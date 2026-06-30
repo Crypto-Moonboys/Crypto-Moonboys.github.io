@@ -28,6 +28,7 @@
   var _state = null;
   var _subscribers = [];
   var _inflight = null;
+  var _inflightKey = null;
   var _cacheKey = null;
   var _invalidatedReason = null;
   var _lastFetchStatus = 'idle';
@@ -79,8 +80,8 @@
     return typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
   }
 
-  function authCacheKey(auth) {
-    if (!auth) return isLinked() ? 'linked:auth_required:' + String(getTelegramId() || 'unknown') : 'anonymous';
+  function authCacheKey(auth, linked) {
+    if (!auth) return linked ? 'linked:auth_required:' + String(getTelegramId() || 'unknown') : 'anonymous';
     return 'linked:' + String(auth.id || auth.telegram_id || getTelegramId() || 'unknown');
   }
 
@@ -88,8 +89,25 @@
     return new Date().toISOString().slice(0, 10);
   }
 
-  function buildCacheKey(auth) {
-    return currentUtcDay() + '|' + authCacheKey(auth);
+  function buildCacheKey(auth, linked) {
+    return currentUtcDay() + '|' + authCacheKey(auth, linked);
+  }
+
+  async function resolveRequestContext(options) {
+    var opts = options || {};
+    var apiBase = getApiBase();
+    if (!apiBase) throw new Error('daily_loop_api_unavailable');
+
+    var linked = isLinked();
+    var auth = linked ? await getFreshAuth({ force: !!opts.forceAuth }) : null;
+    var authState = linked && !auth ? 'auth_required' : (auth ? 'linked' : 'anonymous');
+    return {
+      apiBase: apiBase,
+      linked: linked,
+      auth: auth,
+      authState: authState,
+      key: buildCacheKey(auth, linked),
+    };
   }
 
   function normalizeState(payload, fetchStatus, authState) {
@@ -150,20 +168,15 @@
     return previous;
   }
 
-  async function fetchState(options) {
+  async function fetchState(context, options) {
     var opts = options || {};
-    var apiBase = getApiBase();
-    if (!apiBase) throw new Error('daily_loop_api_unavailable');
-
-    var linked = isLinked();
-    var auth = linked ? await getFreshAuth({ force: !!opts.forceAuth }) : null;
-    var authState = linked && !auth ? 'auth_required' : (auth ? 'linked' : 'anonymous');
-    var key = buildCacheKey(auth);
+    var auth = context.auth;
+    var authState = context.authState;
+    var key = context.key;
 
     if (!opts.force && !_invalidatedReason && _state && _cacheKey === key && _state.utc_day === currentUtcDay()) {
       return clone(_state);
     }
-    if (!opts.force && _inflight) return _inflight;
 
     _cacheKey = key;
     _lastFetchStatus = 'loading';
@@ -179,28 +192,42 @@
       : { method: 'GET', signal: controller.signal };
 
     try {
-      var res = await fetch(apiBase + ENDPOINT, request);
+      var res = await fetch(context.apiBase + ENDPOINT, request);
       var payload = await res.json().catch(function () { return {}; });
       if (!res.ok || !payload || payload.ok === false) {
         throw new Error(payload && payload.error ? payload.error : 'daily_loop_http_' + String(res.status || 0));
       }
       _invalidatedReason = null;
-      return setState(normalizeState(payload, 'ok', authState), _state ? 'daily-loop:update' : 'daily-loop:ready');
+      var nextState = normalizeState(payload, 'ok', authState);
+      if (_inflightKey !== key) return clone(nextState);
+      return setState(nextState, _state ? 'daily-loop:update' : 'daily-loop:ready');
     } catch (error) {
       var next = errorState(error);
+      if (_inflightKey !== key) return clone(next);
       _lastFetchStatus = 'error';
       _state = next;
       notify('daily-loop:error', { state: clone(next), error: next.error });
       return clone(_state);
     } finally {
       clearTimeout(timer);
-      _inflight = null;
+      if (_inflightKey === key) {
+        _inflight = null;
+        _inflightKey = null;
+      }
     }
   }
 
-  function refresh(options) {
-    if (_inflight) return _inflight;
-    _inflight = fetchState(options || {});
+  async function refresh(options) {
+    var opts = options || {};
+    var context;
+    try {
+      context = await resolveRequestContext(opts);
+    } catch (error) {
+      return setState(errorState(error), 'daily-loop:error');
+    }
+    if (_inflight && _inflightKey === context.key) return _inflight;
+    _inflightKey = context.key;
+    _inflight = fetchState(context, opts);
     return _inflight;
   }
 

@@ -14,6 +14,8 @@ const packageJson = fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8');
 const truthMap = fs.readFileSync(path.join(ROOT, 'docs/LIVE_DAILY_LOOP_TRUTH_MAP.md'), 'utf8');
 
 function createRuntime({ linked = false, auth = null, fetchImpl } = {}) {
+  let linkedState = linked;
+  let authState = auth;
   const listeners = new Map();
   const documentListeners = new Map();
   const busEvents = [];
@@ -22,11 +24,11 @@ function createRuntime({ linked = false, auth = null, fetchImpl } = {}) {
       getApiBase: () => 'https://moonboys-api.test',
     },
     MOONBOYS_IDENTITY: {
-      isTelegramLinked: () => linked,
+      isTelegramLinked: () => linkedState,
       getTelegramId: () => '12345',
-      getFreshTelegramAuth: () => Promise.resolve(auth),
-      restoreLinkedTelegramAuth: () => Promise.resolve(auth ? { ok: true, telegram_auth: auth } : null),
-      getSignedTelegramAuth: () => auth,
+      getFreshTelegramAuth: () => Promise.resolve(authState),
+      restoreLinkedTelegramAuth: () => Promise.resolve(authState ? { ok: true, telegram_auth: authState } : null),
+      getSignedTelegramAuth: () => authState,
     },
     MOONBOYS_EVENT_BUS: {
       emit(name, detail) { busEvents.push({ name, detail }); },
@@ -64,7 +66,13 @@ function createRuntime({ linked = false, auth = null, fetchImpl } = {}) {
   windowObj.AbortController = AbortController;
   windowObj.fetch = fetchImpl;
   vm.runInNewContext(singletonSrc, windowObj, { filename: 'daily-loop-state.js' });
-  return { window: windowObj, document: documentObj, busEvents };
+  return {
+    window: windowObj,
+    document: documentObj,
+    busEvents,
+    setLinked(value) { linkedState = !!value; },
+    setAuth(value) { authState = value; },
+  };
 }
 
 function response(payload, ok = true, status = 200) {
@@ -100,6 +108,13 @@ function dailyPayload(extra = {}) {
     },
     ...extra,
   };
+}
+
+async function waitForCalls(calls, expectedCount) {
+  for (let i = 0; i < 10 && calls.length < expectedCount; i += 1) {
+    await Promise.resolve();
+  }
+  assert.equal(calls.length, expectedCount, `expected ${expectedCount} fetch call(s) to start`);
 }
 
 assert.ok(singletonSrc.includes('window.MOONBOYS_DAILY_LOOP = {'), 'singleton exposes MOONBOYS_DAILY_LOOP');
@@ -150,10 +165,98 @@ const concurrentRuntime = createRuntime({
 });
 const first = concurrentRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
 const second = concurrentRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
-assert.equal(first, second, 'concurrent refresh calls share one in-flight promise');
+await Promise.resolve();
 resolveFetch();
-await first;
+await Promise.all([first, second]);
 assert.equal(concurrentCallCount, 1);
+
+let resolveAnonFetch;
+const authRaceCalls = [];
+const raceAuthPayload = { id: 12345, hash: 'race-hash', auth_date: 1782781111 };
+const authRaceRuntime = createRuntime({
+  linked: false,
+  auth: null,
+  fetchImpl(url, options = {}) {
+    authRaceCalls.push({ url: String(url), options });
+    if ((options.method || 'GET') === 'GET') {
+      return new Promise((resolve) => {
+        resolveAnonFetch = () => resolve(response(dailyPayload({ identity: { linked: false, auth_mode: 'anonymous' } })));
+      });
+    }
+    return response(dailyPayload({ identity: { linked: true, auth_mode: 'telegram_verified' } }));
+  },
+});
+const anonymousInFlight = authRaceRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+await waitForCalls(authRaceCalls, 1);
+authRaceRuntime.setLinked(true);
+authRaceRuntime.setAuth(raceAuthPayload);
+const linkedAfterAuth = authRaceRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+assert.notEqual(anonymousInFlight, linkedAfterAuth, 'linked refresh must not reuse anonymous in-flight promise');
+await linkedAfterAuth;
+resolveAnonFetch();
+await anonymousInFlight;
+assert.equal(authRaceCalls.length, 2, 'auth restore during anonymous fetch starts a separate linked request');
+assert.equal(authRaceCalls[0].options.method, 'GET');
+assert.equal(authRaceCalls[1].options.method, 'POST');
+assert.equal(authRaceCalls[1].url.includes('?'), false, 'linked auth after race must not use query strings');
+assert.deepEqual(JSON.parse(authRaceCalls[1].options.body), { telegram_auth: raceAuthPayload });
+const raceFinalState = await authRaceRuntime.window.MOONBOYS_DAILY_LOOP.getState();
+assert.equal(raceFinalState.identity.auth_mode, 'telegram_verified', 'late anonymous response must not overwrite linked state');
+
+let resolveLinkedFetch;
+const linkedToAnonCalls = [];
+const linkedToAnonRuntime = createRuntime({
+  linked: true,
+  auth: authPayload,
+  fetchImpl(url, options = {}) {
+    linkedToAnonCalls.push({ url: String(url), options });
+    if ((options.method || 'GET') === 'POST') {
+      return new Promise((resolve) => {
+        resolveLinkedFetch = () => resolve(response(dailyPayload({ identity: { linked: true, auth_mode: 'telegram_verified' } })));
+      });
+    }
+    return response(dailyPayload({ identity: { linked: false, auth_mode: 'anonymous' } }));
+  },
+});
+const linkedInFlight = linkedToAnonRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+await waitForCalls(linkedToAnonCalls, 1);
+linkedToAnonRuntime.setLinked(false);
+linkedToAnonRuntime.setAuth(null);
+const anonymousAfterUnlink = linkedToAnonRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+assert.notEqual(linkedInFlight, anonymousAfterUnlink, 'anonymous refresh must not reuse linked in-flight promise');
+await anonymousAfterUnlink;
+resolveLinkedFetch();
+await linkedInFlight;
+assert.equal(linkedToAnonCalls.length, 2, 'unlink during linked fetch starts a separate anonymous request');
+assert.equal(linkedToAnonCalls[0].options.method, 'POST');
+assert.equal(linkedToAnonCalls[1].options.method, 'GET');
+const linkedToAnonFinalState = await linkedToAnonRuntime.window.MOONBOYS_DAILY_LOOP.getState();
+assert.equal(linkedToAnonFinalState.identity.auth_mode, 'anonymous', 'late linked response must not overwrite anonymous state');
+
+let resolveAuthRequiredFetch;
+const authRequiredCalls = [];
+const authRequiredRuntime = createRuntime({
+  linked: true,
+  auth: null,
+  fetchImpl(url, options = {}) {
+    authRequiredCalls.push({ url: String(url), options });
+    if ((options.method || 'GET') === 'GET' && authRequiredCalls.length === 1) {
+      return new Promise((resolve) => {
+        resolveAuthRequiredFetch = () => resolve(response(dailyPayload()));
+      });
+    }
+    return response(dailyPayload({ identity: { linked: false, auth_mode: 'anonymous' } }));
+  },
+});
+const authRequiredInFlight = authRequiredRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+await waitForCalls(authRequiredCalls, 1);
+authRequiredRuntime.setLinked(false);
+const anonymousAfterAuthRequired = authRequiredRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+assert.notEqual(authRequiredInFlight, anonymousAfterAuthRequired, 'auth_required mode must be separate from anonymous mode');
+await anonymousAfterAuthRequired;
+resolveAuthRequiredFetch();
+await authRequiredInFlight;
+assert.equal(authRequiredCalls.length, 2, 'auth_required in-flight GET must not be reused for anonymous GET');
 
 const expiredCalls = [];
 const expiredRuntime = createRuntime({
