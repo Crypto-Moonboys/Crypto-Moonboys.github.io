@@ -35,6 +35,7 @@ const ROOT            = path.resolve(__dirname, '..');
 const WIKI_DIR        = path.join(ROOT, 'wiki');
 const AUDIT_OUTPUT    = path.join(ROOT, 'js', 'wiki-publish-audit.json');
 const BRAND_CANON_DIR = path.join(ROOT, 'brand-canon');
+const WEBSITE_PAYLOAD_DIR = path.join(ROOT, 'website-publish-payloads');
 
 const MIN_WORD_COUNT = 250;
 
@@ -74,6 +75,8 @@ function loadBrandCanon() {
   const approvedSlugs = new Set(
     (approvedPagesConfig.approved_slugs || []).map(normalizeSlug).filter(Boolean)
   );
+  const payloadApprovedSlugs = loadWebsitePayloadApprovedSlugs();
+  for (const slug of payloadApprovedSlugs) approvedSlugs.add(slug);
   const reviewSlugs = new Set(
     (reviewNeededConfig.review_needed_slugs || []).map(normalizeSlug).filter(Boolean)
   );
@@ -106,7 +109,27 @@ function loadBrandCanon() {
     }
   }
 
-  return { blockedPatterns, approvedSlugs, reviewSlugs, brandIds, genericWords };
+  return { blockedPatterns, approvedSlugs, payloadApprovedSlugs, reviewSlugs, brandIds, genericWords };
+}
+
+function loadWebsitePayloadApprovedSlugs() {
+  const slugs = new Set();
+  if (!fs.existsSync(WEBSITE_PAYLOAD_DIR)) return slugs;
+
+  for (const file of fs.readdirSync(WEBSITE_PAYLOAD_DIR).filter(name => name.endsWith('.json')).sort()) {
+    try {
+      const payload = JSON.parse(fs.readFileSync(path.join(WEBSITE_PAYLOAD_DIR, file), 'utf8'));
+      const slug = normalizeSlug(payload && payload.slug);
+      if (slug && payload.publish_mode === 'middle_content_only') {
+        slugs.add(slug);
+      }
+    } catch (err) {
+      // The importer performs full validation before write-mode sync. The gate
+      // ignores malformed payload files when it is run standalone.
+    }
+  }
+
+  return slugs;
 }
 
 // ── Slug utilities ────────────────────────────────────────────────────────────
@@ -184,6 +207,10 @@ function classifySlug(slug, canon) {
 
   if (!normalized) {
     return { status: STATUS.BLOCKED_SYNTHETIC_SLUG, reason: 'Empty or invalid slug.' };
+  }
+
+  if (canon.payloadApprovedSlugs && canon.payloadApprovedSlugs.has(normalized)) {
+    return { status: STATUS.APPROVED_CANON_PAGE, reason: 'Approved by validated website-publish-payloads middle_content_only contract.' };
   }
 
   // Manually approved overrides everything
