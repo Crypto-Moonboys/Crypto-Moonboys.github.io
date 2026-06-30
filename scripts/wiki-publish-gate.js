@@ -177,6 +177,18 @@ function hasNeedsBrandReviewMarker(html) {
   return /NEEDS_BRAND_REVIEW/i.test(html);
 }
 
+function isNftTemplatePage(html) {
+  if (/data-page-type=["']nft_collection["']/i.test(html)) return false;
+  return /data-page-type=["']nft_template["']/i.test(html) ||
+         /class=["'][^"']*\bnft-template-article\b/i.test(html) ||
+         /<template\b[^>]*class=["'][^"']*\bnft-battle-media-template\b/i.test(html);
+}
+
+function isNftCollectionPage(html) {
+  return /data-page-type=["']nft_collection["']/i.test(html) ||
+         /class=["'][^"']*\bnft-collection-article\b/i.test(html);
+}
+
 /**
  * Count meaningful words in the HTML body (strips tags, script/style blocks).
  */
@@ -295,6 +307,24 @@ function classifyPage(slug, html, canon) {
       status: STATUS.APPROVED_ALIAS_REDIRECT,
       reason: 'http-equiv refresh or data-wiki-stub redirect page.',
       word_count: 0,
+    };
+  }
+
+  if (isNftTemplatePage(html)) {
+    return {
+      slug: normalized,
+      status: STATUS.APPROVED_CANON_PAGE,
+      reason: 'Approved as mechanical NFT template page with Battle Heat media metadata.',
+      word_count: countMeaningfulWords(html),
+    };
+  }
+
+  if (isNftCollectionPage(html)) {
+    return {
+      slug: normalized,
+      status: STATUS.APPROVED_CANON_PAGE,
+      reason: 'Approved as mechanical NFT collection page metadata.',
+      word_count: countMeaningfulWords(html),
     };
   }
 

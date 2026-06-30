@@ -1,20 +1,23 @@
 {
-  "article_count": 180,
-  "entity_count": 180,
-  "category_count": 15,
-  "totalArticles": 180,
-  "totalEntities": 180,
-  "totalCategories": 15,
-  "total_articles": 180,
-  "total_entities": 180,
+  "total_wiki_pages": 329,
+  "total_articles": 185,
+  "nft_template_pages": 143,
+  "nft_collection_pages": 1,
+  "indexed_pages": 324,
+  "search_index_pages": 324,
+  "graph_nodes": 324,
+  "sitemap_wiki_urls": 324,
   "total_categories": 15,
+  "article_count": 329,
+  "totalArticles": 329,
+  "entity_count": 324,
+  "totalEntities": 324,
+  "category_count": 15,
+  "totalCategories": 15,
+  "total_entities": 324,
   "canonical_hub": "/search.html",
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-06-29T20:28:51.634Z",
-  "nft_collection_pages": 1,
-  "nft_template_pages": 143,
-  "nft_minted_assets_counted": 124463,
-  "nft_raw_asset_pages": 0
+  "last_updated": "2026-06-30T12:56:07.964Z"
 }

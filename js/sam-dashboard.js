@@ -113,7 +113,9 @@
     const el = document.getElementById('panel-stats');
     if (!el) return;
 
-    const totalPages = (siteStats && siteStats.total_articles) || (siteStats && siteStats.article_count) || '—';
+    const totalPages = (siteStats && (siteStats.total_wiki_pages || siteStats.article_count)) || '—';
+    const totalArticles = (siteStats && siteStats.total_articles) || '—';
+    const nftTemplates = (siteStats && siteStats.nft_template_pages) || 0;
     const totalEntities = (entityMap && entityMap.length) || (siteStats && siteStats.total_entities) || '—';
     const lastUpdated = (memory && memory.updated_at) || (siteStats && siteStats.last_updated);
 
@@ -124,6 +126,16 @@
           <div class="sam-stat-lbl">Wiki Pages</div>
         </div>
         <div class="sam-stat-box sam-stat-box--green">
+          <div class="sam-stat-num">${esc(String(totalArticles))}</div>
+          <div class="sam-stat-lbl">Articles Excl NFT Templates</div>
+        </div>
+        <div class="sam-stat-box sam-stat-box--blue">
+          <div class="sam-stat-num">${esc(String(nftTemplates))}</div>
+          <div class="sam-stat-lbl">NFT Templates</div>
+        </div>
+      </div>
+      <div class="sam-stat-row sam-stat-row--3">
+        <div class="sam-stat-box sam-stat-box--green">
           <div class="sam-stat-num">${esc(String(totalEntities))}</div>
           <div class="sam-stat-lbl">Entities</div>
         </div>
@@ -132,7 +144,7 @@
           <div class="sam-stat-lbl">Categories</div>
         </div>
       </div>
-      <div class="sam-section-label">🕐 Last System Update</div>
+      <div class="sam-section-label">🕐 Last Data Build</div>
       <div class="sam-update-time">
         <span class="sam-time-abs">${fmtDate(lastUpdated)}</span>
         <span class="sam-time-rel">${relTime(lastUpdated)}</span>
@@ -486,7 +498,7 @@
     const tsEl = document.getElementById('sam-ts');
     if (tsEl) {
       const ts = (memory && memory.updated_at) || (siteStats && siteStats.last_updated);
-      tsEl.textContent = ts ? `Last sync: ${fmtDate(ts)}` : '';
+      tsEl.textContent = ts ? `Last data build: ${fmtDate(ts)}` : '';
     }
   }
 

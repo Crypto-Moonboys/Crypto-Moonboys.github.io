@@ -10,7 +10,7 @@
  * - .stat-last-updated
  *
  * Supported JSON keys:
- * - totalArticles / total_articles
+ * - total_wiki_pages / totalArticles / article_count
  * - totalCategories / total_categories
  * - totalEntities / total_entities
  * - last_updated
@@ -60,7 +60,7 @@
       .then(stats => {
         if (!stats) return;
 
-        const totalArticles = pickNumber(stats, ['totalArticles', 'total_articles', 'article_count']);
+        const totalArticles = pickNumber(stats, ['total_wiki_pages', 'totalArticles', 'article_count']);
         const totalCategories = pickNumber(stats, ['totalCategories', 'total_categories', 'category_count']);
         const totalEntities = pickNumber(stats, ['totalEntities', 'total_entities', 'entity_count']);
 
