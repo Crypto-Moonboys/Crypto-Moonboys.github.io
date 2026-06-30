@@ -562,14 +562,48 @@ export async function buildDailyLoopState(env, options = {}) {
   return state;
 }
 
+export function summarizeDailyLoopHealth(state) {
+  const sourceStatus = state?.source_status && typeof state.source_status === 'object' ? state.source_status : {};
+  const sourceStatusSummary = {};
+  const counts = {
+    live_count: 0,
+    preview_count: 0,
+    unavailable_count: 0,
+    query_failed_count: 0,
+    migration_pending_count: 0,
+  };
+
+  for (const [key, status] of Object.entries(sourceStatus)) {
+    const statusState = status?.state || 'unavailable';
+    sourceStatusSummary[key] = statusState;
+    if (statusState === 'live' || statusState === 'live_empty') counts.live_count += 1;
+    if (statusState === 'preview') counts.preview_count += 1;
+    if (statusState === 'unavailable') counts.unavailable_count += 1;
+    if (statusState === 'query_failed') counts.query_failed_count += 1;
+    if (statusState === 'migration_pending') counts.migration_pending_count += 1;
+  }
+
+  return {
+    utc_day: state?.utc_day || null,
+    seconds_until_reset: Number.isFinite(Number(state?.seconds_until_reset)) ? Number(state.seconds_until_reset) : null,
+    linked: !!state?.identity?.linked,
+    source_status_summary: sourceStatusSummary,
+    ...counts,
+  };
+}
+
 export async function handleDailyLoopStateRoute(request, env, helpers = {}) {
   const url = new URL(request.url);
   const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '');
   if (path !== '/daily-loop/state' || !['GET', 'POST'].includes(request.method)) return null;
   if (!env.DB) return helpers.err ? helpers.err('D1 binding unavailable', 503) : new Response('D1 binding unavailable', { status: 503 });
+  const maybeWithDebug = (state) => {
+    if (url.searchParams.get('debug') !== '1') return state;
+    return { ...state, debug: summarizeDailyLoopHealth(state) };
+  };
 
   if (request.method === 'GET') {
-    return helpers.json(await buildDailyLoopState(env));
+    return helpers.json(maybeWithDebug(await buildDailyLoopState(env)));
   }
 
   let body = {};
@@ -583,5 +617,5 @@ export async function handleDailyLoopStateRoute(request, env, helpers = {}) {
       }
     });
   }
-  return helpers.json(await buildDailyLoopState(env, { verified }));
+  return helpers.json(maybeWithDebug(await buildDailyLoopState(env, { verified })));
 }

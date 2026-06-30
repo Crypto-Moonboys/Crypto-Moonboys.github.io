@@ -73,9 +73,14 @@ assert.ok(builder.includes(': {}'), 'Anonymous/public command paths must fall ba
 
 assert.ok(daily.includes('const today = loop.utc_day || getTodayUtcDate();'), '/daily must use the builder utc_day for the command readout and daily claim date');
 assert.ok(dailyReadout.includes('formatLoopResetLine(loop)'), '/daily readout must use the builder reset/countdown fields');
+assert.ok(dailyReadout.includes('<b>Daily Loop</b>'), '/daily output must include the daily-loop readout');
+assert.ok(dailyReadout.includes('formatDailyLoopSourceSummary(loop'), '/daily output must include source truth');
 assert.ok(dailyReadout.includes('formatMissionSummary(loop.daily_missions)'), '/daily must summarize missions from the daily-loop contract');
+assert.ok(status.includes('formatLoopResetLine(loop)'), '/gkstatus output must include UTC day/reset');
+assert.ok(status.includes('formatDailyLoopSourceSummary(loop'), '/gkstatus output must include Daily Loop source truth');
 assert.ok(quests.includes('formatMissionSummary(loop.daily_missions)'), '/gkquests must use the same daily mission count helper as /daily');
 assert.ok(quests.includes('formatWikiMissionSummary(loop.wiki_missions)'), '/gkquests must use daily-loop wiki mission completions');
+assert.ok(quests.includes('Daily missions:') && quests.includes('Wiki missions:'), '/gkquests output must include daily and wiki mission summaries');
 assert.ok(!quests.includes('FROM telegram_quests'), '/gkquests must not invent or duplicate legacy telegram_quests rows');
 
 assert.ok(wtfLine.includes("formatSourceStatusForTelegram(status)"), 'Daily WTF text must render from source_status');
@@ -88,6 +93,7 @@ assert.ok(!sourceFormatter.includes('LIVE'), 'No fake-live fallback label should
 
 assert.ok(faction.includes('Daily contribution:'), '/gkfaction must render daily contribution from faction_state');
 assert.ok(faction.includes('Weekly contribution:'), '/gkfaction must render weekly contribution from faction_state');
+assert.ok(faction.includes('Source: ${factionSource}'), '/gkfaction output must include faction source status');
 assert.ok(faction.includes("formatSourceStatusForTelegram(loop.source_status?.faction_state"), '/gkfaction must expose faction source_status');
 assert.ok(faction.includes('FACTION_UNALIGNED'), '/gkfaction must keep unaligned state explicit when no faction is selected');
 
