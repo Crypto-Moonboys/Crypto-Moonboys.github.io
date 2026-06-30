@@ -10,6 +10,7 @@
  *   /js/arcade/core/global-event-bus.js
  *   /js/identity-gate.js
  *   /js/core/moonboys-state.js
+ *   /js/core/daily-loop-state.js
  *   /js/site-shell.js
  *   /js/components/connection-status-panel.js
  *   /js/components/global-player-header.js
@@ -32,6 +33,7 @@ const REQUIRED_SCRIPTS = [
   '/js/arcade/core/global-event-bus.js',
   '/js/identity-gate.js',
   '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
   '/js/site-shell.js',
   '/js/components/connection-status-panel.js',
   '/js/components/global-player-header.js',
@@ -64,6 +66,7 @@ const CANONICAL_BOOT_SRCS = [
   '/js/arcade/core/global-event-bus.js',
   '/js/identity-gate.js',
   '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
   '/js/site-shell.js',
   '/js/components/connection-status-panel.js',
   '/js/components/global-player-header.js',
