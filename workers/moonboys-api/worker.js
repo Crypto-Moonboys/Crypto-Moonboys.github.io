@@ -2,6 +2,7 @@ import { GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blo
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
+import { handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxOnEdgeRoute, runWaxOnEdgeScheduledSync } from './routes/waxonedge.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
@@ -51,6 +52,8 @@ import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFaction
  *   GET  /battle-chamber/activity?limit=20
  *   POST /battle-chamber/event
  *   POST /player/mastery/update
+ *   GET  /daily-loop/state  (public anonymous UTC daily loop authority)
+ *   POST /daily-loop/state  JSON { telegram_auth } (Telegram-linked UTC daily loop authority)
  *   GET  /roguelite/daily-state  (legacy query-auth compatibility; deprecated for linked state)
  *   POST /roguelite/daily-state  JSON { telegram_auth }
  *   GET  /roguelite/missed-history?limit=30  (legacy query-auth compatibility; deprecated for linked state)
@@ -2930,6 +2933,17 @@ export default {
       return handleWaxOnEdgeRoute(request, env, CORS_HEADERS);
     }
 
+
+    if (path === '/daily-loop/state') {
+      const dailyLoopResponse = await handleDailyLoopStateRoute(request, env, {
+        json,
+        err,
+        verifyTelegramAuth,
+        upsertTelegramUser,
+        logApiFailure,
+      });
+      if (dailyLoopResponse) return dailyLoopResponse;
+    }
 
     // ── POST /admin/blocktopia/access ─────────────────────────────────────
     // Admin access probe for hidden tooling UIs.
