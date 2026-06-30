@@ -250,9 +250,8 @@ function classifyPage(slug, html, canon) {
   // a noindex meta or happen to look like redirect stubs.
   const slugResult = classifySlug(normalized, canon);
 
-  // If slug is blocked, no further checks needed
-  if (slugResult.status === STATUS.BLOCKED_SYNTHETIC_SLUG ||
-      slugResult.status === STATUS.BLOCKED_DUPLICATE_CONCEPT) {
+  // Synthetic slugs stay blocked even if they look like redirects.
+  if (slugResult.status === STATUS.BLOCKED_SYNTHETIC_SLUG) {
     return {
       slug: normalized,
       status: slugResult.status,
@@ -261,12 +260,23 @@ function classifyPage(slug, html, canon) {
     };
   }
 
-  // Redirect stubs are approved-alias (for non-blocked slugs)
+  // Redirect stubs are approved-alias. This keeps old URLs alive without
+  // treating them as duplicate canonical article pages.
   if (isRedirectPage(html)) {
     return {
       slug: normalized,
       status: STATUS.APPROVED_ALIAS_REDIRECT,
       reason: 'http-equiv refresh or data-wiki-stub redirect page.',
+      word_count: 0,
+    };
+  }
+
+  // If slug is duplicate-blocked and is not a redirect alias, no further checks needed.
+  if (slugResult.status === STATUS.BLOCKED_DUPLICATE_CONCEPT) {
+    return {
+      slug: normalized,
+      status: slugResult.status,
+      reason: slugResult.reason,
       word_count: 0,
     };
   }

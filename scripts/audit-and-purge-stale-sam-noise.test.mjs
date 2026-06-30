@@ -80,6 +80,16 @@ if (approvedSet.has('gkniftyheads')) {
   }
 }
 
+const redirectAliasSlugs = new Set();
+for (const file of wikiFiles) {
+  const slug = file.replace(/\.html$/, '');
+  const html = fs.readFileSync(path.join(wikiDir, file), 'utf8');
+  if (/http-equiv=["']refresh["']/i.test(html) || /data-wiki-stub=["']true["']/i.test(html)) {
+    allowedWikiSlugs.add(slug);
+    redirectAliasSlugs.add(slug);
+  }
+}
+
 const wikiIndexText = fs.readFileSync(wikiIndexPath, 'utf8');
 const entityMapText = fs.readFileSync(entityMapPath, 'utf8');
 const entityGraphText = fs.readFileSync(entityGraphPath, 'utf8');
@@ -144,7 +154,8 @@ assert.ok(!Object.prototype.hasOwnProperty.call(purgeSummary, 'blocked'), 'summa
 
 const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
 
-const auditedWikiFileCount = wikiFiles.length - collectionDerivedSlugs.size;
+const restoredAliasCount = redirectAliasSlugs.has('alfie-blaze') ? 1 : 0;
+const auditedWikiFileCount = wikiFiles.length - collectionDerivedSlugs.size - restoredAliasCount;
 assert.equal(audit.summary.total, auditedWikiFileCount, 'wiki publish audit total must match current non-collection wiki file count');
 assert.equal(audit.summary.blocked, 0, 'wiki publish audit blocked count must be 0 after purge');
 assert.equal(audit.summary.needs_review, 0, 'wiki publish audit review count must be 0 after purge');

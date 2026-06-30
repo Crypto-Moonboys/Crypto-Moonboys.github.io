@@ -24,6 +24,9 @@ const {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const wikiIndexPath = path.join(ROOT, 'js', 'wiki-index.json');
 const wikiIndex = JSON.parse(fs.readFileSync(wikiIndexPath, 'utf8'));
+const alfieAliasPath = path.join(ROOT, 'wiki', 'alfie-blaze.html');
+const alfieCanonicalPath = path.join(ROOT, 'wiki', 'alfie-bitcoin-kid-blaze.html');
+const graffpunksEcosystemPath = path.join(ROOT, 'wiki', 'graffpunks-ecosystem.html');
 
 // ── Safe alias collapses (same brand, same concept type) ──────────────────
 
@@ -98,6 +101,41 @@ assert.equal(radioMeta.brand_family, 'graffpunks');
 // ── titleFromSlug ─────────────────────────────────────────────────────────
 
 assert.equal(titleFromSlug('graffpunks-24-7'), 'Graffpunks 24 7');
+
+// Alfie short URL remains as a safe redirect alias, not a duplicate canon page.
+assert.ok(fs.existsSync(alfieAliasPath), '/wiki/alfie-blaze.html must remain as a non-404 alias page');
+assert.ok(fs.existsSync(alfieCanonicalPath), '/wiki/alfie-bitcoin-kid-blaze.html must remain the main canonical page');
+const alfieAliasHtml = fs.readFileSync(alfieAliasPath, 'utf8');
+const alfieCanonicalHtml = fs.readFileSync(alfieCanonicalPath, 'utf8');
+const graffpunksEcosystemHtml = fs.readFileSync(graffpunksEcosystemPath, 'utf8');
+assert.ok(
+  alfieAliasHtml.includes('https://cryptomoonboys.com/wiki/alfie-bitcoin-kid-blaze.html'),
+  'Alfie alias page must use the canonical Alfie Bitcoin Kid Blaze URL'
+);
+assert.ok(
+  alfieAliasHtml.includes('/wiki/alfie-bitcoin-kid-blaze.html'),
+  'Alfie alias page must redirect to the canonical Alfie Bitcoin Kid Blaze path'
+);
+assert.ok(
+  alfieAliasHtml.includes('Alfie Blaze has moved to Alfie Bitcoin Kid Blaze'),
+  'Alfie alias page must include a visible fallback link'
+);
+assert.ok(
+  !alfieAliasHtml.includes('SAM:BEGIN') && !alfieAliasHtml.includes('lore-paragraph'),
+  'Alfie alias page must not contain duplicate SAM/canon article content'
+);
+assert.ok(
+  alfieCanonicalHtml.includes('https://cryptomoonboys.com/wiki/alfie-bitcoin-kid-blaze.html'),
+  'Alfie Bitcoin Kid Blaze page must remain self-canonical'
+);
+assert.ok(
+  graffpunksEcosystemHtml.includes('/wiki/alfie-bitcoin-kid-blaze.html'),
+  'Graffpunks ecosystem hub must point to the canonical Alfie page'
+);
+assert.ok(
+  !graffpunksEcosystemHtml.includes('/wiki/alfie-blaze.html'),
+  'Graffpunks ecosystem hub must not link to the old Alfie alias'
+);
 
 // ── wiki-index invariants ─────────────────────────────────────────────────
 
