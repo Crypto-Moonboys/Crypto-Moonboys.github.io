@@ -7,17 +7,17 @@
   "search_index_pages": 324,
   "graph_nodes": 324,
   "sitemap_wiki_urls": 324,
-  "total_categories": 15,
+  "total_categories": 18,
   "article_count": 329,
   "totalArticles": 329,
   "entity_count": 324,
   "totalEntities": 324,
-  "category_count": 15,
-  "totalCategories": 15,
+  "category_count": 18,
+  "totalCategories": 18,
   "total_entities": 324,
   "canonical_hub": "/search.html",
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-06-30T13:14:58.908Z"
+  "last_updated": "2026-06-30T13:52:01.442Z"
 }
