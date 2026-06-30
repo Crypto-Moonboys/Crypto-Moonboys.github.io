@@ -6,6 +6,7 @@ import { handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxOnEdgeRoute, runWaxOnEdgeScheduledSync } from './routes/waxonedge.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
+import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 /**
  * Moonboys API — Cloudflare Worker entrypoint
  *
@@ -1548,31 +1549,6 @@ async function ensureDailyWtfTables(db) {
   }
   return null;
 }
-
-function getWtfDailySchedule(utcDay) {
-  return [
-    { event_id: 'wtf-midnight-signal', title: 'Midnight WTF Signal', event_type: 'signal_window', startHour: 0, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', reward_key: `wtf:${utcDay}:midnight`, theme: 'neon-midnight' },
-    { event_id: 'wtf-early-chain-wake-up', title: 'Early Chain Wake-Up', event_type: 'chain_wake_up', startHour: 4, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', reward_key: `wtf:${utcDay}:early`, theme: 'chain-wake-up' },
-    { event_id: 'wtf-morning-signal', title: 'Morning WTF Signal', event_type: 'signal_window', startHour: 8, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', reward_key: `wtf:${utcDay}:morning`, theme: 'neon-sunrise' },
-    { event_id: 'wtf-midday-rush', title: 'Midday Faction Rush', event_type: 'faction_rush', startHour: 12, durationMinutes: 90, required_action: 'complete_faction_or_battle_action', reward_key: `wtf:${utcDay}:midday`, theme: 'faction-overdrive' },
-    { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', event_type: 'arcade_burst', startHour: 16, durationMinutes: 90, required_action: 'score_target_any_game', reward_key: `wtf:${utcDay}:evening`, theme: 'neon-jackpot' },
-    { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', event_type: 'chaos_window', startHour: 20, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', reward_key: `wtf:${utcDay}:late`, theme: 'after-hours-chaos' },
-  ];
-}
-
-function buildWtfIso(utcDay, hour, minute = 0) {
-  return `${utcDay}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00.000Z`;
-}
-
-function getWtfEventStatus(nowMs, startsAt, endsAt, playerStatus) {
-  const startMs = Date.parse(startsAt);
-  const endMs = Date.parse(endsAt);
-  if (Number.isFinite(endMs) && nowMs >= endMs) return playerStatus === 'completed' ? 'completed' : 'expired';
-  if (Number.isFinite(startMs) && nowMs < startMs) return 'upcoming';
-  if (playerStatus === 'completed') return 'completed';
-  return 'active';
-}
-
 
 function addUtcDays(utcDay, days) {
   const d = new Date(`${utcDay}T00:00:00.000Z`);

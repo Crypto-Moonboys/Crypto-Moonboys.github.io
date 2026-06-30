@@ -1,5 +1,6 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from '../shared/faction-canon.js';
+import { buildWtfPreviewSchedule, getWtfEventStatus } from '../shared/daily-wtf-schedule.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -16,17 +17,13 @@ const REQUIRED_TABLES = Object.freeze({
   telegram_digest_group_status: ['telegram_daily_digest_log', 'telegram_group_announcement_log'],
 });
 
-const WTF_DAILY_SCHEDULE = Object.freeze([
-  { event_id: 'wtf-midnight-signal', title: 'Midnight WTF Signal', event_type: 'signal_window', startHour: 0, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', theme: 'neon-midnight' },
-  { event_id: 'wtf-early-chain-wake-up', title: 'Early Chain Wake-Up', event_type: 'chain_wake_up', startHour: 4, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', theme: 'chain-wake-up' },
-  { event_id: 'wtf-morning-signal', title: 'Morning WTF Signal', event_type: 'signal_window', startHour: 8, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', theme: 'neon-sunrise' },
-  { event_id: 'wtf-midday-rush', title: 'Midday Faction Rush', event_type: 'faction_rush', startHour: 12, durationMinutes: 90, required_action: 'complete_faction_or_battle_action', theme: 'faction-overdrive' },
-  { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', event_type: 'arcade_burst', startHour: 16, durationMinutes: 90, required_action: 'score_target_any_game', theme: 'neon-jackpot' },
-  { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', event_type: 'chaos_window', startHour: 20, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', theme: 'after-hours-chaos' },
-]);
-
 export function getUtcDay(date = new Date()) {
   return new Date(date).toISOString().slice(0, 10);
+}
+
+export function getCurrentUtcDayStartedAt(date = new Date()) {
+  const now = new Date(date);
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0)).toISOString();
 }
 
 export function getNextUtcResetTimestamp(date = new Date()) {
@@ -34,12 +31,29 @@ export function getNextUtcResetTimestamp(date = new Date()) {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0)).toISOString();
 }
 
+export function getSecondsUntilReset(date = new Date()) {
+  const resetMs = Date.parse(getNextUtcResetTimestamp(date));
+  return Math.max(0, Math.floor((resetMs - new Date(date).getTime()) / 1000));
+}
+
 export function statusLive(source, detail = {}) {
   return { state: 'live', source, ...detail };
 }
 
+export function statusLiveEmpty(source, detail = {}) {
+  return { state: 'live_empty', source, ...detail };
+}
+
 export function statusPreview(source, detail = {}) {
   return { state: 'preview', source, ...detail };
+}
+
+export function statusMigrationPending(detail = {}) {
+  return { state: 'migration_pending', source: 'worker_d1', ...detail };
+}
+
+export function statusQueryFailed(source, detail = {}) {
+  return { state: 'query_failed', source, ...detail };
 }
 
 export function statusUnavailable(reason, detail = {}) {
@@ -56,10 +70,14 @@ function normalizeBattleFaction(value) {
 }
 
 async function hasTable(db, tableName) {
-  const row = await db.prepare(
-    `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
-  ).bind(tableName).first().catch(() => null);
-  return !!row?.name;
+  try {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first();
+    return { ok: true, exists: !!row?.name };
+  } catch (error) {
+    return { ok: false, exists: false, error };
+  }
 }
 
 async function getTableStatus(db, subsystem) {
@@ -67,16 +85,40 @@ async function getTableStatus(db, subsystem) {
   if (!tables.length) return statusLive('worker_api');
   const missing = [];
   for (const tableName of tables) {
-    if (!await hasTable(db, tableName)) missing.push(tableName);
+    const table = await hasTable(db, tableName);
+    if (!table.ok) return statusQueryFailed('worker_d1', { stage: 'table_check', table: tableName, error: table.error?.message || String(table.error) });
+    if (!table.exists) missing.push(tableName);
   }
-  if (missing.length) return statusUnavailable('migration_pending', { missing_tables: missing });
-  return statusLive('worker_d1', { tables });
+  if (missing.length) return statusMigrationPending({ missing_tables: missing });
+  return statusLiveEmpty('worker_d1', { tables, reason: 'tables_ready' });
+}
+
+async function queryAll(db, sourceStatus, subsystem, statement, params = []) {
+  try {
+    return { ok: true, rows: (await db.prepare(statement).bind(...params).all())?.results || [] };
+  } catch (error) {
+    sourceStatus[subsystem] = statusQueryFailed('worker_d1', { error: error?.message || String(error) });
+    return { ok: false, rows: [] };
+  }
+}
+
+async function queryFirst(db, sourceStatus, subsystem, statement, params = []) {
+  try {
+    return { ok: true, row: await db.prepare(statement).bind(...params).first() };
+  } catch (error) {
+    sourceStatus[subsystem] = statusQueryFailed('worker_d1', { error: error?.message || String(error) });
+    return { ok: false, row: null };
+  }
 }
 
 function formatMissionIdLabel(missionId) {
   const base = String(missionId || '').replace(/[_-]+/g, ' ').trim();
   if (!base) return 'Mission';
   return base.replace(/\b\w/g, (m) => m.toUpperCase()).slice(0, 60);
+}
+
+function canQuery(sourceStatus, subsystem) {
+  return ['live_empty', 'preview', 'live'].includes(sourceStatus[subsystem]?.state);
 }
 
 function getIsoWeekKey(date = new Date()) {
@@ -111,44 +153,24 @@ async function ensureDailyOpportunityState(db, telegramId, utcDay) {
     FROM daily_opportunity_state
     WHERE telegram_id = ? AND utc_day = ?
     LIMIT 1
-  `).bind(String(telegramId), utcDay).first().catch(() => null);
+  `).bind(String(telegramId), utcDay).first();
 }
 
-function publicWtfSchedule(utcDay, nowMs = Date.now()) {
-  return WTF_DAILY_SCHEDULE.map((event) => {
-    const startsAt = `${utcDay}T${String(event.startHour).padStart(2, '0')}:00:00.000Z`;
-    const endsAt = new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString();
-    const startMs = Date.parse(startsAt);
-    const endMs = Date.parse(endsAt);
-    const status = nowMs < startMs ? 'upcoming' : nowMs >= endMs ? 'expired' : 'active';
-    return {
-      event_id: event.event_id,
-      utc_day: utcDay,
-      title: event.title,
-      event_type: event.event_type,
-      starts_at: startsAt,
-      ends_at: endsAt,
-      required_action: event.required_action,
-      theme: event.theme,
-      status,
-      source_label: 'preview',
-    };
-  });
-}
-
-function emptyLoopState({ utcDay, resetAt, sourceStatus }) {
+function emptyLoopState({ utcDay, dayStartedAt, resetAt, secondsUntilReset, sourceStatus, nowMs }) {
   return {
     ok: true,
     utc_day: utcDay,
+    current_utc_day_started_at: dayStartedAt,
     next_utc_reset_at: resetAt,
+    seconds_until_reset: secondsUntilReset,
     identity: { linked: false, auth_mode: 'anonymous', message: 'Anonymous daily-loop state. Telegram-linked personal state requires POST telegram_auth.' },
     sam_status: { ok: true, message: 'SAM active and monitoring the wiki.' },
     faction_state: { linked: false, faction_id: null, today: {}, week: {} },
     daily_missions: { linked: false, utc_day: utcDay, items: [] },
     wiki_missions: { linked: false, utc_day: utcDay, items: [] },
     arcade_daily_state: { linked: false, utc_day: utcDay, daily_seed: null, chain_depth: 0, label: 'unavailable' },
-    battle_chamber_activity: { period: 'weekly', period_key: battlePeriodKey('weekly'), standings: [], recent_activity: [] },
-    daily_wtf_status: { utc_day: utcDay, events: publicWtfSchedule(utcDay), label: 'preview' },
+    battle_chamber_activity: { period: 'weekly', period_key: battlePeriodKey('weekly', new Date(nowMs)), standings: [], recent_activity: [] },
+    daily_wtf_status: { utc_day: utcDay, events: buildWtfPreviewSchedule(utcDay, nowMs), label: 'preview' },
     missed_opportunities: { linked: false, utc_day: utcDay, total_today: 0, total_all_time: 0, items: [] },
     telegram_digest_group_status: { linked: false, digest: null, group_announcements: [] },
     source_status: sourceStatus,
@@ -157,73 +179,83 @@ function emptyLoopState({ utcDay, resetAt, sourceStatus }) {
 
 export async function buildDailyLoopState(env, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
+  const nowMs = now.getTime();
   const utcDay = getUtcDay(now);
+  const dayStartedAt = getCurrentUtcDayStartedAt(now);
   const resetAt = getNextUtcResetTimestamp(now);
+  const secondsUntilReset = getSecondsUntilReset(now);
   const sourceStatus = {};
   const db = env.DB;
-  const state = emptyLoopState({ utcDay, resetAt, sourceStatus });
+  const state = emptyLoopState({ utcDay, dayStartedAt, resetAt, secondsUntilReset, sourceStatus, nowMs });
 
   for (const subsystem of Object.keys(REQUIRED_TABLES)) {
     sourceStatus[subsystem] = await getTableStatus(db, subsystem);
   }
 
-  if (sourceStatus.battle_chamber_activity.state === 'live') {
+  if (canQuery(sourceStatus, 'battle_chamber_activity')) {
     const period = 'weekly';
     const periodKey = battlePeriodKey(period, now);
-    const [standingRows, activityRows] = await Promise.all([
-      db.prepare(`
+    const standingRows = await queryAll(db, sourceStatus, 'battle_chamber_activity', `
         SELECT faction_id, clout_total, contribution_total, mission_total, score_total, member_count, updated_at
         FROM battle_chamber_faction_clout
         WHERE period_type = ? AND period_key = ?
-      `).bind(period, periodKey).all().catch(() => ({ results: [] })),
-      db.prepare(`
+      `, [period, periodKey]);
+    const activityRows = await queryAll(db, sourceStatus, 'battle_chamber_activity', `
         SELECT id, telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at
         FROM battle_chamber_activity_log
         ORDER BY created_at DESC, id DESC
         LIMIT 10
-      `).all().catch(() => ({ results: [] })),
-    ]);
-    const byFaction = {};
-    for (const row of (standingRows?.results || [])) byFaction[row.faction_id] = row;
-    state.battle_chamber_activity = {
-      period,
-      period_key: periodKey,
-      standings: CANONICAL_FACTION_KEYS.map((factionId) => {
-        const row = byFaction[factionId] || {};
-        return {
-          faction_id: factionId,
-          clout_total: Number(row.clout_total) || 0,
-          contribution_total: Number(row.contribution_total) || 0,
-          mission_total: Number(row.mission_total) || 0,
-          score_total: Number(row.score_total) || 0,
-          member_count: Number(row.member_count) || 0,
-          updated_at: row.updated_at || null,
-        };
-      }).sort((a, b) => (b.clout_total - a.clout_total) || a.faction_id.localeCompare(b.faction_id)),
-      recent_activity: (activityRows?.results || []).map((row) => ({
-        id: row.id,
-        display_name: row.display_name || row.telegram_id,
-        faction_id: row.faction_id,
-        event_type: row.event_type,
-        event_text: row.event_text,
-        clout_delta: Number(row.clout_delta) || 0,
-        source: row.source || null,
-        metadata: safeJsonParse(row.metadata_json, {}),
-        created_at: row.created_at || null,
-      })),
-    };
-    state.battle_chamber_activity.standings.forEach((row, index) => { row.rank = index + 1; });
+      `);
+    if (standingRows.ok && activityRows.ok) {
+      const byFaction = {};
+      for (const row of standingRows.rows) byFaction[row.faction_id] = row;
+      sourceStatus.battle_chamber_activity = standingRows.rows.length || activityRows.rows.length
+        ? statusLive('worker_d1', { period, period_key: periodKey })
+        : statusLiveEmpty('worker_d1', { period, period_key: periodKey, reason: 'no_battle_chamber_rows' });
+      state.battle_chamber_activity = {
+        period,
+        period_key: periodKey,
+        standings: CANONICAL_FACTION_KEYS.map((factionId) => {
+          const row = byFaction[factionId] || {};
+          return {
+            faction_id: factionId,
+            clout_total: Number(row.clout_total) || 0,
+            contribution_total: Number(row.contribution_total) || 0,
+            mission_total: Number(row.mission_total) || 0,
+            score_total: Number(row.score_total) || 0,
+            member_count: Number(row.member_count) || 0,
+            updated_at: row.updated_at || null,
+          };
+        }).sort((a, b) => (b.clout_total - a.clout_total) || a.faction_id.localeCompare(b.faction_id)),
+        recent_activity: activityRows.rows.map((row) => ({
+          id: row.id,
+          display_name: row.display_name || row.telegram_id,
+          faction_id: row.faction_id,
+          event_type: row.event_type,
+          event_text: row.event_text,
+          clout_delta: Number(row.clout_delta) || 0,
+          source: row.source || null,
+          metadata: safeJsonParse(row.metadata_json, {}),
+          created_at: row.created_at || null,
+        })),
+      };
+      state.battle_chamber_activity.standings.forEach((row, index) => { row.rank = index + 1; });
+    }
   }
 
-  if (sourceStatus.daily_wtf_status.state === 'live') {
-    const rows = await db.prepare(`
+  if (canQuery(sourceStatus, 'daily_wtf_status')) {
+    const rows = await queryAll(db, sourceStatus, 'daily_wtf_status', `
       SELECT event_id, utc_day, event_type, title, description, starts_at, ends_at, required_action, reward_key, xp_multiplier_display, theme
       FROM daily_wtf_events
       WHERE utc_day = ?
       ORDER BY starts_at ASC
-    `).bind(utcDay).all().catch(() => ({ results: [] }));
-    const persisted = (rows?.results || []);
+    `, [utcDay]);
+    if (!rows.ok) {
+      // Keep the default preview payload visible, but make the source failure explicit.
+    } else {
+    const persisted = rows.rows;
     if (persisted.length) {
+      sourceStatus.daily_wtf_status = statusLive('worker_d1', { rows: persisted.length });
       state.daily_wtf_status = {
         utc_day: utcDay,
         label: 'live',
@@ -239,27 +271,32 @@ export async function buildDailyLoopState(env, options = {}) {
           reward_preview: row.reward_key,
           multiplier_display: row.xp_multiplier_display || null,
           theme: row.theme || null,
-          status: Date.parse(row.ends_at) <= now.getTime() ? 'expired' : (Date.parse(row.starts_at) > now.getTime() ? 'upcoming' : 'active'),
+          status: getWtfEventStatus(nowMs, row.starts_at, row.ends_at, 'upcoming'),
           source_label: 'live',
         })),
       };
     } else {
       sourceStatus.daily_wtf_status = statusPreview('server_schedule', { reason: 'no_persisted_d1_events_for_utc_day' });
     }
+    }
   }
 
-  if (sourceStatus.telegram_digest_group_status.state === 'live') {
-    const announcements = await db.prepare(`
+  if (canQuery(sourceStatus, 'telegram_digest_group_status')) {
+    const announcements = await queryAll(db, sourceStatus, 'telegram_digest_group_status', `
       SELECT announcement_key, utc_day, event_id, announcement_type, scheduled_for, sent_at, status, error_message
       FROM telegram_group_announcement_log
       WHERE utc_day = ?
       ORDER BY scheduled_for ASC
       LIMIT 20
-    `).bind(utcDay).all().catch(() => ({ results: [] }));
+    `, [utcDay]);
+    if (announcements.ok) {
+    sourceStatus.telegram_digest_group_status = announcements.rows.length
+      ? statusLive('worker_d1', { rows: announcements.rows.length, scope: 'public_group_announcements' })
+      : statusLiveEmpty('worker_d1', { reason: 'no_group_announcements_for_utc_day' });
     state.telegram_digest_group_status = {
       linked: false,
       digest: null,
-      group_announcements: (announcements?.results || []).map((row) => ({
+      group_announcements: announcements.rows.map((row) => ({
         announcement_key: row.announcement_key,
         utc_day: row.utc_day,
         event_id: row.event_id || null,
@@ -270,6 +307,7 @@ export async function buildDailyLoopState(env, options = {}) {
         error_message: row.error_message || null,
       })),
     };
+    }
   }
 
   if (!options.verified) {
@@ -287,13 +325,18 @@ export async function buildDailyLoopState(env, options = {}) {
     last_name: verified.user?.last_name || null,
   };
 
-  if (sourceStatus.identity.state === 'live') {
-    const user = await db.prepare(`
+  if (canQuery(sourceStatus, 'identity')) {
+    const userResult = await queryFirst(db, sourceStatus, 'identity', `
       SELECT telegram_id, username, first_name, last_name, xp, level, created_at
       FROM telegram_users
       WHERE telegram_id = ?
       LIMIT 1
-    `).bind(telegramId).first().catch(() => null);
+    `, [telegramId]);
+    const user = userResult.row;
+    if (userResult.ok) {
+      sourceStatus.identity = user
+        ? statusLive('worker_d1', { telegram_id: telegramId })
+        : statusLiveEmpty('worker_d1', { telegram_id: telegramId, reason: 'verified_user_not_yet_persisted' });
     if (user) {
       state.identity.profile = {
         telegram_id: user.telegram_id,
@@ -305,33 +348,37 @@ export async function buildDailyLoopState(env, options = {}) {
         created_at: user.created_at || null,
       };
     }
+    }
   }
 
-  if (sourceStatus.faction_state.state === 'live') {
-    const [faction, todayRows, weekRows] = await Promise.all([
-      db.prepare(`
+  if (canQuery(sourceStatus, 'faction_state')) {
+    const factionResult = await queryFirst(db, sourceStatus, 'faction_state', `
         SELECT f.id, f.name, f.description, f.icon, fm.role, fm.joined_at
         FROM telegram_faction_members fm
         JOIN telegram_factions f ON f.id = fm.faction_id
         WHERE fm.telegram_id = ?
         LIMIT 1
-      `).bind(telegramId).first().catch(() => null),
-      db.prepare(`
+      `, [telegramId]);
+    const todayRows = await queryAll(db, sourceStatus, 'faction_state', `
         SELECT faction_id, contribution
         FROM player_faction_signal_state
         WHERE telegram_id = ? AND day_key = ?
-      `).bind(telegramId, utcDay).all().catch(() => ({ results: [] })),
-      db.prepare(`
+      `, [telegramId, utcDay]);
+    const weekRows = await queryAll(db, sourceStatus, 'faction_state', `
         SELECT faction_id, SUM(contribution) AS contribution
         FROM player_faction_signal_state
         WHERE telegram_id = ? AND week_key = ?
         GROUP BY faction_id
-      `).bind(telegramId, getIsoWeekKey(now)).all().catch(() => ({ results: [] })),
-    ]);
+      `, [telegramId, getIsoWeekKey(now)]);
+    if (factionResult.ok && todayRows.ok && weekRows.ok) {
+    const faction = factionResult.row;
     const today = {};
     const week = {};
-    for (const row of (todayRows?.results || [])) today[row.faction_id] = Number(row.contribution) || 0;
-    for (const row of (weekRows?.results || [])) week[row.faction_id] = Number(row.contribution) || 0;
+    for (const row of todayRows.rows) today[row.faction_id] = Number(row.contribution) || 0;
+    for (const row of weekRows.rows) week[row.faction_id] = Number(row.contribution) || 0;
+    sourceStatus.faction_state = faction || todayRows.rows.length || weekRows.rows.length
+      ? statusLive('worker_d1', { telegram_id: telegramId })
+      : statusLiveEmpty('worker_d1', { telegram_id: telegramId, reason: 'no_faction_or_signal_for_utc_day' });
     state.faction_state = {
       linked: true,
       faction_id: normalizeBattleFaction(faction?.id || faction?.name) || FACTION_UNALIGNED,
@@ -341,10 +388,19 @@ export async function buildDailyLoopState(env, options = {}) {
       today,
       week,
     };
+    }
   }
 
-  if (sourceStatus.arcade_daily_state.state === 'live') {
-    const row = await ensureDailyOpportunityState(db, telegramId, utcDay).catch(() => null);
+  if (canQuery(sourceStatus, 'arcade_daily_state')) {
+    let row = null;
+    try {
+      row = await ensureDailyOpportunityState(db, telegramId, utcDay);
+      sourceStatus.arcade_daily_state = row
+        ? statusLive('worker_d1', { telegram_id: telegramId, utc_day: utcDay })
+        : statusLiveEmpty('worker_d1', { telegram_id: telegramId, utc_day: utcDay, reason: 'daily_opportunity_not_created' });
+    } catch (error) {
+      sourceStatus.arcade_daily_state = statusQueryFailed('worker_d1', { error: error?.message || String(error) });
+    }
     state.arcade_daily_state = {
       linked: true,
       utc_day: utcDay,
@@ -356,17 +412,21 @@ export async function buildDailyLoopState(env, options = {}) {
     };
   }
 
-  if (sourceStatus.daily_missions.state === 'live') {
-    const rows = await db.prepare(`
+  if (canQuery(sourceStatus, 'daily_missions')) {
+    const rows = await queryAll(db, sourceStatus, 'daily_missions', `
       SELECT mission_id, progress, completed, updated_at
       FROM player_daily_mission_state
       WHERE telegram_id = ? AND mission_date = ?
       ORDER BY mission_id ASC
-    `).bind(telegramId, utcDay).all().catch(() => ({ results: [] }));
+    `, [telegramId, utcDay]);
+    if (rows.ok) {
+    sourceStatus.daily_missions = rows.rows.length
+      ? statusLive('worker_d1', { rows: rows.rows.length, utc_day: utcDay })
+      : statusLiveEmpty('worker_d1', { utc_day: utcDay, reason: 'no_daily_missions_for_player' });
     state.daily_missions = {
       linked: true,
       utc_day: utcDay,
-      items: (rows?.results || []).map((row) => ({
+      items: rows.rows.map((row) => ({
         mission_id: row.mission_id,
         title: formatMissionIdLabel(row.mission_id),
         progress: Number(row.progress) || 0,
@@ -374,20 +434,25 @@ export async function buildDailyLoopState(env, options = {}) {
         updated_at: row.updated_at || null,
       })),
     };
+    }
   }
 
-  if (sourceStatus.wiki_missions.state === 'live') {
-    const rows = await db.prepare(`
+  if (canQuery(sourceStatus, 'wiki_missions')) {
+    const rows = await queryAll(db, sourceStatus, 'wiki_missions', `
       SELECT page_id, mission_id, xp_awarded, source, source_id, created_at
       FROM wiki_mission_completions
       WHERE telegram_id = ? AND mission_window = ?
       ORDER BY created_at DESC
       LIMIT 20
-    `).bind(telegramId, utcDay).all().catch(() => ({ results: [] }));
+    `, [telegramId, utcDay]);
+    if (rows.ok) {
+    sourceStatus.wiki_missions = rows.rows.length
+      ? statusLive('worker_d1', { rows: rows.rows.length, utc_day: utcDay })
+      : statusLiveEmpty('worker_d1', { utc_day: utcDay, reason: 'no_wiki_missions_for_player' });
     state.wiki_missions = {
       linked: true,
       utc_day: utcDay,
-      items: (rows?.results || []).map((row) => ({
+      items: rows.rows.map((row) => ({
         page_id: row.page_id,
         mission_id: row.mission_id,
         xp_awarded: Number(row.xp_awarded) || 0,
@@ -396,26 +461,29 @@ export async function buildDailyLoopState(env, options = {}) {
         completed_at: row.created_at || null,
       })),
     };
+    }
   }
 
-  if (sourceStatus.missed_opportunities.state === 'live') {
-    const [todayTotal, allTimeTotal, rows] = await Promise.all([
-      db.prepare(`SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id = ? AND utc_day = ?`).bind(telegramId, utcDay).first().catch(() => ({ total: 0 })),
-      db.prepare(`SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id = ?`).bind(telegramId).first().catch(() => ({ total: 0 })),
-      db.prepare(`
+  if (canQuery(sourceStatus, 'missed_opportunities')) {
+    const todayTotal = await queryFirst(db, sourceStatus, 'missed_opportunities', `SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id = ? AND utc_day = ?`, [telegramId, utcDay]);
+    const allTimeTotal = await queryFirst(db, sourceStatus, 'missed_opportunities', `SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id = ?`, [telegramId]);
+    const rows = await queryAll(db, sourceStatus, 'missed_opportunities', `
         SELECT id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
         FROM daily_missed_perks
         WHERE telegram_id = ?
         ORDER BY missed_at DESC, id DESC
         LIMIT 10
-      `).bind(telegramId).all().catch(() => ({ results: [] })),
-    ]);
+      `, [telegramId]);
+    if (todayTotal.ok && allTimeTotal.ok && rows.ok) {
+    sourceStatus.missed_opportunities = rows.rows.length || Number(todayTotal.row?.total) || Number(allTimeTotal.row?.total)
+      ? statusLive('worker_d1', { utc_day: utcDay })
+      : statusLiveEmpty('worker_d1', { utc_day: utcDay, reason: 'no_missed_opportunities_for_player' });
     state.missed_opportunities = {
       linked: true,
       utc_day: utcDay,
-      total_today: Number(todayTotal?.total) || 0,
-      total_all_time: Number(allTimeTotal?.total) || 0,
-      items: (rows?.results || []).map((row) => ({
+      total_today: Number(todayTotal.row?.total) || 0,
+      total_all_time: Number(allTimeTotal.row?.total) || 0,
+      items: rows.rows.map((row) => ({
         id: row.id,
         utc_day: row.utc_day,
         faction_id: row.faction_id || null,
@@ -430,16 +498,18 @@ export async function buildDailyLoopState(env, options = {}) {
         created_at: row.created_at || null,
       })),
     };
+    }
   }
 
   if (sourceStatus.daily_wtf_status.state === 'live') {
-    const playerRows = await db.prepare(`
+    const playerRows = await queryAll(db, sourceStatus, 'daily_wtf_status', `
       SELECT event_id, status, checked_in_at, completed_at, missed_at, chain_depth, reward_status
       FROM daily_wtf_player_events
       WHERE telegram_id = ? AND utc_day = ?
-    `).bind(telegramId, utcDay).all().catch(() => ({ results: [] }));
+    `, [telegramId, utcDay]);
+    if (playerRows.ok) {
     const byEvent = {};
-    for (const row of (playerRows?.results || [])) byEvent[row.event_id] = row;
+    for (const row of playerRows.rows) byEvent[row.event_id] = row;
     state.daily_wtf_status.events = state.daily_wtf_status.events.map((event) => {
       const player = byEvent[event.event_id] || null;
       return {
@@ -452,35 +522,38 @@ export async function buildDailyLoopState(env, options = {}) {
         reward_status: player?.reward_status || 'none',
       };
     });
+    }
   }
 
-  if (sourceStatus.telegram_digest_group_status.state === 'live') {
-    const [digest, announcements] = await Promise.all([
-      db.prepare(`
+  if (canQuery(sourceStatus, 'telegram_digest_group_status')) {
+    const digest = await queryFirst(db, sourceStatus, 'telegram_digest_group_status', `
         SELECT status, sent_at, error_message, metadata_json, updated_at
         FROM telegram_daily_digest_log
         WHERE telegram_id = ? AND utc_day = ?
         LIMIT 1
-      `).bind(telegramId, utcDay).first().catch(() => null),
-      db.prepare(`
+      `, [telegramId, utcDay]);
+    const announcements = await queryAll(db, sourceStatus, 'telegram_digest_group_status', `
         SELECT announcement_key, utc_day, event_id, announcement_type, scheduled_for, sent_at, status, error_message
         FROM telegram_group_announcement_log
         WHERE utc_day = ?
         ORDER BY scheduled_for ASC
         LIMIT 20
-      `).bind(utcDay).all().catch(() => ({ results: [] })),
-    ]);
+      `, [utcDay]);
+    if (digest.ok && announcements.ok) {
+    sourceStatus.telegram_digest_group_status = digest.row || announcements.rows.length
+      ? statusLive('worker_d1', { utc_day: utcDay })
+      : statusLiveEmpty('worker_d1', { utc_day: utcDay, reason: 'no_digest_or_group_announcements_for_utc_day' });
     state.telegram_digest_group_status = {
       linked: true,
-      digest: digest ? {
-        status: digest.status,
-        sent_today: digest.status === 'sent',
-        sent_at: digest.sent_at || null,
-        error_message: digest.error_message || null,
-        metadata: safeJsonParse(digest.metadata_json, {}),
-        updated_at: digest.updated_at || null,
+      digest: digest.row ? {
+        status: digest.row.status,
+        sent_today: digest.row.status === 'sent',
+        sent_at: digest.row.sent_at || null,
+        error_message: digest.row.error_message || null,
+        metadata: safeJsonParse(digest.row.metadata_json, {}),
+        updated_at: digest.row.updated_at || null,
       } : { status: null, sent_today: false, sent_at: null, error_message: null },
-      group_announcements: (announcements?.results || []).map((row) => ({
+      group_announcements: announcements.rows.map((row) => ({
         announcement_key: row.announcement_key,
         utc_day: row.utc_day,
         event_id: row.event_id || null,
@@ -491,6 +564,7 @@ export async function buildDailyLoopState(env, options = {}) {
         error_message: row.error_message || null,
       })),
     };
+    }
   }
 
   return state;

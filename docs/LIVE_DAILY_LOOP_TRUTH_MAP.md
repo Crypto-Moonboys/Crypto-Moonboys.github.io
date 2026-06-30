@@ -6,7 +6,7 @@ Phase 1 creates one Worker-owned UTC Daily Loop authority:
 - `POST /daily-loop/state` returns Telegram-linked state and requires a fresh/restored signed `telegram_auth` payload.
 - All dates use the UTC day key from the Worker, not browser local time.
 
-The response always includes `source_status` for every subsystem. `live` is reserved for data read from Worker/D1 or confirmed Worker API state. Server-generated schedules, local fallback, and absent migrations must not be called live.
+The response always includes `source_status` for every subsystem. `live` is reserved for non-empty data read from Worker/D1 or confirmed Worker API state. Empty successful D1 reads use `live_empty`. Server-generated schedules, local fallback, absent migrations, and failed queries must not be called live.
 
 ## Response Contract
 
@@ -26,7 +26,7 @@ The response always includes `source_status` for every subsystem. `live` is rese
 
 ## Source Status Rules
 
-| Subsystem | Live authority | Anonymous behavior | Linked behavior | Non-live label |
+| Subsystem | Live authority | Anonymous behavior | Linked behavior | Non-live labels |
 | --- | --- | --- | --- | --- |
 | `identity` | `telegram_users` plus verified `telegram_auth` for linked requests | Returns `linked: false` | Returns verified Telegram identity and stored profile when present | `unavailable` when D1 table is missing |
 | `sam_status` | Worker-confirmed `/sam/status` equivalent | Returns current Worker SAM status | Same | N/A |
@@ -44,7 +44,10 @@ The response always includes `source_status` for every subsystem. `live` is rese
 Use `source_status[section].state` as the display truth:
 
 - `live`: Worker/D1 or confirmed API state.
+- `live_empty`: Worker/D1 query succeeded, but there are no rows for the current scope.
 - `preview`: server-generated schedule or planning data, not proof of live user activity.
+- `migration_pending`: a required D1 table is not present yet.
+- `query_failed`: a required D1 read failed; do not render that subsystem as live.
 - `offline`: client-only cached UI state.
 - `unavailable`: migration, binding, or upstream data is absent.
 

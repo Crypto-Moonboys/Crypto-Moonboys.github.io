@@ -16,6 +16,7 @@ function check(condition, label) {
 
 const MIGRATION = 'workers/moonboys-api/migrations/019_daily_wtf_timed_events.sql';
 const WORKER = 'workers/moonboys-api/worker.js';
+const WORKER_WTF_SCHEDULE = 'workers/moonboys-api/shared/daily-wtf-schedule.js';
 const COMMUNITY = 'community.html';
 const HOW_TO_PLAY = 'how-to-play.html';
 const GAMES = 'games/index.html';
@@ -29,6 +30,7 @@ const LEADERBOARD = 'js/leaderboard-client.js';
 
 const migrationSql = exists(MIGRATION) ? read(MIGRATION) : '';
 const workerJs = read(WORKER);
+const workerWtfScheduleJs = read(WORKER_WTF_SCHEDULE);
 const communityHtml = read(COMMUNITY);
 const howToPlayHtml = read(HOW_TO_PLAY);
 const gamesHtml = read(GAMES);
@@ -56,7 +58,7 @@ const scheduleBlock = (src, functionName) => {
   }
   return src.slice(start);
 };
-const workerSchedule = scheduleBlock(workerJs, 'getWtfDailySchedule');
+const workerSchedule = workerWtfScheduleJs;
 const fallbackSchedule = scheduleBlock(wtfSystemJs, 'makeFallbackSchedule');
 const ensureScheduleBlock = scheduleBlock(workerJs, 'ensureWtfEventsForDay');
 const wtfScheduleUpsertBlock = workerJs.slice(workerJs.indexOf('function buildWtfScheduleRow'), workerJs.indexOf('function clampText'));
@@ -106,6 +108,7 @@ check(migrationSql.includes('UNIQUE (event_id, utc_day)'), 'event unique constra
 check(migrationSql.includes('UNIQUE (telegram_id, event_id, utc_day)'), 'player unique constraint exists');
 
 check(workerJs.includes("path === '/wtf/events/today'"), 'route /wtf/events/today exists');
+check(workerJs.includes("from './shared/daily-wtf-schedule.js'"), 'Worker imports shared Daily WTF schedule authority');
 check(workerJs.includes("path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')"), '/today supports GET public + POST auth');
 check(workerJs.includes("path === '/wtf/events/check-in'"), 'route /wtf/events/check-in exists');
 check(workerJs.includes("path === '/wtf/events/complete'"), 'route /wtf/events/complete exists');
