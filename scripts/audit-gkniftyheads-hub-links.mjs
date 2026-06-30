@@ -11,6 +11,7 @@ const REQUIRED_CATEGORY_FILES = [
   'categories/wax-nfts.html',
   'categories/gkniftyheads.html',
 ];
+const FULL_COLLECTION_URL = '/wiki/gkniftyheads-nft-collection.html';
 const REQUIRED_SHELL_SCRIPTS = [
   '/js/core/daily-loop-state.js',
   '/js/site-shell.js',
@@ -46,6 +47,12 @@ function isNftTemplateHtml(html) {
     /<template\b[^>]*class=["'][^"']*\bnft-battle-media-template\b/i.test(html);
 }
 
+function gkniftyTemplateHrefs(html) {
+  return new Set(
+    hrefs(html).filter((href) => /^\/wiki\/gkniftyheads-.+-\d+\.html$/i.test(href))
+  );
+}
+
 for (const relPath of REQUIRED_CATEGORY_FILES) {
   assert.ok(exists(relPath), `${relPath} must exist`);
   const html = read(relPath);
@@ -53,7 +60,15 @@ for (const relPath of REQUIRED_CATEGORY_FILES) {
   for (const src of REQUIRED_SHELL_SCRIPTS) {
     assert.ok(html.includes(`src="${src}"`), `${relPath} missing shell script ${src}`);
   }
-  assert.match(html, /class=["'][^"']*\barticle-list-item\b/i, `${relPath} must list relevant pages`);
+  assert.match(html, /class=["'][^"']*\bcategory-grid\b/i, `${relPath} must contain a card/grid section`);
+  assert.match(html, /class=["'][^"']*\bcategory-card\b/i, `${relPath} must contain card links`);
+  assert.doesNotMatch(html, /class=["'][^"']*\barticle-list-item\b/i, `${relPath} must not render a flat article-list dump`);
+  assert.ok(html.includes('Main Hubs'), `${relPath} must include a Main Hubs section`);
+  assert.ok(html.includes(FULL_COLLECTION_URL), `${relPath} must link to the full GKniftyHEADS collection index`);
+  assert.ok(
+    gkniftyTemplateHrefs(html).size <= 12,
+    `${relPath} must not contain more than 12 direct NFT template links`
+  );
 }
 
 const categoriesIndex = read('categories/index.html');
@@ -83,6 +98,10 @@ const collection = read('wiki/gkniftyheads-nft-collection.html');
 assert.ok(
   collection.includes('href="/wiki/gkniftyheads.html"'),
   '/wiki/gkniftyheads-nft-collection.html must link back to /wiki/gkniftyheads.html'
+);
+assert.ok(
+  gkniftyTemplateHrefs(collection).size >= 140,
+  '/wiki/gkniftyheads-nft-collection.html must remain the full GKniftyHEADS template index'
 );
 
 const gkniftyCategory = read('categories/gkniftyheads.html');
