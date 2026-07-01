@@ -1,14 +1,20 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-01T19:20:22.162Z",
+  "generated_at": "2026-07-01T20:38:59.768Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
     "price_used": false,
     "market_data_used": false,
-    "allowed_score_inputs": [
-      "live_assets_held"
-    ],
+    "adaptive_weighting": true,
+    "base_score_weights": {
+      "live_supply_scarcity": 50,
+      "rarity_trait_or_name_exposure_scarcity": 25,
+      "variation_trait_or_metadata_exposure_scarcity": 20,
+      "missing_burned_supply_bonus": 5
+    },
+    "thin_metadata_rule": "Trait weights are reassigned to live supply scarcity when rarity or variation metadata is missing, generic, repeated, or not meaningful.",
+    "burn_missing_rule": "Burns increase rarity through lower live supply and a small missing/burned supply bonus when supported by tracker data.",
     "disallowed_score_inputs": [
       "price",
       "floor_price",
@@ -16,7 +22,12 @@
       "last_sale",
       "listing_count",
       "marketplace_listing_count",
+      "market_cap",
+      "volume",
       "AtomicHub listing counts"
+    ],
+    "allowed_score_inputs": [
+      "live_assets_held"
     ]
   },
   "holders": [

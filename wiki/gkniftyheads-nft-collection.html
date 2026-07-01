@@ -94,13 +94,13 @@
             <div class="wiki-stat"><strong>None</strong><span>Burned assets tracked</span></div>
             <div class="wiki-stat"><strong>22983</strong><span>Surviving mint ranks tracked</span></div>
             <div class="wiki-stat"><strong>2026-07-01T19:19:00.176Z</strong><span>Last asset delta scan</span></div>
-            <div class="wiki-stat"><strong>2026-07-01T19:20:08.383Z</strong><span>Last scan time</span></div>
+            <div class="wiki-stat"><strong>2026-07-01T20:37:58.077Z</strong><span>Last scan time</span></div>
             <div class="wiki-stat"><strong>Not scanned</strong><span>Scan block</span></div>
           </div>
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
-            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.</p>
+            <p class="lore-paragraph">The main leaderboard uses the shared adaptive weighted rarity framework: live surviving supply scarcity, rarity trait/name exposure, variation trait/name exposure, and a small missing/burned supply bonus. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of creating fake traits. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.</p>
             <p class="lore-paragraph">Original mint numbers never change. Burns do not renumber NFTs. The site can track surviving mint rank separately, which is the NFT’s current position among live/unburned assets in the same template.</p>
           </section>
 

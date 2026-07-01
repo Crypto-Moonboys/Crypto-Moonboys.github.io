@@ -1,13 +1,13 @@
 # NFT Rarity Methodology: GKniftyHEADS vs NoBallGames
 
-GKniftyHEADS and NoBallGames are not scored as if they are the same collection. GKniftyHEADS is mainly template-and-trait weighted. NoBallGames is more template-plus-asset weighted, because individual mint position, surviving mint rank, holder concentration, and live asset context matter more. Both trackers use AtomicAssets as source of truth, ignore marketplace price for rarity scoring, preserve original mint numbers, and calculate surviving mint rank separately.
+GKniftyHEADS and NoBallGames use the same broad adaptive weighted rarity framework while respecting the data each collection actually exposes. GKniftyHEADS currently has richer rarity/variation metadata. NoBallGames can have thinner metadata, so missing trait weight moves to live supply scarcity instead of fake traits. Both trackers use AtomicAssets as source of truth, ignore marketplace price for rarity scoring, preserve original mint numbers, and calculate surviving mint rank separately.
 
-The important collector framing is not that the collections have two unrelated rarity philosophies. Both collections share the same broad rarity goal:
+The important collector framing is not that the collections have two unrelated rarity philosophies. Both collections use the same broad adaptive weighted rarity framework and share the same collector goal:
 
 1. Template / edition rarity
 2. Asset / numbered-print rarity
 
-The difference is how much usable metadata each collection currently exposes and how each tracker currently stores and surfaces the data.
+The difference is how much usable metadata each collection currently exposes and how each tracker currently stores and surfaces the data. GKniftyHEADS currently has richer rarity/variation metadata. NoBallGames may have thinner metadata, but it still ranks fairly because missing trait weight is reassigned to live supply scarcity instead of fake traits.
 
 ## 1. What this tracker is
 
@@ -66,6 +66,37 @@ The tracker separates edition-level scarcity from exact-asset scarcity so collec
 
 - Which template or edition is stronger?
 - Which exact NFT inside that template is stronger?
+
+The shared template scoring framework starts from this base formula:
+
+```text
+final_score =
+  supplyScore * 50
++ rarityScore * 25
++ variationScore * 20
++ burnScore * 5
+```
+
+Where:
+
+- `supplyScore` = live surviving supply scarcity
+- `rarityScore` = rarity trait/name exposure scarcity where meaningful metadata exists
+- `variationScore` = variation trait/name/metadata exposure scarcity where meaningful metadata exists
+- `burnScore` = missing/burned supply bonus where supported by tracker data
+- marketplace price/floor/sales/listings/market cap/volume = 0% and never used
+
+Adaptive weighting protects thin metadata. If rarity metadata is missing, generic, repeated, or not meaningful, its 25% weight moves to live supply scarcity. If variation metadata is missing, generic, repeated, or not meaningful, its 20% weight moves to live supply scarcity. The tracker does not invent fake traits, does not treat `Not supplied` as rare, and does not use title/name fallback as weighted trait scoring by default.
+
+Adaptive cases:
+
+| Case | Supply | Rarity | Variation | Burn |
+|---|---:|---:|---:|---:|
+| Rarity and variation both meaningful | 50 | 25 | 20 | 5 |
+| Rarity meaningful, variation missing/thin | 70 | 25 | 0 | 5 |
+| Variation meaningful, rarity missing/thin | 75 | 0 | 20 | 5 |
+| Rarity and variation both missing/thin | 95 | 0 | 0 | 5 |
+
+Burns increase rarity through lower live supply and a small burn/missing bonus when tracker data supports it. If live supply is not counted and only issued-supply fallback exists, burn scoring is not invented.
 
 ## 4. Two rarity layers
 
@@ -253,13 +284,13 @@ Duplicate or similar names/images may still be separate AtomicAssets template ID
 
 ## 8. Current NoBallGames implementation
 
-NoBallGames currently uses the same broad rarity goal, but its active template ranking is currently more live-supply led.
+NoBallGames uses the same broad adaptive weighted rarity framework while keeping its structured NoBallGames tracker files.
 
 Current NoBallGames template ranking:
 
 - separates ranked fixed-supply templates, utility/open mint templates, and unissued templates
-- sorts ranked templates by `live_supply`, then `issued_supply`, then `template_id`
-- calculates `rarity_score` as inverse live supply
+- calculates adaptive `final_score` from live supply scarcity, real rarity/variation metadata where available, and supported burn/missing data
+- sorts ranked templates with 1/1 templates first, then `final_score`, then `live_supply`, then `template_id`
 - excludes price and market data
 - uses AtomicAssets as source of truth
 
@@ -272,23 +303,21 @@ NoBallGames also has extra structured outputs that help inspect exact versions:
 - template stats
 - trait exposure output where metadata supports it
 
-NoBallGames is currently closer to a live-supply plus asset-context tracker. It supports the same long-term rarity goal, but its current active template score is not yet the same full weighted trait/variation formula as GKniftyHEADS.
-
-Do not read this as a weaker collector model. It means the current code only uses fields that are real and available. The tracker should not invent fake rarity fields or fake variation fields just to mirror GKniftyHEADS.
+NoBallGames may have thinner metadata than GKniftyHEADS. When useful rarity or variation fields are absent, those weights move to live supply scarcity. The tracker should not invent fake rarity fields or fake variation fields just to mirror GKniftyHEADS.
 
 ## 9. Comparison table
 
 | Area | GKniftyHEADS | NoBallGames |
 |---|---|---|
 | Shared rarity goal | Live supply, original mint, surviving mint rank, no market scoring | Same |
-| Current template scoring | Full 50/25/20/5 weighted model | Currently live-supply led / inverse live supply |
+| Current template scoring | Adaptive weighted model; current data usually keeps 50/25/20/5 | Adaptive weighted model; thin metadata shifts trait weight to supply |
 | Trait/name weighting | Active `rarity_trait` and `variation_trait` exposure scoring | Only where real metadata supports it; do not fake fields |
 | Asset-level ranking | Original mint and surviving mint rank are separate asset-level context | Original mint and surviving mint rank are strongly surfaced |
 | Data outputs | Template rarity, live asset rarity, trait exposure, asset state | Template rarity, template stats, trait exposure, holder leaderboard, asset rarity leaderboard, asset state |
 | Best use today | Find strongest template/trait/variation, then inspect asset mint | Find scarce template, then inspect exact asset/mint/surviving rank |
 | Marketplace data | Display-only, not scoring | Display-only, not scoring |
 
-GKniftyHEADS is currently better equipped for weighted template/trait/variation comparison. NoBallGames currently gives a clearer path to inspecting exact assets, mint numbers, surviving mint ranks, holder context, and live asset state.
+GKniftyHEADS is currently better equipped for weighted template/trait/variation comparison because its metadata is richer. NoBallGames still uses the same adaptive framework and gives a strong path to inspecting exact assets, mint numbers, surviving mint ranks, holder context, and live asset state.
 
 ## 10. How to find the best version
 
@@ -415,7 +444,7 @@ Shared files:
 
 ## 16. Future parity note
 
-A future scoring update may apply a more comparable weighted template score to NoBallGames if real metadata fields support it.
+Future updates may make NoBallGames trait and variation scoring richer if real metadata fields support it.
 
 Possible target:
 
@@ -434,7 +463,7 @@ But:
 - only use real AtomicAssets/template metadata
 - asset-level original mint and surviving mint rank should remain a separate comparison layer
 
-This is not implemented by this documentation PR.
+The adaptive weighted framework is implemented now. Future work should only add richer trait sources when they come from real AtomicAssets/template metadata.
 
 ## 17. Future improvements
 
@@ -455,4 +484,4 @@ These are future ideas, not claims that the features already exist.
 
 ## 18. Short collector summary
 
-For GKniftyHEADS, the best version is usually found by comparing template rank, live supply, rarity trait/name, and variation trait/name, then checking exact assets inside that template. For NoBallGames, the best version is usually found by combining scarce ranked fixed-supply templates with the exact asset's original mint number, surviving mint rank, and live/unburned status. In both cases, rarity score is not market price. AtomicAssets data decides the tracker; marketplace data is only display/reference.
+For GKniftyHEADS, the best version is usually found by comparing template rank, live supply, rarity trait/name, and variation trait/name, then checking exact assets inside that template. For NoBallGames, the best version is usually found by combining adaptive template score, live supply, and the exact asset's original mint number, surviving mint rank, and live/unburned status. In both cases, rarity score is not market price. AtomicAssets data decides the tracker; marketplace data is only display/reference.
