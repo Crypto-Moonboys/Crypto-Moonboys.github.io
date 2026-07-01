@@ -142,6 +142,16 @@ assert.match(sync.burn_tracking_status, /baseline pending/i, 'first burn scan mu
 
 assert.match(collectionHtml, /GKniftyHEADS Template Rarity Ranking/);
 assert.match(collectionHtml, /separate AtomicAssets template IDs may share the same artwork\/name/, 'page copy should make clear this ranks templates, not unique artwork');
+assert.match(collectionHtml, /Original mint numbers never change/, 'page must explain that original mint numbers are permanent');
+assert.match(collectionHtml, /surviving mint rank/, 'page must explain surviving mint rank separately from original mint numbers');
+assert.match(collectionHtml, /pre-baseline missing\/burned, a current supply delta/, 'missing/burned wording must identify the first scan as a current supply delta');
+assert.doesNotMatch(
+  collectionHtml,
+  /mint numbers?\s+(?:move up|change|renumber|renumbered)|higher mints?\s+(?:move up|become lower|become mint)/i,
+  'page must not imply burns change original mint numbers'
+);
+assert.match(live.note, /original_mint_number is permanent/, 'live data note must use original_mint_number terminology');
+assert.match(live.note, /surviving_mint_rank may be tracked separately/, 'live data note must use surviving_mint_rank terminology');
 assert.match(collectionHtml, /Live rarity data unavailable\. Showing raw template list only\. This is not the final rarity ranking\./);
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-raw-fallback" data-rarity-fallback hidden>/);
 assert.match(collectionHtml, /GKNIFTYHEADS_RAW_TEMPLATE_TABLE:BEGIN/);

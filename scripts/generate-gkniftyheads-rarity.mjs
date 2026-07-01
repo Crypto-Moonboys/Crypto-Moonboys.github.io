@@ -1058,11 +1058,12 @@ function buildRankingSection(model, stats, rawSection) {
   const variationExposureLabel = hasLiveCounts ? 'Variation Exposure' : 'Variation Exposure (Fallback)';
   const liveAssetsValue = hasLiveCounts ? stats.live_assets_counted : 'Not scanned';
   const fallbackSupplyValue = stats.fallback_issued_supply_counted || 'None';
+  const mintNumberCopy = 'Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.';
   const methodCopy = hasLiveCounts
-    ? 'The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began.'
-    : 'The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.';
+    ? `The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. ${mintNumberCopy}`
+    : `The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns. ${mintNumberCopy}`;
   const statusCopy = hasLiveCounts
-    ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
+    ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
     : '<strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.';
 
   return `${RARITY_BEGIN}
@@ -1229,8 +1230,8 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
     generated_at: stats.last_scan_time,
     status: stats.live_data_status,
     note: stats.live_assets_counted === null
-      ? 'Live asset count failed; using issued-supply fallback. original_mint and surviving_mint_rank remain pending until asset snapshots are available.'
-      : 'Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a first-scan delta, not confirmed burn history.',
+      ? 'Live asset count failed; using issued-supply fallback. original_mint_number and surviving_mint_rank remain pending until asset snapshots are available.'
+      : 'Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a current supply delta and first-scan baseline, not confirmed burn history. original_mint_number is permanent; surviving_mint_rank may be tracked separately among currently live/unburned NFTs.',
     template_counts: stats.live_assets_counted === null ? [] : model.all.map((row) => ({
       template_id: row.template_id,
       issued_supply: row.issued_supply,
