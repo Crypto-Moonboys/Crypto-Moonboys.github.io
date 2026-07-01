@@ -100,7 +100,20 @@ assert.equal(templateRarity.ranked_templates[0].live_supply, 2, 'rarity maths sh
 assert.equal(templateRarity.ranked_templates[0].issued_supply, 3, 'issued_supply should remain visible separately');
 assert.equal(templateRarity.ranked_templates[0].price_used, false, 'price must not be used in rarity scoring');
 assert.equal(templateRarity.ranked_templates[0].market_data_used, false, 'market data must not be used in rarity scoring');
-assert.doesNotMatch(JSON.stringify(templateRarity), /floor_price|last_sale|marketplace_listing|listing_count/i, 'rarity output must not include floor/sales/listing scoring fields');
+assert.equal(templateRarity.ranking_formula.source_of_truth, 'AtomicAssets', 'AtomicAssets must be the NoBallGames scoring source of truth');
+assert.equal(templateRarity.ranking_formula.atomichub_usage, 'reference_links_only', 'AtomicHub must stay reference-only for NoBallGames scoring');
+assert.equal(templateRarity.ranking_formula.price_used, false, 'ranking formula must explicitly exclude price');
+assert.equal(templateRarity.ranking_formula.market_data_used, false, 'ranking formula must explicitly exclude market data');
+for (const row of [
+  ...templateRarity.ranked_templates,
+  ...templateRarity.utility_open_mint_templates,
+  ...templateRarity.unissued_templates,
+]) {
+  assert.equal('floor_price' in row, false, 'rarity rows must not include floor_price scoring fields');
+  assert.equal('last_sale' in row, false, 'rarity rows must not include last_sale scoring fields');
+  assert.equal('marketplace_listing_count' in row, false, 'rarity rows must not include marketplace_listing_count scoring fields');
+  assert.equal('listing_count' in row, false, 'rarity rows must not include listing_count scoring fields');
+}
 
 const burnedAsset = assetState.assets.find((row) => row.asset_id === 'a3');
 assert.equal(burnedAsset.original_mint_number, 2, 'asset-state cache preserves original_mint_number');
@@ -115,5 +128,9 @@ assert.match(html, /Original mint numbers never change/, 'page should explain pe
 assert.match(html, /surviving mint rank/, 'page should explain surviving mint rank');
 assert.match(html, /data-feed-status-id="noballgamess_rarity"/, 'page should expose NoBallGames feed status badge');
 assert.match(html, /AtomicAssets is the source of truth/, 'page should name AtomicAssets as source of truth');
+assert.match(html, /Template Stats/, 'page should render template stats section');
+assert.match(html, /Trait Exposure/, 'page should render trait exposure section');
+assert.match(html, /Holder Leaderboard/, 'page should render holder leaderboard section');
+assert.match(html, /Asset Rarity Leaderboard/, 'page should render asset rarity leaderboard section');
 
 console.log('NoBallGames rarity tracker regression passed.');

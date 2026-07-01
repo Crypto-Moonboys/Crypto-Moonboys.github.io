@@ -1,12 +1,75 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-01T16:06:02.940Z",
+  "generated_at": "2026-07-01T16:55:23.075Z",
   "source": "AtomicAssets API is the source of truth; AtomicHub links are reference links only.",
-  "total_local_templates": 0,
-  "total_atomicassets_confirmed_templates": 0,
+  "total_local_templates": 21,
+  "total_atomicassets_confirmed_templates": 21,
   "missing_from_atomicassets": [],
-  "duplicate_title_image_groups": [],
+  "duplicate_title_image_groups": [
+    {
+      "templates": [
+        {
+          "template_id": 438902,
+          "issued_supply": 0,
+          "max_supply": 420,
+          "title": "\"Buster's A Stoned Boy\"",
+          "image_url": "https://ipfs.hivebp.io/ipfs/QmXfX6UFhzcV5MKokFyNz7DCcHGvEybfA2BWyqssGNF23k",
+          "exists_on_atomicassets": true
+        },
+        {
+          "template_id": 438904,
+          "issued_supply": 420,
+          "max_supply": 420,
+          "title": "\"Buster's A Stoned Boy\"",
+          "image_url": "https://ipfs.hivebp.io/ipfs/QmXfX6UFhzcV5MKokFyNz7DCcHGvEybfA2BWyqssGNF23k",
+          "exists_on_atomicassets": true
+        }
+      ]
+    },
+    {
+      "templates": [
+        {
+          "template_id": 441676,
+          "issued_supply": 0,
+          "max_supply": 375,
+          "title": "\"Have FAITH in 377\"",
+          "image_url": "https://ipfs.hivebp.io/ipfs/QmcbjQ5ZpMccNV1fn9iVN6APxJGMGuFV5UqGJGkMb8c5JY",
+          "exists_on_atomicassets": true
+        },
+        {
+          "template_id": 441677,
+          "issued_supply": 144,
+          "max_supply": 377,
+          "title": "\"Have FAITH in 377\"",
+          "image_url": "https://ipfs.hivebp.io/ipfs/QmcbjQ5ZpMccNV1fn9iVN6APxJGMGuFV5UqGJGkMb8c5JY",
+          "exists_on_atomicassets": true
+        }
+      ]
+    }
+  ],
   "local_page_conflicts": [],
-  "included_in_rarity": [],
+  "included_in_rarity": [
+    401767,
+    401779,
+    401786,
+    401809,
+    401910,
+    401911,
+    412225,
+    412229,
+    417407,
+    431133,
+    435457,
+    438902,
+    438904,
+    441676,
+    441677,
+    445272,
+    449935,
+    453934,
+    458168,
+    474614,
+    597818
+  ],
   "excluded_from_rarity": []
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-01T15:26:31.267Z",
+  "generated_at": "2026-07-01T16:57:03.563Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -57,22 +57,27 @@
         "data/noballgamess/holder-leaderboard.json",
         "data/noballgamess/asset-rarity-leaderboard.json",
         "data/noballgamess/sync-status.json",
+        "data/noballgamess/template-rarity.csv",
+        "data/noballgamess/live-asset-rarity.csv",
+        "data/noballgamess/trait-exposure.csv",
         "wiki/noballgamess-nft-collection.html"
       ],
-      "status": "pending",
-      "stale": true,
+      "status": "ok",
+      "stale": false,
       "stale_after_hours": 30,
-      "checked_at": null,
-      "last_successful_check": null,
-      "last_successful_update": null,
-      "source_updated_at": null,
-      "source_age_minutes": null,
-      "last_error": "Pending first scheduled AtomicAssets sync.",
+      "checked_at": "2026-07-01T16:55:23.075Z",
+      "last_successful_check": "2026-07-01T16:55:23.075Z",
+      "last_successful_update": "2026-07-01T16:55:23.075Z",
+      "source_updated_at": "2026-07-01T16:55:23.075Z",
+      "source_age_minutes": 0,
+      "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
+      "analytics_status": null,
+      "endpoint_status": {},
       "notes": [
-        "NoBallGames tracker page is wired; the scheduled feed will replace pending cache data with AtomicAssets-derived snapshots.",
-        "AtomicAssets is the source of truth; AtomicHub links are references only.",
-        "No price, floor, sales, listing, or AtomicHub listing counts are used for rarity math."
+        "Generated NoBallGames rarity render: 12 ranked, 6 utility/open mint, 3 unissued.",
+        "Staged cache refresh: 21/21 metadata ok; 21/21 live supply counts ok; 7415 asset-state records across 21 templates.",
+        "AtomicAssets is the source of truth; AtomicHub links are references only."
       ]
     },
     "waxonedge_bubbles": {

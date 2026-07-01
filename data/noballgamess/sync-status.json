@@ -1,9 +1,9 @@
 {
   "collection": "noballgamess",
   "feed_id": "noballgamess_rarity",
-  "generated_at": "2026-07-01T16:06:02.934Z",
-  "status": "pending",
-  "live_data_status": "issued-supply fallback",
+  "generated_at": "2026-07-01T16:55:23.059Z",
+  "status": "ok",
+  "live_data_status": "atomicassets live asset count",
   "notes": [
     "AtomicAssets is the source of truth.",
     "No price, floor, sales, listing, or AtomicHub listing counts are used for rarity math.",
