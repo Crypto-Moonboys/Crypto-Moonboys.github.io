@@ -2983,9 +2983,39 @@ body.score-updated .lb-row.selected {
   gap: 18px;
 }
 
+.gk-collection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 16px;
+}
+
+.wiki-action-button {
+  align-items: center;
+  border: 1px solid rgba(112, 240, 255, 0.38);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(19, 56, 82, 0.88), rgba(26, 31, 56, 0.9));
+  color: #eaffff;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 700;
+  justify-content: center;
+  letter-spacing: 0;
+  min-height: 38px;
+  padding: 9px 12px;
+  text-decoration: none;
+}
+
+.wiki-action-button:hover,
+.wiki-action-button:focus-visible {
+  border-color: rgba(255, 234, 128, 0.72);
+  color: #fff4b8;
+}
+
 .gk-rarity-method,
 .gk-rarity-status,
-.gk-rarity-source-note {
+.gk-rarity-source-note,
+.gk-schema-summary {
   border-color: rgba(98, 248, 255, 0.26);
   background: linear-gradient(135deg, rgba(12, 27, 42, 0.9), rgba(13, 17, 31, 0.86));
 }
@@ -3080,6 +3110,29 @@ body.score-updated .lb-row.selected {
 
 .gk-rarity-raw-fallback[hidden] {
   display: none !important;
+}
+
+.gk-schema-summary code {
+  white-space: nowrap;
+}
+
+.developer-details {
+  border: 1px solid rgba(112, 240, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(5, 14, 24, 0.58);
+  margin-top: 14px;
+  padding: 10px 12px;
+}
+
+.developer-details summary {
+  color: var(--color-text, #e9fbff);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.nft-schema-developer-table code {
+  white-space: normal;
+  word-break: break-word;
 }
 
 .feed-status-badge {
