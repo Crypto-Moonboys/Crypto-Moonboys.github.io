@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T17:34:39.265Z",
+  "generated_at": "2026-07-01T17:53:57.686Z",
   "templates": [
     {
       "template_id": 773225,
@@ -135003,85 +135003,586 @@
       ]
     },
     {
-      "template_id": 783374,
-      "live_supply": 1,
+      "template_id": 783371,
+      "live_supply": 5,
       "burned_assets_count": 0,
       "assets": [
         {
+          "asset_id": "1099925350239",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925427769",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925469041",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925499348",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926083950",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783372,
+      "live_supply": 5,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925349905",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925469018",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925534600",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925573013",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926083945",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783373,
+      "live_supply": 5,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925344558",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925443395",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925469008",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925502198",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926083941",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783374,
+      "live_supply": 5,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925375399",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925481475",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925573006",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926083930",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
           "asset_id": "1099932698524",
           "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783375,
+      "live_supply": 4,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925375440",
+          "original_mint_number": 1,
           "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925481501",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572956",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926083915",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783376,
+      "live_supply": 5,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925370887",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925469003",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925504794",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572919",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078322",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783377,
+      "live_supply": 4,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925375478",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925387772",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572912",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078310",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783378,
+      "live_supply": 6,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925360375",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925417352",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925430613",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925468986",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572896",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078290",
+          "original_mint_number": 6,
+          "surviving_mint_rank": 6,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783379,
+      "live_supply": 5,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925352397",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925368347",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925417445",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572890",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078254",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
           "burned": false
         }
       ]
     },
     {
       "template_id": 783380,
-      "live_supply": 1,
+      "live_supply": 6,
       "burned_assets_count": 0,
       "assets": [
         {
+          "asset_id": "1099925346106",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925468975",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925473840",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572883",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078195",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        },
+        {
           "asset_id": "1099931465060",
           "original_mint_number": 6,
-          "surviving_mint_rank": 1,
+          "surviving_mint_rank": 6,
           "burned": false
         }
       ]
     },
     {
       "template_id": 783384,
-      "live_supply": 1,
+      "live_supply": 5,
       "burned_assets_count": 0,
       "assets": [
         {
+          "asset_id": "1099925346615",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925468968",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925502155",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078162",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
           "asset_id": "1099948868274",
           "original_mint_number": 5,
-          "surviving_mint_rank": 1,
+          "surviving_mint_rank": 5,
           "burned": false
         }
       ]
     },
     {
       "template_id": 783385,
-      "live_supply": 1,
+      "live_supply": 5,
       "burned_assets_count": 0,
       "assets": [
         {
+          "asset_id": "1099925349161",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925468958",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925499345",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078156",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
           "asset_id": "1099929280586",
           "original_mint_number": 5,
-          "surviving_mint_rank": 1,
+          "surviving_mint_rank": 5,
           "burned": false
         }
       ]
     },
     {
       "template_id": 783389,
-      "live_supply": 1,
+      "live_supply": 5,
       "burned_assets_count": 0,
       "assets": [
         {
+          "asset_id": "1099925375683",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925388818",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572856",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926078152",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
           "asset_id": "1099938967036",
           "original_mint_number": 5,
-          "surviving_mint_rank": 1,
+          "surviving_mint_rank": 5,
           "burned": false
         }
       ]
     },
     {
       "template_id": 783392,
-      "live_supply": 2,
+      "live_supply": 9,
       "burned_assets_count": 0,
       "assets": [
         {
+          "asset_id": "1099925348999",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925372403",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925395440",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925468946",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572787",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926069079",
+          "original_mint_number": 6,
+          "surviving_mint_rank": 6,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926264767",
+          "original_mint_number": 7,
+          "surviving_mint_rank": 7,
+          "burned": false
+        },
+        {
           "asset_id": "1099931464952",
           "original_mint_number": 8,
-          "surviving_mint_rank": 1,
+          "surviving_mint_rank": 8,
           "burned": false
         },
         {
           "asset_id": "1099936648468",
           "original_mint_number": 9,
+          "surviving_mint_rank": 9,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783394,
+      "live_supply": 6,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925348972",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925387216",
+          "original_mint_number": 2,
           "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925394781",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925468906",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572778",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926069062",
+          "original_mint_number": 6,
+          "surviving_mint_rank": 6,
           "burned": false
         }
       ]
@@ -135143,6 +135644,43 @@
           "asset_id": "1099937359752",
           "original_mint_number": 9,
           "surviving_mint_rank": 9,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 783398,
+      "live_supply": 5,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099925350058",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925468903",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925572770",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099925586123",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926264806",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
           "burned": false
         }
       ]
