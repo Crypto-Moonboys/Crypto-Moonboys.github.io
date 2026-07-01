@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readMarketAnalytics, renderMarketAnalyticsSection, updateNftMarketAnalytics } from './nft-market-analytics.mjs';
+import { fetchAtomicCollectionStatsSanity, readMarketAnalytics, renderMarketAnalyticsSection, updateNftMarketAnalytics } from './nft-market-analytics.mjs';
 import { createFeedStatus, fetchJson as fetchSiteJson, findFeed, writeFeedStatus } from './site-feed-utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -14,6 +14,7 @@ export const FEED_ID = 'noballgamess_rarity';
 export const DATA_DIR = path.join('data', COLLECTION);
 export const PAGE_PATH = path.join('wiki', 'noballgamess-nft-collection.html');
 export const ATOMIC_BASE = 'https://wax.api.atomicassets.io/atomicassets/v1';
+const DEFAULT_METADATA_MAX_AGE_HOURS = 24 * 30;
 
 const DELTA_ENDPOINTS = {
   latest_created_assets: `${ATOMIC_BASE}/assets?collection_name=${COLLECTION}&sort=created&order=desc&limit=1000`,
@@ -127,7 +128,7 @@ function imageCandidates(immutable = {}) {
   return [...new Set(candidates)];
 }
 
-function normalizeAtomicTemplate(raw) {
+function normalizeAtomicTemplate(raw, metadataFetchMode = 'single_template') {
   const data = raw?.data && typeof raw.data === 'object' ? raw.data : raw;
   const immutable = data?.immutable_data && typeof data.immutable_data === 'object' ? data.immutable_data : {};
   const templateId = toNumber(data?.template_id);
@@ -150,6 +151,7 @@ function normalizeAtomicTemplate(raw) {
     atomicassets_url: atomicTemplateUrl(templateId),
     exists_on_atomicassets: true,
     metadata_status: 'ok',
+    metadata_fetch_mode: metadataFetchMode,
     last_checked_at: nowIso(),
   };
 }
@@ -179,21 +181,123 @@ async function fetchAllTemplatePages(fetchJson) {
   return templates;
 }
 
+function isFreshConfirmed(entry, maxAgeHours = DEFAULT_METADATA_MAX_AGE_HOURS) {
+  if (!entry || entry.metadata_status !== 'ok' || !entry.exists_on_atomicassets) return false;
+  const checkedAt = Date.parse(entry.last_checked_at || '');
+  return Number.isFinite(checkedAt) && Date.now() - checkedAt <= maxAgeHours * 60 * 60 * 1000;
+}
+
+function templateBatchUrl(rows) {
+  const ids = rows.map((row) => Number(row.template_id)).filter(Number.isFinite).join(',');
+  return `${ATOMIC_BASE}/templates?collection_name=${COLLECTION}&ids=${ids}&limit=1000`;
+}
+
+function batchPayloadRows(payload) {
+  if (!Array.isArray(payload?.data)) throw new Error('AtomicAssets template ids batch response did not include data array');
+  return payload.data;
+}
+
 export async function updateNoballgamessTemplateMetadataCache(root = ROOT, options = {}) {
   const fetchJson = options.fetchJson || defaultFetchJson;
   const generatedAt = nowIso();
   const previous = readJson(root, `${DATA_DIR}/template-metadata-cache.json`, { templates: [] });
-  const rows = options.templates || await fetchAllTemplatePages(fetchJson);
-  const templates = [];
+  const previousById = new Map(asArray(previous.templates).map((row) => [Number(row.template_id), row]));
+  const forceRefresh = options.forceRefresh || options.refreshAll || process.env.NBG_FORCE_TEMPLATE_METADATA_REFRESH === '1';
+  const forceDiscover = options.forceDiscover || !previousById.size;
+  const maxAgeHours = options.maxAgeHours || DEFAULT_METADATA_MAX_AGE_HOURS;
+  const rows = options.templates || (forceDiscover ? await fetchAllTemplatePages(fetchJson) : asArray(previous.templates));
+  const templatesById = new Map(asArray(previous.templates).map((row) => [Number(row.template_id), row]));
   const errors = [];
   for (const raw of rows) {
     try {
-      const normalized = normalizeAtomicTemplate(raw);
-      if (normalized.template_id > 0) templates.push(normalized);
+      const templateId = Number(raw?.template_id);
+      if (!Number.isFinite(templateId) || templateId <= 0) continue;
+      const previousRow = previousById.get(templateId);
+      if (!forceRefresh && isFreshConfirmed(previousRow, maxAgeHours)) {
+        templatesById.set(templateId, {
+          ...previousRow,
+          metadata_fetch_mode: 'cached_confirmed',
+        });
+        continue;
+      }
+      templatesById.set(templateId, {
+        ...previousRow,
+        ...raw,
+        template_id: templateId,
+        metadata_status: previousRow?.metadata_status || 'pending',
+      });
     } catch (error) {
       errors.push({ error: error.message || String(error), raw_template_id: raw?.template_id || null });
     }
   }
+  const rowsToRefresh = rows.filter((raw) => {
+    const templateId = Number(raw?.template_id);
+    return Number.isFinite(templateId) && (forceRefresh || !isFreshConfirmed(previousById.get(templateId), maxAgeHours));
+  });
+  const hydratedByBatch = new Set();
+  let batchAttempts = 0;
+  let batchFallbacks = 0;
+  let singleFallbacks = 0;
+
+  if (rowsToRefresh.length) {
+    batchAttempts += 1;
+    try {
+      const payload = options.fetchTemplatesBatch
+        ? await options.fetchTemplatesBatch(rowsToRefresh, templateBatchUrl(rowsToRefresh))
+        : await fetchJson(templateBatchUrl(rowsToRefresh), { sourceKey: 'templates_batch' });
+      const byTemplateId = new Map(batchPayloadRows(payload).map((entry) => [Number(entry.template_id), entry]));
+      for (const raw of rowsToRefresh) {
+        const templateId = Number(raw.template_id);
+        const batchTemplate = byTemplateId.get(templateId);
+        if (!batchTemplate) continue;
+        const normalized = normalizeAtomicTemplate(batchTemplate, 'batch_ids');
+        if (normalized.template_id > 0) {
+          templatesById.set(normalized.template_id, normalized);
+          hydratedByBatch.add(normalized.template_id);
+        }
+      }
+    } catch (error) {
+      batchFallbacks += 1;
+      errors.push({ source_key: 'templates_batch', error: error.message || String(error) });
+    }
+  }
+
+  for (const raw of rowsToRefresh.filter((row) => !hydratedByBatch.has(Number(row.template_id)))) {
+    const templateId = Number(raw.template_id);
+    try {
+      const payload = options.fetchTemplate
+        ? await options.fetchTemplate(raw)
+        : await fetchJson(atomicTemplateUrl(templateId), { sourceKey: `template:${templateId}` });
+      const normalized = normalizeAtomicTemplate(payload, rowsToRefresh.length ? 'single_template_fallback' : 'single_template');
+      if (normalized.template_id > 0) templatesById.set(normalized.template_id, normalized);
+      singleFallbacks += 1;
+    } catch (error) {
+      const previousRow = previousById.get(templateId);
+      if (previousRow?.metadata_status === 'ok' && previousRow.exists_on_atomicassets) {
+        templatesById.set(templateId, {
+          ...previousRow,
+          metadata_fetch_mode: previousRow.metadata_fetch_mode || 'cached_confirmed',
+          last_error_at: generatedAt,
+          error: error.message || String(error),
+        });
+      } else {
+        templatesById.set(templateId, {
+          ...previousRow,
+          template_id: templateId,
+          metadata_status: 'error',
+          exists_on_atomicassets: false,
+          metadata_fetch_mode: 'single_template_fallback',
+          last_checked_at: generatedAt,
+          error: error.message || String(error),
+        });
+      }
+      errors.push({ source_key: `template:${templateId}`, error: error.message || String(error) });
+    }
+  }
+
+  const templates = [...templatesById.values()]
+    .filter((row) => Number(row.template_id) > 0)
+    .sort((a, b) => a.template_id - b.template_id);
   if (!templates.length && previous.templates?.length) {
     writeJson(root, `${DATA_DIR}/template-metadata-cache.json`, {
       ...previous,
@@ -207,12 +311,26 @@ export async function updateNoballgamessTemplateMetadataCache(root = ROOT, optio
     collection: COLLECTION,
     source: 'AtomicAssets templates API',
     generated_at: generatedAt,
-    templates: templates.sort((a, b) => a.template_id - b.template_id),
+    metadata_fetch_summary: {
+      batch_attempts: batchAttempts,
+      batch_fallbacks: batchFallbacks,
+      single_template_fallbacks: singleFallbacks,
+      cached_confirmed: templates.filter((row) => row.metadata_fetch_mode === 'cached_confirmed').length,
+    },
+    templates,
     errors,
   };
   writeJson(root, `${DATA_DIR}/template-metadata-cache.json`, cache);
   writeTemplateIntegrityAudit(root, cache.templates, []);
-  return { templates: cache.templates.length, ok: cache.templates.length, errors: errors.length };
+  return {
+    templates: cache.templates.length,
+    ok: cache.templates.filter((row) => row.metadata_status === 'ok').length,
+    errors: errors.length,
+    batch_attempts: batchAttempts,
+    batch_fallbacks: batchFallbacks,
+    single_fallbacks: singleFallbacks,
+    cached_confirmed: cache.metadata_fetch_summary.cached_confirmed,
+  };
 }
 
 function writeTemplateIntegrityAudit(root, templates, excluded = []) {
@@ -818,6 +936,7 @@ export async function updateNoballgamessRarityFeed() {
       }
     : await updateNoballgamessAssetStateCache();
   const marketAnalytics = await updateNftMarketAnalytics({ collection: COLLECTION, root: ROOT, feed });
+  const collectionStats = await fetchAtomicCollectionStatsSanity({ collection: COLLECTION });
   const result = await generateNoballgamessRarity();
   const status = createFeedStatus(feed, {
     status: 'ok',
@@ -827,6 +946,9 @@ export async function updateNoballgamessRarityFeed() {
       `Generated NoBallGames rarity render: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`,
       `Staged cache refresh: ${metadataResult.ok}/${metadataResult.templates} metadata ok; ${supplyResult.ok}/${supplyResult.templates} live supply counts ok; ${assetStateResult.assets} asset-state records across ${assetStateResult.templates} templates.`,
       `HiveBP display analytics: ${marketAnalytics.analytics_status}; not used for rarity scoring.`,
+      collectionStats.ok
+        ? 'AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.'
+        : `AtomicAssets collection stats sanity check unavailable: ${collectionStats.error || 'unknown error'}.`,
       'AtomicAssets is the source of truth; AtomicHub links are references only.',
     ],
   });

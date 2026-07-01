@@ -139,6 +139,11 @@ assert.match(
   /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=true&sort=updated&order=desc&limit=1000$/,
   'GKniftyHEADS registry must declare recently updated burned asset scan endpoint'
 );
+assert.match(
+  gkniftyheadsFeed.source_urls.atomicassets_collection_stats,
+  /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/collections\/gkniftyheads\/stats$/,
+  'GKniftyHEADS registry must declare AtomicAssets collection stats sanity endpoint'
+);
 for (const [key, pattern] of Object.entries({
   hivebp_collection_stats: /^https:\/\/wax-api\.hivebp\.io\/v3\/collection-stats\/gkniftyheads$/,
   hivebp_num_assets: /^https:\/\/wax-api\.hivebp\.io\/v3\/num-assets\/gkniftyheads$/,
@@ -166,6 +171,7 @@ for (const [key, pattern] of Object.entries({
   latest_created_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&sort=created&order=desc&limit=1000$/,
   recently_updated_live_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&burned=false&sort=updated&order=desc&limit=1000$/,
   recently_updated_burned_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&burned=true&sort=updated&order=desc&limit=1000$/,
+  atomicassets_collection_stats: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/collections\/noballgamess\/stats$/,
   hivebp_collection_stats: /^https:\/\/wax-api\.hivebp\.io\/v3\/collection-stats\/noballgamess$/,
   hivebp_num_assets: /^https:\/\/wax-api\.hivebp\.io\/v3\/num-assets\/noballgamess$/,
   hivebp_marketcap: /^https:\/\/wax-api\.hivebp\.io\/v3\/marketcap\/noballgamess$/,
@@ -363,6 +369,12 @@ for (const row of noballgamessRarity.ranked_templates || []) {
 const gkUpdater = read('scripts/update-gkniftyheads-rarity-feed.mjs');
 assert.match(gkUpdater, /const result = await runGenerateGkniftyheadsRarity\(\)/, 'GKniftyHEADS feed updater must await the async rarity generator');
 assert.match(gkUpdater, /updateGkniftyheadsAssetStateCache/, 'GKniftyHEADS feed updater must refresh or reuse asset-state cache data');
+assert.match(gkUpdater, /fetchAtomicCollectionStatsSanity/, 'GKniftyHEADS feed updater should run AtomicAssets collection stats as a sanity check only');
+assert.match(read('scripts/nft-market-analytics.mjs'), /collection-level sanity check only; not a replacement for asset-state cache/, 'AtomicAssets collection stats must not replace the asset-state cache');
+assert.match(read('scripts/update-gkniftyheads-template-metadata-cache.mjs'), /metadata_fetch_mode: metadataFetchMode/, 'GKniftyHEADS metadata cache must record fetch mode');
+assert.match(read('scripts/update-gkniftyheads-template-metadata-cache.mjs'), /metadataEntry\(row, \{ data: template \}, checkedAt, 'batch_ids'\)/, 'GKniftyHEADS metadata cache must use ids= batch rows before single fallback');
+assert.match(read('scripts/noballgamess-tracker-lib.mjs'), /metadata_fetch_mode: metadataFetchMode/, 'NoBallGames metadata cache must record fetch mode');
+assert.match(read('scripts/noballgamess-tracker-lib.mjs'), /templateBatchUrl/, 'NoBallGames metadata cache must attempt ids= batch fetches');
 assert.match(gkUpdater, /latest-created, updated-live, and updated-burned asset endpoints update asset-state cache sidecar data/, 'GKniftyHEADS feed status should mention asset-state endpoint coverage without changing current count maths');
 assert.ok(
   gkUpdater.indexOf('await runGenerateGkniftyheadsRarity()') < gkUpdater.indexOf('const status = createFeedStatus'),

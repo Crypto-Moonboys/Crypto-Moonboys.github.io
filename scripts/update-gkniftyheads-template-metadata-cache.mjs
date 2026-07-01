@@ -134,6 +134,16 @@ export async function updateGkniftyheadsTemplateMetadataCache(root = ROOT, optio
   const rowsToRefresh = forceRefresh
     ? rows
     : rows.filter((row) => !isFreshConfirmed(cache.get(row.template_id), maxAgeHours));
+  for (const row of rows.filter((entry) => !rowsToRefresh.includes(entry))) {
+    const cached = cache.get(row.template_id);
+    if (isFreshConfirmed(cached, maxAgeHours)) {
+      cache.set(row.template_id, {
+        ...cached,
+        metadata_fetch_mode: 'cached_confirmed',
+      });
+    }
+  }
+  writeCache(root, cache);
   const attemptedByBatch = new Set();
   const hydratedByBatch = new Set();
   let batchAttempts = 0;

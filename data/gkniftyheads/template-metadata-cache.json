@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T15:26:00.976Z",
+  "generated_at": "2026-07-01T17:28:24.702Z",
   "templates": [
     {
       "template_id": 773225,
@@ -28,7 +28,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.547Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 775997,
@@ -55,7 +56,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775997.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.563Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 775999,
@@ -82,7 +84,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.563Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776000,
@@ -109,7 +112,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.564Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776001,
@@ -136,7 +140,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.565Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776002,
@@ -163,7 +168,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.565Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776003,
@@ -190,7 +196,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.566Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776004,
@@ -217,7 +224,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:40.566Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776005,
@@ -244,7 +252,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.269Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776007,
@@ -271,7 +280,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.270Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776049,
@@ -298,7 +308,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.270Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776055,
@@ -325,7 +336,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.271Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776056,
@@ -352,7 +364,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.271Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776057,
@@ -379,7 +392,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.272Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776058,
@@ -406,7 +420,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.272Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776059,
@@ -433,7 +448,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.272Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776063,
@@ -460,7 +476,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.922Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776065,
@@ -487,7 +504,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.923Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776066,
@@ -514,7 +532,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.923Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776074,
@@ -541,7 +560,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.924Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776099,
@@ -568,7 +588,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.924Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776100,
@@ -595,7 +616,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-bristol-776100.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.925Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776101,
@@ -622,7 +644,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-purple-pains-776101.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.925Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776102,
@@ -649,7 +672,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-lap-head-776102.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:41.925Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776103,
@@ -676,7 +700,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-spit-head-776103.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.603Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776109,
@@ -703,7 +728,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-bristol-776109.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.604Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776110,
@@ -730,7 +756,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.604Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776114,
@@ -757,7 +784,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.604Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776117,
@@ -784,7 +812,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.605Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776118,
@@ -811,7 +840,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.605Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776119,
@@ -838,7 +868,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-pinky-stains-776119.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.605Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776120,
@@ -865,7 +896,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-tab-head-776120.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:42.606Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776121,
@@ -892,7 +924,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.640Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776123,
@@ -919,7 +952,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-follow-darren-cullen-776123.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.641Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776124,
@@ -946,7 +980,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-forever-darren-cullen-776124.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.641Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776145,
@@ -973,7 +1008,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.642Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776146,
@@ -1000,7 +1036,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-776146.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.642Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776147,
@@ -1027,7 +1064,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-vandal-776147.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.643Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 782888,
@@ -1054,7 +1092,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.643Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783235,
@@ -1081,7 +1120,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-slickshot-783235.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:43.643Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783237,
@@ -1108,7 +1148,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-chroma-kid-783237.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.320Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783245,
@@ -1135,7 +1176,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-shadow-streak-783245.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.320Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783247,
@@ -1162,7 +1204,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-chroma-kid-783247.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.321Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783250,
@@ -1189,7 +1232,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-raze-rebel-783250.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.321Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783252,
@@ -1216,7 +1260,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-drift-doodle-783252.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.322Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783253,
@@ -1243,7 +1288,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-marker-maven-783253.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.322Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783255,
@@ -1270,7 +1316,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-dizzy-drip-783255.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.322Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783258,
@@ -1297,7 +1344,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-inked-fury-783258.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.323Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783260,
@@ -1324,7 +1372,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-scribe-serpent-783260.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.973Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783263,
@@ -1351,7 +1400,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-tagger-tempest-783263.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.974Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783269,
@@ -1378,7 +1428,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-rebel-riff-783269.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.974Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783282,
@@ -1405,7 +1456,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-brick-burner-783282.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.975Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783291,
@@ -1432,7 +1484,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-stencil-storm-783291.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.975Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783295,
@@ -1459,7 +1512,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-paint-patriot-783295.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.975Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783296,
@@ -1486,7 +1540,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-stencil-siren-783296.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.976Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783298,
@@ -1513,7 +1568,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-fume-fury-783298.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:44.976Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783300,
@@ -1540,7 +1596,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-daring-doodle-783300.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.700Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783301,
@@ -1567,7 +1624,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-chromatic-crusader-783301.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.701Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783306,
@@ -1594,7 +1652,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-urban-oracle-783306.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.701Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783307,
@@ -1621,7 +1680,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-graphite-ghost-783307.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.702Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783369,
@@ -1648,7 +1708,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.702Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783370,
@@ -1675,7 +1736,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.703Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783371,
@@ -1702,7 +1764,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.703Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783372,
@@ -1729,7 +1792,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:45.704Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783373,
@@ -1756,7 +1820,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.381Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783374,
@@ -1783,7 +1848,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.382Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783375,
@@ -1810,7 +1876,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.382Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783376,
@@ -1837,7 +1904,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.383Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783377,
@@ -1864,7 +1932,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.383Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783378,
@@ -1891,7 +1960,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.384Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783379,
@@ -1918,7 +1988,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.384Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783380,
@@ -1945,7 +2016,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:46.384Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783383,
@@ -1972,7 +2044,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.047Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783384,
@@ -1999,7 +2072,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.048Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783385,
@@ -2026,7 +2100,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.048Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783389,
@@ -2053,7 +2128,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.049Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783392,
@@ -2080,7 +2156,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.049Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783394,
@@ -2107,7 +2184,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-digital-diva-783394.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.049Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783395,
@@ -2134,7 +2212,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bit-boss-783395.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.050Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783398,
@@ -2161,7 +2240,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-virtual-vixen-783398.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.050Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783399,
@@ -2188,7 +2268,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-decentralized-duchess-783399.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.699Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783400,
@@ -2215,7 +2296,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-defi-dame-783400.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.700Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783401,
@@ -2242,7 +2324,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-token-temptress-783401.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.700Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783403,
@@ -2269,7 +2352,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.700Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783404,
@@ -2296,7 +2380,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-digital-duchess-783404.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.701Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783405,
@@ -2323,7 +2408,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-token-tycooness-783405.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.701Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783406,
@@ -2350,7 +2436,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.702Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783407,
@@ -2377,7 +2464,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:47.702Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783408,
@@ -2404,7 +2492,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-cipherella-783408.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.409Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783409,
@@ -2431,7 +2520,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-waxp-banshee-783409.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.410Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783410,
@@ -2458,7 +2548,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-waxp-banshee-783410.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.410Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783411,
@@ -2485,7 +2576,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-crypto-charmcaster-783411.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.410Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783412,
@@ -2512,7 +2604,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-coin-conqueress-783412.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.411Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783413,
@@ -2539,7 +2632,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-cipher-seraph-783413.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.411Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783414,
@@ -2566,7 +2660,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.411Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783415,
@@ -2593,7 +2688,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:48.412Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783431,
@@ -2620,7 +2716,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.083Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783432,
@@ -2647,7 +2744,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.084Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783433,
@@ -2674,7 +2772,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.084Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783442,
@@ -2701,7 +2800,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.084Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783444,
@@ -2728,7 +2828,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.085Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783445,
@@ -2755,7 +2856,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.085Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783447,
@@ -2782,7 +2884,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.086Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783448,
@@ -2809,7 +2912,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.086Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783451,
@@ -2836,7 +2940,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.724Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783453,
@@ -2863,7 +2968,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.724Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783454,
@@ -2890,7 +2996,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.724Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783455,
@@ -2917,7 +3024,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.725Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783457,
@@ -2944,7 +3052,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.725Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783459,
@@ -2971,7 +3080,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.726Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783461,
@@ -2998,7 +3108,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.726Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783462,
@@ -3025,7 +3136,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:49.726Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783463,
@@ -3052,7 +3164,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.382Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783464,
@@ -3079,7 +3192,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.382Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783466,
@@ -3106,7 +3220,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.383Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783468,
@@ -3133,7 +3248,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.383Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783470,
@@ -3160,7 +3276,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.383Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783747,
@@ -3187,7 +3304,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.384Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783755,
@@ -3214,7 +3332,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.384Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783757,
@@ -3241,7 +3360,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:50.384Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783759,
@@ -3268,7 +3388,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.029Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783760,
@@ -3295,7 +3416,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-tsunami-btc-titan-783760.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.030Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783764,
@@ -3322,7 +3444,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.030Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784220,
@@ -3349,7 +3472,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitman-784220.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.030Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784229,
@@ -3376,7 +3500,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitman-784229.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.031Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784264,
@@ -3403,7 +3528,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-satoshi-knight-784264.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.031Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784266,
@@ -3430,7 +3556,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-cryptofrank-784266.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.032Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784269,
@@ -3457,7 +3584,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-freddie-cryptocrusader-784269.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.032Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784272,
@@ -3484,7 +3612,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-myerscoin13-784272.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.695Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784274,
@@ -3511,7 +3640,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.695Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784276,
@@ -3538,7 +3668,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-darknet-lord-784276.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.696Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784277,
@@ -3565,7 +3696,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-binary-blitzer-784277.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.696Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784280,
@@ -3592,7 +3724,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bit-skull-784280.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.696Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784284,
@@ -3619,7 +3752,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.697Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784332,
@@ -3646,7 +3780,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.698Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784340,
@@ -3673,7 +3808,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:51.698Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784344,
@@ -3700,7 +3836,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:52.359Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784349,
@@ -3727,7 +3864,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:52.359Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784350,
@@ -3754,7 +3892,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:52.360Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784413,
@@ -3781,7 +3920,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:52.360Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784419,
@@ -3808,7 +3948,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:52.360Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 788015,
@@ -3835,7 +3976,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-defi-dame-788015.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:52.361Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 904071,
@@ -3857,7 +3999,8 @@
       "local_wiki_page": "/wiki/gkniftyheads-deko-904071.html",
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-07-01T12:43:52.361Z",
-      "metadata_status": "ok"
+      "metadata_status": "ok",
+      "metadata_fetch_mode": "cached_confirmed"
     }
   ]
 }

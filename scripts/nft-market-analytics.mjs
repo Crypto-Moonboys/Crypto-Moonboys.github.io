@@ -6,6 +6,7 @@ import {
 } from './site-feed-utils.mjs';
 
 export const HIVEBP_BASE_URL = 'https://wax-api.hivebp.io';
+export const ATOMICASSETS_BASE_URL = 'https://wax.api.atomicassets.io/atomicassets/v1';
 
 const DEFAULT_DAYS = 30;
 
@@ -192,4 +193,33 @@ export function renderMarketAnalyticsSection(market, escapeHtml = (value) => Str
           </div>
           ${errorCopy}
         </section>`;
+}
+
+export async function fetchAtomicCollectionStatsSanity({
+  collection,
+  fetchJson = null,
+  timeoutMs = 7000,
+  retries = 1,
+} = {}) {
+  if (!collection) throw new Error('Missing collection for AtomicAssets collection stats.');
+  const sourceUrl = `${ATOMICASSETS_BASE_URL}/collections/${encodeURIComponent(collection)}/stats`;
+  const result = await safeFetchJson(sourceUrl, {
+    source_key: 'atomicassets_collection_stats',
+    fetchJson,
+    timeoutMs,
+    retries,
+    retryDelayMs: 250,
+    allowStale: false,
+  });
+  const payload = result.payload?.data || result.payload || {};
+  return {
+    ok: result.ok,
+    source_url: sourceUrl,
+    checked_at: result.checked_at,
+    error: result.error,
+    used_for: 'collection-level sanity check only; not a replacement for asset-state cache',
+    issued_supply: payload.issued_supply ?? payload.assets ?? payload.assets_count ?? null,
+    burned_supply: payload.burned ?? payload.burned_count ?? null,
+    templates: payload.templates ?? payload.templates_count ?? null,
+  };
 }

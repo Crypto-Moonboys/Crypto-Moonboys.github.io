@@ -53,12 +53,55 @@ await updateNoballgamessTemplateMetadataCache(root, {
     template(100002, 5, 0, 'Fixture Open Mint'),
     template(100003, 0, 10, 'Fixture Unissued'),
   ],
+  fetchTemplatesBatch: async (rows, url) => {
+    assert.match(url, /\/atomicassets\/v1\/templates\?collection_name=noballgamess&ids=100001,100002,100003&limit=1000/, 'NoBallGames metadata updater must attempt ids= batch fetch');
+    return { data: rows };
+  },
+  fetchTemplate: async () => {
+    throw new Error('single-template fallback should not run after fixture batch success');
+  },
 });
 
 const metadata = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'template-metadata-cache.json'), 'utf8'));
 assert.equal(metadata.templates.length, 3, 'metadata cache should contain AtomicAssets-confirmed fixture templates');
 assert.ok(metadata.templates.every((row) => row.exists_on_atomicassets === true), 'metadata cache requires AtomicAssets-confirmed templates');
 assert.ok(metadata.templates.every((row) => row.image_sources.length > 0), 'metadata cache should resolve image sources from immutable_data');
+assert.ok(metadata.templates.every((row) => row.metadata_fetch_mode === 'batch_ids'), 'metadata cache should record batch_ids fetch mode after batch hydration');
+
+const fallbackRoot = makeRoot();
+const fallbackOrder = [];
+await updateNoballgamessTemplateMetadataCache(fallbackRoot, {
+  templates: [
+    template(100011, 1, 1, 'Fallback Ranked'),
+    template(100012, 2, 2, 'Fallback Ranked 2'),
+  ],
+  fetchTemplatesBatch: async () => {
+    fallbackOrder.push('batch');
+    throw new Error('ids unsupported fixture');
+  },
+  fetchTemplate: async (row) => {
+    fallbackOrder.push(`single:${row.template_id}`);
+    return { data: row };
+  },
+});
+const fallbackMetadata = JSON.parse(fs.readFileSync(path.join(fallbackRoot, 'data', 'noballgamess', 'template-metadata-cache.json'), 'utf8'));
+assert.deepEqual(fallbackOrder, ['batch', 'single:100011', 'single:100012'], 'NoBallGames metadata updater should fallback to single-template fetches after batch failure');
+assert.ok(fallbackMetadata.templates.every((row) => row.metadata_fetch_mode === 'single_template_fallback'), 'fallback rows should record single_template_fallback fetch mode');
+
+let cacheFetchAttempted = false;
+const cacheReuseResult = await updateNoballgamessTemplateMetadataCache(root, {
+  templates: [template(100001, 3, 3, 'Fixture Ranked')],
+  fetchTemplatesBatch: async () => {
+    cacheFetchAttempted = true;
+    throw new Error('fresh confirmed cache should not refetch');
+  },
+  fetchTemplate: async () => {
+    cacheFetchAttempted = true;
+    throw new Error('fresh confirmed cache should not refetch');
+  },
+});
+assert.equal(cacheFetchAttempted, false, 'fresh confirmed NoBallGames metadata should be reused without AtomicAssets calls');
+assert.equal(cacheReuseResult.cached_confirmed >= 1, true, 'metadata updater should report cached_confirmed rows');
 
 await updateNoballgamessLiveSupplyCache(root, {
   fetchJson: async (url) => {
