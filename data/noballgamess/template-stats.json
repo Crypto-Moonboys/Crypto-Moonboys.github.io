@@ -1,8 +1,29 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-01T16:06:02.935Z",
+  "generated_at": "2026-07-01T16:51:19.555Z",
   "total_templates": 0,
   "ranked_templates": 0,
   "utility_open_mint_templates": 0,
-  "unissued_templates": 0
+  "unissued_templates": 0,
+  "ranking_formula": {
+    "source_of_truth": "AtomicAssets",
+    "atomichub_usage": "reference_links_only",
+    "price_used": false,
+    "market_data_used": false,
+    "allowed_score_inputs": [
+      "live_supply_scarcity",
+      "trait_exposure_scarcity",
+      "surviving_mint_rank_bonus",
+      "pre_baseline_missing_or_burned_audit_when_proven"
+    ],
+    "disallowed_score_inputs": [
+      "price",
+      "floor_price",
+      "sales",
+      "last_sale",
+      "listing_count",
+      "marketplace_listing_count",
+      "AtomicHub listing counts"
+    ]
+  }
 }

@@ -1,5 +1,24 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-01T16:06:02.937Z",
+  "generated_at": "2026-07-01T16:51:19.556Z",
+  "ranking_formula": {
+    "source_of_truth": "AtomicAssets",
+    "atomichub_usage": "reference_links_only",
+    "price_used": false,
+    "market_data_used": false,
+    "allowed_score_inputs": [
+      "original_mint_number",
+      "surviving_mint_rank"
+    ],
+    "disallowed_score_inputs": [
+      "price",
+      "floor_price",
+      "sales",
+      "last_sale",
+      "listing_count",
+      "marketplace_listing_count",
+      "AtomicHub listing counts"
+    ]
+  },
   "assets": []
 }

@@ -20,6 +20,28 @@ const DELTA_ENDPOINTS = {
   recently_updated_burned_assets: `${ATOMIC_BASE}/assets?collection_name=${COLLECTION}&burned=true&sort=updated&order=desc&limit=1000`,
 };
 
+const SCORING_CONTRACT = {
+  source_of_truth: 'AtomicAssets',
+  atomichub_usage: 'reference_links_only',
+  price_used: false,
+  market_data_used: false,
+  allowed_score_inputs: [
+    'live_supply_scarcity',
+    'trait_exposure_scarcity',
+    'surviving_mint_rank_bonus',
+    'pre_baseline_missing_or_burned_audit_when_proven',
+  ],
+  disallowed_score_inputs: [
+    'price',
+    'floor_price',
+    'sales',
+    'last_sale',
+    'listing_count',
+    'marketplace_listing_count',
+    'AtomicHub listing counts',
+  ],
+};
+
 function rootPath(root, relativePath) {
   return path.join(root, relativePath);
 }
@@ -491,8 +513,53 @@ function renderRows(rows, ranked = false) {
   </tr>`).join('\n');
 }
 
-function renderPage(root, data) {
+function renderStatCards(stats) {
+  return `<div class="wiki-rabbit-grid">
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.total_templates || 0)}</span><span class="wiki-rabbit-card-desc">AtomicAssets-confirmed templates</span></div>
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.ranked_templates || 0)}</span><span class="wiki-rabbit-card-desc">ranked fixed-supply templates</span></div>
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.utility_open_mint_templates || 0)}</span><span class="wiki-rabbit-card-desc">utility/open mint templates</span></div>
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.unissued_templates || 0)}</span><span class="wiki-rabbit-card-desc">unissued templates</span></div>
+          </div>`;
+}
+
+function renderTraitExposureRows(rows) {
+  if (!rows.length) return '<tr><td colspan="3">Pending trait exposure sync.</td></tr>';
+  return rows.slice(0, 12).map((row) => `<tr>
+    <td>${escapeHtml(row.schema_name || 'unknown')}</td>
+    <td>${escapeHtml(row.templates || 0)}</td>
+    <td>${escapeHtml(row.live_supply || 0)}</td>
+  </tr>`).join('\n');
+}
+
+function renderHolderRows(rows) {
+  if (!rows.length) return '<tr><td colspan="2">Pending holder snapshot sync.</td></tr>';
+  return rows.slice(0, 12).map((row) => `<tr>
+    <td>${escapeHtml(row.owner || 'unknown')}</td>
+    <td>${escapeHtml(row.live_assets || 0)}</td>
+  </tr>`).join('\n');
+}
+
+function renderAssetRarityRows(rows) {
+  if (!rows.length) return '<tr><td colspan="4">Pending asset rarity sync.</td></tr>';
+  return rows.slice(0, 12).map((row) => `<tr>
+    <td>${escapeHtml(row.asset_id || '')}</td>
+    <td>${escapeHtml(row.template_id || '')}</td>
+    <td>${escapeHtml(row.original_mint_number ?? '')}</td>
+    <td>${escapeHtml(row.surviving_mint_rank ?? '')}</td>
+  </tr>`).join('\n');
+}
+
+function renderPage(root, data, supplemental = {}) {
   const status = readJson(root, `${DATA_DIR}/sync-status.json`, { status: 'pending' });
+  const stats = supplemental.templateStats || {
+    total_templates: data.allRows.length,
+    ranked_templates: data.ranked.length,
+    utility_open_mint_templates: data.utility.length,
+    unissued_templates: data.unissued.length,
+  };
+  const traitExposure = supplemental.traitExposure || { schemas: [] };
+  const holderLeaderboard = supplemental.holderLeaderboard || { holders: [] };
+  const assetRarityLeaderboard = supplemental.assetRarityLeaderboard || { assets: [] };
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -523,12 +590,7 @@ function renderPage(root, data) {
         </section>
         <section class="wiki-section">
           <h2>Collection Summary</h2>
-          <div class="wiki-rabbit-grid">
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${data.allRows.length}</span><span class="wiki-rabbit-card-desc">AtomicAssets-confirmed templates</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${data.ranked.length}</span><span class="wiki-rabbit-card-desc">ranked fixed-supply templates</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${data.utility.length}</span><span class="wiki-rabbit-card-desc">utility/open mint templates</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${data.unissued.length}</span><span class="wiki-rabbit-card-desc">unissued templates</span></div>
-          </div>
+          ${renderStatCards(stats)}
         </section>
         <section class="wiki-section">
           <h2>Template Rarity Ranking</h2>
@@ -549,6 +611,31 @@ function renderPage(root, data) {
           <table class="wiki-table">
             <thead><tr><th>NFT Template</th><th>Template ID</th><th>Schema</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Asset State</th></tr></thead>
             <tbody>${renderRows(data.unissued)}</tbody>
+          </table>
+        </section>
+        <section class="wiki-section">
+          <h2>Template Stats</h2>
+          ${renderStatCards(stats)}
+        </section>
+        <section class="wiki-section">
+          <h2>Trait Exposure</h2>
+          <table class="wiki-table">
+            <thead><tr><th>Schema</th><th>Templates</th><th>Live Supply</th></tr></thead>
+            <tbody>${renderTraitExposureRows(asArray(traitExposure.schemas))}</tbody>
+          </table>
+        </section>
+        <section class="wiki-section">
+          <h2>Holder Leaderboard</h2>
+          <table class="wiki-table">
+            <thead><tr><th>Holder</th><th>Live Assets</th></tr></thead>
+            <tbody>${renderHolderRows(asArray(holderLeaderboard.holders))}</tbody>
+          </table>
+        </section>
+        <section class="wiki-section">
+          <h2>Asset Rarity Leaderboard</h2>
+          <table class="wiki-table">
+            <thead><tr><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th></tr></thead>
+            <tbody>${renderAssetRarityRows(asArray(assetRarityLeaderboard.assets))}</tbody>
           </table>
         </section>
         <!-- RELATED_WIKI_PATHS:BEGIN -->
@@ -602,6 +689,7 @@ export async function generateNoballgamessRarity(root = ROOT) {
     collection: COLLECTION,
     generated_at: nowIso(),
     live_data_status: liveDataStatus,
+    ranking_formula: SCORING_CONTRACT,
     price_used: false,
     market_data_used: false,
     ranked_templates: data.ranked,
@@ -625,6 +713,7 @@ export async function generateNoballgamessRarity(root = ROOT) {
     collection: COLLECTION,
     generated_at: nowIso(),
     note: 'Trait exposure uses live_supply when live counts are available; issued_supply fallback remains explicit.',
+    ranking_formula: SCORING_CONTRACT,
     schemas: Object.values(data.allRows.reduce((memo, row) => {
       const key = row.schema_name || 'unknown';
       memo[key] ||= { schema_name: key, templates: 0, live_supply: 0 };
@@ -650,24 +739,50 @@ export async function generateNoballgamessRarity(root = ROOT) {
     collection: COLLECTION,
     generated_at: nowIso(),
     status: liveDataStatus,
+    ranking_formula: SCORING_CONTRACT,
     assets: assetRarityLeaderboard,
   });
-  writeJson(root, `${DATA_DIR}/template-stats.json`, {
+  const templateStats = {
     collection: COLLECTION,
     generated_at: nowIso(),
     total_templates: data.allRows.length,
     ranked_templates: data.ranked.length,
     utility_open_mint_templates: data.utility.length,
     unissued_templates: data.unissued.length,
-  });
+    ranking_formula: SCORING_CONTRACT,
+  };
+  writeJson(root, `${DATA_DIR}/template-stats.json`, templateStats);
   writeJson(root, `${DATA_DIR}/trait-exposure.json`, traitExposure);
-  writeJson(root, `${DATA_DIR}/holder-leaderboard.json`, { collection: COLLECTION, generated_at: nowIso(), holders: holderLeaderboard });
-  writeJson(root, `${DATA_DIR}/asset-rarity-leaderboard.json`, { collection: COLLECTION, generated_at: nowIso(), assets: assetRarityLeaderboard });
+  const holderLeaderboardOutput = {
+    collection: COLLECTION,
+    generated_at: nowIso(),
+    ranking_formula: {
+      ...SCORING_CONTRACT,
+      allowed_score_inputs: ['live_assets_held'],
+    },
+    holders: holderLeaderboard,
+  };
+  const assetRarityLeaderboardOutput = {
+    collection: COLLECTION,
+    generated_at: nowIso(),
+    ranking_formula: {
+      ...SCORING_CONTRACT,
+      allowed_score_inputs: ['original_mint_number', 'surviving_mint_rank'],
+    },
+    assets: assetRarityLeaderboard,
+  };
+  writeJson(root, `${DATA_DIR}/holder-leaderboard.json`, holderLeaderboardOutput);
+  writeJson(root, `${DATA_DIR}/asset-rarity-leaderboard.json`, assetRarityLeaderboardOutput);
   writeJson(root, `${DATA_DIR}/sync-status.json`, syncStatus);
   writeCsv(root, `${DATA_DIR}/template-rarity.csv`, data.ranked, ['rank', 'template_id', 'title', 'rarity_band', 'issued_supply', 'live_supply', 'max_supply']);
   writeCsv(root, `${DATA_DIR}/live-asset-rarity.csv`, assetRarityLeaderboard, ['template_id', 'asset_id', 'original_mint_number', 'surviving_mint_rank']);
   writeCsv(root, `${DATA_DIR}/trait-exposure.csv`, traitExposure.schemas, ['schema_name', 'templates', 'live_supply']);
-  writeText(root, PAGE_PATH, renderPage(root, data));
+  writeText(root, PAGE_PATH, renderPage(root, data, {
+    templateStats,
+    traitExposure,
+    holderLeaderboard: holderLeaderboardOutput,
+    assetRarityLeaderboard: assetRarityLeaderboardOutput,
+  }));
   writeTemplateIntegrityAudit(root, data.allRows, []);
   return {
     ranked: data.ranked.length,

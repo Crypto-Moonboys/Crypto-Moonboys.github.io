@@ -20,6 +20,62 @@ function exists(relativePath) {
   return fs.existsSync(path.join(root, relativePath));
 }
 
+function assertNoMarketScoringSignals(label, payload) {
+  const forbiddenKey = /(?:floor|price|sale|listing|market)/i;
+  const allowedMarketContractKeys = new Set([
+    'price_used',
+    'market_data_used',
+    'atomichub_usage',
+    'disallowed_score_inputs',
+  ]);
+  const skippedRawMetadataKeys = new Set([
+    'description',
+    'name',
+    'title',
+    'immutable_data',
+    'mutable_data',
+    'raw',
+  ]);
+  const violations = [];
+
+  function walk(value, pathParts = []) {
+    if (value == null || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => walk(item, [...pathParts, String(index)]));
+      return;
+    }
+
+    for (const [key, child] of Object.entries(value)) {
+      const nextPath = [...pathParts, key];
+      if (skippedRawMetadataKeys.has(key)) continue;
+      if (key === 'atomichub_url' || nextPath.includes('source_urls')) continue;
+      if (forbiddenKey.test(key) && !allowedMarketContractKeys.has(key)) {
+        violations.push(nextPath.join('.'));
+      }
+      walk(child, nextPath);
+    }
+  }
+
+  walk(payload);
+  assert.deepEqual(violations, [], `${label} must not expose price/floor/sales/listing/market fields as scoring components`);
+  if ('price_used' in payload) assert.equal(payload.price_used, false, `${label} must mark price_used false`);
+  if ('market_data_used' in payload) assert.equal(payload.market_data_used, false, `${label} must mark market_data_used false`);
+  if (payload.ranking_formula) {
+    if ('price_used' in payload.ranking_formula) {
+      assert.equal(payload.ranking_formula.price_used, false, `${label} ranking formula must mark price_used false`);
+    }
+    if ('market_data_used' in payload.ranking_formula) {
+      assert.equal(payload.ranking_formula.market_data_used, false, `${label} ranking formula must mark market_data_used false`);
+    }
+    if ('source_of_truth' in payload.ranking_formula) {
+      assert.equal(payload.ranking_formula.source_of_truth, 'AtomicAssets', `${label} must use AtomicAssets as source of truth`);
+    }
+    if ('atomichub_usage' in payload.ranking_formula) {
+      assert.equal(payload.ranking_formula.atomichub_usage, 'reference_links_only', `${label} must keep AtomicHub as reference-only`);
+    }
+  }
+}
+
 const registry = readJson('data/feed-registry.json');
 const registryText = read('data/feed-registry.json');
 assert.ok(Array.isArray(registry.feeds), 'feed registry must contain a feeds array');
@@ -230,9 +286,8 @@ for (const generatedPath of [
 assert.match(workflow, /git add "\$\{GENERATED_PATHS\[@\]\}"/, 'workflow must use targeted generated output staging');
 assert.doesNotMatch(workflow, /git add data\s*(?:\n|$)/, 'workflow must not only stage data and miss generated pages/thumbs');
 
-const gk = read('data/gkniftyheads/template-rarity.json');
-assert.match(gk, /"price_used": false/, 'NFT rarity feed must not use price');
-assert.doesNotMatch(gk, /floor price|market price|last sale/i, 'NFT rarity feed must not include price ranking signals');
+const gk = readJson('data/gkniftyheads/template-rarity.json');
+assertNoMarketScoringSignals('GKniftyHEADS rarity feed', gk);
 
 const assetStateCache = read('data/gkniftyheads/asset-state-cache.json');
 const assetRefreshCursor = read('data/gkniftyheads/asset-refresh-cursor.json');
@@ -247,16 +302,28 @@ assert.match(assetRefreshCursor, /"mode": "daily_rotating_backfill"/, 'asset ref
 assert.match(survivingRanks, /"templates"/, 'surviving mint ranks data surface must exist');
 
 const noballgamessPage = read('wiki/noballgamess-nft-collection.html');
-const noballgamessRarity = read('data/noballgamess/template-rarity.json');
+const noballgamessRarity = readJson('data/noballgamess/template-rarity.json');
+const noballgamessAssetLeaderboard = readJson('data/noballgamess/asset-rarity-leaderboard.json');
+const noballgamessHolderLeaderboard = readJson('data/noballgamess/holder-leaderboard.json');
 const noballgamessAssetState = read('data/noballgamess/asset-state-cache.json');
 assert.match(noballgamessPage, /Original mint numbers never change/, 'NoBallGames page must explain permanent original mint numbers');
 assert.match(noballgamessPage, /surviving mint rank/, 'NoBallGames page must explain surviving mint rank');
+assert.match(noballgamessPage, /Template Stats/, 'NoBallGames page must render template stats');
+assert.match(noballgamessPage, /Trait Exposure/, 'NoBallGames page must render trait exposure');
+assert.match(noballgamessPage, /Holder Leaderboard/, 'NoBallGames page must render holder leaderboard');
+assert.match(noballgamessPage, /Asset Rarity Leaderboard/, 'NoBallGames page must render asset rarity leaderboard');
 assert.match(noballgamessAssetState, /"latest_created_assets"/, 'NoBallGames asset-state cache must document latest-created source URL');
 assert.match(noballgamessAssetState, /"recently_updated_live_assets"/, 'NoBallGames asset-state cache must document updated-live source URL');
 assert.match(noballgamessAssetState, /"recently_updated_burned_assets"/, 'NoBallGames asset-state cache must document updated-burned source URL');
 assert.match(noballgamessAssetState, /"template_assets_backfill"/, 'NoBallGames asset-state cache must document template backfill source URL');
-assert.match(noballgamessRarity, /"price_used": false/, 'NoBallGames rarity feed must not use price');
-assert.doesNotMatch(noballgamessRarity, /floor price|market price|last sale|listing count/i, 'NoBallGames rarity feed must not include price/listing ranking signals');
+assertNoMarketScoringSignals('NoBallGames rarity feed', noballgamessRarity);
+assertNoMarketScoringSignals('NoBallGames asset rarity leaderboard', noballgamessAssetLeaderboard);
+assertNoMarketScoringSignals('NoBallGames holder leaderboard', noballgamessHolderLeaderboard);
+for (const row of noballgamessRarity.ranked_templates || []) {
+  assert.equal(row.supply_used_for_scoring, row.live_supply, 'NoBallGames rarity scoring must use live_supply when counted');
+  assert.equal(row.price_used, false, 'NoBallGames ranked rows must mark price_used false');
+  assert.equal(row.market_data_used, false, 'NoBallGames ranked rows must mark market_data_used false');
+}
 
 const gkUpdater = read('scripts/update-gkniftyheads-rarity-feed.mjs');
 assert.match(gkUpdater, /const result = await runGenerateGkniftyheadsRarity\(\)/, 'GKniftyHEADS feed updater must await the async rarity generator');
