@@ -416,6 +416,14 @@ function renderGroup(title, links) {
               ${desc}
             </a>`;
   }).join('\n');
+  if (kind === 'nft-siblings') {
+    return `        <details class="${groupClass}" data-related-group="${escapeHtml(title)}">
+          <summary>${escapeHtml(title)}</summary>
+          <div class="${listClass}" role="list">
+${items}
+          </div>
+        </details>`;
+  }
   return `        <div class="${groupClass}" data-related-group="${escapeHtml(title)}">
           <h3>${escapeHtml(title)}</h3>
           <div class="${listClass}" role="list">

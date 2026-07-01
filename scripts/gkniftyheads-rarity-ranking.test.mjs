@@ -242,9 +242,9 @@ for (const error of assetState.errors || []) {
 assert.equal(sync.wax_get_info.used_for, 'future scan checkpoint metadata only');
 assert.match(sync.burn_tracking_status, /baseline pending/i, 'first burn scan must be a baseline, not fake history');
 
-assert.match(collectionHtml, /GKniftyHEADS Template Rarity Ranking/);
-assert.match(collectionHtml, /Asset Version Ranking/, 'page should render the scored Asset Version Ranking section');
-assert.match(collectionHtml, /Template Rarity Ranking scores the edition\/template\. Asset Version Ranking scores exact live NFTs/, 'page should explain the two ranking layers');
+assert.match(collectionHtml, /GKniftyHEADS Rarity Tracker/);
+assert.match(collectionHtml, /Best Exact NFT Versions/, 'page should render the scored exact NFT version section');
+assert.match(collectionHtml, /This secondary view scores exact live NFTs using template score, original mint number, and surviving mint rank/, 'page should explain the two ranking layers');
 assert.match(collectionHtml, /separate AtomicAssets template IDs may share the same artwork\/name/, 'page copy should make clear this ranks templates, not unique artwork');
 assert.match(collectionHtml, /Original mint numbers never change/, 'page must explain that original mint numbers are permanent');
 assert.match(collectionHtml, /surviving mint rank/, 'page must explain surviving mint rank separately from original mint numbers');
@@ -263,9 +263,9 @@ assert.match(collectionHtml, /<th>Live Supply<\/th>/, 'live-count mode table sho
 assert.match(collectionHtml, /<th>Rarity Exposure<\/th>/, 'live-count mode table should label rarity exposure without fallback wording');
 assert.match(collectionHtml, /<th>Variation Exposure<\/th>/, 'live-count mode table should label variation exposure without fallback wording');
 assert.doesNotMatch(collectionHtml, /<th>Issued Supply Fallback<\/th>|Rarity Exposure \(Fallback\)|Variation Exposure \(Fallback\)/, 'live-count mode must not use fallback table labels');
-assert.match(collectionHtml, /Fallback issued supply counted/, 'fallback stat should be separated from live asset counts');
+assert.doesNotMatch(collectionHtml, /Fallback issued supply counted/, 'collector-facing stat cards should not include fallback debug counters');
 assert.match(collectionHtml, /<strong>124463<\/strong><span>Live assets counted<\/span>/, 'live asset count should show the counted AtomicAssets total');
-assert.ok(collectionHtml.indexOf('GKniftyHEADS Template Rarity Ranking') < collectionHtml.indexOf('All NFTs / Templates'), 'raw template table should only appear after the ranking fallback wrapper');
+assert.ok(collectionHtml.indexOf('GKniftyHEADS Rarity Tracker') < collectionHtml.indexOf('All NFTs / Templates'), 'raw template table should only appear after the ranking fallback wrapper');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-utility">[\s\S]*<tr data-rarity-filter="utility-open-mint">/, 'utility side table must render populated rows');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-unissued">[\s\S]*<tr data-rarity-filter="unissued">/, 'unissued side table must render populated rows');
 const rankedTableHead = collectionHtml.match(/<table class="wiki-table gk-rarity-table">[\s\S]*?<thead>([\s\S]*?)<\/thead>/)?.[1] || '';
