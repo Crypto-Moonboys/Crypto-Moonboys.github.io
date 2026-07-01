@@ -19,6 +19,8 @@ function read(relativePath) {
 const rarity = readJson('data/gkniftyheads/template-rarity.json');
 const integrityAudit = readJson('data/gkniftyheads/template-integrity-audit.json');
 const live = readJson('data/gkniftyheads/live-asset-rarity.json');
+const assetState = readJson('data/gkniftyheads/asset-state-cache.json');
+const survivingMintRanks = readJson('data/gkniftyheads/surviving-mint-ranks.json');
 const traits = readJson('data/gkniftyheads/trait-exposure.json');
 const sync = readJson('data/gkniftyheads/sync-status.json');
 const collectionHtml = read('wiki/gkniftyheads-nft-collection.html');
@@ -133,10 +135,32 @@ for (const trait of traits.variation_traits) {
   assert.equal(trait.exposure_supply, expected, `variation exposure for ${trait.trait} must be supply exposure`);
 }
 
-assert.equal(live.assets.length, 0, 'live asset rarity should not fake asset snapshots');
 assert.match(live.status, /atomicassets live asset count/i, 'live asset rarity status should identify counted mode');
 assert.match(live.note, /pre_baseline_missing_or_burned|first-scan delta/i, 'live asset data contract should identify first-scan missing/burned semantics');
 assert.equal(live.template_counts.length, allTemplates.length, 'live asset rarity should include per-template count summaries when counted');
+assert.ok(fs.existsSync(path.join(root, 'data/gkniftyheads/asset-state-cache.json')), 'asset snapshots require the real asset-state cache file');
+assert.match(assetState.source_urls.latest_created_assets, /atomicassets\/v1\/assets\?collection_name=gkniftyheads&sort=created&order=desc&limit=1000/, 'asset-state cache must declare latest-created source');
+assert.match(assetState.source_urls.recently_updated_live_assets, /atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=false&sort=updated&order=desc&limit=1000/, 'asset-state cache must declare updated-live source');
+assert.match(assetState.source_urls.recently_updated_burned_assets, /atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=true&sort=updated&order=desc&limit=1000/, 'asset-state cache must declare updated-burned source');
+assert.match(assetState.source_urls.template_assets_backfill, /template_id=\{template_id\}.*sort=template_mint/, 'asset-state cache must declare rotating template backfill source');
+if (live.assets.length > 0) {
+  assert.ok(assetState.assets.length > 0, 'live asset snapshots are allowed only when backed by real asset-state cache assets');
+  assert.equal(live.assets.length, assetState.assets.length, 'live asset rarity snapshots should mirror the real asset-state cache asset count');
+  assert.ok(survivingMintRanks.templates.length > 0, 'populated asset snapshots should produce surviving mint rank groups');
+  assert.ok(live.assets.every((asset) => asset.original_mint_number !== undefined), 'asset snapshots must expose permanent original_mint_number');
+  assert.ok(live.assets.filter((asset) => asset.burned).every((asset) => asset.surviving_mint_rank === null || asset.surviving_mint_rank === undefined), 'burned assets must not receive current surviving_mint_rank');
+}
+assert.ok(allTemplates.every((row) => Object.hasOwn(row, 'asset_state_status')), 'template rarity rows must expose asset_state_status');
+assert.ok(allTemplates.every((row) => row.live_supply_source === 'atomicassets_assets_count'), 'rarity maths must keep using AtomicAssets _count live supply');
+assert.ok(allTemplates.every((row) => row.live_supply_status === 'counted'), 'rarity rows should remain backed by counted live supply');
+for (const row of allTemplates.filter((entry) => entry.asset_state_status === 'asset_state_mismatch')) {
+  assert.match(row.asset_state_mismatch || '', /asset-state live supply .* differs from _count live supply/, 'asset-state mismatches must be recorded explicitly');
+  assert.notEqual(row.live_supply_from_asset_state, row.live_supply, 'mismatch rows should keep asset-state supply separate from _count live supply');
+}
+for (const error of assetState.errors || []) {
+  assert.ok(error.source_key || error.source, 'asset-state errors must surface the source key');
+  assert.ok(error.source_url, 'asset-state errors must surface the source URL');
+}
 assert.equal(sync.wax_get_info.used_for, 'future scan checkpoint metadata only');
 assert.match(sync.burn_tracking_status, /baseline pending/i, 'first burn scan must be a baseline, not fake history');
 

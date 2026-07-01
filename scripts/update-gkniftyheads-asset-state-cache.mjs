@@ -209,6 +209,7 @@ async function fetchAssetPages(sourceKey, sourceUrl, options, checkpoint) {
       }
     } catch (error) {
       errors.push({
+        source_key: sourceKey,
         source: sourceKey,
         source_url: url,
         error: String(error?.message || error),
