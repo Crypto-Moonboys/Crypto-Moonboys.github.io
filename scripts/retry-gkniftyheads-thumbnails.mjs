@@ -3,7 +3,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runGenerateGkniftyheadsRarity } from './generate-gkniftyheads-rarity.mjs';
+import {
+  prepareGkniftyheadsThumbnails,
+  runGenerateGkniftyheadsRarity,
+} from './generate-gkniftyheads-rarity.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -39,6 +42,10 @@ function printCoverage(rows) {
   return { total: imageRows.length, local: localRows.length, fallback: fallbackRows.length };
 }
 
+const cachedOnly = process.argv.includes('--cached-only');
+await prepareGkniftyheadsThumbnails(readRows(), ROOT, cachedOnly
+  ? { fetchMissing: false, secondPass: false }
+  : {});
 await runGenerateGkniftyheadsRarity(ROOT);
 const coverage = printCoverage(readRows());
 if (coverage.fallback > 0) {
