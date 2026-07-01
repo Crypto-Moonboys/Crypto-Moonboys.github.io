@@ -1,10 +1,10 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-01T16:51:19.555Z",
-  "total_templates": 0,
-  "ranked_templates": 0,
-  "utility_open_mint_templates": 0,
-  "unissued_templates": 0,
+  "generated_at": "2026-07-01T16:55:23.064Z",
+  "total_templates": 21,
+  "ranked_templates": 12,
+  "utility_open_mint_templates": 6,
+  "unissued_templates": 3,
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
