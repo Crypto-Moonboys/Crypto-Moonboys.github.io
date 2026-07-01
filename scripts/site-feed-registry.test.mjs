@@ -46,6 +46,28 @@ for (const [feedId, expected] of requiredFeeds) {
 const waxonedgeFeed = registry.feeds.find((entry) => entry.feed_id === 'waxonedge_bubbles');
 assert.ok(!waxonedgeFeed.output_files.includes('data/waxonedge/waxcash-bubbles-bootstrap.json'), 'WaxOnEdge registry must not claim static bootstrap output unless updater writes it');
 
+const gkniftyheadsFeed = registry.feeds.find((entry) => entry.feed_id === 'gkniftyheads_rarity');
+assert.match(
+  gkniftyheadsFeed.source_urls.live_count,
+  /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\/_count\?collection_name=gkniftyheads&template_id=\{template_id\}$/,
+  'GKniftyHEADS registry must keep the per-template AtomicAssets _count endpoint'
+);
+assert.match(
+  gkniftyheadsFeed.source_urls.latest_created_assets,
+  /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=gkniftyheads&sort=created&order=desc&limit=1000$/,
+  'GKniftyHEADS registry must declare latest-created asset delta scan endpoint'
+);
+assert.match(
+  gkniftyheadsFeed.source_urls.recently_updated_live_assets,
+  /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=false&sort=updated&order=desc&limit=1000$/,
+  'GKniftyHEADS registry must declare recently updated live asset scan endpoint'
+);
+assert.match(
+  gkniftyheadsFeed.source_urls.recently_updated_burned_assets,
+  /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=true&sort=updated&order=desc&limit=1000$/,
+  'GKniftyHEADS registry must declare recently updated burned asset scan endpoint'
+);
+
 const feedIds = registry.feeds.map((entry) => entry.feed_id);
 assert.equal(new Set(feedIds).size, feedIds.length, 'feed IDs must be unique');
 assert.notEqual(feedIds.filter((id) => id === 'gkniftyheads_rarity').length, feedIds.length, 'GKniftyHEADS must not be the only feed');
@@ -126,7 +148,18 @@ assert.ok(
 assert.match(workflow, /GK_USE_EXISTING_STAGED_CACHES/, 'central feed update should reuse staged GKniftyHEADS caches in the workflow');
 assert.match(workflow, /node scripts\/site-feed-registry\.test\.mjs/, 'workflow must audit feed registry rules');
 assert.match(workflow, /chore: update site data feeds/, 'workflow must use the required commit message');
-assert.match(workflow, /git add data/, 'workflow should commit changed feed data only');
+for (const generatedPath of [
+  'data/gkniftyheads/',
+  'data/gkniftyheads_rarity/',
+  'data/feed-status.json',
+  'wiki/gkniftyheads-nft-collection.html',
+  'img/gkniftyheads/thumbs/',
+  'img/gkniftyheads/thumbs/manifest.json',
+]) {
+  assert.match(workflow, new RegExp(generatedPath.replace(/[/.]/g, '\\$&')), `workflow must stage generated output ${generatedPath}`);
+}
+assert.match(workflow, /git add "\$\{GENERATED_PATHS\[@\]\}"/, 'workflow must use targeted generated output staging');
+assert.doesNotMatch(workflow, /git add data\s*(?:\n|$)/, 'workflow must not only stage data and miss generated pages/thumbs');
 
 const gk = read('data/gkniftyheads/template-rarity.json');
 assert.match(gk, /"price_used": false/, 'NFT rarity feed must not use price');
@@ -134,6 +167,7 @@ assert.doesNotMatch(gk, /floor price|market price|last sale/i, 'NFT rarity feed 
 
 const gkUpdater = read('scripts/update-gkniftyheads-rarity-feed.mjs');
 assert.match(gkUpdater, /const result = await runGenerateGkniftyheadsRarity\(\)/, 'GKniftyHEADS feed updater must await the async rarity generator');
+assert.match(gkUpdater, /latest-created, updated-live, and updated-burned asset endpoints are registered/, 'GKniftyHEADS feed status should mention registered asset-delta endpoints without changing current count maths');
 assert.ok(
   gkUpdater.indexOf('await runGenerateGkniftyheadsRarity()') < gkUpdater.indexOf('const status = createFeedStatus'),
   'GKniftyHEADS feed status must be created only after generated data writes complete'

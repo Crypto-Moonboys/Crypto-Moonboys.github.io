@@ -79,8 +79,8 @@
 
 <!-- GKNIFTYHEADS_RARITY_RANKING:BEGIN -->
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
-          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Collection Rarity Ranking</h2>
-          <p class="lore-paragraph">Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Template Rarity Ranking</h2>
+          <p class="lore-paragraph">This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name. Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
           <div class="wiki-stat-grid gk-rarity-stats" data-rarity-stat-grid="true">
             <div class="wiki-stat"><strong>143</strong><span>Templates scanned</span></div>
             <div class="wiki-stat"><strong>27</strong><span>Ranked limited templates</span></div>
@@ -90,18 +90,18 @@
             <div class="wiki-stat"><strong>None</strong><span>Fallback issued supply counted</span></div>
             <div class="wiki-stat"><strong>124463</strong><span>Live assets counted</span></div>
             <div class="wiki-stat"><strong>0</strong><span>Pre-baseline missing/burned</span></div>
-            <div class="wiki-stat"><strong>2026-07-01T12:04:29.748Z</strong><span>Last scan time</span></div>
+            <div class="wiki-stat"><strong>2026-07-01T13:29:11.001Z</strong><span>Last scan time</span></div>
             <div class="wiki-stat"><strong>Not scanned</strong><span>Scan block</span></div>
           </div>
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
-            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began.</p>
+            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.</p>
           </section>
 
           <section class="wiki-section gk-rarity-status">
             <h3>Last Scan Status</h3>
-            <p class="lore-paragraph"><strong>Live data status:</strong> atomicassets live asset count. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
+            <p class="lore-paragraph"><strong>Live data status:</strong> atomicassets live asset count. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">

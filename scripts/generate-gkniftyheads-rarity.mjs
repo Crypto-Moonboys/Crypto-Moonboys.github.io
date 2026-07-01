@@ -168,7 +168,7 @@ function isUsableImageValue(value) {
   return text && !/\.(mp4|mov|webm|avi|mkv)(?:$|[?#])/i.test(text);
 }
 
-function collectAtomicMediaValues(immutableData = {}) {
+export function collectAtomicMediaValues(immutableData = {}) {
   const primary = [];
   const secondary = [];
   const videos = [];
@@ -200,7 +200,7 @@ function collectAtomicMediaValues(immutableData = {}) {
   return imageValues.length ? imageValues : unique(videos);
 }
 
-function collectAtomicMediaFields(immutableData = {}) {
+export function collectAtomicMediaFields(immutableData = {}) {
   const fields = {};
   function walk(value, key = '') {
     if (Array.isArray(value)) {
@@ -220,7 +220,7 @@ function collectAtomicMediaFields(immutableData = {}) {
   return fields;
 }
 
-async function fetchJson(url, options = {}) {
+export async function fetchJson(url, options = {}) {
   async function requestJson(requestOptions = {}) {
     return new Promise((resolve, reject) => {
       const parsed = new URL(url);
@@ -644,17 +644,125 @@ function readCache(filePath) {
   return new Map(rows.map((row) => [Number(row.template_id), row]));
 }
 
+function normalizeText(value = '') {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function normalizedImageCid(urls = []) {
+  for (const url of urls) {
+    const cid = ipfsCidFromValue(url);
+    if (cid) return cid.toLowerCase();
+  }
+  return '';
+}
+
+function buildTemplateIntegrityAudit(localRows, root = ROOT) {
+  const cache = readCache(path.join(root, 'data', 'gkniftyheads', 'template-metadata-cache.json'));
+  const supplyCache = readCache(path.join(root, 'data', 'gkniftyheads', 'live-template-supply.json'));
+  const confirmed = [];
+  const missing = [];
+  const conflicts = [];
+  const included = [];
+  const excluded = [];
+  const duplicateMap = new Map();
+
+  for (const row of localRows) {
+    const cached = cache.get(row.template_id);
+    const supply = supplyCache.get(row.template_id) || {};
+    const localImageCid = normalizedImageCid(row.image_sources || (row.image_url ? [row.image_url] : []));
+    const atomicImageCid = normalizedImageCid(cached?.image_sources || (cached?.image_url ? [cached.image_url] : []));
+    const atomicName = String(cached?.immutable_data_name || cached?.title || '').trim();
+    const titleConflict = !!(cached?.exists_on_atomicassets && atomicName && row.title && normalizeText(row.title) !== normalizeText(atomicName));
+    const imageConflict = !!(cached?.exists_on_atomicassets && localImageCid && atomicImageCid && localImageCid !== atomicImageCid);
+    const record = {
+      template_id: row.template_id,
+      exists_on_atomicassets: !!(cached?.exists_on_atomicassets && cached?.metadata_status === 'ok'),
+      issued_supply: cached?.issued_supply ?? row.issued_supply,
+      max_supply: cached?.max_supply ?? row.max_supply,
+      schema_name: cached?.schema_name || cached?.schema || row.schema || '',
+      immutable_data_name: atomicName,
+      immutable_data_image_fields: cached?.immutable_data_image_fields || {},
+      image_url: cached?.image_url || row.image_url || '',
+      image_cid: atomicImageCid,
+      live_supply: supply.live_supply ?? null,
+      live_supply_status: supply.live_supply_status || 'missing',
+      atomichub_url: row.atomichub_url,
+      atomicassets_url: row.atomicassets_url,
+      local_wiki_page: row.url || cached?.local_wiki_page || '',
+      local_title: row.title,
+      title_conflict: titleConflict,
+      image_conflict: imageConflict,
+      error: cached?.error || null,
+    };
+
+    if (!record.exists_on_atomicassets) {
+      missing.push(record);
+      excluded.push({ template_id: row.template_id, reason: 'missing_from_atomicassets' });
+      continue;
+    }
+    confirmed.push(record);
+    if (titleConflict || imageConflict) conflicts.push(record);
+    if (imageConflict) {
+      excluded.push({ template_id: row.template_id, reason: 'local_page_image_conflict' });
+      continue;
+    }
+    included.push(row.template_id);
+    const groupKey = `${record.image_cid || 'no-image'}::${normalizeText(record.immutable_data_name || record.local_title)}`;
+    const group = duplicateMap.get(groupKey) || {
+      key: groupKey,
+      normalized_image_cid: record.image_cid,
+      normalized_name: normalizeText(record.immutable_data_name || record.local_title),
+      templates: [],
+      should_remain_separate_template_rows: true,
+      note: 'AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows.',
+    };
+    group.templates.push({
+      template_id: record.template_id,
+      issued_supply: record.issued_supply,
+      live_supply: record.live_supply,
+      exists_on_atomicassets: record.exists_on_atomicassets,
+      local_wiki_page: record.local_wiki_page,
+      atomichub_url: record.atomichub_url,
+    });
+    duplicateMap.set(groupKey, group);
+  }
+
+  const duplicateGroups = [...duplicateMap.values()].filter((group) => group.templates.length > 1);
+  return {
+    collection: COLLECTION,
+    generated_at: new Date().toISOString(),
+    total_local_templates: localRows.length,
+    total_atomicassets_confirmed_templates: confirmed.length,
+    missing_from_atomicassets: missing,
+    duplicate_title_image_groups: duplicateGroups,
+    local_page_conflicts: conflicts,
+    included_in_rarity: included,
+    excluded_from_rarity: excluded,
+  };
+}
+
+function applyTemplateIntegrity(rows, audit) {
+  const included = new Set(audit.included_in_rarity);
+  return rows.filter((row) => included.has(row.template_id));
+}
+
 function applyMetadataCache(rows, root = ROOT) {
   const cache = readCache(path.join(root, 'data', 'gkniftyheads', 'template-metadata-cache.json'));
   return rows.map((row) => {
     const cached = cache.get(row.template_id);
-    if (!cached) return row;
+    if (!cached || !cached.exists_on_atomicassets) return row;
     return {
       ...row,
+      title: String(cached.immutable_data_name || cached.title || row.title || '').trim(),
+      issued_supply: Number.isFinite(Number(cached.issued_supply)) ? Number(cached.issued_supply) : row.issued_supply,
+      max_supply: Number.isFinite(Number(cached.max_supply)) ? Number(cached.max_supply) : row.max_supply,
+      schema: cached.schema_name || cached.schema || row.schema,
+      immutable_data_name: String(cached.immutable_data_name || '').trim(),
       immutable_data_image_fields: cached.immutable_data_image_fields || row.immutable_data_image_fields || {},
       image_url: cached.image_url || row.image_url || '',
       image_sources: unique([...(cached.image_sources || []), ...(row.image_sources || [])]),
       metadata_status: cached.metadata_status || row.metadata_status,
+      exists_on_atomicassets: true,
       metadata_last_checked_at: cached.last_checked_at,
       atomicassets_image_url: cached.atomicassets_url || row.atomicassets_url,
     };
@@ -672,7 +780,7 @@ function applyLiveSupplyCache(rows, root = ROOT) {
       ...row,
       issued_supply: Number.isFinite(Number(cached.issued_supply)) ? Number(cached.issued_supply) : row.issued_supply,
       live_supply: Number(cached.live_supply),
-      live_supply_status: 'ok',
+      live_supply_status: 'counted',
       live_supply_source: 'atomicassets_assets_count',
       live_supply_source_url: cached.source_url,
       live_supply_checked_at: cached.last_checked_at,
@@ -837,8 +945,8 @@ export function buildRanking(rows) {
 }
 
 function buildStats(model) {
-  const counted = model.all.filter((row) => row.live_supply_status === 'counted');
-  const fallback = model.all.filter((row) => row.live_supply_status !== 'counted');
+  const counted = model.all.filter((row) => ['counted', 'ok'].includes(row.live_supply_status));
+  const fallback = model.all.filter((row) => !['counted', 'ok'].includes(row.live_supply_status));
   const liveStatus = counted.length === model.all.length && model.all.length > 0
     ? 'atomicassets live asset count'
     : counted.length > 0
@@ -950,17 +1058,18 @@ function buildRankingSection(model, stats, rawSection) {
   const variationExposureLabel = hasLiveCounts ? 'Variation Exposure' : 'Variation Exposure (Fallback)';
   const liveAssetsValue = hasLiveCounts ? stats.live_assets_counted : 'Not scanned';
   const fallbackSupplyValue = stats.fallback_issued_supply_counted || 'None';
+  const mintNumberCopy = 'Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.';
   const methodCopy = hasLiveCounts
-    ? 'The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began.'
-    : 'The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.';
+    ? `The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. ${mintNumberCopy}`
+    : `The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns. ${mintNumberCopy}`;
   const statusCopy = hasLiveCounts
-    ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
+    ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
     : '<strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.';
 
   return `${RARITY_BEGIN}
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
-          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Collection Rarity Ranking</h2>
-          <p class="lore-paragraph">Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Template Rarity Ranking</h2>
+          <p class="lore-paragraph">This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name. Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
           <div class="wiki-stat-grid gk-rarity-stats" data-rarity-stat-grid="true">
             ${statCard('Templates scanned', stats.templates_scanned)}
             ${statCard('Ranked limited templates', stats.ranked_limited_templates)}
@@ -1088,7 +1197,10 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
     || html.match(/        <section class="wiki-section">\s*<h2 id="all-nfts">All NFTs \/ Templates<\/h2>[\s\S]*?        <\/section>/i)?.[0];
   if (!oldSection) throw new Error('Could not locate raw template table section.');
 
-  let rows = extractRows(html, root);
+  const localRows = extractRows(html, root);
+  const integrityAudit = buildTemplateIntegrityAudit(localRows, root);
+  writeJson(path.join(root, 'data', 'gkniftyheads', 'template-integrity-audit.json'), integrityAudit);
+  let rows = applyTemplateIntegrity(localRows, integrityAudit);
   rows = applyMetadataCache(rows, root);
   rows = applyLiveSupplyCache(rows, root);
   rows = applyThumbnailCache(rows, root);
@@ -1118,8 +1230,8 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
     generated_at: stats.last_scan_time,
     status: stats.live_data_status,
     note: stats.live_assets_counted === null
-      ? 'Live asset count failed; using issued-supply fallback. original_mint and surviving_mint_rank remain pending until asset snapshots are available.'
-      : 'Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a first-scan delta, not confirmed burn history.',
+      ? 'Live asset count failed; using issued-supply fallback. original_mint_number and surviving_mint_rank remain pending until asset snapshots are available.'
+      : 'Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a current supply delta and first-scan baseline, not confirmed burn history. original_mint_number is permanent; surviving_mint_rank may be tracked separately among currently live/unburned NFTs.',
     template_counts: stats.live_assets_counted === null ? [] : model.all.map((row) => ({
       template_id: row.template_id,
       issued_supply: row.issued_supply,

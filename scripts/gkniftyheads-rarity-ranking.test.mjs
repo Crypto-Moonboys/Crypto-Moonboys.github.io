@@ -17,6 +17,7 @@ function read(relativePath) {
 }
 
 const rarity = readJson('data/gkniftyheads/template-rarity.json');
+const integrityAudit = readJson('data/gkniftyheads/template-integrity-audit.json');
 const live = readJson('data/gkniftyheads/live-asset-rarity.json');
 const traits = readJson('data/gkniftyheads/trait-exposure.json');
 const sync = readJson('data/gkniftyheads/sync-status.json');
@@ -35,6 +36,23 @@ function findByTemplateId(rows, templateId) {
 }
 
 assert.equal(rarity.collection, 'gkniftyheads');
+assert.equal(integrityAudit.collection, 'gkniftyheads', 'template integrity audit should be generated for GKniftyHEADS');
+assert.equal(integrityAudit.total_local_templates, allTemplates.length, 'integrity audit should account for the full local template set used by the rarity table');
+assert.equal(integrityAudit.total_atomicassets_confirmed_templates, allTemplates.length, 'every rarity table template must be confirmed by AtomicAssets');
+assert.deepEqual(integrityAudit.missing_from_atomicassets, [], 'no local-only template should enter the committed rarity dataset');
+assert.deepEqual(integrityAudit.excluded_from_rarity, [], 'the committed dataset should not include templates excluded by source-of-truth conflicts');
+assert.ok(allTemplates.every((row) => integrityAudit.included_in_rarity.includes(row.template_id)), 'ranking data must only include AtomicAssets-confirmed template IDs');
+for (const templateId of [776007, 776055, 776057]) {
+  assert.ok(integrityAudit.included_in_rarity.includes(templateId), `template ${templateId} must be individually checked against AtomicAssets`);
+  const auditRecord = [
+    ...integrityAudit.duplicate_title_image_groups.flatMap((group) => group.templates),
+    ...integrityAudit.local_page_conflicts,
+  ].find((row) => row.template_id === templateId);
+  assert.ok(
+    auditRecord || allTemplates.some((row) => row.template_id === templateId),
+    `template ${templateId} must not be trusted from local wiki data alone`,
+  );
+}
 assert.equal(rarity.ranking_formula.price_used, false, 'rarity score must not use price');
 assert.match(rarity.live_data_status, /atomicassets live asset count/i, 'live data status must identify AtomicAssets live asset counts when the cache is populated');
 assert.equal(rarity.stats.templates_scanned, allTemplates.length, 'stats must match the generated template set');
@@ -122,7 +140,18 @@ assert.equal(live.template_counts.length, allTemplates.length, 'live asset rarit
 assert.equal(sync.wax_get_info.used_for, 'future scan checkpoint metadata only');
 assert.match(sync.burn_tracking_status, /baseline pending/i, 'first burn scan must be a baseline, not fake history');
 
-assert.match(collectionHtml, /GKniftyHEADS Collection Rarity Ranking/);
+assert.match(collectionHtml, /GKniftyHEADS Template Rarity Ranking/);
+assert.match(collectionHtml, /separate AtomicAssets template IDs may share the same artwork\/name/, 'page copy should make clear this ranks templates, not unique artwork');
+assert.match(collectionHtml, /Original mint numbers never change/, 'page must explain that original mint numbers are permanent');
+assert.match(collectionHtml, /surviving mint rank/, 'page must explain surviving mint rank separately from original mint numbers');
+assert.match(collectionHtml, /pre-baseline missing\/burned, a current supply delta/, 'missing/burned wording must identify the first scan as a current supply delta');
+assert.doesNotMatch(
+  collectionHtml,
+  /mint numbers?\s+(?:move up|change|renumber|renumbered)|higher mints?\s+(?:move up|become lower|become mint)/i,
+  'page must not imply burns change original mint numbers'
+);
+assert.match(live.note, /original_mint_number is permanent/, 'live data note must use original_mint_number terminology');
+assert.match(live.note, /surviving_mint_rank may be tracked separately/, 'live data note must use surviving_mint_rank terminology');
 assert.match(collectionHtml, /Live rarity data unavailable\. Showing raw template list only\. This is not the final rarity ranking\./);
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-raw-fallback" data-rarity-fallback hidden>/);
 assert.match(collectionHtml, /GKNIFTYHEADS_RAW_TEMPLATE_TABLE:BEGIN/);
@@ -132,7 +161,7 @@ assert.match(collectionHtml, /<th>Variation Exposure<\/th>/, 'live-count mode ta
 assert.doesNotMatch(collectionHtml, /<th>Issued Supply Fallback<\/th>|Rarity Exposure \(Fallback\)|Variation Exposure \(Fallback\)/, 'live-count mode must not use fallback table labels');
 assert.match(collectionHtml, /Fallback issued supply counted/, 'fallback stat should be separated from live asset counts');
 assert.match(collectionHtml, /<strong>124463<\/strong><span>Live assets counted<\/span>/, 'live asset count should show the counted AtomicAssets total');
-assert.ok(collectionHtml.indexOf('GKniftyHEADS Collection Rarity Ranking') < collectionHtml.indexOf('All NFTs / Templates'), 'raw template table should only appear after the ranking fallback wrapper');
+assert.ok(collectionHtml.indexOf('GKniftyHEADS Template Rarity Ranking') < collectionHtml.indexOf('All NFTs / Templates'), 'raw template table should only appear after the ranking fallback wrapper');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-utility">[\s\S]*<tr data-rarity-filter="utility-open-mint">/, 'utility side table must render populated rows');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-unissued">[\s\S]*<tr data-rarity-filter="unissued">/, 'unissued side table must render populated rows');
 const rankedTableHead = collectionHtml.match(/<table class="wiki-table gk-rarity-table">[\s\S]*?<thead>([\s\S]*?)<\/thead>/)?.[1] || '';
