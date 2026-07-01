@@ -9,6 +9,7 @@ import {
   runGenerateGkniftyheadsRarity,
 } from './generate-gkniftyheads-rarity.mjs';
 import { updateGkniftyheadsLiveSupplyCache } from './update-gkniftyheads-live-supply-cache.mjs';
+import { updateGkniftyheadsTemplateMetadataCache } from './update-gkniftyheads-template-metadata-cache.mjs';
 
 assert.equal(parseAtomicAssetsCount({ data: '1' }), 1, 'AtomicAssets count parser must handle data as a string number');
 assert.equal(parseAtomicAssetsCount({ data: 1 }), 1, 'AtomicAssets count parser must handle data as a number');
@@ -57,6 +58,7 @@ function makeRoot() {
         image_url: 'https://ipfs.hivebp.io/ipfs/bafysharedfixture',
         image_sources: ['https://ipfs.hivebp.io/ipfs/bafysharedfixture'],
         immutable_data_image_fields: { img: 'bafysharedfixture' },
+        last_checked_at: new Date().toISOString(),
       },
       {
         template_id: 900002,
@@ -70,6 +72,7 @@ function makeRoot() {
         image_url: 'https://ipfs.hivebp.io/ipfs/bafysharedfixture',
         image_sources: ['https://ipfs.hivebp.io/ipfs/bafysharedfixture'],
         immutable_data_image_fields: { img: 'bafysharedfixture' },
+        last_checked_at: new Date().toISOString(),
       },
       {
         template_id: 900003,
@@ -83,6 +86,7 @@ function makeRoot() {
         image_url: 'https://ipfs.hivebp.io/ipfs/bafyunccappedfixture',
         image_sources: ['https://ipfs.hivebp.io/ipfs/bafyunccappedfixture'],
         immutable_data_image_fields: { img: 'bafyunccappedfixture' },
+        last_checked_at: new Date().toISOString(),
       },
       {
         template_id: 900004,
@@ -94,6 +98,81 @@ function makeRoot() {
   }, null, 2), 'utf8');
   return root;
 }
+
+function atomicTemplate(row, overrides = {}) {
+  return {
+    template_id: String(row.template_id),
+    issued_supply: String(overrides.issued_supply ?? row.issued_supply),
+    max_supply: String(overrides.max_supply ?? row.max_supply),
+    schema_name: overrides.schema_name || row.schema || 'gkniftyheads',
+    immutable_data: {
+      name: overrides.name || row.title,
+      img: overrides.img || `bafy${row.template_id}`,
+    },
+  };
+}
+
+const batchRoot = makeRoot();
+const batchRows = [
+  { template_id: 900001, title: 'Fixture Live Count', issued_supply: 10, max_supply: 10, schema: 'gkniftyheads', atomicassets_url: 'https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/900001', atomichub_url: '', url: '/wiki/gkniftyheads-fixture-900001.html' },
+  { template_id: 900002, title: 'Control Template', issued_supply: 20, max_supply: 20, schema: 'gkniftyheads', atomicassets_url: 'https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/900002', atomichub_url: '', url: '/wiki/gkniftyheads-control-900002.html' },
+];
+let batchCalls = 0;
+let singleCalls = 0;
+await updateGkniftyheadsTemplateMetadataCache(batchRoot, {
+  forceRefresh: true,
+  rows: batchRows,
+  batchSize: 100,
+  fetchTemplatesBatch: async (rows, url) => {
+    batchCalls += 1;
+    assert.match(url, /\/atomicassets\/v1\/templates\?collection_name=gkniftyheads&ids=900001,900002&limit=1000/, 'metadata updater must attempt ids= batch fetch before single-template fallback');
+    return { data: rows.map((row) => atomicTemplate(row)) };
+  },
+  fetchTemplate: async () => {
+    singleCalls += 1;
+    throw new Error('single-template fallback should not run after complete batch success');
+  },
+});
+let batchCache = JSON.parse(fs.readFileSync(path.join(batchRoot, 'data', 'gkniftyheads', 'template-metadata-cache.json'), 'utf8'));
+assert.equal(batchCalls, 1, 'batched template fetch should run once for the fixture batch');
+assert.equal(singleCalls, 0, 'single-template fetch should not run when ids= batch succeeds');
+assert.equal(batchCache.templates.find((row) => row.template_id === 900001).metadata_fetch_mode, 'batch_ids', 'successful batch rows should record batch_ids fetch mode');
+
+const fallbackBatchRoot = makeRoot();
+const callOrder = [];
+await updateGkniftyheadsTemplateMetadataCache(fallbackBatchRoot, {
+  forceRefresh: true,
+  rows: batchRows,
+  batchSize: 100,
+  concurrency: 1,
+  fetchTemplatesBatch: async () => {
+    callOrder.push('batch');
+    throw new Error('ids batching unsupported fixture');
+  },
+  fetchTemplate: async (row) => {
+    callOrder.push(`single:${row.template_id}`);
+    return { data: atomicTemplate(row) };
+  },
+});
+batchCache = JSON.parse(fs.readFileSync(path.join(fallbackBatchRoot, 'data', 'gkniftyheads', 'template-metadata-cache.json'), 'utf8'));
+assert.deepEqual(callOrder, ['batch', 'single:900001', 'single:900002'], 'single-template fallback should run after batched fetch fails');
+assert.equal(batchCache.templates.find((row) => row.template_id === 900001).metadata_fetch_mode, 'single_template_fallback', 'fallback rows should record single_template_fallback fetch mode');
+
+const cacheReuseRoot = makeRoot();
+let unexpectedFetch = false;
+const cacheReuseResult = await updateGkniftyheadsTemplateMetadataCache(cacheReuseRoot, {
+  rows: [batchRows[0]],
+  fetchTemplatesBatch: async () => {
+    unexpectedFetch = true;
+    throw new Error('fresh confirmed cache should not be batch-refetched');
+  },
+  fetchTemplate: async () => {
+    unexpectedFetch = true;
+    throw new Error('fresh confirmed cache should not be single-refetched');
+  },
+});
+assert.equal(unexpectedFetch, false, 'fresh confirmed template metadata should be reused without AtomicAssets calls');
+assert.equal(cacheReuseResult.skipped_fresh, 1, 'metadata updater should report fresh confirmed cache reuse');
 
 const root = makeRoot();
 let sawPartialWrite = false;
