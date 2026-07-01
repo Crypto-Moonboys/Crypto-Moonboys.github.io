@@ -8,6 +8,7 @@ This repository should track only live routes, wired runtime systems, and active
 
 - `README.md` is the top-level repo truth.
 - `robots.txt` stays at the repository root.
+- `docs/nft-rarity-methodology.md` explains the GKniftyHEADS and NoBallGames NFT rarity tracker methodology for collectors and developers.
 
 ## Active Runtime Areas
 

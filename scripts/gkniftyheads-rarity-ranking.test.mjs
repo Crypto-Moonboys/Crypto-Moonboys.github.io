@@ -7,6 +7,26 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
+const { buildRanking } = await import(`file://${path.join(root, 'scripts', 'generate-gkniftyheads-rarity.mjs').replace(/\\/g, '/')}`);
+
+function adaptiveFixture(overrides) {
+  return {
+    title: `Adaptive ${overrides.template_id}`,
+    template_id: overrides.template_id,
+    issued_supply: overrides.issued_supply ?? 100,
+    max_supply: overrides.max_supply ?? 100,
+    live_supply: overrides.live_supply ?? 100,
+    live_supply_status: 'counted',
+    live_supply_source: 'atomicassets_assets_count',
+    rarity_trait: overrides.rarity_trait ?? 'Not supplied',
+    variation_trait: overrides.variation_trait ?? 'Not supplied',
+    missing_or_burned_count: overrides.missing_or_burned_count ?? Math.max(0, (overrides.issued_supply ?? 100) - (overrides.live_supply ?? 100)),
+    pre_baseline_missing_or_burned: overrides.missing_or_burned_count ?? Math.max(0, (overrides.issued_supply ?? 100) - (overrides.live_supply ?? 100)),
+    url: `/wiki/adaptive-${overrides.template_id}.html`,
+    atomicassets_url: '',
+    atomichub_url: '',
+  };
+}
 
 function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
@@ -27,6 +47,31 @@ const collectionHtml = read('wiki/gkniftyheads-nft-collection.html');
 const clientJs = read('js/gkniftyheads-rarity.js');
 const wikiCss = read('css/wiki.css');
 const generatorJs = read('scripts/generate-gkniftyheads-rarity.mjs');
+
+const adaptiveModel = buildRanking([
+  adaptiveFixture({ template_id: 900001, live_supply: 100, rarity_trait: 'Alpha', variation_trait: 'Red' }),
+  adaptiveFixture({ template_id: 900002, live_supply: 90, rarity_trait: 'Beta', variation_trait: 'Not supplied' }),
+  adaptiveFixture({ template_id: 900003, live_supply: 80, rarity_trait: 'Not supplied', variation_trait: 'Blue' }),
+  adaptiveFixture({ template_id: 900004, issued_supply: 100, live_supply: 10, rarity_trait: 'Not supplied', variation_trait: 'Not supplied' }),
+  adaptiveFixture({ template_id: 900005, issued_supply: 10, max_supply: 100, live_supply: 10, rarity_trait: 'Not supplied', variation_trait: 'Not supplied', missing_or_burned_count: 0 }),
+]);
+const adaptiveById = new Map(adaptiveModel.ranked.map((row) => [row.template_id, row]));
+assert.deepEqual(adaptiveById.get(900001).score_weights_used, { supplyScore: 50, rarityScore: 25, variationScore: 20, burnScore: 5 }, 'full meaningful metadata should use 50/25/20/5');
+assert.deepEqual(adaptiveById.get(900002).score_weights_used, { supplyScore: 70, rarityScore: 25, variationScore: 0, burnScore: 5 }, 'missing variation should redistribute 20 points to supply');
+assert.deepEqual(adaptiveById.get(900003).score_weights_used, { supplyScore: 75, rarityScore: 0, variationScore: 20, burnScore: 5 }, 'missing rarity should redistribute 25 points to supply');
+assert.deepEqual(adaptiveById.get(900004).score_weights_used, { supplyScore: 95, rarityScore: 0, variationScore: 0, burnScore: 5 }, 'missing rarity and variation should produce 95/0/0/5');
+assert.equal(adaptiveById.get(900004).rarity_trait_scoring_enabled, false, 'Not supplied is not scored as a rare rarity trait');
+assert.equal(adaptiveById.get(900004).variation_trait_scoring_enabled, false, 'Not supplied is not scored as a rare variation trait');
+assert.ok(adaptiveById.get(900004).burn_score_component > adaptiveById.get(900005).burn_score_component, 'thin metadata with burns should receive a higher burn component than equivalent no-burn thin metadata');
+assert.ok(adaptiveById.get(900004).final_score > adaptiveById.get(900005).final_score, 'thin metadata with burns should rank higher than equivalent no-burn thin metadata');
+
+const repeatedTraitModel = buildRanking([
+  adaptiveFixture({ template_id: 901001, live_supply: 3, rarity_trait: 'Same', variation_trait: 'Same' }),
+  adaptiveFixture({ template_id: 901002, live_supply: 4, rarity_trait: 'Same', variation_trait: 'Same' }),
+]);
+assert.ok(repeatedTraitModel.ranked.every((row) => row.rarity_trait_scoring_enabled === false), 'same rarity trait repeated across all ranked templates should disable rarity scoring');
+assert.ok(repeatedTraitModel.ranked.every((row) => row.variation_trait_scoring_enabled === false), 'same variation trait repeated across all ranked templates should disable variation scoring');
+assert.ok(repeatedTraitModel.ranked.every((row) => row.score_weights_used.supplyScore === 95), 'repeated trait layers should reassign trait weight to supply');
 
 const ranked = rarity.ranked_templates;
 const utility = rarity.utility_open_mint_templates;
@@ -56,6 +101,14 @@ for (const templateId of [776007, 776055, 776057]) {
   );
 }
 assert.equal(rarity.ranking_formula.price_used, false, 'rarity score must not use price');
+assert.equal(rarity.ranking_formula.market_data_used, false, 'rarity score must not use market data');
+assert.equal(rarity.ranking_formula.adaptive_weighting, true, 'GKniftyHEADS should use adaptive weighted scoring');
+assert.deepEqual(rarity.ranking_formula.base_score_weights, {
+  live_supply_scarcity: 50,
+  rarity_trait_or_name_exposure_scarcity: 25,
+  variation_trait_or_metadata_exposure_scarcity: 20,
+  missing_burned_supply_bonus: 5,
+}, 'GKniftyHEADS base adaptive score weights must stay documented in JSON');
 assert.match(rarity.live_data_status, /atomicassets live asset count/i, 'live data status must identify AtomicAssets live asset counts when the cache is populated');
 assert.equal(rarity.stats.templates_scanned, allTemplates.length, 'stats must match the generated template set');
 assert.equal(typeof rarity.stats.live_assets_counted, 'number', 'live-count mode should expose real counted live assets');
@@ -73,6 +126,14 @@ assert.ok(allTemplates.every((row) => Array.isArray(row.image_sources)), 'templa
 assert.ok(allTemplates.every((row) => row.image_sources.length > 0 || row.image_url === ''), 'rows with image_url should carry image source candidates');
 assert.ok(allTemplates.every((row) => typeof row.thumbnail_url === 'string'), 'template rarity data should expose thumbnail_url for every generated row');
 assert.ok(allTemplates.every((row) => row.image_url === '' || row.thumbnail_url), 'rows with source images should have a table image source');
+assert.ok(ranked.every((row) => row.price_used === false), 'ranked rows must explicitly exclude price');
+assert.ok(ranked.every((row) => row.market_data_used === false), 'ranked rows must explicitly exclude market data');
+assert.ok(ranked.every((row) => row.rarity_trait_scoring_enabled === true), 'current meaningful GKniftyHEADS rarity traits should remain scored');
+assert.ok(ranked.every((row) => row.variation_trait_scoring_enabled === true), 'current meaningful GKniftyHEADS variation traits should remain scored');
+assert.ok(ranked.every((row) => row.score_weights_used?.supplyScore === 50 && row.score_weights_used?.rarityScore === 25 && row.score_weights_used?.variationScore === 20 && row.score_weights_used?.burnScore === 5), 'meaningful GKniftyHEADS traits should preserve 50/25/20/5 weights');
+assert.ok(ranked.every((row) => typeof row.supply_score_component === 'number' && typeof row.rarity_score_component === 'number' && typeof row.variation_score_component === 'number' && typeof row.burn_score_component === 'number'), 'ranked rows must expose adaptive score components');
+assert.ok(ranked.every((row) => row.rarity_trait !== 'Not supplied' || row.rarity_trait_scoring_enabled === false), 'Not supplied rarity must never be scored as rare');
+assert.ok(ranked.every((row) => row.variation_trait !== 'Not supplied' || row.variation_trait_scoring_enabled === false), 'Not supplied variation must never be scored as rare');
 assert.ok(allTemplates.some((row) => row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/')), 'generated rows should use local thumbnail URLs where available');
 assert.ok(allTemplates.every((row) => !row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/') || row.thumbnail_url.endsWith(`${row.template_id}.webp`)), 'local thumbnail URLs should use deterministic template_id paths');
 assert.ok(allTemplates.every((row) => !row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/') || fs.existsSync(path.join(root, row.thumbnail_url.replace(/^\//, '')))), 'committed local thumbnail URLs must point to real files');
@@ -138,6 +199,10 @@ for (const trait of traits.variation_traits) {
 assert.match(live.status, /atomicassets live asset count/i, 'live asset rarity status should identify counted mode');
 assert.match(live.note, /pre_baseline_missing_or_burned|first-scan delta/i, 'live asset data contract should identify first-scan missing/burned semantics');
 assert.equal(live.template_counts.length, allTemplates.length, 'live asset rarity should include per-template count summaries when counted');
+assert.equal(live.asset_ranking_formula.asset_ranking_enabled, true, 'live asset rarity should expose Asset Version Ranking formula');
+assert.equal(live.asset_ranking_formula.burned_assets_excluded, true, 'Asset Version Ranking must exclude burned assets');
+assert.equal(live.asset_ranking_formula.price_used, false, 'Asset Version Ranking must exclude price');
+assert.equal(live.asset_ranking_formula.market_data_used, false, 'Asset Version Ranking must exclude market data');
 assert.ok(fs.existsSync(path.join(root, 'data/gkniftyheads/asset-state-cache.json')), 'asset snapshots require the real asset-state cache file');
 assert.match(assetState.source_urls.latest_created_assets, /atomicassets\/v1\/assets\?collection_name=gkniftyheads&sort=created&order=desc&limit=1000/, 'asset-state cache must declare latest-created source');
 assert.match(assetState.source_urls.recently_updated_live_assets, /atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=false&sort=updated&order=desc&limit=1000/, 'asset-state cache must declare updated-live source');
@@ -145,10 +210,23 @@ assert.match(assetState.source_urls.recently_updated_burned_assets, /atomicasset
 assert.match(assetState.source_urls.template_assets_backfill, /template_id=\{template_id\}.*sort=template_mint/, 'asset-state cache must declare rotating template backfill source');
 if (live.assets.length > 0) {
   assert.ok(assetState.assets.length > 0, 'live asset snapshots are allowed only when backed by real asset-state cache assets');
-  assert.equal(live.assets.length, assetState.assets.length, 'live asset rarity snapshots should mirror the real asset-state cache asset count');
+  assert.ok(live.assets.length <= assetState.assets.length, 'Asset Version Ranking should be sourced from the real asset-state cache and may exclude burned/unscored assets');
   assert.ok(survivingMintRanks.templates.length > 0, 'populated asset snapshots should produce surviving mint rank groups');
   assert.ok(live.assets.every((asset) => asset.original_mint_number !== undefined), 'asset snapshots must expose permanent original_mint_number');
-  assert.ok(live.assets.filter((asset) => asset.burned).every((asset) => asset.surviving_mint_rank === null || asset.surviving_mint_rank === undefined), 'burned assets must not receive current surviving_mint_rank');
+  assert.ok(live.assets.every((asset) => asset.burned === false), 'burned assets must be excluded from Asset Version Ranking');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.asset_rank)), 'Asset Version rows must expose asset_rank');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.asset_final_score)), 'Asset Version rows must expose asset_final_score');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.template_final_score)), 'Asset Version rows must expose template_final_score');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.original_mint_score_component)), 'Asset Version rows must expose original mint score component');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.surviving_mint_rank_score_component)), 'Asset Version rows must expose surviving mint rank score component');
+  for (let index = 1; index < live.assets.length; index += 1) {
+    const previous = live.assets[index - 1];
+    const current = live.assets[index];
+    assert.ok(
+      previous.asset_final_score >= current.asset_final_score,
+      'Asset Version Ranking should sort by asset_final_score descending',
+    );
+  }
 }
 assert.ok(allTemplates.every((row) => Object.hasOwn(row, 'asset_state_status')), 'template rarity rows must expose asset_state_status');
 assert.ok(allTemplates.every((row) => row.live_supply_source === 'atomicassets_assets_count'), 'rarity maths must keep using AtomicAssets _count live supply');
@@ -165,6 +243,8 @@ assert.equal(sync.wax_get_info.used_for, 'future scan checkpoint metadata only')
 assert.match(sync.burn_tracking_status, /baseline pending/i, 'first burn scan must be a baseline, not fake history');
 
 assert.match(collectionHtml, /GKniftyHEADS Template Rarity Ranking/);
+assert.match(collectionHtml, /Asset Version Ranking/, 'page should render the scored Asset Version Ranking section');
+assert.match(collectionHtml, /Template Rarity Ranking scores the edition\/template\. Asset Version Ranking scores exact live NFTs/, 'page should explain the two ranking layers');
 assert.match(collectionHtml, /separate AtomicAssets template IDs may share the same artwork\/name/, 'page copy should make clear this ranks templates, not unique artwork');
 assert.match(collectionHtml, /Original mint numbers never change/, 'page must explain that original mint numbers are permanent');
 assert.match(collectionHtml, /surviving mint rank/, 'page must explain surviving mint rank separately from original mint numbers');
