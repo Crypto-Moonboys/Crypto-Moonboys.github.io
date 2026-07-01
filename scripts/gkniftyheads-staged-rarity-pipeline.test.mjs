@@ -299,6 +299,7 @@ await updateGkniftyheadsAssetStateCache(root, {
 assetCache = JSON.parse(fs.readFileSync(path.join(root, 'data', 'gkniftyheads', 'asset-state-cache.json'), 'utf8'));
 assert.equal(assetCache.assets.some((row) => row.asset_id === 'a9'), true, 'failed AtomicAssets delta scan should preserve previous good cache assets');
 assert.equal(assetCache.errors.some((row) => /fixture AtomicAssets outage/.test(row.error)), true, 'failed delta scan should record the source error');
+assert.ok(assetCache.errors.every((row) => row.source_key && row.source_url), 'failed delta scans should record source key and URL for diagnosis');
 
 await runGenerateGkniftyheadsRarity(root);
 const liveHtml = fs.readFileSync(path.join(root, 'wiki', 'gkniftyheads-nft-collection.html'), 'utf8');
