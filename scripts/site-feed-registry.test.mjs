@@ -25,22 +25,26 @@ assert.ok(Array.isArray(registry.feeds), 'feed registry must contain a feeds arr
 assert.ok(registry.feeds.length >= 4, 'registry must include more than only GKniftyHEADS');
 
 const requiredFeeds = new Map([
-  ['gkniftyheads_rarity', '/wiki/gkniftyheads-nft-collection.html'],
-  ['waxonedge_bubbles', '/waxonedge.html'],
-  ['waxcash_analytics', '/waxcash.html'],
-  ['wuffi_token_analytics', '/wiki/wuffi.html'],
+  ['gkniftyheads_rarity', { page: '/wiki/gkniftyheads-nft-collection.html', mode: 'scheduled_snapshot_primary' }],
+  ['waxonedge_bubbles', { page: '/waxonedge.html', mode: 'live_primary_static_fallback' }],
+  ['waxcash_analytics', { page: '/waxcash.html', mode: 'live_primary_static_fallback' }],
+  ['wuffi_token_analytics', { page: '/wiki/wuffi.html', mode: 'live_primary_static_fallback' }],
 ]);
 
-for (const [feedId, pagePath] of requiredFeeds) {
+for (const [feedId, expected] of requiredFeeds) {
   const feed = registry.feeds.find((entry) => entry.feed_id === feedId);
   assert.ok(feed, `${feedId} must exist in feed registry`);
   assert.equal(feed.enabled, true, `${feedId} should be enabled`);
-  assert.ok(feed.page_paths.includes(pagePath), `${feedId} should affect ${pagePath}`);
+  assert.equal(feed.feed_mode, expected.mode, `${feedId} must declare the expected feed mode`);
+  assert.ok(feed.page_paths.includes(expected.page), `${feedId} should affect ${expected.page}`);
   assert.ok(feed.updater && exists(feed.updater), `${feedId} updater must exist`);
   assert.ok(Array.isArray(feed.output_files) && feed.output_files.length > 0, `${feedId} must declare output files`);
   assert.ok(feed.stale_after_hours > 0, `${feedId} must declare stale_after_hours`);
   assert.ok(feed.fallback_behavior, `${feedId} must declare fallback behavior`);
 }
+
+const waxonedgeFeed = registry.feeds.find((entry) => entry.feed_id === 'waxonedge_bubbles');
+assert.ok(!waxonedgeFeed.output_files.includes('data/waxonedge/waxcash-bubbles-bootstrap.json'), 'WaxOnEdge registry must not claim static bootstrap output unless updater writes it');
 
 const feedIds = registry.feeds.map((entry) => entry.feed_id);
 assert.equal(new Set(feedIds).size, feedIds.length, 'feed IDs must be unique');
@@ -49,6 +53,13 @@ assert.notEqual(feedIds.filter((id) => id === 'gkniftyheads_rarity').length, fee
 const mainScript = read('scripts/update-site-feeds.mjs');
 assert.match(mainScript, /data\/feed-registry\.json|loadRegistry/, 'main updater must read the central registry');
 assert.match(mainScript, /writeAllFeedStatus/, 'main updater must write aggregate feed status');
+
+const utils = read('scripts/site-feed-utils.mjs');
+assert.match(utils, /AbortController/, 'feed fetches must use AbortController timeouts');
+assert.match(utils, /DEFAULT_FEED_FETCH_TIMEOUT_MS/, 'feed fetch timeout must be centrally configurable');
+assert.match(utils, /source_updated_at/, 'feed status must separate source_updated_at from checked_at');
+assert.match(utils, /source_age_minutes/, 'feed status must expose source_age_minutes');
+assert.match(utils, /last_successful_check/, 'feed status must expose last_successful_check');
 
 for (const script of [
   'scripts/update-gkniftyheads-rarity-feed.mjs',
@@ -78,11 +89,35 @@ const statusClient = read('js/site-feed-status.js');
 assert.match(statusClient, /\/data\/feed-status\.json/, 'status client must read aggregate feed status');
 assert.match(statusClient, /is-stale/, 'status client must expose stale state');
 assert.match(statusClient, /is-error/, 'status client must expose error state');
+assert.doesNotMatch(statusClient, /document\.write|location\.href|location\.replace|preventDefault/, 'status client must only update badge text/classes and never block rendering');
+
+const waxonedgeHtml = read('waxonedge.html');
+const waxonedgeJs = read('js/waxonedge-bubbles-v2.js');
+assert.match(waxonedgeHtml, /\/js\/waxonedge-bubbles-v2\.js/, 'waxonedge.html must still load live bubble runtime');
+assert.match(waxonedgeJs, /\/api\/waxonedge\/waxcash-bubbles-lite/, 'WaxOnEdge runtime must still use live bubbles API');
+assert.match(waxonedgeJs, /\/api\/waxonedge\/live\/stream|LIVE_POLL_MS|startLiveUpdates/, 'WaxOnEdge runtime must keep SSE or polling live updates');
+assert.match(waxonedgeJs, /\/api\/waxonedge\/indexer-health/, 'WaxOnEdge runtime must keep authoritative indexer health route');
+assert.doesNotMatch(waxonedgeJs, /BOOTSTRAP_API\s*=\s*['"]\/data\/waxonedge_bubbles/, 'WaxOnEdge runtime must not prefer daily snapshot data over live API paths');
+
+const waxcashHtml = read('waxcash.html');
+const waxcashJs = read('js/waxcash-analytics.js');
+assert.match(waxcashHtml, /\/js\/waxcash-analytics\.js/, 'waxcash.html must still load runtime analytics client');
+assert.match(waxcashJs, /\/api\/waxonedge\/waxcash-analytics/, 'WAXCASH runtime must still fetch live analytics API');
+assert.match(waxcashHtml, /alcor\.exchange\/charting_library/, 'WAXCASH must keep direct Alcor TradingView chart loading');
+assert.doesNotMatch(waxcashJs, /\/data\/waxcash_analytics/, 'WAXCASH runtime must not use daily snapshot JSON as live truth');
+
+const wuffiHtml = read('wiki/wuffi.html');
+const wuffiJs = read('js/token-analytics-page.js');
+assert.match(wuffiHtml, /\/js\/token-analytics-page\.js/, 'WUFFI page must still load runtime token analytics client');
+assert.match(wuffiJs, /\/api\/waxonedge\/token-page\/wuffi\/WUF/, 'WUFFI runtime must still fetch live token-page API');
+assert.match(wuffiJs, /wax\.alcor\.exchange\/api\/v2\/swap\/candles/, 'WUFFI must keep direct Alcor WUF/WAX candle feed');
+assert.doesNotMatch(wuffiJs, /\/data\/wuffi_token_analytics/, 'WUFFI runtime must not use daily snapshot JSON as live truth');
 
 const workflow = read('.github/workflows/update-site-feeds.yml');
 assert.match(workflow, /schedule:/, 'feed workflow must run on schedule');
 assert.match(workflow, /workflow_dispatch:/, 'feed workflow must support manual dispatch');
 assert.match(workflow, /node scripts\/update-site-feeds\.mjs/, 'workflow must run central updater');
+assert.match(workflow, /node scripts\/site-feed-registry\.test\.mjs/, 'workflow must audit feed registry rules');
 assert.match(workflow, /chore: update site data feeds/, 'workflow must use the required commit message');
 assert.match(workflow, /git add data/, 'workflow should commit changed feed data only');
 

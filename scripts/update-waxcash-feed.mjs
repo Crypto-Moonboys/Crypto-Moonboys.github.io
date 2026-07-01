@@ -5,6 +5,7 @@ import {
   fetchJson,
   findFeed,
   preserveOrWrite,
+  sourceUpdatedAt,
   summarizePayload,
   writeFeedStatus,
 } from './site-feed-utils.mjs';
@@ -23,7 +24,8 @@ export async function updateWaxcashFeed() {
   }
   const status = createFeedStatus(feed, {
     status: payload ? 'ok' : 'error',
-    last_successful_update: payload ? new Date().toISOString() : null,
+    last_successful_check: payload ? new Date().toISOString() : null,
+    source_updated_at: sourceUpdatedAt(payload),
     last_error: errorMessage,
     notes: [
       'Uses the existing /api/waxonedge/waxcash-analytics page contract.',

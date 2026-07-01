@@ -7,6 +7,7 @@ export const ROOT = path.resolve(__dirname, '..');
 export const FEED_REGISTRY_PATH = path.join(ROOT, 'data', 'feed-registry.json');
 export const FEED_STATUS_PATH = path.join(ROOT, 'data', 'feed-status.json');
 export const DEFAULT_SITE_FEED_BASE_URL = process.env.SITE_FEED_BASE_URL || 'https://cryptomoonboys.com';
+export const DEFAULT_FEED_FETCH_TIMEOUT_MS = Number(process.env.SITE_FEED_FETCH_TIMEOUT_MS || 15000);
 
 export function readJson(filePath, fallback = null) {
   try {
@@ -48,10 +49,13 @@ export function endpointUrl(endpoint, baseUrl = DEFAULT_SITE_FEED_BASE_URL) {
 
 export async function fetchJson(endpoint, options = {}) {
   const url = endpointUrl(endpoint, options.baseUrl);
+  const timeoutMs = Number(options.timeoutMs || DEFAULT_FEED_FETCH_TIMEOUT_MS);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error(`Feed fetch timeout after ${timeoutMs}ms`)), timeoutMs);
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },
-    signal: options.signal,
-  });
+    signal: options.signal || controller.signal,
+  }).finally(() => clearTimeout(timer));
   if (!response.ok) throw new Error(`${url} failed: HTTP ${response.status}`);
   return response.json();
 }
@@ -68,20 +72,27 @@ export function preserveOrWrite(relativePath, value) {
 
 export function createFeedStatus(feed, partial = {}) {
   const now = partial.checked_at || new Date().toISOString();
-  const lastSuccessfulUpdate = partial.last_successful_update || null;
+  const sourceUpdatedAt = partial.source_updated_at || null;
+  const lastSuccessfulCheck = partial.last_successful_check || (partial.status === 'ok' ? now : null);
+  const sourceAgeMinutes = sourceUpdatedAt && Number.isFinite(Date.parse(sourceUpdatedAt))
+    ? Math.max(0, Math.round((Date.now() - Date.parse(sourceUpdatedAt)) / 60000))
+    : null;
   const staleAfterHours = Number(feed.stale_after_hours || 24);
   const stale = partial.status === 'error'
-    || !lastSuccessfulUpdate
-    || (Date.now() - Date.parse(lastSuccessfulUpdate)) > staleAfterHours * 60 * 60 * 1000;
+    || (sourceAgeMinutes != null && sourceAgeMinutes > staleAfterHours * 60);
   return {
     feed_id: feed.feed_id,
+    feed_mode: feed.feed_mode || 'scheduled_snapshot_primary',
     page_paths: feed.page_paths || [],
     output_files: feed.output_files || [],
     status: partial.status || (stale ? 'stale' : 'ok'),
     stale,
     stale_after_hours: staleAfterHours,
     checked_at: now,
-    last_successful_update: lastSuccessfulUpdate,
+    last_successful_check: lastSuccessfulCheck,
+    last_successful_update: partial.last_successful_update || sourceUpdatedAt || lastSuccessfulCheck,
+    source_updated_at: sourceUpdatedAt,
+    source_age_minutes: sourceAgeMinutes,
     last_error: partial.last_error || null,
     fallback_behavior: feed.fallback_behavior || 'preserve previous data',
     notes: partial.notes || [],
@@ -117,4 +128,9 @@ export function summarizePayload(payload) {
     token_count: Array.isArray(data.tokens) ? data.tokens.length : null,
     pair_count: Array.isArray(data.pairs) ? data.pairs.length : null,
   };
+}
+
+export function sourceUpdatedAt(payload) {
+  const summary = summarizePayload(payload);
+  return summary.updated_at || summary.generated_at || null;
 }

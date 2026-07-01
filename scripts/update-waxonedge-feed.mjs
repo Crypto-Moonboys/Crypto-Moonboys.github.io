@@ -5,6 +5,7 @@ import {
   fetchJson,
   findFeed,
   preserveOrWrite,
+  sourceUpdatedAt,
   summarizePayload,
   writeFeedStatus,
 } from './site-feed-utils.mjs';
@@ -33,7 +34,8 @@ export async function updateWaxonedgeFeed() {
   }
   const status = createFeedStatus(feed, {
     status: success ? 'ok' : 'error',
-    last_successful_update: success ? new Date().toISOString() : null,
+    last_successful_check: success ? new Date().toISOString() : null,
+    source_updated_at: sourceUpdatedAt(lite) || sourceUpdatedAt(health),
     last_error: errors.length ? errors.join('; ') : null,
     notes: [
       'Uses existing WaxOnEdge Worker endpoints and preserves static bootstrap data on failure.',

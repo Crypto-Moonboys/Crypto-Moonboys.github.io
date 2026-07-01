@@ -3,6 +3,7 @@
   "feeds": [
     {
       "feed_id": "gkniftyheads_rarity",
+      "feed_mode": "scheduled_snapshot_primary",
       "page_paths": ["/wiki/gkniftyheads-nft-collection.html"],
       "source_type": "atomicassets_and_local_wiki_fallback",
       "source_urls": {
@@ -30,6 +31,7 @@
     },
     {
       "feed_id": "waxonedge_bubbles",
+      "feed_mode": "live_primary_static_fallback",
       "page_paths": ["/waxonedge.html"],
       "source_type": "existing_waxonedge_worker_api",
       "source_urls": {
@@ -38,7 +40,6 @@
         "static_bootstrap": "/data/waxonedge/waxcash-bubbles-bootstrap.json"
       },
       "output_files": [
-        "data/waxonedge/waxcash-bubbles-bootstrap.json",
         "data/waxonedge_bubbles/sync-status.json",
         "data/waxonedge_bubbles/waxcash-bubbles-lite.json",
         "data/waxonedge_bubbles/indexer-health.json"
@@ -53,6 +54,7 @@
     },
     {
       "feed_id": "waxcash_analytics",
+      "feed_mode": "live_primary_static_fallback",
       "page_paths": ["/waxcash.html"],
       "source_type": "existing_waxonedge_worker_api",
       "source_urls": {
@@ -72,6 +74,7 @@
     },
     {
       "feed_id": "wuffi_token_analytics",
+      "feed_mode": "live_primary_static_fallback",
       "page_paths": ["/wiki/wuffi.html"],
       "source_type": "existing_waxonedge_worker_api_and_alcor_chart",
       "source_urls": {

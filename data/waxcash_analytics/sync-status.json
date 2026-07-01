@@ -1,5 +1,6 @@
 {
   "feed_id": "waxcash_analytics",
+  "feed_mode": "live_primary_static_fallback",
   "page_paths": [
     "/waxcash.html"
   ],
@@ -10,8 +11,11 @@
   "status": "error",
   "stale": true,
   "stale_after_hours": 30,
-  "checked_at": "2026-06-30T23:53:04.708Z",
+  "checked_at": "2026-07-01T00:10:50.568Z",
+  "last_successful_check": null,
   "last_successful_update": null,
+  "source_updated_at": null,
+  "source_age_minutes": null,
   "last_error": "fetch failed",
   "fallback_behavior": "preserve previous analytics JSON and show stale/error status if Worker data is unavailable",
   "notes": [

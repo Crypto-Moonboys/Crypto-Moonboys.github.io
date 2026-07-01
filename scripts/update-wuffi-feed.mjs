@@ -5,6 +5,7 @@ import {
   fetchJson,
   findFeed,
   preserveOrWrite,
+  sourceUpdatedAt,
   summarizePayload,
   writeFeedStatus,
 } from './site-feed-utils.mjs';
@@ -30,9 +31,15 @@ export async function updateWuffiFeed() {
   ]);
   const successes = captures.filter((item) => item.ok);
   const errors = captures.filter((item) => !item.ok).map((item) => `${item.key}: ${item.error}`);
+  const newestSourceUpdate = successes
+    .map((item) => sourceUpdatedAt(item.payload))
+    .filter(Boolean)
+    .sort()
+    .pop() || null;
   const status = createFeedStatus(feed, {
     status: successes.length ? 'ok' : 'error',
-    last_successful_update: successes.length ? new Date().toISOString() : null,
+    last_successful_check: successes.length ? new Date().toISOString() : null,
+    source_updated_at: newestSourceUpdate,
     last_error: errors.length ? errors.join('; ') : null,
     notes: [
       'Uses existing WUFFI token analytics Worker contract; chart candles remain direct Alcor runtime data.',

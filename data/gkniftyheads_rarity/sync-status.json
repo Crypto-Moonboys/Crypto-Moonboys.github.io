@@ -1,5 +1,6 @@
 {
   "feed_id": "gkniftyheads_rarity",
+  "feed_mode": "scheduled_snapshot_primary",
   "page_paths": [
     "/wiki/gkniftyheads-nft-collection.html"
   ],
@@ -15,8 +16,11 @@
   "status": "ok",
   "stale": false,
   "stale_after_hours": 30,
-  "checked_at": "2026-06-30T23:53:04.653Z",
-  "last_successful_update": "2026-06-30T23:53:04.653Z",
+  "checked_at": "2026-07-01T00:10:50.555Z",
+  "last_successful_check": "2026-07-01T00:10:50.555Z",
+  "last_successful_update": "2026-07-01T00:10:50.472Z",
+  "source_updated_at": "2026-07-01T00:10:50.472Z",
+  "source_age_minutes": 0,
   "last_error": "WAX get_info checkpoint unavailable: fetch failed",
   "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
   "notes": [

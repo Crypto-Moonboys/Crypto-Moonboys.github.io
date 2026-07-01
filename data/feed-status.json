@@ -1,8 +1,9 @@
 {
-  "generated_at": "2026-06-30T23:53:04.715Z",
+  "generated_at": "2026-07-01T00:10:50.575Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
+      "feed_mode": "scheduled_snapshot_primary",
       "page_paths": [
         "/wiki/gkniftyheads-nft-collection.html"
       ],
@@ -18,8 +19,11 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-06-30T23:53:04.653Z",
-      "last_successful_update": "2026-06-30T23:53:04.653Z",
+      "checked_at": "2026-07-01T00:10:50.555Z",
+      "last_successful_check": "2026-07-01T00:10:50.555Z",
+      "last_successful_update": "2026-07-01T00:10:50.472Z",
+      "source_updated_at": "2026-07-01T00:10:50.472Z",
+      "source_age_minutes": 0,
       "last_error": "WAX get_info checkpoint unavailable: fetch failed",
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
       "notes": [
@@ -30,11 +34,11 @@
     },
     "waxonedge_bubbles": {
       "feed_id": "waxonedge_bubbles",
+      "feed_mode": "live_primary_static_fallback",
       "page_paths": [
         "/waxonedge.html"
       ],
       "output_files": [
-        "data/waxonedge/waxcash-bubbles-bootstrap.json",
         "data/waxonedge_bubbles/sync-status.json",
         "data/waxonedge_bubbles/waxcash-bubbles-lite.json",
         "data/waxonedge_bubbles/indexer-health.json"
@@ -42,8 +46,11 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-06-30T23:53:04.703Z",
+      "checked_at": "2026-07-01T00:10:50.563Z",
+      "last_successful_check": null,
       "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
       "last_error": "bubbles_lite: fetch failed; health: fetch failed",
       "fallback_behavior": "keep static bootstrap and mark feed stale/error if Worker data is unavailable",
       "notes": [
@@ -54,6 +61,7 @@
     },
     "waxcash_analytics": {
       "feed_id": "waxcash_analytics",
+      "feed_mode": "live_primary_static_fallback",
       "page_paths": [
         "/waxcash.html"
       ],
@@ -64,8 +72,11 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-06-30T23:53:04.708Z",
+      "checked_at": "2026-07-01T00:10:50.568Z",
+      "last_successful_check": null,
       "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
       "last_error": "fetch failed",
       "fallback_behavior": "preserve previous analytics JSON and show stale/error status if Worker data is unavailable",
       "notes": [
@@ -75,6 +86,7 @@
     },
     "wuffi_token_analytics": {
       "feed_id": "wuffi_token_analytics",
+      "feed_mode": "live_primary_static_fallback",
       "page_paths": [
         "/wiki/wuffi.html"
       ],
@@ -87,8 +99,11 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-06-30T23:53:04.714Z",
+      "checked_at": "2026-07-01T00:10:50.575Z",
+      "last_successful_check": null,
       "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
       "last_error": "token_page: fetch failed; pairs_liquidity: fetch failed; pairs_volume24: fetch failed",
       "fallback_behavior": "preserve previous token analytics JSON and show stale/error status if Worker or chart data is unavailable",
       "notes": [

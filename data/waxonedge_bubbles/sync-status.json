@@ -1,10 +1,10 @@
 {
   "feed_id": "waxonedge_bubbles",
+  "feed_mode": "live_primary_static_fallback",
   "page_paths": [
     "/waxonedge.html"
   ],
   "output_files": [
-    "data/waxonedge/waxcash-bubbles-bootstrap.json",
     "data/waxonedge_bubbles/sync-status.json",
     "data/waxonedge_bubbles/waxcash-bubbles-lite.json",
     "data/waxonedge_bubbles/indexer-health.json"
@@ -12,8 +12,11 @@
   "status": "error",
   "stale": true,
   "stale_after_hours": 30,
-  "checked_at": "2026-06-30T23:53:04.703Z",
+  "checked_at": "2026-07-01T00:10:50.563Z",
+  "last_successful_check": null,
   "last_successful_update": null,
+  "source_updated_at": null,
+  "source_age_minutes": null,
   "last_error": "bubbles_lite: fetch failed; health: fetch failed",
   "fallback_behavior": "keep static bootstrap and mark feed stale/error if Worker data is unavailable",
   "notes": [

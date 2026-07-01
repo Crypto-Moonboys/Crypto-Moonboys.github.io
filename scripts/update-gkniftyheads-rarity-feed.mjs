@@ -54,7 +54,8 @@ export async function updateGkniftyheadsRarityFeed() {
   preserveOrWrite('data/gkniftyheads/live-asset-rarity.json', readPrevious('data/gkniftyheads/live-asset-rarity.json'));
   const status = createFeedStatus(feed, {
     status: 'ok',
-    last_successful_update: new Date().toISOString(),
+    last_successful_check: new Date().toISOString(),
+    source_updated_at: existingSync.generated_at || new Date().toISOString(),
     last_error: error ? `WAX get_info checkpoint unavailable: ${error}` : null,
     notes: [
       `Generated local rarity fallback: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`,

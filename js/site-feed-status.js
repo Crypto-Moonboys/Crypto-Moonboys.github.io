@@ -6,9 +6,11 @@
   function label(status) {
     if (!status) return 'Feed status unavailable';
     var parts = [status.feed_id || 'feed'];
+    if (status.feed_mode) parts.push(status.feed_mode);
     if (status.status) parts.push(status.status);
     if (status.stale) parts.push('stale');
-    if (status.last_successful_update) parts.push('updated ' + status.last_successful_update);
+    if (status.source_updated_at) parts.push('source ' + status.source_updated_at);
+    if (status.last_successful_check) parts.push('checked ' + status.last_successful_check);
     if (status.last_error) parts.push('last error: ' + status.last_error);
     return parts.join(' · ');
   }

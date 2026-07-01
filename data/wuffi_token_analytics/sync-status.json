@@ -1,5 +1,6 @@
 {
   "feed_id": "wuffi_token_analytics",
+  "feed_mode": "live_primary_static_fallback",
   "page_paths": [
     "/wiki/wuffi.html"
   ],
@@ -12,8 +13,11 @@
   "status": "error",
   "stale": true,
   "stale_after_hours": 30,
-  "checked_at": "2026-06-30T23:53:04.714Z",
+  "checked_at": "2026-07-01T00:10:50.575Z",
+  "last_successful_check": null,
   "last_successful_update": null,
+  "source_updated_at": null,
+  "source_age_minutes": null,
   "last_error": "token_page: fetch failed; pairs_liquidity: fetch failed; pairs_volume24: fetch failed",
   "fallback_behavior": "preserve previous token analytics JSON and show stale/error status if Worker or chart data is unavailable",
   "notes": [
