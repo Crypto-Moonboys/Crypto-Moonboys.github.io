@@ -267,7 +267,7 @@ async function fetchJson(url, options = {}) {
   }
 }
 
-async function hydrateAtomicAssetsImageSources(rows, options = {}) {
+export async function hydrateAtomicAssetsImageSources(rows, options = {}) {
   async function hydrateRow(row) {
     const localSources = row.image_sources || (row.image_url ? [row.image_url] : []);
     const apiUrl = `https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/${row.template_id}`;
@@ -837,10 +837,9 @@ export function buildRanking(rows) {
 }
 
 function buildStats(model) {
-  const circulating = [...model.ranked, ...model.utility];
-  const counted = circulating.filter((row) => row.live_supply_status === 'counted');
-  const fallback = circulating.filter((row) => row.live_supply_status !== 'counted');
-  const liveStatus = counted.length === circulating.length && circulating.length > 0
+  const counted = model.all.filter((row) => row.live_supply_status === 'counted');
+  const fallback = model.all.filter((row) => row.live_supply_status !== 'counted');
+  const liveStatus = counted.length === model.all.length && model.all.length > 0
     ? 'atomicassets live asset count'
     : counted.length > 0
       ? 'partial live asset count with issued-supply fallback'

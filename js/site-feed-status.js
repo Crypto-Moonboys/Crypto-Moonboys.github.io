@@ -6,6 +6,10 @@
   function label(status) {
     if (!status) return 'Feed status unavailable';
     if (status.feed_id === 'gkniftyheads_rarity') {
+      var notes = (status.notes || []).join(' ');
+      if (/\b[1-9]\d*\/\d+\s+live supply counts ok\b/i.test(notes)) {
+        return 'Rarity snapshot active - live supply counted - burn baseline active';
+      }
       return 'Rarity snapshot active - issued-supply fallback - live burn scan pending';
     }
     var parts = [status.feed_id || 'feed'];

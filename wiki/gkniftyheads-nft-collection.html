@@ -87,21 +87,21 @@
             <div class="wiki-stat"><strong>97</strong><span>Utility / open mint templates</span></div>
             <div class="wiki-stat"><strong>19</strong><span>Unissued templates</span></div>
             <div class="wiki-stat"><strong>124463</strong><span>Total issued supply</span></div>
-            <div class="wiki-stat"><strong>124463</strong><span>Fallback issued supply counted</span></div>
-            <div class="wiki-stat"><strong>Not scanned</strong><span>Live assets counted</span></div>
+            <div class="wiki-stat"><strong>None</strong><span>Fallback issued supply counted</span></div>
+            <div class="wiki-stat"><strong>124463</strong><span>Live assets counted</span></div>
             <div class="wiki-stat"><strong>0</strong><span>Pre-baseline missing/burned</span></div>
-            <div class="wiki-stat"><strong>2026-07-01T11:45:04.537Z</strong><span>Last scan time</span></div>
+            <div class="wiki-stat"><strong>2026-07-01T12:04:29.748Z</strong><span>Last scan time</span></div>
             <div class="wiki-stat"><strong>Not scanned</strong><span>Scan block</span></div>
           </div>
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
-            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.</p>
+            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began.</p>
           </section>
 
           <section class="wiki-section gk-rarity-status">
             <h3>Last Scan Status</h3>
-            <p class="lore-paragraph"><strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
+            <p class="lore-paragraph"><strong>Live data status:</strong> atomicassets live asset count. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">
@@ -123,13 +123,13 @@
                 <tr>
                   <th>NFT</th>
                   <th>Template ID</th>
-                  <th>Issued Supply Fallback</th>
+                  <th>Live Supply</th>
                   <th>Issued Supply</th>
                   <th>Pre-baseline Missing/Burned</th>
                   <th>Rarity Trait</th>
-                  <th>Rarity Exposure (Fallback)</th>
+                  <th>Rarity Exposure</th>
                   <th>Variation Trait</th>
-                  <th>Variation Exposure (Fallback)</th>
+                  <th>Variation Exposure</th>
                   <th>Final Score</th>
                   <th>Links</th>
                 </tr>
@@ -147,7 +147,7 @@
     <td>776005</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HOR$£ $HIT</td>
     <td>1</td>
     <td>🚀 GKniftyHEADS ⚡️⚡️⚡️</td>
@@ -167,7 +167,7 @@
     <td>784220</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>⚡️⚡️⚡️ Bitcoin Batboy 🦇</td>
     <td>1</td>
     <td>Blockchain Bat 🦇</td>
@@ -187,7 +187,7 @@
     <td>776003</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HORSE INFINITY 👑</td>
     <td>2</td>
     <td>👑 GKniftyHEADS ⚡️⚡️⚡️</td>
@@ -207,7 +207,7 @@
     <td>776007</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>✨ ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️</td>
     <td>2</td>
     <td>✨ GKniftyHEADS ⚡️⚡️⚡️</td>
@@ -227,7 +227,7 @@
     <td>776055</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>✨ ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️</td>
     <td>2</td>
     <td>✨ GKniftyHEADS ⚡️⚡️⚡️</td>
@@ -247,7 +247,7 @@
     <td>776002</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️</td>
     <td>4</td>
     <td>GKniftyHEADS ⚡️⚡️⚡️</td>
@@ -267,7 +267,7 @@
     <td>776000</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>👉 LONDONZ WHITE TRASH 👑👈</td>
     <td>2</td>
     <td>👉 VANDALS ⚡️⚡️⚡️</td>
@@ -287,7 +287,7 @@
     <td>776001</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>👉 LONDONZ WHITE TRASH 👑👈</td>
     <td>2</td>
     <td>👉 VANDALS ⚡️⚡️⚡️</td>
@@ -307,7 +307,7 @@
     <td>776101</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️</td>
     <td>4</td>
     <td>👉 VANDALS ⚡️⚡️⚡️</td>
@@ -327,7 +327,7 @@
     <td>776102</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️</td>
     <td>4</td>
     <td>👉 VANDALS ⚡️⚡️⚡️</td>
@@ -347,7 +347,7 @@
     <td>776103</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️</td>
     <td>4</td>
     <td>👉 VANDALS ⚡️⚡️⚡️</td>
@@ -367,7 +367,7 @@
     <td>776100</td>
     <td>1</td>
     <td>1</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HORSE INFINITY 👑</td>
     <td>2</td>
     <td>VANDALS ⚡️⚡️⚡️</td>
@@ -387,7 +387,7 @@
     <td>783747</td>
     <td>7</td>
     <td>7</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>#ALLCITYBUYS ⚡️⚡️⚡️</td>
     <td>7</td>
     <td>LONDONZ CALLING ⚡️⚡️⚡️</td>
@@ -407,7 +407,7 @@
     <td>783755</td>
     <td>7</td>
     <td>7</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>THΞ ₿LØ℃K$TΔR̸$ 🌈</td>
     <td>7</td>
     <td>Eternal Voidwalker ⚡️⚡️⚡️</td>
@@ -427,7 +427,7 @@
     <td>783757</td>
     <td>7</td>
     <td>7</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>Abyssal Leviathan ☠️</td>
     <td>7</td>
     <td>Celestial Sentinel 🤖</td>
@@ -447,7 +447,7 @@
     <td>783759</td>
     <td>8</td>
     <td>8</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>Shadow Seraph 🤖</td>
     <td>8</td>
     <td>Frostfire Elemental ⚡️⚡️⚡️</td>
@@ -467,7 +467,7 @@
     <td>783760</td>
     <td>8</td>
     <td>8</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>BTC TITAN ☠️</td>
     <td>8</td>
     <td>Astral Ascendant 🤖</td>
@@ -487,7 +487,7 @@
     <td>783764</td>
     <td>8</td>
     <td>8</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>Dreadnought Desolator 🍩</td>
     <td>8</td>
     <td>Doughnut 🍩 Conqueror 🤖</td>
@@ -507,7 +507,7 @@
     <td>784344</td>
     <td>9</td>
     <td>9</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>Bitcoinker of Chaos 👀</td>
     <td>9</td>
     <td>Pancake Prankster ⚡️⚡️⚡️</td>
@@ -527,7 +527,7 @@
     <td>784340</td>
     <td>10</td>
     <td>10</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>Uniswap Undefeatable 👀</td>
     <td>10</td>
     <td>Coin Ravager ⚡️⚡️⚡️</td>
@@ -547,7 +547,7 @@
     <td>775997</td>
     <td>11</td>
     <td>11</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>LONDONZ WHITE TRASH</td>
     <td>11</td>
     <td>VANDALS</td>
@@ -567,7 +567,7 @@
     <td>784332</td>
     <td>11</td>
     <td>11</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>⚡️⚡️⚡️ Crypto Knight Coin Crusher ☠️</td>
     <td>11</td>
     <td>Satoshi Savior ⚡️⚡️⚡️</td>
@@ -587,7 +587,7 @@
     <td>783468</td>
     <td>12</td>
     <td>12</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>Emperor&amp;#x27;s Elite ⚡️⚡️⚡️</td>
     <td>12</td>
     <td>NOT GOING OUT LIKE OBI-WAN</td>
@@ -607,7 +607,7 @@
     <td>783470</td>
     <td>12</td>
     <td>12</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>Cyber Shinobi ⚡️⚡️⚡️</td>
     <td>12</td>
     <td>NO BALL GAMES ⚡️⚡️⚡️</td>
@@ -627,7 +627,7 @@
     <td>775999</td>
     <td>10</td>
     <td>10</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>LONDONZ WHITE TRASH 👑👈</td>
     <td>10</td>
     <td>VANDALS ⚡️⚡️⚡️</td>
@@ -647,7 +647,7 @@
     <td>776074</td>
     <td>13</td>
     <td>13</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>$HIT $HOW ⚡️⚡️⚡️</td>
     <td>13</td>
     <td>VANDALS ⚡️⚡️⚡️</td>
@@ -667,7 +667,7 @@
     <td>773225</td>
     <td>20</td>
     <td>20</td>
-    <td>Not counted</td>
+    <td>0</td>
     <td>ROCKIN HORSE INFINITY SHIT</td>
     <td>20</td>
     <td>GKniftyHEADS</td>
