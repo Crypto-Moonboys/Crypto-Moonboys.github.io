@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-01T17:54:10.984Z",
+  "generated_at": "2026-07-01T18:00:28.754Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T17:53:57.929Z"
+      "checked_at": "2026-07-01T18:00:23.164Z"
     },
     "num_assets": {
       "ok": true,
@@ -34,8 +34,8 @@
       "source_url": "https://wax-api.hivebp.io/v3/num-assets/noballgamess",
       "error": null,
       "used_previous": false,
-      "attempts": 2,
-      "checked_at": "2026-07-01T17:53:58.114Z"
+      "attempts": 1,
+      "checked_at": "2026-07-01T18:00:23.335Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T17:54:07.993Z"
+      "checked_at": "2026-07-01T18:00:26.526Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-01T17:54:08.173Z"
+      "checked_at": "2026-07-01T18:00:26.696Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T17:54:09.453Z"
+      "checked_at": "2026-07-01T18:00:27.355Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T17:54:10.608Z"
+      "checked_at": "2026-07-01T18:00:28.415Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,7 +80,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T17:54:10.787Z"
+      "checked_at": "2026-07-01T18:00:28.584Z"
     }
   },
   "data": {
