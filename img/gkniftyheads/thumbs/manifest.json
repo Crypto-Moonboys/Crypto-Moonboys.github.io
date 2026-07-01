@@ -1242,5 +1242,20 @@
     "thumbnail_url": "/img/gkniftyheads/thumbs/784413.webp",
     "width": 265,
     "generated_at": "2026-07-01T02:09:46.996Z"
+  },
+  "788015": {
+    "source_url": "https://ipfs.hivebp.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+    "image_sources": [
+      "https://ipfs.hivebp.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+      "https://atomichub-ipfs.com/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+      "https://ipfs.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+      "https://gateway.pinata.cloud/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+      "https://nftstorage.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+      "https://dweb.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu"
+    ],
+    "thumbnail_url": "/img/gkniftyheads/thumbs/788015.webp",
+    "width": 265,
+    "generated_at": "2026-07-01T15:26:14.954Z",
+    "reused_from_template_id": 783400
   }
 }

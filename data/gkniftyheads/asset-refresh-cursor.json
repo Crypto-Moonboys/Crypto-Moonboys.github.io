@@ -1,7 +1,30 @@
 {
   "collection": "gkniftyheads",
   "batch_size": 20,
-  "last_template_batch_index": 0,
-  "last_run_at": null,
-  "mode": "daily_rotating_backfill"
+  "last_template_batch_index": 20,
+  "last_run_at": "2026-07-01T15:26:06.328Z",
+  "mode": "daily_rotating_backfill",
+  "last_template_batch": [
+    773225,
+    775997,
+    775999,
+    776000,
+    776001,
+    776002,
+    776003,
+    776004,
+    776005,
+    776007,
+    776049,
+    776055,
+    776056,
+    776057,
+    776058,
+    776059,
+    776063,
+    776065,
+    776066,
+    776074
+  ],
+  "failed_template_ids": []
 }

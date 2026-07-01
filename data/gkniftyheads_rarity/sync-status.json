@@ -7,6 +7,9 @@
   "output_files": [
     "data/gkniftyheads/template-rarity.json",
     "data/gkniftyheads/live-asset-rarity.json",
+    "data/gkniftyheads/asset-state-cache.json",
+    "data/gkniftyheads/asset-refresh-cursor.json",
+    "data/gkniftyheads/surviving-mint-ranks.json",
     "data/gkniftyheads/trait-exposure.json",
     "data/gkniftyheads/sync-status.json",
     "data/gkniftyheads/template-rarity.csv",
@@ -16,17 +19,18 @@
   "status": "ok",
   "stale": false,
   "stale_after_hours": 30,
-  "checked_at": "2026-07-01T12:04:30.361Z",
-  "last_successful_check": "2026-07-01T12:04:30.361Z",
-  "last_successful_update": "2026-07-01T12:04:29.748Z",
-  "source_updated_at": "2026-07-01T12:04:29.748Z",
+  "checked_at": "2026-07-01T15:26:15.487Z",
+  "last_successful_check": "2026-07-01T15:26:15.487Z",
+  "last_successful_update": "2026-07-01T15:26:15.230Z",
+  "source_updated_at": "2026-07-01T15:26:15.230Z",
   "source_age_minutes": 0,
-  "last_error": "WAX get_info checkpoint unavailable: fetch failed",
+  "last_error": null,
   "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
   "notes": [
     "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-    "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok.",
+    "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 2983 asset-state records across 143 templates.",
     "Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.",
-    "WAX get_info checkpoint not updated; rarity data preserved."
+    "AtomicAssets latest-created, updated-live, and updated-burned asset endpoints update asset-state cache sidecar data; current rarity maths still uses per-template live count verification.",
+    "WAX get_info checkpoint updated for scan metadata only."
   ]
 }
