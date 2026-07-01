@@ -19,13 +19,21 @@ const feedRegistry = read('data/feed-registry.json');
 const worker = read('workers/moonboys-api/worker.js');
 
 assert.match(apiConfig, /api\.getApiBase = function/, 'api-config production fallback policy should remain present');
-assert.match(apiClient, /api\.getApiBase\(\{ allowProductionFallback: true \}\)/, 'WAX API client must use MOONBOYS_API.getApiBase');
+assert.match(apiClient, /api\.getApiBase\(\)/, 'WAX API client must use canonical MOONBOYS_API.getApiBase()');
+assert.doesNotMatch(apiClient, /allowProductionFallback:\s*true/, 'WAX API client must not force production fallback');
 assert.doesNotMatch(apiClient + renderer + imageNormalizer, /require\(|from ['"](@?anchor|wax|eosjs|atomicassets)/i, 'frontend must not add Node/blockchain SDK dependencies');
 assert.doesNotMatch(apiClient + renderer, /signTransaction|transact\(|claim|staking|stake/i, 'frontend WAX bridge must not add transaction, claim, or staking flows');
 
 assert.match(renderer, /client\.getCollectionPageData\(collection\)/, 'renderer should try /api/wax collection page-data first');
 assert.match(renderer, /client\.loadStaticCollectionFallback\(collection\)/, 'renderer should fallback to existing static JSON');
-assert.match(renderer, /Static fallback active/, 'renderer should show a degraded static fallback card');
+assert.match(renderer, /Static\/degraded fallback active/, 'renderer should show a degraded static fallback card');
+assert.match(renderer, /function renderCollectionData/, 'renderer should hydrate visible collection sections');
+assert.match(renderer, /Collection Summary/, 'renderer should render collection summary');
+assert.match(renderer, /Template Preview/, 'renderer should render template cards');
+assert.match(renderer, /Trait Exposure/, 'renderer should render trait exposure');
+assert.match(renderer, /Holder Leaderboard/, 'renderer should render holder leaderboard where available');
+assert.match(renderer, /Asset Rarity Leaderboard/, 'renderer should render asset rarity leaderboard where available');
+assert.match(renderer, /<img class="nft-thumb"/, 'renderer should render normalized NFT image markup');
 
 assert.match(apiClient, /\/data\/'\s*\+\s*collection\s*\+\s*'\/'/, 'static fallback should read existing collection data folders');
 assert.match(apiClient, /template-rarity\.json/, 'static fallback should include template-rarity.json');

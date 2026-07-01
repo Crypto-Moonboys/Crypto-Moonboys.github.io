@@ -4,7 +4,7 @@
   function apiBase() {
     var api = window.MOONBOYS_API;
     if (!api || typeof api.getApiBase !== 'function') return '';
-    return api.getApiBase({ allowProductionFallback: true });
+    return api.getApiBase();
   }
 
   function apiUrl(path) {
@@ -48,8 +48,8 @@
   async function loadStaticCollectionFallback(collection) {
     var base = '/data/' + collection + '/';
     var files = collection === 'noballgamess'
-      ? ['template-rarity.json', 'template-stats.json', 'holder-leaderboard.json', 'asset-rarity-leaderboard.json']
-      : ['template-rarity.json', 'template-stats.json', 'live-asset-rarity.json'];
+      ? ['template-rarity.json', 'template-stats.json', 'trait-exposure.json', 'holder-leaderboard.json', 'asset-rarity-leaderboard.json', 'sync-status.json', 'market-analytics.json']
+      : ['template-rarity.json', 'template-stats.json', 'trait-exposure.json', 'live-asset-rarity.json', 'sync-status.json', 'market-analytics.json'];
     var payload = { collection: collection, files: {} };
     await Promise.all(files.map(async function (file) {
       try {
@@ -69,4 +69,3 @@
     loadStaticCollectionFallback: loadStaticCollectionFallback,
   });
 }());
-
