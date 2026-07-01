@@ -14,11 +14,19 @@
         "latest_created_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads&sort=created&order=desc&limit=1000",
         "recently_updated_live_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads&burned=false&sort=updated&order=desc&limit=1000",
         "recently_updated_burned_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads&burned=true&sort=updated&order=desc&limit=1000",
+        "hivebp_collection_stats": "https://wax-api.hivebp.io/v3/collection-stats/gkniftyheads",
+        "hivebp_num_assets": "https://wax-api.hivebp.io/v3/num-assets/gkniftyheads",
+        "hivebp_marketcap": "https://wax-api.hivebp.io/v3/marketcap/gkniftyheads",
+        "hivebp_top_users": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads",
+        "hivebp_top_templates": "https://wax-api.hivebp.io/v3/top-templates/30/gkniftyheads",
+        "hivebp_volume": "https://wax-api.hivebp.io/v3/volume/30/gkniftyheads",
+        "hivebp_sales_volume_graph": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/gkniftyheads",
         "wax_get_info": "https://wax.eosusa.io/v1/chain/get_info"
       },
       "output_files": [
         "data/gkniftyheads/template-rarity.json",
         "data/gkniftyheads/live-asset-rarity.json",
+        "data/gkniftyheads/market-analytics.json",
         "data/gkniftyheads/asset-state-cache.json",
         "data/gkniftyheads/asset-refresh-cursor.json",
         "data/gkniftyheads/surviving-mint-ranks.json",
@@ -50,7 +58,14 @@
         "live_count": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id={template_id}",
         "latest_created_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&sort=created&order=desc&limit=1000",
         "recently_updated_live_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=false&sort=updated&order=desc&limit=1000",
-        "recently_updated_burned_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=true&sort=updated&order=desc&limit=1000"
+        "recently_updated_burned_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=true&sort=updated&order=desc&limit=1000",
+        "hivebp_collection_stats": "https://wax-api.hivebp.io/v3/collection-stats/noballgamess",
+        "hivebp_num_assets": "https://wax-api.hivebp.io/v3/num-assets/noballgamess",
+        "hivebp_marketcap": "https://wax-api.hivebp.io/v3/marketcap/noballgamess",
+        "hivebp_top_users": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess",
+        "hivebp_top_templates": "https://wax-api.hivebp.io/v3/top-templates/30/noballgamess",
+        "hivebp_volume": "https://wax-api.hivebp.io/v3/volume/30/noballgamess",
+        "hivebp_sales_volume_graph": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/noballgamess"
       },
       "output_files": [
         "data/noballgamess/template-metadata-cache.json",
@@ -61,6 +76,7 @@
         "data/noballgamess/surviving-mint-ranks.json",
         "data/noballgamess/template-rarity.json",
         "data/noballgamess/live-asset-rarity.json",
+        "data/noballgamess/market-analytics.json",
         "data/noballgamess/template-stats.json",
         "data/noballgamess/trait-exposure.json",
         "data/noballgamess/holder-leaderboard.json",

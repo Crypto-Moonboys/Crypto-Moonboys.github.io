@@ -5,6 +5,7 @@ import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readMarketAnalytics, renderMarketAnalyticsSection } from './nft-market-analytics.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -1109,7 +1110,7 @@ function statCard(label, value) {
   return `<div class="wiki-stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
 }
 
-function buildRankingSection(model, stats, rawSection) {
+function buildRankingSection(model, stats, rawSection, marketAnalytics = null) {
   const filters = [
     ['all-ranked', 'All Ranked'],
     ['legendary', 'Legendary'],
@@ -1226,6 +1227,8 @@ function buildRankingSection(model, stats, rawSection) {
             <h3>Source Links / Methodology Note</h3>
             <p class="lore-paragraph">Source data comes from the existing website collection table and local GKniftyHEADS template wiki pages. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
           </section>
+
+          ${renderMarketAnalyticsSection(marketAnalytics, esc)}
 
           <section class="wiki-section gk-rarity-raw-fallback" data-rarity-fallback hidden>
             <p class="notice notice-warning">Live rarity data unavailable. Showing raw template list only. This is not the final rarity ranking.</p>
@@ -1418,7 +1421,8 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
   ], ['trait_type', 'trait', 'template_count', 'exposure_supply', 'template_ids']);
 
   const rawFallback = oldSection.includes(RAW_BEGIN) ? oldSection : `${RAW_BEGIN}\n${oldSection}\n${RAW_END}`;
-  const nextHtml = ensureRarityClientScript(replaceSection(html, buildRankingSection(model, stats, rawFallback)));
+  const marketAnalytics = readMarketAnalytics(root, COLLECTION);
+  const nextHtml = ensureRarityClientScript(replaceSection(html, buildRankingSection(model, stats, rawFallback, marketAnalytics)));
   fs.writeFileSync(collectionPage, nextHtml, 'utf8');
   return {
     templates: rows.length,

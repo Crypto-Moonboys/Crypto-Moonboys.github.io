@@ -1,0 +1,98 @@
+{
+  "collection": "noballgamess",
+  "provider": "NFTHive / HiveBP WAX API",
+  "api_base": "https://wax-api.hivebp.io",
+  "generated_at": "2026-07-01T17:13:56.605Z",
+  "analytics_status": "pending",
+  "status": "pending",
+  "display_only": true,
+  "rarity_input": false,
+  "note": "Market analytics are display-only and are not used for rarity scoring. AtomicAssets remains the source of truth for template verification, live supply, burns, mints, asset state, original_mint_number, and surviving_mint_rank.",
+  "days": 30,
+  "source_urls": {
+    "collection_stats": "https://wax-api.hivebp.io/v3/collection-stats/noballgamess",
+    "num_assets": "https://wax-api.hivebp.io/v3/num-assets/noballgamess",
+    "marketcap": "https://wax-api.hivebp.io/v3/marketcap/noballgamess",
+    "top_users": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess",
+    "top_templates": "https://wax-api.hivebp.io/v3/top-templates/30/noballgamess",
+    "volume": "https://wax-api.hivebp.io/v3/volume/30/noballgamess",
+    "sales_volume_graph": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/noballgamess"
+  },
+  "endpoint_status": {
+    "collection_stats": {
+      "ok": false,
+      "stale": false,
+      "source_url": "https://wax-api.hivebp.io/v3/collection-stats/noballgamess",
+      "error": "fetch failed",
+      "used_previous": false,
+      "attempts": 2,
+      "checked_at": "2026-07-01T17:13:56.279Z"
+    },
+    "num_assets": {
+      "ok": false,
+      "stale": false,
+      "source_url": "https://wax-api.hivebp.io/v3/num-assets/noballgamess",
+      "error": "fetch failed",
+      "used_previous": false,
+      "attempts": 2,
+      "checked_at": "2026-07-01T17:13:56.336Z"
+    },
+    "marketcap": {
+      "ok": false,
+      "stale": false,
+      "source_url": "https://wax-api.hivebp.io/v3/marketcap/noballgamess",
+      "error": "fetch failed",
+      "used_previous": false,
+      "attempts": 2,
+      "checked_at": "2026-07-01T17:13:56.378Z"
+    },
+    "top_users": {
+      "ok": false,
+      "stale": false,
+      "source_url": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess",
+      "error": "fetch failed",
+      "used_previous": false,
+      "attempts": 2,
+      "checked_at": "2026-07-01T17:13:56.430Z"
+    },
+    "top_templates": {
+      "ok": false,
+      "stale": false,
+      "source_url": "https://wax-api.hivebp.io/v3/top-templates/30/noballgamess",
+      "error": "fetch failed",
+      "used_previous": false,
+      "attempts": 2,
+      "checked_at": "2026-07-01T17:13:56.474Z"
+    },
+    "volume": {
+      "ok": false,
+      "stale": false,
+      "source_url": "https://wax-api.hivebp.io/v3/volume/30/noballgamess",
+      "error": "fetch failed",
+      "used_previous": false,
+      "attempts": 2,
+      "checked_at": "2026-07-01T17:13:56.518Z"
+    },
+    "sales_volume_graph": {
+      "ok": false,
+      "stale": false,
+      "source_url": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/noballgamess",
+      "error": "fetch failed",
+      "used_previous": false,
+      "attempts": 2,
+      "checked_at": "2026-07-01T17:13:56.560Z"
+    }
+  },
+  "data": {},
+  "previous_preserved": false,
+  "previous_generated_at": null,
+  "error_summary": [
+    "collection_stats: fetch failed",
+    "num_assets: fetch failed",
+    "marketcap: fetch failed",
+    "top_users: fetch failed",
+    "top_templates: fetch failed",
+    "volume: fetch failed",
+    "sales_volume_graph: fetch failed"
+  ]
+}

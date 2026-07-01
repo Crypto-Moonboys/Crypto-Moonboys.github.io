@@ -10,6 +10,7 @@ import {
   updateNoballgamessLiveSupplyCache,
   updateNoballgamessTemplateMetadataCache,
 } from './noballgamess-tracker-lib.mjs';
+import { updateNftMarketAnalytics } from './nft-market-analytics.mjs';
 
 function makeRoot() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'noballgamess-tracker-'));
@@ -84,6 +85,14 @@ await updateNoballgamessAssetStateCache(root, {
 assert.deepEqual(sourceKeys.slice(0, 3), ['latest_created_assets', 'recently_updated_live_assets', 'recently_updated_burned_assets'], 'daily delta scans should always run');
 assert.ok(sourceKeys.includes('template_assets_backfill:100001'), 'rotating template backfill should run for selected template IDs');
 
+await updateNftMarketAnalytics({
+  root,
+  collection: 'noballgamess',
+  fetchJson: async () => {
+    throw new Error('HiveBP fixture unavailable');
+  },
+});
+
 await generateNoballgamessRarity(root);
 
 const templateRarity = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'template-rarity.json'), 'utf8'));
@@ -92,6 +101,7 @@ const ranks = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess',
 const holders = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'holder-leaderboard.json'), 'utf8'));
 const assetLeaderboard = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'asset-rarity-leaderboard.json'), 'utf8'));
 const html = fs.readFileSync(path.join(root, 'wiki', 'noballgamess-nft-collection.html'), 'utf8');
+const marketAnalytics = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'market-analytics.json'), 'utf8'));
 
 assert.equal(templateRarity.ranked_templates.some((row) => row.template_id === 100001), true, 'fixed-supply template should rank');
 assert.equal(templateRarity.utility_open_mint_templates.some((row) => row.template_id === 100002), true, 'max_supply=0 template should be utility/open mint');
@@ -123,6 +133,9 @@ assert.deepEqual(liveRankedAssets.map((row) => row.original_mint_number), [1, 3]
 assert.deepEqual(liveRankedAssets.map((row) => row.surviving_mint_rank), [1, 2], 'surviving_mint_rank recalculates among unburned assets');
 assert.equal(holders.holders.some((row) => row.owner === 'burned.gm'), false, 'holder leaderboard excludes burned assets');
 assert.equal(assetLeaderboard.assets.some((row) => row.asset_id === 'a3'), false, 'asset rarity leaderboard excludes burned assets');
+assert.equal(marketAnalytics.display_only, true, 'market analytics sidecar is display-only');
+assert.equal(marketAnalytics.rarity_input, false, 'market analytics sidecar is not a rarity input');
+assert.equal(marketAnalytics.analytics_status, 'pending', 'HiveBP failure keeps analytics separate and pending without failing rarity generation');
 
 assert.match(html, /Original mint numbers never change/, 'page should explain permanent original mint numbers');
 assert.match(html, /surviving mint rank/, 'page should explain surviving mint rank');
@@ -132,5 +145,6 @@ assert.match(html, /Template Stats/, 'page should render template stats section'
 assert.match(html, /Trait Exposure/, 'page should render trait exposure section');
 assert.match(html, /Holder Leaderboard/, 'page should render holder leaderboard section');
 assert.match(html, /Asset Rarity Leaderboard/, 'page should render asset rarity leaderboard section');
+assert.match(html, /Market analytics — display only, not rarity input/, 'page should render display-only market analytics section');
 
 console.log('NoBallGames rarity tracker regression passed.');

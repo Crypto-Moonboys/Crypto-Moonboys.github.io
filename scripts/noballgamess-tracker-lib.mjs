@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readMarketAnalytics, renderMarketAnalyticsSection, updateNftMarketAnalytics } from './nft-market-analytics.mjs';
 import { createFeedStatus, fetchJson as fetchSiteJson, findFeed, writeFeedStatus } from './site-feed-utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -560,6 +561,7 @@ function renderPage(root, data, supplemental = {}) {
   const traitExposure = supplemental.traitExposure || { schemas: [] };
   const holderLeaderboard = supplemental.holderLeaderboard || { holders: [] };
   const assetRarityLeaderboard = supplemental.assetRarityLeaderboard || { assets: [] };
+  const marketAnalytics = supplemental.marketAnalytics || readMarketAnalytics(root, COLLECTION);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -638,6 +640,7 @@ function renderPage(root, data, supplemental = {}) {
             <tbody>${renderAssetRarityRows(asArray(assetRarityLeaderboard.assets))}</tbody>
           </table>
         </section>
+        ${renderMarketAnalyticsSection(marketAnalytics, escapeHtml)}
         <!-- RELATED_WIKI_PATHS:BEGIN -->
         <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true">
           <h2>Related Wiki Paths</h2>
@@ -782,6 +785,7 @@ export async function generateNoballgamessRarity(root = ROOT) {
     traitExposure,
     holderLeaderboard: holderLeaderboardOutput,
     assetRarityLeaderboard: assetRarityLeaderboardOutput,
+    marketAnalytics: readMarketAnalytics(root, COLLECTION),
   }));
   writeTemplateIntegrityAudit(root, data.allRows, []);
   return {
@@ -813,6 +817,7 @@ export async function updateNoballgamessRarityFeed() {
         errors: asArray(readJson(ROOT, `${DATA_DIR}/asset-state-cache.json`, { errors: [] }).errors).length,
       }
     : await updateNoballgamessAssetStateCache();
+  const marketAnalytics = await updateNftMarketAnalytics({ collection: COLLECTION, root: ROOT, feed });
   const result = await generateNoballgamessRarity();
   const status = createFeedStatus(feed, {
     status: 'ok',
@@ -821,6 +826,7 @@ export async function updateNoballgamessRarityFeed() {
     notes: [
       `Generated NoBallGames rarity render: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`,
       `Staged cache refresh: ${metadataResult.ok}/${metadataResult.templates} metadata ok; ${supplyResult.ok}/${supplyResult.templates} live supply counts ok; ${assetStateResult.assets} asset-state records across ${assetStateResult.templates} templates.`,
+      `HiveBP display analytics: ${marketAnalytics.analytics_status}; not used for rarity scoring.`,
       'AtomicAssets is the source of truth; AtomicHub links are references only.',
     ],
   });

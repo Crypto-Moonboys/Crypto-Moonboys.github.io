@@ -139,6 +139,20 @@ assert.match(
   /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=true&sort=updated&order=desc&limit=1000$/,
   'GKniftyHEADS registry must declare recently updated burned asset scan endpoint'
 );
+for (const [key, pattern] of Object.entries({
+  hivebp_collection_stats: /^https:\/\/wax-api\.hivebp\.io\/v3\/collection-stats\/gkniftyheads$/,
+  hivebp_num_assets: /^https:\/\/wax-api\.hivebp\.io\/v3\/num-assets\/gkniftyheads$/,
+  hivebp_marketcap: /^https:\/\/wax-api\.hivebp\.io\/v3\/marketcap\/gkniftyheads$/,
+  hivebp_top_users: /^https:\/\/wax-api\.hivebp\.io\/v3\/top-users\/30\/gkniftyheads$/,
+  hivebp_top_templates: /^https:\/\/wax-api\.hivebp\.io\/v3\/top-templates\/30\/gkniftyheads$/,
+  hivebp_volume: /^https:\/\/wax-api\.hivebp\.io\/v3\/volume\/30\/gkniftyheads$/,
+  hivebp_sales_volume_graph: /^https:\/\/wax-api\.hivebp\.io\/v3\/sales-volume-graph\/30\/gkniftyheads$/,
+})) {
+  assert.match(gkniftyheadsFeed.source_urls[key], pattern, `GKniftyHEADS registry must declare ${key}`);
+}
+assert.ok(gkniftyheadsFeed.output_files.includes('data/gkniftyheads/market-analytics.json'), 'GKniftyHEADS registry must include market analytics output');
+assert.ok(exists('data/gkniftyheads/market-analytics.json'), 'GKniftyHEADS market analytics JSON must exist');
+assert.equal(Object.keys(gkniftyheadsFeed.source_urls).some((key) => /floor/i.test(key)), false, 'GKniftyHEADS must not register per-template floor endpoint spam');
 
 const noballgamessFeed = registry.feeds.find((entry) => entry.feed_id === 'noballgamess_rarity');
 assert.equal(noballgamessFeed.feed_mode, 'scheduled_snapshot_primary', 'NoBallGames must be a scheduled snapshot feed');
@@ -152,9 +166,17 @@ for (const [key, pattern] of Object.entries({
   latest_created_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&sort=created&order=desc&limit=1000$/,
   recently_updated_live_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&burned=false&sort=updated&order=desc&limit=1000$/,
   recently_updated_burned_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&burned=true&sort=updated&order=desc&limit=1000$/,
+  hivebp_collection_stats: /^https:\/\/wax-api\.hivebp\.io\/v3\/collection-stats\/noballgamess$/,
+  hivebp_num_assets: /^https:\/\/wax-api\.hivebp\.io\/v3\/num-assets\/noballgamess$/,
+  hivebp_marketcap: /^https:\/\/wax-api\.hivebp\.io\/v3\/marketcap\/noballgamess$/,
+  hivebp_top_users: /^https:\/\/wax-api\.hivebp\.io\/v3\/top-users\/30\/noballgamess$/,
+  hivebp_top_templates: /^https:\/\/wax-api\.hivebp\.io\/v3\/top-templates\/30\/noballgamess$/,
+  hivebp_volume: /^https:\/\/wax-api\.hivebp\.io\/v3\/volume\/30\/noballgamess$/,
+  hivebp_sales_volume_graph: /^https:\/\/wax-api\.hivebp\.io\/v3\/sales-volume-graph\/30\/noballgamess$/,
 })) {
   assert.match(noballgamessFeed.source_urls[key], pattern, `NoBallGames registry must declare ${key} with collection_name=noballgamess`);
 }
+assert.equal(Object.keys(noballgamessFeed.source_urls).some((key) => /floor/i.test(key)), false, 'NoBallGames must not register per-template floor endpoint spam');
 for (const generatedPath of [
   'data/noballgamess/template-metadata-cache.json',
   'data/noballgamess/live-template-supply.json',
@@ -164,6 +186,7 @@ for (const generatedPath of [
   'data/noballgamess/surviving-mint-ranks.json',
   'data/noballgamess/template-rarity.json',
   'data/noballgamess/live-asset-rarity.json',
+  'data/noballgamess/market-analytics.json',
   'data/noballgamess/template-stats.json',
   'data/noballgamess/trait-exposure.json',
   'data/noballgamess/holder-leaderboard.json',
@@ -287,7 +310,13 @@ assert.match(workflow, /git add "\$\{GENERATED_PATHS\[@\]\}"/, 'workflow must us
 assert.doesNotMatch(workflow, /git add data\s*(?:\n|$)/, 'workflow must not only stage data and miss generated pages/thumbs');
 
 const gk = readJson('data/gkniftyheads/template-rarity.json');
+const gkMarketAnalytics = readJson('data/gkniftyheads/market-analytics.json');
 assertNoMarketScoringSignals('GKniftyHEADS rarity feed', gk);
+assert.equal(gkMarketAnalytics.display_only, true, 'GKniftyHEADS market analytics must be display-only');
+assert.equal(gkMarketAnalytics.rarity_input, false, 'GKniftyHEADS market analytics must not be a rarity input');
+assert.notEqual(gkMarketAnalytics.analytics_status, undefined, 'GKniftyHEADS market analytics status must be separate from rarity status');
+assert.match(read('wiki/gkniftyheads-nft-collection.html'), /Market analytics — display only, not rarity input/, 'GKniftyHEADS page must label HiveBP analytics as display-only');
+assert.doesNotMatch(read('scripts/generate-gkniftyheads-rarity.mjs'), /market-analytics\.json[\s\S]{0,400}final_score|final_score[\s\S]{0,400}market-analytics\.json/i, 'GKniftyHEADS rarity scoring must not read market analytics');
 
 const assetStateCache = read('data/gkniftyheads/asset-state-cache.json');
 const assetRefreshCursor = read('data/gkniftyheads/asset-refresh-cursor.json');
@@ -303,6 +332,7 @@ assert.match(survivingRanks, /"templates"/, 'surviving mint ranks data surface m
 
 const noballgamessPage = read('wiki/noballgamess-nft-collection.html');
 const noballgamessRarity = readJson('data/noballgamess/template-rarity.json');
+const noballgamessMarketAnalytics = readJson('data/noballgamess/market-analytics.json');
 const noballgamessAssetLeaderboard = readJson('data/noballgamess/asset-rarity-leaderboard.json');
 const noballgamessHolderLeaderboard = readJson('data/noballgamess/holder-leaderboard.json');
 const noballgamessAssetState = read('data/noballgamess/asset-state-cache.json');
@@ -312,6 +342,10 @@ assert.match(noballgamessPage, /Template Stats/, 'NoBallGames page must render t
 assert.match(noballgamessPage, /Trait Exposure/, 'NoBallGames page must render trait exposure');
 assert.match(noballgamessPage, /Holder Leaderboard/, 'NoBallGames page must render holder leaderboard');
 assert.match(noballgamessPage, /Asset Rarity Leaderboard/, 'NoBallGames page must render asset rarity leaderboard');
+assert.match(noballgamessPage, /Market analytics — display only, not rarity input/, 'NoBallGames page must label HiveBP analytics as display-only');
+assert.equal(noballgamessMarketAnalytics.display_only, true, 'NoBallGames market analytics must be display-only');
+assert.equal(noballgamessMarketAnalytics.rarity_input, false, 'NoBallGames market analytics must not be a rarity input');
+assert.notEqual(noballgamessMarketAnalytics.analytics_status, undefined, 'NoBallGames market analytics status must be separate from rarity status');
 assert.match(noballgamessAssetState, /"latest_created_assets"/, 'NoBallGames asset-state cache must document latest-created source URL');
 assert.match(noballgamessAssetState, /"recently_updated_live_assets"/, 'NoBallGames asset-state cache must document updated-live source URL');
 assert.match(noballgamessAssetState, /"recently_updated_burned_assets"/, 'NoBallGames asset-state cache must document updated-burned source URL');
@@ -319,6 +353,7 @@ assert.match(noballgamessAssetState, /"template_assets_backfill"/, 'NoBallGames 
 assertNoMarketScoringSignals('NoBallGames rarity feed', noballgamessRarity);
 assertNoMarketScoringSignals('NoBallGames asset rarity leaderboard', noballgamessAssetLeaderboard);
 assertNoMarketScoringSignals('NoBallGames holder leaderboard', noballgamessHolderLeaderboard);
+assert.doesNotMatch(read('scripts/noballgamess-tracker-lib.mjs'), /market-analytics\.json[\s\S]{0,400}(final_score|weighted_rarity_score)|(final_score|weighted_rarity_score)[\s\S]{0,400}market-analytics\.json/i, 'NoBallGames rarity scoring must not read market analytics');
 for (const row of noballgamessRarity.ranked_templates || []) {
   assert.equal(row.supply_used_for_scoring, row.live_supply, 'NoBallGames rarity scoring must use live_supply when counted');
   assert.equal(row.price_used, false, 'NoBallGames ranked rows must mark price_used false');
