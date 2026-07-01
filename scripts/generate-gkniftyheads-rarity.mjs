@@ -200,6 +200,26 @@ function collectAtomicMediaValues(immutableData = {}) {
   return imageValues.length ? imageValues : unique(videos);
 }
 
+function collectAtomicMediaFields(immutableData = {}) {
+  const fields = {};
+  function walk(value, key = '') {
+    if (Array.isArray(value)) {
+      value.forEach((item) => walk(item, key));
+      return;
+    }
+    if (value && typeof value === 'object') {
+      for (const [childKey, childValue] of Object.entries(value)) walk(childValue, childKey);
+      return;
+    }
+    const lowerKey = String(key || '').toLowerCase();
+    if (/^(img|image|video)$/.test(lowerKey) || /img|image|thumbnail|thumb|picture|photo|artwork|media/.test(lowerKey)) {
+      fields[key || 'media'] = value;
+    }
+  }
+  walk(immutableData);
+  return fields;
+}
+
 async function fetchJson(url, options = {}) {
   async function requestJson(requestOptions = {}) {
     return new Promise((resolve, reject) => {
@@ -210,7 +230,7 @@ async function fetchJson(url, options = {}) {
         hostname: parsed.hostname,
         port: parsed.port,
         path: `${parsed.pathname}${parsed.search}`,
-        rejectUnauthorized: requestOptions.rejectUnauthorized !== false,
+        rejectUnauthorized: options.rejectUnauthorized === false ? false : requestOptions.rejectUnauthorized !== false,
         timeout: options.timeoutMs || 20000,
         headers: {
           accept: 'application/json',
@@ -255,17 +275,75 @@ async function hydrateAtomicAssetsImageSources(rows, options = {}) {
       const payload = await fetchJson(apiUrl, { timeoutMs: options.timeoutMs || 20000 });
       const immutableData = payload?.data?.immutable_data || {};
       const atomicSources = collectAtomicMediaValues(immutableData);
+      row.immutable_data_image_fields = collectAtomicMediaFields(immutableData);
       row.atomicassets_image_url = apiUrl;
       row.image_sources = unique([...atomicSources, ...localSources]);
       row.image_url = row.image_sources[0] || row.image_url || '';
+      row.metadata_status = 'ok';
+      row.last_checked_at = options.checkedAt || new Date().toISOString();
     } catch (error) {
       row.atomicassets_image_error = String(error?.message || error);
       row.image_sources = unique(localSources);
       row.image_url = row.image_sources[0] || row.image_url || '';
+      row.metadata_status = 'error';
+      row.last_checked_at = options.checkedAt || new Date().toISOString();
     }
+    if (options.onRow) await options.onRow(row);
   }
 
   const concurrency = options.concurrency || 8;
+  for (let index = 0; index < rows.length; index += concurrency) {
+    await Promise.all(rows.slice(index, index + concurrency).map(hydrateRow));
+  }
+}
+
+export function parseAtomicAssetsCount(payload) {
+  const data = payload?.data;
+  const candidates = [
+    data,
+    data?.count,
+    payload?.count,
+    payload?.total,
+  ];
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null || typeof candidate === 'object') continue;
+    const parsed = Number(candidate);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+export async function countTemplateLiveAssets(row, options = {}) {
+  const endpoint = `https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=${COLLECTION}&template_id=${row.template_id}`;
+  const payload = await fetchJson(endpoint, { timeoutMs: options.timeoutMs || 20000 });
+  const count = parseAtomicAssetsCount(payload);
+  if (!Number.isFinite(count)) throw new Error('AtomicAssets count payload did not include a numeric count');
+  return count;
+}
+
+export async function hydrateLiveAssetCounts(rows, options = {}) {
+  async function hydrateRow(row) {
+    try {
+      const count = await (options.countTemplate || countTemplateLiveAssets)(row, options);
+      row.live_supply = count;
+      row.live_supply_status = 'ok';
+      row.live_supply_source = 'atomicassets_assets_count';
+      row.live_supply_source_url = `https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=${COLLECTION}&template_id=${row.template_id}`;
+      row.live_supply_checked_at = options.checkedAt || new Date().toISOString();
+      row.missing_or_burned_count = Math.max(0, row.issued_supply - count);
+      row.pre_baseline_missing_or_burned = row.missing_or_burned_count;
+    } catch (error) {
+      row.live_supply = row.issued_supply;
+      row.live_supply_status = 'issued_supply_fallback';
+      row.live_supply_source = 'issued_supply';
+      row.live_supply_error = String(error?.message || error);
+      row.missing_or_burned_count = null;
+      row.pre_baseline_missing_or_burned = null;
+    }
+    if (options.onRow) await options.onRow(row);
+  }
+
+  const concurrency = options.concurrency || 6;
   for (let index = 0; index < rows.length; index += concurrency) {
     await Promise.all(rows.slice(index, index + concurrency).map(hydrateRow));
   }
@@ -468,6 +546,7 @@ export async function prepareGkniftyheadsThumbnails(rows, root = ROOT, options =
       writeThumbManifest(root, manifest);
       return;
     }
+    if (passOptions.fetchMissing === false) return;
     if (playwrightUnavailable) return;
 
     try {
@@ -503,6 +582,7 @@ export async function prepareGkniftyheadsThumbnails(rows, root = ROOT, options =
     timeoutMs: options.timeoutMs || 20000,
     retries: options.retries ?? 2,
     concurrency: options.concurrency || 8,
+    fetchMissing: options.fetchMissing,
   });
 
   const retryRows = rows.filter((row) => row.thumbnail_status === 'original_fallback' && row.image_url);
@@ -511,6 +591,7 @@ export async function prepareGkniftyheadsThumbnails(rows, root = ROOT, options =
       timeoutMs: options.secondPassTimeoutMs || 45000,
       retries: options.secondPassRetries ?? 2,
       concurrency: options.secondPassConcurrency || 2,
+      fetchMissing: options.fetchMissing,
     });
   }
 
@@ -518,8 +599,8 @@ export async function prepareGkniftyheadsThumbnails(rows, root = ROOT, options =
   writeThumbManifest(root, manifest);
 }
 
-async function prepareThumbnails(rows, root = ROOT) {
-  return prepareGkniftyheadsThumbnails(rows, root);
+async function prepareThumbnails(rows, root = ROOT, options = {}) {
+  return prepareGkniftyheadsThumbnails(rows, root, options);
 }
 
 function readTemplatePage(row, root = ROOT) {
@@ -537,7 +618,7 @@ function readTemplatePage(row, root = ROOT) {
   };
 }
 
-function extractRows(collectionHtml, root = ROOT) {
+export function extractRows(collectionHtml, root = ROOT) {
   const table = collectionHtml.match(/<table class="wiki-table nft-template-table">[\s\S]*?<\/table>/i)?.[0];
   if (!table) throw new Error('Could not find existing nft-template-table in collection page.');
   const rows = [...table.matchAll(/<tr><td><a href="([^"]+)">([\s\S]*?)<\/a><\/td><td>([^<]*)<\/td><td>([^<]*)<\/td><td>([^<]*)<\/td><td>([^<]*)<\/td><td><a href="([^"]+)"[^>]*>AtomicAssets<\/a><\/td><td><a href="([^"]+)"[^>]*>AtomicHub<\/a><\/td><\/tr>/gi)];
@@ -554,6 +635,72 @@ function extractRows(collectionHtml, root = ROOT) {
     };
     return { ...row, ...readTemplatePage(row, root) };
   }).filter((row) => row.template_id);
+}
+
+function readCache(filePath) {
+  if (!fs.existsSync(filePath)) return new Map();
+  const payload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const rows = payload.templates || payload.supplies || [];
+  return new Map(rows.map((row) => [Number(row.template_id), row]));
+}
+
+function applyMetadataCache(rows, root = ROOT) {
+  const cache = readCache(path.join(root, 'data', 'gkniftyheads', 'template-metadata-cache.json'));
+  return rows.map((row) => {
+    const cached = cache.get(row.template_id);
+    if (!cached) return row;
+    return {
+      ...row,
+      immutable_data_image_fields: cached.immutable_data_image_fields || row.immutable_data_image_fields || {},
+      image_url: cached.image_url || row.image_url || '',
+      image_sources: unique([...(cached.image_sources || []), ...(row.image_sources || [])]),
+      metadata_status: cached.metadata_status || row.metadata_status,
+      metadata_last_checked_at: cached.last_checked_at,
+      atomicassets_image_url: cached.atomicassets_url || row.atomicassets_url,
+    };
+  });
+}
+
+function applyLiveSupplyCache(rows, root = ROOT) {
+  const cache = readCache(path.join(root, 'data', 'gkniftyheads', 'live-template-supply.json'));
+  return rows.map((row) => {
+    const cached = cache.get(row.template_id);
+    if (!cached || !['ok', 'counted'].includes(cached.live_supply_status) || !Number.isFinite(Number(cached.live_supply))) {
+      return row;
+    }
+    return {
+      ...row,
+      issued_supply: Number.isFinite(Number(cached.issued_supply)) ? Number(cached.issued_supply) : row.issued_supply,
+      live_supply: Number(cached.live_supply),
+      live_supply_status: 'ok',
+      live_supply_source: 'atomicassets_assets_count',
+      live_supply_source_url: cached.source_url,
+      live_supply_checked_at: cached.last_checked_at,
+      missing_or_burned_count: Number(cached.pre_baseline_missing_or_burned || 0),
+      pre_baseline_missing_or_burned: Number(cached.pre_baseline_missing_or_burned || 0),
+    };
+  });
+}
+
+function applyThumbnailCache(rows, root = ROOT) {
+  const manifest = readThumbManifest(root);
+  return rows.map((row) => {
+    const expected = `${THUMB_URL_PREFIX}/${row.template_id}.webp`;
+    const expectedPath = path.join(root, expected.replace(/^\//, ''));
+    const manifestEntry = manifest[String(row.template_id)];
+    if (fs.existsSync(expectedPath)) {
+      return {
+        ...row,
+        thumbnail_url: expected,
+        thumbnail_status: manifestEntry?.generated_at ? 'cached' : 'cached_file',
+      };
+    }
+    return {
+      ...row,
+      thumbnail_url: row.image_url || '',
+      thumbnail_status: row.image_url ? 'original_fallback' : 'missing_source',
+    };
+  });
 }
 
 function utilityReason(row) {
@@ -598,18 +745,38 @@ function exposure(rows, traitKey, supplyKey) {
   return [...map.values()].sort((a, b) => a.exposure_supply - b.exposure_supply || a.template_count - b.template_count || a.trait.localeCompare(b.trait));
 }
 
-function buildRanking(rows) {
+function normalizeSupply(row) {
+  const hasLiveCount = ['counted', 'ok'].includes(row.live_supply_status) && Number.isFinite(Number(row.live_supply));
+  const liveSupply = hasLiveCount ? Number(row.live_supply) : row.issued_supply;
+  const preBaselineMissing = hasLiveCount ? Math.max(0, row.issued_supply - liveSupply) : null;
+  return {
+    liveSupply,
+    liveSupplyStatus: hasLiveCount ? 'counted' : 'issued_supply_fallback',
+    liveDataStatus: hasLiveCount ? 'atomicassets live asset count' : 'issued-supply fallback',
+    liveSupplySource: hasLiveCount ? (row.live_supply_source || 'atomicassets_assets_count') : 'issued_supply',
+    preBaselineMissing,
+  };
+}
+
+export function buildRanking(rows) {
   const classified = rows.map((row) => {
     const cls = classify(row);
+    const supply = normalizeSupply(row);
     return {
       ...row,
       bucket: cls.bucket,
       band: cls.band,
       classification_reason: cls.reason,
-      live_supply: row.issued_supply,
-      live_data_status: 'issued-supply fallback',
-      missing_burned_count: 0,
-      missing_burned_status: 'not scanned; no burn data claimed',
+      live_supply: supply.liveSupply,
+      live_supply_status: supply.liveSupplyStatus,
+      live_supply_source: supply.liveSupplySource,
+      live_data_status: supply.liveDataStatus,
+      missing_or_burned_count: supply.preBaselineMissing,
+      pre_baseline_missing_or_burned: supply.preBaselineMissing,
+      missing_burned_count: supply.preBaselineMissing || 0,
+      missing_burned_status: supply.liveSupplyStatus === 'counted'
+        ? 'pre-baseline missing/current-supply delta; not confirmed burn history'
+        : 'not counted; issued-supply fallback only',
     };
   });
 
@@ -633,7 +800,7 @@ function buildRanking(rows) {
     const supplyScore = 1 - ((row.live_supply - 1) / Math.max(maxSupply - 1, 1));
     const rarityScore = 1 - ((row.rarity_live_exposure - 1) / Math.max(maxRarityExposure - 1, 1));
     const variationScore = 1 - ((row.variation_live_exposure - 1) / Math.max(maxVariationExposure - 1, 1));
-    const burnScore = row.issued_supply > 0 ? row.missing_burned_count / row.issued_supply : 0;
+    const burnScore = row.issued_supply > 0 && row.missing_or_burned_count !== null ? row.missing_or_burned_count / row.issued_supply : 0;
     row.final_score = Number(((supplyScore * 50) + (rarityScore * 25) + (variationScore * 20) + (burnScore * 5)).toFixed(4));
   }
 
@@ -670,18 +837,29 @@ function buildRanking(rows) {
 }
 
 function buildStats(model) {
+  const circulating = [...model.ranked, ...model.utility];
+  const counted = circulating.filter((row) => row.live_supply_status === 'counted');
+  const fallback = circulating.filter((row) => row.live_supply_status !== 'counted');
+  const liveStatus = counted.length === circulating.length && circulating.length > 0
+    ? 'atomicassets live asset count'
+    : counted.length > 0
+      ? 'partial live asset count with issued-supply fallback'
+      : 'issued-supply fallback';
   return {
     templates_scanned: model.all.length,
     ranked_limited_templates: model.ranked.length,
     utility_open_mint_templates: model.utility.length,
     unissued_templates: model.unissued.length,
     total_issued_supply: model.all.reduce((sum, row) => sum + row.issued_supply, 0),
-    live_assets_counted: null,
-    fallback_issued_supply_counted: model.ranked.reduce((sum, row) => sum + row.live_supply, 0) + model.utility.reduce((sum, row) => sum + row.live_supply, 0),
-    missing_burned_count: 0,
+    live_assets_counted: counted.length ? counted.reduce((sum, row) => sum + row.live_supply, 0) : null,
+    live_templates_counted: counted.length,
+    fallback_issued_supply_counted: fallback.reduce((sum, row) => sum + row.issued_supply, 0),
+    pre_baseline_missing_or_burned: counted.reduce((sum, row) => sum + (row.pre_baseline_missing_or_burned || 0), 0),
+    missing_or_burned_count: counted.reduce((sum, row) => sum + (row.missing_or_burned_count || 0), 0),
+    missing_burned_count: counted.reduce((sum, row) => sum + (row.missing_or_burned_count || 0), 0),
     last_scan_time: new Date().toISOString(),
     scan_block: null,
-    live_data_status: 'issued-supply fallback',
+    live_data_status: liveStatus,
   };
 }
 
@@ -710,19 +888,23 @@ function nftCard(row, options = {}) {
     </div>`;
 }
 
+function supplyCell(value) {
+  return value === null || value === undefined ? 'Not counted' : value;
+}
+
 function rankedRow(row) {
   const filters = [
     'ranked',
     row.band.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     row.live_supply === 1 ? 'one-of-one' : '',
-    row.missing_burned_count > 0 ? 'missing-burned' : '',
+    row.missing_or_burned_count > 0 ? 'missing-burned' : '',
   ].filter(Boolean).join(' ');
   return `<tr data-rarity-filter="${filters}">
     <td class="gk-rarity-nft-cell">${nftCard(row, { rank: true, band: true })}</td>
     <td>${row.template_id}</td>
     <td>${row.live_supply}</td>
     <td>${row.issued_supply}</td>
-    <td>${row.missing_burned_count}</td>
+    <td>${supplyCell(row.pre_baseline_missing_or_burned)}</td>
     <td>${esc(row.rarity_trait)}</td>
     <td>${row.rarity_live_exposure}</td>
     <td>${esc(row.variation_trait)}</td>
@@ -763,32 +945,44 @@ function buildRankingSection(model, stats, rawSection) {
     ['utility-open-mint', 'Utility / Open Mint'],
     ['unissued', 'Unissued'],
   ];
+  const hasLiveCounts = stats.live_assets_counted !== null;
+  const supplyLabel = hasLiveCounts ? 'Live Supply' : 'Issued Supply Fallback';
+  const rarityExposureLabel = hasLiveCounts ? 'Rarity Exposure' : 'Rarity Exposure (Fallback)';
+  const variationExposureLabel = hasLiveCounts ? 'Variation Exposure' : 'Variation Exposure (Fallback)';
+  const liveAssetsValue = hasLiveCounts ? stats.live_assets_counted : 'Not scanned';
+  const fallbackSupplyValue = stats.fallback_issued_supply_counted || 'None';
+  const methodCopy = hasLiveCounts
+    ? 'The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began.'
+    : 'The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.';
+  const statusCopy = hasLiveCounts
+    ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
+    : '<strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.';
 
   return `${RARITY_BEGIN}
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
           <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Collection Rarity Ranking</h2>
-          <p class="lore-paragraph">Ranked by live surviving supply, rarity trait exposure, variation trait exposure, missing/burned supply, and mint survival data. Price is not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          <p class="lore-paragraph">Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
           <div class="wiki-stat-grid gk-rarity-stats" data-rarity-stat-grid="true">
             ${statCard('Templates scanned', stats.templates_scanned)}
             ${statCard('Ranked limited templates', stats.ranked_limited_templates)}
             ${statCard('Utility / open mint templates', stats.utility_open_mint_templates)}
             ${statCard('Unissued templates', stats.unissued_templates)}
             ${statCard('Total issued supply', stats.total_issued_supply)}
-            ${statCard('Fallback issued supply counted', stats.fallback_issued_supply_counted)}
-            ${statCard('Live assets counted', 'Not scanned')}
-            ${statCard('Missing/burned count', stats.missing_burned_count)}
+            ${statCard('Fallback issued supply counted', fallbackSupplyValue)}
+            ${statCard('Live assets counted', liveAssetsValue)}
+            ${statCard('Pre-baseline missing/burned', stats.pre_baseline_missing_or_burned)}
             ${statCard('Last scan time', stats.last_scan_time)}
             ${statCard('Scan block', stats.scan_block || 'Not scanned')}
           </div>
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
-            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset scans are not bundled in this PR, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.</p>
+            <p class="lore-paragraph">${methodCopy}</p>
           </section>
 
           <section class="wiki-section gk-rarity-status">
             <h3>Last Scan Status</h3>
-            <p class="lore-paragraph"><strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
+            <p class="lore-paragraph">${statusCopy}</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">
@@ -801,13 +995,13 @@ function buildRankingSection(model, stats, rawSection) {
                 <tr>
                   <th>NFT</th>
                   <th>Template ID</th>
-                  <th>Issued Supply Fallback</th>
+                  <th>${supplyLabel}</th>
                   <th>Issued Supply</th>
-                  <th>Missing/Burned</th>
+                  <th>Pre-baseline Missing/Burned</th>
                   <th>Rarity Trait</th>
-                  <th>Rarity Exposure (Fallback)</th>
+                  <th>${rarityExposureLabel}</th>
                   <th>Variation Trait</th>
-                  <th>Variation Exposure (Fallback)</th>
+                  <th>${variationExposureLabel}</th>
                   <th>Final Score</th>
                   <th>Links</th>
                 </tr>
@@ -888,16 +1082,20 @@ function replaceSection(html, rankingSection) {
   return html.replace(oldSection, rankingSection);
 }
 
-export async function runGenerateGkniftyheadsRarity(root = ROOT) {
+export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
   const collectionPage = path.join(root, 'wiki', 'gkniftyheads-nft-collection.html');
   const html = fs.readFileSync(collectionPage, 'utf8');
   const oldSection = html.match(new RegExp(`${RAW_BEGIN}[\\s\\S]*?${RAW_END}`))?.[0]
     || html.match(/        <section class="wiki-section">\s*<h2 id="all-nfts">All NFTs \/ Templates<\/h2>[\s\S]*?        <\/section>/i)?.[0];
   if (!oldSection) throw new Error('Could not locate raw template table section.');
 
-  const rows = extractRows(html, root);
-  await hydrateAtomicAssetsImageSources(rows);
-  await prepareThumbnails(rows, root);
+  let rows = extractRows(html, root);
+  rows = applyMetadataCache(rows, root);
+  rows = applyLiveSupplyCache(rows, root);
+  rows = applyThumbnailCache(rows, root);
+  if (options.prepareThumbnails) {
+    await prepareThumbnails(rows, root, options.thumbnailOptions || {});
+  }
   const model = buildRanking(rows);
   const stats = buildStats(model);
   const rarityPayload = {
@@ -919,8 +1117,17 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT) {
   const livePayload = {
     collection: COLLECTION,
     generated_at: stats.last_scan_time,
-    status: 'issued-supply fallback',
-    note: 'Live asset scan is not bundled. original_mint and surviving_mint_rank remain pending until asset snapshots are available.',
+    status: stats.live_data_status,
+    note: stats.live_assets_counted === null
+      ? 'Live asset count failed; using issued-supply fallback. original_mint and surviving_mint_rank remain pending until asset snapshots are available.'
+      : 'Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a first-scan delta, not confirmed burn history.',
+    template_counts: stats.live_assets_counted === null ? [] : model.all.map((row) => ({
+      template_id: row.template_id,
+      issued_supply: row.issued_supply,
+      live_supply: row.live_supply,
+      live_supply_status: row.live_supply_status,
+      pre_baseline_missing_or_burned: row.pre_baseline_missing_or_burned,
+    })),
     assets: [],
   };
   const traitPayload = {
@@ -942,6 +1149,9 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT) {
       head_block_time: null,
     },
     burn_tracking_status: 'baseline pending; no confirmed historic burn events claimed',
+    supply_counting: stats.live_assets_counted === null
+      ? 'issued_supply_fallback'
+      : 'atomicassets_current_assets_by_template',
   };
 
   writeJson(path.join(root, 'data', 'gkniftyheads', 'template-rarity.json'), rarityPayload);
@@ -949,7 +1159,7 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT) {
   writeJson(path.join(root, 'data', 'gkniftyheads', 'trait-exposure.json'), traitPayload);
   writeJson(path.join(root, 'data', 'gkniftyheads', 'sync-status.json'), syncPayload);
   writeCsv(path.join(root, 'data', 'gkniftyheads', 'template-rarity.csv'), [...model.ranked, ...model.utility, ...model.unissued], [
-    'rank', 'band', 'bucket', 'title', 'template_id', 'live_supply', 'issued_supply', 'max_supply', 'missing_burned_count', 'rarity_trait', 'rarity_live_exposure', 'variation_trait', 'variation_live_exposure', 'final_score', 'url', 'atomicassets_url', 'atomichub_url'
+    'rank', 'band', 'bucket', 'title', 'template_id', 'live_supply', 'live_supply_status', 'issued_supply', 'max_supply', 'pre_baseline_missing_or_burned', 'missing_or_burned_count', 'rarity_trait', 'rarity_live_exposure', 'variation_trait', 'variation_live_exposure', 'final_score', 'url', 'atomicassets_url', 'atomichub_url'
   ]);
   writeCsv(path.join(root, 'data', 'gkniftyheads', 'live-asset-rarity.csv'), [], [
     'asset_id', 'template_id', 'original_template_mint', 'surviving_mint_rank', 'status'

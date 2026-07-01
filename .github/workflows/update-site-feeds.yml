@@ -24,7 +24,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Refresh GKniftyHEADS staged rarity caches
+        run: |
+          node scripts/update-gkniftyheads-template-metadata-cache.mjs
+          node scripts/update-gkniftyheads-live-supply-cache.mjs
+          node scripts/generate-gkniftyheads-rarity.mjs
+          node scripts/retry-gkniftyheads-thumbnails.mjs --cached-only
+
       - name: Update feeds
+        env:
+          GK_USE_EXISTING_STAGED_CACHES: '1'
         run: node scripts/update-site-feeds.mjs
 
       - name: Validate feed registry

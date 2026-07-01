@@ -117,6 +117,13 @@ const workflow = read('.github/workflows/update-site-feeds.yml');
 assert.match(workflow, /schedule:/, 'feed workflow must run on schedule');
 assert.match(workflow, /workflow_dispatch:/, 'feed workflow must support manual dispatch');
 assert.match(workflow, /node scripts\/update-site-feeds\.mjs/, 'workflow must run central updater');
+assert.ok(
+  workflow.indexOf('node scripts/update-gkniftyheads-template-metadata-cache.mjs') < workflow.indexOf('node scripts/update-gkniftyheads-live-supply-cache.mjs')
+  && workflow.indexOf('node scripts/update-gkniftyheads-live-supply-cache.mjs') < workflow.indexOf('node scripts/generate-gkniftyheads-rarity.mjs')
+  && workflow.indexOf('node scripts/generate-gkniftyheads-rarity.mjs') < workflow.indexOf('node scripts/retry-gkniftyheads-thumbnails.mjs --cached-only'),
+  'GKniftyHEADS workflow must refresh metadata, live supply, local rarity render, then cached-only thumbnails in order'
+);
+assert.match(workflow, /GK_USE_EXISTING_STAGED_CACHES/, 'central feed update should reuse staged GKniftyHEADS caches in the workflow');
 assert.match(workflow, /node scripts\/site-feed-registry\.test\.mjs/, 'workflow must audit feed registry rules');
 assert.match(workflow, /chore: update site data feeds/, 'workflow must use the required commit message');
 assert.match(workflow, /git add data/, 'workflow should commit changed feed data only');
