@@ -8,6 +8,7 @@ export const FEED_REGISTRY_PATH = path.join(ROOT, 'data', 'feed-registry.json');
 export const FEED_STATUS_PATH = path.join(ROOT, 'data', 'feed-status.json');
 export const DEFAULT_SITE_FEED_BASE_URL = process.env.SITE_FEED_BASE_URL || 'https://cryptomoonboys.com';
 export const DEFAULT_FEED_FETCH_TIMEOUT_MS = Number(process.env.SITE_FEED_FETCH_TIMEOUT_MS || 15000);
+export const DEFAULT_FEED_RETRY_DELAY_MS = Number(process.env.SITE_FEED_RETRY_DELAY_MS || 250);
 
 export function readJson(filePath, fallback = null) {
   try {
@@ -60,6 +61,69 @@ export async function fetchJson(endpoint, options = {}) {
   return response.json();
 }
 
+export function isTransientFeedError(error) {
+  const message = error?.message || String(error || '');
+  return /timeout|abort|HTTP\s+(?:408|429|500|502|503|504)\b/i.test(message);
+}
+
+export function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+}
+
+export async function safeFetchJson(endpoint, options = {}) {
+  const checkedAt = new Date().toISOString();
+  const sourceKey = options.source_key || options.sourceKey || 'source';
+  const sourceUrl = endpointUrl(endpoint, options.baseUrl);
+  const retries = Math.max(0, Number(options.retries ?? 1));
+  const retryDelayMs = Number(options.retryDelayMs ?? DEFAULT_FEED_RETRY_DELAY_MS);
+  const retryBackoff = Number(options.retryBackoff ?? 2);
+  const fetcher = options.fetchJson || fetchJson;
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      const payload = await fetcher(endpoint, {
+        baseUrl: options.baseUrl,
+        timeoutMs: options.timeoutMs,
+        signal: options.signal,
+        sourceKey,
+        source_key: sourceKey,
+        attempt,
+      });
+      return {
+        ok: true,
+        stale: false,
+        source_key: sourceKey,
+        source_url: sourceUrl,
+        payload,
+        error: null,
+        used_previous: false,
+        attempts: attempt + 1,
+        checked_at: checkedAt,
+      };
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retries || !isTransientFeedError(error)) break;
+      const backoffMs = retryDelayMs * (retryBackoff ** attempt);
+      await delay(backoffMs);
+    }
+  }
+
+  const previous = options.previousPath ? readPrevious(options.previousPath) : null;
+  const usedPrevious = Boolean(previous && options.allowStale !== false);
+  return {
+    ok: false,
+    stale: usedPrevious,
+    source_key: sourceKey,
+    source_url: sourceUrl,
+    payload: usedPrevious ? previous : null,
+    error: lastError?.message || String(lastError || 'Feed fetch failed'),
+    used_previous: usedPrevious,
+    attempts: retries + 1,
+    checked_at: checkedAt,
+  };
+}
+
 export function readPrevious(relativePath, fallback = null) {
   return readJson(resolveRoot(relativePath), fallback);
 }
@@ -73,13 +137,15 @@ export function preserveOrWrite(relativePath, value) {
 export function createFeedStatus(feed, partial = {}) {
   const now = partial.checked_at || new Date().toISOString();
   const sourceUpdatedAt = partial.source_updated_at || null;
-  const lastSuccessfulCheck = partial.last_successful_check || (partial.status === 'ok' ? now : null);
+  const lastSuccessfulCheck = partial.last_successful_check || (['ok', 'degraded'].includes(partial.status) ? now : null);
   const sourceAgeMinutes = sourceUpdatedAt && Number.isFinite(Date.parse(sourceUpdatedAt))
     ? Math.max(0, Math.round((Date.now() - Date.parse(sourceUpdatedAt)) / 60000))
     : null;
   const staleAfterHours = Number(feed.stale_after_hours || 24);
-  const stale = partial.status === 'error'
-    || (sourceAgeMinutes != null && sourceAgeMinutes > staleAfterHours * 60);
+  const stale = partial.stale ?? (
+    partial.status === 'error'
+    || (sourceAgeMinutes != null && sourceAgeMinutes > staleAfterHours * 60)
+  );
   return {
     feed_id: feed.feed_id,
     feed_mode: feed.feed_mode || 'scheduled_snapshot_primary',
@@ -95,6 +161,8 @@ export function createFeedStatus(feed, partial = {}) {
     source_age_minutes: sourceAgeMinutes,
     last_error: partial.last_error || null,
     fallback_behavior: feed.fallback_behavior || 'preserve previous data',
+    analytics_status: partial.analytics_status || null,
+    endpoint_status: partial.endpoint_status || {},
     notes: partial.notes || [],
   };
 }

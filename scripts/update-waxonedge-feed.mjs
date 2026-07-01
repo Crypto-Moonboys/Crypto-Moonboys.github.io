@@ -2,9 +2,9 @@
 
 import {
   createFeedStatus,
-  fetchJson,
   findFeed,
   preserveOrWrite,
+  safeFetchJson,
   sourceUpdatedAt,
   summarizePayload,
   writeFeedStatus,
@@ -14,33 +14,60 @@ const FEED_ID = 'waxonedge_bubbles';
 
 export async function updateWaxonedgeFeed() {
   const feed = findFeed(FEED_ID);
-  const errors = [];
-  let success = false;
-  let lite = null;
-  let health = null;
-  try {
-    lite = await fetchJson(feed.source_urls.bubbles_lite);
-    preserveOrWrite('data/waxonedge_bubbles/waxcash-bubbles-lite.json', lite);
-    success = true;
-  } catch (error) {
-    errors.push(`bubbles_lite: ${error.message || error}`);
-  }
-  try {
-    health = await fetchJson(feed.source_urls.health);
-    preserveOrWrite('data/waxonedge_bubbles/indexer-health.json', health);
-    success = true;
-  } catch (error) {
-    errors.push(`health: ${error.message || error}`);
-  }
+  const fetchOptions = {
+    timeoutMs: feed.timeout_ms,
+    retries: feed.retries,
+    retryDelayMs: feed.retry_backoff_ms,
+    allowStale: true,
+  };
+  const liteResult = await safeFetchJson(feed.source_urls.bubbles_lite, {
+    ...fetchOptions,
+    source_key: 'bubbles_lite',
+    previousPath: 'data/waxonedge_bubbles/waxcash-bubbles-lite.json',
+  });
+  if (liteResult.ok) preserveOrWrite('data/waxonedge_bubbles/waxcash-bubbles-lite.json', liteResult.payload);
+  const healthResult = await safeFetchJson(feed.source_urls.health, {
+    ...fetchOptions,
+    source_key: 'health',
+    previousPath: 'data/waxonedge_bubbles/indexer-health.json',
+  });
+  if (healthResult.ok) preserveOrWrite('data/waxonedge_bubbles/indexer-health.json', healthResult.payload);
+  const staticResult = await safeFetchJson(feed.source_urls.static_bootstrap, {
+    ...fetchOptions,
+    source_key: 'static_bootstrap',
+    previousPath: 'data/waxonedge/waxcash-bubbles-bootstrap.json',
+    retries: 0,
+  });
+  const endpointStatus = {
+    health: healthResult,
+    bubbles_lite: liteResult,
+    static_bootstrap: staticResult,
+  };
+  const errors = Object.values(endpointStatus)
+    .filter((result) => result.error)
+    .map((result) => `${result.source_key}: ${result.error}`);
+  const hasUsableBubbles = Boolean(liteResult.payload || staticResult.payload);
+  const hasFreshLiveBubbles = liteResult.ok && !liteResult.used_previous;
+  const statusValue = hasFreshLiveBubbles && healthResult.ok
+    ? 'ok'
+    : hasUsableBubbles
+      ? 'degraded'
+      : 'error';
+  const lite = liteResult.payload;
+  const health = healthResult.payload;
   const status = createFeedStatus(feed, {
-    status: success ? 'ok' : 'error',
-    last_successful_check: success ? new Date().toISOString() : null,
+    status: statusValue,
+    stale: statusValue !== 'ok',
+    analytics_status: statusValue,
+    last_successful_check: statusValue !== 'error' ? new Date().toISOString() : null,
     source_updated_at: sourceUpdatedAt(lite) || sourceUpdatedAt(health),
     last_error: errors.length ? errors.join('; ') : null,
+    endpoint_status: endpointStatus,
     notes: [
-      'Uses existing WaxOnEdge Worker endpoints and preserves static bootstrap data on failure.',
+      'Uses existing WaxOnEdge Worker endpoints; scheduled feed status is advisory and preserves live-primary runtime behavior.',
       `bubbles_lite summary: ${JSON.stringify(summarizePayload(lite))}`,
       `health summary: ${JSON.stringify(summarizePayload(health))}`,
+      staticResult.payload ? 'Static bootstrap or previous live bubbles remain available as fallback.' : 'No static/bootstrap bubble fallback was available.',
     ],
   });
   writeFeedStatus(feed, status);

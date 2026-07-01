@@ -48,6 +48,20 @@ for (const [feedId, expected] of requiredFeeds) {
 const waxonedgeFeed = registry.feeds.find((entry) => entry.feed_id === 'waxonedge_bubbles');
 assert.ok(!waxonedgeFeed.output_files.includes('data/waxonedge/waxcash-bubbles-bootstrap.json'), 'WaxOnEdge registry must not claim static bootstrap output unless updater writes it');
 
+function assertFeedSafetyMetadata(feedId, expectedMode) {
+  const feed = registry.feeds.find((entry) => entry.feed_id === feedId);
+  assert.equal(feed.endpoint_refresh_mode, expectedMode, `${feedId} must declare endpoint_refresh_mode`);
+  assert.equal(feed.max_concurrency, 1, `${feedId} must cap scheduled endpoint concurrency at 1`);
+  assert.ok(feed.timeout_ms >= 10000, `${feedId} must declare a sane timeout_ms`);
+  assert.ok(feed.retries >= 1, `${feedId} must retry transient endpoint failures`);
+  assert.ok(feed.retry_backoff_ms > 0, `${feedId} must declare retry_backoff_ms`);
+  assert.ok(feed.fallback_age_hours >= 24, `${feedId} must declare fallback_age_hours`);
+}
+
+assertFeedSafetyMetadata('waxonedge_bubbles', 'health_plus_bubbles_with_static_fallback');
+assertFeedSafetyMetadata('waxcash_analytics', 'single_safe_fetch');
+assertFeedSafetyMetadata('wuffi_token_analytics', 'sequential');
+
 const gkniftyheadsFeed = registry.feeds.find((entry) => entry.feed_id === 'gkniftyheads_rarity');
 assert.match(
   gkniftyheadsFeed.source_urls.live_count,
@@ -116,9 +130,13 @@ assert.match(mainScript, /writeAllFeedStatus/, 'main updater must write aggregat
 const utils = read('scripts/site-feed-utils.mjs');
 assert.match(utils, /AbortController/, 'feed fetches must use AbortController timeouts');
 assert.match(utils, /DEFAULT_FEED_FETCH_TIMEOUT_MS/, 'feed fetch timeout must be centrally configurable');
+assert.match(utils, /safeFetchJson/, 'feed utilities must expose safeFetchJson fallback/retry wrapper');
+assert.match(utils, /isTransientFeedError/, 'feed utilities must distinguish transient endpoint errors for retry');
+assert.match(utils, /used_previous/, 'safe feed fetches must report whether previous JSON was used');
 assert.match(utils, /source_updated_at/, 'feed status must separate source_updated_at from checked_at');
 assert.match(utils, /source_age_minutes/, 'feed status must expose source_age_minutes');
 assert.match(utils, /last_successful_check/, 'feed status must expose last_successful_check');
+assert.match(utils, /endpoint_status/, 'feed status must expose per-endpoint status');
 
 for (const script of [
   'scripts/update-gkniftyheads-rarity-feed.mjs',
@@ -127,9 +145,11 @@ for (const script of [
   'scripts/update-wuffi-feed.mjs',
 ]) {
   const source = read(script);
-  assert.match(source, /preserveOrWrite|runGenerateGkniftyheadsRarity/, `${script} must preserve previous feed data or regenerate fallback`);
+  assert.match(source, /preserveOrWrite|safeFetchJson|runGenerateGkniftyheadsRarity/, `${script} must preserve previous feed data or regenerate fallback`);
   assert.match(source, /writeFeedStatus/, `${script} must write per-feed sync status`);
 }
+
+assert.doesNotMatch(read('scripts/update-wuffi-feed.mjs'), /Promise\.all/, 'WUFFI scheduled updater must not fetch heavy Worker endpoints concurrently');
 
 const pages = [
   ['wiki/gkniftyheads-nft-collection.html', 'gkniftyheads_rarity'],
