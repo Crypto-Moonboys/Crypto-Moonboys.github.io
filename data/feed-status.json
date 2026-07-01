@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-01T18:48:42.263Z",
+  "generated_at": "2026-07-01T19:21:24.918Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -23,10 +23,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T18:45:41.796Z",
-      "last_successful_check": "2026-07-01T18:45:41.796Z",
-      "last_successful_update": "2026-07-01T18:45:41.370Z",
-      "source_updated_at": "2026-07-01T18:45:41.370Z",
+      "checked_at": "2026-07-01T19:20:08.765Z",
+      "last_successful_check": "2026-07-01T19:20:08.765Z",
+      "last_successful_update": "2026-07-01T19:20:08.383Z",
+      "source_updated_at": "2026-07-01T19:20:08.383Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -34,7 +34,7 @@
       "endpoint_status": {},
       "notes": [
         "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22898 asset-state records across 143 templates.",
+        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22983 asset-state records across 143 templates.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.",
@@ -71,10 +71,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T18:45:47.910Z",
-      "last_successful_check": "2026-07-01T18:45:47.910Z",
-      "last_successful_update": "2026-07-01T18:45:47.910Z",
-      "source_updated_at": "2026-07-01T18:45:47.910Z",
+      "checked_at": "2026-07-01T19:20:22.207Z",
+      "last_successful_check": "2026-07-01T19:20:22.207Z",
+      "last_successful_update": "2026-07-01T19:20:22.207Z",
+      "source_updated_at": "2026-07-01T19:20:22.207Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -102,9 +102,9 @@
       "status": "degraded",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T18:46:48.612Z",
-      "last_successful_check": "2026-07-01T18:46:48.612Z",
-      "last_successful_update": "2026-07-01T18:46:48.612Z",
+      "checked_at": "2026-07-01T19:21:22.836Z",
+      "last_successful_check": "2026-07-01T19:21:22.836Z",
+      "last_successful_update": "2026-07-01T19:21:22.836Z",
       "source_updated_at": null,
       "source_age_minutes": null,
       "last_error": "health: Feed fetch timeout after 15000ms; bubbles_lite: Feed fetch timeout after 15000ms",
@@ -120,7 +120,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-01T18:46:18.164Z"
+          "checked_at": "2026-07-01T19:20:52.461Z"
         },
         "bubbles_lite": {
           "ok": false,
@@ -131,7 +131,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-01T18:45:47.911Z"
+          "checked_at": "2026-07-01T19:20:22.208Z"
         },
         "static_bootstrap": {
           "ok": true,
@@ -10944,7 +10944,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-07-01T18:46:48.418Z"
+          "checked_at": "2026-07-01T19:21:22.712Z"
         }
       },
       "notes": [
@@ -10967,12 +10967,12 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T18:47:10.757Z",
+      "checked_at": "2026-07-01T19:21:23.292Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
       "source_age_minutes": null,
-      "last_error": "Feed fetch timeout after 15000ms",
+      "last_error": "https://cryptomoonboys.com/api/waxonedge/waxcash-analytics failed: HTTP 503",
       "fallback_behavior": "preserve previous analytics JSON and show stale/error status if Worker data is unavailable",
       "analytics_status": "error",
       "endpoint_status": {
@@ -10982,10 +10982,10 @@
           "source_key": "analytics",
           "source_url": "https://cryptomoonboys.com/api/waxonedge/waxcash-analytics",
           "payload": null,
-          "error": "Feed fetch timeout after 15000ms",
+          "error": "https://cryptomoonboys.com/api/waxonedge/waxcash-analytics failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-01T18:46:48.615Z"
+          "checked_at": "2026-07-01T19:21:22.839Z"
         }
       },
       "notes": [
@@ -11009,12 +11009,12 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T18:48:42.262Z",
+      "checked_at": "2026-07-01T19:21:24.917Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
       "source_age_minutes": null,
-      "last_error": "token_page: Feed fetch timeout after 15000ms; pairs_liquidity: Feed fetch timeout after 15000ms; pairs_volume24: Feed fetch timeout after 15000ms",
+      "last_error": "token_page: https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF failed: HTTP 503; pairs_liquidity: https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=liquidity failed: HTTP 503; pairs_volume24: https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=volume24 failed: HTTP 503",
       "fallback_behavior": "preserve previous token analytics JSON and show stale/error status if Worker or chart data is unavailable",
       "analytics_status": "error",
       "endpoint_status": {
@@ -11024,10 +11024,10 @@
           "source_key": "token_page",
           "source_url": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF",
           "payload": null,
-          "error": "Feed fetch timeout after 15000ms",
+          "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-01T18:47:10.758Z",
+          "checked_at": "2026-07-01T19:21:23.293Z",
           "key": "token_page"
         },
         "pairs_liquidity": {
@@ -11036,10 +11036,10 @@
           "source_key": "pairs_liquidity",
           "source_url": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=liquidity",
           "payload": null,
-          "error": "Feed fetch timeout after 15000ms",
+          "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=liquidity failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-01T18:47:41.257Z",
+          "checked_at": "2026-07-01T19:21:23.830Z",
           "key": "pairs_liquidity"
         },
         "pairs_volume24": {
@@ -11048,10 +11048,10 @@
           "source_key": "pairs_volume24",
           "source_url": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=volume24",
           "payload": null,
-          "error": "Feed fetch timeout after 15000ms",
+          "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=volume24 failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-01T18:48:11.760Z",
+          "checked_at": "2026-07-01T19:21:24.371Z",
           "key": "pairs_volume24"
         }
       },
