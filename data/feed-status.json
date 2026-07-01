@@ -37,6 +37,44 @@
         "WAX get_info checkpoint updated for scan metadata only."
       ]
     },
+    "noballgamess_rarity": {
+      "feed_id": "noballgamess_rarity",
+      "feed_mode": "scheduled_snapshot_primary",
+      "page_paths": [
+        "/wiki/noballgamess-nft-collection.html"
+      ],
+      "output_files": [
+        "data/noballgamess/template-metadata-cache.json",
+        "data/noballgamess/live-template-supply.json",
+        "data/noballgamess/template-integrity-audit.json",
+        "data/noballgamess/asset-state-cache.json",
+        "data/noballgamess/asset-refresh-cursor.json",
+        "data/noballgamess/surviving-mint-ranks.json",
+        "data/noballgamess/template-rarity.json",
+        "data/noballgamess/live-asset-rarity.json",
+        "data/noballgamess/template-stats.json",
+        "data/noballgamess/trait-exposure.json",
+        "data/noballgamess/holder-leaderboard.json",
+        "data/noballgamess/asset-rarity-leaderboard.json",
+        "data/noballgamess/sync-status.json",
+        "wiki/noballgamess-nft-collection.html"
+      ],
+      "status": "pending",
+      "stale": true,
+      "stale_after_hours": 30,
+      "checked_at": null,
+      "last_successful_check": null,
+      "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
+      "last_error": "Pending first scheduled AtomicAssets sync.",
+      "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
+      "notes": [
+        "NoBallGames tracker page is wired; the scheduled feed will replace pending cache data with AtomicAssets-derived snapshots.",
+        "AtomicAssets is the source of truth; AtomicHub links are references only.",
+        "No price, floor, sales, listing, or AtomicHub listing counts are used for rarity math."
+      ]
+    },
     "waxonedge_bubbles": {
       "feed_id": "waxonedge_bubbles",
       "feed_mode": "live_primary_static_fallback",

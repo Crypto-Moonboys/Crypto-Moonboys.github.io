@@ -32,9 +32,17 @@ jobs:
           node scripts/generate-gkniftyheads-rarity.mjs
           node scripts/retry-gkniftyheads-thumbnails.mjs --cached-only
 
+      - name: Refresh NoBallGames staged rarity caches
+        run: |
+          node scripts/update-noballgamess-template-metadata-cache.mjs
+          node scripts/update-noballgamess-live-supply-cache.mjs
+          node scripts/update-noballgamess-asset-state-cache.mjs
+          node scripts/generate-noballgamess-rarity.mjs
+
       - name: Update feeds
         env:
           GK_USE_EXISTING_STAGED_CACHES: '1'
+          NBG_USE_EXISTING_STAGED_CACHES: '1'
         run: node scripts/update-site-feeds.mjs
 
       - name: Validate feed registry
@@ -55,8 +63,10 @@ jobs:
           GENERATED_PATHS=(
             data/gkniftyheads/
             data/gkniftyheads_rarity/
+            data/noballgamess/
             data/feed-status.json
             wiki/gkniftyheads-nft-collection.html
+            wiki/noballgamess-nft-collection.html
             img/gkniftyheads/thumbs/
             img/gkniftyheads/thumbs/manifest.json
           )

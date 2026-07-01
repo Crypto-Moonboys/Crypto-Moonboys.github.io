@@ -1,0 +1,12 @@
+{
+  "collection": "noballgamess",
+  "source": "AtomicAssets templates API",
+  "generated_at": null,
+  "templates": [],
+  "errors": [
+    {
+      "source_key": "templates",
+      "error": "Pending first scheduled AtomicAssets metadata sync."
+    }
+  ]
+}
