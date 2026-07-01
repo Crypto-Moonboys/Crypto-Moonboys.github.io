@@ -1,0 +1,15 @@
+{
+  "collection": "gkniftyheads",
+  "generated_at": null,
+  "last_full_scan_at": null,
+  "last_delta_scan_at": null,
+  "last_successful_asset_update": null,
+  "source_urls": {
+    "latest_created_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads&sort=created&order=desc&limit=1000",
+    "recently_updated_live_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads&burned=false&sort=updated&order=desc&limit=1000",
+    "recently_updated_burned_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads&burned=true&sort=updated&order=desc&limit=1000"
+  },
+  "assets": [],
+  "template_state": [],
+  "errors": []
+}

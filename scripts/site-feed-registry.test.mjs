@@ -21,6 +21,7 @@ function exists(relativePath) {
 }
 
 const registry = readJson('data/feed-registry.json');
+const registryText = read('data/feed-registry.json');
 assert.ok(Array.isArray(registry.feeds), 'feed registry must contain a feeds array');
 assert.ok(registry.feeds.length >= 4, 'registry must include more than only GKniftyHEADS');
 
@@ -141,9 +142,10 @@ assert.match(workflow, /workflow_dispatch:/, 'feed workflow must support manual 
 assert.match(workflow, /node scripts\/update-site-feeds\.mjs/, 'workflow must run central updater');
 assert.ok(
   workflow.indexOf('node scripts/update-gkniftyheads-template-metadata-cache.mjs') < workflow.indexOf('node scripts/update-gkniftyheads-live-supply-cache.mjs')
-  && workflow.indexOf('node scripts/update-gkniftyheads-live-supply-cache.mjs') < workflow.indexOf('node scripts/generate-gkniftyheads-rarity.mjs')
+  && workflow.indexOf('node scripts/update-gkniftyheads-live-supply-cache.mjs') < workflow.indexOf('node scripts/update-gkniftyheads-asset-state-cache.mjs')
+  && workflow.indexOf('node scripts/update-gkniftyheads-asset-state-cache.mjs') < workflow.indexOf('node scripts/generate-gkniftyheads-rarity.mjs')
   && workflow.indexOf('node scripts/generate-gkniftyheads-rarity.mjs') < workflow.indexOf('node scripts/retry-gkniftyheads-thumbnails.mjs --cached-only'),
-  'GKniftyHEADS workflow must refresh metadata, live supply, local rarity render, then cached-only thumbnails in order'
+  'GKniftyHEADS workflow must refresh metadata, live supply, asset state, local rarity render, then cached-only thumbnails in order'
 );
 assert.match(workflow, /GK_USE_EXISTING_STAGED_CACHES/, 'central feed update should reuse staged GKniftyHEADS caches in the workflow');
 assert.match(workflow, /node scripts\/site-feed-registry\.test\.mjs/, 'workflow must audit feed registry rules');
@@ -165,9 +167,19 @@ const gk = read('data/gkniftyheads/template-rarity.json');
 assert.match(gk, /"price_used": false/, 'NFT rarity feed must not use price');
 assert.doesNotMatch(gk, /floor price|market price|last sale/i, 'NFT rarity feed must not include price ranking signals');
 
+const assetStateCache = read('data/gkniftyheads/asset-state-cache.json');
+const survivingRanks = read('data/gkniftyheads/surviving-mint-ranks.json');
+assert.match(registryText, /data\/gkniftyheads\/asset-state-cache\.json/, 'registry must include asset-state cache output');
+assert.match(registryText, /data\/gkniftyheads\/surviving-mint-ranks\.json/, 'registry must include surviving mint ranks output');
+assert.match(assetStateCache, /"latest_created_assets"/, 'asset-state cache must document latest-created source URL');
+assert.match(assetStateCache, /"recently_updated_live_assets"/, 'asset-state cache must document updated-live source URL');
+assert.match(assetStateCache, /"recently_updated_burned_assets"/, 'asset-state cache must document updated-burned source URL');
+assert.match(survivingRanks, /"templates"/, 'surviving mint ranks data surface must exist');
+
 const gkUpdater = read('scripts/update-gkniftyheads-rarity-feed.mjs');
 assert.match(gkUpdater, /const result = await runGenerateGkniftyheadsRarity\(\)/, 'GKniftyHEADS feed updater must await the async rarity generator');
-assert.match(gkUpdater, /latest-created, updated-live, and updated-burned asset endpoints are registered/, 'GKniftyHEADS feed status should mention registered asset-delta endpoints without changing current count maths');
+assert.match(gkUpdater, /updateGkniftyheadsAssetStateCache/, 'GKniftyHEADS feed updater must refresh or reuse asset-state cache data');
+assert.match(gkUpdater, /latest-created, updated-live, and updated-burned asset endpoints update asset-state cache sidecar data/, 'GKniftyHEADS feed status should mention asset-state endpoint coverage without changing current count maths');
 assert.ok(
   gkUpdater.indexOf('await runGenerateGkniftyheadsRarity()') < gkUpdater.indexOf('const status = createFeedStatus'),
   'GKniftyHEADS feed status must be created only after generated data writes complete'

@@ -10,6 +10,7 @@ import {
 } from './generate-gkniftyheads-rarity.mjs';
 import { updateGkniftyheadsLiveSupplyCache } from './update-gkniftyheads-live-supply-cache.mjs';
 import { updateGkniftyheadsTemplateMetadataCache } from './update-gkniftyheads-template-metadata-cache.mjs';
+import { updateGkniftyheadsAssetStateCache } from './update-gkniftyheads-asset-state-cache.mjs';
 
 assert.equal(parseAtomicAssetsCount({ data: '1' }), 1, 'AtomicAssets count parser must handle data as a string number');
 assert.equal(parseAtomicAssetsCount({ data: 1 }), 1, 'AtomicAssets count parser must handle data as a number');
@@ -191,6 +192,60 @@ await updateGkniftyheadsLiveSupplyCache(root, {
 });
 assert.equal(sawPartialWrite, true, 'live supply cache should write partial progress before all templates finish');
 
+function asset(assetId, templateId, mint, burned = false, owner = 'owner.gm') {
+  return {
+    asset_id: String(assetId),
+    template: { template_id: String(templateId) },
+    template_mint: String(mint),
+    burned: burned ? 'true' : 'false',
+    owner,
+    updated_at_time: '1782920000000',
+    created_at_time: '1782910000000',
+    transferred_at_time: '1782925000000',
+  };
+}
+
+await updateGkniftyheadsAssetStateCache(root, {
+  rows: [
+    { template_id: 900001, issued_supply: 10 },
+    { template_id: 900002, issued_supply: 20 },
+  ],
+  fetchJson: async (url, { sourceKey }) => {
+    assert.match(url, /page=1/, 'asset-state fetches should use paginated AtomicAssets asset URLs');
+    if (sourceKey === 'latest_created_assets') return { data: [asset('a9', 900001, 9)] };
+    if (sourceKey === 'recently_updated_live_assets') return { data: [
+      asset('a1', 900001, 1),
+      asset('a2', 900001, 2),
+      asset('a4', 900001, 4, false, 'fresh.owner'),
+      asset('a5', 900001, 5),
+      asset('a6', 900001, 6),
+      asset('a7', 900001, 7),
+      asset('a8', 900001, 8),
+    ] };
+    if (sourceKey === 'recently_updated_burned_assets') return { data: [asset('a3', 900001, 3, true, '')] };
+    return { data: [] };
+  },
+});
+let assetCache = JSON.parse(fs.readFileSync(path.join(root, 'data', 'gkniftyheads', 'asset-state-cache.json'), 'utf8'));
+let mintRanks = JSON.parse(fs.readFileSync(path.join(root, 'data', 'gkniftyheads', 'surviving-mint-ranks.json'), 'utf8'));
+assert.equal(assetCache.assets.some((row) => row.asset_id === 'a9'), true, 'new asset from latest_created_assets should be added to cache');
+assert.equal(assetCache.assets.find((row) => row.asset_id === 'a3').burned, true, 'burned asset delta should update burned=true');
+assert.equal(assetCache.assets.find((row) => row.asset_id === 'a4').owner, 'fresh.owner', 'live asset delta should update owner/current metadata');
+const rankedA4 = mintRanks.templates.find((row) => row.template_id === 900001).assets.find((row) => row.asset_id === 'a4');
+assert.equal(rankedA4.original_mint_number, 4, 'original mint numbers never mutate after lower mints burn');
+assert.equal(rankedA4.surviving_mint_rank, 3, 'mint #4 should become surviving_mint_rank 3 when mint #3 is burned');
+assert.equal(mintRanks.templates.find((row) => row.template_id === 900001).assets.find((row) => row.asset_id === 'a3').surviving_mint_rank, undefined, 'burned assets must not receive current surviving_mint_rank');
+
+await updateGkniftyheadsAssetStateCache(root, {
+  rows: [{ template_id: 900001, issued_supply: 10 }],
+  fetchJson: async () => {
+    throw new Error('fixture AtomicAssets outage');
+  },
+});
+assetCache = JSON.parse(fs.readFileSync(path.join(root, 'data', 'gkniftyheads', 'asset-state-cache.json'), 'utf8'));
+assert.equal(assetCache.assets.some((row) => row.asset_id === 'a9'), true, 'failed AtomicAssets delta scan should preserve previous good cache assets');
+assert.equal(assetCache.errors.some((row) => /fixture AtomicAssets outage/.test(row.error)), true, 'failed delta scan should record the source error');
+
 await runGenerateGkniftyheadsRarity(root);
 const liveHtml = fs.readFileSync(path.join(root, 'wiki', 'gkniftyheads-nft-collection.html'), 'utf8');
 const liveJson = JSON.parse(fs.readFileSync(path.join(root, 'data', 'gkniftyheads', 'template-rarity.json'), 'utf8'));
@@ -202,6 +257,12 @@ assert.equal(fixture.issued_supply, 10, 'issued_supply should remain visible as 
 assert.equal(fixture.live_supply, 8, 'renderer should use cached live_supply');
 assert.equal(fixture.pre_baseline_missing_or_burned, 2, 'renderer should preserve pre-baseline missing/burned count');
 assert.equal(fixture.rarity_live_exposure, 8, 'scoring exposure should use cached live_supply');
+assert.equal(fixture.live_supply_from_asset_state, 8, 'asset-state live_supply should be exposed when cache matches _count');
+assert.equal(fixture.asset_state_status, 'ok', 'asset-state live_supply should match template _count in the happy path');
+assert.equal(fixture.burned_assets_count, 1, 'asset-state burned asset count should be exposed on rarity rows');
+assert.match(liveHtml, /Asset state cache/, 'page should expose asset state cache status');
+assert.match(liveHtml, /Original mint numbers never change\. Burns do not renumber NFTs/, 'page should explain permanent original mint numbers');
+assert.match(liveHtml, /surviving mint rank/, 'page should explain surviving mint rank');
 assert.equal(liveJson.ranked_templates.some((row) => row.template_id === 900003), false, 'max_supply=0 templates must stay out of limited ranking');
 assert.equal(liveJson.ranked_templates.some((row) => row.template_id === 900004), false, 'local-only stale templates must not enter ranked_templates');
 assert.equal(integrityAudit.missing_from_atomicassets.some((row) => row.template_id === 900004), true, 'integrity audit should report local-only templates missing from AtomicAssets');
@@ -210,6 +271,30 @@ assert.equal(integrityAudit.duplicate_title_image_groups.some((group) => {
   const ids = group.templates.map((row) => row.template_id).sort((a, b) => a - b);
   return ids.includes(900001) && ids.includes(900002);
 }), true, 'integrity audit should report duplicate title/image groups across valid AtomicAssets templates');
+
+const mismatchRoot = makeRoot();
+await updateGkniftyheadsLiveSupplyCache(mismatchRoot, {
+  concurrency: 1,
+  rows: [{ template_id: 900001, issued_supply: 10 }],
+  countTemplate: async () => 8,
+});
+await updateGkniftyheadsAssetStateCache(mismatchRoot, {
+  rows: [{ template_id: 900001, issued_supply: 10 }],
+  fetchJson: async (url, { sourceKey }) => {
+    if (sourceKey === 'recently_updated_live_assets') return { data: [
+      asset('m1', 900001, 1),
+      asset('m2', 900001, 2),
+      asset('m4', 900001, 4),
+    ] };
+    return { data: [] };
+  },
+});
+await runGenerateGkniftyheadsRarity(mismatchRoot);
+const mismatchJson = JSON.parse(fs.readFileSync(path.join(mismatchRoot, 'data', 'gkniftyheads', 'template-rarity.json'), 'utf8'));
+const mismatchRow = mismatchJson.ranked_templates.find((row) => row.template_id === 900001);
+assert.equal(mismatchRow.live_supply, 8, 'asset-state mismatch must not override _count live supply used for current rarity maths');
+assert.equal(mismatchRow.live_supply_from_asset_state, 3, 'asset-state mismatch should preserve the independently counted asset-state supply');
+assert.equal(mismatchRow.asset_state_status, 'asset_state_mismatch', 'mismatch between asset-state live_supply and _count must be recorded');
 
 const fallbackRoot = makeRoot();
 await runGenerateGkniftyheadsRarity(fallbackRoot);

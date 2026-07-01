@@ -790,6 +790,63 @@ function applyLiveSupplyCache(rows, root = ROOT) {
   });
 }
 
+function readAssetStateCache(root = ROOT) {
+  const file = path.join(root, 'data', 'gkniftyheads', 'asset-state-cache.json');
+  if (!fs.existsSync(file)) {
+    return {
+      collection: COLLECTION,
+      generated_at: null,
+      last_delta_scan_at: null,
+      last_successful_asset_update: null,
+      assets: [],
+      template_state: [],
+      errors: [],
+    };
+  }
+  const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+  return {
+    ...payload,
+    assets: Array.isArray(payload.assets) ? payload.assets : [],
+    template_state: Array.isArray(payload.template_state) ? payload.template_state : [],
+    errors: Array.isArray(payload.errors) ? payload.errors : [],
+  };
+}
+
+function applyAssetStateCache(rows, root = ROOT) {
+  const cache = readAssetStateCache(root);
+  const stateByTemplate = new Map(cache.template_state.map((row) => [Number(row.template_id), row]));
+  return rows.map((row) => {
+    const state = stateByTemplate.get(row.template_id);
+    if (!state) {
+      return {
+        ...row,
+        live_supply_from_asset_state: null,
+        burned_assets_count: null,
+        asset_state_status: cache.assets.length ? 'missing_template_state' : 'not_available',
+        asset_state_last_checked_at: cache.last_successful_asset_update || cache.last_delta_scan_at || null,
+      };
+    }
+    const liveFromAssets = Number(state.live_supply_from_assets);
+    const countedLive = Number(row.live_supply);
+    const hasCountedLive = ['counted', 'ok'].includes(row.live_supply_status) && Number.isFinite(countedLive);
+    const matchesCount = hasCountedLive && Number.isFinite(liveFromAssets) && liveFromAssets === countedLive;
+    return {
+      ...row,
+      live_supply_from_asset_state: Number.isFinite(liveFromAssets) ? liveFromAssets : null,
+      burned_assets_count: Number(state.burned_assets_count || 0),
+      asset_state_status: matchesCount
+        ? 'ok'
+        : hasCountedLive && Number.isFinite(liveFromAssets)
+          ? 'asset_state_mismatch'
+          : 'asset_state_available',
+      asset_state_last_checked_at: state.last_asset_state_update || cache.last_successful_asset_update || cache.last_delta_scan_at || null,
+      asset_state_mismatch: hasCountedLive && Number.isFinite(liveFromAssets) && liveFromAssets !== countedLive
+        ? `asset-state live supply ${liveFromAssets} differs from _count live supply ${countedLive}`
+        : null,
+    };
+  });
+}
+
 function applyThumbnailCache(rows, root = ROOT) {
   const manifest = readThumbManifest(root);
   return rows.map((row) => {
@@ -947,6 +1004,9 @@ export function buildRanking(rows) {
 function buildStats(model) {
   const counted = model.all.filter((row) => ['counted', 'ok'].includes(row.live_supply_status));
   const fallback = model.all.filter((row) => !['counted', 'ok'].includes(row.live_supply_status));
+  const assetStateRows = model.all.filter((row) => row.live_supply_from_asset_state !== null && row.live_supply_from_asset_state !== undefined);
+  const assetStateOk = model.all.filter((row) => row.asset_state_status === 'ok');
+  const assetStateMismatches = model.all.filter((row) => row.asset_state_status === 'asset_state_mismatch');
   const liveStatus = counted.length === model.all.length && model.all.length > 0
     ? 'atomicassets live asset count'
     : counted.length > 0
@@ -964,6 +1024,16 @@ function buildStats(model) {
     pre_baseline_missing_or_burned: counted.reduce((sum, row) => sum + (row.pre_baseline_missing_or_burned || 0), 0),
     missing_or_burned_count: counted.reduce((sum, row) => sum + (row.missing_or_burned_count || 0), 0),
     missing_burned_count: counted.reduce((sum, row) => sum + (row.missing_or_burned_count || 0), 0),
+    asset_state_templates_tracked: assetStateRows.length,
+    asset_state_ok_templates: assetStateOk.length,
+    asset_state_mismatch_templates: assetStateMismatches.length,
+    burned_assets_tracked: assetStateRows.reduce((sum, row) => sum + (row.burned_assets_count || 0), 0),
+    surviving_mint_ranks_tracked: assetStateRows.reduce((sum, row) => sum + (row.live_supply_from_asset_state || 0), 0),
+    asset_state_last_checked_at: assetStateRows
+      .map((row) => row.asset_state_last_checked_at)
+      .filter(Boolean)
+      .sort()
+      .at(-1) || null,
     last_scan_time: new Date().toISOString(),
     scan_block: null,
     live_data_status: liveStatus,
@@ -1059,12 +1129,16 @@ function buildRankingSection(model, stats, rawSection) {
   const liveAssetsValue = hasLiveCounts ? stats.live_assets_counted : 'Not scanned';
   const fallbackSupplyValue = stats.fallback_issued_supply_counted || 'None';
   const mintNumberCopy = 'Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.';
+  const holderMintCopy = 'Original mint numbers never change. Burns do not renumber NFTs. The site can track surviving mint rank separately, which is the NFT’s current position among live/unburned assets in the same template.';
   const methodCopy = hasLiveCounts
     ? `The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. ${mintNumberCopy}`
     : `The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns. ${mintNumberCopy}`;
   const statusCopy = hasLiveCounts
     ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
     : '<strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.';
+  const assetStateCopy = stats.asset_state_templates_tracked
+    ? `<strong>Asset state cache:</strong> ${stats.asset_state_ok_templates}/${stats.asset_state_templates_tracked} template states match current _count supply; ${stats.asset_state_mismatch_templates} mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> ${esc(stats.asset_state_last_checked_at || 'Not scanned')}.`
+    : '<strong>Asset state cache:</strong> pending first successful asset delta scan.';
 
   return `${RARITY_BEGIN}
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
@@ -1079,6 +1153,10 @@ function buildRankingSection(model, stats, rawSection) {
             ${statCard('Fallback issued supply counted', fallbackSupplyValue)}
             ${statCard('Live assets counted', liveAssetsValue)}
             ${statCard('Pre-baseline missing/burned', stats.pre_baseline_missing_or_burned)}
+            ${statCard('Asset state templates', stats.asset_state_templates_tracked || 'Pending')}
+            ${statCard('Burned assets tracked', stats.burned_assets_tracked || 'None')}
+            ${statCard('Surviving mint ranks tracked', stats.surviving_mint_ranks_tracked || 'Pending')}
+            ${statCard('Last asset delta scan', stats.asset_state_last_checked_at || 'Not scanned')}
             ${statCard('Last scan time', stats.last_scan_time)}
             ${statCard('Scan block', stats.scan_block || 'Not scanned')}
           </div>
@@ -1086,11 +1164,13 @@ function buildRankingSection(model, stats, rawSection) {
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
             <p class="lore-paragraph">${methodCopy}</p>
+            <p class="lore-paragraph">${holderMintCopy}</p>
           </section>
 
           <section class="wiki-section gk-rarity-status">
             <h3>Last Scan Status</h3>
             <p class="lore-paragraph">${statusCopy}</p>
+            <p class="lore-paragraph">${assetStateCopy}</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">
@@ -1181,6 +1261,43 @@ function ensureRarityClientScript(html) {
   return html.replace('</body>', `${script}\n</body>`);
 }
 
+function buildSurvivingMintRanksPayload(root = ROOT) {
+  const cache = readAssetStateCache(root);
+  const byTemplate = new Map();
+  for (const asset of cache.assets || []) {
+    const templateId = Number(asset.template_id);
+    if (!Number.isFinite(templateId)) continue;
+    const group = byTemplate.get(templateId) || [];
+    group.push(asset);
+    byTemplate.set(templateId, group);
+  }
+  const templates = [...byTemplate.entries()].sort((a, b) => a[0] - b[0]).map(([templateId, assets]) => {
+    const live = assets
+      .filter((asset) => !asset.burned)
+      .sort((a, b) => Number(a.original_mint_number || 0) - Number(b.original_mint_number || 0) || String(a.asset_id).localeCompare(String(b.asset_id)));
+    const rankByAsset = new Map(live.map((asset, index) => [asset.asset_id, index + 1]));
+    return {
+      template_id: templateId,
+      live_supply: live.length,
+      burned_assets_count: assets.filter((asset) => asset.burned).length,
+      assets: assets
+        .slice()
+        .sort((a, b) => Number(a.original_mint_number || 0) - Number(b.original_mint_number || 0) || String(a.asset_id).localeCompare(String(b.asset_id)))
+        .map((asset) => ({
+          asset_id: asset.asset_id,
+          original_mint_number: asset.original_mint_number,
+          ...(asset.burned ? {} : { surviving_mint_rank: rankByAsset.get(asset.asset_id) }),
+          burned: Boolean(asset.burned),
+        })),
+    };
+  });
+  return {
+    collection: COLLECTION,
+    generated_at: new Date().toISOString(),
+    templates,
+  };
+}
+
 function replaceSection(html, rankingSection) {
   if (html.includes(RARITY_BEGIN) && html.includes(RARITY_END)) {
     return html.replace(new RegExp(`${RARITY_BEGIN}[\\s\\S]*?${RARITY_END}`), rankingSection);
@@ -1203,6 +1320,7 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
   let rows = applyTemplateIntegrity(localRows, integrityAudit);
   rows = applyMetadataCache(rows, root);
   rows = applyLiveSupplyCache(rows, root);
+  rows = applyAssetStateCache(rows, root);
   rows = applyThumbnailCache(rows, root);
   if (options.prepareThumbnails) {
     await prepareThumbnails(rows, root, options.thumbnailOptions || {});
@@ -1225,6 +1343,15 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
     utility_open_mint_templates: model.utility.map(publicTemplate),
     unissued_templates: model.unissued.map(publicTemplate),
   };
+  const survivingMintRanksPayload = buildSurvivingMintRanksPayload(root);
+  const liveAssetRows = survivingMintRanksPayload.templates.flatMap((template) => template.assets.map((asset) => ({
+    asset_id: asset.asset_id,
+    template_id: template.template_id,
+    original_mint_number: asset.original_mint_number,
+    surviving_mint_rank: asset.surviving_mint_rank ?? null,
+    burned: asset.burned,
+    status: asset.burned ? 'burned' : 'live',
+  })));
   const livePayload = {
     collection: COLLECTION,
     generated_at: stats.last_scan_time,
@@ -1239,7 +1366,7 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
       live_supply_status: row.live_supply_status,
       pre_baseline_missing_or_burned: row.pre_baseline_missing_or_burned,
     })),
-    assets: [],
+    assets: liveAssetRows,
   };
   const traitPayload = {
     collection: COLLECTION,
@@ -1263,17 +1390,27 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
     supply_counting: stats.live_assets_counted === null
       ? 'issued_supply_fallback'
       : 'atomicassets_current_assets_by_template',
+    asset_state_cache: {
+      status: stats.asset_state_templates_tracked ? 'available' : 'pending',
+      templates_tracked: stats.asset_state_templates_tracked,
+      ok_templates: stats.asset_state_ok_templates,
+      mismatch_templates: stats.asset_state_mismatch_templates,
+      burned_assets_tracked: stats.burned_assets_tracked,
+      surviving_mint_ranks_tracked: stats.surviving_mint_ranks_tracked,
+      last_asset_delta_scan: stats.asset_state_last_checked_at,
+    },
   };
 
   writeJson(path.join(root, 'data', 'gkniftyheads', 'template-rarity.json'), rarityPayload);
   writeJson(path.join(root, 'data', 'gkniftyheads', 'live-asset-rarity.json'), livePayload);
+  writeJson(path.join(root, 'data', 'gkniftyheads', 'surviving-mint-ranks.json'), survivingMintRanksPayload);
   writeJson(path.join(root, 'data', 'gkniftyheads', 'trait-exposure.json'), traitPayload);
   writeJson(path.join(root, 'data', 'gkniftyheads', 'sync-status.json'), syncPayload);
   writeCsv(path.join(root, 'data', 'gkniftyheads', 'template-rarity.csv'), [...model.ranked, ...model.utility, ...model.unissued], [
     'rank', 'band', 'bucket', 'title', 'template_id', 'live_supply', 'live_supply_status', 'issued_supply', 'max_supply', 'pre_baseline_missing_or_burned', 'missing_or_burned_count', 'rarity_trait', 'rarity_live_exposure', 'variation_trait', 'variation_live_exposure', 'final_score', 'url', 'atomicassets_url', 'atomichub_url'
   ]);
-  writeCsv(path.join(root, 'data', 'gkniftyheads', 'live-asset-rarity.csv'), [], [
-    'asset_id', 'template_id', 'original_template_mint', 'surviving_mint_rank', 'status'
+  writeCsv(path.join(root, 'data', 'gkniftyheads', 'live-asset-rarity.csv'), liveAssetRows, [
+    'asset_id', 'template_id', 'original_mint_number', 'surviving_mint_rank', 'status'
   ]);
   writeCsv(path.join(root, 'data', 'gkniftyheads', 'trait-exposure.csv'), [
     ...model.rarityExposure.map((row) => ({ trait_type: 'rarity', ...row })),
