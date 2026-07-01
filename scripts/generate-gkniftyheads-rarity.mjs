@@ -5,6 +5,7 @@ import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ASSET_RANKING_FORMULA, buildAssetVersionRanking } from './nft-asset-version-ranking.mjs';
 import { readMarketAnalytics, renderMarketAnalyticsSection } from './nft-market-analytics.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1183,11 +1184,27 @@ function utilityRow(row) {
   </tr>`;
 }
 
+function assetVersionRow(row) {
+  return `<tr>
+    <td>${row.asset_rank}</td>
+    <td class="gk-rarity-nft-cell">${nftCard(row, { status: row.rarity_band || 'Asset Version' })}</td>
+    <td>${row.asset_final_score.toFixed(2)}</td>
+    <td>${row.asset_id}</td>
+    <td>${row.template_id}</td>
+    <td>${row.template_rank ?? ''}</td>
+    <td>${row.template_final_score.toFixed(2)}</td>
+    <td>${row.original_mint_number ?? 'Missing'}</td>
+    <td>${row.surviving_mint_rank ?? 'Missing'}</td>
+    <td>${row.live_supply}</td>
+    <td>${esc(row.owner || 'Not exposed')}</td>
+  </tr>`;
+}
+
 function statCard(label, value) {
   return `<div class="wiki-stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
 }
 
-function buildRankingSection(model, stats, rawSection, marketAnalytics = null) {
+function buildRankingSection(model, stats, rawSection, marketAnalytics = null, assetVersionRanking = []) {
   const filters = [
     ['all-ranked', 'All Ranked'],
     ['legendary', 'Legendary'],
@@ -1277,6 +1294,19 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null) {
               </tbody>
             </table>
           </div>
+
+          <section class="wiki-section gk-asset-version-ranking">
+            <h3>Asset Version Ranking</h3>
+            <p class="lore-paragraph">Template Rarity Ranking scores the edition/template. Asset Version Ranking scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers never change. Burns do not renumber NFTs; they only affect live supply and surviving mint rank. Market data is excluded.</p>
+            <div class="wiki-table-wrap">
+              <table class="wiki-table gk-asset-version-table">
+                <thead>
+                  <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Template Rank</th><th>Template Score</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th><th>Owner</th></tr>
+                </thead>
+                <tbody>${assetVersionRanking.length ? assetVersionRanking.slice(0, 50).map(assetVersionRow).join('\n                ') : '<tr><td colspan="11">Pending asset-state sync.</td></tr>'}</tbody>
+              </table>
+            </div>
+          </section>
 
           <section class="wiki-section gk-rarity-utility">
             <h3>Utility / Open Mint / Infinite Supply</h3>
@@ -1418,18 +1448,25 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
     unissued_templates: model.unissued.map(publicTemplate),
   };
   const survivingMintRanksPayload = buildSurvivingMintRanksPayload(root);
-  const liveAssetRows = survivingMintRanksPayload.templates.flatMap((template) => template.assets.map((asset) => ({
+  const survivingRankByAsset = new Map(survivingMintRanksPayload.templates.flatMap((template) => template.assets.map((asset) => [
+    String(asset.asset_id),
+    asset.surviving_mint_rank ?? null,
+  ])));
+  const assetStateCache = readAssetStateCache(root);
+  const sourceAssetRows = assetStateCache.assets.map((asset) => ({
     asset_id: asset.asset_id,
-    template_id: template.template_id,
+    template_id: Number(asset.template_id),
+    owner: asset.owner || null,
     original_mint_number: asset.original_mint_number,
-    surviving_mint_rank: asset.surviving_mint_rank ?? null,
-    burned: asset.burned,
-    status: asset.burned ? 'burned' : 'live',
-  })));
+    surviving_mint_rank: survivingRankByAsset.get(String(asset.asset_id)) ?? null,
+    burned: Boolean(asset.burned),
+  }));
+  const assetVersionRanking = buildAssetVersionRanking(sourceAssetRows, model.ranked);
   const livePayload = {
     collection: COLLECTION,
     generated_at: stats.last_scan_time,
     status: stats.live_data_status,
+    asset_ranking_formula: ASSET_RANKING_FORMULA,
     note: stats.live_assets_counted === null
       ? 'Live asset count failed; using issued-supply fallback. original_mint_number and surviving_mint_rank remain pending until asset snapshots are available.'
       : 'Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a current supply delta and first-scan baseline, not confirmed burn history. original_mint_number is permanent; surviving_mint_rank may be tracked separately among currently live/unburned NFTs.',
@@ -1440,7 +1477,7 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
       live_supply_status: row.live_supply_status,
       pre_baseline_missing_or_burned: row.pre_baseline_missing_or_burned,
     })),
-    assets: liveAssetRows,
+    assets: assetVersionRanking,
   };
   const traitPayload = {
     collection: COLLECTION,
@@ -1483,8 +1520,8 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
   writeCsv(path.join(root, 'data', 'gkniftyheads', 'template-rarity.csv'), [...model.ranked, ...model.utility, ...model.unissued], [
     'rank', 'band', 'bucket', 'title', 'template_id', 'live_supply', 'live_supply_status', 'issued_supply', 'max_supply', 'pre_baseline_missing_or_burned', 'missing_or_burned_count', 'rarity_trait', 'rarity_trait_scoring_enabled', 'rarity_live_exposure', 'variation_trait', 'variation_trait_scoring_enabled', 'variation_live_exposure', 'supply_score_component', 'rarity_score_component', 'variation_score_component', 'burn_score_component', 'missing_burned_percentage', 'final_score', 'url', 'atomicassets_url', 'atomichub_url'
   ]);
-  writeCsv(path.join(root, 'data', 'gkniftyheads', 'live-asset-rarity.csv'), liveAssetRows, [
-    'asset_id', 'template_id', 'original_mint_number', 'surviving_mint_rank', 'status'
+  writeCsv(path.join(root, 'data', 'gkniftyheads', 'live-asset-rarity.csv'), assetVersionRanking, [
+    'asset_rank', 'asset_final_score', 'asset_id', 'template_id', 'owner', 'template_rank', 'template_final_score', 'template_score_component', 'original_mint_number', 'original_mint_score', 'original_mint_score_component', 'original_mint_status', 'surviving_mint_rank', 'surviving_mint_rank_score', 'surviving_mint_rank_score_component', 'surviving_mint_rank_status', 'live_supply', 'issued_supply', 'rarity_band', 'burned', 'price_used', 'market_data_used'
   ]);
   writeCsv(path.join(root, 'data', 'gkniftyheads', 'trait-exposure.csv'), [
     ...model.rarityExposure.map((row) => ({ trait_type: 'rarity', ...row })),
@@ -1493,7 +1530,7 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
 
   const rawFallback = oldSection.includes(RAW_BEGIN) ? oldSection : `${RAW_BEGIN}\n${oldSection}\n${RAW_END}`;
   const marketAnalytics = readMarketAnalytics(root, COLLECTION);
-  const nextHtml = ensureRarityClientScript(replaceSection(html, buildRankingSection(model, stats, rawFallback, marketAnalytics)));
+  const nextHtml = ensureRarityClientScript(replaceSection(html, buildRankingSection(model, stats, rawFallback, marketAnalytics, assetVersionRanking)));
   fs.writeFileSync(collectionPage, nextHtml, 'utf8');
   return {
     templates: rows.length,

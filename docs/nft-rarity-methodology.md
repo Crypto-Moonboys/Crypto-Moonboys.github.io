@@ -102,7 +102,17 @@ Burns increase rarity through lower live supply and a small burn/missing bonus w
 
 ### Layer 1: Template / edition rarity
 
-Template / edition rarity compares template editions against other template editions.
+Template Rarity Ranking compares template editions against other template editions. It answers: which edition/template is rarest?
+
+Formula:
+
+```text
+template_final_score =
+  supplyScore * 50
++ rarityScore * 25
++ variationScore * 20
++ burnScore * 5
+```
 
 Inputs can include:
 
@@ -115,7 +125,18 @@ Inputs can include:
 
 ### Layer 2: Asset / numbered-print rarity
 
-Asset / numbered-print rarity compares exact NFTs inside a template.
+Asset Version Ranking compares exact live NFTs and is built on top of template rank. It answers: which exact NFT is the strongest version?
+
+Formula:
+
+```text
+asset_final_score =
+  normalized_template_final_score * 60
++ original_mint_score * 20
++ surviving_mint_rank_score * 20
+```
+
+Burned assets are excluded from Asset Version Ranking. Missing original mint numbers or missing surviving mint ranks score `0` for that component and are marked as missing; the tracker does not fake mint data.
 
 Inputs can include:
 
@@ -124,6 +145,7 @@ Inputs can include:
 - surviving mint rank
 - live/unburned status
 - whether lower mints are burned/missing
+- template_final_score from Template Rarity Ranking
 
 Think of a template like a numbered art print run. A 10,000-edition print run works like NFT template mints. Print `#10,000` is normally not the strongest mint number. But if prints `#1` through `#9,999` are destroyed, print `#10,000` is still original `#10,000`, but it is now the only surviving print and surviving rank `#1`. If prints `#3` through `#9,999` are destroyed, print `#10,000` is still original `#10,000`, but surviving rank `#3` behind `#1` and `#2`.
 
@@ -132,6 +154,7 @@ Apply the same logic to NFTs:
 - `original_mint_number` = permanent print number
 - `surviving_mint_rank` = current live/unburned rank after burns
 - burns never renumber the NFT
+- marketplace price, floor, sales, listings, market cap, and volume are excluded from asset ranking
 
 ## 5. Core rarity terms
 
@@ -238,7 +261,7 @@ Important NoBallGames files:
 - `data/noballgamess/template-stats.json`
 - `data/noballgamess/trait-exposure.json`
 - `data/noballgamess/holder-leaderboard.json`
-- `data/noballgamess/asset-rarity-leaderboard.json`
+- `data/noballgamess/asset-rarity-leaderboard.json` (Asset Version Ranking output)
 - `data/noballgamess/sync-status.json`
 - `data/noballgamess/market-analytics.json` when present
 
@@ -299,7 +322,7 @@ NoBallGames also has extra structured outputs that help inspect exact versions:
 - asset-state cache
 - surviving mint ranks
 - holder leaderboard
-- asset rarity leaderboard
+- scored Asset Version Ranking
 - template stats
 - trait exposure output where metadata supports it
 
@@ -313,7 +336,7 @@ NoBallGames may have thinner metadata than GKniftyHEADS. When useful rarity or v
 | Current template scoring | Adaptive weighted model; current data usually keeps 50/25/20/5 | Adaptive weighted model; thin metadata shifts trait weight to supply |
 | Trait/name weighting | Active `rarity_trait` and `variation_trait` exposure scoring | Only where real metadata supports it; do not fake fields |
 | Asset-level ranking | Original mint and surviving mint rank are separate asset-level context | Original mint and surviving mint rank are strongly surfaced |
-| Data outputs | Template rarity, live asset rarity, trait exposure, asset state | Template rarity, template stats, trait exposure, holder leaderboard, asset rarity leaderboard, asset state |
+| Data outputs | Template rarity, live asset rarity, trait exposure, asset state, Asset Version Ranking | Template rarity, template stats, trait exposure, holder leaderboard, Asset Version Ranking, asset state |
 | Best use today | Find strongest template/trait/variation, then inspect asset mint | Find scarce template, then inspect exact asset/mint/surviving rank |
 | Marketplace data | Display-only, not scoring | Display-only, not scoring |
 
@@ -345,7 +368,7 @@ Best version checklist:
 
 1. Start with ranked fixed-supply templates.
 2. Check live supply.
-3. Check asset rarity leaderboard.
+3. Check Asset Version Ranking.
 4. Check original mint number.
 5. Check surviving mint rank.
 6. Check whether lower mints are burned/missing.

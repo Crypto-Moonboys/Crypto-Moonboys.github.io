@@ -25,6 +25,7 @@
           <p>This is a Template Rarity Ranking using the shared adaptive weighted rarity framework. Separate AtomicAssets template IDs may share the same artwork or name. AtomicAssets is the source of truth; AtomicHub links are reference links only.</p>
           <p>The base template formula is live surviving supply scarcity 50%, rarity trait/name exposure scarcity 25%, variation trait/name/metadata exposure scarcity 20%, and missing/burned supply bonus 5%. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of creating fake traits.</p>
           <p>Thin metadata templates rank mostly by live surviving supply. Burns can increase rarity through lower live supply plus a small missing/burned bonus when supported by tracker data. Market price, floor, sales, listings, market cap, and volume are display-only and never scoring inputs.</p>
+          <p>Template Rarity Ranking scores the edition/template. Asset Version Ranking scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers never change. Burns do not renumber NFTs; they only affect live supply and surviving mint rank.</p>
           <p>Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset's position among currently live/unburned NFTs.</p>
           <p>Pre-baseline missing/burned is a current supply delta. It is not confirmed historic burn tracking unless future snapshots prove disappearance after tracking began.</p>
         </section>
@@ -555,164 +556,225 @@
           </table>
         </section>
         <section class="wiki-section">
-          <h2>Asset Rarity Leaderboard</h2>
+          <h2>Asset Version Ranking</h2>
+          <p>Exact live NFT assets are sorted by asset_final_score, built from template_final_score, original_mint_number, and surviving_mint_rank. Burned assets are excluded and market data is excluded.</p>
           <table class="wiki-table">
-            <thead><tr><th>NFT</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th></tr></thead>
+            <thead><tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Template Rank</th><th>Template Score</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Owner</th></tr></thead>
             <tbody><tr>
-    <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
-      <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
-      </div>
-    </div></td>
-    <td>1099675823320</td>
-    <td></td>
-    <td>0</td>
     <td>1</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401767" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmQ9CwboL2gj4NK12Yr49FiL7zQxyMWD7LAEYeDaqFRbY4" alt="C B Twoheadz NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401767" target="_blank" rel="noopener noreferrer">C B Twoheadz</a>
+        <small>Ultra Rare · Template #401767</small>
       </div>
     </div></td>
-    <td>1099675823319</td>
-    <td></td>
-    <td>0</td>
+    <td>96.4771</td>
+    <td>1099595898015</td>
+    <td>401767</td>
+    <td>1</td>
+    <td>94.1285</td>
+    <td>1</td>
+    <td>1</td>
+    <td>pepperstake</td>
+  </tr>
+<tr>
     <td>2</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmeGAXwybWB5FoXqSSRAoZDd7QGRCgLcpoUzrpTMCMVGrB" alt="‘’The Radiant Child’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer">‘’The Radiant Child’’</a>
+        <small>Rare · Template #401779</small>
       </div>
     </div></td>
-    <td>1099675823318</td>
-    <td></td>
-    <td>0</td>
+    <td>96.3191</td>
+    <td>1099595902155</td>
+    <td>401779</td>
+    <td>2</td>
+    <td>93.8651</td>
+    <td>1</td>
+    <td>1</td>
+    <td>pepperstake</td>
+  </tr>
+<tr>
     <td>3</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmTcwXvX3LSmu5Wicjvd74bcBQZiLmz5isSa7CRhAkUmef" alt="‘’Pluto To Las Vegas’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer">‘’Pluto To Las Vegas’’</a>
+        <small>Rare · Template #401786</small>
       </div>
     </div></td>
-    <td>1099675823317</td>
-    <td></td>
-    <td>0</td>
+    <td>96.2243</td>
+    <td>1099595905079</td>
+    <td>401786</td>
+    <td>3</td>
+    <td>93.7071</td>
+    <td>1</td>
+    <td>1</td>
+    <td>pepperstake</td>
+  </tr>
+<tr>
     <td>4</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmTcwXvX3LSmu5Wicjvd74bcBQZiLmz5isSa7CRhAkUmef" alt="‘’Pluto To Las Vegas’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer">‘’Pluto To Las Vegas’’</a>
+        <small>Rare · Template #401786</small>
       </div>
     </div></td>
-    <td>1099675823316</td>
-    <td></td>
-    <td>0</td>
+    <td>94.2243</td>
+    <td>1099595905080</td>
+    <td>401786</td>
+    <td>3</td>
+    <td>93.7071</td>
+    <td>2</td>
+    <td>2</td>
+    <td>yoitscharlie</td>
+  </tr>
+<tr>
     <td>5</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmeGAXwybWB5FoXqSSRAoZDd7QGRCgLcpoUzrpTMCMVGrB" alt="‘’The Radiant Child’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer">‘’The Radiant Child’’</a>
+        <small>Rare · Template #401779</small>
       </div>
     </div></td>
-    <td>1099675823315</td>
-    <td></td>
-    <td>0</td>
+    <td>93.9661</td>
+    <td>1099595902156</td>
+    <td>401779</td>
+    <td>2</td>
+    <td>93.8651</td>
+    <td>2</td>
+    <td>2</td>
+    <td>yoitscharlie</td>
+  </tr>
+<tr>
     <td>6</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401767" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmQ9CwboL2gj4NK12Yr49FiL7zQxyMWD7LAEYeDaqFRbY4" alt="C B Twoheadz NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401767" target="_blank" rel="noopener noreferrer">C B Twoheadz</a>
+        <small>Ultra Rare · Template #401767</small>
       </div>
     </div></td>
-    <td>1099675823314</td>
-    <td></td>
-    <td>0</td>
+    <td>93.1437</td>
+    <td>1099595898016</td>
+    <td>401767</td>
+    <td>1</td>
+    <td>94.1285</td>
+    <td>2</td>
+    <td>2</td>
+    <td>yoitscharlie</td>
+  </tr>
+<tr>
     <td>7</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmTcwXvX3LSmu5Wicjvd74bcBQZiLmz5isSa7CRhAkUmef" alt="‘’Pluto To Las Vegas’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer">‘’Pluto To Las Vegas’’</a>
+        <small>Rare · Template #401786</small>
       </div>
     </div></td>
-    <td>1099675823313</td>
-    <td></td>
-    <td>0</td>
+    <td>92.2243</td>
+    <td>1099595905081</td>
+    <td>401786</td>
+    <td>3</td>
+    <td>93.7071</td>
+    <td>3</td>
+    <td>3</td>
+    <td>opxp4.c.wam</td>
+  </tr>
+<tr>
     <td>8</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmeGAXwybWB5FoXqSSRAoZDd7QGRCgLcpoUzrpTMCMVGrB" alt="‘’The Radiant Child’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer">‘’The Radiant Child’’</a>
+        <small>Rare · Template #401779</small>
       </div>
     </div></td>
-    <td>1099675823312</td>
-    <td></td>
-    <td>0</td>
+    <td>91.6133</td>
+    <td>1099595902157</td>
+    <td>401779</td>
+    <td>2</td>
+    <td>93.8651</td>
+    <td>3</td>
+    <td>3</td>
+    <td>xsph.wam</td>
+  </tr>
+<tr>
     <td>9</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmTcwXvX3LSmu5Wicjvd74bcBQZiLmz5isSa7CRhAkUmef" alt="‘’Pluto To Las Vegas’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer">‘’Pluto To Las Vegas’’</a>
+        <small>Rare · Template #401786</small>
       </div>
     </div></td>
-    <td>1099675823311</td>
-    <td></td>
-    <td>0</td>
+    <td>90.2243</td>
+    <td>1099595905082</td>
+    <td>401786</td>
+    <td>3</td>
+    <td>93.7071</td>
+    <td>4</td>
+    <td>4</td>
+    <td>xsph.wam</td>
+  </tr>
+<tr>
     <td>10</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401767" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmQ9CwboL2gj4NK12Yr49FiL7zQxyMWD7LAEYeDaqFRbY4" alt="C B Twoheadz NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401767" target="_blank" rel="noopener noreferrer">C B Twoheadz</a>
+        <small>Ultra Rare · Template #401767</small>
       </div>
     </div></td>
-    <td>1099675823310</td>
-    <td></td>
-    <td>0</td>
+    <td>89.8105</td>
+    <td>1099595898017</td>
+    <td>401767</td>
+    <td>1</td>
+    <td>94.1285</td>
+    <td>3</td>
+    <td>3</td>
+    <td>xsph.wam</td>
+  </tr>
+<tr>
     <td>11</td>
-  </tr>
-<tr>
     <td><div class="nft-template-cell">
-      <div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmeGAXwybWB5FoXqSSRAoZDd7QGRCgLcpoUzrpTMCMVGrB" alt="‘’The Radiant Child’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <div class="nft-template-cell-copy">
-        <a href="https://wax.atomichub.io/market?collection_name=noballgamess" target="_blank" rel="noopener noreferrer">Template 0</a>
-        
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401779" target="_blank" rel="noopener noreferrer">‘’The Radiant Child’’</a>
+        <small>Rare · Template #401779</small>
       </div>
     </div></td>
-    <td>1099675823309</td>
-    <td></td>
-    <td>0</td>
+    <td>89.2603</td>
+    <td>1099595902158</td>
+    <td>401779</td>
+    <td>2</td>
+    <td>93.8651</td>
+    <td>4</td>
+    <td>4</td>
+    <td>opxp4.c.wam</td>
+  </tr>
+<tr>
     <td>12</td>
+    <td><div class="nft-template-cell">
+      <a class="nft-template-image-link" href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="https://ipfs.hivebp.io/ipfs/QmTcwXvX3LSmu5Wicjvd74bcBQZiLmz5isSa7CRhAkUmef" alt="‘’Pluto To Las Vegas’’ NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <div class="nft-template-cell-copy">
+        <a href="https://wax.atomichub.io/market?collection_name=noballgamess&amp;template_id=401786" target="_blank" rel="noopener noreferrer">‘’Pluto To Las Vegas’’</a>
+        <small>Rare · Template #401786</small>
+      </div>
+    </div></td>
+    <td>88.2243</td>
+    <td>1099595905083</td>
+    <td>401786</td>
+    <td>3</td>
+    <td>93.7071</td>
+    <td>5</td>
+    <td>5</td>
+    <td>yoitscharlie</td>
   </tr></tbody>
           </table>
         </section>

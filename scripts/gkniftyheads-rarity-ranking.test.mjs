@@ -199,6 +199,10 @@ for (const trait of traits.variation_traits) {
 assert.match(live.status, /atomicassets live asset count/i, 'live asset rarity status should identify counted mode');
 assert.match(live.note, /pre_baseline_missing_or_burned|first-scan delta/i, 'live asset data contract should identify first-scan missing/burned semantics');
 assert.equal(live.template_counts.length, allTemplates.length, 'live asset rarity should include per-template count summaries when counted');
+assert.equal(live.asset_ranking_formula.asset_ranking_enabled, true, 'live asset rarity should expose Asset Version Ranking formula');
+assert.equal(live.asset_ranking_formula.burned_assets_excluded, true, 'Asset Version Ranking must exclude burned assets');
+assert.equal(live.asset_ranking_formula.price_used, false, 'Asset Version Ranking must exclude price');
+assert.equal(live.asset_ranking_formula.market_data_used, false, 'Asset Version Ranking must exclude market data');
 assert.ok(fs.existsSync(path.join(root, 'data/gkniftyheads/asset-state-cache.json')), 'asset snapshots require the real asset-state cache file');
 assert.match(assetState.source_urls.latest_created_assets, /atomicassets\/v1\/assets\?collection_name=gkniftyheads&sort=created&order=desc&limit=1000/, 'asset-state cache must declare latest-created source');
 assert.match(assetState.source_urls.recently_updated_live_assets, /atomicassets\/v1\/assets\?collection_name=gkniftyheads&burned=false&sort=updated&order=desc&limit=1000/, 'asset-state cache must declare updated-live source');
@@ -206,10 +210,23 @@ assert.match(assetState.source_urls.recently_updated_burned_assets, /atomicasset
 assert.match(assetState.source_urls.template_assets_backfill, /template_id=\{template_id\}.*sort=template_mint/, 'asset-state cache must declare rotating template backfill source');
 if (live.assets.length > 0) {
   assert.ok(assetState.assets.length > 0, 'live asset snapshots are allowed only when backed by real asset-state cache assets');
-  assert.equal(live.assets.length, assetState.assets.length, 'live asset rarity snapshots should mirror the real asset-state cache asset count');
+  assert.ok(live.assets.length <= assetState.assets.length, 'Asset Version Ranking should be sourced from the real asset-state cache and may exclude burned/unscored assets');
   assert.ok(survivingMintRanks.templates.length > 0, 'populated asset snapshots should produce surviving mint rank groups');
   assert.ok(live.assets.every((asset) => asset.original_mint_number !== undefined), 'asset snapshots must expose permanent original_mint_number');
-  assert.ok(live.assets.filter((asset) => asset.burned).every((asset) => asset.surviving_mint_rank === null || asset.surviving_mint_rank === undefined), 'burned assets must not receive current surviving_mint_rank');
+  assert.ok(live.assets.every((asset) => asset.burned === false), 'burned assets must be excluded from Asset Version Ranking');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.asset_rank)), 'Asset Version rows must expose asset_rank');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.asset_final_score)), 'Asset Version rows must expose asset_final_score');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.template_final_score)), 'Asset Version rows must expose template_final_score');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.original_mint_score_component)), 'Asset Version rows must expose original mint score component');
+  assert.ok(live.assets.every((asset) => Number.isFinite(asset.surviving_mint_rank_score_component)), 'Asset Version rows must expose surviving mint rank score component');
+  for (let index = 1; index < live.assets.length; index += 1) {
+    const previous = live.assets[index - 1];
+    const current = live.assets[index];
+    assert.ok(
+      previous.asset_final_score >= current.asset_final_score,
+      'Asset Version Ranking should sort by asset_final_score descending',
+    );
+  }
 }
 assert.ok(allTemplates.every((row) => Object.hasOwn(row, 'asset_state_status')), 'template rarity rows must expose asset_state_status');
 assert.ok(allTemplates.every((row) => row.live_supply_source === 'atomicassets_assets_count'), 'rarity maths must keep using AtomicAssets _count live supply');
@@ -226,6 +243,8 @@ assert.equal(sync.wax_get_info.used_for, 'future scan checkpoint metadata only')
 assert.match(sync.burn_tracking_status, /baseline pending/i, 'first burn scan must be a baseline, not fake history');
 
 assert.match(collectionHtml, /GKniftyHEADS Template Rarity Ranking/);
+assert.match(collectionHtml, /Asset Version Ranking/, 'page should render the scored Asset Version Ranking section');
+assert.match(collectionHtml, /Template Rarity Ranking scores the edition\/template\. Asset Version Ranking scores exact live NFTs/, 'page should explain the two ranking layers');
 assert.match(collectionHtml, /separate AtomicAssets template IDs may share the same artwork\/name/, 'page copy should make clear this ranks templates, not unique artwork');
 assert.match(collectionHtml, /Original mint numbers never change/, 'page must explain that original mint numbers are permanent');
 assert.match(collectionHtml, /surviving mint rank/, 'page must explain surviving mint rank separately from original mint numbers');

@@ -355,8 +355,9 @@ const fallbackRoot = makeRoot();
 await runGenerateGkniftyheadsRarity(fallbackRoot);
 const fallbackHtml = fs.readFileSync(path.join(fallbackRoot, 'wiki', 'gkniftyheads-nft-collection.html'), 'utf8');
 const fallbackJson = JSON.parse(fs.readFileSync(path.join(fallbackRoot, 'data', 'gkniftyheads', 'template-rarity.json'), 'utf8'));
+const fallbackRankedHead = fallbackHtml.match(/<table class="wiki-table gk-rarity-table">[\s\S]*?<thead>([\s\S]*?)<\/thead>/)?.[1] || '';
 assert.match(fallbackHtml, /<th>Issued Supply Fallback<\/th>/, 'missing live cache should label supply as issued-supply fallback');
-assert.doesNotMatch(fallbackHtml, /<th>Live Supply<\/th>/, 'fallback page must not silently label issued supply as live supply');
+assert.doesNotMatch(fallbackRankedHead, /<th>Live Supply<\/th>/, 'fallback template ranking table must not silently label issued supply as live supply');
 assert.match(fallbackJson.live_data_status, /issued-supply fallback/, 'fallback JSON should report issued-supply fallback');
 
 console.log('GKniftyHEADS staged rarity pipeline regression passed.');

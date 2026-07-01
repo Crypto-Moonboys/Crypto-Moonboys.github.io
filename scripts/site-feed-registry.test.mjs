@@ -347,7 +347,7 @@ assert.match(noballgamessPage, /surviving mint rank/, 'NoBallGames page must exp
 assert.match(noballgamessPage, /Template Stats/, 'NoBallGames page must render template stats');
 assert.match(noballgamessPage, /Trait Exposure/, 'NoBallGames page must render trait exposure');
 assert.match(noballgamessPage, /Holder Leaderboard/, 'NoBallGames page must render holder leaderboard');
-assert.match(noballgamessPage, /Asset Rarity Leaderboard/, 'NoBallGames page must render asset rarity leaderboard');
+assert.match(noballgamessPage, /Asset Version Ranking/, 'NoBallGames page must render scored Asset Version Ranking');
 assert.match(noballgamessPage, /Market analytics — display only, not rarity input/, 'NoBallGames page must label HiveBP analytics as display-only');
 assert.equal(noballgamessMarketAnalytics.display_only, true, 'NoBallGames market analytics must be display-only');
 assert.equal(noballgamessMarketAnalytics.rarity_input, false, 'NoBallGames market analytics must not be a rarity input');

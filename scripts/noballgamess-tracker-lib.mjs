@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ASSET_RANKING_FORMULA, buildAssetVersionRanking } from './nft-asset-version-ranking.mjs';
 import { fetchAtomicCollectionStatsSanity, readMarketAnalytics, renderMarketAnalyticsSection, updateNftMarketAnalytics } from './nft-market-analytics.mjs';
 import { createFeedStatus, fetchJson as fetchSiteJson, findFeed, writeFeedStatus } from './site-feed-utils.mjs';
 
@@ -799,13 +800,18 @@ function renderHolderRows(rows) {
 }
 
 function renderAssetRarityRows(rows) {
-  if (!rows.length) return '<tr><td colspan="5">Pending asset rarity sync.</td></tr>';
+  if (!rows.length) return '<tr><td colspan="10">Pending asset version ranking sync.</td></tr>';
   return rows.slice(0, 12).map((row) => `<tr>
-    <td>${renderTemplateCell(row, { status: row.rarity_band || '' })}</td>
+    <td>${escapeHtml(row.asset_rank ?? '')}</td>
+    <td>${renderTemplateCell(row, { status: row.rarity_band || 'Asset Version' })}</td>
+    <td>${escapeHtml(row.asset_final_score ?? '')}</td>
     <td>${escapeHtml(row.asset_id || '')}</td>
     <td>${escapeHtml(row.template_id || '')}</td>
+    <td>${escapeHtml(row.template_rank ?? '')}</td>
+    <td>${escapeHtml(row.template_final_score ?? '')}</td>
     <td>${escapeHtml(row.original_mint_number ?? '')}</td>
     <td>${escapeHtml(row.surviving_mint_rank ?? '')}</td>
+    <td>${escapeHtml(row.owner || 'Not exposed')}</td>
   </tr>`).join('\n');
 }
 
@@ -848,6 +854,7 @@ function renderPage(root, data, supplemental = {}) {
           <p>This is a Template Rarity Ranking using the shared adaptive weighted rarity framework. Separate AtomicAssets template IDs may share the same artwork or name. AtomicAssets is the source of truth; AtomicHub links are reference links only.</p>
           <p>The base template formula is live surviving supply scarcity 50%, rarity trait/name exposure scarcity 25%, variation trait/name/metadata exposure scarcity 20%, and missing/burned supply bonus 5%. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of creating fake traits.</p>
           <p>Thin metadata templates rank mostly by live surviving supply. Burns can increase rarity through lower live supply plus a small missing/burned bonus when supported by tracker data. Market price, floor, sales, listings, market cap, and volume are display-only and never scoring inputs.</p>
+          <p>Template Rarity Ranking scores the edition/template. Asset Version Ranking scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers never change. Burns do not renumber NFTs; they only affect live supply and surviving mint rank.</p>
           <p>Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset's position among currently live/unburned NFTs.</p>
           <p>Pre-baseline missing/burned is a current supply delta. It is not confirmed historic burn tracking unless future snapshots prove disappearance after tracking began.</p>
         </section>
@@ -895,9 +902,10 @@ function renderPage(root, data, supplemental = {}) {
           </table>
         </section>
         <section class="wiki-section">
-          <h2>Asset Rarity Leaderboard</h2>
+          <h2>Asset Version Ranking</h2>
+          <p>Exact live NFT assets are sorted by asset_final_score, built from template_final_score, original_mint_number, and surviving_mint_rank. Burned assets are excluded and market data is excluded.</p>
           <table class="wiki-table">
-            <thead><tr><th>NFT</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th></tr></thead>
+            <thead><tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Template Rank</th><th>Template Score</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Owner</th></tr></thead>
             <tbody>${renderAssetRarityRows(asArray(assetRarityLeaderboard.assets))}</tbody>
           </table>
         </section>
@@ -973,17 +981,18 @@ export async function generateNoballgamessRarity(root = ROOT) {
   const holderLeaderboard = [...holderCounts.entries()].map(([owner, live_assets]) => ({ owner, live_assets })).sort((a, b) => b.live_assets - a.live_assets);
   const ranks = readJson(root, `${DATA_DIR}/surviving-mint-ranks.json`, { templates: [] });
   const templateById = new Map(data.allRows.map((row) => [row.template_id, row]));
-  const assetRarityLeaderboard = asArray(ranks.templates).flatMap((template) => asArray(template.assets).map((asset) => ({
-    ...asset,
-    template_id: template.template_id,
-    title: templateById.get(template.template_id)?.title || `Template ${template.template_id}`,
-    image_url: templateById.get(template.template_id)?.image_url || null,
-    image_sources: templateById.get(template.template_id)?.image_sources || [],
-    immutable_data_image_fields: templateById.get(template.template_id)?.immutable_data_image_fields || {},
-    atomichub_url: templateById.get(template.template_id)?.atomichub_url || atomichubUrl(template.template_id),
-    atomicassets_url: templateById.get(template.template_id)?.atomicassets_url || atomicTemplateUrl(template.template_id),
-    rarity_band: templateById.get(template.template_id)?.rarity_band || null,
-  })));
+  const survivingRankByAsset = new Map(asArray(ranks.templates).flatMap((template) => asArray(template.assets).map((asset) => [
+    String(asset.asset_id),
+    asset.surviving_mint_rank ?? null,
+  ])));
+  const assetRarityLeaderboard = buildAssetVersionRanking(asArray(assetCache.assets).map((asset) => ({
+    asset_id: asset.asset_id,
+    template_id: Number(asset.template_id),
+    owner: asset.owner || null,
+    original_mint_number: asset.original_mint_number,
+    surviving_mint_rank: survivingRankByAsset.get(String(asset.asset_id)) ?? null,
+    burned: Boolean(asset.burned),
+  })), data.ranked);
   const traitExposure = {
     collection: COLLECTION,
     generated_at: nowIso(),
@@ -1016,7 +1025,7 @@ export async function generateNoballgamessRarity(root = ROOT) {
     collection: COLLECTION,
     generated_at: nowIso(),
     status: liveDataStatus,
-    ranking_formula: SCORING_CONTRACT,
+    asset_ranking_formula: ASSET_RANKING_FORMULA,
     assets: assetRarityLeaderboard,
   });
   const templateStats = {
@@ -1049,17 +1058,15 @@ export async function generateNoballgamessRarity(root = ROOT) {
   const assetRarityLeaderboardOutput = {
     collection: COLLECTION,
     generated_at: nowIso(),
-    ranking_formula: {
-      ...SCORING_CONTRACT,
-      allowed_score_inputs: ['original_mint_number', 'surviving_mint_rank'],
-    },
+    asset_ranking_formula: ASSET_RANKING_FORMULA,
     assets: assetRarityLeaderboard,
   };
   writeJson(root, `${DATA_DIR}/holder-leaderboard.json`, holderLeaderboardOutput);
   writeJson(root, `${DATA_DIR}/asset-rarity-leaderboard.json`, assetRarityLeaderboardOutput);
   writeJson(root, `${DATA_DIR}/sync-status.json`, syncStatus);
   writeCsv(root, `${DATA_DIR}/template-rarity.csv`, data.ranked, ['rank', 'template_id', 'title', 'rarity_band', 'issued_supply', 'live_supply', 'max_supply']);
-  writeCsv(root, `${DATA_DIR}/live-asset-rarity.csv`, assetRarityLeaderboard, ['template_id', 'asset_id', 'original_mint_number', 'surviving_mint_rank']);
+  writeCsv(root, `${DATA_DIR}/asset-rarity-leaderboard.csv`, assetRarityLeaderboard, ['asset_rank', 'asset_final_score', 'asset_id', 'template_id', 'owner', 'template_rank', 'template_final_score', 'template_score_component', 'original_mint_number', 'original_mint_score', 'original_mint_score_component', 'original_mint_status', 'surviving_mint_rank', 'surviving_mint_rank_score', 'surviving_mint_rank_score_component', 'surviving_mint_rank_status', 'live_supply', 'issued_supply', 'rarity_band', 'burned', 'price_used', 'market_data_used']);
+  writeCsv(root, `${DATA_DIR}/live-asset-rarity.csv`, assetRarityLeaderboard, ['asset_rank', 'asset_final_score', 'asset_id', 'template_id', 'original_mint_number', 'surviving_mint_rank', 'template_final_score']);
   writeCsv(root, `${DATA_DIR}/trait-exposure.csv`, traitExposure.schemas, ['schema_name', 'templates', 'live_supply']);
   writeText(root, PAGE_PATH, renderPage(root, data, {
     templateStats,

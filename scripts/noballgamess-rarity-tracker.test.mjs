@@ -204,6 +204,24 @@ assert.deepEqual(liveRankedAssets.map((row) => row.original_mint_number), [1, 3]
 assert.deepEqual(liveRankedAssets.map((row) => row.surviving_mint_rank), [1, 2], 'surviving_mint_rank recalculates among unburned assets');
 assert.equal(holders.holders.some((row) => row.owner === 'burned.gm'), false, 'holder leaderboard excludes burned assets');
 assert.equal(assetLeaderboard.assets.some((row) => row.asset_id === 'a3'), false, 'asset rarity leaderboard excludes burned assets');
+assert.equal(assetLeaderboard.asset_ranking_formula.asset_ranking_enabled, true, 'NoBallGames asset leaderboard should expose Asset Version Ranking formula');
+assert.equal(assetLeaderboard.asset_ranking_formula.burned_assets_excluded, true, 'Asset Version Ranking should exclude burned assets');
+assert.equal(assetLeaderboard.asset_ranking_formula.price_used, false, 'Asset Version Ranking must exclude price');
+assert.equal(assetLeaderboard.asset_ranking_formula.market_data_used, false, 'Asset Version Ranking must exclude market data');
+assert.ok(assetLeaderboard.assets.every((row) => Number.isFinite(row.asset_rank)), 'asset rows should include asset_rank');
+assert.ok(assetLeaderboard.assets.every((row) => Number.isFinite(row.asset_final_score)), 'asset rows should include asset_final_score');
+assert.ok(assetLeaderboard.assets.every((row) => Number.isFinite(row.template_final_score)), 'asset rows should include template_final_score');
+assert.ok(assetLeaderboard.assets.every((row) => Number.isFinite(row.original_mint_score_component)), 'asset rows should include original mint score component');
+assert.ok(assetLeaderboard.assets.every((row) => Number.isFinite(row.surviving_mint_rank_score_component)), 'asset rows should include surviving mint rank score component');
+assert.ok(assetLeaderboard.assets.every((row) => row.burned === false), 'asset rows should only include live/unburned assets');
+for (let index = 1; index < assetLeaderboard.assets.length; index += 1) {
+  const previous = assetLeaderboard.assets[index - 1];
+  const current = assetLeaderboard.assets[index];
+  assert.ok(
+    previous.asset_final_score >= current.asset_final_score,
+    'asset rows should sort by asset_final_score descending',
+  );
+}
 assert.equal(marketAnalytics.display_only, true, 'market analytics sidecar is display-only');
 assert.equal(marketAnalytics.rarity_input, false, 'market analytics sidecar is not a rarity input');
 assert.equal(marketAnalytics.analytics_status, 'pending', 'HiveBP failure keeps analytics separate and pending without failing rarity generation');
@@ -220,13 +238,15 @@ assert.match(html, /Variation Scored/, 'page should render variation scoring ena
 assert.match(html, /Weights Used/, 'page should render score weights used where practical');
 assert.match(html, /Trait Exposure/, 'page should render trait exposure section');
 assert.match(html, /Holder Leaderboard/, 'page should render holder leaderboard section');
-assert.match(html, /Asset Rarity Leaderboard/, 'page should render asset rarity leaderboard section');
+assert.match(html, /Asset Version Ranking/, 'page should render scored asset version ranking section');
+assert.doesNotMatch(html, /Asset Rarity Leaderboard/, 'page should not imply an unscored asset rarity leaderboard');
+assert.match(html, /asset_final_score/, 'page should explain asset_final_score sorting');
 assert.match(html, /Market analytics — display only, not rarity input/, 'page should render display-only market analytics section');
 
 assert.match(html, /<img class="nft-thumb"/, 'NoBallGames page should render NFT thumbnail images');
 assert.match(html, /<h2>Template Rarity Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'Template Rarity Ranking rows should include image markup');
 assert.match(html, /<h2>Utility \/ Open Mint<\/h2>[\s\S]*<img class="nft-thumb"/, 'Utility/Open Mint rows should include image markup when image data exists');
-assert.match(html, /<h2>Asset Rarity Leaderboard<\/h2>[\s\S]*<img class="nft-thumb"/, 'Asset Rarity Leaderboard rows should include image markup');
+assert.match(html, /<h2>Asset Version Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'Asset Version Ranking rows should include image markup');
 assert.doesNotMatch(html, /src="[^"]*gkniftyheads/i, 'NoBallGames rendered image src must not point to gkniftyheads assets');
 assert.doesNotMatch(html, /src="[^"]*\/img\/noballgames(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgames path spelling');
 assert.doesNotMatch(html, /src="[^"]*\/img\/noballgame(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgame path spelling');
