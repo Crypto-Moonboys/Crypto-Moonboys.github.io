@@ -205,6 +205,60 @@ function asset(assetId, templateId, mint, burned = false, owner = 'owner.gm') {
   };
 }
 
+const cursorRoot = makeRoot();
+const cursorRows = [900001, 900002, 900003, 900004, 900005].map((templateId) => ({ template_id: templateId, issued_supply: 10 }));
+let cursorSourceKeys = [];
+await updateGkniftyheadsAssetStateCache(cursorRoot, {
+  rows: cursorRows,
+  batchSize: 3,
+  fetchJson: async (url, { sourceKey }) => {
+    cursorSourceKeys.push(sourceKey);
+    if (sourceKey === 'template_backfill:900001') return { data: [asset('b1', 900001, 1)] };
+    if (sourceKey === 'template_backfill:900002') return { data: [asset('b2', 900002, 1)] };
+    return { data: [] };
+  },
+});
+let cursor = JSON.parse(fs.readFileSync(path.join(cursorRoot, 'data', 'gkniftyheads', 'asset-refresh-cursor.json'), 'utf8'));
+let cursorCache = JSON.parse(fs.readFileSync(path.join(cursorRoot, 'data', 'gkniftyheads', 'asset-state-cache.json'), 'utf8'));
+assert.deepEqual(cursorSourceKeys.slice(0, 3), ['latest_created_assets', 'recently_updated_live_assets', 'recently_updated_burned_assets'], 'daily delta scans should run before rotating template backfill');
+assert.ok(cursorSourceKeys.includes('template_backfill:900001') && cursorSourceKeys.includes('template_backfill:900003'), 'rotating backfill should process the selected template batch');
+assert.equal(cursor.last_template_batch_index, 3, 'cursor should advance by batch_size after successful backfill');
+assert.equal(cursorCache.assets.some((row) => row.asset_id === 'b1'), true, 'template backfill should update assets for selected template IDs');
+cursorSourceKeys = [];
+await updateGkniftyheadsAssetStateCache(cursorRoot, {
+  rows: cursorRows,
+  batchSize: 3,
+  fetchJson: async (url, { sourceKey }) => {
+    cursorSourceKeys.push(sourceKey);
+    return { data: [] };
+  },
+});
+cursor = JSON.parse(fs.readFileSync(path.join(cursorRoot, 'data', 'gkniftyheads', 'asset-refresh-cursor.json'), 'utf8'));
+assert.ok(cursorSourceKeys.includes('template_backfill:900004') && cursorSourceKeys.includes('template_backfill:900001'), 'rotating backfill should wrap at the end of the template list');
+assert.equal(cursor.last_template_batch_index, 1, 'cursor should wrap after reaching the end of sorted template IDs');
+
+const failedBackfillRoot = makeRoot();
+await updateGkniftyheadsAssetStateCache(failedBackfillRoot, {
+  rows: [{ template_id: 900001, issued_supply: 10 }],
+  batchSize: 1,
+  fetchJson: async (url, { sourceKey }) => {
+    if (sourceKey === 'template_backfill:900001') return { data: [asset('keep1', 900001, 1)] };
+    return { data: [] };
+  },
+});
+await updateGkniftyheadsAssetStateCache(failedBackfillRoot, {
+  rows: [{ template_id: 900001, issued_supply: 10 }],
+  batchSize: 1,
+  fetchJson: async (url, { sourceKey }) => {
+    if (sourceKey === 'template_backfill:900001') throw new Error('template backfill failed');
+    return { data: [] };
+  },
+});
+const failedBackfillCache = JSON.parse(fs.readFileSync(path.join(failedBackfillRoot, 'data', 'gkniftyheads', 'asset-state-cache.json'), 'utf8'));
+const failedBackfillCursor = JSON.parse(fs.readFileSync(path.join(failedBackfillRoot, 'data', 'gkniftyheads', 'asset-refresh-cursor.json'), 'utf8'));
+assert.equal(failedBackfillCache.assets.some((row) => row.asset_id === 'keep1'), true, 'failed template backfill must not delete previous cache assets');
+assert.deepEqual(failedBackfillCursor.failed_template_ids, [900001], 'failed template batch should record failed template IDs in the cursor');
+
 await updateGkniftyheadsAssetStateCache(root, {
   rows: [
     { template_id: 900001, issued_supply: 10 },

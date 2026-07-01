@@ -10,11 +10,14 @@ const ROOT = path.resolve(__dirname, '..');
 const COLLECTION = 'gkniftyheads';
 const CACHE_RELATIVE = path.join('data', 'gkniftyheads', 'asset-state-cache.json');
 const RANKS_RELATIVE = path.join('data', 'gkniftyheads', 'surviving-mint-ranks.json');
+const CURSOR_RELATIVE = path.join('data', 'gkniftyheads', 'asset-refresh-cursor.json');
 const LIMIT = 1000;
+const DEFAULT_BACKFILL_BATCH_SIZE = 20;
 const SOURCE_URLS = {
   latest_created_assets: `https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=${COLLECTION}&sort=created&order=desc&limit=${LIMIT}`,
   recently_updated_live_assets: `https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=${COLLECTION}&burned=false&sort=updated&order=desc&limit=${LIMIT}`,
   recently_updated_burned_assets: `https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=${COLLECTION}&burned=true&sort=updated&order=desc&limit=${LIMIT}`,
+  template_assets_backfill: `https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=${COLLECTION}&template_id={template_id}&limit=${LIMIT}&order=asc&sort=template_mint`,
 };
 
 function cachePath(root = ROOT) {
@@ -23,6 +26,10 @@ function cachePath(root = ROOT) {
 
 function ranksPath(root = ROOT) {
   return path.join(root, RANKS_RELATIVE);
+}
+
+function cursorPath(root = ROOT) {
+  return path.join(root, CURSOR_RELATIVE);
 }
 
 function readJson(file, fallback) {
@@ -89,6 +96,49 @@ function readCache(root = ROOT) {
   };
 }
 
+function emptyCursor(batchSize = DEFAULT_BACKFILL_BATCH_SIZE) {
+  return {
+    collection: COLLECTION,
+    batch_size: batchSize,
+    last_template_batch_index: 0,
+    last_run_at: null,
+    mode: 'daily_rotating_backfill',
+  };
+}
+
+function readCursor(root = ROOT, batchSize = DEFAULT_BACKFILL_BATCH_SIZE) {
+  const cursor = readJson(cursorPath(root), null);
+  if (!cursor) return emptyCursor(batchSize);
+  return {
+    ...emptyCursor(batchSize),
+    ...cursor,
+    batch_size: Number(cursor.batch_size) > 0 ? Number(cursor.batch_size) : batchSize,
+    last_template_batch_index: Number(cursor.last_template_batch_index) >= 0 ? Number(cursor.last_template_batch_index) : 0,
+  };
+}
+
+function writeCursor(root, cursor) {
+  writeJson(cursorPath(root), cursor);
+}
+
+function templateIds(rows = []) {
+  return [...new Set(rows.map((row) => Number(row.template_id)).filter(Number.isFinite))].sort((a, b) => a - b);
+}
+
+function selectTemplateBatch(ids, cursor) {
+  if (!ids.length) return { batch: [], nextIndex: 0 };
+  const batchSize = Math.min(Math.max(Number(cursor.batch_size) || DEFAULT_BACKFILL_BATCH_SIZE, 1), ids.length);
+  const start = Math.min(Number(cursor.last_template_batch_index) || 0, ids.length - 1);
+  const batch = [];
+  for (let offset = 0; offset < batchSize; offset += 1) {
+    batch.push(ids[(start + offset) % ids.length]);
+  }
+  return {
+    batch,
+    nextIndex: (start + batchSize) % ids.length,
+  };
+}
+
 function timestampValue(value) {
   if (value === null || value === undefined || value === '') return '';
   const numeric = Number(value);
@@ -130,6 +180,10 @@ function assetPageUrl(sourceUrl, page) {
   url.searchParams.set('page', String(page));
   url.searchParams.set('limit', String(LIMIT));
   return url.toString();
+}
+
+function templateAssetsUrl(templateId) {
+  return SOURCE_URLS.template_assets_backfill.replace('{template_id}', String(templateId));
 }
 
 async function fetchAssetPages(sourceKey, sourceUrl, options, checkpoint) {
@@ -264,28 +318,43 @@ export async function updateGkniftyheadsAssetStateCache(root = ROOT, options = {
   const checkedAt = options.checkedAt || new Date().toISOString();
   const rows = readTemplateRows(root, options);
   const previous = readCache(root);
-  const isFirstRun = !fs.existsSync(cachePath(root)) || !previous.assets.length;
+  const cursor = readCursor(root, options.batchSize || DEFAULT_BACKFILL_BATCH_SIZE);
   const forceFullScan = Boolean(options.forceFullScan || options.fullScan || process.env.GK_FORCE_ASSET_STATE_FULL_SCAN === '1');
-  const effectiveFullScan = forceFullScan || isFirstRun;
-  const sources = effectiveFullScan
+  const ids = templateIds(rows);
+  const { batch: backfillTemplateIds, nextIndex } = selectTemplateBatch(ids, cursor);
+  const sources = forceFullScan
     ? ['latest_created_assets', 'recently_updated_live_assets', 'recently_updated_burned_assets']
     : ['latest_created_assets', 'recently_updated_live_assets', 'recently_updated_burned_assets'];
   const incoming = [];
   const errors = [];
+  const failedBackfillTemplateIds = [];
   for (const sourceKey of sources) {
     const { rows: sourceRows, errors: sourceErrors } = await fetchAssetPages(sourceKey, SOURCE_URLS[sourceKey], {
       ...options,
-      forceFullScan: effectiveFullScan,
+      forceFullScan,
     }, previous.last_delta_scan_at || previous.last_successful_asset_update);
     incoming.push(...sourceRows.map((asset) => normalizeAtomicAsset(asset, checkedAt)));
     errors.push(...sourceErrors);
   }
+  for (const templateId of backfillTemplateIds) {
+    const { rows: sourceRows, errors: sourceErrors } = await fetchAssetPages(`template_backfill:${templateId}`, templateAssetsUrl(templateId), {
+      ...options,
+      forceFullScan: true,
+      maxPages: options.backfillMaxPages || options.maxPages || 20,
+    }, null);
+    incoming.push(...sourceRows.map((asset) => normalizeAtomicAsset(asset, checkedAt)));
+    if (sourceErrors.length) {
+      failedBackfillTemplateIds.push(templateId);
+      errors.push(...sourceErrors.map((error) => ({ ...error, template_id: templateId })));
+    }
+  }
 
   const assets = mergeAssets(previous.assets || [], incoming);
+  const backfillSucceeded = backfillTemplateIds.length > 0 && failedBackfillTemplateIds.length < backfillTemplateIds.length;
   const cache = {
     collection: COLLECTION,
     generated_at: checkedAt,
-    last_full_scan_at: effectiveFullScan && !errors.length ? checkedAt : previous.last_full_scan_at,
+    last_full_scan_at: forceFullScan && !errors.length ? checkedAt : previous.last_full_scan_at,
     last_delta_scan_at: errors.length === sources.length ? previous.last_delta_scan_at : checkedAt,
     last_successful_asset_update: incoming.length ? checkedAt : previous.last_successful_asset_update,
     source_urls: SOURCE_URLS,
@@ -298,11 +367,22 @@ export async function updateGkniftyheadsAssetStateCache(root = ROOT, options = {
   };
   writeJson(cachePath(root), cache);
   writeJson(ranksPath(root), buildSurvivingMintRanks(cache));
+  writeCursor(root, {
+    collection: COLLECTION,
+    batch_size: cursor.batch_size,
+    last_template_batch_index: backfillSucceeded ? nextIndex : cursor.last_template_batch_index,
+    last_run_at: checkedAt,
+    mode: 'daily_rotating_backfill',
+    last_template_batch: backfillTemplateIds,
+    failed_template_ids: failedBackfillTemplateIds,
+  });
   return {
     assets: cache.assets.length,
     templates: cache.template_state.length,
     errors: errors.length,
     updated_assets: incoming.length,
+    backfill_templates: backfillTemplateIds.length,
+    failed_backfill_templates: failedBackfillTemplateIds.length,
   };
 }
 

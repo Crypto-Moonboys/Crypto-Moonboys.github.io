@@ -1,0 +1,7 @@
+{
+  "collection": "gkniftyheads",
+  "batch_size": 20,
+  "last_template_batch_index": 0,
+  "last_run_at": null,
+  "mode": "daily_rotating_backfill"
+}

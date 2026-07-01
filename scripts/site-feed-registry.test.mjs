@@ -168,12 +168,15 @@ assert.match(gk, /"price_used": false/, 'NFT rarity feed must not use price');
 assert.doesNotMatch(gk, /floor price|market price|last sale/i, 'NFT rarity feed must not include price ranking signals');
 
 const assetStateCache = read('data/gkniftyheads/asset-state-cache.json');
+const assetRefreshCursor = read('data/gkniftyheads/asset-refresh-cursor.json');
 const survivingRanks = read('data/gkniftyheads/surviving-mint-ranks.json');
 assert.match(registryText, /data\/gkniftyheads\/asset-state-cache\.json/, 'registry must include asset-state cache output');
+assert.match(registryText, /data\/gkniftyheads\/asset-refresh-cursor\.json/, 'registry must include asset refresh cursor output');
 assert.match(registryText, /data\/gkniftyheads\/surviving-mint-ranks\.json/, 'registry must include surviving mint ranks output');
 assert.match(assetStateCache, /"latest_created_assets"/, 'asset-state cache must document latest-created source URL');
 assert.match(assetStateCache, /"recently_updated_live_assets"/, 'asset-state cache must document updated-live source URL');
 assert.match(assetStateCache, /"recently_updated_burned_assets"/, 'asset-state cache must document updated-burned source URL');
+assert.match(assetRefreshCursor, /"mode": "daily_rotating_backfill"/, 'asset refresh cursor must use daily rotating backfill mode');
 assert.match(survivingRanks, /"templates"/, 'surviving mint ranks data surface must exist');
 
 const gkUpdater = read('scripts/update-gkniftyheads-rarity-feed.mjs');

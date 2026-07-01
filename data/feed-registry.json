@@ -20,6 +20,7 @@
         "data/gkniftyheads/template-rarity.json",
         "data/gkniftyheads/live-asset-rarity.json",
         "data/gkniftyheads/asset-state-cache.json",
+        "data/gkniftyheads/asset-refresh-cursor.json",
         "data/gkniftyheads/surviving-mint-ranks.json",
         "data/gkniftyheads/trait-exposure.json",
         "data/gkniftyheads/sync-status.json",
