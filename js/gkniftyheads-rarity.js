@@ -30,7 +30,8 @@
     const normalized = filter || 'all-ranked';
     const focusingUtility = normalized === 'utility-open-mint';
     const focusingUnissued = normalized === 'unissued';
-    if (commandDeck) commandDeck.hidden = focusingUtility || focusingUnissued;
+    const matchingRankedCards = rankedCards.filter((card) => matchesFilter(card, normalized));
+    if (commandDeck) commandDeck.hidden = focusingUtility || focusingUnissued || matchingRankedCards.length === 0;
     if (audit) {
       audit.hidden = focusingUtility || focusingUnissued;
       if (normalized !== 'all-ranked' && !focusingUtility && !focusingUnissued) audit.open = true;
