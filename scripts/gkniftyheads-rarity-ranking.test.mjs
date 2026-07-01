@@ -75,6 +75,12 @@ const oneOfOneCount = ranked.filter((row) => row.live_supply === 1).length;
 assert.ok(oneOfOneCount > 0, 'ranked data should include 1/1 templates');
 assert.ok(ranked.slice(0, oneOfOneCount).every((row) => row.live_supply === 1), '1/1 templates should lead the ranked table unless excluded as utility/open mint');
 assert.ok(ranked.filter((row) => row.live_supply === 1).every((row) => row.band === 'Legendary'), '1/1 ranked templates should be labelled Legendary');
+const nonLegendaryRanked = ranked.filter((row) => row.live_supply !== 1);
+if (nonLegendaryRanked.length > 0) {
+  assert.ok(nonLegendaryRanked.some((row) => row.band === 'Ultra Rare'), 'non-1/1 ranked templates should include at least one Ultra Rare row');
+  assert.ok(ranked.some((row) => row.band === 'Ultra Rare' && row.live_supply !== 1), 'Legendary rows must not consume Ultra Rare percentile slots');
+  assert.match(collectionHtml, /data-rarity-filter="ranked ultra-rare"/, 'Ultra Rare filter must have generated rows when non-1/1 ranked templates exist');
+}
 
 for (const trait of traits.rarity_traits) {
   const expected = ranked

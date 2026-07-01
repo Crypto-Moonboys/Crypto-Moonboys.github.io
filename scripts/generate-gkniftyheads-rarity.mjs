@@ -173,12 +173,18 @@ function buildRanking(rows) {
     const bOneOfOne = b.live_supply === 1 ? 1 : 0;
     return bOneOfOne - aOneOfOne || b.final_score - a.final_score || a.live_supply - b.live_supply || a.template_id - b.template_id;
   });
+  const nonLegendaryRanked = ranked.filter((row) => row.live_supply !== 1);
+  const ultraRareCutoff = Math.max(1, Math.ceil(nonLegendaryRanked.length * 0.08));
+  const rareCutoff = Math.max(ultraRareCutoff + 1, Math.ceil(nonLegendaryRanked.length * 0.25));
+  const uncommonCutoff = Math.max(rareCutoff + 1, Math.ceil(nonLegendaryRanked.length * 0.55));
   ranked.forEach((row, index) => {
     row.rank = index + 1;
     if (row.live_supply === 1) row.band = 'Legendary';
-    else if (index < Math.ceil(ranked.length * 0.08)) row.band = 'Ultra Rare';
-    else if (index < Math.ceil(ranked.length * 0.25)) row.band = 'Rare';
-    else if (index < Math.ceil(ranked.length * 0.55)) row.band = 'Uncommon';
+  });
+  nonLegendaryRanked.forEach((row, index) => {
+    if (index < ultraRareCutoff) row.band = 'Ultra Rare';
+    else if (index < rareCutoff) row.band = 'Rare';
+    else if (index < uncommonCutoff) row.band = 'Uncommon';
     else row.band = 'Common';
   });
 
