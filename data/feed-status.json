@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-01T00:10:50.575Z",
+  "generated_at": "2026-07-01T08:33:55.167Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -19,17 +19,17 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T00:10:50.555Z",
-      "last_successful_check": "2026-07-01T00:10:50.555Z",
-      "last_successful_update": "2026-07-01T00:10:50.472Z",
-      "source_updated_at": "2026-07-01T00:10:50.472Z",
+      "checked_at": "2026-07-01T08:33:24.961Z",
+      "last_successful_check": "2026-07-01T08:33:24.961Z",
+      "last_successful_update": "2026-07-01T08:33:24.845Z",
+      "source_updated_at": "2026-07-01T08:33:24.845Z",
       "source_age_minutes": 0,
-      "last_error": "WAX get_info checkpoint unavailable: fetch failed",
+      "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
       "notes": [
-        "Generated local rarity fallback: 119 ranked, 5 utility/open mint, 19 unissued.",
+        "Generated local rarity fallback: 27 ranked, 97 utility/open mint, 19 unissued.",
         "Live asset scan is not faked; issued-supply fallback remains explicit until AtomicAssets asset snapshots are available.",
-        "WAX get_info checkpoint not updated; rarity data preserved."
+        "WAX get_info checkpoint updated for scan metadata only."
       ]
     },
     "waxonedge_bubbles": {
@@ -46,12 +46,12 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T00:10:50.563Z",
+      "checked_at": "2026-07-01T08:33:54.965Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
       "source_age_minutes": null,
-      "last_error": "bubbles_lite: fetch failed; health: fetch failed",
+      "last_error": "bubbles_lite: Feed fetch timeout after 15000ms; health: Feed fetch timeout after 15000ms",
       "fallback_behavior": "keep static bootstrap and mark feed stale/error if Worker data is unavailable",
       "notes": [
         "Uses existing WaxOnEdge Worker endpoints and preserves static bootstrap data on failure.",
@@ -72,12 +72,12 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T00:10:50.568Z",
+      "checked_at": "2026-07-01T08:33:55.095Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
       "source_age_minutes": null,
-      "last_error": "fetch failed",
+      "last_error": "https://cryptomoonboys.com/api/waxonedge/waxcash-analytics failed: HTTP 503",
       "fallback_behavior": "preserve previous analytics JSON and show stale/error status if Worker data is unavailable",
       "notes": [
         "Uses the existing /api/waxonedge/waxcash-analytics page contract.",
@@ -99,12 +99,12 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-01T00:10:50.575Z",
+      "checked_at": "2026-07-01T08:33:55.167Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
       "source_age_minutes": null,
-      "last_error": "token_page: fetch failed; pairs_liquidity: fetch failed; pairs_volume24: fetch failed",
+      "last_error": "token_page: https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF failed: HTTP 503; pairs_liquidity: https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=liquidity failed: HTTP 503; pairs_volume24: https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=volume24 failed: HTTP 503",
       "fallback_behavior": "preserve previous token analytics JSON and show stale/error status if Worker or chart data is unavailable",
       "notes": [
         "Uses existing WUFFI token analytics Worker contract; chart candles remain direct Alcor runtime data.",

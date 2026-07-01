@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T02:52:23.358Z",
+  "generated_at": "2026-07-01T08:33:24.845Z",
   "ranking_formula": {
     "live_surviving_supply_scarcity": 0.5,
     "rarity_trait_live_exposure_scarcity": 0.25,
@@ -18,7 +18,7 @@
     "live_assets_counted": null,
     "fallback_issued_supply_counted": 124463,
     "missing_burned_count": 0,
-    "last_scan_time": "2026-07-01T02:52:23.358Z",
+    "last_scan_time": "2026-07-01T08:33:24.845Z",
     "scan_block": null,
     "live_data_status": "issued-supply fallback"
   },
@@ -38,12 +38,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
         "https://atomichub-ipfs.com/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
+        "https://ipfs.io/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
         "https://gateway.pinata.cloud/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
         "https://nftstorage.link/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
-        "https://dweb.link/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
-        "https://ipfs.io/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa"
+        "https://dweb.link/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776005",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776005.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -75,12 +75,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://atomichub-ipfs.com/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
+        "https://ipfs.io/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://gateway.pinata.cloud/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://nftstorage.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
-        "https://dweb.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
-        "https://ipfs.io/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy"
+        "https://dweb.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784220",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784220.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -112,12 +112,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
         "https://atomichub-ipfs.com/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
+        "https://ipfs.io/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
         "https://gateway.pinata.cloud/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
         "https://nftstorage.link/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
-        "https://dweb.link/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
-        "https://ipfs.io/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm"
+        "https://dweb.link/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776003",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776003.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -149,12 +149,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://atomichub-ipfs.com/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
+        "https://ipfs.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://gateway.pinata.cloud/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://nftstorage.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
-        "https://dweb.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
-        "https://ipfs.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi"
+        "https://dweb.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776007",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776007.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -186,12 +186,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://atomichub-ipfs.com/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
+        "https://ipfs.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://gateway.pinata.cloud/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://nftstorage.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
-        "https://dweb.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
-        "https://ipfs.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi"
+        "https://dweb.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776055",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776055.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -223,12 +223,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
         "https://atomichub-ipfs.com/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
+        "https://ipfs.io/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
         "https://gateway.pinata.cloud/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
         "https://nftstorage.link/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
-        "https://dweb.link/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
-        "https://ipfs.io/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a"
+        "https://dweb.link/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776002",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776002.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -260,12 +260,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://atomichub-ipfs.com/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
+        "https://ipfs.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://gateway.pinata.cloud/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://nftstorage.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
-        "https://dweb.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
-        "https://ipfs.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula"
+        "https://dweb.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776000",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776000.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -297,12 +297,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://atomichub-ipfs.com/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
+        "https://ipfs.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://gateway.pinata.cloud/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://nftstorage.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
-        "https://dweb.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
-        "https://ipfs.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula"
+        "https://dweb.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776001",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776001.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -334,14 +334,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
         "https://atomichub-ipfs.com/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
+        "https://ipfs.io/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
         "https://gateway.pinata.cloud/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
         "https://nftstorage.link/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
-        "https://dweb.link/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
-        "https://ipfs.io/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q"
+        "https://dweb.link/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776101",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776101.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "ranked",
       "band": "Legendary",
       "classification_reason": "Fixed/limited circulating template.",
@@ -371,12 +371,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
         "https://atomichub-ipfs.com/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
+        "https://ipfs.io/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
         "https://gateway.pinata.cloud/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
         "https://nftstorage.link/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
-        "https://dweb.link/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
-        "https://ipfs.io/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y"
+        "https://dweb.link/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776102",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776102.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -408,12 +408,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
         "https://atomichub-ipfs.com/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
+        "https://ipfs.io/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
         "https://gateway.pinata.cloud/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
         "https://nftstorage.link/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
-        "https://dweb.link/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
-        "https://ipfs.io/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq"
+        "https://dweb.link/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776103",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776103.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -445,12 +445,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
         "https://atomichub-ipfs.com/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
+        "https://ipfs.io/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
         "https://gateway.pinata.cloud/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
         "https://nftstorage.link/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
-        "https://dweb.link/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
-        "https://ipfs.io/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4"
+        "https://dweb.link/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776100",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776100.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -482,15 +482,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si",
         "https://atomichub-ipfs.com/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si",
+        "https://ipfs.io/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si",
         "https://gateway.pinata.cloud/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si",
         "https://nftstorage.link/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si",
-        "https://dweb.link/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si",
-        "https://ipfs.io/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si"
+        "https://dweb.link/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeig4agold6m2czhapkz37cmqudsyj7gusn55b3icyfli2kqaevp4si",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783747",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783747.webp",
+      "thumbnail_status": "generated",
       "bucket": "ranked",
       "band": "Ultra Rare",
       "classification_reason": "Fixed/limited circulating template.",
@@ -520,12 +519,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi",
         "https://atomichub-ipfs.com/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi",
+        "https://ipfs.io/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi",
         "https://gateway.pinata.cloud/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi",
         "https://nftstorage.link/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi",
-        "https://dweb.link/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi",
-        "https://ipfs.io/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi"
+        "https://dweb.link/ipfs/bafybeihhvlfldxzwno3jvvi7utlt7lrw45rhhetxy3xxwl2maa3qiiutzi"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783755",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783755.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -557,12 +556,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq",
         "https://atomichub-ipfs.com/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq",
+        "https://ipfs.io/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq",
         "https://gateway.pinata.cloud/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq",
         "https://nftstorage.link/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq",
-        "https://dweb.link/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq",
-        "https://ipfs.io/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq"
+        "https://dweb.link/ipfs/bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783757",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783757.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -594,12 +593,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
         "https://atomichub-ipfs.com/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
+        "https://ipfs.io/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
         "https://gateway.pinata.cloud/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
         "https://nftstorage.link/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
-        "https://dweb.link/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
-        "https://ipfs.io/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja"
+        "https://dweb.link/ipfs/bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783759",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783759.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -631,12 +630,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4",
         "https://atomichub-ipfs.com/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4",
+        "https://ipfs.io/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4",
         "https://gateway.pinata.cloud/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4",
         "https://nftstorage.link/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4",
-        "https://dweb.link/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4",
-        "https://ipfs.io/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4"
+        "https://dweb.link/ipfs/bafybeicrsvm224fnmhiaad6mxonmfnlehv2t6uao4wv6ae62qbff6uewg4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783760",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783760.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -668,15 +667,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m",
         "https://atomichub-ipfs.com/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m",
+        "https://ipfs.io/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m",
         "https://gateway.pinata.cloud/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m",
         "https://nftstorage.link/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m",
-        "https://dweb.link/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m",
-        "https://ipfs.io/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m"
+        "https://dweb.link/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeickitz74iz2iiyc66lvvdk6cmtn4j337tt6prx3wqkpfdcp7g3u4m",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783764",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783764.webp",
+      "thumbnail_status": "generated",
       "bucket": "ranked",
       "band": "Uncommon",
       "classification_reason": "Fixed/limited circulating template.",
@@ -706,15 +704,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
         "https://atomichub-ipfs.com/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
+        "https://ipfs.io/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
         "https://gateway.pinata.cloud/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
         "https://nftstorage.link/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
-        "https://dweb.link/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
-        "https://ipfs.io/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue"
+        "https://dweb.link/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784344",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784344.webp",
+      "thumbnail_status": "generated",
       "bucket": "ranked",
       "band": "Uncommon",
       "classification_reason": "Fixed/limited circulating template.",
@@ -744,12 +741,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe",
         "https://atomichub-ipfs.com/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe",
+        "https://ipfs.io/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe",
         "https://gateway.pinata.cloud/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe",
         "https://nftstorage.link/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe",
-        "https://dweb.link/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe",
-        "https://ipfs.io/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe"
+        "https://dweb.link/ipfs/bafybeif77ga2uciauafcfgv63h4mvkid6hncygtubxg55qwtjvstqa4jhe"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784340",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784340.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -781,12 +778,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
         "https://atomichub-ipfs.com/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
+        "https://ipfs.io/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
         "https://gateway.pinata.cloud/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
         "https://nftstorage.link/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
-        "https://dweb.link/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
-        "https://ipfs.io/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq"
+        "https://dweb.link/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/775997",
       "thumbnail_url": "/img/gkniftyheads/thumbs/775997.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -818,15 +815,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4",
         "https://atomichub-ipfs.com/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4",
+        "https://ipfs.io/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4",
         "https://gateway.pinata.cloud/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4",
         "https://nftstorage.link/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4",
-        "https://dweb.link/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4",
-        "https://ipfs.io/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4"
+        "https://dweb.link/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihbkb3toazoygoqqiky6muq6zbkkwyietnyo7crshotbrjl64i2p4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784332",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784332.webp",
+      "thumbnail_status": "generated",
       "bucket": "ranked",
       "band": "Common",
       "classification_reason": "Fixed/limited circulating template.",
@@ -856,12 +852,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy",
         "https://atomichub-ipfs.com/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy",
+        "https://ipfs.io/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy",
         "https://gateway.pinata.cloud/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy",
         "https://nftstorage.link/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy",
-        "https://dweb.link/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy",
-        "https://ipfs.io/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy"
+        "https://dweb.link/ipfs/bafybeies222uioys3gbsip4hjmynoe4bmqsd6yvlfs7affgfkpzk7kthwy"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783468",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783468.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -893,12 +889,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi",
         "https://atomichub-ipfs.com/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi",
+        "https://ipfs.io/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi",
         "https://gateway.pinata.cloud/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi",
         "https://nftstorage.link/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi",
-        "https://dweb.link/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi",
-        "https://ipfs.io/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi"
+        "https://dweb.link/ipfs/bafybeieqpkx4mjspwkisiqr6ufsgdyalnttiwcke2qo7riqiqsp7eopkhi"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783470",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783470.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -930,12 +926,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
         "https://atomichub-ipfs.com/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
+        "https://ipfs.io/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
         "https://gateway.pinata.cloud/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
         "https://nftstorage.link/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
-        "https://dweb.link/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
-        "https://ipfs.io/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe"
+        "https://dweb.link/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/775999",
       "thumbnail_url": "/img/gkniftyheads/thumbs/775999.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -967,14 +963,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i",
         "https://atomichub-ipfs.com/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i",
+        "https://ipfs.io/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i",
         "https://gateway.pinata.cloud/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i",
         "https://nftstorage.link/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i",
-        "https://dweb.link/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i",
-        "https://ipfs.io/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i"
+        "https://dweb.link/ipfs/bafybeib26kz6mirvsog3xbk6srfzou6jqvegpbgf2t3ynuvahqpm64vj6i"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776074",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776074.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "ranked",
       "band": "Common",
       "classification_reason": "Fixed/limited circulating template.",
@@ -1004,12 +1000,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
         "https://atomichub-ipfs.com/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
+        "https://ipfs.io/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
         "https://gateway.pinata.cloud/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
         "https://nftstorage.link/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
-        "https://dweb.link/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
-        "https://ipfs.io/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre"
+        "https://dweb.link/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/773225",
       "thumbnail_url": "/img/gkniftyheads/thumbs/773225.webp",
       "thumbnail_status": "cached",
       "bucket": "ranked",
@@ -1043,12 +1039,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra",
         "https://atomichub-ipfs.com/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra",
+        "https://ipfs.io/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra",
         "https://gateway.pinata.cloud/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra",
         "https://nftstorage.link/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra",
-        "https://dweb.link/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra",
-        "https://ipfs.io/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra"
+        "https://dweb.link/ipfs/bafybeig5ckjqquat5x6z2stj3m5yvucjqrsxktrrjugvmk5wtq2sxmgdra"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/782888",
       "thumbnail_url": "/img/gkniftyheads/thumbs/782888.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1074,12 +1070,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa",
         "https://atomichub-ipfs.com/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa",
+        "https://ipfs.io/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa",
         "https://gateway.pinata.cloud/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa",
         "https://nftstorage.link/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa",
-        "https://dweb.link/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa",
-        "https://ipfs.io/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa"
+        "https://dweb.link/ipfs/bafybeiaejf4il4advxhku2jdtpvshzehwewpyjv2lajzahftkb2bp5wrfa"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783455",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783455.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1105,12 +1101,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu",
         "https://atomichub-ipfs.com/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu",
+        "https://ipfs.io/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu",
         "https://gateway.pinata.cloud/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu",
         "https://nftstorage.link/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu",
-        "https://dweb.link/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu",
-        "https://ipfs.io/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu"
+        "https://dweb.link/ipfs/bafybeifcq3fa75swsff2mxzo2terqzwmg7vslg6kjwofqwinxxbuvdvizu"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776145",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776145.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1136,12 +1132,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri",
         "https://atomichub-ipfs.com/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri",
+        "https://ipfs.io/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri",
         "https://gateway.pinata.cloud/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri",
         "https://nftstorage.link/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri",
-        "https://dweb.link/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri",
-        "https://ipfs.io/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri"
+        "https://dweb.link/ipfs/bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776147",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776147.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1167,12 +1163,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu",
         "https://atomichub-ipfs.com/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu",
+        "https://ipfs.io/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu",
         "https://gateway.pinata.cloud/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu",
         "https://nftstorage.link/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu",
-        "https://dweb.link/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu",
-        "https://ipfs.io/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu"
+        "https://dweb.link/ipfs/bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776146",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776146.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1198,12 +1194,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
         "https://atomichub-ipfs.com/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
+        "https://ipfs.io/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
         "https://gateway.pinata.cloud/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
         "https://nftstorage.link/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
-        "https://dweb.link/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre",
-        "https://ipfs.io/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre"
+        "https://dweb.link/ipfs/bafybeictraluxizixisbubqj4yqru2tzm77ndvttpuhymkwpyp5m5vwwre"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776004",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776004.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1229,15 +1225,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre",
         "https://atomichub-ipfs.com/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre",
+        "https://ipfs.io/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre",
         "https://gateway.pinata.cloud/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre",
         "https://nftstorage.link/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre",
-        "https://dweb.link/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre",
-        "https://ipfs.io/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre"
+        "https://dweb.link/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihjnzpyf2sdfvlwlx3zehzzqwojgf6vmb4zyj5ppkfxllvkmpirre",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784274",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784274.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1261,12 +1256,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
         "https://atomichub-ipfs.com/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
+        "https://ipfs.io/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
         "https://gateway.pinata.cloud/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
         "https://nftstorage.link/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
-        "https://dweb.link/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
-        "https://ipfs.io/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm"
+        "https://dweb.link/ipfs/bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776058",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776058.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1292,12 +1287,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
         "https://atomichub-ipfs.com/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
+        "https://ipfs.io/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
         "https://gateway.pinata.cloud/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
         "https://nftstorage.link/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
-        "https://dweb.link/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
-        "https://ipfs.io/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa"
+        "https://dweb.link/ipfs/bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776056",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776056.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1323,12 +1318,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
         "https://atomichub-ipfs.com/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
+        "https://ipfs.io/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
         "https://gateway.pinata.cloud/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
         "https://nftstorage.link/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
-        "https://dweb.link/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
-        "https://ipfs.io/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm"
+        "https://dweb.link/ipfs/bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783296",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783296.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1354,12 +1349,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4",
         "https://atomichub-ipfs.com/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4",
+        "https://ipfs.io/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4",
         "https://gateway.pinata.cloud/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4",
         "https://nftstorage.link/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4",
-        "https://dweb.link/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4",
-        "https://ipfs.io/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4"
+        "https://dweb.link/ipfs/bafybeicvxtqbkyz3ktvu4mpkkmstljxir23cflsqntgxwvkos56eberwx4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783392",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783392.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1385,15 +1380,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24",
         "https://atomichub-ipfs.com/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24",
+        "https://ipfs.io/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24",
         "https://gateway.pinata.cloud/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24",
         "https://nftstorage.link/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24",
-        "https://dweb.link/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24",
-        "https://ipfs.io/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24"
+        "https://dweb.link/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783395",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783395.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1417,12 +1411,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
         "https://atomichub-ipfs.com/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
+        "https://ipfs.io/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
         "https://gateway.pinata.cloud/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
         "https://nftstorage.link/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
-        "https://dweb.link/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
-        "https://ipfs.io/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy"
+        "https://dweb.link/ipfs/bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783463",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783463.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1448,12 +1442,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy",
         "https://atomichub-ipfs.com/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy",
+        "https://ipfs.io/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy",
         "https://gateway.pinata.cloud/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy",
         "https://nftstorage.link/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy",
-        "https://dweb.link/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy",
-        "https://ipfs.io/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy"
+        "https://dweb.link/ipfs/bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784277",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784277.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1479,15 +1473,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
         "https://atomichub-ipfs.com/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+        "https://ipfs.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
         "https://gateway.pinata.cloud/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
         "https://nftstorage.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
-        "https://dweb.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
-        "https://ipfs.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu"
+        "https://dweb.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/788015",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/788015.webp",
+      "thumbnail_status": "reused",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1511,12 +1504,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
         "https://atomichub-ipfs.com/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
+        "https://ipfs.io/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
         "https://gateway.pinata.cloud/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
         "https://nftstorage.link/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
-        "https://dweb.link/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
-        "https://ipfs.io/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a"
+        "https://dweb.link/ipfs/bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776059",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776059.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1542,12 +1535,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
         "https://atomichub-ipfs.com/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
+        "https://ipfs.io/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
         "https://gateway.pinata.cloud/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
         "https://nftstorage.link/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
-        "https://dweb.link/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
-        "https://ipfs.io/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq"
+        "https://dweb.link/ipfs/bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776063",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776063.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1573,12 +1566,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm",
         "https://atomichub-ipfs.com/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm",
+        "https://ipfs.io/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm",
         "https://gateway.pinata.cloud/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm",
         "https://nftstorage.link/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm",
-        "https://dweb.link/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm",
-        "https://ipfs.io/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm"
+        "https://dweb.link/ipfs/bafybeih4olbvgiygho5ifdpljjlmvhtw6ogzgjf2u4ot4ylmxn5ysnp7lm"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783235",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783235.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1604,12 +1597,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha",
         "https://atomichub-ipfs.com/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha",
+        "https://ipfs.io/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha",
         "https://gateway.pinata.cloud/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha",
         "https://nftstorage.link/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha",
-        "https://dweb.link/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha",
-        "https://ipfs.io/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha"
+        "https://dweb.link/ipfs/bafybeid3plphgaj5zwpfcpvfeyafv5gkvlve7ptizxqpv3qjiskwztxqha"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783269",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783269.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1635,12 +1628,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki",
         "https://atomichub-ipfs.com/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki",
+        "https://ipfs.io/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki",
         "https://gateway.pinata.cloud/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki",
         "https://nftstorage.link/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki",
-        "https://dweb.link/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki",
-        "https://ipfs.io/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki"
+        "https://dweb.link/ipfs/bafybeicp6pnw77qsx5l4rq24gxvpnlgt3nu7ypw7nqifk32ritlk6rbrki"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783307",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783307.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1666,12 +1659,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
         "https://atomichub-ipfs.com/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
+        "https://ipfs.io/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
         "https://gateway.pinata.cloud/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
         "https://nftstorage.link/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
-        "https://dweb.link/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
-        "https://ipfs.io/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e"
+        "https://dweb.link/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783408",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783408.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1697,12 +1690,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4",
         "https://atomichub-ipfs.com/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4",
+        "https://ipfs.io/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4",
         "https://gateway.pinata.cloud/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4",
         "https://nftstorage.link/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4",
-        "https://dweb.link/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4",
-        "https://ipfs.io/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4"
+        "https://dweb.link/ipfs/bafybeiea3vufx52uppkvkspnfvbddqo7vvodigo4soxtjvvfxwqylnfkp4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784413",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784413.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1728,15 +1721,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
         "https://atomichub-ipfs.com/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
+        "https://ipfs.io/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
         "https://gateway.pinata.cloud/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
         "https://nftstorage.link/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
-        "https://dweb.link/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
-        "https://ipfs.io/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4"
+        "https://dweb.link/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784419",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784419.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1760,12 +1752,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://atomichub-ipfs.com/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
+        "https://ipfs.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://gateway.pinata.cloud/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
         "https://nftstorage.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
-        "https://dweb.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
-        "https://ipfs.io/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi"
+        "https://dweb.link/ipfs/bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776057",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776057.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1791,12 +1783,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://atomichub-ipfs.com/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
+        "https://ipfs.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://gateway.pinata.cloud/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
         "https://nftstorage.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
-        "https://dweb.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
-        "https://ipfs.io/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula"
+        "https://dweb.link/ipfs/bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776065",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776065.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1822,14 +1814,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu",
         "https://atomichub-ipfs.com/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu",
+        "https://ipfs.io/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu",
         "https://gateway.pinata.cloud/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu",
         "https://nftstorage.link/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu",
-        "https://dweb.link/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu",
-        "https://ipfs.io/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu"
+        "https://dweb.link/ipfs/bafybeicl6i6kbqsfljjuko66l7hy7osppfxjsmvno7bndv5bb2gfxxrefu"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783245",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783245.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1853,12 +1845,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm",
         "https://atomichub-ipfs.com/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm",
+        "https://ipfs.io/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm",
         "https://gateway.pinata.cloud/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm",
         "https://nftstorage.link/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm",
-        "https://dweb.link/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm",
-        "https://ipfs.io/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm"
+        "https://dweb.link/ipfs/bafybeiehem6igyvxfisj3rqnogiuzo65isnd7f36wfgiqqvjm4nj3vbxhm"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783258",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783258.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -1884,15 +1876,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq",
         "https://atomichub-ipfs.com/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq",
+        "https://ipfs.io/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq",
         "https://gateway.pinata.cloud/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq",
         "https://nftstorage.link/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq",
-        "https://dweb.link/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq",
-        "https://ipfs.io/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq"
+        "https://dweb.link/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783282",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783282.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1916,15 +1907,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu",
         "https://atomichub-ipfs.com/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu",
+        "https://ipfs.io/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu",
         "https://gateway.pinata.cloud/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu",
         "https://nftstorage.link/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu",
-        "https://dweb.link/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu",
-        "https://ipfs.io/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu"
+        "https://dweb.link/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783291",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783291.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1948,15 +1938,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me",
         "https://atomichub-ipfs.com/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me",
+        "https://ipfs.io/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me",
         "https://gateway.pinata.cloud/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me",
         "https://nftstorage.link/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me",
-        "https://dweb.link/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me",
-        "https://ipfs.io/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me"
+        "https://dweb.link/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783295",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783295.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -1980,12 +1969,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli",
         "https://atomichub-ipfs.com/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli",
+        "https://ipfs.io/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli",
         "https://gateway.pinata.cloud/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli",
         "https://nftstorage.link/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli",
-        "https://dweb.link/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli",
-        "https://ipfs.io/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli"
+        "https://dweb.link/ipfs/bafybeicuokg2xje6px4csfmab45evslybswhjyp3ppghu5uwjqxf22qvli"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783298",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783298.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2011,15 +2000,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
         "https://atomichub-ipfs.com/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
+        "https://ipfs.io/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
         "https://gateway.pinata.cloud/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
         "https://nftstorage.link/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
-        "https://dweb.link/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
-        "https://ipfs.io/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu"
+        "https://dweb.link/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783300",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783300.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2043,12 +2031,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq",
         "https://atomichub-ipfs.com/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq",
+        "https://ipfs.io/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq",
         "https://gateway.pinata.cloud/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq",
         "https://nftstorage.link/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq",
-        "https://dweb.link/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq",
-        "https://ipfs.io/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq"
+        "https://dweb.link/ipfs/bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783301",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783301.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2074,12 +2062,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m",
         "https://atomichub-ipfs.com/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m",
+        "https://ipfs.io/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m",
         "https://gateway.pinata.cloud/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m",
         "https://nftstorage.link/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m",
-        "https://dweb.link/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m",
-        "https://ipfs.io/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m"
+        "https://dweb.link/ipfs/bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783306",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783306.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2105,12 +2093,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy",
         "https://atomichub-ipfs.com/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy",
+        "https://ipfs.io/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy",
         "https://gateway.pinata.cloud/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy",
         "https://nftstorage.link/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy",
-        "https://dweb.link/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy",
-        "https://ipfs.io/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy"
+        "https://dweb.link/ipfs/bafybeiepenghztqisqv4eiaaoymyvlsoaeeuqdayq5qgjzaapayjbdhxyy"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783406",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783406.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2136,15 +2124,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe",
         "https://atomichub-ipfs.com/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe",
+        "https://ipfs.io/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe",
         "https://gateway.pinata.cloud/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe",
         "https://nftstorage.link/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe",
-        "https://dweb.link/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe",
-        "https://ipfs.io/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe"
+        "https://dweb.link/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783414",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783414.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2168,12 +2155,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y",
         "https://atomichub-ipfs.com/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y",
+        "https://ipfs.io/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y",
         "https://gateway.pinata.cloud/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y",
         "https://nftstorage.link/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y",
-        "https://dweb.link/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y",
-        "https://ipfs.io/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y"
+        "https://dweb.link/ipfs/bafybeie3ikplompldqcrcdpimmaiw5ifkel4g6frt5vmfnsymnbtjmoy7y"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783453",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783453.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2199,12 +2186,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q",
         "https://atomichub-ipfs.com/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q",
+        "https://ipfs.io/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q",
         "https://gateway.pinata.cloud/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q",
         "https://nftstorage.link/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q",
-        "https://dweb.link/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q",
-        "https://ipfs.io/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q"
+        "https://dweb.link/ipfs/bafybeibe53ldyzq4qvfczqs2entbx34tx2dopfj65bepwbb6fgkfovc65q"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783462",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783462.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2230,12 +2217,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
         "https://atomichub-ipfs.com/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
+        "https://ipfs.io/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
         "https://gateway.pinata.cloud/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
         "https://nftstorage.link/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
-        "https://dweb.link/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
-        "https://ipfs.io/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4"
+        "https://dweb.link/ipfs/bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783464",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783464.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2261,12 +2248,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e",
         "https://atomichub-ipfs.com/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e",
+        "https://ipfs.io/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e",
         "https://gateway.pinata.cloud/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e",
         "https://nftstorage.link/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e",
-        "https://dweb.link/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e",
-        "https://ipfs.io/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e"
+        "https://dweb.link/ipfs/bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783466",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783466.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2292,15 +2279,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
         "https://atomichub-ipfs.com/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
+        "https://ipfs.io/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
         "https://gateway.pinata.cloud/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
         "https://nftstorage.link/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
-        "https://dweb.link/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
-        "https://ipfs.io/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq"
+        "https://dweb.link/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784264",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784264.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2324,12 +2310,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4",
         "https://atomichub-ipfs.com/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4",
+        "https://ipfs.io/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4",
         "https://gateway.pinata.cloud/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4",
         "https://nftstorage.link/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4",
-        "https://dweb.link/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4",
-        "https://ipfs.io/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4"
+        "https://dweb.link/ipfs/bafybeidhbkvdr3cb23dswbv7pv5t4cmra7idxd45c2b3656hm7epij5ys4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784272",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784272.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2355,15 +2341,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja",
         "https://atomichub-ipfs.com/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja",
+        "https://ipfs.io/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja",
         "https://gateway.pinata.cloud/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja",
         "https://nftstorage.link/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja",
-        "https://dweb.link/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja",
-        "https://ipfs.io/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja"
+        "https://dweb.link/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeigdnrg6a7lajgyu5yfjwjvj35ohaeggmjzb5jyzgpq3hcsgtqqoja",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784350",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784350.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2387,12 +2372,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
         "https://atomichub-ipfs.com/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
+        "https://ipfs.io/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
         "https://gateway.pinata.cloud/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
         "https://nftstorage.link/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
-        "https://dweb.link/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
-        "https://ipfs.io/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe"
+        "https://dweb.link/ipfs/bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776066",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776066.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2418,14 +2403,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
         "https://atomichub-ipfs.com/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
+        "https://ipfs.io/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
         "https://gateway.pinata.cloud/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
         "https://nftstorage.link/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
-        "https://dweb.link/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
-        "https://ipfs.io/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a"
+        "https://dweb.link/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783247",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783247.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2449,12 +2434,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i",
         "https://atomichub-ipfs.com/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i",
+        "https://ipfs.io/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i",
         "https://gateway.pinata.cloud/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i",
         "https://nftstorage.link/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i",
-        "https://dweb.link/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i",
-        "https://ipfs.io/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i"
+        "https://dweb.link/ipfs/bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783252",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783252.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2480,12 +2465,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy",
         "https://atomichub-ipfs.com/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy",
+        "https://ipfs.io/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy",
         "https://gateway.pinata.cloud/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy",
         "https://nftstorage.link/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy",
-        "https://dweb.link/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy",
-        "https://ipfs.io/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy"
+        "https://dweb.link/ipfs/bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783253",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783253.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2511,15 +2496,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku",
         "https://atomichub-ipfs.com/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku",
+        "https://ipfs.io/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku",
         "https://gateway.pinata.cloud/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku",
         "https://nftstorage.link/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku",
-        "https://dweb.link/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku",
-        "https://ipfs.io/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku"
+        "https://dweb.link/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783260",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783260.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2543,15 +2527,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly",
         "https://atomichub-ipfs.com/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly",
+        "https://ipfs.io/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly",
         "https://gateway.pinata.cloud/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly",
         "https://nftstorage.link/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly",
-        "https://dweb.link/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly",
-        "https://ipfs.io/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly"
+        "https://dweb.link/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783263",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783263.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2575,15 +2558,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu",
         "https://atomichub-ipfs.com/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu",
+        "https://ipfs.io/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu",
         "https://gateway.pinata.cloud/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu",
         "https://nftstorage.link/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu",
-        "https://dweb.link/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu",
-        "https://ipfs.io/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu"
+        "https://dweb.link/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783378",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783378.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2607,15 +2589,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4",
         "https://atomichub-ipfs.com/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4",
+        "https://ipfs.io/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4",
         "https://gateway.pinata.cloud/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4",
         "https://nftstorage.link/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4",
-        "https://dweb.link/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4",
-        "https://ipfs.io/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4"
+        "https://dweb.link/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783380",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783380.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2639,12 +2620,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny",
         "https://atomichub-ipfs.com/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny",
+        "https://ipfs.io/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny",
         "https://gateway.pinata.cloud/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny",
         "https://nftstorage.link/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny",
-        "https://dweb.link/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny",
-        "https://ipfs.io/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny"
+        "https://dweb.link/ipfs/bafybeihexllo7ryfyckufpdqgssktn4qep5fhr2rkrzwz2ybbjmzosb5ny"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783394",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783394.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2670,15 +2651,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke",
         "https://atomichub-ipfs.com/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke",
+        "https://ipfs.io/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke",
         "https://gateway.pinata.cloud/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke",
         "https://nftstorage.link/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke",
-        "https://dweb.link/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke",
-        "https://ipfs.io/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke"
+        "https://dweb.link/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeifm4twytngnkeckix75qxx72ir7qxfpbpzz5oqxrtahk55tgwirke",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783403",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783403.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2702,12 +2682,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e",
         "https://atomichub-ipfs.com/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e",
+        "https://ipfs.io/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e",
         "https://gateway.pinata.cloud/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e",
         "https://nftstorage.link/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e",
-        "https://dweb.link/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e",
-        "https://ipfs.io/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e"
+        "https://dweb.link/ipfs/bafybeihr4w3hs6esntgwnz34luhxvdt66g6lrvr3nhfh3fn77zn6ds4w5e"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783407",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783407.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2733,15 +2713,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm",
         "https://atomichub-ipfs.com/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm",
+        "https://ipfs.io/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm",
         "https://gateway.pinata.cloud/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm",
         "https://nftstorage.link/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm",
-        "https://dweb.link/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm",
-        "https://ipfs.io/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm"
+        "https://dweb.link/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783415",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783415.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2765,15 +2744,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y",
         "https://atomichub-ipfs.com/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y",
+        "https://ipfs.io/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y",
         "https://gateway.pinata.cloud/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y",
         "https://nftstorage.link/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y",
-        "https://dweb.link/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y",
-        "https://ipfs.io/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y"
+        "https://dweb.link/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783431",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783431.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2797,15 +2775,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4",
         "https://atomichub-ipfs.com/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4",
+        "https://ipfs.io/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4",
         "https://gateway.pinata.cloud/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4",
         "https://nftstorage.link/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4",
-        "https://dweb.link/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4",
-        "https://ipfs.io/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4"
+        "https://dweb.link/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783461",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783461.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2829,12 +2806,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://atomichub-ipfs.com/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
+        "https://ipfs.io/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://gateway.pinata.cloud/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://nftstorage.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
-        "https://dweb.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
-        "https://ipfs.io/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy"
+        "https://dweb.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784229",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784229.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -2860,15 +2837,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea",
         "https://atomichub-ipfs.com/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea",
+        "https://ipfs.io/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea",
         "https://gateway.pinata.cloud/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea",
         "https://nftstorage.link/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea",
-        "https://dweb.link/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea",
-        "https://ipfs.io/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea"
+        "https://dweb.link/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihqmxqgicy6dcvfts4cwus4c5yflqtuazvy6ytnyab6qw6svkmfea",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784276",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784276.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2892,15 +2868,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu",
         "https://atomichub-ipfs.com/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu",
+        "https://ipfs.io/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu",
         "https://gateway.pinata.cloud/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu",
         "https://nftstorage.link/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu",
-        "https://dweb.link/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu",
-        "https://ipfs.io/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu"
+        "https://dweb.link/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeidphuw3blvv4envw24ue7ni3zc22fjeq7eshdbvyqwiykvjwylhdu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784280",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784280.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2924,14 +2899,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq",
         "https://atomichub-ipfs.com/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq",
+        "https://ipfs.io/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq",
         "https://gateway.pinata.cloud/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq",
         "https://nftstorage.link/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq",
-        "https://dweb.link/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq",
-        "https://ipfs.io/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq"
+        "https://dweb.link/ipfs/bafybeiaxq3h6ea2qyuew6z56v2cpwe47baj2qq6yr3tbyotqoqioewuraq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783250",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783250.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2955,14 +2930,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq",
         "https://atomichub-ipfs.com/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq",
+        "https://ipfs.io/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq",
         "https://gateway.pinata.cloud/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq",
         "https://nftstorage.link/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq",
-        "https://dweb.link/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq",
-        "https://ipfs.io/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq"
+        "https://dweb.link/ipfs/bafybeia3cpslxsuqv3uammqmxkaybtcp77ie3htxy7wlah54oqacyz2qxq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783255",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783255.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -2986,15 +2961,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
         "https://atomichub-ipfs.com/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
+        "https://ipfs.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
         "https://gateway.pinata.cloud/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
         "https://nftstorage.link/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
-        "https://dweb.link/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
-        "https://ipfs.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e"
+        "https://dweb.link/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783371",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783371.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3018,15 +2992,15 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
         "https://atomichub-ipfs.com/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
+        "https://ipfs.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
         "https://gateway.pinata.cloud/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
         "https://nftstorage.link/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
-        "https://dweb.link/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
-        "https://ipfs.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u"
+        "https://dweb.link/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783372",
       "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
       "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "thumbnail_error": "image fetch timeout",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3050,15 +3024,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde",
         "https://atomichub-ipfs.com/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde",
+        "https://ipfs.io/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde",
         "https://gateway.pinata.cloud/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde",
         "https://nftstorage.link/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde",
-        "https://dweb.link/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde",
-        "https://ipfs.io/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde"
+        "https://dweb.link/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783373",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783373.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3082,15 +3055,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai",
         "https://atomichub-ipfs.com/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai",
+        "https://ipfs.io/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai",
         "https://gateway.pinata.cloud/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai",
         "https://nftstorage.link/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai",
-        "https://dweb.link/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai",
-        "https://ipfs.io/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai"
+        "https://dweb.link/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783374",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783374.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3114,15 +3086,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u",
         "https://atomichub-ipfs.com/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u",
+        "https://ipfs.io/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u",
         "https://gateway.pinata.cloud/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u",
         "https://nftstorage.link/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u",
-        "https://dweb.link/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u",
-        "https://ipfs.io/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u"
+        "https://dweb.link/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783376",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783376.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3146,15 +3117,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu",
         "https://atomichub-ipfs.com/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu",
+        "https://ipfs.io/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu",
         "https://gateway.pinata.cloud/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu",
         "https://nftstorage.link/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu",
-        "https://dweb.link/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu",
-        "https://ipfs.io/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu"
+        "https://dweb.link/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783379",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783379.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3178,15 +3148,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u",
         "https://atomichub-ipfs.com/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u",
+        "https://ipfs.io/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u",
         "https://gateway.pinata.cloud/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u",
         "https://nftstorage.link/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u",
-        "https://dweb.link/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u",
-        "https://ipfs.io/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u"
+        "https://dweb.link/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeidzqq5pl36ywzdeh54gj3kbg4zb23r3pbs2wx2okg5mdyvrktmr5u",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783384",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783384.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3210,15 +3179,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu",
         "https://atomichub-ipfs.com/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu",
+        "https://ipfs.io/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu",
         "https://gateway.pinata.cloud/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu",
         "https://nftstorage.link/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu",
-        "https://dweb.link/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu",
-        "https://ipfs.io/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu"
+        "https://dweb.link/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783385",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783385.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3242,15 +3210,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4",
         "https://atomichub-ipfs.com/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4",
+        "https://ipfs.io/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4",
         "https://gateway.pinata.cloud/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4",
         "https://nftstorage.link/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4",
-        "https://dweb.link/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4",
-        "https://ipfs.io/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4"
+        "https://dweb.link/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783389",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783389.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3274,12 +3241,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi",
         "https://atomichub-ipfs.com/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi",
+        "https://ipfs.io/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi",
         "https://gateway.pinata.cloud/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi",
         "https://nftstorage.link/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi",
-        "https://dweb.link/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi",
-        "https://ipfs.io/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi"
+        "https://dweb.link/ipfs/bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783398",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783398.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -3305,12 +3272,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa",
         "https://atomichub-ipfs.com/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa",
+        "https://ipfs.io/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa",
         "https://gateway.pinata.cloud/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa",
         "https://nftstorage.link/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa",
-        "https://dweb.link/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa",
-        "https://ipfs.io/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa"
+        "https://dweb.link/ipfs/bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783399",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783399.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -3336,15 +3303,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq",
         "https://atomichub-ipfs.com/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq",
+        "https://ipfs.io/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq",
         "https://gateway.pinata.cloud/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq",
         "https://nftstorage.link/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq",
-        "https://dweb.link/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq",
-        "https://ipfs.io/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq"
+        "https://dweb.link/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiexor3mrn5jgf6qlbzsehxox6k6c3vjbyltdo3pwrun5atcomxhtq",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783401",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783401.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3368,12 +3334,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte",
         "https://atomichub-ipfs.com/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte",
+        "https://ipfs.io/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte",
         "https://gateway.pinata.cloud/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte",
         "https://nftstorage.link/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte",
-        "https://dweb.link/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte",
-        "https://ipfs.io/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte"
+        "https://dweb.link/ipfs/bafybeifyxoicqbymwum6dk7pecv44ilu4wojrg3ejjf5mbja22catvvdte"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783404",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783404.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -3399,12 +3365,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq",
         "https://atomichub-ipfs.com/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq",
+        "https://ipfs.io/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq",
         "https://gateway.pinata.cloud/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq",
         "https://nftstorage.link/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq",
-        "https://dweb.link/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq",
-        "https://ipfs.io/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq"
+        "https://dweb.link/ipfs/bafybeieujuphtfeknpv5n2heqak7kq6f5chpdo5eg6eiejsosfqrqaabpq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783405",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783405.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -3430,15 +3396,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554",
         "https://atomichub-ipfs.com/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554",
+        "https://ipfs.io/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554",
         "https://gateway.pinata.cloud/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554",
         "https://nftstorage.link/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554",
-        "https://dweb.link/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554",
-        "https://ipfs.io/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554"
+        "https://dweb.link/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783410",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783410.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3462,15 +3427,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4",
         "https://atomichub-ipfs.com/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4",
+        "https://ipfs.io/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4",
         "https://gateway.pinata.cloud/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4",
         "https://nftstorage.link/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4",
-        "https://dweb.link/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4",
-        "https://ipfs.io/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4"
+        "https://dweb.link/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783413",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783413.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3494,15 +3458,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa",
         "https://atomichub-ipfs.com/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa",
+        "https://ipfs.io/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa",
         "https://gateway.pinata.cloud/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa",
         "https://nftstorage.link/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa",
-        "https://dweb.link/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa",
-        "https://ipfs.io/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa"
+        "https://dweb.link/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783433",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783433.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3526,15 +3489,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq",
         "https://atomichub-ipfs.com/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq",
+        "https://ipfs.io/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq",
         "https://gateway.pinata.cloud/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq",
         "https://nftstorage.link/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq",
-        "https://dweb.link/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq",
-        "https://ipfs.io/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq"
+        "https://dweb.link/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783445",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783445.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3558,15 +3520,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene",
         "https://atomichub-ipfs.com/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene",
+        "https://ipfs.io/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene",
         "https://gateway.pinata.cloud/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene",
         "https://nftstorage.link/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene",
-        "https://dweb.link/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene",
-        "https://ipfs.io/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene"
+        "https://dweb.link/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783448",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783448.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3590,15 +3551,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u",
         "https://atomichub-ipfs.com/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u",
+        "https://ipfs.io/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u",
         "https://gateway.pinata.cloud/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u",
         "https://nftstorage.link/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u",
-        "https://dweb.link/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u",
-        "https://ipfs.io/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u"
+        "https://dweb.link/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiauowvdc73gp5dzlcoalbcufbqbi3ayn74w2oab3nstfiiwf5dn4u",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783451",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783451.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3622,15 +3582,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy",
         "https://atomichub-ipfs.com/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy",
+        "https://ipfs.io/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy",
         "https://gateway.pinata.cloud/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy",
         "https://nftstorage.link/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy",
-        "https://dweb.link/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy",
-        "https://ipfs.io/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy"
+        "https://dweb.link/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783454",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783454.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3654,15 +3613,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe",
         "https://atomichub-ipfs.com/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe",
+        "https://ipfs.io/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe",
         "https://gateway.pinata.cloud/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe",
         "https://nftstorage.link/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe",
-        "https://dweb.link/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe",
-        "https://ipfs.io/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe"
+        "https://dweb.link/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783457",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783457.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3686,15 +3644,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe",
         "https://atomichub-ipfs.com/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe",
+        "https://ipfs.io/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe",
         "https://gateway.pinata.cloud/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe",
         "https://nftstorage.link/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe",
-        "https://dweb.link/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe",
-        "https://ipfs.io/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe"
+        "https://dweb.link/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783459",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783459.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3718,15 +3675,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy",
         "https://atomichub-ipfs.com/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy",
+        "https://ipfs.io/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy",
         "https://gateway.pinata.cloud/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy",
         "https://nftstorage.link/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy",
-        "https://dweb.link/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy",
-        "https://ipfs.io/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy"
+        "https://dweb.link/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeig75qlsv7h5ujojqyppc45s3qvrie55yzngbv5kynatios7qbr5uy",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784266",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784266.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3750,12 +3706,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4",
         "https://atomichub-ipfs.com/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4",
+        "https://ipfs.io/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4",
         "https://gateway.pinata.cloud/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4",
         "https://nftstorage.link/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4",
-        "https://dweb.link/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4",
-        "https://ipfs.io/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4"
+        "https://dweb.link/ipfs/bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784269",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784269.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -3781,12 +3737,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4",
         "https://atomichub-ipfs.com/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4",
+        "https://ipfs.io/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4",
         "https://gateway.pinata.cloud/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4",
         "https://nftstorage.link/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4",
-        "https://dweb.link/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4",
-        "https://ipfs.io/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4"
+        "https://dweb.link/ipfs/bafybeicpvlg7y3dtmy5um3ezqf6cgttqozr5xqvk3mxbk7ytrh4mmpznx4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784284",
       "thumbnail_url": "/img/gkniftyheads/thumbs/784284.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -3812,15 +3768,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni",
         "https://atomichub-ipfs.com/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni",
+        "https://ipfs.io/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni",
         "https://gateway.pinata.cloud/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni",
         "https://nftstorage.link/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni",
-        "https://dweb.link/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni",
-        "https://ipfs.io/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni"
+        "https://dweb.link/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783375",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783375.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3844,15 +3799,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi",
         "https://atomichub-ipfs.com/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi",
+        "https://ipfs.io/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi",
         "https://gateway.pinata.cloud/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi",
         "https://nftstorage.link/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi",
-        "https://dweb.link/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi",
-        "https://ipfs.io/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi"
+        "https://dweb.link/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeih37phmmplqu2pvson3knw7egctgcs5iz47vdmr3bgfgyem46xmdi",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783377",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783377.webp",
+      "thumbnail_status": "generated",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3876,15 +3830,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e",
         "https://atomichub-ipfs.com/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e",
+        "https://ipfs.io/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e",
         "https://gateway.pinata.cloud/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e",
         "https://nftstorage.link/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e",
-        "https://dweb.link/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e",
-        "https://ipfs.io/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e"
+        "https://dweb.link/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783411",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783411.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3908,15 +3861,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4",
         "https://atomichub-ipfs.com/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4",
+        "https://ipfs.io/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4",
         "https://gateway.pinata.cloud/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4",
         "https://nftstorage.link/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4",
-        "https://dweb.link/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4",
-        "https://ipfs.io/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4"
+        "https://dweb.link/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783412",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783412.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3940,15 +3892,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy",
         "https://atomichub-ipfs.com/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy",
+        "https://ipfs.io/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy",
         "https://gateway.pinata.cloud/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy",
         "https://nftstorage.link/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy",
-        "https://dweb.link/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy",
-        "https://ipfs.io/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy"
+        "https://dweb.link/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783432",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783432.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -3972,15 +3923,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri",
         "https://atomichub-ipfs.com/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri",
+        "https://ipfs.io/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri",
         "https://gateway.pinata.cloud/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri",
         "https://nftstorage.link/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri",
-        "https://dweb.link/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri",
-        "https://ipfs.io/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri"
+        "https://dweb.link/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783442",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783442.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -4004,15 +3954,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4",
         "https://atomichub-ipfs.com/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4",
+        "https://ipfs.io/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4",
         "https://gateway.pinata.cloud/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4",
         "https://nftstorage.link/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4",
-        "https://dweb.link/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4",
-        "https://ipfs.io/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4"
+        "https://dweb.link/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783444",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783444.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -4036,15 +3985,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy",
         "https://atomichub-ipfs.com/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy",
+        "https://ipfs.io/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy",
         "https://gateway.pinata.cloud/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy",
         "https://nftstorage.link/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy",
-        "https://dweb.link/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy",
-        "https://ipfs.io/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy"
+        "https://dweb.link/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783447",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783447.webp",
+      "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
       "band": "Utility / Open Mint",
       "classification_reason": "Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.",
@@ -4068,12 +4016,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4",
         "https://atomichub-ipfs.com/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4",
+        "https://ipfs.io/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4",
         "https://gateway.pinata.cloud/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4",
         "https://nftstorage.link/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4",
-        "https://dweb.link/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4",
-        "https://ipfs.io/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4"
+        "https://dweb.link/ipfs/bafybeicqr4dgocedavorz6c66hno6lh6rurdbs7nyswczvjiuvakmr6zt4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776099",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776099.webp",
       "thumbnail_status": "cached",
       "bucket": "utility_open_mint",
@@ -4101,12 +4049,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu",
         "https://atomichub-ipfs.com/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu",
+        "https://ipfs.io/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu",
         "https://gateway.pinata.cloud/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu",
         "https://nftstorage.link/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu",
-        "https://dweb.link/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu",
-        "https://ipfs.io/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu"
+        "https://dweb.link/ipfs/bafybeidwkyvhtoncu7qcdoz7fqu2gxhdnur4n2ph5eixikd2pqzlg3wdsu"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776049",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776049.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4132,12 +4080,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
         "https://atomichub-ipfs.com/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
+        "https://ipfs.io/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
         "https://gateway.pinata.cloud/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
         "https://nftstorage.link/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
-        "https://dweb.link/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
-        "https://ipfs.io/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4"
+        "https://dweb.link/ipfs/bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776109",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776109.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4163,12 +4111,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
         "https://atomichub-ipfs.com/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
+        "https://ipfs.io/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
         "https://gateway.pinata.cloud/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
         "https://nftstorage.link/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
-        "https://dweb.link/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
-        "https://ipfs.io/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q"
+        "https://dweb.link/ipfs/bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776110",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776110.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4194,12 +4142,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
         "https://atomichub-ipfs.com/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
+        "https://ipfs.io/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
         "https://gateway.pinata.cloud/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
         "https://nftstorage.link/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
-        "https://dweb.link/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
-        "https://ipfs.io/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y"
+        "https://dweb.link/ipfs/bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776114",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776114.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4225,12 +4173,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
         "https://atomichub-ipfs.com/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
+        "https://ipfs.io/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
         "https://gateway.pinata.cloud/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
         "https://nftstorage.link/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
-        "https://dweb.link/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
-        "https://ipfs.io/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq"
+        "https://dweb.link/ipfs/bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776117",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776117.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4256,12 +4204,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny",
         "https://atomichub-ipfs.com/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny",
+        "https://ipfs.io/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny",
         "https://gateway.pinata.cloud/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny",
         "https://nftstorage.link/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny",
-        "https://dweb.link/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny",
-        "https://ipfs.io/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny"
+        "https://dweb.link/ipfs/bafybeigtbucpdjwy3d47jzxfshw4rzjqrzvlsatgpx5dqdmpcuy2ngseny"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776118",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776118.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4287,12 +4235,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u",
         "https://atomichub-ipfs.com/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u",
+        "https://ipfs.io/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u",
         "https://gateway.pinata.cloud/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u",
         "https://nftstorage.link/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u",
-        "https://dweb.link/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u",
-        "https://ipfs.io/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u"
+        "https://dweb.link/ipfs/bafybeifd2abifqzuvhxuybv5pp6ycbemizssmx464qxi35dnkrrgolbw7u"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776119",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776119.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4318,12 +4266,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu",
         "https://atomichub-ipfs.com/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu",
+        "https://ipfs.io/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu",
         "https://gateway.pinata.cloud/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu",
         "https://nftstorage.link/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu",
-        "https://dweb.link/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu",
-        "https://ipfs.io/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu"
+        "https://dweb.link/ipfs/bafybeidjrbc7wpmwgpg5jm6vb673d7urufczx6piv42wwngd7onbb2o4nu"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776120",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776120.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4349,12 +4297,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey",
         "https://atomichub-ipfs.com/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey",
+        "https://ipfs.io/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey",
         "https://gateway.pinata.cloud/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey",
         "https://nftstorage.link/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey",
-        "https://dweb.link/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey",
-        "https://ipfs.io/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey"
+        "https://dweb.link/ipfs/bafybeieglvlytaxkf3qcnz6dwmxfsuoogsgwhb347ylnudrqkj5b4bzvey"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776121",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776121.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4380,12 +4328,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli",
         "https://atomichub-ipfs.com/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli",
+        "https://ipfs.io/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli",
         "https://gateway.pinata.cloud/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli",
         "https://nftstorage.link/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli",
-        "https://dweb.link/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli",
-        "https://ipfs.io/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli"
+        "https://dweb.link/ipfs/bafybeic5lvhcuu5lqxnizqwcui73on2js5cizeiljgzbfw2x7cvimn6oli"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776123",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776123.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4411,14 +4359,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu",
         "https://atomichub-ipfs.com/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu",
+        "https://ipfs.io/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu",
         "https://gateway.pinata.cloud/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu",
         "https://nftstorage.link/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu",
-        "https://dweb.link/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu",
-        "https://ipfs.io/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu"
+        "https://dweb.link/ipfs/bafybeigqcoeh3ggffddc4dhfteveywp4zmf3ijslvtloes4hbviyptccgu"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776124",
       "thumbnail_url": "/img/gkniftyheads/thumbs/776124.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "unissued",
       "band": "Unissued",
       "classification_reason": "Issued supply is zero.",
@@ -4442,14 +4390,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
         "https://atomichub-ipfs.com/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
+        "https://ipfs.io/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
         "https://gateway.pinata.cloud/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
         "https://nftstorage.link/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
-        "https://dweb.link/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
-        "https://ipfs.io/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a"
+        "https://dweb.link/ipfs/bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783237",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783237.webp",
-      "thumbnail_status": "generated",
+      "thumbnail_status": "cached",
       "bucket": "unissued",
       "band": "Unissued",
       "classification_reason": "Issued supply is zero.",
@@ -4473,15 +4421,15 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
         "https://atomichub-ipfs.com/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
+        "https://ipfs.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
         "https://gateway.pinata.cloud/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
         "https://nftstorage.link/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
-        "https://dweb.link/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
-        "https://ipfs.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u"
+        "https://dweb.link/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783369",
       "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
       "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "thumbnail_error": "image fetch timeout",
       "bucket": "unissued",
       "band": "Unissued",
       "classification_reason": "Issued supply is zero.",
@@ -4505,15 +4453,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
         "https://atomichub-ipfs.com/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
+        "https://ipfs.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
         "https://gateway.pinata.cloud/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
         "https://nftstorage.link/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
-        "https://dweb.link/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
-        "https://ipfs.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e"
+        "https://dweb.link/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783370",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783370.webp",
+      "thumbnail_status": "cached",
       "bucket": "unissued",
       "band": "Unissued",
       "classification_reason": "Issued supply is zero.",
@@ -4537,15 +4484,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi",
         "https://atomichub-ipfs.com/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi",
+        "https://ipfs.io/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi",
         "https://gateway.pinata.cloud/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi",
         "https://nftstorage.link/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi",
-        "https://dweb.link/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi",
-        "https://ipfs.io/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi"
+        "https://dweb.link/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783383",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783383.webp",
+      "thumbnail_status": "cached",
       "bucket": "unissued",
       "band": "Unissued",
       "classification_reason": "Issued supply is zero.",
@@ -4569,15 +4515,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
         "https://atomichub-ipfs.com/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+        "https://ipfs.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
         "https://gateway.pinata.cloud/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
         "https://nftstorage.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
-        "https://dweb.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
-        "https://ipfs.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu"
+        "https://dweb.link/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783400",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/783400.webp",
+      "thumbnail_status": "cached",
       "bucket": "unissued",
       "band": "Unissued",
       "classification_reason": "Issued supply is zero.",
@@ -4601,12 +4546,12 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
         "https://atomichub-ipfs.com/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
+        "https://ipfs.io/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
         "https://gateway.pinata.cloud/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
         "https://nftstorage.link/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
-        "https://dweb.link/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e",
-        "https://ipfs.io/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e"
+        "https://dweb.link/ipfs/bafybeicifcbrlockys5vlspoq22t4oypokjxbgrhmfp6tswvastjse337e"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783409",
       "thumbnail_url": "/img/gkniftyheads/thumbs/783409.webp",
       "thumbnail_status": "cached",
       "bucket": "unissued",
@@ -4632,15 +4577,14 @@
       "image_sources": [
         "https://ipfs.hivebp.io/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu",
         "https://atomichub-ipfs.com/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu",
+        "https://ipfs.io/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu",
         "https://gateway.pinata.cloud/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu",
         "https://nftstorage.link/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu",
-        "https://dweb.link/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu",
-        "https://ipfs.io/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu"
+        "https://dweb.link/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu"
       ],
-      "atomicassets_image_error": "fetch failed",
-      "thumbnail_url": "https://ipfs.hivebp.io/ipfs/bafybeia2c67fpae442anvmdqmcl2gw5y3cnmgztkxlvzc75jr3tv2dzevu",
-      "thumbnail_status": "original_fallback",
-      "thumbnail_error": "getaddrinfo ENOTFOUND ipfs.filebase.io",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784349",
+      "thumbnail_url": "/img/gkniftyheads/thumbs/784349.webp",
+      "thumbnail_status": "generated",
       "bucket": "unissued",
       "band": "Unissued",
       "classification_reason": "Issued supply is zero.",
@@ -4664,7 +4608,7 @@
       "image_sources": [
         "/img/logo.svg"
       ],
-      "atomicassets_image_error": "fetch failed",
+      "atomicassets_image_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/904071",
       "thumbnail_url": "/img/logo.svg",
       "thumbnail_status": "local_source",
       "bucket": "unissued",
