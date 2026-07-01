@@ -151,6 +151,19 @@ function compactNumber(value) {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: number >= 100 ? 0 : 4 }).format(number);
 }
 
+function cleanMarketLabel(value) {
+  if (value == null) return '';
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  if (Array.isArray(value)) return value.map(cleanMarketLabel).filter(Boolean).join(' / ');
+  if (typeof value === 'object') {
+    for (const key of ['name', 'display_name', 'template_name', 'template_id', 'account', 'owner', 'user', 'collection']) {
+      const label = cleanMarketLabel(value[key]);
+      if (label) return label;
+    }
+  }
+  return '';
+}
+
 function topItems(payload, labelKeys = []) {
   const data = payload?.data ?? payload;
   const candidates = [
@@ -165,10 +178,11 @@ function topItems(payload, labelKeys = []) {
   return rows.slice(0, 5).map((row) => {
     if (typeof row !== 'object' || row == null) return String(row);
     for (const key of labelKeys) {
-      if (row[key] != null) return String(row[key]);
+      const label = cleanMarketLabel(row[key]);
+      if (label) return label;
     }
-    return String(row.template_id || row.account || row.owner || row.name || row.collection || JSON.stringify(row).slice(0, 80));
-  });
+    return cleanMarketLabel(row) || 'Unavailable';
+  }).filter((label) => label && label !== '[object Object]');
 }
 
 export function renderMarketAnalyticsSection(market, escapeHtml = (value) => String(value ?? '')) {

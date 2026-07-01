@@ -79,35 +79,20 @@
 
 <!-- GKNIFTYHEADS_RARITY_RANKING:BEGIN -->
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
-          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Template Rarity Ranking</h2>
-          <p class="lore-paragraph">This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name. Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Rarity Tracker</h2>
+          <p class="lore-paragraph">A collector-facing tracker for GKniftyHEADS AtomicAssets templates and exact NFT versions. This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name.</p>
           <div class="wiki-stat-grid gk-rarity-stats" data-rarity-stat-grid="true">
             <div class="wiki-stat"><strong>143</strong><span>Templates scanned</span></div>
             <div class="wiki-stat"><strong>27</strong><span>Ranked limited templates</span></div>
             <div class="wiki-stat"><strong>97</strong><span>Utility / open mint templates</span></div>
             <div class="wiki-stat"><strong>19</strong><span>Unissued templates</span></div>
-            <div class="wiki-stat"><strong>124463</strong><span>Total issued supply</span></div>
-            <div class="wiki-stat"><strong>None</strong><span>Fallback issued supply counted</span></div>
             <div class="wiki-stat"><strong>124463</strong><span>Live assets counted</span></div>
-            <div class="wiki-stat"><strong>0</strong><span>Pre-baseline missing/burned</span></div>
-            <div class="wiki-stat"><strong>143</strong><span>Asset state templates</span></div>
-            <div class="wiki-stat"><strong>None</strong><span>Burned assets tracked</span></div>
-            <div class="wiki-stat"><strong>22988</strong><span>Surviving mint ranks tracked</span></div>
-            <div class="wiki-stat"><strong>2026-07-01T22:16:39.301Z</strong><span>Last asset delta scan</span></div>
-            <div class="wiki-stat"><strong>2026-07-01T22:17:29.649Z</strong><span>Last scan time</span></div>
-            <div class="wiki-stat"><strong>Not scanned</strong><span>Scan block</span></div>
+            <div class="wiki-stat"><strong>2026-07-01T22:17:29.649Z</strong><span>Last updated</span></div>
           </div>
 
           <section class="wiki-section gk-rarity-method">
-            <h3>Rarity Method</h3>
-            <p class="lore-paragraph">The main leaderboard uses the shared adaptive weighted rarity framework: live surviving supply scarcity, rarity trait/name exposure, variation trait/name exposure, and a small missing/burned supply bonus. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of creating fake traits. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.</p>
-            <p class="lore-paragraph">Original mint numbers never change. Burns do not renumber NFTs. The site can track surviving mint rank separately, which is the NFT’s current position among live/unburned assets in the same template.</p>
-          </section>
-
-          <section class="wiki-section gk-rarity-status">
-            <h3>Last Scan Status</h3>
-            <p class="lore-paragraph"><strong>Live data status:</strong> atomicassets live asset count. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
-            <p class="lore-paragraph"><strong>Asset state cache:</strong> 142/143 template states match current _count supply; 1 mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> 2026-07-01T22:16:39.301Z.</p>
+            <h3>How rarity works</h3>
+            <p class="lore-paragraph">Template scores use the adaptive rarity formula: 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available. Original mint numbers never change. Burns do not renumber NFTs. Surviving mint rank is tracked separately among currently live/unburned NFTs. Price, floor, listings, volume, sales, and market cap are excluded. <a href="/docs/nft-rarity-methodology.md">Read the full methodology</a>.</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">
@@ -123,7 +108,10 @@
             <button type="button" data-gk-rarity-filter="unissued">Unissued</button>
           </div>
 
-          <div class="wiki-table-wrap gk-rarity-table-wrap">
+          <section class="wiki-section gk-ranked-template-preview">
+            <h3>Top Ranked Templates</h3>
+            <p class="lore-paragraph">Limited-supply templates ranked from AtomicAssets source data. Utility, open-mint, and unissued templates are kept out of the main leaderboard.</p>
+            <div class="wiki-table-wrap gk-rarity-table-wrap">
             <table class="wiki-table gk-rarity-table">
               <thead>
                 <tr>
@@ -681,17 +669,18 @@
     <td>3.48</td>
     <td><a href="/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html">Wiki</a> <a href="https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/773225" target="_blank" rel="noopener noreferrer">AtomicAssets</a> <a href="https://wax.atomichub.io/market?collection_name=gkniftyheads&amp;template_id=773225" target="_blank" rel="noopener noreferrer">AtomicHub</a></td>
   </tr>
-              </tbody>
+          </tbody>
             </table>
           </div>
+          </section>
 
           <section class="wiki-section gk-asset-version-ranking">
-            <h3>Asset Version Ranking</h3>
-            <p class="lore-paragraph">Template Rarity Ranking scores the edition/template. Asset Version Ranking scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers never change. Burns do not renumber NFTs; they only affect live supply and surviving mint rank. Market data is excluded.</p>
+            <h3>Best Exact NFT Versions</h3>
+            <p class="lore-paragraph">This secondary view scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers stay permanent; surviving mint rank can change as live/unburned assets change.</p>
             <div class="wiki-table-wrap">
               <table class="wiki-table gk-asset-version-table">
                 <thead>
-                  <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Template Rank</th><th>Template Score</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th><th>Owner</th></tr>
+                  <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
                 </thead>
                 <tbody><tr>
     <td>1</td>
@@ -706,11 +695,8 @@
     <td>1099921717072</td>
     <td>776005</td>
     <td>1</td>
-    <td>95.00</td>
     <td>1</td>
     <td>1</td>
-    <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>2</td>
@@ -724,12 +710,9 @@
     <td>97.00</td>
     <td>1099926082957</td>
     <td>784220</td>
-    <td>2</td>
-    <td>95.00</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>3</td>
@@ -743,12 +726,9 @@
     <td>96.21</td>
     <td>1099921717142</td>
     <td>776003</td>
-    <td>3</td>
-    <td>93.68</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>4</td>
@@ -762,12 +742,9 @@
     <td>95.69</td>
     <td>1099921716986</td>
     <td>776007</td>
-    <td>4</td>
-    <td>92.81</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>5</td>
@@ -781,12 +758,9 @@
     <td>95.69</td>
     <td>1099921717301</td>
     <td>776055</td>
-    <td>5</td>
-    <td>92.81</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>6</td>
@@ -800,12 +774,9 @@
     <td>94.63</td>
     <td>1099921717149</td>
     <td>776002</td>
-    <td>6</td>
-    <td>91.05</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>7</td>
@@ -819,12 +790,9 @@
     <td>94.12</td>
     <td>1099921715639</td>
     <td>776000</td>
-    <td>7</td>
-    <td>90.21</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>8</td>
@@ -838,12 +806,9 @@
     <td>94.12</td>
     <td>1099921717183</td>
     <td>776001</td>
-    <td>8</td>
-    <td>90.21</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>9</td>
@@ -857,12 +822,9 @@
     <td>92.54</td>
     <td>1099921728422</td>
     <td>776103</td>
-    <td>11</td>
-    <td>87.57</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>10</td>
@@ -876,12 +838,9 @@
     <td>92.54</td>
     <td>1099921728425</td>
     <td>776102</td>
-    <td>10</td>
-    <td>87.57</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>11</td>
@@ -895,12 +854,9 @@
     <td>92.54</td>
     <td>1099921728454</td>
     <td>776101</td>
-    <td>9</td>
-    <td>87.57</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>12</td>
@@ -914,12 +870,9 @@
     <td>84.21</td>
     <td>1099921728466</td>
     <td>776100</td>
-    <td>12</td>
-    <td>73.68</td>
     <td>1</td>
     <td>1</td>
     <td>1</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>13</td>
@@ -933,12 +886,9 @@
     <td>79.66</td>
     <td>1099925486770</td>
     <td>783747</td>
-    <td>13</td>
-    <td>66.10</td>
     <td>1</td>
     <td>1</td>
     <td>7</td>
-    <td>wdluo.wam</td>
   </tr>
                 <tr>
     <td>14</td>
@@ -952,12 +902,9 @@
     <td>79.66</td>
     <td>1099925495488</td>
     <td>783757</td>
-    <td>15</td>
-    <td>66.10</td>
     <td>1</td>
     <td>1</td>
     <td>7</td>
-    <td>b1nbs.wam</td>
   </tr>
                 <tr>
     <td>15</td>
@@ -971,12 +918,9 @@
     <td>79.66</td>
     <td>1099925495566</td>
     <td>783755</td>
-    <td>14</td>
-    <td>66.10</td>
     <td>1</td>
     <td>1</td>
     <td>7</td>
-    <td>.w4rg.wam</td>
   </tr>
                 <tr>
     <td>16</td>
@@ -990,12 +934,9 @@
     <td>76.77</td>
     <td>1099925495569</td>
     <td>783764</td>
-    <td>18</td>
-    <td>61.28</td>
     <td>1</td>
     <td>1</td>
     <td>8</td>
-    <td>bsyru.wam</td>
   </tr>
                 <tr>
     <td>17</td>
@@ -1009,12 +950,9 @@
     <td>76.77</td>
     <td>1099925495819</td>
     <td>783760</td>
-    <td>17</td>
-    <td>61.28</td>
     <td>1</td>
     <td>1</td>
     <td>8</td>
-    <td>olrqy.wam</td>
   </tr>
                 <tr>
     <td>18</td>
@@ -1028,12 +966,9 @@
     <td>76.77</td>
     <td>1099925495829</td>
     <td>783759</td>
-    <td>16</td>
-    <td>61.28</td>
     <td>1</td>
     <td>1</td>
     <td>8</td>
-    <td>.w4rg.wam</td>
   </tr>
                 <tr>
     <td>19</td>
@@ -1047,12 +982,9 @@
     <td>73.88</td>
     <td>1099926110079</td>
     <td>784344</td>
-    <td>19</td>
-    <td>56.46</td>
     <td>1</td>
     <td>1</td>
     <td>9</td>
-    <td>wdluo.wam</td>
   </tr>
                 <tr>
     <td>20</td>
@@ -1066,12 +998,9 @@
     <td>72.99</td>
     <td>1099925499092</td>
     <td>783755</td>
-    <td>14</td>
-    <td>66.10</td>
     <td>2</td>
     <td>2</td>
     <td>7</td>
-    <td>q4oia.wam</td>
   </tr>
                 <tr>
     <td>21</td>
@@ -1085,12 +1014,9 @@
     <td>72.99</td>
     <td>1099925499367</td>
     <td>783757</td>
-    <td>15</td>
-    <td>66.10</td>
     <td>2</td>
     <td>2</td>
     <td>7</td>
-    <td>q4oia.wam</td>
   </tr>
                 <tr>
     <td>22</td>
@@ -1104,12 +1030,9 @@
     <td>72.99</td>
     <td>1099925499470</td>
     <td>783747</td>
-    <td>13</td>
-    <td>66.10</td>
     <td>2</td>
     <td>2</td>
     <td>7</td>
-    <td>i5d52.c.wam</td>
   </tr>
                 <tr>
     <td>23</td>
@@ -1123,12 +1046,9 @@
     <td>71.05</td>
     <td>1099925497598</td>
     <td>783760</td>
-    <td>17</td>
-    <td>61.28</td>
     <td>2</td>
     <td>2</td>
     <td>8</td>
-    <td>kvkb4.wam</td>
   </tr>
                 <tr>
     <td>24</td>
@@ -1142,12 +1062,9 @@
     <td>71.05</td>
     <td>1099925499084</td>
     <td>783759</td>
-    <td>16</td>
-    <td>61.28</td>
     <td>2</td>
     <td>2</td>
     <td>8</td>
-    <td>i5d52.c.wam</td>
   </tr>
                 <tr>
     <td>25</td>
@@ -1161,12 +1078,9 @@
     <td>71.05</td>
     <td>1099925502395</td>
     <td>783764</td>
-    <td>18</td>
-    <td>61.28</td>
     <td>2</td>
     <td>2</td>
     <td>8</td>
-    <td>i5d52.c.wam</td>
   </tr>
                 <tr>
     <td>26</td>
@@ -1180,12 +1094,9 @@
     <td>70.99</td>
     <td>1099926111708</td>
     <td>784340</td>
-    <td>20</td>
-    <td>51.65</td>
     <td>1</td>
     <td>1</td>
     <td>10</td>
-    <td>bsyru.wam</td>
   </tr>
                 <tr>
     <td>27</td>
@@ -1199,12 +1110,9 @@
     <td>68.88</td>
     <td>1099926151064</td>
     <td>784344</td>
-    <td>19</td>
-    <td>56.46</td>
     <td>2</td>
     <td>2</td>
     <td>9</td>
-    <td>bullishasfuk</td>
   </tr>
                 <tr>
     <td>28</td>
@@ -1218,12 +1126,9 @@
     <td>68.10</td>
     <td>1099921695290</td>
     <td>775997</td>
-    <td>21</td>
-    <td>46.83</td>
     <td>1</td>
     <td>1</td>
     <td>11</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>29</td>
@@ -1237,12 +1142,9 @@
     <td>68.10</td>
     <td>1099926102350</td>
     <td>784332</td>
-    <td>22</td>
-    <td>46.83</td>
     <td>1</td>
     <td>1</td>
     <td>11</td>
-    <td>fs1r2.wam</td>
   </tr>
                 <tr>
     <td>30</td>
@@ -1256,12 +1158,9 @@
     <td>66.54</td>
     <td>1099926115776</td>
     <td>784340</td>
-    <td>20</td>
-    <td>51.65</td>
     <td>2</td>
     <td>2</td>
     <td>10</td>
-    <td>nsdbk.wam</td>
   </tr>
                 <tr>
     <td>31</td>
@@ -1275,12 +1174,9 @@
     <td>66.33</td>
     <td>1099925517886</td>
     <td>783757</td>
-    <td>15</td>
-    <td>66.10</td>
     <td>3</td>
     <td>3</td>
     <td>7</td>
-    <td>opxp4.c.wam</td>
   </tr>
                 <tr>
     <td>32</td>
@@ -1294,12 +1190,9 @@
     <td>66.33</td>
     <td>1099925517969</td>
     <td>783755</td>
-    <td>14</td>
-    <td>66.10</td>
     <td>3</td>
     <td>3</td>
     <td>7</td>
-    <td>opxp4.c.wam</td>
   </tr>
                 <tr>
     <td>33</td>
@@ -1313,12 +1206,9 @@
     <td>66.33</td>
     <td>1099925531607</td>
     <td>783747</td>
-    <td>13</td>
-    <td>66.10</td>
     <td>3</td>
     <td>3</td>
     <td>7</td>
-    <td>sanbw.wam</td>
   </tr>
                 <tr>
     <td>34</td>
@@ -1332,12 +1222,9 @@
     <td>65.34</td>
     <td>1099925499111</td>
     <td>783760</td>
-    <td>17</td>
-    <td>61.28</td>
     <td>3</td>
     <td>3</td>
     <td>8</td>
-    <td>bullishasfuk</td>
   </tr>
                 <tr>
     <td>35</td>
@@ -1351,12 +1238,9 @@
     <td>65.34</td>
     <td>1099925505489</td>
     <td>783764</td>
-    <td>18</td>
-    <td>61.28</td>
     <td>3</td>
     <td>3</td>
     <td>8</td>
-    <td>sanbw.wam</td>
   </tr>
                 <tr>
     <td>36</td>
@@ -1370,12 +1254,9 @@
     <td>65.34</td>
     <td>1099925511892</td>
     <td>783759</td>
-    <td>16</td>
-    <td>61.28</td>
     <td>3</td>
     <td>3</td>
     <td>8</td>
-    <td>kvkb4.wam</td>
   </tr>
                 <tr>
     <td>37</td>
@@ -1389,12 +1270,9 @@
     <td>65.21</td>
     <td>1099925374296</td>
     <td>783470</td>
-    <td>24</td>
-    <td>42.01</td>
     <td>1</td>
     <td>1</td>
     <td>12</td>
-    <td>wdluo.wam</td>
   </tr>
                 <tr>
     <td>38</td>
@@ -1408,12 +1286,9 @@
     <td>65.21</td>
     <td>1099925374315</td>
     <td>783468</td>
-    <td>23</td>
-    <td>42.01</td>
     <td>1</td>
     <td>1</td>
     <td>12</td>
-    <td>wdluo.wam</td>
   </tr>
                 <tr>
     <td>39</td>
@@ -1427,12 +1302,9 @@
     <td>64.10</td>
     <td>1099921695291</td>
     <td>775997</td>
-    <td>21</td>
-    <td>46.83</td>
     <td>2</td>
     <td>2</td>
     <td>11</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>40</td>
@@ -1446,12 +1318,9 @@
     <td>64.10</td>
     <td>1099926115808</td>
     <td>784332</td>
-    <td>22</td>
-    <td>46.83</td>
     <td>2</td>
     <td>2</td>
     <td>11</td>
-    <td>nsdbk.wam</td>
   </tr>
                 <tr>
     <td>41</td>
@@ -1465,12 +1334,9 @@
     <td>63.88</td>
     <td>1099926225747</td>
     <td>784344</td>
-    <td>19</td>
-    <td>56.46</td>
     <td>3</td>
     <td>3</td>
     <td>9</td>
-    <td>5uzr.wam</td>
   </tr>
                 <tr>
     <td>42</td>
@@ -1484,12 +1350,9 @@
     <td>63.68</td>
     <td>1099921696300</td>
     <td>775999</td>
-    <td>25</td>
-    <td>39.47</td>
     <td>1</td>
     <td>1</td>
     <td>10</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>43</td>
@@ -1503,12 +1366,9 @@
     <td>62.10</td>
     <td>1099926116535</td>
     <td>784340</td>
-    <td>20</td>
-    <td>51.65</td>
     <td>3</td>
     <td>3</td>
     <td>10</td>
-    <td>fs1r2.wam</td>
   </tr>
                 <tr>
     <td>44</td>
@@ -1522,12 +1382,9 @@
     <td>61.57</td>
     <td>1099925383699</td>
     <td>783468</td>
-    <td>23</td>
-    <td>42.01</td>
     <td>2</td>
     <td>2</td>
     <td>12</td>
-    <td>bullishasfuk</td>
   </tr>
                 <tr>
     <td>45</td>
@@ -1541,12 +1398,9 @@
     <td>61.57</td>
     <td>1099925386835</td>
     <td>783470</td>
-    <td>24</td>
-    <td>42.01</td>
     <td>2</td>
     <td>2</td>
     <td>12</td>
-    <td>kvkb4.wam</td>
   </tr>
                 <tr>
     <td>46</td>
@@ -1560,12 +1414,9 @@
     <td>60.10</td>
     <td>1099921695292</td>
     <td>775997</td>
-    <td>21</td>
-    <td>46.83</td>
     <td>3</td>
     <td>3</td>
     <td>11</td>
-    <td>Not exposed</td>
   </tr>
                 <tr>
     <td>47</td>
@@ -1579,12 +1430,9 @@
     <td>60.10</td>
     <td>1099926245935</td>
     <td>784332</td>
-    <td>22</td>
-    <td>46.83</td>
     <td>3</td>
     <td>3</td>
     <td>11</td>
-    <td>wdsra.wam</td>
   </tr>
                 <tr>
     <td>48</td>
@@ -1598,12 +1446,9 @@
     <td>59.66</td>
     <td>1099925535318</td>
     <td>783747</td>
-    <td>13</td>
-    <td>66.10</td>
     <td>4</td>
     <td>4</td>
     <td>7</td>
-    <td>opxp4.c.wam</td>
   </tr>
                 <tr>
     <td>49</td>
@@ -1617,12 +1462,9 @@
     <td>59.66</td>
     <td>1099925547357</td>
     <td>783757</td>
-    <td>15</td>
-    <td>66.10</td>
     <td>4</td>
     <td>4</td>
     <td>7</td>
-    <td>nsdbk.wam</td>
   </tr>
                 <tr>
     <td>50</td>
@@ -1636,24 +1478,23 @@
     <td>59.66</td>
     <td>1099925547363</td>
     <td>783755</td>
-    <td>14</td>
-    <td>66.10</td>
     <td>4</td>
     <td>4</td>
     <td>7</td>
-    <td>nsdbk.wam</td>
   </tr></tbody>
               </table>
             </div>
+            <details class="developer-details gk-asset-version-full"><summary>Full Asset Version Ranking export</summary><p class="lore-paragraph">The complete Asset Version Ranking remains in JSON for bridge/API consumers.</p></details>
           </section>
 
           <section class="wiki-section gk-rarity-utility">
-            <h3>Utility / Open Mint / Infinite Supply</h3>
-            <p class="lore-paragraph">These templates are useful collection objects, but they are excluded from the limited-template rarity leaderboard because their supply behavior or purpose is not comparable to scarce art/card templates.</p>
-            <div class="wiki-table-wrap">
-              <table class="wiki-table gk-rarity-side-table">
-                <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
-                <tbody><tr data-rarity-filter="utility-open-mint">
+            <details>
+              <summary>Utility / Open Mint / Infinite Supply</summary>
+              <p class="lore-paragraph">These templates are useful collection objects, but they are excluded from the limited-template rarity leaderboard because their supply behavior or purpose is not comparable to scarce art/card templates.</p>
+              <div class="wiki-table-wrap">
+                <table class="wiki-table gk-rarity-side-table">
+                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <tbody><tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
       <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/782888.webp" alt="👉 GKniftyHEADS FUN COUPON ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html">👉 GKniftyHEADS FUN COUPON ⚡️⚡️⚡️</a>
@@ -3205,17 +3046,19 @@
     <td>Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.</td>
     <td><a href="/wiki/gkniftyheads-mr-cheo-test-press-776099.html">Wiki</a> <a href="https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776099" target="_blank" rel="noopener noreferrer">AtomicAssets</a> <a href="https://wax.atomichub.io/market?collection_name=gkniftyheads&amp;template_id=776099" target="_blank" rel="noopener noreferrer">AtomicHub</a></td>
   </tr></tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+            </details>
           </section>
 
           <section class="wiki-section gk-rarity-unissued">
-            <h3>Unissued / Not Circulating</h3>
-            <p class="lore-paragraph">These templates have zero issued supply and are not ranked as rare circulating NFTs.</p>
-            <div class="wiki-table-wrap">
-              <table class="wiki-table gk-rarity-side-table">
-                <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
-                <tbody><tr data-rarity-filter="unissued">
+            <details>
+              <summary>Unissued / Not Circulating</summary>
+              <p class="lore-paragraph">These templates have zero issued supply and are not ranked as rare circulating NFTs.</p>
+              <div class="wiki-table-wrap">
+                <table class="wiki-table gk-rarity-side-table">
+                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <tbody><tr data-rarity-filter="unissued">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
       <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/776049.webp" alt="⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html">⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS</a>
@@ -3519,13 +3362,9 @@
     <td>Issued supply is zero.</td>
     <td><a href="/wiki/gkniftyheads-deko-904071.html">Wiki</a> <a href="https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/904071" target="_blank" rel="noopener noreferrer">AtomicAssets</a> <a href="https://wax.atomichub.io/market?collection_name=gkniftyheads&amp;template_id=904071" target="_blank" rel="noopener noreferrer">AtomicHub</a></td>
   </tr></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="wiki-section gk-rarity-source-note">
-            <h3>Source Links / Methodology Note</h3>
-            <p class="lore-paragraph">Source data comes from the existing website collection table and local GKniftyHEADS template wiki pages. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
+                </table>
+              </div>
+            </details>
           </section>
 
           <section class="wiki-section nft-market-analytics" data-market-analytics-provider="hivebp">
@@ -3536,10 +3375,23 @@
             <div class="wiki-stat"><strong>Unavailable</strong><span>Market cap</span></div>
             <div class="wiki-stat"><strong>Unavailable</strong><span>Volume (30d)</span></div>
             <div class="wiki-stat"><strong>Unavailable</strong><span>Top users</span></div>
-            <div class="wiki-stat"><strong>[object Object], [object Object], [object Object], [object Object], [object Object]</strong><span>Top templates</span></div>
+            <div class="wiki-stat"><strong>gkniftyheads, gkniftyheads, gkniftyheads, gkniftyheads, gkniftyheads</strong><span>Top templates</span></div>
           </div>
           <p class="lore-paragraph"><small>Analytics status: degraded. top_users: https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500</small></p>
         </section>
+
+          <details class="developer-details gk-rarity-developer-details">
+            <summary>Developer tracker details</summary>
+            <section class="wiki-section gk-rarity-status">
+              <h3>Last Scan Status</h3>
+              <p class="lore-paragraph"><strong>Live data status:</strong> atomicassets live asset count. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
+              <p class="lore-paragraph"><strong>Asset state cache:</strong> 142/143 template states match current _count supply; 1 mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> 2026-07-01T22:16:39.301Z.</p>
+            </section>
+            <section class="wiki-section gk-rarity-source-note">
+              <h3>Source Links / Methodology Note</h3>
+              <p class="lore-paragraph">Source data comes from AtomicAssets, existing website collection data, and local GKniftyHEADS template wiki pages. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
+            </section>
+          </details>
 
           <section class="wiki-section gk-rarity-raw-fallback" data-rarity-fallback hidden>
             <p class="notice notice-warning">Live rarity data unavailable. Showing raw template list only. This is not the final rarity ranking.</p>
@@ -3910,8 +3762,8 @@
             </a>
           </div>
         </div>
-        <div class="wiki-rabbit-group" data-related-group="Related NFT Templates">
-          <h3>Related NFT Templates</h3>
+        <details class="wiki-rabbit-group wiki-rabbit-group--nft-siblings" data-related-group="Related NFT Templates">
+          <summary>Related NFT Templates</summary>
           <div class="wiki-rabbit-grid" role="list">
             <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-binary-blitzer-784277.html" role="listitem">
               <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬</span>
@@ -3946,7 +3798,7 @@
               <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Cyber Shinobi Shroud 🤖 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
             </a>
           </div>
-        </div>
+        </details>
       </section>
 <!-- RELATED_WIKI_PATHS:END -->
 <!-- CITATION_VOTE_PANEL:BEGIN -->
