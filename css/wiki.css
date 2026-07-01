@@ -3053,7 +3053,10 @@ body.score-updated .lb-row.selected {
   overflow-x: auto;
 }
 
-.gk-rarity-table,
+.gk-rarity-table {
+  min-width: 860px;
+}
+
 .gk-rarity-side-table {
   min-width: 980px;
 }
@@ -3102,6 +3105,30 @@ body.score-updated .lb-row.selected {
 
 .gk-rarity-nft-title {
   line-height: 1.35;
+}
+
+.gk-rarity-nft-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gk-rarity-rank,
+.gk-rarity-status-badge {
+  border: 1px solid rgba(180, 194, 212, 0.24);
+  border-radius: 999px;
+  color: rgba(234, 246, 255, 0.82);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+
+.gk-rarity-status-badge {
+  border-color: rgba(112, 240, 255, 0.24);
+  color: #d8f4ff;
 }
 
 .gk-rarity-table th,

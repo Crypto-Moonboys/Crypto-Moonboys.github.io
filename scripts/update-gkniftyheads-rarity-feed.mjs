@@ -35,7 +35,7 @@ async function tryUpdateCheckpoint(feed) {
 
 export async function updateGkniftyheadsRarityFeed() {
   const feed = findFeed(FEED_ID);
-  const result = runGenerateGkniftyheadsRarity();
+  const result = await runGenerateGkniftyheadsRarity();
   const { checkpoint, error } = await tryUpdateCheckpoint(feed);
   const syncPath = 'data/gkniftyheads/sync-status.json';
   const existingSync = readPrevious(syncPath, {});
