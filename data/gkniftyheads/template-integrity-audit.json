@@ -1,0 +1,572 @@
+{
+  "collection": "gkniftyheads",
+  "generated_at": "2026-07-01T12:43:56.010Z",
+  "total_local_templates": 143,
+  "total_atomicassets_confirmed_templates": 143,
+  "missing_from_atomicassets": [],
+  "duplicate_title_image_groups": [
+    {
+      "key": "bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq::we are vandals not vanduls",
+      "normalized_image_cid": "bafybeifthehj4pfx7bc6fip2pofomxo43dp7joo5ndjwnxlnuadlhjixaq",
+      "normalized_name": "we are vandals not vanduls",
+      "templates": [
+        {
+          "template_id": 775997,
+          "issued_supply": 11,
+          "live_supply": 11,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775997.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=775997"
+        },
+        {
+          "template_id": 776063,
+          "issued_supply": 8,
+          "live_supply": 8,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776063"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe::we are vandals not vanduls",
+      "normalized_image_cid": "bafybeie67imgx4pnch2ho66n7ojiyco3bt5v4fo3qmo3ien5ndxrk2iyxe",
+      "normalized_name": "we are vandals not vanduls",
+      "templates": [
+        {
+          "template_id": 775999,
+          "issued_supply": 10,
+          "live_supply": 10,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=775999"
+        },
+        {
+          "template_id": 776066,
+          "issued_supply": 6,
+          "live_supply": 6,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776066"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula::we are vandals not vanduls",
+      "normalized_image_cid": "bafybeihvm77fmacyuqgkac6p4cuaj4qe346rnrpvontshqlyfmuzzukula",
+      "normalized_name": "we are vandals not vanduls",
+      "templates": [
+        {
+          "template_id": 776000,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776000"
+        },
+        {
+          "template_id": 776001,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776001"
+        },
+        {
+          "template_id": 776065,
+          "issued_supply": 7,
+          "live_supply": 7,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776065"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a::bitcoin kid infinite",
+      "normalized_image_cid": "bafybeia5mzbanxklwrw25tfbu2ljfupbwtqzucvzx5rytg6mjmimldlj4a",
+      "normalized_name": "bitcoin kid infinite",
+      "templates": [
+        {
+          "template_id": 776002,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776002"
+        },
+        {
+          "template_id": 776059,
+          "issued_supply": 8,
+          "live_supply": 8,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776059"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm::bitcoin kid infinite",
+      "normalized_image_cid": "bafybeibtv54bikm2isa7j6xrotp6wwizttvkpeuf737nrgi7tgjwplaznm",
+      "normalized_name": "bitcoin kid infinite",
+      "templates": [
+        {
+          "template_id": 776003,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776003"
+        },
+        {
+          "template_id": 776058,
+          "issued_supply": 11,
+          "live_supply": 11,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776058"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa::bitcoin kid infinite",
+      "normalized_image_cid": "bafybeidfqqb7qaxk4lyigkexwmxizjebm34yxnmsbwmqp53cc7jpnjigpa",
+      "normalized_name": "bitcoin kid infinite",
+      "templates": [
+        {
+          "template_id": 776005,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776005"
+        },
+        {
+          "template_id": 776056,
+          "issued_supply": 10,
+          "live_supply": 10,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776056"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi::blockchain furie infinite",
+      "normalized_image_cid": "bafybeifc6aamfxl6nvifghopwmjrjijpawirpi2tazqhak6uvozz4fqzwi",
+      "normalized_name": "blockchain furie infinite",
+      "templates": [
+        {
+          "template_id": 776007,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776007"
+        },
+        {
+          "template_id": 776055,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776055"
+        },
+        {
+          "template_id": 776057,
+          "issued_supply": 7,
+          "live_supply": 7,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776057"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4::mr cheo bristol",
+      "normalized_image_cid": "bafybeidaaw5zhkhvij7ls6cup5ixjycz2zun3tr2ozgkethn57k4l4pkm4",
+      "normalized_name": "mr cheo bristol",
+      "templates": [
+        {
+          "template_id": 776100,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-bristol-776100.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776100"
+        },
+        {
+          "template_id": 776109,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-bristol-776109.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776109"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q::mr cheo purple pains",
+      "normalized_image_cid": "bafybeiabz22p26cxecgq56ap2chqqaiqkgokc7ay6iru4wi6qujwwq632q",
+      "normalized_name": "mr cheo purple pains",
+      "templates": [
+        {
+          "template_id": 776101,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-purple-pains-776101.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776101"
+        },
+        {
+          "template_id": 776110,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776110"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y::mr cheo lap head",
+      "normalized_image_cid": "bafybeih2olempqplvbitwpgvddext2uftpzxnviocf6k6jo5ieipvqmp3y",
+      "normalized_name": "mr cheo lap head",
+      "templates": [
+        {
+          "template_id": 776102,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-lap-head-776102.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776102"
+        },
+        {
+          "template_id": 776114,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776114"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq::mr cheo spit head",
+      "normalized_image_cid": "bafybeibbk67x2m7uveo2k7igh4e5dcrnlduoki4dcjvucbecximzatxbcq",
+      "normalized_name": "mr cheo spit head",
+      "templates": [
+        {
+          "template_id": 776103,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-spit-head-776103.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776103"
+        },
+        {
+          "template_id": 776117,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=776117"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a::chroma kid",
+      "normalized_image_cid": "bafybeiaatjcfetddfkipnfdjbmltz6rxhz6efwmtdbwgzuaswfk6tgh24a",
+      "normalized_name": "chroma kid",
+      "templates": [
+        {
+          "template_id": 783237,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-chroma-kid-783237.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=783237"
+        },
+        {
+          "template_id": 783247,
+          "issued_supply": 6,
+          "live_supply": 6,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-chroma-kid-783247.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=783247"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u::tommy the titan tucci",
+      "normalized_image_cid": "bafybeifk5czx2sgokvzzjjcltwadgpqvcfjgta3ifty7xbyaxmsygsdi7u",
+      "normalized_name": "tommy the titan tucci",
+      "templates": [
+        {
+          "template_id": 783369,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=783369"
+        },
+        {
+          "template_id": 783372,
+          "issued_supply": 5,
+          "live_supply": 5,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=783372"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e::vin the vanguard ventura",
+      "normalized_image_cid": "bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e",
+      "normalized_name": "vin the vanguard ventura",
+      "templates": [
+        {
+          "template_id": 783370,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=783370"
+        },
+        {
+          "template_id": 783371,
+          "issued_supply": 5,
+          "live_supply": 5,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=783371"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu::defi dame",
+      "normalized_image_cid": "bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu",
+      "normalized_name": "defi dame",
+      "templates": [
+        {
+          "template_id": 783400,
+          "issued_supply": 0,
+          "live_supply": 0,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-defi-dame-783400.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=783400"
+        },
+        {
+          "template_id": 788015,
+          "issued_supply": 9,
+          "live_supply": 9,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-defi-dame-788015.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=788015"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    },
+    {
+      "key": "bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy::bitman",
+      "normalized_image_cid": "bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
+      "normalized_name": "bitman",
+      "templates": [
+        {
+          "template_id": 784220,
+          "issued_supply": 1,
+          "live_supply": 1,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitman-784220.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=784220"
+        },
+        {
+          "template_id": 784229,
+          "issued_supply": 6,
+          "live_supply": 6,
+          "exists_on_atomicassets": true,
+          "local_wiki_page": "/wiki/gkniftyheads-bitman-784229.html",
+          "atomichub_url": "https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=784229"
+        }
+      ],
+      "should_remain_separate_template_rows": true,
+      "note": "AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows."
+    }
+  ],
+  "local_page_conflicts": [],
+  "included_in_rarity": [
+    773225,
+    775997,
+    775999,
+    776000,
+    776001,
+    776002,
+    776003,
+    776004,
+    776005,
+    776007,
+    776049,
+    776055,
+    776056,
+    776057,
+    776058,
+    776059,
+    776063,
+    776065,
+    776066,
+    776074,
+    776099,
+    776100,
+    776101,
+    776102,
+    776103,
+    776109,
+    776110,
+    776114,
+    776117,
+    776118,
+    776119,
+    776120,
+    776121,
+    776123,
+    776124,
+    776145,
+    776146,
+    776147,
+    782888,
+    783235,
+    783237,
+    783245,
+    783247,
+    783250,
+    783252,
+    783253,
+    783255,
+    783258,
+    783260,
+    783263,
+    783269,
+    783282,
+    783291,
+    783295,
+    783296,
+    783298,
+    783300,
+    783301,
+    783306,
+    783307,
+    783369,
+    783370,
+    783371,
+    783372,
+    783373,
+    783374,
+    783375,
+    783376,
+    783377,
+    783378,
+    783379,
+    783380,
+    783383,
+    783384,
+    783385,
+    783389,
+    783392,
+    783394,
+    783395,
+    783398,
+    783399,
+    783400,
+    783401,
+    783403,
+    783404,
+    783405,
+    783406,
+    783407,
+    783408,
+    783409,
+    783410,
+    783411,
+    783412,
+    783413,
+    783414,
+    783415,
+    783431,
+    783432,
+    783433,
+    783442,
+    783444,
+    783445,
+    783447,
+    783448,
+    783451,
+    783453,
+    783454,
+    783455,
+    783457,
+    783459,
+    783461,
+    783462,
+    783463,
+    783464,
+    783466,
+    783468,
+    783470,
+    783747,
+    783755,
+    783757,
+    783759,
+    783760,
+    783764,
+    784220,
+    784229,
+    784264,
+    784266,
+    784269,
+    784272,
+    784274,
+    784276,
+    784277,
+    784280,
+    784284,
+    784332,
+    784340,
+    784344,
+    784349,
+    784350,
+    784413,
+    784419,
+    788015,
+    904071
+  ],
+  "excluded_from_rarity": []
+}

@@ -26,6 +26,7 @@ function makeRoot() {
             <tr><td><a href="/wiki/gkniftyheads-fixture-900001.html">Fixture Live Count</a></td><td>900001</td><td>gkniftyheads</td><td>10</td><td>10</td><td><a href="https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/900001">AtomicAssets</a></td><td><a href="https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=900001">AtomicHub</a></td></tr>
             <tr><td><a href="/wiki/gkniftyheads-control-900002.html">Control Template</a></td><td>900002</td><td>gkniftyheads</td><td>20</td><td>20</td><td><a href="https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/900002">AtomicAssets</a></td><td><a href="https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=900002">AtomicHub</a></td></tr>
             <tr><td><a href="/wiki/gkniftyheads-uncapped-900003.html">Uncapped Template</a></td><td>900003</td><td>gkniftyheads</td><td>1</td><td>0</td><td><a href="https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/900003">AtomicAssets</a></td><td><a href="https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=900003">AtomicHub</a></td></tr>
+            <tr><td><a href="/wiki/gkniftyheads-local-only-900004.html">Local Only Stale Template</a></td><td>900004</td><td>gkniftyheads</td><td>5</td><td>5</td><td><a href="https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/900004">AtomicAssets</a></td><td><a href="https://wax.atomichub.io/market?collection_name=gkniftyheads&template_id=900004">AtomicHub</a></td></tr>
           </table>
         </section>
         <!-- GKNIFTYHEADS_RAW_TEMPLATE_TABLE:END -->
@@ -36,9 +37,61 @@ function makeRoot() {
     ['gkniftyheads-fixture-900001.html', 'Fixture Rare', 'Fixture Variation'],
     ['gkniftyheads-control-900002.html', 'Common Fixture', 'Common Variation'],
     ['gkniftyheads-uncapped-900003.html', 'Uncapped', 'Uncapped'],
+    ['gkniftyheads-local-only-900004.html', 'Local Only', 'Local Only'],
   ]) {
     fs.writeFileSync(path.join(root, 'wiki', file), `<table><tr><th>rarity</th><td>${rarity}</td></tr><tr><th>variation</th><td>${variation}</td></tr><tr><th>DESCRIPTION</th><td>#HODLWARS P2E lore only</td></tr></table>`, 'utf8');
   }
+  fs.mkdirSync(path.join(root, 'data', 'gkniftyheads'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'data', 'gkniftyheads', 'template-metadata-cache.json'), JSON.stringify({
+    collection: 'gkniftyheads',
+    templates: [
+      {
+        template_id: 900001,
+        exists_on_atomicassets: true,
+        metadata_status: 'ok',
+        title: 'Shared Fixture',
+        immutable_data_name: 'Shared Fixture',
+        issued_supply: 10,
+        max_supply: 10,
+        schema_name: 'gkniftyheads',
+        image_url: 'https://ipfs.hivebp.io/ipfs/bafysharedfixture',
+        image_sources: ['https://ipfs.hivebp.io/ipfs/bafysharedfixture'],
+        immutable_data_image_fields: { img: 'bafysharedfixture' },
+      },
+      {
+        template_id: 900002,
+        exists_on_atomicassets: true,
+        metadata_status: 'ok',
+        title: 'Shared Fixture',
+        immutable_data_name: 'Shared Fixture',
+        issued_supply: 20,
+        max_supply: 20,
+        schema_name: 'gkniftyheads',
+        image_url: 'https://ipfs.hivebp.io/ipfs/bafysharedfixture',
+        image_sources: ['https://ipfs.hivebp.io/ipfs/bafysharedfixture'],
+        immutable_data_image_fields: { img: 'bafysharedfixture' },
+      },
+      {
+        template_id: 900003,
+        exists_on_atomicassets: true,
+        metadata_status: 'ok',
+        title: 'Uncapped Template',
+        immutable_data_name: 'Uncapped Template',
+        issued_supply: 1,
+        max_supply: 0,
+        schema_name: 'gkniftyheads',
+        image_url: 'https://ipfs.hivebp.io/ipfs/bafyunccappedfixture',
+        image_sources: ['https://ipfs.hivebp.io/ipfs/bafyunccappedfixture'],
+        immutable_data_image_fields: { img: 'bafyunccappedfixture' },
+      },
+      {
+        template_id: 900004,
+        exists_on_atomicassets: false,
+        metadata_status: 'error',
+        error: 'template not found on AtomicAssets',
+      },
+    ],
+  }, null, 2), 'utf8');
   return root;
 }
 
@@ -62,6 +115,7 @@ assert.equal(sawPartialWrite, true, 'live supply cache should write partial prog
 await runGenerateGkniftyheadsRarity(root);
 const liveHtml = fs.readFileSync(path.join(root, 'wiki', 'gkniftyheads-nft-collection.html'), 'utf8');
 const liveJson = JSON.parse(fs.readFileSync(path.join(root, 'data', 'gkniftyheads', 'template-rarity.json'), 'utf8'));
+const integrityAudit = JSON.parse(fs.readFileSync(path.join(root, 'data', 'gkniftyheads', 'template-integrity-audit.json'), 'utf8'));
 const fixture = liveJson.ranked_templates.find((row) => row.template_id === 900001);
 assert.match(liveHtml, /<th>Live Supply<\/th>/, 'page should label live supply only when cached live counts exist');
 assert.doesNotMatch(liveHtml, /<th>Issued Supply Fallback<\/th>/, 'live-counted page should not label counted supply as fallback');
@@ -70,6 +124,13 @@ assert.equal(fixture.live_supply, 8, 'renderer should use cached live_supply');
 assert.equal(fixture.pre_baseline_missing_or_burned, 2, 'renderer should preserve pre-baseline missing/burned count');
 assert.equal(fixture.rarity_live_exposure, 8, 'scoring exposure should use cached live_supply');
 assert.equal(liveJson.ranked_templates.some((row) => row.template_id === 900003), false, 'max_supply=0 templates must stay out of limited ranking');
+assert.equal(liveJson.ranked_templates.some((row) => row.template_id === 900004), false, 'local-only stale templates must not enter ranked_templates');
+assert.equal(integrityAudit.missing_from_atomicassets.some((row) => row.template_id === 900004), true, 'integrity audit should report local-only templates missing from AtomicAssets');
+assert.equal(integrityAudit.excluded_from_rarity.some((row) => row.template_id === 900004 && row.reason === 'missing_from_atomicassets'), true, 'missing AtomicAssets templates should be excluded from rarity');
+assert.equal(integrityAudit.duplicate_title_image_groups.some((group) => {
+  const ids = group.templates.map((row) => row.template_id).sort((a, b) => a - b);
+  return ids.includes(900001) && ids.includes(900002);
+}), true, 'integrity audit should report duplicate title/image groups across valid AtomicAssets templates');
 
 const fallbackRoot = makeRoot();
 await runGenerateGkniftyheadsRarity(fallbackRoot);

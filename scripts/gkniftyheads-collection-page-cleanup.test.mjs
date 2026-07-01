@@ -39,7 +39,7 @@ assert.match(html, /class="wiki-action-button"[^>]+>Buy \/ View GKniftyHEADS Fun
 assert.match(html, /class="wiki-action-button"[^>]+>Burn \/ Blend on NeftyBlocks<\/a>/, 'NeftyBlocks blend action button must render');
 assert.match(html, /class="wiki-action-button"[^>]+>View Collection on AtomicHub<\/a>/, 'AtomicHub collection action button must render');
 
-assert.match(html, /GKniftyHEADS Collection Rarity Ranking/, 'rarity ranking must remain on the page');
+assert.match(html, /GKniftyHEADS Template Rarity Ranking/, 'template rarity ranking must remain on the page');
 assert.match(html, /<section class="wiki-section gk-rarity-utility">[\s\S]*Utility \/ Open Mint \/ Infinite Supply/, 'utility/open mint section must remain');
 assert.match(html, /<section class="wiki-section gk-rarity-unissued">[\s\S]*Unissued \/ Not Circulating/, 'unissued section must remain');
 assert.match(html, /data-feed-status-id="gkniftyheads_rarity"/, 'feed status badge must remain');
