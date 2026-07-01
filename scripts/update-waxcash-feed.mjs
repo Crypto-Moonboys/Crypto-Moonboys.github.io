@@ -2,9 +2,9 @@
 
 import {
   createFeedStatus,
-  fetchJson,
   findFeed,
   preserveOrWrite,
+  safeFetchJson,
   sourceUpdatedAt,
   summarizePayload,
   writeFeedStatus,
@@ -14,22 +14,29 @@ const FEED_ID = 'waxcash_analytics';
 
 export async function updateWaxcashFeed() {
   const feed = findFeed(FEED_ID);
-  let payload = null;
-  let errorMessage = null;
-  try {
-    payload = await fetchJson(feed.source_urls.analytics);
-    preserveOrWrite('data/waxcash_analytics/waxcash-analytics.json', payload);
-  } catch (error) {
-    errorMessage = error.message || String(error);
-  }
+  const result = await safeFetchJson(feed.source_urls.analytics, {
+    source_key: 'analytics',
+    previousPath: 'data/waxcash_analytics/waxcash-analytics.json',
+    timeoutMs: feed.timeout_ms,
+    retries: feed.retries,
+    retryDelayMs: feed.retry_backoff_ms,
+    allowStale: true,
+  });
+  if (result.ok) preserveOrWrite('data/waxcash_analytics/waxcash-analytics.json', result.payload);
+  const payload = result.payload;
+  const statusValue = result.ok ? 'ok' : result.used_previous ? 'degraded' : 'error';
   const status = createFeedStatus(feed, {
-    status: payload ? 'ok' : 'error',
-    last_successful_check: payload ? new Date().toISOString() : null,
+    status: statusValue,
+    stale: statusValue !== 'ok',
+    analytics_status: statusValue,
+    last_successful_check: statusValue !== 'error' ? new Date().toISOString() : null,
     source_updated_at: sourceUpdatedAt(payload),
-    last_error: errorMessage,
+    last_error: result.error,
+    endpoint_status: { analytics: result },
     notes: [
       'Uses the existing /api/waxonedge/waxcash-analytics page contract.',
-      payload ? `analytics summary: ${JSON.stringify(summarizePayload(payload))}` : 'Previous analytics JSON preserved if present.',
+      payload ? `analytics summary: ${JSON.stringify(summarizePayload(payload))}` : 'No previous analytics JSON was available.',
+      result.used_previous ? 'Previous analytics JSON preserved and used as stale fallback.' : 'Fresh analytics endpoint data used when available.',
     ],
   });
   writeFeedStatus(feed, status);
