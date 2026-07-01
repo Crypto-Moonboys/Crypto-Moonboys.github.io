@@ -13,6 +13,8 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const CACHE_RELATIVE = path.join('data', 'gkniftyheads', 'template-metadata-cache.json');
+const DEFAULT_METADATA_MAX_AGE_HOURS = 24 * 30;
+const DEFAULT_BATCH_SIZE = 100;
 
 function cachePath(root = ROOT) {
   return path.join(root, CACHE_RELATIVE);
@@ -50,7 +52,7 @@ function schemaName(data = {}, fallback = '') {
   return data.schema?.schema_name || data.schema_name || fallback || '';
 }
 
-function metadataEntry(row, payload, checkedAt) {
+function metadataEntry(row, payload, checkedAt, metadataFetchMode = 'single_template') {
   const data = payload?.data || {};
   const immutableData = data.immutable_data || {};
   const imageSources = collectAtomicMediaValues(immutableData);
@@ -72,6 +74,7 @@ function metadataEntry(row, payload, checkedAt) {
     exists_on_atomicassets: true,
     last_checked_at: checkedAt,
     metadata_status: 'ok',
+    metadata_fetch_mode: metadataFetchMode,
   };
 }
 
@@ -89,13 +92,37 @@ function missingEntry(row, error, previous = {}, checkedAt = new Date().toISOStr
     exists_on_atomicassets: false,
     last_checked_at: checkedAt,
     metadata_status: 'error',
+    metadata_fetch_mode: previous.metadata_fetch_mode || 'single_template_fallback',
     error: String(error?.message || error),
   };
+}
+
+function isFreshConfirmed(entry, maxAgeHours) {
+  if (!entry || entry.metadata_status !== 'ok' || !entry.exists_on_atomicassets) return false;
+  if (!entry.last_checked_at) return false;
+  const checkedAt = Date.parse(entry.last_checked_at);
+  if (!Number.isFinite(checkedAt)) return false;
+  return Date.now() - checkedAt <= maxAgeHours * 60 * 60 * 1000;
+}
+
+function batchUrl(rows) {
+  const ids = rows.map((row) => row.template_id).join(',');
+  return `https://wax.api.atomicassets.io/atomicassets/v1/templates?collection_name=gkniftyheads&ids=${ids}&limit=1000`;
+}
+
+function batchPayloadRows(payload) {
+  const rows = Array.isArray(payload?.data) ? payload.data : null;
+  if (!rows) {
+    throw new Error('AtomicAssets template ids batch response did not include data array');
+  }
+  return rows;
 }
 
 export async function updateGkniftyheadsTemplateMetadataCache(root = ROOT, options = {}) {
   const rows = options.rows || readRows(root);
   const cache = readExistingCache(root);
+  const forceRefresh = options.forceRefresh || options.refreshAll || process.env.GK_FORCE_TEMPLATE_METADATA_REFRESH === '1';
+  const maxAgeHours = options.maxAgeHours || DEFAULT_METADATA_MAX_AGE_HOURS;
 
   for (const row of rows) {
     if (!cache.has(row.template_id)) {
@@ -103,6 +130,50 @@ export async function updateGkniftyheadsTemplateMetadataCache(root = ROOT, optio
     }
   }
   writeCache(root, cache);
+
+  const rowsToRefresh = forceRefresh
+    ? rows
+    : rows.filter((row) => !isFreshConfirmed(cache.get(row.template_id), maxAgeHours));
+  const attemptedByBatch = new Set();
+  const hydratedByBatch = new Set();
+  let batchAttempts = 0;
+  let batchFallbacks = 0;
+  let singleFallbacks = 0;
+
+  async function hydrateBatch(batchRows) {
+    if (!batchRows.length) return;
+    batchAttempts += 1;
+    batchRows.forEach((row) => attemptedByBatch.add(row.template_id));
+    const checkedAt = new Date().toISOString();
+    try {
+      const payload = options.fetchTemplatesBatch
+        ? await options.fetchTemplatesBatch(batchRows, batchUrl(batchRows))
+        : await fetchJson(batchUrl(batchRows), {
+          timeoutMs: options.timeoutMs || 20000,
+          rejectUnauthorized: options.rejectUnauthorized,
+        });
+      const byTemplateId = new Map(batchPayloadRows(payload).map((entry) => [Number(entry.template_id), entry]));
+      for (const row of batchRows) {
+        const template = byTemplateId.get(row.template_id);
+        if (!template) continue;
+        cache.set(row.template_id, metadataEntry(row, { data: template }, checkedAt, 'batch_ids'));
+        hydratedByBatch.add(row.template_id);
+      }
+    } catch (error) {
+      batchFallbacks += 1;
+      for (const row of batchRows) {
+        const previous = cache.get(row.template_id) || {};
+        cache.set(row.template_id, {
+          ...previous,
+          template_id: row.template_id,
+          metadata_fetch_mode: previous.metadata_fetch_mode || 'batch_ids_fallback',
+          batch_error: String(error?.message || error),
+          last_batch_error_at: checkedAt,
+        });
+      }
+    }
+    writeCache(root, cache);
+  }
 
   async function hydrateRow(row) {
     const checkedAt = new Date().toISOString();
@@ -113,7 +184,8 @@ export async function updateGkniftyheadsTemplateMetadataCache(root = ROOT, optio
           timeoutMs: options.timeoutMs || 20000,
           rejectUnauthorized: options.rejectUnauthorized,
         });
-      cache.set(row.template_id, metadataEntry(row, payload, checkedAt));
+      singleFallbacks += attemptedByBatch.has(row.template_id) ? 1 : 0;
+      cache.set(row.template_id, metadataEntry(row, payload, checkedAt, attemptedByBatch.has(row.template_id) ? 'single_template_fallback' : 'single_template'));
     } catch (error) {
       const previous = cache.get(row.template_id) || {};
       if (previous.metadata_status === 'ok' && previous.exists_on_atomicassets) {
@@ -128,9 +200,15 @@ export async function updateGkniftyheadsTemplateMetadataCache(root = ROOT, optio
     }
   }
 
-  const concurrency = options.concurrency || 8;
-  for (let index = 0; index < rows.length; index += concurrency) {
-    await Promise.all(rows.slice(index, index + concurrency).map(hydrateRow));
+  const batchSize = options.batchSize || DEFAULT_BATCH_SIZE;
+  for (let index = 0; index < rowsToRefresh.length; index += batchSize) {
+    await hydrateBatch(rowsToRefresh.slice(index, index + batchSize));
+  }
+
+  const fallbackRows = rowsToRefresh.filter((row) => !hydratedByBatch.has(row.template_id));
+  const concurrency = options.concurrency || 4;
+  for (let index = 0; index < fallbackRows.length; index += concurrency) {
+    await Promise.all(fallbackRows.slice(index, index + concurrency).map(hydrateRow));
     writeCache(root, cache);
   }
 
@@ -138,6 +216,10 @@ export async function updateGkniftyheadsTemplateMetadataCache(root = ROOT, optio
     templates: cache.size,
     ok: [...cache.values()].filter((row) => row.metadata_status === 'ok' && row.exists_on_atomicassets).length,
     error: [...cache.values()].filter((row) => row.metadata_status === 'error').length,
+    skipped_fresh: rows.length - rowsToRefresh.length,
+    batch_attempts: batchAttempts,
+    batch_fallbacks: batchFallbacks,
+    single_fallbacks: singleFallbacks,
   };
 }
 
