@@ -29,7 +29,7 @@ function relatedSection(slug) {
 }
 
 function group(section, title) {
-  const starts = [...section.matchAll(/<div\b[^>]*class=["'][^"']*\bwiki-rabbit-group\b[^"']*["'][^>]*>/gi)];
+  const starts = [...section.matchAll(/<(?:div|details)\b[^>]*class=["'][^"']*\bwiki-rabbit-group\b[^"']*["'][^>]*>/gi)];
   for (let index = 0; index < starts.length; index += 1) {
     const start = starts[index].index;
     const end = starts[index + 1]?.index ?? section.search(/\s*<\/section>/i);

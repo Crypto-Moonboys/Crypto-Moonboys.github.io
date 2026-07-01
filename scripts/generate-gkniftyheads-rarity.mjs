@@ -1191,17 +1191,45 @@ function assetVersionRow(row) {
     <td>${row.asset_final_score.toFixed(2)}</td>
     <td>${row.asset_id}</td>
     <td>${row.template_id}</td>
-    <td>${row.template_rank ?? ''}</td>
-    <td>${row.template_final_score.toFixed(2)}</td>
     <td>${row.original_mint_number ?? 'Missing'}</td>
     <td>${row.surviving_mint_rank ?? 'Missing'}</td>
     <td>${row.live_supply}</td>
-    <td>${esc(row.owner || 'Not exposed')}</td>
   </tr>`;
 }
 
 function statCard(label, value) {
   return `<div class="wiki-stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
+}
+
+function rankingTable(rows, {
+  supplyLabel,
+  rarityExposureLabel,
+  variationExposureLabel,
+  extraClass = '',
+} = {}) {
+  const tableClass = `wiki-table gk-rarity-table${extraClass ? ` ${extraClass}` : ''}`;
+  return `<div class="wiki-table-wrap gk-rarity-table-wrap">
+            <table class="${tableClass}">
+              <thead>
+                <tr>
+                  <th>NFT</th>
+                  <th>Template ID</th>
+                  <th>${supplyLabel}</th>
+                  <th>Issued Supply</th>
+                  <th>Pre-baseline Missing/Burned</th>
+                  <th>Rarity Trait</th>
+                  <th>${rarityExposureLabel}</th>
+                  <th>Variation Trait</th>
+                  <th>${variationExposureLabel}</th>
+                  <th>Final Score</th>
+                  <th>Links</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(rankedRow).join('\n                ')}
+              </tbody>
+            </table>
+          </div>`;
 }
 
 function buildRankingSection(model, stats, rawSection, marketAnalytics = null, assetVersionRanking = []) {
@@ -1222,12 +1250,8 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
   const rarityExposureLabel = hasLiveCounts ? 'Rarity Exposure' : 'Rarity Exposure (Fallback)';
   const variationExposureLabel = hasLiveCounts ? 'Variation Exposure' : 'Variation Exposure (Fallback)';
   const liveAssetsValue = hasLiveCounts ? stats.live_assets_counted : 'Not scanned';
-  const fallbackSupplyValue = stats.fallback_issued_supply_counted || 'None';
-  const mintNumberCopy = 'Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.';
-  const holderMintCopy = 'Original mint numbers never change. Burns do not renumber NFTs. The site can track surviving mint rank separately, which is the NFT’s current position among live/unburned assets in the same template.';
-  const methodCopy = hasLiveCounts
-    ? `The main leaderboard uses the shared adaptive weighted rarity framework: live surviving supply scarcity, rarity trait/name exposure, variation trait/name exposure, and a small missing/burned supply bonus. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of creating fake traits. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. ${mintNumberCopy}`
-    : `The main leaderboard uses the shared adaptive weighted rarity framework, but current live asset counts are unavailable, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns. Missing trait weights move to supply scarcity rather than fake traits. ${mintNumberCopy}`;
+  const rankedPreview = model.ranked.slice(0, 50);
+  const assetPreview = assetVersionRanking.slice(0, 50);
   const statusCopy = hasLiveCounts
     ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
     : '<strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.';
@@ -1237,105 +1261,87 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
 
   return `${RARITY_BEGIN}
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
-          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Template Rarity Ranking</h2>
-          <p class="lore-paragraph">This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name. Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Rarity Tracker</h2>
+          <p class="lore-paragraph">A collector-facing tracker for GKniftyHEADS AtomicAssets templates and exact NFT versions. This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name.</p>
           <div class="wiki-stat-grid gk-rarity-stats" data-rarity-stat-grid="true">
             ${statCard('Templates scanned', stats.templates_scanned)}
             ${statCard('Ranked limited templates', stats.ranked_limited_templates)}
             ${statCard('Utility / open mint templates', stats.utility_open_mint_templates)}
             ${statCard('Unissued templates', stats.unissued_templates)}
-            ${statCard('Total issued supply', stats.total_issued_supply)}
-            ${statCard('Fallback issued supply counted', fallbackSupplyValue)}
             ${statCard('Live assets counted', liveAssetsValue)}
-            ${statCard('Pre-baseline missing/burned', stats.pre_baseline_missing_or_burned)}
-            ${statCard('Asset state templates', stats.asset_state_templates_tracked || 'Pending')}
-            ${statCard('Burned assets tracked', stats.burned_assets_tracked || 'None')}
-            ${statCard('Surviving mint ranks tracked', stats.surviving_mint_ranks_tracked || 'Pending')}
-            ${statCard('Last asset delta scan', stats.asset_state_last_checked_at || 'Not scanned')}
-            ${statCard('Last scan time', stats.last_scan_time)}
-            ${statCard('Scan block', stats.scan_block || 'Not scanned')}
+            ${statCard('Last updated', stats.last_scan_time)}
           </div>
 
           <section class="wiki-section gk-rarity-method">
-            <h3>Rarity Method</h3>
-            <p class="lore-paragraph">${methodCopy}</p>
-            <p class="lore-paragraph">${holderMintCopy}</p>
-          </section>
-
-          <section class="wiki-section gk-rarity-status">
-            <h3>Last Scan Status</h3>
-            <p class="lore-paragraph">${statusCopy}</p>
-            <p class="lore-paragraph">${assetStateCopy}</p>
+            <h3>How rarity works</h3>
+            <p class="lore-paragraph">Template scores use the adaptive rarity formula: 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available. Original mint numbers never change. Burns do not renumber NFTs. Surviving mint rank is tracked separately among currently live/unburned NFTs. Price, floor, listings, volume, sales, and market cap are excluded. <a href="/docs/nft-rarity-methodology.md">Read the full methodology</a>.</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">
             ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n            ')}
           </div>
 
-          <div class="wiki-table-wrap gk-rarity-table-wrap">
-            <table class="wiki-table gk-rarity-table">
-              <thead>
-                <tr>
-                  <th>NFT</th>
-                  <th>Template ID</th>
-                  <th>${supplyLabel}</th>
-                  <th>Issued Supply</th>
-                  <th>Pre-baseline Missing/Burned</th>
-                  <th>Rarity Trait</th>
-                  <th>${rarityExposureLabel}</th>
-                  <th>Variation Trait</th>
-                  <th>${variationExposureLabel}</th>
-                  <th>Final Score</th>
-                  <th>Links</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${model.ranked.map(rankedRow).join('\n                ')}
-              </tbody>
-            </table>
-          </div>
+          <section class="wiki-section gk-ranked-template-preview">
+            <h3>Top Ranked Templates</h3>
+            <p class="lore-paragraph">Limited-supply templates ranked from AtomicAssets source data. Utility, open-mint, and unissued templates are kept out of the main leaderboard.</p>
+            ${rankingTable(rankedPreview, { supplyLabel, rarityExposureLabel, variationExposureLabel })}${model.ranked.length > rankedPreview.length ? `
+            <details class="developer-details gk-rarity-full-table"><summary>View all ranked templates</summary>${rankingTable(model.ranked, { supplyLabel, rarityExposureLabel, variationExposureLabel, extraClass: 'gk-rarity-table--full' })}</details>` : ''}
+          </section>
 
           <section class="wiki-section gk-asset-version-ranking">
-            <h3>Asset Version Ranking</h3>
-            <p class="lore-paragraph">Template Rarity Ranking scores the edition/template. Asset Version Ranking scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers never change. Burns do not renumber NFTs; they only affect live supply and surviving mint rank. Market data is excluded.</p>
+            <h3>Best Exact NFT Versions</h3>
+            <p class="lore-paragraph">This secondary view scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers stay permanent; surviving mint rank can change as live/unburned assets change.</p>
             <div class="wiki-table-wrap">
               <table class="wiki-table gk-asset-version-table">
                 <thead>
-                  <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Template Rank</th><th>Template Score</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th><th>Owner</th></tr>
+                  <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
                 </thead>
-                <tbody>${assetVersionRanking.length ? assetVersionRanking.slice(0, 50).map(assetVersionRow).join('\n                ') : '<tr><td colspan="11">Pending asset-state sync.</td></tr>'}</tbody>
+                <tbody>${assetPreview.length ? assetPreview.map(assetVersionRow).join('\n                ') : '<tr><td colspan="8">Pending asset-state sync.</td></tr>'}</tbody>
               </table>
             </div>
+            ${assetVersionRanking.length > assetPreview.length ? '<details class="developer-details gk-asset-version-full"><summary>Full Asset Version Ranking export</summary><p class="lore-paragraph">The complete Asset Version Ranking remains in JSON for bridge/API consumers.</p></details>' : ''}
           </section>
 
           <section class="wiki-section gk-rarity-utility">
-            <h3>Utility / Open Mint / Infinite Supply</h3>
-            <p class="lore-paragraph">These templates are useful collection objects, but they are excluded from the limited-template rarity leaderboard because their supply behavior or purpose is not comparable to scarce art/card templates.</p>
-            <div class="wiki-table-wrap">
-              <table class="wiki-table gk-rarity-side-table">
-                <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
-                <tbody>${model.utility.map(utilityRow).join('\n                ')}</tbody>
-              </table>
-            </div>
+            <details>
+              <summary>Utility / Open Mint / Infinite Supply</summary>
+              <p class="lore-paragraph">These templates are useful collection objects, but they are excluded from the limited-template rarity leaderboard because their supply behavior or purpose is not comparable to scarce art/card templates.</p>
+              <div class="wiki-table-wrap">
+                <table class="wiki-table gk-rarity-side-table">
+                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <tbody>${model.utility.map(utilityRow).join('\n                ')}</tbody>
+                </table>
+              </div>
+            </details>
           </section>
 
           <section class="wiki-section gk-rarity-unissued">
-            <h3>Unissued / Not Circulating</h3>
-            <p class="lore-paragraph">These templates have zero issued supply and are not ranked as rare circulating NFTs.</p>
-            <div class="wiki-table-wrap">
-              <table class="wiki-table gk-rarity-side-table">
-                <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
-                <tbody>${model.unissued.map(utilityRow).join('\n                ')}</tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="wiki-section gk-rarity-source-note">
-            <h3>Source Links / Methodology Note</h3>
-            <p class="lore-paragraph">Source data comes from the existing website collection table and local GKniftyHEADS template wiki pages. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
+            <details>
+              <summary>Unissued / Not Circulating</summary>
+              <p class="lore-paragraph">These templates have zero issued supply and are not ranked as rare circulating NFTs.</p>
+              <div class="wiki-table-wrap">
+                <table class="wiki-table gk-rarity-side-table">
+                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <tbody>${model.unissued.map(utilityRow).join('\n                ')}</tbody>
+                </table>
+              </div>
+            </details>
           </section>
 
           ${renderMarketAnalyticsSection(marketAnalytics, esc)}
+
+          <details class="developer-details gk-rarity-developer-details">
+            <summary>Developer tracker details</summary>
+            <section class="wiki-section gk-rarity-status">
+              <h3>Last Scan Status</h3>
+              <p class="lore-paragraph">${statusCopy}</p>
+              <p class="lore-paragraph">${assetStateCopy}</p>
+            </section>
+            <section class="wiki-section gk-rarity-source-note">
+              <h3>Source Links / Methodology Note</h3>
+              <p class="lore-paragraph">Source data comes from AtomicAssets, existing website collection data, and local GKniftyHEADS template wiki pages. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
+            </section>
+          </details>
 
           <section class="wiki-section gk-rarity-raw-fallback" data-rarity-fallback hidden>
             <p class="notice notice-warning">Live rarity data unavailable. Showing raw template list only. This is not the final rarity ranking.</p>

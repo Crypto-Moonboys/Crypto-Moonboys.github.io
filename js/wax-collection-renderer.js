@@ -49,6 +49,14 @@
     return section;
   }
 
+  function hasStaticTracker() {
+    return !!document.querySelector('[data-gkniftyheads-rarity="true"], [data-noballgamess-rarity="true"]');
+  }
+
+  function shouldRenderFullBridgeData(collection) {
+    return !!collection && !hasStaticTracker();
+  }
+
   function rowsFromTemplateRarity(templateRarity) {
     var rows = []
       .concat(templateRarity.ranked_templates || [])
@@ -193,7 +201,9 @@
     var payload;
     if (!collection || !client) return;
     statusCard = ensureStatusCard(collection);
-    dataSection = ensureBridgeSection(collection);
+    if (shouldRenderFullBridgeData(collection)) {
+      dataSection = ensureBridgeSection(collection);
+    }
     try {
       envelope = await client.getCollectionPageData(collection);
       if (!envelope || envelope.ok === false) throw new Error('WAX bridge returned unavailable status');
@@ -203,7 +213,9 @@
     }
     payload = normalizePagePayload(envelope);
     renderStatus(statusCard, payload);
-    renderCollectionData(dataSection, payload);
+    if (dataSection) {
+      renderCollectionData(dataSection, payload);
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -216,6 +228,7 @@
     currentCollection: currentCollection,
     ensureStatusCard: ensureStatusCard,
     ensureBridgeSection: ensureBridgeSection,
+    shouldRenderFullBridgeData: shouldRenderFullBridgeData,
     normalizePagePayload: normalizePagePayload,
     renderStatus: renderStatus,
     renderCollectionData: renderCollectionData,

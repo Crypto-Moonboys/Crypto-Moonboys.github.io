@@ -39,10 +39,18 @@ assert.match(html, /class="wiki-action-button"[^>]+>Buy \/ View GKniftyHEADS Fun
 assert.match(html, /class="wiki-action-button"[^>]+>Burn \/ Blend on NeftyBlocks<\/a>/, 'NeftyBlocks blend action button must render');
 assert.match(html, /class="wiki-action-button"[^>]+>View Collection on AtomicHub<\/a>/, 'AtomicHub collection action button must render');
 
-assert.match(html, /GKniftyHEADS Template Rarity Ranking/, 'template rarity ranking must remain on the page');
-assert.match(html, /<section class="wiki-section gk-rarity-utility">[\s\S]*Utility \/ Open Mint \/ Infinite Supply/, 'utility/open mint section must remain');
-assert.match(html, /<section class="wiki-section gk-rarity-unissued">[\s\S]*Unissued \/ Not Circulating/, 'unissued section must remain');
+assert.match(html, /GKniftyHEADS Rarity Tracker/, 'rarity tracker must remain on the page');
+assert.match(html, /<h3>Top Ranked Templates<\/h3>/, 'top ranked templates should be the main table section');
+assert.match(html, /<h3>Best Exact NFT Versions<\/h3>/, 'asset version ranking should use the collector-facing title');
+assert.match(html, /<section class="wiki-section gk-rarity-utility">[\s\S]*<summary>Utility \/ Open Mint \/ Infinite Supply<\/summary>/, 'utility/open mint section must remain collapsed');
+assert.match(html, /<section class="wiki-section gk-rarity-unissued">[\s\S]*<summary>Unissued \/ Not Circulating<\/summary>/, 'unissued section must remain collapsed');
 assert.match(html, /data-feed-status-id="gkniftyheads_rarity"/, 'feed status badge must remain');
+assert.doesNotMatch(html, /\[object Object\]/, 'market analytics should not render object values as text');
+
+const visibleMethodMatches = visible.match(/How rarity works|Rarity Method/g) || [];
+assert.equal(visibleMethodMatches.length, 1, 'visible page should contain one concise rarity-method block');
+assert.doesNotMatch(visible, /Original mint numbers never change[\s\S]*Original mint numbers never change/, 'mint-number explanation should not be repeated visibly');
+assert.match(html, /<th>Asset Rank<\/th><th>NFT<\/th><th>Asset Score<\/th><th>Asset ID<\/th><th>Template ID<\/th><th>Original Mint Number<\/th><th>Surviving Mint Rank<\/th><th>Live Supply<\/th>/, 'asset table should omit owner/template debug columns');
 
 assert.match(html, /<h2 id="schemas">Schema Summary<\/h2>/, 'schema section should be a readable summary');
 assert.match(html, /<tr><th>Schema<\/th><th>Display Name<\/th><th>Purpose \/ Notes<\/th><th>Created<\/th><\/tr>/, 'schema table should use visitor-facing columns');
@@ -56,6 +64,10 @@ assert.match(statusClient, /Rarity snapshot active - issued-supply fallback - li
 assert.match(statusClient, /node\.textContent = label\(status\)/, 'badge visible text should use visitor-safe label');
 assert.match(statusClient, /node\.setAttribute\('title', detailLabel\(status\)\)/, 'detailed feed errors should stay in title text');
 assert.doesNotMatch(statusClient, /node\.textContent = detailLabel/, 'detailed feed errors must not become visible badge text');
+
+assert.match(read('js/wax-collection-renderer.js'), /function shouldRenderFullBridgeData/, 'WAX bridge renderer should keep full bridge hydration behind a tracker-page guard');
+assert.match(read('js/wax-collection-renderer.js'), /!hasStaticTracker\(\)/, 'static tracker pages should not append a duplicate WAX bridge tracker');
+assert.match(html, /<details class="wiki-rabbit-group wiki-rabbit-group--nft-siblings" data-related-group="Related NFT Templates">/, 'related NFT templates should be collapsed on the collection page');
 
 assert.match(css, /\.gk-collection-actions/, 'collection action row should have responsive styling');
 assert.match(css, /\.developer-details/, 'developer-only schema details should have collapsed detail styling');
