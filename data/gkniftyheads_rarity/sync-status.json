@@ -1,0 +1,31 @@
+{
+  "feed_id": "gkniftyheads_rarity",
+  "feed_mode": "scheduled_snapshot_primary",
+  "page_paths": [
+    "/wiki/gkniftyheads-nft-collection.html"
+  ],
+  "output_files": [
+    "data/gkniftyheads/template-rarity.json",
+    "data/gkniftyheads/live-asset-rarity.json",
+    "data/gkniftyheads/trait-exposure.json",
+    "data/gkniftyheads/sync-status.json",
+    "data/gkniftyheads/template-rarity.csv",
+    "data/gkniftyheads/live-asset-rarity.csv",
+    "data/gkniftyheads/trait-exposure.csv"
+  ],
+  "status": "ok",
+  "stale": false,
+  "stale_after_hours": 30,
+  "checked_at": "2026-07-01T00:10:50.555Z",
+  "last_successful_check": "2026-07-01T00:10:50.555Z",
+  "last_successful_update": "2026-07-01T00:10:50.472Z",
+  "source_updated_at": "2026-07-01T00:10:50.472Z",
+  "source_age_minutes": 0,
+  "last_error": "WAX get_info checkpoint unavailable: fetch failed",
+  "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
+  "notes": [
+    "Generated local rarity fallback: 119 ranked, 5 utility/open mint, 19 unissued.",
+    "Live asset scan is not faked; issued-supply fallback remains explicit until AtomicAssets asset snapshots are available.",
+    "WAX get_info checkpoint not updated; rarity data preserved."
+  ]
+}

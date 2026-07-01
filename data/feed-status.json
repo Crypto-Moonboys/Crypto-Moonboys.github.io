@@ -1,0 +1,115 @@
+{
+  "generated_at": "2026-07-01T00:10:50.575Z",
+  "feeds": {
+    "gkniftyheads_rarity": {
+      "feed_id": "gkniftyheads_rarity",
+      "feed_mode": "scheduled_snapshot_primary",
+      "page_paths": [
+        "/wiki/gkniftyheads-nft-collection.html"
+      ],
+      "output_files": [
+        "data/gkniftyheads/template-rarity.json",
+        "data/gkniftyheads/live-asset-rarity.json",
+        "data/gkniftyheads/trait-exposure.json",
+        "data/gkniftyheads/sync-status.json",
+        "data/gkniftyheads/template-rarity.csv",
+        "data/gkniftyheads/live-asset-rarity.csv",
+        "data/gkniftyheads/trait-exposure.csv"
+      ],
+      "status": "ok",
+      "stale": false,
+      "stale_after_hours": 30,
+      "checked_at": "2026-07-01T00:10:50.555Z",
+      "last_successful_check": "2026-07-01T00:10:50.555Z",
+      "last_successful_update": "2026-07-01T00:10:50.472Z",
+      "source_updated_at": "2026-07-01T00:10:50.472Z",
+      "source_age_minutes": 0,
+      "last_error": "WAX get_info checkpoint unavailable: fetch failed",
+      "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
+      "notes": [
+        "Generated local rarity fallback: 119 ranked, 5 utility/open mint, 19 unissued.",
+        "Live asset scan is not faked; issued-supply fallback remains explicit until AtomicAssets asset snapshots are available.",
+        "WAX get_info checkpoint not updated; rarity data preserved."
+      ]
+    },
+    "waxonedge_bubbles": {
+      "feed_id": "waxonedge_bubbles",
+      "feed_mode": "live_primary_static_fallback",
+      "page_paths": [
+        "/waxonedge.html"
+      ],
+      "output_files": [
+        "data/waxonedge_bubbles/sync-status.json",
+        "data/waxonedge_bubbles/waxcash-bubbles-lite.json",
+        "data/waxonedge_bubbles/indexer-health.json"
+      ],
+      "status": "error",
+      "stale": true,
+      "stale_after_hours": 30,
+      "checked_at": "2026-07-01T00:10:50.563Z",
+      "last_successful_check": null,
+      "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
+      "last_error": "bubbles_lite: fetch failed; health: fetch failed",
+      "fallback_behavior": "keep static bootstrap and mark feed stale/error if Worker data is unavailable",
+      "notes": [
+        "Uses existing WaxOnEdge Worker endpoints and preserves static bootstrap data on failure.",
+        "bubbles_lite summary: {}",
+        "health summary: {}"
+      ]
+    },
+    "waxcash_analytics": {
+      "feed_id": "waxcash_analytics",
+      "feed_mode": "live_primary_static_fallback",
+      "page_paths": [
+        "/waxcash.html"
+      ],
+      "output_files": [
+        "data/waxcash_analytics/waxcash-analytics.json",
+        "data/waxcash_analytics/sync-status.json"
+      ],
+      "status": "error",
+      "stale": true,
+      "stale_after_hours": 30,
+      "checked_at": "2026-07-01T00:10:50.568Z",
+      "last_successful_check": null,
+      "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
+      "last_error": "fetch failed",
+      "fallback_behavior": "preserve previous analytics JSON and show stale/error status if Worker data is unavailable",
+      "notes": [
+        "Uses the existing /api/waxonedge/waxcash-analytics page contract.",
+        "Previous analytics JSON preserved if present."
+      ]
+    },
+    "wuffi_token_analytics": {
+      "feed_id": "wuffi_token_analytics",
+      "feed_mode": "live_primary_static_fallback",
+      "page_paths": [
+        "/wiki/wuffi.html"
+      ],
+      "output_files": [
+        "data/wuffi_token_analytics/token-page.json",
+        "data/wuffi_token_analytics/pairs-liquidity.json",
+        "data/wuffi_token_analytics/pairs-volume24.json",
+        "data/wuffi_token_analytics/sync-status.json"
+      ],
+      "status": "error",
+      "stale": true,
+      "stale_after_hours": 30,
+      "checked_at": "2026-07-01T00:10:50.575Z",
+      "last_successful_check": null,
+      "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
+      "last_error": "token_page: fetch failed; pairs_liquidity: fetch failed; pairs_volume24: fetch failed",
+      "fallback_behavior": "preserve previous token analytics JSON and show stale/error status if Worker or chart data is unavailable",
+      "notes": [
+        "Uses existing WUFFI token analytics Worker contract; chart candles remain direct Alcor runtime data.",
+        "Previous WUFFI analytics JSON preserved for failed endpoints."
+      ]
+    }
+  }
+}

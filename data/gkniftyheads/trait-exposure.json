@@ -1,0 +1,350 @@
+{
+  "collection": "gkniftyheads",
+  "generated_at": "2026-07-01T00:31:31.628Z",
+  "live_data_status": "issued-supply fallback",
+  "rarity_traits": [
+    {
+      "trait": "⚡️⚡️⚡️ Bitcoin Batboy 🦇",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        784220
+      ]
+    },
+    {
+      "trait": "ROCKIN HOR$£ $HIT",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776005
+      ]
+    },
+    {
+      "trait": "✨ ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
+      "template_count": 2,
+      "exposure_supply": 2,
+      "template_ids": [
+        776007,
+        776055
+      ]
+    },
+    {
+      "trait": "👉 LONDONZ WHITE TRASH 👑👈",
+      "template_count": 2,
+      "exposure_supply": 2,
+      "template_ids": [
+        776000,
+        776001
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY 👑",
+      "template_count": 2,
+      "exposure_supply": 2,
+      "template_ids": [
+        776003,
+        776100
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
+      "template_count": 4,
+      "exposure_supply": 4,
+      "template_ids": [
+        776002,
+        776101,
+        776102,
+        776103
+      ]
+    },
+    {
+      "trait": "#ALLCITYBUYS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783747
+      ]
+    },
+    {
+      "trait": "Abyssal Leviathan ☠️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783757
+      ]
+    },
+    {
+      "trait": "THΞ ₿LØ℃K$TΔR̸$ 🌈",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783755
+      ]
+    },
+    {
+      "trait": "BTC TITAN ☠️",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783760
+      ]
+    },
+    {
+      "trait": "Dreadnought Desolator 🍩",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783764
+      ]
+    },
+    {
+      "trait": "Shadow Seraph 🤖",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783759
+      ]
+    },
+    {
+      "trait": "Bitcoinker of Chaos 👀",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        784344
+      ]
+    },
+    {
+      "trait": "LONDONZ WHITE TRASH 👑👈",
+      "template_count": 1,
+      "exposure_supply": 10,
+      "template_ids": [
+        775999
+      ]
+    },
+    {
+      "trait": "Uniswap Undefeatable 👀",
+      "template_count": 1,
+      "exposure_supply": 10,
+      "template_ids": [
+        784340
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Crypto Knight Coin Crusher ☠️",
+      "template_count": 1,
+      "exposure_supply": 11,
+      "template_ids": [
+        784332
+      ]
+    },
+    {
+      "trait": "LONDONZ WHITE TRASH",
+      "template_count": 1,
+      "exposure_supply": 11,
+      "template_ids": [
+        775997
+      ]
+    },
+    {
+      "trait": "Cyber Shinobi ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783470
+      ]
+    },
+    {
+      "trait": "Emperor&#x27;s Elite ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783468
+      ]
+    },
+    {
+      "trait": "$HIT $HOW ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 13,
+      "template_ids": [
+        776074
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY SHIT",
+      "template_count": 1,
+      "exposure_supply": 20,
+      "template_ids": [
+        773225
+      ]
+    }
+  ],
+  "variation_traits": [
+    {
+      "trait": "👑 GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776003
+      ]
+    },
+    {
+      "trait": "🚀 GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776005
+      ]
+    },
+    {
+      "trait": "Blockchain Bat 🦇",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        784220
+      ]
+    },
+    {
+      "trait": "GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776002
+      ]
+    },
+    {
+      "trait": "✨ GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 2,
+      "exposure_supply": 2,
+      "template_ids": [
+        776007,
+        776055
+      ]
+    },
+    {
+      "trait": "👉 VANDALS ⚡️⚡️⚡️",
+      "template_count": 5,
+      "exposure_supply": 5,
+      "template_ids": [
+        776000,
+        776001,
+        776101,
+        776102,
+        776103
+      ]
+    },
+    {
+      "trait": "Celestial Sentinel 🤖",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783757
+      ]
+    },
+    {
+      "trait": "Eternal Voidwalker ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783755
+      ]
+    },
+    {
+      "trait": "LONDONZ CALLING ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783747
+      ]
+    },
+    {
+      "trait": "Astral Ascendant 🤖",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783760
+      ]
+    },
+    {
+      "trait": "Doughnut 🍩 Conqueror 🤖",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783764
+      ]
+    },
+    {
+      "trait": "Frostfire Elemental ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783759
+      ]
+    },
+    {
+      "trait": "Pancake Prankster ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        784344
+      ]
+    },
+    {
+      "trait": "Coin Ravager ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 10,
+      "template_ids": [
+        784340
+      ]
+    },
+    {
+      "trait": "Satoshi Savior ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 11,
+      "template_ids": [
+        784332
+      ]
+    },
+    {
+      "trait": "VANDALS",
+      "template_count": 1,
+      "exposure_supply": 11,
+      "template_ids": [
+        775997
+      ]
+    },
+    {
+      "trait": "NO BALL GAMES ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783470
+      ]
+    },
+    {
+      "trait": "NOT GOING OUT LIKE OBI-WAN",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783468
+      ]
+    },
+    {
+      "trait": "GKniftyHEADS",
+      "template_count": 1,
+      "exposure_supply": 20,
+      "template_ids": [
+        773225
+      ]
+    },
+    {
+      "trait": "VANDALS ⚡️⚡️⚡️",
+      "template_count": 3,
+      "exposure_supply": 24,
+      "template_ids": [
+        775999,
+        776074,
+        776100
+      ]
+    }
+  ]
+}
