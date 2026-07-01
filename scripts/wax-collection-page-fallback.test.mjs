@@ -30,6 +30,7 @@ assert.match(renderer, /Static\/degraded fallback active/, 'renderer should show
 assert.match(renderer, /function renderCollectionData/, 'renderer should hydrate visible collection sections');
 assert.match(renderer, /Collection Summary/, 'renderer should render collection summary');
 assert.match(renderer, /Template Preview/, 'renderer should render template cards');
+assert.match(renderer, /Live Template Supply/, 'renderer should render GKnifty live template supply when available');
 assert.match(renderer, /Trait Exposure/, 'renderer should render trait exposure');
 assert.match(renderer, /Holder Leaderboard/, 'renderer should render holder leaderboard where available');
 assert.match(renderer, /Asset Rarity Leaderboard/, 'renderer should render asset rarity leaderboard where available');
@@ -37,7 +38,8 @@ assert.match(renderer, /<img class="nft-thumb"/, 'renderer should render normali
 
 assert.match(apiClient, /\/data\/'\s*\+\s*collection\s*\+\s*'\/'/, 'static fallback should read existing collection data folders');
 assert.match(apiClient, /template-rarity\.json/, 'static fallback should include template-rarity.json');
-assert.match(apiClient, /template-stats\.json/, 'static fallback should include template-stats.json');
+assert.match(apiClient, /live-template-supply\.json/, 'GKniftyHEADS static fallback should include live-template-supply.json');
+assert.match(apiClient, /collection === 'noballgamess'[\s\S]*template-stats\.json/, 'NoBallGames static fallback should keep template-stats.json');
 assert.match(apiClient, /holder-leaderboard\.json/, 'NoBallGames fallback should include holder leaderboard');
 assert.match(apiClient, /asset-rarity-leaderboard\.json/, 'NoBallGames fallback should include asset rarity leaderboard');
 

@@ -67,6 +67,7 @@
     var data = envelope && envelope.data ? envelope.data : {};
     var files = data.files || {};
     var templateRarity = data.template_rarity || files['template-rarity.json'] || {};
+    var liveTemplateSupply = data.live_template_supply || files['live-template-supply.json'] || {};
     return {
       collection: data.collection || templateRarity.collection || '',
       source: envelope && envelope.source || 'static-fallback',
@@ -81,6 +82,7 @@
       },
       template_rarity: templateRarity,
       template_stats: data.template_stats || files['template-stats.json'] || {},
+      live_template_supply: liveTemplateSupply,
       trait_exposure: data.trait_exposure || files['trait-exposure.json'] || {},
       holder_leaderboard: data.holder_leaderboard || files['holder-leaderboard.json'] || {},
       asset_rarity_leaderboard: data.asset_rarity_leaderboard || files['asset-rarity-leaderboard.json'] || files['live-asset-rarity.json'] || {},
@@ -147,6 +149,7 @@
   function renderCollectionData(section, payload) {
     var templates = payload.templates || [];
     var traitRows = payload.trait_exposure.schemas || payload.trait_exposure.traits || [];
+    var supplyRows = payload.live_template_supply.supplies || [];
     var holderRows = payload.holder_leaderboard.holders || [];
     var assetRows = payload.asset_rarity_leaderboard.assets || [];
     section.innerHTML = '<h2>WAX Bridge Collection Data</h2>'
@@ -155,6 +158,12 @@
       + statCards(payload.summary || {})
       + '<h3>Template Preview</h3>'
       + '<div class="wiki-rabbit-grid">' + templates.slice(0, 12).map(templateCard).join('') + '</div>'
+      + (supplyRows.length ? '<h3>Live Template Supply</h3>' + simpleTable(supplyRows, [
+        { label: 'Template ID', value: function (row) { return row.template_id || ''; } },
+        { label: 'Issued Supply', value: function (row) { return row.issued_supply || 0; } },
+        { label: 'Live Supply', value: function (row) { return row.live_supply || 0; } },
+        { label: 'Status', value: function (row) { return row.live_supply_status || 'pending'; } },
+      ], 'Live template supply is not available in the bridge payload.') : '')
       + '<h3>Trait Exposure</h3>'
       + simpleTable(traitRows, [
         { label: 'Trait / Schema', value: function (row) { return row.schema_name || row.trait || row.name || 'unknown'; } },
@@ -213,4 +222,3 @@
     init: init,
   });
 }());
-

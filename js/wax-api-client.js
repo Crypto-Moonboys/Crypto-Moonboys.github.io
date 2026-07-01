@@ -49,7 +49,7 @@
     var base = '/data/' + collection + '/';
     var files = collection === 'noballgamess'
       ? ['template-rarity.json', 'template-stats.json', 'trait-exposure.json', 'holder-leaderboard.json', 'asset-rarity-leaderboard.json', 'sync-status.json', 'market-analytics.json']
-      : ['template-rarity.json', 'template-stats.json', 'trait-exposure.json', 'live-asset-rarity.json', 'sync-status.json', 'market-analytics.json'];
+      : ['template-rarity.json', 'live-template-supply.json', 'trait-exposure.json', 'live-asset-rarity.json', 'sync-status.json', 'market-analytics.json'];
     var payload = { collection: collection, files: {} };
     await Promise.all(files.map(async function (file) {
       try {

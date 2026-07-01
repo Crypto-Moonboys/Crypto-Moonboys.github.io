@@ -97,7 +97,7 @@ function staticCollectionFiles(collection) {
       ]
     : [
         `${base}template-rarity.json`,
-        `${base}template-stats.json`,
+        `${base}live-template-supply.json`,
         `${base}trait-exposure.json`,
         `${base}live-asset-rarity.json`,
         `${base}sync-status.json`,
@@ -343,6 +343,7 @@ async function buildCollectionPageData(collection, env, deps) {
     summary,
     template_rarity: templateRarity,
     template_stats: staticData.byName['template-stats.json'] || {},
+    live_template_supply: staticData.byName['live-template-supply.json'] || {},
     trait_exposure: staticData.byName['trait-exposure.json'] || {},
     holder_leaderboard: staticData.byName['holder-leaderboard.json'] || {},
     asset_rarity_leaderboard: staticData.byName['asset-rarity-leaderboard.json'] || staticData.byName['live-asset-rarity.json'] || {},
@@ -569,4 +570,3 @@ export const WAX_BRIDGE_CONTRACT = Object.freeze({
   routes: ROUTES,
   scoring_exclusions: ['price', 'floor', 'sales', 'listings', 'market_cap', 'volume'],
 });
-
