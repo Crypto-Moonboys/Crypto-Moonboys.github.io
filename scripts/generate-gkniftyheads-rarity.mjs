@@ -1123,6 +1123,14 @@ function rowLinks(row) {
   return `<a href="${esc(row.url)}">Wiki</a> <a href="${esc(row.atomicassets_url)}" target="_blank" rel="noopener noreferrer">AtomicAssets</a> <a href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>`;
 }
 
+function actionLinks(row) {
+  return `<div class="gk-rarity-card-links">
+      <a href="${esc(row.url)}">Wiki</a>
+      <a href="${esc(row.atomicassets_url)}" target="_blank" rel="noopener noreferrer">AtomicAssets</a>
+      <a href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>
+    </div>`;
+}
+
 function bandClass(value) {
   return esc(String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
 }
@@ -1148,14 +1156,72 @@ function supplyCell(value) {
   return value === null || value === undefined ? 'Not counted' : value;
 }
 
-function rankedRow(row) {
-  const filters = [
+function rarityFilterTokens(row) {
+  return [
     'ranked',
     row.band.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     row.live_supply === 1 ? 'one-of-one' : '',
     row.missing_or_burned_count > 0 ? 'missing-burned' : '',
   ].filter(Boolean).join(' ');
-  return `<tr data-rarity-filter="${filters}">
+}
+
+function deckMetric(label, value) {
+  return `<span><strong>${esc(value)}</strong>${esc(label)}</span>`;
+}
+
+function featuredCard(row) {
+  if (!row) return '';
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-command-featured-image-link" href="${esc(row.url)}"><img class="gk-command-featured-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-command-featured-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  return `<article class="gk-command-featured-card" data-rarity-filter="${rarityFilterTokens(row)}">
+      <div class="gk-command-featured-media">${image}</div>
+      <div class="gk-command-featured-copy">
+        <div class="gk-command-eyebrow">Rank #${row.rank} template</div>
+        <h3>${esc(row.title)}</h3>
+        <div class="gk-command-badges">
+          <span class="gk-rarity-rank">Rank #${row.rank}</span>
+          <span class="rarity-band rarity-band--${bandClass(row.band)}">${esc(row.band)}</span>
+          <span class="gk-rarity-status-badge">Template ${row.template_id}</span>
+        </div>
+        <div class="gk-command-featured-metrics">
+          ${deckMetric('Live supply', row.live_supply)}
+          ${deckMetric('Issued supply', row.issued_supply)}
+          ${deckMetric('Final score', row.final_score.toFixed(2))}
+          ${deckMetric('Missing / burned', supplyCell(row.pre_baseline_missing_or_burned))}
+        </div>
+        <dl class="gk-command-traits">
+          <div><dt>Rarity trait</dt><dd>${esc(row.rarity_trait)}</dd></div>
+          <div><dt>Variation trait</dt><dd>${esc(row.variation_trait)}</dd></div>
+        </dl>
+        ${actionLinks(row)}
+      </div>
+    </article>`;
+}
+
+function topRankedCard(row) {
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-top-ranked-thumb-link" href="${esc(row.url)}"><img class="gk-top-ranked-thumb" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-top-ranked-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  return `<article class="gk-top-ranked-card" data-rarity-filter="${rarityFilterTokens(row)}">
+      <div class="gk-top-ranked-rank">#${row.rank}</div>
+      ${image}
+      <div class="gk-top-ranked-copy">
+        <a class="gk-top-ranked-title" href="${esc(row.url)}">${esc(row.title)}</a>
+        <div class="gk-top-ranked-meta">
+          <span class="rarity-band rarity-band--${bandClass(row.band)}">${esc(row.band)}</span>
+          <span>${row.live_supply}/${row.issued_supply} live/issued</span>
+          <span>${row.final_score.toFixed(2)} score</span>
+        </div>
+        ${actionLinks(row)}
+      </div>
+    </article>`;
+}
+
+function rankedRow(row) {
+  return `<tr data-rarity-filter="${rarityFilterTokens(row)}">
     <td class="gk-rarity-nft-cell">${nftCard(row, { rank: true, band: true })}</td>
     <td>${row.template_id}</td>
     <td>${row.live_supply}</td>
@@ -1204,6 +1270,14 @@ function statCard(label, value) {
   return `<div class="wiki-stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
 }
 
+function readExistingJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    return null;
+  }
+}
+
 function buildRankingSection(model, stats, rawSection, marketAnalytics = null, assetVersionRanking = []) {
   const filters = [
     ['all-ranked', 'All Ranked'],
@@ -1234,32 +1308,86 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
   const assetStateCopy = stats.asset_state_templates_tracked
     ? `<strong>Asset state cache:</strong> ${stats.asset_state_ok_templates}/${stats.asset_state_templates_tracked} template states match current _count supply; ${stats.asset_state_mismatch_templates} mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> ${esc(stats.asset_state_last_checked_at || 'Not scanned')}.`
     : '<strong>Asset state cache:</strong> pending first successful asset delta scan.';
+  const featured = model.ranked[0] || null;
+  const topRanked = model.ranked.slice(1, 9);
 
   return `${RARITY_BEGIN}
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
-          <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Template Rarity Ranking</h2>
+          <div class="gk-command-header">
+            <div>
+              <p class="gk-command-kicker">GKniftyHEADS Template Rarity Ranking</p>
+              <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Rarity Command Deck</h2>
+            </div>
+            <span class="feed-status-badge" data-feed-status-id="gkniftyheads_rarity">Rarity snapshot active</span>
+          </div>
           <p class="lore-paragraph">This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name. Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
-          <div class="wiki-stat-grid gk-rarity-stats" data-rarity-stat-grid="true">
+          <div class="wiki-stat-grid gk-rarity-stats gk-command-stat-strip" data-rarity-stat-grid="true">
             ${statCard('Templates scanned', stats.templates_scanned)}
             ${statCard('Ranked limited templates', stats.ranked_limited_templates)}
             ${statCard('Utility / open mint templates', stats.utility_open_mint_templates)}
             ${statCard('Unissued templates', stats.unissued_templates)}
-            ${statCard('Total issued supply', stats.total_issued_supply)}
-            ${statCard('Fallback issued supply counted', fallbackSupplyValue)}
             ${statCard('Live assets counted', liveAssetsValue)}
-            ${statCard('Pre-baseline missing/burned', stats.pre_baseline_missing_or_burned)}
-            ${statCard('Asset state templates', stats.asset_state_templates_tracked || 'Pending')}
-            ${statCard('Burned assets tracked', stats.burned_assets_tracked || 'None')}
-            ${statCard('Surviving mint ranks tracked', stats.surviving_mint_ranks_tracked || 'Pending')}
-            ${statCard('Last asset delta scan', stats.asset_state_last_checked_at || 'Not scanned')}
-            ${statCard('Last scan time', stats.last_scan_time)}
-            ${statCard('Scan block', stats.scan_block || 'Not scanned')}
+            ${statCard('Last updated', stats.last_scan_time)}
           </div>
+
+          <section class="gk-command-deck" aria-label="Featured GKniftyHEADS rarity cards">
+            ${featuredCard(featured)}
+            <aside class="gk-top-ranked-panel" aria-labelledby="gk-top-ranked-title">
+              <div class="gk-top-ranked-heading">
+                <h3 id="gk-top-ranked-title">Top Ranked Templates</h3>
+                <span>${topRanked.length} shown</span>
+              </div>
+              <div class="gk-top-ranked-list">
+                ${topRanked.map(topRankedCard).join('\n                ')}
+              </div>
+            </aside>
+          </section>
+
+          <div class="gk-rarity-filters" aria-label="Rarity filters">
+            ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n            ')}
+          </div>
+
+          <details class="wiki-section gk-rarity-audit" data-rarity-audit>
+            <summary>Full Rarity Audit Table</summary>
+            <p class="lore-paragraph">Power-user view with every ranked template, score component context, supply counts, traits, and source links.</p>
+            <div class="wiki-table-wrap gk-rarity-table-wrap">
+              <table class="wiki-table gk-rarity-table">
+                <thead>
+                  <tr>
+                    <th>NFT</th>
+                    <th>Template ID</th>
+                    <th>${supplyLabel}</th>
+                    <th>Issued Supply</th>
+                    <th>Pre-baseline Missing/Burned</th>
+                    <th>Rarity Trait</th>
+                    <th>${rarityExposureLabel}</th>
+                    <th>Variation Trait</th>
+                    <th>${variationExposureLabel}</th>
+                    <th>Final Score</th>
+                    <th>Links</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${model.ranked.map(rankedRow).join('\n                ')}
+                </tbody>
+              </table>
+            </div>
+          </details>
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
             <p class="lore-paragraph">${methodCopy}</p>
             <p class="lore-paragraph">${holderMintCopy}</p>
+            <div class="wiki-stat-grid gk-rarity-secondary-stats">
+              ${statCard('Total issued supply', stats.total_issued_supply)}
+              ${statCard('Fallback issued supply counted', fallbackSupplyValue)}
+              ${statCard('Pre-baseline missing/burned', stats.pre_baseline_missing_or_burned)}
+              ${statCard('Asset state templates', stats.asset_state_templates_tracked || 'Pending')}
+              ${statCard('Burned assets tracked', stats.burned_assets_tracked || 'None')}
+              ${statCard('Surviving mint ranks tracked', stats.surviving_mint_ranks_tracked || 'Pending')}
+              ${statCard('Last asset delta scan', stats.asset_state_last_checked_at || 'Not scanned')}
+              ${statCard('Scan block', stats.scan_block || 'Not scanned')}
+            </div>
           </section>
 
           <section class="wiki-section gk-rarity-status">
@@ -1267,33 +1395,6 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             <p class="lore-paragraph">${statusCopy}</p>
             <p class="lore-paragraph">${assetStateCopy}</p>
           </section>
-
-          <div class="gk-rarity-filters" aria-label="Rarity filters">
-            ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n            ')}
-          </div>
-
-          <div class="wiki-table-wrap gk-rarity-table-wrap">
-            <table class="wiki-table gk-rarity-table">
-              <thead>
-                <tr>
-                  <th>NFT</th>
-                  <th>Template ID</th>
-                  <th>${supplyLabel}</th>
-                  <th>Issued Supply</th>
-                  <th>Pre-baseline Missing/Burned</th>
-                  <th>Rarity Trait</th>
-                  <th>${rarityExposureLabel}</th>
-                  <th>Variation Trait</th>
-                  <th>${variationExposureLabel}</th>
-                  <th>Final Score</th>
-                  <th>Links</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${model.ranked.map(rankedRow).join('\n                ')}
-              </tbody>
-            </table>
-          </div>
 
           <section class="wiki-section gk-asset-version-ranking">
             <h3>Asset Version Ranking</h3>
@@ -1486,16 +1587,21 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
     rarity_traits: model.rarityExposure,
     variation_traits: model.variationExposure,
   };
+  const existingSync = readExistingJson(path.join(root, 'data', 'gkniftyheads', 'sync-status.json'));
+  const existingWaxInfo = existingSync?.wax_get_info && typeof existingSync.wax_get_info === 'object'
+    ? existingSync.wax_get_info
+    : {};
   const syncPayload = {
     collection: COLLECTION,
     generated_at: stats.last_scan_time,
     source: 'local website pages',
     live_data_status: stats.live_data_status,
     wax_get_info: {
+      ...existingWaxInfo,
       used_for: 'future scan checkpoint metadata only',
       endpoint: 'https://wax.eosusa.io/v1/chain/get_info',
-      head_block_num: null,
-      head_block_time: null,
+      head_block_num: existingWaxInfo.head_block_num ?? null,
+      head_block_time: existingWaxInfo.head_block_time ?? null,
     },
     burn_tracking_status: 'baseline pending; no confirmed historic burn events claimed',
     supply_counting: stats.live_assets_counted === null
