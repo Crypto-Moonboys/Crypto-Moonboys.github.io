@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T12:04:29.748Z",
+  "generated_at": "2026-07-01T12:43:56.039Z",
   "status": "atomicassets live asset count",
   "note": "Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a first-scan delta, not confirmed burn history.",
   "template_counts": [
