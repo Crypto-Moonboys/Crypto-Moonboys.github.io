@@ -1,7 +1,1010 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T08:33:24.845Z",
-  "status": "issued-supply fallback",
-  "note": "Live asset scan is not bundled. original_mint and surviving_mint_rank remain pending until asset snapshots are available.",
+  "generated_at": "2026-07-01T12:04:29.748Z",
+  "status": "atomicassets live asset count",
+  "note": "Current AtomicAssets asset counts are captured by template. pre_baseline_missing_or_burned is a first-scan delta, not confirmed burn history.",
+  "template_counts": [
+    {
+      "template_id": 773225,
+      "issued_supply": 20,
+      "live_supply": 20,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 775997,
+      "issued_supply": 11,
+      "live_supply": 11,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 775999,
+      "issued_supply": 10,
+      "live_supply": 10,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776000,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776001,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776002,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776003,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776004,
+      "issued_supply": 12,
+      "live_supply": 12,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776005,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776007,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776049,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776055,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776056,
+      "issued_supply": 10,
+      "live_supply": 10,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776057,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776058,
+      "issued_supply": 11,
+      "live_supply": 11,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776059,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776063,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776065,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776066,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776074,
+      "issued_supply": 13,
+      "live_supply": 13,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776099,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776100,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776101,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776102,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776103,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776109,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776110,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776114,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776117,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776118,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776119,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776120,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776121,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776123,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776124,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776145,
+      "issued_supply": 69,
+      "live_supply": 69,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776146,
+      "issued_supply": 63,
+      "live_supply": 63,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 776147,
+      "issued_supply": 65,
+      "live_supply": 65,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 782888,
+      "issued_supply": 123450,
+      "live_supply": 123450,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783235,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783237,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783245,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783247,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783250,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783252,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783253,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783255,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783258,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783260,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783263,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783269,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783282,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783291,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783295,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783296,
+      "issued_supply": 10,
+      "live_supply": 10,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783298,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783300,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783301,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783306,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783307,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783369,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783370,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783371,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783372,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783373,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783374,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783375,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783376,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783377,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783378,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783379,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783380,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783383,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783384,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783385,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783389,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783392,
+      "issued_supply": 9,
+      "live_supply": 9,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783394,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783395,
+      "issued_supply": 9,
+      "live_supply": 9,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783398,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783399,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783400,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783401,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783403,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783404,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783405,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783406,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783407,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783408,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783409,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783410,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783411,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783412,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783413,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783414,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783415,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783431,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783432,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783433,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783442,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783444,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783445,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783447,
+      "issued_supply": 4,
+      "live_supply": 4,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783448,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783451,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783453,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783454,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783455,
+      "issued_supply": 72,
+      "live_supply": 72,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783457,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783459,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783461,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783462,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783463,
+      "issued_supply": 9,
+      "live_supply": 9,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783464,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783466,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783468,
+      "issued_supply": 12,
+      "live_supply": 12,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783470,
+      "issued_supply": 12,
+      "live_supply": 12,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783747,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783755,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783757,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783759,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783760,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 783764,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784220,
+      "issued_supply": 1,
+      "live_supply": 1,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784229,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784264,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784266,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784269,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784272,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784274,
+      "issued_supply": 12,
+      "live_supply": 12,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784276,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784277,
+      "issued_supply": 9,
+      "live_supply": 9,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784280,
+      "issued_supply": 6,
+      "live_supply": 6,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784284,
+      "issued_supply": 5,
+      "live_supply": 5,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784332,
+      "issued_supply": 11,
+      "live_supply": 11,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784340,
+      "issued_supply": 10,
+      "live_supply": 10,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784344,
+      "issued_supply": 9,
+      "live_supply": 9,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784349,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784350,
+      "issued_supply": 7,
+      "live_supply": 7,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784413,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 784419,
+      "issued_supply": 8,
+      "live_supply": 8,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 788015,
+      "issued_supply": 9,
+      "live_supply": 9,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    },
+    {
+      "template_id": 904071,
+      "issued_supply": 0,
+      "live_supply": 0,
+      "live_supply_status": "counted",
+      "pre_baseline_missing_or_burned": 0
+    }
+  ],
   "assets": []
 }

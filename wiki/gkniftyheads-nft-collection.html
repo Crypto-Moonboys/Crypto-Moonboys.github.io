@@ -80,28 +80,28 @@
 <!-- GKNIFTYHEADS_RARITY_RANKING:BEGIN -->
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
           <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Collection Rarity Ranking</h2>
-          <p class="lore-paragraph">Ranked by live surviving supply, rarity trait exposure, variation trait exposure, missing/burned supply, and mint survival data. Price is not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          <p class="lore-paragraph">Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
           <div class="wiki-stat-grid gk-rarity-stats" data-rarity-stat-grid="true">
             <div class="wiki-stat"><strong>143</strong><span>Templates scanned</span></div>
             <div class="wiki-stat"><strong>27</strong><span>Ranked limited templates</span></div>
             <div class="wiki-stat"><strong>97</strong><span>Utility / open mint templates</span></div>
             <div class="wiki-stat"><strong>19</strong><span>Unissued templates</span></div>
             <div class="wiki-stat"><strong>124463</strong><span>Total issued supply</span></div>
-            <div class="wiki-stat"><strong>124463</strong><span>Fallback issued supply counted</span></div>
-            <div class="wiki-stat"><strong>Not scanned</strong><span>Live assets counted</span></div>
-            <div class="wiki-stat"><strong>0</strong><span>Missing/burned count</span></div>
-            <div class="wiki-stat"><strong>2026-07-01T02:52:23.358Z</strong><span>Last scan time</span></div>
+            <div class="wiki-stat"><strong>None</strong><span>Fallback issued supply counted</span></div>
+            <div class="wiki-stat"><strong>124463</strong><span>Live assets counted</span></div>
+            <div class="wiki-stat"><strong>0</strong><span>Pre-baseline missing/burned</span></div>
+            <div class="wiki-stat"><strong>2026-07-01T12:04:29.748Z</strong><span>Last scan time</span></div>
             <div class="wiki-stat"><strong>Not scanned</strong><span>Scan block</span></div>
           </div>
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
-            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset scans are not bundled in this PR, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.</p>
+            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began.</p>
           </section>
 
           <section class="wiki-section gk-rarity-status">
             <h3>Last Scan Status</h3>
-            <p class="lore-paragraph"><strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
+            <p class="lore-paragraph"><strong>Live data status:</strong> atomicassets live asset count. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">
@@ -123,13 +123,13 @@
                 <tr>
                   <th>NFT</th>
                   <th>Template ID</th>
-                  <th>Issued Supply Fallback</th>
+                  <th>Live Supply</th>
                   <th>Issued Supply</th>
-                  <th>Missing/Burned</th>
+                  <th>Pre-baseline Missing/Burned</th>
                   <th>Rarity Trait</th>
-                  <th>Rarity Exposure (Fallback)</th>
+                  <th>Rarity Exposure</th>
                   <th>Variation Trait</th>
-                  <th>Variation Exposure (Fallback)</th>
+                  <th>Variation Exposure</th>
                   <th>Final Score</th>
                   <th>Links</th>
                 </tr>
@@ -863,7 +863,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-bit-boss-783395.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeia7y5c4zkiqfsmhvmvfxrw2qbcmn7ruq3e2ooqrzrc2hu5taixx24" alt="🍒 Bit Boss 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-bit-boss-783395.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783395.webp" alt="🍒 Bit Boss 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-bit-boss-783395.html">🍒 Bit Boss 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1119,7 +1119,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-brick-burner-783282.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeichaln7ls6lyvbtvxs4prubxaecbxpw3qwwimb4hi6ppdyo33pwnq" alt="Brick Burner 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-brick-burner-783282.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783282.webp" alt="Brick Burner 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-brick-burner-783282.html">Brick Burner 👑👈</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1135,7 +1135,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-stencil-storm-783291.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeici4ar6gn362vj4ug5emiumoh45mwkae6p27ksh5vmgcdd22v2lpu" alt="Stencil Storm 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-stencil-storm-783291.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783291.webp" alt="Stencil Storm 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-stencil-storm-783291.html">Stencil Storm 👑👈</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1151,7 +1151,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-paint-patriot-783295.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeigojcjsot3mssjwordngnxco5x3wh5l22675xjpp6bzwv3skl67me" alt="Paint Patriot 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-paint-patriot-783295.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783295.webp" alt="Paint Patriot 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-paint-patriot-783295.html">Paint Patriot 👑👈</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1183,7 +1183,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-daring-doodle-783300.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu" alt="Daring Doodle 🐸🐸🐸" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-daring-doodle-783300.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783300.webp" alt="Daring Doodle 🐸🐸🐸" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-daring-doodle-783300.html">Daring Doodle 🐸🐸🐸</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1247,7 +1247,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeig7eqgicp2ubzlejgqftxmt5ue44vj5cv5hwec7yt47dqbhgbrfqe" alt="🍒 WAXP Femme Fatale, the Token Temptress 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783414.webp" alt="🍒 WAXP Femme Fatale, the Token Temptress 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html">🍒 WAXP Femme Fatale, the Token Temptress 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1439,7 +1439,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-scribe-serpent-783260.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeicqwqssba3snfksxvlcpkgwzhttwrsml2ihaf2kvq4szxqrsjp2ku" alt="Scribe Serpent 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-scribe-serpent-783260.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783260.webp" alt="Scribe Serpent 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-scribe-serpent-783260.html">Scribe Serpent 👑👈</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1455,7 +1455,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-tagger-tempest-783263.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeid2muxuftvwxbuuj5w22v5ck7csgljtet7to3byi72ntdfpupswly" alt="Tagger Tempest 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-tagger-tempest-783263.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783263.webp" alt="Tagger Tempest 👑👈" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-tagger-tempest-783263.html">Tagger Tempest 👑👈</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1471,7 +1471,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiafeyeh7qsq4v2spbfh75br7uxlytg6bq37bpvc44yprpqyev3hlu" alt="🍄 Marco &quot;The Maestro&quot; Mancini ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783378.webp" alt="🍄 Marco &quot;The Maestro&quot; Mancini ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html">🍄 Marco &quot;The Maestro&quot; Mancini ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1487,7 +1487,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeihhg6n5ssgufd6yn3jpmwbaigonoedoksf65osqv5civcaiwagfz4" alt="👑 Carmine &quot;The Conductor&quot; Cimino⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783380.webp" alt="👑 Carmine &quot;The Conductor&quot; Cimino⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html">👑 Carmine &quot;The Conductor&quot; Cimino⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1551,7 +1551,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiaw5wz4x54ij5bxdwpoeyfmtgy5ovazghg7p5ucqv6dyszi2pbasm" alt="🍒 Bit Brawler, the Byte Battler 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783415.webp" alt="🍒 Bit Brawler, the Byte Battler 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html">🍒 Bit Brawler, the Byte Battler 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1567,7 +1567,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeihjuel6eonyufya6ilf62p7pohffwzmup3avdzy3arodwhcwxde5y" alt="🤘 Vincenzo &quot;Il Criptografo&quot; Russo 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783431.webp" alt="🤘 Vincenzo &quot;Il Criptografo&quot; Russo 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html">🤘 Vincenzo &quot;Il Criptografo&quot; Russo 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1583,7 +1583,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeicke7tbd47h6ohi3lwtueg3sdvm5q244sbyxpjbbvrkttf6akxaj4" alt="🤘 Alessandro &quot;Token Titan&quot; Marini 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783461.webp" alt="🤘 Alessandro &quot;Token Titan&quot; Marini 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html">🤘 Alessandro &quot;Token Titan&quot; Marini 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1679,7 +1679,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e" alt="Vin &quot;The Vanguard&quot; Ventura ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783371.webp" alt="Vin &quot;The Vanguard&quot; Ventura ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html">Vin &quot;The Vanguard&quot; Ventura ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1711,7 +1711,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeibdgccrxunots4cw4hw6fdq7jxkamsvhtcrcf2mbhbdu2vc7u3lde" alt="👉 Joey &quot;The Oracle&quot; Olivieri ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783373.webp" alt="👉 Joey &quot;The Oracle&quot; Olivieri ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html">👉 Joey &quot;The Oracle&quot; Olivieri ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1727,7 +1727,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeidbjdbgfua7atfyox4iye7ioudjuup5lcvdowii77ngnb3pqxdzai" alt="🌈 Frankie &quot;The Phoenix&quot; Piccioli ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783374.webp" alt="🌈 Frankie &quot;The Phoenix&quot; Piccioli ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html">🌈 Frankie &quot;The Phoenix&quot; Piccioli ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1743,7 +1743,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-tony-the-technician-toscano-783376.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiauba4wiyzthqxavvec32ldzhctpaeev6k7rwlyqgvcb4fftral5u" alt="🐸 Tony &quot;The Technician&quot; Toscano⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-tony-the-technician-toscano-783376.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783376.webp" alt="🐸 Tony &quot;The Technician&quot; Toscano⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-tony-the-technician-toscano-783376.html">🐸 Tony &quot;The Technician&quot; Toscano⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1759,7 +1759,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeifiytwsntxhgbklgxiv2nmype47zkeezuu256m7ggipyi2sxcjzcu" alt="🌈 Rocco &quot;The Rocket&quot; Radic 👀" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783379.webp" alt="🌈 Rocco &quot;The Rocket&quot; Radic 👀" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html">🌈 Rocco &quot;The Rocket&quot; Radic 👀</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1791,7 +1791,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiegt6qky5rbjjsngtd5lbxmzbgbmyx4iewm6gqoqiv3jflbriontu" alt="👉 Nicky &quot;The Ninja&quot; Napolitano ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783385.webp" alt="👉 Nicky &quot;The Ninja&quot; Napolitano ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html">👉 Nicky &quot;The Ninja&quot; Napolitano ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1807,7 +1807,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeicyb2dljdhimw7kmrxcy3xqcumkqx3g5iqg6vopzhog73wwi2wga4" alt="👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783389.webp" alt="👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html">👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1903,7 +1903,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-waxp-banshee-783410.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeib4uccr3kemcmyk2hpwkagixydi6m26cld3chkz4mmqp7ellok554" alt="🍒 WAXP Banshee 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-waxp-banshee-783410.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783410.webp" alt="🍒 WAXP Banshee 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-waxp-banshee-783410.html">🍒 WAXP Banshee 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1919,7 +1919,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-cipher-seraph-783413.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiajciuwl6v7ahteflxvjvniz2rrs7n2jdhenae53qzfuhfds5d3s4" alt="🍒 Cipher Seraph 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-cipher-seraph-783413.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783413.webp" alt="🍒 Cipher Seraph 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-cipher-seraph-783413.html">🍒 Cipher Seraph 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1935,7 +1935,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiatpimcfyvvbdz76vgpw5shclhzhptgjgimj4nfjzyr6mpq5zszfa" alt="🤘 Giovanni &quot;Gas Guzzler&quot; Giordano 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783433.webp" alt="🤘 Giovanni &quot;Gas Guzzler&quot; Giordano 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html">🤘 Giovanni &quot;Gas Guzzler&quot; Giordano 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1951,7 +1951,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiflpdsu4w7q3f6mzqswei6zbu3zpoxv7b5lx5ssg2gsa35vsl6luq" alt="🤘 Alessandro &quot;Anonymity Advocate&quot; Amato 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783445.webp" alt="🤘 Alessandro &quot;Anonymity Advocate&quot; Amato 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html">🤘 Alessandro &quot;Anonymity Advocate&quot; Amato 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1967,7 +1967,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeifqvngsazaykpw74h4mfy45a3k57axf4q2cls3otpep3fejgw2ene" alt="🤘 Antonio &quot;Ether Emperor&quot; Costa 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783448.webp" alt="🤘 Antonio &quot;Ether Emperor&quot; Costa 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html">🤘 Antonio &quot;Ether Emperor&quot; Costa 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -1999,7 +1999,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeidgdopdw5t3ak6h4jqflioij3kq6endnorwzycdt27urpfmrqhkcy" alt="🤘 Davide &quot;Altcoin Alchemist&quot; Marino 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783454.webp" alt="🤘 Davide &quot;Altcoin Alchemist&quot; Marino 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html">🤘 Davide &quot;Altcoin Alchemist&quot; Marino 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2015,7 +2015,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeics7dpbwy7w6a67cpghqcbynl6s6gfgxzkizv3t76tsp7b4th4ipe" alt="🤘 Matteo &quot;Cryptocurrency Connoisseur&quot; De Angelis 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783457.webp" alt="🤘 Matteo &quot;Cryptocurrency Connoisseur&quot; De Angelis 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html">🤘 Matteo &quot;Cryptocurrency Connoisseur&quot; De Angelis 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2031,7 +2031,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeievbxk5o2et3lg6ixct7tflegywshmsieqwwzufv3tpzl3pm3f3oe" alt="🤘 VGiovanni &quot;NFT Ninja&quot; Rossi👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783459.webp" alt="🤘 VGiovanni &quot;NFT Ninja&quot; Rossi👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html">🤘 VGiovanni &quot;NFT Ninja&quot; Rossi👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2095,7 +2095,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeigvza5vdtk53zlihmgfhou2tci56zjb7srurr5qkqqyu3fpibvbni" alt="🎯 Vinny &quot;The Visionary&quot; Valenti ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783375.webp" alt="🎯 Vinny &quot;The Visionary&quot; Valenti ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html">🎯 Vinny &quot;The Visionary&quot; Valenti ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2127,7 +2127,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-crypto-charmcaster-783411.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiehofgwpmyjdfhbjrmvircadrxhzbicvrh4m5x7z3kad3horpxz5e" alt="🍒 Crypto Charmcaster 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-crypto-charmcaster-783411.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783411.webp" alt="🍒 Crypto Charmcaster 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-crypto-charmcaster-783411.html">🍒 Crypto Charmcaster 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2143,7 +2143,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-coin-conqueress-783412.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeic7akm2z7e2bamngsod2t5id2f42yi6kqhwcjibvebm4hibs65qn4" alt="🍒 Coin Conqueress 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-coin-conqueress-783412.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783412.webp" alt="🍒 Coin Conqueress 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-coin-conqueress-783412.html">🍒 Coin Conqueress 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2159,7 +2159,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiffvdn7xutjsvdqqrtml52tjm3gc4roql3yrl3byvb7osj353wdgy" alt="🤘 Marco &quot;Crypto Maestro&quot; Rossi 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783432.webp" alt="🤘 Marco &quot;Crypto Maestro&quot; Rossi 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html">🤘 Marco &quot;Crypto Maestro&quot; Rossi 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2175,7 +2175,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeif2aom5bgktmhb2xkjxvgfijfcg6fhtoi4ptcwiaid2r6dwh7slri" alt="🤘 Alessandro &quot;Satoshi Samurai&quot; Ferrari 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783442.webp" alt="🤘 Alessandro &quot;Satoshi Samurai&quot; Ferrari 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html">🤘 Alessandro &quot;Satoshi Samurai&quot; Ferrari 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2191,7 +2191,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeiefik2puy6ms2pgpqkwtc2bun3fl6f2zker77aotcdyutjlsfrzn4" alt="🤘 Luca &quot;Altcoin Assassin&quot; Bianchi 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783444.webp" alt="🤘 Luca &quot;Altcoin Assassin&quot; Bianchi 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html">🤘 Luca &quot;Altcoin Assassin&quot; Bianchi 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2207,7 +2207,7 @@
   </tr>
                 <tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeibgj7jkmhu3r6idhszpb2af7x3l737wxmhs2lgwehzrpke426e2dy" alt="🤘 Matteo &quot;Bitcoin Bandit&quot; Gallo 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783447.webp" alt="🤘 Matteo &quot;Bitcoin Bandit&quot; Gallo 👑" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html">🤘 Matteo &quot;Bitcoin Bandit&quot; Gallo 👑</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Utility / Open Mint</span>
@@ -2457,7 +2457,7 @@
   </tr>
                 <tr data-rarity-filter="unissued">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeihq2uyp5dpld7ymhcwdfgc2g6tkhnblxjzxv7yrpplkox6mnrqs3e" alt="Vin &quot;The Vanguard&quot; Ventura⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783370.webp" alt="Vin &quot;The Vanguard&quot; Ventura⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html">Vin &quot;The Vanguard&quot; Ventura⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Unissued</span>
@@ -2473,7 +2473,7 @@
   </tr>
                 <tr data-rarity-filter="unissued">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeifk5khghgrhbzr7d6g32s3j327o6jsuh7abwzdzytkun6w4myxqpi" alt="💋 Joey &quot;The Juggernaut&quot; Jablonski ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783383.webp" alt="💋 Joey &quot;The Juggernaut&quot; Jablonski ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html">💋 Joey &quot;The Juggernaut&quot; Jablonski ⚡️⚡️⚡️</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Unissued</span>
@@ -2489,7 +2489,7 @@
   </tr>
                 <tr data-rarity-filter="unissued">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
-      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-defi-dame-783400.html"><img class="gk-rarity-nft-image" src="https://ipfs.hivebp.io/ipfs/bafybeihg7tohixmensuebcvikpbvnizaiftsx5jw2435lqseyb2or276hu" alt="🍒 DeFi Dame 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+      <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-defi-dame-783400.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/783400.webp" alt="🍒 DeFi Dame 💋" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
       <a class="gk-rarity-nft-title" href="/wiki/gkniftyheads-defi-dame-783400.html">🍒 DeFi Dame 💋</a>
       <div class="gk-rarity-nft-meta">
         <span class="gk-rarity-status-badge">Unissued</span>
