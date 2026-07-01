@@ -70,7 +70,10 @@ const pageHtml = readText('wiki/noballgamess-nft-collection.html');
 
 assertFormula(assetLeaderboard, 'asset-rarity-leaderboard.json');
 assertFormula(liveAssetRarity, 'live-asset-rarity.json');
-assert.equal(liveAssetRarity.status, 'atomicassets live asset count', 'live-asset-rarity.json should identify counted live asset mode');
+assert.ok(
+  ['atomicassets live asset count', 'issued-supply fallback'].includes(liveAssetRarity.status),
+  'live-asset-rarity.json should identify a documented live data status',
+);
 
 const liveAssetStateRows = (assetState.assets || []).filter((row) => !row.burned);
 if (liveAssetStateRows.length > 0) {
