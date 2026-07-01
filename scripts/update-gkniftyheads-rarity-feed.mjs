@@ -3,6 +3,7 @@
 import { runGenerateGkniftyheadsRarity } from './generate-gkniftyheads-rarity.mjs';
 import { updateGkniftyheadsLiveSupplyCache } from './update-gkniftyheads-live-supply-cache.mjs';
 import { updateGkniftyheadsTemplateMetadataCache } from './update-gkniftyheads-template-metadata-cache.mjs';
+import { updateGkniftyheadsAssetStateCache } from './update-gkniftyheads-asset-state-cache.mjs';
 import {
   createFeedStatus,
   fetchJson,
@@ -50,6 +51,13 @@ export async function updateGkniftyheadsRarityFeed() {
         ok: (readPrevious('data/gkniftyheads/live-template-supply.json', { supplies: [] }).supplies || []).filter((row) => row.live_supply_status === 'ok').length,
       }
     : await updateGkniftyheadsLiveSupplyCache();
+  const assetStateResult = useExistingCaches
+    ? {
+        assets: (readPrevious('data/gkniftyheads/asset-state-cache.json', { assets: [] }).assets || []).length,
+        templates: (readPrevious('data/gkniftyheads/asset-state-cache.json', { template_state: [] }).template_state || []).length,
+        errors: (readPrevious('data/gkniftyheads/asset-state-cache.json', { errors: [] }).errors || []).length,
+      }
+    : await updateGkniftyheadsAssetStateCache();
   const result = await runGenerateGkniftyheadsRarity();
   const { checkpoint, error } = await tryUpdateCheckpoint(feed);
   const syncPath = 'data/gkniftyheads/sync-status.json';
@@ -74,9 +82,9 @@ export async function updateGkniftyheadsRarityFeed() {
     last_error: error ? `WAX get_info checkpoint unavailable: ${error}` : null,
     notes: [
       `Generated local rarity render: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`,
-      `Staged cache refresh: ${metadataResult.ok}/${metadataResult.templates} metadata ok; ${supplyResult.ok}/${supplyResult.templates} live supply counts ok.`,
+      `Staged cache refresh: ${metadataResult.ok}/${metadataResult.templates} metadata ok; ${supplyResult.ok}/${supplyResult.templates} live supply counts ok; ${assetStateResult.assets} asset-state records across ${assetStateResult.templates} templates.`,
       'Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.',
-      'AtomicAssets latest-created, updated-live, and updated-burned asset endpoints are registered for future asset-delta tracking; current 24-hour refresh still uses per-template live count verification.',
+      'AtomicAssets latest-created, updated-live, and updated-burned asset endpoints update asset-state cache sidecar data; current rarity maths still uses per-template live count verification.',
       checkpoint ? 'WAX get_info checkpoint updated for scan metadata only.' : 'WAX get_info checkpoint not updated; rarity data preserved.',
     ],
   });

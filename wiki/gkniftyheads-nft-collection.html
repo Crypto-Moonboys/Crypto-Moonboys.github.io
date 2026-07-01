@@ -90,18 +90,24 @@
             <div class="wiki-stat"><strong>None</strong><span>Fallback issued supply counted</span></div>
             <div class="wiki-stat"><strong>124463</strong><span>Live assets counted</span></div>
             <div class="wiki-stat"><strong>0</strong><span>Pre-baseline missing/burned</span></div>
-            <div class="wiki-stat"><strong>2026-07-01T13:29:11.001Z</strong><span>Last scan time</span></div>
+            <div class="wiki-stat"><strong>Pending</strong><span>Asset state templates</span></div>
+            <div class="wiki-stat"><strong>None</strong><span>Burned assets tracked</span></div>
+            <div class="wiki-stat"><strong>Pending</strong><span>Surviving mint ranks tracked</span></div>
+            <div class="wiki-stat"><strong>Not scanned</strong><span>Last asset delta scan</span></div>
+            <div class="wiki-stat"><strong>2026-07-01T14:41:56.479Z</strong><span>Last scan time</span></div>
             <div class="wiki-stat"><strong>Not scanned</strong><span>Scan block</span></div>
           </div>
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
             <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Supply scarcity and trait exposure use current AtomicAssets asset counts when available. The first scan labels missing supply as pre-baseline missing/burned, a current supply delta, and does not claim confirmed burn history until future snapshots prove asset disappearance after tracking began. Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset’s position among currently live/unburned NFTs.</p>
+            <p class="lore-paragraph">Original mint numbers never change. Burns do not renumber NFTs. The site can track surviving mint rank separately, which is the NFT’s current position among live/unburned assets in the same template.</p>
           </section>
 
           <section class="wiki-section gk-rarity-status">
             <h3>Last Scan Status</h3>
             <p class="lore-paragraph"><strong>Live data status:</strong> atomicassets live asset count. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.</p>
+            <p class="lore-paragraph"><strong>Asset state cache:</strong> pending first successful asset delta scan.</p>
           </section>
 
           <div class="gk-rarity-filters" aria-label="Rarity filters">

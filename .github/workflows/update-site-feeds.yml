@@ -28,6 +28,7 @@ jobs:
         run: |
           node scripts/update-gkniftyheads-template-metadata-cache.mjs
           node scripts/update-gkniftyheads-live-supply-cache.mjs
+          node scripts/update-gkniftyheads-asset-state-cache.mjs
           node scripts/generate-gkniftyheads-rarity.mjs
           node scripts/retry-gkniftyheads-thumbnails.mjs --cached-only
 
