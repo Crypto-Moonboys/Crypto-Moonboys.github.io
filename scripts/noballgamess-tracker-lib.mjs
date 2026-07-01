@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchAtomicCollectionStatsSanity, readMarketAnalytics, renderMarketAnalyticsSection, updateNftMarketAnalytics } from './nft-market-analytics.mjs';
 import { createFeedStatus, fetchJson as fetchSiteJson, findFeed, writeFeedStatus } from './site-feed-utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,6 +14,7 @@ export const FEED_ID = 'noballgamess_rarity';
 export const DATA_DIR = path.join('data', COLLECTION);
 export const PAGE_PATH = path.join('wiki', 'noballgamess-nft-collection.html');
 export const ATOMIC_BASE = 'https://wax.api.atomicassets.io/atomicassets/v1';
+const DEFAULT_METADATA_MAX_AGE_HOURS = 24 * 30;
 
 const DELTA_ENDPOINTS = {
   latest_created_assets: `${ATOMIC_BASE}/assets?collection_name=${COLLECTION}&sort=created&order=desc&limit=1000`,
@@ -126,7 +128,7 @@ function imageCandidates(immutable = {}) {
   return [...new Set(candidates)];
 }
 
-function normalizeAtomicTemplate(raw) {
+function normalizeAtomicTemplate(raw, metadataFetchMode = 'single_template') {
   const data = raw?.data && typeof raw.data === 'object' ? raw.data : raw;
   const immutable = data?.immutable_data && typeof data.immutable_data === 'object' ? data.immutable_data : {};
   const templateId = toNumber(data?.template_id);
@@ -149,6 +151,7 @@ function normalizeAtomicTemplate(raw) {
     atomicassets_url: atomicTemplateUrl(templateId),
     exists_on_atomicassets: true,
     metadata_status: 'ok',
+    metadata_fetch_mode: metadataFetchMode,
     last_checked_at: nowIso(),
   };
 }
@@ -178,21 +181,123 @@ async function fetchAllTemplatePages(fetchJson) {
   return templates;
 }
 
+function isFreshConfirmed(entry, maxAgeHours = DEFAULT_METADATA_MAX_AGE_HOURS) {
+  if (!entry || entry.metadata_status !== 'ok' || !entry.exists_on_atomicassets) return false;
+  const checkedAt = Date.parse(entry.last_checked_at || '');
+  return Number.isFinite(checkedAt) && Date.now() - checkedAt <= maxAgeHours * 60 * 60 * 1000;
+}
+
+function templateBatchUrl(rows) {
+  const ids = rows.map((row) => Number(row.template_id)).filter(Number.isFinite).join(',');
+  return `${ATOMIC_BASE}/templates?collection_name=${COLLECTION}&ids=${ids}&limit=1000`;
+}
+
+function batchPayloadRows(payload) {
+  if (!Array.isArray(payload?.data)) throw new Error('AtomicAssets template ids batch response did not include data array');
+  return payload.data;
+}
+
 export async function updateNoballgamessTemplateMetadataCache(root = ROOT, options = {}) {
   const fetchJson = options.fetchJson || defaultFetchJson;
   const generatedAt = nowIso();
   const previous = readJson(root, `${DATA_DIR}/template-metadata-cache.json`, { templates: [] });
-  const rows = options.templates || await fetchAllTemplatePages(fetchJson);
-  const templates = [];
+  const previousById = new Map(asArray(previous.templates).map((row) => [Number(row.template_id), row]));
+  const forceRefresh = options.forceRefresh || options.refreshAll || process.env.NBG_FORCE_TEMPLATE_METADATA_REFRESH === '1';
+  const forceDiscover = options.forceDiscover || !previousById.size;
+  const maxAgeHours = options.maxAgeHours || DEFAULT_METADATA_MAX_AGE_HOURS;
+  const rows = options.templates || (forceDiscover ? await fetchAllTemplatePages(fetchJson) : asArray(previous.templates));
+  const templatesById = new Map(asArray(previous.templates).map((row) => [Number(row.template_id), row]));
   const errors = [];
   for (const raw of rows) {
     try {
-      const normalized = normalizeAtomicTemplate(raw);
-      if (normalized.template_id > 0) templates.push(normalized);
+      const templateId = Number(raw?.template_id);
+      if (!Number.isFinite(templateId) || templateId <= 0) continue;
+      const previousRow = previousById.get(templateId);
+      if (!forceRefresh && isFreshConfirmed(previousRow, maxAgeHours)) {
+        templatesById.set(templateId, {
+          ...previousRow,
+          metadata_fetch_mode: 'cached_confirmed',
+        });
+        continue;
+      }
+      templatesById.set(templateId, {
+        ...previousRow,
+        ...raw,
+        template_id: templateId,
+        metadata_status: previousRow?.metadata_status || 'pending',
+      });
     } catch (error) {
       errors.push({ error: error.message || String(error), raw_template_id: raw?.template_id || null });
     }
   }
+  const rowsToRefresh = rows.filter((raw) => {
+    const templateId = Number(raw?.template_id);
+    return Number.isFinite(templateId) && (forceRefresh || !isFreshConfirmed(previousById.get(templateId), maxAgeHours));
+  });
+  const hydratedByBatch = new Set();
+  let batchAttempts = 0;
+  let batchFallbacks = 0;
+  let singleFallbacks = 0;
+
+  if (rowsToRefresh.length) {
+    batchAttempts += 1;
+    try {
+      const payload = options.fetchTemplatesBatch
+        ? await options.fetchTemplatesBatch(rowsToRefresh, templateBatchUrl(rowsToRefresh))
+        : await fetchJson(templateBatchUrl(rowsToRefresh), { sourceKey: 'templates_batch' });
+      const byTemplateId = new Map(batchPayloadRows(payload).map((entry) => [Number(entry.template_id), entry]));
+      for (const raw of rowsToRefresh) {
+        const templateId = Number(raw.template_id);
+        const batchTemplate = byTemplateId.get(templateId);
+        if (!batchTemplate) continue;
+        const normalized = normalizeAtomicTemplate(batchTemplate, 'batch_ids');
+        if (normalized.template_id > 0) {
+          templatesById.set(normalized.template_id, normalized);
+          hydratedByBatch.add(normalized.template_id);
+        }
+      }
+    } catch (error) {
+      batchFallbacks += 1;
+      errors.push({ source_key: 'templates_batch', error: error.message || String(error) });
+    }
+  }
+
+  for (const raw of rowsToRefresh.filter((row) => !hydratedByBatch.has(Number(row.template_id)))) {
+    const templateId = Number(raw.template_id);
+    try {
+      const payload = options.fetchTemplate
+        ? await options.fetchTemplate(raw)
+        : await fetchJson(atomicTemplateUrl(templateId), { sourceKey: `template:${templateId}` });
+      const normalized = normalizeAtomicTemplate(payload, rowsToRefresh.length ? 'single_template_fallback' : 'single_template');
+      if (normalized.template_id > 0) templatesById.set(normalized.template_id, normalized);
+      singleFallbacks += 1;
+    } catch (error) {
+      const previousRow = previousById.get(templateId);
+      if (previousRow?.metadata_status === 'ok' && previousRow.exists_on_atomicassets) {
+        templatesById.set(templateId, {
+          ...previousRow,
+          metadata_fetch_mode: previousRow.metadata_fetch_mode || 'cached_confirmed',
+          last_error_at: generatedAt,
+          error: error.message || String(error),
+        });
+      } else {
+        templatesById.set(templateId, {
+          ...previousRow,
+          template_id: templateId,
+          metadata_status: 'error',
+          exists_on_atomicassets: false,
+          metadata_fetch_mode: 'single_template_fallback',
+          last_checked_at: generatedAt,
+          error: error.message || String(error),
+        });
+      }
+      errors.push({ source_key: `template:${templateId}`, error: error.message || String(error) });
+    }
+  }
+
+  const templates = [...templatesById.values()]
+    .filter((row) => Number(row.template_id) > 0)
+    .sort((a, b) => a.template_id - b.template_id);
   if (!templates.length && previous.templates?.length) {
     writeJson(root, `${DATA_DIR}/template-metadata-cache.json`, {
       ...previous,
@@ -206,12 +311,26 @@ export async function updateNoballgamessTemplateMetadataCache(root = ROOT, optio
     collection: COLLECTION,
     source: 'AtomicAssets templates API',
     generated_at: generatedAt,
-    templates: templates.sort((a, b) => a.template_id - b.template_id),
+    metadata_fetch_summary: {
+      batch_attempts: batchAttempts,
+      batch_fallbacks: batchFallbacks,
+      single_template_fallbacks: singleFallbacks,
+      cached_confirmed: templates.filter((row) => row.metadata_fetch_mode === 'cached_confirmed').length,
+    },
+    templates,
     errors,
   };
   writeJson(root, `${DATA_DIR}/template-metadata-cache.json`, cache);
   writeTemplateIntegrityAudit(root, cache.templates, []);
-  return { templates: cache.templates.length, ok: cache.templates.length, errors: errors.length };
+  return {
+    templates: cache.templates.length,
+    ok: cache.templates.filter((row) => row.metadata_status === 'ok').length,
+    errors: errors.length,
+    batch_attempts: batchAttempts,
+    batch_fallbacks: batchFallbacks,
+    single_fallbacks: singleFallbacks,
+    cached_confirmed: cache.metadata_fetch_summary.cached_confirmed,
+  };
 }
 
 function writeTemplateIntegrityAudit(root, templates, excluded = []) {
@@ -500,10 +619,48 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
+function safeImageUrl(row = {}) {
+  const candidates = [
+    row.thumbnail_url,
+    row.atomicassets_image_url,
+    row.image_url,
+    ...asArray(row.image_sources),
+  ].filter(Boolean);
+  return candidates.find((url) => {
+    const value = String(url);
+    if (/\/img\/gkniftyheads\//i.test(value)) return false;
+    if (/\/img\/noballgames(?:\/|-)|\/img\/noballgame(?:\/|-)/i.test(value)) return false;
+    return /^\/img\/noballgamess\/thumbs\/[^?#]+\.(webp|jpg|jpeg|png)$/i.test(value)
+      || /^https:\/\/(ipfs\.hivebp\.io|atomichub-ipfs\.com|ipfs\.io|gateway\.pinata\.cloud|nftstorage\.link|dweb\.link)\/ipfs\/[A-Za-z0-9]+/i.test(value);
+  }) || '';
+}
+
+function renderTemplateCell(row, options = {}) {
+  const imageSrc = safeImageUrl(row);
+  const title = row.title || `Template ${row.template_id}`;
+  const href = row.atomichub_url || row.atomicassets_url || '#';
+  const meta = [
+    options.rank ? `Rank #${row.rank}` : '',
+    options.band ? row.rarity_band : '',
+    options.status || '',
+    row.template_id ? `Template #${row.template_id}` : '',
+  ].filter(Boolean).join(' · ');
+  const image = imageSrc
+    ? `<a class="nft-template-image-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(title)} NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : '<div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>';
+  return `<div class="nft-template-cell">
+      ${image}
+      <div class="nft-template-cell-copy">
+        <a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+        ${meta ? `<small>${escapeHtml(meta)}</small>` : ''}
+      </div>
+    </div>`;
+}
+
 function renderRows(rows, ranked = false) {
   if (!rows.length) return '<tr><td colspan="7">Pending first AtomicAssets sync.</td></tr>';
   return rows.map((row) => `<tr>
-    <td><a href="${escapeHtml(row.atomichub_url)}">${escapeHtml(row.title)}</a>${ranked ? `<br><small>Rank #${row.rank} · ${escapeHtml(row.rarity_band)}</small>` : ''}</td>
+    <td>${renderTemplateCell(row, { rank: ranked, band: ranked, status: ranked ? '' : row.max_supply === 0 ? 'Utility / Open Mint' : row.issued_supply <= 0 ? 'Unissued' : '' })}</td>
     <td>${escapeHtml(row.template_id)}</td>
     <td>${escapeHtml(row.schema_name || '')}</td>
     <td>${escapeHtml(row.issued_supply)}</td>
@@ -540,8 +697,9 @@ function renderHolderRows(rows) {
 }
 
 function renderAssetRarityRows(rows) {
-  if (!rows.length) return '<tr><td colspan="4">Pending asset rarity sync.</td></tr>';
+  if (!rows.length) return '<tr><td colspan="5">Pending asset rarity sync.</td></tr>';
   return rows.slice(0, 12).map((row) => `<tr>
+    <td>${renderTemplateCell(row, { status: row.rarity_band || '' })}</td>
     <td>${escapeHtml(row.asset_id || '')}</td>
     <td>${escapeHtml(row.template_id || '')}</td>
     <td>${escapeHtml(row.original_mint_number ?? '')}</td>
@@ -560,6 +718,7 @@ function renderPage(root, data, supplemental = {}) {
   const traitExposure = supplemental.traitExposure || { schemas: [] };
   const holderLeaderboard = supplemental.holderLeaderboard || { holders: [] };
   const assetRarityLeaderboard = supplemental.assetRarityLeaderboard || { assets: [] };
+  const marketAnalytics = supplemental.marketAnalytics || readMarketAnalytics(root, COLLECTION);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -634,10 +793,11 @@ function renderPage(root, data, supplemental = {}) {
         <section class="wiki-section">
           <h2>Asset Rarity Leaderboard</h2>
           <table class="wiki-table">
-            <thead><tr><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th></tr></thead>
+            <thead><tr><th>NFT</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th></tr></thead>
             <tbody>${renderAssetRarityRows(asArray(assetRarityLeaderboard.assets))}</tbody>
           </table>
         </section>
+        ${renderMarketAnalyticsSection(marketAnalytics, escapeHtml)}
         <!-- RELATED_WIKI_PATHS:BEGIN -->
         <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true">
           <h2>Related Wiki Paths</h2>
@@ -705,9 +865,17 @@ export async function generateNoballgamessRarity(root = ROOT) {
   }
   const holderLeaderboard = [...holderCounts.entries()].map(([owner, live_assets]) => ({ owner, live_assets })).sort((a, b) => b.live_assets - a.live_assets);
   const ranks = readJson(root, `${DATA_DIR}/surviving-mint-ranks.json`, { templates: [] });
+  const templateById = new Map(data.allRows.map((row) => [row.template_id, row]));
   const assetRarityLeaderboard = asArray(ranks.templates).flatMap((template) => asArray(template.assets).map((asset) => ({
     ...asset,
     template_id: template.template_id,
+    title: templateById.get(template.template_id)?.title || `Template ${template.template_id}`,
+    image_url: templateById.get(template.template_id)?.image_url || null,
+    image_sources: templateById.get(template.template_id)?.image_sources || [],
+    immutable_data_image_fields: templateById.get(template.template_id)?.immutable_data_image_fields || {},
+    atomichub_url: templateById.get(template.template_id)?.atomichub_url || atomichubUrl(template.template_id),
+    atomicassets_url: templateById.get(template.template_id)?.atomicassets_url || atomicTemplateUrl(template.template_id),
+    rarity_band: templateById.get(template.template_id)?.rarity_band || null,
   })));
   const traitExposure = {
     collection: COLLECTION,
@@ -750,6 +918,13 @@ export async function generateNoballgamessRarity(root = ROOT) {
     utility_open_mint_templates: data.utility.length,
     unissued_templates: data.unissued.length,
     ranking_formula: SCORING_CONTRACT,
+    templates: data.allRows.map((row) => ({
+      template_id: row.template_id,
+      title: row.title,
+      image_url: row.image_url || null,
+      image_sources: row.image_sources || [],
+      immutable_data_image_fields: row.immutable_data_image_fields || {},
+    })),
   };
   writeJson(root, `${DATA_DIR}/template-stats.json`, templateStats);
   writeJson(root, `${DATA_DIR}/trait-exposure.json`, traitExposure);
@@ -782,6 +957,7 @@ export async function generateNoballgamessRarity(root = ROOT) {
     traitExposure,
     holderLeaderboard: holderLeaderboardOutput,
     assetRarityLeaderboard: assetRarityLeaderboardOutput,
+    marketAnalytics: readMarketAnalytics(root, COLLECTION),
   }));
   writeTemplateIntegrityAudit(root, data.allRows, []);
   return {
@@ -813,6 +989,8 @@ export async function updateNoballgamessRarityFeed() {
         errors: asArray(readJson(ROOT, `${DATA_DIR}/asset-state-cache.json`, { errors: [] }).errors).length,
       }
     : await updateNoballgamessAssetStateCache();
+  const marketAnalytics = await updateNftMarketAnalytics({ collection: COLLECTION, root: ROOT, feed });
+  const collectionStats = await fetchAtomicCollectionStatsSanity({ collection: COLLECTION });
   const result = await generateNoballgamessRarity();
   const status = createFeedStatus(feed, {
     status: 'ok',
@@ -821,6 +999,10 @@ export async function updateNoballgamessRarityFeed() {
     notes: [
       `Generated NoBallGames rarity render: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`,
       `Staged cache refresh: ${metadataResult.ok}/${metadataResult.templates} metadata ok; ${supplyResult.ok}/${supplyResult.templates} live supply counts ok; ${assetStateResult.assets} asset-state records across ${assetStateResult.templates} templates.`,
+      `HiveBP display analytics: ${marketAnalytics.analytics_status}; not used for rarity scoring.`,
+      collectionStats.ok
+        ? 'AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.'
+        : `AtomicAssets collection stats sanity check unavailable: ${collectionStats.error || 'unknown error'}.`,
       'AtomicAssets is the source of truth; AtomicHub links are references only.',
     ],
   });

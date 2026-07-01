@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T17:17:05.388Z",
+  "generated_at": "2026-07-01T17:34:39.212Z",
   "ranking_formula": {
     "live_surviving_supply_scarcity": 0.5,
     "rarity_trait_live_exposure_scarcity": 0.25,
@@ -27,7 +27,7 @@
     "burned_assets_tracked": 0,
     "surviving_mint_ranks_tracked": 22572,
     "asset_state_last_checked_at": "2026-07-01T17:16:16.405Z",
-    "last_scan_time": "2026-07-01T17:17:05.388Z",
+    "last_scan_time": "2026-07-01T17:34:39.212Z",
     "scan_block": null,
     "live_data_status": "atomicassets live asset count"
   },

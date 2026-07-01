@@ -10,6 +10,7 @@ import {
   updateNoballgamessLiveSupplyCache,
   updateNoballgamessTemplateMetadataCache,
 } from './noballgamess-tracker-lib.mjs';
+import { updateNftMarketAnalytics } from './nft-market-analytics.mjs';
 
 function makeRoot() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'noballgamess-tracker-'));
@@ -52,12 +53,55 @@ await updateNoballgamessTemplateMetadataCache(root, {
     template(100002, 5, 0, 'Fixture Open Mint'),
     template(100003, 0, 10, 'Fixture Unissued'),
   ],
+  fetchTemplatesBatch: async (rows, url) => {
+    assert.match(url, /\/atomicassets\/v1\/templates\?collection_name=noballgamess&ids=100001,100002,100003&limit=1000/, 'NoBallGames metadata updater must attempt ids= batch fetch');
+    return { data: rows };
+  },
+  fetchTemplate: async () => {
+    throw new Error('single-template fallback should not run after fixture batch success');
+  },
 });
 
 const metadata = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'template-metadata-cache.json'), 'utf8'));
 assert.equal(metadata.templates.length, 3, 'metadata cache should contain AtomicAssets-confirmed fixture templates');
 assert.ok(metadata.templates.every((row) => row.exists_on_atomicassets === true), 'metadata cache requires AtomicAssets-confirmed templates');
 assert.ok(metadata.templates.every((row) => row.image_sources.length > 0), 'metadata cache should resolve image sources from immutable_data');
+assert.ok(metadata.templates.every((row) => row.metadata_fetch_mode === 'batch_ids'), 'metadata cache should record batch_ids fetch mode after batch hydration');
+
+const fallbackRoot = makeRoot();
+const fallbackOrder = [];
+await updateNoballgamessTemplateMetadataCache(fallbackRoot, {
+  templates: [
+    template(100011, 1, 1, 'Fallback Ranked'),
+    template(100012, 2, 2, 'Fallback Ranked 2'),
+  ],
+  fetchTemplatesBatch: async () => {
+    fallbackOrder.push('batch');
+    throw new Error('ids unsupported fixture');
+  },
+  fetchTemplate: async (row) => {
+    fallbackOrder.push(`single:${row.template_id}`);
+    return { data: row };
+  },
+});
+const fallbackMetadata = JSON.parse(fs.readFileSync(path.join(fallbackRoot, 'data', 'noballgamess', 'template-metadata-cache.json'), 'utf8'));
+assert.deepEqual(fallbackOrder, ['batch', 'single:100011', 'single:100012'], 'NoBallGames metadata updater should fallback to single-template fetches after batch failure');
+assert.ok(fallbackMetadata.templates.every((row) => row.metadata_fetch_mode === 'single_template_fallback'), 'fallback rows should record single_template_fallback fetch mode');
+
+let cacheFetchAttempted = false;
+const cacheReuseResult = await updateNoballgamessTemplateMetadataCache(root, {
+  templates: [template(100001, 3, 3, 'Fixture Ranked')],
+  fetchTemplatesBatch: async () => {
+    cacheFetchAttempted = true;
+    throw new Error('fresh confirmed cache should not refetch');
+  },
+  fetchTemplate: async () => {
+    cacheFetchAttempted = true;
+    throw new Error('fresh confirmed cache should not refetch');
+  },
+});
+assert.equal(cacheFetchAttempted, false, 'fresh confirmed NoBallGames metadata should be reused without AtomicAssets calls');
+assert.equal(cacheReuseResult.cached_confirmed >= 1, true, 'metadata updater should report cached_confirmed rows');
 
 await updateNoballgamessLiveSupplyCache(root, {
   fetchJson: async (url) => {
@@ -84,6 +128,14 @@ await updateNoballgamessAssetStateCache(root, {
 assert.deepEqual(sourceKeys.slice(0, 3), ['latest_created_assets', 'recently_updated_live_assets', 'recently_updated_burned_assets'], 'daily delta scans should always run');
 assert.ok(sourceKeys.includes('template_assets_backfill:100001'), 'rotating template backfill should run for selected template IDs');
 
+await updateNftMarketAnalytics({
+  root,
+  collection: 'noballgamess',
+  fetchJson: async () => {
+    throw new Error('HiveBP fixture unavailable');
+  },
+});
+
 await generateNoballgamessRarity(root);
 
 const templateRarity = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'template-rarity.json'), 'utf8'));
@@ -92,6 +144,7 @@ const ranks = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess',
 const holders = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'holder-leaderboard.json'), 'utf8'));
 const assetLeaderboard = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'asset-rarity-leaderboard.json'), 'utf8'));
 const html = fs.readFileSync(path.join(root, 'wiki', 'noballgamess-nft-collection.html'), 'utf8');
+const marketAnalytics = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'market-analytics.json'), 'utf8'));
 
 assert.equal(templateRarity.ranked_templates.some((row) => row.template_id === 100001), true, 'fixed-supply template should rank');
 assert.equal(templateRarity.utility_open_mint_templates.some((row) => row.template_id === 100002), true, 'max_supply=0 template should be utility/open mint');
@@ -123,6 +176,9 @@ assert.deepEqual(liveRankedAssets.map((row) => row.original_mint_number), [1, 3]
 assert.deepEqual(liveRankedAssets.map((row) => row.surviving_mint_rank), [1, 2], 'surviving_mint_rank recalculates among unburned assets');
 assert.equal(holders.holders.some((row) => row.owner === 'burned.gm'), false, 'holder leaderboard excludes burned assets');
 assert.equal(assetLeaderboard.assets.some((row) => row.asset_id === 'a3'), false, 'asset rarity leaderboard excludes burned assets');
+assert.equal(marketAnalytics.display_only, true, 'market analytics sidecar is display-only');
+assert.equal(marketAnalytics.rarity_input, false, 'market analytics sidecar is not a rarity input');
+assert.equal(marketAnalytics.analytics_status, 'pending', 'HiveBP failure keeps analytics separate and pending without failing rarity generation');
 
 assert.match(html, /Original mint numbers never change/, 'page should explain permanent original mint numbers');
 assert.match(html, /surviving mint rank/, 'page should explain surviving mint rank');
@@ -132,5 +188,29 @@ assert.match(html, /Template Stats/, 'page should render template stats section'
 assert.match(html, /Trait Exposure/, 'page should render trait exposure section');
 assert.match(html, /Holder Leaderboard/, 'page should render holder leaderboard section');
 assert.match(html, /Asset Rarity Leaderboard/, 'page should render asset rarity leaderboard section');
+assert.match(html, /Market analytics — display only, not rarity input/, 'page should render display-only market analytics section');
+
+assert.match(html, /<img class="nft-thumb"/, 'NoBallGames page should render NFT thumbnail images');
+assert.match(html, /<h2>Template Rarity Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'Template Rarity Ranking rows should include image markup');
+assert.match(html, /<h2>Utility \/ Open Mint<\/h2>[\s\S]*<img class="nft-thumb"/, 'Utility/Open Mint rows should include image markup when image data exists');
+assert.match(html, /<h2>Asset Rarity Leaderboard<\/h2>[\s\S]*<img class="nft-thumb"/, 'Asset Rarity Leaderboard rows should include image markup');
+assert.doesNotMatch(html, /src="[^"]*gkniftyheads/i, 'NoBallGames rendered image src must not point to gkniftyheads assets');
+assert.doesNotMatch(html, /src="[^"]*\/img\/noballgames(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgames path spelling');
+assert.doesNotMatch(html, /src="[^"]*\/img\/noballgame(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgame path spelling');
+for (const [, src] of html.matchAll(/<img class="nft-thumb"[^>]+src="([^"]+)"/g)) {
+  assert.match(
+    src,
+    /^(\/img\/noballgamess\/thumbs\/[^?#]+\.(webp|jpg|jpeg|png)|https:\/\/(ipfs\.hivebp\.io|atomichub-ipfs\.com|ipfs\.io|gateway\.pinata\.cloud|nftstorage\.link|dweb\.link)\/ipfs\/[A-Za-z0-9]+)/i,
+    `NoBallGames NFT image src should be a local noballgamess thumbnail or safe IPFS gateway URL: ${src}`,
+  );
+}
+for (const row of [
+  ...templateRarity.ranked_templates,
+  ...templateRarity.utility_open_mint_templates,
+  ...templateRarity.unissued_templates,
+]) {
+  assert.ok(row.image_url || row.image_sources?.length, `template ${row.template_id} should carry AtomicAssets image data`);
+}
+assert.ok(assetLeaderboard.assets.every((row) => row.image_url || row.image_sources?.length), 'asset rarity rows should inherit template image data');
 
 console.log('NoBallGames rarity tracker regression passed.');

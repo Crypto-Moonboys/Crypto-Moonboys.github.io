@@ -4,6 +4,7 @@ import { runGenerateGkniftyheadsRarity } from './generate-gkniftyheads-rarity.mj
 import { updateGkniftyheadsLiveSupplyCache } from './update-gkniftyheads-live-supply-cache.mjs';
 import { updateGkniftyheadsTemplateMetadataCache } from './update-gkniftyheads-template-metadata-cache.mjs';
 import { updateGkniftyheadsAssetStateCache } from './update-gkniftyheads-asset-state-cache.mjs';
+import { fetchAtomicCollectionStatsSanity, updateNftMarketAnalytics } from './nft-market-analytics.mjs';
 import {
   createFeedStatus,
   fetchJson,
@@ -58,6 +59,8 @@ export async function updateGkniftyheadsRarityFeed() {
         errors: (readPrevious('data/gkniftyheads/asset-state-cache.json', { errors: [] }).errors || []).length,
       }
     : await updateGkniftyheadsAssetStateCache();
+  const marketAnalytics = await updateNftMarketAnalytics({ collection: 'gkniftyheads', root: resolveRoot('.') });
+  const collectionStats = await fetchAtomicCollectionStatsSanity({ collection: 'gkniftyheads' });
   const result = await runGenerateGkniftyheadsRarity();
   const { checkpoint, error } = await tryUpdateCheckpoint(feed);
   const syncPath = 'data/gkniftyheads/sync-status.json';
@@ -83,6 +86,10 @@ export async function updateGkniftyheadsRarityFeed() {
     notes: [
       `Generated local rarity render: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`,
       `Staged cache refresh: ${metadataResult.ok}/${metadataResult.templates} metadata ok; ${supplyResult.ok}/${supplyResult.templates} live supply counts ok; ${assetStateResult.assets} asset-state records across ${assetStateResult.templates} templates.`,
+      `HiveBP display analytics: ${marketAnalytics.analytics_status}; not used for rarity scoring.`,
+      collectionStats.ok
+        ? 'AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.'
+        : `AtomicAssets collection stats sanity check unavailable: ${collectionStats.error || 'unknown error'}.`,
       'Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.',
       'AtomicAssets latest-created, updated-live, and updated-burned asset endpoints update asset-state cache sidecar data; current rarity maths still uses per-template live count verification.',
       checkpoint ? 'WAX get_info checkpoint updated for scan metadata only.' : 'WAX get_info checkpoint not updated; rarity data preserved.',
