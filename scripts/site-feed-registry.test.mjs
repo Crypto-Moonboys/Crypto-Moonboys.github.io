@@ -125,4 +125,13 @@ const gk = read('data/gkniftyheads/template-rarity.json');
 assert.match(gk, /"price_used": false/, 'NFT rarity feed must not use price');
 assert.doesNotMatch(gk, /floor price|market price|last sale/i, 'NFT rarity feed must not include price ranking signals');
 
+const gkUpdater = read('scripts/update-gkniftyheads-rarity-feed.mjs');
+assert.match(gkUpdater, /const result = await runGenerateGkniftyheadsRarity\(\)/, 'GKniftyHEADS feed updater must await the async rarity generator');
+assert.ok(
+  gkUpdater.indexOf('await runGenerateGkniftyheadsRarity()') < gkUpdater.indexOf('const status = createFeedStatus'),
+  'GKniftyHEADS feed status must be created only after generated data writes complete'
+);
+assert.doesNotMatch(gkUpdater, /const result = runGenerateGkniftyheadsRarity\(\)/, 'GKniftyHEADS feed updater must not read a Promise as the generator result');
+assert.doesNotMatch(read('data/gkniftyheads_rarity/sync-status.json'), /undefined ranked/, 'GKniftyHEADS feed status notes must never contain undefined ranked counts');
+
 console.log('Site feed registry audit passed.');
