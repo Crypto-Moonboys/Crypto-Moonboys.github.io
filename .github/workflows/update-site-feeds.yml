@@ -24,8 +24,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install thumbnail tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick webp
+
       - name: Update feeds
         run: node scripts/update-site-feeds.mjs
+
+      - name: Generate local GKniftyHEADS thumbnails
+        run: node scripts/generate-gkniftyheads-local-thumbnails.mjs
 
       - name: Validate feed registry
         run: node scripts/site-feed-registry.test.mjs
@@ -33,21 +41,24 @@ jobs:
       - name: Validate GKniftyHEADS rarity
         run: node scripts/gkniftyheads-rarity-ranking.test.mjs
 
+      - name: Validate GKniftyHEADS thumbnails
+        run: node scripts/gkniftyheads-local-thumbnails.test.mjs
+
       - name: Run relevant audits
         run: |
           node scripts/audit-gkniftyheads-hub-links.mjs
           node scripts/audit-nft-pages-and-feed-sync.mjs
           node scripts/audit-related-wiki-paths.mjs
 
-      - name: Commit changed feed data
+      - name: Commit changed feed data and thumbnails
         shell: bash
         run: |
-          if [[ -n "$(git status --short data)" ]]; then
+          if [[ -n "$(git status --short data img/gkniftyheads/thumbs wiki/gkniftyheads-nft-collection.html)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add data
-            git commit -m "chore: update site data feeds"
+            git add data img/gkniftyheads/thumbs wiki/gkniftyheads-nft-collection.html
+            git commit -m "chore: update site data feeds and thumbnails"
             git push
           else
-            echo "No feed data changes to commit."
+            echo "No feed data or thumbnail changes to commit."
           fi
