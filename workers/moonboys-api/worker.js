@@ -5,6 +5,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxOnEdgeRoute, runWaxOnEdgeScheduledSync } from './routes/waxonedge.js';
+import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 /**
@@ -73,6 +74,16 @@ import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/da
  *   GET  /api/waxonedge/token/:contract/:symbol/holders
  *   GET  /api/waxonedge/token/:contract/:symbol/trades
  *   GET  /api/waxonedge/sync-status
+ *   GET  /api/wax/health
+ *   GET  /api/wax/collections/:collection/stats
+ *   GET  /api/wax/collections/:collection/templates
+ *   GET  /api/wax/collections/:collection/page-data
+ *   GET  /api/wax/templates?collection=&ids=
+ *   GET  /api/wax/templates/:template_id/stats
+ *   GET  /api/wax/assets/:asset_id
+ *   GET  /api/wax/assets/:asset_id/image
+ *   GET  /api/wax/wallets/:account/nfts?collection=
+ *   POST /api/wax/verify-ownership  (read-only facade)
  *
  * Telegram bot commands (POST /telegram/webhook):
  *   /gkstart /gkhelp /gklink /gkstatus /gkseason /gkleaderboard /gkquests /gkfaction /gkunlink
@@ -2909,6 +2920,9 @@ export default {
       return handleWaxOnEdgeRoute(request, env, CORS_HEADERS);
     }
 
+    if (path === '/api/wax' || path.startsWith('/api/wax/')) {
+      return handleWaxBridgeRoute(request, env, CORS_HEADERS);
+    }
 
     if (path === '/daily-loop/state') {
       const dailyLoopResponse = await handleDailyLoopStateRoute(request, env, {
