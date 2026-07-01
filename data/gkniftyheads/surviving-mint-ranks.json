@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T21:06:11.672Z",
+  "generated_at": "2026-07-01T21:44:58.739Z",
   "templates": [
     {
       "template_id": 773225,
@@ -138684,25 +138684,55 @@
     },
     {
       "template_id": 784419,
-      "live_supply": 3,
+      "live_supply": 8,
       "burned_assets_count": 0,
       "assets": [
         {
+          "asset_id": "1099926212101",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926212102",
+          "original_mint_number": 2,
+          "surviving_mint_rank": 2,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926225719",
+          "original_mint_number": 3,
+          "surviving_mint_rank": 3,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926347193",
+          "original_mint_number": 4,
+          "surviving_mint_rank": 4,
+          "burned": false
+        },
+        {
+          "asset_id": "1099926348261",
+          "original_mint_number": 5,
+          "surviving_mint_rank": 5,
+          "burned": false
+        },
+        {
           "asset_id": "1099929499802",
           "original_mint_number": 6,
-          "surviving_mint_rank": 1,
+          "surviving_mint_rank": 6,
           "burned": false
         },
         {
           "asset_id": "1099931464917",
           "original_mint_number": 7,
-          "surviving_mint_rank": 2,
+          "surviving_mint_rank": 7,
           "burned": false
         },
         {
           "asset_id": "1099969757146",
           "original_mint_number": 8,
-          "surviving_mint_rank": 3,
+          "surviving_mint_rank": 8,
           "burned": false
         }
       ]

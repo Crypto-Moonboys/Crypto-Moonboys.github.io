@@ -2,7 +2,9 @@
   "collection": "noballgamess",
   "batch_size": 20,
   "last_template_batch_index": 14,
-  "last_run_at": "2026-07-01T19:20:00.144Z",
+  "last_run_at": "2026-07-01T21:44:47.364Z",
   "mode": "daily_rotating_backfill",
-  "failed_template_ids": []
+  "failed_template_ids": [
+    441677
+  ]
 }
