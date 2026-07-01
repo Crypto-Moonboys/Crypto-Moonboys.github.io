@@ -51,12 +51,20 @@ jobs:
       - name: Commit changed feed data
         shell: bash
         run: |
-          if [[ -n "$(git status --short data)" ]]; then
+          GENERATED_PATHS=(
+            data/gkniftyheads/
+            data/gkniftyheads_rarity/
+            data/feed-status.json
+            wiki/gkniftyheads-nft-collection.html
+            img/gkniftyheads/thumbs/
+            img/gkniftyheads/thumbs/manifest.json
+          )
+          if [[ -n "$(git status --short "${GENERATED_PATHS[@]}")" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add data
+            git add "${GENERATED_PATHS[@]}"
             git commit -m "chore: update site data feeds"
             git push
           else
-            echo "No feed data changes to commit."
+            echo "No generated feed changes to commit."
           fi

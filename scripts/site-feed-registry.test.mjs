@@ -126,7 +126,18 @@ assert.ok(
 assert.match(workflow, /GK_USE_EXISTING_STAGED_CACHES/, 'central feed update should reuse staged GKniftyHEADS caches in the workflow');
 assert.match(workflow, /node scripts\/site-feed-registry\.test\.mjs/, 'workflow must audit feed registry rules');
 assert.match(workflow, /chore: update site data feeds/, 'workflow must use the required commit message');
-assert.match(workflow, /git add data/, 'workflow should commit changed feed data only');
+for (const generatedPath of [
+  'data/gkniftyheads/',
+  'data/gkniftyheads_rarity/',
+  'data/feed-status.json',
+  'wiki/gkniftyheads-nft-collection.html',
+  'img/gkniftyheads/thumbs/',
+  'img/gkniftyheads/thumbs/manifest.json',
+]) {
+  assert.match(workflow, new RegExp(generatedPath.replace(/[/.]/g, '\\$&')), `workflow must stage generated output ${generatedPath}`);
+}
+assert.match(workflow, /git add "\$\{GENERATED_PATHS\[@\]\}"/, 'workflow must use targeted generated output staging');
+assert.doesNotMatch(workflow, /git add data\s*(?:\n|$)/, 'workflow must not only stage data and miss generated pages/thumbs');
 
 const gk = read('data/gkniftyheads/template-rarity.json');
 assert.match(gk, /"price_used": false/, 'NFT rarity feed must not use price');
