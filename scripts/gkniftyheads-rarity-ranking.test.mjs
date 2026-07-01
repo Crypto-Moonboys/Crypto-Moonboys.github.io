@@ -48,6 +48,10 @@ assert.ok(rarity.stats.utility_open_mint_templates < 104, 'utility/open mint buc
 assert.ok(ranked.every((row) => row.max_supply > 0), 'every ranked limited template must have fixed max_supply > 0');
 assert.equal(ranked.some((row) => row.max_supply === 0), false, 'max_supply=0 templates must not appear in ranked_templates');
 assert.ok(allTemplates.every((row) => typeof row.image_url === 'string'), 'template rarity data should expose image_url for every generated row');
+assert.ok(allTemplates.every((row) => typeof row.thumbnail_url === 'string'), 'template rarity data should expose thumbnail_url for every generated row');
+assert.ok(allTemplates.every((row) => row.image_url === '' || row.thumbnail_url), 'rows with source images should have a table image source');
+assert.ok(allTemplates.some((row) => row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/')), 'generated rows should use local thumbnail URLs where available');
+assert.ok(allTemplates.every((row) => !row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/') || row.thumbnail_url.endsWith(`${row.template_id}.webp`)), 'local thumbnail URLs should use deterministic template_id paths');
 
 const funCoupon = findByTemplateId(utility, 782888);
 assert.ok(funCoupon, 'FUN COUPON template 782888 must be classified as utility/open mint');
@@ -61,6 +65,7 @@ assert.equal(findByTemplateId(utility, 784220), undefined, 'Bitman 784220 must n
 assert.equal(bitman.issued_supply, 1, 'Bitman fixture should preserve 1/1 issued supply');
 assert.equal(bitman.max_supply, 1, 'Bitman fixture should preserve fixed max supply');
 assert.match(bitman.image_url, /^https:\/\/.+ipfs\//, 'Bitman should inherit its NFT image from the child template page');
+assert.equal(bitman.thumbnail_url, '/img/gkniftyheads/thumbs/784220.webp', 'Bitman should use a deterministic local table thumbnail');
 
 const bitSkull = findByTemplateId(utility, 784280);
 assert.ok(bitSkull, 'Bit-Skull 784280 must be excluded when current data says max_supply=0');
@@ -122,13 +127,21 @@ assert.match(collectionHtml, /<strong>Not scanned<\/strong><span>Live assets cou
 assert.ok(collectionHtml.indexOf('GKniftyHEADS Collection Rarity Ranking') < collectionHtml.indexOf('All NFTs / Templates'), 'raw template table should only appear after the ranking fallback wrapper');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-utility">[\s\S]*<tr data-rarity-filter="utility-open-mint">/, 'utility side table must render populated rows');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-unissued">[\s\S]*<tr data-rarity-filter="unissued">/, 'unissued side table must render populated rows');
+const rankedTableHead = collectionHtml.match(/<table class="wiki-table gk-rarity-table">[\s\S]*?<thead>([\s\S]*?)<\/thead>/)?.[1] || '';
+assert.doesNotMatch(rankedTableHead, /<th>Rank<\/th>/, 'ranked table should not have a separate Rank column');
+assert.doesNotMatch(rankedTableHead, /<th>Band<\/th>/, 'ranked table should not have a separate Band column');
+assert.match(rankedTableHead, /<tr>\s*<th>NFT<\/th>/, 'ranked table should start with the NFT column');
+assert.match(collectionHtml, /<div class="gk-rarity-nft-meta">[\s\S]*?<span class="gk-rarity-rank">Rank #1<\/span>[\s\S]*?<span class="rarity-band rarity-band--legendary">Legendary<\/span>/, 'rank and rarity band should render inside the NFT card');
 assert.match(collectionHtml, /<tr data-rarity-filter="ranked[\s\S]*?<img class="gk-rarity-nft-image"[^>]+loading="lazy"[^>]+decoding="async"[^>]+referrerpolicy="no-referrer"/, 'ranked rows must render lazy NFT images');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-utility">[\s\S]*?<img class="gk-rarity-nft-image"/, 'utility/open mint rows must render NFT images');
 assert.match(collectionHtml, /<section class="wiki-section gk-rarity-unissued">[\s\S]*?<img class="gk-rarity-nft-image"/, 'unissued rows must render NFT images');
+assert.match(collectionHtml, /<img class="gk-rarity-nft-image" src="\/img\/gkniftyheads\/thumbs\/784220\.webp"/, 'table images should prefer local generated thumbnails when available');
+assert.doesNotMatch(collectionHtml, /<img class="gk-rarity-nft-image" src="https:\/\/[^"]+ipfs\/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy"/, 'table images should not load the full Bitman IPFS original when a thumbnail exists');
 assert.match(collectionHtml, /alt="[^"]*Bitman[^"]*"/, 'NFT row image alt text should use the NFT title');
 assert.match(generatorJs, /gk-rarity-nft-image-placeholder[\s\S]*Image unavailable/, 'renderer should include a clean image placeholder fallback when an image is missing');
 assert.match(wikiCss, /\.gk-rarity-nft-image\s*\{[\s\S]*width:\s*265px;[\s\S]*max-width:\s*100%;[\s\S]*height:\s*auto;[\s\S]*object-fit:\s*contain;/, 'NFT row images must be sized to 265px without cropping or stretching');
 assert.match(wikiCss, /\.gk-rarity-nft-cell\s*\{[\s\S]*min-width:\s*300px;/, 'NFT column should be wide enough for the image card');
+assert.match(wikiCss, /\.gk-rarity-table\s*\{[\s\S]*min-width:\s*860px;/, 'rank/band column removal should reduce the ranked table width');
 assert.match(collectionHtml, /src="\/js\/gkniftyheads-rarity\.js"/, 'collection page must load rarity fallback/filter client');
 assert.match(clientJs, /fetch\('\/data\/gkniftyheads\/template-rarity\.json'/, 'client should verify generated rarity JSON is available');
 assert.match(clientJs, /data-rarity-fallback/, 'client should reveal raw fallback on JSON failure');

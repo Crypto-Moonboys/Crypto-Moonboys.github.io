@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,6 +11,10 @@ const ROOT = path.resolve(__dirname, '..');
 const COLLECTION = 'gkniftyheads';
 const COLLECTION_PAGE = path.join(ROOT, 'wiki', 'gkniftyheads-nft-collection.html');
 const DATA_DIR = path.join(ROOT, 'data', 'gkniftyheads');
+const THUMB_WIDTH = 265;
+const THUMB_DIR = path.join(ROOT, 'img', 'gkniftyheads', 'thumbs');
+const THUMB_URL_PREFIX = '/img/gkniftyheads/thumbs';
+const THUMB_MANIFEST = path.join(THUMB_DIR, 'manifest.json');
 const RAW_BEGIN = '<!-- GKNIFTYHEADS_RAW_TEMPLATE_TABLE:BEGIN -->';
 const RAW_END = '<!-- GKNIFTYHEADS_RAW_TEMPLATE_TABLE:END -->';
 const RARITY_BEGIN = '<!-- GKNIFTYHEADS_RARITY_RANKING:BEGIN -->';
@@ -66,6 +72,205 @@ function getTemplateImageUrl(html) {
     || getImgSrc(html, 'class="[^"]*\\bnft-template-image\\b')
     || getImgSrc(html, 'src="[^"]*ipfs')
     || getImgSrc(html, 'class="[^"]*\\bnft-image\\b');
+}
+
+function readThumbManifest(root = ROOT) {
+  const manifestPath = path.join(root, 'img', 'gkniftyheads', 'thumbs', 'manifest.json');
+  if (!fs.existsSync(manifestPath)) return {};
+  return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+}
+
+function writeThumbManifest(root, manifest) {
+  const manifestPath = path.join(root, 'img', 'gkniftyheads', 'thumbs', 'manifest.json');
+  fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+}
+
+function ipfsGatewayCandidates(url) {
+  const match = String(url).match(/\/ipfs\/([^/?#]+)/i);
+  if (!match) return [url];
+  const cid = match[1];
+  return [
+    url,
+    `https://ipfs.io/ipfs/${cid}`,
+  ];
+}
+
+function downloadImage(url, options = {}, redirectCount = 0) {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const client = parsed.protocol === 'http:' ? http : https;
+    const request = client.get({
+      protocol: parsed.protocol,
+      hostname: parsed.hostname,
+      port: parsed.port,
+      path: `${parsed.pathname}${parsed.search}`,
+      rejectUnauthorized: options.rejectUnauthorized !== false,
+      timeout: 10000,
+      headers: {
+        'user-agent': 'CryptoMoonboysStaticGenerator/1.0',
+        accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8,*/*;q=0.5',
+      },
+    }, (response) => {
+      if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location && redirectCount < 4) {
+        response.resume();
+        const nextUrl = new URL(response.headers.location, url).toString();
+        downloadImage(nextUrl, options, redirectCount + 1).then(resolve, reject);
+        return;
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        response.resume();
+        reject(new Error(`image fetch ${response.statusCode}`));
+        return;
+      }
+      const chunks = [];
+      response.on('data', (chunk) => chunks.push(chunk));
+      response.on('end', () => {
+        resolve({
+          bytes: Buffer.concat(chunks),
+          mime: String(response.headers['content-type'] || 'image/jpeg').split(';')[0],
+        });
+      });
+    });
+    request.on('timeout', () => {
+      request.destroy(new Error('image fetch timeout'));
+    });
+    request.on('error', reject);
+  });
+}
+
+async function fetchImageBytes(url) {
+  let lastError = null;
+  for (const candidate of ipfsGatewayCandidates(url)) {
+    try {
+      return await downloadImage(candidate);
+    } catch (error) {
+      lastError = error;
+      if (/SELF_SIGNED_CERT|CERT_|NO_REVOCATION/i.test(String(error?.code || error?.message || ''))) {
+        try {
+          return await downloadImage(candidate, { rejectUnauthorized: false });
+        } catch (insecureError) {
+          lastError = insecureError;
+        }
+      }
+    }
+  }
+  throw lastError || new Error('image fetch failed');
+}
+
+async function renderWebpThumbnail(page, bytes, mime) {
+  const base64 = bytes.toString('base64');
+  const result = await page.evaluate(async ({ base64Image, mimeType, targetWidth }) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = `data:${mimeType};base64,${base64Image}`;
+    await image.decode();
+    const width = targetWidth;
+    const height = Math.max(1, Math.round((image.naturalHeight || targetWidth) * (width / Math.max(image.naturalWidth || targetWidth, 1))));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    context.drawImage(image, 0, 0, width, height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.84));
+    const arrayBuffer = await blob.arrayBuffer();
+    return Array.from(new Uint8Array(arrayBuffer));
+  }, {
+    base64Image: base64,
+    mimeType: mime,
+    targetWidth: THUMB_WIDTH,
+  });
+  return Buffer.from(result);
+}
+
+async function resizeWithSharp(bytes) {
+  try {
+    const sharp = (await import('sharp')).default;
+    return await sharp(bytes)
+      .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
+      .webp({ quality: 84 })
+      .toBuffer();
+  } catch (error) {
+    return null;
+  }
+}
+
+async function prepareThumbnails(rows, root = ROOT) {
+  const thumbDir = path.join(root, 'img', 'gkniftyheads', 'thumbs');
+  const manifest = readThumbManifest(root);
+  let browser = null;
+  let page = null;
+  let playwrightUnavailable = false;
+
+  async function getPage() {
+    if (page) return page;
+    try {
+      const { chromium } = await import('playwright');
+      browser = await chromium.launch();
+      page = await browser.newPage();
+      return page;
+    } catch (error) {
+      playwrightUnavailable = true;
+      throw error;
+    }
+  }
+
+  fs.mkdirSync(thumbDir, { recursive: true });
+  async function processRow(row) {
+    row.thumbnail_url = row.image_url || '';
+    row.thumbnail_status = row.image_url ? 'original_fallback' : 'missing_source';
+    if (!row.image_url) return;
+    if (/^\//.test(row.image_url)) {
+      row.thumbnail_status = 'local_source';
+      return;
+    }
+
+    const fileName = `${row.template_id}.webp`;
+    const filePath = path.join(thumbDir, fileName);
+    const publicUrl = `${THUMB_URL_PREFIX}/${fileName}`;
+    const manifestEntry = manifest[String(row.template_id)];
+    if (fs.existsSync(filePath) && (!manifestEntry || manifestEntry.source_url === row.image_url)) {
+      if (!manifestEntry) {
+        manifest[String(row.template_id)] = {
+          source_url: row.image_url,
+          thumbnail_url: publicUrl,
+          width: THUMB_WIDTH,
+          generated_at: new Date().toISOString(),
+        };
+      }
+      row.thumbnail_url = publicUrl;
+      row.thumbnail_status = 'cached';
+      return;
+    }
+    if (playwrightUnavailable) return;
+
+    try {
+      const image = await fetchImageBytes(row.image_url);
+      const thumb = await resizeWithSharp(image.bytes)
+        || await renderWebpThumbnail(await getPage(), image.bytes, image.mime);
+      fs.writeFileSync(filePath, thumb);
+      manifest[String(row.template_id)] = {
+        source_url: row.image_url,
+        thumbnail_url: publicUrl,
+        width: THUMB_WIDTH,
+        generated_at: new Date().toISOString(),
+      };
+      row.thumbnail_url = publicUrl;
+      row.thumbnail_status = 'generated';
+      writeThumbManifest(root, manifest);
+    } catch (error) {
+      row.thumbnail_error = String(error?.message || error);
+      row.thumbnail_status = 'original_fallback';
+    }
+  }
+
+  const concurrency = 8;
+  for (let index = 0; index < rows.length; index += concurrency) {
+    await Promise.all(rows.slice(index, index + concurrency).map(processRow));
+  }
+
+  if (browser) await browser.close();
+  writeThumbManifest(root, manifest);
 }
 
 function readTemplatePage(row, root = ROOT) {
@@ -233,13 +438,24 @@ function rowLinks(row) {
   return `<a href="${esc(row.url)}">Wiki</a> <a href="${esc(row.atomicassets_url)}" target="_blank" rel="noopener noreferrer">AtomicAssets</a> <a href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>`;
 }
 
-function nftCard(row) {
-  const image = row.image_url
-    ? `<a class="gk-rarity-nft-image-link" href="${esc(row.url)}"><img class="gk-rarity-nft-image" src="${esc(row.image_url)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+function bandClass(value) {
+  return esc(String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+}
+
+function nftCard(row, options = {}) {
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-rarity-nft-image-link" href="${esc(row.url)}"><img class="gk-rarity-nft-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
     : `<div class="gk-rarity-nft-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  const meta = [
+    options.rank ? `<span class="gk-rarity-rank">Rank #${row.rank}</span>` : '',
+    options.band ? `<span class="rarity-band rarity-band--${bandClass(row.band)}">${esc(row.band)}</span>` : '',
+    options.status ? `<span class="gk-rarity-status-badge">${esc(options.status)}</span>` : '',
+  ].filter(Boolean).join('\n        ');
   return `<div class="gk-rarity-nft-card">
       ${image}
       <a class="gk-rarity-nft-title" href="${esc(row.url)}">${esc(row.title)}</a>
+      ${meta ? `<div class="gk-rarity-nft-meta">\n        ${meta}\n      </div>` : ''}
     </div>`;
 }
 
@@ -251,9 +467,7 @@ function rankedRow(row) {
     row.missing_burned_count > 0 ? 'missing-burned' : '',
   ].filter(Boolean).join(' ');
   return `<tr data-rarity-filter="${filters}">
-    <td>${row.rank}</td>
-    <td><span class="rarity-band rarity-band--${esc(row.band.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}">${esc(row.band)}</span></td>
-    <td class="gk-rarity-nft-cell">${nftCard(row)}</td>
+    <td class="gk-rarity-nft-cell">${nftCard(row, { rank: true, band: true })}</td>
     <td>${row.template_id}</td>
     <td>${row.live_supply}</td>
     <td>${row.issued_supply}</td>
@@ -268,8 +482,9 @@ function rankedRow(row) {
 }
 
 function utilityRow(row) {
+  const status = row.bucket === 'unissued' ? 'Unissued' : 'Utility / Open Mint';
   return `<tr data-rarity-filter="${row.bucket === 'unissued' ? 'unissued' : 'utility-open-mint'}">
-    <td class="gk-rarity-nft-cell">${nftCard(row)}</td>
+    <td class="gk-rarity-nft-cell">${nftCard(row, { status })}</td>
     <td>${row.template_id}</td>
     <td>${row.issued_supply}</td>
     <td>${row.max_supply}</td>
@@ -333,8 +548,6 @@ function buildRankingSection(model, stats, rawSection) {
             <table class="wiki-table gk-rarity-table">
               <thead>
                 <tr>
-                  <th>Rank</th>
-                  <th>Band</th>
                   <th>NFT</th>
                   <th>Template ID</th>
                   <th>Issued Supply Fallback</th>
@@ -424,7 +637,7 @@ function replaceSection(html, rankingSection) {
   return html.replace(oldSection, rankingSection);
 }
 
-export function runGenerateGkniftyheadsRarity(root = ROOT) {
+export async function runGenerateGkniftyheadsRarity(root = ROOT) {
   const collectionPage = path.join(root, 'wiki', 'gkniftyheads-nft-collection.html');
   const html = fs.readFileSync(collectionPage, 'utf8');
   const oldSection = html.match(new RegExp(`${RAW_BEGIN}[\\s\\S]*?${RAW_END}`))?.[0]
@@ -432,6 +645,7 @@ export function runGenerateGkniftyheadsRarity(root = ROOT) {
   if (!oldSection) throw new Error('Could not locate raw template table section.');
 
   const rows = extractRows(html, root);
+  await prepareThumbnails(rows, root);
   const model = buildRanking(rows);
   const stats = buildStats(model);
   const rarityPayload = {
@@ -505,6 +719,6 @@ export function runGenerateGkniftyheadsRarity(root = ROOT) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const result = runGenerateGkniftyheadsRarity(ROOT);
+  const result = await runGenerateGkniftyheadsRarity(ROOT);
   console.log(`Generated GKniftyHEADS rarity data: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`);
 }
