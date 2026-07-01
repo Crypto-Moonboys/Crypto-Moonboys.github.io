@@ -5,12 +5,20 @@
   if (!ranking) return;
 
   const fallback = ranking.querySelector('[data-rarity-fallback]');
-  const tableRows = Array.from(ranking.querySelectorAll('[data-rarity-filter]'));
+  const mainTableWrap = ranking.querySelector('.gk-rarity-table-wrap');
+  const mainRows = Array.from(ranking.querySelectorAll('.gk-rarity-table tbody [data-rarity-filter]'));
+  const utilitySection = ranking.querySelector('.gk-rarity-utility');
+  const unissuedSection = ranking.querySelector('.gk-rarity-unissued');
   const filterButtons = Array.from(ranking.querySelectorAll('[data-gk-rarity-filter]'));
 
   function applyFilter(filter) {
     const normalized = filter || 'all-ranked';
-    for (const row of tableRows) {
+    const focusingUtility = normalized === 'utility-open-mint';
+    const focusingUnissued = normalized === 'unissued';
+    if (mainTableWrap) mainTableWrap.hidden = focusingUtility || focusingUnissued;
+    if (utilitySection) utilitySection.hidden = focusingUnissued;
+    if (unissuedSection) unissuedSection.hidden = focusingUtility;
+    for (const row of mainRows) {
       const tokens = String(row.getAttribute('data-rarity-filter') || '').split(/\s+/);
       const show = normalized === 'all-ranked'
         ? tokens.includes('ranked')

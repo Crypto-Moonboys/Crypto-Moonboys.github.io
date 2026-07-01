@@ -98,8 +98,8 @@ function utilityReason(row) {
   if (explicitUtilityPattern.test(titleAndTraits) || explicitUtilityPattern.test(description)) {
     return 'Utility/open-mint wording in title, traits, or description.';
   }
-  if (row.max_supply === 0 && row.issued_supply >= 50) {
-    return 'Open max supply with high issued supply.';
+  if (row.max_supply === 0) {
+    return 'Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.';
   }
   return '';
 }
@@ -288,7 +288,7 @@ function buildRankingSection(model, stats, rawSection) {
 
           <section class="wiki-section gk-rarity-method">
             <h3>Rarity Method</h3>
-            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and mass-supply max_supply=0 templates. Current live asset scans are not bundled in this PR, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.</p>
+            <p class="lore-paragraph">The main leaderboard excludes unissued templates, utility/open-mint templates, obvious coupon/drop/blend/farming supplies, and uncapped max_supply=0 templates. Current live asset scans are not bundled in this PR, so supply and trait exposure use issued-supply fallback data and do not claim confirmed historic burns.</p>
           </section>
 
           <section class="wiki-section gk-rarity-status">

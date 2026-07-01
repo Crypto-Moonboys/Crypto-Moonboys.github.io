@@ -40,6 +40,8 @@ assert.equal(rarity.stats.live_assets_counted, null, 'fallback mode must not pre
 assert.equal(typeof rarity.stats.fallback_issued_supply_counted, 'number', 'fallback mode should expose fallback issued supply separately');
 assert.ok(rarity.stats.ranked_limited_templates > 20, 'ranked limited templates should not collapse to the old over-aggressive 20-template set');
 assert.ok(rarity.stats.utility_open_mint_templates < 104, 'utility/open mint bucket should not contain the old over-aggressive 104-template set');
+assert.ok(ranked.every((row) => row.max_supply > 0), 'every ranked limited template must have fixed max_supply > 0');
+assert.equal(ranked.some((row) => row.max_supply === 0), false, 'max_supply=0 templates must not appear in ranked_templates');
 
 const funCoupon = findByTemplateId(utility, 782888);
 assert.ok(funCoupon, 'FUN COUPON template 782888 must be classified as utility/open mint');
@@ -53,13 +55,17 @@ assert.equal(findByTemplateId(utility, 784220), undefined, 'Bitman 784220 must n
 assert.equal(bitman.issued_supply, 1, 'Bitman fixture should preserve 1/1 issued supply');
 assert.equal(bitman.max_supply, 1, 'Bitman fixture should preserve fixed max supply');
 
-const bitSkull = findByTemplateId(ranked, 784280);
-assert.ok(bitSkull, 'Bit-Skull 784280 must be ranked despite #P2E/HODLWARS game wording');
-assert.equal(findByTemplateId(utility, 784280), undefined, 'Bit-Skull 784280 must not be classified as utility/open mint');
+const bitSkull = findByTemplateId(utility, 784280);
+assert.ok(bitSkull, 'Bit-Skull 784280 must be excluded when current data says max_supply=0');
+assert.equal(bitSkull.max_supply, 0, 'Bit-Skull 784280 fixture should preserve uncapped max_supply=0');
+assert.equal(findByTemplateId(ranked, 784280), undefined, 'Bit-Skull 784280 may only be ranked when it has fixed max_supply > 0');
 
-const rankedFourMint = [783375, 783377, 783411, 783412].filter((templateId) => findByTemplateId(ranked, templateId));
-assert.ok(rankedFourMint.length >= 1, 'at least one known 4-mint HODLWARS/P2E template must stay ranked');
-assert.equal(findByTemplateId(utility, 783375), undefined, 'P2E/#HODLWARS wording alone must not classify template 783375 as utility');
+const uncappedTemplate = findByTemplateId(utility, 776099);
+assert.ok(uncappedTemplate, 'Uncapped template 776099 must be classified as utility/open mint');
+assert.equal(uncappedTemplate.max_supply, 0, 'template 776099 fixture should preserve max_supply=0');
+assert.equal(findByTemplateId(ranked, 776099), undefined, 'template 776099 must not be ranked when max_supply=0');
+
+assert.equal(findByTemplateId(utility, 784220), undefined, 'P2E/Play2Earn wording alone must not classify fixed-supply Bitman 784220 as utility');
 
 assert.equal(ranked.some((row) => row.issued_supply <= 0), false, 'unissued templates must not be ranked');
 assert.ok(unissued.length > 0, 'unissued templates should be tracked separately');
@@ -101,9 +107,15 @@ assert.doesNotMatch(collectionHtml, /<th>Live Supply<\/th>|Rarity Live Exposure|
 assert.match(collectionHtml, /Fallback issued supply counted/, 'fallback stat should be separated from live asset counts');
 assert.match(collectionHtml, /<strong>Not scanned<\/strong><span>Live assets counted<\/span>/, 'live asset count should be shown as not scanned in fallback mode');
 assert.ok(collectionHtml.indexOf('GKniftyHEADS Collection Rarity Ranking') < collectionHtml.indexOf('All NFTs / Templates'), 'raw template table should only appear after the ranking fallback wrapper');
+assert.match(collectionHtml, /<section class="wiki-section gk-rarity-utility">[\s\S]*<tr data-rarity-filter="utility-open-mint">/, 'utility side table must render populated rows');
+assert.match(collectionHtml, /<section class="wiki-section gk-rarity-unissued">[\s\S]*<tr data-rarity-filter="unissued">/, 'unissued side table must render populated rows');
 assert.match(collectionHtml, /src="\/js\/gkniftyheads-rarity\.js"/, 'collection page must load rarity fallback/filter client');
 assert.match(clientJs, /fetch\('\/data\/gkniftyheads\/template-rarity\.json'/, 'client should verify generated rarity JSON is available');
 assert.match(clientJs, /data-rarity-fallback/, 'client should reveal raw fallback on JSON failure');
+assert.match(clientJs, /gk-rarity-table tbody \[data-rarity-filter\]/, 'client filtering must be scoped to the main leaderboard rows');
+assert.doesNotMatch(clientJs, /querySelectorAll\('\[data-rarity-filter\]'\)/, 'client must not collect side-table rows for the default all-ranked filter');
+assert.match(clientJs, /focusingUtility/, 'client should focus the utility side section when that filter is clicked');
+assert.match(clientJs, /focusingUnissued/, 'client should focus the unissued side section when that filter is clicked');
 
 assert.ok(ranked.every((row) => row.url.startsWith('/wiki/gkniftyheads-') && row.url.endsWith('.html')), 'ranked rows should link to local template pages');
 assert.ok(allTemplates.every((row) => row.atomicassets_url.includes('wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/')), 'AtomicAssets template links must be preserved');
