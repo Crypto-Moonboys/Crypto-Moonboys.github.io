@@ -5,14 +5,23 @@
 
   function label(status) {
     if (!status) return 'Feed status unavailable';
+    if (status.feed_id === 'gkniftyheads_rarity') {
+      return 'Rarity snapshot active - issued-supply fallback - live burn scan pending';
+    }
     var parts = [status.feed_id || 'feed'];
     if (status.feed_mode) parts.push(status.feed_mode);
     if (status.status) parts.push(status.status);
     if (status.stale) parts.push('stale');
     if (status.source_updated_at) parts.push('source ' + status.source_updated_at);
     if (status.last_successful_check) parts.push('checked ' + status.last_successful_check);
+    return parts.join(' - ');
+  }
+
+  function detailLabel(status) {
+    if (!status) return 'Feed status unavailable';
+    var parts = [label(status)];
     if (status.last_error) parts.push('last error: ' + status.last_error);
-    return parts.join(' · ');
+    return parts.join(' - ');
   }
 
   function render(statuses) {
@@ -23,7 +32,7 @@
       node.classList.toggle('is-stale', !!(status && status.stale));
       node.classList.toggle('is-error', !!(status && status.status === 'error'));
       node.textContent = label(status);
-      node.setAttribute('title', label(status));
+      node.setAttribute('title', detailLabel(status));
     });
   }
 
