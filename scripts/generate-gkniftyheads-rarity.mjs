@@ -15,6 +15,17 @@ const THUMB_WIDTH = 265;
 const THUMB_DIR = path.join(ROOT, 'img', 'gkniftyheads', 'thumbs');
 const THUMB_URL_PREFIX = '/img/gkniftyheads/thumbs';
 const THUMB_MANIFEST = path.join(THUMB_DIR, 'manifest.json');
+const IPFS_GATEWAYS = [
+  'https://ipfs.io/ipfs/',
+  'https://cloudflare-ipfs.com/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
+  'https://nftstorage.link/ipfs/',
+  'https://dweb.link/ipfs/',
+  'https://w3s.link/ipfs/',
+  'https://ipfs.filebase.io/ipfs/',
+  'https://atomichub-ipfs.com/ipfs/',
+  'https://ipfs.hivebp.io/ipfs/',
+];
 const RAW_BEGIN = '<!-- GKNIFTYHEADS_RAW_TEMPLATE_TABLE:BEGIN -->';
 const RAW_END = '<!-- GKNIFTYHEADS_RAW_TEMPLATE_TABLE:END -->';
 const RARITY_BEGIN = '<!-- GKNIFTYHEADS_RARITY_RANKING:BEGIN -->';
@@ -67,11 +78,40 @@ function getImgSrc(html, selectorPattern) {
   return decodeHtml(img?.[1] || '');
 }
 
-function getTemplateImageUrl(html) {
-  return getImgSrc(html, 'class="[^"]*\\bwiki-hero-image\\b')
-    || getImgSrc(html, 'class="[^"]*\\bnft-template-image\\b')
-    || getImgSrc(html, 'src="[^"]*ipfs')
-    || getImgSrc(html, 'class="[^"]*\\bnft-image\\b');
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function attrValue(tag, name) {
+  const match = String(tag || '').match(new RegExp(`\\b${name}=(["'])([\\s\\S]*?)\\1`, 'i'));
+  return match ? decodeHtml(match[2]) : '';
+}
+
+function parseFallbackSrcs(tag) {
+  const raw = attrValue(tag, 'data-fallback-srcs');
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === 'string') : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function getTemplateImageSources(html) {
+  const imgTags = [...html.matchAll(/<img\b[^>]*>/gi)].map((match) => match[0]);
+  const patterns = [
+    /\bwiki-hero-image\b/i,
+    /\bnft-template-image\b/i,
+    /src=["'][^"']*ipfs/i,
+    /\bnft-image\b/i,
+  ];
+  for (const pattern of patterns) {
+    const tag = imgTags.find((candidate) => pattern.test(candidate));
+    const primary = attrValue(tag, 'src');
+    if (primary) return unique([primary, ...parseFallbackSrcs(tag)]);
+  }
+  return [];
 }
 
 function readThumbManifest(root = ROOT) {
@@ -90,10 +130,145 @@ function ipfsGatewayCandidates(url) {
   const match = String(url).match(/\/ipfs\/([^/?#]+)/i);
   if (!match) return [url];
   const cid = match[1];
-  return [
+  return unique([
     url,
+    ...IPFS_GATEWAYS.map((gateway) => `${gateway}${cid}`),
+  ]);
+}
+
+function ipfsCidFromValue(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const ipfsUri = text.match(/^ipfs:\/\/(?:ipfs\/)?([^/?#]+(?:\/[^?#]+)?)/i);
+  if (ipfsUri) return ipfsUri[1];
+  const gateway = text.match(/\/ipfs\/([^?#]+)/i);
+  if (gateway) return gateway[1];
+  const bare = text.match(/^(bafy[a-z0-9]+|bafk[a-z0-9]+|Qm[1-9A-HJ-NP-Za-km-z]+)(?:\/[^?#]+)?$/);
+  return bare ? bare[0] : '';
+}
+
+function normalizeIpfsValue(value) {
+  const text = String(value || '').trim();
+  if (!text) return [];
+  if (/^https?:\/\//i.test(text)) return [text];
+  const cid = ipfsCidFromValue(text);
+  if (!cid) return [];
+  return [
+    `https://ipfs.hivebp.io/ipfs/${cid}`,
+    `https://atomichub-ipfs.com/ipfs/${cid}`,
     `https://ipfs.io/ipfs/${cid}`,
+    `https://gateway.pinata.cloud/ipfs/${cid}`,
+    `https://nftstorage.link/ipfs/${cid}`,
+    `https://dweb.link/ipfs/${cid}`,
   ];
+}
+
+function isUsableImageValue(value) {
+  const text = String(value || '').toLowerCase();
+  return text && !/\.(mp4|mov|webm|avi|mkv)(?:$|[?#])/i.test(text);
+}
+
+function collectAtomicMediaValues(immutableData = {}) {
+  const primary = [];
+  const secondary = [];
+  const videos = [];
+
+  function addByKey(key, value) {
+    if (typeof value !== 'string') return;
+    const normalized = normalizeIpfsValue(value);
+    if (!normalized.length) return;
+    const lowerKey = String(key || '').toLowerCase();
+    if (lowerKey === 'img' || lowerKey === 'image') primary.push(...normalized);
+    else if (/img|image|thumbnail|thumb|picture|photo|artwork|media/.test(lowerKey)) secondary.push(...normalized);
+    else if (lowerKey === 'video' && isUsableImageValue(value)) videos.push(...normalized);
+  }
+
+  function walk(value, key = '') {
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item, key);
+      return;
+    }
+    if (value && typeof value === 'object') {
+      for (const [childKey, childValue] of Object.entries(value)) walk(childValue, childKey);
+      return;
+    }
+    addByKey(key, value);
+  }
+
+  walk(immutableData);
+  const imageValues = unique([...primary, ...secondary]);
+  return imageValues.length ? imageValues : unique(videos);
+}
+
+async function fetchJson(url, options = {}) {
+  async function requestJson(requestOptions = {}) {
+    return new Promise((resolve, reject) => {
+      const parsed = new URL(url);
+      const client = parsed.protocol === 'http:' ? http : https;
+      const request = client.get({
+        protocol: parsed.protocol,
+        hostname: parsed.hostname,
+        port: parsed.port,
+        path: `${parsed.pathname}${parsed.search}`,
+        rejectUnauthorized: requestOptions.rejectUnauthorized !== false,
+        timeout: options.timeoutMs || 20000,
+        headers: {
+          accept: 'application/json',
+          'user-agent': 'CryptoMoonboysStaticGenerator/1.0',
+        },
+      }, (response) => {
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          response.resume();
+          reject(new Error(`template api ${response.statusCode}`));
+          return;
+        }
+        const chunks = [];
+        response.on('data', (chunk) => chunks.push(chunk));
+        response.on('end', () => {
+          try {
+            resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+          } catch (error) {
+            reject(error);
+          }
+        });
+      });
+      request.on('timeout', () => request.destroy(new Error('template api timeout')));
+      request.on('error', reject);
+    });
+  }
+
+  try {
+    return await requestJson();
+  } catch (error) {
+    if (/SELF_SIGNED_CERT|CERT_|NO_REVOCATION|UNABLE_TO_VERIFY/i.test(String(error?.code || error?.message || ''))) {
+      return requestJson({ rejectUnauthorized: false });
+    }
+    throw error;
+  }
+}
+
+async function hydrateAtomicAssetsImageSources(rows, options = {}) {
+  async function hydrateRow(row) {
+    const localSources = row.image_sources || (row.image_url ? [row.image_url] : []);
+    const apiUrl = `https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/${row.template_id}`;
+    try {
+      const payload = await fetchJson(apiUrl, { timeoutMs: options.timeoutMs || 20000 });
+      const immutableData = payload?.data?.immutable_data || {};
+      const atomicSources = collectAtomicMediaValues(immutableData);
+      row.atomicassets_image_url = apiUrl;
+      row.image_sources = unique([...atomicSources, ...localSources]);
+      row.image_url = row.image_sources[0] || row.image_url || '';
+    } catch (error) {
+      row.atomicassets_image_error = String(error?.message || error);
+      row.image_sources = unique(localSources);
+      row.image_url = row.image_sources[0] || row.image_url || '';
+    }
+  }
+
+  const concurrency = options.concurrency || 8;
+  for (let index = 0; index < rows.length; index += concurrency) {
+    await Promise.all(rows.slice(index, index + concurrency).map(hydrateRow));
+  }
 }
 
 function downloadImage(url, options = {}, redirectCount = 0) {
@@ -106,7 +281,7 @@ function downloadImage(url, options = {}, redirectCount = 0) {
       port: parsed.port,
       path: `${parsed.pathname}${parsed.search}`,
       rejectUnauthorized: options.rejectUnauthorized !== false,
-      timeout: 10000,
+      timeout: options.timeoutMs || 20000,
       headers: {
         'user-agent': 'CryptoMoonboysStaticGenerator/1.0',
         accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8,*/*;q=0.5',
@@ -126,9 +301,19 @@ function downloadImage(url, options = {}, redirectCount = 0) {
       const chunks = [];
       response.on('data', (chunk) => chunks.push(chunk));
       response.on('end', () => {
+        const mime = String(response.headers['content-type'] || '').split(';')[0];
+        const bytes = Buffer.concat(chunks);
+        if (!mime.startsWith('image/')) {
+          reject(new Error(`bad content-type ${mime || 'missing'}`));
+          return;
+        }
+        if (bytes.length <= 1024) {
+          reject(new Error(`image too small ${bytes.length}`));
+          return;
+        }
         resolve({
-          bytes: Buffer.concat(chunks),
-          mime: String(response.headers['content-type'] || 'image/jpeg').split(';')[0],
+          bytes,
+          mime,
         });
       });
     });
@@ -139,23 +324,42 @@ function downloadImage(url, options = {}, redirectCount = 0) {
   });
 }
 
-async function fetchImageBytes(url) {
+async function fetchImageBytes(urls, options = {}) {
+  const attempts = Math.max(1, options.retries ?? 2);
+  const explicitSources = unique([].concat(urls || []));
+  const candidates = unique([
+    ...explicitSources,
+    ...explicitSources.flatMap((source) => ipfsGatewayCandidates(source)),
+  ]);
   let lastError = null;
-  for (const candidate of ipfsGatewayCandidates(url)) {
-    try {
-      return await downloadImage(candidate);
-    } catch (error) {
-      lastError = error;
-      if (/SELF_SIGNED_CERT|CERT_|NO_REVOCATION/i.test(String(error?.code || error?.message || ''))) {
-        try {
-          return await downloadImage(candidate, { rejectUnauthorized: false });
-        } catch (insecureError) {
-          lastError = insecureError;
+  for (const candidate of candidates) {
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      try {
+        return await downloadImage(candidate, { timeoutMs: options.timeoutMs });
+      } catch (error) {
+        lastError = error;
+        if (/SELF_SIGNED_CERT|CERT_|NO_REVOCATION|UNABLE_TO_VERIFY/i.test(String(error?.code || error?.message || ''))) {
+          try {
+            return await downloadImage(candidate, { rejectUnauthorized: false, timeoutMs: options.timeoutMs });
+          } catch (insecureError) {
+            lastError = insecureError;
+          }
         }
+      }
+      if (attempt + 1 < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
       }
     }
   }
   throw lastError || new Error('image fetch failed');
+}
+
+async function tryResizeWithSharp(bytes) {
+  const sharp = (await import('sharp')).default;
+  return sharp(bytes)
+    .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
+    .webp({ quality: 84 })
+    .toBuffer();
 }
 
 async function renderWebpThumbnail(page, bytes, mime) {
@@ -185,17 +389,13 @@ async function renderWebpThumbnail(page, bytes, mime) {
 
 async function resizeWithSharp(bytes) {
   try {
-    const sharp = (await import('sharp')).default;
-    return await sharp(bytes)
-      .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-      .webp({ quality: 84 })
-      .toBuffer();
+    return await tryResizeWithSharp(bytes);
   } catch (error) {
     return null;
   }
 }
 
-async function prepareThumbnails(rows, root = ROOT) {
+export async function prepareGkniftyheadsThumbnails(rows, root = ROOT, options = {}) {
   const thumbDir = path.join(root, 'img', 'gkniftyheads', 'thumbs');
   const manifest = readThumbManifest(root);
   let browser = null;
@@ -216,9 +416,10 @@ async function prepareThumbnails(rows, root = ROOT) {
   }
 
   fs.mkdirSync(thumbDir, { recursive: true });
-  async function processRow(row) {
+  async function processRow(row, passOptions) {
     row.thumbnail_url = row.image_url || '';
     row.thumbnail_status = row.image_url ? 'original_fallback' : 'missing_source';
+    delete row.thumbnail_error;
     if (!row.image_url) return;
     if (/^\//.test(row.image_url)) {
       row.thumbnail_status = 'local_source';
@@ -233,6 +434,7 @@ async function prepareThumbnails(rows, root = ROOT) {
       if (!manifestEntry) {
         manifest[String(row.template_id)] = {
           source_url: row.image_url,
+          image_sources: row.image_sources || [row.image_url],
           thumbnail_url: publicUrl,
           width: THUMB_WIDTH,
           generated_at: new Date().toISOString(),
@@ -242,15 +444,41 @@ async function prepareThumbnails(rows, root = ROOT) {
       row.thumbnail_status = 'cached';
       return;
     }
+    const reusableEntry = Object.entries(manifest).find(([templateId, entry]) => {
+      if (Number(templateId) === row.template_id) return false;
+      const entrySources = entry?.image_sources || [entry?.source_url];
+      const rowSources = row.image_sources || [row.image_url];
+      const sourceOverlap = entrySources.some((source) => rowSources.includes(source));
+      const existingPath = entry?.thumbnail_url ? path.join(root, entry.thumbnail_url.replace(/^\//, '')) : '';
+      return sourceOverlap && existingPath && fs.existsSync(existingPath);
+    });
+    if (reusableEntry) {
+      const sourcePath = path.join(root, reusableEntry[1].thumbnail_url.replace(/^\//, ''));
+      fs.copyFileSync(sourcePath, filePath);
+      manifest[String(row.template_id)] = {
+        source_url: row.image_url,
+        image_sources: row.image_sources || [row.image_url],
+        thumbnail_url: publicUrl,
+        width: THUMB_WIDTH,
+        generated_at: new Date().toISOString(),
+        reused_from_template_id: Number(reusableEntry[0]),
+      };
+      row.thumbnail_url = publicUrl;
+      row.thumbnail_status = 'reused';
+      writeThumbManifest(root, manifest);
+      return;
+    }
     if (playwrightUnavailable) return;
 
     try {
-      const image = await fetchImageBytes(row.image_url);
+      const image = await fetchImageBytes(row.image_sources || [row.image_url], passOptions);
       const thumb = await resizeWithSharp(image.bytes)
         || await renderWebpThumbnail(await getPage(), image.bytes, image.mime);
+      if (!thumb || thumb.length <= 1024) throw new Error(`thumbnail too small ${thumb?.length || 0}`);
       fs.writeFileSync(filePath, thumb);
       manifest[String(row.template_id)] = {
         source_url: row.image_url,
+        image_sources: row.image_sources || [row.image_url],
         thumbnail_url: publicUrl,
         width: THUMB_WIDTH,
         generated_at: new Date().toISOString(),
@@ -264,24 +492,47 @@ async function prepareThumbnails(rows, root = ROOT) {
     }
   }
 
-  const concurrency = 8;
-  for (let index = 0; index < rows.length; index += concurrency) {
-    await Promise.all(rows.slice(index, index + concurrency).map(processRow));
+  async function runPass(passRows, passOptions) {
+    const concurrency = passOptions.concurrency || 8;
+    for (let index = 0; index < passRows.length; index += concurrency) {
+      await Promise.all(passRows.slice(index, index + concurrency).map((row) => processRow(row, passOptions)));
+    }
+  }
+
+  await runPass(rows, {
+    timeoutMs: options.timeoutMs || 20000,
+    retries: options.retries ?? 2,
+    concurrency: options.concurrency || 8,
+  });
+
+  const retryRows = rows.filter((row) => row.thumbnail_status === 'original_fallback' && row.image_url);
+  if (retryRows.length && options.secondPass !== false) {
+    await runPass(retryRows, {
+      timeoutMs: options.secondPassTimeoutMs || 45000,
+      retries: options.secondPassRetries ?? 2,
+      concurrency: options.secondPassConcurrency || 2,
+    });
   }
 
   if (browser) await browser.close();
   writeThumbManifest(root, manifest);
 }
 
+async function prepareThumbnails(rows, root = ROOT) {
+  return prepareGkniftyheadsThumbnails(rows, root);
+}
+
 function readTemplatePage(row, root = ROOT) {
   const filePath = path.join(root, row.url.replace(/^\//, ''));
   if (!fs.existsSync(filePath)) return {};
   const html = fs.readFileSync(filePath, 'utf8');
+  const imageSources = getTemplateImageSources(html);
   return {
     rarity_trait: getAttr(html, 'rarity') || 'Not supplied',
     variation_trait: getAttr(html, 'variation') || 'Not supplied',
     description: getAttr(html, 'DESCRIPTION'),
-    image_url: getTemplateImageUrl(html),
+    image_url: imageSources[0] || '',
+    image_sources: imageSources,
     schema: getStat(html, 'Schema') || row.schema || '',
   };
 }
@@ -645,6 +896,7 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT) {
   if (!oldSection) throw new Error('Could not locate raw template table section.');
 
   const rows = extractRows(html, root);
+  await hydrateAtomicAssetsImageSources(rows);
   await prepareThumbnails(rows, root);
   const model = buildRanking(rows);
   const stats = buildStats(model);

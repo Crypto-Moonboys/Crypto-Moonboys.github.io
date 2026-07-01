@@ -48,10 +48,15 @@ assert.ok(rarity.stats.utility_open_mint_templates < 104, 'utility/open mint buc
 assert.ok(ranked.every((row) => row.max_supply > 0), 'every ranked limited template must have fixed max_supply > 0');
 assert.equal(ranked.some((row) => row.max_supply === 0), false, 'max_supply=0 templates must not appear in ranked_templates');
 assert.ok(allTemplates.every((row) => typeof row.image_url === 'string'), 'template rarity data should expose image_url for every generated row');
+assert.ok(allTemplates.every((row) => Array.isArray(row.image_sources)), 'template rarity data should expose image_sources for every generated row');
+assert.ok(allTemplates.every((row) => row.image_sources.length > 0 || row.image_url === ''), 'rows with image_url should carry image source candidates');
 assert.ok(allTemplates.every((row) => typeof row.thumbnail_url === 'string'), 'template rarity data should expose thumbnail_url for every generated row');
 assert.ok(allTemplates.every((row) => row.image_url === '' || row.thumbnail_url), 'rows with source images should have a table image source');
 assert.ok(allTemplates.some((row) => row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/')), 'generated rows should use local thumbnail URLs where available');
 assert.ok(allTemplates.every((row) => !row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/') || row.thumbnail_url.endsWith(`${row.template_id}.webp`)), 'local thumbnail URLs should use deterministic template_id paths');
+assert.ok(allTemplates.every((row) => !row.thumbnail_url.startsWith('/img/gkniftyheads/thumbs/') || fs.existsSync(path.join(root, row.thumbnail_url.replace(/^\//, '')))), 'committed local thumbnail URLs must point to real files');
+assert.match(generatorJs, /wax\.api\.atomicassets\.io\/atomicassets\/v1\/templates\/gkniftyheads\/\$\{row\.template_id\}/, 'generator should use the AtomicAssets template API as the primary image metadata source');
+assert.match(generatorJs, /cloudflare-ipfs\.com\/ipfs/, 'generator should try the full IPFS gateway set for thumbnail retries');
 
 const funCoupon = findByTemplateId(utility, 782888);
 assert.ok(funCoupon, 'FUN COUPON template 782888 must be classified as utility/open mint');
@@ -66,6 +71,7 @@ assert.equal(bitman.issued_supply, 1, 'Bitman fixture should preserve 1/1 issued
 assert.equal(bitman.max_supply, 1, 'Bitman fixture should preserve fixed max supply');
 assert.match(bitman.image_url, /^https:\/\/.+ipfs\//, 'Bitman should inherit its NFT image from the child template page');
 assert.equal(bitman.thumbnail_url, '/img/gkniftyheads/thumbs/784220.webp', 'Bitman should use a deterministic local table thumbnail');
+assert.ok(bitman.image_sources.some((source) => source.includes('atomichub-ipfs.com/ipfs/')), 'Bitman image sources should include AtomicAssets-derived gateway candidates');
 
 const bitSkull = findByTemplateId(utility, 784280);
 assert.ok(bitSkull, 'Bit-Skull 784280 must be excluded when current data says max_supply=0');
