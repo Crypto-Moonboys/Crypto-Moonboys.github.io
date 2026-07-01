@@ -27,6 +27,7 @@ assert.ok(registry.feeds.length >= 4, 'registry must include more than only GKni
 
 const requiredFeeds = new Map([
   ['gkniftyheads_rarity', { page: '/wiki/gkniftyheads-nft-collection.html', mode: 'scheduled_snapshot_primary' }],
+  ['noballgamess_rarity', { page: '/wiki/noballgamess-nft-collection.html', mode: 'scheduled_snapshot_primary' }],
   ['waxonedge_bubbles', { page: '/waxonedge.html', mode: 'live_primary_static_fallback' }],
   ['waxcash_analytics', { page: '/waxcash.html', mode: 'live_primary_static_fallback' }],
   ['wuffi_token_analytics', { page: '/wiki/wuffi.html', mode: 'live_primary_static_fallback' }],
@@ -69,6 +70,41 @@ assert.match(
   'GKniftyHEADS registry must declare recently updated burned asset scan endpoint'
 );
 
+const noballgamessFeed = registry.feeds.find((entry) => entry.feed_id === 'noballgamess_rarity');
+assert.equal(noballgamessFeed.feed_mode, 'scheduled_snapshot_primary', 'NoBallGames must be a scheduled snapshot feed');
+for (const [key, pattern] of Object.entries({
+  templates: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/templates\?collection_name=noballgamess$/,
+  template: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/templates\/noballgamess\/\{template_id\}$/,
+  templates_batch: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/templates\?collection_name=noballgamess&ids=\{template_ids\}&limit=1000$/,
+  assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&template_id=\{template_id\}&limit=1000$/,
+  template_assets_backfill: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&template_id=\{template_id\}&limit=1000&order=asc&sort=template_mint$/,
+  live_count: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\/_count\?collection_name=noballgamess&template_id=\{template_id\}$/,
+  latest_created_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&sort=created&order=desc&limit=1000$/,
+  recently_updated_live_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&burned=false&sort=updated&order=desc&limit=1000$/,
+  recently_updated_burned_assets: /^https:\/\/wax\.api\.atomicassets\.io\/atomicassets\/v1\/assets\?collection_name=noballgamess&burned=true&sort=updated&order=desc&limit=1000$/,
+})) {
+  assert.match(noballgamessFeed.source_urls[key], pattern, `NoBallGames registry must declare ${key} with collection_name=noballgamess`);
+}
+for (const generatedPath of [
+  'data/noballgamess/template-metadata-cache.json',
+  'data/noballgamess/live-template-supply.json',
+  'data/noballgamess/template-integrity-audit.json',
+  'data/noballgamess/asset-state-cache.json',
+  'data/noballgamess/asset-refresh-cursor.json',
+  'data/noballgamess/surviving-mint-ranks.json',
+  'data/noballgamess/template-rarity.json',
+  'data/noballgamess/live-asset-rarity.json',
+  'data/noballgamess/template-stats.json',
+  'data/noballgamess/trait-exposure.json',
+  'data/noballgamess/holder-leaderboard.json',
+  'data/noballgamess/asset-rarity-leaderboard.json',
+  'data/noballgamess/sync-status.json',
+  'wiki/noballgamess-nft-collection.html',
+]) {
+  assert.ok(noballgamessFeed.output_files.includes(generatedPath), `NoBallGames registry must include generated output ${generatedPath}`);
+  assert.ok(exists(generatedPath), `NoBallGames generated output must exist: ${generatedPath}`);
+}
+
 const feedIds = registry.feeds.map((entry) => entry.feed_id);
 assert.equal(new Set(feedIds).size, feedIds.length, 'feed IDs must be unique');
 assert.notEqual(feedIds.filter((id) => id === 'gkniftyheads_rarity').length, feedIds.length, 'GKniftyHEADS must not be the only feed');
@@ -97,6 +133,7 @@ for (const script of [
 
 const pages = [
   ['wiki/gkniftyheads-nft-collection.html', 'gkniftyheads_rarity'],
+  ['wiki/noballgamess-nft-collection.html', 'noballgamess_rarity'],
   ['waxonedge.html', 'waxonedge_bubbles'],
   ['waxcash.html', 'waxcash_analytics'],
   ['wiki/wuffi.html', 'wuffi_token_analytics'],
@@ -147,14 +184,24 @@ assert.ok(
   && workflow.indexOf('node scripts/generate-gkniftyheads-rarity.mjs') < workflow.indexOf('node scripts/retry-gkniftyheads-thumbnails.mjs --cached-only'),
   'GKniftyHEADS workflow must refresh metadata, live supply, asset state, local rarity render, then cached-only thumbnails in order'
 );
+assert.ok(
+  workflow.indexOf('node scripts/update-gkniftyheads-template-metadata-cache.mjs') < workflow.indexOf('node scripts/update-noballgamess-template-metadata-cache.mjs')
+  && workflow.indexOf('node scripts/update-noballgamess-template-metadata-cache.mjs') < workflow.indexOf('node scripts/update-noballgamess-live-supply-cache.mjs')
+  && workflow.indexOf('node scripts/update-noballgamess-live-supply-cache.mjs') < workflow.indexOf('node scripts/update-noballgamess-asset-state-cache.mjs')
+  && workflow.indexOf('node scripts/update-noballgamess-asset-state-cache.mjs') < workflow.indexOf('node scripts/generate-noballgamess-rarity.mjs'),
+  'workflow must keep GKniftyHEADS first, then refresh NoBallGames metadata, live supply, asset state, and render in order'
+);
 assert.match(workflow, /GK_USE_EXISTING_STAGED_CACHES/, 'central feed update should reuse staged GKniftyHEADS caches in the workflow');
+assert.match(workflow, /NBG_USE_EXISTING_STAGED_CACHES/, 'central feed update should reuse staged NoBallGames caches in the workflow');
 assert.match(workflow, /node scripts\/site-feed-registry\.test\.mjs/, 'workflow must audit feed registry rules');
 assert.match(workflow, /chore: update site data feeds/, 'workflow must use the required commit message');
 for (const generatedPath of [
   'data/gkniftyheads/',
   'data/gkniftyheads_rarity/',
+  'data/noballgamess/',
   'data/feed-status.json',
   'wiki/gkniftyheads-nft-collection.html',
+  'wiki/noballgamess-nft-collection.html',
   'img/gkniftyheads/thumbs/',
   'img/gkniftyheads/thumbs/manifest.json',
 ]) {
@@ -178,6 +225,18 @@ assert.match(assetStateCache, /"recently_updated_live_assets"/, 'asset-state cac
 assert.match(assetStateCache, /"recently_updated_burned_assets"/, 'asset-state cache must document updated-burned source URL');
 assert.match(assetRefreshCursor, /"mode": "daily_rotating_backfill"/, 'asset refresh cursor must use daily rotating backfill mode');
 assert.match(survivingRanks, /"templates"/, 'surviving mint ranks data surface must exist');
+
+const noballgamessPage = read('wiki/noballgamess-nft-collection.html');
+const noballgamessRarity = read('data/noballgamess/template-rarity.json');
+const noballgamessAssetState = read('data/noballgamess/asset-state-cache.json');
+assert.match(noballgamessPage, /Original mint numbers never change/, 'NoBallGames page must explain permanent original mint numbers');
+assert.match(noballgamessPage, /surviving mint rank/, 'NoBallGames page must explain surviving mint rank');
+assert.match(noballgamessAssetState, /"latest_created_assets"/, 'NoBallGames asset-state cache must document latest-created source URL');
+assert.match(noballgamessAssetState, /"recently_updated_live_assets"/, 'NoBallGames asset-state cache must document updated-live source URL');
+assert.match(noballgamessAssetState, /"recently_updated_burned_assets"/, 'NoBallGames asset-state cache must document updated-burned source URL');
+assert.match(noballgamessAssetState, /"template_assets_backfill"/, 'NoBallGames asset-state cache must document template backfill source URL');
+assert.match(noballgamessRarity, /"price_used": false/, 'NoBallGames rarity feed must not use price');
+assert.doesNotMatch(noballgamessRarity, /floor price|market price|last sale|listing count/i, 'NoBallGames rarity feed must not include price/listing ranking signals');
 
 const gkUpdater = read('scripts/update-gkniftyheads-rarity-feed.mjs');
 assert.match(gkUpdater, /const result = await runGenerateGkniftyheadsRarity\(\)/, 'GKniftyHEADS feed updater must await the async rarity generator');
