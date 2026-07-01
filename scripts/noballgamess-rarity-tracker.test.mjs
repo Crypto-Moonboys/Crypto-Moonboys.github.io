@@ -190,4 +190,27 @@ assert.match(html, /Holder Leaderboard/, 'page should render holder leaderboard 
 assert.match(html, /Asset Rarity Leaderboard/, 'page should render asset rarity leaderboard section');
 assert.match(html, /Market analytics — display only, not rarity input/, 'page should render display-only market analytics section');
 
+assert.match(html, /<img class="nft-thumb"/, 'NoBallGames page should render NFT thumbnail images');
+assert.match(html, /<h2>Template Rarity Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'Template Rarity Ranking rows should include image markup');
+assert.match(html, /<h2>Utility \/ Open Mint<\/h2>[\s\S]*<img class="nft-thumb"/, 'Utility/Open Mint rows should include image markup when image data exists');
+assert.match(html, /<h2>Asset Rarity Leaderboard<\/h2>[\s\S]*<img class="nft-thumb"/, 'Asset Rarity Leaderboard rows should include image markup');
+assert.doesNotMatch(html, /src="[^"]*gkniftyheads/i, 'NoBallGames rendered image src must not point to gkniftyheads assets');
+assert.doesNotMatch(html, /src="[^"]*\/img\/noballgames(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgames path spelling');
+assert.doesNotMatch(html, /src="[^"]*\/img\/noballgame(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgame path spelling');
+for (const [, src] of html.matchAll(/<img class="nft-thumb"[^>]+src="([^"]+)"/g)) {
+  assert.match(
+    src,
+    /^(\/img\/noballgamess\/thumbs\/[^?#]+\.(webp|jpg|jpeg|png)|https:\/\/(ipfs\.hivebp\.io|atomichub-ipfs\.com|ipfs\.io|gateway\.pinata\.cloud|nftstorage\.link|dweb\.link)\/ipfs\/[A-Za-z0-9]+)/i,
+    `NoBallGames NFT image src should be a local noballgamess thumbnail or safe IPFS gateway URL: ${src}`,
+  );
+}
+for (const row of [
+  ...templateRarity.ranked_templates,
+  ...templateRarity.utility_open_mint_templates,
+  ...templateRarity.unissued_templates,
+]) {
+  assert.ok(row.image_url || row.image_sources?.length, `template ${row.template_id} should carry AtomicAssets image data`);
+}
+assert.ok(assetLeaderboard.assets.every((row) => row.image_url || row.image_sources?.length), 'asset rarity rows should inherit template image data');
+
 console.log('NoBallGames rarity tracker regression passed.');

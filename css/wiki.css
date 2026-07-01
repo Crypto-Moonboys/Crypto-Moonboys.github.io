@@ -3131,6 +3131,55 @@ body.score-updated .lb-row.selected {
   color: #d8f4ff;
 }
 
+.nft-template-cell {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.nft-template-image-link {
+  display: block;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.nft-thumb {
+  background: rgba(3, 9, 18, 0.82);
+  border: 1px solid rgba(112, 240, 255, 0.28);
+  border-radius: 8px;
+  display: block;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  width: 128px;
+}
+
+.nft-thumb-placeholder {
+  align-items: center;
+  border: 1px dashed rgba(180, 194, 212, 0.38);
+  border-radius: 8px;
+  color: rgba(230, 240, 255, 0.72);
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  height: 96px;
+  justify-content: center;
+  text-align: center;
+  width: 128px;
+}
+
+.nft-template-cell-copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nft-template-cell-copy small {
+  color: rgba(234, 246, 255, 0.74);
+  line-height: 1.35;
+}
+
 .gk-rarity-table th,
 .gk-rarity-table td,
 .gk-rarity-side-table th,

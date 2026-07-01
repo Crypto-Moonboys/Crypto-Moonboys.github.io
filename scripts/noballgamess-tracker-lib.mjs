@@ -619,10 +619,48 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
+function safeImageUrl(row = {}) {
+  const candidates = [
+    row.thumbnail_url,
+    row.atomicassets_image_url,
+    row.image_url,
+    ...asArray(row.image_sources),
+  ].filter(Boolean);
+  return candidates.find((url) => {
+    const value = String(url);
+    if (/\/img\/gkniftyheads\//i.test(value)) return false;
+    if (/\/img\/noballgames(?:\/|-)|\/img\/noballgame(?:\/|-)/i.test(value)) return false;
+    return /^\/img\/noballgamess\/thumbs\/[^?#]+\.(webp|jpg|jpeg|png)$/i.test(value)
+      || /^https:\/\/(ipfs\.hivebp\.io|atomichub-ipfs\.com|ipfs\.io|gateway\.pinata\.cloud|nftstorage\.link|dweb\.link)\/ipfs\/[A-Za-z0-9]+/i.test(value);
+  }) || '';
+}
+
+function renderTemplateCell(row, options = {}) {
+  const imageSrc = safeImageUrl(row);
+  const title = row.title || `Template ${row.template_id}`;
+  const href = row.atomichub_url || row.atomicassets_url || '#';
+  const meta = [
+    options.rank ? `Rank #${row.rank}` : '',
+    options.band ? row.rarity_band : '',
+    options.status || '',
+    row.template_id ? `Template #${row.template_id}` : '',
+  ].filter(Boolean).join(' · ');
+  const image = imageSrc
+    ? `<a class="nft-template-image-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(title)} NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : '<div class="nft-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>';
+  return `<div class="nft-template-cell">
+      ${image}
+      <div class="nft-template-cell-copy">
+        <a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+        ${meta ? `<small>${escapeHtml(meta)}</small>` : ''}
+      </div>
+    </div>`;
+}
+
 function renderRows(rows, ranked = false) {
   if (!rows.length) return '<tr><td colspan="7">Pending first AtomicAssets sync.</td></tr>';
   return rows.map((row) => `<tr>
-    <td><a href="${escapeHtml(row.atomichub_url)}">${escapeHtml(row.title)}</a>${ranked ? `<br><small>Rank #${row.rank} · ${escapeHtml(row.rarity_band)}</small>` : ''}</td>
+    <td>${renderTemplateCell(row, { rank: ranked, band: ranked, status: ranked ? '' : row.max_supply === 0 ? 'Utility / Open Mint' : row.issued_supply <= 0 ? 'Unissued' : '' })}</td>
     <td>${escapeHtml(row.template_id)}</td>
     <td>${escapeHtml(row.schema_name || '')}</td>
     <td>${escapeHtml(row.issued_supply)}</td>
@@ -659,8 +697,9 @@ function renderHolderRows(rows) {
 }
 
 function renderAssetRarityRows(rows) {
-  if (!rows.length) return '<tr><td colspan="4">Pending asset rarity sync.</td></tr>';
+  if (!rows.length) return '<tr><td colspan="5">Pending asset rarity sync.</td></tr>';
   return rows.slice(0, 12).map((row) => `<tr>
+    <td>${renderTemplateCell(row, { status: row.rarity_band || '' })}</td>
     <td>${escapeHtml(row.asset_id || '')}</td>
     <td>${escapeHtml(row.template_id || '')}</td>
     <td>${escapeHtml(row.original_mint_number ?? '')}</td>
@@ -754,7 +793,7 @@ function renderPage(root, data, supplemental = {}) {
         <section class="wiki-section">
           <h2>Asset Rarity Leaderboard</h2>
           <table class="wiki-table">
-            <thead><tr><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th></tr></thead>
+            <thead><tr><th>NFT</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th></tr></thead>
             <tbody>${renderAssetRarityRows(asArray(assetRarityLeaderboard.assets))}</tbody>
           </table>
         </section>
@@ -826,9 +865,17 @@ export async function generateNoballgamessRarity(root = ROOT) {
   }
   const holderLeaderboard = [...holderCounts.entries()].map(([owner, live_assets]) => ({ owner, live_assets })).sort((a, b) => b.live_assets - a.live_assets);
   const ranks = readJson(root, `${DATA_DIR}/surviving-mint-ranks.json`, { templates: [] });
+  const templateById = new Map(data.allRows.map((row) => [row.template_id, row]));
   const assetRarityLeaderboard = asArray(ranks.templates).flatMap((template) => asArray(template.assets).map((asset) => ({
     ...asset,
     template_id: template.template_id,
+    title: templateById.get(template.template_id)?.title || `Template ${template.template_id}`,
+    image_url: templateById.get(template.template_id)?.image_url || null,
+    image_sources: templateById.get(template.template_id)?.image_sources || [],
+    immutable_data_image_fields: templateById.get(template.template_id)?.immutable_data_image_fields || {},
+    atomichub_url: templateById.get(template.template_id)?.atomichub_url || atomichubUrl(template.template_id),
+    atomicassets_url: templateById.get(template.template_id)?.atomicassets_url || atomicTemplateUrl(template.template_id),
+    rarity_band: templateById.get(template.template_id)?.rarity_band || null,
   })));
   const traitExposure = {
     collection: COLLECTION,
@@ -871,6 +918,13 @@ export async function generateNoballgamessRarity(root = ROOT) {
     utility_open_mint_templates: data.utility.length,
     unissued_templates: data.unissued.length,
     ranking_formula: SCORING_CONTRACT,
+    templates: data.allRows.map((row) => ({
+      template_id: row.template_id,
+      title: row.title,
+      image_url: row.image_url || null,
+      image_sources: row.image_sources || [],
+      immutable_data_image_fields: row.immutable_data_image_fields || {},
+    })),
   };
   writeJson(root, `${DATA_DIR}/template-stats.json`, templateStats);
   writeJson(root, `${DATA_DIR}/trait-exposure.json`, traitExposure);
