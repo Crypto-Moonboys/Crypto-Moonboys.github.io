@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T15:26:06.269Z",
+  "generated_at": "2026-07-01T17:13:02.370Z",
   "supplies": [
     {
       "template_id": 773225,
@@ -9,7 +9,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.406Z",
+      "last_checked_at": "2026-07-01T17:12:53.305Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=773225",
       "error": null
     },
@@ -20,7 +20,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.414Z",
+      "last_checked_at": "2026-07-01T17:12:53.576Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=775997",
       "error": null
     },
@@ -31,7 +31,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.404Z",
+      "last_checked_at": "2026-07-01T17:12:53.268Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=775999",
       "error": null
     },
@@ -42,7 +42,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.405Z",
+      "last_checked_at": "2026-07-01T17:12:53.313Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776000",
       "error": null
     },
@@ -53,7 +53,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.420Z",
+      "last_checked_at": "2026-07-01T17:12:53.448Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776001",
       "error": null
     },
@@ -64,7 +64,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.410Z",
+      "last_checked_at": "2026-07-01T17:12:53.293Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776002",
       "error": null
     },
@@ -75,7 +75,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.432Z",
+      "last_checked_at": "2026-07-01T17:12:53.471Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776003",
       "error": null
     },
@@ -86,7 +86,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.409Z",
+      "last_checked_at": "2026-07-01T17:12:53.263Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776004",
       "error": null
     },
@@ -97,7 +97,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.608Z",
+      "last_checked_at": "2026-07-01T17:12:53.888Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776005",
       "error": null
     },
@@ -108,7 +108,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.598Z",
+      "last_checked_at": "2026-07-01T17:12:54.237Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776007",
       "error": null
     },
@@ -119,7 +119,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.595Z",
+      "last_checked_at": "2026-07-01T17:12:54.009Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776049",
       "error": null
     },
@@ -130,7 +130,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.595Z",
+      "last_checked_at": "2026-07-01T17:12:54.010Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776055",
       "error": null
     },
@@ -141,7 +141,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.601Z",
+      "last_checked_at": "2026-07-01T17:12:54.121Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776056",
       "error": null
     },
@@ -152,7 +152,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.599Z",
+      "last_checked_at": "2026-07-01T17:12:54.542Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776057",
       "error": null
     },
@@ -163,7 +163,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.594Z",
+      "last_checked_at": "2026-07-01T17:12:54.467Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776058",
       "error": null
     },
@@ -174,7 +174,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.610Z",
+      "last_checked_at": "2026-07-01T17:12:54.353Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776059",
       "error": null
     },
@@ -185,7 +185,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.777Z",
+      "last_checked_at": "2026-07-01T17:12:54.852Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776063",
       "error": null
     },
@@ -196,7 +196,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.785Z",
+      "last_checked_at": "2026-07-01T17:12:54.803Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776065",
       "error": null
     },
@@ -207,7 +207,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.777Z",
+      "last_checked_at": "2026-07-01T17:12:54.861Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776066",
       "error": null
     },
@@ -218,7 +218,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.776Z",
+      "last_checked_at": "2026-07-01T17:12:54.857Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776074",
       "error": null
     },
@@ -229,7 +229,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.770Z",
+      "last_checked_at": "2026-07-01T17:12:54.792Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776099",
       "error": null
     },
@@ -240,7 +240,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.781Z",
+      "last_checked_at": "2026-07-01T17:12:54.797Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776100",
       "error": null
     },
@@ -251,7 +251,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.772Z",
+      "last_checked_at": "2026-07-01T17:12:54.803Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776101",
       "error": null
     },
@@ -262,7 +262,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.778Z",
+      "last_checked_at": "2026-07-01T17:12:54.848Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776102",
       "error": null
     },
@@ -273,7 +273,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.372Z",
+      "last_checked_at": "2026-07-01T17:12:55.117Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776103",
       "error": null
     },
@@ -284,7 +284,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.072Z",
+      "last_checked_at": "2026-07-01T17:12:55.237Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776109",
       "error": null
     },
@@ -295,7 +295,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.328Z",
+      "last_checked_at": "2026-07-01T17:12:55.153Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776110",
       "error": null
     },
@@ -306,7 +306,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.958Z",
+      "last_checked_at": "2026-07-01T17:12:55.109Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776114",
       "error": null
     },
@@ -317,7 +317,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.215Z",
+      "last_checked_at": "2026-07-01T17:12:55.121Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776117",
       "error": null
     },
@@ -328,7 +328,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.940Z",
+      "last_checked_at": "2026-07-01T17:12:55.126Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776118",
       "error": null
     },
@@ -339,7 +339,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.939Z",
+      "last_checked_at": "2026-07-01T17:12:55.112Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776119",
       "error": null
     },
@@ -350,7 +350,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:01.947Z",
+      "last_checked_at": "2026-07-01T17:12:55.113Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776120",
       "error": null
     },
@@ -361,7 +361,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.491Z",
+      "last_checked_at": "2026-07-01T17:12:55.549Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776121",
       "error": null
     },
@@ -372,7 +372,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.539Z",
+      "last_checked_at": "2026-07-01T17:12:55.490Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776123",
       "error": null
     },
@@ -383,7 +383,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.544Z",
+      "last_checked_at": "2026-07-01T17:12:55.493Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776124",
       "error": null
     },
@@ -394,7 +394,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.540Z",
+      "last_checked_at": "2026-07-01T17:12:55.497Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776145",
       "error": null
     },
@@ -405,7 +405,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.559Z",
+      "last_checked_at": "2026-07-01T17:12:55.492Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776146",
       "error": null
     },
@@ -416,7 +416,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.543Z",
+      "last_checked_at": "2026-07-01T17:12:55.508Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=776147",
       "error": null
     },
@@ -427,7 +427,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:03.834Z",
+      "last_checked_at": "2026-07-01T17:12:56.912Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=782888",
       "error": null
     },
@@ -438,7 +438,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:02.553Z",
+      "last_checked_at": "2026-07-01T17:12:55.548Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783235",
       "error": null
     },
@@ -449,7 +449,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.002Z",
+      "last_checked_at": "2026-07-01T17:12:57.172Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783237",
       "error": null
     },
@@ -460,7 +460,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.006Z",
+      "last_checked_at": "2026-07-01T17:12:57.171Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783245",
       "error": null
     },
@@ -471,7 +471,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.004Z",
+      "last_checked_at": "2026-07-01T17:12:57.237Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783247",
       "error": null
     },
@@ -482,7 +482,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.000Z",
+      "last_checked_at": "2026-07-01T17:12:57.172Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783250",
       "error": null
     },
@@ -493,7 +493,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.004Z",
+      "last_checked_at": "2026-07-01T17:12:57.222Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783252",
       "error": null
     },
@@ -504,7 +504,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.002Z",
+      "last_checked_at": "2026-07-01T17:12:57.219Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783253",
       "error": null
     },
@@ -515,7 +515,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.001Z",
+      "last_checked_at": "2026-07-01T17:12:57.219Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783255",
       "error": null
     },
@@ -526,7 +526,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.003Z",
+      "last_checked_at": "2026-07-01T17:12:57.218Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783258",
       "error": null
     },
@@ -537,7 +537,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.184Z",
+      "last_checked_at": "2026-07-01T17:12:57.552Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783260",
       "error": null
     },
@@ -548,7 +548,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.174Z",
+      "last_checked_at": "2026-07-01T17:12:57.548Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783263",
       "error": null
     },
@@ -559,7 +559,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.181Z",
+      "last_checked_at": "2026-07-01T17:12:57.562Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783269",
       "error": null
     },
@@ -570,7 +570,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.184Z",
+      "last_checked_at": "2026-07-01T17:12:57.491Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783282",
       "error": null
     },
@@ -581,7 +581,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.175Z",
+      "last_checked_at": "2026-07-01T17:12:57.486Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783291",
       "error": null
     },
@@ -592,7 +592,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.180Z",
+      "last_checked_at": "2026-07-01T17:12:57.552Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783295",
       "error": null
     },
@@ -603,7 +603,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.178Z",
+      "last_checked_at": "2026-07-01T17:12:57.503Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783296",
       "error": null
     },
@@ -614,7 +614,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.185Z",
+      "last_checked_at": "2026-07-01T17:12:57.542Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783298",
       "error": null
     },
@@ -625,7 +625,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.349Z",
+      "last_checked_at": "2026-07-01T17:12:57.828Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783300",
       "error": null
     },
@@ -636,7 +636,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.363Z",
+      "last_checked_at": "2026-07-01T17:12:57.874Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783301",
       "error": null
     },
@@ -647,7 +647,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.359Z",
+      "last_checked_at": "2026-07-01T17:12:57.828Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783306",
       "error": null
     },
@@ -658,7 +658,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.361Z",
+      "last_checked_at": "2026-07-01T17:12:57.823Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783307",
       "error": null
     },
@@ -669,7 +669,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.341Z",
+      "last_checked_at": "2026-07-01T17:12:57.815Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783369",
       "error": null
     },
@@ -680,7 +680,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.342Z",
+      "last_checked_at": "2026-07-01T17:12:57.861Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783370",
       "error": null
     },
@@ -691,7 +691,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.376Z",
+      "last_checked_at": "2026-07-01T17:12:57.871Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783371",
       "error": null
     },
@@ -702,7 +702,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.356Z",
+      "last_checked_at": "2026-07-01T17:12:57.816Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783372",
       "error": null
     },
@@ -713,7 +713,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.497Z",
+      "last_checked_at": "2026-07-01T17:12:58.210Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783373",
       "error": null
     },
@@ -724,7 +724,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.535Z",
+      "last_checked_at": "2026-07-01T17:12:58.141Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783374",
       "error": null
     },
@@ -735,7 +735,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.540Z",
+      "last_checked_at": "2026-07-01T17:12:58.128Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783375",
       "error": null
     },
@@ -746,7 +746,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.547Z",
+      "last_checked_at": "2026-07-01T17:12:58.133Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783376",
       "error": null
     },
@@ -757,7 +757,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.551Z",
+      "last_checked_at": "2026-07-01T17:12:58.209Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783377",
       "error": null
     },
@@ -768,7 +768,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.536Z",
+      "last_checked_at": "2026-07-01T17:12:58.209Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783378",
       "error": null
     },
@@ -779,7 +779,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.543Z",
+      "last_checked_at": "2026-07-01T17:12:58.134Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783379",
       "error": null
     },
@@ -790,7 +790,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.543Z",
+      "last_checked_at": "2026-07-01T17:12:58.210Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783380",
       "error": null
     },
@@ -801,7 +801,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.711Z",
+      "last_checked_at": "2026-07-01T17:12:58.519Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783383",
       "error": null
     },
@@ -812,7 +812,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.729Z",
+      "last_checked_at": "2026-07-01T17:12:58.383Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783384",
       "error": null
     },
@@ -823,7 +823,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.727Z",
+      "last_checked_at": "2026-07-01T17:12:58.464Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783385",
       "error": null
     },
@@ -834,7 +834,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.715Z",
+      "last_checked_at": "2026-07-01T17:12:58.391Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783389",
       "error": null
     },
@@ -845,7 +845,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.673Z",
+      "last_checked_at": "2026-07-01T17:12:58.520Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783392",
       "error": null
     },
@@ -856,7 +856,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.671Z",
+      "last_checked_at": "2026-07-01T17:12:58.475Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783394",
       "error": null
     },
@@ -867,7 +867,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.718Z",
+      "last_checked_at": "2026-07-01T17:12:58.467Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783395",
       "error": null
     },
@@ -878,7 +878,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.716Z",
+      "last_checked_at": "2026-07-01T17:12:58.491Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783398",
       "error": null
     },
@@ -889,7 +889,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.864Z",
+      "last_checked_at": "2026-07-01T17:12:58.872Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783399",
       "error": null
     },
@@ -900,7 +900,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.887Z",
+      "last_checked_at": "2026-07-01T17:12:58.981Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783400",
       "error": null
     },
@@ -911,7 +911,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.892Z",
+      "last_checked_at": "2026-07-01T17:12:58.771Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783401",
       "error": null
     },
@@ -922,7 +922,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.888Z",
+      "last_checked_at": "2026-07-01T17:12:58.871Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783403",
       "error": null
     },
@@ -933,7 +933,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.887Z",
+      "last_checked_at": "2026-07-01T17:12:59.225Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783404",
       "error": null
     },
@@ -944,7 +944,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.857Z",
+      "last_checked_at": "2026-07-01T17:12:58.872Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783405",
       "error": null
     },
@@ -955,7 +955,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.902Z",
+      "last_checked_at": "2026-07-01T17:12:58.696Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783406",
       "error": null
     },
@@ -966,7 +966,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:04.891Z",
+      "last_checked_at": "2026-07-01T17:12:59.105Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783407",
       "error": null
     },
@@ -977,7 +977,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.023Z",
+      "last_checked_at": "2026-07-01T17:12:59.937Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783408",
       "error": null
     },
@@ -988,7 +988,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.069Z",
+      "last_checked_at": "2026-07-01T17:12:59.817Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783409",
       "error": null
     },
@@ -999,7 +999,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.073Z",
+      "last_checked_at": "2026-07-01T17:12:59.699Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783410",
       "error": null
     },
@@ -1010,7 +1010,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.073Z",
+      "last_checked_at": "2026-07-01T17:12:59.585Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783411",
       "error": null
     },
@@ -1021,7 +1021,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.074Z",
+      "last_checked_at": "2026-07-01T17:12:59.973Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783412",
       "error": null
     },
@@ -1032,7 +1032,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.061Z",
+      "last_checked_at": "2026-07-01T17:12:59.498Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783413",
       "error": null
     },
@@ -1043,7 +1043,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.085Z",
+      "last_checked_at": "2026-07-01T17:12:59.944Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783414",
       "error": null
     },
@@ -1054,7 +1054,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.071Z",
+      "last_checked_at": "2026-07-01T17:12:59.700Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783415",
       "error": null
     },
@@ -1065,7 +1065,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.257Z",
+      "last_checked_at": "2026-07-01T17:13:00.224Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783431",
       "error": null
     },
@@ -1076,7 +1076,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.257Z",
+      "last_checked_at": "2026-07-01T17:13:00.297Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783432",
       "error": null
     },
@@ -1087,7 +1087,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.258Z",
+      "last_checked_at": "2026-07-01T17:13:00.225Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783433",
       "error": null
     },
@@ -1098,7 +1098,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.258Z",
+      "last_checked_at": "2026-07-01T17:13:00.315Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783442",
       "error": null
     },
@@ -1109,7 +1109,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.259Z",
+      "last_checked_at": "2026-07-01T17:13:00.334Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783444",
       "error": null
     },
@@ -1120,7 +1120,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.254Z",
+      "last_checked_at": "2026-07-01T17:13:00.230Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783445",
       "error": null
     },
@@ -1131,7 +1131,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.253Z",
+      "last_checked_at": "2026-07-01T17:13:00.225Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783447",
       "error": null
     },
@@ -1142,7 +1142,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.256Z",
+      "last_checked_at": "2026-07-01T17:13:00.233Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783448",
       "error": null
     },
@@ -1153,7 +1153,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.420Z",
+      "last_checked_at": "2026-07-01T17:13:00.592Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783451",
       "error": null
     },
@@ -1164,7 +1164,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.431Z",
+      "last_checked_at": "2026-07-01T17:13:00.638Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783453",
       "error": null
     },
@@ -1175,7 +1175,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.426Z",
+      "last_checked_at": "2026-07-01T17:13:00.651Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783454",
       "error": null
     },
@@ -1186,7 +1186,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.404Z",
+      "last_checked_at": "2026-07-01T17:13:00.589Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783455",
       "error": null
     },
@@ -1197,7 +1197,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.420Z",
+      "last_checked_at": "2026-07-01T17:13:00.598Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783457",
       "error": null
     },
@@ -1208,7 +1208,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.429Z",
+      "last_checked_at": "2026-07-01T17:13:00.652Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783459",
       "error": null
     },
@@ -1219,7 +1219,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.425Z",
+      "last_checked_at": "2026-07-01T17:13:00.644Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783461",
       "error": null
     },
@@ -1230,7 +1230,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.422Z",
+      "last_checked_at": "2026-07-01T17:13:00.587Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783462",
       "error": null
     },
@@ -1241,7 +1241,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.594Z",
+      "last_checked_at": "2026-07-01T17:13:00.975Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783463",
       "error": null
     },
@@ -1252,7 +1252,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.597Z",
+      "last_checked_at": "2026-07-01T17:13:00.829Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783464",
       "error": null
     },
@@ -1263,7 +1263,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.665Z",
+      "last_checked_at": "2026-07-01T17:13:00.911Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783466",
       "error": null
     },
@@ -1274,7 +1274,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.603Z",
+      "last_checked_at": "2026-07-01T17:13:00.957Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783468",
       "error": null
     },
@@ -1285,7 +1285,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.556Z",
+      "last_checked_at": "2026-07-01T17:13:00.908Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783470",
       "error": null
     },
@@ -1296,7 +1296,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.606Z",
+      "last_checked_at": "2026-07-01T17:13:00.827Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783747",
       "error": null
     },
@@ -1307,7 +1307,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.601Z",
+      "last_checked_at": "2026-07-01T17:13:00.973Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783755",
       "error": null
     },
@@ -1318,7 +1318,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.596Z",
+      "last_checked_at": "2026-07-01T17:13:00.958Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783757",
       "error": null
     },
@@ -1329,7 +1329,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.828Z",
+      "last_checked_at": "2026-07-01T17:13:01.226Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783759",
       "error": null
     },
@@ -1340,7 +1340,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.843Z",
+      "last_checked_at": "2026-07-01T17:13:01.253Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783760",
       "error": null
     },
@@ -1351,7 +1351,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.832Z",
+      "last_checked_at": "2026-07-01T17:13:01.292Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=783764",
       "error": null
     },
@@ -1362,7 +1362,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.829Z",
+      "last_checked_at": "2026-07-01T17:13:01.291Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784220",
       "error": null
     },
@@ -1373,7 +1373,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.838Z",
+      "last_checked_at": "2026-07-01T17:13:01.290Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784229",
       "error": null
     },
@@ -1384,7 +1384,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.785Z",
+      "last_checked_at": "2026-07-01T17:13:01.291Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784264",
       "error": null
     },
@@ -1395,7 +1395,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.842Z",
+      "last_checked_at": "2026-07-01T17:13:01.272Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784266",
       "error": null
     },
@@ -1406,7 +1406,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.829Z",
+      "last_checked_at": "2026-07-01T17:13:01.244Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784269",
       "error": null
     },
@@ -1417,7 +1417,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.013Z",
+      "last_checked_at": "2026-07-01T17:13:01.599Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784272",
       "error": null
     },
@@ -1428,7 +1428,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.011Z",
+      "last_checked_at": "2026-07-01T17:13:01.590Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784274",
       "error": null
     },
@@ -1439,7 +1439,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.010Z",
+      "last_checked_at": "2026-07-01T17:13:01.634Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784276",
       "error": null
     },
@@ -1450,7 +1450,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.012Z",
+      "last_checked_at": "2026-07-01T17:13:01.593Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784277",
       "error": null
     },
@@ -1461,7 +1461,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.016Z",
+      "last_checked_at": "2026-07-01T17:13:01.587Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784280",
       "error": null
     },
@@ -1472,7 +1472,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.004Z",
+      "last_checked_at": "2026-07-01T17:13:01.607Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784284",
       "error": null
     },
@@ -1483,7 +1483,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.012Z",
+      "last_checked_at": "2026-07-01T17:13:01.644Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784332",
       "error": null
     },
@@ -1494,7 +1494,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:05.974Z",
+      "last_checked_at": "2026-07-01T17:13:01.587Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784340",
       "error": null
     },
@@ -1505,7 +1505,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.178Z",
+      "last_checked_at": "2026-07-01T17:13:02.044Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784344",
       "error": null
     },
@@ -1516,7 +1516,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.141Z",
+      "last_checked_at": "2026-07-01T17:13:01.944Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784349",
       "error": null
     },
@@ -1527,7 +1527,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.179Z",
+      "last_checked_at": "2026-07-01T17:13:02.055Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784350",
       "error": null
     },
@@ -1538,7 +1538,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.184Z",
+      "last_checked_at": "2026-07-01T17:13:02.239Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784413",
       "error": null
     },
@@ -1549,7 +1549,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.269Z",
+      "last_checked_at": "2026-07-01T17:13:02.310Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=784419",
       "error": null
     },
@@ -1560,7 +1560,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.183Z",
+      "last_checked_at": "2026-07-01T17:13:02.370Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=788015",
       "error": null
     },
@@ -1571,7 +1571,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-07-01T15:26:06.174Z",
+      "last_checked_at": "2026-07-01T17:13:01.986Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=gkniftyheads&template_id=904071",
       "error": null
     }
