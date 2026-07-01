@@ -56,6 +56,18 @@ function getStat(html, label) {
   return decodeHtml(found?.[1] || '');
 }
 
+function getImgSrc(html, selectorPattern) {
+  const img = html.match(new RegExp(`<img\\b(?=[^>]*${selectorPattern})[^>]*\\bsrc="([^"]+)"[^>]*>`, 'i'));
+  return decodeHtml(img?.[1] || '');
+}
+
+function getTemplateImageUrl(html) {
+  return getImgSrc(html, 'class="[^"]*\\bwiki-hero-image\\b')
+    || getImgSrc(html, 'class="[^"]*\\bnft-template-image\\b')
+    || getImgSrc(html, 'src="[^"]*ipfs')
+    || getImgSrc(html, 'class="[^"]*\\bnft-image\\b');
+}
+
 function readTemplatePage(row, root = ROOT) {
   const filePath = path.join(root, row.url.replace(/^\//, ''));
   if (!fs.existsSync(filePath)) return {};
@@ -64,6 +76,7 @@ function readTemplatePage(row, root = ROOT) {
     rarity_trait: getAttr(html, 'rarity') || 'Not supplied',
     variation_trait: getAttr(html, 'variation') || 'Not supplied',
     description: getAttr(html, 'DESCRIPTION'),
+    image_url: getTemplateImageUrl(html),
     schema: getStat(html, 'Schema') || row.schema || '',
   };
 }
@@ -220,6 +233,16 @@ function rowLinks(row) {
   return `<a href="${esc(row.url)}">Wiki</a> <a href="${esc(row.atomicassets_url)}" target="_blank" rel="noopener noreferrer">AtomicAssets</a> <a href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>`;
 }
 
+function nftCard(row) {
+  const image = row.image_url
+    ? `<a class="gk-rarity-nft-image-link" href="${esc(row.url)}"><img class="gk-rarity-nft-image" src="${esc(row.image_url)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-rarity-nft-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  return `<div class="gk-rarity-nft-card">
+      ${image}
+      <a class="gk-rarity-nft-title" href="${esc(row.url)}">${esc(row.title)}</a>
+    </div>`;
+}
+
 function rankedRow(row) {
   const filters = [
     'ranked',
@@ -230,7 +253,7 @@ function rankedRow(row) {
   return `<tr data-rarity-filter="${filters}">
     <td>${row.rank}</td>
     <td><span class="rarity-band rarity-band--${esc(row.band.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}">${esc(row.band)}</span></td>
-    <td><a href="${esc(row.url)}">${esc(row.title)}</a></td>
+    <td class="gk-rarity-nft-cell">${nftCard(row)}</td>
     <td>${row.template_id}</td>
     <td>${row.live_supply}</td>
     <td>${row.issued_supply}</td>
@@ -246,7 +269,7 @@ function rankedRow(row) {
 
 function utilityRow(row) {
   return `<tr data-rarity-filter="${row.bucket === 'unissued' ? 'unissued' : 'utility-open-mint'}">
-    <td><a href="${esc(row.url)}">${esc(row.title)}</a></td>
+    <td class="gk-rarity-nft-cell">${nftCard(row)}</td>
     <td>${row.template_id}</td>
     <td>${row.issued_supply}</td>
     <td>${row.max_supply}</td>
