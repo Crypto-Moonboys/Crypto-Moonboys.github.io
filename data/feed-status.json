@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-02T06:54:13.205Z",
+  "generated_at": "2026-07-02T17:08:08.858Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -23,10 +23,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-02T06:53:20.227Z",
-      "last_successful_check": "2026-07-02T06:53:20.227Z",
-      "last_successful_update": "2026-07-02T06:53:19.980Z",
-      "source_updated_at": "2026-07-02T06:53:19.980Z",
+      "checked_at": "2026-07-02T17:07:16.333Z",
+      "last_successful_check": "2026-07-02T17:07:16.333Z",
+      "last_successful_update": "2026-07-02T17:07:15.971Z",
+      "source_updated_at": "2026-07-02T17:07:15.971Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -34,7 +34,7 @@
       "endpoint_status": {},
       "notes": [
         "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22988 asset-state records across 143 templates.",
+        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22989 asset-state records across 143 templates.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.",
@@ -71,10 +71,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-02T06:53:25.089Z",
-      "last_successful_check": "2026-07-02T06:53:25.089Z",
-      "last_successful_update": "2026-07-02T06:53:25.089Z",
-      "source_updated_at": "2026-07-02T06:53:25.089Z",
+      "checked_at": "2026-07-02T17:07:20.705Z",
+      "last_successful_check": "2026-07-02T17:07:20.705Z",
+      "last_successful_update": "2026-07-02T17:07:20.705Z",
+      "source_updated_at": "2026-07-02T17:07:20.705Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -102,10 +102,10 @@
       "status": "degraded",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-02T06:54:11.281Z",
-      "last_successful_check": "2026-07-02T06:54:11.281Z",
-      "last_successful_update": "2026-07-02T06:54:10.977Z",
-      "source_updated_at": "2026-07-02T06:54:10.977Z",
+      "checked_at": "2026-07-02T17:08:06.936Z",
+      "last_successful_check": "2026-07-02T17:08:06.936Z",
+      "last_successful_update": "2026-07-02T17:08:06.609Z",
+      "source_updated_at": "2026-07-02T17:08:06.609Z",
       "source_age_minutes": 0,
       "last_error": "bubbles_lite: Feed fetch timeout after 15000ms",
       "fallback_behavior": "keep static bootstrap and mark feed stale/error if Worker data is unavailable",
@@ -121,7 +121,7 @@
             "source": "moonboys-api/waxonedge",
             "updated_at": null,
             "data": {
-              "generated_at": "2026-07-02T06:54:10.977Z",
+              "generated_at": "2026-07-02T17:08:06.609Z",
               "runtime_config": {
                 "free_safe_mode": false,
                 "active_candle_backfill_pair_limit": 24,
@@ -570,7 +570,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-02T06:53:55.344Z"
+          "checked_at": "2026-07-02T17:07:50.959Z"
         },
         "bubbles_lite": {
           "ok": false,
@@ -581,7 +581,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-02T06:53:25.090Z"
+          "checked_at": "2026-07-02T17:07:20.706Z"
         },
         "static_bootstrap": {
           "ok": true,
@@ -11394,13 +11394,13 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-07-02T06:54:11.209Z"
+          "checked_at": "2026-07-02T17:08:06.783Z"
         }
       },
       "notes": [
         "Uses existing WaxOnEdge Worker endpoints; scheduled feed status is advisory and preserves live-primary runtime behavior.",
         "bubbles_lite summary: {}",
-        "health summary: {\"generated_at\":\"2026-07-02T06:54:10.977Z\",\"updated_at\":null,\"source\":\"moonboys-api/waxonedge\",\"token_count\":null,\"pair_count\":null}",
+        "health summary: {\"generated_at\":\"2026-07-02T17:08:06.609Z\",\"updated_at\":null,\"source\":\"moonboys-api/waxonedge\",\"token_count\":null,\"pair_count\":null}",
         "Static bootstrap or previous live bubbles remain available as fallback."
       ]
     },
@@ -11417,7 +11417,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-02T06:54:11.586Z",
+      "checked_at": "2026-07-02T17:08:07.240Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -11435,7 +11435,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/waxcash-analytics failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-02T06:54:11.285Z"
+          "checked_at": "2026-07-02T17:08:06.940Z"
         }
       },
       "notes": [
@@ -11459,7 +11459,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-02T06:54:13.204Z",
+      "checked_at": "2026-07-02T17:08:08.857Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -11477,7 +11477,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-02T06:54:11.587Z",
+          "checked_at": "2026-07-02T17:08:07.242Z",
           "key": "token_page"
         },
         "pairs_liquidity": {
@@ -11489,7 +11489,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=liquidity failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-02T06:54:12.126Z",
+          "checked_at": "2026-07-02T17:08:07.779Z",
           "key": "pairs_liquidity"
         },
         "pairs_volume24": {
@@ -11501,7 +11501,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=volume24 failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-02T06:54:12.669Z",
+          "checked_at": "2026-07-02T17:08:08.318Z",
           "key": "pairs_volume24"
         }
       },
