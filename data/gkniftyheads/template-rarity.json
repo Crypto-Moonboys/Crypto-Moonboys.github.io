@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-01T23:54:23.464Z",
+  "generated_at": "2026-07-02T00:30:00.265Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -46,7 +46,7 @@
     "burned_assets_tracked": 0,
     "surviving_mint_ranks_tracked": 22988,
     "asset_state_last_checked_at": "2026-07-01T22:16:39.301Z",
-    "last_scan_time": "2026-07-01T23:54:23.464Z",
+    "last_scan_time": "2026-07-02T00:30:00.265Z",
     "scan_block": null,
     "live_data_status": "atomicassets live asset count"
   },

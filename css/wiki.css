@@ -2981,6 +2981,12 @@ body.score-updated .lb-row.selected {
 .gk-rarity-ranking {
   display: grid;
   gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.gk-rarity-ranking > * {
+  max-width: 100%;
+  min-width: 0;
 }
 
 .gk-command-header {
@@ -3011,9 +3017,12 @@ body.score-updated .lb-row.selected {
 }
 
 .gk-command-deck {
+  align-items: start;
   display: grid;
-  gap: 16px;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .85fr);
+  gap: 14px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, .78fr);
+  max-width: 100%;
+  min-width: 0;
 }
 
 .gk-command-featured-card,
@@ -3024,14 +3033,16 @@ body.score-updated .lb-row.selected {
     linear-gradient(135deg, rgba(5, 17, 31, .96), rgba(31, 12, 41, .9)),
     radial-gradient(circle at top left, rgba(255, 121, 220, .22), transparent 34%);
   box-shadow: 0 0 24px rgba(73, 229, 255, .12), inset 0 0 0 1px rgba(255, 255, 255, .03);
+  min-width: 0;
 }
 
 .gk-command-featured-card {
+  align-items: start;
   display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(210px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
   overflow: hidden;
-  padding: 16px;
+  padding: 14px;
   position: relative;
 }
 
@@ -3054,17 +3065,25 @@ body.score-updated .lb-row.selected {
 
 .gk-command-featured-media {
   align-self: start;
+  max-width: 320px;
+  min-width: 0;
+  width: 100%;
+}
+
+.gk-command-featured-image-link {
+  display: block;
+  line-height: 0;
 }
 
 .gk-command-featured-image,
 .gk-command-featured-image-placeholder {
-  aspect-ratio: 1 / 1;
   background: rgba(3, 9, 18, .9);
   border: 1px solid rgba(255, 121, 220, .42);
   border-radius: 8px;
   box-shadow: 0 0 24px rgba(255, 121, 220, .12);
   display: block;
   height: auto;
+  max-height: 340px;
   object-fit: contain;
   width: 100%;
 }
@@ -3079,46 +3098,109 @@ body.score-updated .lb-row.selected {
 
 .gk-command-featured-copy {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 .gk-command-featured-copy h3 {
   color: #f9fdff;
-  font-size: 1.8rem;
-  line-height: 1.08;
+  font-size: 1.35rem;
+  line-height: 1.18;
   margin: 0;
   overflow-wrap: anywhere;
 }
 
 .gk-command-badges,
 .gk-command-featured-metrics,
-.gk-rarity-card-links,
+.gk-command-links,
 .gk-top-ranked-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+}
+
+.gk-command-badge {
+  align-items: center;
+  border: 1px solid rgba(112, 240, 255, .32);
+  border-radius: 999px;
+  background: rgba(4, 14, 26, .72);
+  color: #eafcff;
+  display: inline-flex;
+  font-size: .66rem;
+  font-weight: 900;
+  justify-content: center;
+  line-height: 1;
+  min-height: 24px;
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+
+.gk-command-badge--rank {
+  border-color: rgba(255, 121, 220, .54);
+  color: #ffd8f5;
+}
+
+.gk-command-badge--legendary {
+  border-color: rgba(255, 218, 108, .72);
+  background: rgba(255, 196, 72, .16);
+  color: #ffeaa0;
+}
+
+.gk-command-badge--ultra-rare {
+  border-color: rgba(213, 141, 255, .62);
+  color: #efd7ff;
+}
+
+.gk-command-badge--rare {
+  border-color: rgba(99, 201, 255, .62);
+  color: #d8f4ff;
+}
+
+.gk-command-badge--uncommon {
+  border-color: rgba(91, 255, 181, .52);
+  color: #dcffe9;
+}
+
+.gk-command-badge--common {
+  border-color: rgba(180, 194, 212, .36);
+  color: #edf4ff;
+}
+
+.gk-command-badge--mini {
+  font-size: .6rem;
+  min-height: 20px;
+  padding: 4px 6px;
 }
 
 .gk-command-featured-metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(90px, 1fr));
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(72px, 1fr));
+  min-width: 0;
 }
 
-.gk-command-featured-metrics span {
+.gk-command-metric {
   border: 1px solid rgba(112, 240, 255, .24);
   border-radius: 8px;
   background: rgba(4, 14, 26, .74);
   color: rgba(234, 246, 255, .76);
   display: grid;
   font-size: .72rem;
-  gap: 3px;
-  padding: 8px;
+  gap: 2px;
+  min-height: 54px;
+  padding: 7px 8px;
 }
 
-.gk-command-featured-metrics strong {
+.gk-command-metric strong {
   color: #fff8c8;
-  font-size: 1rem;
+  font-size: .92rem;
+  line-height: 1.1;
+}
+
+.gk-command-metric small {
+  color: rgba(234, 246, 255, .72);
+  font-size: .62rem;
+  line-height: 1.25;
 }
 
 .gk-command-traits {
@@ -3129,8 +3211,11 @@ body.score-updated .lb-row.selected {
 }
 
 .gk-command-traits div {
+  background: rgba(4, 14, 26, .46);
+  border: 1px solid rgba(112, 240, 255, .18);
   border-left: 2px solid rgba(255, 121, 220, .58);
-  padding-left: 10px;
+  border-radius: 8px;
+  padding: 7px 9px;
 }
 
 .gk-command-traits dt {
@@ -3142,29 +3227,35 @@ body.score-updated .lb-row.selected {
 
 .gk-command-traits dd {
   color: #eafcff;
+  font-size: .78rem;
+  line-height: 1.35;
   margin: 3px 0 0;
 }
 
-.gk-rarity-card-links a {
+.gk-command-links a {
   border: 1px solid rgba(112, 240, 255, .28);
   border-radius: 999px;
   color: #dffaff;
-  font-size: .72rem;
+  font-size: .66rem;
   font-weight: 800;
-  padding: 6px 9px;
+  line-height: 1;
+  min-height: 26px;
+  padding: 6px 8px;
   text-decoration: none;
 }
 
-.gk-rarity-card-links a:hover,
-.gk-rarity-card-links a:focus-visible {
+.gk-command-links a:hover,
+.gk-command-links a:focus-visible {
   border-color: rgba(255, 234, 128, .72);
   color: #fff4b8;
 }
 
 .gk-top-ranked-panel {
   display: grid;
-  gap: 12px;
-  padding: 14px;
+  gap: 9px;
+  max-width: 100%;
+  min-width: 0;
+  padding: 12px;
 }
 
 .gk-top-ranked-heading {
@@ -3187,7 +3278,7 @@ body.score-updated .lb-row.selected {
 
 .gk-top-ranked-list {
   display: grid;
-  gap: 10px;
+  gap: 7px;
 }
 
 .gk-top-ranked-card {
@@ -3196,10 +3287,11 @@ body.score-updated .lb-row.selected {
   border-radius: 8px;
   background: rgba(3, 12, 23, .72);
   display: grid;
-  gap: 10px;
-  grid-template-columns: 40px 64px minmax(0, 1fr);
-  min-height: 86px;
-  padding: 8px;
+  gap: 8px;
+  grid-template-columns: 32px 52px minmax(0, 1fr);
+  min-height: 68px;
+  min-width: 0;
+  padding: 7px;
 }
 
 .gk-top-ranked-rank {
@@ -3217,7 +3309,7 @@ body.score-updated .lb-row.selected {
   border-radius: 6px;
   display: block;
   object-fit: contain;
-  width: 64px;
+  width: 52px;
 }
 
 .gk-top-ranked-thumb-placeholder {
@@ -3231,12 +3323,13 @@ body.score-updated .lb-row.selected {
 
 .gk-top-ranked-copy {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
 .gk-top-ranked-title {
   color: #f4fdff;
+  font-size: .76rem;
   font-weight: 800;
   line-height: 1.25;
   overflow-wrap: anywhere;
@@ -3244,7 +3337,18 @@ body.score-updated .lb-row.selected {
 
 .gk-top-ranked-meta {
   color: rgba(234, 246, 255, .7);
-  font-size: .72rem;
+  font-size: .64rem;
+  gap: 5px;
+}
+
+.gk-top-ranked-card .gk-command-links {
+  gap: 4px;
+}
+
+.gk-top-ranked-card .gk-command-links a {
+  font-size: .58rem;
+  min-height: 20px;
+  padding: 4px 6px;
 }
 
 .gk-rarity-audit {
@@ -3256,6 +3360,15 @@ body.score-updated .lb-row.selected {
   color: #eafcff;
   cursor: pointer;
   font-weight: 900;
+}
+
+.gk-rarity-audit:not([open]) .gk-rarity-table-wrap {
+  display: none;
+}
+
+.gk-rarity-utility details:not([open]) .wiki-table-wrap,
+.gk-rarity-unissued details:not([open]) .wiki-table-wrap {
+  display: none;
 }
 
 .gk-rarity-secondary-stats {
@@ -3328,6 +3441,7 @@ body.score-updated .lb-row.selected {
 
 .gk-rarity-table-wrap,
 .gk-rarity-ranking .wiki-table-wrap {
+  contain: inline-size;
   max-width: 100%;
   overflow-x: auto;
 }
@@ -3561,6 +3675,10 @@ body.score-updated .lb-row.selected {
 }
 
 @media (max-width: 720px) {
+  .gk-rarity-ranking {
+    overflow-x: hidden;
+  }
+
   .gk-command-header {
     display: grid;
   }
@@ -3572,27 +3690,60 @@ body.score-updated .lb-row.selected {
   .gk-command-deck,
   .gk-command-featured-card {
     grid-template-columns: 1fr;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .gk-command-featured-media {
+    justify-self: center;
+    max-width: min(320px, 100%);
   }
 
   .gk-command-featured-copy h3 {
-    font-size: 1.45rem;
+    font-size: 1.18rem;
   }
 
-  .gk-command-featured-metrics,
+  .gk-command-featured-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .gk-command-traits {
     grid-template-columns: 1fr;
   }
 
   .gk-top-ranked-card {
-    grid-template-columns: 34px 56px minmax(0, 1fr);
+    grid-template-columns: 30px 48px minmax(0, 1fr);
   }
 
   .gk-top-ranked-thumb,
   .gk-top-ranked-thumb-placeholder {
-    width: 56px;
+    width: 48px;
+  }
+
+  .gk-asset-version-table {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .nft-collection-article .nft-schema-table {
+    min-width: 0;
+    table-layout: auto;
+    width: 100%;
   }
 
   .gk-rarity-filters button {
     flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 440px) {
+  .gk-command-featured-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .gk-command-links a {
+    flex: 1 1 auto;
+    text-align: center;
   }
 }
