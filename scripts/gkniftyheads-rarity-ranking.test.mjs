@@ -244,7 +244,7 @@ assert.match(sync.burn_tracking_status, /baseline pending/i, 'first burn scan mu
 
 assert.match(collectionHtml, /GKniftyHEADS Rarity Tracker/);
 assert.match(collectionHtml, /Best Exact NFT Versions/, 'page should render the scored exact NFT version section');
-assert.match(collectionHtml, /This secondary view scores exact live NFTs using template score, original mint number, and surviving mint rank/, 'page should explain the two ranking layers');
+assert.match(collectionHtml, /Ranks exact live NFTs, not just templates/, 'page should explain the two ranking layers');
 assert.match(collectionHtml, /separate AtomicAssets template IDs may share the same artwork\/name/, 'page copy should make clear this ranks templates, not unique artwork');
 assert.match(collectionHtml, /Original mint numbers never change/, 'page must explain that original mint numbers are permanent');
 assert.match(collectionHtml, /surviving mint rank/, 'page must explain surviving mint rank separately from original mint numbers');
