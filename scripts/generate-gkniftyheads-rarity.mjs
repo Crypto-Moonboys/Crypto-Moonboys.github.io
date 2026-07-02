@@ -1124,7 +1124,7 @@ function rowLinks(row) {
 }
 
 function actionLinks(row) {
-  return `<div class="gk-rarity-card-links">
+  return `<div class="gk-command-links">
       <a href="${esc(row.url)}">Wiki</a>
       <a href="${esc(row.atomicassets_url)}" target="_blank" rel="noopener noreferrer">AtomicAssets</a>
       <a href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>
@@ -1166,7 +1166,7 @@ function rarityFilterTokens(row) {
 }
 
 function deckMetric(label, value) {
-  return `<span><strong>${esc(value)}</strong>${esc(label)}</span>`;
+  return `<span class="gk-command-metric"><strong>${esc(value)}</strong><small>${esc(label)}</small></span>`;
 }
 
 function featuredCard(row) {
@@ -1181,9 +1181,9 @@ function featuredCard(row) {
         <div class="gk-command-eyebrow">Rank #${row.rank} template</div>
         <h3>${esc(row.title)}</h3>
         <div class="gk-command-badges">
-          <span class="gk-rarity-rank">Rank #${row.rank}</span>
-          <span class="rarity-band rarity-band--${bandClass(row.band)}">${esc(row.band)}</span>
-          <span class="gk-rarity-status-badge">Template ${row.template_id}</span>
+          <span class="gk-command-badge gk-command-badge--rank">Rank #${row.rank}</span>
+          <span class="gk-command-badge gk-command-badge--${bandClass(row.band)}">${esc(row.band)}</span>
+          <span class="gk-command-badge">Template ${row.template_id}</span>
         </div>
         <div class="gk-command-featured-metrics">
           ${deckMetric('Live supply', row.live_supply)}
@@ -1211,11 +1211,73 @@ function topRankedCard(row) {
       <div class="gk-top-ranked-copy">
         <a class="gk-top-ranked-title" href="${esc(row.url)}">${esc(row.title)}</a>
         <div class="gk-top-ranked-meta">
-          <span class="rarity-band rarity-band--${bandClass(row.band)}">${esc(row.band)}</span>
+          <span class="gk-command-badge gk-command-badge--mini gk-command-badge--${bandClass(row.band)}">${esc(row.band)}</span>
           <span>${row.live_supply}/${row.issued_supply} live/issued</span>
           <span>${row.final_score.toFixed(2)} score</span>
         </div>
         ${actionLinks(row)}
+      </div>
+    </article>`;
+}
+
+function assetActionLinks(row) {
+  const assetApi = row.asset_id ? `https://wax.api.atomicassets.io/atomicassets/v1/assets/${row.asset_id}` : row.atomicassets_url;
+  const assetHub = row.asset_id ? `https://wax.atomichub.io/explorer/asset/${row.asset_id}` : row.atomichub_url;
+  return `<div class="gk-command-links">
+      <a href="${esc(row.url)}">Wiki</a>
+      <a href="${esc(assetApi)}" target="_blank" rel="noopener noreferrer">AtomicAssets</a>
+      <a href="${esc(assetHub)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>
+    </div>`;
+}
+
+function globalRarityHeroCard(row) {
+  if (!row) return '';
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-command-featured-image-link" href="${esc(row.url)}"><img class="gk-command-featured-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-command-featured-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  return `<article class="gk-command-featured-card gk-global-featured-card">
+      <div class="gk-command-featured-media">${image}</div>
+      <div class="gk-command-featured-copy">
+        <div class="gk-command-eyebrow">Global Rank #${row.asset_rank} exact NFT</div>
+        <h3>${esc(row.title)}</h3>
+        <div class="gk-command-badges">
+          <span class="gk-command-badge gk-command-badge--rank">Global #${row.asset_rank}</span>
+          <span class="gk-command-badge gk-command-badge--${bandClass(row.rarity_band)}">${esc(row.rarity_band || 'Ranked')}</span>
+          <span class="gk-command-badge">Asset ${esc(row.asset_id)}</span>
+        </div>
+        <div class="gk-command-featured-metrics">
+          ${deckMetric('Global score', row.asset_final_score?.toFixed ? row.asset_final_score.toFixed(2) : row.asset_final_score)}
+          ${deckMetric('Template rank', row.template_rank ?? 'Missing')}
+          ${deckMetric('Original mint', row.original_mint_number ?? 'Missing')}
+          ${deckMetric('Surviving mint rank', row.surviving_mint_rank ?? 'Missing')}
+        </div>
+        <dl class="gk-command-traits">
+          <div><dt>Template ID</dt><dd>${row.template_id}</dd></div>
+          <div><dt>Live supply</dt><dd>${row.live_supply}</dd></div>
+        </dl>
+        ${assetActionLinks(row)}
+      </div>
+    </article>`;
+}
+
+function globalRankedCard(row) {
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-top-ranked-thumb-link" href="${esc(row.url)}"><img class="gk-top-ranked-thumb" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-top-ranked-thumb-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  const score = row.asset_final_score?.toFixed ? row.asset_final_score.toFixed(2) : row.asset_final_score;
+  return `<article class="gk-top-ranked-card">
+      <div class="gk-top-ranked-rank">#${row.asset_rank}</div>
+      ${image}
+      <div class="gk-top-ranked-copy">
+        <a class="gk-top-ranked-title" href="${esc(row.url)}">${esc(row.title)}</a>
+        <div class="gk-top-ranked-meta">
+          <span class="gk-command-badge gk-command-badge--mini gk-command-badge--${bandClass(row.rarity_band)}">${esc(row.rarity_band || 'Ranked')}</span>
+          <span>${score} score</span>
+          <span>mint ${row.original_mint_number ?? 'missing'}</span>
+        </div>
+        ${assetActionLinks(row)}
       </div>
     </article>`;
 }
@@ -1335,6 +1397,8 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
     : '<strong>Asset state cache:</strong> pending first successful asset delta scan.';
   const featured = model.ranked[0] || null;
   const topRanked = model.ranked.slice(1, 9);
+  const globalFeatured = assetPreview[0] || null;
+  const globalTopRanked = assetPreview.slice(1, 9);
 
   return `${RARITY_BEGIN}
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
@@ -1384,15 +1448,32 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
           </section>
           <section class="wiki-section gk-asset-version-ranking">
             <h3>Best Exact NFT Versions</h3>
-            <p class="lore-paragraph">This secondary view scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers stay permanent; surviving mint rank can change as live/unburned assets change.</p>
-            <div class="wiki-table-wrap">
-              <table class="wiki-table gk-asset-version-table">
-                <thead>
-                  <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
-                </thead>
-                <tbody>${assetPreview.length ? assetPreview.map(assetVersionRow).join('\n                ') : '<tr><td colspan="8">Pending asset-state sync.</td></tr>'}</tbody>
-              </table>
-            </div>
+            <p class="gk-command-kicker">Global Rarity / Exact NFT Ranking</p>
+            <p class="lore-paragraph">This secondary view scores exact live NFTs using template score, original mint number, and surviving mint rank. Global rarity scores exact live NFTs using collection template rarity, permanent original mint number, and surviving mint rank. Original mint numbers stay permanent; surviving mint rank can change as live/unburned assets change.</p>
+            <section class="gk-command-deck gk-global-rarity-deck" aria-label="Global rarity cards">
+              ${globalRarityHeroCard(globalFeatured)}
+              <aside class="gk-top-ranked-panel" aria-label="Top Global Ranked NFTs">
+                <div class="gk-top-ranked-heading">
+                  <h3>Top Global Ranked NFTs</h3>
+                  <span>${globalTopRanked.length} shown</span>
+                </div>
+                <div class="gk-top-ranked-list">
+                  ${globalTopRanked.length ? globalTopRanked.map(globalRankedCard).join('\n                ') : '<p class="lore-paragraph">Pending asset-state sync.</p>'}
+                </div>
+              </aside>
+            </section>
+            <details class="wiki-section gk-rarity-audit gk-global-rarity-audit">
+              <summary>Full Global Rarity Audit Table</summary>
+              <p class="lore-paragraph">Power-user view for exact NFT scoring, asset IDs, template ranks, original mint numbers, surviving mint ranks, and live supply.</p>
+              <div class="wiki-table-wrap">
+                <table class="wiki-table gk-asset-version-table">
+                  <thead>
+                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
+                  </thead>
+                  <tbody>${assetPreview.length ? assetPreview.map(assetVersionRow).join('\n                ') : '<tr><td colspan="8">Pending asset-state sync.</td></tr>'}</tbody>
+                </table>
+              </div>
+            </details>
             ${assetVersionRanking.length > assetPreview.length ? '<details class="developer-details gk-asset-version-full"><summary>Full Asset Version Ranking export</summary><p class="lore-paragraph">The complete Asset Version Ranking remains in JSON for bridge/API consumers.</p></details>' : ''}
           </section>
 
