@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-01T22:17:35.059Z",
+  "generated_at": "2026-07-02T06:53:24.575Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T22:17:30.371Z"
+      "checked_at": "2026-07-02T06:53:20.251Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T22:17:30.579Z"
+      "checked_at": "2026-07-02T06:53:20.386Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T22:17:32.616Z"
+      "checked_at": "2026-07-02T06:53:22.465Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-01T22:17:32.826Z"
+      "checked_at": "2026-07-02T06:53:22.590Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T22:17:33.536Z"
+      "checked_at": "2026-07-02T06:53:23.226Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T22:17:34.652Z"
+      "checked_at": "2026-07-02T06:53:24.294Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,7 +80,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-01T22:17:34.862Z"
+      "checked_at": "2026-07-02T06:53:24.420Z"
     }
   },
   "data": {
@@ -687,12 +687,6 @@
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
-        "date": "2026-06-02"
-      },
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
         "date": "2026-06-03"
       },
       {
@@ -862,6 +856,12 @@
         "sales": 0,
         "usdVolume": 0,
         "date": "2026-07-01"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-07-02"
       }
     ]
   },
