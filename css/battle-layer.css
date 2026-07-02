@@ -760,6 +760,66 @@ body.conflict-active .community-card {
   font-size: .76rem;
 }
 
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection {
+  grid-template-columns: minmax(260px, .9fr) minmax(300px, 1fr);
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media .battle-shell-inner {
+  display: grid;
+  gap: 8px;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media {
+  align-items: center;
+  background: rgba(3, 12, 23, .72);
+  border: 1px solid rgba(112, 240, 255, .18);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media img {
+  max-height: min(34vh, 300px) !important;
+  object-fit: contain;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions {
+  opacity: 1;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary {
+  border: 1px solid rgba(112, 240, 255, .22);
+  border-radius: 10px;
+  background: rgba(3, 12, 23, .72);
+  display: grid;
+  gap: 7px;
+  margin: 0 0 8px;
+  padding: 9px;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head span {
+  color: #fff8c8;
+  font-size: .74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head strong {
+  color: #eafcff;
+  font-size: .82rem;
+}
+
 .wiki-engagement-module .battle-deck.battle-engagement-deck .battle-shell--heat:not(:has(.battle-page-media)) {
   align-self: start;
 }
@@ -813,10 +873,17 @@ body.conflict-active .community-card {
   margin-top: 24px;
 }
 
+.nft-collection-article .wiki-hero + .wiki-engagement-module {
+  margin: 12px 0 14px;
+  max-width: min(100%, 1120px);
+  width: min(100%, 1120px);
+}
+
 @media (max-width: 860px) {
   .wiki-engagement-module .battle-deck.battle-engagement-deck,
   .nft-template-article + .wiki-engagement-module .battle-deck.battle-engagement-deck,
-  .nft-template-article .wiki-engagement-module .battle-deck.battle-engagement-deck {
+  .nft-template-article .wiki-engagement-module .battle-deck.battle-engagement-deck,
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection {
     grid-template-columns: 1fr;
   }
 }

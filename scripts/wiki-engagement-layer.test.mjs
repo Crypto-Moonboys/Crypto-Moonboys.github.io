@@ -43,6 +43,8 @@ check(!alcor.includes(WUF_GIF) && !rugPullWars.includes(WUF_GIF), 'Other wiki pa
 check(css.includes('.battle-page-media') && css.includes('max-height: 260px'), 'Battle Heat page media has responsive CSS');
 
 check(battleLayer.includes('<h3>Daily Missions</h3>') && battleLayer.includes('MISSION_DEFINITIONS'), 'Daily Missions render from mission definitions on wiki pages');
+check(battleLayer.includes('battle-engagement-deck--collection') && battleLayer.includes('buildCollectionMediaShell() + buildMissionHTML(pageId, engagement)'), 'NFT collection pages render collection art beside a Daily Missions card with embedded Battle Heat');
+check(css.includes('battle-engagement-deck--collection') && css.includes('battle-heat-summary') && css.includes('battle-shell--media') && css.includes('battle-page-media'), 'NFT collection engagement card styles keep art separate from the Battle Heat meter');
 check(battleLayer.includes("ensurePageLikeWidget(pageId)") && battleLayer.includes("className = 'page-like-widget'"), 'Page-like widget is auto-injected when missing');
 check(battleLayer.includes("'.citations-list li, .source-ref-list li'"), 'Citation votes inject into both citations-list and source-ref-list items');
 check(wuffi.includes('class="source-ref-list"'), 'WUF uses source-ref-list and is covered by citation injection');

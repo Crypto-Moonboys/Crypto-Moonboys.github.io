@@ -1241,6 +1241,23 @@ function collectionDeckNotes() {
     </div>`;
 }
 
+function rarityOverviewCards() {
+  return `<div class="gk-section-card-grid gk-rarity-overview-cards" aria-label="Rarity overview">
+            <div class="gk-info-card">
+              <span>Template rarity</span>
+              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets templates. Separate template IDs may share the same artwork or name.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Live supply first</span>
+              <p>Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Market neutral</span>
+              <p>Price, listings, trading volume, and marketplace floor data are not used. Utility/open-mint templates stay outside the main leaderboard.</p>
+            </div>
+          </div>`;
+}
+
 function assetActionLinks(row) {
   const assetApi = row.asset_id ? `https://wax.api.atomicassets.io/atomicassets/v1/assets/${row.asset_id}` : row.atomicassets_url;
   const assetHub = row.asset_id ? `https://wax.atomichub.io/explorer/asset/${row.asset_id}` : row.atomichub_url;
@@ -1445,7 +1462,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             </div>
             <span class="feed-status-badge" data-feed-status-id="gkniftyheads_rarity">Rarity snapshot active</span>
           </div>
-          <p class="lore-paragraph">A collector-facing tracker for GKniftyHEADS AtomicAssets templates and exact NFT versions. This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name. Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          ${rarityOverviewCards()}
           <div class="wiki-stat-grid gk-rarity-stats gk-command-stat-strip" data-rarity-stat-grid="true">
             ${statCard('Templates scanned', stats.templates_scanned)}
             ${statCard('Ranked limited templates', stats.ranked_limited_templates)}
@@ -1482,7 +1499,24 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
 
           <section class="wiki-section gk-rarity-method">
             <h3>How rarity works</h3>
-            <p class="lore-paragraph">Template scores use the adaptive rarity formula: 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available. Original mint numbers never change. Burns do not renumber NFTs. Surviving mint rank is tracked separately among currently live/unburned NFTs. Price, floor, listings, volume, sales, and market cap are excluded. <a href="/docs/nft-rarity-methodology.md">Read the full methodology</a>.</p>
+            <div class="gk-section-card-grid gk-rarity-method-cards" aria-label="Rarity methodology notes">
+              <div class="gk-info-card">
+                <span>Template formula</span>
+                <p>Template scores use 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Mint rules</span>
+                <p>Original mint numbers never change. Burns do not renumber NFTs; surviving mint rank is tracked separately among currently live/unburned NFTs.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Market excluded</span>
+                <p>Price, floor, listings, volume, sales, and market cap are excluded from the rarity score.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Methodology</span>
+                <p><a href="/docs/nft-rarity-methodology.md">Read the full methodology</a> for the score model and audit assumptions.</p>
+              </div>
+            </div>
           </section>
           <section class="wiki-section gk-asset-version-ranking">
             <p class="gk-command-kicker">Global Rarity / Exact NFT Ranking</p>
