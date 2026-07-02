@@ -290,6 +290,7 @@ assert.match(clientJs, /gk-rarity-table tbody \[data-rarity-filter\]/, 'client f
 assert.doesNotMatch(clientJs, /querySelectorAll\('\[data-rarity-filter\]'\)/, 'client must not collect side-table rows for the default all-ranked filter');
 assert.match(clientJs, /focusingUtility/, 'client should focus the utility side section when that filter is clicked');
 assert.match(clientJs, /focusingUnissued/, 'client should focus the unissued side section when that filter is clicked');
+assert.match(clientJs, /matchingRankedCards\.length === 0/, 'client should hide the command deck when an active ranked filter has no matching cards');
 
 assert.ok(ranked.every((row) => row.url.startsWith('/wiki/gkniftyheads-') && row.url.endsWith('.html')), 'ranked rows should link to local template pages');
 assert.ok(allTemplates.every((row) => row.atomicassets_url.includes('wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/')), 'AtomicAssets template links must be preserved');

@@ -2983,6 +2983,285 @@ body.score-updated .lb-row.selected {
   gap: 18px;
 }
 
+.gk-command-header {
+  align-items: start;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.gk-command-kicker,
+.gk-command-eyebrow {
+  color: #ff79dc;
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.gk-command-stat-strip {
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+}
+
+.gk-command-stat-strip .wiki-stat {
+  background: linear-gradient(135deg, rgba(8, 26, 42, .94), rgba(28, 13, 40, .82));
+  border-color: rgba(100, 241, 255, .38);
+  box-shadow: 0 0 0 1px rgba(255, 121, 220, .08), 0 14px 36px rgba(0, 0, 0, .22);
+}
+
+.gk-command-deck {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .85fr);
+}
+
+.gk-command-featured-card,
+.gk-top-ranked-panel {
+  border: 1px solid rgba(100, 241, 255, .38);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(5, 17, 31, .96), rgba(31, 12, 41, .9)),
+    radial-gradient(circle at top left, rgba(255, 121, 220, .22), transparent 34%);
+  box-shadow: 0 0 24px rgba(73, 229, 255, .12), inset 0 0 0 1px rgba(255, 255, 255, .03);
+}
+
+.gk-command-featured-card {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(210px, 300px) minmax(0, 1fr);
+  overflow: hidden;
+  padding: 16px;
+  position: relative;
+}
+
+.gk-command-featured-card::before,
+.gk-top-ranked-panel::before {
+  background: repeating-linear-gradient(90deg, rgba(100, 241, 255, .18) 0 1px, transparent 1px 8px);
+  content: "";
+  display: block;
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gk-command-featured-card,
+.gk-top-ranked-panel {
+  position: relative;
+}
+
+.gk-command-featured-media {
+  align-self: start;
+}
+
+.gk-command-featured-image,
+.gk-command-featured-image-placeholder {
+  aspect-ratio: 1 / 1;
+  background: rgba(3, 9, 18, .9);
+  border: 1px solid rgba(255, 121, 220, .42);
+  border-radius: 8px;
+  box-shadow: 0 0 24px rgba(255, 121, 220, .12);
+  display: block;
+  height: auto;
+  object-fit: contain;
+  width: 100%;
+}
+
+.gk-command-featured-image-placeholder {
+  align-items: center;
+  color: rgba(230, 240, 255, .72);
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.gk-command-featured-copy {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.gk-command-featured-copy h3 {
+  color: #f9fdff;
+  font-size: 1.8rem;
+  line-height: 1.08;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.gk-command-badges,
+.gk-command-featured-metrics,
+.gk-rarity-card-links,
+.gk-top-ranked-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gk-command-featured-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, 1fr));
+}
+
+.gk-command-featured-metrics span {
+  border: 1px solid rgba(112, 240, 255, .24);
+  border-radius: 8px;
+  background: rgba(4, 14, 26, .74);
+  color: rgba(234, 246, 255, .76);
+  display: grid;
+  font-size: .72rem;
+  gap: 3px;
+  padding: 8px;
+}
+
+.gk-command-featured-metrics strong {
+  color: #fff8c8;
+  font-size: 1rem;
+}
+
+.gk-command-traits {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.gk-command-traits div {
+  border-left: 2px solid rgba(255, 121, 220, .58);
+  padding-left: 10px;
+}
+
+.gk-command-traits dt {
+  color: rgba(234, 246, 255, .64);
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.gk-command-traits dd {
+  color: #eafcff;
+  margin: 3px 0 0;
+}
+
+.gk-rarity-card-links a {
+  border: 1px solid rgba(112, 240, 255, .28);
+  border-radius: 999px;
+  color: #dffaff;
+  font-size: .72rem;
+  font-weight: 800;
+  padding: 6px 9px;
+  text-decoration: none;
+}
+
+.gk-rarity-card-links a:hover,
+.gk-rarity-card-links a:focus-visible {
+  border-color: rgba(255, 234, 128, .72);
+  color: #fff4b8;
+}
+
+.gk-top-ranked-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.gk-top-ranked-heading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.gk-top-ranked-heading h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.gk-top-ranked-heading span {
+  color: rgba(234, 246, 255, .68);
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.gk-top-ranked-list {
+  display: grid;
+  gap: 10px;
+}
+
+.gk-top-ranked-card {
+  align-items: center;
+  border: 1px solid rgba(112, 240, 255, .22);
+  border-radius: 8px;
+  background: rgba(3, 12, 23, .72);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 40px 64px minmax(0, 1fr);
+  min-height: 86px;
+  padding: 8px;
+}
+
+.gk-top-ranked-rank {
+  color: #ff79dc;
+  font-size: .9rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.gk-top-ranked-thumb,
+.gk-top-ranked-thumb-placeholder {
+  aspect-ratio: 1 / 1;
+  background: rgba(3, 9, 18, .9);
+  border: 1px solid rgba(112, 240, 255, .28);
+  border-radius: 6px;
+  display: block;
+  object-fit: contain;
+  width: 64px;
+}
+
+.gk-top-ranked-thumb-placeholder {
+  align-items: center;
+  color: rgba(230, 240, 255, .68);
+  display: flex;
+  font-size: .62rem;
+  justify-content: center;
+  text-align: center;
+}
+
+.gk-top-ranked-copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.gk-top-ranked-title {
+  color: #f4fdff;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.gk-top-ranked-meta {
+  color: rgba(234, 246, 255, .7);
+  font-size: .72rem;
+}
+
+.gk-rarity-audit {
+  border-color: rgba(112, 240, 255, .26);
+  background: rgba(4, 13, 23, .68);
+}
+
+.gk-rarity-audit summary {
+  color: #eafcff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.gk-rarity-secondary-stats {
+  margin-top: 12px;
+}
+
 .gk-collection-actions {
   display: flex;
   flex-wrap: wrap;
@@ -3282,6 +3561,37 @@ body.score-updated .lb-row.selected {
 }
 
 @media (max-width: 720px) {
+  .gk-command-header {
+    display: grid;
+  }
+
+  .gk-command-stat-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gk-command-deck,
+  .gk-command-featured-card {
+    grid-template-columns: 1fr;
+  }
+
+  .gk-command-featured-copy h3 {
+    font-size: 1.45rem;
+  }
+
+  .gk-command-featured-metrics,
+  .gk-command-traits {
+    grid-template-columns: 1fr;
+  }
+
+  .gk-top-ranked-card {
+    grid-template-columns: 34px 56px minmax(0, 1fr);
+  }
+
+  .gk-top-ranked-thumb,
+  .gk-top-ranked-thumb-placeholder {
+    width: 56px;
+  }
+
   .gk-rarity-filters button {
     flex: 1 1 auto;
   }
