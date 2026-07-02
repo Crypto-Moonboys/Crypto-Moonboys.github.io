@@ -3025,6 +3025,13 @@ body.score-updated .lb-row.selected {
   min-width: 0;
 }
 
+.gk-command-primary {
+  align-content: start;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
 .gk-command-featured-card,
 .gk-top-ranked-panel {
   border: 1px solid rgba(100, 241, 255, .38);
@@ -3250,6 +3257,58 @@ body.score-updated .lb-row.selected {
   color: #fff4b8;
 }
 
+.gk-command-support {
+  border: 1px solid rgba(112, 240, 255, .24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(4, 13, 25, .84), rgba(28, 10, 37, .66)),
+    repeating-linear-gradient(0deg, rgba(112, 240, 255, .04) 0 1px, transparent 1px 6px);
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.gk-command-note {
+  border-left: 2px solid rgba(255, 121, 220, .58);
+  display: grid;
+  gap: 3px;
+  padding-left: 10px;
+}
+
+.gk-command-note strong {
+  color: #fff8c8;
+  font-size: .76rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.gk-command-note span {
+  color: rgba(234, 246, 255, .76);
+  font-size: .74rem;
+  line-height: 1.35;
+}
+
+.gk-command-mini-stats {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 2px;
+}
+
+.gk-command-mini-stats .gk-command-metric {
+  min-height: 48px;
+}
+
+.gk-command-primary .gk-rarity-filters {
+  margin: 0;
+}
+
+.gk-command-primary .gk-rarity-filters button {
+  font-size: .72rem;
+  min-height: 34px;
+  padding: 8px 11px;
+}
+
 .gk-top-ranked-panel {
   display: grid;
   gap: 9px;
@@ -3379,7 +3438,62 @@ body.score-updated .lb-row.selected {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 14px 0 16px;
+  margin: 12px 0;
+}
+
+.gk-intro-card-grid,
+.gk-section-card-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 12px 0;
+}
+
+.gk-rarity-overview-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0;
+}
+
+.gk-info-card {
+  border: 1px solid rgba(112, 240, 255, .24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(5, 17, 31, .82), rgba(24, 11, 34, .68)),
+    repeating-linear-gradient(0deg, rgba(112, 240, 255, .035) 0 1px, transparent 1px 6px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .025);
+  min-width: 0;
+  padding: 12px;
+}
+
+.gk-info-card--primary {
+  border-color: rgba(255, 121, 220, .36);
+}
+
+.gk-info-card span {
+  color: #fff8c8;
+  display: block;
+  font-size: .76rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.gk-info-card p {
+  color: rgba(234, 246, 255, .78);
+  font-size: .84rem;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 74ch;
+}
+
+.gk-info-card a {
+  color: #00f5ff;
+}
+
+.gk-parent-hub-card {
+  margin: 10px 0 0;
+  max-width: 780px;
 }
 
 .wiki-action-button {
@@ -3687,6 +3801,12 @@ body.score-updated .lb-row.selected {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .gk-intro-card-grid,
+  .gk-section-card-grid,
+  .gk-rarity-overview-cards {
+    grid-template-columns: 1fr;
+  }
+
   .gk-command-deck,
   .gk-command-featured-card {
     grid-template-columns: 1fr;
@@ -3700,11 +3820,19 @@ body.score-updated .lb-row.selected {
     max-width: min(320px, 100%);
   }
 
+  .gk-command-primary {
+    gap: 10px;
+  }
+
   .gk-command-featured-copy h3 {
     font-size: 1.18rem;
   }
 
   .gk-command-featured-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gk-command-mini-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3739,6 +3867,10 @@ body.score-updated .lb-row.selected {
 
 @media (max-width: 440px) {
   .gk-command-featured-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .gk-command-mini-stats {
     grid-template-columns: 1fr;
   }
 

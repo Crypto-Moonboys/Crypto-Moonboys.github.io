@@ -75,7 +75,17 @@ function replaceOrThrow(html, pattern, replacement, label) {
 }
 
 function cleanHero(html) {
-  const cleanLead = `<p class="lead-paragraph">GKniftyHEADS is a WAX AtomicAssets collection hub for templates, collection actions, rarity context, and source-backed navigation into the wider Crypto Moonboys wiki.</p>
+  if (html.includes('class="gk-intro-card-grid"')) return html;
+  const cleanLead = `<div class="gk-intro-card-grid" aria-label="GKniftyHEADS collection overview">
+            <div class="gk-info-card gk-info-card--primary">
+              <span>Collection hub</span>
+              <p>GKniftyHEADS is a WAX AtomicAssets collection hub for templates, collection actions, rarity context, and source-backed navigation into the wider Crypto Moonboys wiki.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Collector flow</span>
+              <p>Use the action buttons for coupons, blends, and AtomicHub collection browsing; use the rarity deck below for template and exact NFT ranking.</p>
+            </div>
+          </div>
           <div class="wiki-action-row gk-collection-actions" aria-label="GKniftyHEADS collection actions">
             <a class="wiki-action-button" href="${esc(ATOMICHUB_FUN_COUPON_URL)}" target="_blank" rel="noopener noreferrer">Buy / View GKniftyHEADS Fun Coupons</a>
             <a class="wiki-action-button" href="${esc(NEFTY_BLEND_URL)}" target="_blank" rel="noopener noreferrer">Burn / Blend on NeftyBlocks</a>
@@ -83,9 +93,41 @@ function cleanHero(html) {
           </div>`;
   return replaceOrThrow(
     html,
-    /<p class="lead-paragraph">[\s\S]*?<\/p>\s*(?=<div class="category-tags)/,
+    /<p class="lead-paragraph">[\s\S]*?<\/p>\s*<div class="wiki-action-row gk-collection-actions"[\s\S]*?<\/div>\s*(?=<div class="category-tags)/,
     `${cleanLead}\n`,
     'raw hero intro'
+  );
+}
+
+function cleanHeroHubCard(html) {
+  if (html.includes('class="gk-info-card gk-parent-hub-card"')) return html;
+  return replaceOrThrow(
+    html,
+    /<p class="lore-paragraph">Parent hub: <a href="\/wiki\/gkniftyheads\.html">GKniftyHEADS<\/a>\. This generated collection index links the parent brand hub to the WAX AtomicAssets NFT template child pages\.<\/p>/,
+    `<div class="gk-info-card gk-parent-hub-card">
+          <span>Parent hub</span>
+          <p><a href="/wiki/gkniftyheads.html">GKniftyHEADS</a> anchors this generated collection index and connects the parent brand hub to WAX AtomicAssets NFT template child pages.</p>
+        </div>`,
+    'parent hub paragraph'
+  );
+}
+
+function cleanCollectionSummary(html) {
+  if (html.includes('aria-label="Collection summary notes"')) return html;
+  return replaceOrThrow(
+    html,
+    /<p class="lore-paragraph">This page is generated from WAX AtomicAssets API records\. Template pages are used as the main NFT wiki pages because templates describe the unique NFT designs\/types, while individual assets are the minted copies owned by wallets\.<\/p>/,
+    `<div class="gk-section-card-grid" aria-label="Collection summary notes">
+            <div class="gk-info-card">
+              <span>Generated index</span>
+              <p>This page is generated from WAX AtomicAssets API records, keeping collection totals and template navigation aligned with the source dataset.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Template-first wiki</span>
+              <p>Template pages act as the main NFT wiki pages because templates describe the unique designs and types; individual assets are wallet-owned minted copies.</p>
+            </div>
+          </div>`,
+    'collection summary paragraph'
   );
 }
 
@@ -108,6 +150,7 @@ function schemaRows(schemaTableHtml) {
 }
 
 function cleanSchemas(html) {
+  if (html.includes('class="wiki-section gk-schema-summary"')) return html;
   const start = html.search(/<section class="wiki-section">\s*<h2 id="schemas">Schemas<\/h2>/i);
   const end = html.search(/<section class="wiki-section">\s*<h2 id="sources">Sources<\/h2>/i);
   if (start === -1 || end === -1 || end <= start) {
@@ -177,6 +220,8 @@ function run() {
     .replace(/<span aria-current="page">gkniftyheads NFT Collection<\/span>/, '<span aria-current="page">GKniftyHEADS NFT Collection</span>')
     .replace(/<a href="\/categories\/gkniftyheads\.html">gkniftyheads<\/a>/, '<a href="/categories/gkniftyheads.html">GKniftyHEADS</a>');
   html = cleanHero(html);
+  html = cleanHeroHubCard(html);
+  html = cleanCollectionSummary(html);
   html = cleanSchemas(html);
   fs.writeFileSync(PAGE_PATH, html, 'utf8');
   console.log('Cleaned GKniftyHEADS collection page shell.');

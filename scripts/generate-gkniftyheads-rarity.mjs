@@ -1169,6 +1169,13 @@ function deckMetric(label, value) {
   return `<span class="gk-command-metric"><strong>${esc(value)}</strong><small>${esc(label)}</small></span>`;
 }
 
+function commandNote(title, copy) {
+  return `<div class="gk-command-note">
+      <strong>${esc(title)}</strong>
+      <span>${esc(copy)}</span>
+    </div>`;
+}
+
 function featuredCard(row) {
   if (!row) return '';
   const imageSrc = row.thumbnail_url || row.image_url;
@@ -1220,6 +1227,37 @@ function topRankedCard(row) {
     </article>`;
 }
 
+function collectionDeckNotes() {
+  return `<div class="gk-command-support" aria-label="Collection rarity guide">
+      ${commandNote('Collection rarity', 'Ranks scarce AtomicAssets templates against the rest of the GKniftyHEADS collection. Separate template IDs can share artwork or a name.')}
+      ${commandNote('Score inputs', 'Uses live supply scarcity, rarity trait exposure, variation exposure, and the pre-baseline missing/burned delta when available.')}
+      ${commandNote('Not counted', 'Market prices, listings, sales volume, floor data, and market cap are excluded from rarity scoring.')}
+      <div class="gk-command-mini-stats" aria-label="Collection rarity source stats">
+        ${deckMetric('Supply weight', '50%')}
+        ${deckMetric('Rarity trait', '25%')}
+        ${deckMetric('Variation trait', '20%')}
+        ${deckMetric('Missing/burned', '5%')}
+      </div>
+    </div>`;
+}
+
+function rarityOverviewCards() {
+  return `<div class="gk-section-card-grid gk-rarity-overview-cards" aria-label="Rarity overview">
+            <div class="gk-info-card">
+              <span>Template rarity</span>
+              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets templates. Separate template IDs may share the same artwork or name.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Live supply first</span>
+              <p>Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Market neutral</span>
+              <p>Price, listings, trading volume, and marketplace floor data are not used. Utility/open-mint templates stay outside the main leaderboard.</p>
+            </div>
+          </div>`;
+}
+
 function assetActionLinks(row) {
   const assetApi = row.asset_id ? `https://wax.api.atomicassets.io/atomicassets/v1/assets/${row.asset_id}` : row.atomicassets_url;
   const assetHub = row.asset_id ? `https://wax.atomichub.io/explorer/asset/${row.asset_id}` : row.atomichub_url;
@@ -1259,6 +1297,21 @@ function globalRarityHeroCard(row) {
         ${assetActionLinks(row)}
       </div>
     </article>`;
+}
+
+function globalDeckNotes(assetPreview) {
+  const scoredCount = assetPreview.length || 'Pending';
+  return `<div class="gk-command-support" aria-label="Global rarity guide">
+      ${commandNote('Global rarity', 'Ranks exact live NFTs, not just templates. It combines collection template rarity with each asset original mint and surviving mint position.')}
+      ${commandNote('Mint logic', 'Original mint number is permanent. Surviving mint rank can change when live/unburned asset counts change.')}
+      ${commandNote('Audit scope', 'The full table keeps asset IDs, template IDs, original mints, surviving mint ranks, live supply, and global score in one raw view.')}
+      <div class="gk-command-mini-stats" aria-label="Global rarity source stats">
+        ${deckMetric('Exact NFTs previewed', scoredCount)}
+        ${deckMetric('Formula layers', 3)}
+        ${deckMetric('Primary source', 'AtomicAssets')}
+        ${deckMetric('Market data', 'Excluded')}
+      </div>
+    </div>`;
 }
 
 function globalRankedCard(row) {
@@ -1409,7 +1462,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             </div>
             <span class="feed-status-badge" data-feed-status-id="gkniftyheads_rarity">Rarity snapshot active</span>
           </div>
-          <p class="lore-paragraph">A collector-facing tracker for GKniftyHEADS AtomicAssets templates and exact NFT versions. This is a template rarity ranking: separate AtomicAssets template IDs may share the same artwork/name. Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails. Price and marketplace listing/trading data are not used. Utility/open-mint templates are separated from the main rarity leaderboard.</p>
+          ${rarityOverviewCards()}
           <div class="wiki-stat-grid gk-rarity-stats gk-command-stat-strip" data-rarity-stat-grid="true">
             ${statCard('Templates scanned', stats.templates_scanned)}
             ${statCard('Ranked limited templates', stats.ranked_limited_templates)}
@@ -1420,7 +1473,13 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
           </div>
 
           <section class="gk-command-deck" aria-label="Featured GKniftyHEADS rarity cards">
-            ${featuredCard(featured)}
+            <div class="gk-command-primary">
+              ${featuredCard(featured)}
+              ${collectionDeckNotes()}
+              <div class="gk-rarity-filters" aria-label="Rarity filters">
+                ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n                ')}
+              </div>
+            </div>
             <aside class="gk-top-ranked-panel" aria-label="Top Ranked Templates">
               <div class="gk-top-ranked-heading">
                 <h3>Top Ranked Templates</h3>
@@ -1432,10 +1491,6 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             </aside>
           </section>
 
-          <div class="gk-rarity-filters" aria-label="Rarity filters">
-            ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n            ')}
-          </div>
-
           <details class="wiki-section gk-rarity-audit" data-rarity-audit>
             <summary>Full Rarity Audit Table</summary>
             <p class="lore-paragraph">Power-user view with every ranked template, score component context, supply counts, traits, and source links.</p>
@@ -1444,14 +1499,33 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
 
           <section class="wiki-section gk-rarity-method">
             <h3>How rarity works</h3>
-            <p class="lore-paragraph">Template scores use the adaptive rarity formula: 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available. Original mint numbers never change. Burns do not renumber NFTs. Surviving mint rank is tracked separately among currently live/unburned NFTs. Price, floor, listings, volume, sales, and market cap are excluded. <a href="/docs/nft-rarity-methodology.md">Read the full methodology</a>.</p>
+            <div class="gk-section-card-grid gk-rarity-method-cards" aria-label="Rarity methodology notes">
+              <div class="gk-info-card">
+                <span>Template formula</span>
+                <p>Template scores use 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Mint rules</span>
+                <p>Original mint numbers never change. Burns do not renumber NFTs; surviving mint rank is tracked separately among currently live/unburned NFTs.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Market excluded</span>
+                <p>Price, floor, listings, volume, sales, and market cap are excluded from the rarity score.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Methodology</span>
+                <p><a href="/docs/nft-rarity-methodology.md">Read the full methodology</a> for the score model and audit assumptions.</p>
+              </div>
+            </div>
           </section>
           <section class="wiki-section gk-asset-version-ranking">
-            <h3>Best Exact NFT Versions</h3>
             <p class="gk-command-kicker">Global Rarity / Exact NFT Ranking</p>
-            <p class="lore-paragraph">This secondary view scores exact live NFTs using template score, original mint number, and surviving mint rank. Global rarity scores exact live NFTs using collection template rarity, permanent original mint number, and surviving mint rank. Original mint numbers stay permanent; surviving mint rank can change as live/unburned assets change.</p>
+            <h3>Best Exact NFT Versions</h3>
             <section class="gk-command-deck gk-global-rarity-deck" aria-label="Global rarity cards">
-              ${globalRarityHeroCard(globalFeatured)}
+              <div class="gk-command-primary">
+                ${globalRarityHeroCard(globalFeatured)}
+                ${globalDeckNotes(assetPreview)}
+              </div>
               <aside class="gk-top-ranked-panel" aria-label="Top Global Ranked NFTs">
                 <div class="gk-top-ranked-heading">
                   <h3>Top Global Ranked NFTs</h3>
@@ -1474,7 +1548,6 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
                 </table>
               </div>
             </details>
-            ${assetVersionRanking.length > assetPreview.length ? '<details class="developer-details gk-asset-version-full"><summary>Full Asset Version Ranking export</summary><p class="lore-paragraph">The complete Asset Version Ranking remains in JSON for bridge/API consumers.</p></details>' : ''}
           </section>
 
           <section class="wiki-section gk-rarity-utility">

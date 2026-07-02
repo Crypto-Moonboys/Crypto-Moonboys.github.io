@@ -280,9 +280,22 @@
     });
   }
 
-  function buildMissionHTML(pageId) {
+  function buildBattleHeatSummary(engagement) {
+    var level = 'Calm';
+    if (engagement > 60) level = 'Hot';
+    else if (engagement > 30) level = 'Warming Up';
+
+    return '<div class="battle-heat-summary" aria-label="Battle Heat">' +
+      '<div class="battle-heat-summary-head"><span>Battle Heat</span><strong>' + engagement + '%</strong></div>' +
+      '<div class="battle-meter-shell"><div class="battle-bar-fill" style="width:' + engagement + '%"></div></div>' +
+      '<div class="battle-meter-meta"><span>' + esc(level) + ' engagement</span><span>Comments / likes / citation votes</span></div>' +
+    '</div>';
+  }
+
+  function buildMissionHTML(pageId, engagement) {
     return '<div class="battle-shell battle-shell--missions"><div class="battle-shell-inner">' +
       '<h3>Daily Missions</h3>' +
+      (typeof engagement === 'number' ? buildBattleHeatSummary(engagement) : '') +
       '<div class="mission-stack">' +
       MISSION_DEFINITIONS.map(function (m) {
         return '<div class="mission-row" data-mission-id="' + esc(m.id) + '">' +
@@ -295,6 +308,12 @@
       }).join('') +
       '</div>' +
       '<p class="battle-copy">Rewards sync only for Telegram-linked users after supported actions are accepted by the live backend.</p>' +
+      '</div></div>';
+  }
+
+  function buildCollectionMediaShell() {
+    return '<div class="battle-shell battle-shell--media"><div class="battle-shell-inner">' +
+      '<h3>Collection Art</h3>' +
       '</div></div>';
   }
 
@@ -353,14 +372,17 @@
 
     var deck = document.createElement('div');
     deck.className = 'battle-deck battle-engagement-deck';
-    deck.innerHTML =
-      buildBattleMeterHTML(engagement, pageId) +
-      buildMissionHTML(pageId);
+    var article = target.closest('article');
+    var isCollection = article && article.dataset.pageType === 'nft_collection';
+    if (isCollection) deck.className += ' battle-engagement-deck--collection';
+    deck.innerHTML = isCollection
+      ? buildCollectionMediaShell() + buildMissionHTML(pageId, engagement)
+      : buildBattleMeterHTML(engagement, pageId) + buildMissionHTML(pageId);
     module.appendChild(deck);
 
-    var article = target.closest('article');
-    if (article && article.dataset.pageType === 'nft_collection') {
-      article.insertAdjacentElement('afterend', module);
+    if (isCollection) {
+      var hero = article.querySelector('.wiki-hero');
+      (hero || target).insertAdjacentElement('afterend', module);
     } else {
       target.insertAdjacentElement('afterend', module);
     }
