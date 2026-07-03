@@ -25,10 +25,7 @@ window.__HUD_CONSOLIDATED__ = true;
   ];
 
   const sidebarGroups = [
-    {
-      heading: 'Navigation',
-      items: links
-    },
+    { heading: 'Navigation', items: links },
     {
       heading: 'Wiki Routes',
       items: [
@@ -174,7 +171,6 @@ window.__HUD_CONSOLIDATED__ = true;
 
     const legacyBareNav = Array.from(document.querySelectorAll('body > #global-nav')).find((node) => node.parentElement !== header);
     if (legacyBareNav) legacyBareNav.remove();
-
     return header;
   }
 
@@ -192,7 +188,6 @@ window.__HUD_CONSOLIDATED__ = true;
         <div class="sidebar-nav">${group.items.map((item) => navLinkHtml(item, 'sidebar-nav-link')).join('')}</div>
       </section>
     `).join('');
-
     return sidebar;
   }
 
@@ -208,10 +203,7 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function ensureMainContent() {
-    let content = document.getElementById('content');
-    if (!content) {
-      content = document.querySelector('main');
-    }
+    let content = document.getElementById('content') || document.querySelector('main');
     if (!content) {
       content = document.createElement('main');
       content.id = 'content';
@@ -243,26 +235,19 @@ window.__HUD_CONSOLIDATED__ = true;
       header.insertAdjacentElement('afterend', layout);
     }
 
-    if (sidebar.parentElement !== layout) {
-      layout.insertBefore(sidebar, layout.firstChild);
-    }
+    if (sidebar.parentElement !== layout) layout.insertBefore(sidebar, layout.firstChild);
 
     let mainWrapper = document.getElementById('main-wrapper');
     if (!mainWrapper) {
       mainWrapper = document.createElement('div');
       mainWrapper.id = 'main-wrapper';
     }
-    if (mainWrapper.parentElement !== layout) {
-      layout.appendChild(mainWrapper);
-    }
-    if (content.parentElement !== mainWrapper) {
-      mainWrapper.insertBefore(content, mainWrapper.firstChild);
-    }
+    if (mainWrapper.parentElement !== layout) layout.appendChild(mainWrapper);
+    if (content.parentElement !== mainWrapper) mainWrapper.insertBefore(content, mainWrapper.firstChild);
 
     ensureFooter(mainWrapper);
     ensureOverlay();
     ensureRightPanel(layout);
-
     return { layout, sidebar, mainWrapper, content };
   }
 
@@ -273,9 +258,7 @@ window.__HUD_CONSOLIDATED__ = true;
       footer.id = 'site-footer';
       footer.innerHTML = '<span>No password account · Telegram link for competitive systems · Bot-maintained</span>';
     }
-    if (footer.parentElement !== mainWrapper) {
-      mainWrapper.appendChild(footer);
-    }
+    if (footer.parentElement !== mainWrapper) mainWrapper.appendChild(footer);
     return footer;
   }
 
@@ -312,8 +295,8 @@ window.__HUD_CONSOLIDATED__ = true;
       <section class="hud-card hud-box hud-box--player" data-csp-panel>
         <h2>PLAYER LIVE FEED</h2>
         <div class="hud-player-card">
-          <div id="hud-player-avatar" aria-hidden="true">☾</div>
-          <div><div class="hud-player-name">Moonboy Operator</div><p>Battle Chamber live layer</p></div>
+          <div id="hud-player-avatar" aria-hidden="true"><span class="hud-avatar-icon">☾</span></div>
+          <div><div id="hud-player-name" class="hud-player-name">Telegram not linked</div><p>Battle Chamber live layer</p></div>
         </div>
       </section>
       <section class="hud-card hud-box hud-box--actions" data-csp-faction-ops>
@@ -329,9 +312,7 @@ window.__HUD_CONSOLIDATED__ = true;
         <p>Missed rewards and activity notes render without touching wiki articles.</p>
       </section>
     `;
-    if (rightPanel.parentElement !== layout) {
-      layout.appendChild(rightPanel);
-    }
+    if (rightPanel.parentElement !== layout) layout.appendChild(rightPanel);
     return rightPanel;
   }
 
@@ -339,12 +320,10 @@ window.__HUD_CONSOLIDATED__ = true;
     const p = normalizePathname(window.location.pathname);
     const isWikiSource = p.startsWith(CANONICAL_PUBLIC_ROOT) || p === '/search.html' || p === '/index.html';
     let banner = document.getElementById('wiki-route-banner');
-
     if (isWikiSource) {
       if (banner) banner.remove();
       return;
     }
-
     const canonical = resolveCanonicalWikiRoute(p);
     if (!banner) {
       banner = document.createElement('div');
@@ -361,17 +340,13 @@ window.__HUD_CONSOLIDATED__ = true;
     const dropdown = document.getElementById('search-results');
     if (!form || form.dataset.shellSearchBound) return;
     form.dataset.shellSearchBound = 'true';
-
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const q = input ? String(input.value || '').trim() : '';
       window.location.href = q ? `/search.html?q=${encodeURIComponent(q)}` : '/search.html';
     });
-
     if (input && dropdown) {
-      input.addEventListener('input', () => {
-        dropdown.classList.toggle('open', Boolean(input.value.trim()));
-      });
+      input.addEventListener('input', () => dropdown.classList.toggle('open', Boolean(input.value.trim())));
       document.addEventListener('click', (event) => {
         if (!form.contains(event.target)) dropdown.classList.remove('open');
       });
@@ -384,17 +359,14 @@ window.__HUD_CONSOLIDATED__ = true;
     const ham = document.getElementById('hamburger');
     if (ham) ham.setAttribute('aria-expanded', String(shouldOpen));
   }
-
   window._shellSetSidebarOpen = _shellSetSidebarOpen;
 
   function bindSidebar() {
     if (window.__MOONBOYS_SIDEBAR_BOUND) return;
     window.__MOONBOYS_SIDEBAR_BOUND = true;
-
     const ham = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
     const ov = document.getElementById('sidebar-overlay');
-
     if (ham && !ham.dataset.sidebarBound) {
       ham.dataset.sidebarBound = 'true';
       ham.addEventListener('click', () => _shellSetSidebarOpen(!document.body.classList.contains('sidebar-open')));
@@ -410,13 +382,78 @@ window.__HUD_CONSOLIDATED__ = true;
         if (link) _shellSetSidebarOpen(false);
       });
     }
-
     if (!window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND) {
       window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND = true;
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') _shellSetSidebarOpen(false);
       });
     }
+  }
+
+  function getTelegramPhotoUrl(gate) {
+    if (gate && typeof gate.getTelegramPhotoUrl === 'function') return gate.getTelegramPhotoUrl();
+    if (gate && gate.photo_url) return gate.photo_url;
+    if (gate && gate.photoUrl) return gate.photoUrl;
+    return '';
+  }
+
+  function clearHudLivePill(nameEl) {
+    if (!nameEl) return;
+    const existing = nameEl.querySelector('.hud-live-pill');
+    if (existing) existing.remove();
+  }
+
+  function resolveHudSignedTelegramAuth(gate) {
+    if (gate && typeof gate.restoreLinkedTelegramAuth === 'function') {
+      return gate.restoreLinkedTelegramAuth();
+    }
+    return window.MOONBOYS_TELEGRAM_AUTH || null;
+  }
+
+  function renderHudLivePill(nameEl, gate) {
+    if (!nameEl) return;
+    clearHudLivePill(nameEl);
+    const auth = resolveHudSignedTelegramAuth(gate);
+    const pill = document.createElement('span');
+    pill.className = auth ? 'hud-live-pill' : 'hud-live-pill hud-live-pill--relink';
+    pill.textContent = auth ? 'LIVE LINKED' : 'RELINK';
+    if (auth && window.MOONBOYS_API_CONFIGURED === false) {
+      pill.className = 'hud-live-pill hud-live-pill--pending';
+      pill.textContent = 'SYNC PENDING';
+    }
+    nameEl.appendChild(pill);
+  }
+
+  function scheduleHudIdentityRefresh() {
+    window.clearTimeout(window.__MOONBOYS_HUD_IDENTITY_REFRESH_TIMER__);
+    window.__MOONBOYS_HUD_IDENTITY_REFRESH_TIMER__ = window.setTimeout(refreshHudIdentity, 0);
+  }
+
+  function refreshHudIdentity() {
+    const gate = window.MOONBOYS_TELEGRAM_GATE || window.IDENTITY_GATE || null;
+    const avatar = document.getElementById('hud-player-avatar');
+    const nameEl = document.getElementById('hud-player-name');
+    if (avatar) {
+      const photo = getTelegramPhotoUrl(gate);
+      avatar.innerHTML = photo
+        ? `<img src="${escapeHtml(photo)}" alt="" loading="lazy" decoding="async">`
+        : '<span class="hud-avatar-icon" aria-hidden="true">☾</span>';
+    }
+    if (nameEl) {
+      if (!nameEl.firstChild || nameEl.firstChild.nodeType !== Node.TEXT_NODE) nameEl.textContent = 'Telegram not linked';
+      renderHudLivePill(nameEl, gate);
+    }
+  }
+
+  function bindHudIdentityRefresh() {
+    if (window.__MOONBOYS_HUD_IDENTITY_REFRESH_BOUND__) return;
+    window.__MOONBOYS_HUD_IDENTITY_REFRESH_BOUND__ = true;
+    window.addEventListener('moonboys:sync-state', scheduleHudIdentityRefresh);
+    window.addEventListener('moonboys:faction-status', scheduleHudIdentityRefresh);
+    window.addEventListener('storage', (event) => {
+      const key = String(event && event.key || '');
+      if (key.indexOf('moonboys_tg_') === 0 || key === 'MOONBOYS_TELEGRAM_AUTH') scheduleHudIdentityRefresh();
+    });
   }
 
   function ensureBackToTop() {
@@ -431,9 +468,7 @@ window.__HUD_CONSOLIDATED__ = true;
     }
     if (!button.dataset.shellBound) {
       button.dataset.shellBound = 'true';
-      window.addEventListener('scroll', () => {
-        button.classList.toggle('visible', window.scrollY > 320);
-      }, { passive: true });
+      window.addEventListener('scroll', () => button.classList.toggle('visible', window.scrollY > 320), { passive: true });
       button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     }
   }
@@ -452,7 +487,6 @@ window.__HUD_CONSOLIDATED__ = true;
   function bootHUD() {
     if (window.__HUD_BOOTED__) return;
     window.__HUD_BOOTED__ = true;
-
     if (window.HUD_UNIFIED && window.HUD_UNIFIED.init) window.HUD_UNIFIED.init();
     if (window.OS_HUD && window.OS_HUD.init) window.OS_HUD.init();
     if (window.XP_UI && window.XP_UI.init) window.XP_UI.init();
@@ -465,6 +499,8 @@ window.__HUD_CONSOLIDATED__ = true;
     renderLegacyRouteBanner(shell.content);
     bindSearchForm();
     bindSidebar();
+    bindHudIdentityRefresh();
+    scheduleHudIdentityRefresh();
     ensureBackToTop();
     ensureSwarmsyAgent();
     bootHUD();
