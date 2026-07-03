@@ -5,8 +5,8 @@
  * Shell coverage guard v2:
  * 1. Unified Wiki Shell v1 configuration validation
  * 2. All public pages must include /js/site-shell.js (except redirects and standalone tools)
- * 3. Canonical boot order validation where required
- * 4. No hardcoded competing global nav/header/footer markup
+ * 3. No hardcoded competing global nav/header/footer markup
+ * 4. Verify redirect targets point to valid wiki/search/canonical routes
  */
 
 import fs from 'node:fs';
@@ -93,6 +93,19 @@ console.log('\n--- Public Page Shell Coverage Guard ---\n');
 function collectPublicPages() {
   const pages = [];
   
+  // Helper to recursively walk a directory and collect .html files
+  const walkDir = (dir, prefix) => {
+    for (const f of fs.readdirSync(dir)) {
+      const fullPath = path.join(dir, f);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        walkDir(fullPath, prefix + f + '/');
+      } else if (f.endsWith('.html')) {
+        pages.push(prefix + f);
+      }
+    }
+  };
+  
   // Root *.html (except _*)
   for (const f of fs.readdirSync(ROOT)) {
     if (f.endsWith('.html') && !f.startsWith('_')) {
@@ -100,44 +113,27 @@ function collectPublicPages() {
     }
   }
   
-  // about/*.html
+  // about/**/*.html (recursive)
   const aboutDir = path.join(ROOT, 'about');
   if (fs.existsSync(aboutDir)) {
-    for (const f of fs.readdirSync(aboutDir)) {
-      if (f.endsWith('.html')) pages.push(`about/${f}`);
-    }
+    walkDir(aboutDir, 'about/');
   }
   
-  // categories/*.html
+  // categories/**/*.html (recursive)
   const categoriesDir = path.join(ROOT, 'categories');
   if (fs.existsSync(categoriesDir)) {
-    for (const f of fs.readdirSync(categoriesDir)) {
-      if (f.endsWith('.html')) pages.push(`categories/${f}`);
-    }
+    walkDir(categoriesDir, 'categories/');
   }
   
-  // games/*.html (but not wiki/*.html - that's covered by wiki-shell-guard)
+  // games/**/*.html (recursive, but not wiki/*.html - that's covered by wiki-shell-guard)
   const gamesDir = path.join(ROOT, 'games');
   if (fs.existsSync(gamesDir)) {
-    for (const f of fs.readdirSync(gamesDir)) {
-      if (f.endsWith('.html')) pages.push(`games/${f}`);
-    }
+    walkDir(gamesDir, 'games/');
   }
   
-  // battle-chamber/*.html
+  // battle-chamber/**/*.html (recursive)
   const battleDir = path.join(ROOT, 'battle-chamber');
   if (fs.existsSync(battleDir)) {
-    const walkDir = (dir, prefix) => {
-      for (const f of fs.readdirSync(dir)) {
-        const fullPath = path.join(dir, f);
-        const stat = fs.statSync(fullPath);
-        if (stat.isDirectory()) {
-          walkDir(fullPath, prefix + f + '/');
-        } else if (f.endsWith('.html')) {
-          pages.push(prefix + f);
-        }
-      }
-    };
     walkDir(battleDir, 'battle-chamber/');
   }
   
