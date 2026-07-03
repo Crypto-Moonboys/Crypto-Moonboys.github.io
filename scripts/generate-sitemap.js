@@ -98,6 +98,7 @@ addEntry(`${BASE_URL}/`, 'weekly', '1.0');
 const ROOT_PAGES = [
   { file: 'about.html', changefreq: 'weekly', priority: '0.9' },
   { file: 'search.html', changefreq: 'weekly', priority: '1.0' },
+  { file: 'waxcash.html', changefreq: 'weekly', priority: '0.9' },
   // articles.html is a noindex redirect stub - excluded from sitemap
   // agent.html is disallowed in robots.txt - excluded from sitemap
   { file: 'block-topia.html', changefreq: 'daily', priority: '0.9' },

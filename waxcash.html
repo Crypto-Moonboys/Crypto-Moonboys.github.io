@@ -52,6 +52,29 @@
     h2 { font-size: 20px; color: var(--cyan); }
     h3 { font-size: 16px; color: var(--text); }
     .wx-note { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .wx-home-nav {
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .wx-home-btn {
+      display: inline-block;
+      padding: 10px 16px;
+      background: rgba(2, 240, 231, 0.12);
+      border: 1px solid rgba(2, 240, 231, 0.3);
+      color: var(--cyan);
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .wx-home-btn:hover,
+    .wx-home-btn:focus-visible {
+      background: rgba(2, 240, 231, 0.2);
+      border-color: rgba(2, 240, 231, 0.6);
+    }
     .wx-main-grid {
       display: grid;
       grid-template-columns: minmax(300px, 530px) minmax(0, 1fr);
@@ -322,6 +345,9 @@
 <body >
 <main id="content" role="main">
   <div class="wx-shell">
+    <nav class="wx-home-nav">
+      <a href="/" class="wx-home-btn">← Home</a>
+    </nav>
     <div id="wx-status" hidden></div>
     <div class="feed-status-badge" data-feed-status-id="waxcash_analytics">Feed status loading...</div>
 
