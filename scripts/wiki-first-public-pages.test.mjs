@@ -136,7 +136,19 @@ function collectPublicPages() {
   if (fs.existsSync(battleDir)) {
     walkDir(battleDir, 'battle-chamber/');
   }
-  
+
+  // analytics/**/*.html (recursive)
+  const analyticsDir = path.join(ROOT, 'analytics');
+  if (fs.existsSync(analyticsDir)) {
+    walkDir(analyticsDir, 'analytics/');
+  }
+
+  // waxonedge/**/*.html (recursive)
+  const waxonedgeDir = path.join(ROOT, 'waxonedge');
+  if (fs.existsSync(waxonedgeDir)) {
+    walkDir(waxonedgeDir, 'waxonedge/');
+  }
+
   return pages.sort();
 }
 
@@ -196,16 +208,26 @@ function validateRedirectTarget(html, pagePath) {
   // Extract refresh URL
   const refreshMatch = html.match(/http-equiv=["']refresh["']\s+content=["'].*?URL=([^"']+)/i);
   if (!refreshMatch) return false;
-  
-  const target = refreshMatch[1];
-  // Valid redirect targets: wiki pages, search pages, canonical routes, or same-domain redirects
+
+  // Normalize: trim whitespace, strip query and hash for path validation
+  const raw = refreshMatch[1].trim();
+  const target = raw.replace(/[?#].*$/, '');
+
+  // Must be internal (no scheme = not external)
+  if (/^https?:\/\//i.test(target)) return false;
+
+  // Valid redirect targets: wiki pages, search pages, canonical routes, or root HTML files
   if (target.startsWith('/wiki/') || target.startsWith('/search.html')) return true;
   if (target === '/index.html' || target === '/' || target === '/about.html') return true;
   if (target.startsWith('/battle-chamber/')) return true;
   if (target.startsWith('/games/')) return true;
   if (target.startsWith('/categories/')) return true;
   if (target.startsWith('/about/')) return true;
-  
+  if (target.startsWith('/analytics/')) return true;
+  if (target.startsWith('/waxonedge/')) return true;
+  // Allow any existing root HTML file (e.g. /waxonedge.html, /community.html)
+  if (/^\/[^/]+\.html$/.test(target) && fs.existsSync(path.join(ROOT, target.slice(1)))) return true;
+
   return false;
 }
 
@@ -252,7 +274,7 @@ for (const pagePath of publicPages) {
   
   // Must have a shell class (unless it's a special page)
   if (!hasShellClass(bodyAttrs)) {
-    fail(`${pagePath} - missing shell class (page-standard-shell/page-action-shell/page-game-shell)`);
+    fail(`${pagePath} - missing shell class (accepted: page-standard-shell, page-action-shell, page-game-shell, page-game, page-community, page-waxcash, page-admin, page-dashboard)`);
   } else {
     pass(`${pagePath} - has shell class`);
   }
