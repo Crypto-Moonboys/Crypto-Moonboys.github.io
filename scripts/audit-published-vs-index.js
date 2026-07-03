@@ -80,14 +80,24 @@ function readHtmlFile(filePath) {
   }
 }
 
-function isIntentionallyExcluded(url, html) {
-  if (!html) return true;
+/**
+ * Determine if a page is intentionally excluded from indexing.
+ * Returns:
+ *   'missing' - HTML file doesn't exist (drift failure)
+ *   'excluded' - HTML file exists but is marked as stub/noindex (intentional)
+ *   'indexed' - HTML file exists and should be indexed (normal)
+ */
+function classifyPage(url, html, filePath) {
+  if (!html) {
+    // File doesn't exist
+    return fs.existsSync(filePath) ? 'indexed' : 'missing';
+  }
   
   // Check for stub/noindex markers
-  if (/data-wiki-stub=["']true["']/i.test(html)) return true;
-  if (/meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(html)) return true;
+  if (/data-wiki-stub=["']true["']/i.test(html)) return 'excluded';
+  if (/meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(html)) return 'excluded';
   
-  return false;
+  return 'indexed';
 }
 
 function extractTitle(html) {
@@ -121,6 +131,7 @@ async function run() {
     indexed: [],
     missingFromIndex: [],
     missingFromSitemap: [],
+    missingFiles: [],
     intentionallyExcluded: [],
     extraInIndex: []
   };
@@ -128,9 +139,11 @@ async function run() {
   for (const url of approvedUrls) {
     const filePath = path.join(ROOT, url.slice(1));
     const html = readHtmlFile(filePath);
-    const isExcluded = isIntentionallyExcluded(url, html);
+    const classification = classifyPage(url, html, filePath);
 
-    if (isExcluded) {
+    if (classification === 'missing') {
+      byCategory.missingFiles.push(url);
+    } else if (classification === 'excluded') {
       byCategory.intentionallyExcluded.push(url);
     } else if (!indexedUrls.has(url)) {
       byCategory.missingFromIndex.push(url);
@@ -155,12 +168,22 @@ async function run() {
   console.log(`  Indexed pages (searchable):      ${indexedUrls.size}`);
   console.log(`  In sitemap (crawlable):          ${sitemapUrls.size}`);
   console.log(`  Intentionally excluded (stubs):  ${byCategory.intentionallyExcluded.length}`);
+  console.log(`  Missing HTML files:              ${byCategory.missingFiles.length}`);
   console.log(`  Missing from index:              ${byCategory.missingFromIndex.length}`);
   console.log(`  Missing from sitemap:            ${byCategory.missingFromSitemap.length}`);
   console.log(`  Extra in index:                  ${byCategory.extraInIndex.length}\n`);
 
   // Report issues
   let hasIssues = false;
+
+  if (byCategory.missingFiles.length > 0) {
+    hasIssues = true;
+    console.log('❌ Approved URLs with missing HTML files:');
+    for (const url of byCategory.missingFiles) {
+      console.log(`  ❌ Approved URL has no HTML file: ${url}`);
+    }
+    console.log();
+  }
 
   if (byCategory.missingFromIndex.length > 0) {
     hasIssues = true;
