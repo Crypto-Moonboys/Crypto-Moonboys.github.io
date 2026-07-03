@@ -261,7 +261,7 @@ window.__HUD_CONSOLIDATED__ = true;
 
     ensureFooter(mainWrapper);
     ensureOverlay();
-    ensureRightPanel(mainWrapper);
+    ensureRightPanel(layout);
 
     return { layout, sidebar, mainWrapper, content };
   }
@@ -291,7 +291,7 @@ window.__HUD_CONSOLIDATED__ = true;
     return exact.includes(p);
   }
 
-  function ensureRightPanel(mainWrapper) {
+  function ensureRightPanel(layout) {
     let rightPanel = document.getElementById('homepage-right-panel');
     const enabled = shouldShowRightPanel(window.location.pathname);
 
@@ -329,8 +329,8 @@ window.__HUD_CONSOLIDATED__ = true;
         <p>Missed rewards and activity notes render without touching wiki articles.</p>
       </section>
     `;
-    if (rightPanel.parentElement !== mainWrapper) {
-      mainWrapper.appendChild(rightPanel);
+    if (rightPanel.parentElement !== layout) {
+      layout.appendChild(rightPanel);
     }
     return rightPanel;
   }
