@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadNonApprovedUrls } = require('./wiki-publish-gate.js');
+const { getRootPagePaths } = require('./root-pages-config.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
@@ -73,11 +74,20 @@ function validateWikiIndex() {
   assert(Array.isArray(wikiIndex), 'js/wiki-index.json must be an array');
   assert(wikiIndex.length > 0, 'js/wiki-index.json is empty');
 
+  const approvedRootPaths = new Set(getRootPagePaths());
+
   for (const [idx, entry] of wikiIndex.entries()) {
     assert(entry && typeof entry === 'object', `wiki-index entry ${idx} is not an object`);
 
     assert(typeof entry.title === 'string' && entry.title.trim(), `wiki-index entry ${idx} missing title`);
-    assert(typeof entry.url === 'string' && entry.url.startsWith('/wiki/'), `wiki-index entry ${idx} has invalid url`);
+    
+    // Allow /wiki/ URLs or approved root/tool/category pages
+    const isWikiUrl = typeof entry.url === 'string' && entry.url.startsWith('/wiki/');
+    const isApprovedRootUrl = typeof entry.url === 'string' && approvedRootPaths.has(entry.url);
+    assert(
+      isWikiUrl || isApprovedRootUrl,
+      `wiki-index entry ${idx} has invalid url: ${entry.url} (must be /wiki/ or approved root page)`
+    );
     assert(entry.url !== '/wiki/index.html', `wiki-index entry ${idx} must not include legacy /wiki/index.html`);
     assert(!entry.url.includes('../'), `wiki-index entry ${idx} contains fragile relative url`);
     assert(isNumber(entry.rank_score), `wiki-index entry ${idx} has invalid rank_score`);
@@ -143,9 +153,15 @@ function validateWikiIndex() {
     assert(Array.isArray(entry.aliases), `wiki-index entry ${idx} aliases must be an array`);
     for (const alias of entry.aliases) {
       if (typeof alias === 'string') continue;
-      assert(alias && typeof alias.title === 'string', `wiki-index entry ${idx} has malformed alias title`);
+      assert(alias && typeof alias === 'object' && typeof alias.title === 'string', `wiki-index entry ${idx} has malformed alias title`);
       if (alias.url) {
-        assert(typeof alias.url === 'string' && alias.url.startsWith('/wiki/'), `wiki-index entry ${idx} has malformed alias url`);
+        // Allow /wiki/ URLs or approved root/tool/category pages in aliases
+        const isAliasWikiUrl = typeof alias.url === 'string' && alias.url.startsWith('/wiki/');
+        const isAliasRootUrl = typeof alias.url === 'string' && approvedRootPaths.has(alias.url);
+        assert(
+          isAliasWikiUrl || isAliasRootUrl,
+          `wiki-index entry ${idx} has malformed alias url: ${alias.url} (must be /wiki/ or approved root page)`
+        );
         const aliasPath = path.join(ROOT, alias.url.replace(/^\//, ''));
         ensureFile(aliasPath);
       }
