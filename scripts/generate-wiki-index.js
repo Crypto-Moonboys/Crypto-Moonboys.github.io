@@ -10,6 +10,7 @@ const {
 } = require('./wiki-aliases.js');
 const { classifyWikiSlug } = require('./wiki-brand-taxonomy.js');
 const { loadApprovedUrls } = require('./wiki-publish-gate.js');
+const { getRootPagePaths } = require('./root-pages-config.js');
 
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
@@ -18,15 +19,7 @@ const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
 const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 
 // Approved root/tool pages that should be in search index (non-wiki)
-const ROOT_PAGES_TO_INDEX = [
-  '/waxcash.html',
-  '/about.html',
-  '/categories/index.html',
-  '/categories/tools.html',
-  '/categories/gkniftyheads.html',
-  '/hubs.html',
-  '/sam.html'
-];
+const ROOT_PAGES_TO_INDEX = getRootPagePaths();
 
 function walk(dir) {
   let results = [];

@@ -24,8 +24,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
-// Test configuration
-const MINIMUM_INDEX_ENTRIES = 320; // Allow room for intentional exclusions
+// NOTE: Root pages list is maintained as REQUIRED_ROOT_PAGES here because this is an ES module
+// (.mjs) and cannot directly import the CommonJS root-pages-config.js via require().
+// A regression test below (verifyRootPagesMatch) ensures this list stays in sync with
+// scripts/root-pages-config.js by comparing the extracted paths.
 const REQUIRED_ROOT_PAGES = [
   '/waxcash.html',
   '/about.html',
@@ -42,6 +44,29 @@ const REQUIRED_WIKI_PAGES = [
   '/wiki/nbg-token.html',
   '/wiki/charlie-buster.html'
 ];
+
+function verifyRootPagesMatch() {
+  // Parse root-pages-config.js to extract the APPROVED_ROOT_PAGES paths
+  const configPath = path.join(ROOT, 'scripts', 'root-pages-config.js');
+  const configContent = fs.readFileSync(configPath, 'utf8');
+
+  // Extract paths from { path: '/waxcash.html', title: '...' }
+  const pathMatches = configContent.match(/path:\s*['"]([^'"]+)['"]/g);
+  if (!pathMatches) {
+    throw new Error('Could not extract root pages paths from root-pages-config.js');
+  }
+
+  const configPaths = pathMatches.map(m => m.match(/['"]([^'"]+)['"]/)[1]).sort();
+  const testPaths = REQUIRED_ROOT_PAGES.slice().sort();
+
+  if (JSON.stringify(configPaths) !== JSON.stringify(testPaths)) {
+    throw new Error(
+      'Root pages list mismatch: REQUIRED_ROOT_PAGES in wiki-index-drift-regression.test.mjs ' +
+      'does not match APPROVED_ROOT_PAGES paths in root-pages-config.js. ' +
+      `Config: ${configPaths.join(', ')}, Test: ${testPaths.join(', ')}`
+    );
+  }
+}
 
 function loadIndex() {
   const indexPath = path.join(ROOT, 'js', 'wiki-index.json');
@@ -61,6 +86,14 @@ function loadAudit() {
 
 function runTests() {
   console.log('🧪 Wiki Index Drift Regression Tests\n');
+
+  // Verify root pages list is in sync with shared config
+  try {
+    verifyRootPagesMatch();
+  } catch (err) {
+    console.error(`❌ Root pages list synchronization check failed: ${err.message}`);
+    process.exit(1);
+  }
 
   const index = loadIndex();
   const audit = loadAudit();

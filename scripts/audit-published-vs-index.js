@@ -21,19 +21,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { APPROVED_ROOT_PAGES } = require('./root-pages-config.js');
 
 const ROOT = path.resolve(__dirname, '..');
-
-// Approved root/tool pages that should be in search index
-const APPROVED_ROOT_PAGES = [
-  { path: '/waxcash.html', title: 'WAXCASH Analytics' },
-  { path: '/about.html', title: 'About Crypto Moonboys' },
-  { path: '/categories/index.html', title: 'Categories' },
-  { path: '/categories/tools.html', title: 'Tools' },
-  { path: '/categories/gkniftyheads.html', title: 'GKniftyheads' },
-  { path: '/hubs.html', title: 'Hubs' },
-  { path: '/sam.html', title: 'SAM' }
-];
 
 async function loadAudit() {
   const auditPath = path.join(ROOT, 'js', 'wiki-publish-audit.json');
@@ -200,8 +190,9 @@ async function run() {
   }
 
   // Check root/tool pages
-  console.log('🔍 Approved Root/Tool Pages (should be in search):');
+  console.log('🔍 Approved Root/Tool Pages (should be in search & sitemap):');
   const missingRootPages = [];
+  const missingSitemapRootPages = [];
   for (const page of APPROVED_ROOT_PAGES) {
     const filePath = path.join(ROOT, page.path.slice(1));
     const exists = fs.existsSync(filePath);
@@ -212,10 +203,14 @@ async function run() {
       ? inIndex ? '✅ indexed' : '❌ not indexed'
       : '⚠️  file missing';
     
-    console.log(`  ${page.path.padEnd(30)} ${status}${inSitemap ? ' (in sitemap)' : ''}`);
+    const sitemapStatus = exists && inIndex && !inSitemap ? ' ⚠️ not in sitemap' : '';
+    console.log(`  ${page.path.padEnd(30)} ${status}${sitemapStatus}`);
     
     if (exists && !inIndex) {
       missingRootPages.push(page);
+    }
+    if (exists && inIndex && !inSitemap) {
+      missingSitemapRootPages.push(page);
     }
   }
 
@@ -223,6 +218,12 @@ async function run() {
     hasIssues = true;
     console.log(`\n❌ ${missingRootPages.length} approved root pages not in search index!`);
     console.log('   These need to be added to generate-wiki-index.js');
+  }
+
+  if (missingSitemapRootPages.length > 0) {
+    hasIssues = true;
+    console.log(`\n❌ ${missingSitemapRootPages.length} approved root pages not in sitemap!`);
+    console.log('   These need to be added to generate-sitemap.js');
   }
 
   console.log();
