@@ -212,6 +212,11 @@ function isRedirectPage(html) {
   return html.includes('http-equiv="refresh"') || html.includes("http-equiv='refresh'");
 }
 
+/* ── Check for standalone flag ─────────────────────────────────── */
+function isStandaloneToolPage(bodyAttrs) {
+  return bodyAttrs.includes('page-standalone-tool');
+}
+
 /* ── Build output HTML ─────────────────────────────────────────── */
 function transform(html, relPath) {
   // Strip BOM
@@ -229,6 +234,12 @@ function transform(html, relPath) {
 
   if (!mainContent && !html.includes('id="content"')) {
     console.warn(`  [WARN] ${relPath}: could not extract <main id="content">`);
+  }
+
+  // Skip shell regeneration for standalone tool pages (e.g., WAXCASH analytics)
+  // These pages manage their own scripts and do not use the global shell
+  if (isStandaloneToolPage(bodyAttrs)) {
+    return html;
   }
 
   // Special: index.html — add page-has-right-panel if missing but has right panel
