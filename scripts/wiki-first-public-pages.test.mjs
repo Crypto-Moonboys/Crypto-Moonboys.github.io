@@ -155,6 +155,20 @@ function collectPublicPages() {
 const publicPages = collectPublicPages();
 console.log(`Scanning ${publicPages.length} public HTML pages for shell coverage...\n`);
 
+// Canonical shell boot stack for public content pages (in required load order).
+// /js/wiki.js is intentionally excluded — wiki pages are covered by wiki-shell-guard.test.mjs.
+const SHELL_BOOT_STACK = [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
+  '/js/site-shell.js',
+  '/js/components/connection-status-panel.js',
+  '/js/components/global-player-header.js',
+  '/js/components/live-activity-summary.js',
+];
+
 // Helpers
 function isRedirectPage(html) {
   return html.includes('http-equiv="refresh"') || html.includes("http-equiv='refresh'");
@@ -202,6 +216,26 @@ function hasHardcodedCompetingMarkup(html) {
 function scriptCount(html, src) {
   const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return (html.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
+}
+
+function validateBootStack(html) {
+  // Returns an array of error strings (empty = pass)
+  const errors = [];
+  const positions = SHELL_BOOT_STACK.map(s => html.indexOf(s));
+  for (let i = 0; i < positions.length; i++) {
+    if (positions[i] === -1) {
+      errors.push(`missing boot script: ${SHELL_BOOT_STACK[i]}`);
+    }
+  }
+  // Only check order when all scripts are present
+  if (errors.length === 0) {
+    for (let i = 1; i < positions.length; i++) {
+      if (positions[i] < positions[i - 1]) {
+        errors.push(`boot order violation: ${SHELL_BOOT_STACK[i]} appears before ${SHELL_BOOT_STACK[i - 1]}`);
+      }
+    }
+  }
+  return errors;
 }
 
 function validateRedirectTarget(html, pagePath) {
@@ -263,13 +297,14 @@ for (const pagePath of publicPages) {
     continue;
   }
   
-  // Regular content pages: must have site-shell.js
-  if (!html.includes('/js/site-shell.js')) {
-    fail(`${pagePath} - missing /js/site-shell.js`);
+  // Regular content pages: validate full canonical shell boot stack (presence + order)
+  const bootErrors = validateBootStack(html);
+  if (bootErrors.length > 0) {
+    for (const e of bootErrors) fail(`${pagePath} - ${e}`);
     failingPages.push(pagePath);
     continue;
   } else {
-    pass(`${pagePath} - has /js/site-shell.js`);
+    pass(`${pagePath} - canonical boot stack present and in order`);
   }
   
   // Must have a shell class (unless it's a special page)
