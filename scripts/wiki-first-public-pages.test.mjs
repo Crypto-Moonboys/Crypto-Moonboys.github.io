@@ -2,11 +2,22 @@
 /**
  * wiki-first-public-pages.test.mjs
  *
- * Shell coverage guard v2:
+ * Shell coverage guard v3:
  * 1. Unified Wiki Shell v1 configuration validation
- * 2. All public pages must include /js/site-shell.js (except redirects and standalone tools)
- * 3. No hardcoded competing global nav/header/footer markup
- * 4. Verify redirect targets point to valid wiki/search/canonical routes
+ * 2. All public pages (except redirects and standalone tools) must include full boot stack:
+ *    - /js/api-config.js
+ *    - /js/arcade/core/global-event-bus.js
+ *    - /js/identity-gate.js
+ *    - /js/core/moonboys-state.js
+ *    - /js/core/daily-loop-state.js
+ *    - /js/site-shell.js
+ *    - /js/components/connection-status-panel.js
+ *    - /js/components/global-player-header.js
+ *    - /js/components/live-activity-summary.js
+ * 3. Scripts must be in exact order (no out-of-order loading)
+ * 4. No hardcoded competing global nav/header/footer markup
+ * 5. Verify redirect targets point to valid wiki/search/canonical routes
+ * 6. Wiki pages are owned by scripts/wiki-shell-guard.test.mjs (not this guard)
  */
 
 import fs from 'node:fs';
@@ -342,8 +353,8 @@ if (failingPages.length > 0) {
 }
 
 if (failures > 0) {
-  console.error(`\nShell coverage guard v2 FAILED with ${failures} failure(s).\n`);
+  console.error(`\nShell coverage guard v3 FAILED with ${failures} failure(s).\n`);
   process.exit(1);
 }
 
-console.log(`\nShell coverage guard v2 PASSED.\n`);
+console.log(`\nShell coverage guard v3 PASSED.\n`);
