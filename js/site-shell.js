@@ -1,30 +1,44 @@
-
 // --- HUD CONSOLIDATION PATCH (v1) ---
 // Prevent duplicate HUD / XP / faction render loops across systems
 
 window.__HUD_CONSOLIDATED__ = true;
 
 (function () {
+
+  const links = [
+    ['HOME','/index.html'],
+    ['WIKI','/search.html'],
+    ['GAMES','/games/'],
+    ['BATTLE CHAMBER','/community.html'],
+    ['SWARMSY','/swarmsy.html'],
+    ['SYSTEM HUB','/dashboard.html']
+  ];
+
+  function ensureNav() {
+    if (document.getElementById('global-nav')) return;
+
+    const nav = document.createElement('div');
+    nav.id = 'global-nav';
+
+    links.forEach(l => {
+      const a = document.createElement('a');
+      a.href = l[1];
+      a.textContent = l[0];
+      nav.appendChild(a);
+    });
+
+    document.body.insertBefore(nav, document.body.firstChild);
+  }
+
   function bootHUD() {
     if (window.__HUD_BOOTED__) return;
     window.__HUD_BOOTED__ = true;
 
-    // Unified HUD renderer (if present)
-    if (window.HUD_UNIFIED && typeof window.HUD_UNIFIED.init === 'function') {
-      window.HUD_UNIFIED.init();
-    }
+    if (window.HUD_UNIFIED && window.HUD_UNIFIED.init) window.HUD_UNIFIED.init();
+    if (window.OS_HUD && window.OS_HUD.init) window.OS_HUD.init();
+    if (window.XP_UI && window.XP_UI.init) window.XP_UI.init();
 
-    // OS HUD bridge (safe initializer)
-    if (window.OS_HUD && typeof window.OS_HUD.init === 'function') {
-      window.OS_HUD.init();
-    }
-
-    // XP UI safety init (avoid duplicate intervals)
-    if (window.XP_UI && typeof window.XP_UI.init === 'function') {
-      window.XP_UI.init();
-    }
-
-    console.log('[GK] HUD consolidation pass active');
+    ensureNav();
   }
 
   if (document.readyState === 'loading') {
