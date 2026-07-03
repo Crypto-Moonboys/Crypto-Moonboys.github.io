@@ -264,7 +264,10 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function shouldShowRightPanel(pathname) {
     const p = normalizePathname(pathname || window.location.pathname);
+    const body = document.body;
+    if (body.classList.contains('page-no-right-panel')) return false;
     if (p === '/dashboard.html') return false;
+    if (body.classList.contains('page-has-right-panel')) return true;
     const exact = [
       '/community.html',
       '/games/',
