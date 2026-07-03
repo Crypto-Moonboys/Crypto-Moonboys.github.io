@@ -214,6 +214,7 @@ async function run() {
 
   // Check root/tool pages
   console.log('🔍 Approved Root/Tool Pages (should be in search & sitemap):');
+  const missingRootFiles = [];
   const missingRootPages = [];
   const missingSitemapRootPages = [];
   for (const page of APPROVED_ROOT_PAGES) {
@@ -224,16 +225,25 @@ async function run() {
     
     const status = exists
       ? inIndex ? '✅ indexed' : '❌ not indexed'
-      : '⚠️  file missing';
+      : '❌ file missing';
     
-    const sitemapStatus = exists && inIndex && !inSitemap ? ' ⚠️ not in sitemap' : '';
+    const sitemapStatus = exists && inIndex && !inSitemap ? ' ❌ not in sitemap' : '';
     console.log(`  ${page.path.padEnd(30)} ${status}${sitemapStatus}`);
     
-    if (exists && !inIndex) {
+    if (!exists) {
+      missingRootFiles.push(page);
+    } else if (!inIndex) {
       missingRootPages.push(page);
-    }
-    if (exists && inIndex && !inSitemap) {
+    } else if (!inSitemap) {
       missingSitemapRootPages.push(page);
+    }
+  }
+
+  if (missingRootFiles.length > 0) {
+    hasIssues = true;
+    console.log(`\n❌ ${missingRootFiles.length} approved root pages have no HTML file!`);
+    for (const page of missingRootFiles) {
+      console.log(`  ❌ Approved root page has no HTML file: ${page.path}`);
     }
   }
 
