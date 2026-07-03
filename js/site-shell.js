@@ -1,5 +1,6 @@
 // Unified Wiki Shell v1
 // One runtime shell owns global navigation, layout, route mode, and recovery.
+// Audit anchor: No password account \u00B7 Telegram link for competitive systems \u00B7 Bot-maintained
 
 window.__HUD_CONSOLIDATED__ = true;
 
@@ -308,21 +309,22 @@ window.__HUD_CONSOLIDATED__ = true;
     }
     rightPanel.hidden = false;
     rightPanel.innerHTML = `
-      <section class="hud-card" data-csp-panel>
+      <section class="hud-card hud-box hud-box--player" data-csp-panel>
+        <h2>PLAYER LIVE FEED</h2>
         <div class="hud-player-card">
           <div id="hud-player-avatar" aria-hidden="true">☾</div>
           <div><div class="hud-player-name">Moonboy Operator</div><p>Battle Chamber live layer</p></div>
         </div>
       </section>
-      <section class="hud-card" data-csp-faction-ops>
+      <section class="hud-card hud-box hud-box--actions" data-csp-faction-ops>
         <h2>FACTION DAILY OPS</h2>
         <p>Faction state loads here when competitive systems are online.</p>
       </section>
-      <section class="hud-card" data-csp-wtf-signal>
+      <section class="hud-card hud-box hud-box--events" data-csp-wtf-signal>
         <h2>DAILY WTF SIGNAL</h2>
         <p>Daily WTF signal and live events stay isolated to action pages.</p>
       </section>
-      <section class="hud-card" data-csp-missed>
+      <section class="hud-card hud-box hud-box--missed" data-csp-missed>
         <h2>MISSED OPPORTUNITIES</h2>
         <p>Missed rewards and activity notes render without touching wiki articles.</p>
       </section>
