@@ -1,0 +1,279 @@
+#!/usr/bin/env node
+'use strict';
+
+/**
+ * scripts/audit-published-vs-index.js
+ *
+ * Comprehensive audit comparing:
+ *   - Approved URLs from js/wiki-publish-audit.json
+ *   - Indexed URLs from js/wiki-index.json
+ *   - URLs in sitemap.xml
+ *   - Explicit root/tool pages list
+ *
+ * Identifies and reports every drift category:
+ *   1. Missing from index (approved but not searchable)
+ *   2. Missing from sitemap (approved but not crawlable)
+ *   3. Excluded intentionally (stubs, noindex)
+ *   4. Should-be-included root pages (waxcash, about, etc.)
+ *
+ * Run: node scripts/audit-published-vs-index.js
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { APPROVED_ROOT_PAGES } = require('./root-pages-config.js');
+
+const ROOT = path.resolve(__dirname, '..');
+
+async function loadAudit() {
+  const auditPath = path.join(ROOT, 'js', 'wiki-publish-audit.json');
+  if (!fs.existsSync(auditPath)) {
+    console.error('ERROR: js/wiki-publish-audit.json not found. Run: node scripts/wiki-publish-gate.js');
+    process.exit(1);
+  }
+  return JSON.parse(fs.readFileSync(auditPath, 'utf8'));
+}
+
+function loadIndex() {
+  const indexPath = path.join(ROOT, 'js', 'wiki-index.json');
+  if (!fs.existsSync(indexPath)) {
+    console.error('ERROR: js/wiki-index.json not found. Run: node scripts/generate-wiki-index.js');
+    process.exit(1);
+  }
+  return JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+}
+
+async function loadSitemap() {
+  const sitemapPath = path.join(ROOT, 'sitemap.xml');
+  if (!fs.existsSync(sitemapPath)) {
+    console.error('ERROR: sitemap.xml not found');
+    return new Set();
+  }
+
+  try {
+    const xml = fs.readFileSync(sitemapPath, 'utf8');
+    // Simple regex to extract URLs (avoiding xml2js dependency)
+    const matches = xml.match(/<loc>(.*?)<\/loc>/g) || [];
+    const urls = new Set();
+    
+    for (const match of matches) {
+      const url = match.replace(/<\/?loc>/g, '');
+      const relativePath = url.replace('https://cryptomoonboys.com', '');
+      if (relativePath) {
+        urls.add(relativePath);
+      }
+    }
+    
+    return urls;
+  } catch (err) {
+    console.error(`ERROR reading sitemap: ${err.message}`);
+    return new Set();
+  }
+}
+
+function readHtmlFile(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    return fs.readFileSync(filePath, 'utf8');
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
+ * Determine if a page is intentionally excluded from indexing.
+ * Returns:
+ *   'missing' - HTML file doesn't exist (drift failure)
+ *   'excluded' - HTML file exists but is marked as stub/noindex (intentional)
+ *   'indexed' - HTML file exists and should be indexed (normal)
+ */
+function classifyPage(url, html, filePath) {
+  if (!html) {
+    // File doesn't exist
+    return fs.existsSync(filePath) ? 'indexed' : 'missing';
+  }
+  
+  // Check for stub/noindex markers
+  if (/data-wiki-stub=["']true["']/i.test(html)) return 'excluded';
+  if (/meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(html)) return 'excluded';
+  
+  return 'indexed';
+}
+
+function extractTitle(html) {
+  if (!html) return null;
+  const match = html.match(/<title>(.*?)<\/title>/i);
+  return match ? match[1].trim() : null;
+}
+
+function extractDescription(html) {
+  if (!html) return null;
+  const match = 
+    html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i) ||
+    html.match(/<meta\s+content=["']([^"']*)["']\s+name=["']description["']/i);
+  return match ? match[1].trim() : null;
+}
+
+async function run() {
+  console.log('📊 Audit: Published URLs vs Search Index vs Sitemap\n');
+  
+  const audit = await loadAudit();
+  const index = loadIndex();
+  const sitemap = await loadSitemap();
+
+  // Build URL sets
+  const approvedUrls = new Set(audit.approved.map(a => `/wiki/${a.file}`));
+  const indexedUrls = new Set(index.map(e => e.url));
+  const sitemapUrls = sitemap;
+
+  // Categorize approved pages
+  const byCategory = {
+    indexed: [],
+    missingFromIndex: [],
+    missingFromSitemap: [],
+    missingFiles: [],
+    intentionallyExcluded: [],
+    extraInIndex: []
+  };
+
+  for (const url of approvedUrls) {
+    const filePath = path.join(ROOT, url.slice(1));
+    const html = readHtmlFile(filePath);
+    const classification = classifyPage(url, html, filePath);
+
+    if (classification === 'missing') {
+      byCategory.missingFiles.push(url);
+    } else if (classification === 'excluded') {
+      byCategory.intentionallyExcluded.push(url);
+    } else if (!indexedUrls.has(url)) {
+      byCategory.missingFromIndex.push(url);
+    } else {
+      byCategory.indexed.push(url);
+      if (!sitemapUrls.has(url)) {
+        byCategory.missingFromSitemap.push(url);
+      }
+    }
+  }
+
+  // Check for extra entries in index (but exclude intentional root pages)
+  for (const url of indexedUrls) {
+    if (!approvedUrls.has(url) && !APPROVED_ROOT_PAGES.find(p => p.path === url)) {
+      byCategory.extraInIndex.push(url);
+    }
+  }
+
+  // Summary
+  console.log('📈 Summary:');
+  console.log(`  Approved pages (from audit):     ${approvedUrls.size}`);
+  console.log(`  Indexed pages (searchable):      ${indexedUrls.size}`);
+  console.log(`  In sitemap (crawlable):          ${sitemapUrls.size}`);
+  console.log(`  Intentionally excluded (stubs):  ${byCategory.intentionallyExcluded.length}`);
+  console.log(`  Missing HTML files:              ${byCategory.missingFiles.length}`);
+  console.log(`  Missing from index:              ${byCategory.missingFromIndex.length}`);
+  console.log(`  Missing from sitemap:            ${byCategory.missingFromSitemap.length}`);
+  console.log(`  Extra in index:                  ${byCategory.extraInIndex.length}\n`);
+
+  // Report issues
+  let hasIssues = false;
+
+  if (byCategory.missingFiles.length > 0) {
+    hasIssues = true;
+    console.log('❌ Approved URLs with missing HTML files:');
+    for (const url of byCategory.missingFiles) {
+      console.log(`  ❌ Approved URL has no HTML file: ${url}`);
+    }
+    console.log();
+  }
+
+  if (byCategory.missingFromIndex.length > 0) {
+    hasIssues = true;
+    console.log('❌ Missing from Search Index (approved but not searchable):');
+    for (const url of byCategory.missingFromIndex) {
+      console.log(`  ${url}`);
+    }
+    console.log();
+  }
+
+  if (byCategory.missingFromSitemap.length > 0) {
+    hasIssues = true;
+    console.log('⚠️  Missing from Sitemap (indexed but not crawlable):');
+    for (const url of byCategory.missingFromSitemap) {
+      console.log(`  ${url}`);
+    }
+    console.log();
+  }
+
+  if (byCategory.extraInIndex.length > 0) {
+    hasIssues = true;
+    console.log('⚠️  Extra in Index (indexed but not approved):');
+    for (const url of byCategory.extraInIndex) {
+      console.log(`  ${url}`);
+    }
+    console.log();
+  }
+
+  // Check root/tool pages
+  console.log('🔍 Approved Root/Tool Pages (should be in search & sitemap):');
+  const missingRootFiles = [];
+  const missingRootPages = [];
+  const missingSitemapRootPages = [];
+  for (const page of APPROVED_ROOT_PAGES) {
+    const filePath = path.join(ROOT, page.path.slice(1));
+    const exists = fs.existsSync(filePath);
+    const inIndex = indexedUrls.has(page.path);
+    const inSitemap = sitemapUrls.has(page.path);
+    
+    const status = exists
+      ? inIndex ? '✅ indexed' : '❌ not indexed'
+      : '❌ file missing';
+    
+    const sitemapStatus = exists && inIndex && !inSitemap ? ' ❌ not in sitemap' : '';
+    console.log(`  ${page.path.padEnd(30)} ${status}${sitemapStatus}`);
+    
+    if (!exists) {
+      missingRootFiles.push(page);
+    } else if (!inIndex) {
+      missingRootPages.push(page);
+    } else if (!inSitemap) {
+      missingSitemapRootPages.push(page);
+    }
+  }
+
+  if (missingRootFiles.length > 0) {
+    hasIssues = true;
+    console.log(`\n❌ ${missingRootFiles.length} approved root pages have no HTML file!`);
+    for (const page of missingRootFiles) {
+      console.log(`  ❌ Approved root page has no HTML file: ${page.path}`);
+    }
+  }
+
+  if (missingRootPages.length > 0) {
+    hasIssues = true;
+    console.log(`\n❌ ${missingRootPages.length} approved root pages not in search index!`);
+    console.log('   These need to be added to generate-wiki-index.js');
+  }
+
+  if (missingSitemapRootPages.length > 0) {
+    hasIssues = true;
+    console.log(`\n❌ ${missingSitemapRootPages.length} approved root pages not in sitemap!`);
+    console.log('   These need to be added to generate-sitemap.js');
+  }
+
+  console.log();
+
+  // Final status
+  if (!hasIssues && byCategory.missingFromIndex.length === 0) {
+    console.log('✅ All published pages are properly indexed and in sitemap!');
+    process.exit(0);
+  } else {
+    console.log('⚠️  Drift detected - see issues above');
+    process.exit(1);
+  }
+}
+
+run().catch(err => {
+  console.error(`ERROR: ${err.message}`);
+  process.exit(1);
+});
+
+module.exports = { run };

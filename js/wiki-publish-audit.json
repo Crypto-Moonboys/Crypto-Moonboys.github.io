@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-07-01T16:03:42.688Z",
+  "_generated": "2026-07-03T17:46:25.209Z",
   "summary": {
     "total": 330,
     "approved": 330,
@@ -1121,7 +1121,7 @@
       "file": "gkniftyheads-nft-collection.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT collection page metadata.",
-      "word_count": 6271
+      "word_count": 7344
     },
     {
       "slug": "gkniftyheads-nicky-the-ninja-napolitano-783385",
@@ -1744,7 +1744,7 @@
       "file": "noballgamess-nft-collection.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 237
+      "word_count": 1149
     },
     {
       "slug": "null-the-prophet",

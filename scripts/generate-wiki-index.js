@@ -10,12 +10,16 @@ const {
 } = require('./wiki-aliases.js');
 const { classifyWikiSlug } = require('./wiki-brand-taxonomy.js');
 const { loadApprovedUrls } = require('./wiki-publish-gate.js');
+const { getRootPagePaths } = require('./root-pages-config.js');
 
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
 const OUTPUT = path.join(ROOT, 'js', 'wiki-index.json');
 const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
 const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
+
+// Approved root/tool pages that should be in search index (non-wiki)
+const ROOT_PAGES_TO_INDEX = getRootPagePaths();
 
 function walk(dir) {
   let results = [];
@@ -486,6 +490,76 @@ function buildBrandMeta(slug) {
   };
 }
 
+function processRootPagesForIndex(canonicalEntries, linkGraph) {
+  // Process approved root/tool pages (non-wiki) to add to search index.
+  // These pages are public, in sitemap, but need to be in search index.
+  
+  for (const rootPageUrl of ROOT_PAGES_TO_INDEX) {
+    const filePath = path.join(ROOT, rootPageUrl.slice(1));
+    
+    if (!fs.existsSync(filePath)) continue;
+    
+    try {
+      const html = fs.readFileSync(filePath, 'utf8');
+      
+      // Skip noindex/redirect stubs
+      if (/data-wiki-stub=["']true["']/i.test(html)) continue;
+      if (/<meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(html)) continue;
+      
+      const title = extractTitle(html);
+      if (!title) continue;
+      
+      const description = extractDescription(html);
+      const htmlKeywords = extractKeywords(html);
+      const keywords = htmlKeywords.length > 0 ? htmlKeywords : [];
+      
+      // Use root page URL as canonical
+      const slug = rootPageUrl.replace(/^\/$/, 'index').replace(/^\//, '').replace(/\.html$/, '');
+      
+      // Build rank signals for root page (simpler than wiki pages)
+      const rankSignals = buildRankSignals(html, filePath, title, description, keywords, [], null);
+      const rankScore = computeRankScore(rankSignals);
+      const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
+      const searchIndex = buildSearchIndex(title, description, keywords, []);
+      const linkScore = buildLinkScore(rootPageUrl, linkGraph);
+      
+      // Fold graph authority
+      const authorityGraphPoints = Math.round(linkScore.authority);
+      const updatedAuthorityPoints = rankDiagnostics.authority_points + authorityGraphPoints;
+      const updatedRankDiagnostics = {
+        ...rankDiagnostics,
+        authority_points: updatedAuthorityPoints,
+        authority_graph_points: authorityGraphPoints,
+        final_rank_score: rankDiagnostics.final_rank_score + authorityGraphPoints
+      };
+      
+      const entry = {
+        title,
+        desc: description,
+        url: rootPageUrl,
+        tags: keywords,
+        category: rankSignals.category,
+        aliases: [],
+        rank_score: updatedRankDiagnostics.final_rank_score,
+        rank_signals: rankSignals,
+        rank_diagnostics: updatedRankDiagnostics,
+        search_index: searchIndex,
+        link_score: linkScore,
+        brand: null,
+        _slug: slug,
+        _canonicalSlug: slug
+      };
+      
+      // Don't overwrite if already exists (e.g., from wiki)
+      if (!canonicalEntries.has(slug)) {
+        canonicalEntries.set(slug, entry);
+      }
+    } catch (err) {
+      console.warn(`[wiki-index] Failed to process root page ${rootPageUrl}: ${err.message}`);
+    }
+  }
+}
+
 function run() {
   console.log('Generating wiki index...');
 
@@ -605,6 +679,9 @@ function run() {
       aliases: mergeAliases(existing.aliases, candidate.aliases)
     });
   });
+
+  // Add approved root/tool pages to the index
+  processRootPagesForIndex(canonicalEntries, linkGraph);
 
   const index = [...canonicalEntries.values()].map(entry => {
     const canonicalTitle = cleanupCanonicalTitle(entry.title);
