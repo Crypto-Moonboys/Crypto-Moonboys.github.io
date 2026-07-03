@@ -103,6 +103,17 @@ ok('waxcash.html Home button links to /',
 ok('waxcash.html has page-waxcash class',
   waxcashHtml.includes('class="page-waxcash page-standalone-tool"'));
 
+// Durability: verify that apply-shell.mjs respects the standalone flag
+const applyShellJs = read('scripts/apply-shell.mjs');
+ok('apply-shell.mjs contains isStandaloneToolPage function',
+  applyShellJs.includes('isStandaloneToolPage'));
+
+ok('apply-shell.mjs checks for page-standalone-tool flag',
+  applyShellJs.includes("includes('page-standalone-tool')"));
+
+ok('apply-shell.mjs skips shell regeneration for standalone pages',
+  applyShellJs.includes('Skip shell regeneration for standalone tool pages'));
+
 // Summary
 const total = passed + failed;
 console.log(`\n${passed}/${total} checks passed.`);
