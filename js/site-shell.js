@@ -235,7 +235,9 @@ window.__HUD_CONSOLIDATED__ = true;
       header.insertAdjacentElement('afterend', layout);
     }
 
-    if (sidebar.parentElement !== layout) layout.insertBefore(sidebar, layout.firstChild);
+    // Global sidebar panel disabled: UI unification removes permanent left nav
+    // Sidebar remains in DOM for hamburger menu access but not auto-inserted into layout
+    // if (sidebar.parentElement !== layout) layout.insertBefore(sidebar, layout.firstChild);
 
     let mainWrapper = document.getElementById('main-wrapper');
     if (!mainWrapper) {
@@ -247,7 +249,9 @@ window.__HUD_CONSOLIDATED__ = true;
 
     ensureFooter(mainWrapper);
     ensureOverlay();
-    ensureRightPanel(layout);
+    // Global right panel disabled: UI unification removes permanent right rail
+    // Live stats should be rendered inline on specific pages instead
+    // ensureRightPanel(layout);
     return { layout, sidebar, mainWrapper, content };
   }
 
