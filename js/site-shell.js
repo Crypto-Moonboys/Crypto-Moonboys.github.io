@@ -522,7 +522,7 @@ window.__HUD_CONSOLIDATED__ = true;
         }
       });
     });
-    observer.observe(document.body, { childList: true, subtree: false });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function bootShell() {
