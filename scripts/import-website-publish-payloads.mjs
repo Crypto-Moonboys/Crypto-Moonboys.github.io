@@ -585,8 +585,6 @@ function renderCategoryPage(category, entries) {
   <meta name="robots" content="index, follow">
   <title>${escapeHtml(category)} - Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/retro-16bit-theme.css">
-  <link rel="stylesheet" href="/css/swarmsy-visual-authority.css">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-category page-standard-shell">

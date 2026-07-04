@@ -1,4 +1,3 @@
-// Unified Wiki Shell v1
 // One runtime shell owns global navigation, layout, route mode, and recovery.
 // Audit anchor: No password account \u00B7 Telegram link for competitive systems \u00B7 Bot-maintained
 
@@ -7,13 +6,10 @@ window.__HUD_CONSOLIDATED__ = true;
 (function () {
   'use strict';
 
-  if (window.__WIKI_SHELL_V1_BOOTED__) return;
-  window.__WIKI_SHELL_V1_BOOTED__ = true;
+  if (window.__MOONBOYS_SHELL_BOOTED__) return;
+  window.__MOONBOYS_SHELL_BOOTED__ = true;
 
-  const WIKI_SHELL_V1 = true;
   const CANONICAL_PUBLIC_ROOT = '/wiki/';
-  const SHELL_CSS_ID = 'wiki-shell-v1-css';
-  const SHELL_CSS_HREF = '/css/wiki-shell-v1.css';
 
   const links = [
     { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
@@ -105,23 +101,15 @@ window.__HUD_CONSOLIDATED__ = true;
     return `<a class="${className}${active}" href="${escapeHtml(item.href)}" title="${escapeHtml(item.title || item.label)}" data-shell-link="${escapeHtml(item.label)}">${icon}<span>${escapeHtml(item.label)}</span></a>`;
   }
 
-  function ensureShellStyles() {
-    if (document.getElementById(SHELL_CSS_ID)) return;
-    const link = document.createElement('link');
-    link.id = SHELL_CSS_ID;
-    link.rel = 'stylesheet';
-    link.href = SHELL_CSS_HREF;
-    document.head.appendChild(link);
-  }
-
   function stampShellMode() {
     const mode = resolveShellMode(window.location.pathname);
-    document.documentElement.dataset.wikiShell = 'v1';
-    document.body.classList.add('wiki-shell-v1');
+    document.documentElement.dataset.wikiShell = 'global';
+    document.body.classList.add('swarmsy-shell');
     document.body.dataset.shellMode = mode;
-    document.body.dataset.publicSource = window.location.pathname.startsWith(CANONICAL_PUBLIC_ROOT) ? 'wiki' : 'wiki-shell';
-    document.body.classList.remove('wiki-shell-mode-home', 'wiki-shell-mode-wiki', 'wiki-shell-mode-games', 'wiki-shell-mode-battle', 'wiki-shell-mode-tool', 'wiki-shell-mode-system', 'wiki-shell-mode-legacy');
-    document.body.classList.add(`wiki-shell-mode-${mode}`);
+    document.body.dataset.publicSource = window.location.pathname.startsWith(CANONICAL_PUBLIC_ROOT) ? 'wiki' : 'swarmsy-shell';
+    document.body.classList.remove('wiki-shell-v1', 'wiki-shell-mode-home', 'wiki-shell-mode-wiki', 'wiki-shell-mode-games', 'wiki-shell-mode-battle', 'wiki-shell-mode-tool', 'wiki-shell-mode-system', 'wiki-shell-mode-legacy');
+    document.body.classList.remove('swarmsy-shell-mode-home', 'swarmsy-shell-mode-wiki', 'swarmsy-shell-mode-games', 'swarmsy-shell-mode-battle', 'swarmsy-shell-mode-tool', 'swarmsy-shell-mode-system', 'swarmsy-shell-mode-legacy');
+    document.body.classList.add(`swarmsy-shell-mode-${mode}`);
     if (!document.body.classList.contains('page-standard-shell') && mode !== 'games') {
       document.body.classList.add('page-standard-shell');
     }
@@ -138,7 +126,7 @@ window.__HUD_CONSOLIDATED__ = true;
       header.innerHTML = `
         <a class="site-logo" href="/index.html" aria-label="Crypto Moonboys home">
           <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
-          <span><span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span><span class="logo-sub">Unified Wiki Shell v1</span></span>
+          <span><span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span><span class="logo-sub">LIVE KNOWLEDGE NETWORK</span></span>
         </a>
         <form id="header-search" role="search" action="/search.html">
           <input id="search-input" name="q" type="search" placeholder="Search the wiki…" autocomplete="off" aria-label="Search the wiki">
@@ -200,14 +188,7 @@ window.__HUD_CONSOLIDATED__ = true;
         <p>Missed rewards and activity notes render without touching wiki articles.</p>
       </section>
     `;
-    const banner = content.querySelector('#wiki-route-banner');
-    if (banner && banner.nextSibling) {
-      content.insertBefore(container, banner.nextSibling);
-    } else if (banner) {
-      content.appendChild(container);
-    } else {
-      content.insertBefore(container, content.firstChild);
-    }
+    content.insertBefore(container, content.firstChild);
   }
 
   function shouldShowInlineStats(pathname) {
@@ -287,24 +268,6 @@ window.__HUD_CONSOLIDATED__ = true;
     document.body.classList.remove('page-has-right-panel');
     if (rightPanel) rightPanel.remove();
     return null;
-  }
-
-  function renderLegacyRouteBanner(content) {
-    const p = normalizePathname(window.location.pathname);
-    const isWikiSource = p.startsWith(CANONICAL_PUBLIC_ROOT) || p === '/search.html' || p === '/index.html';
-    let banner = document.getElementById('wiki-route-banner');
-    if (isWikiSource) {
-      if (banner) banner.remove();
-      return;
-    }
-    const canonical = resolveCanonicalWikiRoute(p);
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = 'wiki-route-banner';
-      banner.className = 'wiki-route-banner';
-    }
-    banner.innerHTML = `<strong>Unified Wiki Shell v1</strong><span>Public route mounted through the wiki UI. Canonical wiki route:</span><a href="${escapeHtml(canonical)}">${escapeHtml(canonical)}</a>`;
-    content.insertBefore(banner, content.firstChild);
   }
 
   function bindSearchForm() {
@@ -429,10 +392,8 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function ensureNav() {
-    ensureShellStyles();
     stampShellMode();
     const shell = ensureLayout();
-    renderLegacyRouteBanner(shell.content);
     ensureInlineLiveStats(shell.content);
     bindSearchForm();
     bindHudIdentityRefresh();
@@ -466,8 +427,6 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   window.MOONBOYS_WIKI_SHELL = Object.freeze({
-    version: 'v1',
-    WIKI_SHELL_V1,
     CANONICAL_PUBLIC_ROOT,
     links: links.map((item) => ({ label: item.label, href: item.href })),
     ensureNav,
