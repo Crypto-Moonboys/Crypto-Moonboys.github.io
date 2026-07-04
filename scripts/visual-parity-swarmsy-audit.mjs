@@ -543,6 +543,68 @@ if (wikiCss) {
 }
 if (swarmsyLayoutOk) pass('SWARMSY/About routes have full-width landing-page layout contract');
 
+console.log('\n[10] Wiki article pages inherit the SWARMSY glowing card and font contract');
+let wikiArticleVisualOk = true;
+if (wikiCss) {
+  const wikiContentBlock = selectorBlock(wikiCss, 'body.page-wiki .wiki-content,\nbody.page-wiki .wiki-page,\nbody.page-wiki .article-body')
+    || selectorBlock(wikiCss, 'body.page-wiki .wiki-content,\r\nbody.page-wiki .wiki-page,\r\nbody.page-wiki .article-body');
+  const wikiTitleBlock = selectorBlock(wikiCss, 'body.page-wiki .page-title,\nbody.page-wiki .article-title')
+    || selectorBlock(wikiCss, 'body.page-wiki .page-title,\r\nbody.page-wiki .article-title');
+  const wikiSectionBlock = selectorBlock(wikiCss, 'body.page-wiki .wiki-section');
+  const wikiSectionHeadingBlock = selectorBlock(wikiCss, 'body.page-wiki .wiki-section h2,\nbody.page-wiki .wiki-section h3')
+    || selectorBlock(wikiCss, 'body.page-wiki .wiki-section h2,\r\nbody.page-wiki .wiki-section h3');
+  const wikiFactBlock = selectorBlock(wikiCss, 'body.page-wiki .lore-fact-block,\nbody.page-wiki .wiki-card,\nbody.page-wiki .infobox,\nbody.page-wiki .notice,\nbody.page-wiki .related-wiki-paths li,\nbody.page-wiki .related-wiki-card,\nbody.page-wiki .citation-vote-panel')
+    || selectorBlock(wikiCss, 'body.page-wiki .lore-fact-block,\r\nbody.page-wiki .wiki-card,\r\nbody.page-wiki .infobox,\r\nbody.page-wiki .notice,\r\nbody.page-wiki .related-wiki-paths li,\r\nbody.page-wiki .related-wiki-card,\r\nbody.page-wiki .citation-vote-panel');
+  const wikiMetaBlock = selectorBlock(wikiCss, 'body.page-wiki .article-badge,\nbody.page-wiki .meta-item')
+    || selectorBlock(wikiCss, 'body.page-wiki .article-badge,\r\nbody.page-wiki .meta-item');
+  const wikiFactGridBlock = selectorBlock(wikiCss, 'body.page-wiki .lore-facts-stack');
+
+  const cardChecks = [
+    [wikiContentBlock, 'wiki content panel'],
+    [wikiSectionBlock, 'wiki section card'],
+    [wikiFactBlock, 'wiki fact/card block'],
+  ];
+  for (const [block, label] of cardChecks) {
+    if (
+      !blockHas(block, /background\s*:/i) ||
+      !blockHas(block, /border\s*:/i) ||
+      !blockHas(block, /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i) ||
+      !blockHas(block, /box-shadow\s*:/i) ||
+      !blockHas(block, /padding\s*:/i)
+    ) {
+      fail(`${GLOBAL_SHELL_CSS} - ${label} must use SWARMSY glass card background, border, glow, radius, and padding`);
+      wikiArticleVisualOk = false;
+    }
+  }
+  if (
+    !blockHas(wikiTitleBlock, /font-family\s*:\s*var\(--font-display\)/i) ||
+    !blockHas(wikiTitleBlock, /font-size\s*:\s*clamp/i) ||
+    !blockHas(wikiTitleBlock, /text-shadow\s*:/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - wiki titles must use SWARMSY glowing display typography`);
+    wikiArticleVisualOk = false;
+  }
+  if (!blockHas(wikiSectionHeadingBlock, /color\s*:\s*#00ffcc/i) || !blockHas(wikiSectionHeadingBlock, /text-shadow\s*:/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - wiki section headings must use cyan SWARMSY glow`);
+    wikiArticleVisualOk = false;
+  }
+  if (
+    !blockHas(wikiMetaBlock, /border-radius\s*:\s*999px/i) ||
+    !blockHas(wikiMetaBlock, /background\s*:/i) ||
+    !blockHas(wikiMetaBlock, /border\s*:/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - wiki metadata must render as SWARMSY pills, not plain text`);
+    wikiArticleVisualOk = false;
+  }
+  if (!blockHas(wikiFactGridBlock, /display\s*:\s*grid/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - wiki fact stacks must use a responsive SWARMSY card grid`);
+    wikiArticleVisualOk = false;
+  }
+} else {
+  wikiArticleVisualOk = false;
+}
+if (wikiArticleVisualOk) pass('Wiki article pages have SWARMSY glowing typography, cards, pills, and fact grids');
+
 console.log('\n--- Result ---');
 console.log(`  Normal public pages checked : ${normalPages.length}`);
 console.log(`  CSS files checked           : ${CSS_FILES_TO_AUDIT.length}`);

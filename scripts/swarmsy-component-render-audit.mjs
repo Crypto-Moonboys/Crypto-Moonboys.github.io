@@ -23,6 +23,8 @@ const ROUTES = [
   '/index.html',
   '/games/',
   '/community.html',
+  '/wiki/block-topia.html',
+  '/wiki/gkniftyheads.html',
 ];
 
 const MIME = new Map([
@@ -149,6 +151,11 @@ for (const route of ROUTES) {
       swarmsyCard: metrics('.swarmsy-card'),
       swarmsySection: metrics('.swarmsy-section'),
       swarmsyPill: metrics('.swarmsy-pill'),
+      wikiContent: metrics('body.page-wiki .wiki-content, body.page-wiki .wiki-page, body.page-wiki .article-body'),
+      wikiTitle: metrics('body.page-wiki .page-title, body.page-wiki .article-title'),
+      wikiSection: metrics('body.page-wiki .wiki-section'),
+      wikiFactCard: metrics('body.page-wiki .lore-fact-block, body.page-wiki .wiki-card, body.page-wiki .infobox, body.page-wiki .notice'),
+      wikiMetaPill: metrics('body.page-wiki .article-badge, body.page-wiki .meta-item'),
       categoryCard: metrics('.category-card'),
       gameOrArticleCard: metrics('.game-card, .article-list-item, .article-card'),
       communityPanel: metrics('.page-community .section, .bc-why-list li, .bc-join-card, .bc-perk-card'),
@@ -229,6 +236,34 @@ for (const route of ROUTES) {
       fail(route, 'community sections/cards look flattened');
     }
   }
+  if (route.startsWith('/wiki/')) {
+    for (const [name, data] of [
+      ['wiki content panel', audit.wikiContent],
+      ['wiki section card', audit.wikiSection],
+      ['wiki fact/card block', audit.wikiFactCard],
+    ]) {
+      if (!data) {
+        fail(route, `${name} missing`);
+        continue;
+      }
+      if (data.borderTopWidth < 1) fail(route, `${name} must have visible border`);
+      if (data.backgroundColor === 'rgba(0, 0, 0, 0)' || data.backgroundColor === 'transparent') {
+        fail(route, `${name} must have SWARMSY glass background`);
+      }
+      if (data.borderRadius < 14) fail(route, `${name} border-radius must be >= 14px`);
+      if (data.paddingTop < 14 || data.paddingLeft < 14) fail(route, `${name} must have card padding`);
+    }
+    if (!audit.wikiTitle) {
+      fail(route, 'wiki title missing');
+    } else if (!/rgb\(255,\s*255,\s*255\)|rgb\(247,\s*201,\s*72\)|rgb\(0,\s*255,\s*204\)/i.test(audit.wikiTitle.color)) {
+      fail(route, `wiki title must use bright SWARMSY display colour, got ${audit.wikiTitle.color}`);
+    }
+    if (!audit.wikiMetaPill) {
+      fail(route, 'wiki metadata pill missing');
+    } else if (audit.wikiMetaPill.borderRadius < 14 || audit.wikiMetaPill.paddingTop < 6) {
+      fail(route, 'wiki metadata must render as pill/card, not plain text');
+    }
+  }
 
   results.push({
     route,
@@ -237,6 +272,9 @@ for (const route of ROUTES) {
     swarmsyCard: audit.swarmsyCard ? summarizeBox(audit.swarmsyCard.box) : null,
     swarmsySection: audit.swarmsySection ? summarizeBox(audit.swarmsySection.box) : null,
     swarmsyPill: audit.swarmsyPill ? summarizeBox(audit.swarmsyPill.box) : null,
+    wikiContent: audit.wikiContent ? summarizeBox(audit.wikiContent.box) : null,
+    wikiSection: audit.wikiSection ? summarizeBox(audit.wikiSection.box) : null,
+    wikiFactCard: audit.wikiFactCard ? summarizeBox(audit.wikiFactCard.box) : null,
   });
 }
 
@@ -256,5 +294,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`  [PASS] ${ROUTES.length} pages render SWARMSY components as cards, grids, pills, and glass sections`);
+console.log(`  [PASS] ${ROUTES.length} pages render SWARMSY components and wiki article cards/glow as expected`);
 console.log('\nSWARMSY component render audit passed.\n');
