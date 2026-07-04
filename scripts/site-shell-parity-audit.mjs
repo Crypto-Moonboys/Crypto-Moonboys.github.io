@@ -101,6 +101,7 @@ console.log('[1] site-shell.js exists');
 const shellJs = read('js/site-shell.js');
 const applyShell = read('scripts/apply-shell.mjs');
 const retroTheme = read('css/retro-16bit-theme.css') || '';
+const wikiShellCss = read('css/wiki-shell-v1.css') || '';
 if (!shellJs) {
   fail('js/site-shell.js — file not found');
 } else {
@@ -348,28 +349,19 @@ if (!indexHtml.includes('page-has-right-panel')) {
 } else {
   fail('index.html - must not contain page-has-right-panel');
 }
-const homeLayoutRightPanelRules = Array.from(retroTheme.matchAll(/([^{}]*\.page-home\s+#layout[^{}]*)\{([^{}]*)\}/gu))
-  .filter((match) => match[2].includes('grid-template-columns') || match[2].includes('var(--right-panel-w)'));
-if (homeLayoutRightPanelRules.length === 0) {
-  pass('retro theme: .page-home #layout does not reserve right-panel grid space');
+const retroShellContainerSelectors = /#layout|#main-wrapper|#content/u;
+const retroRightPanelPlacement = /#layout\s*>\s*#homepage-right-panel|#homepage-right-panel:not\(#sidebar\):not\(#main-wrapper\)|--right-panel-w|--sparky-right-panel-gap/u;
+if (!retroShellContainerSelectors.test(retroTheme) && !retroRightPanelPlacement.test(retroTheme)) {
+  pass('retro theme: no shell container or right-panel layout authority remains');
 } else {
-  fail('retro theme - .page-home #layout must not set grid-template-columns or var(--right-panel-w)');
+  fail('retro theme - must not define #layout/#main-wrapper/#content or right-panel placement rules');
 }
-if (!/body\.page-home\s+#layout\s*>\s*#homepage-right-panel/u.test(retroTheme)) {
-  pass('retro theme: page-home is not used as right-panel layout proxy');
+if (wikiShellCss.includes('body.wiki-shell-v1 #layout')
+    && wikiShellCss.includes('body.wiki-shell-v1 #main-wrapper')
+    && wikiShellCss.includes('body.wiki-shell-v1 #content')) {
+  pass('wiki-shell-v1.css: owns shell container layout');
 } else {
-  fail('retro theme - body.page-home #layout > #homepage-right-panel selector must not be used');
-}
-if (!/\.page-has-right-panel\s+#layout\s*\{[\s\S]*?grid-template-columns:\s*var\(--color-sidebar-w\)\s+minmax\(0,\s*1fr\)\s+var\(--right-panel-w\)/u.test(retroTheme)
-    && !/body\.page-game\s+#layout\s*\{[\s\S]*?grid-template-columns:\s*var\(--color-sidebar-w\)\s+minmax\(0,\s*1fr\)/u.test(retroTheme)) {
-  pass('retro theme: stale right-panel/game layout classes do not reserve grid columns');
-} else {
-  fail('retro theme - stale right-panel/game layout classes must not reserve grid columns');
-}
-if (retroTheme.includes('body.page-standard-shell #layout') && retroTheme.includes('body.page-standard-shell #main-wrapper') && retroTheme.includes('body.page-standard-shell #content')) {
-  pass('retro theme: standard shell layout fills freed width');
-} else {
-  fail('retro theme - missing standard shell fill-width layout rules');
+  fail('wiki-shell-v1.css - must own #layout/#main-wrapper/#content layout');
 }
 if (dashboardHtml.includes('data-csp-panel') || dashboardHtml.includes('data-las-panel')) {
   fail('dashboard.html — contains live player panel hooks');

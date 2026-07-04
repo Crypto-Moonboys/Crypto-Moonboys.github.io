@@ -44,9 +44,6 @@
   /* Pixel font */
   --font-pixel: 'Press Start 2P', 'Courier New', monospace;
 
-  /* Layout dimensions */
-  --right-panel-w: 270px;
-  --sparky-right-panel-gap: 50px;
 }
 
 /* ── PREFERS-REDUCED-MOTION ──────────────────────────────────── */
@@ -793,86 +790,6 @@ a.hero-stat-link:hover {
   position: relative;
   z-index: 10;
 }
-
-/* ── SHARED RIGHT-PANEL LAYOUT ───────────────────────────────── */
-/* Unified shell flow: stale right-panel opt-in classes must not reserve columns.
- * Live/action stats render inline inside #content.
- */
-.page-has-right-panel #layout {
-  display: block !important;
-  grid-template-columns: none !important;
-  width: 100%;
-  max-width: none;
-  min-width: 0;
-  align-items: stretch;
-}
-
-body.page-standard-shell #layout,
-body.page-home.page-standard-shell #layout {
-  display: flex !important;
-}
-
-body.page-standard-shell #main-wrapper,
-body.page-home.page-standard-shell #main-wrapper {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: 100%;
-}
-
-body.page-standard-shell #content,
-body.page-home.page-standard-shell #content {
-  width: 100%;
-  max-width: none;
-}
-
-/* Ensure main wrapper still stacks vertically inside the grid */
-.page-has-right-panel #main-wrapper {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── RIGHT PANEL ─────────────────────────────────────────────── */
-/* wiki.css has a defensive guard with specificity (0,3,0,0):
- *   #layout > *:not(#sidebar):not(#main-wrapper) { flex:0 0 0!important; max-width:0!important; overflow:hidden!important; ... }
- *   IDs counted: #layout=1, :not(#sidebar)=1, :not(#main-wrapper)=1 → total 3 IDs.
- *
- * The selector below mirrors the guard's :not() pseudo-classes, giving it
- * specificity (0,4,1,1): #layout=1 + #homepage-right-panel=1 + :not(#sidebar)=1 + :not(#main-wrapper)=1
- * = 4 IDs, plus .page-has-right-panel=1 class, body=1 type.  4 IDs > 3 IDs, so
- * every !important declaration here wins, making the panel visible at desktop (≥1201 px).
- */
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
-  position: sticky !important;
-  top: var(--color-header-h) !important;
-  height: calc(100vh - var(--color-header-h)) !important;
-  flex: 0 0 var(--right-panel-w) !important;
-  width: var(--right-panel-w) !important;
-  min-width: var(--right-panel-w) !important;
-  max-width: var(--right-panel-w) !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 14px 10px !important;
-  margin: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 14px !important;
-  /* Bright neon magenta outer border, cyan inner glow */
-  border-left: 3px solid var(--neon-magenta) !important;
-  box-shadow: inset 2px 0 0 rgba(0, 229, 255, 0.25),
-              0 0 18px rgba(255, 45, 120, 0.18) !important;
-  background: rgba(2, 6, 14, 0.88) !important;
-  /* Pixel dither scanline on right panel bg */
-  background-image: repeating-linear-gradient(
-    0deg,
-    rgba(0, 229, 255, 0.018) 0px,
-    rgba(0, 229, 255, 0.018) 2px,
-    transparent 2px,
-    transparent 4px
-  ) !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(255, 45, 120, 0.4) transparent !important;
-}
 #homepage-right-panel::-webkit-scrollbar       { width: 4px; }
 #homepage-right-panel::-webkit-scrollbar-track { background: transparent; }
 #homepage-right-panel::-webkit-scrollbar-thumb {
@@ -1301,28 +1218,8 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
 
-/* Collapse right panel below 1200 px */
-@media (max-width: 1200px) {
-  .page-has-right-panel #layout {
-    grid-template-columns: none !important;
-  }
-  body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
-    display: none !important;
-    flex: 0 0 0 !important;
-    width: 0 !important;
-    min-width: 0 !important;
-    max-width: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-  }
-}
-
 /* Stack layout on mobile */
 @media (max-width: 900px) {
-  .page-has-right-panel #layout {
-    display: block !important;
-  }
-
   .hero-logo-img {
     width: min(92vw, 520px);
     margin: 20px auto 14px;
@@ -1576,22 +1473,6 @@ body.page-home .retro-hud-body b {
   text-shadow: 0 0 6px rgba(255,255,255,.22), 2px 2px 0 #000;
 }
 
-body.page-has-right-panel #homepage-right-panel {
-  min-width: 250px;
-  max-width: 310px;
-}
-
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
-  background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, rgba(4, 8, 24, .86), rgba(1, 4, 12, .95)) !important;
-  border-left: 4px solid var(--ui-pink) !important;
-  box-shadow:
-    inset 3px 0 0 rgba(0, 229, 255, 0.55),
-    -10px 0 22px rgba(255, 45, 120, 0.16),
-    0 0 24px rgba(0, 229, 255, 0.10) !important;
-}
-
 body.page-home .article-card-desc {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -1696,18 +1577,6 @@ body.page-home .retro-info-panel > *,
 body.page-home .home-widget > * {
   position: relative;
   z-index: 5;
-}
-
-/* Right HUD */
-body.page-has-right-panel #homepage-right-panel {
-  background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, rgba(4, 8, 24, .86), rgba(1, 4, 12, .95)) !important;
-  border-left: 4px solid var(--ui-pink) !important;
-  box-shadow:
-    inset 3px 0 0 rgba(0, 229, 255, 0.55),
-    -10px 0 22px rgba(255, 45, 120, 0.16),
-    0 0 24px rgba(0, 229, 255, 0.10) !important;
 }
 
 body.page-home .retro-hud-title {
@@ -1833,12 +1702,6 @@ body.page-home .launch-manifesto {
 body.page-home .launch-subcopy {
   color: rgba(190, 230, 246, 0.86) !important;
   text-shadow: 2px 2px 0 rgba(0,0,0,.85);
-}
-
-@media (max-width: 1200px) {
-  body.page-has-right-panel #homepage-right-panel {
-    max-width: none;
-  }
 }
 
 @media (max-width: 900px) {
@@ -2821,17 +2684,6 @@ body.page-has-right-panel .retro-hud-body b {
   text-shadow: 0 0 6px rgba(255,255,255,.22), 2px 2px 0 #000;
 }
 
-body.page-has-right-panel #homepage-right-panel {
-  background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, rgba(4, 8, 24, .86), rgba(1, 4, 12, .95)) !important;
-  border-left: 4px solid var(--ui-pink) !important;
-  box-shadow:
-    inset 3px 0 0 rgba(0, 229, 255, 0.55),
-    -10px 0 22px rgba(255, 45, 120, 0.16),
-    0 0 24px rgba(0, 229, 255, 0.10) !important;
-}
-
 body.page-has-right-panel .retro-hud-title {
   min-height: 38px;
   padding: 10px 12px !important;
@@ -2895,12 +2747,6 @@ body.page-has-right-panel .retro-hud-title-icon {
     0 0 14px rgba(0,229,255,.50),
     2px 2px 0 #000 !important;
   image-rendering: pixelated;
-}
-
-@media (max-width: 1200px) {
-  body.page-has-right-panel #homepage-right-panel {
-    max-width: none;
-  }
 }
 
 @media (max-width: 900px) {
@@ -3562,12 +3408,6 @@ body.page-has-right-panel .sidebar-nav a.active {
   border-left-color: var(--ui-pink) !important;
   color: #fff !important;
   box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.28), 0 0 10px rgba(0, 229, 255, 0.16) !important;
-}
-
-@media (max-width: 1200px) {
-  body.page-has-right-panel #homepage-right-panel {
-    max-width: none;
-  }
 }
 
 /* ==========================================================================
@@ -4943,32 +4783,9 @@ body.page-game .meta-item {
   padding: 8px 10px !important;
 }
 
-/* Display:grid rule scoped to desktop only.
- * Without the min-width guard this rule's higher specificity (body + class + ID)
- * overrides the max-width:900px media-query's display:flex !important, leaving
- * mobile stuck in a 260 px grid column instead of a full-width flex column. */
-@media (min-width: 901px) {
-  body.page-has-right-panel #layout,
-  body.page-game #layout {
-    display: block !important;
-    grid-template-columns: none !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-height: calc(100vh - var(--color-header-h));
-    align-items: stretch;
-    min-width: 0 !important;
-  }
-}
-
 :is(body.page-has-right-panel, body.page-game) {
   overflow-x: hidden;
   overflow-x: clip;
-}
-
-:is(body.page-home, body.page-standard-shell, body.page-has-right-panel, body.page-game) #sidebar {
-  width: var(--color-sidebar-w);
-  min-width: var(--color-sidebar-w);
-  max-width: var(--color-sidebar-w);
 }
 
 :is(body.page-home, body.page-standard-shell, body.page-has-right-panel, body.page-game) .sidebar-heading {
@@ -5015,23 +4832,6 @@ body.page-game .meta-item {
   box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
 }
 
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
-body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
-  position: sticky !important;
-  top: var(--color-header-h) !important;
-  width: 270px !important;
-  min-width: 270px !important;
-  max-width: 270px !important;
-  box-sizing: border-box !important;
-  height: calc(100vh - var(--color-header-h)) !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 12px 8px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-}
-
 :is(body.page-home, body.page-standard-shell, body.page-has-right-panel, body.page-game) .retro-hud-title {
   font-size: 0.62rem !important;
   line-height: 1.35 !important;
@@ -5047,28 +4847,6 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
 }
 
 :is(body.page-home, body.page-standard-shell, body.page-has-right-panel, body.page-game) .hud-value {
-  font-size: 0.62rem !important;
-}
-
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title,
-body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title {
-  font-size: 0.62rem !important;
-  line-height: 1.35 !important;
-}
-
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body,
-body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body {
-  font-size: 0.74rem !important;
-  line-height: 1.5 !important;
-}
-
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label,
-body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label {
-  font-size: 0.60rem !important;
-}
-
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value,
-body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value {
   font-size: 0.62rem !important;
 }
 
@@ -5088,51 +4866,7 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
   border-radius: 0 !important;
 }
 
-:is(body.page-has-right-panel, body.page-game) #content {
-  /* max-width removed: content must fill the grid column, not leave a blank right gutter */
-  max-width: none;
-  min-width: 0 !important;
-  width: 100%;
-}
-
-:is(body.page-has-right-panel, body.page-game) #main-wrapper {
-  min-width: 0 !important;
-}
-
-@media (max-width: 1360px) {
-  body.page-has-right-panel #layout,
-  body.page-game #layout {
-    grid-template-columns: none !important;
-  }
-
-  body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
-  body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
-    display: none !important;
-    width: 0 !important;
-    min-width: 0 !important;
-    max-width: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-  }
-}
-
-/* Homepage mobile/tablet content centering + overflow guard */
 @media (max-width: 900px) {
-  body.page-home.page-standard-shell #main-wrapper,
-  body.page-home.page-standard-shell #content {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  body.page-home.page-standard-shell #content {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-  }
-
   body.page-home .home-hero,
   body.page-home .home-widget,
   body.page-home .category-grid,
@@ -5143,13 +4877,6 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
     box-sizing: border-box !important;
     margin-left: auto !important;
     margin-right: auto !important;
-  }
-}
-
-@media (max-width: 640px) {
-  body.page-home #content {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
   }
 }
 
@@ -5314,12 +5041,6 @@ body.page-game .roguelite-loop-copy {
   text-decoration: none;
   color: #00ffcc;
   transition: transform 0.15s ease, filter 0.15s ease;
-}
-
-@media (min-width: 1361px) {
-  body.page-has-right-panel .site-paperclip-agent {
-    right: calc(var(--right-panel-w) + var(--sparky-right-panel-gap));
-  }
 }
 
 .site-paperclip-agent__bot {
