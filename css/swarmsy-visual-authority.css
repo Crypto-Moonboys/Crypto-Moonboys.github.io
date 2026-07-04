@@ -387,6 +387,11 @@ body.page-home .article-card-img {
   box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
 }
 
+/* Keep reward cards faction-accented after the card border shorthand above */
+.bc-faction-reward-card {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
+}
+
 .bc-join-btn,
 .bc-join-confirm-btn,
 .bc-join-cancel-btn {

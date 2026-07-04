@@ -161,6 +161,16 @@ function hasCssSelector(cssText, selector) {
   return pattern.test(cssText);
 }
 
+function getCssBlocksForSelector(cssText, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`(?:^|[,}])[^{}]*${escaped}[^{}]*\\{([\\s\\S]*?)\\}`, 'gm');
+  return Array.from(cssText.matchAll(pattern), (match) => match[1]);
+}
+
+function hasDeclarationInAnyBlock(cssText, selector, declarationPattern) {
+  return getCssBlocksForSelector(cssText, selector).some((block) => declarationPattern.test(block));
+}
+
 function getHTMLFiles(dir) {
   const files = [];
   try {
@@ -544,12 +554,34 @@ if (authorityCss) {
 
 if (pixelFontOk) pass('swarmsy-visual-authority.css does not re-introduce pixel font on cards/nav/headings');
 
-// 10. Authority CSS must restore faction-colored border-top on bc-join-card and bc-perk-card
-console.log('\n[10] Checking bc-join-card / bc-perk-card retain faction border-top in authority CSS');
+// 10. Authority CSS must neutralise homepage retro pseudo-frame effects
+console.log('\n[10] Checking homepage retro pseudo-frame effects are neutralised');
+let homepageFrameOk = true;
+
+if (authorityCss) {
+  for (const selector of [
+    'body.page-home .category-card::before',
+    'body.page-home .category-card::after',
+    'body.page-home .article-card::before',
+    'body.page-home .article-card::after',
+  ]) {
+    const hasDisplayNone = hasDeclarationInAnyBlock(authorityCss, selector, /display\s*:\s*none\s*!important/i);
+    const hasContentNone = hasDeclarationInAnyBlock(authorityCss, selector, /content\s*:\s*none\s*!important/i);
+    if (!hasDisplayNone || !hasContentNone) {
+      fail(`${AUTHORITY_CSS_PATH} - ${selector} must set display: none !important and content: none !important to neutralise retro pseudo-frame effects`);
+      homepageFrameOk = false;
+    }
+  }
+}
+
+if (homepageFrameOk) pass('Homepage category/article retro pseudo-frame effects are neutralised');
+
+// 11. Authority CSS must restore faction-colored border-top on faction-accent cards
+console.log('\n[11] Checking faction-accent cards retain faction border-top in authority CSS');
 let factionBorderOk = true;
 
 if (authorityCss) {
-  for (const sel of ['.bc-join-card', '.bc-perk-card']) {
+  for (const sel of ['.bc-join-card', '.bc-perk-card', '.bc-faction-reward-card']) {
     const escaped = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     // The selector may share a rule block with other selectors; allow comma-separated list before {
     const pattern = new RegExp(`${escaped}[^{]*\\{[^}]*border-top[^;]*--faction-color`, 's');
@@ -560,7 +592,7 @@ if (authorityCss) {
   }
 }
 
-if (factionBorderOk) pass('bc-join-card and bc-perk-card retain faction-colored border-top in authority CSS');
+if (factionBorderOk) pass('Faction-accent cards retain faction-colored border-top in authority CSS');
 
 // Summary
 console.log('\n─────────────────────────────────────────────────────────────────────');
