@@ -37,7 +37,7 @@
           '<a href="' + INCUBATOR_HREF + '">Learn more</a>.' +
         '</span>' +
       '</div>' +
-      '<a href="' + BOT_HREF + '" class="btn btn-primary tg-sync-cta-btn" target="_blank" rel="noopener noreferrer">Link Telegram</a>' +
+      '<a href="' + BOT_HREF + '" class="swarmsy-action-card tg-sync-cta-btn" target="_blank" rel="noopener noreferrer"><strong>Link Telegram</strong><span>Open the bot and run /gklink.</span></a>' +
     '</div>';
 
   function mount(el) {

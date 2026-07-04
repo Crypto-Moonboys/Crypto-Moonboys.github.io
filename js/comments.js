@@ -229,7 +229,7 @@
       '</div>' +
       '<div class="comment-form-footer">' +
         '<span class="comment-form-note">💡 Gravatar used for avatar. <a href="https://gravatar.com" target="_blank" rel="noopener noreferrer">Set yours up.</a></span>' +
-        '<button type="submit" class="btn btn-primary">Post Comment</button>' +
+        '<button type="submit" class="swarmsy-form-button">Post Comment</button>' +
       '</div>' +
       '<div class="comment-form-status" role="status" aria-live="polite"></div>' +
     '</form>';

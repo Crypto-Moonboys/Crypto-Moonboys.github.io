@@ -108,9 +108,9 @@
         '<div class="live-activity-panel">' +
           '<p class="live-activity-desc">Activity feed not live yet. ' +
             'Arcade runs, faction actions, and Battle Chamber events will appear here when the feed launches.</p>' +
-          '<div class="live-activity-cta">' +
-            '<a href="/games/" class="btn btn-primary">Play Arcade</a>' +
-            '<a href="/community.html" class="btn btn-secondary">Open Battle Chamber</a>' +
+          '<div class="swarmsy-action-grid swarmsy-action-grid--compact">' +
+            '<a href="/games/" class="swarmsy-action-card swarmsy-action-card--gold"><strong>Play Arcade</strong><span>Open the live games index.</span></a>' +
+            '<a href="/community.html" class="swarmsy-action-card"><strong>Open Battle Chamber</strong><span>Enter community signal and proof routes.</span></a>' +
           '</div>' +
         '</div>';
       return;
@@ -148,7 +148,7 @@
 
     if (!BASE || !FEATURES.LEADERBOARD) {
       el.innerHTML = '<div class="widget-unavailable"><p>Engagement leaderboard not yet available.</p>'
-        + '<a href="/games/leaderboard.html" class="btn btn-secondary">Open arcade leaderboard \u2192</a></div>';
+        + '<a href="/games/leaderboard.html" class="swarmsy-action-card"><strong>Open arcade leaderboard</strong><span>View the full leaderboard route.</span></a></div>';
       return;
     }
 
@@ -232,7 +232,7 @@
             '<div class="bt-title">Battle Chamber</div>' +
             '<div class="bt-sub">Community comments are not yet available here. ' +
               'Open the Battle Chamber for the current proof wall and faction entry points.</div>' +
-            '<div class="bt-cta"><a href="/community.html" class="btn btn-primary">Open Battle Chamber \u2192</a></div>' +
+            '<div class="bt-cta"><a href="/community.html" class="swarmsy-action-card swarmsy-action-card--gold"><strong>Open Battle Chamber</strong><span>Enter community comments and faction routes.</span></a></div>' +
           '</div>' +
         '</div>';
       return;
@@ -258,7 +258,7 @@
               '</div>' +
             '</div>';
           }).join('') +
-          '<a href="articles.html" class="btn btn-secondary teaser-see-all">See all battles →</a>' +
+          '<a href="articles.html" class="swarmsy-action-card teaser-see-all"><strong>See all battles</strong><span>Open the full article and comment list.</span></a>' +
           '</div>';
       })
       .catch(function () {

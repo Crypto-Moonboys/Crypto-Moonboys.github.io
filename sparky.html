@@ -7,291 +7,98 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" type="image/png" href="/favicon.png">
-  <style>
-    .sparky-panel {
-      max-width: 920px;
-      margin: 40px auto;
-      padding: 36px 28px;
-      border: 1px solid rgba(0, 255, 204, 0.28);
-      border-radius: 14px;
-      background: rgba(0, 16, 24, 0.78);
-      box-shadow: 0 0 28px rgba(0, 255, 204, 0.08);
-    }
-
-    .sparky-eyebrow {
-      color: #00ffcc;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      font-size: 0.78rem;
-      margin-bottom: 10px;
-    }
-
-    .sparky-title {
-      font-size: clamp(2rem, 5vw, 3.1rem);
-      color: #00ffcc;
-      margin: 0 0 18px;
-      line-height: 1.05;
-    }
-
-    .sparky-copy {
-      font-size: 1.05rem;
-      line-height: 1.72;
-      color: rgba(255, 255, 255, 0.88);
-      max-width: 760px;
-      margin-bottom: 22px;
-    }
-
-    .sparky-status {
-      display: grid;
-      gap: 10px;
-      margin: 24px 0;
-      padding: 18px 20px;
-      border: 1px solid rgba(0, 255, 204, 0.24);
-      border-radius: 10px;
-      background: rgba(0, 255, 204, 0.055);
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .sparky-status strong {
-      color: #00ffcc;
-    }
-
-    .sparky-chat {
-      display: grid;
-      gap: 16px;
-      margin-top: 26px;
-    }
-
-    .sparky-chat-header {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
-
-    .sparky-npc-select {
-      min-width: 190px;
-      border: 1px solid rgba(0, 255, 204, 0.35);
-      background: rgba(0, 0, 0, 0.6);
-      color: #00ffcc;
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .sparky-log {
-      min-height: 260px;
-      max-height: 520px;
-      overflow-y: auto;
-      padding: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.38);
-    }
-
-    .sparky-message {
-      margin: 0 0 14px;
-      padding: 13px 15px;
-      border-radius: 12px;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .sparky-message[data-role="user"] {
-      margin-left: auto;
-      max-width: 78%;
-      border: 1px solid rgba(0, 255, 204, 0.32);
-      background: rgba(0, 255, 204, 0.08);
-    }
-
-    .sparky-message[data-role="assistant"] {
-      max-width: 86%;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.055);
-    }
-
-    .sparky-meta {
-      display: block;
-      margin-bottom: 7px;
-      color: #00ffcc;
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .sparky-form {
-      display: grid;
-      gap: 12px;
-    }
-
-    .sparky-input {
-      width: 100%;
-      min-height: 110px;
-      resize: vertical;
-      padding: 14px 15px;
-      border: 1px solid rgba(0, 255, 204, 0.3);
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.48);
-      color: #fff;
-      font: inherit;
-    }
-
-    .sparky-actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .sparky-send {
-      border: 1px solid rgba(0, 255, 204, 0.45);
-      border-radius: 999px;
-      background: #00ffcc;
-      color: #03110f;
-      padding: 11px 18px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .sparky-send:disabled {
-      cursor: not-allowed;
-      opacity: 0.58;
-    }
-
-    .sparky-hint {
-      color: rgba(255, 255, 255, 0.62);
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    .sparky-error {
-      display: none;
-      color: #ff8f8f;
-      font-size: 0.94rem;
-      line-height: 1.5;
-    }
-
-    .sparky-error[data-visible="true"] {
-      display: block;
-    }
-
-    .sparky-login-required {
-      display: grid;
-      gap: 14px;
-      margin-top: 26px;
-      padding: 20px;
-      border: 1px solid rgba(255, 208, 0, 0.36);
-      border-radius: 12px;
-      background: rgba(255, 208, 0, 0.08);
-      color: rgba(255, 255, 255, 0.92);
-    }
-
-    .sparky-login-required[data-authenticated="true"] {
-      display: none;
-    }
-
-    .sparky-login-required strong {
-      color: #ffd000;
-    }
-
-    .sparky-login-actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .sparky-telegram-widget {
-      min-height: 32px;
-    }
-  </style>
 </head>
 <body class="page-sparky page-standard-shell">
 <main id="content" role="main">
-  <div class="battle-page">
-
-    <section class="section sparky-panel" aria-labelledby="sparky-title">
-      <div class="sparky-eyebrow">SWARMSY public bridge</div>
-      <h1 id="sparky-title" class="sparky-title">Sparky</h1>
-
-      <p class="sparky-copy">
-        Sparky is the Crypto Moonboys / SWARMSY project helper for public questions about the
-        project, site, lore, games, factions, NFTs, and related docs. Sparky requires Telegram
-        login before chat messages can be sent, then connects through the public API bridge.
-      </p>
-
-      <div class="sparky-status" aria-live="polite">
-        <strong>Status: Live bridge page ready.</strong>
-        <span>
-          This page does not contain sealed instructions, secrets, workspace keys, or admin URLs.
-          It calls the public API bridge, which then talks to the private SWARMSY server.
-        </span>
-      </div>
-
-      <div class="sparky-login-required" data-sparky-login-panel role="region" aria-live="polite">
-        <strong>Log in with Telegram to use Sparky AI Chat.</strong>
-        <span>Use the site’s Telegram login/sync flow. The login widget calls the existing <code>/telegram/auth</code> route, and linked users can refresh sync from the bot.</span>
-        <div class="sparky-login-actions">
-          <div class="sparky-telegram-widget" data-sparky-telegram-login></div>
-          <a class="btn btn-secondary" href="https://t.me/WIKICOMSBOT?start=gklink" target="_blank" rel="noopener noreferrer">Sync with @WIKICOMSBOT</a>
+  <div class="swarmsy-page">
+    <section class="swarmsy-hero" aria-labelledby="sparky-title">
+      <div class="swarmsy-hero-inner">
+        <div class="swarmsy-kicker">SWARMSY public bridge</div>
+        <h1 id="sparky-title" class="swarmsy-title">SPARKY<br><span>AI CHAT</span></h1>
+        <p class="swarmsy-lead">
+          Sparky is the Crypto Moonboys / SWARMSY project helper for public questions about the
+          project, site, lore, games, factions, NFTs, and related docs. Sparky requires Telegram
+          login before chat messages can be sent, then connects through the public API bridge.
+        </p>
+        <div class="swarmsy-pill-row" aria-live="polite">
+          <span class="swarmsy-pill">Live bridge page ready</span>
+          <span class="swarmsy-pill">Telegram login required</span>
+          <span class="swarmsy-pill">No sealed instructions exposed</span>
         </div>
-      </div>
-
-      <div class="sparky-chat" data-sparky-chat data-requires-telegram-auth="true" aria-disabled="true">
-        <div class="sparky-chat-header">
-          <div>
-            <strong style="color: #00ffcc;">Chat with Sparky</strong><br>
-            <span class="sparky-hint">Ask for Crypto Moonboys and SWARMSY project help through the public bridge.</span>
-          </div>
-        </div>
-
-        <div class="sparky-log" data-sparky-log aria-live="polite" aria-label="Sparky chat messages">
-          <div class="sparky-message" data-role="assistant">
-            <span class="sparky-meta">Sparky</span>
-            Ask Sparky about Crypto Moonboys, lore, games, factions, NFTs, or the SWARMSY project. Questions route through the public API bridge to the private SWARMSY control panel when the backend endpoint is available.
-          </div>
-        </div>
-
-        <form class="sparky-form" data-sparky-form>
-          <textarea class="sparky-input" data-sparky-input aria-label="Message" maxlength="2000" placeholder="Ask Sparky..." disabled></textarea>
-          <div class="sparky-actions">
-            <button class="sparky-send" type="submit" data-sparky-send disabled>Send message</button>
-            <span class="sparky-hint" data-sparky-state>Telegram login required.</span>
-          </div>
-          <div class="sparky-error" data-sparky-error></div>
-        </form>
-      </div>
-
-      <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px;">
-        <a href="/search.html" class="btn btn-primary">Search the Wiki</a>
-        <a href="/Crypto_Moonboys_Master_Source_of_Truth_v1.md" class="btn btn-secondary">Find Master Source of Truth</a>
       </div>
     </section>
 
+    <section class="swarmsy-section" data-sparky-login-panel role="region" aria-live="polite">
+      <h2>Telegram Gate</h2>
+      <p class="swarmsy-callout">
+        <strong>Log in with Telegram to use Sparky AI Chat.</strong>
+        Use the site's Telegram login/sync flow. The login widget calls the existing
+        <code>/telegram/auth</code> route, and linked users can refresh sync from the bot.
+      </p>
+      <div class="swarmsy-inline-actions" style="margin-top:18px;">
+        <div class="swarmsy-telegram-widget" data-sparky-telegram-login></div>
+        <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT?start=gklink" target="_blank" rel="noopener noreferrer">
+          <strong>Sync with @WIKICOMSBOT</strong>
+          <span>Refresh the Telegram link used by Sparky.</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="swarmsy-section swarmsy-chat" data-sparky-chat data-requires-telegram-auth="true" aria-disabled="true">
+      <div class="swarmsy-chat-header">
+        <div>
+          <strong style="color:#00ffcc;">Chat with Sparky</strong><br>
+          <span class="swarmsy-hint">Ask for Crypto Moonboys and SWARMSY project help through the public bridge.</span>
+        </div>
+      </div>
+
+      <div class="swarmsy-chat-log" data-sparky-log aria-live="polite" aria-label="Sparky chat messages">
+        <div class="sparky-message" data-role="assistant">
+          <span class="sparky-meta">Sparky</span>
+          Ask Sparky about Crypto Moonboys, lore, games, factions, NFTs, or the SWARMSY project. Questions route through the public API bridge to the private SWARMSY control panel when the backend endpoint is available.
+        </div>
+      </div>
+
+      <form class="swarmsy-form" data-sparky-form>
+        <textarea class="swarmsy-input" data-sparky-input aria-label="Message" maxlength="2000" placeholder="Ask Sparky..." disabled></textarea>
+        <div class="swarmsy-inline-actions">
+          <button class="swarmsy-form-button" type="submit" data-sparky-send disabled>Send message</button>
+          <span class="swarmsy-hint" data-sparky-state>Telegram login required.</span>
+        </div>
+        <div class="swarmsy-error" data-sparky-error></div>
+      </form>
+    </section>
+
+    <section class="swarmsy-section">
+      <h2>Sparky Public Context</h2>
+      <p class="swarmsy-callout">
+        This page does not contain sealed instructions, secrets, workspace keys, or admin URLs.
+        It calls the public API bridge, which then talks to the private SWARMSY server.
+      </p>
+      <div class="swarmsy-action-grid swarmsy-action-grid--compact">
+        <a href="/search.html" class="swarmsy-action-card">
+          <strong>Search the Wiki</strong>
+          <span>Find public lore, games, factions, and docs.</span>
+        </a>
+        <a href="/Crypto_Moonboys_Master_Source_of_Truth_v1.md" class="swarmsy-action-card swarmsy-action-card--magenta">
+          <strong>Find Master Source of Truth</strong>
+          <span>Open the public project reference file.</span>
+        </a>
+      </div>
+    </section>
   </div>
 </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
+<!-- CANONICAL SCRIPT BOOT -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 7. Page-specific scripts -->
-
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/sparky-chat.js"></script>

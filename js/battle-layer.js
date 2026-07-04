@@ -433,7 +433,7 @@
       el.innerHTML = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
         ? window.UI_STATUS_COPY.panels.leaderboardUnavailable()
         : '<div class="widget-unavailable"><p>Arcade leaderboard temporarily unavailable.</p>'
-          + '<a href="/games/leaderboard.html" class="btn btn-secondary">Open full leaderboard \u2192</a></div>';
+          + '<a href="/games/leaderboard.html" class="swarmsy-action-card"><strong>Open full leaderboard</strong><span>View the complete arcade standings.</span></a></div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading contributors…</div>';
