@@ -491,6 +491,58 @@ if (wikiCss) {
 }
 if (swarmsyComponentsOk) pass('SWARMSY card, section, pill, and grid classes are defined in css/wiki.css');
 
+console.log('\n[9] SWARMSY routes use landing-page width, not centered wiki lane');
+let swarmsyLayoutOk = true;
+if (wikiCss) {
+  const contentRouteBlock = selectorBlock(wikiCss, 'body.page-swarmsy #content,\nbody.page-about #content')
+    || selectorBlock(wikiCss, 'body.page-swarmsy #content,\r\nbody.page-about #content');
+  const pageRouteBlock = selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-page,\nbody.page-about .swarmsy-page')
+    || selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-page,\r\nbody.page-about .swarmsy-page');
+  const heroRouteBlock = selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-hero,\nbody.page-about .swarmsy-hero')
+    || selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-hero,\r\nbody.page-about .swarmsy-hero');
+  const heroInnerRouteBlock = selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-hero-inner,\nbody.page-about .swarmsy-hero-inner')
+    || selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-hero-inner,\r\nbody.page-about .swarmsy-hero-inner');
+  const sectionRouteBlock = selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-section,\nbody.page-about .swarmsy-section')
+    || selectorBlock(wikiCss, 'body.page-swarmsy .swarmsy-section,\r\nbody.page-about .swarmsy-section');
+
+  if (!blockHas(contentRouteBlock, /padding-left\s*:\s*0/i) || !blockHas(contentRouteBlock, /padding-right\s*:\s*0/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - SWARMSY/About routes must remove #content side padding`);
+    swarmsyLayoutOk = false;
+  }
+  if (
+    !blockHas(pageRouteBlock, /width\s*:\s*100%/i) ||
+    !blockHas(pageRouteBlock, /max-width\s*:\s*none/i) ||
+    !blockHas(pageRouteBlock, /margin\s*:\s*0/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-page must be full-width on SWARMSY/About routes`);
+    swarmsyLayoutOk = false;
+  }
+  if (
+    !blockHas(heroRouteBlock, /width\s*:\s*100%/i) ||
+    !blockHas(heroRouteBlock, /max-width\s*:\s*none/i) ||
+    !blockHas(heroRouteBlock, /margin\s*:\s*0/i) ||
+    !blockHas(heroRouteBlock, /border-radius\s*:\s*0/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-hero must be full-bleed on SWARMSY/About routes`);
+    swarmsyLayoutOk = false;
+  }
+  if (!blockHas(heroInnerRouteBlock, /max-width\s*:\s*1100px/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-hero-inner must keep readable max-width on SWARMSY/About routes`);
+    swarmsyLayoutOk = false;
+  }
+  if (
+    !blockHas(sectionRouteBlock, /max-width\s*:\s*none/i) ||
+    !blockHas(sectionRouteBlock, /margin-left\s*:\s*clamp/i) ||
+    !blockHas(sectionRouteBlock, /margin-right\s*:\s*clamp/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-section must use full-width route margins without centered lane cap`);
+    swarmsyLayoutOk = false;
+  }
+} else {
+  swarmsyLayoutOk = false;
+}
+if (swarmsyLayoutOk) pass('SWARMSY/About routes have full-width landing-page layout contract');
+
 console.log('\n--- Result ---');
 console.log(`  Normal public pages checked : ${normalPages.length}`);
 console.log(`  CSS files checked           : ${CSS_FILES_TO_AUDIT.length}`);

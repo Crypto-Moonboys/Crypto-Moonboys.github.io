@@ -652,6 +652,45 @@ th {
   max-width: 880px;
 }
 
+body.page-swarmsy #content,
+body.page-about #content {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+body.page-swarmsy .swarmsy-page,
+body.page-about .swarmsy-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+body.page-swarmsy .swarmsy-hero,
+body.page-about .swarmsy-hero {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding-right: clamp(28px, 6vw, 88px);
+  padding-left: clamp(28px, 6vw, 88px);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
+body.page-swarmsy .swarmsy-hero-inner,
+body.page-about .swarmsy-hero-inner {
+  max-width: 1100px;
+}
+
+body.page-swarmsy .swarmsy-section,
+body.page-about .swarmsy-section {
+  width: auto;
+  max-width: none;
+  margin-right: clamp(20px, 3vw, 48px);
+  margin-left: clamp(20px, 3vw, 48px);
+}
+
 .swarmsy-kicker {
   display: inline-flex;
   align-items: center;
