@@ -1,5 +1,5 @@
 // One runtime shell owns global navigation, layout, route mode, and recovery.
-// Audit anchor: No password account · Telegram link for competitive systems · Bot-maintained
+// Audit anchor: No password account \u00B7 Telegram link for competitive systems \u00B7 Bot-maintained
 
 window.__HUD_CONSOLIDATED__ = true;
 
@@ -253,7 +253,7 @@ window.__HUD_CONSOLIDATED__ = true;
     if (!footer) {
       footer = document.createElement('footer');
       footer.id = 'site-footer';
-      footer.innerHTML = '<span>No password account · Telegram link for competitive systems · Bot-maintained</span>';
+      footer.innerHTML = '<span>No password account \u00B7 Telegram link for competitive systems \u00B7 Bot-maintained</span>';
     }
     if (footer.parentElement !== mainWrapper) mainWrapper.appendChild(footer);
     return footer;
