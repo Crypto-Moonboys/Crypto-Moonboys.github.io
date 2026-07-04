@@ -19,42 +19,31 @@
  *
  * ── Pages verified ────────────────────────────────────────────────────────────
  *
- * Core shell (right panel expected):
- *   /                         home — right panel + 4 CSP sections
- *   /index.html               home — right panel + 4 CSP sections
- *   /search.html              wiki search — right panel + wiki search behavior
- *   /games/                   arcade hub — right panel + 8-game roster
+ * All pages — no global right panel (UI unification):
+ *   /                         home — centered single-column layout
+ *   /index.html               home — centered single-column layout
+ *   /search.html              wiki search
+ *   /games/                   arcade hub — 8-game roster
  *   /games/leaderboard.html   leaderboard page
- *
- * Standalone CSP panel (no right panel; data-csp-panel mounted directly):
+ *   /community.html
+ *   /dashboard.html           editorial wiki intelligence
  *   /gkniftyheads-incubator.html
  *
  * Arcade/runtime:
  *   /games/block-topia-quest-maze/   BTQM — Phaser boot smoke, no 404 for generated assets
  *   /games/invaders-3008/            simple arcade game — shell smoke
  *
- * Right-panel intentionally absent:
- *   /dashboard.html           editorial wiki intelligence — no player right panel
- *
  * ── Per-page assertions ───────────────────────────────────────────────────────
  *
  * Shell structure:
  *   ✓ #site-header exists
  *   ✓ #sidebar exists
- *   ✓ #homepage-right-panel exists (on right-panel pages)
- *   ✓ #homepage-right-panel absent (on /dashboard.html)
- *   ✓ [data-csp-panel] exists (right-panel pages + incubator)
- *   ✓ [data-csp-faction-ops] exists (right-panel pages)
- *   ✓ [data-csp-wtf-signal] exists (right-panel pages)
- *   ✓ [data-csp-missed] exists (right-panel pages)
- *   ✓ Right rail section headings: PLAYER LIVE FEED, FACTION DAILY OPS,
- *       DAILY WTF SIGNAL, MISSED OPPORTUNITIES
+ *   ✗ #homepage-right-panel must NOT exist in DOM on any page (element absent, not just hidden)
+ *   ✗ [data-csp-*] hooks must NOT be inside #homepage-right-panel
  *   ✓ no #live-feed-widget (LIVE_FEED=false)
  *   ✓ no "Live System Feed" text (removed section)
  *   ✓ no "System Status" text (removed section)
  *   ✓ no "WIKI NODES" fake row
- *   ✓ #hud-player-avatar present (right-panel pages)
- *   ✓ #homepage-right-panel visible (display≠none, visibility≠hidden, bbox>0)
  *
  * Telegram sync state (anonymous — no credentials required):
  *   ✓ no duplicate RELINK badges
@@ -121,21 +110,11 @@ const BASE = 'https://cryptomoonboys.com';
 const EXPECTED_API_BASE        = 'https://moonboys-api.sercullen.workers.dev';
 const EXPECTED_LEADERBOARD_URL = 'https://moonboys-leaderboard.sercullen.workers.dev';
 
-// Pages that receive the full right panel (4 CSP section hooks + #homepage-right-panel).
-// NOTE: UI unification removes global right panel — all pages now have NO_RIGHT_PANEL behavior.
-// Right panel is disabled; live stats rendered inline on specific pages instead.
-const RIGHT_PANEL_PAGES = [
-  // DEPRECATED: Global right panel no longer mounted as page chrome.
-  // Pages that previously had right panels now use inline live-stats modules.
-];
-
-// Pages where [data-csp-panel] is mounted standalone (no #homepage-right-panel).
-// NOTE: After UI unification, CSP sections no longer mount in global right panel.
-// They render inline on specific pages if user is logged in.
-const STANDALONE_CSP_PAGES = [
-  // DEPRECATED: Global CSP mounting removed.
-  // Inline stats render on /games/, /games/leaderboard.html, /community.html, Battle Chamber pages.
-];
+// DEPRECATED — no global right panel. Both arrays are empty and kept only to avoid
+// breaking the PAGES spread below. Contract: #homepage-right-panel must not appear on
+// any page; CSP sections render inline on specific pages only.
+const RIGHT_PANEL_PAGES = [];
+const STANDALONE_CSP_PAGES = [];
 
 // Pages intentionally missing the right panel.
 const NO_RIGHT_PANEL_PAGES = [
@@ -409,8 +388,6 @@ async function testPage(page, pathname) {
   const url = `${BASE}${pathname}`;
   process.stdout.write(`\n── ${pathname} ──────────────────────────────────────────\n`);
 
-  const isRightPanelPage   = RIGHT_PANEL_PAGES.includes(pathname);
-  const isStandaloneCsp    = STANDALONE_CSP_PAGES.includes(pathname);
   const isNoRightPanel     = NO_RIGHT_PANEL_PAGES.includes(pathname);
   const isBtqmPage         = pathname === '/games/block-topia-quest-maze/';
   const isGamesHub         = pathname === '/games/';
@@ -506,6 +483,13 @@ async function testPage(page, pathname) {
       relinkCount:        countText('RELINK'),
       liveLinkedCount:    countText('LIVE LINKED'),
       syncPendingCount:   countText('SYNC PENDING'),
+      // CSP hooks: detect any [data-csp-*] element nested inside #homepage-right-panel.
+      // Must be false on every page — right panel must not exist and must not host CSP hooks.
+      cspInsideRightPanel: (() => {
+        const rp = document.getElementById('homepage-right-panel');
+        if (!rp) return false;
+        return !!(rp.querySelector('[data-csp-panel],[data-csp-faction-ops],[data-csp-wtf-signal],[data-csp-missed]'));
+      })(),
       // API config state
       moonboysApiExists:  !!apiObj,
       apiBaseState:       apiBaseInfo ? apiBaseInfo.state : null,
@@ -580,28 +564,28 @@ async function testPage(page, pathname) {
   // Right panel (#homepage-right-panel) should be absent on all pages.
   // Live stats render inline on specific pages (Arcade, Battle Chamber) instead.
   const rp = diag.rightPanel;
-  if (!rp.exists || (rp.exists && !rp.w && !rp.h)) {
-    pass('#homepage-right-panel absent or hidden (global right panel disabled — UI unification)');
+  if (!rp.exists) {
+    pass('#homepage-right-panel absent from DOM (global right panel disabled — UI unification)');
   } else {
-    fail('#homepage-right-panel should not be mounted as global chrome (UI unification requires inline stats)', {
+    fail('#homepage-right-panel exists in DOM — element must not be mounted at all (CSS hiding is not sufficient)', {
       url,
       selector: '#homepage-right-panel',
-      suggested: 'ensureRightPanel() should be disabled in site-shell.js; ensure ensureLayout() does not call ensureRightPanel()',
+      suggested: 'ensureRightPanel() must be disabled in site-shell.js; ensure ensureLayout() does not call ensureRightPanel()',
     });
   }
 
   // ── CSP section hooks ─────────────────────────────────────────────────
-  // NOTE: UI unification removes global right panel.
-  // CSP sections (data-csp-*) are now rendered inline on specific pages only.
-  // This test now only checks that no global CSP sections appear in the global right panel.
-  // Inline CSP validation happens on individual page tests for /games/, /community.html, etc.
-  
-  // Verify no global CSP sections in global right panel (which no longer exists)
-  if (diag.cspPanel || diag.cspFactionOps || diag.cspWtfSignal || diag.cspMissed) {
-    // If CSP sections exist, they must be inline on the page (not in global right panel)
-    pass('[data-csp-*] sections may exist inline (not in global right panel)');
+  // Fail if any [data-csp-*] hook is nested inside #homepage-right-panel.
+  // Pass when hooks are absent (pages with no inline stats) or exist inline
+  // in page content (outside global chrome).
+  if (diag.cspInsideRightPanel) {
+    fail('[data-csp-*] hook found inside #homepage-right-panel — CSP sections must not be mounted in global right panel', {
+      url,
+      selector: '#homepage-right-panel [data-csp-panel],[data-csp-faction-ops],[data-csp-wtf-signal],[data-csp-missed]',
+      suggested: 'ensureRightPanel() must remain disabled; inline live-stats modules must render outside #homepage-right-panel',
+    });
   } else {
-    pass('[data-csp-*] sections absent from global chrome (UI unification)');
+    pass('[data-csp-*] sections absent from #homepage-right-panel (inline-only contract satisfied)');
   }
 
   // data-las-panel is a legacy hook — must never appear.
