@@ -4226,7 +4226,7 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   border-radius: 16px !important;
   background: rgba(0, 255, 200, 0.045) !important;
   box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
-  transition: border-color 160ms ease, background 160ms ease !important;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease !important;
 }
 
 .category-card:hover,
@@ -4398,7 +4398,7 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   background: rgba(255, 204, 0, 0.2);
   color: #ffcc00;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 14px;
   margin-left: 6px;
   vertical-align: middle;
 }
@@ -4455,7 +4455,7 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   background: rgba(255,204,0,.18);
   color: #ffc700;
   padding: 2px 5px;
-  border-radius: 3px;
+  border-radius: 14px;
 }
 
 .campaign-card { padding: 18px 20px; }
@@ -4490,7 +4490,7 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .bc-coming-next {
   background: rgba(86, 220, 255, 0.06);
   border: 1px dashed rgba(86, 220, 255, 0.3);
-  border-radius: 8px;
+  border-radius: 14px;
   padding: 20px 24px;
   line-height: 1.8;
 }
