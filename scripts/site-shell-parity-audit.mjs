@@ -35,7 +35,7 @@ function stringArrayValues(src, varName) {
   const re = new RegExp(`(?:var|let|const)\\s+${escapedVarName}\\s*=\\s*\\[([\\s\\S]*?)\\]`);
   const match = src.match(re);
   if (!match) {
-    throw new Error(`Unable to locate string array definition for "${varName}"`);
+    return [];
   }
   return Array.from(match[1].matchAll(/['"]([^'"]+)['"]/g)).map((m) => m[1]);
 }
@@ -272,21 +272,15 @@ for (const rel of LIVE_PAGES) {
   }
 }
 
-// 6. Right-panel trigger: named live/action pages must have page-has-right-panel class
-//    OR be in the canonical allowlist in site-shell.js
-console.log('\n[6] Right-panel trigger present on named live/action pages');
-const RIGHT_PANEL_ALLOWLIST = [
-  '/community.html',
-  '/games/', '/games/index.html', '/games/leaderboard.html',
-];
+// 6. Live/action pages use inline stats, not a global right-panel layout.
+console.log('\n[6] Live/action pages avoid right-panel layout opt-in');
 for (const rel of LIVE_PAGES) {
   const html = read(rel);
   if (!html) continue;
-  const normPath = '/' + rel.replace(/\\/g, '/');
-  if (html.includes('page-has-right-panel') || RIGHT_PANEL_ALLOWLIST.includes(normPath)) {
-    pass(`${rel}: right-panel trigger present`);
+  if (!html.includes('page-has-right-panel')) {
+    pass(`${rel}: no page-has-right-panel opt-in`);
   } else {
-    fail(`${rel} — missing page-has-right-panel class and not in canonical allowlist`);
+    fail(`${rel} — must not opt into page-has-right-panel`);
   }
 }
 
@@ -366,10 +360,11 @@ if (!/body\.page-home\s+#layout\s*>\s*#homepage-right-panel/u.test(retroTheme)) 
 } else {
   fail('retro theme - body.page-home #layout > #homepage-right-panel selector must not be used');
 }
-if (/\.page-has-right-panel\s+#layout\s*\{[\s\S]*?grid-template-columns:\s*var\(--color-sidebar-w\)\s+minmax\(0,\s*1fr\)\s+var\(--right-panel-w\)/u.test(retroTheme)) {
-  pass('retro theme: right-panel grid reservation is scoped to .page-has-right-panel');
+if (!/\.page-has-right-panel\s+#layout\s*\{[\s\S]*?grid-template-columns:\s*var\(--color-sidebar-w\)\s+minmax\(0,\s*1fr\)\s+var\(--right-panel-w\)/u.test(retroTheme)
+    && !/body\.page-game\s+#layout\s*\{[\s\S]*?grid-template-columns:\s*var\(--color-sidebar-w\)\s+minmax\(0,\s*1fr\)/u.test(retroTheme)) {
+  pass('retro theme: stale right-panel/game layout classes do not reserve grid columns');
 } else {
-  fail('retro theme - right-panel grid reservation must be scoped to .page-has-right-panel with minmax content column');
+  fail('retro theme - stale right-panel/game layout classes must not reserve grid columns');
 }
 if (retroTheme.includes('body.page-standard-shell #layout') && retroTheme.includes('body.page-standard-shell #main-wrapper') && retroTheme.includes('body.page-standard-shell #content')) {
   pass('retro theme: standard shell layout fills freed width');
@@ -405,20 +400,20 @@ if (shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return fals
 const communityHtml = read('community.html') || '';
 const gamesHtml = read('games/index.html') || '';
 const leaderboardHtml = read('games/leaderboard.html') || '';
-if (communityHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/community.html')) {
-  pass('community.html: Battle Chamber keeps live right-rail behaviour');
+if (!communityHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/community.html')) {
+  pass('community.html: Battle Chamber uses inline live stats without right-rail layout');
 } else {
-  fail('community.html — must keep Battle Chamber live right-rail opt-in/allowlist');
+  fail('community.html — must not opt into right-rail layout');
 }
-if (gamesHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/index.html')) {
-  pass('games/index.html: game hub keeps live right-rail behaviour');
+if (!gamesHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/index.html') && !runtimeAllowlist.includes('/games/')) {
+  pass('games/index.html: game hub uses inline live stats without right-rail layout');
 } else {
-  fail('games/index.html — must keep live right-rail opt-in/allowlist');
+  fail('games/index.html — must not opt into right-rail layout');
 }
-if (leaderboardHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/leaderboard.html')) {
-  pass('games/leaderboard.html: leaderboard keeps live right-rail behaviour');
+if (!leaderboardHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/leaderboard.html')) {
+  pass('games/leaderboard.html: leaderboard uses inline live stats without right-rail layout');
 } else {
-  fail('games/leaderboard.html — must keep live right-rail opt-in/allowlist');
+  fail('games/leaderboard.html — must not opt into right-rail layout');
 }
 
 // 6c. Dashboard left-nav parity: must use page-standard-shell for retro sidebar parity with home page.

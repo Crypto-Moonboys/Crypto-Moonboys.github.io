@@ -795,14 +795,16 @@ a.hero-stat-link:hover {
 }
 
 /* ── SHARED RIGHT-PANEL LAYOUT ───────────────────────────────── */
-/* Three-column grid: sidebar | content | right-panel.
- * Only pages that explicitly opt into the live/right-panel layout reserve
- * the right-panel column.
+/* Unified shell flow: stale right-panel opt-in classes must not reserve columns.
+ * Live/action stats render inline inside #content.
  */
 .page-has-right-panel #layout {
-  display: grid !important;
-  grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr) var(--right-panel-w);
-  align-items: start;
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  align-items: stretch;
 }
 
 body.page-standard-shell #layout,
@@ -1302,7 +1304,7 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 /* Collapse right panel below 1200 px */
 @media (max-width: 1200px) {
   .page-has-right-panel #layout {
-    grid-template-columns: var(--color-sidebar-w) 1fr;
+    grid-template-columns: none !important;
   }
   body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
     display: none !important;
@@ -1318,8 +1320,8 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 /* Stack layout on mobile */
 @media (max-width: 900px) {
   .page-has-right-panel #layout {
-    display: flex !important;
-    flex-direction: column;
+    display: block !important;
+    flex-direction: initial;
   }
 
   .hero-logo-img {
@@ -4949,10 +4951,12 @@ body.page-game .meta-item {
 @media (min-width: 901px) {
   body.page-has-right-panel #layout,
   body.page-game #layout {
-    display: grid !important;
-    grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr) 270px;
+    display: block !important;
+    grid-template-columns: none !important;
+    width: 100% !important;
+    max-width: none !important;
     min-height: calc(100vh - var(--color-header-h));
-    align-items: start;
+    align-items: stretch;
     min-width: 0 !important;
   }
 }
@@ -5099,7 +5103,7 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
 @media (max-width: 1360px) {
   body.page-has-right-panel #layout,
   body.page-game #layout {
-    grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr);
+    grid-template-columns: none !important;
   }
 
   body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
