@@ -1,1 +1,65 @@
-/* placeholder */
+/* Full-width shell repair loaded after legacy theme rules. */
+
+body.wiki-shell-v1 #layout,
+body.wiki-shell-v1.page-game #layout,
+body.wiki-shell-v1.page-has-right-panel #layout,
+body.wiki-shell-v1.page-standard-shell #layout {
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.wiki-shell-v1 #main-wrapper,
+body.wiki-shell-v1.page-game #main-wrapper,
+body.wiki-shell-v1.page-has-right-panel #main-wrapper,
+body.wiki-shell-v1.page-standard-shell #main-wrapper {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+body.wiki-shell-v1 #content,
+body.wiki-shell-v1.page-game #content,
+body.wiki-shell-v1.page-has-right-panel #content,
+body.wiki-shell-v1.page-standard-shell #content,
+body.wiki-shell-v1.wiki-shell-mode-wiki #content,
+body.wiki-shell-v1.wiki-shell-mode-legacy #content {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: clamp(18px, 2.3vw, 36px) var(--wiki-shell-gutter, clamp(14px, 2vw, 30px)) clamp(54px, 6vw, 90px) !important;
+}
+
+body.wiki-shell-v1 .inline-live-stats {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)) !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 0 24px !important;
+}
+body.wiki-shell-v1 .inline-live-stats--left { grid-column: auto !important; }
+
+body.wiki-shell-v1.page-game .article-list {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)) !important;
+  align-items: stretch;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.wiki-shell-v1.page-game .notice,
+body.wiki-shell-v1.page-game .category-header,
+body.wiki-shell-v1.page-game .page-title-line,
+body.wiki-shell-v1.page-game #arcade-status-panel,
+body.wiki-shell-v1.page-game .roguelite-loop-panel,
+body.wiki-shell-v1.page-game .article-list-item {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
