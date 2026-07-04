@@ -34,7 +34,7 @@ console.log('\n[Sparky Telegram gate] Frontend/static assertions');
 await test('/swarmsy.html contains visible /sparky.html CTA', () => {
   assert.match(
     swarmsyHtml,
-    /<a\s+href="\/sparky\.html"[^>]*class="[^"]*\bswarmsy-action-card\b[^"]*"[^>]*>[\s\S]*?<strong>\s*CHAT WITH SPARKY\s*<\/strong>[\s\S]*?<\/a>/,
+    /<a\b(?=[^>]*\bhref="\/sparky\.html")(?=[^>]*\bclass="[^"]*\bswarmsy-action-card\b)[^>]*>[\s\S]*?<strong>\s*CHAT WITH SPARKY\s*<\/strong>[\s\S]*?<\/a>/,
     'SWARMSY hero CTA card must link to /sparky.html with the required text',
   );
 });

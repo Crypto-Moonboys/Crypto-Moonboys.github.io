@@ -3949,8 +3949,7 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   line-height: 1.75;
 }
 
-.swarmsy-pill-row,
-.swarmsy-action-grid {
+.swarmsy-pill-row {
   display: flex;
   flex-wrap: wrap;
 }
@@ -4044,6 +4043,10 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   color: var(--color-text-muted);
   font-size: 0.88rem;
   line-height: 1.55;
+}
+
+.tg-sync-cta-btn.swarmsy-action-card {
+  white-space: normal;
 }
 
 .swarmsy-action-card--gold {
