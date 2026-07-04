@@ -88,6 +88,7 @@ function pageHtml({ slug, title, description, intro, sections }) {
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
+  <link rel="stylesheet" href="/css/swarmsy-visual-authority.css">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-category page-standard-shell">

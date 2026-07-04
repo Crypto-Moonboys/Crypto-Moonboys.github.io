@@ -8,6 +8,9 @@
  *  - No old rounded soft app buttons (border-radius 6-8px)
  *  - No mixed old/new visual styling
  *  - All cards use SWARMSY-compatible styling
+ *  - swarmsy-visual-authority.css loads AFTER retro-16bit-theme.css on all public pages
+ *  - swarmsy-visual-authority.css covers all required selectors
+ *  - No Press Start 2P / var(--font-pixel) as active card/nav/article font without override
  */
 
 import fs from 'node:fs';
@@ -16,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI_CSS_PATH = 'css/wiki.css';
+const AUTHORITY_CSS_PATH = 'css/swarmsy-visual-authority.css';
 const BATTLE_CHAMBER_JS_PATH = 'js/battle-chamber-factions.js';
 const PARITY_LAYER_MARKER = 'SWARMSY VISUAL PARITY LAYER';
 const BATTLE_CHAMBER_CRITICAL_SELECTORS = [
@@ -401,6 +405,104 @@ if (!battleChamberJs) {
 }
 
 if (battleChamberCoverageOk) pass('Battle Chamber JS-rendered critical selectors have CSS coverage');
+
+// 7. Cascade authority: swarmsy-visual-authority.css must exist and load AFTER retro-16bit-theme.css
+console.log('\n[7] Checking swarmsy-visual-authority.css cascade order on public pages');
+const RETRO_LINK = 'href="/css/retro-16bit-theme.css"';
+const AUTHORITY_LINK = 'href="/css/swarmsy-visual-authority.css"';
+let cascadeOk = true;
+
+const authorityCss = read(AUTHORITY_CSS_PATH);
+if (!authorityCss) {
+  fail(`${AUTHORITY_CSS_PATH} - file not found; must exist to provide final cascade authority`);
+  cascadeOk = false;
+}
+
+for (const pagePath of pagesToCheck) {
+  const html = read(pagePath);
+  if (!html) continue;
+
+  if (!html.includes('http-equiv="refresh"') && html.includes(RETRO_LINK)) {
+    if (!html.includes(AUTHORITY_LINK)) {
+      fail(`${pagePath} - loads retro-16bit-theme.css but is missing swarmsy-visual-authority.css`);
+      cascadeOk = false;
+    } else {
+      const retroIdx = html.indexOf(RETRO_LINK);
+      const authorityIdx = html.indexOf(AUTHORITY_LINK);
+      if (authorityIdx < retroIdx) {
+        fail(`${pagePath} - swarmsy-visual-authority.css appears BEFORE retro-16bit-theme.css (must load after)`);
+        cascadeOk = false;
+      }
+    }
+  }
+}
+
+if (cascadeOk) pass('swarmsy-visual-authority.css loads AFTER retro-16bit-theme.css on all public pages');
+
+// 8. Authority CSS must override key selectors that retro-16bit-theme.css defines with pixel font
+console.log('\n[8] Checking swarmsy-visual-authority.css covers required selectors');
+const AUTHORITY_REQUIRED_SELECTORS = [
+  '.section-heading',
+  '.category-card',
+  '.category-card .cat-name',
+  '.category-card .cat-icon',
+  '.article-card',
+  '.article-card-title',
+  '.article-card-cat',
+  '.article-list-item',
+  '.page-search .article-card-summary',
+  '.page-search .article-card-meta-item',
+  '.page-search .article-card-tag',
+  '.notice',
+  '.home-widget',
+  '#header-search input',
+  '.header-nav a',
+  '.bc-join-btn',
+  '.bc-mission-row',
+];
+
+let authoritySelectorOk = true;
+
+if (authorityCss) {
+  for (const selector of AUTHORITY_REQUIRED_SELECTORS) {
+    if (!hasCssSelector(authorityCss, selector)) {
+      fail(`${AUTHORITY_CSS_PATH} - missing required authority override for ${selector}`);
+      authoritySelectorOk = false;
+    }
+  }
+}
+
+if (authoritySelectorOk) pass('swarmsy-visual-authority.css has all required selector overrides');
+
+// 9. Authority CSS must not contain active pixel-font on card/nav/article selectors without override
+console.log('\n[9] Checking swarmsy-visual-authority.css does not re-introduce pixel font');
+const PIXEL_FONT_PATTERN = /font-family\s*:[^;]*(?:Press Start 2P|--font-pixel)[^!;]*(?:!important)?/i;
+const PIXEL_FONT_SELECTORS_BANNED = [
+  'category-card',
+  'cat-name',
+  'article-card-title',
+  'article-card-cat',
+  'article-card-meta-item',
+  'article-card-tag',
+  'header-nav',
+  'section-heading',
+  'article-card-summary',
+];
+let pixelFontOk = true;
+
+if (authorityCss) {
+  for (const selector of PIXEL_FONT_SELECTORS_BANNED) {
+    const pattern = new RegExp(`\\.${selector}(?:[^{]|\\n)*\\{([\\s\\S]*?)\\}`, 'g');
+    for (const match of authorityCss.matchAll(pattern)) {
+      if (PIXEL_FONT_PATTERN.test(match[1])) {
+        fail(`${AUTHORITY_CSS_PATH} - .${selector} sets pixel font (Press Start 2P / --font-pixel) which would re-introduce retro styling`);
+        pixelFontOk = false;
+      }
+    }
+  }
+}
+
+if (pixelFontOk) pass('swarmsy-visual-authority.css does not re-introduce pixel font on cards/nav/headings');
 
 // Summary
 console.log('\n─────────────────────────────────────────────────────────────────────');

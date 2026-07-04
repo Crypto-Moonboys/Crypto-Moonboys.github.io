@@ -837,6 +837,7 @@ function renderPage(root, data, supplemental = {}) {
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
+  <link rel="stylesheet" href="/css/swarmsy-visual-authority.css">
 </head>
 <body class="page-wiki page-standard-shell">
   <div id="layout">
