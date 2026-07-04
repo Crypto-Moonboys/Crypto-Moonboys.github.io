@@ -278,67 +278,15 @@ window.__HUD_CONSOLIDATED__ = true;
     return footer;
   }
 
-  function shouldShowRightPanel(pathname) {
-    const p = normalizePathname(pathname || window.location.pathname);
-
-    // Right panel is globally disabled in shell UI
-    // Only allow explicit opt-in via body class
-    if (document.body.classList.contains('page-no-right-panel')) return false;
-
-    // dashboard always disabled
-    if (p === '/dashboard.html') return false;
-
-    // explicit opt-in pages only
-    const allowed = [
-      '/community.html',
-      '/games/',
-      '/games/index.html',
-      '/games/leaderboard.html'
-    ];
-
-    return allowed.includes(p);
+  function shouldShowRightPanel() {
+    return false;
   }
 
-  function ensureRightPanel(layout) {
+  function ensureRightPanel() {
     let rightPanel = document.getElementById('homepage-right-panel');
-    const enabled = shouldShowRightPanel(window.location.pathname);
-
-    if (!enabled) {
-      document.body.classList.remove('page-has-right-panel');
-      if (rightPanel) rightPanel.hidden = true;
-      return null;
-    }
-
-    document.body.classList.add('page-has-right-panel');
-    if (!rightPanel) {
-      rightPanel = document.createElement('aside');
-      rightPanel.id = 'homepage-right-panel';
-      rightPanel.setAttribute('aria-label', 'Live system panel');
-    }
-    rightPanel.hidden = false;
-    rightPanel.innerHTML = `
-      <section class="hud-card hud-box hud-box--player" data-csp-panel>
-        <h2>PLAYER LIVE FEED</h2>
-        <div class="hud-player-card">
-          <div id="hud-player-avatar" aria-hidden="true"><span class="hud-avatar-icon">☾</span></div>
-          <div><div id="hud-player-name" class="hud-player-name">Telegram not linked</div><p>Battle Chamber live layer</p></div>
-        </div>
-      </section>
-      <section class="hud-card hud-box hud-box--actions" data-csp-faction-ops>
-        <h2>FACTION DAILY OPS</h2>
-        <p>Faction state loads here when competitive systems are online.</p>
-      </section>
-      <section class="hud-card hud-box hud-box--events" data-csp-wtf-signal>
-        <h2>DAILY WTF SIGNAL</h2>
-        <p>Daily WTF signal and live events stay isolated to action pages.</p>
-      </section>
-      <section class="hud-card hud-box hud-box--missed" data-csp-missed>
-        <h2>MISSED OPPORTUNITIES</h2>
-        <p>Missed rewards and activity notes render without touching wiki articles.</p>
-      </section>
-    `;
-    if (rightPanel.parentElement !== layout) layout.appendChild(rightPanel);
-    return rightPanel;
+    document.body.classList.remove('page-has-right-panel');
+    if (rightPanel) rightPanel.remove();
+    return null;
   }
 
   function renderLegacyRouteBanner(content) {

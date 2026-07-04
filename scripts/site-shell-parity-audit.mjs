@@ -391,29 +391,29 @@ if (runtimeAllowlist.includes('/dashboard.html')) {
 } else {
   pass('site-shell.js: right-panel allowlist excludes /dashboard.html');
 }
-if (shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return false;")) {
-  pass('site-shell.js: shouldShowRightPanel explicitly blocks dashboard route');
+if (/function\s+shouldShowRightPanel\s*\(\)\s*\{\s*return false;\s*\}/u.test(shouldShowRightPanelBlock)) {
+  pass('site-shell.js: shouldShowRightPanel returns false globally');
 } else {
-  fail('site-shell.js — shouldShowRightPanel lacks explicit dashboard exclusion');
+  fail('site-shell.js — shouldShowRightPanel must return false globally');
 }
 
 const communityHtml = read('community.html') || '';
 const gamesHtml = read('games/index.html') || '';
 const leaderboardHtml = read('games/leaderboard.html') || '';
-if (!communityHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/community.html')) {
-  pass('community.html: Battle Chamber keeps helper allowlist but uses inline live stats without static right-rail layout');
+if (!communityHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/community.html')) {
+  pass('community.html: Battle Chamber uses inline live stats without right-rail allowlist/layout');
 } else {
-  fail('community.html — must keep helper allowlist without static right-rail opt-in');
+  fail('community.html — must not opt into right-rail allowlist/layout');
 }
-if (!gamesHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/index.html') && runtimeAllowlist.includes('/games/')) {
-  pass('games/index.html: game hub keeps helper allowlist but uses inline live stats without static right-rail layout');
+if (!gamesHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/index.html') && !runtimeAllowlist.includes('/games/')) {
+  pass('games/index.html: game hub uses inline live stats without right-rail allowlist/layout');
 } else {
-  fail('games/index.html — must keep helper allowlist without static right-rail opt-in');
+  fail('games/index.html — must not opt into right-rail allowlist/layout');
 }
-if (!leaderboardHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/leaderboard.html')) {
-  pass('games/leaderboard.html: leaderboard keeps helper allowlist but uses inline live stats without static right-rail layout');
+if (!leaderboardHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/leaderboard.html')) {
+  pass('games/leaderboard.html: leaderboard uses inline live stats without right-rail allowlist/layout');
 } else {
-  fail('games/leaderboard.html — must keep helper allowlist without static right-rail opt-in');
+  fail('games/leaderboard.html — must not opt into right-rail allowlist/layout');
 }
 
 // 6c. Dashboard left-nav parity: must use page-standard-shell for retro sidebar parity with home page.
@@ -428,7 +428,6 @@ if (dashboardHtml.includes('page-standard-shell')) {
 console.log('\n[7] site-shell.js DOM marker check (static string check)');
 if (shellJs) {
   const MARKER_CHECKS = [
-    { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
     { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
     { needle: 'data-csp-faction-ops',      label: '[data-csp-faction-ops]' },
     { needle: 'data-csp-wtf-signal',       label: '[data-csp-wtf-signal]' },

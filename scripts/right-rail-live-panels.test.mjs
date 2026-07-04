@@ -395,8 +395,7 @@ check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_tim
 check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-panel'), 'dashboard.html does not contain live player feed panel hooks');
 check(!dashboard.includes('page-has-right-panel'), 'dashboard.html does not opt into the runtime right rail');
 check(!rightPanelAllowlist.includes('/dashboard.html'), 'site-shell.js right-panel allowlist excludes /dashboard.html');
-check(shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return false;"), 'site-shell.js explicitly prevents dashboard runtime right-rail injection even if body classes drift');
-check(shouldShowRightPanelBlock.includes("if (document.body.classList.contains('page-no-right-panel')) return false;"), 'site-shell.js supports page-no-right-panel as a force-disable before allowed routes');
+check(/function\s+shouldShowRightPanel\s*\(\)\s*\{\s*return false;\s*\}/u.test(shouldShowRightPanelBlock), 'site-shell.js disables right-panel runtime globally');
 for (const [route, html] of [
   ['/index.html', indexHtml],
   ['/search.html', searchHtml],
@@ -413,8 +412,8 @@ for (const [route, html] of [
 }
 check(!rightPanelAllowlist.includes('/wiki/') && !shouldShowRightPanelBlock.includes("'/wiki/'"), 'site-shell.js does not auto-enable right rail for /wiki/ prefix');
 check(!rightPanelAllowlist.includes('/categories/') && !shouldShowRightPanelBlock.includes("'/categories/'"), 'site-shell.js does not auto-enable right rail for /categories/ prefix');
-check(rightPanelAllowlist.includes('/community.html') && !community.includes('page-has-right-panel'), 'community.html keeps helper allowlist but uses inline live stats without static right-rail layout opt-in');
-check(rightPanelAllowlist.includes('/games/index.html') && rightPanelAllowlist.includes('/games/') && !games.includes('page-has-right-panel'), 'games/index.html keeps helper allowlist but uses inline live stats without static right-rail layout opt-in');
+check(!rightPanelAllowlist.includes('/community.html') && !community.includes('page-has-right-panel'), 'community.html uses inline live stats without right-rail allowlist/layout opt-in');
+check(!rightPanelAllowlist.includes('/games/index.html') && !rightPanelAllowlist.includes('/games/') && !games.includes('page-has-right-panel'), 'games/index.html uses inline live stats without right-rail allowlist/layout opt-in');
 check(!nftTemplateExample.includes('page-has-right-panel'), 'NFT template example does not force page-has-right-panel');
 check(nftTemplateExample.includes('page-standard-shell'), 'NFT template example uses page-standard-shell');
 // Missed history persistence: data is accumulated, not reset by UTC day
