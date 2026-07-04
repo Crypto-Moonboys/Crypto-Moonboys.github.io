@@ -86,6 +86,70 @@ body.wiki-shell-v1 #back-to-top.visible { opacity: 1; pointer-events: auto; tran
 body.wiki-shell-v1 #site-paperclip-agent { position: fixed; left: 18px; bottom: 18px; z-index: 240; display: inline-flex; align-items: center; gap: 8px; max-width: calc(100vw - 36px); padding: 8px 10px; border: 1px solid rgba(247, 201, 72, .32); border-radius: 999px; background: rgba(13, 17, 23, .92); color: var(--color-accent, #f7c948); font-family: var(--font-mono, monospace); font-size: .72rem; text-decoration: none; box-shadow: 0 14px 36px rgba(0, 0, 0, .34); }
 body.wiki-shell-v1 #site-paperclip-agent img { width: 30px; height: 30px; object-fit: contain; }
 
+/* Action pages must not inherit the old side-column grid. */
+body.wiki-shell-v1 #layout,
+body.wiki-shell-v1.page-game #layout,
+body.wiki-shell-v1.page-has-right-panel #layout,
+body.wiki-shell-v1.page-standard-shell #layout {
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.wiki-shell-v1 #main-wrapper,
+body.wiki-shell-v1.page-game #main-wrapper,
+body.wiki-shell-v1.page-has-right-panel #main-wrapper,
+body.wiki-shell-v1.page-standard-shell #main-wrapper,
+body.wiki-shell-v1 #content,
+body.wiki-shell-v1.page-game #content,
+body.wiki-shell-v1.page-has-right-panel #content,
+body.wiki-shell-v1.page-standard-shell #content,
+body.wiki-shell-v1.wiki-shell-mode-wiki #content,
+body.wiki-shell-v1.wiki-shell-mode-legacy #content {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+body.wiki-shell-v1 #content,
+body.wiki-shell-v1.page-game #content,
+body.wiki-shell-v1.page-has-right-panel #content,
+body.wiki-shell-v1.page-standard-shell #content {
+  padding: clamp(18px, 2.3vw, 36px) var(--wiki-shell-gutter) clamp(54px, 6vw, 90px) !important;
+}
+
+body.wiki-shell-v1 .inline-live-stats {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 0 24px !important;
+}
+body.wiki-shell-v1 .inline-live-stats--left { grid-column: auto !important; }
+
+body.wiki-shell-v1.page-game .article-list {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)) !important;
+  align-items: stretch;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.wiki-shell-v1.page-game .notice,
+body.wiki-shell-v1.page-game .category-header,
+body.wiki-shell-v1.page-game .page-title-line,
+body.wiki-shell-v1.page-game #arcade-status-panel,
+body.wiki-shell-v1.page-game .roguelite-loop-panel,
+body.wiki-shell-v1.page-game .article-list-item {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
 @media (max-width: 1120px) {
   body.wiki-shell-v1 #site-header { grid-template-columns: minmax(140px, auto) 1fr; }
   body.wiki-shell-v1 #global-nav { grid-column: 1 / -1; justify-content: flex-start; padding-bottom: 2px; }
@@ -95,6 +159,6 @@ body.wiki-shell-v1 #site-paperclip-agent img { width: 30px; height: 30px; object
   :root { --wiki-shell-header-h: 118px; }
   body.wiki-shell-v1 #header-search { grid-column: 1 / -1; }
   body.wiki-shell-v1 .site-logo .logo-text { max-width: 22ch; }
-  body.wiki-shell-v1 #content { padding-left: 14px; padding-right: 14px; }
+  body.wiki-shell-v1 #content { padding-left: 14px !important; padding-right: 14px !important; }
   body.wiki-shell-v1 #site-paperclip-agent span { display: none; }
 }
