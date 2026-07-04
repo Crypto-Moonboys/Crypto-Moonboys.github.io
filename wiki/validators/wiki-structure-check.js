@@ -64,7 +64,7 @@ function isRedirectPage(html) {
 }
 
 function extractRequiredShellScripts(shellHtml) {
-  const matches = shellHtml.matchAll(/<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi);
+  const matches = shellHtml.matchAll(/<script[^>]*src=["']([^"']+)["'][^>]*><\/script\s*>/gi);
   return Array.from(matches, (match) => match[1]);
 }
 
