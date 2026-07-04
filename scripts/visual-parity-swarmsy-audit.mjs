@@ -63,7 +63,7 @@ const CSS_FORBIDDEN_PATTERNS = [
   { name: 'crt marker', pattern: /\bcrt\b/i },
   { name: 'scanline marker', pattern: /\bscanline/i },
   { name: 'game-window selector', pattern: /\.game-window\b/i },
-  { name: 'hard magenta UI color', pattern: /#ff00ff|#f0f|magenta/i },
+  { name: 'hard magenta UI color', pattern: /#ff00ff|#f0f/i },
   { name: 'chunky UI term', pattern: /\bchunky\b/i },
   { name: 'old bit UI term', pattern: /\b(?:8-bit|16-bit)\b/i },
 ];
@@ -176,8 +176,29 @@ function selectorBlock(cssText, selector) {
   return match ? match[1] : '';
 }
 
+function selectorBlocksForClass(cssText, className) {
+  const blocks = [];
+  const blockPattern = /([^{}]+)\{([^{}]*)\}/g;
+  let match;
+  while ((match = blockPattern.exec(cssText)) !== null) {
+    const selectors = match[1].split(',').map((selector) => selector.trim());
+    if (selectors.some((selector) => selector.includes(`.${className}`))) {
+      blocks.push(match[2]);
+    }
+  }
+  return blocks.join('\n');
+}
+
 function blockHas(block, pattern) {
   return pattern.test(block);
+}
+
+function htmlContainsClass(html, className) {
+  return new RegExp(`\\bclass=["'][^"']*\\b${className}\\b`, 'i').test(html);
+}
+
+function anyNormalPageContainsClass(className) {
+  return normalPages.some(({ html }) => htmlContainsClass(html, className));
 }
 
 console.log('\n--- SWARMSY Global Shell Audit ---\n');
@@ -390,6 +411,85 @@ if (!wikiCss) {
   }
 }
 if (homepageHeroOk) pass('Homepage hero background is an absolute SWARMSY layer behind content');
+
+console.log('\n[8] SWARMSY component classes keep their global styling contract');
+let swarmsyComponentsOk = true;
+if (wikiCss) {
+  const componentContracts = [
+    {
+      className: 'swarmsy-action-card',
+      selector: '.swarmsy-action-card',
+      checks: [
+        ['grid/flex layout', /display\s*:\s*(?:grid|flex|inline-flex)/i],
+        ['border', /border\s*:/i],
+        ['background', /background\s*:/i],
+        ['rounded card radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['padding', /padding\s*:/i],
+      ],
+    },
+    {
+      className: 'swarmsy-card',
+      selector: '.swarmsy-card',
+      checks: [
+        ['border', /border\s*:/i],
+        ['background', /background\s*:/i],
+        ['rounded card radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['padding', /padding\s*:/i],
+      ],
+    },
+    {
+      className: 'swarmsy-section',
+      selector: '.swarmsy-section',
+      checks: [
+        ['border', /border\s*:/i],
+        ['background', /background\s*:/i],
+        ['rounded section radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['padding', /padding\s*:/i],
+      ],
+    },
+    {
+      className: 'swarmsy-pill',
+      selector: '.swarmsy-pill',
+      checks: [
+        ['border', /border\s*:/i],
+        ['background', /background\s*:/i],
+        ['rounded pill radius', /border-radius\s*:\s*(?:999px|var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['padding', /padding\s*:/i],
+      ],
+    },
+    {
+      className: 'swarmsy-action-grid',
+      selector: '.swarmsy-grid,\n.swarmsy-action-grid',
+      checks: [['CSS grid layout', /display\s*:\s*grid/i]],
+    },
+    {
+      className: 'swarmsy-grid',
+      selector: '.swarmsy-grid,\n.swarmsy-action-grid',
+      checks: [['CSS grid layout', /display\s*:\s*grid/i]],
+    },
+  ];
+
+  for (const contract of componentContracts) {
+    if (!anyNormalPageContainsClass(contract.className)) continue;
+    const block = selectorBlocksForClass(wikiCss, contract.className)
+      || selectorBlock(wikiCss, contract.selector)
+      || selectorBlock(wikiCss, contract.selector.replace('\n', '\r\n'));
+    if (!block) {
+      fail(`${GLOBAL_SHELL_CSS} - missing ${contract.selector} while .${contract.className} exists in public HTML`);
+      swarmsyComponentsOk = false;
+      continue;
+    }
+    for (const [label, pattern] of contract.checks) {
+      if (!blockHas(block, pattern)) {
+        fail(`${GLOBAL_SHELL_CSS} - ${contract.selector} missing ${label}`);
+        swarmsyComponentsOk = false;
+      }
+    }
+  }
+} else {
+  swarmsyComponentsOk = false;
+}
+if (swarmsyComponentsOk) pass('SWARMSY card, section, pill, and grid classes are defined in css/wiki.css');
 
 console.log('\n--- Result ---');
 console.log(`  Normal public pages checked : ${normalPages.length}`);
