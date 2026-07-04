@@ -136,8 +136,13 @@ for (const route of ROUTES) {
     }
 
     return {
+      viewportWidth: window.innerWidth,
       oldLinks: /retro-16bit-theme\.css|swarmsy-visual-authority\.css|Press Start 2P/i.test(document.documentElement.outerHTML),
       retroClass: !!document.querySelector('[class*="retro"]'),
+      content: metrics('#content'),
+      swarmsyPage: metrics('.swarmsy-page'),
+      swarmsyHero: metrics('.swarmsy-hero'),
+      swarmsyHeroInner: metrics('.swarmsy-hero-inner'),
       swarmsyActionGrid: metrics('.swarmsy-action-grid'),
       swarmsyGrid: metrics('.swarmsy-grid'),
       swarmsyActionCard: metrics('.swarmsy-action-card'),
@@ -154,6 +159,28 @@ for (const route of ROUTES) {
   if (audit.retroClass) fail(route, 'retro class returned');
 
   if (route === '/swarmsy.html' || route === '/about.html') {
+    for (const [name, data] of [
+      ['#content', audit.content],
+      ['.swarmsy-page', audit.swarmsyPage],
+      ['.swarmsy-hero', audit.swarmsyHero],
+    ]) {
+      if (!data) {
+        fail(route, `${name} missing from rendered page`);
+        continue;
+      }
+      if (Math.abs(data.box.width - audit.viewportWidth) > 2) {
+        fail(route, `${name} must span the viewport width, got ${Math.round(data.box.width)} of ${audit.viewportWidth}`);
+      }
+    }
+    if (audit.swarmsyHero && audit.swarmsyHero.borderRadius !== 0) {
+      fail(route, '.swarmsy-hero must be full-bleed with 0 route border radius');
+    }
+    if (!audit.swarmsyHeroInner) {
+      fail(route, '.swarmsy-hero-inner missing from rendered page');
+    } else if (audit.swarmsyHeroInner.box.width > 1102) {
+      fail(route, `.swarmsy-hero-inner must keep readable width, got ${Math.round(audit.swarmsyHeroInner.box.width)}`);
+    }
+
     for (const [name, data] of [
       ['.swarmsy-action-card', audit.swarmsyActionCard],
       ['.swarmsy-card', audit.swarmsyCard],
