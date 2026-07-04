@@ -211,7 +211,8 @@ assert.ok(/\.category-card\s+\.cat-desc\s*\{[\s\S]*?overflow-wrap:\s*anywhere/.t
 assert.ok(/\.wiki-rabbit-card\s*\{[\s\S]*?min-height:\s*68px/.test(css), 'Related Wiki Paths cards stay compact');
 assert.ok(/\.wiki-rabbit-group--nft-siblings\s+\.wiki-rabbit-grid\s*\{[\s\S]*?190px/.test(css), 'More from collection keeps distinct sibling-card sizing');
 assert.ok(/\.infobox\s*\{[\s\S]*?width:\s*min\(240px, 32vw\)/.test(css), 'right-side info cards are compact instead of forcing wide dead space');
-assert.ok(/\.infobox-image\s+span\s*\{[\s\S]*?font-size:\s*2\.6rem\s*!important/.test(css), 'emoji info cards do not dominate the hero area');
+assert.ok(/\.infobox-image\s+span\s*\{[\s\S]*?font-size:\s*2\.6rem/.test(css), 'emoji info cards do not dominate the hero area');
+assert.ok(!/\.infobox-image\s+span\s*\{[\s\S]*?!important/.test(css), 'emoji info card sizing does not require cascade-war priority');
 assert.ok(!css.includes('.battle-engagement-deck {'), 'wiki.css no longer owns final engagement deck layout');
 assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engagement-deck'), 'battle-layer.css owns final engagement module layout');
 

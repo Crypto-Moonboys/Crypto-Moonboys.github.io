@@ -10,8 +10,6 @@ window.__HUD_CONSOLIDATED__ = true;
   window.__MOONBOYS_SHELL_BOOTED__ = true;
 
   const CANONICAL_PUBLIC_ROOT = '/wiki/';
-  const SHELL_CSS_ID = 'moonboys-global-shell-css';
-  const SHELL_CSS_HREF = '/css/wiki-shell-v1.css';
 
   const links = [
     { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
@@ -103,23 +101,15 @@ window.__HUD_CONSOLIDATED__ = true;
     return `<a class="${className}${active}" href="${escapeHtml(item.href)}" title="${escapeHtml(item.title || item.label)}" data-shell-link="${escapeHtml(item.label)}">${icon}<span>${escapeHtml(item.label)}</span></a>`;
   }
 
-  function ensureShellStyles() {
-    if (document.getElementById(SHELL_CSS_ID)) return;
-    const link = document.createElement('link');
-    link.id = SHELL_CSS_ID;
-    link.rel = 'stylesheet';
-    link.href = SHELL_CSS_HREF;
-    document.head.appendChild(link);
-  }
-
   function stampShellMode() {
     const mode = resolveShellMode(window.location.pathname);
     document.documentElement.dataset.wikiShell = 'global';
-    document.body.classList.add('wiki-shell-v1');
+    document.body.classList.add('swarmsy-shell');
     document.body.dataset.shellMode = mode;
-    document.body.dataset.publicSource = window.location.pathname.startsWith(CANONICAL_PUBLIC_ROOT) ? 'wiki' : 'wiki-shell';
-    document.body.classList.remove('wiki-shell-mode-home', 'wiki-shell-mode-wiki', 'wiki-shell-mode-games', 'wiki-shell-mode-battle', 'wiki-shell-mode-tool', 'wiki-shell-mode-system', 'wiki-shell-mode-legacy');
-    document.body.classList.add(`wiki-shell-mode-${mode}`);
+    document.body.dataset.publicSource = window.location.pathname.startsWith(CANONICAL_PUBLIC_ROOT) ? 'wiki' : 'swarmsy-shell';
+    document.body.classList.remove('wiki-shell-v1', 'wiki-shell-mode-home', 'wiki-shell-mode-wiki', 'wiki-shell-mode-games', 'wiki-shell-mode-battle', 'wiki-shell-mode-tool', 'wiki-shell-mode-system', 'wiki-shell-mode-legacy');
+    document.body.classList.remove('swarmsy-shell-mode-home', 'swarmsy-shell-mode-wiki', 'swarmsy-shell-mode-games', 'swarmsy-shell-mode-battle', 'swarmsy-shell-mode-tool', 'swarmsy-shell-mode-system', 'swarmsy-shell-mode-legacy');
+    document.body.classList.add(`swarmsy-shell-mode-${mode}`);
     if (!document.body.classList.contains('page-standard-shell') && mode !== 'games') {
       document.body.classList.add('page-standard-shell');
     }
@@ -402,7 +392,6 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function ensureNav() {
-    ensureShellStyles();
     stampShellMode();
     const shell = ensureLayout();
     ensureInlineLiveStats(shell.content);

@@ -101,7 +101,7 @@ console.log('[1] site-shell.js exists');
 const shellJs = read('js/site-shell.js');
 const applyShell = read('scripts/apply-shell.mjs');
 const retroTheme = read('css/retro-16bit-theme.css') || '';
-const wikiShellCss = read('css/wiki-shell-v1.css') || '';
+const wikiShellCss = read('css/wiki.css') || '';
 if (!shellJs) {
   fail('js/site-shell.js — file not found');
 } else {
@@ -356,12 +356,12 @@ if (!retroShellContainerSelectors.test(retroTheme) && !retroRightPanelPlacement.
 } else {
   fail('retro theme - must not define #layout/#main-wrapper/#content or right-panel placement rules');
 }
-if (wikiShellCss.includes('body.wiki-shell-v1 #layout')
-    && wikiShellCss.includes('body.wiki-shell-v1 #main-wrapper')
-    && wikiShellCss.includes('body.wiki-shell-v1 #content')) {
-  pass('wiki-shell-v1.css: owns shell container layout');
+if (wikiShellCss.includes('#layout')
+    && wikiShellCss.includes('#main-wrapper')
+    && wikiShellCss.includes('#content')) {
+  pass('wiki.css: owns shell container layout');
 } else {
-  fail('wiki-shell-v1.css - must own #layout/#main-wrapper/#content layout');
+  fail('wiki.css - must own #layout/#main-wrapper/#content layout');
 }
 if (dashboardHtml.includes('data-csp-panel') || dashboardHtml.includes('data-las-panel')) {
   fail('dashboard.html — contains live player panel hooks');

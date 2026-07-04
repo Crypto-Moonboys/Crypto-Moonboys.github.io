@@ -241,7 +241,7 @@ body.page-waxonedge #content {
   background: rgba(57, 255, 20, 0.08);
   border: 1px solid rgba(57, 255, 20, 0.35);
   color: var(--neon-green, #39ff14);
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   font-size: .72rem;
   font-weight: 700;
   padding: 3px 10px;
@@ -278,7 +278,7 @@ body.page-waxonedge #content {
   max-width: 580px;
   background: #060a0d;
   border: 1px solid #22363d;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   color: var(--color-text);
   font-size: .86rem;
   padding: 9px 12px;
@@ -343,7 +343,7 @@ body.page-waxonedge #content {
 .woe-detail-card {
   background: linear-gradient(180deg, rgba(14, 20, 24, 0.98), rgba(7, 10, 12, 0.98));
   border: 1px solid #1a2a30;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   padding: 12px;
   min-height: 100%;
   box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.04);
@@ -445,7 +445,7 @@ body.page-waxonedge #content {
     #05090b;
   background-size: auto, 62px 100%, 100% 56px, auto;
   border: 1px solid #1b2c32;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -747,7 +747,7 @@ body.page-waxonedge #content {
   gap: 10px;
   background: #0b1013;
   border: 1px solid #18242a;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   padding: 10px 12px;
   transition: border-color .15s;
 }
@@ -804,7 +804,7 @@ body.page-waxonedge #content {
 .woe-table-wrap {
   overflow-x: auto;
   max-width: 100%;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   border: 1px solid #18242a;
   background: #06090b;
 }
@@ -988,7 +988,7 @@ body.page-waxonedge #content {
 .woe-filter-input {
   background: #060a0d;
   border: 1px solid #22363d;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   color: var(--color-text);
   font-size: .78rem;
   padding: 7px 10px;
@@ -1028,7 +1028,7 @@ body.page-waxonedge #content {
   align-items: flex-start;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   font-size: .8rem;
   border: 1px solid transparent;
 }
@@ -1066,7 +1066,7 @@ body.page-waxonedge #content {
 .woe-placeholder {
   background: #0b1013;
   border: 1px solid #18242a;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   padding: 18px;
 }
 
@@ -1093,7 +1093,7 @@ body.page-waxonedge #content {
 .woe-input {
   background: #060a0d;
   border: 1px solid #22363d;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   color: var(--color-text);
   font-size: .8rem;
   padding: 7px 12px;
@@ -1108,7 +1108,7 @@ body.page-waxonedge #content {
 .woe-btn-lookup {
   background: #10171b;
   border: 1px solid var(--neon-cyan, #00e5ff);
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   color: var(--neon-cyan, #00e5ff);
   font-size: .74rem;
   font-weight: 700;
@@ -1132,7 +1132,7 @@ body.page-waxonedge #content {
 .woe-holder-result-card {
   background: #0f1519;
   border: 1px solid #18242a;
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -1149,7 +1149,7 @@ body.page-waxonedge #content {
   font-size: .7rem;
   color: var(--neon-cyan, #00e5ff);
   border: 1px solid rgba(0, 229, 255, 0.24);
-  border-radius: 0;
+  border-radius: var(--radius-md, 14px);
   padding: 3px 7px;
   text-decoration: none;
   transition: background .12s, color .12s;
