@@ -136,7 +136,6 @@ window.__HUD_CONSOLIDATED__ = true;
       header.id = 'site-header';
       header.setAttribute('role', 'banner');
       header.innerHTML = `
-        <button id="hamburger" class="hamburger" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">☰</button>
         <a class="site-logo" href="/index.html" aria-label="Crypto Moonboys home">
           <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
           <span><span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span><span class="logo-sub">Unified Wiki Shell v1</span></span>
@@ -174,32 +173,51 @@ window.__HUD_CONSOLIDATED__ = true;
     return header;
   }
 
-  function ensureSidebar() {
-    let sidebar = document.getElementById('sidebar');
-    if (!sidebar) {
-      sidebar = document.createElement('nav');
-      sidebar.id = 'sidebar';
-      sidebar.setAttribute('aria-label', 'Navigation');
-    }
-
-    sidebar.innerHTML = sidebarGroups.map((group) => `
-      <section class="sidebar-section">
-        <h2 class="sidebar-heading">${escapeHtml(group.heading)}</h2>
-        <div class="sidebar-nav">${group.items.map((item) => navLinkHtml(item, 'sidebar-nav-link')).join('')}</div>
+  function ensureInlineLiveStats(content) {
+    if (!shouldShowInlineStats(window.location.pathname)) return;
+    if (content.querySelector('.inline-live-stats')) return;
+    const container = document.createElement('div');
+    container.className = 'inline-live-stats inline-live-stats--left';
+    container.setAttribute('aria-label', 'Live player stats');
+    container.innerHTML = `
+      <section class="hud-card hud-box hud-box--player" data-csp-panel>
+        <h2>PLAYER LIVE FEED</h2>
+        <div class="hud-player-card">
+          <div id="hud-player-avatar" aria-hidden="true"><span class="hud-avatar-icon">☾</span></div>
+          <div><div id="hud-player-name" class="hud-player-name">Telegram not linked</div><p>Link Telegram to see live faction and competitive stats.</p></div>
+        </div>
       </section>
-    `).join('');
-    return sidebar;
+      <section class="hud-card hud-box hud-box--actions" data-csp-faction-ops>
+        <h2>FACTION DAILY OPS</h2>
+        <p>Faction state loads here when competitive systems are online.</p>
+      </section>
+      <section class="hud-card hud-box hud-box--events" data-csp-wtf-signal>
+        <h2>DAILY WTF SIGNAL</h2>
+        <p>Daily WTF signal and live events stay isolated to action pages.</p>
+      </section>
+      <section class="hud-card hud-box hud-box--missed" data-csp-missed>
+        <h2>MISSED OPPORTUNITIES</h2>
+        <p>Missed rewards and activity notes render without touching wiki articles.</p>
+      </section>
+    `;
+    const banner = content.querySelector('#wiki-route-banner');
+    if (banner && banner.nextSibling) {
+      content.insertBefore(container, banner.nextSibling);
+    } else if (banner) {
+      content.appendChild(container);
+    } else {
+      content.insertBefore(container, content.firstChild);
+    }
   }
 
-  function ensureOverlay() {
-    let overlay = document.getElementById('sidebar-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'sidebar-overlay';
-      overlay.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(overlay);
-    }
-    return overlay;
+  function shouldShowInlineStats(pathname) {
+    const p = normalizePathname(pathname || window.location.pathname);
+    return [
+      '/community.html',
+      '/games/',
+      '/games/index.html',
+      '/games/leaderboard.html',
+    ].includes(p);
   }
 
   function ensureMainContent() {
@@ -225,8 +243,10 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function ensureLayout() {
     const header = ensureHeader();
-    const sidebar = ensureSidebar();
     const content = ensureMainContent();
+
+    // Remove stale page-has-right-panel class from HTML source (no global right panel).
+    document.body.classList.remove('page-has-right-panel');
 
     let layout = document.getElementById('layout');
     if (!layout) {
@@ -234,8 +254,6 @@ window.__HUD_CONSOLIDATED__ = true;
       layout.id = 'layout';
       header.insertAdjacentElement('afterend', layout);
     }
-
-    if (sidebar.parentElement !== layout) layout.insertBefore(sidebar, layout.firstChild);
 
     let mainWrapper = document.getElementById('main-wrapper');
     if (!mainWrapper) {
@@ -246,9 +264,7 @@ window.__HUD_CONSOLIDATED__ = true;
     if (content.parentElement !== mainWrapper) mainWrapper.insertBefore(content, mainWrapper.firstChild);
 
     ensureFooter(mainWrapper);
-    ensureOverlay();
-    ensureRightPanel(layout);
-    return { layout, sidebar, mainWrapper, content };
+    return { layout, mainWrapper, content };
   }
 
   function ensureFooter(mainWrapper) {
@@ -352,43 +368,6 @@ window.__HUD_CONSOLIDATED__ = true;
       input.addEventListener('input', () => dropdown.classList.toggle('open', Boolean(input.value.trim())));
       document.addEventListener('click', (event) => {
         if (!form.contains(event.target)) dropdown.classList.remove('open');
-      });
-    }
-  }
-
-  function _shellSetSidebarOpen(expanded) {
-    const shouldOpen = Boolean(expanded);
-    document.body.classList.toggle('sidebar-open', shouldOpen);
-    const ham = document.getElementById('hamburger');
-    if (ham) ham.setAttribute('aria-expanded', String(shouldOpen));
-  }
-  window._shellSetSidebarOpen = _shellSetSidebarOpen;
-
-  function bindSidebar() {
-    if (window.__MOONBOYS_SIDEBAR_BOUND) return;
-    window.__MOONBOYS_SIDEBAR_BOUND = true;
-    const ham = document.getElementById('hamburger');
-    const sidebar = document.getElementById('sidebar');
-    const ov = document.getElementById('sidebar-overlay');
-    if (ham && !ham.dataset.sidebarBound) {
-      ham.dataset.sidebarBound = 'true';
-      ham.addEventListener('click', () => _shellSetSidebarOpen(!document.body.classList.contains('sidebar-open')));
-    }
-    if (ov && !ov.dataset.sidebarBound) {
-      ov.dataset.sidebarBound = 'true';
-      ov.addEventListener('click', () => _shellSetSidebarOpen(false));
-    }
-    if (sidebar && !sidebar.dataset.sidebarBound) {
-      sidebar.dataset.sidebarBound = 'true';
-      sidebar.addEventListener('click', (event) => {
-        const link = event.target && event.target.closest ? event.target.closest('a') : null;
-        if (link) _shellSetSidebarOpen(false);
-      });
-    }
-    if (!window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND) {
-      window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND = true;
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') _shellSetSidebarOpen(false);
       });
     }
   }
@@ -500,8 +479,8 @@ window.__HUD_CONSOLIDATED__ = true;
     stampShellMode();
     const shell = ensureLayout();
     renderLegacyRouteBanner(shell.content);
+    ensureInlineLiveStats(shell.content);
     bindSearchForm();
-    bindSidebar();
     bindHudIdentityRefresh();
     scheduleHudIdentityRefresh();
     ensureBackToTop();
@@ -520,7 +499,6 @@ window.__HUD_CONSOLIDATED__ = true;
       window.requestAnimationFrame(() => {
         pending = false;
         if (!document.getElementById('site-header') || !document.getElementById('global-nav') || !document.getElementById('layout')) {
-          window.__MOONBOYS_SIDEBAR_BOUND = false;
           ensureNav();
         }
       });
@@ -541,7 +519,8 @@ window.__HUD_CONSOLIDATED__ = true;
     ensureNav,
     resolveShellMode,
     resolveCanonicalWikiRoute,
-    shouldShowRightPanel
+    shouldShowInlineStats,
+    shouldShowRightPanel,
   });
 
   if (document.readyState === 'loading') {

@@ -464,21 +464,22 @@ if (shellJs) {
   }
 }
 
-// 8. Hamburger/sidebar binding in site-shell.js
-console.log('\n[8] site-shell.js hamburger/sidebar binding');
+// 8. Hamburger/sidebar binding in site-shell.js — UI Unification: must be ABSENT
+// site-shell.js no longer manages the global sidebar; wiki.js retains per-wiki-page sidebar binding.
+console.log('\n[8] site-shell.js hamburger/sidebar binding (UI unification — must be absent)');
 if (shellJs) {
-  const SIDEBAR_CHECKS = [
+  const SIDEBAR_REMOVED_CHECKS = [
     { needle: '__MOONBOYS_SIDEBAR_BOUND',        label: 'window.__MOONBOYS_SIDEBAR_BOUND marker' },
     { needle: '__MOONBOYS_SIDEBAR_ESCAPE_BOUND', label: 'window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND (global Escape once)' },
     { needle: 'dataset.sidebarBound',            label: 'per-element dataset.sidebarBound marker' },
     { needle: 'sidebar-open',                    label: 'body.sidebar-open canonical class' },
     { needle: '_shellSetSidebarOpen',            label: '_shellSetSidebarOpen() helper function' },
   ];
-  for (const { needle, label } of SIDEBAR_CHECKS) {
-    if (shellJs.includes(needle)) {
-      pass(`site-shell.js sidebar: ${label} present`);
+  for (const { needle, label } of SIDEBAR_REMOVED_CHECKS) {
+    if (!shellJs.includes(needle)) {
+      pass(`site-shell.js sidebar: ${label} correctly absent (global sidebar removed — UI unification)`);
     } else {
-      fail(`site-shell.js sidebar: ${label} MISSING`);
+      fail(`site-shell.js sidebar: ${label} still PRESENT — must be removed from site-shell.js (UI unification)`);
     }
   }
 }

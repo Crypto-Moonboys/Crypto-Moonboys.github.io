@@ -82,8 +82,6 @@ for (const needle of routeNeedles) {
 const cssNeedles = [
   'body.wiki-shell-v1 #site-header',
   'body.wiki-shell-v1 #global-nav',
-  'body.wiki-shell-v1 #sidebar',
-  'body.wiki-shell-v1.sidebar-open #sidebar',
   'body.wiki-shell-v1 .wiki-route-banner',
   'body.wiki-shell-v1 #site-paperclip-agent'
 ];

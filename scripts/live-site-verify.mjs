@@ -19,42 +19,31 @@
  *
  * ── Pages verified ────────────────────────────────────────────────────────────
  *
- * Core shell (right panel expected):
- *   /                         home — right panel + 4 CSP sections
- *   /index.html               home — right panel + 4 CSP sections
- *   /search.html              wiki search — right panel + wiki search behavior
- *   /games/                   arcade hub — right panel + 8-game roster
+ * All pages — no global right panel (UI unification):
+ *   /                         home — centered single-column layout
+ *   /index.html               home — centered single-column layout
+ *   /search.html              wiki search
+ *   /games/                   arcade hub — 8-game roster
  *   /games/leaderboard.html   leaderboard page
- *
- * Standalone CSP panel (no right panel; data-csp-panel mounted directly):
+ *   /community.html
+ *   /dashboard.html           editorial wiki intelligence
  *   /gkniftyheads-incubator.html
  *
  * Arcade/runtime:
  *   /games/block-topia-quest-maze/   BTQM — Phaser boot smoke, no 404 for generated assets
  *   /games/invaders-3008/            simple arcade game — shell smoke
  *
- * Right-panel intentionally absent:
- *   /dashboard.html           editorial wiki intelligence — no player right panel
- *
  * ── Per-page assertions ───────────────────────────────────────────────────────
  *
  * Shell structure:
  *   ✓ #site-header exists
  *   ✓ #sidebar exists
- *   ✓ #homepage-right-panel exists (on right-panel pages)
- *   ✓ #homepage-right-panel absent (on /dashboard.html)
- *   ✓ [data-csp-panel] exists (right-panel pages + incubator)
- *   ✓ [data-csp-faction-ops] exists (right-panel pages)
- *   ✓ [data-csp-wtf-signal] exists (right-panel pages)
- *   ✓ [data-csp-missed] exists (right-panel pages)
- *   ✓ Right rail section headings: PLAYER LIVE FEED, FACTION DAILY OPS,
- *       DAILY WTF SIGNAL, MISSED OPPORTUNITIES
+ *   ✗ #homepage-right-panel must NOT exist in DOM on any page (element absent, not just hidden)
+ *   ✗ [data-csp-*] hooks must NOT be inside #homepage-right-panel
  *   ✓ no #live-feed-widget (LIVE_FEED=false)
  *   ✓ no "Live System Feed" text (removed section)
  *   ✓ no "System Status" text (removed section)
  *   ✓ no "WIKI NODES" fake row
- *   ✓ #hud-player-avatar present (right-panel pages)
- *   ✓ #homepage-right-panel visible (display≠none, visibility≠hidden, bbox>0)
  *
  * Telegram sync state (anonymous — no credentials required):
  *   ✓ no duplicate RELINK badges
@@ -121,23 +110,29 @@ const BASE = 'https://cryptomoonboys.com';
 const EXPECTED_API_BASE        = 'https://moonboys-api.sercullen.workers.dev';
 const EXPECTED_LEADERBOARD_URL = 'https://moonboys-leaderboard.sercullen.workers.dev';
 
-// Pages that receive the full right panel (4 CSP section hooks + #homepage-right-panel).
-const RIGHT_PANEL_PAGES = [
+// DEPRECATED — no global right panel. Both arrays are empty and kept only to avoid
+// breaking the PAGES spread below. Contract: #homepage-right-panel must not appear on
+// any page; CSP sections render inline on specific pages only.
+const RIGHT_PANEL_PAGES = [];
+const STANDALONE_CSP_PAGES = [];
+
+// Pages that receive inline live/player stats in page content (no global chrome).
+const INLINE_STATS_PAGES = [
+  '/games/',
+  '/games/leaderboard.html',
+  '/community.html',
+];
+
+// Pages intentionally missing the right panel.
+const NO_RIGHT_PANEL_PAGES = [
   '/',
   '/index.html',
   '/search.html',
   '/games/',
   '/games/leaderboard.html',
-];
-
-// Pages where [data-csp-panel] is mounted standalone (no #homepage-right-panel).
-const STANDALONE_CSP_PAGES = [
-  '/gkniftyheads-incubator.html',
-];
-
-// Pages intentionally missing the right panel.
-const NO_RIGHT_PANEL_PAGES = [
+  '/community.html',
   '/dashboard.html',
+  '/gkniftyheads-incubator.html',
 ];
 
 // Arcade/game-specific pages (shell smoke only; no right panel required).
@@ -400,17 +395,14 @@ async function testPage(page, pathname) {
   const url = `${BASE}${pathname}`;
   process.stdout.write(`\n── ${pathname} ──────────────────────────────────────────\n`);
 
-  const isRightPanelPage   = RIGHT_PANEL_PAGES.includes(pathname);
-  const isStandaloneCsp    = STANDALONE_CSP_PAGES.includes(pathname);
-  const isNoRightPanel     = NO_RIGHT_PANEL_PAGES.includes(pathname);
   const isBtqmPage         = pathname === '/games/block-topia-quest-maze/';
   const isGamesHub         = pathname === '/games/';
   const isSearchPage       = pathname === '/search.html';
   const isArcadePage       = ARCADE_PAGES.includes(pathname);
+  const isInlineStatsPage  = INLINE_STATS_PAGES.includes(pathname);
 
   const allCritical = [
     ...(isArcadePage ? [] : SHELL_CRITICAL_JS_PATHS),
-    ...(isRightPanelPage || isStandaloneCsp ? RIGHT_RAIL_CRITICAL_JS_PATHS : []),
     ...(isSearchPage ? WIKI_SEARCH_CRITICAL_JS_PATHS : []),
     ...(isArcadePage ? ARCADE_CRITICAL_JS_PATHS : []),
     ...(ARCADE_PAGE_CRITICAL_BOOTSTRAP_PATHS[pathname] || []),
@@ -427,7 +419,8 @@ async function testPage(page, pathname) {
     return;
   }
 
-  // Allow deferred/live script execution to settle before runtime assertions.
+  // Wait for the shell to boot (no longer waiting for right panel — UI unification removes it).
+  // Just wait for API config to resolve.
   try {
     await page.waitForFunction(
       () => !!(window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object'),
@@ -439,14 +432,6 @@ async function testPage(page, pathname) {
     try {
       await page.waitForTimeout(1500);
     } catch (_) { /* no-op */ }
-  }
-
-  // Wait for the shell to inject the right panel (up to 8 s — live site has
-  // Cloudflare edge latency on top of local rendering).
-  if (isRightPanelPage) {
-    try {
-      await page.waitForSelector('#homepage-right-panel', { timeout: 8000 });
-    } catch (_) { /* assertion below records the failure */ }
   }
 
   // ── Collect diagnostics from the browser ──────────────────────────────
@@ -482,7 +467,9 @@ async function testPage(page, pathname) {
       pathname:           window.location.pathname,
       bodyClass:          document.body.className,
       siteHeader:         !!document.querySelector('#site-header'),
+      hamburger:          !!document.getElementById('hamburger'),
       sidebar:            !!document.querySelector('#sidebar'),
+      sidebarOverlay:     !!document.getElementById('sidebar-overlay'),
       rightPanel:         visInfo('#homepage-right-panel'),
       cspPanel:           !!document.querySelector('[data-csp-panel]'),
       cspFactionOps:      !!document.querySelector('[data-csp-faction-ops]'),
@@ -502,6 +489,15 @@ async function testPage(page, pathname) {
       relinkCount:        countText('RELINK'),
       liveLinkedCount:    countText('LIVE LINKED'),
       syncPendingCount:   countText('SYNC PENDING'),
+      // CSP hooks: detect any [data-csp-*] element nested inside #homepage-right-panel.
+      // Must be false on every page — right panel must not exist and must not host CSP hooks.
+      cspInsideRightPanel: (() => {
+        const rp = document.getElementById('homepage-right-panel');
+        if (!rp) return false;
+        return !!(rp.querySelector('[data-csp-panel],[data-csp-faction-ops],[data-csp-wtf-signal],[data-csp-missed]'));
+      })(),
+      // Inline stats mount: .inline-live-stats in page content (required on Arcade/Battle Chamber pages).
+      inlineStatsMount:   !!document.querySelector('.inline-live-stats'),
       // API config state
       moonboysApiExists:  !!apiObj,
       apiBaseState:       apiBaseInfo ? apiBaseInfo.state : null,
@@ -565,91 +561,64 @@ async function testPage(page, pathname) {
     fail('#site-header MISSING', { url, selector: '#site-header', suggested: 'site-shell.js did not run or boot block broken' });
   }
 
-  if (diag.sidebar) {
-    pass('#sidebar exists');
+  // ── Sidebar/hamburger/overlay chrome — must be absent (UI unification) ────
+  if (!diag.hamburger) {
+    pass('#hamburger absent from DOM (hamburger chrome removed — UI unification)');
   } else {
-    fail('#sidebar MISSING', { url, selector: '#sidebar', suggested: 'site-shell.js did not run or boot block broken' });
+    fail('#hamburger present in DOM — hamburger button must not exist after UI unification', {
+      url,
+      selector: '#hamburger',
+      suggested: 'ensureHeader() must not render the hamburger button; check site-shell.js header template',
+    });
+  }
+
+  if (!diag.sidebar) {
+    pass('#sidebar absent from DOM (sidebar chrome removed — UI unification)');
+  } else {
+    fail('#sidebar present in DOM — sidebar element must not be mounted after UI unification', {
+      url,
+      selector: '#sidebar',
+      suggested: 'ensureSidebar() must not be called from ensureLayout(); check site-shell.js',
+    });
+  }
+
+  if (!diag.sidebarOverlay) {
+    pass('#sidebar-overlay absent from DOM (overlay chrome removed — UI unification)');
+  } else {
+    fail('#sidebar-overlay present in DOM — overlay must not be mounted after UI unification', {
+      url,
+      selector: '#sidebar-overlay',
+      suggested: 'ensureOverlay() must not be called from ensureLayout(); check site-shell.js',
+    });
   }
 
   // ── Right-panel presence/absence ──────────────────────────────────────
+  // NOTE: UI unification removes global right panel from all pages.
+  // Right panel (#homepage-right-panel) should be absent on all pages.
+  // Live stats render inline on specific pages (Arcade, Battle Chamber) instead.
   const rp = diag.rightPanel;
-  if (isNoRightPanel) {
-    if (!rp.exists) {
-      pass('#homepage-right-panel absent (intentionally — dashboard is right-panel-free)');
-    } else {
-      fail('#homepage-right-panel should be ABSENT on dashboard (editorial wiki intelligence only)', {
-        url,
-        selector: '#homepage-right-panel',
-        suggested: 'shouldShowRightPanel() is returning true for /dashboard.html — check site-shell.js',
-      });
-    }
-  } else if (isRightPanelPage) {
-    if (rp.exists) {
-      pass('#homepage-right-panel exists');
-    } else {
-      fail('#homepage-right-panel MISSING', {
-        url,
-        selector: '#homepage-right-panel',
-        suggested: 'shouldShowRightPanel() returned false; check body class or site-shell.js page allowlist',
-      });
-    }
-
-    // Visibility checks only when right panel exists.
-    if (rp.exists) {
-      if (rp.display !== 'none') {
-        pass('#homepage-right-panel display !== "none"');
-      } else {
-        fail('#homepage-right-panel has display:none', {
-          url,
-          selector: '#homepage-right-panel',
-          suggested: 'CSS hide rule active — check viewport width or retro-16bit-theme.css breakpoint',
-        });
-      }
-      if (rp.visibility !== 'hidden') {
-        pass('#homepage-right-panel visibility !== "hidden"');
-      } else {
-        fail('#homepage-right-panel has visibility:hidden', { url, selector: '#homepage-right-panel' });
-      }
-      if (rp.w > 0 && rp.h > 0) {
-        pass(`#homepage-right-panel bounding box ${rp.w.toFixed(0)}×${rp.h.toFixed(0)} > 0`);
-      } else {
-        fail(`#homepage-right-panel bounding box is zero (${rp.w}×${rp.h})`, {
-          url,
-          selector: '#homepage-right-panel',
-          suggested: 'Panel rendered but not visible — check layout/CSS at 1440px viewport',
-        });
-      }
-    }
+  if (!rp.exists) {
+    pass('#homepage-right-panel absent from DOM (global right panel disabled — UI unification)');
+  } else {
+    fail('#homepage-right-panel exists in DOM — element must not be mounted at all (CSS hiding is not sufficient)', {
+      url,
+      selector: '#homepage-right-panel',
+      suggested: 'ensureRightPanel() must be disabled in site-shell.js; ensure ensureLayout() does not call ensureRightPanel()',
+    });
   }
 
   // ── CSP section hooks ─────────────────────────────────────────────────
-  if (isRightPanelPage) {
-    if (diag.cspPanel) {
-      pass('[data-csp-panel] exists');
-    } else {
-      fail('[data-csp-panel] MISSING', { url, selector: '[data-csp-panel]', suggested: 'Right-rail HTML not rendered by site-shell.js' });
-    }
-    if (diag.cspFactionOps) {
-      pass('[data-csp-faction-ops] exists');
-    } else {
-      fail('[data-csp-faction-ops] MISSING', { url, selector: '[data-csp-faction-ops]', suggested: 'Faction Daily Ops section not rendered by site-shell.js' });
-    }
-    if (diag.cspWtfSignal) {
-      pass('[data-csp-wtf-signal] exists');
-    } else {
-      fail('[data-csp-wtf-signal] MISSING', { url, selector: '[data-csp-wtf-signal]', suggested: 'Daily WTF Signal section not rendered by site-shell.js' });
-    }
-    if (diag.cspMissed) {
-      pass('[data-csp-missed] exists');
-    } else {
-      fail('[data-csp-missed] MISSING', { url, selector: '[data-csp-missed]', suggested: 'Missed Opportunities section not rendered by site-shell.js' });
-    }
-  } else if (isStandaloneCsp) {
-    if (diag.cspPanel) {
-      pass('[data-csp-panel] exists (standalone)');
-    } else {
-      fail('[data-csp-panel] MISSING (standalone page)', { url, selector: '[data-csp-panel]', suggested: 'Inline data-csp-panel markup missing from page HTML' });
-    }
+  // Fail if any [data-csp-*] hook is nested inside #homepage-right-panel.
+  // Pass when hooks are absent (pages with no inline stats) or exist inline
+  // in page content (outside global chrome).
+  if (diag.cspInsideRightPanel) {
+    fail('[data-csp-*] hook found inside #homepage-right-panel — CSP sections must not be mounted in global right panel', {
+      url,
+      selector: '#homepage-right-panel [data-csp-panel],[data-csp-faction-ops],[data-csp-wtf-signal],[data-csp-missed]',
+      suggested: 'ensureRightPanel() must remain disabled; inline live-stats modules must render outside #homepage-right-panel',
+    });
+  } else {
+    pass('[data-csp-*] sections absent from #homepage-right-panel (inline-only contract satisfied)');
   }
 
   // data-las-panel is a legacy hook — must never appear.
@@ -663,30 +632,17 @@ async function testPage(page, pathname) {
     });
   }
 
-  // ── Right-rail section headings ───────────────────────────────────────
-  if (isRightPanelPage) {
-    if (rp.exists) {
-      for (const { text, diagKey } of [
-        { text: 'PLAYER LIVE FEED',     diagKey: 'textPlayerLiveFeed' },
-        { text: 'FACTION DAILY OPS',    diagKey: 'textFactionOps' },
-        { text: 'DAILY WTF SIGNAL',     diagKey: 'textWtfSignal' },
-        { text: 'MISSED OPPORTUNITIES', diagKey: 'textMissed' },
-      ]) {
-        if (diag[diagKey]) {
-          pass(`right rail body text includes "${text}"`);
-        } else {
-          fail(`right rail body text MISSING "${text}"`, {
-            url,
-            selector: text,
-            suggested: 'Section heading removed or renamed in site-shell.js right-panel HTML',
-          });
-        }
-      }
-    }
-    if (diag.hudAvatar) {
-      pass('#hud-player-avatar present');
+  // ── Inline live/player stats mount ───────────────────────────────────
+  // Required on Arcade/Battle Chamber pages; must be absent on all others (inline only).
+  if (isInlineStatsPage) {
+    if (diag.inlineStatsMount) {
+      pass('.inline-live-stats present — inline player/faction stats rendered in page content');
     } else {
-      fail('#hud-player-avatar MISSING', { url, selector: '#hud-player-avatar', suggested: 'Avatar box removed from right-rail player HUD in site-shell.js' });
+      fail('.inline-live-stats MISSING — inline live/player stats must be mounted on this page', {
+        url,
+        selector: '.inline-live-stats',
+        suggested: 'ensureInlineLiveStats() must run for this page — check shouldShowInlineStats() in site-shell.js',
+      });
     }
   }
 
