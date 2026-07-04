@@ -37,7 +37,7 @@ function fail(message) { console.error(`  [FAIL] ${message}`); failures += 1; }
 function pass(message) { console.log(`  [PASS] ${message}`); passes += 1; }
 function read(relPath) { return fs.readFileSync(path.join(ROOT, relPath), 'utf8'); }
 
-console.log('\n--- Unified Wiki Shell v1 Guard ---\n');
+console.log('\n--- Global Public Shell Guard ---\n');
 
 if (!fs.existsSync(shellPath)) fail('js/site-shell.js missing');
 if (!fs.existsSync(cssPath)) fail('css/wiki-shell-v1.css missing');
@@ -46,13 +46,12 @@ const shell = fs.existsSync(shellPath) ? read('js/site-shell.js') : '';
 const css = fs.existsSync(cssPath) ? read('css/wiki-shell-v1.css') : '';
 
 const requiredShellNeedles = [
-  'Unified Wiki Shell v1',
   'CANONICAL_PUBLIC_ROOT',
   "const CANONICAL_PUBLIC_ROOT = '/wiki/'",
   'window.MOONBOYS_WIKI_SHELL',
   'resolveCanonicalWikiRoute',
   'wiki-shell-mode-',
-  'wiki-route-banner',
+  "document.documentElement.dataset.wikiShell = 'global'",
   'Search the wiki…',
   'THE CRYPTO MOONBOYS GK WIKI'
 ];
@@ -82,7 +81,6 @@ for (const needle of routeNeedles) {
 const cssNeedles = [
   'body.wiki-shell-v1 #site-header',
   'body.wiki-shell-v1 #global-nav',
-  'body.wiki-shell-v1 .wiki-route-banner',
   'body.wiki-shell-v1 #site-paperclip-agent'
 ];
 for (const needle of cssNeedles) {
