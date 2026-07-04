@@ -25,7 +25,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install || true
+        run: npm ci
 
       - name: Run Wiki Structure Validator
         run: node wiki/validators/wiki-structure-check.js
