@@ -22,6 +22,7 @@ const DEBUG_TEXTS = [
 ];
 
 const REQUIRED_RENDER_PATHS = [
+  'index.html',
   'search.html',
   'wiki/gkniftyheads.html',
   'wiki/gkniftyheads-nft-collection.html',
@@ -167,6 +168,16 @@ function hasShellWidthCap(styleText) {
 function hasSmallCardRadius(cssText) {
   const cardBlockPattern = /(?:card|panel|box|tile)[^{]*\{[^}]*border-radius\s*:\s*(0|[1-7]px)\b/gi;
   return cardBlockPattern.test(cssText);
+}
+
+function selectorBlock(cssText, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\s+/g, '\\s+');
+  const match = cssText.match(new RegExp(`${escaped}\\s*\\{([\\s\\S]*?)\\}`, 'i'));
+  return match ? match[1] : '';
+}
+
+function blockHas(block, pattern) {
+  return pattern.test(block);
 }
 
 console.log('\n--- SWARMSY Global Shell Audit ---\n');
@@ -327,6 +338,58 @@ if (!wikiCss) {
   }
 }
 if (wikiCssOk) pass('css/wiki.css owns shell layout and SWARMSY components without max-width caps');
+
+console.log('\n[7] Homepage hero background stays behind launch content');
+let homepageHeroOk = true;
+const homepageHtml = read('index.html') || '';
+if (!homepageHtml.includes('class="swarmsy-hero-bg"')) {
+  fail('index.html - missing swarmsy-hero-bg homepage hero background wrapper');
+  homepageHeroOk = false;
+}
+if (/retro-hero-bg/i.test(homepageHtml)) {
+  fail('index.html - must not restore retro-hero-bg');
+  homepageHeroOk = false;
+}
+if (!wikiCss) {
+  homepageHeroOk = false;
+} else {
+  const homeHeroBlock = selectorBlock(wikiCss, '.home-hero,\n.launch-hero') || selectorBlock(wikiCss, '.home-hero,\r\n.launch-hero');
+  const bgBlock = selectorBlock(wikiCss, '.swarmsy-hero-bg');
+  const imgBlock = selectorBlock(wikiCss, '.swarmsy-hero-bg .hero-bg-img');
+  const overlayBlock = selectorBlock(wikiCss, '.swarmsy-hero-bg::after');
+  const contentBlock = selectorBlock(wikiCss, '.home-hero > :not(.swarmsy-hero-bg)');
+
+  if (!blockHas(homeHeroBlock, /position\s*:\s*relative/i) || !blockHas(homeHeroBlock, /overflow\s*:\s*hidden/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - .home-hero/.launch-hero must be relative and hide hero background overflow`);
+    homepageHeroOk = false;
+  }
+  if (
+    !blockHas(bgBlock, /position\s*:\s*absolute/i) ||
+    !blockHas(bgBlock, /inset\s*:\s*0/i) ||
+    !blockHas(bgBlock, /z-index\s*:\s*0/i) ||
+    !blockHas(bgBlock, /pointer-events\s*:\s*none/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-hero-bg must be an absolute inset non-interactive background layer`);
+    homepageHeroOk = false;
+  }
+  if (
+    !blockHas(imgBlock, /width\s*:\s*100%/i) ||
+    !blockHas(imgBlock, /height\s*:\s*100%/i) ||
+    !blockHas(imgBlock, /object-fit\s*:\s*cover/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-hero-bg .hero-bg-img must fill the hero with object-fit cover`);
+    homepageHeroOk = false;
+  }
+  if (!blockHas(imgBlock, /opacity\s*:\s*(?:0?\.\d+|[01])/i) && !blockHas(overlayBlock, /background\s*:/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero background needs opacity or overlay treatment`);
+    homepageHeroOk = false;
+  }
+  if (!blockHas(contentBlock, /position\s*:\s*relative/i) || !blockHas(contentBlock, /z-index\s*:\s*1/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero content must sit above the background layer`);
+    homepageHeroOk = false;
+  }
+}
+if (homepageHeroOk) pass('Homepage hero background is an absolute SWARMSY layer behind content');
 
 console.log('\n--- Result ---');
 console.log(`  Normal public pages checked : ${normalPages.length}`);

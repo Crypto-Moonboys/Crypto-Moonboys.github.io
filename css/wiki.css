@@ -580,6 +580,41 @@ th {
   font-size: clamp(1rem, 1.7vw, 1.2rem);
 }
 
+.home-hero,
+.launch-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.swarmsy-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.swarmsy-hero-bg::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(7, 11, 18, 0.88), rgba(7, 11, 18, 0.56) 48%, rgba(7, 11, 18, 0.82)),
+    linear-gradient(180deg, rgba(7, 11, 18, 0.24), rgba(7, 11, 18, 0.82));
+}
+
+.swarmsy-hero-bg .hero-bg-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.46;
+}
+
+.home-hero > :not(.swarmsy-hero-bg) {
+  position: relative;
+  z-index: 1;
+}
+
 .category-grid,
 .article-grid,
 .card-grid,
