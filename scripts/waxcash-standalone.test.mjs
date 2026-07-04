@@ -99,9 +99,12 @@ ok('waxcash.html contains Home button (← Home)',
 ok('waxcash.html Home button links to /',
   waxcashHtml.includes('<a href="/" class="wx-home-btn">← Home</a>'));
 
-// Sanity: body tag should have class flags for page identification
-ok('waxcash.html has page-waxcash class',
-  waxcashHtml.includes('class="page-waxcash page-standalone-tool"'));
+// Sanity: body tag should keep standalone identification while allowing SWARMSY shell parity tagging
+ok('waxcash.html keeps page-waxcash and page-standalone-tool classes',
+  /<body\b[^>]*class=["'][^"']*\bpage-waxcash\b[^"']*\bpage-standalone-tool\b[^"']*["']/u.test(waxcashHtml));
+
+ok('waxcash.html includes page-standard-shell class',
+  /<body\b[^>]*class=["'][^"']*\bpage-standard-shell\b[^"']*["']/u.test(waxcashHtml));
 
 // Durability: verify that apply-shell.mjs respects the standalone flag
 const applyShellJs = read('scripts/apply-shell.mjs');

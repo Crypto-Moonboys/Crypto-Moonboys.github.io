@@ -4214,6 +4214,710 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   display: none;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   SWARMSY VISUAL PARITY LAYER
+   Global component system ensuring all public pages use unified visual language
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Card unification: Old classes adopt SWARMSY card system ────── */
+.category-card,
+.article-card {
+  border: 1px solid rgba(0, 255, 200, 0.16) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.045) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease !important;
+}
+
+.category-card:hover,
+.article-card:hover {
+  border-color: rgba(0, 255, 200, 0.45) !important;
+  background: rgba(0, 255, 200, 0.085) !important;
+  transform: translateY(-2px) !important;
+}
+
+.article-card-title {
+  color: #00ffcc !important;
+}
+
+.category-card .cat-name {
+  color: #00ffcc !important;
+}
+
+/* ── Button unification: Old buttons adopt SWARMSY button system ─── */
+.bc-hero-cta,
+.bc-cta-btn {
+  border: 1px solid rgba(0, 255, 200, 0.34) !important;
+  border-radius: 14px !important;
+  background: rgba(0, 255, 200, 0.08) !important;
+  color: #00ffcc !important;
+  font-weight: 700 !important;
+  padding: 12px 16px !important;
+  text-transform: uppercase !important;
+  font-size: 0.88rem !important;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease !important;
+}
+
+.bc-hero-cta:hover,
+.bc-cta-btn:hover {
+  border-color: rgba(0, 255, 200, 0.55) !important;
+  background: rgba(0, 255, 200, 0.14) !important;
+  transform: translateY(-2px) !important;
+  text-decoration: none !important;
+}
+
+.bc-hero-cta.bc-cta-secondary,
+.bc-cta-btn.bc-cta-secondary,
+.bc-cta-secondary {
+  border-color: rgba(0, 255, 200, 0.34) !important;
+  background: transparent !important;
+  color: #00ffcc !important;
+}
+
+/* ── List items and cards unification ──────────────────────────── */
+.bc-why-list li,
+.bc-join-card,
+.bc-perk-card,
+.bc-reward-item,
+.article-list-item {
+  border: 1px solid rgba(0, 255, 200, 0.16) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.045) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+}
+
+/* ── Notice/alert unification ───────────────────────────────────── */
+.notice {
+  border: 1px solid rgba(0, 255, 200, 0.2) !important;
+  border-radius: 14px !important;
+  background: rgba(0, 255, 200, 0.06) !important;
+}
+
+.notice.info {
+  border-color: rgba(88, 166, 255, 0.28) !important;
+  background: rgba(88, 166, 255, 0.07) !important;
+}
+
+.notice.warning {
+  border-color: rgba(247, 201, 72, 0.28) !important;
+  background: rgba(247, 201, 72, 0.07) !important;
+}
+
+.notice.danger {
+  border-color: rgba(255, 123, 114, 0.28) !important;
+  background: rgba(255, 123, 114, 0.07) !important;
+}
+
+.notice.success {
+  border-color: rgba(63, 185, 80, 0.28) !important;
+  background: rgba(63, 185, 80, 0.07) !important;
+}
+
+/* ── Page widget sections unification ──────────────────────────── */
+.home-widget {
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 18px !important;
+  background: rgba(10,10,16,0.76) !important;
+  padding: 28px !important;
+}
+
+/* ── Battle Chamber styles with SWARMSY alignment ───────────────── */
+.battle-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.battle-page .section {
+  padding: 35px 40px;
+}
+
+.battle-page .page-hero {
+  padding: 50px 40px;
+}
+
+.battle-page .section h2 {
+  margin-bottom: 20px;
+}
+
+.battle-page .section p,
+.battle-page .section li {
+  line-height: 1.8;
+}
+
+.bc-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.bc-why-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.bc-why-list li::before {
+  content: '\26A1 ';
+}
+
+.bc-standings-note {
+  font-size: 0.85rem;
+  color: #8a9bac;
+  margin-bottom: 16px;
+}
+
+.bc-faction-standings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bc-faction-row {
+  display: grid;
+  grid-template-columns: 2.5rem 2rem 1fr 1fr 1fr 1fr 1fr 2fr 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  font-size: 0.87rem;
+}
+
+.bc-faction-row--dominant {
+  background: rgba(8, 18, 34, 0.85) !important;
+}
+
+.bc-faction-rank { font-weight: 700; color: #ffcc00; }
+.bc-faction-icon { font-size: 1.25rem; }
+.bc-faction-name { font-weight: 700; color: #fff; }
+
+.bc-dominant-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  background: rgba(255, 204, 0, 0.2);
+  color: #ffcc00;
+  padding: 2px 6px;
+  border-radius: 14px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.bc-faction-power,
+.bc-faction-daily,
+.bc-faction-weekly { color: #aac6dc; }
+.bc-faction-momentum { color: #00ffcc; }
+.bc-faction-perk-teaser { color: #8a9bac; font-size: 0.82rem; }
+.bc-faction-chamber-link {
+  color: #56dcff;
+  font-size: 0.82rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.bc-faction-chamber-link:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .bc-faction-row {
+    grid-template-columns: 2rem 2rem 1fr 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .bc-faction-perk-teaser,
+  .bc-faction-chamber-link { grid-column: 1 / -1; }
+}
+
+.bc-weekly-header { margin-bottom: 16px; font-size: 1.1rem; }
+.bc-weekly-leader { font-weight: 700; color: #ffcc00; }
+.bc-weekly-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.bc-weekly-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+.bc-weekly-rank { font-weight: 700; color: #ffcc00; min-width: 28px; }
+.bc-weekly-name { flex: 1; font-weight: 600; }
+.bc-weekly-score { color: #00ffcc; }
+.bc-weekly-reset-note { color: #8a9bac; font-size: 0.85rem; margin-bottom: 12px; }
+
+.bc-weekly-prizes {
+  padding: 14px;
+}
+
+.bc-monthly-clout-header { margin-bottom: 12px; font-size: 0.95rem; font-weight: 700; }
+.bc-monthly-clout-note { font-size: 0.82rem; color: #8a9bac; margin-bottom: 14px; }
+.bc-clout-avatar { width: 32px; height: 32px; }
+.bc-clout-name { flex: 1; font-weight: 600; }
+.bc-clout-score { color: #00ffcc; font-weight: 600; }
+.bc-tier-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  background: rgba(255,204,0,.18);
+  color: #ffc700;
+  padding: 2px 5px;
+  border-radius: 14px;
+}
+
+.campaign-card { padding: 18px 20px; }
+.campaign-card h4 { margin: 0 0 6px; color: #00ffcc; font-size: 0.95rem; }
+.campaign-card p { font-size: 0.88rem; color: #aaa; line-height: 1.5; }
+
+.faction-perk-panel { padding: 18px 20px; }
+.faction-perk-panel h4 { margin: 0 0 8px; color: #00ffcc; font-size: 0.95rem; }
+.faction-perk-panel ul { list-style: none; padding: 0; margin: 0; }
+.faction-perk-panel li { font-size: 0.88rem; color: #aaa; margin-bottom: 6px; }
+.faction-perk-panel li::before { content: '✓ '; color: #56dcff; font-weight: 700; }
+
+.missions-section { padding-top: 0; }
+.mission-card { padding: 16px; margin-bottom: 10px; }
+.mission-card h4 { margin: 0 0 4px; color: #00ffcc; font-size: 0.9rem; }
+.mission-card p { font-size: 0.82rem; color: #888; margin: 0; }
+
+.leaderboard-card { padding: 16px; }
+.leaderboard-card h4 { margin: 0 0 12px; font-weight: 700; font-size: 0.95rem; }
+.lb-entry { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.lb-rank { font-weight: 700; color: #ffcc00; min-width: 28px; }
+.lb-avatar { width: 28px; height: 28px; flex-shrink: 0; }
+.lb-info { flex: 1; min-width: 0; }
+.lb-name { font-size: 0.9rem; font-weight: 600; }
+.lb-stat { font-size: 0.8rem; color: #888; }
+.lb-value { color: #00ffcc; font-weight: 600; text-align: right; min-width: 60px; }
+
+.tg-username { font-weight: 700; color: #00ffcc; font-size: 0.95rem; margin-bottom: 2px; }
+.tg-xp { color: #ffcc00; font-size: 0.9rem; font-weight: 600; }
+.tg-rank { font-size: 0.85rem; color: #888; min-width: 24px; }
+
+.bc-coming-next {
+  background: rgba(86, 220, 255, 0.06);
+  border: 1px dashed rgba(86, 220, 255, 0.3);
+  border-radius: 14px;
+  padding: 20px 24px;
+  line-height: 1.8;
+}
+
+.bc-faction-row,
+.bc-weekly-row,
+.bc-standings-note {
+  border-radius: 14px !important;
+}
+
+.bc-faction-row {
+  border: 1px solid rgba(0, 255, 200, 0.16) !important;
+  background: rgba(0, 255, 200, 0.04) !important;
+}
+
+.bc-weekly-row {
+  border: 1px solid rgba(0, 255, 200, 0.12) !important;
+  background: rgba(0, 255, 200, 0.02) !important;
+}
+
+.bc-join-grid,
+.bc-perk-grid,
+.bc-rewards-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.bc-join-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.bc-perk-grid {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+
+.bc-rewards-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  margin-bottom: 20px;
+}
+
+.bc-join-season-notice,
+.bc-aligned-panel,
+.bc-join-confirm-panel,
+.bc-join-success-panel,
+.bc-join-locked-panel,
+.bc-monthly-target,
+.bc-season-current,
+.bc-monthly-rewards,
+.bc-season-rewards {
+  border: 1px solid rgba(0, 255, 200, 0.18) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.05) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+}
+
+.bc-join-intro,
+.bc-perks-intro,
+.bc-rewards-intro,
+.bc-rew-intro {
+  margin-bottom: 20px;
+}
+
+.bc-join-card,
+.bc-perk-card,
+.bc-faction-reward-card {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
+  padding: 16px;
+}
+
+.bc-join-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bc-faction-reward-card {
+  border: 1px solid rgba(0, 255, 200, 0.18) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.05) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bc-join-card-icon,
+.bc-join-confirm-icon,
+.bc-join-success-icon {
+  font-size: 1.6rem;
+}
+
+.bc-perk-icon {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.bc-weekly-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+}
+
+.bc-join-card-name,
+.bc-perk-name,
+.bc-join-confirm-title,
+.bc-join-confirm-faction {
+  color: #fff;
+  font-weight: 700;
+}
+
+.bc-join-card-name {
+  font-size: 0.95rem;
+}
+
+.bc-perk-name {
+  margin-bottom: 4px;
+}
+
+.bc-join-card-playstyle,
+.bc-perk-playstyle {
+  color: #00ffcc;
+  font-size: 0.82rem;
+}
+
+.bc-join-card-perk,
+.bc-perk-text {
+  color: #aac6dc;
+  font-size: 0.85rem;
+}
+
+.bc-frc-header {
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.bc-join-card-perk {
+  flex: 1;
+}
+
+.bc-perk-playstyle {
+  margin-bottom: 8px;
+}
+
+.bc-perk-xp-meta,
+.bc-perk-score-meta {
+  color: #8a9bac;
+  font-size: 0.78rem;
+  margin-top: 6px;
+}
+
+.bc-faction-reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 18px 0 0;
+}
+
+.bc-frc-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #aac6dc;
+}
+
+.bc-frc-row strong {
+  color: #fff;
+}
+
+.bc-join-btn,
+.bc-join-confirm-btn,
+.bc-join-cancel-btn {
+  border: 1px solid rgba(0, 255, 200, 0.34) !important;
+  border-radius: 14px !important;
+  background: rgba(0, 255, 200, 0.08) !important;
+  color: #00ffcc !important;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 12px 16px !important;
+  text-transform: uppercase;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease, opacity 160ms ease !important;
+}
+
+.bc-join-btn {
+  margin-top: 8px;
+}
+
+.bc-cta-chamber,
+.bc-frc-link {
+  text-decoration: none;
+}
+
+.bc-join-btn:hover,
+.bc-join-confirm-btn:hover,
+.bc-join-cancel-btn:hover {
+  border-color: rgba(0, 255, 200, 0.55) !important;
+  background: rgba(0, 255, 200, 0.14) !important;
+  transform: translateY(-2px) !important;
+}
+
+.bc-join-btn:disabled,
+.bc-join-confirm-btn:disabled,
+.bc-join-cancel-btn:disabled {
+  cursor: wait;
+  opacity: 0.55;
+  transform: none !important;
+}
+
+.bc-aligned-panel,
+.bc-join-confirm-panel,
+.bc-join-success-panel,
+.bc-join-locked-panel {
+  padding: 22px 24px;
+}
+
+.bc-aligned-panel {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
+  max-width: 500px;
+}
+
+.bc-aligned-header {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.bc-aligned-row {
+  color: #aac6dc;
+  margin-bottom: 10px;
+}
+
+.bc-aligned-row strong {
+  color: #fff;
+}
+
+.bc-aligned-season-lock,
+.bc-aligned-clout-note,
+.bc-aligned-season-note,
+.bc-join-season-lock-copy,
+.bc-join-season-reset-copy,
+.bc-join-link-copy,
+.bc-join-confirm-lock,
+.bc-join-confirm-reset,
+.bc-missions-note,
+.bc-perks-note,
+.bc-rewards-disclaimer,
+.bc-placeholder,
+.bc-proof-intro,
+.bc-rew-disclaimer {
+  color: #8a9bac;
+}
+
+.bc-join-season-notice {
+  margin-bottom: 18px;
+  padding: 18px 20px;
+}
+
+.bc-join-season-notice p:last-child {
+  margin-bottom: 0;
+}
+
+.bc-aligned-actions,
+.bc-join-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.bc-join-confirm-panel,
+.bc-join-success-panel,
+.bc-join-locked-panel {
+  max-width: 560px;
+}
+
+.bc-frc-link {
+  color: #00ffcc;
+  font-weight: 700;
+  margin-top: auto;
+}
+
+.bc-frc-link:hover {
+  text-decoration: underline;
+}
+
+.bc-join-confirm-panel,
+.bc-join-success-panel {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
+}
+
+.bc-join-confirm-title {
+  font-size: 1rem;
+  margin-top: 10px;
+}
+
+.bc-join-confirm-faction {
+  font-size: 1.05rem;
+  margin: 6px 0;
+}
+
+.bc-join-success-msg,
+.bc-join-locked-msg {
+  line-height: 1.7;
+}
+
+.bc-join-success-msg {
+  color: #fff;
+  margin-top: 10px;
+}
+
+.bc-join-locked-panel {
+  padding-bottom: 18px;
+}
+
+.bc-missions-header {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.bc-missions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bc-mission-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(0, 255, 200, 0.12) !important;
+  border-radius: 14px !important;
+  background: rgba(0, 255, 200, 0.03) !important;
+  padding: 12px 14px;
+  font-size: 0.87rem;
+}
+
+.bc-mission-row--done {
+  border-color: rgba(0, 255, 200, 0.35) !important;
+  background: rgba(0, 255, 200, 0.08) !important;
+}
+
+.bc-mission-label {
+  color: #fff;
+  font-weight: 700;
+}
+
+.bc-mission-desc {
+  color: #aac6dc;
+}
+
+.bc-mission-progress {
+  color: #00ffcc;
+  font-weight: 600;
+}
+
+.bc-mission-reward {
+  color: #ffcc00;
+  font-size: 0.82rem;
+}
+
+.bc-missions-empty,
+.bc-missions-loading {
+  color: #8a9bac;
+  font-style: italic;
+}
+
+.bc-missions-note {
+  font-size: 0.82rem;
+  margin-top: 12px;
+}
+
+.bc-monthly-target,
+.bc-season-current {
+  margin: 16px 0;
+  padding: 14px 16px;
+}
+
+.bc-monthly-rewards,
+.bc-season-rewards {
+  padding: 18px 20px;
+}
+
+.bc-rew-disclaimer {
+  font-size: 0.85rem;
+  margin-top: 12px;
+}
+
+.bc-monthly-rewards ul,
+.bc-season-rewards ul {
+  margin: 10px 0 10px 20px;
+  line-height: 1.9;
+}
+
+.bc-hall-of-fame {
+  color: #ffcc00;
+  font-style: italic;
+  margin-top: 12px;
+}
+
+.bc-reward-item {
+  padding: 14px 16px;
+}
+
+.bc-reward-icon {
+  display: block;
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+}
+
+.bc-rewards-disclaimer {
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.bc-perks-note {
+  font-size: 0.82rem;
+  margin-top: 16px;
+}
+
 @media (max-width: 720px) {
   .swarmsy-page {
     padding: 12px;
@@ -4228,5 +4932,14 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   .swarmsy-action-grid,
   .swarmsy-action-grid--compact {
     grid-template-columns: 1fr;
+  }
+
+  .bc-mission-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bc-frc-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
