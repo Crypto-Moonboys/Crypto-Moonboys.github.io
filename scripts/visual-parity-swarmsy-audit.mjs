@@ -19,10 +19,8 @@ const WIKI_CSS_PATH = 'css/wiki.css';
 const PARITY_LAYER_MARKER = 'SWARMSY VISUAL PARITY LAYER';
 
 let failures = 0;
-let warnings = 0;
 
 function fail(msg) { console.error(`  [FAIL] ${msg}`); failures += 1; }
-function warn(msg) { console.warn(`  [WARN] ${msg}`); warnings += 1; }
 function pass(msg) { console.log(`  [PASS] ${msg}`); }
 
 function read(rel) {
@@ -52,6 +50,22 @@ function findSmallRadiusMatches(cssText, selectors) {
       const radius = Number.parseInt(match[1], 10);
       if (radius < 14) {
         matches.push({ selector, radius });
+      }
+    }
+  }
+  return matches;
+}
+
+function findSelectorIndicatorMatches(cssText, selectors, indicators) {
+  const matches = [];
+  for (const selector of selectors) {
+    const pattern = new RegExp(`\\.${selector}(?:[^{]|\\n)*\\{([\\s\\S]*?)\\}`, 'g');
+    for (const match of cssText.matchAll(pattern)) {
+      const block = match[1];
+      for (const { pattern: indicatorPattern, name } of indicators) {
+        if (indicatorPattern.test(block)) {
+          matches.push({ selector, indicator: name });
+        }
       }
     }
   }
@@ -144,7 +158,7 @@ for (const pagePath of pagesToCheck) {
   for (const styleContent of styleBlocks) {
     for (const { pattern, name } of oldCSSPatterns) {
       if (pattern.test(styleContent)) {
-        warn(`${pagePath} - found ${name} in <style> block (should use global wiki.css)`);
+        fail(`${pagePath} - found ${name} in <style> block (should use global wiki.css)`);
         inlineCSSOk = false;
       }
     }
@@ -175,7 +189,7 @@ for (const pagePath of pagesToCheck) {
   for (const styleContent of styleBlocks) {
     const smallRadiiMatches = findSmallRadiusMatches(styleContent, swarmsyRadiusSelectors);
     for (const { selector, radius } of smallRadiiMatches) {
-      warn(`${pagePath} - ${selector} uses old small border-radius ${radius}px (should be 14px+ for SWARMSY compatibility)`);
+      fail(`${pagePath} - ${selector} uses old small border-radius ${radius}px (should be 14px+ for SWARMSY compatibility)`);
       radiusOk = false;
     }
   }
@@ -190,7 +204,7 @@ if (!wikiCss) {
     ? wikiCss.slice(wikiCss.indexOf(PARITY_LAYER_MARKER))
     : wikiCss;
   for (const { selector, radius } of findSmallRadiusMatches(parityLayerCss, swarmsyRadiusSelectors)) {
-    warn(`${WIKI_CSS_PATH} - ${selector} uses old small border-radius ${radius}px (should be 14px+ for SWARMSY compatibility)`);
+    fail(`${WIKI_CSS_PATH} - ${selector} uses old small border-radius ${radius}px (should be 14px+ for SWARMSY compatibility)`);
     radiusOk = false;
   }
 }
@@ -244,17 +258,27 @@ const mixedIndicators = [
 ];
 
 let mixedOk = true;
+const mixedStyleSelectors = ['bc-hero-cta', 'bc-cta-btn'];
 
 for (const pagePath of pagesToCheck) {
   const html = read(pagePath);
   if (!html) continue;
 
   for (const styleContent of extractStyleBlocks(html)) {
-    // Check for old button styling in .bc-hero-cta specifically
-    if (styleContent.includes('.bc-hero-cta') && styleContent.includes('background: #00ffcc')) {
-      warn(`${pagePath} - found old solid button styling in .bc-hero-cta (should use rgba with transparency)`);
+    for (const { selector, indicator } of findSelectorIndicatorMatches(styleContent, mixedStyleSelectors, mixedIndicators)) {
+      fail(`${pagePath} - found ${indicator} in .${selector} (should use rgba-based SWARMSY styling)`);
       mixedOk = false;
     }
+  }
+}
+
+if (wikiCss) {
+  const parityLayerCss = wikiCss.includes(PARITY_LAYER_MARKER)
+    ? wikiCss.slice(wikiCss.indexOf(PARITY_LAYER_MARKER))
+    : wikiCss;
+  for (const { selector, indicator } of findSelectorIndicatorMatches(parityLayerCss, mixedStyleSelectors, mixedIndicators)) {
+    fail(`${WIKI_CSS_PATH} - found ${indicator} in .${selector} (should use rgba-based SWARMSY styling)`);
+    mixedOk = false;
   }
 }
 
@@ -263,13 +287,10 @@ if (mixedOk) pass('No mixed old/new visual styling patterns detected');
 // Summary
 console.log('\n─────────────────────────────────────────────────────────────────────');
 
-if (failures === 0 && warnings === 0) {
+if (failures === 0) {
   console.log('\n✓ Visual parity audit passed! All pages use unified SWARMSY system.\n');
   process.exit(0);
-} else if (failures === 0) {
-  console.log(`\n⚠ Visual parity audit completed with ${warnings} warning(s).\n`);
-  process.exit(0);
 } else {
-  console.log(`\n✗ Visual parity audit FAILED: ${failures} failure(s), ${warnings} warning(s)\n`);
+  console.log(`\n✗ Visual parity audit FAILED: ${failures} failure(s)\n`);
   process.exit(1);
 }
