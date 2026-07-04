@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-03T06:45:25.682Z",
+  "generated_at": "2026-07-04T06:33:07.918Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -33,11 +33,11 @@
   "holders": [
     {
       "owner": "yoitscharlie",
-      "live_assets": 731
+      "live_assets": 730
     },
     {
       "owner": "pepperstake",
-      "live_assets": 692
+      "live_assets": 693
     },
     {
       "owner": "q4oia.wam",
