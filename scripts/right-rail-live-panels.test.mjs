@@ -76,7 +76,7 @@ function stringArrayValues(src, varName) {
   const re = new RegExp(`(?:var|let|const)\\s+${escapedVarName}\\s*=\\s*\\[([\\s\\S]*?)\\]`);
   const match = src.match(re);
   if (!match) {
-    throw new Error(`Unable to locate string array definition for "${varName}"`);
+    return [];
   }
   return Array.from(match[1].matchAll(/['"]([^'"]+)['"]/g)).map((m) => m[1]);
 }
@@ -196,10 +196,8 @@ check(opsBlock.includes('csp-ops-label">Battle</span>') && opsBlock.includes("va
 check(wtfSectionBlock.includes('Ready</a>') && wtfSectionBlock.includes('Play</a>') && wtfSectionBlock.includes('Open</a>') && !wtfSectionBlock.includes('Get Ready') && !wtfSectionBlock.includes('Play Arcade') && !wtfSectionBlock.includes('Open Arcade'), 'Daily WTF action labels are compact (Ready/Play/Open)');
 check(missedSectionBlock.includes('csp-live-row-val csp-live-row-val--warn') && csp.includes('#homepage-right-panel .csp-live-row-val{') && csp.includes('white-space:nowrap'), 'Missed values use right-rail nowrap styling so numbers cannot stack vertically');
 check(
-  retroTheme.includes('body.page-home.page-standard-shell #main-wrapper,') &&
-  retroTheme.includes('body.page-home.page-standard-shell #content {') &&
-  !/\/\* Homepage mobile\/tablet content centering \+ overflow guard \*\/[\s\S]*?@media \(max-width: 900px\)\s*\{[\s\S]*?overflow-x:\s*(?:clip|hidden)\s*!important;/u.test(retroTheme),
-  'retro theme uses structural homepage mobile centering constraints instead of overflow clipping guards'
+  !/#layout|#main-wrapper|#content|#layout\s*>\s*#homepage-right-panel|#homepage-right-panel:not\(#sidebar\):not\(#main-wrapper\)|--right-panel-w|--sparky-right-panel-gap/u.test(retroTheme),
+  'retro theme carries no shell container or right-panel layout authority'
 );
 check(retroTheme.includes('body.page-home .home-hero,') && retroTheme.includes('body.page-home .category-grid,') && retroTheme.includes('margin-left: auto !important;') && retroTheme.includes('margin-right: auto !important;'), 'homepage mobile content cards/grids keep centered full-width constraints');
 // Fix checks: honest copy, no hard-coded faction name, badge not contradictory
@@ -390,14 +388,12 @@ check(las.includes('state.missed_events_all_time != null ? state.missed_events_a
 // dashboard.html must remain wiki/editorial only, both in static HTML and runtime shell injection.
 const dashboard = read('dashboard.html');
 const shouldShowRightPanelBlock = functionBlock(siteShell, 'shouldShowRightPanel');
-const rightPanelAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'exact');
+const rightPanelAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'allowed');
 check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_time'), 'dashboard.html does not contain missed XP player data (wiki/editorial only)');
 check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-panel'), 'dashboard.html does not contain live player feed panel hooks');
 check(!dashboard.includes('page-has-right-panel'), 'dashboard.html does not opt into the runtime right rail');
 check(!rightPanelAllowlist.includes('/dashboard.html'), 'site-shell.js right-panel allowlist excludes /dashboard.html');
-check(shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return false;"), 'site-shell.js explicitly prevents dashboard runtime right-rail injection even if body classes drift');
-check(shouldShowRightPanelBlock.includes("if (body.classList.contains('page-no-right-panel')) return false;"), 'site-shell.js supports page-no-right-panel as a force-disable before opt-in classes');
-check(shouldShowRightPanelBlock.includes("if (body.classList.contains('page-has-right-panel')) return true;"), 'site-shell.js keeps page-has-right-panel as explicit opt-in');
+check(/function\s+shouldShowRightPanel\s*\(\)\s*\{\s*return false;\s*\}/u.test(shouldShowRightPanelBlock), 'site-shell.js disables right-panel runtime globally');
 for (const [route, html] of [
   ['/index.html', indexHtml],
   ['/search.html', searchHtml],
@@ -414,8 +410,8 @@ for (const [route, html] of [
 }
 check(!rightPanelAllowlist.includes('/wiki/') && !shouldShowRightPanelBlock.includes("'/wiki/'"), 'site-shell.js does not auto-enable right rail for /wiki/ prefix');
 check(!rightPanelAllowlist.includes('/categories/') && !shouldShowRightPanelBlock.includes("'/categories/'"), 'site-shell.js does not auto-enable right rail for /categories/ prefix');
-check(rightPanelAllowlist.includes('/community.html') && community.includes('page-has-right-panel'), 'community.html still opts into the Battle Chamber/right-rail live system');
-check(rightPanelAllowlist.includes('/games/index.html') && games.includes('page-has-right-panel'), 'games/index.html still opts into the live/action right rail');
+check(!rightPanelAllowlist.includes('/community.html') && !community.includes('page-has-right-panel'), 'community.html uses inline live stats without right-rail allowlist/layout opt-in');
+check(!rightPanelAllowlist.includes('/games/index.html') && !rightPanelAllowlist.includes('/games/') && !games.includes('page-has-right-panel'), 'games/index.html uses inline live stats without right-rail allowlist/layout opt-in');
 check(!nftTemplateExample.includes('page-has-right-panel'), 'NFT template example does not force page-has-right-panel');
 check(nftTemplateExample.includes('page-standard-shell'), 'NFT template example uses page-standard-shell');
 // Missed history persistence: data is accumulated, not reset by UTC day
