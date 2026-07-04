@@ -64,8 +64,11 @@ function isRedirectPage(html) {
 }
 
 function extractRequiredShellScripts(shellHtml) {
-  const matches = shellHtml.matchAll(/<script[^>]*src=["']([^"']+)["'][^>]*><\/script\s*>/gi);
-  return Array.from(matches, (match) => match[1]);
+  return shellHtml
+    .split(/\r?\n/)
+    .map((line) => line.match(/<script[^>]*src=["']([^"']+)["']/i))
+    .filter(Boolean)
+    .map((match) => match[1]);
 }
 
 function hasCfBypass(html, src) {
