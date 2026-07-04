@@ -16,7 +16,69 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI_CSS_PATH = 'css/wiki.css';
+const BATTLE_CHAMBER_JS_PATH = 'js/battle-chamber-factions.js';
 const PARITY_LAYER_MARKER = 'SWARMSY VISUAL PARITY LAYER';
+const BATTLE_CHAMBER_CRITICAL_SELECTORS = [
+  '.bc-join-grid',
+  '.bc-join-btn',
+  '.bc-join-btn:hover',
+  '.bc-join-btn:disabled',
+  '.bc-aligned-panel',
+  '.bc-aligned-header',
+  '.bc-aligned-row',
+  '.bc-aligned-actions',
+  '.bc-aligned-season-lock',
+  '.bc-aligned-clout-note',
+  '.bc-aligned-season-note',
+  '.bc-join-season-notice',
+  '.bc-join-season-lock-copy',
+  '.bc-join-season-reset-copy',
+  '.bc-join-link-copy',
+  '.bc-join-confirm-panel',
+  '.bc-join-confirm-icon',
+  '.bc-join-confirm-title',
+  '.bc-join-confirm-faction',
+  '.bc-join-confirm-lock',
+  '.bc-join-confirm-reset',
+  '.bc-join-confirm-actions',
+  '.bc-join-confirm-btn',
+  '.bc-join-cancel-btn',
+  '.bc-join-success-panel',
+  '.bc-join-success-icon',
+  '.bc-join-success-msg',
+  '.bc-join-locked-panel',
+  '.bc-join-locked-msg',
+  '.bc-missions-header',
+  '.bc-missions-list',
+  '.bc-mission-row',
+  '.bc-mission-row--done',
+  '.bc-mission-label',
+  '.bc-mission-desc',
+  '.bc-mission-progress',
+  '.bc-mission-reward',
+  '.bc-missions-empty',
+  '.bc-missions-loading',
+  '.bc-missions-note',
+  '.bc-perk-grid',
+  '.bc-perk-icon',
+  '.bc-perk-name',
+  '.bc-perk-playstyle',
+  '.bc-perk-text',
+  '.bc-perk-xp-meta',
+  '.bc-perk-score-meta',
+  '.bc-perks-intro',
+  '.bc-perks-note',
+  '.bc-rewards-grid',
+  '.bc-rewards-intro',
+  '.bc-reward-icon',
+  '.bc-rewards-disclaimer',
+  '.bc-monthly-target',
+  '.bc-season-current',
+  '.bc-placeholder',
+  '.bc-monthly-rewards',
+  '.bc-season-rewards',
+  '.bc-hall-of-fame',
+];
 
 let failures = 0;
 
@@ -70,6 +132,21 @@ function findSelectorIndicatorMatches(cssText, selectors, indicators) {
     }
   }
   return matches;
+}
+
+function extractRenderedBcClasses(jsText) {
+  return new Set(Array.from(jsText.matchAll(/\bbc-[a-z0-9-]+\b/g), (match) => match[0]));
+}
+
+function selectorBaseClass(selector) {
+  const match = selector.match(/\.([a-z0-9-]+)/i);
+  return match ? match[1] : null;
+}
+
+function hasCssSelector(cssText, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`(?:^|[\\s,}])${escaped}(?=\\s*[,\\{])`, 'm');
+  return pattern.test(cssText);
 }
 
 function getHTMLFiles(dir) {
@@ -283,6 +360,33 @@ if (wikiCss) {
 }
 
 if (mixedOk) pass('No mixed old/new visual styling patterns detected');
+
+// 6. Check Battle Chamber JS-rendered critical selector coverage
+console.log('\n[6] Checking Battle Chamber rendered selector coverage');
+let battleChamberCoverageOk = true;
+const battleChamberJs = read(BATTLE_CHAMBER_JS_PATH);
+
+if (!battleChamberJs) {
+  fail(`${BATTLE_CHAMBER_JS_PATH} - file not found`);
+  battleChamberCoverageOk = false;
+} else if (!wikiCss) {
+  battleChamberCoverageOk = false;
+} else {
+  const renderedClasses = extractRenderedBcClasses(battleChamberJs);
+  const selectorsToCheck = BATTLE_CHAMBER_CRITICAL_SELECTORS.filter((selector) => {
+    const baseClass = selectorBaseClass(selector);
+    return baseClass && renderedClasses.has(baseClass);
+  });
+
+  for (const selector of selectorsToCheck) {
+    if (!hasCssSelector(wikiCss, selector)) {
+      fail(`${WIKI_CSS_PATH} - missing Battle Chamber selector coverage for ${selector} rendered by ${BATTLE_CHAMBER_JS_PATH}`);
+      battleChamberCoverageOk = false;
+    }
+  }
+}
+
+if (battleChamberCoverageOk) pass('Battle Chamber JS-rendered critical selectors have CSS coverage');
 
 // Summary
 console.log('\n─────────────────────────────────────────────────────────────────────');

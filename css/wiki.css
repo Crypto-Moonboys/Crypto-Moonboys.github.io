@@ -4511,6 +4511,347 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   background: rgba(0, 255, 200, 0.02) !important;
 }
 
+.bc-join-grid,
+.bc-perk-grid,
+.bc-rewards-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.bc-join-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.bc-perk-grid {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+
+.bc-rewards-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  margin-bottom: 20px;
+}
+
+.bc-join-season-notice,
+.bc-aligned-panel,
+.bc-join-confirm-panel,
+.bc-join-success-panel,
+.bc-join-locked-panel,
+.bc-monthly-target,
+.bc-season-current,
+.bc-monthly-rewards,
+.bc-season-rewards {
+  border: 1px solid rgba(0, 255, 200, 0.18) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.05) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+}
+
+.bc-join-intro,
+.bc-perks-intro,
+.bc-rewards-intro {
+  margin-bottom: 20px;
+}
+
+.bc-join-card,
+.bc-perk-card {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
+  padding: 16px;
+}
+
+.bc-join-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bc-join-card-icon,
+.bc-join-confirm-icon,
+.bc-join-success-icon {
+  font-size: 1.6rem;
+}
+
+.bc-perk-icon {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.bc-join-card-name,
+.bc-perk-name,
+.bc-join-confirm-title,
+.bc-join-confirm-faction {
+  color: #fff;
+  font-weight: 700;
+}
+
+.bc-join-card-name {
+  font-size: 0.95rem;
+}
+
+.bc-perk-name {
+  margin-bottom: 4px;
+}
+
+.bc-join-card-playstyle,
+.bc-perk-playstyle {
+  color: #00ffcc;
+  font-size: 0.82rem;
+}
+
+.bc-join-card-perk,
+.bc-perk-text {
+  color: #aac6dc;
+  font-size: 0.85rem;
+}
+
+.bc-join-card-perk {
+  flex: 1;
+}
+
+.bc-perk-playstyle {
+  margin-bottom: 8px;
+}
+
+.bc-perk-xp-meta,
+.bc-perk-score-meta {
+  color: #8a9bac;
+  font-size: 0.78rem;
+  margin-top: 6px;
+}
+
+.bc-join-btn,
+.bc-join-confirm-btn,
+.bc-join-cancel-btn {
+  border: 1px solid rgba(0, 255, 200, 0.34) !important;
+  border-radius: 14px !important;
+  background: rgba(0, 255, 200, 0.08) !important;
+  color: #00ffcc !important;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 12px 16px !important;
+  text-transform: uppercase;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease, opacity 160ms ease !important;
+}
+
+.bc-join-btn {
+  margin-top: 8px;
+}
+
+.bc-join-btn:hover,
+.bc-join-confirm-btn:hover,
+.bc-join-cancel-btn:hover {
+  border-color: rgba(0, 255, 200, 0.55) !important;
+  background: rgba(0, 255, 200, 0.14) !important;
+  transform: translateY(-2px) !important;
+}
+
+.bc-join-btn:disabled,
+.bc-join-confirm-btn:disabled,
+.bc-join-cancel-btn:disabled {
+  cursor: wait;
+  opacity: 0.55;
+  transform: none !important;
+}
+
+.bc-aligned-panel,
+.bc-join-confirm-panel,
+.bc-join-success-panel,
+.bc-join-locked-panel {
+  padding: 22px 24px;
+}
+
+.bc-aligned-panel {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
+  max-width: 500px;
+}
+
+.bc-aligned-header {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.bc-aligned-row {
+  color: #aac6dc;
+  margin-bottom: 10px;
+}
+
+.bc-aligned-row strong {
+  color: #fff;
+}
+
+.bc-aligned-season-lock,
+.bc-aligned-clout-note,
+.bc-aligned-season-note,
+.bc-join-season-lock-copy,
+.bc-join-season-reset-copy,
+.bc-join-link-copy,
+.bc-join-confirm-lock,
+.bc-join-confirm-reset,
+.bc-missions-note,
+.bc-perks-note,
+.bc-rewards-disclaimer,
+.bc-placeholder {
+  color: #8a9bac;
+}
+
+.bc-join-season-notice {
+  margin-bottom: 18px;
+  padding: 18px 20px;
+}
+
+.bc-join-season-notice p:last-child {
+  margin-bottom: 0;
+}
+
+.bc-aligned-actions,
+.bc-join-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.bc-join-confirm-panel,
+.bc-join-success-panel,
+.bc-join-locked-panel {
+  max-width: 560px;
+}
+
+.bc-join-confirm-panel,
+.bc-join-success-panel {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
+}
+
+.bc-join-confirm-title {
+  font-size: 1rem;
+  margin-top: 10px;
+}
+
+.bc-join-confirm-faction {
+  font-size: 1.05rem;
+  margin: 6px 0;
+}
+
+.bc-join-success-msg,
+.bc-join-locked-msg {
+  line-height: 1.7;
+}
+
+.bc-join-success-msg {
+  color: #fff;
+  margin-top: 10px;
+}
+
+.bc-join-locked-panel {
+  padding-bottom: 18px;
+}
+
+.bc-missions-header {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.bc-missions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bc-mission-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(0, 255, 200, 0.12) !important;
+  border-radius: 14px !important;
+  background: rgba(0, 255, 200, 0.03) !important;
+  padding: 12px 14px;
+  font-size: 0.87rem;
+}
+
+.bc-mission-row--done {
+  border-color: rgba(0, 255, 200, 0.35) !important;
+  background: rgba(0, 255, 200, 0.08) !important;
+}
+
+.bc-mission-label {
+  color: #fff;
+  font-weight: 700;
+}
+
+.bc-mission-desc {
+  color: #aac6dc;
+}
+
+.bc-mission-progress {
+  color: #00ffcc;
+  font-weight: 600;
+}
+
+.bc-mission-reward {
+  color: #ffcc00;
+  font-size: 0.82rem;
+}
+
+.bc-missions-empty,
+.bc-missions-loading {
+  color: #8a9bac;
+  font-style: italic;
+}
+
+.bc-missions-note {
+  font-size: 0.82rem;
+  margin-top: 12px;
+}
+
+.bc-monthly-target,
+.bc-season-current {
+  margin: 16px 0;
+  padding: 14px 16px;
+}
+
+.bc-monthly-rewards,
+.bc-season-rewards {
+  padding: 18px 20px;
+}
+
+.bc-monthly-rewards ul,
+.bc-season-rewards ul {
+  margin: 10px 0 10px 20px;
+  line-height: 1.9;
+}
+
+.bc-hall-of-fame {
+  color: #ffcc00;
+  font-style: italic;
+  margin-top: 12px;
+}
+
+.bc-reward-item {
+  padding: 14px 16px;
+}
+
+.bc-reward-icon {
+  display: block;
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+}
+
+.bc-rewards-disclaimer {
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.bc-perks-note {
+  font-size: 0.82rem;
+  margin-top: 16px;
+}
+
 @media (max-width: 720px) {
   .swarmsy-page {
     padding: 12px;
@@ -4525,5 +4866,9 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   .swarmsy-action-grid,
   .swarmsy-action-grid--compact {
     grid-template-columns: 1fr;
+  }
+
+  .bc-mission-row {
+    grid-template-columns: 1fr 1fr;
   }
 }
