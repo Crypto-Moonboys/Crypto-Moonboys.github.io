@@ -4266,7 +4266,9 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   text-decoration: none !important;
 }
 
-.bc-hero-cta.bc-cta-secondary {
+.bc-hero-cta.bc-cta-secondary,
+.bc-cta-btn.bc-cta-secondary,
+.bc-cta-secondary {
   border-color: rgba(0, 255, 200, 0.34) !important;
   background: transparent !important;
   color: #00ffcc !important;
@@ -4548,12 +4550,14 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 
 .bc-join-intro,
 .bc-perks-intro,
-.bc-rewards-intro {
+.bc-rewards-intro,
+.bc-rew-intro {
   margin-bottom: 20px;
 }
 
 .bc-join-card,
-.bc-perk-card {
+.bc-perk-card,
+.bc-faction-reward-card {
   border-top: 3px solid var(--faction-color, #56dcff) !important;
   padding: 16px;
 }
@@ -4562,6 +4566,16 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.bc-faction-reward-card {
+  border: 1px solid rgba(0, 255, 200, 0.18) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.05) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .bc-join-card-icon,
@@ -4573,6 +4587,12 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .bc-perk-icon {
   font-size: 1.5rem;
   margin-bottom: 6px;
+}
+
+.bc-weekly-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
 }
 
 .bc-join-card-name,
@@ -4603,6 +4623,12 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   font-size: 0.85rem;
 }
 
+.bc-frc-header {
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
 .bc-join-card-perk {
   flex: 1;
 }
@@ -4616,6 +4642,24 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   color: #8a9bac;
   font-size: 0.78rem;
   margin-top: 6px;
+}
+
+.bc-faction-reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 18px 0 0;
+}
+
+.bc-frc-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #aac6dc;
+}
+
+.bc-frc-row strong {
+  color: #fff;
 }
 
 .bc-join-btn,
@@ -4636,6 +4680,11 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 
 .bc-join-btn {
   margin-top: 8px;
+}
+
+.bc-cta-chamber,
+.bc-frc-link {
+  text-decoration: none;
 }
 
 .bc-join-btn:hover,
@@ -4693,7 +4742,9 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .bc-missions-note,
 .bc-perks-note,
 .bc-rewards-disclaimer,
-.bc-placeholder {
+.bc-placeholder,
+.bc-proof-intro,
+.bc-rew-disclaimer {
   color: #8a9bac;
 }
 
@@ -4718,6 +4769,16 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .bc-join-success-panel,
 .bc-join-locked-panel {
   max-width: 560px;
+}
+
+.bc-frc-link {
+  color: #00ffcc;
+  font-weight: 700;
+  margin-top: auto;
+}
+
+.bc-frc-link:hover {
+  text-decoration: underline;
 }
 
 .bc-join-confirm-panel,
@@ -4820,6 +4881,11 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   padding: 18px 20px;
 }
 
+.bc-rew-disclaimer {
+  font-size: 0.85rem;
+  margin-top: 12px;
+}
+
 .bc-monthly-rewards ul,
 .bc-season-rewards ul {
   margin: 10px 0 10px 20px;
@@ -4870,5 +4936,10 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 
   .bc-mission-row {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .bc-frc-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

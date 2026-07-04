@@ -135,7 +135,15 @@ function findSelectorIndicatorMatches(cssText, selectors, indicators) {
 }
 
 function extractRenderedBcClasses(jsText) {
-  return new Set(Array.from(jsText.matchAll(/\bbc-[a-z0-9-]+\b/g), (match) => match[0]));
+  const classes = new Set();
+  for (const match of jsText.matchAll(/class="([^"]+)"/g)) {
+    for (const className of match[1].split(/\s+/)) {
+      if (/^bc-[a-z0-9-]+$/i.test(className)) {
+        classes.add(className);
+      }
+    }
+  }
+  return classes;
 }
 
 function selectorBaseClass(selector) {
@@ -273,13 +281,13 @@ for (const pagePath of pagesToCheck) {
 }
 
 const wikiCss = read(WIKI_CSS_PATH);
+const parityLayerCss = wikiCss && wikiCss.includes(PARITY_LAYER_MARKER)
+  ? wikiCss.slice(wikiCss.indexOf(PARITY_LAYER_MARKER))
+  : wikiCss;
 if (!wikiCss) {
   fail(`${WIKI_CSS_PATH} - file not found`);
   radiusOk = false;
 } else {
-  const parityLayerCss = wikiCss.includes(PARITY_LAYER_MARKER)
-    ? wikiCss.slice(wikiCss.indexOf(PARITY_LAYER_MARKER))
-    : wikiCss;
   for (const { selector, radius } of findSmallRadiusMatches(parityLayerCss, swarmsyRadiusSelectors)) {
     fail(`${WIKI_CSS_PATH} - ${selector} uses old small border-radius ${radius}px (should be 14px+ for SWARMSY compatibility)`);
     radiusOk = false;
@@ -350,9 +358,6 @@ for (const pagePath of pagesToCheck) {
 }
 
 if (wikiCss) {
-  const parityLayerCss = wikiCss.includes(PARITY_LAYER_MARKER)
-    ? wikiCss.slice(wikiCss.indexOf(PARITY_LAYER_MARKER))
-    : wikiCss;
   for (const { selector, indicator } of findSelectorIndicatorMatches(parityLayerCss, mixedStyleSelectors, mixedIndicators)) {
     fail(`${WIKI_CSS_PATH} - found ${indicator} in .${selector} (should use rgba-based SWARMSY styling)`);
     mixedOk = false;
@@ -361,7 +366,7 @@ if (wikiCss) {
 
 if (mixedOk) pass('No mixed old/new visual styling patterns detected');
 
-// 6. Check Battle Chamber JS-rendered critical selector coverage
+// 6. Check Battle Chamber JS-rendered selector coverage
 console.log('\n[6] Checking Battle Chamber rendered selector coverage');
 let battleChamberCoverageOk = true;
 const battleChamberJs = read(BATTLE_CHAMBER_JS_PATH);
@@ -369,17 +374,26 @@ const battleChamberJs = read(BATTLE_CHAMBER_JS_PATH);
 if (!battleChamberJs) {
   fail(`${BATTLE_CHAMBER_JS_PATH} - file not found`);
   battleChamberCoverageOk = false;
-} else if (!wikiCss) {
+} else if (!parityLayerCss) {
   battleChamberCoverageOk = false;
 } else {
   const renderedClasses = extractRenderedBcClasses(battleChamberJs);
-  const selectorsToCheck = BATTLE_CHAMBER_CRITICAL_SELECTORS.filter((selector) => {
+  const criticalSelectorsToCheck = BATTLE_CHAMBER_CRITICAL_SELECTORS.filter((selector) => {
     const baseClass = selectorBaseClass(selector);
     return baseClass && renderedClasses.has(baseClass);
   });
 
-  for (const selector of selectorsToCheck) {
-    if (!hasCssSelector(wikiCss, selector)) {
+  const renderedSelectorsToCheck = Array.from(renderedClasses, (className) => `.${className}`);
+
+  for (const selector of renderedSelectorsToCheck) {
+    if (!hasCssSelector(parityLayerCss, selector)) {
+      fail(`${WIKI_CSS_PATH} - missing explicit SWARMSY parity coverage for ${selector} rendered by ${BATTLE_CHAMBER_JS_PATH}`);
+      battleChamberCoverageOk = false;
+    }
+  }
+
+  for (const selector of criticalSelectorsToCheck) {
+    if (!hasCssSelector(parityLayerCss, selector)) {
       fail(`${WIKI_CSS_PATH} - missing Battle Chamber selector coverage for ${selector} rendered by ${BATTLE_CHAMBER_JS_PATH}`);
       battleChamberCoverageOk = false;
     }
