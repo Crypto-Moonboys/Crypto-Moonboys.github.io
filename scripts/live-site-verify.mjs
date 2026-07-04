@@ -116,6 +116,13 @@ const EXPECTED_LEADERBOARD_URL = 'https://moonboys-leaderboard.sercullen.workers
 const RIGHT_PANEL_PAGES = [];
 const STANDALONE_CSP_PAGES = [];
 
+// Pages that receive inline live/player stats in page content (no global chrome).
+const INLINE_STATS_PAGES = [
+  '/games/',
+  '/games/leaderboard.html',
+  '/community.html',
+];
+
 // Pages intentionally missing the right panel.
 const NO_RIGHT_PANEL_PAGES = [
   '/',
@@ -388,17 +395,14 @@ async function testPage(page, pathname) {
   const url = `${BASE}${pathname}`;
   process.stdout.write(`\n── ${pathname} ──────────────────────────────────────────\n`);
 
-  const isNoRightPanel     = NO_RIGHT_PANEL_PAGES.includes(pathname);
   const isBtqmPage         = pathname === '/games/block-topia-quest-maze/';
   const isGamesHub         = pathname === '/games/';
   const isSearchPage       = pathname === '/search.html';
   const isArcadePage       = ARCADE_PAGES.includes(pathname);
+  const isInlineStatsPage  = INLINE_STATS_PAGES.includes(pathname);
 
   const allCritical = [
     ...(isArcadePage ? [] : SHELL_CRITICAL_JS_PATHS),
-    // NOTE: UI unification removes global right-panel JS dependencies.
-    // RIGHT_RAIL_CRITICAL_JS_PATHS no longer required on any page.
-    // Inline live-stats rendering will be page-specific (TODO: add inline validation).
     ...(isSearchPage ? WIKI_SEARCH_CRITICAL_JS_PATHS : []),
     ...(isArcadePage ? ARCADE_CRITICAL_JS_PATHS : []),
     ...(ARCADE_PAGE_CRITICAL_BOOTSTRAP_PATHS[pathname] || []),
@@ -463,7 +467,9 @@ async function testPage(page, pathname) {
       pathname:           window.location.pathname,
       bodyClass:          document.body.className,
       siteHeader:         !!document.querySelector('#site-header'),
+      hamburger:          !!document.getElementById('hamburger'),
       sidebar:            !!document.querySelector('#sidebar'),
+      sidebarOverlay:     !!document.getElementById('sidebar-overlay'),
       rightPanel:         visInfo('#homepage-right-panel'),
       cspPanel:           !!document.querySelector('[data-csp-panel]'),
       cspFactionOps:      !!document.querySelector('[data-csp-faction-ops]'),
@@ -490,6 +496,8 @@ async function testPage(page, pathname) {
         if (!rp) return false;
         return !!(rp.querySelector('[data-csp-panel],[data-csp-faction-ops],[data-csp-wtf-signal],[data-csp-missed]'));
       })(),
+      // Inline stats mount: .inline-live-stats in page content (required on Arcade/Battle Chamber pages).
+      inlineStatsMount:   !!document.querySelector('.inline-live-stats'),
       // API config state
       moonboysApiExists:  !!apiObj,
       apiBaseState:       apiBaseInfo ? apiBaseInfo.state : null,
@@ -553,10 +561,35 @@ async function testPage(page, pathname) {
     fail('#site-header MISSING', { url, selector: '#site-header', suggested: 'site-shell.js did not run or boot block broken' });
   }
 
-  if (diag.sidebar) {
-    pass('#sidebar exists');
+  // ── Sidebar/hamburger/overlay chrome — must be absent (UI unification) ────
+  if (!diag.hamburger) {
+    pass('#hamburger absent from DOM (hamburger chrome removed — UI unification)');
   } else {
-    fail('#sidebar MISSING', { url, selector: '#sidebar', suggested: 'site-shell.js did not run or boot block broken' });
+    fail('#hamburger present in DOM — hamburger button must not exist after UI unification', {
+      url,
+      selector: '#hamburger',
+      suggested: 'ensureHeader() must not render the hamburger button; check site-shell.js header template',
+    });
+  }
+
+  if (!diag.sidebar) {
+    pass('#sidebar absent from DOM (sidebar chrome removed — UI unification)');
+  } else {
+    fail('#sidebar present in DOM — sidebar element must not be mounted after UI unification', {
+      url,
+      selector: '#sidebar',
+      suggested: 'ensureSidebar() must not be called from ensureLayout(); check site-shell.js',
+    });
+  }
+
+  if (!diag.sidebarOverlay) {
+    pass('#sidebar-overlay absent from DOM (overlay chrome removed — UI unification)');
+  } else {
+    fail('#sidebar-overlay present in DOM — overlay must not be mounted after UI unification', {
+      url,
+      selector: '#sidebar-overlay',
+      suggested: 'ensureOverlay() must not be called from ensureLayout(); check site-shell.js',
+    });
   }
 
   // ── Right-panel presence/absence ──────────────────────────────────────
@@ -599,11 +632,19 @@ async function testPage(page, pathname) {
     });
   }
 
-  // ── Right-rail section headings ───────────────────────────────────────
-  // NOTE: UI unification removes global right panel section headings.
-  // These headings now only appear inline on specific pages (/games/, /community.html, Battle Chamber pages).
-  // This check is disabled since the global right panel no longer exists.
-  // TODO: Add inline section heading validation for /games/ and Battle Chamber pages.
+  // ── Inline live/player stats mount ───────────────────────────────────
+  // Required on Arcade/Battle Chamber pages; must be absent on all others (inline only).
+  if (isInlineStatsPage) {
+    if (diag.inlineStatsMount) {
+      pass('.inline-live-stats present — inline player/faction stats rendered in page content');
+    } else {
+      fail('.inline-live-stats MISSING — inline live/player stats must be mounted on this page', {
+        url,
+        selector: '.inline-live-stats',
+        suggested: 'ensureInlineLiveStats() must run for this page — check shouldShowInlineStats() in site-shell.js',
+      });
+    }
+  }
 
   // ── Absent/removed sections ───────────────────────────────────────────
   if (diag.noLiveFeed) {
