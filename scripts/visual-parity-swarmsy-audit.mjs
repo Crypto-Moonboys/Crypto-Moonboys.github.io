@@ -178,6 +178,30 @@ function getHTMLFiles(dir) {
   return files;
 }
 
+function getAllHTMLFiles(dir = '') {
+  const files = [];
+  const fullDir = path.join(ROOT, dir);
+  const excludedDirs = new Set([
+    '.git',
+    'node_modules',
+  ]);
+
+  for (const entry of fs.readdirSync(fullDir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (excludedDirs.has(entry.name)) continue;
+      files.push(...getAllHTMLFiles(path.join(dir, entry.name)));
+    } else if (entry.isFile() && entry.name.endsWith('.html')) {
+      files.push(path.join(dir, entry.name).replace(/\\/g, '/'));
+    }
+  }
+
+  return files;
+}
+
+function isRedirectPage(html) {
+  return /http-equiv=["']refresh["']/i.test(html);
+}
+
 // Pages that should have page-standard-shell
 const SHELL_PAGES = [
   'index.html',
@@ -204,6 +228,8 @@ const pagesToCheck = [
   ...factionPages,
   ...gamePages,
 ];
+
+const allHtmlFiles = getAllHTMLFiles();
 
 console.log('\n─── SWARMSY Visual Parity Audit ───────────────────────────────────\n');
 
@@ -407,10 +433,11 @@ if (!battleChamberJs) {
 if (battleChamberCoverageOk) pass('Battle Chamber JS-rendered critical selectors have CSS coverage');
 
 // 7. Cascade authority: swarmsy-visual-authority.css must exist and load AFTER retro-16bit-theme.css
-console.log('\n[7] Checking swarmsy-visual-authority.css cascade order on public pages');
+console.log('\n[7] Checking swarmsy-visual-authority.css cascade order repo-wide');
 const RETRO_LINK = 'href="/css/retro-16bit-theme.css"';
 const AUTHORITY_LINK = 'href="/css/swarmsy-visual-authority.css"';
 let cascadeOk = true;
+let retroPageCount = 0;
 
 const authorityCss = read(AUTHORITY_CSS_PATH);
 if (!authorityCss) {
@@ -418,26 +445,28 @@ if (!authorityCss) {
   cascadeOk = false;
 }
 
-for (const pagePath of pagesToCheck) {
+for (const pagePath of allHtmlFiles) {
   const html = read(pagePath);
   if (!html) continue;
 
-  if (!html.includes('http-equiv="refresh"') && html.includes(RETRO_LINK)) {
-    if (!html.includes(AUTHORITY_LINK)) {
-      fail(`${pagePath} - loads retro-16bit-theme.css but is missing swarmsy-visual-authority.css`);
+  if (isRedirectPage(html) || !html.includes(RETRO_LINK)) continue;
+
+  retroPageCount += 1;
+
+  if (!html.includes(AUTHORITY_LINK)) {
+    fail(`${pagePath} - loads retro-16bit-theme.css but is missing swarmsy-visual-authority.css`);
+    cascadeOk = false;
+  } else {
+    const retroIdx = html.indexOf(RETRO_LINK);
+    const authorityIdx = html.indexOf(AUTHORITY_LINK);
+    if (authorityIdx < retroIdx) {
+      fail(`${pagePath} - swarmsy-visual-authority.css appears BEFORE retro-16bit-theme.css (must load after)`);
       cascadeOk = false;
-    } else {
-      const retroIdx = html.indexOf(RETRO_LINK);
-      const authorityIdx = html.indexOf(AUTHORITY_LINK);
-      if (authorityIdx < retroIdx) {
-        fail(`${pagePath} - swarmsy-visual-authority.css appears BEFORE retro-16bit-theme.css (must load after)`);
-        cascadeOk = false;
-      }
     }
   }
 }
 
-if (cascadeOk) pass('swarmsy-visual-authority.css loads AFTER retro-16bit-theme.css on all public pages');
+if (cascadeOk) pass(`swarmsy-visual-authority.css loads AFTER retro-16bit-theme.css on all ${retroPageCount} retro-themed HTML pages`);
 
 // 8. Authority CSS must override key selectors that retro-16bit-theme.css defines with pixel font
 console.log('\n[8] Checking swarmsy-visual-authority.css covers required selectors');
