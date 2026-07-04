@@ -1321,7 +1321,6 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 @media (max-width: 900px) {
   .page-has-right-panel #layout {
     display: block !important;
-    flex-direction: initial;
   }
 
   .hero-logo-img {

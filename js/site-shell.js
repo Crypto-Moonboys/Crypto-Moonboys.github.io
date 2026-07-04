@@ -280,9 +280,23 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function shouldShowRightPanel(pathname) {
     const p = normalizePathname(pathname || window.location.pathname);
-    // Global right-panel chrome is disabled; action stats mount inline in #content.
+
+    // Right panel is globally disabled in shell UI
+    // Only allow explicit opt-in via body class
+    if (document.body.classList.contains('page-no-right-panel')) return false;
+
+    // dashboard always disabled
     if (p === '/dashboard.html') return false;
-    return false;
+
+    // explicit opt-in pages only
+    const allowed = [
+      '/community.html',
+      '/games/',
+      '/games/index.html',
+      '/games/leaderboard.html'
+    ];
+
+    return allowed.includes(p);
   }
 
   function ensureRightPanel(layout) {

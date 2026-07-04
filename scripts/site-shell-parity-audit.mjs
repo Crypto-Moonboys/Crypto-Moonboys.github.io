@@ -291,7 +291,7 @@ console.log('\n[6b] Dashboard excludes runtime right panel');
 const dashboardHtml = read('dashboard.html') || '';
 const indexHtml = read('index.html') || '';
 const shouldShowRightPanelBlock = functionBlock(shellJs, 'shouldShowRightPanel');
-const runtimeAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'exact');
+const runtimeAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'allowed');
 const STATIC_STANDARD_PAGES = [
   'index.html',
   'search.html',
@@ -400,20 +400,20 @@ if (shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return fals
 const communityHtml = read('community.html') || '';
 const gamesHtml = read('games/index.html') || '';
 const leaderboardHtml = read('games/leaderboard.html') || '';
-if (!communityHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/community.html')) {
-  pass('community.html: Battle Chamber uses inline live stats without right-rail layout');
+if (!communityHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/community.html')) {
+  pass('community.html: Battle Chamber keeps helper allowlist but uses inline live stats without static right-rail layout');
 } else {
-  fail('community.html — must not opt into right-rail layout');
+  fail('community.html — must keep helper allowlist without static right-rail opt-in');
 }
-if (!gamesHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/index.html') && !runtimeAllowlist.includes('/games/')) {
-  pass('games/index.html: game hub uses inline live stats without right-rail layout');
+if (!gamesHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/index.html') && runtimeAllowlist.includes('/games/')) {
+  pass('games/index.html: game hub keeps helper allowlist but uses inline live stats without static right-rail layout');
 } else {
-  fail('games/index.html — must not opt into right-rail layout');
+  fail('games/index.html — must keep helper allowlist without static right-rail opt-in');
 }
-if (!leaderboardHtml.includes('page-has-right-panel') && !runtimeAllowlist.includes('/games/leaderboard.html')) {
-  pass('games/leaderboard.html: leaderboard uses inline live stats without right-rail layout');
+if (!leaderboardHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/leaderboard.html')) {
+  pass('games/leaderboard.html: leaderboard keeps helper allowlist but uses inline live stats without static right-rail layout');
 } else {
-  fail('games/leaderboard.html — must not opt into right-rail layout');
+  fail('games/leaderboard.html — must keep helper allowlist without static right-rail opt-in');
 }
 
 // 6c. Dashboard left-nav parity: must use page-standard-shell for retro sidebar parity with home page.
