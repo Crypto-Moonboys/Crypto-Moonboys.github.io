@@ -149,6 +149,7 @@ function isStandaloneToolPage(html) {
 function isNormalPublicPage(rel, html) {
   if (!html || isRedirectPage(html) || isStandaloneToolPage(html)) return false;
   if (rel === 'admin-tools.html') return false;
+  if (rel.startsWith('wiki/components/') || rel.startsWith('wiki/layouts/')) return false;
   return true;
 }
 

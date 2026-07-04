@@ -143,20 +143,6 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function ensureSharedHeaderAssets() {
     if (!isWikiShellRoute(window.location.pathname)) return;
-    if (!document.querySelector(`link[href="${SHARED_WIKI_HEADER.css}"]`)) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = SHARED_WIKI_HEADER.css;
-      link.dataset.wikiSharedHeaderCss = 'true';
-      document.head.appendChild(link);
-    }
-    if (!document.querySelector(`script[src="${SHARED_WIKI_HEADER.js}"]`) && !window.__WIKI_SWARMSY_HEADER__) {
-      const script = document.createElement('script');
-      script.src = SHARED_WIKI_HEADER.js;
-      script.dataset.cfasync = 'false';
-      script.dataset.wikiSharedHeaderJs = 'true';
-      document.head.appendChild(script);
-    }
   }
 
   function loadSharedHeaderMarkup(navHtml) {
