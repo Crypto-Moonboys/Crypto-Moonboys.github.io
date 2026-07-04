@@ -15,127 +15,6 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" type="image/png" href="/favicon.png">
-  <style>
-    .swarmsy-page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .swarmsy-hero {
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(0, 255, 200, 0.2);
-      border-radius: 20px;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255, 208, 0, 0.18), transparent 32%),
-        radial-gradient(circle at 80% 0%, rgba(0, 255, 200, 0.13), transparent 28%),
-        linear-gradient(135deg, #08080d 0%, #150021 45%, #0a0f0d 100%);
-      padding: 52px 34px;
-      box-shadow: 0 0 42px rgba(0, 255, 200, 0.08);
-    }
-    .swarmsy-hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-      background-size: 26px 26px;
-      opacity: 0.15;
-      pointer-events: none;
-    }
-    .swarmsy-hero-inner {
-      position: relative;
-      z-index: 1;
-      max-width: 880px;
-    }
-    .swarmsy-kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 18px;
-      color: #ffd000;
-      font-size: 0.78rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-    body.page-swarmsy.page-standard-shell .swarmsy-hero .swarmsy-title {
-      margin: 0;
-      font-size: clamp(2.4rem, 8vw, 5.4rem) !important;
-      line-height: 0.95;
-      color: #ffffff;
-      text-shadow: 0 0 24px rgba(255, 208, 0, 0.22);
-    }
-    .swarmsy-title span {
-      color: #00ffcc;
-    }
-    .swarmsy-lead {
-      margin-top: 22px;
-      max-width: 760px;
-      color: var(--color-text-muted);
-      font-size: 1.1rem;
-      line-height: 1.75;
-    }
-    .swarmsy-cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 30px;
-    }
-    .swarmsy-pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
-    }
-    .swarmsy-pill {
-      border: 1px solid rgba(255, 208, 0, 0.25);
-      background: rgba(255, 208, 0, 0.08);
-      color: #ffe875;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 0.78rem;
-    }
-    .swarmsy-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 18px;
-      margin-top: 28px;
-    }
-    .swarmsy-card {
-      border: 1px solid rgba(0, 255, 200, 0.16);
-      border-radius: 16px;
-      background: rgba(0, 255, 200, 0.045);
-      padding: 22px;
-      min-height: 150px;
-    }
-    .swarmsy-card h3 {
-      margin: 0 0 12px;
-      color: #00ffcc;
-      font-size: 1rem;
-    }
-    .swarmsy-card p, .swarmsy-card li {
-      color: var(--color-text-muted);
-      line-height: 1.65;
-      font-size: 0.95rem;
-    }
-    .swarmsy-section {
-      margin-top: 34px;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      background: rgba(10,10,16,0.76);
-      padding: 28px;
-    }
-    .swarmsy-section h2 {
-      color: #ffd000;
-      margin-top: 0;
-    }
-    .swarmsy-callout {
-      border-left: 4px solid #ffd000;
-      padding: 16px 18px;
-      background: rgba(255,208,0,0.08);
-      color: var(--color-text-muted);
-      line-height: 1.7;
-    }
-  </style>
 </head>
 <body class="page-swarmsy page-standard-shell">
 <main id="content" role="main">
@@ -147,10 +26,19 @@
         <p class="swarmsy-lead">
           SWARMSY is the AI project-manager HIVE built to turn identity, lore, proof, products, and campaign ideas into a controlled creative system. It is designed around SPARKY — the operator that keeps the project moving without fake claims, fake engagement, spam, or bland brand-app output. Sparky AI Chat requires Telegram login before messages can be sent.
         </p>
-        <div class="swarmsy-cta-row" role="navigation" aria-label="SWARMSY actions">
-          <a href="/about.html" class="btn btn-primary">ENTER THE MOONBOYS SYSTEM</a>
-          <a href="/sparky.html" class="btn btn-primary">CHAT WITH SPARKY</a>
-          <a href="https://github.com/HODLKONG64/DIZ-A-REMIX" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">VIEW SWARMSY BUILD</a>
+        <div class="swarmsy-action-grid" role="navigation" aria-label="SWARMSY actions">
+          <a href="/about.html" class="swarmsy-action-card swarmsy-action-card--gold">
+            <strong>ENTER THE MOONBOYS SYSTEM</strong>
+            <span>Open the live wiki and project context.</span>
+          </a>
+          <a href="/sparky.html" class="swarmsy-action-card">
+            <strong>CHAT WITH SPARKY</strong>
+            <span>Use the Telegram-gated public AI bridge.</span>
+          </a>
+          <a href="https://github.com/HODLKONG64/DIZ-A-REMIX" class="swarmsy-action-card swarmsy-action-card--magenta" target="_blank" rel="noopener noreferrer">
+            <strong>VIEW SWARMSY BUILD</strong>
+            <span>Review the public build source and docs.</span>
+          </a>
         </div>
         <div class="swarmsy-pill-row" aria-label="SWARMSY principles">
           <span class="swarmsy-pill">Replace spam with signal</span>
@@ -235,9 +123,15 @@
       <p style="max-width:760px;margin:0 auto 24px;color:var(--color-text-muted);line-height:1.7;">
         Crypto Moonboys is the living Web3 wiki. SWARMSY is the operator system for turning a creative identity into a structured world, then pushing that world through proof-safe signals.
       </p>
-      <div class="swarmsy-cta-row" style="justify-content:center;">
-        <a href="/index.html" class="btn btn-primary">BACK TO THE WIKI</a>
-        <a href="/games/" class="btn btn-secondary">PLAY THE ARCADE</a>
+      <div class="swarmsy-action-grid swarmsy-action-grid--compact">
+        <a href="/index.html" class="swarmsy-action-card swarmsy-action-card--gold">
+          <strong>BACK TO THE WIKI</strong>
+          <span>Return to the living public archive.</span>
+        </a>
+        <a href="/games/" class="swarmsy-action-card">
+          <strong>PLAY THE ARCADE</strong>
+          <span>Enter the game routes and leaderboards.</span>
+        </a>
       </div>
     </section>
   </div>

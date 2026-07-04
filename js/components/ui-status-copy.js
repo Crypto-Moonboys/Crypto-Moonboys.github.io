@@ -46,7 +46,7 @@
       leaderboardUnavailable: function () {
         return '<div class="widget-unavailable">'
           + '<p>Arcade leaderboard temporarily unavailable.</p>'
-          + '<a href="/games/leaderboard.html" class="btn btn-secondary">Open full leaderboard \u2192</a>'
+          + '<a href="/games/leaderboard.html" class="swarmsy-action-card"><strong>Open full leaderboard</strong><span>View the complete arcade standings.</span></a>'
           + '</div>';
       },
 
