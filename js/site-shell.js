@@ -143,18 +143,35 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function ensureSharedHeaderAssets() {
     if (!isWikiShellRoute(window.location.pathname)) return;
+    if (!document.querySelector('link[data-wiki-shared-header-css]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = SHARED_WIKI_HEADER.css;
+      link.setAttribute('data-wiki-shared-header-css', 'swarmsy-lock-v1');
+      document.head.append(link);
+    }
+    if (!document.querySelector('script[data-wiki-shared-header-js]')) {
+      const script = document.createElement('script');
+      script.src = SHARED_WIKI_HEADER.js;
+      script.async = true;
+      script.setAttribute('data-wiki-shared-header-js', 'swarmsy-lock-v1');
+      document.head.append(script);
+    }
   }
 
   function loadSharedHeaderMarkup(navHtml) {
-    if (!isWikiShellRoute(window.location.pathname) || typeof window.fetch !== 'function') {
+    if (!isWikiShellRoute(window.location.pathname)) {
       return Promise.resolve(buildHeaderHtml(navHtml));
+    }
+    if (typeof window.fetch !== 'function') {
+      return Promise.resolve('');
     }
     if (!sharedHeaderMarkupPromise) {
       sharedHeaderMarkupPromise = window.fetch(SHARED_WIKI_HEADER.html, { credentials: 'same-origin' })
         .then((response) => (response.ok ? response.text() : ''))
         .catch(() => '');
     }
-    return sharedHeaderMarkupPromise.then((markup) => (markup && markup.trim()) || buildHeaderHtml(navHtml));
+    return sharedHeaderMarkupPromise.then((markup) => (markup && markup.trim()) || '');
   }
 
   function parseSharedHeaderMarkup(markup) {

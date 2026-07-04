@@ -5,7 +5,7 @@
 body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] {
   position: sticky;
   top: 0;
-  z-index: 120;
+  z-index: 220;
 }
 
 body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] .site-logo,
