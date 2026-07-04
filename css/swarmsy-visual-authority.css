@@ -196,6 +196,120 @@ body.page-standard-shell {
   padding: 28px !important;
 }
 
+/* ── HOMEPAGE SPECIFICITY OVERRIDES (body.page-home) ────────── */
+/* retro-16bit-theme.css uses body.page-home-scoped selectors with
+   !important, so plain selectors above are beaten by specificity.
+   These equal-specificity rules restore SWARMSY visual language on
+   the homepage even when both sides use !important. */
+
+body.page-home .section-heading {
+  font-family: var(--font-display, 'Orbitron', 'Rajdhani', 'Segoe UI', sans-serif) !important;
+  font-size: clamp(0.8rem, 1.4vw, 1rem) !important;
+  color: #00ffcc !important;
+  text-shadow: 0 0 12px rgba(0, 255, 200, 0.3) !important;
+  background: rgba(0, 255, 200, 0.05) !important;
+  border-left: 3px solid rgba(0, 255, 200, 0.5) !important;
+  border-bottom: 1px solid rgba(0, 255, 200, 0.18) !important;
+  padding: 10px 14px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+body.page-home .category-card {
+  border: 1px solid rgba(0, 255, 200, 0.16) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.045) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+  position: relative !important;
+  isolation: auto !important;
+}
+body.page-home .category-card:hover {
+  border-color: rgba(0, 255, 200, 0.45) !important;
+  background: rgba(0, 255, 200, 0.085) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.08) !important;
+  transform: translateY(-2px) !important;
+}
+body.page-home .category-card::before,
+body.page-home .category-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+body.page-home .category-card .cat-name {
+  font-family: var(--font-sans, 'Rajdhani', 'Segoe UI', system-ui, sans-serif) !important;
+  font-size: 0.9rem !important;
+  color: #00ffcc !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+body.page-home .category-card .cat-count {
+  font-family: var(--font-sans, 'Rajdhani', 'Segoe UI', system-ui, sans-serif) !important;
+  font-size: 0.78rem !important;
+  color: #5a98b8 !important;
+}
+
+body.page-home .category-card .cat-icon {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(0, 255, 200, 0.22) !important;
+  border-radius: 10px !important;
+  color: #00ffcc !important;
+  text-shadow: 0 0 8px rgba(0, 255, 200, 0.4) !important;
+  box-shadow: none !important;
+}
+
+body.page-home .article-card {
+  border: 1px solid rgba(0, 255, 200, 0.16) !important;
+  border-radius: 16px !important;
+  background: rgba(0, 255, 200, 0.045) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+  position: relative !important;
+  isolation: auto !important;
+}
+body.page-home .article-card:hover {
+  border-color: rgba(0, 255, 200, 0.45) !important;
+  background: rgba(0, 255, 200, 0.085) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 200, 0.08) !important;
+  transform: translateY(-2px) !important;
+}
+body.page-home .article-card::before,
+body.page-home .article-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+body.page-home .article-card-title {
+  font-family: var(--font-sans, 'Rajdhani', 'Segoe UI', system-ui, sans-serif) !important;
+  font-size: 0.95rem !important;
+  color: #00ffcc !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: 1.4 !important;
+}
+
+body.page-home .article-card-desc {
+  font-family: var(--font-sans, 'Rajdhani', 'Segoe UI', system-ui, sans-serif) !important;
+  font-size: 0.85rem !important;
+  color: rgba(214, 242, 255, 0.78) !important;
+  line-height: 1.55 !important;
+}
+
+body.page-home .article-card-cat {
+  font-family: var(--font-sans, 'Rajdhani', 'Segoe UI', system-ui, sans-serif) !important;
+  font-size: 0.78rem !important;
+  color: #8a9bac !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+body.page-home .article-card-img {
+  background: rgba(0, 0, 0, 0.4) !important;
+  color: #00ffcc !important;
+  text-shadow: 0 0 8px rgba(0, 255, 200, 0.5) !important;
+  border-right: 1px solid rgba(0, 255, 200, 0.12) !important;
+  image-rendering: auto !important;
+}
+
 /* ── BATTLE CHAMBER BC-* PARITY (mirrors css/wiki.css parity layer) ── */
 
 .bc-hero-cta,
@@ -235,6 +349,13 @@ body.page-standard-shell {
   border-radius: 16px !important;
   background: rgba(0, 255, 200, 0.045) !important;
   box-shadow: 0 0 24px rgba(0, 255, 200, 0.04) !important;
+}
+
+/* Restore faction-colored top accent that the border shorthand above would reset */
+.bc-join-card,
+.bc-perk-card,
+.bc-faction-reward-card {
+  border-top: 3px solid var(--faction-color, #56dcff) !important;
 }
 
 .bc-join-grid,

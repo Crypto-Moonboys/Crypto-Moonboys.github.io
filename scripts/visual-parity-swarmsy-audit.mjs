@@ -488,6 +488,17 @@ const AUTHORITY_REQUIRED_SELECTORS = [
   '.header-nav a',
   '.bc-join-btn',
   '.bc-mission-row',
+  // Homepage-scoped overrides (equal specificity to retro body.page-home selectors)
+  'body.page-home .section-heading',
+  'body.page-home .category-card',
+  'body.page-home .category-card .cat-name',
+  'body.page-home .category-card .cat-count',
+  'body.page-home .category-card .cat-icon',
+  'body.page-home .article-card',
+  'body.page-home .article-card-title',
+  'body.page-home .article-card-desc',
+  'body.page-home .article-card-cat',
+  'body.page-home .article-card-img',
 ];
 
 let authoritySelectorOk = true;
@@ -532,6 +543,24 @@ if (authorityCss) {
 }
 
 if (pixelFontOk) pass('swarmsy-visual-authority.css does not re-introduce pixel font on cards/nav/headings');
+
+// 10. Authority CSS must restore faction-colored border-top on bc-join-card and bc-perk-card
+console.log('\n[10] Checking bc-join-card / bc-perk-card retain faction border-top in authority CSS');
+let factionBorderOk = true;
+
+if (authorityCss) {
+  for (const sel of ['.bc-join-card', '.bc-perk-card']) {
+    const escaped = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // The selector may share a rule block with other selectors; allow comma-separated list before {
+    const pattern = new RegExp(`${escaped}[^{]*\\{[^}]*border-top[^;]*--faction-color`, 's');
+    if (!pattern.test(authorityCss)) {
+      fail(`${AUTHORITY_CSS_PATH} - ${sel} missing border-top: 3px solid var(--faction-color, ...) !important to restore faction accent after border shorthand`);
+      factionBorderOk = false;
+    }
+  }
+}
+
+if (factionBorderOk) pass('bc-join-card and bc-perk-card retain faction-colored border-top in authority CSS');
 
 // Summary
 console.log('\n─────────────────────────────────────────────────────────────────────');
