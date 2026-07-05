@@ -15,7 +15,7 @@
  *   2. bootstrap.js imports ArcadeSync and submitScore
  *   3. bootstrap.js exports the expected adapter symbol
  *   4. game page index.html exists and has expected canvas/button elements
- *   5. game page links to arcade sidebar nav (all 8 arcade games)
+ *   5. game page does not hardcode removed sidebar/hamburger shell chrome
  *   6. fullscreen-only launch flag exists on every listed arcade game start button
  *   7. fullscreen overlay exit routing targets /games/
  *
@@ -92,8 +92,8 @@ const GAMES = [
   },
 ];
 
-// All 9 arcade sidebar links that must appear in every game page nav.
-const REQUIRED_NAV_LINKS = [
+// All arcade game pages that use the fullscreen-only shell path.
+const FULLSCREEN_ARCADE_LINKS = [
   '/games/invaders-3008/',
   '/games/pac-chain/',
   '/games/asteroid-fork/',
@@ -107,7 +107,7 @@ const REQUIRED_NAV_LINKS = [
 // Block Topia has a separate shell/runtime and is intentionally excluded.
 const EXCLUDED_FROM_FULLSCREEN_ONLY = ['/games/block-topia/'];
 
-const FULLSCREEN_ONLY_GAME_PAGES = REQUIRED_NAV_LINKS
+const FULLSCREEN_ONLY_GAME_PAGES = FULLSCREEN_ARCADE_LINKS
   .filter((link) => !EXCLUDED_FROM_FULLSCREEN_ONLY.includes(link))
   .map((link) => `games/${link.replace(/^\/games\//, '').replace(/\/$/, '')}/index.html`);
 
@@ -190,13 +190,13 @@ for (const game of GAMES) {
   );
 
   if (indexHtml) {
-    // 6. index.html has the full arcade sidebar nav
-    for (const link of REQUIRED_NAV_LINKS) {
-      check(
-        indexHtml.includes(link),
-        `index.html sidebar includes link to ${link}`,
-      );
-    }
+    // 6. index.html must not hardcode legacy sidebar/hamburger chrome.
+    check(
+      !/\bid=(["'])hamburger\1/u.test(indexHtml) &&
+        !/\bid=(["'])sidebar-overlay\1/u.test(indexHtml) &&
+        !/<nav\b[^>]*\bid=(["'])sidebar\1/u.test(indexHtml),
+      'index.html does not hardcode removed sidebar/hamburger chrome',
+    );
 
     // 7. index.html has a canvas element (or game-card for DOM-based games)
     if (game.noCanvas) {
