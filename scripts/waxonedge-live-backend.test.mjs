@@ -9403,9 +9403,21 @@ ok('frontend WAXCASH analytics adapter maps selected root price, pair row price,
 ok('frontend live hook uses EventSource only when enabled and safe polling fallback',
   frontendBubbles.includes('window.EventSource') &&
   frontendBubbles.includes("live.transport === 'sse'") &&
+  frontendBubbles.includes('apiJson(HEALTH_API).then(function (health)') &&
+  frontendBubbles.includes("if (live && live.transport === 'sse' && live.stream_endpoint)") &&
+  frontendBubbles.includes('startLiveEventSource(live.stream_endpoint)') &&
+  frontendBubbles.includes('function stopLiveEventSource()') &&
   frontendBubbles.includes('scheduleLivePolling(1000)') &&
   frontendBubbles.includes('var LIVE_POLL_MS = 1000') &&
   !frontendBubbles.includes('var LIVE_POLL_MS = 10000'));
+ok('frontend live transports are cleaned up on pagehide',
+  frontendBubbles.includes("window.addEventListener('pagehide', function ()") &&
+  frontendBubbles.includes('window.clearTimeout(state.live.pollTimer)') &&
+  frontendBubbles.includes('stopLiveEventSource();'));
+ok('frontend live transports restart after BFCache restore',
+  frontendBubbles.includes("window.addEventListener('pageshow', function (event)") &&
+  frontendBubbles.includes('if (!event || !event.persisted) return;') &&
+  frontendBubbles.includes('startLiveUpdates();'));
 ok('frontend polls the slim WAXCASH bubble feed with no-store/cache-busting instead of timestamp-only since cursor',
   frontendBubbles.includes('return LIVE_API;') &&
   frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&

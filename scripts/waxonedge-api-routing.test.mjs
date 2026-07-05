@@ -88,6 +88,16 @@ ok('WUF token analytics supports liquidity and 24h volume sorting',
   tokenAnalyticsPageJs.includes('function setPairSort(sortKey)') &&
   tokenAnalyticsPageJs.includes('loadAnalytics();') &&
   tokenAnalyticsPageJs.includes('analyticsRequestId'));
+ok('WUF token analytics aborts stale live-feed requests and hidden chart polling',
+  tokenAnalyticsPageJs.includes('var analyticsController = null') &&
+  tokenAnalyticsPageJs.includes('if (analyticsController) analyticsController.abort();') &&
+  tokenAnalyticsPageJs.includes("cache: 'no-store'") &&
+  tokenAnalyticsPageJs.includes('signal: analyticsController ? analyticsController.signal : undefined') &&
+  tokenAnalyticsPageJs.includes("if (error && error.name === 'AbortError') return;") &&
+  tokenAnalyticsPageJs.includes('function stopLiveFeeds()') &&
+  tokenAnalyticsPageJs.includes('analyticsController = null;') &&
+  tokenAnalyticsPageJs.includes("window.addEventListener('pagehide', stopLiveFeeds)") &&
+  tokenAnalyticsPageJs.includes('if (document.hidden) return;'));
 ok('WUF chart init is not blocked behind the token-page table request',
   tokenAnalyticsPageJs.includes('function init() { initSortControls(); initChart(); loadAnalytics(); }'));
 ok('WUF generic table renders selected pair, DEX logos, token icons, native volume fallback, and clean verified liquidity badge',

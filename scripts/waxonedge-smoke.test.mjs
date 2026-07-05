@@ -197,6 +197,13 @@ ok('waxcash analytics frontend calls the dedicated backend endpoint only',
   waxcashAnalyticsJs.includes('sections.pair_table') &&
   !waxcashAnalyticsJs.includes('sections.chart_external') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
+ok('waxcash analytics frontend aborts stale live-feed requests and bypasses browser cache',
+  waxcashAnalyticsJs.includes('var analyticsController = window.AbortController ? new AbortController() : null') &&
+  waxcashAnalyticsJs.includes("window.addEventListener('pagehide', function ()") &&
+  waxcashAnalyticsJs.includes('if (analyticsController) analyticsController.abort();') &&
+  waxcashAnalyticsJs.includes("cache: 'no-store'") &&
+  waxcashAnalyticsJs.includes('signal: analyticsController ? analyticsController.signal : undefined') &&
+  waxcashAnalyticsJs.includes("if (error && error.name === 'AbortError') return;"));
 ok('waxcash analytics script cache key is bumped for native LastStats pair volume fixes',
   waxcashHtml.includes('/js/waxcash-analytics.js?v=wxcash-native-laststats-20260620-5') &&
   !waxcashHtml.includes('wxcash-og-woe-restore-20260620-1'));
@@ -928,6 +935,18 @@ ok('waxonedge-bubbles-v2.js labels snapshot polling honestly instead of fake str
   v2Js.includes("state.live.transport === 'sse' && state.connected") &&
   v2Js.includes("'INDEXED STREAM'") &&
   !v2Js.includes("text.textContent = state.connected ? 'LIVE' : 'CONNECTING'"));
+ok('waxonedge-bubbles-v2.js starts SSE only from live-indexer health and cleans up live transports',
+  v2Js.includes('function stopLiveEventSource()') &&
+  v2Js.includes('stopLiveEventSource();') &&
+  v2Js.includes('apiJson(HEALTH_API).then(function (health)') &&
+  v2Js.includes("if (live && live.transport === 'sse' && live.stream_endpoint)") &&
+  v2Js.includes('startLiveEventSource(live.stream_endpoint)') &&
+  v2Js.includes('scheduleLivePolling(LIVE_POLL_MS)') &&
+  v2Js.includes("window.addEventListener('pagehide', function ()") &&
+  v2Js.includes('window.clearTimeout(state.live.pollTimer)') &&
+  v2Js.includes("window.addEventListener('pageshow', function (event)") &&
+  v2Js.includes('if (!event || !event.persisted) return;') &&
+  v2Js.includes('startLiveUpdates();'));
 
 ok('waxonedge.html is scanner-only and omits dominant KPI/source strips',
   !html.includes('woe-kpi-grid') &&

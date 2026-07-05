@@ -13,6 +13,7 @@
   var latestPairs = [];
   var latestSuppressedCount = 0;
   var analyticsRequestId = 0;
+  var analyticsController = null;
   var DEX_LOGOS = {
     alcor: '/img/waxonedge/dex/alcor.png',
     'swap.alcor': '/img/waxonedge/dex/alcor.png',
@@ -203,13 +204,24 @@
 
   function loadAnalytics() {
     var requestId = ++analyticsRequestId;
+    if (analyticsController) analyticsController.abort();
+    analyticsController = window.AbortController ? new AbortController() : null;
     if (byId('wuf-pair-summary')) byId('wuf-pair-summary').textContent = 'Loading indexed pairs...';
-    fetch(tokenPageUrl(), { headers: { Accept: 'application/json' } })
+    fetch(tokenPageUrl(), {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+      signal: analyticsController ? analyticsController.signal : undefined
+    })
       .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
       .then(function (payload) { if (requestId === analyticsRequestId) renderAnalytics(payload); })
       .catch(function (error) {
+        if (error && error.name === 'AbortError') return;
+        if (requestId !== analyticsRequestId) return;
         if (byId('wuf-pair-summary')) byId('wuf-pair-summary').textContent = 'Indexed analytics unavailable';
         if (byId('wuf-pairs')) byId('wuf-pairs').innerHTML = '<tr><td colspan="9" class="token-muted">Pair table unavailable: ' + esc(error.message || error) + '</td></tr>';
+      })
+      .finally(function () {
+        if (requestId === analyticsRequestId) analyticsController = null;
       });
   }
 
@@ -226,9 +238,17 @@
   function toBar(candle) { return { time: alcorMillis(candle.time), open: Number(candle.open), high: Number(candle.high), low: Number(candle.low), close: Number(candle.close), volume: Number(candle.volume || 0) }; }
   function resolutionMs(resolution) { if (resolution === 'D') return 86400000; if (resolution === 'W') return 604800000; if (resolution === 'M') return 2678400000; var minutes = Number(resolution); return Number.isFinite(minutes) && minutes > 0 ? minutes * 60000 : 14400000; }
   function getBarsFromAlcor(resolution, from, to) {
-    return fetch(candleUrl({ resolution: resolution, from: Math.floor(from * 1000), to: Math.floor(to * 1000) }))
+    return fetch(candleUrl({ resolution: resolution, from: Math.floor(from * 1000), to: Math.floor(to * 1000) }), { cache: 'no-store' })
       .then(function (response) { if (!response.ok) throw new Error('Alcor candles HTTP ' + response.status); return response.json(); })
       .then(function (payload) { return (payload.candles || []).map(toBar).filter(function (bar) { return Number.isFinite(bar.time) && Number.isFinite(bar.open) && Number.isFinite(bar.high) && Number.isFinite(bar.low) && Number.isFinite(bar.close); }).sort(function (a, b) { return a.time - b.time; }); });
+  }
+  function stopLiveFeeds() {
+    if (analyticsController) analyticsController.abort();
+    analyticsController = null;
+    Object.keys(subscriptions).forEach(function (key) {
+      clearInterval(subscriptions[key]);
+      delete subscriptions[key];
+    });
   }
   function initChart() {
     if (!window.TradingView || !byId(CONTAINER_ID)) return;
@@ -237,7 +257,7 @@
       searchSymbols: function () {},
       resolveSymbol: function (symbolName, onResolve) { setTimeout(function () { onResolve({ name: 'WUF_WAX', ticker: 'WUF_WAX', description: 'WUF / WAX', type: 'crypto', exchange: 'Alcor', listed_exchange: 'Alcor', timezone: 'Etc/UTC', session: '24x7', minmov: 1, pricescale: 100000000, has_intraday: true, has_daily: true, has_weekly_and_monthly: true, supported_resolutions: RESOLUTIONS, visible_plots_set: 'ohlcv', volume_precision: 2, data_status: 'streaming', format: 'price' }); }, 0); },
       getBars: function (symbolInfo, resolution, periodParams, onHistory, onError) { activeResolution = resolution; getBarsFromAlcor(resolution, Number(periodParams.from), Number(periodParams.to)).then(function (bars) { onHistory(bars, { noData: bars.length === 0 }); if (byId('wuf-chart-status')) byId('wuf-chart-status').textContent = 'Alcor candles loaded directly'; }).catch(function (error) { if (byId('wuf-chart-status')) byId('wuf-chart-status').textContent = 'Alcor chart unavailable'; onError(error.message || String(error)); }); },
-      subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID) { if (!subscriberUID) return; var timer = setInterval(function () { var to = Math.floor(Date.now() / 1000); var from = Math.floor((Date.now() - Math.max(resolutionMs(resolution) * 3, 1800000)) / 1000); getBarsFromAlcor(resolution, from, to).then(function (bars) { if (bars.length) onRealtime(bars[bars.length - 1]); }).catch(function () {}); }, 30000); subscriptions[subscriberUID] = timer; },
+      subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID) { if (!subscriberUID) return; var timer = setInterval(function () { if (document.hidden) return; var to = Math.floor(Date.now() / 1000); var from = Math.floor((Date.now() - Math.max(resolutionMs(resolution) * 3, 1800000)) / 1000); getBarsFromAlcor(resolution, from, to).then(function (bars) { if (bars.length) onRealtime(bars[bars.length - 1]); }).catch(function () {}); }, 30000); subscriptions[subscriberUID] = timer; },
       unsubscribeBars: function (subscriberUID) { clearInterval(subscriptions[subscriberUID]); delete subscriptions[subscriberUID]; },
       getMarks: function () {}, getTimescaleMarks: function () {}, getServerTime: function (callback) { callback(Math.floor(Date.now() / 1000)); }
     };
@@ -245,5 +265,6 @@
   }
 
   function init() { initSortControls(); initChart(); loadAnalytics(); }
+  window.addEventListener('pagehide', stopLiveFeeds);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 }());
