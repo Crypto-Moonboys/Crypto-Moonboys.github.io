@@ -37,9 +37,41 @@
     }
 
     .howto-page .page-hero.wiki-living-hero {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.86fr) minmax(360px, 1.14fr);
+      gap: clamp(34px, 5vw, 86px);
+      align-items: center;
+      min-height: clamp(560px, 62vh, 780px);
       margin-top: 0;
+      padding: clamp(72px, 8vw, 108px) clamp(48px, 7vw, 112px) clamp(58px, 6vw, 88px);
       border-right: 0;
       border-left: 0;
+    }
+
+    .howto-hero-copy,
+    .howto-hero-title-wrap {
+      min-width: 0;
+    }
+
+    .howto-hero-copy {
+      display: grid;
+      gap: 24px;
+      align-content: center;
+      max-width: 780px;
+    }
+
+    .howto-hero-title-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .howto-page .page-hero.wiki-living-hero > .howto-hero-copy {
+      grid-column: 1;
+    }
+
+    .howto-page .page-hero.wiki-living-hero > .howto-hero-title-wrap {
+      grid-column: 2;
     }
 
     .howto-page .page-hero::before {
@@ -62,12 +94,13 @@
 
     .howto-kicker {
       display: inline-block;
-      margin-bottom: 12px;
+      margin-bottom: 0;
       color: var(--howto-green);
-      letter-spacing: 0.16em;
+      letter-spacing: 0;
       text-transform: uppercase;
       font-size: 0.82rem;
       font-weight: 800;
+      line-height: 1.65;
     }
 
     .howto-neon-title,
@@ -82,10 +115,10 @@
       position: relative;
       display: inline-block;
       color: #eaffff;
-      margin: 18px 0 24px;
-      max-width: 1240px;
-      font-size: clamp(2.35rem, 6.3vw, 5.15rem);
-      line-height: 1.12;
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(3rem, 6.1vw, 6.05rem);
+      line-height: 1.16;
       letter-spacing: 0;
       text-shadow:
         2px 0 rgba(255, 106, 213, 0.6),
@@ -111,8 +144,8 @@
     }
 
     .howto-lead {
-      max-width: 980px;
-      margin-top: 0;
+      max-width: 740px;
+      margin: 0;
       font-size: 1.08rem;
       line-height: 1.85;
       color: rgba(235, 255, 255, 0.9);
@@ -123,7 +156,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-top: 22px;
+      margin-top: 0;
     }
 
     .howto-btn {
@@ -160,15 +193,15 @@
     .howto-route {
       box-sizing: border-box;
       max-width: 100%;
-      margin: 22px 0;
-      padding: 20px;
+      margin: 0;
+      padding: 22px 24px;
       border: 1px solid rgba(0, 255, 204, 0.45);
       border-left: 5px solid var(--howto-green);
       background: linear-gradient(90deg, rgba(0, 255, 204, 0.12), rgba(86, 220, 255, 0.05));
       color: #f4ffff;
-      font-size: 1.08rem;
+      font-size: clamp(0.92rem, 1.08vw, 1.04rem);
       font-weight: 900;
-      line-height: 1.8;
+      line-height: 1.95;
       text-transform: uppercase;
       box-shadow: inset 0 0 24px rgba(0, 255, 204, 0.05);
       overflow-wrap: anywhere;
@@ -257,6 +290,33 @@
       .howto-page .page-hero { padding-left: 24px; padding-right: 24px; }
     }
 
+    @media (max-width: 980px) {
+      .howto-page .page-hero.wiki-living-hero {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        min-height: auto;
+      }
+
+      .howto-hero-title-wrap {
+        order: -1;
+      }
+
+      .howto-glitch-title {
+        max-width: 100%;
+        font-size: clamp(2.6rem, 12vw, 4.8rem);
+      }
+
+      .howto-page .page-hero.wiki-living-hero > .howto-hero-copy,
+      .howto-page .page-hero.wiki-living-hero > .howto-hero-title-wrap {
+        grid-column: 1;
+        grid-row: auto;
+      }
+
+      .howto-lead {
+        max-width: 100%;
+      }
+    }
+
     .howto-step {
       display: grid;
       grid-template-columns: 42px 1fr;
@@ -319,19 +379,23 @@
   <div class="battle-page howto-page">
 
     <section class="page-hero wiki-living-hero">
-      <span class="howto-kicker">SYSTEM GUIDE / PLAYER ONBOARDING / BATTLE CHAMBER MANUAL</span>
-      <h1 class="howto-glitch-title howto-pulse swarmsy-title">HOW TO PLAY<br><span>CRYPTO MOONBOYS</span></h1>
-      <p class="howto-lead">
-        Crypto Moonboys is not just a website, not just a wiki, and not just an arcade. It is a living progression universe where lore, games, Telegram identity, factions, missions, clout, missed opportunities, and Battle Chamber proof all connect. This page explains how the whole machine works.
-      </p>
-      <div class="howto-route">
-        READ / EXPLORE → PLAY ARCADE → SUBMIT SCORES → LINK TELEGRAM → SYNC ACCEPTED ARCADE XP → JOIN A FACTION → COMPLETE MISSIONS → BUILD CLOUT / STATUS → ENTER BATTLE CHAMBER → UNLOCK MORE OPPORTUNITIES → REACH BLOCK TOPIA → BECOME A BUILDER
+      <div class="howto-hero-copy">
+        <span class="howto-kicker">SYSTEM GUIDE / PLAYER ONBOARDING / BATTLE CHAMBER MANUAL</span>
+        <p class="howto-lead">
+          Crypto Moonboys is not just a website, not just a wiki, and not just an arcade. It is a living progression universe where lore, games, Telegram identity, factions, missions, clout, missed opportunities, and Battle Chamber proof all connect. This page explains how the whole machine works.
+        </p>
+        <div class="howto-route">
+          READ / EXPLORE → PLAY ARCADE → SUBMIT SCORES → LINK TELEGRAM → SYNC ACCEPTED ARCADE XP → JOIN A FACTION → COMPLETE MISSIONS → BUILD CLOUT / STATUS → ENTER BATTLE CHAMBER → UNLOCK MORE OPPORTUNITIES → REACH BLOCK TOPIA → BECOME A BUILDER
+        </div>
+        <div class="howto-hero-actions">
+          <a class="howto-btn" href="/games/">Play Arcade</a>
+          <a class="howto-btn howto-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
+          <a class="howto-btn howto-btn-secondary" href="/community.html">Enter Battle Chamber</a>
+          <a class="howto-btn howto-btn-secondary" href="/battle-chamber/factions/">View Community</a>
+        </div>
       </div>
-      <div class="howto-hero-actions">
-        <a class="howto-btn" href="/games/">Play Arcade</a>
-        <a class="howto-btn howto-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
-        <a class="howto-btn howto-btn-secondary" href="/community.html">Enter Battle Chamber</a>
-        <a class="howto-btn howto-btn-secondary" href="/battle-chamber/factions/">View Community</a>
+      <div class="howto-hero-title-wrap">
+        <h1 class="howto-glitch-title howto-pulse swarmsy-title">HOW TO PLAY<br><span>CRYPTO MOONBOYS</span></h1>
       </div>
     </section>
 

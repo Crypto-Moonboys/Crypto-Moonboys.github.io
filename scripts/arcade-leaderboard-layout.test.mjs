@@ -11,6 +11,27 @@ async function read(relPath) {
 }
 
 const leaderboardJs = await read('js/arcade-leaderboard.js');
+const leaderboardHtml = await read('games/leaderboard.html');
+
+assert.ok(
+  leaderboardHtml.includes('leaderboard-hero wiki-living-hero swarmsy-hero') &&
+    leaderboardHtml.includes('swarmsy-title wiki-living-title'),
+  'leaderboard page must use the SWARMSY/living full-width hero contract',
+);
+
+assert.ok(
+  leaderboardHtml.includes('class="lb-page"') &&
+    leaderboardHtml.includes('class="lb-overview-grid"') &&
+    leaderboardHtml.includes('class="lb-toolbar-card"'),
+  'leaderboard page must keep the rearranged card/surface layout',
+);
+
+assert.ok(
+  leaderboardHtml.includes('Score = leaderboard ranking only') &&
+    leaderboardHtml.includes('Arcade XP needs Telegram sync and server acceptance') &&
+    leaderboardHtml.includes('unsynced runs stay local/pending'),
+  'leaderboard hero must explain score, server-accepted Arcade XP, and local/pending runs',
+);
 
 // ── Empty/missing/unaligned faction badge ────────────────────────────────────
 

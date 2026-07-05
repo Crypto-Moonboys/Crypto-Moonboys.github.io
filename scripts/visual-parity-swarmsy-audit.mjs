@@ -574,10 +574,11 @@ if (wikiCss) {
 }
 if (swarmsyLayoutOk) pass('SWARMSY/About routes have full-width landing-page layout contract');
 
-console.log('\n[9b] Search, dashboard, how-to-play, and faction routes use living full-width heroes');
+console.log('\n[9b] Search, dashboard, leaderboard, how-to-play, and faction routes use living full-width heroes');
 let livingHeroOk = true;
 const searchHtml = read('search.html');
 const dashboardHtml = read('dashboard.html');
+const leaderboardHtml = read('games/leaderboard.html');
 const howToPlayHtml = read('how-to-play.html');
 const factionDirectoryHtml = read('battle-chamber/factions/index.html');
 const factionPageHtml = read('battle-chamber/factions/hard-fork-rockers.html');
@@ -587,6 +588,7 @@ const factionCss = read('css/faction-chamber.css');
 const livingHeroRoutes = [
   ['search.html', searchHtml, 'THE WIKI IS ALIVE'],
   ['dashboard.html', dashboardHtml, 'wiki-living-hero dashboard-hero swarmsy-hero'],
+  ['games/leaderboard.html', leaderboardHtml, 'leaderboard-hero wiki-living-hero swarmsy-hero'],
   ['how-to-play.html', howToPlayHtml, 'page-hero wiki-living-hero'],
   ['battle-chamber/factions/index.html', factionDirectoryHtml, 'fcp-route-hero wiki-living-hero swarmsy-hero'],
   ['battle-chamber/factions/hard-fork-rockers.html', factionPageHtml, 'fcp-route-hero wiki-living-hero swarmsy-hero'],
@@ -596,6 +598,13 @@ for (const [rel, html, marker] of livingHeroRoutes) {
     fail(`${rel} - missing living/SWARMSY hero markup`);
     livingHeroOk = false;
   }
+}
+if (
+  !howToPlayHtml.includes('class="howto-hero-copy"') ||
+  !howToPlayHtml.includes('class="howto-hero-title-wrap"')
+) {
+  fail('how-to-play.html - missing the wrapped living-hero copy/title layout contract');
+  livingHeroOk = false;
 }
 if (
   !wikiCss.includes('.wiki-living-hero') ||

@@ -3,38 +3,221 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Moonboys Arcade Leaderboard — ranked scores across SnakeRun 3008, Crystal Quest, and Block Topia Quest Maze.">
+  <meta name="description" content="Moonboys Arcade Leaderboard - ranked scores across active arcade games.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Arcade Leaderboard — Crypto Moonboys Wiki">
+  <meta property="og:title" content="Arcade Leaderboard - Crypto Moonboys Wiki">
   <meta property="og:description" content="See who's leading the Moonboys Arcade across all games.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/games/leaderboard.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <meta name="twitter:card" content="summary_large_image">
-  <title>Arcade Leaderboard — Crypto Moonboys Wiki</title>
+  <title>Arcade Leaderboard - Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
-<style>
-    /* Leaderboard page - minimal layout overrides; global shell styling lives in wiki.css */
-    .lb-intro {
-      margin-bottom: 20px;
-      line-height: 1.6;
+  <style>
+    body.page-game #content {
+      padding-top: 0;
+      padding-right: 0;
+      padding-left: 0;
     }
-    #lb-mode-toggle {
+
+    .leaderboard-hero {
+      min-height: clamp(520px, 58vh, 740px);
+    }
+
+    .leaderboard-hero .swarmsy-hero-inner {
+      display: grid;
+      gap: clamp(24px, 4vw, 46px);
+      max-width: 1280px;
+    }
+
+    .leaderboard-hero .wiki-hero-breadcrumb {
+      margin-bottom: 0;
+    }
+
+    .leaderboard-hero .swarmsy-title {
+      max-width: 980px;
+      margin: 0;
+      font-size: clamp(3.4rem, 8vw, 7.4rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .leaderboard-hero .swarmsy-lead {
+      max-width: 860px;
+      margin: 0;
+      color: rgba(214, 240, 255, 0.88);
+      font-size: clamp(1rem, 1.5vw, 1.16rem);
+      line-height: 1.85;
+    }
+
+    .leaderboard-hero .swarmsy-action-grid {
+      max-width: 1120px;
+      margin-top: 0;
+    }
+
+    .leaderboard-pills {
       display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-width: 1120px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
     }
+
+    .leaderboard-pills li {
+      padding: 10px 14px;
+      color: var(--color-accent);
+      background: rgba(247, 201, 72, 0.09);
+      border: 1px solid rgba(247, 201, 72, 0.34);
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .lb-page {
+      display: grid;
+      gap: 22px;
+      margin: 28px clamp(20px, 3vw, 48px) clamp(48px, 6vw, 82px);
+    }
+
+    .lb-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: 16px;
+    }
+
+    .lb-info-card,
+    .lb-toolbar-card,
+    #lb-status-panel,
+    #lb-breakdown-panel,
+    #lb-table-wrap,
+    .lb-graph-section,
+    .notice.info {
+      box-sizing: border-box;
+      width: 100%;
+      padding: clamp(18px, 2.2vw, 28px);
+      color: var(--color-text);
+      background: rgba(6, 10, 18, 0.78);
+      border: 1px solid rgba(86, 220, 255, 0.16);
+      border-radius: 16px;
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(0, 255, 204, 0.03);
+      overflow-wrap: anywhere;
+    }
+
+    .lb-info-card {
+      min-height: 160px;
+      border-color: rgba(0, 255, 204, 0.18);
+      background: rgba(0, 255, 204, 0.048);
+    }
+
+    .lb-info-card strong {
+      display: block;
+      margin: 0 0 10px;
+      color: #00ffcc;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .lb-info-card p,
+    .notice.info li {
+      margin: 0;
+      color: var(--color-text-muted);
+      line-height: 1.7;
+    }
+
+    .lb-sync-zone {
+      display: grid;
+      gap: 16px;
+    }
+
+    .lb-sync-zone [data-tg-sync-cta] {
+      min-width: 0;
+    }
+
+    .lb-sync-zone .tg-sync-cta {
+      gap: 16px;
+      padding: clamp(18px, 2vw, 24px);
+      background: rgba(0, 255, 204, 0.055);
+      border: 1px solid rgba(0, 255, 204, 0.22);
+      border-radius: 16px;
+    }
+
+    .lb-sync-zone .tg-sync-cta-body {
+      min-width: min(100%, 320px);
+    }
+
+    .notice.info {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .notice.info ul {
+      margin: 0.55rem 0 0 1.1rem;
+      padding: 0;
+    }
+
+    .lb-toolbar-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    #lb-mode-toggle,
     #lb-tab-bar {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 18px;
+      margin: 0;
     }
+
+    #lb-mode-toggle button,
+    #lb-tab-bar button,
+    .lb-controls button,
+    .lb-presence-btn,
+    #lb-graph-reset {
+      min-height: 40px;
+      padding: 9px 13px;
+      color: var(--color-text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(86, 220, 255, 0.20);
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    #lb-mode-toggle button[aria-pressed="true"],
+    #lb-mode-toggle button.active,
+    #lb-tab-bar button[aria-selected="true"],
+    #lb-tab-bar button.active {
+      color: var(--color-accent);
+      background: rgba(247, 201, 72, 0.12);
+      border-color: rgba(247, 201, 72, 0.46);
+      box-shadow: 0 0 22px rgba(247, 201, 72, 0.10);
+    }
+
+    #lb-mode-toggle button:hover,
+    #lb-tab-bar button:hover,
+    .lb-controls button:hover,
+    .lb-presence-btn:hover,
+    #lb-graph-reset:hover {
+      background: rgba(0, 255, 204, 0.10);
+      border-color: rgba(0, 255, 204, 0.42);
+      transform: translateY(-1px);
+    }
+
     #lb-status {
       padding: 32px 0;
       text-align: center;
       font-size: .9rem;
     }
+
     .lb-col-player { text-align: left; min-width: 180px; overflow: visible; text-overflow: clip; }
     .lb-table tbody tr:focus { outline: 2px solid var(--neon-cyan, rgba(0, 229, 255, 1)); outline-offset: -2px; }
     .lb-table th,
@@ -44,25 +227,32 @@
     .lb-faction-cell { text-align: center; }
     .lb-faction { display: inline-flex; align-items: center; gap: 4px; }
     .lb-score { text-align: center; font-variant-numeric: tabular-nums; }
+
     .lb-controls {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 14px;
+      margin: 0;
       flex-wrap: wrap;
     }
+
     .lb-linked-shell {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 14px;
+      padding: 16px;
+      background: rgba(0, 255, 204, 0.055);
+      border: 1px solid rgba(0, 255, 204, 0.20);
+      border-radius: 12px;
     }
+
     .lb-linked-identity { flex: 1 1 360px; }
     .lb-linked-meta { display: block; margin-top: 4px; }
     .lb-linked-identity strong { display: block; }
     @keyframes lbPulseGreen { from { filter: none; } to { filter: drop-shadow(0 0 6px rgba(57,255,20,.55)); } }
+
     .lb-bd-header {
       display: flex;
       align-items: baseline;
@@ -71,148 +261,183 @@
       margin-bottom: 14px;
       flex-wrap: wrap;
     }
+
     .lb-bd-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 8px;
     }
-    .lb-bd-row { display: flex; flex-direction: column; padding: 8px 12px; gap: 2px; }
-    .lb-graph-section { margin: 28px 0; }
+
+    .lb-bd-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 12px;
+      background: rgba(86, 220, 255, 0.06);
+      border-radius: 8px;
+    }
+
+    .lb-graph-section { margin: 0; }
     .lb-graph-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .lb-graph-heading::after { content: ''; flex: 1; height: 2px; }
-    .lb-graph-wrap { overflow: hidden; position: relative; }
+    .lb-graph-heading::after { content: ""; flex: 1; height: 2px; }
+    .lb-graph-wrap {
+      position: relative;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.26);
+      border: 1px solid rgba(86, 220, 255, 0.14);
+      border-radius: 12px;
+    }
+
     #arcade-graph-canvas { display: block; width: 100%; }
+
     .lb-graph-legend {
       display: flex;
       flex-wrap: wrap;
       gap: 10px 18px;
       padding: 10px 16px;
     }
+
     .lb-legend-item { display: flex; align-items: center; gap: 6px; }
     .lb-legend-dot { width: 10px; height: 10px; flex-shrink: 0; }
-    #lb-graph-reset { position: absolute; top: 8px; right: 10px; padding: 4px 10px; cursor: pointer; }
+    #lb-graph-reset { position: absolute; top: 10px; right: 10px; }
     #lb-refresh-btn:disabled { opacity: .5; cursor: default; }
     .lb-presence-btn:disabled { opacity: .45; cursor: not-allowed; }
-    @media (max-width: 480px) { .lb-bd-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    @media (max-width: 760px) {
+      .leaderboard-hero .swarmsy-title {
+        font-size: clamp(2.7rem, 14vw, 4.8rem);
+      }
+
+      .lb-page {
+        margin-top: 22px;
+      }
+
+      .notice.info {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .lb-bd-grid { grid-template-columns: repeat(2, 1fr); }
+      .leaderboard-pills li { width: 100%; }
+    }
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-game page-standard-shell" data-sidebar-extra="arcade">
 <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a><span class="sep">›</span>
-        <a href="/games/">Arcade</a><span class="sep">›</span>
-        <span aria-current="page">Leaderboard</span>
-      </nav>
-
-      <div class="category-header">
-        <span class="cat-big-icon" aria-hidden="true">🏆</span>
-        <div>
-          <h1 class="page-title">Arcade Leaderboard</h1>
-          <p style="color:var(--color-text-muted)">Shared rankings across all Moonboys Arcade games.</p>
-        </div>
-      </div>
-      <div class="page-title-line" aria-hidden="true"></div>
-
-      <p class="lb-intro">
-        Track your rank across all Moonboys Arcade games: <strong>👾 Invaders 3008</strong> (current Arcade XP &amp; leaderboard source), <strong>SnakeRun 3008</strong>, <strong>Crystal Quest</strong>,
-        <strong>Block Topia Quest Maze</strong>, <strong>Pac-Chain</strong>,
-        <strong>Asteroid Fork</strong>, <strong>Breakout Bullrun</strong>, and <strong>Tetris Block Topia</strong>.
-        <strong>Score = leaderboard ranking only.</strong> Accepted scores can convert into <strong>Arcade XP</strong> (multiplayer gate progress) only after Telegram sync and server acceptance.
-        Telegram sync via /gklink is required for server-stored XP; unsynced runs stay local/pending in this browser until linked.
-        Click any row to visualise that player's breakdown on the graph below.
-      </p>
-
-      <p class="lb-intro">
-        Need the full guide? Read the <a href="/how-to-play.html"><strong>How to Play Manual</strong></a> — Telegram sync, XP, and Block Topia entry requirements.
-        To link Telegram, visit the <a href="/gkniftyheads-incubator.html"><strong>Incubator — Link Telegram</strong></a> page.
-      </p>
-
-      <div data-tg-sync-cta></div>
-
-
-      <section class="notice info" role="note" aria-label="Arcade system explainer">
-        <span class="notice-icon" aria-hidden="true">◈</span>
-        <div>
-          <strong>Arcade System:</strong>
-          <ul style="margin:.4rem 0 0 1.1rem">
-            <li>Ranking uses score only.</li>
-            <li>Accepted scores can convert into Arcade XP after Telegram sync and server acceptance.</li>
-            <li>At least 50 Arcade XP is required to enter the Block Topia server (exact value shown in the status panel above).</li>
-            <li>Telegram sync via /gklink is required to store Arcade XP and progression server-side; unlinked runs remain local/pending.</li>
+      <section class="leaderboard-hero wiki-living-hero swarmsy-hero" aria-labelledby="leaderboard-title">
+        <div class="swarmsy-hero-inner">
+          <nav class="breadcrumb wiki-hero-breadcrumb" aria-label="Breadcrumb">
+            <a href="/index.html">Home</a><span class="sep">&rsaquo;</span>
+            <a href="/games/">Arcade</a><span class="sep">&rsaquo;</span>
+            <span aria-current="page">Leaderboard</span>
+          </nav>
+          <span class="swarmsy-kicker wiki-alive-kicker">ARCADE LEADERBOARD / SCORE RANKING / XP SYNC</span>
+          <h1 id="leaderboard-title" class="swarmsy-title wiki-living-title">ARCADE<br><span>LEADERBOARD</span></h1>
+          <p class="swarmsy-lead">
+            Track rank across every active Moonboys Arcade game. Score drives leaderboard position; linked, server-accepted runs can become Arcade XP after sync checks.
+          </p>
+          <div class="swarmsy-action-grid swarmsy-action-grid--compact" aria-label="Leaderboard actions">
+            <a class="swarmsy-action-card swarmsy-action-card--gold" href="/games/"><strong>Play Arcade</strong><span>Start runs across the active arcade roster.</span></a>
+            <a class="swarmsy-action-card" href="/how-to-play.html"><strong>How to Play</strong><span>Read the XP, sync, and Block Topia guide.</span></a>
+            <a class="swarmsy-action-card swarmsy-action-card--magenta" href="/gkniftyheads-incubator.html"><strong>Link Telegram</strong><span>Use /gklink before server-side XP sync.</span></a>
+          </div>
+          <ul class="leaderboard-pills" aria-label="Arcade leaderboard rules">
+            <li>Score = leaderboard ranking only.</li>
+            <li>Arcade XP needs Telegram sync and server acceptance</li>
+            <li>unsynced runs stay local/pending</li>
           </ul>
         </div>
       </section>
 
-      <!-- ── Status Panel ──────────────────────────────────────────── -->
-      <div id="lb-status-panel" style="margin-bottom:18px"></div>
+      <div class="lb-page">
+        <section class="lb-overview-grid" aria-label="Leaderboard overview">
+          <article class="lb-info-card">
+            <strong>Rank Every Run</strong>
+            <p>Track your place across Invaders 3008, SnakeRun 3008, Crystal Quest, Block Topia Quest Maze, Pac-Chain, Asteroid Fork, Breakout Bullrun, and Tetris Block Topia.</p>
+          </article>
+          <article class="lb-info-card">
+            <strong>Score Is Not XP</strong>
+            <p>Score is the public ranking layer. Accepted scores can convert into Arcade XP only after Telegram sync and server acceptance.</p>
+          </article>
+          <article class="lb-info-card">
+            <strong>Read The Route</strong>
+            <p>Need the full guide? Use the <a href="/how-to-play.html"><strong>How to Play Manual</strong></a> for Telegram sync, XP, and Block Topia entry requirements.</p>
+          </article>
+        </section>
 
-      <!-- ── Tab bar ─────────────────────────────────────────────── -->
-      <div id="lb-mode-toggle" role="group" aria-label="Leaderboard mode"></div>
-      <div id="lb-tab-bar" role="tablist" aria-label="Leaderboard filters"></div>
+        <section class="lb-sync-zone" aria-label="Arcade sync">
+          <div data-tg-sync-cta></div>
+        </section>
 
-      <!-- ── Controls ──────────────────────────────────────────────── -->
-      <div class="lb-linked-shell">
-        <div id="lb-linked-identity" class="lb-linked-identity sync-state--bad" aria-live="polite">
-          <strong>Telegram not linked — run /gklink</strong>
-          <span class="lb-linked-meta">Run /gklink to store ranking and Arcade XP server-side.</span>
-        </div>
-        <button id="lb-presence-toggle" class="lb-presence-btn" type="button" aria-pressed="false">Hide presence</button>
+        <section class="notice info" role="note" aria-label="Arcade system explainer">
+          <span class="notice-icon" aria-hidden="true">&#9672;</span>
+          <div>
+            <strong>Arcade System:</strong>
+            <ul>
+              <li>Ranking uses score only.</li>
+              <li>Accepted scores can convert into Arcade XP after Telegram sync and server acceptance.</li>
+              <li>At least 50 Arcade XP is required to enter the Block Topia server (exact value shown in the status panel above).</li>
+              <li>Telegram sync via /gklink is required to store Arcade XP and progression server-side; unlinked runs remain local/pending.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="lb-status-panel"></div>
+
+        <section class="lb-toolbar-card" aria-label="Leaderboard filters and controls">
+          <div id="lb-mode-toggle" role="group" aria-label="Leaderboard mode"></div>
+          <div id="lb-tab-bar" role="tablist" aria-label="Leaderboard filters"></div>
+
+          <div class="lb-linked-shell">
+            <div id="lb-linked-identity" class="lb-linked-identity sync-state--bad" aria-live="polite">
+              <strong>Telegram not linked - run /gklink</strong>
+              <span class="lb-linked-meta">Run /gklink to store ranking and Arcade XP server-side.</span>
+            </div>
+            <button id="lb-presence-toggle" class="lb-presence-btn" type="button" aria-pressed="false">Hide presence</button>
+          </div>
+          <div class="lb-controls">
+            <button id="lb-refresh-btn" aria-label="Refresh leaderboard">Refresh</button>
+            <span class="lb-hint">Score = ranking. Arcade XP = Block Topia gate progress (requires Telegram sync).</span>
+          </div>
+        </section>
+
+        <div id="lb-status" style="display:none"></div>
+        <div id="lb-table-wrap" class="lb-table-outer shell-scroll" data-shell-scroll style="display:none"></div>
+
+        <div id="lb-breakdown-panel" class="shell-scroll" data-shell-scroll style="display:none" aria-label="Selected player score breakdown" aria-live="polite"></div>
+
+        <section class="lb-graph-section" aria-label="Arcade graph">
+          <div class="lb-graph-heading">Arcade Node Map</div>
+          <div class="lb-graph-wrap">
+            <canvas id="arcade-graph-canvas" aria-label="Interactive arcade score graph. Click a leaderboard row to see a player's breakdown."></canvas>
+            <button id="lb-graph-reset" aria-label="Reset graph to overview">Reset</button>
+          </div>
+          <div class="lb-graph-legend" aria-label="Graph legend">
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#f7c948"></span>Global / Player</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#2ec5ff"></span>Snake</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#ff4fd1"></span>Crystal</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#bc8cff"></span>BlockTopia</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#3fb950"></span>Invaders</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#f7c948"></span>Pac-Chain</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#8b949e"></span>Asteroids</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#ff6b35"></span>Bullrun</span>
+            <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#a78bfa"></span>Tetris</span>
+          </div>
+        </section>
       </div>
-      <div class="lb-controls">
-        <button id="lb-refresh-btn" aria-label="Refresh leaderboard">🔄 Refresh</button>
-        <span class="lb-hint">Score = ranking. Arcade XP = Block Topia gate progress (requires Telegram sync).</span>
-      </div>
-
-      <!-- ── Status / table ─────────────────────────────────────────── -->
-      <div id="lb-status" style="display:none"></div>
-      <div id="lb-table-wrap" class="lb-table-outer shell-scroll" data-shell-scroll style="display:none"></div>
-
-      <!-- ── Selected-player breakdown panel ───────────────────────── -->
-      <div id="lb-breakdown-panel" class="shell-scroll" data-shell-scroll style="display:none" aria-label="Selected player score breakdown" aria-live="polite"></div>
-
-      <!-- ── OG Graph node map ──────────────────────────────────────── -->
-      <section class="lb-graph-section" aria-label="Arcade graph">
-        <div class="lb-graph-heading">🌐 Arcade Node Map</div>
-        <div class="lb-graph-wrap">
-          <canvas id="arcade-graph-canvas" aria-label="Interactive arcade score graph. Click a leaderboard row to see a player's breakdown."></canvas>
-          <button id="lb-graph-reset" aria-label="Reset graph to overview">Reset</button>
-        </div>
-        <div class="lb-graph-legend" aria-label="Graph legend">
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#f7c948"></span>Global / Player</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#2ec5ff"></span>🐍 Snake</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#ff4fd1"></span>🧩 Crystal</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#bc8cff"></span>🧱 BlockTopia</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#3fb950"></span>👾 Invaders</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#f7c948"></span>🟡 Pac-Chain</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#8b949e"></span>🌑 Asteroids</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#ff6b35"></span>🧱 Bullrun</span>
-          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#a78bfa"></span>🟦 Tetris</span>
-        </div>
-      </section>
-
     </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 7. Page-specific scripts -->
-
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
