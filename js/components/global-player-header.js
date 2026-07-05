@@ -126,8 +126,10 @@
 
   function observeHeaderBadgeDock() {
     if (_headerBadgeObserver || typeof MutationObserver !== 'function') return;
+    var root = document.getElementById('site-header') || document.body;
+    if (!root) return;
     _headerBadgeObserver = new MutationObserver(scheduleHeaderBadgeDock);
-    _headerBadgeObserver.observe(document.body, { childList: true, subtree: true });
+    _headerBadgeObserver.observe(root, { childList: true, subtree: true });
   }
 
   /**
