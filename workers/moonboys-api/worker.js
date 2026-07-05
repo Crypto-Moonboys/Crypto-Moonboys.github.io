@@ -163,28 +163,29 @@ function buildCorsHeaders(request, env) {
 // ── Shared utilities ──────────────────────────────────────────────────────────
 
 function makeJsonResponder(corsHeaders) {
-  return function json(data, status = 200) {
-    return new Response(JSON.stringify(data), {
-      status,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+  return function respondJson(data, status = 200) {
+    return json(data, status, corsHeaders);
   };
 }
 
-function makeErrorResponder(jsonResponder) {
-  return function err(message, status = 400) {
-    return jsonResponder({ error: message }, status);
+function makeErrorResponder(corsHeaders) {
+  return function respondError(message, status = 400) {
+    return err(message, status, corsHeaders);
   };
 }
 
-const defaultJson = makeJsonResponder(buildCorsHeaders(null, null));
-
-function json(data, status = 200) {
-  return defaultJson(data, status);
+function json(data, status = 200, corsHeaders = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      ...corsHeaders,
+    },
+  });
 }
 
-function err(message, status = 400) {
-  return json({ error: message }, status);
+function err(message, status = 400, corsHeaders = {}) {
+  return json({ error: message }, status, corsHeaders);
 }
 
 function logApiFailure(event, context = {}) {
@@ -2906,7 +2907,7 @@ export default {
     const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '');
     const corsHeaders = buildCorsHeaders(request, env);
     const json = makeJsonResponder(corsHeaders);
-    const err = makeErrorResponder(json);
+    const err = makeErrorResponder(corsHeaders);
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });

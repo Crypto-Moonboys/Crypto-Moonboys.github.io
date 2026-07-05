@@ -159,6 +159,7 @@ await test('worker.js uses env.CORS_ALLOWED_ORIGINS to build allowed list', () =
 
 await test('worker.js does not keep mutable module-level CORS response state', () => {
   assert.equal(/let\s+CORS_HEADERS\b/.test(workerSrc), false, 'worker.js must not declare mutable CORS_HEADERS state');
+  assert.equal(workerSrc.includes('buildCorsHeaders(null, null)'), false, 'worker.js must not build module-level fallback CORS headers');
   assert.ok(workerSrc.includes('const corsHeaders = buildCorsHeaders(request, env)'), 'fetch() must build request-local CORS headers');
   assert.ok(workerSrc.includes('const json = makeJsonResponder(corsHeaders)'), 'fetch() must use request-local JSON helpers');
 });
