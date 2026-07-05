@@ -236,6 +236,11 @@ function pruneRateLimitMemory(now) {
     if (!bucket || bucket.resetAt <= now) RATE_LIMIT_MEMORY_BUCKETS.delete(key);
     if (RATE_LIMIT_MEMORY_BUCKETS.size <= RATE_LIMIT_MEMORY_MAX_BUCKETS) break;
   }
+  while (RATE_LIMIT_MEMORY_BUCKETS.size > RATE_LIMIT_MEMORY_MAX_BUCKETS) {
+    const oldestKey = RATE_LIMIT_MEMORY_BUCKETS.keys().next().value;
+    if (oldestKey === undefined) break;
+    RATE_LIMIT_MEMORY_BUCKETS.delete(oldestKey);
+  }
 }
 
 function consumeMemoryRateLimit(key, limit, now) {
@@ -251,26 +256,7 @@ function consumeMemoryRateLimit(key, limit, now) {
   return { limited: false, remaining: Math.max(0, limit - bucket.count), resetAt: bucket.resetAt };
 }
 
-async function consumeKvRateLimit(env, key, limit, now) {
-  const kv = env?.RATE_LIMIT_KV;
-  if (!kv || typeof kv.get !== 'function' || typeof kv.put !== 'function') return { limited: false };
-  const windowStart = Math.floor(now / RATE_LIMIT_WINDOW_MS) * RATE_LIMIT_WINDOW_MS;
-  const kvKey = `moonboys-api:rate-limit:${key}:${windowStart}`;
-  const raw = await kv.get(kvKey).catch((error) => {
-    logApiFailure('rate_limit_kv_get_failed', { key, message: error?.message || String(error) });
-    return null;
-  });
-  const count = Math.max(0, parseInt(String(raw || '0'), 10) || 0) + 1;
-  if (count > limit) {
-    return { limited: true, resetAt: windowStart + RATE_LIMIT_WINDOW_MS };
-  }
-  await kv.put(kvKey, String(count), { expirationTtl: 120 }).catch((error) => {
-    logApiFailure('rate_limit_kv_put_failed', { key, message: error?.message || String(error) });
-  });
-  return { limited: false, remaining: Math.max(0, limit - count), resetAt: windowStart + RATE_LIMIT_WINDOW_MS };
-}
-
-async function enforcePublicRateLimit(request, env, routeKey, body, corsHeaders, options = {}) {
+function enforcePublicRateLimit(request, env, routeKey, body, corsHeaders, options = {}) {
   const now = Date.now();
   pruneRateLimitMemory(now);
   const ipLimit = readPositiveIntegerEnv(env, 'RATE_LIMIT_PUBLIC_PER_MINUTE', RATE_LIMIT_DEFAULT_PUBLIC_PER_MINUTE);
@@ -286,10 +272,8 @@ async function enforcePublicRateLimit(request, env, routeKey, body, corsHeaders,
 
   for (const check of checks) {
     const key = `${routeKey}:${check.scope}:${check.id}`;
-    const memory = consumeMemoryRateLimit(key, check.limit, now);
-    const persisted = await consumeKvRateLimit(env, key, check.limit, now);
-    const result = persisted.limited ? persisted : memory;
-    if (memory.limited || persisted.limited) {
+    const result = consumeMemoryRateLimit(key, check.limit, now);
+    if (result.limited) {
       const retryAfterSeconds = Math.max(1, Math.ceil(((result.resetAt || now + RATE_LIMIT_WINDOW_MS) - now) / 1000));
       logApiFailure('public_rate_limit_exceeded', {
         route: routeKey,

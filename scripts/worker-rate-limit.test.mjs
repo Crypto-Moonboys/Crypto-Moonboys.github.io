@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import worker from '../workers/moonboys-api/worker.js';
 
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE_URL = 'https://moonboys-api.test';
+const workerSrc = await fs.readFile(path.join(ROOT, 'workers/moonboys-api/worker.js'), 'utf8');
 
 function makeEnv(overrides = {}) {
   return {
@@ -33,6 +38,17 @@ async function assertRateLimited(response, label) {
   const json = await response.json();
   assert.equal(json.error, 'rate_limited', `${label} must return JSON error payload`);
   assert.equal(Number.isInteger(json.retry_after_seconds), true, `${label} must include retry_after_seconds`);
+}
+
+{
+  assert.ok(
+    workerSrc.includes('while (RATE_LIMIT_MEMORY_BUCKETS.size > RATE_LIMIT_MEMORY_MAX_BUCKETS)'),
+    'rate limiter must evict oldest memory buckets until the hard cap is met',
+  );
+  assert.equal(workerSrc.includes('consumeKvRateLimit'), false,
+    'rate limiter must not use non-atomic KV get/put counters');
+  assert.equal(workerSrc.includes('RATE_LIMIT_KV'), false,
+    'rate limiter must not depend on eventually consistent KV counters');
 }
 
 {
