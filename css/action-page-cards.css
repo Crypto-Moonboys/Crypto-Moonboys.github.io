@@ -13,7 +13,7 @@ body.page-community {
 }
 
 body.page-game #content {
-  padding-top: clamp(18px, 2.3vw, 34px);
+  padding: 0 0 clamp(64px, 6vw, 96px);
 }
 
 body.page-community #content {
@@ -64,6 +64,56 @@ body.page-game .page-title,
 body.page-community .page-hero h1 {
   color: var(--color-accent);
   text-shadow: 0 0 18px rgba(247, 201, 72, 0.16);
+}
+
+body.page-game .breadcrumb,
+body.page-game .arcade-top-logo-wrap,
+body.page-game .category-header,
+body.page-game .page-title-line {
+  display: none !important;
+}
+
+body.page-game .arcade-hero {
+  width: 100%;
+  max-width: none;
+  min-height: clamp(520px, 58vh, 720px);
+  margin: 0;
+  padding: clamp(72px, 8vw, 108px) clamp(28px, 6vw, 88px) clamp(52px, 6vw, 76px);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
+body.page-game .arcade-hero-inner {
+  max-width: 1100px;
+}
+
+body.page-standard-shell.page-game .arcade-hero .swarmsy-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 8vw, 5.4rem);
+  line-height: 0.95;
+  text-shadow: 0 0 24px rgba(247, 201, 72, 0.24);
+}
+
+body.page-game .arcade-hero .swarmsy-title span {
+  color: #00ffcc;
+}
+
+body.page-game .arcade-hero .swarmsy-lead {
+  max-width: 760px;
+  margin-top: 22px;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1.75;
+}
+
+body.page-game .arcade-hero .swarmsy-action-grid {
+  max-width: 1280px;
+}
+
+body.page-game .arcade-hero ~ .notice {
+  margin-top: 24px;
 }
 
 body.page-game .category-header,
@@ -262,6 +312,13 @@ body.page-game .notice {
   gap: 12px;
 }
 
+body.page-game .notice > div,
+body.page-game .roguelite-loop-content,
+body.page-game .roguelite-loop-copy,
+body.page-game .article-list-item > div {
+  min-width: 0;
+}
+
 body.page-game .notice strong,
 body.page-game .ali-title,
 body.page-community .bc-join-card-name,
@@ -337,12 +394,17 @@ body.page-community .bc-reward-icon {
 
 body.page-game .roguelite-loop-panel {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
+  overflow: hidden;
 }
 
 body.page-game .roguelite-loop-image {
   display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
   border: 1px solid rgba(0, 255, 204, 0.18);
   border-radius: 16px;
   box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
@@ -352,6 +414,10 @@ body.page-game .roguelite-loop-content {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
+}
+
+body.page-game .roguelite-loop-copy {
+  overflow-wrap: anywhere;
 }
 
 body.page-game .roguelite-stat-pill,
@@ -408,10 +474,13 @@ body.page-community .bc-faction-row,
 body.page-community .bc-weekly-row,
 body.page-community .bc-mission-row,
 body.page-community .bc-frc-row,
+body.page-community .bc-why-list li,
 body.page-community .bc-coming-next li,
 body.page-community #battle-faction-proof-feed li,
 body.page-community #battle-todays-active-options li,
-body.page-community #battle-missed-perks-history li {
+body.page-community #battle-missed-perks-history li,
+body.page-community #tg-activity-feed .feed-item,
+body.page-community .tg-user-list > * {
   background: var(--action-card-bg);
   border: 1px solid var(--action-card-border);
   border-radius: 16px;
@@ -553,11 +622,29 @@ body.page-community .bc-frc-row {
 }
 
 body.page-community .bc-frc-row {
-  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 124px) minmax(0, 1fr);
+  padding: 8px 10px;
+  background: rgba(0, 255, 204, 0.06);
+  border-color: rgba(0, 255, 204, 0.18);
+  border-radius: 999px;
 }
 
 body.page-community .bc-frc-row strong {
+  display: block;
+  min-width: 0;
   line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+body.page-community .bc-frc-row:last-of-type {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
+  align-items: start;
+  border-radius: 14px;
+}
+
+body.page-community .bc-frc-row:last-of-type strong {
+  padding-left: 0;
 }
 
 body.page-community .bc-join-card,
@@ -606,6 +693,7 @@ body.page-community .bc-coming-next {
 }
 
 body.page-community .bc-coming-next ul,
+body.page-community .bc-why-list,
 body.page-community #battle-faction-proof-feed ul,
 body.page-community #battle-todays-active-options ul,
 body.page-community #battle-missed-perks-history ul {
@@ -613,11 +701,131 @@ body.page-community #battle-missed-perks-history ul {
   list-style: none;
 }
 
+body.page-community .bc-why-list {
+  gap: 14px;
+}
+
+body.page-community .bc-why-list li {
+  position: relative;
+  display: grid;
+  align-items: start;
+  min-height: 58px;
+  padding: 14px 16px 14px 48px;
+  line-height: 1.55;
+}
+
+body.page-community .bc-why-list li::before {
+  position: absolute;
+  top: 15px;
+  left: 16px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: #06110f;
+  background: #00ffcc;
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgba(0, 255, 204, 0.20);
+  content: ">";
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
 body.page-community .bc-coming-next li,
 body.page-community #battle-faction-proof-feed li,
 body.page-community #battle-todays-active-options li,
 body.page-community #battle-missed-perks-history li {
   padding: 12px 14px;
+}
+
+body.page-community [data-tg-sync-cta] {
+  margin: 24px clamp(20px, 3vw, 48px) 0;
+}
+
+body.page-community .tg-sync-cta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(220px, 0.32fr);
+  gap: 16px;
+  align-items: center;
+  padding: 18px 20px;
+  color: var(--color-text);
+  background: var(--action-card-bg-strong);
+  border: 1px solid var(--action-card-border);
+  border-radius: 18px;
+  box-shadow: var(--action-card-shadow);
+}
+
+body.page-community .tg-sync-cta-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: var(--color-accent);
+  background: rgba(247, 201, 72, 0.10);
+  border: 1px solid rgba(247, 201, 72, 0.32);
+  border-radius: 14px;
+}
+
+body.page-community .tg-sync-cta-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  line-height: 1.55;
+}
+
+body.page-community .tg-sync-cta-body strong {
+  color: #00ffcc;
+  text-transform: uppercase;
+}
+
+body.page-community .tg-sync-cta-body span,
+body.page-community .tg-sync-cta-body code,
+body.page-community .tg-sync-cta-body a {
+  overflow-wrap: anywhere;
+}
+
+body.page-community .tg-sync-cta-btn.swarmsy-action-card {
+  min-height: 74px;
+  padding: 14px 16px;
+}
+
+body.page-community #tg-activity-feed {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+body.page-community #tg-activity-feed .feed-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px 14px;
+  align-items: center;
+  padding: 12px 14px;
+}
+
+body.page-community #tg-activity-feed .feed-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-accent);
+  background: rgba(247, 201, 72, 0.10);
+  border-radius: 10px;
+}
+
+body.page-community #tg-activity-feed .feed-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body.page-community #tg-activity-feed .feed-time {
+  width: max-content;
+  max-width: 100%;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 body.page-community .community-loading,
@@ -688,6 +896,16 @@ body.page-community .bc-retry-btn {
   body.page-game .notice,
   body.page-game .roguelite-loop-panel {
     padding: 18px;
+  }
+
+  body.page-community .tg-sync-cta,
+  body.page-community #tg-activity-feed .feed-item {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  body.page-community #tg-activity-feed .feed-time {
+    white-space: normal;
   }
 }
 
