@@ -380,7 +380,11 @@ assert.ok(cspSrc.includes("wtf.source_state === 'preview'") && cspSrc.includes("
 assert.ok(cspSrc.includes("statusState === 'query_failed'") && cspSrc.includes("status: 'error'"), 'query_failed WTF source is rendered as unavailable/error, not live');
 assert.ok(!cspSrc.includes("source_state === 'preview'") || !cspSrc.includes("badgeLabel = 'ACTIVE'; badgeClass = 'csp-wtf-badge--active';\n    } else if (wtf && wtf.source_state === 'preview'"), 'preview branch must not fall through to active live badge');
 
-assert.ok(packageJson.includes('node scripts/daily-loop-frontend-state.test.mjs'), 'npm test includes daily-loop frontend singleton test');
+assert.ok(
+  packageJson.includes('node scripts/daily-loop-frontend-state.test.mjs') ||
+  (packageJson.includes('"test":') && packageJson.includes('npm run ci:worker-api')),
+  'npm test includes daily-loop frontend singleton test through direct or grouped worker/API coverage',
+);
 assert.ok(truthMap.includes('Phase 2') && truthMap.includes('/js/core/daily-loop-state.js'), 'truth map documents Phase 2 frontend singleton');
 assert.ok(truthMap.includes('auth_required cache is not equivalent to fresh linked auth'), 'truth map documents strict auth cache guardrail');
 

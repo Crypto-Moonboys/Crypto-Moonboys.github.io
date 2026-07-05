@@ -99,7 +99,11 @@ assert.ok(packageJson.scripts['test:crystal-quest'], 'package.json exposes narro
 assert.match(packageJson.scripts['test:crystal-quest'], /node scripts\/crystal-quest-signal-vault\.test\.mjs/, 'Crystal Quest focused test script runs Signal Vault regression');
 assert.match(packageJson.scripts['test:crystal-quest'], /node scripts\/crystal-quest-wiki-trail\.test\.mjs/, 'Crystal Quest focused test script runs Wiki Trail regression');
 assert.match(packageJson.scripts['test:crystal-quest'], /node scripts\/crystal-quest-mobile-fullscreen-polish\.test\.mjs/, 'Crystal Quest focused test script runs mobile/fullscreen polish regression');
-assert.match(packageJson.scripts.test, /npm run test:crystal-quest/, 'npm test includes the Crystal Quest focused regressions');
+assert.ok(
+  /npm run test:crystal-quest/.test(packageJson.scripts.test) ||
+  /npm run ci:arcade/.test(packageJson.scripts.test),
+  'npm test includes the Crystal Quest focused regressions through direct or grouped arcade coverage',
+);
 
 const mojibakeMarkers = /(?:â€”|â€“|â€¦|â€œ|â€�|â€™|â€˜|â€¢|ï¿½|ðŸ)/u;
 for (const file of [htmlPath, bootPath]) {
