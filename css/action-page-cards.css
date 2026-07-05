@@ -1,0 +1,498 @@
+/* Crypto Moonboys action pages — SWARMSY-style card restore
+   Scope: Arcade + Battle Chamber pages only. */
+
+body.page-game,
+body.page-community {
+  --action-card-bg: rgba(0, 255, 204, 0.052);
+  --action-card-bg-strong: rgba(10, 10, 16, 0.76);
+  --action-card-border: rgba(0, 255, 204, 0.18);
+  --action-card-border-hot: rgba(0, 255, 204, 0.48);
+  --action-card-glow: 0 0 28px rgba(0, 255, 204, 0.055);
+  --action-card-shadow: 0 18px 54px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(0, 255, 204, 0.035);
+  font-family: var(--font-sans);
+}
+
+body.page-game #content,
+body.page-community #content {
+  padding-top: clamp(18px, 2.3vw, 34px);
+}
+
+body.page-game h1,
+body.page-game h2,
+body.page-game h3,
+body.page-community h1,
+body.page-community h2,
+body.page-community h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.015em;
+}
+
+body.page-game .page-title,
+body.page-community .page-hero h1 {
+  color: var(--color-accent);
+  text-shadow: 0 0 18px rgba(247, 201, 72, 0.16);
+}
+
+body.page-game .category-header,
+body.page-community .page-hero,
+body.page-community .section,
+body.page-game .notice,
+body.page-game .roguelite-loop-panel,
+body.page-game .article-list-item,
+body.page-community .bc-join-card,
+body.page-community .bc-perk-card,
+body.page-community .bc-reward-item,
+body.page-community .bc-faction-reward-card,
+body.page-community .bc-aligned-panel,
+body.page-community .bc-join-confirm-panel,
+body.page-community .bc-join-success-panel,
+body.page-community .bc-join-locked-panel,
+body.page-community .bc-coming-next,
+body.page-community .bc-monthly-target,
+body.page-community .bc-monthly-rewards,
+body.page-community .bc-season-current,
+body.page-community .bc-season-rewards,
+body.page-community .bc-hall-of-fame,
+body.page-community .bc-weekly-prizes,
+body.page-community .bc-weekly-reset-note,
+body.page-community .bc-join-season-notice,
+body.page-community #battle-todays-active-options,
+body.page-community #battle-missed-perks-history {
+  background: var(--action-card-bg);
+  border: 1px solid var(--action-card-border);
+  border-radius: 16px;
+  box-shadow: var(--action-card-glow);
+}
+
+body.page-game .category-header,
+body.page-community .page-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(28px, 4vw, 54px);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(247, 201, 72, 0.20), transparent 32%),
+    radial-gradient(circle at 82% 0%, rgba(0, 255, 204, 0.15), transparent 30%),
+    linear-gradient(135deg, rgba(8, 8, 13, 0.98) 0%, rgba(21, 0, 33, 0.92) 45%, rgba(10, 15, 13, 0.96) 100%);
+  border-color: rgba(0, 255, 204, 0.24);
+  border-radius: 22px;
+  box-shadow: 0 0 48px rgba(0, 255, 204, 0.10), 0 22px 70px rgba(0, 0, 0, 0.34);
+}
+
+body.page-game .category-header::before,
+body.page-community .page-hero::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.14;
+}
+
+body.page-game .category-header > *,
+body.page-community .page-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.page-game .notice,
+body.page-game .roguelite-loop-panel,
+body.page-community .section {
+  margin-top: 18px;
+  padding: 22px;
+  background: var(--action-card-bg-strong);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 18px;
+  box-shadow: var(--action-card-shadow);
+}
+
+body.page-community .section h2 {
+  margin: 0 0 18px;
+  color: var(--color-accent);
+  background: rgba(10, 10, 16, 0.76);
+  border: 1px solid rgba(0, 255, 204, 0.18);
+  border-left: 3px solid rgba(86, 220, 255, 0.62);
+  border-radius: 16px;
+  box-shadow: var(--action-card-glow);
+}
+
+body.page-game .notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+body.page-game .notice strong,
+body.page-game .ali-title,
+body.page-community .bc-join-card-name,
+body.page-community .bc-perk-name,
+body.page-community .bc-frc-header,
+body.page-community .bc-weekly-leader strong,
+body.page-community .bc-faction-name,
+body.page-community .bc-missions-header,
+body.page-community .bc-reward-item strong {
+  color: #00ffcc;
+  font-weight: 800;
+}
+
+body.page-game .notice > div,
+body.page-game .ali-desc,
+body.page-game .ali-meta,
+body.page-game .roguelite-loop-copy,
+body.page-community .section p,
+body.page-community .section li,
+body.page-community .bc-perk-text,
+body.page-community .bc-perk-playstyle,
+body.page-community .bc-join-card-playstyle,
+body.page-community .bc-join-card-perk,
+body.page-community .bc-frc-row,
+body.page-community .bc-weekly-score,
+body.page-community .bc-faction-perk-teaser,
+body.page-community .bc-missions-note {
+  color: var(--color-text-muted);
+  line-height: 1.65;
+}
+
+body.page-game .article-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+body.page-game .article-list-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
+  gap: 14px;
+  min-height: 128px;
+  padding: 18px 20px;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+body.page-game .article-list-item:hover,
+body.page-game .article-list-item:focus-visible {
+  color: var(--color-text);
+  background: rgba(0, 255, 204, 0.09);
+  border-color: var(--action-card-border-hot);
+  transform: translateY(-2px);
+}
+
+body.page-game .ali-icon,
+body.page-community .bc-join-card-icon,
+body.page-community .bc-perk-icon,
+body.page-community .bc-reward-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--color-accent);
+  background: rgba(247, 201, 72, 0.08);
+  border: 1px solid rgba(247, 201, 72, 0.28);
+  border-radius: 14px;
+  box-shadow: 0 0 20px rgba(247, 201, 72, 0.06);
+}
+
+body.page-game .roguelite-loop-panel {
+  display: grid;
+  gap: 18px;
+}
+
+body.page-game .roguelite-loop-image {
+  display: block;
+  width: 100%;
+  border: 1px solid rgba(0, 255, 204, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+}
+
+body.page-game .roguelite-loop-content {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+}
+
+body.page-game .roguelite-stat-pill,
+body.page-game .roguelite-cycle-card,
+body.page-game .roguelite-branch-card,
+body.page-game .roguelite-task-card {
+  background: var(--action-card-bg);
+  border: 1px solid var(--action-card-border);
+  border-radius: 16px;
+  box-shadow: var(--action-card-glow);
+}
+
+body.page-game .roguelite-cycle-card,
+body.page-game .roguelite-branch-card,
+body.page-game .roguelite-task-card {
+  padding: 16px;
+}
+
+body.page-game .roguelite-branch-card:hover,
+body.page-game .roguelite-branch-card:focus-visible,
+body.page-game .roguelite-task-card:hover,
+body.page-game .roguelite-task-card:focus-visible {
+  background: rgba(0, 255, 204, 0.09);
+  border-color: var(--action-card-border-hot);
+  transform: translateY(-2px);
+}
+
+body.page-community .bc-faction-standings-list,
+body.page-community .bc-weekly-rows,
+body.page-community .bc-join-grid,
+body.page-community .bc-perk-grid,
+body.page-community .bc-rewards-grid,
+body.page-community .bc-faction-reward-grid,
+body.page-community .bc-missions-list,
+body.page-community .bc-why-list,
+body.page-community .bc-coming-next ul,
+body.page-community #battle-faction-proof-feed ul,
+body.page-community #battle-todays-active-options ul,
+body.page-community #battle-missed-perks-history ul {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+body.page-community .bc-join-grid,
+body.page-community .bc-perk-grid,
+body.page-community .bc-rewards-grid,
+body.page-community .bc-faction-reward-grid,
+body.page-community .bc-why-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+}
+
+body.page-community .bc-faction-row,
+body.page-community .bc-weekly-row,
+body.page-community .bc-mission-row,
+body.page-community .bc-frc-row,
+body.page-community .bc-coming-next li,
+body.page-community #battle-faction-proof-feed li,
+body.page-community #battle-todays-active-options li,
+body.page-community #battle-missed-perks-history li {
+  background: var(--action-card-bg);
+  border: 1px solid var(--action-card-border);
+  border-radius: 16px;
+  box-shadow: var(--action-card-glow);
+}
+
+body.page-community .bc-faction-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(150px, 1.1fr) repeat(4, minmax(82px, auto)) minmax(210px, 1.4fr) auto;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--faction-color, #00ffcc);
+}
+
+body.page-community .bc-faction-row > *,
+body.page-community .bc-weekly-row > *,
+body.page-community .bc-frc-row > * {
+  min-width: 0;
+}
+
+body.page-community .bc-faction-row--dominant {
+  background: linear-gradient(135deg, rgba(247, 201, 72, 0.09), rgba(0, 255, 204, 0.055));
+  border-color: rgba(247, 201, 72, 0.34);
+}
+
+body.page-community .bc-faction-rank,
+body.page-community .bc-faction-power,
+body.page-community .bc-faction-daily,
+body.page-community .bc-faction-weekly,
+body.page-community .bc-faction-momentum,
+body.page-community .bc-weekly-rank,
+body.page-community .bc-dominant-badge,
+body.page-community .bc-perk-xp-meta,
+body.page-community .bc-perk-score-meta {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px 8px;
+  color: #ffe875;
+  background: rgba(247, 201, 72, 0.09);
+  border: 1px solid rgba(247, 201, 72, 0.28);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+body.page-community .bc-faction-icon,
+body.page-community .bc-weekly-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+body.page-community .bc-faction-chamber-link,
+body.page-community .bc-frc-link,
+body.page-community .bc-cta-btn,
+body.page-community .bc-hero-cta,
+body.page-community .bc-join-btn,
+body.page-community .bc-join-confirm-btn,
+body.page-community .bc-join-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  color: #00ffcc;
+  background: rgba(0, 255, 204, 0.08);
+  border: 1px solid rgba(0, 255, 204, 0.34);
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+body.page-community .bc-faction-chamber-link:hover,
+body.page-community .bc-frc-link:hover,
+body.page-community .bc-cta-btn:hover,
+body.page-community .bc-hero-cta:hover,
+body.page-community .bc-join-btn:hover,
+body.page-community .bc-join-confirm-btn:hover,
+body.page-community .bc-join-cancel-btn:hover {
+  color: var(--color-accent);
+  background: rgba(247, 201, 72, 0.10);
+  border-color: rgba(247, 201, 72, 0.42);
+}
+
+body.page-community .bc-weekly-header,
+body.page-community .bc-weekly-row,
+body.page-community .bc-monthly-target,
+body.page-community .bc-monthly-rewards,
+body.page-community .bc-season-current,
+body.page-community .bc-season-rewards,
+body.page-community .bc-hall-of-fame,
+body.page-community .bc-weekly-prizes,
+body.page-community .bc-weekly-reset-note,
+body.page-community .bc-join-season-notice,
+body.page-community .bc-missions-header,
+body.page-community .bc-missions-note,
+body.page-community .bc-perks-intro,
+body.page-community .bc-perks-note,
+body.page-community .bc-rewards-intro,
+body.page-community .bc-rewards-disclaimer,
+body.page-community .bc-rew-intro,
+body.page-community .bc-rew-disclaimer,
+body.page-community .bc-proof-intro,
+body.page-community #battle-todays-active-options,
+body.page-community #battle-missed-perks-history {
+  padding: 14px 16px;
+}
+
+body.page-community .bc-weekly-row,
+body.page-community .bc-frc-row {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) minmax(170px, auto);
+  align-items: center;
+  gap: 10px 14px;
+}
+
+body.page-community .bc-join-card,
+body.page-community .bc-perk-card,
+body.page-community .bc-reward-item,
+body.page-community .bc-faction-reward-card,
+body.page-community .bc-aligned-panel,
+body.page-community .bc-join-confirm-panel,
+body.page-community .bc-join-success-panel,
+body.page-community .bc-join-locked-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 18px 20px;
+  border-top: 3px solid var(--faction-color, #00ffcc);
+}
+
+body.page-community .bc-reward-item p,
+body.page-community .bc-faction-reward-card p,
+body.page-community .bc-join-card p,
+body.page-community .bc-perk-card p {
+  margin-bottom: 0;
+}
+
+body.page-community .bc-mission-row {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+}
+
+body.page-community .bc-mission-label {
+  color: #00ffcc;
+  font-weight: 800;
+}
+
+body.page-community .bc-mission-progress,
+body.page-community .bc-mission-reward {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+body.page-community .bc-coming-next {
+  padding: 18px 20px;
+}
+
+body.page-community .bc-coming-next ul,
+body.page-community #battle-faction-proof-feed ul,
+body.page-community #battle-todays-active-options ul,
+body.page-community #battle-missed-perks-history ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+body.page-community .bc-coming-next li,
+body.page-community #battle-faction-proof-feed li,
+body.page-community #battle-todays-active-options li,
+body.page-community #battle-missed-perks-history li {
+  padding: 12px 14px;
+}
+
+body.page-community .community-loading,
+body.page-game .community-loading {
+  padding: 14px 16px;
+  color: var(--color-text-muted);
+  background: rgba(0, 255, 204, 0.052);
+  border: 1px solid var(--action-card-border);
+  border-radius: 16px;
+}
+
+@media (max-width: 1180px) {
+  body.page-community .bc-faction-row,
+  body.page-community .bc-weekly-row,
+  body.page-community .bc-frc-row {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  body.page-community .bc-faction-chamber-link,
+  body.page-community .bc-frc-link {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  body.page-game .notice,
+  body.page-game .roguelite-loop-content,
+  body.page-game .article-list-item {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-game .category-header,
+  body.page-community .page-hero,
+  body.page-community .section,
+  body.page-game .notice,
+  body.page-game .roguelite-loop-panel {
+    padding: 18px;
+  }
+}
