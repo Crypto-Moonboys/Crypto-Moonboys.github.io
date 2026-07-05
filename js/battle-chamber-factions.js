@@ -620,7 +620,7 @@
         '<div class="bc-perk-name">' + esc(f.label) + '</div>' +
         '<div class="bc-perk-playstyle">' + esc(f.playstyle) + '</div>' +
         '<div class="bc-perk-text">' + esc(f.perkTeaser) + '</div>' +
-        '<div class="bc-perk-xp-meta">XP modifier metadata: ' + (xpMeta != null ? '×' + esc(String(xpMeta)) + ' <em>(display only — not applied to XP base math)</em>' : '<em>—</em>') + '</div>' +
+        '<div class="bc-perk-xp-meta">XP metadata: ' + (xpMeta != null ? '×' + esc(String(xpMeta)) + ' <em>display only</em>' : '<em>—</em>') + '</div>' +
         '<div class="bc-perk-score-meta">Score modifier: ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '<em>—</em>') + '</div>' +
         '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
         '</div>';
@@ -629,7 +629,7 @@
     container.innerHTML =
       '<p class="bc-perks-intro">Each faction unlocks a specific gameplay playstyle and roguelite modifiers. Perks activate when you join and play arcade runs as that faction.</p>' +
       '<div class="bc-perk-grid">' + cards + '</div>' +
-      '<p class="bc-perks-note">xpModifier values are display-only metadata — they are never applied to the XP base math or submitScore path unless server-backed.</p>';
+      '<p class="bc-perks-note">XP metadata is display-only and is not applied to XP base math unless the server explicitly backs it.</p>';
   }
 
   // ── 8. Clout Rewards Board ────────────────────────────────────────────────
@@ -789,6 +789,16 @@
       '<ul>' + previewRows + '</ul>';
   }
 
+  function openDisclosureForHash() {
+    if (!window.location.hash) return;
+    var id = window.location.hash.slice(1);
+    if (!id) return;
+    var target = document.getElementById(id);
+    if (!target) return;
+    var disclosure = target.closest ? target.closest('details.bc-disclosure') : null;
+    if (disclosure) disclosure.open = true;
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // Full render pass
   // ─────────────────────────────────────────────────────────────────────────
@@ -815,12 +825,14 @@
   function init() {
     // Initial render pass (works offline / pre-auth / before bridge fires)
     renderAll(null);
+    openDisclosureForHash();
 
     // Hydrate faction status — triggers a re-render with current server state
     var factionApi = window.MOONBOYS_FACTION;
     if (factionApi && typeof factionApi.loadStatus === 'function') {
       factionApi.loadStatus().then(function (status) {
         renderAll(status || null);
+        openDisclosureForHash();
       }).catch(function () {
         // Failure is safe — page already rendered with cached/placeholder data
       });
@@ -829,6 +841,7 @@
     // Re-render when the faction data bridge has populated window globals
     window.addEventListener('battle-chamber:faction-data-ready', function () {
       renderAll(null);
+      openDisclosureForHash();
     });
 
     // Re-render when reward data is ready
@@ -842,9 +855,11 @@
     // Re-render when faction status is loaded or updated
     window.addEventListener('moonboys:faction-status', function (e) {
       renderAll(e && e.detail ? e.detail : null);
+      openDisclosureForHash();
     });
     window.addEventListener('moonboys:faction-boost', function (e) {
       renderAll(e && e.detail ? e.detail : null);
+      openDisclosureForHash();
     });
 
     // Also listen on the global event bus if available
@@ -852,8 +867,10 @@
     if (bus && typeof bus.on === 'function') {
       bus.on('faction:update', function (payload) {
         renderAll(payload || null);
+        openDisclosureForHash();
       });
     }
+    window.addEventListener('hashchange', openDisclosureForHash);
   }
 
   // Run after DOM is ready

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Battle Chamber: Faction Wars | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/action-page-cards.css">
 <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-community page-standard-shell">
@@ -45,67 +46,67 @@
     </section>
 
     <!-- Section 3: Faction War Standings -->
-    <section class="section">
-      <h2>Faction War Standings</h2>
+    <details class="section bc-disclosure" open>
+      <summary><h2>Faction War Standings</h2></summary>
       <p class="bc-standings-note">Battle Chamber loads server-backed standings when available. Current standings and status are shown below.</p>
       <div id="battle-faction-standings">
         <div class="community-loading">Loading faction standings&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 4: Weekly Faction War -->
-    <section class="section">
-      <h2>Weekly Faction War</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Weekly Faction War</h2></summary>
       <div id="battle-weekly-war">
         <div class="community-loading">Loading weekly war&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 5: Monthly Clout Chase -->
-    <section class="section">
-      <h2>Monthly Clout Chase</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Monthly Clout Chase</h2></summary>
       <div id="battle-monthly-clout">
         <div class="community-loading">Loading monthly clout&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 6: Seasonal Campaign -->
-    <section class="section">
-      <h2>Seasonal Campaign</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Seasonal Campaign</h2></summary>
       <div id="battle-seasonal-campaign">
         <div class="community-loading">Loading seasonal campaign&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 7: Join a Faction Panel -->
-    <section class="section">
-      <h2>Join a Faction</h2>
+    <details class="section bc-disclosure" open>
+      <summary><h2>Join a Faction</h2></summary>
       <div id="battle-join-faction">
         <div class="community-loading">Loading faction panel&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 8: Active Faction Missions -->
-    <section class="section">
-      <h2>Active Faction Missions</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Active Faction Missions</h2></summary>
       <div id="battle-active-missions">
         <div class="community-loading">Loading missions&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 8b: Today's Active Options -->
-    <section class="section">
-      <h2>Today’s Active Options</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Today's Active Options</h2></summary>
       <div id="battle-todays-active-options">
         <p>Today’s active opportunities reset at UTC midnight.</p>
         <p>Daily WTF signals open every 4 hours across the UTC day: 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Each timed signal runs for 90 minutes.</p>
         <p>Complete missions, accepted arcade runs, and Battle Chamber proof actions while a signal is live to unlock more roguelite choices. Timed event XP is preview/status unless the server explicitly reports an awarded XP event.</p>
       </div>
-    </section>
+    </details>
 
     <!-- Section 8c: Missed Days / Missed Perks -->
-    <section class="section">
-      <h2>Missed Days / Missed Perks</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Missed Days / Missed Perks</h2></summary>
       <div id="battle-missed-perks-history">
         <p>This does not reset.</p>
         <p>The city kept moving while you were away.</p>
@@ -113,55 +114,53 @@
         <p>Daily active options reset. Missed history does not reset.</p>
         <p>Log in daily to stop the missed list growing.</p>
       </div>
-    </section>
+    </details>
 
     <!-- Section 9: Faction Perks + Roguelite Options -->
-    <section class="section">
-      <h2>Faction Perks + Roguelite Options</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Faction Perks + Roguelite Options</h2></summary>
       <div id="battle-faction-perks">
         <div class="community-loading">Loading faction perks&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 10: Clout Rewards Board -->
-    <section class="section">
-      <h2>Clout Rewards Board</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Clout Rewards Board</h2></summary>
       <div id="battle-clout-rewards">
         <div class="community-loading">Loading rewards&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 10b: Faction Reward Unlocks -->
-    <section class="section">
-      <h2>Faction Reward Unlocks</h2>
-      <p><strong>Win the week. Own the chamber.</strong> Monthly clout puts your faction on the board. Seasonal winners become part of the Battle Chamber record. Badges, stickers, titles, and roguelite options prove your faction moved.</p>
-      <p>Faction rewards are gameplay/status rewards only.</p>
+    <details class="section bc-disclosure">
+      <summary><h2>Faction Reward Unlocks</h2></summary>
       <div id="battle-faction-reward-unlocks">
         <div class="community-loading">Loading faction reward unlocks&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 11: Live Proof Feed -->
-    <section class="section">
-      <h2>Live Proof Feed</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Live Proof Feed</h2></summary>
       <div id="battle-faction-proof-feed"></div>
       <div id="tg-activity-feed">
         <div class="community-loading">Loading live activity&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 12: Top Contributors -->
-    <section class="section">
-      <h2>Top Contributors</h2>
+    <details class="section bc-disclosure">
+      <summary><h2>Top Contributors</h2></summary>
       <p>Community XP and synced arcade activity. These are the most active faction members on the Battle Chamber proof board.</p>
       <div class="tg-user-list" id="tg-community-leaderboard">
         <div class="community-loading">Loading community leaderboard&#8230;</div>
       </div>
-    </section>
+    </details>
 
     <!-- Section 13: Faction Chambers Live -->
-    <section class="section" id="faction-chambers-live">
-      <h2>Faction Chambers are now open.</h2>
+    <details class="section bc-disclosure" id="faction-chambers-live">
+      <summary><h2>Faction Chambers are now open.</h2></summary>
       <div class="bc-coming-next">
         <p>Every faction now has a dedicated Battle Chamber page with lore, identity, perks, missions, war status, clout tracks, and join/participation CTAs.</p>
         <ul>
@@ -177,7 +176,7 @@
         </ul>
         <p><a href="/battle-chamber/factions/index.html">Open the full faction directory</a></p>
       </div>
-    </section>
+    </details>
 
   </div>
 </main>

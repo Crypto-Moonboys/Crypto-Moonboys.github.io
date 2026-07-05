@@ -17,6 +17,29 @@ body.page-community #content {
   padding-top: clamp(18px, 2.3vw, 34px);
 }
 
+body.page-community .battle-page,
+body.page-community .section,
+body.page-community .section *,
+body.page-community .bc-join-card,
+body.page-community .bc-perk-card,
+body.page-community .bc-reward-item,
+body.page-community .bc-faction-reward-card {
+  min-width: 0;
+}
+
+body.page-community .section,
+body.page-community .section *,
+body.page-community .bc-join-card,
+body.page-community .bc-perk-card,
+body.page-community .bc-reward-item,
+body.page-community .bc-faction-reward-card,
+body.page-community .bc-weekly-row,
+body.page-community .bc-faction-row,
+body.page-community .bc-frc-row {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
 body.page-game h1,
 body.page-game h2,
 body.page-game h3,
@@ -108,6 +131,49 @@ body.page-community .section {
   box-shadow: var(--action-card-shadow);
 }
 
+body.page-community .bc-disclosure {
+  overflow: hidden;
+}
+
+body.page-community .bc-disclosure > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+body.page-community .bc-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+body.page-community .bc-disclosure > summary::after {
+  content: "+";
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--color-accent);
+  background: rgba(247, 201, 72, 0.08);
+  border: 1px solid rgba(247, 201, 72, 0.28);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+body.page-community .bc-disclosure[open] > summary::after {
+  content: "-";
+}
+
+body.page-community .bc-disclosure > summary h2 {
+  margin-bottom: 0;
+}
+
+body.page-community .bc-disclosure:not([open]) {
+  padding-bottom: 22px;
+}
+
 body.page-community .section h2 {
   margin: 0 0 18px;
   color: var(--color-accent);
@@ -116,6 +182,10 @@ body.page-community .section h2 {
   border-left: 3px solid rgba(86, 220, 255, 0.62);
   border-radius: 16px;
   box-shadow: var(--action-card-glow);
+}
+
+body.page-community .bc-disclosure > summary h2 {
+  margin: 0;
 }
 
 body.page-game .notice {
@@ -264,7 +334,7 @@ body.page-community .bc-perk-grid,
 body.page-community .bc-rewards-grid,
 body.page-community .bc-faction-reward-grid,
 body.page-community .bc-why-list {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
 }
 
 body.page-community .bc-faction-row,
@@ -310,9 +380,8 @@ body.page-community .bc-weekly-rank,
 body.page-community .bc-dominant-badge,
 body.page-community .bc-perk-xp-meta,
 body.page-community .bc-perk-score-meta {
-  display: inline-flex;
-  align-items: center;
-  width: max-content;
+  display: inline-block;
+  width: fit-content;
   max-width: 100%;
   padding: 4px 8px;
   color: #ffe875;
@@ -322,6 +391,7 @@ body.page-community .bc-perk-score-meta {
   font-family: var(--font-mono);
   font-size: 0.74rem;
   line-height: 1.35;
+  white-space: normal;
 }
 
 body.page-community .bc-faction-icon,
@@ -341,7 +411,7 @@ body.page-community .bc-join-cancel-btn {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: max-content;
+  width: fit-content;
   max-width: 100%;
   min-height: 38px;
   padding: 8px 12px;
@@ -351,8 +421,10 @@ body.page-community .bc-join-cancel-btn {
   border-radius: 12px;
   font-family: var(--font-sans);
   font-weight: 800;
+  line-height: 1.25;
   text-decoration: none;
   text-transform: uppercase;
+  white-space: normal;
 }
 
 body.page-community .bc-faction-chamber-link:hover,
@@ -408,9 +480,17 @@ body.page-community #battle-missed-perks-history {
 body.page-community .bc-weekly-row,
 body.page-community .bc-frc-row {
   display: grid;
-  grid-template-columns: auto minmax(180px, 1fr) minmax(170px, auto);
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
   align-items: center;
   gap: 10px 14px;
+}
+
+body.page-community .bc-frc-row {
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+}
+
+body.page-community .bc-frc-row strong {
+  line-height: 1.35;
 }
 
 body.page-community .bc-join-card,
@@ -426,6 +506,7 @@ body.page-community .bc-join-locked-panel {
   gap: 10px;
   padding: 18px 20px;
   border-top: 3px solid var(--faction-color, #00ffcc);
+  overflow: hidden;
 }
 
 body.page-community .bc-reward-item p,
