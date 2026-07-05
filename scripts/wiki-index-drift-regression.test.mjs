@@ -19,10 +19,14 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
+const require = createRequire(import.meta.url);
+const RANKING_CONFIG = require('../js/ranking-config.js');
+const APPROVED_CATEGORIES = new Set(Object.keys(RANKING_CONFIG.CATEGORY_PRIORITY));
 
 // NOTE: Root pages list is maintained as REQUIRED_ROOT_PAGES here because this is an ES module
 // (.mjs) and cannot directly import the CommonJS root-pages-config.js via require().
@@ -139,6 +143,41 @@ function runTests() {
     pass: indexedUrls.has(url)
   }));
   tests.push(...wikiPageTests);
+
+  const rawUnderscoreTitle = index.find(entry => /\b[a-z0-9]+_[a-z0-9_]+\b/.test(String(entry.title || '')));
+  tests.push({
+    name: 'Public search titles do not expose raw underscore slugs',
+    description: rawUnderscoreTitle
+      ? `${rawUnderscoreTitle.url} has raw title "${rawUnderscoreTitle.title}"`
+      : 'No indexed public title contains raw underscore slug formatting',
+    pass: !rawUnderscoreTitle
+  });
+
+  const badDescription = index.find(entry => {
+    const desc = String(entry.desc || '').trim();
+    if (!desc) return true;
+    if (!entry.url || entry.url === '/wiki/index.html') return false;
+    return /[A-Za-z]{18,}\.\.\.$/.test(desc);
+  });
+  tests.push({
+    name: 'Indexed public descriptions are present and word-boundary clipped',
+    description: badDescription
+      ? `${badDescription.url} has empty or mid-word clipped description`
+      : 'Every indexed public page has a non-empty description with safe clipping',
+    pass: !badDescription
+  });
+
+  const badCategory = index.find(entry => {
+    const category = String(entry.category || entry.rank_signals?.category || '').trim();
+    return !APPROVED_CATEGORIES.has(category);
+  });
+  tests.push({
+    name: 'Search index categories use approved taxonomy',
+    description: badCategory
+      ? `${badCategory.url} has unapproved category "${badCategory.category || badCategory.rank_signals?.category}"`
+      : `All categories are approved: ${Array.from(APPROVED_CATEGORIES).sort().join(', ')}`,
+    pass: !badCategory
+  });
 
   // Print results
   let passCount = 0;

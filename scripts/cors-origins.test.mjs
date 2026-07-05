@@ -157,6 +157,12 @@ await test('worker.js uses env.CORS_ALLOWED_ORIGINS to build allowed list', () =
   );
 });
 
+await test('worker.js does not keep mutable module-level CORS response state', () => {
+  assert.equal(/let\s+CORS_HEADERS\b/.test(workerSrc), false, 'worker.js must not declare mutable CORS_HEADERS state');
+  assert.ok(workerSrc.includes('const corsHeaders = buildCorsHeaders(request, env)'), 'fetch() must build request-local CORS headers');
+  assert.ok(workerSrc.includes('const json = makeJsonResponder(corsHeaders)'), 'fetch() must use request-local JSON helpers');
+});
+
 // ── 4. Block Topia server: default ALLOWED_ORIGINS ───────────────────────────
 
 console.log('\n[4] Block Topia server default ALLOWED_ORIGINS contains all 3 production HTTPS origins');
