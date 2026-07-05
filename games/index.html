@@ -402,7 +402,7 @@ function renderLoopBoard() {
       ${renderBranch('comeback', 'Comeback', findBranch('comeback', branches, rabbits, daily))}
     </div>
     <div class="roguelite-loop-grid">
-      ${(nextRabbits.length ? nextRabbits : nextDaily).map(renderTask).join('')}
+      ${(nextRabbits.length ? nextRabbits : (nextDaily.length ? nextDaily : [{}])).map(renderTask).join('')}
     </div>
   `;
   tickerEl = board.querySelector('#roguelite-xp-ticker');

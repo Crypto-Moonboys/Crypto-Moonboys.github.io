@@ -283,44 +283,45 @@
 
     var monthlyRows = getServerPeriodRows('monthly');
     var serverStatus = getServerStatus();
-    if (monthlyRows && monthlyRows.length) {
-      var top = monthlyRows
+    var usingServer = !!(monthlyRows && monthlyRows.length);
+
+    // Always render bc-weekly-rows regardless of data source so DOM shape never changes.
+    var rowsHtml;
+    if (usingServer) {
+      rowsHtml = monthlyRows
         .slice()
         .sort(function (a, b) { return (Number(b.clout_total) || 0) - (Number(a.clout_total) || 0); })
-        .slice(0, 5);
-      container.innerHTML =
-        '<p>Monthly clout standings are server-backed when available.</p>' +
-        '<div class="bc-weekly-rows">' +
-          top.map(function (row, idx) {
-            var meta = factionMeta(row.faction_id);
-            return '<div class="bc-weekly-row">' +
-              '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-              '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
-              '<span class="bc-weekly-score">Monthly clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
-              '</div>';
-          }).join('') +
-        '</div>' +
-        '<div class="bc-monthly-target"><strong>Live monthly source:</strong> Battle Chamber authority layer</div>';
-      return;
+        .slice(0, 5)
+        .map(function (row, idx) {
+          var meta = factionMeta(row.faction_id);
+          return '<div class="bc-weekly-row">' +
+            '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
+            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-score">Monthly clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
+            '</div>';
+        }).join('');
+    } else {
+      rowsHtml = getStandings()
+        .slice()
+        .sort(function (a, b) { return b.power - a.power; })
+        .slice(0, 5)
+        .map(function (row, idx) {
+          var meta = factionMeta(row.faction);
+          return '<div class="bc-weekly-row">' +
+            '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
+            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-score">Monthly clout: <strong>0</strong></span>' +
+            '</div>';
+        }).join('');
     }
 
     container.innerHTML =
-      '<p class="bc-standings-note">' + esc(serverStatus.message || 'Live server standings unavailable. Showing local display state.') + '</p>' +
-      '<p>Monthly clout rankings track cumulative faction power, daily mission completions, weekly placements, top-player scores, activity streaks, leaderboard appearances, and quest completions across the full calendar month.</p>' +
-      '<div class="bc-monthly-target"><strong>Current monthly target:</strong> <span class="bc-placeholder">Monthly standings update live — keep building faction clout.</span></div>' +
-      '<div class="bc-monthly-rewards">' +
-        '<h3>Monthly Clout Rewards</h3>' +
-        '<ul>' +
-        '<li>Faction title upgrade</li>' +
-        '<li>Monthly champion badge</li>' +
-        '<li>Profile border</li>' +
-        '<li>Faction sticker pack</li>' +
-        '<li>Battle Chamber top placement</li>' +
-        '<li>Bonus roguelite branch for next month</li>' +
-        '<li>Monthly Hall of Fame placement</li>' +
-        '</ul>' +
-        '<p class="bc-rewards-disclaimer">Rewards stay focused on clout and gameplay status progression only.</p>' +
-      '</div>';
+      '<p class="bc-standings-note">' + esc(usingServer
+        ? 'Monthly clout standings are server-backed when available.'
+        : (serverStatus.message || 'Live server standings unavailable. Showing local display state.')) + '</p>' +
+      '<div class="bc-weekly-rows">' + rowsHtml + '</div>' +
+      '<div class="bc-monthly-target"><strong>' + (usingServer ? 'Live monthly source:' : 'Current monthly target:') + '</strong> ' +
+        esc(usingServer ? 'Battle Chamber authority layer' : 'Monthly standings update live — keep building faction clout.') + '</div>';
   }
 
   // ── 4. Seasonal Campaign ──────────────────────────────────────────────────
@@ -331,46 +332,46 @@
 
     var seasonalRows = getServerPeriodRows('seasonal');
     var serverStatus = getServerStatus();
-    if (seasonalRows && seasonalRows.length) {
-      var top = seasonalRows
+    var usingServer = !!(seasonalRows && seasonalRows.length);
+
+    // Always render bc-weekly-rows regardless of data source so DOM shape never changes.
+    var rowsHtml;
+    if (usingServer) {
+      rowsHtml = seasonalRows
         .slice()
         .sort(function (a, b) { return (Number(b.clout_total) || 0) - (Number(a.clout_total) || 0); })
-        .slice(0, 5);
-      container.innerHTML =
-        '<p>Seasonal campaign standings are server-backed when available.</p>' +
-        '<div class="bc-weekly-rows">' +
-          top.map(function (row, idx) {
-            var meta = factionMeta(row.faction_id);
-            return '<div class="bc-weekly-row">' +
-              '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-              '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
-              '<span class="bc-weekly-score">Seasonal clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
-              '</div>';
-          }).join('') +
-        '</div>' +
-        '<p class="bc-hall-of-fame">Seasonal winners become part of the Battle Chamber record. Hall of Fame placement is permanent.</p>';
-      return;
+        .slice(0, 5)
+        .map(function (row, idx) {
+          var meta = factionMeta(row.faction_id);
+          return '<div class="bc-weekly-row">' +
+            '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
+            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-score">Seasonal clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
+            '</div>';
+        }).join('');
+    } else {
+      rowsHtml = getStandings()
+        .slice()
+        .sort(function (a, b) { return b.power - a.power; })
+        .slice(0, 5)
+        .map(function (row, idx) {
+          var meta = factionMeta(row.faction);
+          return '<div class="bc-weekly-row">' +
+            '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
+            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-score">Seasonal clout: <strong>0</strong></span>' +
+            '</div>';
+        }).join('');
     }
 
     container.innerHTML =
-      '<p class="bc-standings-note">' + esc(serverStatus.message || 'Live server standings unavailable. Showing local display state.') + '</p>' +
-      '<p>Each season runs a full cross-faction campaign. Complete seasonal missions, build maximum clout, and secure your faction\'s place in the Battle Chamber record.</p>' +
+      '<p class="bc-standings-note">' + esc(usingServer
+        ? 'Seasonal campaign standings are server-backed when available.'
+        : (serverStatus.message || 'Live server standings unavailable. Showing local display state.')) + '</p>' +
+      '<div class="bc-weekly-rows">' + rowsHtml + '</div>' +
       '<div class="bc-season-current">' +
         '<strong>Season 1: The Clout War</strong>' +
-        '<p>The first war for Battle Chamber dominance. Every run counts. Every mission builds proof. Seasonal winners become part of the permanent Battle Chamber record.</p>' +
-      '</div>' +
-      '<div class="bc-season-rewards">' +
-        '<h3>Seasonal Rewards</h3>' +
-        '<ul>' +
-        '<li>Seasonal badge</li>' +
-        '<li>Season title</li>' +
-        '<li>Faction archive placement</li>' +
-        '<li>Permanent clout record</li>' +
-        '<li>Special roguelite modifier</li>' +
-        '<li>Special faction page trophy</li>' +
-        '<li>Legendary clout badge</li>' +
-        '</ul>' +
-        '<p class="bc-rewards-disclaimer">Rewards stay focused on clout and gameplay status progression only.</p>' +
+        '<p>Each season runs a full cross-faction campaign. Complete seasonal missions, build maximum clout, and secure your faction\'s place in the Battle Chamber record.</p>' +
       '</div>' +
       '<p class="bc-hall-of-fame">Seasonal winners become part of the Battle Chamber record. Hall of Fame placement is permanent.</p>';
   }
@@ -619,8 +620,9 @@
         '<div class="bc-perk-name">' + esc(f.label) + '</div>' +
         '<div class="bc-perk-playstyle">' + esc(f.playstyle) + '</div>' +
         '<div class="bc-perk-text">' + esc(f.perkTeaser) + '</div>' +
-        (xpMeta != null ? '<div class="bc-perk-xp-meta">XP modifier metadata: ×' + esc(String(xpMeta)) + ' <em>(display only — not applied to XP base math)</em></div>' : '') +
-        (scoreMulti != null ? '<div class="bc-perk-score-meta">Score modifier: ×' + esc(String(scoreMulti)) + '</div>' : '') +
+        '<div class="bc-perk-xp-meta">XP modifier metadata: ' + (xpMeta != null ? '×' + esc(String(xpMeta)) + ' <em>(display only — not applied to XP base math)</em>' : '<em>—</em>') + '</div>' +
+        '<div class="bc-perk-score-meta">Score modifier: ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '<em>—</em>') + '</div>' +
+        '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
         '</div>';
     }).join('');
 
