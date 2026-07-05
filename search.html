@@ -17,31 +17,31 @@
 </head>
 <body class="page-search page-standard-shell">
 <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
-        <span class="sep">›</span>
-        <span aria-current="page">Search / All Articles</span>
-      </nav>
-
-      <h1 class="page-title">🔍 Search Articles</h1>
-      <div class="page-title-line" aria-hidden="true"></div>
-
-      <div style="margin-bottom:24px">
-        <p style="margin:0 0 12px 0;color:var(--color-text-muted)">
-          This is the canonical article hub for the site. All searchable wiki content routes through this page.
-        </p>
-        <div style="display:flex;gap:10px;max-width:560px">
+      <section class="wiki-living-hero swarmsy-hero" aria-labelledby="search-title">
+        <div class="swarmsy-hero-inner">
+          <nav class="breadcrumb wiki-hero-breadcrumb" aria-label="Breadcrumb">
+            <a href="/index.html">Home</a>
+            <span class="sep">&rsaquo;</span>
+            <span aria-current="page">Search / All Articles</span>
+          </nav>
+          <div class="swarmsy-kicker wiki-alive-kicker">THE WIKI IS ALIVE</div>
+          <h1 id="search-title" class="swarmsy-title wiki-living-title">SEARCH<br><span>ARTICLES</span></h1>
+          <p class="swarmsy-lead">
+            This is the canonical article hub for the site. All searchable wiki content routes through this page.
+          </p>
+          <div class="wiki-hero-search">
           <input
             type="search"
             id="search-page-input"
             placeholder="Search by topic, keyword, coin name…"
             aria-label="Search articles"
-            style="flex:1;padding:11px 18px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);color:var(--color-text);font-size:.95rem;outline:none;transition:border-color .2s"
+            class="wiki-hero-search-input"
             onfocus="this.style.borderColor='var(--color-accent)'"
             onblur="this.style.borderColor='var(--color-border)'"
           >
+          </div>
         </div>
-      </div>
+      </section>
 
       <h2 class="section-heading" id="search-heading">All Articles</h2>
 

@@ -36,6 +36,12 @@
       box-shadow: 0 0 32px rgba(0, 255, 204, 0.12);
     }
 
+    .howto-page .page-hero.wiki-living-hero {
+      margin-top: 0;
+      border-right: 0;
+      border-left: 0;
+    }
+
     .howto-page .page-hero::before {
       content: "";
       position: absolute;
@@ -76,10 +82,19 @@
       position: relative;
       display: inline-block;
       color: #eaffff;
+      margin: 18px 0 24px;
+      max-width: 1240px;
+      font-size: clamp(2.35rem, 6.3vw, 5.15rem);
+      line-height: 1.12;
+      letter-spacing: 0;
       text-shadow:
         2px 0 rgba(255, 106, 213, 0.6),
         -2px 0 rgba(86, 220, 255, 0.7),
         0 0 18px rgba(0, 255, 204, 0.3);
+    }
+
+    .howto-glitch-title span {
+      color: #00ffcc;
     }
 
     .howto-pulse {
@@ -97,6 +112,7 @@
 
     .howto-lead {
       max-width: 980px;
+      margin-top: 0;
       font-size: 1.08rem;
       line-height: 1.85;
       color: rgba(235, 255, 255, 0.9);
@@ -142,6 +158,8 @@
     }
 
     .howto-route {
+      box-sizing: border-box;
+      max-width: 100%;
       margin: 22px 0;
       padding: 20px;
       border: 1px solid rgba(0, 255, 204, 0.45);
@@ -153,6 +171,7 @@
       line-height: 1.8;
       text-transform: uppercase;
       box-shadow: inset 0 0 24px rgba(0, 255, 204, 0.05);
+      overflow-wrap: anywhere;
     }
 
     .howto-grid {
@@ -299,9 +318,9 @@
 <main id="content" role="main">
   <div class="battle-page howto-page">
 
-    <section class="page-hero">
+    <section class="page-hero wiki-living-hero">
       <span class="howto-kicker">SYSTEM GUIDE / PLAYER ONBOARDING / BATTLE CHAMBER MANUAL</span>
-      <h1 class="howto-glitch-title howto-pulse">How to Play Crypto Moonboys</h1>
+      <h1 class="howto-glitch-title howto-pulse swarmsy-title">HOW TO PLAY<br><span>CRYPTO MOONBOYS</span></h1>
       <p class="howto-lead">
         Crypto Moonboys is not just a website, not just a wiki, and not just an arcade. It is a living progression universe where lore, games, Telegram identity, factions, missions, clout, missed opportunities, and Battle Chamber proof all connect. This page explains how the whole machine works.
       </p>
