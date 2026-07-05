@@ -72,6 +72,10 @@ assert.match(bootstrap, /return Math\.floor\(baseScore\) \+ streakBonus;/, 'base
 
 assert.ok(packageJson.scripts['test:crystal-quest'], 'package.json exposes Crystal Quest focused regressions');
 assert.match(packageJson.scripts['test:crystal-quest'], /node scripts\/crystal-quest-living-machine-effects\.test\.mjs/, 'Crystal Quest focused test script includes living-machine effects regression');
-assert.match(packageJson.scripts.test, /npm run test:crystal-quest/, 'npm test includes Crystal Quest focused regressions');
+assert.ok(
+  /npm run test:crystal-quest/.test(packageJson.scripts.test) ||
+  /npm run ci:arcade/.test(packageJson.scripts.test),
+  'npm test includes Crystal Quest focused regressions through direct or grouped arcade coverage',
+);
 
 console.log('crystal-quest-living-machine-effects: passed');

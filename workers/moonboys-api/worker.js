@@ -204,6 +204,106 @@ function logApiEvent(event, context = {}) {
   }));
 }
 
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_DEFAULT_PUBLIC_PER_MINUTE = 30;
+const RATE_LIMIT_DEFAULT_TELEGRAM_PER_MINUTE = 30;
+const RATE_LIMIT_MEMORY_MAX_BUCKETS = 5000;
+const RATE_LIMIT_MEMORY_BUCKETS = new Map();
+
+function readPositiveIntegerEnv(env, key, fallback) {
+  const parsed = parseInt(String(env?.[key] || ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function getClientIp(request) {
+  const cfIp = request.headers.get('CF-Connecting-IP');
+  if (cfIp) return cfIp.trim();
+  const forwarded = request.headers.get('X-Forwarded-For');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  const realIp = request.headers.get('X-Real-IP');
+  return realIp ? realIp.trim() : 'unknown';
+}
+
+function extractRateLimitTelegramId(body) {
+  const raw = body?.telegram_auth?.id ?? body?.telegram_id ?? body?.id ?? null;
+  const value = String(raw || '').trim();
+  return /^\d{1,20}$/.test(value) ? value : null;
+}
+
+function pruneRateLimitMemory(now) {
+  if (RATE_LIMIT_MEMORY_BUCKETS.size <= RATE_LIMIT_MEMORY_MAX_BUCKETS) return;
+  for (const [key, bucket] of RATE_LIMIT_MEMORY_BUCKETS.entries()) {
+    if (!bucket || bucket.resetAt <= now) RATE_LIMIT_MEMORY_BUCKETS.delete(key);
+    if (RATE_LIMIT_MEMORY_BUCKETS.size <= RATE_LIMIT_MEMORY_MAX_BUCKETS) break;
+  }
+  while (RATE_LIMIT_MEMORY_BUCKETS.size > RATE_LIMIT_MEMORY_MAX_BUCKETS) {
+    const oldestKey = RATE_LIMIT_MEMORY_BUCKETS.keys().next().value;
+    if (oldestKey === undefined) break;
+    RATE_LIMIT_MEMORY_BUCKETS.delete(oldestKey);
+  }
+}
+
+function consumeMemoryRateLimit(key, limit, now) {
+  const bucket = RATE_LIMIT_MEMORY_BUCKETS.get(key);
+  if (!bucket || bucket.resetAt <= now) {
+    RATE_LIMIT_MEMORY_BUCKETS.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { limited: false, remaining: Math.max(0, limit - 1), resetAt: now + RATE_LIMIT_WINDOW_MS };
+  }
+  if (bucket.count >= limit) {
+    return { limited: true, remaining: 0, resetAt: bucket.resetAt };
+  }
+  bucket.count += 1;
+  return { limited: false, remaining: Math.max(0, limit - bucket.count), resetAt: bucket.resetAt };
+}
+
+function enforcePublicRateLimit(request, env, routeKey, body, corsHeaders, options = {}) {
+  const now = Date.now();
+  pruneRateLimitMemory(now);
+  const ipLimit = readPositiveIntegerEnv(env, 'RATE_LIMIT_PUBLIC_PER_MINUTE', RATE_LIMIT_DEFAULT_PUBLIC_PER_MINUTE);
+  const telegramLimit = readPositiveIntegerEnv(env, 'RATE_LIMIT_TELEGRAM_PER_MINUTE', RATE_LIMIT_DEFAULT_TELEGRAM_PER_MINUTE);
+  const checks = [];
+  if (options.includeIp !== false) {
+    checks.push({ scope: 'ip', id: getClientIp(request), limit: ipLimit });
+  }
+  const telegramId = extractRateLimitTelegramId(body);
+  if (options.includeTelegram !== false && telegramId) {
+    checks.push({ scope: 'telegram', id: telegramId, limit: telegramLimit });
+  }
+
+  for (const check of checks) {
+    const key = `${routeKey}:${check.scope}:${check.id}`;
+    const result = consumeMemoryRateLimit(key, check.limit, now);
+    if (result.limited) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(((result.resetAt || now + RATE_LIMIT_WINDOW_MS) - now) / 1000));
+      logApiFailure('public_rate_limit_exceeded', {
+        route: routeKey,
+        scope: check.scope,
+        limit: check.limit,
+        retry_after_seconds: retryAfterSeconds,
+      });
+      return json({
+        error: 'rate_limited',
+        retry_after_seconds: retryAfterSeconds,
+      }, 429, {
+        ...corsHeaders,
+        'Retry-After': String(retryAfterSeconds),
+      });
+    }
+  }
+  return null;
+}
+
+function ensureAdminGrantConfigured(env) {
+  const missing = [];
+  if (!String(env?.TELEGRAM_BOT_TOKEN || '').trim()) missing.push('TELEGRAM_BOT_TOKEN');
+  if (!String(env?.ADMIN_TELEGRAM_IDS || '').trim()) missing.push('ADMIN_TELEGRAM_IDS');
+  return missing;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /** Return today's UTC date as a YYYY-MM-DD string. */
 function getTodayUtcDate() {
   return new Date().toISOString().slice(0, 10);
@@ -2963,6 +3063,11 @@ export default {
     // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
     // Admin-only tooling endpoint for Block Topia test/ops XP + gems grants.
     if (path === '/admin/blocktopia/grant-xp' && request.method === 'POST') {
+      const missingAdminConfig = ensureAdminGrantConfigured(env);
+      if (missingAdminConfig.length) {
+        logApiFailure('admin_blocktopia_grant_xp_not_configured', { missing: missingAdminConfig });
+        return err('Admin grant route is not configured', 503);
+      }
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
@@ -3058,6 +3163,11 @@ export default {
     // Admin-only tooling endpoint to grant Arcade XP (arcade_progression_state.arcade_xp_total).
     // This is the value checked by the Block Topia multiplayer gate.
     if (path === '/admin/arcade/grant-xp' && request.method === 'POST') {
+      const missingAdminConfig = ensureAdminGrantConfigured(env);
+      if (missingAdminConfig.length) {
+        logApiFailure('admin_arcade_grant_xp_not_configured', { missing: missingAdminConfig });
+        return err('Admin grant route is not configured', 503);
+      }
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
@@ -3149,6 +3259,7 @@ export default {
     if (path === '/telegram/auth' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/auth', body, corsHeaders); if (_rateLimit) return _rateLimit; }
       const { id, first_name, last_name, username, photo_url, auth_date, hash } = body || {};
 
       if (!id || !auth_date || !hash) {
@@ -3307,6 +3418,7 @@ export default {
     // stored in telegram_link_tokens (15-minute TTL).
     // Rejects if the user's anti-cheat state is blocked.
     if (path === '/telegram/link' && request.method === 'POST') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link', null, corsHeaders, { includeTelegram: false }); if (_rateLimit) return _rateLimit; }
       if (!(await isAuthorizedByAdminSecret(request, env))) {
         logApiFailure('telegram_link_token_mint_denied', {
           hasAdminSecret: !!String(env.ADMIN_SECRET || '').trim(),
@@ -3317,6 +3429,7 @@ export default {
 
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link', body, corsHeaders, { includeIp: false }); if (_rateLimit) return _rateLimit; }
       const { telegram_id } = body || {};
       const telegramId = String(telegram_id || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id invalid');
@@ -3352,6 +3465,7 @@ export default {
     // Validates a one-time token from telegram_link_tokens.
     // Checks is_used = 0 and expires_at; marks is_used = 1 on success.
     if (path === '/telegram/link/confirm' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link/confirm', null, corsHeaders); if (_rateLimit) return _rateLimit; }
       const token = url.searchParams.get('token');
       if (!token || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
         return err('token required');
@@ -3410,6 +3524,7 @@ export default {
         }));
         return err('Invalid JSON');
       }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link/confirm', body, corsHeaders); if (_rateLimit) return _rateLimit; }
 
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       console.log('[telegram_link_confirm]', JSON.stringify({
@@ -4639,6 +4754,7 @@ export default {
     // Returns full server-backed player state for a Telegram-linked user.
     // Requires a signed telegram_auth payload in the query string or POST body.
     if (path === '/comments' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', null, corsHeaders); if (_rateLimit) return _rateLimit; }
       const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
       if (!pageId) return err('page_id required', 400);
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 1), 50);
@@ -4669,6 +4785,7 @@ export default {
     if (path === '/comments' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', body, corsHeaders); if (_rateLimit) return _rateLimit; }
       const pageId = normalizeWikiPageId(body?.page_id);
       const name = normalizeTextField(body?.name, 60);
       const text = normalizeTextField(body?.text, 1000);
@@ -4745,6 +4862,7 @@ export default {
     if (commentVoteMatch && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', body, corsHeaders); if (_rateLimit) return _rateLimit; }
       const commentId = normalizeTextField(decodeURIComponent(commentVoteMatch[1]), 80);
       const vote = normalizeWikiVote(body?.vote);
       if (!commentId) return err('comment_id required', 400);
@@ -4787,6 +4905,7 @@ export default {
     }
 
     if (path === '/likes' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/likes', null, corsHeaders); if (_rateLimit) return _rateLimit; }
       const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
       if (!pageId) return err('page_id required', 400);
       try {
@@ -4802,6 +4921,7 @@ export default {
     if (path === '/likes' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/likes', body, corsHeaders); if (_rateLimit) return _rateLimit; }
       const pageId = normalizeWikiPageId(body?.page_id);
       if (!pageId) return err('page_id required', 400);
       try {
@@ -4833,6 +4953,7 @@ export default {
     }
 
     if (path === '/citation-votes' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/citation-votes', null, corsHeaders); if (_rateLimit) return _rateLimit; }
       const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
       const citeId = normalizeWikiId(url.searchParams.get('cite_id'), 80);
       if (!pageId) return err('page_id required', 400);
@@ -4864,6 +4985,7 @@ export default {
     if (path === '/citation-votes' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/citation-votes', body, corsHeaders); if (_rateLimit) return _rateLimit; }
       const pageId = normalizeWikiPageId(body?.page_id);
       const citeId = normalizeWikiId(body?.cite_id, 80);
       const vote = normalizeWikiVote(body?.vote);
@@ -5736,6 +5858,7 @@ export default {
       // 1. Parse body — return 400 for malformed JSON.
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/public/npc-chat', body, corsHeaders); if (_rateLimit) return _rateLimit; }
 
       // 2. Require verified Telegram auth before any Sparky/SWARMSY relay.
       // Short-circuit the common unauthenticated case (no auth evidence at all) without
@@ -5795,6 +5918,7 @@ export default {
       const SWARMSY_NPC_URL = 'https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat';
       const NPC_CHAT_BRIDGE_TIMEOUT_MS = 25000;
       const NPC_CHAT_BRIDGE_MAX_ATTEMPTS = 2;
+      const NPC_CHAT_BRIDGE_RETRY_BASE_MS = 250;
       const swarmsyBody = JSON.stringify({
         npcId,
         message,
@@ -5808,9 +5932,10 @@ export default {
       for (let attempt = 1; attempt <= NPC_CHAT_BRIDGE_MAX_ATTEMPTS; attempt++) {
         let fetchSucceeded = false;
         let timedOut = false;
+        let timeoutId = null;
+        const controller = new AbortController();
         try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => {
+          timeoutId = setTimeout(() => {
             timedOut = true;
             controller.abort();
           }, NPC_CHAT_BRIDGE_TIMEOUT_MS);
@@ -5842,6 +5967,11 @@ export default {
           });
           swarmsyRes = null;
           upstreamPayload = undefined;
+          if (attempt < NPC_CHAT_BRIDGE_MAX_ATTEMPTS) {
+            await sleep(NPC_CHAT_BRIDGE_RETRY_BASE_MS * (2 ** (attempt - 1)));
+          }
+        } finally {
+          if (timeoutId) clearTimeout(timeoutId);
         }
       }
 
@@ -5879,12 +6009,18 @@ export default {
     const shouldRunDailySummary = !cron || cron === '0 9 * * *';
     const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
     const shouldRunWaxOnEdge = !cron || cron === '* * * * *';
+    const scheduledResults = [];
 
     if (shouldRunWaxOnEdge) {
       const waxOnEdgeSummary = await runWaxOnEdgeScheduledSync(env, cron).catch((error) => ({
         ok: false,
         error: error?.message || String(error),
       }));
+      scheduledResults.push({
+        task: 'waxonedge_sync',
+        ok: !!waxOnEdgeSummary?.ok,
+        error: waxOnEdgeSummary?.ok ? null : (waxOnEdgeSummary?.error || 'unknown_error'),
+      });
       if (!waxOnEdgeSummary?.ok) {
         logApiFailure('waxonedge_scheduled_failed', waxOnEdgeSummary);
       } else {
@@ -5904,6 +6040,11 @@ export default {
         ok: false,
         error: error?.message || String(error),
       }));
+      scheduledResults.push({
+        task: 'telegram_daily_digest',
+        ok: !!summary?.ok,
+        error: summary?.ok ? null : (summary?.error || 'unknown_error'),
+      });
       if (!summary?.ok) {
         logApiFailure('telegram_daily_digest_scheduled_failed', summary);
       } else {
@@ -5931,6 +6072,11 @@ export default {
         ok: false,
         error: error?.message || String(error),
       }));
+      scheduledResults.push({
+        task: 'telegram_group_announcements',
+        ok: !!groupSummary?.ok,
+        error: groupSummary?.ok ? null : (groupSummary?.error || 'unknown_error'),
+      });
       if (!groupSummary?.ok) {
         logApiFailure('telegram_group_announcements_scheduled_failed', groupSummary);
       } else {
@@ -5943,6 +6089,20 @@ export default {
           group_configured: groupSummary.group_configured,
         });
       }
+    }
+    const failedTasks = scheduledResults.filter((result) => !result.ok);
+    if (failedTasks.length) {
+      logApiFailure('scheduled_partial_failure', {
+        cron,
+        failed_tasks: failedTasks,
+        task_count: scheduledResults.length,
+      });
+    } else if (scheduledResults.length) {
+      logApiEvent('scheduled_tasks_complete', {
+        cron,
+        task_count: scheduledResults.length,
+        tasks: scheduledResults.map((result) => result.task),
+      });
     }
   },
 };

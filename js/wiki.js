@@ -116,6 +116,22 @@ async function loadWikiIndex() {
   }
 }
 
+function getWikiIndexLoadState() {
+  return WIKI_INDEX_LOAD_STATE;
+}
+
+async function retryWikiIndexLoad(query) {
+  await loadWikiIndex();
+  renderSearchPage(query == null ? new URLSearchParams(window.location.search).get('q') || '' : query);
+  return WIKI_INDEX_LOAD_STATE;
+}
+
+window.MOONBOYS_WIKI_SEARCH = {
+  ...(window.MOONBOYS_WIKI_SEARCH || {}),
+  getIndexLoadState: getWikiIndexLoadState,
+  retryIndexLoad: retryWikiIndexLoad,
+};
+
 async function loadEntityMap() {
   if (ENTITY_MAP) return;
   try {

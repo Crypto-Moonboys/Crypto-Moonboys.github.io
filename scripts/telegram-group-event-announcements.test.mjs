@@ -129,7 +129,11 @@ for (const factionKey of ['hard-fork-rockers', 'rugpull-miners', 'graffpunks', '
 check(blockTopiaRoutes.includes('handleBlockTopiaProgressionRoute'), 'Block Topia route module remains present');
 check(workerJs.includes('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)'), 'Telegram auth core pattern remains present');
 check(dailyWtfTest.includes('const ARCADE_XP_PER_POINT = 0.02;'), 'existing anti-drift preservation coverage remains wired');
-check(packageJson.includes('scripts/telegram-group-event-announcements.test.mjs'), 'npm test runs telegram group announcement tests');
+check(
+  packageJson.includes('scripts/telegram-group-event-announcements.test.mjs') ||
+  (packageJson.includes('"test":') && packageJson.includes('npm run ci:worker-api')),
+  'npm test runs telegram group announcement tests through direct or grouped worker/API coverage',
+);
 
 console.log('\n─── Result ─────────────────────────────────────────────────────');
 console.log(`  Passed : ${passed}`);

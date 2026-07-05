@@ -327,6 +327,49 @@ const graffpunksStopwordOnly = {
 
 // ── 11. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
 {
+  let callCount = 0;
+  const elements = {
+    'search-results-page': { innerHTML: '' },
+    'search-heading': { textContent: '' }
+  };
+  const sandbox = {
+    console,
+    URL,
+    URLSearchParams,
+    fetch: async () => {
+      callCount++;
+      if (callCount === 1) return { ok: false, status: 503, json: async () => [] };
+      return { ok: true, status: 200, json: async () => [graffpunksMain] };
+    },
+    history: { replaceState() {} },
+    document: {
+      readyState: 'loading',
+      addEventListener() {},
+      querySelectorAll() { return []; },
+      querySelector() { return null; },
+      getElementById(id) { return elements[id] || null; }
+    },
+    window: {
+      location: {
+        pathname: '/search.html',
+        search: '?q=graffpunks',
+        href: 'https://example.test/search.html?q=graffpunks'
+      }
+    }
+  };
+
+  vm.createContext(sandbox);
+  vm.runInContext(wikiJs, sandbox, { filename: 'wiki.js' });
+  await sandbox.loadWikiIndex();
+  assert.equal(sandbox.window.MOONBOYS_WIKI_SEARCH.getIndexLoadState(), 'failed',
+    'Failed wiki-index load must expose failed state');
+  assert.equal(typeof sandbox.window.MOONBOYS_WIKI_SEARCH.retryIndexLoad, 'function',
+    'Wiki search must expose a retry hook');
+  const retryState = await sandbox.window.MOONBOYS_WIKI_SEARCH.retryIndexLoad('graffpunks');
+  assert.equal(retryState, 'loaded', 'Retry hook must restore loaded state after a successful fetch');
+  assert.ok(elements['search-results-page'].innerHTML.includes('GraffPUNKS'),
+    'Retry hook must re-render search results after reloading the index');
+
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
   );

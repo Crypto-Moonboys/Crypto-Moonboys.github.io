@@ -54,6 +54,8 @@ async function test(label, fn) {
 // Mock global fetch so the worker never hits a real network during tests.
 // Each test overrides globalThis.fetch as needed.
 const originalFetch = globalThis.fetch;
+const originalSetTimeout = globalThis.setTimeout;
+const originalClearTimeout = globalThis.clearTimeout;
 
 function makeMockFetch(statusCode, responseBody) {
   return async () => {
@@ -85,7 +87,13 @@ function makeSequenceFetch(steps) {
 }
 
 function makeEnv(overrides = {}) {
-  return { SWARMSY_BRIDGE_TOKEN: BRIDGE_TOKEN, TELEGRAM_BOT_TOKEN, ...overrides };
+  return {
+    SWARMSY_BRIDGE_TOKEN: BRIDGE_TOKEN,
+    TELEGRAM_BOT_TOKEN,
+    RATE_LIMIT_PUBLIC_PER_MINUTE: '1000',
+    RATE_LIMIT_TELEGRAM_PER_MINUTE: '1000',
+    ...overrides,
+  };
 }
 
 async function signTelegramAuth(fields, botToken = TELEGRAM_BOT_TOKEN) {
@@ -203,6 +211,14 @@ await test('NPC chat bridge retry constants are defined', () => {
   assert.ok(
     /const\s+NPC_CHAT_BRIDGE_MAX_ATTEMPTS\s*=\s*2\b/.test(workerSrc),
     'NPC_CHAT_BRIDGE_MAX_ATTEMPTS must be 2',
+  );
+  assert.ok(
+    /const\s+NPC_CHAT_BRIDGE_RETRY_BASE_MS\s*=\s*250\b/.test(workerSrc),
+    'NPC_CHAT_BRIDGE_RETRY_BASE_MS must be 250',
+  );
+  assert.ok(
+    workerSrc.includes('await sleep(NPC_CHAT_BRIDGE_RETRY_BASE_MS * (2 ** (attempt - 1)))'),
+    'NPC chat bridge must use exponential backoff between retry attempts',
   );
 });
 
@@ -419,6 +435,55 @@ await test('[10] First SWARMSY fetch throws, second succeeds -> 200', async () =
   assert.equal(body.success, true);
   assert.equal(body.reply, 'Recovered after retry');
   assert.equal(globalThis.fetch.calls.length, 2, 'Expected exactly two SWARMSY attempts');
+});
+
+await test('[10] First SWARMSY attempt times out, second succeeds without overlapping upstream calls', async () => {
+  let activeCalls = 0;
+  let maxActiveCalls = 0;
+  let timeoutTimers = 0;
+  globalThis.setTimeout = (fn, ms, ...args) => {
+    if (ms === 25000) {
+      timeoutTimers++;
+      if (timeoutTimers === 1) fn();
+      return { timeoutTimer: timeoutTimers };
+    }
+    return originalSetTimeout(fn, 0, ...args);
+  };
+  globalThis.clearTimeout = () => {};
+  globalThis.fetch = makeSequenceFetch([
+    (_url, init) => new Promise((resolve, reject) => {
+      activeCalls++;
+      maxActiveCalls = Math.max(maxActiveCalls, activeCalls);
+      const abort = () => {
+        activeCalls--;
+        const error = new Error('aborted by timeout');
+        error.name = 'AbortError';
+        reject(error);
+      };
+      if (init.signal.aborted) abort();
+      else init.signal.addEventListener('abort', abort, { once: true });
+    }),
+    async () => {
+      activeCalls++;
+      maxActiveCalls = Math.max(maxActiveCalls, activeCalls);
+      activeCalls--;
+      return new Response(JSON.stringify({ success: true, reply: 'Recovered after timeout' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  ]);
+  try {
+    const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.reply, 'Recovered after timeout');
+    assert.equal(globalThis.fetch.calls.length, 2, 'Expected exactly two SWARMSY attempts');
+    assert.equal(maxActiveCalls, 1, 'Retry must not overlap a timed-out upstream call');
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+    globalThis.clearTimeout = originalClearTimeout;
+  }
 });
 
 await test('[10] First SWARMSY response is non-JSON, second succeeds -> 200', async () => {
