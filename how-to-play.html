@@ -306,7 +306,7 @@
         Crypto Moonboys is not just a website, not just a wiki, and not just an arcade. It is a living progression universe where lore, games, Telegram identity, factions, missions, clout, missed opportunities, and Battle Chamber proof all connect. This page explains how the whole machine works.
       </p>
       <div class="howto-route">
-        READ / EXPLORE → PLAY ARCADE → EARN ACCEPTED PROGRESSION → LINK TELEGRAM → JOIN A FACTION → COMPLETE MISSIONS → BUILD CLOUT / STATUS → ENTER BATTLE CHAMBER → UNLOCK MORE OPPORTUNITIES → REACH BLOCK TOPIA → BECOME A BUILDER
+        READ / EXPLORE → PLAY ARCADE → SUBMIT SCORES → LINK TELEGRAM → SYNC ACCEPTED ARCADE XP → JOIN A FACTION → COMPLETE MISSIONS → BUILD CLOUT / STATUS → ENTER BATTLE CHAMBER → UNLOCK MORE OPPORTUNITIES → REACH BLOCK TOPIA → BECOME A BUILDER
       </div>
       <div class="howto-hero-actions">
         <a class="howto-btn" href="/games/">Play Arcade</a>
@@ -331,7 +331,7 @@
           <span class="howto-label">KEY TRUTH</span>
           <h3>This universe keeps moving.</h3>
           <p>
-            Score proves a run. XP proves a player. Faction choice changes how the city sees you. Battle Chamber is where your motion becomes public.
+            Score proves a run. Server-accepted Arcade XP proves synced progression. Faction choice changes how the city sees you. Battle Chamber is where your motion becomes public.
           </p>
         </div>
       </div>
@@ -342,8 +342,8 @@
       <div class="howto-grid-wide">
         <div class="howto-card howto-step"><div class="howto-step-num">01</div><div><h3>Explore the Universe</h3><p>Read lore, systems, and pages so your actions connect to the world memory layer.</p></div></div>
         <div class="howto-card howto-step"><div class="howto-step-num">02</div><div><h3>Play Games</h3><p>Use the arcade as your active entry point and start generating run performance data.</p></div></div>
-        <div class="howto-card howto-step"><div class="howto-step-num">03</div><div><h3>Understand Score vs XP</h3><p>Score is per run. XP is accepted long-term progression. They are linked, but not the same signal.</p></div></div>
-        <div class="howto-card howto-step"><div class="howto-step-num">04</div><div><h3>Link Telegram</h3><p>Sync identity so progression persists beyond one browser and can enter full system loops.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">03</div><div><h3>Understand Score vs XP</h3><p>Score ranks the run. Arcade XP is awarded only after accepted sync through the server progression flow.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">04</div><div><h3>Link Telegram</h3><p>Sync identity so accepted runs can leave browser-only storage and become server-backed progression.</p></div></div>
         <div class="howto-card howto-step"><div class="howto-step-num">05</div><div><h3>Join a Faction</h3><p>Pick your side for season lock, mission identity, and faction-level contribution pressure.</p></div></div>
         <div class="howto-card howto-step"><div class="howto-step-num">06</div><div><h3>Complete Missions</h3><p>Use daily missions, quests, and events to push structured progress instead of random play.</p></div></div>
         <div class="howto-card howto-step"><div class="howto-step-num">07</div><div><h3>Watch Battle Chamber</h3><p>Follow proof feeds, standings, logs, and visibility to track your movement in public.</p></div></div>
@@ -362,12 +362,12 @@
           <span class="howto-label">ACTIVE GAME LAYER</span>
           <h3>Current Arcade Roster</h3>
           <p>Invaders 3008, Asteroid Fork, Breakout Bullrun, Crystal Quest, Pac-Chain, Snake Run, Tetris Block Topia, and Block Topia Quest Maze.</p>
-          <p>Different games feed different rhythms, but all meaningful runs can route into the same broader progression loop.</p>
+          <p>Different games feed different rhythms, but all active arcade games use the shared score submit path and the same server-backed Arcade XP sync flow.</p>
         </div>
         <div class="howto-warning">
           <span class="howto-label">IMPORTANT</span>
           <h3>SCORE ≠ XP</h3>
-          <p>Score = run performance. XP = accepted long-term progression. Clout = public or faction-facing momentum. Missions = objective layer. Perks/rewards = status and opportunity layer.</p>
+          <p>Score = leaderboard ranking. Arcade XP = server-accepted progression after Telegram sync. Clout = public or faction-facing momentum. Missions = objective layer. Perks/rewards = status and opportunity layer.</p>
         </div>
       </div>
 
@@ -383,12 +383,12 @@
           <tr>
             <td><strong>Score</strong></td>
             <td>Single-run performance inside one game session.</td>
-            <td>Shows run quality and leaderboard competitiveness.</td>
+            <td>Ranks players on leaderboards. Score alone is not an XP award.</td>
           </tr>
           <tr>
             <td><strong>Arcade XP</strong></td>
-            <td>Accepted long-term progression after linked/synced flow.</td>
-            <td>Drives advancement, eligibility, and access gates.</td>
+            <td>Server-accepted progression from eligible arcade runs after Telegram sync.</td>
+            <td>Drives progression, eligibility, and the Block Topia Arcade XP gate.</td>
           </tr>
           <tr>
             <td><strong>Faction Clout</strong></td>
@@ -402,6 +402,12 @@
           </tr>
         </tbody>
       </table>
+      <div class="howto-highlight">
+        <span class="howto-label">NEW XP SYSTEM TRUTH</span>
+        <h3>Accepted score, then synced Arcade XP.</h3>
+        <p>All active arcade games submit through the shared <code>submitScore()</code> path. Unlinked players can play freely, but runs stay browser-local/pending until Telegram is linked. Linked users with signed auth can sync accepted runs to the server, where dedupe, caps, anti-farm checks, and final Arcade XP awards are decided.</p>
+        <p>Only server-accepted sync results should be treated as awarded Arcade XP. Local roguelite clout, rabbit-hole branches, streaks, and daily previews are useful status signals, but they are not final XP authority.</p>
+      </div>
     </section>
 
     <section class="section">
@@ -409,10 +415,10 @@
       <div class="howto-split">
         <div>
           <p>
-            Telegram linking is the bridge from browser-only activity to persistent progression. Linked users can keep identity continuity across sessions and future system layers.
+            Telegram linking is the bridge from browser-only activity to persistent progression. Linked users can keep identity continuity across sessions and send accepted arcade runs into the server XP authority.
           </p>
           <p>
-            Linked users can sync accepted progression, maintain faction status, receive daily digest updates, and stay connected to missions and visibility systems.
+            Linked users can sync accepted Arcade XP, maintain faction status, receive daily digest updates, and stay connected to missions and visibility systems. If a run was played before linking, the pending queue can flush after <code>/gklink</code> succeeds.
           </p>
           <p>
             Use the Incubator flow and run <code>/gklink</code> in <span class="howto-mono">@WIKICOMSBOT</span>.
@@ -422,7 +428,7 @@
         <div class="howto-danger">
           <span class="howto-label">SYNC WARNING</span>
           <h3>Without Telegram link, long-term progression is limited.</h3>
-          <p>Browser-only play can show activity, but cannot fully carry persistent identity, mission continuity, and full proof-layer integration.</p>
+          <p>Browser-only play can show activity and cache pending runs locally, but it cannot claim server-awarded Arcade XP, persistent identity, mission continuity, or full proof-layer integration until Telegram sync succeeds.</p>
         </div>
       </div>
     </section>
@@ -504,7 +510,7 @@
         <div class="howto-card">
           <h3>What players can gain</h3>
           <ul>
-            <li>Arcade XP progression</li>
+            <li>Server-accepted Arcade XP progression</li>
             <li>Faction clout and contribution status</li>
             <li>Titles, badges, and stickers</li>
             <li>Faction identity markers and role visibility</li>
@@ -560,8 +566,8 @@
         Block Topia is a deeper progression layer, not the starting point. It sits further down the ladder and represents the broader live-city multiplayer direction.
       </p>
       <div class="howto-grid-wide">
-        <div class="howto-card"><h3>Progression Gate</h3><p>Access is tied to linked identity and progression requirements.</p></div>
-        <div class="howto-card"><h3>System Position</h3><p>It comes after the core route: arcade, sync, missions, faction momentum, and chamber proof.</p></div>
+        <div class="howto-card"><h3>Progression Gate</h3><p>Access requires a Telegram-linked identity and the current Arcade XP threshold shown by the status panel. The default multiplayer gate is 50 Arcade XP.</p></div>
+        <div class="howto-card"><h3>System Position</h3><p>It comes after the core route: arcade scores, accepted XP sync, missions, faction momentum, and chamber proof.</p></div>
       </div>
     </section>
 
@@ -570,7 +576,7 @@
       <div class="howto-grid-wide">
         <div class="howto-card"><h3>Visitor</h3><p>Explore lore and systems to understand how the world works.</p></div>
         <div class="howto-card"><h3>Player</h3><p>Enter arcade loops and start generating score-based activity.</p></div>
-        <div class="howto-card"><h3>Synced Player</h3><p>Link Telegram and transition into persistent progression.</p></div>
+        <div class="howto-card"><h3>Synced Player</h3><p>Link Telegram and let accepted arcade runs sync into server-backed Arcade XP.</p></div>
         <div class="howto-card"><h3>Faction Member</h3><p>Choose alignment, complete missions, and build visible clout.</p></div>
         <div class="howto-card"><h3>Battle Chamber Presence</h3><p>Your movement appears in logs, standings, proof, and seasonal memory.</p></div>
         <div class="howto-card"><h3>Builder</h3><p>Contribute to evolving systems, culture, and future universe expansion.</p></div>

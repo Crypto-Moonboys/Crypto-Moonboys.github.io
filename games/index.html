@@ -36,12 +36,12 @@
 
       <div class="notice info" role="note">
         <span class="notice-icon" aria-hidden="true">◈</span>
-        <div><strong>Arcade Hub</strong> — Leaderboard rank is score-only. Invaders 3008 flow remains active, and accepted runs from active arcade games can sync into shared progression after Telegram link. Unsynced runs stay local to this device.</div>
+        <div><strong>Arcade Hub</strong> — Leaderboard rank is score-only. Invaders 3008 flow remains active, and accepted runs from active arcade games can sync into shared progression after Telegram link and server acceptance. Unsynced runs stay local/pending to this device.</div>
       </div>
 
       <section class="notice info" role="note" aria-label="Arcade system explainer">
         <span class="notice-icon" aria-hidden="true">◈</span>
-        <div><strong>Arcade System:</strong> Rank = score only. Accepted runs can convert to Arcade XP after Telegram sync. At least 50 Arcade XP is required to enter Block Topia (exact value shown in status panel). Use <code>/gklink</code> in <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a> to link your account.</div>
+        <div><strong>Arcade System:</strong> Rank = score only. Accepted runs can convert to Arcade XP only after Telegram sync and server acceptance. At least 50 server-accepted Arcade XP is required to enter Block Topia (exact value shown in status panel). Unlinked runs stay local/pending until <code>/gklink</code> connects your account in <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a>.</div>
       </section>
 
       <section class="notice" role="note" aria-label="Faction perks explainer">
@@ -61,7 +61,7 @@
         <div class="roguelite-loop-content">
           <span class="notice-icon" aria-hidden="true">⚡</span>
           <div class="roguelite-loop-copy">
-            <strong>Roguelite Infinite Loop:</strong> The arcade uses one protected browser-driven roguelite post-run loop. Accepted game runs feed the shared submit path, refresh local UTC daily/weekly/monthly/seasonal previews, queue Arcade XP for server sync, update local clout, and roll local rabbit-hole choices automatically. Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC; missed signal history can build over time and does not reset.
+            <strong>Roguelite Infinite Loop:</strong> The arcade uses one protected browser-driven roguelite post-run loop. All active games feed the shared submit path. Unlinked runs can stay browser-local/pending; linked accepted runs can sync Arcade XP through the server, where dedupe, caps, and anti-farm checks decide final awards. Local UTC daily/weekly/monthly/seasonal previews, clout, and rabbit-hole choices are status signals, not final XP authority. Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC; missed signal history can build over time and does not reset.
             <div id="roguelite-loop-board" aria-live="polite" style="margin-top:12px"></div>
             <div id="roguelite-daily-digest-summary" aria-live="polite" style="margin-top:12px"></div>
           </div>
@@ -76,7 +76,7 @@
           <div class="ali-icon">🏆</div>
           <div>
             <div class="ali-title">Arcade Leaderboard</div>
-            <div class="ali-desc">Shared score rankings across all Moonboys Arcade games, plus projected XP context (XP does not affect rank).</div>
+            <div class="ali-desc">Shared score rankings across all Moonboys Arcade games, plus Arcade XP sync context. Score ranks runs; server-accepted XP does not affect rank.</div>
             <div class="ali-meta">Leaderboard · Graph · All Games</div>
           </div>
         </a>
@@ -84,7 +84,7 @@
           <div class="ali-icon">◈</div>
           <div>
             <div class="ali-title">How to Play &amp; Systems Manual</div>
-            <div class="ali-desc">New player guide: Telegram sync with /gklink, XP, and how to enter Block Topia.</div>
+            <div class="ali-desc">New player guide: score vs Arcade XP, Telegram sync with /gklink, server-accepted progression, and how to enter Block Topia.</div>
             <div class="ali-meta">Manual · Onboarding · Progression</div>
           </div>
         </a>
@@ -92,7 +92,7 @@
           <div class="ali-icon">👾</div>
           <div>
             <div class="ali-title">Invaders 3008 — 🏆 Current Season Game</div>
-            <div class="ali-desc">Current season anchor game and leaderboard source. Moonboys-themed alien waves, wave system, increasing speed, boss every 5th wave. Telegram-linked users auto-submit scores.</div>
+            <div class="ali-desc">Current season anchor game and leaderboard source. Moonboys-themed alien waves, wave system, increasing speed, boss every 5th wave. Accepted linked runs can sync Arcade XP after server acceptance.</div>
             <div class="ali-meta">Arcade · Shooter · Waves · Arcade XP Source · Season Active</div>
           </div>
         </a>
@@ -140,7 +140,7 @@
           <div class="ali-icon">🧱</div>
           <div>
             <div class="ali-title">Block Topia Quest Maze</div>
-            <div class="ali-desc">Retro 8-bit RPG dungeon crawler. 6 crypto-themed zones, turn-based battles, and accepted score conversion into Arcade XP after Telegram sync.</div>
+            <div class="ali-desc">Retro 8-bit RPG dungeon crawler. 6 crypto-themed zones, turn-based battles, and accepted score conversion into Arcade XP after Telegram sync and server acceptance.</div>
             <div class="ali-meta">RPG · Dungeon · Daily Reset · Battle Chambers</div>
           </div>
         </a>
@@ -156,7 +156,7 @@
           <div class="ali-icon">🏙️</div>
           <div>
             <div class="ali-title">Block Topia Multiplayer</div>
-            <div class="ali-desc">Clean 2-player isometric map base. Requires Telegram-linked account and at least 50 Arcade XP to enter. More gameplay systems coming.</div>
+            <div class="ali-desc">Clean 2-player isometric map base. Requires Telegram-linked account and server-accepted Arcade XP gate progress, currently 50 Arcade XP. More gameplay systems coming.</div>
             <div class="ali-meta">Multiplayer · ISO 3D · Live</div>
           </div>
         </a>
