@@ -97,14 +97,37 @@ for (const cloutKey of ['daily', 'weekly', 'monthly', 'seasonal', 'streak', 'fac
 }
 
 const hub = await read('games/index.html');
+const actionCardsCss = await read('css/action-page-cards.css');
 assertContains(hub, 'id="roguelite-loop-board"', 'games/index.html must render roguelite-loop-board');
+assertContains(hub, 'class="arcade-hero swarmsy-hero"', 'games/index.html must use SWARMSY-style arcade hero');
+assertContains(hub, 'class="swarmsy-title"', 'games/index.html must use SWARMSY title typography');
+assertContains(hub, '&#10022; MOONBOYS ARCADE / XP SYSTEM', 'games hero kicker must render the SWARMSY sparkle marker via a safe entity');
+assert.doesNotMatch(hub, /âœ¦|Ã¢Å“Â¦/, 'games hero kicker must not contain mojibake sparkle text');
 assertContains(hub, "if (!Number.isFinite(timestamp) || timestamp <= 0) return 'pending';", 'formatReset() must guard invalid reset timestamps');
 assertContains(hub, 'protected browser-driven roguelite post-run loop', 'games/index.html must state frontend-driven shared loop truth');
+assert.doesNotMatch(hub, /CRYPTO%20MOONBOYS%20ARCADE%20GAME\.jpg/i, 'games/index.html must not render the old full-width arcade JPEG');
+assert.doesNotMatch(hub, /CRYPTO%20MOONBOYS%20Roguelite%20Infinite%20Loop%20ARCADE%20GAME\.jpg/i, 'games/index.html must not render the full-width roguelite JPEG');
 for (const label of ['Active daily cycle', 'Weekly faction target', 'Monthly clout target', 'Seasonal preview target', 'Next best action']) {
   assertContains(hub, label, `roguelite-loop-board must show ${label}`);
 }
 
 // ── No HexGL references in active game files or manifest ──────────────────────
+
+assert.match(
+  actionCardsCss,
+  /body\.page-game \.roguelite-loop-panel\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\);[\s\S]*?overflow:\s*hidden;/,
+  'roguelite loop panel must override generic notice columns and contain its image/copy layout',
+);
+assert.match(
+  actionCardsCss,
+  /body\.page-game \.arcade-hero\s*\{[\s\S]*?min-height:\s*clamp\(520px,\s*58vh,\s*720px\);[\s\S]*?border-radius:\s*0;/,
+  'games hero must use the full-width SWARMSY route treatment',
+);
+assert.match(
+  actionCardsCss,
+  /body\.page-game \.roguelite-loop-copy\s*\{[\s\S]*?overflow-wrap:\s*anywhere;/,
+  'roguelite loop copy must wrap inside the panel',
+);
 
 const manifest = await read('js/arcade/arcade-manifest.js');
 assert.doesNotMatch(manifest, /hexgl/i, 'arcade-manifest.js must not reference HexGL');

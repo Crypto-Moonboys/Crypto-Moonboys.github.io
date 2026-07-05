@@ -35,6 +35,7 @@ const ROOT = path.resolve(__dirname, '..');
 const COMMUNITY_FILE = path.join(ROOT, 'community.html');
 const BC_FACTIONS_FILE = path.join(ROOT, 'js', 'battle-chamber-factions.js');
 const BC_BRIDGE_FILE = path.join(ROOT, 'js', 'battle-chamber-faction-bridge.js');
+const ACTION_CARDS_CSS_FILE = path.join(ROOT, 'css', 'action-page-cards.css');
 
 function read(filePath) {
   return fs.readFileSync(filePath, 'utf8');
@@ -68,10 +69,12 @@ console.log('\n─── Battle Chamber Faction Page Tests ───────
 check(fs.existsSync(COMMUNITY_FILE), 'community.html exists');
 check(fs.existsSync(BC_FACTIONS_FILE), 'js/battle-chamber-factions.js exists');
 check(fs.existsSync(BC_BRIDGE_FILE), 'js/battle-chamber-faction-bridge.js exists');
+check(fs.existsSync(ACTION_CARDS_CSS_FILE), 'css/action-page-cards.css exists');
 
 const communityHtml = fs.existsSync(COMMUNITY_FILE) ? read(COMMUNITY_FILE) : '';
 const bcFactionsJs = fs.existsSync(BC_FACTIONS_FILE) ? read(BC_FACTIONS_FILE) : '';
 const bcBridgeJs = fs.existsSync(BC_BRIDGE_FILE) ? read(BC_BRIDGE_FILE) : '';
+const actionCardsCss = fs.existsSync(ACTION_CARDS_CSS_FILE) ? read(ACTION_CARDS_CSS_FILE) : '';
 
 // ── community.html: required headline ─────────────────────────────────────────
 
@@ -137,6 +140,12 @@ check(communityHtml.includes('tg-community-leaderboard'), 'community.html includ
 check(communityHtml.includes('tg-activity-feed'), 'community.html includes tg-activity-feed');
 check(communityHtml.includes('gklink-status'), 'community.html includes gklink-status');
 check(communityHtml.includes('data-tg-sync-cta'), 'community.html includes data-tg-sync-cta');
+
+console.log('\n[5b] community.html - Battle Chamber card polish CSS');
+check(/body\.page-community \.bc-why-list li\s*\{[\s\S]*?padding:\s*14px 16px 14px 48px;/.test(actionCardsCss), 'why-join list cards keep inner padding and icon gutter');
+check(/body\.page-community \.tg-sync-cta\s*\{[\s\S]*?grid-template-columns:\s*auto minmax\(0,\s*1fr\) minmax\(220px,\s*0\.32fr\);[\s\S]*?padding:\s*18px 20px;/.test(actionCardsCss), 'Telegram sync CTA uses spaced card layout');
+check(/body\.page-community #tg-activity-feed \.feed-item\s*\{[\s\S]*?grid-template-columns:\s*auto minmax\(0,\s*1fr\) auto;[\s\S]*?padding:\s*12px 14px;/.test(actionCardsCss), 'proof feed items use readable card rows');
+check(/body\.page-community \.bc-frc-row:last-of-type\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\);/.test(actionCardsCss), 'long roguelite reward options get full row width');
 
 // ── community.html: required JS files loaded ──────────────────────────────────
 
