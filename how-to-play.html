@@ -66,17 +66,12 @@
       justify-content: flex-start;
     }
 
-    .howto-page .page-hero.wiki-living-hero > .howto-kicker,
-    .howto-page .page-hero.wiki-living-hero > .howto-lead,
-    .howto-page .page-hero.wiki-living-hero > .howto-route,
-    .howto-page .page-hero.wiki-living-hero > .howto-hero-actions {
+    .howto-page .page-hero.wiki-living-hero > .howto-hero-copy {
       grid-column: 1;
     }
 
-    .howto-page .page-hero.wiki-living-hero > .howto-glitch-title {
+    .howto-page .page-hero.wiki-living-hero > .howto-hero-title-wrap {
       grid-column: 2;
-      grid-row: 1 / span 4;
-      align-self: center;
     }
 
     .howto-page .page-hero::before {
@@ -311,11 +306,8 @@
         font-size: clamp(2.6rem, 12vw, 4.8rem);
       }
 
-      .howto-page .page-hero.wiki-living-hero > .howto-kicker,
-      .howto-page .page-hero.wiki-living-hero > .howto-lead,
-      .howto-page .page-hero.wiki-living-hero > .howto-route,
-      .howto-page .page-hero.wiki-living-hero > .howto-hero-actions,
-      .howto-page .page-hero.wiki-living-hero > .howto-glitch-title {
+      .howto-page .page-hero.wiki-living-hero > .howto-hero-copy,
+      .howto-page .page-hero.wiki-living-hero > .howto-hero-title-wrap {
         grid-column: 1;
         grid-row: auto;
       }
@@ -387,19 +379,23 @@
   <div class="battle-page howto-page">
 
     <section class="page-hero wiki-living-hero">
-      <span class="howto-kicker">SYSTEM GUIDE / PLAYER ONBOARDING / BATTLE CHAMBER MANUAL</span>
-      <h1 class="howto-glitch-title howto-pulse swarmsy-title">HOW TO PLAY<br><span>CRYPTO MOONBOYS</span></h1>
-      <p class="howto-lead">
-        Crypto Moonboys is not just a website, not just a wiki, and not just an arcade. It is a living progression universe where lore, games, Telegram identity, factions, missions, clout, missed opportunities, and Battle Chamber proof all connect. This page explains how the whole machine works.
-      </p>
-      <div class="howto-route">
-        READ / EXPLORE → PLAY ARCADE → SUBMIT SCORES → LINK TELEGRAM → SYNC ACCEPTED ARCADE XP → JOIN A FACTION → COMPLETE MISSIONS → BUILD CLOUT / STATUS → ENTER BATTLE CHAMBER → UNLOCK MORE OPPORTUNITIES → REACH BLOCK TOPIA → BECOME A BUILDER
+      <div class="howto-hero-copy">
+        <span class="howto-kicker">SYSTEM GUIDE / PLAYER ONBOARDING / BATTLE CHAMBER MANUAL</span>
+        <p class="howto-lead">
+          Crypto Moonboys is not just a website, not just a wiki, and not just an arcade. It is a living progression universe where lore, games, Telegram identity, factions, missions, clout, missed opportunities, and Battle Chamber proof all connect. This page explains how the whole machine works.
+        </p>
+        <div class="howto-route">
+          READ / EXPLORE → PLAY ARCADE → SUBMIT SCORES → LINK TELEGRAM → SYNC ACCEPTED ARCADE XP → JOIN A FACTION → COMPLETE MISSIONS → BUILD CLOUT / STATUS → ENTER BATTLE CHAMBER → UNLOCK MORE OPPORTUNITIES → REACH BLOCK TOPIA → BECOME A BUILDER
+        </div>
+        <div class="howto-hero-actions">
+          <a class="howto-btn" href="/games/">Play Arcade</a>
+          <a class="howto-btn howto-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
+          <a class="howto-btn howto-btn-secondary" href="/community.html">Enter Battle Chamber</a>
+          <a class="howto-btn howto-btn-secondary" href="/battle-chamber/factions/">View Community</a>
+        </div>
       </div>
-      <div class="howto-hero-actions">
-        <a class="howto-btn" href="/games/">Play Arcade</a>
-        <a class="howto-btn howto-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
-        <a class="howto-btn howto-btn-secondary" href="/community.html">Enter Battle Chamber</a>
-        <a class="howto-btn howto-btn-secondary" href="/battle-chamber/factions/">View Community</a>
+      <div class="howto-hero-title-wrap">
+        <h1 class="howto-glitch-title howto-pulse swarmsy-title">HOW TO PLAY<br><span>CRYPTO MOONBOYS</span></h1>
       </div>
     </section>
 

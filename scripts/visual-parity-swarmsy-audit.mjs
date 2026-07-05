@@ -600,6 +600,13 @@ for (const [rel, html, marker] of livingHeroRoutes) {
   }
 }
 if (
+  !howToPlayHtml.includes('class="howto-hero-copy"') ||
+  !howToPlayHtml.includes('class="howto-hero-title-wrap"')
+) {
+  fail('how-to-play.html - missing the wrapped living-hero copy/title layout contract');
+  livingHeroOk = false;
+}
+if (
   !wikiCss.includes('.wiki-living-hero') ||
   !wikiCss.includes('wikiHeroBreath') ||
   !wikiCss.includes('wikiColorDrift') ||
