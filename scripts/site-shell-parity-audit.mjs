@@ -128,6 +128,7 @@ console.log('\n─── Site Shell Parity Audit ──────────�
 console.log('[1] site-shell.js exists');
 const shellJs = read('js/site-shell.js');
 const applyShell = read('scripts/apply-shell.mjs');
+const globalPlayerHeader = read('js/components/global-player-header.js') || '';
 const retroTheme = read('css/retro-16bit-theme.css') || '';
 const wikiShellCss = read('css/wiki.css') || '';
 if (!shellJs) {
@@ -472,6 +473,12 @@ if (/function\s+shouldShowRightPanel\s*\(\)\s*\{\s*return false;\s*\}/u.test(sho
   pass('site-shell.js: shouldShowRightPanel returns false globally');
 } else {
   fail('site-shell.js — shouldShowRightPanel must return false globally');
+}
+
+if (!globalPlayerHeader.includes('moveInlineLiveStatsToBottom') && !globalPlayerHeader.includes('moonboys-live-stats-bottom-style')) {
+  pass('global-player-header.js: live stats bottom placement is not corrected after shell render');
+} else {
+  fail('global-player-header.js - must not own or correct inline live stats bottom placement');
 }
 
 const communityHtml = read('community.html') || '';

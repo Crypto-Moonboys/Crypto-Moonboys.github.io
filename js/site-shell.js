@@ -369,11 +369,6 @@ window.__HUD_CONSOLIDATED__ = true;
   function ensureSwarmsyLandingTighten() {
     if (normalizePathname(window.location.pathname) !== '/swarmsy.html') return;
     document.body.classList.add('swarmsy-landing-tight');
-    if (document.getElementById('swarmsy-landing-tight-css')) return;
-    const style = document.createElement('style');
-    style.id = 'swarmsy-landing-tight-css';
-    style.textContent = 'body.page-swarmsy #content{padding-top:0;}body.page-swarmsy .swarmsy-page{margin-top:0;}body.page-swarmsy .swarmsy-hero{margin-top:0;}';
-    document.head.appendChild(style);
   }
 
   function bindSearchForm() {

@@ -8,11 +8,13 @@ It exists to stop the rebuild from drifting into static frontend guesses. The cu
 
 ## Intended deploy target
 
-Cloudflare Worker with:
+If this scaffold is ever revived as a dedicated Worker, it must be promoted by an
+explicit architecture decision and must not duplicate the live `moonboys-api`
+cron ownership. The current live target is:
 
 - D1 for relational indexed market data
 - optional KV/R2 for large chart/snapshot payloads
-- scheduled cron triggers for source sync
+- scheduled cron triggers owned by `workers/moonboys-api`
 - public read-only `/api/waxonedge/*` endpoints
 
 ## Deployment rule
@@ -31,9 +33,6 @@ compatibility_date = "2026-06-12"
 binding = "WAXONEDGE_DB"
 database_name = "waxonedge"
 database_id = "REPLACE_WITH_REAL_D1_ID"
-
-[triggers]
-crons = ["*/5 * * * *"]
 ```
 
 ## Required first live endpoints

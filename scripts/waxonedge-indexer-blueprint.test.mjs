@@ -37,6 +37,7 @@ ok('worker API scaffold exists', exists('workers/waxonedge/src/index.js'));
 const blueprint = exists('docs/waxonedge-og-indexer-blueprint.md') ? read('docs/waxonedge-og-indexer-blueprint.md') : '';
 const schema = exists('workers/waxonedge/schema.sql') ? read('workers/waxonedge/schema.sql') : '';
 const worker = exists('workers/waxonedge/src/index.js') ? read('workers/waxonedge/src/index.js') : '';
+const readme = exists('workers/waxonedge/README.md') ? read('workers/waxonedge/README.md') : '';
 
 ok('blueprint states no invented-data rule', blueprint.includes('must never infer or fabricate'));
 ok('blueprint defines Cloudflare Worker and D1 architecture', blueprint.includes('Cloudflare Worker') && blueprint.includes('D1'));
@@ -61,12 +62,16 @@ ok('worker returns unavailable state instead of invented data', worker.includes(
 ok('worker exposes summary endpoint', worker.includes('/api/waxonedge/summary'));
 ok('worker exposes top tokens endpoint', worker.includes('/api/waxonedge/tokens/top'));
 ok('worker exposes top pairs endpoint', worker.includes('/api/waxonedge/pairs/top'));
-ok('worker keeps scheduler as pending source-adapter work', worker.includes('Sync implementation pending confirmed source adapters'));
+ok('worker scaffold is route-only and does not declare a scheduled cron owner',
+  !worker.includes('async scheduled(') &&
+  !worker.includes('recordSkippedSchedule') &&
+  !readme.includes('[triggers]') &&
+  !readme.includes('crons =') &&
+  readme.includes('scheduled cron triggers owned by `workers/moonboys-api`'));
 ok('worker uses compact JSON', !worker.includes('JSON.stringify(payload, null, 2)'));
 ok('worker 404 uses notFound helper', worker.includes('function notFound(') && worker.includes('return notFound(path)'));
 ok('worker 405 uses methodNotAllowed helper', worker.includes('function methodNotAllowed(') && worker.includes('return methodNotAllowed(request.method)'));
 ok('worker read functions handle DB setup errors', worker.includes('} catch (error) {') && worker.includes('dbUnavailable('));
-ok('worker scheduled placeholder is guarded', worker.includes('recordSkippedSchedule') && worker.includes('} catch (_error) {'));
 
 console.log('\nwaxonedge-indexer-blueprint.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);

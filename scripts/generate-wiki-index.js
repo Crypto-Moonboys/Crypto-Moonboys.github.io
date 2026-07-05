@@ -104,15 +104,13 @@ function cleanupCanonicalTitle(title) {
     .replace(/_/g, ' ')
     .replace(/\s+â€”\s+Crypto Moonboys Wiki$/i, '')
     .replace(/\s+—\s+Crypto Moonboys Wiki$/i, '')
+    .replace(/\s+[-\u2014]\s+Crypto Moonboys Wiki$/i, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function formatPublicTitle(title) {
-  return String(title || '')
-    .replace(/_/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return cleanupCanonicalTitle(title);
 }
 
 function clipAtWordBoundary(text, maxLength = 160) {

@@ -66,6 +66,8 @@ ok('WaxOnEdge D1 retention runbook exists', exists('docs/waxonedge-d1-retention.
 const route = read('workers/moonboys-api/routes/waxonedge.js');
 const normalizedRoute = route.replace(/\r\n/g, '\n');
 const worker = read('workers/moonboys-api/worker.js');
+const historicalScaffold = read('workers/waxonedge/src/index.js');
+const historicalScaffoldReadme = read('workers/waxonedge/README.md');
 const wrangler = read('workers/moonboys-api/wrangler.toml');
 const ci = read('.github/workflows/ci.yml');
 const packageJson = JSON.parse(read('package.json'));
@@ -344,6 +346,10 @@ ok('worker delegates /api/waxonedge routes through moonboys-api',
   worker.includes("path === '/api/waxonedge'") &&
   worker.includes('handleWaxOnEdgeRoute(request, env, corsHeaders)'));
 ok('worker scheduled handler runs WaxOnEdge sync', worker.includes('runWaxOnEdgeScheduledSync(env, cron)'));
+ok('historical WaxOnEdge scaffold does not declare its own scheduled cron owner',
+  !historicalScaffold.includes('async scheduled(') &&
+  !historicalScaffoldReadme.includes('[triggers]') &&
+  !historicalScaffoldReadme.includes('crons ='));
 ok('WaxOnEdge scheduled sync runs bounded retention cleanup and exposes manual cleanup cron',
   route.includes("cron === 'waxonedge-retention-cleanup'") &&
   route.includes('runWaxOnEdgeRetentionCleanup(env)') &&
