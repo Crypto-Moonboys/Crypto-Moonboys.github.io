@@ -655,6 +655,14 @@
 
   // ── 9. Faction Reward Unlocks ─────────────────────────────────────────────
 
+  function getFactionRewardCopyHtml() {
+    var copyTemplate = el('battle-faction-reward-copy');
+    if (copyTemplate && 'innerHTML' in copyTemplate) {
+      return copyTemplate.innerHTML;
+    }
+    return '<p class="bc-rew-intro"><strong>Faction reward unlocks</strong></p>';
+  }
+
   function renderFactionRewardUnlocks() {
     var container = el('battle-faction-reward-unlocks');
     if (!container) return;
@@ -688,10 +696,8 @@
     }
 
     container.innerHTML =
-      '<p class="bc-rew-intro"><strong>Win the week. Own the chamber.</strong></p>' +
-      '<p>Monthly clout puts your faction on the board. Seasonal winners become part of the Battle Chamber record. Badges, stickers, titles, and roguelite options prove your faction moved.</p>' +
-      '<div class="bc-faction-reward-grid">' + factionCards + '</div>' +
-      '<p class="bc-rew-disclaimer"><strong>Faction rewards are gameplay/status rewards only.</strong> These are clout, badges, stickers, titles, and roguelite branch eligibility only.</p>';
+      getFactionRewardCopyHtml() +
+      '<div class="bc-faction-reward-grid">' + factionCards + '</div>';
   }
 
   // ── 10. Faction Proof Feed headline ──────────────────────────────────────

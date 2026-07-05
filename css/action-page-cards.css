@@ -166,10 +166,6 @@ body.page-community .bc-disclosure[open] > summary::after {
   content: "-";
 }
 
-body.page-community .bc-disclosure > summary h2 {
-  margin-bottom: 0;
-}
-
 body.page-community .bc-disclosure:not([open]) {
   padding-bottom: 22px;
 }
