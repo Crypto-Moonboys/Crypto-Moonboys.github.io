@@ -153,6 +153,15 @@ function runTests() {
     pass: !rawUnderscoreTitle
   });
 
+  const siteSuffixTitle = index.find(entry => /\s+[-\u2014]\s+Crypto Moonboys Wiki$/i.test(String(entry.title || '')));
+  tests.push({
+    name: 'Public search titles do not include site chrome suffixes',
+    description: siteSuffixTitle
+      ? `${siteSuffixTitle.url} has suffixed title "${siteSuffixTitle.title}"`
+      : 'No indexed public title ends with the site chrome suffix',
+    pass: !siteSuffixTitle
+  });
+
   const badDescription = index.find(entry => {
     const desc = String(entry.desc || '').trim();
     if (!desc) return true;

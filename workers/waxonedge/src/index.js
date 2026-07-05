@@ -173,26 +173,6 @@ function route(request, env) {
   return notFound(path);
 }
 
-async function recordSkippedSchedule(env) {
-  try {
-    await env.WAXONEDGE_DB.prepare(
-      'INSERT INTO waxonedge_sync_runs (source, status, started_at, finished_at, error) VALUES (?, ?, ?, ?, ?)',
-    ).bind(
-      'scheduler',
-      'skipped',
-      new Date().toISOString(),
-      new Date().toISOString(),
-      'Sync implementation pending confirmed source adapters',
-    ).run();
-  } catch (_error) {
-    // Safe during early D1 bring-up before schema migration.
-  }
-}
-
 export default {
   fetch: route,
-  async scheduled(_event, env, ctx) {
-    if (!env.WAXONEDGE_DB) return;
-    ctx.waitUntil(recordSkippedSchedule(env));
-  },
 };
