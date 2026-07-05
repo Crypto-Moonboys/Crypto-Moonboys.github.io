@@ -39,11 +39,24 @@
 
   var FIXED_BADGE_ID = 'moonboys-global-header-fixed-badge';
   var FIXED_BADGE_STYLE_ID = 'moonboys-global-header-fixed-style';
+  var HEADER_BADGE_ID = 'moonboys-global-status-badge';
+  var HEADER_NAV_ID = 'global-nav';
+  var HEADER_BADGE_STYLE_ID = 'moonboys-header-status-dock-style';
+  var _headerBadgeObserver = null;
+  var _headerBadgeDockPending = false;
 
   // ── Helpers ─────────────────────────────────────────────────────────────
 
   function getStatusPanel() {
     return window.MOONBOYS_STATUS_PANEL || null;
+  }
+
+  function nextFrame(fn) {
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(fn);
+      return;
+    }
+    window.setTimeout(fn, 0);
   }
 
   function injectFixedBadgeStyles() {
@@ -58,6 +71,65 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
+  function injectHeaderBadgeDockStyles() {
+    if (document.getElementById(HEADER_BADGE_STYLE_ID)) return;
+    var style = document.createElement('style');
+    style.id = HEADER_BADGE_STYLE_ID;
+    style.textContent = [
+      '@media (min-width:1121px){',
+      '  #site-header{grid-template-columns:minmax(180px,auto) minmax(220px,1fr) auto minmax(0,auto);}',
+      '  #site-header>.site-logo{grid-column:1;grid-row:1;}',
+      '  #site-header>#header-search{grid-column:2;grid-row:1;}',
+      '  #site-header>#' + HEADER_BADGE_ID + '{grid-column:3;grid-row:1;align-self:center;justify-self:start;margin-left:0;min-width:0;}',
+      '  #site-header>#' + HEADER_NAV_ID + '{grid-column:4;grid-row:1;}',
+      '}',
+      '#' + HEADER_BADGE_ID + '{display:flex;align-items:center;min-width:0;}',
+      '#' + HEADER_BADGE_ID + ' .csp-badge{max-width:min(280px,24vw);}',
+      '#' + HEADER_BADGE_ID + ' .csp-badge-chip{display:none!important;}',
+      '@media (max-width:1120px){',
+      '  #site-header>#' + HEADER_BADGE_ID + '{grid-column:1 / -1;justify-self:start;margin-left:0;}',
+      '  #' + HEADER_BADGE_ID + ' .csp-badge{max-width:100%;}',
+      '}'
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function stripHeaderBadgeChips() {
+    var badge = document.getElementById(HEADER_BADGE_ID);
+    if (!badge) return;
+    badge.querySelectorAll('.csp-badge-chip').forEach(function (chip) {
+      chip.remove();
+    });
+  }
+
+  function dockHeaderBadge() {
+    injectHeaderBadgeDockStyles();
+    var header = document.getElementById('site-header');
+    var nav = document.getElementById(HEADER_NAV_ID);
+    var badge = document.getElementById(HEADER_BADGE_ID);
+
+    if (header && nav && badge && badge.parentElement === header && badge.nextElementSibling !== nav) {
+      header.insertBefore(badge, nav);
+    }
+
+    stripHeaderBadgeChips();
+  }
+
+  function scheduleHeaderBadgeDock() {
+    if (_headerBadgeDockPending) return;
+    _headerBadgeDockPending = true;
+    nextFrame(function () {
+      _headerBadgeDockPending = false;
+      dockHeaderBadge();
+    });
+  }
+
+  function observeHeaderBadgeDock() {
+    if (_headerBadgeObserver || typeof MutationObserver !== 'function') return;
+    _headerBadgeObserver = new MutationObserver(scheduleHeaderBadgeDock);
+    _headerBadgeObserver.observe(document.body, { childList: true, subtree: true });
+  }
+
   /**
    * For pages that have no wiki #site-header (e.g. Block Topia gate),
    * inject a compact fixed badge at top-right so the player always sees
@@ -70,7 +142,7 @@
     // Already injected.
     if (document.getElementById(FIXED_BADGE_ID)) return;
     // Global badge already present (injected by CSP via #site-header fallback).
-    if (document.getElementById('moonboys-global-status-badge')) return;
+    if (document.getElementById(HEADER_BADGE_ID)) return;
 
     injectFixedBadgeStyles();
     var wrap = document.createElement('div');
@@ -89,6 +161,7 @@
   function refresh() {
     var panel = getStatusPanel();
     if (panel) panel.refresh();
+    scheduleHeaderBadgeDock();
   }
 
   function mount(containerOrId) {
@@ -98,7 +171,10 @@
 
   function mountBadge(containerOrId) {
     var panel = getStatusPanel();
-    if (panel) return panel.mountBadge(containerOrId);
+    return panel ? panel.mountBadge(containerOrId).then(function (result) {
+      scheduleHeaderBadgeDock();
+      return result;
+    }) : undefined;
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────
@@ -130,6 +206,8 @@
 
   function bootstrap() {
     injectFixedBadge();
+    dockHeaderBadge();
+    observeHeaderBadgeDock();
     // Defer panel creation by one task to guarantee live-activity-summary.js
     // has already bootstrapped and set window.MOONBOYS_LIVE_ACTIVITY.  Both
     // scripts load synchronously in the same <head>, but LAS bootstraps via
