@@ -43,7 +43,6 @@
   var HEADER_NAV_ID = 'global-nav';
   var HEADER_BADGE_STYLE_ID = 'moonboys-header-status-dock-style';
   var LIVE_STATS_BOTTOM_STYLE_ID = 'moonboys-live-stats-bottom-style';
-  var ACTION_PAGE_CARDS_CSS = '/css/action-page-cards.css';
   var _headerBadgeObserver = null;
   var _headerBadgeDockPending = false;
   var _liveStatsObserver = null;
@@ -149,16 +148,6 @@
     return p === '/community.html' || p === '/games/' || p === '/games/index.html' || p === '/games/leaderboard.html';
   }
 
-  function ensureActionPageCardsStyles() {
-    if (!isActionPageCardsRoute()) return;
-    if (document.querySelector('link[data-action-page-cards-css], link[href="' + ACTION_PAGE_CARDS_CSS + '"]')) return;
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = ACTION_PAGE_CARDS_CSS;
-    link.setAttribute('data-action-page-cards-css', 'true');
-    (document.head || document.documentElement).appendChild(link);
-  }
-
   function shouldMoveInlineLiveStatsToBottom() {
     return isActionPageCardsRoute();
   }
@@ -232,7 +221,6 @@
   function refresh() {
     var panel = getStatusPanel();
     if (panel) panel.refresh();
-    ensureActionPageCardsStyles();
     scheduleHeaderBadgeDock();
     scheduleInlineLiveStatsMove();
   }
@@ -245,7 +233,6 @@
   function mountBadge(containerOrId) {
     var panel = getStatusPanel();
     return panel ? panel.mountBadge(containerOrId).then(function (result) {
-      ensureActionPageCardsStyles();
       scheduleHeaderBadgeDock();
       scheduleInlineLiveStatsMove();
       return result;
@@ -283,7 +270,6 @@
     injectFixedBadge();
     dockHeaderBadge();
     observeHeaderBadgeDock();
-    ensureActionPageCardsStyles();
     moveInlineLiveStatsToBottom();
     observeInlineLiveStatsPosition();
     scheduleInlineLiveStatsMove();

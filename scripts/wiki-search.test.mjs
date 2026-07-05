@@ -105,6 +105,43 @@ async function renderSearchResults(indexData, query) {
   };
 }
 
+async function renderSearchAfterFailedIndexLoad(query) {
+  const elements = {
+    'search-results-page': { innerHTML: '' },
+    'search-heading': { textContent: '' }
+  };
+  const sandbox = {
+    console,
+    URL,
+    URLSearchParams,
+    fetch: async () => ({ ok: false, status: 503, json: async () => [] }),
+    history: { replaceState() {} },
+    document: {
+      readyState: 'loading',
+      addEventListener() {},
+      querySelectorAll() { return []; },
+      querySelector() { return null; },
+      getElementById(id) { return elements[id] || null; }
+    },
+    window: {
+      location: {
+        pathname: '/search.html',
+        search: '',
+        href: 'https://example.test/search.html'
+      }
+    }
+  };
+
+  vm.createContext(sandbox);
+  vm.runInContext(wikiJs, sandbox, { filename: 'wiki.js' });
+  await sandbox.loadWikiIndex();
+  sandbox.renderSearchPage(query);
+  return {
+    html: elements['search-results-page'].innerHTML,
+    heading: elements['search-heading'].textContent
+  };
+}
+
 const sb = makeSandbox();
 const scoreResult = sb.scoreResult;
 const selectSearchMatches = sb.selectSearchMatches;
@@ -277,6 +314,15 @@ const graffpunksStopwordOnly = {
   });
   assert.equal(scored.length, 0,
     'Long query partial fallback must not pass results that only match one meaningful token plus stopwords');
+}
+
+{
+  const { html, heading } = await renderSearchAfterFailedIndexLoad('bitcoin');
+  assert.ok(
+    html.includes('Search index failed to load. Refresh the page or try again later.'),
+    'Search page must render a clear failed-load message when wiki-index.json fails'
+  );
+  assert.equal(heading, 'All Articles', 'Failed-load search page keeps the all-articles heading');
 }
 
 // ── 11. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────

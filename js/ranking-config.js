@@ -5,6 +5,7 @@ module.exports = {
     factions: 7,
     tokens: 6,
     concepts: 5,
+    'nfts-digital-art': 4,
     misc: 3
   },
 

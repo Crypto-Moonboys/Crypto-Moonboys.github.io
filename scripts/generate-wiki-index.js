@@ -20,6 +20,7 @@ const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 
 // Approved root/tool pages that should be in search index (non-wiki)
 const ROOT_PAGES_TO_INDEX = getRootPagePaths();
+const APPROVED_INDEX_CATEGORIES = new Set(Object.keys(CONFIG.CATEGORY_PRIORITY));
 
 function walk(dir) {
   let results = [];
@@ -100,8 +101,33 @@ function slugFromUrl(url) {
 
 function cleanupCanonicalTitle(title) {
   return String(title || '')
+    .replace(/_/g, ' ')
+    .replace(/\s+â€”\s+Crypto Moonboys Wiki$/i, '')
     .replace(/\s+—\s+Crypto Moonboys Wiki$/i, '')
+    .replace(/\s+/g, ' ')
     .trim();
+}
+
+function formatPublicTitle(title) {
+  return String(title || '')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function clipAtWordBoundary(text, maxLength = 160) {
+  const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) return normalized;
+  const clipped = normalized.slice(0, maxLength + 1);
+  const lastSpace = clipped.lastIndexOf(' ');
+  const safe = lastSpace > 0 ? clipped.slice(0, lastSpace) : normalized.slice(0, maxLength);
+  return safe.replace(/[,\s;:.-]+$/g, '').trim() + '...';
+}
+
+function buildPublicDescription(html, description) {
+  const clean = String(description || '').replace(/\s+/g, ' ').trim();
+  if (clean) return clean;
+  return clipAtWordBoundary(stripHtml(html), 160);
 }
 
 function loadSamMemory() {
@@ -183,7 +209,8 @@ function detectCategory(filePath, html, samEntity) {
   if (isNftTemplateHtml(html)) return 'nfts-digital-art';
 
   if (samEntity && samEntity.category) {
-    return String(samEntity.category).toLowerCase();
+    const category = String(samEntity.category).toLowerCase();
+    return APPROVED_INDEX_CATEGORIES.has(category) ? category : 'misc';
   }
 
   const lowerPath = filePath.toLowerCase();
@@ -509,7 +536,7 @@ function processRootPagesForIndex(canonicalEntries, linkGraph) {
       const title = extractTitle(html);
       if (!title) continue;
       
-      const description = extractDescription(html);
+      const description = buildPublicDescription(html, extractDescription(html));
       const htmlKeywords = extractKeywords(html);
       const keywords = htmlKeywords.length > 0 ? htmlKeywords : [];
       
@@ -595,7 +622,7 @@ function run() {
     const title = extractTitle(html);
     if (!title) return;
 
-    const description = extractDescription(html);
+    const description = buildPublicDescription(html, extractDescription(html));
     const htmlKeywords = extractKeywords(html);
     const url = '/' + relative;
     const slug = slugFromUrl(url);
@@ -699,7 +726,7 @@ function run() {
         return alias;
       });
     return {
-      title: entry.title,
+      title: formatPublicTitle(entry.title),
       desc: entry.desc,
       url: entry.url,
       tags: entry.tags,

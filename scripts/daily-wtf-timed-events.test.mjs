@@ -155,6 +155,8 @@ check(workerJs.includes('getNextDailyWtfEvent') && workerJs.includes('addUtcDays
 check(workerJs.includes('countdown_seconds'), 'countdown field exists');
 
 check(workerJs.includes('daily_wtf_chain_options') && workerJs.includes("'available'"), 'chain options unlocked on completion');
+check(workerJs.includes("const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';"), 'scheduled timed events are owned only by the */5 cron');
+check(!workerJs.includes("cron === '* * * * *' &&") && !workerJs.includes('getUTCMinutes() % 5'), 'every-minute cron has no timed-event modulo fallback');
 check(workerJs.includes("status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE 'checked_in' END"), 'check-in cannot downgrade completed event');
 check(workerJs.includes('await upsertTelegramUser(env.DB, verified.user);'), 'check-in ensures telegram user upsert for FK safety');
 check(workerJs.includes("return err('event_inactive', 409)") && workerJs.includes("return err('event_expired', 409)"), 'completion enforces event active window');

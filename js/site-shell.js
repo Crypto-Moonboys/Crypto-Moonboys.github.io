@@ -260,8 +260,9 @@ window.__HUD_CONSOLIDATED__ = true;
     if (!shouldShowInlineStats(window.location.pathname)) return;
     if (content.querySelector('.inline-live-stats')) return;
     const container = document.createElement('div');
-    container.className = 'inline-live-stats inline-live-stats--left';
+    container.className = 'inline-live-stats inline-live-stats--bottom';
     container.setAttribute('aria-label', 'Live player stats');
+    container.setAttribute('data-live-stats-position', 'bottom');
     container.innerHTML = `
       <section class="hud-card hud-box hud-box--player" data-csp-panel>
         <h2>PLAYER LIVE FEED</h2>
@@ -283,7 +284,7 @@ window.__HUD_CONSOLIDATED__ = true;
         <p>Missed rewards and activity notes render without touching wiki articles.</p>
       </section>
     `;
-    content.insertBefore(container, content.firstChild);
+    content.appendChild(container);
   }
 
   function shouldShowInlineStats(pathname) {

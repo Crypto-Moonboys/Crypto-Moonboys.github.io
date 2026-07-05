@@ -60,10 +60,10 @@ for (const feedId of ['gkniftyheads_rarity', 'noballgamess_rarity']) {
   assert.ok(feed.output_files.some((file) => /template-rarity\.json$/.test(file)), `${feedId} should keep static template rarity output`);
 }
 
-assert.match(worker, /handleWaxOnEdgeRoute\(request, env, CORS_HEADERS\)/, 'WaxOnEdge route dispatch should remain wired');
-assert.match(worker, /handleWaxBridgeRoute\(request, env, CORS_HEADERS\)/, 'WAX bridge route dispatch should be wired');
+assert.match(worker, /handleWaxOnEdgeRoute\(request, env, corsHeaders\)/, 'WaxOnEdge route dispatch should remain wired');
+assert.match(worker, /handleWaxBridgeRoute\(request, env, corsHeaders\)/, 'WAX bridge route dispatch should be wired');
 assert.ok(
-  worker.indexOf('handleWaxOnEdgeRoute(request, env, CORS_HEADERS)') < worker.indexOf('handleWaxBridgeRoute(request, env, CORS_HEADERS)'),
+  worker.indexOf('handleWaxOnEdgeRoute(request, env, corsHeaders)') < worker.indexOf('handleWaxBridgeRoute(request, env, corsHeaders)'),
   'WAX bridge should not replace WaxOnEdge dispatch',
 );
 

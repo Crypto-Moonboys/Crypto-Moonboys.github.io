@@ -162,24 +162,31 @@ function buildCorsHeaders(request, env) {
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 
-function json(data, status = 200) {
+function makeJsonResponder(corsHeaders) {
+  return function respondJson(data, status = 200) {
+    return json(data, status, corsHeaders);
+  };
+}
+
+function makeErrorResponder(corsHeaders) {
+  return function respondError(message, status = 400) {
+    return err(message, status, corsHeaders);
+  };
+}
+
+function json(data, status = 200, corsHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    headers: {
+      'Content-Type': 'application/json',
+      ...corsHeaders,
+    },
   });
 }
 
-function err(message, status = 400) {
-  return json({ error: message }, status);
+function err(message, status = 400, corsHeaders = {}) {
+  return json({ error: message }, status, corsHeaders);
 }
-
-// CORS_HEADERS is a module-level reference updated at the start of each fetch() invocation.
-// Cloudflare Workers run each request in its own V8 isolate context, so there is no
-// concurrent-request race condition — module-level state is request-scoped in practice.
-// The mutable reference avoids threading `request` through every json()/err() call site.
-// NOTE: Do not reuse this worker outside a Cloudflare Workers runtime without refactoring
-// this to a parameter-passing pattern.
-let CORS_HEADERS = buildCorsHeaders(null, null);
 
 function logApiFailure(event, context = {}) {
   console.log('[moonboys-api]', JSON.stringify({
@@ -1186,7 +1193,7 @@ const DIGEST_PENDING_STALE_MS = DIGEST_PENDING_STALE_MINUTES * 60 * 1000;
 const DIGEST_SEND_BATCH_SIZE = 12;
 const DIGEST_SEND_MAX_CONCURRENCY = 3;
 
-async function ensurePlayerStateTables(db) {
+async function ensurePlayerStateTables(db, responseHeaders = {}) {
   for (const tableName of PLAYER_STATE_TABLES) {
     const row = await db.prepare(
       `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
@@ -1204,7 +1211,7 @@ async function ensurePlayerStateTables(db) {
           message: 'Player state tables are not yet configured. Apply migration 015.',
         }), {
           status: 503,
-          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...responseHeaders },
         }),
       };
     }
@@ -1212,7 +1219,7 @@ async function ensurePlayerStateTables(db) {
   return null; // all tables present
 }
 
-async function ensureWikiEngagementTables(db) {
+async function ensureWikiEngagementTables(db, responseHeaders = {}) {
   for (const tableName of WIKI_ENGAGEMENT_TABLES) {
     const row = await db.prepare(
       `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
@@ -1228,7 +1235,7 @@ async function ensureWikiEngagementTables(db) {
           message: 'Wiki engagement tables are not yet configured. Apply migration 029.',
         }), {
           status: 503,
-          headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...CORS_HEADERS },
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...responseHeaders },
         }),
       };
     }
@@ -1249,7 +1256,7 @@ function getIsoWeekKey() {
   return thu.getUTCFullYear() + '-W' + String(weekNum).padStart(2, '0');
 }
 
-async function ensureBattleChamberTables(db) {
+async function ensureBattleChamberTables(db, responseHeaders = {}) {
   const checks = await Promise.all(BATTLE_CHAMBER_TABLES.map((tableName) =>
     db.prepare(
       `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
@@ -1267,7 +1274,7 @@ async function ensureBattleChamberTables(db) {
         message: 'Battle Chamber authority tables are not yet configured. Apply migration 016.',
       }), {
         status: 503,
-        headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...responseHeaders },
       }),
     };
   }
@@ -2898,12 +2905,12 @@ export default {
   async fetch(request, env) {
     const url  = new URL(request.url);
     const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '');
-
-    // Set per-request CORS headers reflecting the request's Origin.
-    CORS_HEADERS = buildCorsHeaders(request, env);
+    const corsHeaders = buildCorsHeaders(request, env);
+    const json = makeJsonResponder(corsHeaders);
+    const err = makeErrorResponder(corsHeaders);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers: corsHeaders });
     }
 
     // ── GET /health ────────────────────────────────────────────────────────
@@ -2917,11 +2924,11 @@ export default {
     }
 
     if (path === '/api/waxonedge' || path.startsWith('/api/waxonedge/')) {
-      return handleWaxOnEdgeRoute(request, env, CORS_HEADERS);
+      return handleWaxOnEdgeRoute(request, env, corsHeaders);
     }
 
     if (path === '/api/wax' || path.startsWith('/api/wax/')) {
-      return handleWaxBridgeRoute(request, env, CORS_HEADERS);
+      return handleWaxBridgeRoute(request, env, corsHeaders);
     }
 
     if (path === '/daily-loop/state') {
@@ -4636,7 +4643,7 @@ export default {
       if (!pageId) return err('page_id required', 400);
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 1), 50);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const rows = await env.DB.prepare(`
           SELECT id, page_id, telegram_id, name, email_hash, avatar_url, telegram_username,
                  discord_username, text, status, votes_up, votes_down, created_at
@@ -4669,7 +4676,7 @@ export default {
       if (!name) return err('name required', 400);
       if (!text) return err('text required', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyOptionalWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
         const emailHash = await hashEmail(body?.email);
@@ -4743,7 +4750,7 @@ export default {
       if (!commentId) return err('comment_id required', 400);
       if (!vote) return err('vote must be up or down', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyRequiredWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
         const comment = await env.DB.prepare(`SELECT id FROM wiki_comments WHERE id = ? LIMIT 1`).bind(commentId).first();
@@ -4783,7 +4790,7 @@ export default {
       const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
       if (!pageId) return err('page_id required', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const row = await env.DB.prepare(`SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?`).bind(pageId).first();
         return json({ ok: true, page_id: pageId, count: Number(row?.count || 0) });
       } catch (error) {
@@ -4798,7 +4805,7 @@ export default {
       const pageId = normalizeWikiPageId(body?.page_id);
       if (!pageId) return err('page_id required', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyRequiredWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
         const insertResult = await env.DB.prepare(`
@@ -4831,7 +4838,7 @@ export default {
       if (!pageId) return err('page_id required', 400);
       if (!citeId) return err('cite_id required', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const row = await env.DB.prepare(`
           SELECT
             SUM(CASE WHEN vote = 'up' THEN 1 WHEN vote = 'down' THEN -1 ELSE 0 END) AS score,
@@ -4864,7 +4871,7 @@ export default {
       if (!citeId) return err('cite_id required', 400);
       if (!vote) return err('vote must be up or down', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyRequiredWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
         const existing = await env.DB.prepare(`
@@ -4922,7 +4929,7 @@ export default {
       const pageId = normalizeWikiPageId(body?.page_id);
       if (!pageId) return err('page_id required', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyRequiredWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
         const missionWindow = getTodayUtcDate();
@@ -4960,7 +4967,7 @@ export default {
       if (!missionId || !WIKI_MISSION_IDS.has(missionId)) return err('valid mission_id required', 400);
       if (source !== WIKI_MISSION_SOURCE_BY_ID[missionId]) return err('source does not match mission_id', 400);
       try {
-        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyRequiredWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
         const sourceExists = await verifyWikiMissionSourceAction(env.DB, {
@@ -5000,7 +5007,7 @@ export default {
       }
       const telegramId = verified.telegramId;
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const [arcadeState, faction, modState, streakState, masteryRows] = await Promise.all([
           env.DB.prepare(
             `SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1`
@@ -5110,7 +5117,7 @@ export default {
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const row = await env.DB.prepare(
           `SELECT active_modifier_id, unlocked_modifiers_json FROM player_modifier_state WHERE telegram_id = ? LIMIT 1`
         ).bind(verified.telegramId).first().catch(() => null);
@@ -5141,7 +5148,7 @@ export default {
         return err('Invalid modifier id', 400);
       }
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const nowStr = new Date().toISOString();
         await env.DB.prepare(`
           INSERT INTO player_modifier_state (telegram_id, active_modifier_id, updated_at)
@@ -5168,7 +5175,7 @@ export default {
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const rows = await env.DB.prepare(
           `SELECT mission_id, progress, completed FROM player_daily_mission_state
@@ -5210,7 +5217,7 @@ export default {
       const target = Math.max(1, Math.floor(Number(body?.target) || 1));
       if (!missionId) return err('mission_id required', 400);
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const nowStr = new Date().toISOString();
         // Upsert mission progress
@@ -5265,7 +5272,7 @@ export default {
       // For faction signal, auth is optional — we return aggregate data, with personal data when linked
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth).catch(() => ({ error: 'no_auth' }));
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const weekKey = getIsoWeekKey();
         // Get aggregate faction totals for today and week
@@ -5328,7 +5335,7 @@ export default {
       const reason = FACTION_SIGNAL_ALLOWED_REASONS.has(rawReason) ? rawReason : null;
       if (!reason) return err('reason not recognized', 400);
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const weekKey = getIsoWeekKey();
         const nowStr = new Date().toISOString();
@@ -5361,7 +5368,7 @@ export default {
         // Battle Chamber authority ownership model:
         // /faction/signal/contribute owns clout increments for contribution pressure.
         // /battle-chamber/event is used for explicit public proof activity.
-        const battleTables = await ensureBattleChamberTables(env.DB);
+        const battleTables = await ensureBattleChamberTables(env.DB, corsHeaders);
         if (!battleTables) {
           const safeBattleDelta = clampBattleClout(contribution);
           await applyBattleChamberCloutUpdate(env.DB, {
@@ -5405,7 +5412,7 @@ export default {
     if (path === '/battle-chamber/factions/standings' && request.method === 'GET') {
       const period = String(url.searchParams.get('period') || 'weekly').trim().toLowerCase();
       if (!BATTLE_CHAMBER_PERIODS.includes(period)) return err('period must be daily, weekly, monthly, or seasonal', 400);
-      const bcCheck = await ensureBattleChamberTables(env.DB);
+      const bcCheck = await ensureBattleChamberTables(env.DB, corsHeaders);
       if (bcCheck) return bcCheck.response;
       try {
         const periodKey = await getBattlePeriodKey(period, env.DB, Date.now());
@@ -5453,7 +5460,7 @@ export default {
       }
       const factionId = normalizeBattleChamberFaction(requestedFaction);
       if (!factionId) return err('Valid faction_id required', 400);
-      const bcCheck = await ensureBattleChamberTables(env.DB);
+      const bcCheck = await ensureBattleChamberTables(env.DB, corsHeaders);
       if (bcCheck) return bcCheck.response;
       try {
         const nowMs = Date.now();
@@ -5563,7 +5570,7 @@ export default {
 
     // ── GET /battle-chamber/activity ─────────────────────────────────────────
     if (path === '/battle-chamber/activity' && request.method === 'GET') {
-      const bcCheck = await ensureBattleChamberTables(env.DB);
+      const bcCheck = await ensureBattleChamberTables(env.DB, corsHeaders);
       if (bcCheck) return bcCheck.response;
       const rawFactionFilter = url.searchParams.get('faction_id');
       const requestedFaction = rawFactionFilter == null ? null : normalizeBattleChamberFaction(rawFactionFilter);
@@ -5613,7 +5620,7 @@ export default {
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
-      const bcCheck = await ensureBattleChamberTables(env.DB);
+      const bcCheck = await ensureBattleChamberTables(env.DB, corsHeaders);
       if (bcCheck) return bcCheck.response;
 
       const eventType = String(body?.event_type || '').trim().toLowerCase();
@@ -5677,7 +5684,7 @@ export default {
       const masteryXpDelta = Math.max(0, Math.min(500, Math.floor(Number(body?.mastery_xp_delta) || 0)));
       if (!gameId || gameId === 'global') return err('Valid game_id required', 400);
       try {
-        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        { const _ptCheck = await ensurePlayerStateTables(env.DB, corsHeaders); if (_ptCheck) return _ptCheck.response; }
         const nowStr = new Date().toISOString();
         await env.DB.prepare(`
           INSERT INTO player_game_mastery_state (telegram_id, game_id, best_score, runs_played, mastery_xp, updated_at)
@@ -5722,7 +5729,7 @@ export default {
       if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
           status: 405,
-          headers: { 'Content-Type': 'application/json', Allow: 'POST, OPTIONS', ...CORS_HEADERS },
+          headers: { 'Content-Type': 'application/json', Allow: 'POST, OPTIONS', ...corsHeaders },
         });
       }
 
@@ -5868,10 +5875,9 @@ export default {
   },
   async scheduled(event, env, _ctx) {
     const cron = String(event?.cron || '');
-    const cronNow = new Date();
     const shouldRunDigest = !cron || cron === '0 9 * * *';
     const shouldRunDailySummary = !cron || cron === '0 9 * * *';
-    const shouldRunTimedEvents = !cron || cron === '*/5 * * * *' || (cron === '* * * * *' && cronNow.getUTCMinutes() % 5 === 0);
+    const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
     const shouldRunWaxOnEdge = !cron || cron === '* * * * *';
 
     if (shouldRunWaxOnEdge) {

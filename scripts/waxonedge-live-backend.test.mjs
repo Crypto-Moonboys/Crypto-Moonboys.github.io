@@ -342,7 +342,7 @@ ok('migration stores price/volume/liquidity as TEXT',
   migration.includes('fdv_usd TEXT'));
 ok('worker delegates /api/waxonedge routes through moonboys-api',
   worker.includes("path === '/api/waxonedge'") &&
-  worker.includes('handleWaxOnEdgeRoute(request, env, CORS_HEADERS)'));
+  worker.includes('handleWaxOnEdgeRoute(request, env, corsHeaders)'));
 ok('worker scheduled handler runs WaxOnEdge sync', worker.includes('runWaxOnEdgeScheduledSync(env, cron)'));
 ok('WaxOnEdge scheduled sync runs bounded retention cleanup and exposes manual cleanup cron',
   route.includes("cron === 'waxonedge-retention-cleanup'") &&

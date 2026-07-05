@@ -31,6 +31,7 @@ function goToSearch(q) {
 
 /* ── SEARCH INDEX ────────────────────────────────────────────────────────── */
 let WIKI_INDEX = [];
+let WIKI_INDEX_LOAD_STATE = 'idle';
 
 /* ── ENTITY MAP ──────────────────────────────────────────────────────────── */
 let ENTITY_MAP = null;
@@ -99,15 +100,19 @@ function getDerivedJsonUrl(fileName) {
 async function loadWikiIndex() {
   const url = getDerivedJsonUrl('wiki-index.json');
   console.debug('[wiki.js] loading wiki-index from:', url);
+  WIKI_INDEX_LOAD_STATE = 'loading';
   try {
     const res = await fetch(url);
     console.debug('[wiki.js] wiki-index fetch status:', res.status);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     WIKI_INDEX = data.filter(x => x.url !== '/wiki/index.html');
+    WIKI_INDEX_LOAD_STATE = 'loaded';
     console.debug('[wiki.js] WIKI_INDEX loaded, entries:', WIKI_INDEX.length);
   } catch (err) {
     console.error('[wiki.js] wiki-index load failed:', err);
     WIKI_INDEX = [];
+    WIKI_INDEX_LOAD_STATE = 'failed';
   }
 }
 
@@ -336,7 +341,13 @@ function renderSearchPage(query) {
 
   const q = String(query || '').trim();
 
-  if (!WIKI_INDEX.length) {
+  if (WIKI_INDEX_LOAD_STATE === 'failed') {
+    container.innerHTML = '<p class="search-empty">Search index failed to load. Refresh the page or try again later.</p>';
+    if (heading) heading.textContent = 'All Articles';
+    return;
+  }
+
+  if (WIKI_INDEX_LOAD_STATE !== 'loaded') {
     container.innerHTML = '<p class="search-empty">Loading articles…</p>';
     if (heading) heading.textContent = 'All Articles';
     return;

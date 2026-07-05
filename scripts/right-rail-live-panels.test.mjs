@@ -12,6 +12,7 @@ function check(condition, message) {
 
 const community = read('community.html');
 const games = read('games/index.html');
+const gamesLeaderboard = read('games/leaderboard.html');
 const indexHtml = read('index.html');
 const searchHtml = read('search.html');
 const timelineHtml = read('timeline.html');
@@ -40,6 +41,7 @@ const telegramCommunity = read('js/telegram-community.js');
 const leaderboardClient = read('js/leaderboard-client.js');
 const moonboysState = read('js/core/moonboys-state.js');
 const retroTheme = read('css/retro-16bit-theme.css');
+const ensureInlineLiveStatsBlock = functionBlock(siteShell, 'ensureInlineLiveStats');
 
 function hasScript(html, src) {
   return html.includes(`src="${src}"`) || html.includes(`src='${src}'`);
@@ -412,6 +414,11 @@ check(!rightPanelAllowlist.includes('/wiki/') && !shouldShowRightPanelBlock.incl
 check(!rightPanelAllowlist.includes('/categories/') && !shouldShowRightPanelBlock.includes("'/categories/'"), 'site-shell.js does not auto-enable right rail for /categories/ prefix');
 check(!rightPanelAllowlist.includes('/community.html') && !community.includes('page-has-right-panel'), 'community.html uses inline live stats without right-rail allowlist/layout opt-in');
 check(!rightPanelAllowlist.includes('/games/index.html') && !rightPanelAllowlist.includes('/games/') && !games.includes('page-has-right-panel'), 'games/index.html uses inline live stats without right-rail allowlist/layout opt-in');
+check(ensureInlineLiveStatsBlock.includes("container.className = 'inline-live-stats inline-live-stats--bottom'") && ensureInlineLiveStatsBlock.includes("data-live-stats-position', 'bottom'") && ensureInlineLiveStatsBlock.includes('content.appendChild(container)'), 'site-shell.js inserts inline live stats at the bottom immediately');
+check(!ensureInlineLiveStatsBlock.includes('content.insertBefore(container, content.firstChild)'), 'site-shell.js no longer inserts inline live stats at the top before later correction');
+check(community.includes('href="/css/action-page-cards.css"'), 'community.html loads action-page card CSS in the document head');
+check(games.includes('href="/css/action-page-cards.css"'), 'games/index.html loads action-page card CSS in the document head');
+check(gamesLeaderboard.includes('href="/css/action-page-cards.css"'), 'games/leaderboard.html loads action-page card CSS in the document head');
 check(!nftTemplateExample.includes('page-has-right-panel'), 'NFT template example does not force page-has-right-panel');
 check(nftTemplateExample.includes('page-standard-shell'), 'NFT template example uses page-standard-shell');
 // Missed history persistence: data is accumulated, not reset by UTC day
