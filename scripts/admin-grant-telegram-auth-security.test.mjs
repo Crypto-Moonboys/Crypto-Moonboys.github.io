@@ -190,6 +190,28 @@ function seedLinkedUser(db, telegramId, { username = 'moonboy_admin' } = {}) {
   const db = new MockD1();
   const res = await request('/admin/blocktopia/grant-xp', {
     body: { telegram_id: TARGET_ID, xp: 10 },
+    env: { ...makeEnv(db), TELEGRAM_BOT_TOKEN: '' },
+  });
+  assert.equal(res.status, 503, 'blocktopia admin grant must fail closed when TELEGRAM_BOT_TOKEN is missing');
+  const json = await readJson(res);
+  assert.equal(json.error, 'Admin grant route is not configured');
+}
+
+{
+  const db = new MockD1();
+  const res = await request('/admin/arcade/grant-xp', {
+    body: { telegram_id: TARGET_ID, xp: 10 },
+    env: { ...makeEnv(db), ADMIN_TELEGRAM_IDS: '' },
+  });
+  assert.equal(res.status, 503, 'arcade admin grant must fail closed when ADMIN_TELEGRAM_IDS is missing');
+  const json = await readJson(res);
+  assert.equal(json.error, 'Admin grant route is not configured');
+}
+
+{
+  const db = new MockD1();
+  const res = await request('/admin/blocktopia/grant-xp', {
+    body: { telegram_id: TARGET_ID, xp: 10 },
     headers: { 'X-Admin-Secret': ADMIN_SECRET },
     env: makeEnv(db),
   });
