@@ -2,6 +2,10 @@ name               = "moonboys-anti-cheat"
 main               = "worker.js"
 compatibility_date = "2024-11-01"
 
+[observability]
+enabled = true
+head_sampling_rate = 0.1
+
 # KV namespace — same binding and ID as leaderboard-worker so the anti-cheat
 # scanner can write anticheat:blocked:{telegram_id} keys that the leaderboard
 # worker reads before accepting score submissions.

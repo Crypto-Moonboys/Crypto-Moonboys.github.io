@@ -59,19 +59,21 @@ Do not move WaxOnEdge to Railway, Vercel, or the Moonboys VPS unless Cloudflare 
 
 ## Runtime configuration
 
-Workers Paid is active.
+Workers Paid is active, but the shared Moonboys API Worker should still run
+WaxOnEdge cron in free-safe rotation unless a short, supervised backfill window is
+being deployed.
 
 The Worker should run with:
 
 ```text
-WAXONEDGE_FREE_SAFE_MODE=false
+WAXONEDGE_FREE_SAFE_MODE=true
 ```
 
 This must be visible in health output:
 
 ```json
 "runtime_config": {
-  "free_safe_mode": false
+  "free_safe_mode": true
 }
 ```
 
@@ -214,7 +216,7 @@ The internal candle builder is structurally active, but candles remain unavailab
 At the time of this handover, health showed:
 
 ```text
-free_safe_mode=false
+free_safe_mode=true
 trade_indexing active
 trade_rows_indexed=0
 rows_written=0

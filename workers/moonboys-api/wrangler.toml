@@ -19,8 +19,12 @@ crons = ["* * * * *", "*/5 * * * *", "0 9 * * *"]
 TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
-WAXONEDGE_FREE_SAFE_MODE = "false"
+WAXONEDGE_FREE_SAFE_MODE = "true"
 WAXONEDGE_HYPERION_API = "https://wax.eosusa.io/v2"
+
+[observability]
+enabled = true
+head_sampling_rate = 0.1
 
 # WaxOnEdge live indexer probe config. Set production values explicitly when the
 # deployed Worker has a reachable VPS URL; never commit the shared secret value:

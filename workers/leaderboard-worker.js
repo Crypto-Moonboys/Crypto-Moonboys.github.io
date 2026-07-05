@@ -231,6 +231,53 @@ function normaliseGameKey(raw) {
   return GAME_KEY_ALIASES[cleaned] || cleaned;
 }
 
+function currentSeasonIndex(now = Date.now()) {
+  return Math.floor((now - SEASON_EPOCH_MS) / SEASON_LENGTH_MS);
+}
+
+function currentSeasonNumber(now = Date.now()) {
+  return currentSeasonIndex(now) + 1;
+}
+
+function currentSeasonStartIso(now = Date.now()) {
+  return new Date(SEASON_EPOCH_MS + currentSeasonIndex(now) * SEASON_LENGTH_MS).toISOString();
+}
+
+function currentYearStartIso(now = Date.now()) {
+  return new Date(Date.UTC(new Date(now).getUTCFullYear(), 0, 1)).toISOString();
+}
+
+function canonicalMetaForNow(now = Date.now()) {
+  return {
+    season_start: currentSeasonStartIso(now),
+    season_number: currentSeasonNumber(now),
+    year_start: currentYearStartIso(now),
+  };
+}
+
+function isMetaDriftedFromCanonical(meta, now = Date.now()) {
+  if (!meta || typeof meta !== 'object') return true;
+  const expected = canonicalMetaForNow(now);
+  const storedSeasonNumber = Math.floor(Number(meta.season_number) || 0);
+  const storedSeasonStart = new Date(meta.season_start).getTime();
+  const storedYearStart = new Date(meta.year_start).getTime();
+  const expectedSeasonStart = new Date(expected.season_start).getTime();
+  const expectedYearStart = new Date(expected.year_start).getTime();
+  return (
+    storedSeasonNumber !== expected.season_number ||
+    !Number.isFinite(storedSeasonStart) ||
+    !Number.isFinite(storedYearStart) ||
+    storedSeasonStart !== expectedSeasonStart ||
+    storedYearStart !== expectedYearStart
+  );
+}
+
+async function repairMetaToCanonical(env, now = Date.now()) {
+  const meta = canonicalMetaForNow(now);
+  await env.LEADERBOARD.put("leaderboard:meta", JSON.stringify(meta));
+  return meta;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -444,8 +491,12 @@ export default {
  * exclusively here — individual games never trigger resets.
  */
 async function checkAndRunResets(env) {
-  const meta = await getOrInitMeta(env);
+  let meta = await getOrInitMeta(env);
   const now = Date.now();
+
+  if (isMetaDriftedFromCanonical(meta, now)) {
+    meta = await repairMetaToCanonical(env, now);
+  }
 
   // Yearly reset takes priority (also performs the final seasonal reset)
   const currentYear = new Date(now).getUTCFullYear();
@@ -499,8 +550,7 @@ async function runSeasonalReset(env, meta, now) {
   // 4. Advance meta
   await env.LEADERBOARD.put("leaderboard:meta", JSON.stringify({
     ...meta,
-    season_start:  new Date(now).toISOString(),
-    season_number: meta.season_number + 1
+    ...canonicalMetaForNow(now),
   }));
 }
 
@@ -512,8 +562,6 @@ async function runSeasonalReset(env, meta, now) {
  *  4. Reset yearly ranks / awards in meta; preserve all-time board
  */
 async function runYearlyReset(env, meta, now) {
-  const currentYear = new Date(now).getUTCFullYear();
-
   // 1. Close current season (final all-time eval + seasonal archive + seasonal reset)
   const seasonalBoard = await getBoard(env, "seasonal");
   if (seasonalBoard.length > 0) {
@@ -554,11 +602,7 @@ async function runYearlyReset(env, meta, now) {
   ]);
 
   // 4. Update meta: new year + new season (all-time board untouched)
-  await env.LEADERBOARD.put("leaderboard:meta", JSON.stringify({
-    season_start:  new Date(now).toISOString(),
-    season_number: meta.season_number + 1,
-    year_start:    new Date(Date.UTC(currentYear, 0, 1)).toISOString()
-  }));
+  await env.LEADERBOARD.put("leaderboard:meta", JSON.stringify(canonicalMetaForNow(now)));
 }
 
 /* ── All-Time High board (top 420, never resets) ─────────────────────────── */
@@ -858,12 +902,7 @@ async function getOrInitMeta(env) {
     } catch { /* fall through to init */ }
   }
   const now        = Date.now();
-  const seasonIdx  = Math.floor((now - SEASON_EPOCH_MS) / SEASON_LENGTH_MS);
-  const meta = {
-    season_start:  new Date(SEASON_EPOCH_MS + seasonIdx * SEASON_LENGTH_MS).toISOString(),
-    season_number: seasonIdx + 1,
-    year_start:    new Date(Date.UTC(new Date(now).getUTCFullYear(), 0, 1)).toISOString()
-  };
+  const meta = canonicalMetaForNow(now);
   await env.LEADERBOARD.put("leaderboard:meta", JSON.stringify(meta));
   return meta;
 }

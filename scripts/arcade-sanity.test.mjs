@@ -443,6 +443,14 @@ check(
   'leaderboard-worker.js defines TELEGRAM_AUTH_MAX_AGE_SECONDS for Telegram verification',
 );
 check(
+  workerSrc.includes('function canonicalMetaForNow') &&
+    workerSrc.includes('function isMetaDriftedFromCanonical') &&
+    workerSrc.includes('function repairMetaToCanonical') &&
+    workerSrc.includes('meta = await repairMetaToCanonical(env, now)') &&
+    !workerSrc.includes('now - seasonStart >= SEASON_LENGTH_MS || isMeta'),
+  'leaderboard-worker.js repairs stale KV season metadata without destructive seasonal reset',
+);
+check(
   workerSrc.includes('verifyLeaderboardTelegramAuth'),
   'leaderboard-worker.js calls verifyLeaderboardTelegramAuth before accepting scores',
 );
