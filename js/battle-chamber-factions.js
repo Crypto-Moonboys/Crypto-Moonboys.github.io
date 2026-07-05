@@ -795,14 +795,21 @@
       '<ul>' + previewRows + '</ul>';
   }
 
-  function openDisclosureForHash() {
-    if (!window.location.hash) return;
-    var id = window.location.hash.slice(1);
+  var lastAutoOpenedDisclosureHash = '';
+
+  function openDisclosureForHash(force) {
+    var hash = window.location.hash;
+    if (!hash) return;
+    if (!force && hash === lastAutoOpenedDisclosureHash) return;
+    var id = hash.slice(1);
     if (!id) return;
     var target = document.getElementById(id);
     if (!target) return;
     var disclosure = target.closest ? target.closest('details.bc-disclosure') : null;
-    if (disclosure) disclosure.open = true;
+    if (disclosure) {
+      disclosure.open = true;
+      lastAutoOpenedDisclosureHash = hash;
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -876,7 +883,7 @@
         openDisclosureForHash();
       });
     }
-    window.addEventListener('hashchange', openDisclosureForHash);
+    window.addEventListener('hashchange', function () { openDisclosureForHash(true); });
   }
 
   // Run after DOM is ready
