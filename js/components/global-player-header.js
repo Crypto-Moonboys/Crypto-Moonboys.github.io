@@ -42,8 +42,11 @@
   var HEADER_BADGE_ID = 'moonboys-global-status-badge';
   var HEADER_NAV_ID = 'global-nav';
   var HEADER_BADGE_STYLE_ID = 'moonboys-header-status-dock-style';
+  var LIVE_STATS_BOTTOM_STYLE_ID = 'moonboys-live-stats-bottom-style';
   var _headerBadgeObserver = null;
   var _headerBadgeDockPending = false;
+  var _liveStatsObserver = null;
+  var _liveStatsMovePending = false;
 
   // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -132,6 +135,57 @@
     _headerBadgeObserver.observe(root, { childList: true, subtree: true });
   }
 
+  function normalizeLiveStatsPath(pathname) {
+    var p = String(pathname || window.location.pathname || '/').split('#')[0].split('?')[0];
+    if (!p.startsWith('/')) p = '/' + p;
+    p = p.replace(/\/+/g, '/');
+    if (p === '/games') return '/games/';
+    return p;
+  }
+
+  function shouldMoveInlineLiveStatsToBottom() {
+    var p = normalizeLiveStatsPath(window.location.pathname);
+    return p === '/community.html' || p === '/games/' || p === '/games/index.html' || p === '/games/leaderboard.html';
+  }
+
+  function injectLiveStatsBottomStyles() {
+    if (document.getElementById(LIVE_STATS_BOTTOM_STYLE_ID)) return;
+    var style = document.createElement('style');
+    style.id = LIVE_STATS_BOTTOM_STYLE_ID;
+    style.textContent = '.inline-live-stats--bottom{margin:clamp(24px,3vw,42px) 0 0!important;}';
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function moveInlineLiveStatsToBottom() {
+    if (!shouldMoveInlineLiveStatsToBottom()) return;
+    var content = document.getElementById('content') || document.querySelector('main');
+    var stats = content ? content.querySelector('.inline-live-stats') : null;
+    if (!content || !stats) return;
+    injectLiveStatsBottomStyles();
+    stats.classList.remove('inline-live-stats--left');
+    stats.classList.add('inline-live-stats--bottom');
+    stats.setAttribute('data-live-stats-position', 'bottom');
+    if (stats.parentElement === content && stats.nextElementSibling === null) return;
+    content.appendChild(stats);
+  }
+
+  function scheduleInlineLiveStatsMove() {
+    if (_liveStatsMovePending) return;
+    _liveStatsMovePending = true;
+    nextFrame(function () {
+      _liveStatsMovePending = false;
+      moveInlineLiveStatsToBottom();
+    });
+  }
+
+  function observeInlineLiveStatsPosition() {
+    if (_liveStatsObserver || typeof MutationObserver !== 'function' || !shouldMoveInlineLiveStatsToBottom()) return;
+    var content = document.getElementById('content') || document.querySelector('main');
+    if (!content) return;
+    _liveStatsObserver = new MutationObserver(scheduleInlineLiveStatsMove);
+    _liveStatsObserver.observe(content, { childList: true });
+  }
+
   /**
    * For pages that have no wiki #site-header (e.g. Block Topia gate),
    * inject a compact fixed badge at top-right so the player always sees
@@ -164,6 +218,7 @@
     var panel = getStatusPanel();
     if (panel) panel.refresh();
     scheduleHeaderBadgeDock();
+    scheduleInlineLiveStatsMove();
   }
 
   function mount(containerOrId) {
@@ -175,6 +230,7 @@
     var panel = getStatusPanel();
     return panel ? panel.mountBadge(containerOrId).then(function (result) {
       scheduleHeaderBadgeDock();
+      scheduleInlineLiveStatsMove();
       return result;
     }) : undefined;
   }
@@ -210,6 +266,9 @@
     injectFixedBadge();
     dockHeaderBadge();
     observeHeaderBadgeDock();
+    moveInlineLiveStatsToBottom();
+    observeInlineLiveStatsPosition();
+    scheduleInlineLiveStatsMove();
     // Defer panel creation by one task to guarantee live-activity-summary.js
     // has already bootstrapped and set window.MOONBOYS_LIVE_ACTIVITY.  Both
     // scripts load synchronously in the same <head>, but LAS bootstraps via
