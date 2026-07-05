@@ -107,6 +107,30 @@
 
   function el(id) { return document.getElementById(id); }
 
+  var PLATFORM = window.BATTLE_CHAMBER_PLATFORM || null;
+  var CONTENT = PLATFORM && PLATFORM.content ? PLATFORM.content : {};
+  var SECTION_STATE = PLATFORM && PLATFORM.sections ? PLATFORM.sections : null;
+  var IDENTITY_PROVIDER = PLATFORM && PLATFORM.identityProvider ? PLATFORM.identityProvider : null;
+  var DISCLOSURE_STORAGE_KEY = PLATFORM && PLATFORM.disclosureStorageKey
+    ? PLATFORM.disclosureStorageKey
+    : 'moonboys:battle-chamber:disclosures:v1';
+  var SECTION_IDS = [
+    'battle-faction-standings',
+    'battle-weekly-war',
+    'battle-monthly-clout',
+    'battle-seasonal-campaign',
+    'battle-join-faction',
+    'battle-active-missions',
+    'battle-faction-perks',
+    'battle-clout-rewards',
+    'battle-faction-reward-unlocks',
+    'battle-faction-proof-feed',
+    'battle-todays-active-options',
+    'battle-missed-perks-history',
+  ];
+  var renderController = null;
+  var hashOpenTimer = null;
+
   // ── War data helpers ──────────────────────────────────────────────────────
 
   /**
@@ -151,6 +175,9 @@
   }
 
   function isTelegramLinked() {
+    if (IDENTITY_PROVIDER && typeof IDENTITY_PROVIDER.isLinked === 'function') {
+      return IDENTITY_PROVIDER.isLinked();
+    }
     try {
       var identity = window.MOONBOYS_IDENTITY;
       return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
@@ -176,8 +203,9 @@
 
   function getMissions(factionKey) {
     var cache = window.MOONBOYS_MISSION_DATA;
-    if (cache && cache[factionKey] && Array.isArray(cache[factionKey].daily)) {
-      return cache[factionKey].daily.slice(0, 3);
+    var factions = cache && cache.factions ? cache.factions : cache;
+    if (factions && factions[factionKey] && Array.isArray(factions[factionKey].daily)) {
+      return factions[factionKey].daily.slice(0, 3);
     }
     return null;
   }
@@ -189,6 +217,35 @@
       if (LIVE_FACTIONS[i].key === key) return LIVE_FACTIONS[i];
     }
     return LIVE_FACTIONS[0];
+  }
+
+  function sectionState(id, state, message) {
+    if (SECTION_STATE && typeof SECTION_STATE.setState === 'function') {
+      SECTION_STATE.setState(id, state, message);
+    }
+  }
+
+  function renderSection(id, fn, status) {
+    if (renderController && typeof renderController.runSection === 'function') {
+      renderController.runSection(id, fn, status);
+      return;
+    }
+    try {
+      fn(status || null);
+      sectionState(id, 'loaded');
+    } catch (_) {
+      if (SECTION_STATE && typeof SECTION_STATE.showFallback === 'function') {
+        SECTION_STATE.showFallback(id, 'failed', CONTENT.failed || 'This section could not load.');
+      }
+    }
+  }
+
+  function requestRender(reason, status) {
+    if (renderController && typeof renderController.request === 'function') {
+      renderController.request(reason, status || null);
+      return;
+    }
+    renderAll(status || null);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -422,11 +479,11 @@
 
       container.innerHTML =
         '<div class="bc-join-season-notice">' +
-          '<p class="bc-join-season-lock-copy">Choose carefully. Your faction is locked for the current season.</p>' +
-          '<p class="bc-join-season-reset-copy">At season reset, your faction lock clears and you can join again or pick a new side.</p>' +
-          '<p class="bc-join-link-copy">Faction clout only counts when you are Telegram-linked. No faction, no faction clout.</p>' +
+          '<p class="bc-join-season-lock-copy">' + esc(CONTENT.factionLock || 'Choose carefully. Your faction is locked for the current season.') + '</p>' +
+          '<p class="bc-join-season-reset-copy">' + esc(CONTENT.factionReset || 'At season reset, your faction lock clears and you can join again or pick a new side.') + '</p>' +
+          '<p class="bc-join-link-copy">' + esc(CONTENT.factionIdentityRequired || 'Faction clout only counts when your identity provider is linked. No faction, no faction clout.') + '</p>' +
         '</div>' +
-        '<p class="bc-join-intro">Join a faction to make your arcade activity count for something bigger. Your runs build clout. Your faction earns pressure.</p>' +
+        '<p class="bc-join-intro">' + esc(CONTENT.joinIntro || 'Join a faction to make your arcade activity count for something bigger. Your runs build clout. Your faction earns pressure.') + '</p>' +
         '<div class="bc-join-grid">' + cards + '</div>';
 
       // Wire join buttons
@@ -436,16 +493,13 @@
           var targetFaction = btn.getAttribute('data-faction');
           if (!targetFaction) return;
 
-          // Check Telegram linked state first.  Unlinked users must link before joining.
-          var identity = window.MOONBOYS_IDENTITY;
-          var isLinked = identity && typeof identity.isTelegramLinked === 'function'
-            ? identity.isTelegramLinked()
-            : false;
+          // Check linked identity first. Unlinked users must connect before joining.
+          var isLinked = isTelegramLinked();
 
           var api = window.MOONBOYS_FACTION;
 
           if (!isLinked || !api || typeof api.joinFaction !== 'function') {
-            // Not linked — redirect to Telegram link CTA page
+            // Not linked — redirect to the identity link CTA page
             window.location.href = '/gkniftyheads-incubator.html';
             return;
           }
@@ -541,7 +595,7 @@
                 } else if (isBackendUnavailable) {
                   container.innerHTML =
                     '<div class="bc-join-locked-panel">' +
-                      '<div class="bc-join-locked-msg">Faction backend is updating. Your Telegram link is active, but faction join is temporarily unavailable. Try again after deployment.</div>' +
+                      '<div class="bc-join-locked-msg">' + esc(CONTENT.backendUnavailable || 'Faction backend is updating. Your identity link is active, but faction join is temporarily unavailable. Try again after deployment.') + '</div>' +
                       '<button class="bc-join-cancel-btn interactive" id="bc-backend-back">Back</button>' +
                     '</div>';
                   var backendBackBtn = container.querySelector('#bc-backend-back');
@@ -581,8 +635,10 @@
     var rows = '';
     if (missions && missions.length) {
       rows = missions.map(function (m) {
-        var progress = (window.MOONBOYS_MISSION_DATA && window.MOONBOYS_MISSION_DATA[currentFaction] && window.MOONBOYS_MISSION_DATA[currentFaction].progress)
-          ? (window.MOONBOYS_MISSION_DATA[currentFaction].progress[m.id] || { progress: 0, complete: false })
+        var missionCache = window.MOONBOYS_MISSION_DATA || {};
+        var missionFactions = missionCache.factions || missionCache;
+        var progress = (missionFactions[currentFaction] && missionFactions[currentFaction].progress)
+          ? (missionFactions[currentFaction].progress[m.id] || { progress: 0, complete: false })
           : { progress: 0, complete: false };
         return '<div class="bc-mission-row' + (progress.complete ? ' bc-mission-row--done' : '') + '">' +
           '<span class="bc-mission-label">' + esc(m.label) + '</span>' +
@@ -592,13 +648,13 @@
           '</div>';
       }).join('');
     } else {
-      rows = '<div class="bc-missions-loading">Loading faction missions… (connect Telegram to sync live data)</div>';
+      rows = '<div class="bc-missions-loading">' + esc(CONTENT.missionsLoading || 'Loading faction missions... (connect your identity provider to sync live data)') + '</div>';
     }
 
     container.innerHTML =
       '<div class="bc-missions-header">' + meta.icon + ' ' + esc(meta.label) + ' — Today\'s Missions</div>' +
       '<div class="bc-missions-list">' + rows + '</div>' +
-      '<div class="bc-missions-note">Mission rewards are clout/war contribution only. Telegram-linked users sync mission progress to server.</div>';
+      '<div class="bc-missions-note">' + esc(CONTENT.missionsNote || 'Mission rewards are clout/war contribution only. Linked identity users sync mission progress to server.') + '</div>';
   }
 
   // ── 7. Faction Perks + Roguelite Options ─────────────────────────────────
@@ -716,7 +772,7 @@
     }
     container.innerHTML =
       '<p class="bc-proof-intro">Live server standings unavailable. Showing local display state.</p>' +
-      '<p class="bc-proof-intro">Faction activity, XP movement, and public proof appear below where wired. Telegram-linked users sync activity to the server.</p>';
+      '<p class="bc-proof-intro">' + esc(CONTENT.proofFallback || 'Faction activity, XP movement, and public proof appear below where wired. Linked identity users sync activity to the server.') + '</p>';
   }
 
   function renderTodaysActiveOptions(status) {
@@ -727,8 +783,8 @@
       container.innerHTML =
         '<p>Today’s active opportunities reset at UTC midnight.</p>' +
         '<p>Complete missions, runs, and proof actions to unlock more choices.</p>' +
-        '<p>Link Telegram to load your live daily state.</p>' +
-        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+        '<p>' + esc(CONTENT.identityRequired || 'Connect an identity provider to load linked account state.') + '</p>' +
+        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Identity</a></p>';
       return;
     }
     var dailyState = getRogueliteDailyState();
@@ -772,7 +828,7 @@
         '<p>The city kept moving while you were away.</p>' +
         '<p>Missed perks history builds over time.</p>' +
         '<p>Log in daily to stop the missed list growing.</p>' +
-        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Identity</a></p>';
       return;
     }
     var dailyState = getRogueliteDailyState();
@@ -797,6 +853,52 @@
 
   var lastAutoOpenedDisclosureHash = '';
 
+  function readDisclosureState() {
+    try {
+      return JSON.parse(window.localStorage.getItem(DISCLOSURE_STORAGE_KEY) || '{}') || {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function writeDisclosureState(state) {
+    try {
+      window.localStorage.setItem(DISCLOSURE_STORAGE_KEY, JSON.stringify(state || {}));
+    } catch (_) {}
+  }
+
+  function disclosureKey(details, index) {
+    if (details.id) return details.id;
+    var target = details.querySelector('[id]');
+    if (target && target.id) return target.id;
+    return 'bc-disclosure-' + index;
+  }
+
+  function restoreDisclosureState() {
+    var state = readDisclosureState();
+    var disclosures = document.querySelectorAll('details.bc-disclosure');
+    for (var i = 0; i < disclosures.length; i++) {
+      var key = disclosureKey(disclosures[i], i);
+      if (Object.prototype.hasOwnProperty.call(state, key)) {
+        disclosures[i].open = !!state[key];
+      }
+      disclosures[i].dataset.bcDisclosureKey = key;
+    }
+  }
+
+  function bindDisclosureState() {
+    var disclosures = document.querySelectorAll('details.bc-disclosure');
+    for (var i = 0; i < disclosures.length; i++) {
+      disclosures[i].addEventListener('toggle', function (event) {
+        var details = event.currentTarget;
+        var key = details.dataset.bcDisclosureKey || disclosureKey(details, 0);
+        var state = readDisclosureState();
+        state[key] = !!details.open;
+        writeDisclosureState(state);
+      });
+    }
+  }
+
   function openDisclosureForHash(force) {
     var hash = window.location.hash;
     if (!hash) return;
@@ -809,7 +911,21 @@
     if (disclosure) {
       disclosure.open = true;
       lastAutoOpenedDisclosureHash = hash;
+      window.setTimeout(function () {
+        if (typeof target.scrollIntoView === 'function') {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 30);
     }
+  }
+
+  function scheduleHashOpen(force) {
+    if (hashOpenTimer) clearTimeout(hashOpenTimer);
+    hashOpenTimer = setTimeout(function () {
+      hashOpenTimer = null;
+      openDisclosureForHash(!!force);
+      window.setTimeout(function () { openDisclosureForHash(!!force); }, 160);
+    }, 80);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -817,18 +933,18 @@
   // ─────────────────────────────────────────────────────────────────────────
 
   function renderAll(status) {
-    renderStandings();
-    renderWeeklyWar();
-    renderMonthlyClout();
-    renderSeasonalCampaign();
-    renderJoinFaction(status);
-    renderActiveMissions(status);
-    renderFactionPerks();
-    renderCloutRewards();
-    renderFactionRewardUnlocks();
-    renderProofFeedHeader();
-    renderTodaysActiveOptions(status);
-    renderMissedPerksHistory();
+    renderSection('battle-faction-standings', renderStandings, status);
+    renderSection('battle-weekly-war', renderWeeklyWar, status);
+    renderSection('battle-monthly-clout', renderMonthlyClout, status);
+    renderSection('battle-seasonal-campaign', renderSeasonalCampaign, status);
+    renderSection('battle-join-faction', renderJoinFaction, status);
+    renderSection('battle-active-missions', renderActiveMissions, status);
+    renderSection('battle-faction-perks', renderFactionPerks, status);
+    renderSection('battle-clout-rewards', renderCloutRewards, status);
+    renderSection('battle-faction-reward-unlocks', renderFactionRewardUnlocks, status);
+    renderSection('battle-faction-proof-feed', renderProofFeedHeader, status);
+    renderSection('battle-todays-active-options', renderTodaysActiveOptions, status);
+    renderSection('battle-missed-perks-history', renderMissedPerksHistory, status);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -836,16 +952,38 @@
   // ─────────────────────────────────────────────────────────────────────────
 
   function init() {
+    if (PLATFORM && typeof PLATFORM.createRenderController === 'function') {
+      renderController = PLATFORM.createRenderController({
+        sections: SECTION_IDS,
+        debounceMs: 90,
+        callbacks: {
+          renderAll: renderAll,
+          afterRender: function () { scheduleHashOpen(false); },
+        },
+      });
+      renderController.markLoading();
+    }
+    restoreDisclosureState();
+    bindDisclosureState();
+    document.addEventListener('click', function (event) {
+      var retry = event.target && event.target.closest ? event.target.closest('[data-bc-retry]') : null;
+      if (!retry) return;
+      if (renderController && typeof renderController.retry === 'function') {
+        renderController.retry();
+      } else {
+        requestRender('retry', null);
+      }
+    });
+
     // Initial render pass (works offline / pre-auth / before bridge fires)
-    renderAll(null);
-    openDisclosureForHash();
+    requestRender('initial', null);
+    scheduleHashOpen(false);
 
     // Hydrate faction status — triggers a re-render with current server state
     var factionApi = window.MOONBOYS_FACTION;
     if (factionApi && typeof factionApi.loadStatus === 'function') {
       factionApi.loadStatus().then(function (status) {
-        renderAll(status || null);
-        openDisclosureForHash();
+        requestRender('faction-status-loaded', status || null);
       }).catch(function () {
         // Failure is safe — page already rendered with cached/placeholder data
       });
@@ -853,37 +991,33 @@
 
     // Re-render when the faction data bridge has populated window globals
     window.addEventListener('battle-chamber:faction-data-ready', function () {
-      renderAll(null);
-      openDisclosureForHash();
+      requestRender('faction-data-ready', null);
     });
 
     // Re-render when reward data is ready
     window.addEventListener('battle-chamber:faction-rewards-ready', function () {
-      renderFactionRewardUnlocks();
+      requestRender('faction-rewards-ready', null);
     });
     window.addEventListener('battle-chamber:activity-ready', function () {
-      renderProofFeedHeader();
+      requestRender('activity-ready', null);
     });
 
     // Re-render when faction status is loaded or updated
     window.addEventListener('moonboys:faction-status', function (e) {
-      renderAll(e && e.detail ? e.detail : null);
-      openDisclosureForHash();
+      requestRender('moonboys:faction-status', e && e.detail ? e.detail : null);
     });
     window.addEventListener('moonboys:faction-boost', function (e) {
-      renderAll(e && e.detail ? e.detail : null);
-      openDisclosureForHash();
+      requestRender('moonboys:faction-boost', e && e.detail ? e.detail : null);
     });
 
     // Also listen on the global event bus if available
     var bus = window.MOONBOYS_EVENT_BUS;
     if (bus && typeof bus.on === 'function') {
       bus.on('faction:update', function (payload) {
-        renderAll(payload || null);
-        openDisclosureForHash();
+        requestRender('bus:faction:update', payload || null);
       });
     }
-    window.addEventListener('hashchange', function () { openDisclosureForHash(true); });
+    window.addEventListener('hashchange', function () { scheduleHashOpen(true); });
   }
 
   // Run after DOM is ready

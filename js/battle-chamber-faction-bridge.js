@@ -57,6 +57,9 @@ var FETCH_TIMEOUT_MS = 6000;
 var UNALIGNED_LOAD_TTL_MS = 30000;
 var _lastUnalignedLoadCheckAt = 0;
 var _resolveFactionInflight = null;
+var PLATFORM = window.BATTLE_CHAMBER_PLATFORM || null;
+var SCHEMA = PLATFORM && PLATFORM.schema ? PLATFORM.schema : null;
+var IDENTITY_PROVIDER = PLATFORM && PLATFORM.identityProvider ? PLATFORM.identityProvider : null;
 
 function getApiBase() {
   try {
@@ -89,8 +92,10 @@ async function resolveCurrentFactionKey() {
   if (current) return current;
   if (_resolveFactionInflight) return _resolveFactionInflight;
   try {
-    var identity = window.MOONBOYS_IDENTITY;
-    var linked = !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+    var identity = IDENTITY_PROVIDER || window.MOONBOYS_IDENTITY;
+    var linked = IDENTITY_PROVIDER
+      ? IDENTITY_PROVIDER.isLinked()
+      : !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
     if (!linked) return null;
     if ((Date.now() - _lastUnalignedLoadCheckAt) < UNALIGNED_LOAD_TTL_MS) return null;
     var api = window.MOONBOYS_FACTION;
@@ -116,6 +121,9 @@ async function resolveCurrentFactionKey() {
 
 function getSignedTelegramAuthPayload() {
   try {
+    if (IDENTITY_PROVIDER && typeof IDENTITY_PROVIDER.getSignedAuth === 'function') {
+      return IDENTITY_PROVIDER.getSignedAuth();
+    }
     var identity = window.MOONBOYS_IDENTITY;
     if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
     var payload = identity.getSignedTelegramAuth();
@@ -166,7 +174,16 @@ function buildRewardData() {
       factions[key] = emptyRewardSummary(key);
     }
   }
-  return { factions: factions, updatedAt: Date.now() };
+  if (SCHEMA && typeof SCHEMA.validateRewardData === 'function') {
+    var validated = SCHEMA.validateRewardData({ factions: factions, source: 'local' });
+    return {
+      schemaVersion: validated.schemaVersion,
+      source: validated.source,
+      factions: validated.data.factions,
+      updatedAt: validated.updatedAt,
+    };
+  }
+  return { schemaVersion: 1, source: 'local', factions: factions, updatedAt: Date.now() };
 }
 
 function buildLocalWarData() {
@@ -201,10 +218,29 @@ function buildMissionData() {
       data[key] = { daily: [], seasonal: [], completed: [], progress: {} };
     }
   }
-  return data;
+  if (SCHEMA && typeof SCHEMA.validateMissionData === 'function') {
+    var validated = SCHEMA.validateMissionData(data);
+    return Object.assign({}, data, {
+      schemaVersion: validated.schemaVersion,
+      source: validated.source,
+      factions: validated.data,
+      updatedAt: validated.updatedAt,
+    });
+  }
+  return Object.assign({}, data, { schemaVersion: 1, source: 'local', factions: data, updatedAt: Date.now() });
 }
 
 function normaliseServerStandings(payload) {
+  var validated = SCHEMA && typeof SCHEMA.validateStandingsPayload === 'function'
+    ? SCHEMA.validateStandingsPayload(payload, payload && payload.period)
+    : null;
+  if (validated) {
+    return Object.assign({}, validated.data, {
+      schemaVersion: validated.schemaVersion,
+      source: validated.source,
+      updatedAt: validated.updatedAt,
+    });
+  }
   if (!payload || !payload.ok || !Array.isArray(payload.factions)) return null;
   var rows = payload.factions.map(function (row) {
     var key = String(row.faction_id || '').toLowerCase();
@@ -220,6 +256,9 @@ function normaliseServerStandings(payload) {
     };
   }).filter(function (row) { return LIVE_FACTION_KEYS.indexOf(row.faction_id) !== -1; });
   return {
+    schemaVersion: 1,
+    source: 'server',
+    updatedAt: Date.now(),
     period: payload.period || 'weekly',
     period_key: payload.period_key || null,
     rows: rows,
@@ -380,10 +419,15 @@ async function hydrateServerAuthority() {
   var weekly = normaliseServerStandings(results[0]);
   var monthly = normaliseServerStandings(results[1]);
   var seasonal = normaliseServerStandings(results[2]);
-  var activity = results[3] && results[3].ok && Array.isArray(results[3].items) ? results[3].items : null;
+  var activityEnvelope = SCHEMA && typeof SCHEMA.validateActivityPayload === 'function'
+    ? SCHEMA.validateActivityPayload(results[3])
+    : null;
+  var activity = activityEnvelope ? activityEnvelope.data : (results[3] && results[3].ok && Array.isArray(results[3].items) ? results[3].items : null);
   var factionDetail = results[4] && results[4].ok ? results[4] : null;
-  var dailyState = results[5] && results[5].ok ? results[5] : null;
-  var missedHistory = results[6] && results[6].ok && Array.isArray(results[6].items) ? results[6].items : null;
+  var dailyEnvelope = SCHEMA && typeof SCHEMA.validateDailyState === 'function' ? SCHEMA.validateDailyState(results[5]) : null;
+  var missedEnvelope = SCHEMA && typeof SCHEMA.validateMissedHistoryPayload === 'function' ? SCHEMA.validateMissedHistoryPayload(results[6]) : null;
+  var dailyState = dailyEnvelope ? dailyEnvelope.data : (results[5] && results[5].ok ? results[5] : null);
+  var missedHistory = missedEnvelope ? missedEnvelope.data : (results[6] && results[6].ok && Array.isArray(results[6].items) ? results[6].items : null);
 
   var hasServerData = !!(weekly || monthly || seasonal || activity || dailyState || missedHistory);
   if (!hasServerData) return false;
