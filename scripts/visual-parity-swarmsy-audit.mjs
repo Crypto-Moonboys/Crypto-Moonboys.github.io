@@ -574,6 +574,50 @@ if (wikiCss) {
 }
 if (swarmsyLayoutOk) pass('SWARMSY/About routes have full-width landing-page layout contract');
 
+console.log('\n[9b] Search, dashboard, how-to-play, and faction routes use living full-width heroes');
+let livingHeroOk = true;
+const searchHtml = read('search.html');
+const dashboardHtml = read('dashboard.html');
+const howToPlayHtml = read('how-to-play.html');
+const factionDirectoryHtml = read('battle-chamber/factions/index.html');
+const factionPageHtml = read('battle-chamber/factions/hard-fork-rockers.html');
+const factionRendererJs = read('js/faction-chamber-page.js');
+const factionCss = read('css/faction-chamber.css');
+
+const livingHeroRoutes = [
+  ['search.html', searchHtml, 'THE WIKI IS ALIVE'],
+  ['dashboard.html', dashboardHtml, 'wiki-living-hero dashboard-hero swarmsy-hero'],
+  ['how-to-play.html', howToPlayHtml, 'page-hero wiki-living-hero'],
+  ['battle-chamber/factions/index.html', factionDirectoryHtml, 'fcp-route-hero wiki-living-hero swarmsy-hero'],
+  ['battle-chamber/factions/hard-fork-rockers.html', factionPageHtml, 'fcp-route-hero wiki-living-hero swarmsy-hero'],
+];
+for (const [rel, html, marker] of livingHeroRoutes) {
+  if (!html.includes(marker) || !html.includes('swarmsy-title')) {
+    fail(`${rel} - missing living/SWARMSY hero markup`);
+    livingHeroOk = false;
+  }
+}
+if (
+  !wikiCss.includes('.wiki-living-hero') ||
+  !wikiCss.includes('wikiHeroBreath') ||
+  !wikiCss.includes('wikiColorDrift') ||
+  !wikiCss.includes('wikiTextGlow') ||
+  !wikiCss.includes('prefers-reduced-motion: reduce') ||
+  !wikiCss.includes('.wiki-hero-search-input')
+) {
+  fail(`${GLOBAL_SHELL_CSS} - missing living hero pulse/grid/search CSS contract`);
+  livingHeroOk = false;
+}
+if (!factionCss.includes('.fcp-route-hero') || !factionCss.includes('.fcp-hero-shell')) {
+  fail('css/faction-chamber.css - missing full-width faction route hero shell styles');
+  livingHeroOk = false;
+}
+if (!factionRendererJs.includes('swarmsy-hero-inner fcp-hero-card') || !factionRendererJs.includes('wiki-living-title')) {
+  fail('js/faction-chamber-page.js - runtime faction hero must render SWARMSY/living title classes');
+  livingHeroOk = false;
+}
+if (livingHeroOk) pass('Living full-width hero contract is wired across search, dashboard, how-to-play, and faction routes');
+
 console.log('\n[10] Wiki article pages inherit the SWARMSY glowing card and font contract');
 let wikiArticleVisualOk = true;
 if (wikiCss) {

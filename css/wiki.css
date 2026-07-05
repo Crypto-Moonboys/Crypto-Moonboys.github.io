@@ -866,6 +866,195 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   color: var(--color-accent);
 }
 
+body.page-search #content,
+body.page-dashboard #content,
+body.page-how-to-play #content {
+  padding-top: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+body.page-search .section-heading,
+body.page-search .ranking-debug-panel,
+body.page-search .article-list,
+body.page-dashboard .dash-page,
+body.page-how-to-play .howto-page > .section {
+  margin-right: clamp(20px, 3vw, 48px);
+  margin-left: clamp(20px, 3vw, 48px);
+}
+
+body.page-search .section-heading {
+  margin-top: 28px;
+}
+
+.wiki-living-hero {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-height: clamp(500px, 56vh, 720px);
+  margin: 0;
+  padding: clamp(72px, 8vw, 112px) clamp(28px, 6vw, 88px) clamp(52px, 6vw, 78px);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 14% 24%, rgba(0, 255, 204, 0.20), transparent 32%),
+    radial-gradient(circle at 72% 12%, rgba(255, 0, 170, 0.18), transparent 34%),
+    radial-gradient(circle at 35% 88%, rgba(247, 201, 72, 0.16), transparent 30%),
+    linear-gradient(135deg, rgba(7, 10, 16, 0.98) 0%, rgba(25, 0, 42, 0.92) 48%, rgba(3, 18, 24, 0.98) 100%);
+  animation: wikiHeroBreath 36s ease-in-out infinite;
+}
+
+.wiki-living-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(86, 220, 255, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(86, 220, 255, 0.10) 1px, transparent 1px);
+  background-position: 0 0;
+  background-size: 26px 26px;
+  opacity: 0.34;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.16) 86%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.16) 86%);
+}
+
+.wiki-living-hero::after {
+  position: absolute;
+  inset: -18%;
+  z-index: 0;
+  content: "";
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 24%, rgba(0, 255, 204, 0.26), transparent 26%),
+    radial-gradient(circle at 78% 18%, rgba(255, 0, 170, 0.22), transparent 26%),
+    radial-gradient(circle at 58% 76%, rgba(247, 201, 72, 0.18), transparent 26%),
+    radial-gradient(circle at 90% 82%, rgba(86, 220, 255, 0.17), transparent 24%);
+  filter: blur(10px);
+  opacity: 0.62;
+  animation: wikiColorDrift 58s ease-in-out infinite alternate;
+}
+
+.wiki-living-hero > *,
+.wiki-living-hero .swarmsy-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.wiki-living-hero .swarmsy-hero-inner {
+  max-width: 1180px;
+}
+
+.wiki-alive-kicker {
+  color: #00ffcc;
+  letter-spacing: 0;
+  text-shadow:
+    0 0 10px rgba(86, 220, 255, 0.60),
+    0 0 26px rgba(0, 255, 204, 0.26);
+  animation: wikiTextGlow 8.5s ease-in-out infinite;
+}
+
+body.page-standard-shell .wiki-living-hero .wiki-living-title,
+.wiki-living-title {
+  color: #ffffff;
+  text-shadow:
+    0 0 10px rgba(234, 255, 255, 0.76),
+    0 0 26px rgba(86, 220, 255, 0.42),
+    0 0 42px rgba(0, 255, 204, 0.16);
+  animation: wikiTitleGlow 11s ease-in-out infinite;
+}
+
+.wiki-hero-breadcrumb {
+  margin: 0 0 22px;
+}
+
+.wiki-hero-search {
+  display: flex;
+  width: min(100%, 720px);
+  margin-top: 28px;
+}
+
+.wiki-hero-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 20px;
+  color: var(--color-text);
+  background: rgba(3, 8, 15, 0.72);
+  border: 1px solid rgba(86, 220, 255, 0.30);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(0, 255, 204, 0.04), 0 0 24px rgba(0, 255, 204, 0.06);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.wiki-hero-search-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 28px rgba(247, 201, 72, 0.14), inset 0 0 0 1px rgba(247, 201, 72, 0.08);
+}
+
+@keyframes wikiHeroBreath {
+  0%, 100% {
+    filter: saturate(1) brightness(0.92);
+    box-shadow: 0 0 44px rgba(0, 255, 204, 0.10), 0 22px 70px rgba(0, 0, 0, 0.34);
+  }
+  45% {
+    filter: saturate(1.18) brightness(1.08);
+    box-shadow: 0 0 72px rgba(0, 255, 204, 0.18), 0 22px 80px rgba(255, 0, 170, 0.12);
+  }
+  72% {
+    filter: saturate(1.28) brightness(1.16);
+    box-shadow: 0 0 82px rgba(247, 201, 72, 0.16), 0 22px 88px rgba(86, 220, 255, 0.12);
+  }
+}
+
+@keyframes wikiColorDrift {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+    opacity: 0.46;
+  }
+  38% {
+    transform: translate3d(2%, 1%, 0) scale(1.04);
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(1%, -2%, 0) scale(1.08);
+    opacity: 0.56;
+  }
+}
+
+@keyframes wikiTextGlow {
+  0%, 100% {
+    color: #00ffcc;
+    text-shadow: 0 0 8px rgba(86, 220, 255, 0.48), 0 0 20px rgba(0, 255, 204, 0.18);
+  }
+  50% {
+    color: #eaffff;
+    text-shadow: 0 0 15px rgba(86, 220, 255, 0.92), 0 0 34px rgba(0, 255, 204, 0.36);
+  }
+}
+
+@keyframes wikiTitleGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(234, 255, 255, 0.62), 0 0 26px rgba(86, 220, 255, 0.30), 0 0 42px rgba(0, 255, 204, 0.14);
+  }
+  52% {
+    text-shadow: 0 0 16px rgba(234, 255, 255, 0.92), 0 0 38px rgba(86, 220, 255, 0.56), 0 0 60px rgba(0, 255, 204, 0.28);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wiki-living-hero,
+  .wiki-living-hero::after,
+  .wiki-alive-kicker,
+  .wiki-living-title {
+    animation: none;
+  }
+}
+
 .battle-page .section,
 .page-community .section {
   margin-top: 24px;

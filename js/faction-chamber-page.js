@@ -243,14 +243,15 @@
     var hero = byId('fcp-hero');
     if (hero) {
       hero.innerHTML = '' +
-        '<div class="fcp-hero-card" style="--faction-color:' + esc(profile.chamberColor) + '">' +
-          '<h1>' + esc(profile.icon) + ' ' + esc(profile.name) + '</h1>' +
-          '<p class="fcp-hero-tagline">' + esc(profile.tagline) + '</p>' +
-          '<p>' + esc(profile.joinCtaCopy) + '</p>' +
-          '<div class="fcp-card-actions">' +
-            '<a class="fcp-btn" href="/community.html#battle-join-faction">Join this faction</a>' +
-            '<a class="fcp-btn fcp-btn-secondary" href="/community.html">Back to Battle Chamber</a>' +
-            '<a class="fcp-btn fcp-btn-secondary" href="/games/">Play Arcade</a>' +
+        '<div class="swarmsy-hero-inner fcp-hero-card" style="--faction-color:' + esc(profile.chamberColor) + '">' +
+          '<div class="swarmsy-kicker wiki-alive-kicker">' + esc(profile.icon) + ' FACTION CHAMBER / BATTLE SIGNAL</div>' +
+          '<h1 class="swarmsy-title wiki-living-title">' + esc(profile.name) + '</h1>' +
+          '<p class="swarmsy-lead fcp-hero-tagline">' + esc(profile.tagline) + '</p>' +
+          '<p class="swarmsy-lead">' + esc(profile.joinCtaCopy) + '</p>' +
+          '<div class="swarmsy-action-grid swarmsy-action-grid--compact" role="navigation" aria-label="' + esc(profile.name) + ' actions">' +
+            '<a class="swarmsy-action-card swarmsy-action-card--gold" href="/community.html#battle-join-faction"><strong>JOIN THIS FACTION</strong><span>Enter the join panel.</span></a>' +
+            '<a class="swarmsy-action-card" href="/community.html"><strong>BACK TO BATTLE CHAMBER</strong><span>Return to faction war status.</span></a>' +
+            '<a class="swarmsy-action-card swarmsy-action-card--magenta" href="/games/"><strong>PLAY ARCADE</strong><span>Build action and clout.</span></a>' +
           '</div>' +
         '</div>';
     }

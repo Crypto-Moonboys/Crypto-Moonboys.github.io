@@ -1,6 +1,56 @@
 /* Shared faction chamber styles */
-.fcp-wrap .section { padding: 28px 32px; }
+body.page-community #content {
+  padding-top: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.fcp-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 clamp(64px, 6vw, 96px);
+}
+
+.fcp-wrap .section {
+  padding: 28px 32px;
+  margin-right: clamp(20px, 3vw, 48px);
+  margin-left: clamp(20px, 3vw, 48px);
+}
 .fcp-wrap .page-hero { padding: 40px 32px; }
+
+.fcp-route-hero {
+  display: block;
+}
+
+.fcp-route-hero .fcp-hero-shell,
+.fcp-route-hero .fcp-hero-card {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.fcp-route-hero .fcp-hero-shell {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.fcp-route-hero .fcp-hero-shell a {
+  color: #00ffcc;
+}
+
+.fcp-route-hero .fcp-hero-tagline {
+  color: #00ffcc;
+}
+
+.fcp-route-hero .swarmsy-title {
+  max-width: 1180px;
+}
+
 .fcp-hero-card,
 .fcp-panel,
 .fcp-card {
