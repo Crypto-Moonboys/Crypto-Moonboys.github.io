@@ -12,9 +12,42 @@ body.page-community {
   font-family: var(--font-sans);
 }
 
-body.page-game #content,
-body.page-community #content {
+body.page-game #content {
   padding-top: clamp(18px, 2.3vw, 34px);
+}
+
+body.page-community #content {
+  padding: 0 0 clamp(64px, 6vw, 96px);
+}
+
+body.page-community .battle-page,
+body.page-community .section,
+body.page-community .section *,
+body.page-community .bc-join-card,
+body.page-community .bc-perk-card,
+body.page-community .bc-reward-item,
+body.page-community .bc-faction-reward-card {
+  min-width: 0;
+}
+
+body.page-community .section,
+body.page-community .section *,
+body.page-community .bc-join-card,
+body.page-community .bc-perk-card,
+body.page-community .bc-reward-item,
+body.page-community .bc-faction-reward-card,
+body.page-community .bc-weekly-row,
+body.page-community .bc-faction-row,
+body.page-community .bc-frc-row {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+body.page-community .battle-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 body.page-game h1,
@@ -78,6 +111,55 @@ body.page-community .page-hero {
   box-shadow: 0 0 48px rgba(0, 255, 204, 0.10), 0 22px 70px rgba(0, 0, 0, 0.34);
 }
 
+body.page-community .bc-community-hero {
+  width: 100%;
+  max-width: none;
+  min-height: clamp(520px, 58vh, 760px);
+  margin: 0;
+  padding: clamp(72px, 8vw, 108px) clamp(28px, 6vw, 88px) clamp(52px, 6vw, 76px);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
+body.page-community .bc-community-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+}
+
+body.page-standard-shell.page-community .bc-community-hero .swarmsy-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 8vw, 5.4rem);
+  line-height: 0.95;
+  text-shadow: 0 0 24px rgba(247, 201, 72, 0.24);
+}
+
+body.page-standard-shell.page-community .bc-community-hero .swarmsy-title span {
+  color: #00ffcc;
+}
+
+body.page-community .bc-community-hero .swarmsy-lead {
+  max-width: 760px;
+  margin-top: 22px;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1.75;
+}
+
+body.page-community .bc-community-hero .swarmsy-lead + .swarmsy-lead {
+  margin-top: 8px;
+}
+
+body.page-community .bc-community-hero .swarmsy-action-grid {
+  max-width: 1280px;
+}
+
+body.page-community .bc-community-hero .swarmsy-action-card {
+  text-transform: none;
+}
+
 body.page-game .category-header::before,
 body.page-community .page-hero::before {
   position: absolute;
@@ -100,12 +182,51 @@ body.page-community .page-hero > * {
 body.page-game .notice,
 body.page-game .roguelite-loop-panel,
 body.page-community .section {
-  margin-top: 18px;
+  margin: 18px clamp(20px, 3vw, 48px) 0;
   padding: 22px;
   background: var(--action-card-bg-strong);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 18px;
   box-shadow: var(--action-card-shadow);
+}
+
+body.page-community .bc-disclosure {
+  overflow: hidden;
+}
+
+body.page-community .bc-disclosure > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+body.page-community .bc-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+body.page-community .bc-disclosure > summary::after {
+  content: "+";
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--color-accent);
+  background: rgba(247, 201, 72, 0.08);
+  border: 1px solid rgba(247, 201, 72, 0.28);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+body.page-community .bc-disclosure[open] > summary::after {
+  content: "-";
+}
+
+body.page-community .bc-disclosure:not([open]) {
+  padding-bottom: 22px;
 }
 
 body.page-community .section h2 {
@@ -116,6 +237,22 @@ body.page-community .section h2 {
   border-left: 3px solid rgba(86, 220, 255, 0.62);
   border-radius: 16px;
   box-shadow: var(--action-card-glow);
+}
+
+body.page-community .bc-disclosure > summary .bc-disclosure-title {
+  display: block;
+  margin: 0;
+  color: var(--color-accent);
+  background: rgba(10, 10, 16, 0.76);
+  border: 1px solid rgba(0, 255, 204, 0.18);
+  border-left: 3px solid rgba(86, 220, 255, 0.62);
+  border-radius: 16px;
+  box-shadow: var(--action-card-glow);
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 2.7vw, 2rem);
+  line-height: 1.15;
+  padding: 10px 16px;
+  text-transform: uppercase;
 }
 
 body.page-game .notice {
@@ -264,7 +401,7 @@ body.page-community .bc-perk-grid,
 body.page-community .bc-rewards-grid,
 body.page-community .bc-faction-reward-grid,
 body.page-community .bc-why-list {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
 }
 
 body.page-community .bc-faction-row,
@@ -310,9 +447,8 @@ body.page-community .bc-weekly-rank,
 body.page-community .bc-dominant-badge,
 body.page-community .bc-perk-xp-meta,
 body.page-community .bc-perk-score-meta {
-  display: inline-flex;
-  align-items: center;
-  width: max-content;
+  display: inline-block;
+  width: fit-content;
   max-width: 100%;
   padding: 4px 8px;
   color: #ffe875;
@@ -322,6 +458,7 @@ body.page-community .bc-perk-score-meta {
   font-family: var(--font-mono);
   font-size: 0.74rem;
   line-height: 1.35;
+  white-space: normal;
 }
 
 body.page-community .bc-faction-icon,
@@ -341,7 +478,7 @@ body.page-community .bc-join-cancel-btn {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: max-content;
+  width: fit-content;
   max-width: 100%;
   min-height: 38px;
   padding: 8px 12px;
@@ -351,8 +488,10 @@ body.page-community .bc-join-cancel-btn {
   border-radius: 12px;
   font-family: var(--font-sans);
   font-weight: 800;
+  line-height: 1.25;
   text-decoration: none;
   text-transform: uppercase;
+  white-space: normal;
 }
 
 body.page-community .bc-faction-chamber-link:hover,
@@ -408,9 +547,17 @@ body.page-community #battle-missed-perks-history {
 body.page-community .bc-weekly-row,
 body.page-community .bc-frc-row {
   display: grid;
-  grid-template-columns: auto minmax(180px, 1fr) minmax(170px, auto);
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
   align-items: center;
   gap: 10px 14px;
+}
+
+body.page-community .bc-frc-row {
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+}
+
+body.page-community .bc-frc-row strong {
+  line-height: 1.35;
 }
 
 body.page-community .bc-join-card,
@@ -426,6 +573,7 @@ body.page-community .bc-join-locked-panel {
   gap: 10px;
   padding: 18px 20px;
   border-top: 3px solid var(--faction-color, #00ffcc);
+  overflow: hidden;
 }
 
 body.page-community .bc-reward-item p,
@@ -479,6 +627,38 @@ body.page-game .community-loading {
   background: rgba(0, 255, 204, 0.052);
   border: 1px solid var(--action-card-border);
   border-radius: 16px;
+}
+
+body.page-community .bc-state-note,
+body.page-community .bc-fallback-state {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  color: var(--color-text-muted);
+  background: rgba(247, 201, 72, 0.08);
+  border: 1px solid rgba(247, 201, 72, 0.22);
+  border-radius: 12px;
+}
+
+body.page-community .bc-fallback-state {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+
+body.page-community .bc-fallback-state p {
+  margin: 0;
+}
+
+body.page-community .bc-retry-btn {
+  justify-self: start;
+  padding: 10px 14px;
+  color: #00ffcc;
+  background: rgba(0, 255, 204, 0.08);
+  border: 1px solid rgba(0, 255, 204, 0.32);
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  cursor: pointer;
 }
 
 @media (max-width: 1180px) {
