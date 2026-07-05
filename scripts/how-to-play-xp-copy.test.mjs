@@ -48,6 +48,11 @@ check(gamesIndex.includes('All active games feed the shared submit path.'), 'gam
 check(gamesIndex.includes('Unlinked runs can stay browser-local/pending'), 'games hub documents unlinked pending state');
 check(gamesIndex.includes('server, where dedupe, caps, and anti-farm checks decide final awards'), 'games hub documents server-award authority');
 check(gamesIndex.includes('Score ranks runs; server-accepted XP does not affect rank.'), 'games hub keeps score and XP rank separate');
+check(gamesIndex.includes('after Telegram link and server acceptance'), 'games hub top notice requires server acceptance');
+check(gamesIndex.includes('only after Telegram sync and server acceptance'), 'games hub system notice requires Telegram sync and server acceptance');
+check(gamesIndex.includes('Unlinked runs stay local/pending until <code>/gklink</code>'), 'games hub system notice documents local/pending runs');
+check(gamesIndex.includes('after server acceptance'), 'games hub game cards mention server acceptance for XP sync');
+check(gamesIndex.includes('after Telegram sync and server acceptance'), 'BTQM card mentions server acceptance for XP conversion');
 
 check(leaderboard.includes('Score = leaderboard ranking only.'), 'leaderboard keeps score ranking language');
 check(leaderboard.includes('only after Telegram sync and server acceptance'), 'leaderboard requires server acceptance for Arcade XP');
@@ -59,6 +64,8 @@ check(blockTopia.includes('accepted scores can become server-backed Arcade XP'),
 check(!/Score\s*=\s*Arcade XP/i.test(corpus), 'public onboarding copy never equates score with Arcade XP');
 check(!/XP proves a player/i.test(corpus), 'manual avoids vague old XP claim');
 check(!/accepted long-term progression/i.test(corpus), 'manual removes vague old accepted-progression wording');
+check(!/can convert (?:to|into) Arcade XP after Telegram sync(?! and server acceptance)/i.test(gamesIndex), 'games hub has no stale Telegram-only XP conversion copy');
+check(!/sync (?:into shared progression|Arcade XP) after Telegram link(?! and server acceptance)/i.test(gamesIndex), 'games hub has no stale Telegram-link-only XP sync copy');
 
 console.log('\n--- Result ---');
 console.log(`  Passed : ${passed}`);
