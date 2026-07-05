@@ -54,6 +54,7 @@ const GROUPS = {
     ['node', 'scripts/identity-gate-auth-guard.test.mjs'],
     ['node', 'scripts/leaderboard-client-regression.test.mjs'],
     ['node', 'scripts/how-to-play-xp-copy.test.mjs'],
+    ['node', 'scripts/ui-timer-ownership.test.mjs'],
     ['node', 'scripts/faction-canon-protection.test.mjs'],
     ['node', 'scripts/battle-chamber-faction-page.test.mjs'],
     ['node', 'scripts/faction-chamber-pages.test.mjs'],

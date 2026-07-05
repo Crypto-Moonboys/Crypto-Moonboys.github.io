@@ -5,10 +5,14 @@
 
 (function () {
   const CYCLE_MS = 7 * 24 * 60 * 60 * 1000;
+  let timer = null;
+  let initialized = false;
 
   function get() {
-    const saved = localStorage.getItem('cm_season');
-    if (saved) return JSON.parse(saved);
+    try {
+      const saved = localStorage.getItem('cm_season');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
 
     return {
       id: 1,
@@ -18,7 +22,9 @@
   }
 
   function save(state) {
-    localStorage.setItem('cm_season', JSON.stringify(state));
+    try {
+      localStorage.setItem('cm_season', JSON.stringify(state));
+    } catch (_) {}
   }
 
   function tick() {
@@ -39,8 +45,10 @@
   }
 
   function init() {
+    if (initialized) return;
+    initialized = true;
     tick();
-    setInterval(tick, 60000);
+    timer = setInterval(tick, 60000);
 
     window.GK_BUS?.emit('season:init', get());
   }
@@ -48,7 +56,13 @@
   window.SEASON_CYCLE = {
     get,
     tick,
-    init
+    init,
+    stop() {
+      if (!timer) return;
+      clearInterval(timer);
+      timer = null;
+      initialized = false;
+    }
   };
 
   document.addEventListener('DOMContentLoaded', init);
