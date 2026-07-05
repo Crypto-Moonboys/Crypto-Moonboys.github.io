@@ -1726,7 +1726,7 @@ body.page-home .launch-cta-primary {
   border-color: rgba(247, 201, 72, 0.32);
 }
 
-body.page-home .launch-cta-secondary:nth-child(3) {
+body.page-home .launch-cta-secondary[href="/gkniftyheads-incubator.html"] {
   color: #ff66c7;
   background: rgba(255, 0, 170, 0.07);
   border-color: rgba(255, 0, 170, 0.28);

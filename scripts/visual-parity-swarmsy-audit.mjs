@@ -364,7 +364,7 @@ if (wikiCssOk) pass('css/wiki.css owns shell layout and SWARMSY components witho
 console.log('\n[7] Homepage owns the SWARMSY landing-page card contract');
 let homepageHeroOk = true;
 const homepageHtml = read('index.html') || '';
-if (homepageHtml.includes('class="swarmsy-hero-bg"') || /hero-bg-img/i.test(homepageHtml)) {
+if (htmlContainsClass(homepageHtml, 'swarmsy-hero-bg') || /hero-bg-img/i.test(homepageHtml)) {
   fail('index.html - homepage must not restore the old large hero background image layer');
   homepageHeroOk = false;
 }
