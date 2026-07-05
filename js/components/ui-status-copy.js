@@ -29,7 +29,7 @@
 
   window.UI_STATUS_COPY = Object.freeze({
     UNLINKED:            'Telegram not linked \u2014 run /gklink',
-    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    FEATURE_UNAVAILABLE: 'Feature unavailable',
     API_UNAVAILABLE:     'Core API unavailable',
     SYNC_IN_PROGRESS:    'Sync in progress',
     SYNC_READY:          'Sync ready',
@@ -42,7 +42,7 @@
      */
     panels: Object.freeze({
 
-      /** Leaderboard endpoint not yet live or fetch failed. */
+      /** Leaderboard endpoint disabled or fetch failed. */
       leaderboardUnavailable: function () {
         return '<div class="widget-unavailable">'
           + '<p>Arcade leaderboard temporarily unavailable.</p>'

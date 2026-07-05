@@ -9276,6 +9276,23 @@ ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analyt
   route.includes('excludes_normalization_diagnostics: true') &&
   route.includes('excludes_chart_candles: true') &&
   !/async function buildWaxcashBubblesLite\(db, env\)\s*{[^}]*buildWaxcashAnalytics/s.test(route));
+ok('WaxOnEdge slow public read routes use a short in-memory response cache',
+  route.includes('WAXONEDGE_PUBLIC_ROUTE_CACHE_TTL_SECONDS = 30') &&
+  route.includes('const WAXONEDGE_PUBLIC_ROUTE_CACHEABLE_PATHS = new Set([') &&
+  route.includes('const waxonedgePublicRouteCache = new Map()') &&
+  route.includes('function waxonedgePublicRouteCacheKey(url, path)') &&
+  route.includes('if (!WAXONEDGE_PUBLIC_ROUTE_CACHEABLE_PATHS.has(path)) return null') &&
+  route.includes('return waxonedgeJson(cached.payload, cached.status || 200, corsHeaders)') &&
+  route.includes("`${WAXONEDGE_API_PREFIX}/bootstrap`") &&
+  route.includes("`${WAXONEDGE_API_PREFIX}/summary`") &&
+  route.includes("`${WAXONEDGE_API_PREFIX}/tokens/top`") &&
+  route.includes("`${WAXONEDGE_API_PREFIX}/pairs/top`") &&
+  route.includes("`${WAXONEDGE_API_PREFIX}/waxcash-bubbles-lite`") &&
+  route.includes('const cachedRouteResponse = cachedPublicRouteResponse(publicRouteCacheKey, corsHeaders)') &&
+  route.includes('if (cachedRouteResponse) return cachedRouteResponse') &&
+  route.includes('return cachedOk(publicRouteCacheKey, await listTopTokens(env.DB)') &&
+  route.includes('return cachedOk(publicRouteCacheKey, await listTopPairs(env.DB)') &&
+  route.includes('storePublicRouteResponse(publicRouteCacheKey, payload)'));
 const tokenRowsForRefsSection = route.slice(
   route.indexOf('async function loadTokenRowsForRefs'),
   route.indexOf('async function deriveReserveBackedTokenRow'),

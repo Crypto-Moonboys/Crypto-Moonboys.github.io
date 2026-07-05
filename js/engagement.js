@@ -6,7 +6,7 @@
  *
  * Configure MOONBOYS_API.BASE_URL in js/api-config.js.
  * When BASE_URL is null or feature flags are false, controls render
- * with a clear "Feature not yet available" notice — nothing breaks.
+ * with a clear "Feature unavailable" notice — nothing breaks.
  *
  * Identity tiers (enforced by backend + this file):
  *   guest           — button renders but action blocked (sync gate modal shown)
@@ -32,7 +32,7 @@
   // fall back to the same literal values so this file needs no type="module".
   var COPY = window.UI_STATUS_COPY || {
     UNLINKED:            'Telegram not linked \u2014 run /gklink',
-    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    FEATURE_UNAVAILABLE: 'Feature unavailable',
     API_UNAVAILABLE:     'Core API unavailable',
   };
 

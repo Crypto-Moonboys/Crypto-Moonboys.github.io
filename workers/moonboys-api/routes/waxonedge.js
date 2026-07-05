@@ -28,6 +28,15 @@ const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE = 'waxcash_bubbles_membership_l
 const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_STALE_MS = 10 * 60 * 1000;
 const WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS = 60;
 const WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES = 50;
+const WAXONEDGE_PUBLIC_ROUTE_CACHE_TTL_SECONDS = 30;
+const WAXONEDGE_PUBLIC_ROUTE_CACHE_MAX_ENTRIES = 40;
+const WAXONEDGE_PUBLIC_ROUTE_CACHEABLE_PATHS = new Set([
+  `${WAXONEDGE_API_PREFIX}/bootstrap`,
+  `${WAXONEDGE_API_PREFIX}/summary`,
+  `${WAXONEDGE_API_PREFIX}/tokens/top`,
+  `${WAXONEDGE_API_PREFIX}/pairs/top`,
+  `${WAXONEDGE_API_PREFIX}/waxcash-bubbles-lite`,
+]);
 const SUPPLY_SYNC_SOURCE = 'wax_rpc_supply';
 const AGGREGATE_REFRESH_REASON = 'Aggregate refresh pending after source cursor progress';
 const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
@@ -75,6 +84,7 @@ const WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST = Object.freeze([
 ]);
 let waxcashBubblesLiteGraphCache = null;
 const waxonedgePublicAnalyticsCache = new Map();
+const waxonedgePublicRouteCache = new Map();
 const WAXONEDGE_OG_ENDPOINTS = Object.freeze([
   '/pools',
   '/pool',
@@ -986,6 +996,53 @@ function ok(data, warnings = [], updatedAt = null, corsHeaders = {}) {
 function cloneJsonSafe(value) {
   if (value == null) return value;
   return JSON.parse(JSON.stringify(value));
+}
+
+function waxonedgePublicRouteCacheKey(url, path) {
+  if (!WAXONEDGE_PUBLIC_ROUTE_CACHEABLE_PATHS.has(path)) return null;
+  const search = url.searchParams.toString();
+  return search ? `${path}?${search}` : path;
+}
+
+function pruneWaxonedgePublicRouteCache(nowMs = Date.now()) {
+  for (const [key, cached] of waxonedgePublicRouteCache.entries()) {
+    if (!cached || cached.expiresAt <= nowMs) {
+      waxonedgePublicRouteCache.delete(key);
+    }
+  }
+  while (waxonedgePublicRouteCache.size > WAXONEDGE_PUBLIC_ROUTE_CACHE_MAX_ENTRIES) {
+    const oldestKey = waxonedgePublicRouteCache.keys().next().value;
+    if (oldestKey == null) break;
+    waxonedgePublicRouteCache.delete(oldestKey);
+  }
+}
+
+function cachedPublicRouteResponse(key, corsHeaders = {}, nowMs = Date.now()) {
+  if (!key) return null;
+  const cached = waxonedgePublicRouteCache.get(key);
+  if (!cached || cached.expiresAt <= nowMs) {
+    if (cached) waxonedgePublicRouteCache.delete(key);
+    return null;
+  }
+  return waxonedgeJson(cached.payload, cached.status || 200, corsHeaders);
+}
+
+function storePublicRouteResponse(key, payload, status = 200, ttlSeconds = WAXONEDGE_PUBLIC_ROUTE_CACHE_TTL_SECONDS, nowMs = Date.now()) {
+  if (!key || !payload || ttlSeconds <= 0) return;
+  pruneWaxonedgePublicRouteCache(nowMs);
+  waxonedgePublicRouteCache.delete(key);
+  waxonedgePublicRouteCache.set(key, {
+    payload: cloneJsonSafe(payload),
+    status,
+    expiresAt: nowMs + ttlSeconds * 1000,
+  });
+  pruneWaxonedgePublicRouteCache(nowMs);
+}
+
+function cachedOk(cacheKey, data, warnings = [], updatedAt = null, corsHeaders = {}) {
+  const payload = envelope({ ok: true, data, warnings, updatedAt });
+  storePublicRouteResponse(cacheKey, payload);
+  return waxonedgeJson(payload, 200, corsHeaders);
 }
 
 function normalizeAnalyticsCacheDebug(value) {
@@ -14580,15 +14637,25 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     return unavailable('Method not allowed', 405, corsHeaders);
   }
   if (!env.DB) return unavailable('DB binding is not configured', 503, corsHeaders);
+  const publicRouteCacheKey = waxonedgePublicRouteCacheKey(url, path);
+  const cachedRouteResponse = cachedPublicRouteResponse(publicRouteCacheKey, corsHeaders);
+  if (cachedRouteResponse) return cachedRouteResponse;
 
   try {
-    if (path === `${WAXONEDGE_API_PREFIX}/bootstrap`) return handleBootstrap(env, corsHeaders);
+    if (path === `${WAXONEDGE_API_PREFIX}/bootstrap`) {
+      const response = await handleBootstrap(env, corsHeaders);
+      if (publicRouteCacheKey && response.ok) {
+        const payload = await response.clone().json().catch(() => null);
+        if (payload?.ok) storePublicRouteResponse(publicRouteCacheKey, payload);
+      }
+      return response;
+    }
     if (path === `${WAXONEDGE_API_PREFIX}/summary`) {
       const [tokens, pairs, syncStatus, sourceStates] = await Promise.all([listTopTokens(env.DB), listTopPairs(env.DB), getLatestSync(env.DB), getSourceIndexStates(env.DB)]);
-      return ok({ token_count: tokens.length, pair_count: pairs.length, latest_sync: syncStatus.slice(0, 10), source_index_state: sourceStates }, [], null, corsHeaders);
+      return cachedOk(publicRouteCacheKey, { token_count: tokens.length, pair_count: pairs.length, latest_sync: syncStatus.slice(0, 10), source_index_state: sourceStates }, [], null, corsHeaders);
     }
-    if (path === `${WAXONEDGE_API_PREFIX}/tokens/top`) return ok(await listTopTokens(env.DB), [], null, corsHeaders);
-    if (path === `${WAXONEDGE_API_PREFIX}/pairs/top`) return ok(await listTopPairs(env.DB), [], null, corsHeaders);
+    if (path === `${WAXONEDGE_API_PREFIX}/tokens/top`) return cachedOk(publicRouteCacheKey, await listTopTokens(env.DB), [], null, corsHeaders);
+    if (path === `${WAXONEDGE_API_PREFIX}/pairs/top`) return cachedOk(publicRouteCacheKey, await listTopPairs(env.DB), [], null, corsHeaders);
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-graph`) {
       const graph = await buildWaxcashPairGraph(env.DB);
       return ok(graph, ['WAXCASH graph is derived only from indexed direct waxonedge_pairs rows; bootstrap token inventory is not used.'], graph.updated_at, corsHeaders);
@@ -14632,7 +14699,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
           updatedAt: lite.updated_at || lite.generated_at || null,
         }), 200, corsHeaders);
       }
-      return ok(lite, ['Slim WAXCASH bubble feed excludes source diagnostics, chart candles, proof internals, and large debug arrays.'], lite.updated_at || lite.generated_at || null, corsHeaders);
+      return cachedOk(publicRouteCacheKey, lite, ['Slim WAXCASH bubble feed excludes source diagnostics, chart candles, proof internals, and large debug arrays.'], lite.updated_at || lite.generated_at || null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics/laststats-diagnostics`) {
       const diagnostics = await getWaxcashLastStatsDiagnostics(env);
@@ -14786,6 +14853,12 @@ export const __waxonedgeTestHooks = {
   storeAnalyticsPayload,
   pruneWaxonedgePublicAnalyticsCache,
   WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES,
+  waxonedgePublicRouteCacheKey,
+  cachedPublicRouteResponse,
+  storePublicRouteResponse,
+  pruneWaxonedgePublicRouteCache,
+  WAXONEDGE_PUBLIC_ROUTE_CACHE_TTL_SECONDS,
+  WAXONEDGE_PUBLIC_ROUTE_CACHE_MAX_ENTRIES,
   waxonedgePublicAnalyticsCacheSize,
   clearWaxonedgePublicAnalyticsCache,
   listTokenPairs,

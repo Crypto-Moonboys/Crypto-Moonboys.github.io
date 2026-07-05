@@ -106,8 +106,8 @@
     if (!BASE || !FEATURES.LIVE_FEED) {
       el.innerHTML =
         '<div class="live-activity-panel">' +
-          '<p class="live-activity-desc">Activity feed not live yet. ' +
-            'Arcade runs, faction actions, and Battle Chamber events will appear here when the feed launches.</p>' +
+          '<p class="live-activity-desc">Activity feed unavailable. ' +
+            'Use the live Arcade and Battle Chamber routes below while this panel has no current feed data.</p>' +
           '<div class="swarmsy-action-grid swarmsy-action-grid--compact">' +
             '<a href="/games/" class="swarmsy-action-card swarmsy-action-card--gold"><strong>Play Arcade</strong><span>Open the live games index.</span></a>' +
             '<a href="/community.html" class="swarmsy-action-card"><strong>Open Battle Chamber</strong><span>Enter community signal and proof routes.</span></a>' +
@@ -147,7 +147,7 @@
     if (!el) return;
 
     if (!BASE || !FEATURES.LEADERBOARD) {
-      el.innerHTML = '<div class="widget-unavailable"><p>Engagement leaderboard not yet available.</p>'
+      el.innerHTML = '<div class="widget-unavailable"><p>Engagement leaderboard unavailable.</p>'
         + '<a href="/games/leaderboard.html" class="swarmsy-action-card"><strong>Open arcade leaderboard</strong><span>View the full leaderboard route.</span></a></div>';
       return;
     }
@@ -184,7 +184,7 @@
     if (!BASE || !FEATURES.ACTIVITY_PANEL) {
       el.innerHTML =
         '<div class="explore-wiki-panel">' +
-          '<p class="explore-wiki-desc">Explore the Living Wiki — activity heat not live yet</p>' +
+          '<p class="explore-wiki-desc">Explore the Living Wiki</p>' +
           '<ul class="explore-wiki-links">' +
             '<li><a href="/search.html">\uD83D\uDCD6 All Articles</a></li>' +
             '<li><a href="/timeline.html">\uD83D\uDCC5 Timeline</a></li>' +
@@ -230,7 +230,7 @@
           '<div class="bt-icon" aria-hidden="true">⚔️</div>' +
           '<div class="bt-body">' +
             '<div class="bt-title">Battle Chamber</div>' +
-            '<div class="bt-sub">Community comments are not yet available here. ' +
+            '<div class="bt-sub">Community comments are unavailable here. ' +
               'Open the Battle Chamber for the current proof wall and faction entry points.</div>' +
             '<div class="bt-cta"><a href="/community.html" class="swarmsy-action-card swarmsy-action-card--gold"><strong>Open Battle Chamber</strong><span>Enter community comments and faction routes.</span></a></div>' +
           '</div>' +

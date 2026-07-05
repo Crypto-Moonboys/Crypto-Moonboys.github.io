@@ -94,19 +94,12 @@ function buildCorsHeaders(request, env) {
   };
 }
 
-// Per-request CORS headers, set at the start of each fetch() invocation.
-// Cloudflare Workers run each request in its own V8 isolate context, so there is no
-// concurrent-request race condition — module-level state is request-scoped in practice.
-// NOTE: Do not reuse this worker outside a Cloudflare Workers runtime without refactoring
-// this to a parameter-passing pattern.
-let CORS_HEADERS = buildCorsHeaders(null, null);
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: CORS_HEADERS });
+function json(data, status = 200, corsHeaders = {}) {
+  return new Response(JSON.stringify(data), { status, headers: corsHeaders });
 }
 
-function err(msg, status = 400) {
-  return json({ error: msg }, status);
+function err(msg, status = 400, corsHeaders = {}) {
+  return json({ error: msg }, status, corsHeaders);
 }
 
 function logAntiCheatFailure(event, context = {}) {
@@ -492,18 +485,18 @@ export default {
   async fetch(request, env) {
     const url  = new URL(request.url);
     const path = url.pathname.replace(/\/$/, '') || '/';
-
-    // Set per-request CORS headers reflecting the request's Origin.
-    CORS_HEADERS = buildCorsHeaders(request, env);
+    const corsHeaders = buildCorsHeaders(request, env);
+    const jsonResponse = (data, status = 200) => json(data, status, corsHeaders);
+    const errorResponse = (msg, status = 400) => err(msg, status, corsHeaders);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers: corsHeaders });
     }
 
     // ── GET /anticheat/health ──────────────────────────────────────────────
     if (path === '/anticheat/health' && request.method === 'GET') {
       const now = Date.now();
-      return json({
+      return jsonResponse({
         ok:            true,
         season_number: currentSeasonNumber(now),
         year:          currentUtcYear(now),
@@ -517,37 +510,37 @@ export default {
     // ── GET /anticheat/status ──────────────────────────────────────────────
     // Admin: ?telegram_id=... or ?username=@...
     if (path === '/anticheat/status' && request.method === 'GET') {
-      if (!isAdminAuthorised(request, env)) return err('Unauthorised', 401);
+      if (!isAdminAuthorised(request, env)) return errorResponse('Unauthorised', 401);
 
       const telegramId = await resolveId(env.DB, {
         telegram_id: url.searchParams.get('telegram_id'),
         username:    url.searchParams.get('username'),
       });
-      if (!telegramId) return err('telegram_id or username required');
+      if (!telegramId) return errorResponse('telegram_id or username required');
 
       const state = await getAntiCheatState(env.DB, telegramId);
       if (!state) {
-        return json({ telegram_id: telegramId, state: null, message: 'No anti-cheat record yet' });
+        return jsonResponse({ telegram_id: telegramId, state: null, message: 'No anti-cheat record yet' });
       }
-      return json({ telegram_id: telegramId, state });
+      return jsonResponse({ telegram_id: telegramId, state });
     }
 
     // ── POST /anticheat/scan ───────────────────────────────────────────────
     // Admin: manually trigger the weekly scan (useful for testing).
     if (path === '/anticheat/scan' && request.method === 'POST') {
-      if (!isAdminAuthorised(request, env)) return err('Unauthorised', 401);
+      if (!isAdminAuthorised(request, env)) return errorResponse('Unauthorised', 401);
       const result = await weeklyAntiCheatScan(env).catch((e) => ({ error: e?.message || String(e) }));
-      return json(result);
+      return jsonResponse(result);
     }
 
     // ── POST /anticheat/unblock ────────────────────────────────────────────
     // Body: { telegram_id } or { username }
     if (path === '/anticheat/unblock' && request.method === 'POST') {
-      if (!isAdminAuthorised(request, env)) return err('Unauthorised', 401);
-      let body; try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      if (!isAdminAuthorised(request, env)) return errorResponse('Unauthorised', 401);
+      let body; try { body = await request.json(); } catch { return errorResponse('Invalid JSON'); }
 
       const telegramId = await resolveId(env.DB, body);
-      if (!telegramId) return err('telegram_id or username required');
+      if (!telegramId) return errorResponse('telegram_id or username required');
 
       await clearKvBlock(env, telegramId);
       await env.DB.prepare(`
@@ -565,17 +558,17 @@ export default {
       await logAntiCheatEvent(env.DB, telegramId, 'admin_unblock',
         currentSeasonNumber(now), currentUtcYear(now), 0, 'Admin action');
 
-      return json({ ok: true, telegram_id: telegramId });
+      return jsonResponse({ ok: true, telegram_id: telegramId });
     }
 
     // ── POST /anticheat/block ──────────────────────────────────────────────
     // Body: { telegram_id | username, block_type?: "season"|"year"|"lifetime", reason? }
     if (path === '/anticheat/block' && request.method === 'POST') {
-      if (!isAdminAuthorised(request, env)) return err('Unauthorised', 401);
-      let body; try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      if (!isAdminAuthorised(request, env)) return errorResponse('Unauthorised', 401);
+      let body; try { body = await request.json(); } catch { return errorResponse('Invalid JSON'); }
 
       const telegramId = await resolveId(env.DB, body);
-      if (!telegramId) return err('telegram_id or username required');
+      if (!telegramId) return errorResponse('telegram_id or username required');
 
       const blockType = ['season', 'year', 'lifetime'].includes(body.block_type)
         ? body.block_type : 'season';
@@ -607,17 +600,17 @@ export default {
       await logAntiCheatEvent(env.DB, telegramId, 'admin_block', sNum, sYear, 0,
         JSON.stringify({ block_type: blockType, reason }));
 
-      return json({ ok: true, telegram_id: telegramId, block_type: blockType });
+      return jsonResponse({ ok: true, telegram_id: telegramId, block_type: blockType });
     }
 
     // ── POST /anticheat/clear-strikes ──────────────────────────────────────
     // Body: { telegram_id } or { username }
     if (path === '/anticheat/clear-strikes' && request.method === 'POST') {
-      if (!isAdminAuthorised(request, env)) return err('Unauthorised', 401);
-      let body; try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      if (!isAdminAuthorised(request, env)) return errorResponse('Unauthorised', 401);
+      let body; try { body = await request.json(); } catch { return errorResponse('Invalid JSON'); }
 
       const telegramId = await resolveId(env.DB, body);
-      if (!telegramId) return err('telegram_id or username required');
+      if (!telegramId) return errorResponse('telegram_id or username required');
 
       const now   = Date.now();
       const sNum  = currentSeasonNumber(now);
@@ -640,9 +633,9 @@ export default {
 
       await logAntiCheatEvent(env.DB, telegramId, 'admin_clear_strikes', sNum, sYear, 0, 'Admin action');
 
-      return json({ ok: true, telegram_id: telegramId });
+      return jsonResponse({ ok: true, telegram_id: telegramId });
     }
 
-    return err('Not found', 404);
+    return errorResponse('Not found', 404);
   },
 };
