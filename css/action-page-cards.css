@@ -367,6 +367,20 @@ body.page-community .bc-join-cancel-btn:hover {
   border-color: rgba(247, 201, 72, 0.42);
 }
 
+body.page-community .bc-faction-chamber-link:focus-visible,
+body.page-community .bc-frc-link:focus-visible,
+body.page-community .bc-cta-btn:focus-visible,
+body.page-community .bc-hero-cta:focus-visible,
+body.page-community .bc-join-btn:focus-visible,
+body.page-community .bc-join-confirm-btn:focus-visible,
+body.page-community .bc-join-cancel-btn:focus-visible {
+  color: var(--color-accent);
+  background: rgba(247, 201, 72, 0.10);
+  border-color: rgba(247, 201, 72, 0.42);
+  outline: 2px solid rgba(0, 255, 204, 0.5);
+  outline-offset: 2px;
+}
+
 body.page-community .bc-weekly-header,
 body.page-community .bc-weekly-row,
 body.page-community .bc-monthly-target,
@@ -494,5 +508,16 @@ body.page-game .community-loading {
   body.page-game .notice,
   body.page-game .roguelite-loop-panel {
     padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-game .article-list-item,
+  body.page-game .roguelite-branch-card,
+  body.page-game .roguelite-task-card,
+  body.page-community .bc-faction-row,
+  body.page-community .bc-weekly-row {
+    transition: none !important;
+    transform: none !important;
   }
 }
