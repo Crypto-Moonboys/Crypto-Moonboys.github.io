@@ -31,7 +31,7 @@
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
     UNLINKED:            'Telegram not linked \u2014 run /gklink',
-    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    FEATURE_UNAVAILABLE: 'Feature unavailable',
     API_UNAVAILABLE:     'Core API unavailable',
   };
 

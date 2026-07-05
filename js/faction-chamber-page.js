@@ -431,7 +431,7 @@
         ? '<ul>' + roguelitePerks.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>'
         : '';
       rogue.innerHTML = '<p>' + esc(profile.rogueliteIdentity) + ' defines this faction’s roguelite branch identity.</p>' +
-        (perksHtml ? '<p><strong>Roguelite perk eligibility (display only, not live wired unless noted):</strong></p>' + perksHtml : '') +
+        (perksHtml ? '<p><strong>Roguelite perk eligibility:</strong></p>' + perksHtml : '') +
         '<p>Roguelite perk options are eligibility indicators shown as unlocked/eligible and wired into the roguelite loop where confirmed.</p>';
     }
 

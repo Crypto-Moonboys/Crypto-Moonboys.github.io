@@ -499,10 +499,10 @@ const initLiveFeedBlock = functionBlock(homeWidgets, 'initLiveFeed');
 const initLeaderboardBlock = functionBlock(homeWidgets, 'initLeaderboard');
 const initActivityPanelBlock = functionBlock(homeWidgets, 'initActivityPanel');
 const initCommentsTeaserBlock = functionBlock(homeWidgets, 'initCommentsTeaser');
-check(initLiveFeedBlock.includes('Activity feed not live yet.'), 'disabled homepage live feed renders honest not-live-yet copy');
-check(initLeaderboardBlock.includes('Engagement leaderboard not yet available.'), 'disabled homepage leaderboard renders honest not-yet-available copy');
-check(initActivityPanelBlock.includes('activity heat not live yet'), 'disabled homepage activity panel renders honest not-live-yet copy');
-check(initCommentsTeaserBlock.includes('Community comments are not yet available here.'), 'disabled homepage comments teaser renders honest not-yet-available copy');
+check(initLiveFeedBlock.includes('Activity feed unavailable.') && initLiveFeedBlock.includes('Use the live Arcade and Battle Chamber routes below'), 'disabled homepage live feed renders neutral unavailable copy with live route CTAs');
+check(initLeaderboardBlock.includes('Engagement leaderboard unavailable.'), 'disabled homepage leaderboard renders neutral unavailable copy');
+check(initActivityPanelBlock.includes('Explore the Living Wiki') && !initActivityPanelBlock.includes('not live yet'), 'disabled homepage activity panel avoids not-live-yet copy');
+check(initCommentsTeaserBlock.includes('Community comments are unavailable here.'), 'disabled homepage comments teaser renders neutral unavailable copy');
 check(!initLiveFeedBlock.includes('Recent activity is generated from synced arcade'), 'disabled homepage live feed does not use misleading "is generated" copy');
 check(!initLiveFeedBlock.includes('Live feed'), 'disabled homepage live feed does not label a disabled endpoint as "Live feed"');
 

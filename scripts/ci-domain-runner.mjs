@@ -88,6 +88,7 @@ const GROUPS = {
     ['node', 'scripts/right-rail-live-panels.test.mjs'],
     ['node', 'scripts/favicon-consistency.test.mjs'],
     ['node', 'scripts/anti-drift-check.mjs'],
+    ['node', 'scripts/public-copy-trust-guard.test.mjs'],
     ['node', 'scripts/ci-domain-groups.test.mjs'],
     ['node', 'scripts/live-site-verify-static.test.mjs'],
     ['node', 'scripts/site-shell-parity-audit.mjs'],
