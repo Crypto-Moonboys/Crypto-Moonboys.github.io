@@ -2665,6 +2665,12 @@
     state.live.pollTimer = window.setTimeout(pollLiveSnapshot, delay == null ? LIVE_POLL_MS : delay);
   }
 
+  function stopLiveEventSource() {
+    if (!state.live.eventSource) return;
+    try { state.live.eventSource.close(); } catch (_) {}
+    state.live.eventSource = null;
+  }
+
   function pollLiveSnapshot() {
     if (state.live.pollInFlight || document.hidden) {
       scheduleLivePolling(LIVE_POLL_MS);
@@ -2690,6 +2696,8 @@
       return;
     }
     try {
+      window.clearTimeout(state.live.pollTimer);
+      stopLiveEventSource();
       state.live.transport = 'sse';
       state.live.eventSource = new window.EventSource(endpoint);
       state.live.eventSource.addEventListener('token_update', function (event) {
@@ -2703,8 +2711,7 @@
         setStatus();
       });
       state.live.eventSource.onerror = function () {
-        if (state.live.eventSource) state.live.eventSource.close();
-        state.live.eventSource = null;
+        stopLiveEventSource();
         scheduleLivePolling(1000);
       };
     } catch (_) {
@@ -2713,7 +2720,17 @@
   }
 
   function startLiveUpdates() {
-    scheduleLivePolling(LIVE_POLL_MS);
+    apiJson(HEALTH_API).then(function (health) {
+      state.health = payloadData(health);
+      var live = state.health && state.health.live_updates;
+      if (live && live.transport === 'sse' && live.stream_endpoint) {
+        startLiveEventSource(live.stream_endpoint);
+        return;
+      }
+      scheduleLivePolling(LIVE_POLL_MS);
+    }).catch(function () {
+      scheduleLivePolling(LIVE_POLL_MS);
+    });
   }
 
   function fetchBootstrapSnapshot() {
@@ -2892,6 +2909,14 @@
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) requestDraw();
     });
+    window.addEventListener('pagehide', function () {
+      window.clearTimeout(state.live.pollTimer);
+      stopLiveEventSource();
+    });
+    window.addEventListener('pageshow', function (event) {
+      if (!event || !event.persisted) return;
+      startLiveUpdates();
+    });
     if (reducedMotionQuery) {
       var onMotionChange = function () {
         state.nodes.forEach(function (node) {
@@ -2938,9 +2963,6 @@
       setStatus();
       fetchEnrichedSnapshotAfterFirstPaint();
       startLiveUpdates();
-      apiJson(HEALTH_API).then(function (health) {
-        state.health = payloadData(health);
-      }).catch(function () {});
       requestDraw();
     }).catch(function (error) {
       state.connected = false;

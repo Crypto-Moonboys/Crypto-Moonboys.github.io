@@ -7,6 +7,7 @@
     payload: null,
     pairSort: null,
   };
+  var analyticsController = window.AbortController ? new AbortController() : null;
 
   function $(id) {
     return document.getElementById(id);
@@ -342,7 +343,15 @@
     button.addEventListener('click', function () { setPairSort(button.getAttribute('data-sort')); });
   });
 
-  fetch(ENDPOINT, { headers: { Accept: 'application/json' } })
+  window.addEventListener('pagehide', function () {
+    if (analyticsController) analyticsController.abort();
+  });
+
+  fetch(ENDPOINT, {
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+    signal: analyticsController ? analyticsController.signal : undefined,
+  })
     .then(function (response) {
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
@@ -351,9 +360,13 @@
       render(payload && payload.data ? payload.data : payload);
     })
     .catch(function (error) {
+      if (error && error.name === 'AbortError') return;
       $('wx-status').textContent = 'Analytics unavailable';
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
       updateSortButtons([]);
       $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">Pair table unavailable.</td></tr>';
+    })
+    .finally(function () {
+      analyticsController = null;
     });
 }());
