@@ -481,7 +481,7 @@
         '<div class="bc-join-season-notice">' +
           '<p class="bc-join-season-lock-copy">' + esc(CONTENT.factionLock || 'Choose carefully. Your faction is locked for the current season.') + '</p>' +
           '<p class="bc-join-season-reset-copy">' + esc(CONTENT.factionReset || 'At season reset, your faction lock clears and you can join again or pick a new side.') + '</p>' +
-          '<p class="bc-join-link-copy">' + esc(CONTENT.factionIdentityRequired || 'Faction clout only counts when your identity provider is linked. No faction, no faction clout.') + '</p>' +
+          '<p class="bc-join-link-copy">' + esc(CONTENT.factionIdentityRequired || 'Faction clout only counts when you are Telegram-linked. No faction, no faction clout.') + '</p>' +
         '</div>' +
         '<p class="bc-join-intro">' + esc(CONTENT.joinIntro || 'Join a faction to make your arcade activity count for something bigger. Your runs build clout. Your faction earns pressure.') + '</p>' +
         '<div class="bc-join-grid">' + cards + '</div>';
@@ -595,7 +595,7 @@
                 } else if (isBackendUnavailable) {
                   container.innerHTML =
                     '<div class="bc-join-locked-panel">' +
-                      '<div class="bc-join-locked-msg">' + esc(CONTENT.backendUnavailable || 'Faction backend is updating. Your identity link is active, but faction join is temporarily unavailable. Try again after deployment.') + '</div>' +
+                      '<div class="bc-join-locked-msg">' + esc(CONTENT.backendUnavailable || 'Faction backend is updating. Your Telegram link is active, but faction join is temporarily unavailable. Try again after deployment.') + '</div>' +
                       '<button class="bc-join-cancel-btn interactive" id="bc-backend-back">Back</button>' +
                     '</div>';
                   var backendBackBtn = container.querySelector('#bc-backend-back');

@@ -26,12 +26,12 @@
     noLinkedDaily: 'Linked daily state is unavailable. Local Battle Chamber guidance remains available.',
     factionLock: 'Choose carefully. Your faction is locked for the current season.',
     factionReset: 'At season reset, your faction lock clears and you can join again or pick a new side.',
-    factionIdentityRequired: 'Faction clout only counts when your identity provider is linked. No faction, no faction clout.',
+    factionIdentityRequired: 'Faction clout only counts when you are Telegram-linked. No faction, no faction clout.',
     joinIntro: 'Join a faction to make your arcade activity count for something bigger. Your runs build clout. Your faction earns pressure.',
     missionsLoading: 'Loading faction missions... (connect your identity provider to sync live data)',
     missionsNote: 'Mission rewards are clout/war contribution only. Linked identity users sync mission progress to server.',
     proofFallback: 'Faction activity, XP movement, and public proof appear below where wired. Linked identity users sync activity to the server.',
-    backendUnavailable: 'Faction backend is updating. Your identity link is active, but faction join is temporarily unavailable. Try again after deployment.',
+    backendUnavailable: 'Faction backend is updating. Your Telegram link is active, but faction join is temporarily unavailable. Try again after deployment.',
   });
 
   function isObject(value) {
