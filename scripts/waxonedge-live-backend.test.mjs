@@ -7668,8 +7668,8 @@ ok('candle backfill limit respects free-safe and paid mode',
 ok('WAXONEDGE_FREE_SAFE_MODE=false uses paid candle limit',
   __waxonedgeTestHooks.candleBackfillPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 24 &&
   __waxonedgeTestHooks.candleBackfillPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 2);
-ok('WAXONEDGE_FREE_SAFE_MODE=false is configured for paid WaxOnEdge runtime',
-  wrangler.includes('WAXONEDGE_FREE_SAFE_MODE = "false"') &&
+ok('WAXONEDGE_FREE_SAFE_MODE=true is configured for account-safe WaxOnEdge runtime',
+  wrangler.includes('WAXONEDGE_FREE_SAFE_MODE = "true"') &&
   __waxonedgeTestHooks.tradeIndexPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 24 &&
   __waxonedgeTestHooks.tradeIndexPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 2 &&
   __waxonedgeTestHooks.tradeRowsPerMarketLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 250 &&
