@@ -37,6 +37,7 @@ let lastComboValue = 1;
 let hintTimeout = null;
 let liveEventTimer = null;
 let chaosPulseTimer = null;
+let hudTimer = null;
 let activeLiveEvent = null;
 let lastHintAt = 0;
 let lastHintKey = '';
@@ -370,6 +371,26 @@ function endLiveEventLocal() {
   updateHud();
 }
 
+function startHudTimer() {
+  if (hudTimer || document.hidden) return;
+  hudTimer = setInterval(updateHud, 500);
+}
+
+function stopHudTimer() {
+  if (!hudTimer) return;
+  clearInterval(hudTimer);
+  hudTimer = null;
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    stopHudTimer();
+    return;
+  }
+  updateHud();
+  startHudTimer();
+}
+
 function handleLiveEventStarted(payload) {
   const event = payload?.event || payload;
   if (!event) return;
@@ -575,6 +596,12 @@ function startSurvivalTicks() {
   }, 1000);
 }
 
+function stopSurvivalTicks() {
+  if (!survivalTimer) return;
+  clearInterval(survivalTimer);
+  survivalTimer = null;
+}
+
 function wireRunLifecycle() {
   document.addEventListener('arcade-run-start', () => {
     runActive = true;
@@ -591,6 +618,7 @@ function wireRunLifecycle() {
   const stopRun = () => {
     runActive = false;
     runPaused = false;
+    stopSurvivalTicks();
     endLiveEventLocal();
     if (typeof ArcadeMeta.endLiveEvent === 'function') {
       try { ArcadeMeta.endLiveEvent('run_end'); } catch (_) {}
@@ -615,6 +643,8 @@ function initGlobalHooks() {
 
 function init() {
   if (!isArcadeGamePage()) return;
+  if (window.__arcadeMetaUiInitialized) return;
+  window.__arcadeMetaUiInitialized = true;
   ensureUi();
   initGlobalHooks();
   wireInputModifiers();
@@ -622,7 +652,8 @@ function init() {
   wireRunLifecycle();
   setupScoreHooks();
   updateHud();
-  setInterval(updateHud, 500);
+  startHudTimer();
+  document.addEventListener('visibilitychange', handleVisibilityChange);
 }
 
 if (typeof window !== 'undefined') {

@@ -4,6 +4,10 @@
  */
 
 (function () {
+  let renderTimer = null;
+  let initialized = false;
+  let lastValue = null;
+
   function render() {
     let el = document.getElementById('xp-hud');
 
@@ -25,14 +29,40 @@
     }
 
     const xp = window.XP ? window.XP.get() : 0;
-    el.innerHTML = `XP: ${xp}`;
+    if (xp !== lastValue) {
+      el.textContent = `XP: ${xp}`;
+      lastValue = xp;
+    }
+  }
+
+  function startTimer() {
+    if (renderTimer || document.hidden) return;
+    renderTimer = setInterval(render, 1000);
+  }
+
+  function stopTimer() {
+    if (!renderTimer) return;
+    clearInterval(renderTimer);
+    renderTimer = null;
+  }
+
+  function handleVisibilityChange() {
+    if (document.hidden) {
+      stopTimer();
+      return;
+    }
+    render();
+    startTimer();
   }
 
   function init() {
+    if (initialized) return;
+    initialized = true;
     render();
-    setInterval(render, 1000);
+    startTimer();
 
     window.addEventListener('xp:update', render);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
   }
 
   window.XP_UI = { init, render };
