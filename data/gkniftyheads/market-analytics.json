@@ -2,7 +2,7 @@
   "collection": "gkniftyheads",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-04T06:33:02.450Z",
+  "generated_at": "2026-07-05T06:53:04.119Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -20,80 +20,80 @@
   },
   "endpoint_status": {
     "collection_stats": {
-      "ok": false,
-      "stale": true,
+      "ok": true,
+      "stale": false,
       "source_url": "https://wax-api.hivebp.io/v3/collection-stats/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/collection-stats/gkniftyheads failed: HTTP 503",
-      "used_previous": true,
-      "attempts": 2,
-      "checked_at": "2026-07-04T06:32:56.244Z"
+      "error": null,
+      "used_previous": false,
+      "attempts": 1,
+      "checked_at": "2026-07-05T06:52:58.673Z"
     },
     "num_assets": {
-      "ok": false,
-      "stale": true,
+      "ok": true,
+      "stale": false,
       "source_url": "https://wax-api.hivebp.io/v3/num-assets/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/num-assets/gkniftyheads failed: HTTP 503",
-      "used_previous": true,
-      "attempts": 2,
-      "checked_at": "2026-07-04T06:32:57.597Z"
+      "error": null,
+      "used_previous": false,
+      "attempts": 1,
+      "checked_at": "2026-07-05T06:52:59.649Z"
     },
     "marketcap": {
-      "ok": false,
-      "stale": true,
+      "ok": true,
+      "stale": false,
       "source_url": "https://wax-api.hivebp.io/v3/marketcap/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/marketcap/gkniftyheads failed: HTTP 503",
-      "used_previous": true,
-      "attempts": 2,
-      "checked_at": "2026-07-04T06:32:59.231Z"
+      "error": null,
+      "used_previous": false,
+      "attempts": 1,
+      "checked_at": "2026-07-05T06:53:01.735Z"
     },
     "top_users": {
       "ok": false,
       "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 503",
+      "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-04T06:32:59.873Z"
+      "checked_at": "2026-07-05T06:53:01.928Z"
     },
     "top_templates": {
-      "ok": false,
-      "stale": true,
+      "ok": true,
+      "stale": false,
       "source_url": "https://wax-api.hivebp.io/v3/top-templates/30/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/top-templates/30/gkniftyheads failed: HTTP 503",
-      "used_previous": true,
-      "attempts": 2,
-      "checked_at": "2026-07-04T06:33:00.518Z"
+      "error": null,
+      "used_previous": false,
+      "attempts": 1,
+      "checked_at": "2026-07-05T06:53:02.620Z"
     },
     "volume": {
-      "ok": false,
-      "stale": true,
+      "ok": true,
+      "stale": false,
       "source_url": "https://wax-api.hivebp.io/v3/volume/30/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/volume/30/gkniftyheads failed: HTTP 503",
-      "used_previous": true,
-      "attempts": 2,
-      "checked_at": "2026-07-04T06:33:01.165Z"
+      "error": null,
+      "used_previous": false,
+      "attempts": 1,
+      "checked_at": "2026-07-05T06:53:03.670Z"
     },
     "sales_volume_graph": {
-      "ok": false,
-      "stale": true,
+      "ok": true,
+      "stale": false,
       "source_url": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/gkniftyheads failed: HTTP 503",
-      "used_previous": true,
-      "attempts": 2,
-      "checked_at": "2026-07-04T06:33:01.807Z"
+      "error": null,
+      "used_previous": false,
+      "attempts": 1,
+      "checked_at": "2026-07-05T06:53:03.864Z"
     }
   },
   "data": {
     "collection_stats": {
-      "numUsers": 116190,
-      "usdMarketCap": 32511.398180656957,
-      "waxMarketCap": 524822.7292572217,
+      "numUsers": 116189,
+      "usdMarketCap": 32511.398180655648,
+      "waxMarketCap": 524822.7292572286,
       "numAssets": 123351
     },
     "num_assets": {
       "numberOfAssets": 123351,
-      "estimatedWaxValue": 524822.729257251,
-      "estimatedUsdValue": 32511.398180659296
+      "estimatedWaxValue": 524822.729257227,
+      "estimatedUsdValue": 32511.398180655888
     },
     "marketcap": {
       "waxMarketCap": 458438.5664333417,
@@ -120,7 +120,7 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 20254.822917917205,
+          "waxVolume": 20254.8229179172,
           "usdVolume": 1072.7225518019752,
           "waxFloor": 15.99999999,
           "change": 0,
@@ -719,18 +719,6 @@
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
-        "date": "2026-06-04"
-      },
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-05"
-      },
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
         "date": "2026-06-06"
       },
       {
@@ -850,7 +838,7 @@
       {
         "waxVolume": 1677.20499569,
         "sales": 50,
-        "usdVolume": 7.882863479743,
+        "usdVolume": 7.882863479743001,
         "date": "2026-06-26"
       },
       {
@@ -894,18 +882,24 @@
         "sales": 0,
         "usdVolume": 0,
         "date": "2026-07-03"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-07-04"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-07-05"
       }
     ]
   },
-  "previous_preserved": true,
-  "previous_generated_at": "2026-07-03T06:45:20.469Z",
+  "previous_preserved": false,
+  "previous_generated_at": null,
   "error_summary": [
-    "collection_stats: https://wax-api.hivebp.io/v3/collection-stats/gkniftyheads failed: HTTP 503",
-    "num_assets: https://wax-api.hivebp.io/v3/num-assets/gkniftyheads failed: HTTP 503",
-    "marketcap: https://wax-api.hivebp.io/v3/marketcap/gkniftyheads failed: HTTP 503",
-    "top_users: https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 503",
-    "top_templates: https://wax-api.hivebp.io/v3/top-templates/30/gkniftyheads failed: HTTP 503",
-    "volume: https://wax-api.hivebp.io/v3/volume/30/gkniftyheads failed: HTTP 503",
-    "sales_volume_graph: https://wax-api.hivebp.io/v3/sales-volume-graph/30/gkniftyheads failed: HTTP 503"
+    "top_users: https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500"
   ]
 }

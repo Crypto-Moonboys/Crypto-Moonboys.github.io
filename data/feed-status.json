@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-04T06:33:56.941Z",
+  "generated_at": "2026-07-05T06:53:57.737Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -23,10 +23,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-04T06:33:03.134Z",
-      "last_successful_check": "2026-07-04T06:33:03.134Z",
-      "last_successful_update": "2026-07-04T06:33:02.780Z",
-      "source_updated_at": "2026-07-04T06:33:02.780Z",
+      "checked_at": "2026-07-05T06:53:05.288Z",
+      "last_successful_check": "2026-07-05T06:53:05.287Z",
+      "last_successful_update": "2026-07-05T06:53:04.941Z",
+      "source_updated_at": "2026-07-05T06:53:04.941Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -71,10 +71,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-04T06:33:07.987Z",
-      "last_successful_check": "2026-07-04T06:33:07.987Z",
-      "last_successful_update": "2026-07-04T06:33:07.987Z",
-      "source_updated_at": "2026-07-04T06:33:07.987Z",
+      "checked_at": "2026-07-05T06:53:09.602Z",
+      "last_successful_check": "2026-07-05T06:53:09.602Z",
+      "last_successful_update": "2026-07-05T06:53:09.602Z",
+      "source_updated_at": "2026-07-05T06:53:09.602Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -102,10 +102,10 @@
       "status": "degraded",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-04T06:33:54.350Z",
-      "last_successful_check": "2026-07-04T06:33:54.350Z",
-      "last_successful_update": "2026-07-04T06:33:53.872Z",
-      "source_updated_at": "2026-07-04T06:33:53.872Z",
+      "checked_at": "2026-07-05T06:53:55.785Z",
+      "last_successful_check": "2026-07-05T06:53:55.785Z",
+      "last_successful_update": "2026-07-05T06:53:55.444Z",
+      "source_updated_at": "2026-07-05T06:53:55.444Z",
       "source_age_minutes": 0,
       "last_error": "bubbles_lite: Feed fetch timeout after 15000ms",
       "fallback_behavior": "keep static bootstrap and mark feed stale/error if Worker data is unavailable",
@@ -121,7 +121,7 @@
             "source": "moonboys-api/waxonedge",
             "updated_at": null,
             "data": {
-              "generated_at": "2026-07-04T06:33:53.872Z",
+              "generated_at": "2026-07-05T06:53:55.444Z",
               "runtime_config": {
                 "free_safe_mode": false,
                 "active_candle_backfill_pair_limit": 24,
@@ -570,7 +570,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-04T06:33:38.241Z"
+          "checked_at": "2026-07-05T06:53:39.856Z"
         },
         "bubbles_lite": {
           "ok": false,
@@ -581,7 +581,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-04T06:33:07.988Z"
+          "checked_at": "2026-07-05T06:53:09.603Z"
         },
         "static_bootstrap": {
           "ok": true,
@@ -11394,13 +11394,13 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-07-04T06:33:54.171Z"
+          "checked_at": "2026-07-05T06:53:55.649Z"
         }
       },
       "notes": [
         "Uses existing WaxOnEdge Worker endpoints; scheduled feed status is advisory and preserves live-primary runtime behavior.",
         "bubbles_lite summary: {}",
-        "health summary: {\"generated_at\":\"2026-07-04T06:33:53.872Z\",\"updated_at\":null,\"source\":\"moonboys-api/waxonedge\",\"token_count\":null,\"pair_count\":null}",
+        "health summary: {\"generated_at\":\"2026-07-05T06:53:55.444Z\",\"updated_at\":null,\"source\":\"moonboys-api/waxonedge\",\"token_count\":null,\"pair_count\":null}",
         "Static bootstrap or previous live bubbles remain available as fallback."
       ]
     },
@@ -11417,7 +11417,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-04T06:33:54.813Z",
+      "checked_at": "2026-07-05T06:53:56.084Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -11435,7 +11435,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/waxcash-analytics failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-04T06:33:54.353Z"
+          "checked_at": "2026-07-05T06:53:55.789Z"
         }
       },
       "notes": [
@@ -11459,7 +11459,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-04T06:33:56.940Z",
+      "checked_at": "2026-07-05T06:53:57.737Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -11477,7 +11477,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-04T06:33:54.814Z",
+          "checked_at": "2026-07-05T06:53:56.085Z",
           "key": "token_page"
         },
         "pairs_liquidity": {
@@ -11489,7 +11489,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=liquidity failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-04T06:33:55.518Z",
+          "checked_at": "2026-07-05T06:53:56.673Z",
           "key": "pairs_liquidity"
         },
         "pairs_volume24": {
@@ -11501,7 +11501,7 @@
           "error": "https://cryptomoonboys.com/api/waxonedge/token-page/wuffi/WUF?sort=volume24 failed: HTTP 503",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-04T06:33:56.220Z",
+          "checked_at": "2026-07-05T06:53:57.204Z",
           "key": "pairs_volume24"
         }
       },
