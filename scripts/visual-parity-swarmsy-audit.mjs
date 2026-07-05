@@ -361,57 +361,87 @@ if (!wikiCss) {
 }
 if (wikiCssOk) pass('css/wiki.css owns shell layout and SWARMSY components without max-width caps');
 
-console.log('\n[7] Homepage hero background stays behind launch content');
+console.log('\n[7] Homepage owns the SWARMSY landing-page card contract');
 let homepageHeroOk = true;
 const homepageHtml = read('index.html') || '';
-if (!homepageHtml.includes('class="swarmsy-hero-bg"')) {
-  fail('index.html - missing swarmsy-hero-bg homepage hero background wrapper');
+if (homepageHtml.includes('class="swarmsy-hero-bg"') || /hero-bg-img/i.test(homepageHtml)) {
+  fail('index.html - homepage must not restore the old large hero background image layer');
   homepageHeroOk = false;
 }
 if (/retro-hero-bg/i.test(homepageHtml)) {
   fail('index.html - must not restore retro-hero-bg');
   homepageHeroOk = false;
 }
+if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || !htmlContainsClass(homepageHtml, 'hud-hero-logo-wrap')) {
+  fail('index.html - homepage hero must use the compact SWARMSY hero/logo structure');
+  homepageHeroOk = false;
+}
 if (!wikiCss) {
   homepageHeroOk = false;
 } else {
-  const homeHeroBlock = selectorBlock(wikiCss, '.home-hero,\n.launch-hero') || selectorBlock(wikiCss, '.home-hero,\r\n.launch-hero');
-  const bgBlock = selectorBlock(wikiCss, '.swarmsy-hero-bg');
-  const imgBlock = selectorBlock(wikiCss, '.swarmsy-hero-bg .hero-bg-img');
-  const overlayBlock = selectorBlock(wikiCss, '.swarmsy-hero-bg::after');
-  const contentBlock = selectorBlock(wikiCss, '.home-hero > :not(.swarmsy-hero-bg)');
+  const contentBlock = selectorBlock(wikiCss, 'body.page-home #content');
+  const homeHeroBlock =
+    selectorBlock(wikiCss, 'body.page-home .home-hero,\nbody.page-home .launch-hero') ||
+    selectorBlock(wikiCss, 'body.page-home .home-hero,\r\nbody.page-home .launch-hero');
+  const innerBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-inner');
+  const titleBlock =
+    selectorBlock(wikiCss, 'body.page-home .home-hero h1,\nbody.page-home .launch-hero h1') ||
+    selectorBlock(wikiCss, 'body.page-home .home-hero h1,\r\nbody.page-home .launch-hero h1');
+  const logoBlock = selectorBlock(wikiCss, 'body.page-home .hud-hero-logo-wrap');
+  const logoImgBlock = selectorBlock(wikiCss, 'body.page-home .hero-logo-img');
+  const ctaBlock =
+    selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\nbody.page-home .launch-cta-secondary') ||
+    selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\r\nbody.page-home .launch-cta-secondary');
+  const cardBlock =
+    selectorBlock(wikiCss, 'body.page-home .launch-route,\nbody.page-home .hero-stat,\nbody.page-home .home-widget,\nbody.page-home .category-card,\nbody.page-home .article-card') ||
+    selectorBlock(wikiCss, 'body.page-home .launch-route,\r\nbody.page-home .hero-stat,\r\nbody.page-home .home-widget,\r\nbody.page-home .category-card,\r\nbody.page-home .article-card');
 
-  if (!blockHas(homeHeroBlock, /position\s*:\s*relative/i) || !blockHas(homeHeroBlock, /overflow\s*:\s*hidden/i)) {
-    fail(`${GLOBAL_SHELL_CSS} - .home-hero/.launch-hero must be relative and hide hero background overflow`);
+  if (!blockHas(contentBlock, /padding-top\s*:\s*0/i) || !blockHas(contentBlock, /padding-(?:right|left)\s*:\s*0/i)) {
+    fail(`${GLOBAL_SHELL_CSS} - homepage content must remove the top/side shell gap before the SWARMSY hero`);
     homepageHeroOk = false;
   }
   if (
-    !blockHas(bgBlock, /position\s*:\s*absolute/i) ||
-    !blockHas(bgBlock, /inset\s*:\s*0/i) ||
-    !blockHas(bgBlock, /z-index\s*:\s*0/i) ||
-    !blockHas(bgBlock, /pointer-events\s*:\s*none/i)
+    !blockHas(homeHeroBlock, /width\s*:\s*100%/i) ||
+    !blockHas(homeHeroBlock, /max-width\s*:\s*none/i) ||
+    !blockHas(homeHeroBlock, /margin\s*:\s*0/i) ||
+    !blockHas(homeHeroBlock, /border-radius\s*:\s*0/i) ||
+    !blockHas(homeHeroBlock, /background\s*:/i) ||
+    !blockHas(homeHeroBlock, /box-shadow\s*:/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-hero-bg must be an absolute inset non-interactive background layer`);
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero must be a full-width SWARMSY glowing panel with no centered lane`);
     homepageHeroOk = false;
   }
   if (
-    !blockHas(imgBlock, /width\s*:\s*100%/i) ||
-    !blockHas(imgBlock, /height\s*:\s*100%/i) ||
-    !blockHas(imgBlock, /object-fit\s*:\s*cover/i)
+    !blockHas(innerBlock, /display\s*:\s*grid/i) ||
+    !blockHas(innerBlock, /max-width\s*:\s*1280px/i) ||
+    !blockHas(titleBlock, /font-family\s*:\s*var\(--font-display\)/i) ||
+    !blockHas(titleBlock, /text-shadow\s*:/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - .swarmsy-hero-bg .hero-bg-img must fill the hero with object-fit cover`);
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero copy must keep the SWARMSY display font and readable inner layout`);
     homepageHeroOk = false;
   }
-  if (!blockHas(imgBlock, /opacity\s*:\s*(?:0?\.\d+|[01])/i) && !blockHas(overlayBlock, /background\s*:/i)) {
-    fail(`${GLOBAL_SHELL_CSS} - homepage hero background needs opacity or overlay treatment`);
+  if (
+    !blockHas(logoBlock, /width\s*:\s*clamp\(92px,\s*10vw,\s*150px\)/i) ||
+    !blockHas(logoBlock, /border-radius\s*:\s*22px/i) ||
+    !blockHas(logoImgBlock, /max-height\s*:\s*128px/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - homepage Moonboy logo must stay compact inside a SWARMSY card`);
     homepageHeroOk = false;
   }
-  if (!blockHas(contentBlock, /position\s*:\s*relative/i) || !blockHas(contentBlock, /z-index\s*:\s*1/i)) {
-    fail(`${GLOBAL_SHELL_CSS} - homepage hero content must sit above the background layer`);
+  if (
+    !blockHas(ctaBlock, /display\s*:\s*grid/i) ||
+    !blockHas(ctaBlock, /border\s*:/i) ||
+    !blockHas(ctaBlock, /border-radius\s*:\s*16px/i) ||
+    !blockHas(ctaBlock, /box-shadow\s*:/i) ||
+    !blockHas(cardBlock, /border\s*:/i) ||
+    !blockHas(cardBlock, /border-radius\s*:\s*16px/i) ||
+    !blockHas(cardBlock, /box-shadow\s*:/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - homepage actions, stats, info, category, and article cards must keep SWARMSY glowing card styling`);
     homepageHeroOk = false;
   }
 }
-if (homepageHeroOk) pass('Homepage hero background is an absolute SWARMSY layer behind content');
+if (homepageHeroOk) pass('Homepage uses the full-width SWARMSY glowing card/font system without the old hero image');
 
 console.log('\n[8] SWARMSY component classes keep their global styling contract');
 let swarmsyComponentsOk = true;
