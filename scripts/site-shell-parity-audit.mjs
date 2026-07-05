@@ -46,6 +46,34 @@ function read(rel) {
   return fs.readFileSync(full, 'utf8');
 }
 
+function listHtmlFiles(dir = ROOT, prefix = '') {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'build') continue;
+    const full = path.join(dir, entry.name);
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      files.push(...listHtmlFiles(full, rel));
+    } else if (entry.isFile() && entry.name.endsWith('.html')) {
+      files.push(rel.replace(/\\/g, '/'));
+    }
+  }
+  return files.sort();
+}
+
+function isRedirectPage(html) {
+  return html.includes('http-equiv="refresh"') || html.includes("http-equiv='refresh'");
+}
+
+function isStandaloneToolPage(html) {
+  return /<body\b[^>]*class=["'][^"']*\bpage-standalone-tool\b/u.test(html);
+}
+
+function isHtmlPartial(rel) {
+  return rel.startsWith('wiki/components/');
+}
+
 function scriptCount(html, src) {
   const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return (html.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
@@ -129,6 +157,37 @@ if (!shellJs) {
     pass('site-shell.js does not include outdated "No login" footer claim');
   }
 
+  console.log('\n[2aa] site-shell.js global navigation guarantee');
+  const requiredNavLinks = [
+    ["label: 'HOME'", "href: '/index.html'"],
+    ["label: 'WIKI'", "href: '/search.html'"],
+    ["label: 'GAMES'", "href: '/games/'"],
+    ["label: 'BATTLE CHAMBER'", "href: '/community.html'"],
+    ["label: 'SWARMSY'", "href: '/swarmsy.html'"],
+    ["label: 'SYSTEM HUB'", "href: '/dashboard.html'"],
+  ];
+  for (const [labelNeedle, hrefNeedle] of requiredNavLinks) {
+    if (shellJs.includes(labelNeedle) && shellJs.includes(hrefNeedle)) {
+      pass(`site-shell.js nav contract includes ${labelNeedle.replace("label: ", '')}`);
+    } else {
+      fail(`site-shell.js nav contract missing ${labelNeedle} / ${hrefNeedle}`);
+    }
+  }
+  const navGuaranteeChecks = [
+    ['function isGlobalNavComplete', 'nav completeness validator'],
+    ['normalizePathname(href) === expectedHref', 'href validation before accepting nav'],
+    ['globalNav.parentElement !== header', 'nav parent repair'],
+    ['new MutationObserver', 'runtime nav recovery observer'],
+    ['observer.observe(document.body', 'body subtree recovery watch'],
+  ];
+  for (const [needle, label] of navGuaranteeChecks) {
+    if (shellJs.includes(needle)) {
+      pass(`site-shell.js nav guarantee: ${label} present`);
+    } else {
+      fail(`site-shell.js nav guarantee: ${label} MISSING`);
+    }
+  }
+
   console.log('\n[2b] site-shell.js Sparky global marker');
   const sparkyCompatibilityChecks = [
     ["document.getElementById('site-paperclip-agent')", 'single-render guard'],
@@ -201,6 +260,32 @@ for (const rel of SHELL_PAGES) {
     ok = false;
   }
   if (ok) pass(`${rel}`);
+}
+
+console.log('\n[3b] Public content pages load site-shell.js unless explicitly exempt');
+const publicHtmlFiles = listHtmlFiles();
+const missingShellPages = [];
+const exemptShellPages = [];
+for (const rel of publicHtmlFiles) {
+  if (rel.startsWith('_')) continue;
+  const html = read(rel) || '';
+  if (isHtmlPartial(rel) || isRedirectPage(html) || isStandaloneToolPage(html)) {
+    exemptShellPages.push(rel);
+    continue;
+  }
+  if (!html.includes('/js/site-shell.js')) {
+    missingShellPages.push(rel);
+  }
+}
+if (missingShellPages.length) {
+  for (const rel of missingShellPages) fail(`${rel} - public content page missing /js/site-shell.js`);
+} else {
+  pass(`all ${publicHtmlFiles.length - exemptShellPages.length} non-exempt public HTML pages load /js/site-shell.js`);
+}
+if (exemptShellPages.includes('waxcash.html')) {
+  pass('waxcash.html remains an explicit standalone tool exception');
+} else {
+  fail('waxcash.html must remain categorized as a standalone tool exception');
 }
 
 // 4. Shell pages: script load-order check

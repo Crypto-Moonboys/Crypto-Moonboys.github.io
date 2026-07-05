@@ -112,6 +112,18 @@ window.__HUD_CONSOLIDATED__ = true;
     return `<a class="${className}${active}" href="${escapeHtml(item.href)}" title="${escapeHtml(item.title || item.label)}" data-shell-link="${escapeHtml(item.label)}">${icon}<span>${escapeHtml(item.label)}</span></a>`;
   }
 
+  function isGlobalNavComplete(nav) {
+    if (!nav || nav.id !== 'global-nav') return false;
+    return links.every((item) => {
+      const expectedHref = normalizePathname(item.href);
+      return Array.from(nav.querySelectorAll('a[href]')).some((anchor) => {
+        const href = anchor.getAttribute('href') || '';
+        const label = anchor.dataset.shellLink || anchor.textContent || '';
+        return normalizePathname(href) === expectedHref && label.trim().includes(item.label);
+      });
+    });
+  }
+
   function stampShellMode() {
     const mode = resolveShellMode(window.location.pathname);
     document.documentElement.dataset.wikiShell = 'global';
@@ -224,6 +236,9 @@ window.__HUD_CONSOLIDATED__ = true;
         globalNav.setAttribute('aria-label', 'Global navigation');
         header.appendChild(globalNav);
       }
+      if (globalNav.parentElement !== header) header.appendChild(globalNav);
+      globalNav.className = 'header-nav';
+      globalNav.setAttribute('aria-label', 'Global navigation');
       globalNav.innerHTML = navHtml;
       if (!document.getElementById('search-input')) {
         const form = document.createElement('form');
@@ -504,7 +519,9 @@ window.__HUD_CONSOLIDATED__ = true;
       pending = true;
       window.requestAnimationFrame(() => {
         pending = false;
-        if (!document.getElementById('site-header') || !document.getElementById('global-nav') || !document.getElementById('layout')) {
+        const header = document.getElementById('site-header');
+        const globalNav = document.getElementById('global-nav');
+        if (!header || !isGlobalNavComplete(globalNav) || globalNav.parentElement !== header || !document.getElementById('layout')) {
           ensureNav();
         }
       });
