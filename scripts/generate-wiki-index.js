@@ -120,7 +120,7 @@ function clipAtWordBoundary(text, maxLength = 160) {
   if (normalized.length <= maxLength) return normalized;
   const clipped = normalized.slice(0, maxLength + 1);
   const lastSpace = clipped.lastIndexOf(' ');
-  const safe = lastSpace >= 80 ? clipped.slice(0, lastSpace) : normalized.slice(0, maxLength);
+  const safe = lastSpace > 0 ? clipped.slice(0, lastSpace) : normalized.slice(0, maxLength);
   return safe.replace(/[,\s;:.-]+$/g, '').trim() + '...';
 }
 
