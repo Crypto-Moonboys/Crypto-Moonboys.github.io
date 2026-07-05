@@ -692,7 +692,7 @@ body.page-about .swarmsy-hero-inner {
   max-width: 1100px;
 }
 
-.inline-live-stats--bottom {
+.inline-live-stats.inline-live-stats--bottom {
   margin: clamp(24px, 3vw, 42px) 0 0;
 }
 

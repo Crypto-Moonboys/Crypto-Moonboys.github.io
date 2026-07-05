@@ -153,7 +153,7 @@ function runTests() {
     pass: !rawUnderscoreTitle
   });
 
-  const siteSuffixTitle = index.find(entry => /\s+[-\u2014]\s+Crypto Moonboys Wiki$/i.test(String(entry.title || '')));
+  const siteSuffixTitle = index.find(entry => /\s+(?:â€”|[-\u2014])\s+Crypto Moonboys Wiki$/i.test(String(entry.title || '')));
   tests.push({
     name: 'Public search titles do not include site chrome suffixes',
     description: siteSuffixTitle
