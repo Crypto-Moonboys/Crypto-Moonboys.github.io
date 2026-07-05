@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: Run Wiki Structure Validator
-        run: node wiki/validators/wiki-structure-check.js
+        run: npm run test:wiki-structure
 
       - name: Block merge if invalid
         if: failure()
