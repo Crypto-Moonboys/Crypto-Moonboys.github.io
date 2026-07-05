@@ -1,0 +1,37 @@
+name: Wiki Structure Enforcement
+
+on:
+  pull_request:
+    paths:
+      - "wiki/**"
+      - ".github/workflows/wiki-ci.yml"
+      - "js/site-shell.js"
+      - "package.json"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-wiki:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Wiki Structure Validator
+        run: npm run test:wiki-structure
+
+      - name: Block merge if invalid
+        if: failure()
+        run: |
+          echo "❌ Wiki CI FAILED: Swarmsy system violation detected"
+          exit 1

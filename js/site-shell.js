@@ -10,6 +10,12 @@ window.__HUD_CONSOLIDATED__ = true;
   window.__MOONBOYS_SHELL_BOOTED__ = true;
 
   const CANONICAL_PUBLIC_ROOT = '/wiki/';
+  const SHARED_WIKI_HEADER = Object.freeze({
+    html: '/wiki/components/header.html',
+    css: '/wiki/components/header.css',
+    js: '/wiki/components/header.js',
+  });
+  let sharedHeaderMarkupPromise = null;
 
   const links = [
     { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
@@ -61,6 +67,11 @@ window.__HUD_CONSOLIDATED__ = true;
     if (p === '/waxcash.html' || p === '/waxonedge.html' || p.startsWith('/tools/')) return 'tool';
     if (p === '/dashboard.html' || p === '/admin-tools.html') return 'system';
     return 'legacy';
+  }
+
+  function isWikiShellRoute(pathname) {
+    const p = normalizePathname(pathname);
+    return p === '/search.html' || p.startsWith('/wiki/') || p.startsWith('/categories/');
   }
 
   function resolveCanonicalWikiRoute(pathname) {
@@ -115,15 +126,8 @@ window.__HUD_CONSOLIDATED__ = true;
     }
   }
 
-  function ensureHeader() {
-    let header = document.getElementById('site-header');
-    const navHtml = links.map((item) => navLinkHtml(item, 'global-nav-link')).join('');
-
-    if (!header) {
-      header = document.createElement('header');
-      header.id = 'site-header';
-      header.setAttribute('role', 'banner');
-      header.innerHTML = `
+  function buildHeaderHtml(navHtml) {
+    return `
         <a class="site-logo" href="/index.html" aria-label="Crypto Moonboys home">
           <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
           <span><span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span><span class="logo-sub">LIVE KNOWLEDGE NETWORK</span></span>
@@ -135,6 +139,81 @@ window.__HUD_CONSOLIDATED__ = true;
         </form>
         <nav id="global-nav" class="header-nav" aria-label="Global navigation">${navHtml}</nav>
       `;
+  }
+
+  function ensureSharedHeaderAssets() {
+    if (!isWikiShellRoute(window.location.pathname)) return;
+    if (!document.querySelector(`link[data-wiki-shared-header-css], link[href="${SHARED_WIKI_HEADER.css}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = SHARED_WIKI_HEADER.css;
+      link.setAttribute('data-wiki-shared-header-css', 'swarmsy-lock-v1');
+      document.head.append(link);
+    }
+    if (!document.querySelector(`script[data-wiki-shared-header-js], script[src="${SHARED_WIKI_HEADER.js}"]`)) {
+      const script = document.createElement('script');
+      script.src = SHARED_WIKI_HEADER.js;
+      script.async = true;
+      script.setAttribute('data-wiki-shared-header-js', 'swarmsy-lock-v1');
+      document.head.append(script);
+    }
+  }
+
+  function loadSharedHeaderMarkup(navHtml) {
+    if (!isWikiShellRoute(window.location.pathname)) {
+      return Promise.resolve(buildHeaderHtml(navHtml));
+    }
+    if (typeof window.fetch !== 'function') {
+      return Promise.resolve('');
+    }
+    if (!sharedHeaderMarkupPromise) {
+      sharedHeaderMarkupPromise = window.fetch(SHARED_WIKI_HEADER.html, { credentials: 'same-origin' })
+        .then((response) => (response.ok ? response.text() : ''))
+        .catch(() => '');
+    }
+    return sharedHeaderMarkupPromise.then((markup) => (markup && markup.trim()) || '');
+  }
+
+  function parseSharedHeaderMarkup(markup) {
+    if (!markup || typeof document === 'undefined') return null;
+    const template = document.createElement('template');
+    template.innerHTML = String(markup).trim();
+    return template.content.querySelector('#site-header') || template.content.firstElementChild || null;
+  }
+
+  function syncSharedHeaderMarkup(header, navHtml) {
+    if (!isWikiShellRoute(window.location.pathname)) return;
+    ensureSharedHeaderAssets();
+    loadSharedHeaderMarkup(navHtml).then((markup) => {
+      if (!header || !header.isConnected || !markup) return;
+      if (header.dataset.sharedHeaderMarkup === markup) return;
+      const parsedHeader = parseSharedHeaderMarkup(markup);
+      if (parsedHeader) {
+        header.innerHTML = parsedHeader.innerHTML;
+        if (parsedHeader.getAttribute('role')) header.setAttribute('role', parsedHeader.getAttribute('role'));
+        if (parsedHeader.hasAttribute('data-wiki-shared-header')) {
+          header.setAttribute('data-wiki-shared-header', parsedHeader.getAttribute('data-wiki-shared-header'));
+        }
+      } else {
+        header.innerHTML = markup;
+      }
+      header.dataset.sharedHeaderMarkup = markup;
+      header.dataset.sharedHeaderPath = SHARED_WIKI_HEADER.html;
+      const globalNav = document.getElementById('global-nav');
+      if (globalNav) globalNav.innerHTML = navHtml;
+      bindSearchForm();
+    });
+  }
+
+  function ensureHeader() {
+    let header = document.getElementById('site-header');
+    const navHtml = links.map((item) => navLinkHtml(item, 'global-nav-link')).join('');
+
+    if (!header) {
+      header = document.createElement('header');
+      header.id = 'site-header';
+      header.setAttribute('role', 'banner');
+      header.innerHTML = buildHeaderHtml(navHtml);
       document.body.insertBefore(header, document.body.firstChild);
     } else {
       let globalNav = document.getElementById('global-nav');
@@ -156,6 +235,7 @@ window.__HUD_CONSOLIDATED__ = true;
       }
     }
 
+    syncSharedHeaderMarkup(header, navHtml);
     const legacyBareNav = Array.from(document.querySelectorAll('body > #global-nav')).find((node) => node.parentElement !== header);
     if (legacyBareNav) legacyBareNav.remove();
     return header;
@@ -443,6 +523,7 @@ window.__HUD_CONSOLIDATED__ = true;
     ensureNav,
     resolveShellMode,
     resolveCanonicalWikiRoute,
+    isWikiShellRoute,
     shouldShowInlineStats,
     shouldShowRightPanel,
   });

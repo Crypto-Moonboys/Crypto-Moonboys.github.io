@@ -1,0 +1,18 @@
+:root {
+  --wiki-shared-header-lock: "swarmsy-lock-v1";
+}
+
+body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] {
+  position: sticky;
+  top: 0;
+  z-index: 220;
+}
+
+body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] .site-logo,
+body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] .header-nav,
+body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] .global-nav-link,
+body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] #header-search,
+body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] #search-input,
+body.page-wiki #site-header[data-wiki-shared-header="swarmsy-lock-v1"] #search-results {
+  box-sizing: border-box;
+}
