@@ -766,11 +766,84 @@ body.conflict-active .community-card {
   gap: 12px;
 }
 
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection {
+  position: relative;
+  grid-template-columns: minmax(280px, .92fr) minmax(420px, 1.34fr) minmax(260px, .74fr);
+  align-items: stretch;
+  gap: clamp(18px, 2.6vw, 34px);
+  isolation: isolate;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: clamp(250px, 20vw, 330px);
+  left: clamp(260px, 24vw, 350px);
+  z-index: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(191, 91, 255, .66), rgba(0, 222, 255, .92), rgba(247, 201, 72, .42), transparent);
+  box-shadow: 0 0 18px rgba(0, 222, 255, .72);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection > .battle-shell {
+  z-index: 1;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell {
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(5, 12, 26, .94), rgba(7, 15, 34, .84)) padding-box,
+    linear-gradient(135deg, rgba(183, 81, 255, .92), rgba(0, 221, 255, .94), rgba(247, 201, 72, .72), rgba(183, 81, 255, .82)) border-box;
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, .48),
+    0 0 30px rgba(0, 221, 255, .12),
+    inset 0 0 42px rgba(0, 221, 255, .045);
+  animation: gkCollectionCardPulse 4.8s ease-in-out infinite;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::before {
+  inset: -1px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(191, 91, 255, .2), transparent 34%),
+    radial-gradient(circle at 82% 18%, rgba(0, 221, 255, .18), transparent 32%),
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, .08) 38%, transparent 62%);
+  background-size: 100% 100%, 100% 100%, 240% 100%;
+  opacity: .86;
+  animation: gkCollectionEdgeSweep 5.4s linear infinite;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(86, 220, 255, .1);
+  border-radius: 13px;
+  pointer-events: none;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media h3,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions h3 {
+  margin: 0;
+  color: #eefbff;
+  font-size: clamp(.94rem, 1.1vw, 1.14rem);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media .battle-shell-inner,
 .wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-shell--media .battle-shell-inner {
   display: grid;
   gap: 10px;
   padding: clamp(12px, 1.5vw, 16px);
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media .battle-shell-inner {
+  gap: 14px;
+  padding: clamp(18px, 2vw, 24px);
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media,
@@ -793,9 +866,163 @@ body.conflict-active .community-card {
   object-fit: contain;
 }
 
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media {
+  padding: 10px;
+  background:
+    linear-gradient(180deg, rgba(1, 8, 18, .82), rgba(3, 13, 28, .88)) padding-box,
+    linear-gradient(135deg, rgba(0, 221, 255, .5), rgba(183, 81, 255, .48)) border-box;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  box-shadow: inset 0 0 30px rgba(0, 221, 255, .07);
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media img {
+  width: 100%;
+  max-height: min(46vh, 450px) !important;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.wiki-engagement-module .gk-collection-about-card {
+  transform: translateY(-2px);
+}
+
+.wiki-engagement-module .gk-collection-about-card .battle-shell-inner {
+  display: grid;
+  gap: 16px;
+  min-height: 100%;
+  padding: clamp(22px, 2.3vw, 34px);
+  text-align: center;
+}
+
+.gk-collection-about-kicker,
+.gk-collection-link-kicker {
+  margin: 0;
+  color: #b9f8ff;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.gk-collection-about-title {
+  margin: 0;
+  background: linear-gradient(90deg, #d95cff, #75a7ff, #00e2ff, #f7c948, #d95cff);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(2.35rem, 4.5vw, 4.15rem);
+  font-weight: 950;
+  letter-spacing: .05em;
+  line-height: .92;
+  text-shadow: 0 0 28px rgba(0, 221, 255, .28);
+  animation: gkCollectionTitleFlow 6s linear infinite;
+}
+
+.gk-collection-about-subtitle {
+  margin: -4px 0 0;
+  color: #00e2ff;
+  font-size: clamp(.9rem, 1.2vw, 1.1rem);
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.gk-collection-about-copy {
+  max-width: 58ch;
+  margin: 0 auto;
+  color: rgba(244, 250, 255, .88);
+  font-size: clamp(.95rem, 1.05vw, 1.08rem);
+  line-height: 1.72;
+}
+
+.gk-collection-about-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gk-collection-about-stats span,
+.gk-collection-link-grid a {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  background: rgba(0, 22, 42, .72);
+  border: 1px solid rgba(86, 220, 255, .2);
+  border-radius: 10px;
+  box-shadow: inset 0 0 22px rgba(0, 221, 255, .045);
+}
+
+.gk-collection-about-stats span {
+  display: grid;
+  gap: 4px;
+  padding: 14px 10px;
+}
+
+.gk-collection-about-stats strong {
+  color: #f8fdff;
+  font-size: clamp(1.05rem, 1.35vw, 1.32rem);
+  line-height: 1;
+}
+
+.gk-collection-about-stats small {
+  color: rgba(212, 229, 244, .78);
+  font-size: .62rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.gk-collection-link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gk-collection-link-grid a {
+  display: grid;
+  gap: 4px;
+  padding: 13px 34px 13px 16px;
+  color: #eefbff;
+  text-align: left;
+  text-decoration: none;
+}
+
+.gk-collection-link-grid a::after {
+  content: ">";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  color: #00e2ff;
+  font-size: 1.25rem;
+  transform: translateY(-50%);
+}
+
+.gk-collection-link-grid a strong {
+  color: #f8fdff;
+  font-size: .8rem;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.gk-collection-link-grid a span {
+  color: rgba(212, 229, 244, .74);
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions,
 .wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-shell--missions {
   opacity: 1;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions {
+  align-self: center;
+  opacity: .92;
+}
+
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions .battle-shell-inner {
+  padding: clamp(16px, 1.7vw, 22px);
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary,
@@ -861,6 +1088,33 @@ body.conflict-active .community-card {
   line-height: 1.3;
 }
 
+@keyframes gkCollectionCardPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 18px 52px rgba(0, 0, 0, .48),
+      0 0 26px rgba(0, 221, 255, .12),
+      inset 0 0 42px rgba(0, 221, 255, .045);
+  }
+  50% {
+    box-shadow:
+      0 22px 62px rgba(0, 0, 0, .54),
+      0 0 42px rgba(183, 81, 255, .18),
+      0 0 34px rgba(0, 221, 255, .16),
+      inset 0 0 48px rgba(247, 201, 72, .035);
+  }
+}
+
+@keyframes gkCollectionEdgeSweep {
+  from { background-position: 0 0, 0 0, 0% 0; }
+  to { background-position: 0 0, 0 0, 240% 0; }
+}
+
+@keyframes gkCollectionTitleFlow {
+  from { background-position: 0% 50%; }
+  to { background-position: 260% 50%; }
+}
+
 .nft-template-article + .wiki-engagement-module,
 .nft-template-article .wiki-engagement-module {
   width: min(100%, 1040px);
@@ -879,15 +1133,59 @@ body.conflict-active .community-card {
   object-fit: contain;
 }
 
+body.page-gkniftyheads-collection .wiki-engagement-module,
 .nft-collection-article + .wiki-engagement-module {
-  max-width: 860px;
-  margin-top: 24px;
+  width: min(100%, 1480px);
+  max-width: none;
+  margin: 24px auto 26px;
 }
 
 .nft-collection-article .wiki-hero + .wiki-engagement-module {
   margin: 12px 0 14px;
   max-width: min(100%, 1120px);
   width: min(100%, 1120px);
+}
+
+@media (max-width: 1180px) {
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection {
+    grid-template-columns: 1fr;
+  }
+
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection::before {
+    display: none;
+  }
+
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media {
+    order: 1;
+  }
+
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .gk-collection-about-card {
+    order: 2;
+    transform: none;
+  }
+
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions {
+    order: 3;
+  }
+}
+
+@media (max-width: 760px) {
+  .gk-collection-about-stats,
+  .gk-collection-link-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gk-collection-about-title {
+    font-size: clamp(2rem, 13vw, 3.1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell,
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::before,
+  .gk-collection-about-title {
+    animation: none;
+  }
 }
 
 @media (max-width: 860px) {
