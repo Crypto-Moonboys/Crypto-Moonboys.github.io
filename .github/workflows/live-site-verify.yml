@@ -6,7 +6,7 @@ on:
       wait_seconds:
         description: "Seconds to wait for Pages/Cloudflare propagation before verification"
         required: false
-        default: "60"
+        default: "90"
   workflow_run:
     workflows: ["Deploy GitHub Pages"]
     types: [completed]
@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

@@ -38,6 +38,7 @@ console.log('PASS: node --check scripts/live-site-verify.mjs');
 
 // ── 1b. Manual/post-deploy workflow exists, never a PR gate ─────────────
 assert.ok(workflowSource.includes('workflow_dispatch:'), 'live-site workflow must be manually triggerable');
+assert.ok(workflowSource.includes('default: "90"'), 'live-site workflow wait_seconds default must match the workflow fallback');
 assert.ok(workflowSource.includes('workflow_run:'), 'live-site workflow may run after Pages deployment');
 assert.ok(
   workflowSource.includes('workflows: ["Deploy GitHub Pages"]') ||
@@ -47,6 +48,10 @@ assert.ok(
 assert.ok(
   workflowSource.includes("github.event.workflow_run.conclusion == 'success'"),
   'post-deploy live-site verification must run only after successful Pages deploys',
+);
+assert.ok(
+  workflowSource.includes("github.event.workflow_run.head_sha"),
+  'workflow_run live-site verification must checkout the deployed Pages revision',
 );
 assert.ok(!/^\s*pull_request:/m.test(workflowSource), 'live-site workflow must not run on pull_request');
 assert.ok(!/^\s*push:/m.test(workflowSource), 'live-site workflow must not run directly on push');
