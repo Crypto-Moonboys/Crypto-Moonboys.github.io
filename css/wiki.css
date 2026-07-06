@@ -1742,10 +1742,15 @@ body.page-wiki.page-gkniftyheads-collection .wiki-content.nft-collection-article
 }
 
 body.page-gkniftyheads-collection .nft-collection-article > .breadcrumb {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 3;
   margin: 0;
   padding: 12px clamp(24px, 5vw, 72px);
-  background: rgba(7, 11, 18, 0.82);
-  border-bottom: 1px solid rgba(86, 220, 255, 0.14);
+  background: transparent;
+  border: 0;
 }
 
 body.page-gkniftyheads-collection .gk-collection-hero {
@@ -1892,10 +1897,7 @@ body.page-gkniftyheads-collection .gk-collection-hero .nft-category-tags {
 }
 
 body.page-gkniftyheads-collection .gk-parent-hub-card {
-  position: absolute;
-  left: clamp(48px, 7vw, 112px);
-  bottom: clamp(20px, 3vw, 32px);
-  max-width: min(520px, 46vw);
+  max-width: 620px;
   color: rgba(235, 255, 255, 0.82);
 }
 
@@ -1931,7 +1933,6 @@ body.page-gkniftyheads-collection .article-meta {
 
   body.page-gkniftyheads-collection .gk-collection-hero .nft-category-tags,
   body.page-gkniftyheads-collection .gk-parent-hub-card {
-    position: relative;
     right: auto;
     bottom: auto;
     left: auto;

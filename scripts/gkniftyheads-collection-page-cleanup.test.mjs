@@ -61,6 +61,7 @@ assert.match(html, /class="howto-btn howto-btn-secondary"[^>]+>Burn \/ Blend<\/a
 assert.match(html, /class="howto-btn howto-btn-secondary"[^>]+>View AtomicHub<\/a>/, 'AtomicHub collection action button must render with How To Play button styling');
 const collectionHero = sliceBetween(html, '<header class="page-hero wiki-living-hero gk-collection-hero">', '<script type="application/json" class="nft-search-terms"');
 assert.doesNotMatch(collectionHero, /gk-info-card|wiki-action-button|<div class="page-title-line"/, 'collection hero should not contain nested cards, old wiki buttons, or article title chrome');
+assert.match(collectionHero, /gk-collection-actions[\s\S]*<div class="gk-parent-hub-card">[\s\S]*Primary parent/, 'parent hub copy should sit in the hero content stack after actions, not float over them');
 assert.match(html, /<nav class="breadcrumb" aria-label="Breadcrumb">[\s\S]*Home[\s\S]*&rarr;[\s\S]*NFTs[\s\S]*&rarr;[\s\S]*GKniftyHEADS NFT Collection/, 'breadcrumb should render clean Home -> NFTs -> collection hierarchy');
 assert.doesNotMatch(html, /<span class="sep" aria-hidden="true">\?<\/span>/, 'breadcrumb separators must not render broken question marks');
 assert.match(html, /gk-parent-hub-card[\s\S]*Primary parent[\s\S]*href="\/wiki\/crypto-moonboys\.html"[\s\S]*Crypto Moonboys/, 'collection page should identify Crypto Moonboys as the primary parent');
@@ -141,12 +142,14 @@ assert.match(html, /gk-community-intelligence-panel[\s\S]*Community intelligence
 
 assert.match(css, /\.gk-collection-actions/, 'collection action row should have responsive styling');
 assert.match(css, /body\.page-wiki\.page-gkniftyheads-collection #content\s*\{[\s\S]*padding-top:\s*0/, 'collection page should remove the large gap below navigation');
+assert.match(css, /\.nft-collection-article > \.breadcrumb\s*\{[\s\S]*position:\s*absolute;[\s\S]*background:\s*transparent;[\s\S]*border:\s*0/, 'collection breadcrumb should overlay the hero instead of creating a gap band');
 assert.match(css, /body\.page-wiki\.page-gkniftyheads-collection \.wiki-content\.nft-collection-article\s*\{[\s\S]*background:\s*transparent;[\s\S]*border:\s*0;[\s\S]*box-shadow:\s*none/, 'collection article shell should not render as an outer card around the hero');
 assert.match(css, /\.gk-collection-hero\s*\{[\s\S]*grid-template-columns:\s*minmax\(280px,\s*0\.86fr\) minmax\(360px,\s*1\.14fr\)[\s\S]*min-height:\s*clamp\(560px,\s*62vh,\s*780px\)[\s\S]*border-right:\s*0;[\s\S]*border-left:\s*0;[\s\S]*border-radius:\s*0/, 'collection hero should match How To Play full-width proportions');
 assert.match(css, /\.gk-collection-hero\s*\{[\s\S]*overflow:\s*hidden;[\s\S]*min-height:\s*clamp\(560px,\s*62vh,\s*780px\)/, 'collection hero should contain glow layers before they bleed into navigation');
 assert.match(css, /\.gk-collection-hero::before\s*\{[\s\S]*background-image:[\s\S]*linear-gradient\(rgba\(86,\s*220,\s*255,\s*0\.06\) 1px,\s*transparent 1px\)/, 'collection hero should use the How To Play grid overlay');
 assert.match(css, /\.gk-collection-title-wrap \.howto-glitch-title\s*\{[\s\S]*font-size:\s*clamp\(3rem,\s*6\.1vw,\s*6\.05rem\)[\s\S]*text-shadow:[\s\S]*rgba\(255,\s*106,\s*213,\s*0\.6\)/, 'collection title should match How To Play typography and glow');
 assert.match(css, /\.gk-collection-route\s*\{[\s\S]*border-left:\s*5px solid #00ffcc[\s\S]*line-height:\s*1\.95/, 'collection route strip should match How To Play route styling');
+assert.match(css, /\.gk-parent-hub-card\s*\{[\s\S]*max-width:\s*620px;[\s\S]*color:\s*rgba\(235,\s*255,\s*255,\s*0\.82\)/, 'parent hub copy should be normal hero text, not an absolute overlay');
 assert.match(css, /\.gk-showcase-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'showcase rows should render as stable three-card grids on desktop');
 assert.match(css, /\.gk-top-ranked-list--cards/, 'secondary ranked lists should render as responsive cards');
 assert.match(css, /\.gk-rarity-audit\s*\{[\s\S]*background:\s*rgba\(7,\s*11,\s*18,\s*0\.46\)/, 'audit tables should be visually subdued below the showcase');
