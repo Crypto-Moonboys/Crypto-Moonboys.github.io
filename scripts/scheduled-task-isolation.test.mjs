@@ -8,7 +8,8 @@ const worker = await fs.readFile(path.join(ROOT, 'workers/moonboys-api/worker.js
 
 const scheduledStart = worker.indexOf('async scheduled(event, env, _ctx)');
 assert.notEqual(scheduledStart, -1, 'Worker must keep scheduled handler');
-const scheduledEnd = worker.indexOf('\n  },\n};', scheduledStart);
+const scheduledEndMatch = /\r?\n  },\r?\n};/.exec(worker.slice(scheduledStart));
+const scheduledEnd = scheduledEndMatch ? scheduledStart + scheduledEndMatch.index : -1;
 assert.notEqual(scheduledEnd, -1, 'scheduled handler block must be detectable');
 const scheduled = worker.slice(scheduledStart, scheduledEnd);
 

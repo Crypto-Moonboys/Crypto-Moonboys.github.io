@@ -191,3 +191,56 @@ database_id = "YOUR_DB_ID"
     assert.ok(result.output.includes('YOUR_DB_ID'), 'expected database placeholder in audit output');
   },
 );
+
+await withFixture(
+  {
+    deployStatus: {
+      'workers/sample-live-secret': {
+        status: 'live-deployable',
+        deploy: true,
+        required_secrets: ['ADMIN_SECRET'],
+      },
+    },
+    workers: {
+      'sample-live-secret': `
+name = "sample-live-secret"
+
+# Required for POST /public/example.
+# Set via Wrangler CLI:
+#   wrangler secret put ADMIN_SECRET
+#   wrangler secret put SAMPLE_BRIDGE_TOKEN
+`,
+    },
+  },
+  async (fixtureRoot) => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'live-deployable workers must list documented required secrets in DEPLOY_STATUS.json');
+    assert.ok(result.output.includes('SAMPLE_BRIDGE_TOKEN'), 'expected missing required secret in audit output');
+  },
+);
+
+await withFixture(
+  {
+    deployStatus: {
+      'workers/sample-live-optional-secret': {
+        status: 'live-deployable',
+        deploy: true,
+        required_secrets: ['ADMIN_SECRET'],
+      },
+    },
+    workers: {
+      'sample-live-optional-secret': `
+name = "sample-live-optional-secret"
+
+# Required for POST /public/example.
+# Set via Wrangler CLI:
+#   wrangler secret put ADMIN_SECRET
+#   wrangler secret put OPTIONAL_THREAD_ID # optional topic/thread
+`,
+    },
+  },
+  async (fixtureRoot) => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, true, `optional documented secrets must not be required in DEPLOY_STATUS.json\n${result.output}`);
+  },
+);

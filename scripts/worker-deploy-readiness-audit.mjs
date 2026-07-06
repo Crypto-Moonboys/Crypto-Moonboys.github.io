@@ -6,7 +6,8 @@
  *  1. Every Worker listed as "live-deployable" has no placeholder KV/binding IDs.
  *  2. Workers listed as "stub-blocked" are expected to have placeholders — they pass.
  *  3. Workers listed as "needs-binding-setup" are reported as warnings, not failures.
- *  4. Any Worker folder with a wrangler.toml not listed in DEPLOY_STATUS.json is flagged.
+ *  4. Required secrets documented in wrangler.toml are listed in DEPLOY_STATUS.json.
+ *  5. Any Worker folder with a wrangler.toml not listed in DEPLOY_STATUS.json is flagged.
  *
  * Placeholder patterns detected:
  *  - YOUR_*   (e.g. YOUR_CACHE_KV_ID)
@@ -14,8 +15,9 @@
  *  - empty id = ""
  *
  * Exit code 0 = all live-deployable workers are clean.
- * Exit code 1 = a live-deployable worker contains placeholder bindings, or an
- *               unlisted worker folder was found.
+ * Exit code 1 = a live-deployable worker contains placeholder bindings,
+ *               documented required secrets are missing from DEPLOY_STATUS.json,
+ *               or an unlisted worker folder was found.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -105,6 +107,28 @@ function detectPlaceholders(tomlContent) {
   return found;
 }
 
+function detectDocumentedRequiredSecrets(tomlContent) {
+  const found = [];
+  const lines = tomlContent.split('\n');
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const match = line.match(/wrangler\s+secret\s+put\s+([A-Z][A-Z0-9_]*)\b(.*)$/);
+    if (!match) continue;
+    const [, secretName, trailingComment] = match;
+    if (/\boptional\b/i.test(trailingComment)) continue;
+
+    const contextStart = Math.max(0, i - 8);
+    const contextEnd = Math.min(lines.length, i + 4);
+    const context = lines.slice(contextStart, contextEnd).join('\n');
+    if (!/\brequir(?:e|ed|es)\b/i.test(context)) continue;
+
+    if (!found.includes(secretName)) {
+      found.push(secretName);
+    }
+  }
+  return found;
+}
+
 // ── load DEPLOY_STATUS.json ───────────────────────────────────────────────────
 
 let deployStatus;
@@ -147,12 +171,26 @@ for (const folder of workerFolders) {
   const { status } = entry;
 
   if (status === 'live-deployable') {
+    const documentedRequiredSecrets = detectDocumentedRequiredSecrets(tomlContent);
+    const deployStatusRequiredSecrets = Array.isArray(entry.required_secrets)
+      ? entry.required_secrets.map(secret => String(secret).trim())
+      : [];
+    const missingRequiredSecrets = documentedRequiredSecrets
+      .filter(secret => !deployStatusRequiredSecrets.includes(secret));
+
     if (placeholders.length > 0) {
       failures.push({
         folder,
         reason: `marked live-deployable but contains placeholder bindings: ${placeholders.join(', ')}`,
       });
-    } else {
+    }
+    if (missingRequiredSecrets.length > 0) {
+      failures.push({
+        folder,
+        reason: `wrangler.toml documents required secrets missing from DEPLOY_STATUS.json required_secrets: ${missingRequiredSecrets.join(', ')}`,
+      });
+    }
+    if (placeholders.length === 0 && missingRequiredSecrets.length === 0) {
       deployable.push({ folder, command: entry.deploy_command || `cd ${folder} && npx wrangler deploy` });
     }
   } else if (status === 'stub-blocked') {

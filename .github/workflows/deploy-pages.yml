@@ -31,6 +31,12 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run repository tests
+        run: npm test
+
       - name: Hydrate generated BTQM PNG assets
         run: node scripts/hydrate-btqm-generated-assets.mjs --clean-base64
 

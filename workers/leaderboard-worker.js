@@ -80,6 +80,8 @@ const FACTION_ALIASES = {
  */
 const DEFAULT_ALLOWED_ORIGINS = [
   'https://cryptomoonboys.com',
+  'https://www.cryptomoonboys.com',
+  'https://crypto-moonboys.github.io',
 ];
 
 // ── Telegram HMAC verification ───────────────────────────────────────────────
