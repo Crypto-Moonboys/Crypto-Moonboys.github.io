@@ -1169,6 +1169,13 @@ function deckMetric(label, value) {
   return `<span class="gk-command-metric"><strong>${esc(value)}</strong><small>${esc(label)}</small></span>`;
 }
 
+function showcaseKeyTrait(label, value) {
+  return `<div class="gk-showcase-key-trait">
+          <span>${esc(label)}</span>
+          <strong>${esc(value)}</strong>
+        </div>`;
+}
+
 function commandNote(title, copy) {
   return `<div class="gk-command-note">
       <strong>${esc(title)}</strong>
@@ -1182,7 +1189,7 @@ function featuredCard(row) {
   const image = imageSrc
     ? `<a class="gk-command-featured-image-link" href="${esc(row.url)}"><img class="gk-command-featured-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
     : `<div class="gk-command-featured-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
-  return `<article class="gk-command-featured-card" data-rarity-filter="${rarityFilterTokens(row)}">
+  return `<article class="gk-command-featured-card gk-showcase-card" data-rarity-filter="${rarityFilterTokens(row)}">
       <div class="gk-command-featured-media">${image}</div>
       <div class="gk-command-featured-copy">
         <div class="gk-command-eyebrow">Rank #${row.rank} template</div>
@@ -1190,18 +1197,12 @@ function featuredCard(row) {
         <div class="gk-command-badges">
           <span class="gk-command-badge gk-command-badge--rank">Rank #${row.rank}</span>
           <span class="gk-command-badge gk-command-badge--${bandClass(row.band)}">${esc(row.band)}</span>
-          <span class="gk-command-badge">Template ${row.template_id}</span>
         </div>
         <div class="gk-command-featured-metrics">
-          ${deckMetric('Live supply', row.live_supply)}
-          ${deckMetric('Issued supply', row.issued_supply)}
           ${deckMetric('Final score', row.final_score.toFixed(2))}
-          ${deckMetric('Missing / burned', supplyCell(row.pre_baseline_missing_or_burned))}
+          ${deckMetric('Supply', `${row.live_supply}/${row.issued_supply}`)}
         </div>
-        <dl class="gk-command-traits">
-          <div><dt>Rarity trait</dt><dd>${esc(row.rarity_trait)}</dd></div>
-          <div><dt>Variation trait</dt><dd>${esc(row.variation_trait)}</dd></div>
-        </dl>
+        ${showcaseKeyTrait('Key trait', row.rarity_trait)}
         ${actionLinks(row)}
       </div>
     </article>`;
@@ -1229,15 +1230,8 @@ function topRankedCard(row) {
 
 function collectionDeckNotes() {
   return `<div class="gk-command-support" aria-label="Collection rarity guide">
-      ${commandNote('Collection rarity', 'Ranks scarce AtomicAssets templates against the rest of the GKniftyHEADS collection. Separate template IDs can share artwork or a name.')}
-      ${commandNote('Score inputs', 'Uses live supply scarcity, rarity trait exposure, variation exposure, and the pre-baseline missing/burned delta when available.')}
-      ${commandNote('Not counted', 'Market prices, listings, sales volume, floor data, and market cap are excluded from rarity scoring.')}
-      <div class="gk-command-mini-stats" aria-label="Collection rarity source stats">
-        ${deckMetric('Supply weight', '50%')}
-        ${deckMetric('Rarity trait', '25%')}
-        ${deckMetric('Variation trait', '20%')}
-        ${deckMetric('Missing/burned', '5%')}
-      </div>
+      ${commandNote('Template rarity', 'The top cards highlight scarce AtomicAssets templates first. Full scoring components remain in the audit table below.')}
+      ${commandNote('Market neutral', 'Price, listings, sales volume, and floor data are excluded from rarity scoring.')}
     </div>`;
 }
 
@@ -1258,6 +1252,28 @@ function rarityOverviewCards() {
           </div>`;
 }
 
+function showcaseHeader(kicker, title, copy) {
+  return `<div class="gk-showcase-header">
+      <div>
+        <p class="gk-command-kicker">${esc(kicker)}</p>
+        <h3>${esc(title)}</h3>
+      </div>
+      <p>${esc(copy)}</p>
+    </div>`;
+}
+
+function secondaryRankedPanel({ title, countLabel, cards, ariaLabel }) {
+  return `<section class="gk-secondary-ranked-section" aria-label="${esc(ariaLabel)}">
+            <div class="gk-top-ranked-heading">
+              <h3>${esc(title)}</h3>
+              <span>${esc(countLabel)}</span>
+            </div>
+            <div class="gk-top-ranked-list gk-top-ranked-list--cards">
+              ${cards}
+            </div>
+          </section>`;
+}
+
 function assetActionLinks(row) {
   const assetApi = row.asset_id ? `https://wax.api.atomicassets.io/atomicassets/v1/assets/${row.asset_id}` : row.atomicassets_url;
   const assetHub = row.asset_id ? `https://wax.atomichub.io/explorer/asset/${row.asset_id}` : row.atomichub_url;
@@ -1274,7 +1290,7 @@ function globalRarityHeroCard(row) {
   const image = imageSrc
     ? `<a class="gk-command-featured-image-link" href="${esc(row.url)}"><img class="gk-command-featured-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
     : `<div class="gk-command-featured-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
-  return `<article class="gk-command-featured-card gk-global-featured-card">
+  return `<article class="gk-command-featured-card gk-global-featured-card gk-showcase-card">
       <div class="gk-command-featured-media">${image}</div>
       <div class="gk-command-featured-copy">
         <div class="gk-command-eyebrow">Global Rank #${row.asset_rank} exact NFT</div>
@@ -1282,35 +1298,21 @@ function globalRarityHeroCard(row) {
         <div class="gk-command-badges">
           <span class="gk-command-badge gk-command-badge--rank">Global #${row.asset_rank}</span>
           <span class="gk-command-badge gk-command-badge--${bandClass(row.rarity_band)}">${esc(row.rarity_band || 'Ranked')}</span>
-          <span class="gk-command-badge">Asset ${esc(row.asset_id)}</span>
         </div>
         <div class="gk-command-featured-metrics">
           ${deckMetric('Global score', row.asset_final_score?.toFixed ? row.asset_final_score.toFixed(2) : row.asset_final_score)}
-          ${deckMetric('Template rank', row.template_rank ?? 'Missing')}
-          ${deckMetric('Original mint', row.original_mint_number ?? 'Missing')}
-          ${deckMetric('Surviving mint rank', row.surviving_mint_rank ?? 'Missing')}
+          ${deckMetric('Supply', row.live_supply)}
         </div>
-        <dl class="gk-command-traits">
-          <div><dt>Template ID</dt><dd>${row.template_id}</dd></div>
-          <div><dt>Live supply</dt><dd>${row.live_supply}</dd></div>
-        </dl>
+        ${showcaseKeyTrait('Key trait', `Mint #${row.original_mint_number ?? 'Missing'}`)}
         ${assetActionLinks(row)}
       </div>
     </article>`;
 }
 
 function globalDeckNotes(assetPreview) {
-  const scoredCount = assetPreview.length || 'Pending';
   return `<div class="gk-command-support" aria-label="Global rarity guide">
-      ${commandNote('Global rarity', 'Ranks exact live NFTs, not just templates. It combines collection template rarity with each asset original mint and surviving mint position.')}
-      ${commandNote('Mint logic', 'Original mint number is permanent. Surviving mint rank can change when live/unburned asset counts change.')}
-      ${commandNote('Audit scope', 'The full table keeps asset IDs, template IDs, original mints, surviving mint ranks, live supply, and global score in one raw view.')}
-      <div class="gk-command-mini-stats" aria-label="Global rarity source stats">
-        ${deckMetric('Exact NFTs previewed', scoredCount)}
-        ${deckMetric('Formula layers', 3)}
-        ${deckMetric('Primary source', 'AtomicAssets')}
-        ${deckMetric('Market data', 'Excluded')}
-      </div>
+      ${commandNote('Exact NFT rarity', 'Ranks exact live NFTs, not just templates. These cards spotlight individual assets while full IDs, mint fields, and verification data stay in the audit table below.')}
+      ${commandNote('Source rule', 'AtomicAssets remains the source of truth; marketplace data is not used for ranking.')}
     </div>`;
 }
 
@@ -1448,10 +1450,10 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
   const assetStateCopy = stats.asset_state_templates_tracked
     ? `<strong>Asset state cache:</strong> ${stats.asset_state_ok_templates}/${stats.asset_state_templates_tracked} template states match current _count supply; ${stats.asset_state_mismatch_templates} mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> ${esc(stats.asset_state_last_checked_at || 'Not scanned')}.`
     : '<strong>Asset state cache:</strong> pending first successful asset delta scan.';
-  const featured = model.ranked[0] || null;
-  const topRanked = model.ranked.slice(1, 9);
-  const globalFeatured = assetPreview[0] || null;
-  const globalTopRanked = assetPreview.slice(1, 9);
+  const templateHeroCards = model.ranked.slice(0, 3);
+  const secondaryTopRanked = model.ranked.slice(3, 9);
+  const globalHeroCards = assetPreview.slice(0, 3);
+  const globalTopRanked = assetPreview.slice(3, 9);
 
   return `${RARITY_BEGIN}
         <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true">
@@ -1472,24 +1474,23 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             ${statCard('Last updated', stats.last_scan_time)}
           </div>
 
-          <section class="gk-command-deck" aria-label="Featured GKniftyHEADS rarity cards">
-            <div class="gk-command-primary">
-              ${featuredCard(featured)}
-              ${collectionDeckNotes()}
-              <div class="gk-rarity-filters" aria-label="Rarity filters">
-                ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n                ')}
-              </div>
+          <section class="gk-command-deck gk-showcase-section gk-template-rarity-showcase" aria-label="Template Rarity top three cards">
+            ${showcaseHeader('Template Rarity', 'Template Rarity: Top 3', 'The highest ranked GKniftyHEADS templates are surfaced first as collector cards, with audit tables kept below for source verification.')}
+            <div class="gk-showcase-grid">
+              ${templateHeroCards.map(featuredCard).join('\n              ')}
             </div>
-            <aside class="gk-top-ranked-panel" aria-label="Top Ranked Templates">
-              <div class="gk-top-ranked-heading">
-                <h3>Top Ranked Templates</h3>
-                <span>${topRanked.length} shown</span>
-              </div>
-              <div class="gk-top-ranked-list">
-                ${topRanked.map(topRankedCard).join('\n                ')}
-              </div>
-            </aside>
+            ${collectionDeckNotes()}
+            <div class="gk-rarity-filters" aria-label="Rarity filters">
+              ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n              ')}
+            </div>
           </section>
+
+          ${secondaryRankedPanel({
+            title: 'Top Ranked Templates',
+            countLabel: `${secondaryTopRanked.length} more shown`,
+            ariaLabel: 'Secondary Top Ranked Templates',
+            cards: secondaryTopRanked.map(topRankedCard).join('\n              '),
+          })}
 
           <details class="wiki-section gk-rarity-audit" data-rarity-audit>
             <summary>Full Rarity Audit Table</summary>
@@ -1521,21 +1522,19 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
           <section class="wiki-section gk-asset-version-ranking">
             <p class="gk-command-kicker">Global Rarity / Exact NFT Ranking</p>
             <h3>Best Exact NFT Versions</h3>
-            <section class="gk-command-deck gk-global-rarity-deck" aria-label="Global rarity cards">
-              <div class="gk-command-primary">
-                ${globalRarityHeroCard(globalFeatured)}
-                ${globalDeckNotes(assetPreview)}
+            <section class="gk-command-deck gk-global-rarity-deck gk-showcase-section gk-global-rarity-showcase" aria-label="Exact NFT Global Rarity top three cards">
+              ${showcaseHeader('Exact NFT / Global Rarity', 'Exact NFT Global Rarity: Top 3', 'The strongest exact live NFTs are shown as individual asset cards before the deeper global rarity audit.')}
+              <div class="gk-showcase-grid">
+                ${globalHeroCards.length ? globalHeroCards.map(globalRarityHeroCard).join('\n                ') : '<p class="lore-paragraph">Pending asset-state sync.</p>'}
               </div>
-              <aside class="gk-top-ranked-panel" aria-label="Top Global Ranked NFTs">
-                <div class="gk-top-ranked-heading">
-                  <h3>Top Global Ranked NFTs</h3>
-                  <span>${globalTopRanked.length} shown</span>
-                </div>
-                <div class="gk-top-ranked-list">
-                  ${globalTopRanked.length ? globalTopRanked.map(globalRankedCard).join('\n                ') : '<p class="lore-paragraph">Pending asset-state sync.</p>'}
-                </div>
-              </aside>
+              ${globalDeckNotes(assetPreview)}
             </section>
+            ${secondaryRankedPanel({
+              title: 'Top Global Ranked NFTs',
+              countLabel: `${globalTopRanked.length} more shown`,
+              ariaLabel: 'Secondary Top Global Ranked NFTs',
+              cards: globalTopRanked.length ? globalTopRanked.map(globalRankedCard).join('\n              ') : '<p class="lore-paragraph">Pending asset-state sync.</p>',
+            })}
             <details class="wiki-section gk-rarity-audit gk-global-rarity-audit">
               <summary>Full Global Rarity Audit Table</summary>
               <p class="lore-paragraph">Power-user view for exact NFT scoring, asset IDs, template ranks, original mint numbers, surviving mint ranks, and live supply.</p>
