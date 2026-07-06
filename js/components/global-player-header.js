@@ -107,6 +107,17 @@
     var header = document.getElementById('site-header');
     var nav = document.getElementById(HEADER_NAV_ID);
     var badge = document.getElementById(HEADER_BADGE_ID);
+    var panel = getStatusPanel();
+
+    if (header && !badge) {
+      badge = document.createElement('div');
+      badge.id = HEADER_BADGE_ID;
+      badge.setAttribute('aria-live', 'polite');
+      header.insertBefore(badge, nav || null);
+      if (panel && typeof panel.mountBadge === 'function') panel.mountBadge(badge);
+    } else if (badge && panel && typeof panel.mountBadge === 'function' && !badge.querySelector('.csp-badge')) {
+      panel.mountBadge(badge);
+    }
 
     if (header && nav && badge && badge.parentElement === header && badge.nextElementSibling !== nav) {
       header.insertBefore(badge, nav);

@@ -782,8 +782,8 @@ body.conflict-active .community-card {
   left: clamp(260px, 24vw, 350px);
   z-index: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(191, 91, 255, .66), rgba(0, 222, 255, .92), rgba(247, 201, 72, .42), transparent);
-  box-shadow: 0 0 18px rgba(0, 222, 255, .72);
+  background: linear-gradient(90deg, transparent, rgba(191, 91, 255, .38), rgba(0, 222, 255, .58), rgba(247, 201, 72, .28), transparent);
+  box-shadow: 0 0 14px rgba(0, 222, 255, .34);
   transform: translateY(-50%);
   pointer-events: none;
 }
@@ -799,21 +799,21 @@ body.conflict-active .community-card {
     linear-gradient(145deg, rgba(5, 12, 26, .94), rgba(7, 15, 34, .84)) padding-box,
     linear-gradient(135deg, rgba(183, 81, 255, .92), rgba(0, 221, 255, .94), rgba(247, 201, 72, .72), rgba(183, 81, 255, .82)) border-box;
   box-shadow:
-    0 18px 52px rgba(0, 0, 0, .48),
-    0 0 30px rgba(0, 221, 255, .12),
-    inset 0 0 42px rgba(0, 221, 255, .045);
-  animation: gkCollectionCardPulse 4.8s ease-in-out infinite;
+    0 18px 42px rgba(0, 0, 0, .42),
+    0 0 22px rgba(0, 221, 255, .08),
+    inset 0 0 34px rgba(0, 221, 255, .035);
+  animation: gkCollectionCardPulse 8.8s ease-in-out infinite;
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::before {
   inset: -1px;
   background:
-    radial-gradient(circle at 18% 10%, rgba(191, 91, 255, .2), transparent 34%),
-    radial-gradient(circle at 82% 18%, rgba(0, 221, 255, .18), transparent 32%),
-    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, .08) 38%, transparent 62%);
+    radial-gradient(circle at 18% 10%, rgba(191, 91, 255, .13), transparent 34%),
+    radial-gradient(circle at 82% 18%, rgba(0, 221, 255, .12), transparent 32%),
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, .045) 38%, transparent 62%);
   background-size: 100% 100%, 100% 100%, 240% 100%;
-  opacity: .86;
-  animation: gkCollectionEdgeSweep 5.4s linear infinite;
+  opacity: .68;
+  animation: gkCollectionEdgeSweep 10.5s linear infinite;
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::after {
@@ -913,16 +913,18 @@ body.conflict-active .community-card {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  font-size: clamp(2.35rem, 4.5vw, 4.15rem);
+  font-size: clamp(3.1rem, 5.8vw, 5.5rem);
   font-weight: 950;
   letter-spacing: .05em;
   line-height: .92;
-  text-shadow: 0 0 28px rgba(0, 221, 255, .28);
-  animation: gkCollectionTitleFlow 6s linear infinite;
+  text-shadow:
+    0 0 20px rgba(0, 221, 255, .24),
+    0 0 34px rgba(183, 81, 255, .16);
+  animation: gkCollectionTitleFlow 12s linear infinite;
 }
 
 .gk-collection-about-subtitle {
-  margin: -4px 0 0;
+  margin: 6px 0 0;
   color: #00e2ff;
   font-size: clamp(.9rem, 1.2vw, 1.1rem);
   font-weight: 900;
@@ -1017,12 +1019,30 @@ body.conflict-active .community-card {
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions {
-  align-self: center;
+  align-self: stretch;
+  display: flex;
   opacity: .92;
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions .battle-shell-inner {
+  display: grid;
+  align-content: start;
+  width: 100%;
+  min-height: 100%;
   padding: clamp(16px, 1.7vw, 22px);
+}
+
+.mission-like-row {
+  display: grid;
+  margin: 0 0 8px;
+  padding: 9px;
+  background: rgba(3, 12, 23, .62);
+  border: 1px solid rgba(247, 201, 72, .2);
+  border-radius: 10px;
+}
+
+.mission-like-row .page-like-widget {
+  margin: 0;
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary,
@@ -1092,16 +1112,16 @@ body.conflict-active .community-card {
   0%,
   100% {
     box-shadow:
-      0 18px 52px rgba(0, 0, 0, .48),
-      0 0 26px rgba(0, 221, 255, .12),
-      inset 0 0 42px rgba(0, 221, 255, .045);
+      0 18px 42px rgba(0, 0, 0, .42),
+      0 0 18px rgba(0, 221, 255, .075),
+      inset 0 0 34px rgba(0, 221, 255, .035);
   }
   50% {
     box-shadow:
-      0 22px 62px rgba(0, 0, 0, .54),
-      0 0 42px rgba(183, 81, 255, .18),
-      0 0 34px rgba(0, 221, 255, .16),
-      inset 0 0 48px rgba(247, 201, 72, .035);
+      0 21px 48px rgba(0, 0, 0, .46),
+      0 0 28px rgba(183, 81, 255, .105),
+      0 0 22px rgba(0, 221, 255, .1),
+      inset 0 0 38px rgba(247, 201, 72, .025);
   }
 }
 

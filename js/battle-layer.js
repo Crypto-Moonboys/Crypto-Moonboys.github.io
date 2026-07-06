@@ -103,6 +103,23 @@
     }
   }
 
+  function movePageLikeIntoMissions() {
+    var like = document.querySelector('.page-like-widget');
+    var missions = document.querySelector('.battle-engagement-deck--collection .battle-shell--missions .battle-shell-inner');
+    if (!like || !missions) return;
+    if (like.closest('.battle-shell--missions')) return;
+    var wrap = missions.querySelector('.mission-like-row');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'mission-like-row';
+      wrap.setAttribute('aria-label', 'Article signal');
+      var heat = missions.querySelector('.battle-heat-summary');
+      if (heat && heat.nextSibling) missions.insertBefore(wrap, heat.nextSibling);
+      else missions.insertBefore(wrap, missions.firstChild);
+    }
+    wrap.appendChild(like);
+  }
+
   function getMissionWindowKey() {
     if (WIKI_MISSION_WINDOW === 'daily') {
       return new Date().toISOString().slice(0, 10);
@@ -492,6 +509,7 @@
     if (isCollection) {
       var hero = article.querySelector('.wiki-hero');
       (hero || target).insertAdjacentElement('afterend', module);
+      movePageLikeIntoMissions();
     } else {
       target.insertAdjacentElement('afterend', module);
     }

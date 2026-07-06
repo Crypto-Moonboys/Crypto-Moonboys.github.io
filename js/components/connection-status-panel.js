@@ -1326,13 +1326,17 @@
   // ── Global badge injection into header ────────────────────────────────
 
   function injectGlobalBadge() {
-    if (document.getElementById('moonboys-global-status-badge')) return;
-    var wrap = document.createElement('div');
-    wrap.id = 'moonboys-global-status-badge';
-    wrap.setAttribute('aria-live', 'polite');
     var header = document.getElementById('site-header');
     if (!header) return; // No wiki-shell header on this page.
-    header.appendChild(wrap);
+    var wrap = document.getElementById('moonboys-global-status-badge');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'moonboys-global-status-badge';
+      wrap.setAttribute('aria-live', 'polite');
+      header.appendChild(wrap);
+    } else if (wrap.parentElement !== header) {
+      header.appendChild(wrap);
+    }
     mountBadge(wrap);
   }
 
