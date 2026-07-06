@@ -28,6 +28,7 @@ const ALLOWED_METHODS = 'GET, POST, OPTIONS';
 // ── Season constants ─────────────────────────────────────────────────────────
 /** Master epoch: 2024-01-01T00:00:00.000Z — must stay in sync with anti-cheat and leaderboard workers */
 const SEASON_EPOCH_MS = 1704067200000; // new Date(SEASON_EPOCH_MS).toISOString() === "2024-01-01T00:00:00.000Z"
+const TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400;
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,78 @@ function isAdmin(request, env) {
   // URL query params are logged by proxies and browser history.
   const secret = request.headers.get('X-Admin-Secret');
   return secret && secret === env.ADMIN_SECRET;
+}
+
+function buildTelegramAuthCheckString(fields) {
+  return Object.keys(fields || {})
+    .filter((key) => fields[key] != null)
+    .sort()
+    .map((key) => `${key}=${fields[key]}`)
+    .join('\n');
+}
+
+async function verifyTelegramHmac(data, botToken) {
+  if (!botToken || !data || !data.hash) return false;
+  const { hash, ...fields } = data;
+  const checkString = buildTelegramAuthCheckString(fields);
+  const secretKeyBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(botToken));
+  const hmacKey = await crypto.subtle.importKey('raw', secretKeyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sigBytes = await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(checkString));
+  const expected = Array.from(new Uint8Array(sigBytes)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  return expected === String(hash).toLowerCase();
+}
+
+async function verifyLeaderboardTelegramAuth(body, env) {
+  if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, error: 'server_config_error', status: 503 };
+  const rawAuth = body?.telegram_auth ?? body?.auth_evidence ?? null;
+  if (!rawAuth) return { ok: false, error: 'telegram_sync_required', status: 403 };
+
+  let tg;
+  if (typeof rawAuth === 'object') {
+    tg = rawAuth;
+  } else if (typeof rawAuth === 'string') {
+    try { tg = JSON.parse(rawAuth); } catch { tg = null; }
+  }
+  if (!tg || typeof tg !== 'object') return { ok: false, error: 'telegram_sync_required', status: 403 };
+
+  const telegramId = String(tg.id || '').trim();
+  const authDate = String(tg.auth_date || '').trim();
+  const hash = String(tg.hash || '').trim();
+  if (!/^\d{1,20}$/.test(telegramId)) return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  if (!/^\d{1,12}$/.test(authDate)) return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  if (!/^[a-f0-9]{64}$/i.test(hash)) return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+
+  const authDateSeconds = parseInt(authDate, 10);
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  if (!Number.isFinite(authDateSeconds) || authDateSeconds > nowSeconds + 300) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
+  if (nowSeconds - authDateSeconds > TELEGRAM_AUTH_MAX_AGE_SECONDS) {
+    return { ok: false, error: 'telegram_auth_expired', status: 401 };
+  }
+
+  let valid = false;
+  try {
+    valid = await verifyTelegramHmac({
+      id: telegramId,
+      first_name: tg.first_name,
+      last_name: tg.last_name,
+      username: tg.username,
+      photo_url: tg.photo_url,
+      auth_date: authDate,
+      hash,
+    }, env.TELEGRAM_BOT_TOKEN);
+  } catch {
+    return { ok: false, error: 'telegram_auth_verification_error', status: 500 };
+  }
+  if (!valid) return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+
+  if (body.telegram_id != null) {
+    const claimed = String(body.telegram_id).trim();
+    if (claimed && claimed !== telegramId) return { ok: false, error: 'telegram_id_mismatch', status: 403 };
+  }
+
+  return { ok: true, telegramId };
 }
 
 async function cachedGet(env, key, ttl, fetchFn) {
@@ -172,11 +245,14 @@ async function handlePostScore(request, env, origin) {
     return jsonError('Invalid JSON body', 400, origin);
   }
 
-  const { player_id, player_name, score, level, district_id } = body;
-
-  if (!player_id || typeof player_id !== 'string' || player_id.trim().length < 1) {
-    return jsonError('player_id is required', 400, origin);
+  const authResult = await verifyLeaderboardTelegramAuth(body, env);
+  if (!authResult.ok) {
+    return jsonError(authResult.error, authResult.status, origin);
   }
+
+  const { player_name, score, level, district_id } = body;
+  const player_id = authResult.telegramId;
+
   if (!player_name || typeof player_name !== 'string' || player_name.trim().length < 2 || player_name.trim().length > 30) {
     return jsonError('player_name must be 2–30 characters', 400, origin);
   }
@@ -204,6 +280,7 @@ async function handlePostScore(request, env, origin) {
     player_name: player_name.trim(),
     score:       finalScore,
     raw_score:   Math.floor(score),
+    telegram_id: player_id,
     level:       level ? Math.floor(level) : 1,
     district_id: district_id || null,
     submitted_at: new Date().toISOString(),

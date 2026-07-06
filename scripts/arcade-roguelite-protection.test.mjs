@@ -170,10 +170,11 @@ assert.doesNotMatch(
 // ── Unlinked users must never have XP falsely claimed as synced ───────────────
 //
 // The leaderboard-client must not emit a state of "xp_synced" or "xp_confirmed"
-// for unlinked users, and the "local_cached_only" state must be present for the
-// unlinked non-api path.
+// for unlinked users, and the "login_required" state must stop unlinked writes
+// before any local leaderboard/progression queue save.
 
-assertContains(leaderboard, '"local_cached_only"', 'leaderboard-client.js must use local_cached_only state for unlinked users');
+assertContains(leaderboard, '"login_required"', 'leaderboard-client.js must use login_required state for unlinked users');
+assert.doesNotMatch(leaderboard, /"local_cached_only"/, 'leaderboard-client.js must not save unlinked scores as local-only leaderboard state');
 assert.doesNotMatch(leaderboard, /xp_synced|xp_confirmed/, 'leaderboard-client.js must not use a false "xp_synced" or "xp_confirmed" state label');
 
 // ── Sync-state separation: public score submit vs competitive XP sync ─────────
@@ -182,8 +183,7 @@ assert.doesNotMatch(leaderboard, /xp_synced|xp_confirmed/, 'leaderboard-client.j
 // between a public-only score post and a server-confirmed competitive XP sync.
 
 for (const stateLabel of [
-  '"public_submit_unsigned"',
-  '"public_score_submitted"',
+  '"auth_required"',
   '"score_accepted"',
 ]) {
   assertContains(leaderboard, stateLabel, `leaderboard-client.js must expose separate sync state: ${stateLabel}`);
@@ -193,13 +193,13 @@ for (const stateLabel of [
 
 assert.match(
   leaderboard,
-  /if \(!api\) \{[\s\S]*?result\.state = linked \? "sync_pending" : "local_cached_only";/,
-  'missing leaderboard API branch must choose sync_pending for linked users and local_cached_only for unlinked users',
+  /if \(!api\) \{[\s\S]*?result\.state = "sync_pending";/,
+  'missing leaderboard API branch must choose sync_pending for signed linked users',
 );
 assertOrdered(
   leaderboard,
-  ['if (!api)', 'result.state = linked ? "sync_pending" : "local_cached_only";', 'const shouldQueuePending', 'ArcadeSync.queuePendingProgress'],
-  'API-unavailable branch must fall through to the shared pending queue decision instead of claiming sync',
+  ['if (!api)', 'result.state = "sync_pending";', 'const shouldQueuePending', 'ArcadeSync.queuePendingProgress'],
+  'API-unavailable branch must fall through without claiming sync',
 );
 assertContains(leaderboard, '"sync_pending"', 'leaderboard-client.js must use sync_pending state when API unavailable for linked users');
 

@@ -1,13 +1,13 @@
 /**
  * scripts/leaderboard-client-regression.test.mjs
  *
- * Regression tests for js/leaderboard-client.js public + Telegram submit flow.
+ * Regression tests for js/leaderboard-client.js signed Telegram submit flow.
  *
  * Verifies:
- *  1. submitScore() always POSTs to global endpoint for public leaderboard flow
+ *  1. submitScore() stops unlinked users before write/local-save paths
  *  2. linked + signed auth includes telegram_auth in request body
- *  3. linked without signed auth still POSTs anonymously (without telegram_auth)
- *  4. ArcadeSync auth failure does not block basic score submission
+ *  3. linked without signed auth does not POST
+ *  4. ArcadeSync auth failure blocks score submission
  *  5. submitMetaScore() remains Telegram-auth guarded
  *
  * Also validates source-level structure to catch regressions from future edits.
@@ -77,14 +77,14 @@ const submitScoreBody = submitScoreStart >= 0
   ? src.slice(submitScoreStart, submitMetaStart > 0 ? submitMetaStart : submitScoreStart + 12000)
   : '';
 
-await test('submitScore defines shared requestBody payload for global POST', async () => {
+await test('submitScore defines shared requestBody payload for signed POST', async () => {
   assert(submitScoreStart !== -1, 'submitScore function not found in source');
   assert(
     submitScoreBody.includes('const requestBody = {') &&
       submitScoreBody.includes('player: resolvedPlayer') &&
       submitScoreBody.includes('score,') &&
       submitScoreBody.includes('game,'),
-    'submitScore must build a shared requestBody with player/score/game for public submission',
+    'submitScore must build a shared requestBody with player/score/game for signed submission',
   );
 });
 
@@ -97,32 +97,32 @@ await test('submitScore only includes telegram_auth when signed auth is availabl
   );
 });
 
-await test('submitScore missing-auth path marks unsigned public submit instead of aborting', async () => {
+await test('submitScore missing-auth path returns auth_required before POST', async () => {
   assert(
-    submitScoreBody.includes('result.state = "public_submit_unsigned"') &&
-      submitScoreBody.includes('COPY.PUBLIC_SCORE_SUBMITTED') &&
-      submitScoreBody.includes('XP sync pending — Telegram auth refresh needed.'),
-    'missing signed auth should enter public_submit_unsigned path',
+    submitScoreBody.includes('result.state = "auth_required"') &&
+      submitScoreBody.includes('Fresh Telegram auth is required to save scores and earn XP.') &&
+      submitScoreBody.includes('return result;'),
+    'missing signed auth should enter auth_required path and return before POST',
   );
 });
 
-await test('submitScore unsigned fallback copy avoids false competitive/XP success claims', async () => {
+await test('submitScore has no unsigned public fallback states', async () => {
   assert(
-    submitScoreBody.includes('state: linked && !hasSignedAuth ? "public_score_submitted" : "score_accepted"') &&
-      submitScoreBody.includes('COPY.PUBLIC_SCORE_SUBMITTED') &&
-      submitScoreBody.includes('XP sync pending — Telegram auth refresh needed.') &&
+    !submitScoreBody.includes('public_submit_unsigned') &&
+      !submitScoreBody.includes('public_score_submitted') &&
+      !submitScoreBody.includes('Public score submitted') &&
       !submitScoreBody.includes('competitive progression succeeded'),
-    'unsigned accepted state must explicitly report public submit + pending XP sync only',
+    'unsigned public fallback states/copy must be absent',
   );
 });
 
-await test('submitScore does not have pre-fetch return in missing-auth branch', async () => {
-  const publicUnsignedIdx = submitScoreBody.indexOf('result.state = "public_submit_unsigned"');
-  assert(publicUnsignedIdx !== -1, 'public_submit_unsigned marker not found');
-  const fetchIdx = submitScoreBody.indexOf('await fetch(api', publicUnsignedIdx);
-  assert(fetchIdx !== -1, 'submitScore fetch call must appear after unsigned branch');
+await test('submitScore has pre-fetch return in missing-auth branch', async () => {
+  const authRequiredIdx = submitScoreBody.indexOf('result.state = "auth_required"');
+  assert(authRequiredIdx !== -1, 'auth_required marker not found');
+  const returnIdx = submitScoreBody.indexOf('return result;', authRequiredIdx);
+  const fetchIdx = submitScoreBody.indexOf('await fetch(api', authRequiredIdx);
+  assert(returnIdx !== -1 && fetchIdx !== -1 && returnIdx < fetchIdx, 'missing-auth branch must return before fetch');
 });
-
 await test('submitMetaScore signature includes telegram_auth parameter', async () => {
   assert(
     src.includes('async function submitMetaScore(') && src.includes('telegram_auth }'),
@@ -345,47 +345,54 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
   let hasSignedAuth = false;
   let resolvedAuth = null;
 
-  if (linked) {
-    if (authThrows) {
-      healthCalls.push({ state: 'bad', reason: 'auth_expired' });
-      statusCalls.push({ state: 'public_submit_unsigned' });
-    } else {
-      resolvedAuth = telegramAuth;
-      hasSignedAuth = !!(resolvedAuth && resolvedAuth.hash && resolvedAuth.auth_date);
-      if (!hasSignedAuth) {
-        result.state = 'public_submit_unsigned';
-        result.message = 'Telegram auth missing or expired. Submitting to public leaderboard without XP sync.';
-        healthCalls.push({ state: 'bad', reason: 'auth_expired' });
-        statusCalls.push({ state: 'public_submit_unsigned' });
-      }
-    }
+  if (!linked) {
+    result.state = 'login_required';
+    result.message = 'Log in with Telegram to save scores and earn XP.';
+    healthCalls.push({ state: 'bad', reason: 'not_linked' });
+    statusCalls.push({ state: 'login_required' });
+    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls };
+  }
+
+  if (authThrows) {
+    result.state = 'auth_required';
+    result.message = 'Fresh Telegram auth is required to save scores and earn XP.';
+    healthCalls.push({ state: 'bad', reason: 'auth_expired' });
+    statusCalls.push({ state: 'auth_required' });
+    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls };
+  }
+
+  resolvedAuth = telegramAuth;
+  hasSignedAuth = !!(resolvedAuth && resolvedAuth.hash && resolvedAuth.auth_date);
+  if (!hasSignedAuth) {
+    result.state = 'auth_required';
+    result.message = 'Fresh Telegram auth is required to save scores and earn XP.';
+    healthCalls.push({ state: 'bad', reason: 'auth_expired' });
+    statusCalls.push({ state: 'auth_required' });
+    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls };
   }
 
   if (!apiAvailable) {
-    result.state = linked ? 'sync_pending' : 'local_cached_only';
+    result.state = 'sync_pending';
     result.message = apiState === 'disabled'
-      ? (linked ? 'Endpoint disabled. Sync pending.' : 'Endpoint disabled. Local cached only.')
-      : (apiState === 'config_required'
-        ? (linked ? 'API config required. Sync pending.' : 'API config required. Local cached only.')
-        : (linked ? 'Server unavailable. Sync pending.' : 'Server unavailable. Local cached only.'));
+      ? 'Endpoint disabled. Sync pending.'
+      : (apiState === 'config_required' ? 'API config required. Sync pending.' : 'Server unavailable. Sync pending.');
     statusCalls.push({ state: result.state });
     return { outcome: 'skipped', result, fetchCalls, healthCalls, statusCalls };
   }
 
-  // Always POST for public leaderboard.
   fetchCalls.push({
     body: {
       player: 'TestPlayer',
       score: 500,
       game: 'snake',
       faction: 'unaligned',
-      ...(hasSignedAuth ? { telegram_id: '123456789', telegram_auth: resolvedAuth } : {}),
+      telegram_id: '123456789',
+      telegram_auth: resolvedAuth,
     },
   });
 
   return { outcome: 'posted', result, fetchCalls, healthCalls, statusCalls };
 }
-
 await test('BEH: linked user with valid telegram_auth POSTs with telegram_auth in body', async () => {
   const auth = makeValidAuth();
   const { outcome, fetchCalls } = await runSubmitScoreGuard({ linked: true, telegramAuth: auth });
@@ -395,33 +402,29 @@ await test('BEH: linked user with valid telegram_auth POSTs with telegram_auth i
   assert(fetchCalls[0].body.telegram_auth === auth, 'telegram_auth in body must be the fetched auth object');
 });
 
-await test('BEH: linked user with null telegramAuth still POSTs without telegram_auth', async () => {
+await test('BEH: linked user with null telegramAuth does not POST', async () => {
   const { outcome, result, fetchCalls, healthCalls, statusCalls } = await runSubmitScoreGuard({ linked: true, telegramAuth: null });
-  assert(outcome === 'posted', `expected posted, got ${outcome}`);
-  assert(fetchCalls.length === 1, 'must still POST when telegramAuth is null');
-  assert(result.state === 'public_submit_unsigned', `returned result.state must be "public_submit_unsigned", got "${result.state}"`);
-  assert(fetchCalls[0].body.telegram_auth === undefined, 'unsigned fallback POST must omit telegram_auth');
-  assert(fetchCalls[0].body.telegram_id === undefined, 'unsigned fallback POST must omit telegram_id');
+  assert(outcome === 'rejected', `expected rejected, got ${outcome}`);
+  assert(fetchCalls.length === 0, 'must not POST when telegramAuth is null');
+  assert(result.state === 'auth_required', `returned result.state must be "auth_required", got "${result.state}"`);
   assert(healthCalls.some(h => h.state === 'bad'), 'must mark sync health as bad');
-  assert(statusCalls.some(s => s.state === 'public_submit_unsigned'), 'must emit unsigned fallback status');
+  assert(statusCalls.some(s => s.state === 'auth_required'), 'must emit auth_required status');
 });
 
-await test('BEH: anonymous user POSTs without telegram auth fields', async () => {
-  const { outcome, fetchCalls } = await runSubmitScoreGuard({ linked: false, telegramAuth: null });
-  assert(outcome === 'posted', `expected posted, got ${outcome}`);
-  assert(fetchCalls.length === 1, 'anonymous submit must POST');
-  assert(fetchCalls[0].body.telegram_auth === undefined, 'anonymous POST must omit telegram_auth');
-  assert(fetchCalls[0].body.telegram_id === undefined, 'anonymous POST must omit telegram_id');
+await test('BEH: anonymous user is rejected without a POST', async () => {
+  const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({ linked: false, telegramAuth: null });
+  assert(outcome === 'rejected', `expected rejected, got ${outcome}`);
+  assert(result.state === 'login_required', `expected login_required, got ${result.state}`);
+  assert(fetchCalls.length === 0, 'anonymous submit must not POST');
+  assert(statusCalls.some(s => s.state === 'login_required'), 'must emit login_required status');
 });
 
-await test('BEH: ArcadeSync auth failure does not block public score submit', async () => {
+await test('BEH: ArcadeSync auth failure blocks score submit', async () => {
   const { outcome, fetchCalls, statusCalls } = await runSubmitScoreGuard({ linked: true, authThrows: true });
-  assert(outcome === 'posted', `expected posted, got ${outcome}`);
-  assert(fetchCalls.length === 1, 'auth exception should still result in one POST');
-  assert(fetchCalls[0].body.telegram_auth === undefined, 'auth exception fallback must omit telegram_auth');
-  assert(statusCalls.some(s => s.state === 'public_submit_unsigned'), 'auth exception should emit unsigned fallback status');
+  assert(outcome === 'rejected', `expected rejected, got ${outcome}`);
+  assert(fetchCalls.length === 0, 'auth exception must not POST');
+  assert(statusCalls.some(s => s.state === 'auth_required'), 'auth exception should emit auth_required status');
 });
-
 await test('BEH: linked user without write API stays pending and does not POST', async () => {
   const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({
     linked: true,
@@ -435,18 +438,17 @@ await test('BEH: linked user without write API stays pending and does not POST',
   assert(statusCalls.some(s => s.state === 'sync_pending'), 'linked no-config write path must emit sync_pending');
 });
 
-await test('BEH: guest user without write API stays local-only and does not POST', async () => {
+await test('BEH: guest user without write API is rejected before local-only save', async () => {
   const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({
     linked: false,
     apiAvailable: false,
     apiState: 'config_required',
   });
-  assert(outcome === 'skipped', `expected skipped, got ${outcome}`);
+  assert(outcome === 'rejected', `expected rejected, got ${outcome}`);
   assert(fetchCalls.length === 0, 'guest no-config path must not POST to leaderboard worker');
-  assert(result.state === 'local_cached_only', `expected local_cached_only, got ${result.state}`);
-  assert(statusCalls.some(s => s.state === 'local_cached_only'), 'guest no-config path must emit local_cached_only');
+  assert(result.state === 'login_required', `expected login_required, got ${result.state}`);
+  assert(statusCalls.some(s => s.state === 'login_required'), 'guest no-config path must emit login_required');
 });
-
 await test('BEH: disabled write API reports disabled copy instead of server unavailable', async () => {
   const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({
     linked: true,
@@ -546,14 +548,25 @@ await test('Worker: upsertEntry anonymous match excludes rows that have telegram
   );
 });
 
-await test('Worker: anti-cheat block check is guarded by non-null telegramId', async () => {
+await test('Worker: anti-cheat block check runs against verified telegramId', async () => {
   const blockCheckIdx = workerLbSrc.indexOf('anticheat:blocked:${telegramId}');
   assert(blockCheckIdx !== -1, 'anticheat block check pattern not found in worker');
-  // Look back within 300 chars for an if (telegramId) guard
-  const searchWindow = workerLbSrc.slice(Math.max(0, blockCheckIdx - 300), blockCheckIdx);
   assert(
-    searchWindow.includes('if (telegramId)') || searchWindow.includes('if(telegramId)'),
-    'anticheat block check must be inside an if (telegramId) guard to prevent null KV key lookups',
+    workerLbSrc.includes('const telegramId = identity.telegramId;') &&
+      workerLbSrc.includes('const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);'),
+    'anti-cheat block check must use the verified Telegram identity from resolveSubmissionIdentity()',
+  );
+});
+
+await test('Block Topia leaderboard worker compares Telegram HMAC case-insensitively', async () => {
+  const blocktopiaWorkerSrc = await readFile('workers/blocktopia-leaderboard/worker.js');
+  const hmacStart = blocktopiaWorkerSrc.indexOf('async function verifyTelegramHmac(');
+  assert(hmacStart !== -1, 'verifyTelegramHmac not found in blocktopia leaderboard worker');
+  const hmacEnd = blocktopiaWorkerSrc.indexOf('\n}', hmacStart) + 2;
+  const hmacBody = blocktopiaWorkerSrc.slice(hmacStart, hmacEnd);
+  assert(
+    hmacBody.includes('String(hash).toLowerCase()'),
+    'blocktopia leaderboard worker must normalize Telegram hash case before comparison',
   );
 });
 
