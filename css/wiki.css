@@ -864,49 +864,6 @@ table {
   font-weight: 800;
 }
 
-.nft-collection-article .gk-premium-hero {
-  position: relative;
-  overflow: hidden;
-  padding: clamp(58px, 7vw, 96px) clamp(44px, 6vw, 88px);
-  background:
-    linear-gradient(135deg, rgba(8, 18, 34, 0.96), rgba(3, 6, 14, 0.98));
-  border-color: rgba(86, 220, 255, 0.28);
-  border-radius: 8px;
-  box-shadow: 0 0 32px rgba(0, 255, 204, 0.10), 0 22px 62px rgba(0, 0, 0, 0.34);
-}
-
-.nft-collection-article .gk-premium-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(86, 220, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(86, 220, 255, 0.06) 1px, transparent 1px);
-  background-size: 22px 22px;
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 82%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 82%);
-}
-
-.nft-collection-article .gk-premium-hero > * {
-  position: relative;
-  z-index: 1;
-}
-
-.nft-collection-article .gk-premium-hero .page-title {
-  max-width: 1040px;
-  margin-bottom: 8px;
-  color: #eaffff;
-  font-size: clamp(3.2rem, 6vw, 5.8rem);
-  line-height: 1.08;
-  letter-spacing: 0;
-  text-shadow:
-    2px 0 rgba(255, 106, 213, 0.42),
-    -2px 0 rgba(86, 220, 255, 0.58),
-    0 0 18px rgba(0, 255, 204, 0.26);
-}
-
-.nft-collection-article .gk-premium-hero .eyebrow,
 .nft-collection-article .gk-command-kicker {
   color: #00ffcc;
   letter-spacing: 0;
@@ -1574,7 +1531,8 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 
 body.page-search #content,
 body.page-dashboard #content,
-body.page-how-to-play #content {
+body.page-how-to-play #content,
+body.page-wiki.page-gkniftyheads-collection #content {
   padding-top: 0;
   padding-right: 0;
   padding-left: 0;
@@ -1584,7 +1542,11 @@ body.page-search .section-heading,
 body.page-search .ranking-debug-panel,
 body.page-search .article-list,
 body.page-dashboard .dash-page,
-body.page-how-to-play .howto-page > .section {
+body.page-how-to-play .howto-page > .section,
+body.page-gkniftyheads-collection .nft-collection-article > .wiki-section,
+body.page-gkniftyheads-collection .nft-collection-article > .article-meta,
+body.page-gkniftyheads-collection .nft-collection-article > .feed-status-badge,
+body.page-gkniftyheads-collection .nft-collection-article > template + section {
   margin-right: clamp(20px, 3vw, 48px);
   margin-left: clamp(20px, 3vw, 48px);
 }
@@ -1758,6 +1720,221 @@ body.page-standard-shell .wiki-living-hero .wiki-living-title,
   .wiki-alive-kicker,
   .wiki-living-title {
     animation: none;
+  }
+}
+
+body.page-gkniftyheads-collection {
+  background:
+    radial-gradient(circle at 14% 8%, rgba(0, 255, 204, 0.12), transparent 34vw),
+    radial-gradient(circle at 84% 4%, rgba(255, 106, 213, 0.10), transparent 32vw),
+    linear-gradient(135deg, rgba(8, 8, 13, 0.98) 0%, rgba(21, 0, 33, 0.72) 44%, rgba(10, 15, 21, 0.96) 100%);
+}
+
+body.page-wiki.page-gkniftyheads-collection .wiki-content.nft-collection-article {
+  width: 100%;
+  margin: 0;
+  padding: 0 0 clamp(64px, 6vw, 96px);
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.page-gkniftyheads-collection .nft-collection-article > .breadcrumb {
+  margin: 0;
+  padding: 12px clamp(24px, 5vw, 72px);
+  background: rgba(7, 11, 18, 0.82);
+  border-bottom: 1px solid rgba(86, 220, 255, 0.14);
+}
+
+body.page-gkniftyheads-collection .gk-collection-hero {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.86fr) minmax(360px, 1.14fr);
+  gap: clamp(34px, 5vw, 86px);
+  align-items: center;
+  min-height: clamp(560px, 62vh, 780px);
+  margin: 0;
+  padding: clamp(72px, 8vw, 108px) clamp(48px, 7vw, 112px) clamp(58px, 6vw, 88px);
+  border: 1px solid rgba(86, 220, 255, 0.28);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(0, 255, 204, 0.16), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(255, 106, 213, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(8, 18, 34, 0.96), rgba(3, 6, 14, 0.98));
+  box-shadow: 0 0 32px rgba(0, 255, 204, 0.12);
+}
+
+body.page-gkniftyheads-collection .gk-collection-hero::before {
+  background-image:
+    linear-gradient(rgba(86, 220, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(86, 220, 255, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 1;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 80%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 80%);
+}
+
+body.page-gkniftyheads-collection .gk-collection-hero-copy {
+  display: grid;
+  grid-column: 1;
+  align-content: center;
+  max-width: 780px;
+  gap: 24px;
+  min-width: 0;
+}
+
+body.page-gkniftyheads-collection .gk-collection-title-wrap {
+  display: flex;
+  grid-column: 2;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+body.page-gkniftyheads-collection .gk-collection-title-wrap .howto-glitch-title {
+  color: #eaffff;
+  max-width: 980px;
+  margin: 0;
+  font-size: clamp(3rem, 6.1vw, 6.05rem);
+  line-height: 1.16;
+  letter-spacing: 0;
+  text-shadow:
+    2px 0 rgba(255, 106, 213, 0.6),
+    -2px 0 rgba(86, 220, 255, 0.7),
+    0 0 18px rgba(0, 255, 204, 0.3);
+}
+
+body.page-gkniftyheads-collection .gk-collection-title-wrap .howto-glitch-title span {
+  color: #00ffcc;
+}
+
+body.page-gkniftyheads-collection .gk-collection-kicker {
+  display: inline-block;
+  color: #00ffcc;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.65;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+body.page-gkniftyheads-collection .gk-collection-hero .howto-lead {
+  max-width: 740px;
+  margin: 0;
+  color: rgba(235, 255, 255, 0.9);
+  font-size: 1.08rem;
+  line-height: 1.85;
+}
+
+body.page-gkniftyheads-collection .gk-collection-route {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  padding: 22px 24px;
+  color: #f4ffff;
+  background: linear-gradient(90deg, rgba(0, 255, 204, 0.12), rgba(86, 220, 255, 0.05));
+  border: 1px solid rgba(0, 255, 204, 0.45);
+  border-left: 5px solid #00ffcc;
+  border-radius: 0;
+  box-shadow: inset 0 0 24px rgba(0, 255, 204, 0.05);
+  font-size: clamp(0.92rem, 1.08vw, 1.04rem);
+  font-weight: 900;
+  line-height: 1.95;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+body.page-gkniftyheads-collection .gk-collection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 0;
+}
+
+body.page-gkniftyheads-collection .gk-collection-actions .howto-btn {
+  display: inline-block;
+  padding: 11px 16px;
+  color: #00ffcc;
+  background: rgba(0, 255, 204, 0.12);
+  border: 1px solid rgba(0, 255, 204, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 0 18px rgba(0, 255, 204, 0.08);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+body.page-gkniftyheads-collection .gk-collection-actions .howto-btn-secondary {
+  color: #56dcff;
+  background: rgba(86, 220, 255, 0.08);
+  border-color: rgba(86, 220, 255, 0.38);
+}
+
+body.page-gkniftyheads-collection .gk-collection-actions .howto-btn:hover,
+body.page-gkniftyheads-collection .gk-collection-actions .howto-btn:focus-visible {
+  background: rgba(0, 255, 204, 0.2);
+  box-shadow: 0 0 24px rgba(0, 255, 204, 0.16);
+}
+
+body.page-gkniftyheads-collection .gk-collection-hero .nft-category-tags {
+  position: absolute;
+  right: clamp(24px, 5vw, 72px);
+  bottom: clamp(20px, 3vw, 32px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: min(560px, 48vw);
+  gap: 8px;
+  margin: 0;
+}
+
+body.page-gkniftyheads-collection .gk-parent-hub-card {
+  position: absolute;
+  left: clamp(48px, 7vw, 112px);
+  bottom: clamp(20px, 3vw, 32px);
+  max-width: min(520px, 46vw);
+  color: rgba(235, 255, 255, 0.82);
+}
+
+body.page-gkniftyheads-collection .gk-parent-hub-card span {
+  display: block;
+  color: #00ffcc;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body.page-gkniftyheads-collection .gk-parent-hub-card p {
+  margin: 6px 0 0;
+  color: rgba(235, 255, 255, 0.82);
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+body.page-gkniftyheads-collection .article-meta {
+  margin-top: 22px;
+}
+
+@media (max-width: 980px) {
+  body.page-gkniftyheads-collection .gk-collection-hero {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-gkniftyheads-collection .gk-collection-hero-copy,
+  body.page-gkniftyheads-collection .gk-collection-title-wrap {
+    grid-column: auto;
+  }
+
+  body.page-gkniftyheads-collection .gk-collection-hero .nft-category-tags,
+  body.page-gkniftyheads-collection .gk-parent-hub-card {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    max-width: none;
   }
 }
 
