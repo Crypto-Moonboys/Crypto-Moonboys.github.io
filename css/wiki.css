@@ -544,7 +544,7 @@ table {
 
 .gk-showcase-card .gk-command-featured-image {
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .gk-showcase-card .gk-command-featured-copy {
@@ -755,7 +755,7 @@ table {
   aspect-ratio: 1 / 1;
   object-fit: contain;
   background: rgba(0, 0, 0, 0.32);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .gk-top-ranked-copy {
