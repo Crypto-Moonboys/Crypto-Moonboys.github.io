@@ -55,6 +55,7 @@ assert.match(html, /class="howto-kicker gk-collection-kicker"[\s\S]*WAX NFT Coll
 assert.match(html, /class="howto-glitch-title howto-pulse swarmsy-title"[\s\S]*GKniftyHEADS<br><span>NFT Collection<\/span>/, 'collection hero title should use How To Play glitch title treatment');
 assert.match(html, /GKniftyHEADS is the WAX AtomicAssets collection layer of the Crypto Moonboys universe/, 'hero intro should be clean human-facing copy');
 assert.match(html, /class="howto-route gk-collection-route"[\s\S]*COLLECTION HUB \/ COLLECTOR FLOW/, 'collection flow should live inside the hero route strip');
+assert.match(html, /<div class="howto-hero-actions gk-collection-actions" role="group" aria-label="GKniftyHEADS collection actions">/, 'collection action buttons should expose their grouped aria label');
 assert.match(html, /class="howto-btn"[^>]+>Buy \/ View Fun Coupons<\/a>/, 'Fun Coupon action button must render with How To Play button styling');
 assert.match(html, /class="howto-btn howto-btn-secondary"[^>]+>Burn \/ Blend<\/a>/, 'NeftyBlocks blend action button must render with How To Play button styling');
 assert.match(html, /class="howto-btn howto-btn-secondary"[^>]+>View AtomicHub<\/a>/, 'AtomicHub collection action button must render with How To Play button styling');
@@ -142,6 +143,7 @@ assert.match(css, /\.gk-collection-actions/, 'collection action row should have 
 assert.match(css, /body\.page-wiki\.page-gkniftyheads-collection #content\s*\{[\s\S]*padding-top:\s*0/, 'collection page should remove the large gap below navigation');
 assert.match(css, /body\.page-wiki\.page-gkniftyheads-collection \.wiki-content\.nft-collection-article\s*\{[\s\S]*background:\s*transparent;[\s\S]*border:\s*0;[\s\S]*box-shadow:\s*none/, 'collection article shell should not render as an outer card around the hero');
 assert.match(css, /\.gk-collection-hero\s*\{[\s\S]*grid-template-columns:\s*minmax\(280px,\s*0\.86fr\) minmax\(360px,\s*1\.14fr\)[\s\S]*min-height:\s*clamp\(560px,\s*62vh,\s*780px\)[\s\S]*border-right:\s*0;[\s\S]*border-left:\s*0;[\s\S]*border-radius:\s*0/, 'collection hero should match How To Play full-width proportions');
+assert.match(css, /\.gk-collection-hero\s*\{[\s\S]*overflow:\s*hidden;[\s\S]*min-height:\s*clamp\(560px,\s*62vh,\s*780px\)/, 'collection hero should contain glow layers before they bleed into navigation');
 assert.match(css, /\.gk-collection-hero::before\s*\{[\s\S]*background-image:[\s\S]*linear-gradient\(rgba\(86,\s*220,\s*255,\s*0\.06\) 1px,\s*transparent 1px\)/, 'collection hero should use the How To Play grid overlay');
 assert.match(css, /\.gk-collection-title-wrap \.howto-glitch-title\s*\{[\s\S]*font-size:\s*clamp\(3rem,\s*6\.1vw,\s*6\.05rem\)[\s\S]*text-shadow:[\s\S]*rgba\(255,\s*106,\s*213,\s*0\.6\)/, 'collection title should match How To Play typography and glow');
 assert.match(css, /\.gk-collection-route\s*\{[\s\S]*border-left:\s*5px solid #00ffcc[\s\S]*line-height:\s*1\.95/, 'collection route strip should match How To Play route styling');
