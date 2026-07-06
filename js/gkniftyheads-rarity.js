@@ -9,6 +9,8 @@
   const audit = ranking.querySelector('[data-rarity-audit]');
   const mainRows = Array.from(ranking.querySelectorAll('.gk-rarity-table tbody [data-rarity-filter]'));
   const rankedCards = Array.from(ranking.querySelectorAll('.gk-command-deck [data-rarity-filter]'));
+  const auditCards = Array.from(ranking.querySelectorAll('[data-rarity-audit] .gk-audit-card[data-rarity-filter]'));
+  const auditGroups = Array.from(ranking.querySelectorAll('[data-rarity-audit] .gk-audit-card-group'));
   const utilityRows = Array.from(ranking.querySelectorAll('.gk-rarity-utility [data-rarity-filter]'));
   const unissuedRows = Array.from(ranking.querySelectorAll('.gk-rarity-unissued [data-rarity-filter]'));
   const utilitySection = ranking.querySelector('.gk-rarity-utility');
@@ -43,6 +45,14 @@
     }
     for (const card of rankedCards) {
       card.hidden = !matchesFilter(card, normalized);
+    }
+    for (const card of auditCards) {
+      card.hidden = !matchesFilter(card, normalized);
+    }
+    for (const group of auditGroups) {
+      const visibleCards = Array.from(group.querySelectorAll('.gk-audit-card[data-rarity-filter]'))
+        .filter((card) => !card.hidden);
+      group.hidden = visibleCards.length === 0;
     }
     for (const row of utilityRows) {
       row.hidden = !(normalized === 'utility-open-mint' || normalized === 'all-ranked');

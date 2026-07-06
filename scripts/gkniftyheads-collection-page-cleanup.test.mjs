@@ -36,6 +36,7 @@ function sliceBetween(source, startNeedle, endNeedle) {
 const html = read('wiki/gkniftyheads-nft-collection.html');
 const visible = visibleText(html);
 const statusClient = read('js/site-feed-status.js');
+const rarityClient = read('js/gkniftyheads-rarity.js');
 const css = read('css/wiki.css');
 const templateShowcase = html.match(/<section class="gk-command-deck gk-showcase-section gk-template-rarity-showcase"[\s\S]*?<section class="gk-secondary-ranked-section"/)?.[0] || '';
 const globalShowcase = html.match(/<section class="gk-command-deck gk-global-rarity-deck gk-showcase-section gk-global-rarity-showcase"[\s\S]*?<section class="gk-secondary-ranked-section"/)?.[0] || '';
@@ -120,6 +121,10 @@ assert.match(waxRenderer, /function shouldRenderFullBridgeData/, 'WAX bridge ren
 assert.match(waxRenderer, /function shouldRenderBridgeStatus/, 'WAX bridge status card should also be behind a tracker-page guard');
 assert.match(waxRenderer, /if \(!shouldRenderBridgeStatus\(collection\)\) return;/, 'static tracker pages should not append a WAX Bridge card');
 assert.match(read('js/wax-collection-renderer.js'), /!hasStaticTracker\(\)/, 'static tracker pages should not append a duplicate WAX bridge tracker');
+assert.match(rarityClient, /const auditCards = Array\.from\(ranking\.querySelectorAll\('\[data-rarity-audit\] \.gk-audit-card\[data-rarity-filter\]'\)\)/, 'rarity filters should include visible audit cards');
+assert.match(rarityClient, /const auditGroups = Array\.from\(ranking\.querySelectorAll\('\[data-rarity-audit\] \.gk-audit-card-group'\)\)/, 'rarity filters should include audit card groups');
+assert.match(rarityClient, /for \(const card of auditCards\) \{[\s\S]*card\.hidden = !matchesFilter\(card, normalized\);[\s\S]*for \(const group of auditGroups\)/, 'audit cards should hide using the same filter matcher as table rows');
+assert.match(rarityClient, /group\.hidden = visibleCards\.length === 0/, 'empty audit card groups should hide after filtering');
 assert.doesNotMatch(stripDetails(html), /WAX Bridge|wax-bridge-status|wax-bridge-collection-data/, 'collection/wiki page should not show infrastructure WAX Bridge cards');
 assert.match(html, /<details class="wiki-rabbit-group wiki-rabbit-group--nft-siblings" data-related-group="Related NFT Templates">/, 'related NFT templates should be collapsed on the collection page');
 assert.match(html, /gk-related-card-grid[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Collection[\s\S]*NFT Template Pages[\s\S]*Connected Lore/, 'related pages should render as relationship cards');
