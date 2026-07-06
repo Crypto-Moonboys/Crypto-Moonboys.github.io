@@ -179,7 +179,12 @@ assert.ok(battleLayer.includes('battle-shell--heat'), 'Battle Heat keeps a seman
 assert.ok(battleLayer.includes('battle-shell--missions'), 'Daily Missions keeps a semantic shell class');
 assert.ok(battleLayer.includes('battle-deck battle-engagement-deck'), 'Battle Heat and Daily Missions render in one compact engagement area');
 assert.ok(battleLayer.includes('wiki-engagement-module'), 'Battle Heat and Daily Missions are wrapped in one shared engagement module');
-assert.ok(battleLayer.includes("article.dataset.pageType === 'nft_collection'"), 'NFT collection pages move engagement after collection content');
+assert.ok(
+  battleLayer.includes("pageType === 'nft_collection'") &&
+    battleLayer.includes("pageType === 'nft_template'") &&
+    battleLayer.includes("buildTemplateMediaShell() + buildMissionHTML(pageId, engagement)"),
+  'NFT collection/template pages use the shared art plus Daily Missions engagement layout'
+);
 assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engagement-deck'), 'final compact engagement rules live in battle-layer.css');
 assert.ok(
   battleCss.lastIndexOf('.wiki-engagement-module .battle-deck.battle-engagement-deck') > battleCss.indexOf('.battle-deck {'),

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TOKEN_NAME}} - Crypto Moonboys Wiki</title>
+  <meta name="description" content="{{TOKEN_DESCRIPTION}}">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+</head>
+<body class="page-wiki page-standard-shell">
+  <main id="content">
+    <article class="wiki-content og-page-template og-page-template--crypto-token" data-page-type="crypto_token" data-token-symbol="{{TOKEN_SYMBOL}}">
+      <header class="wiki-hero">
+        <p class="wiki-hero-breadcrumb">Crypto Token Page</p>
+        <h1>{{TOKEN_NAME}}</h1>
+        <p>{{TOKEN_SUMMARY}}</p>
+      </header>
+
+      <div class="article-meta">
+        <span class="tag">Token: {{TOKEN_SYMBOL}}</span>
+        <span class="tag">Live feed source: {{LIVE_FEED_SOURCE}}</span>
+      </div>
+
+      <section class="wiki-section" aria-labelledby="token-live-feed-title">
+        <h2 id="token-live-feed-title">Live Token Feed</h2>
+        <p>Values are loaded from the approved live feed source shown above; prices are not hardcoded.</p>
+        <div class="wiki-stat-grid" data-token-live-feed="{{TOKEN_SYMBOL}}">
+          <div class="wiki-card"><strong>Price</strong><span data-token-field="price">Loading from approved feed</span></div>
+          <div class="wiki-card"><strong>24h Volume</strong><span data-token-field="volume_24h">Loading from approved feed</span></div>
+          <div class="wiki-card"><strong>Updated</strong><span data-token-field="updated_at">Waiting for feed</span></div>
+        </div>
+      </section>
+
+      <section class="wiki-section related-wiki-paths" aria-labelledby="related-paths-title">
+        <h2 id="related-paths-title">Related Wiki Paths</h2>
+        {{RELATED_PATHS}}
+      </section>
+
+      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="{{SLUG}}" aria-labelledby="citation-vote-panel-title">
+        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
+        <p>Vote on citations to strengthen the credibility of this token file.</p>
+        <div class="citation-vote-panel-actions">
+          <span class="cite-vote" data-page-id="{{SLUG}}" data-cite-id="citation-panel"></span>
+          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
+        </div>
+      </section>
+    </article>
+
+    <div class="wiki-comments" data-page-id="{{SLUG}}"></div>
+  </main>
+
+  <script data-cfasync="false" src="/js/api-config.js"></script>
+  <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+  <script data-cfasync="false" src="/js/identity-gate.js"></script>
+  <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+  <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+  <script data-cfasync="false" src="/js/site-shell.js"></script>
+  <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+  <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+  <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+  <script data-cfasync="false" src="/js/faction-alignment.js"></script>
+  <script data-cfasync="false" src="/js/wiki.js"></script>
+  <script data-cfasync="false" src="/js/bible-loader.js"></script>
+  <script data-cfasync="false" src="/js/engagement.js"></script>
+  <script data-cfasync="false" src="/js/comments.js"></script>
+  <script data-cfasync="false" src="/js/battle-layer.js"></script>
+</body>
+</html>

@@ -17,6 +17,7 @@ const GROUPS = {
     ['node', 'scripts/search-page-card-rendering.test.mjs'],
     ['node', 'scripts/wiki-search.test.mjs'],
     ['node', 'scripts/wiki-engagement-layer.test.mjs'],
+    ['node', 'scripts/og-page-template-contract.test.mjs'],
     ['node', 'scripts/wiki-engagement-api.test.mjs'],
     ['node', 'scripts/wiki-first-public-pages.test.mjs'],
     ['node', 'scripts/wiki-shell-guard.test.mjs'],

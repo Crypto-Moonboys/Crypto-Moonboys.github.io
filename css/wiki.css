@@ -1258,6 +1258,172 @@ body.page-wiki table {
   box-shadow: 0 0 24px rgba(0, 255, 204, 0.045);
 }
 
+body.page-wiki .wiki-hero {
+  position: relative;
+  overflow: hidden;
+  margin-top: 0;
+  padding: clamp(32px, 5vw, 68px) clamp(24px, 6vw, 78px);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(247, 201, 72, 0.20), transparent 34%),
+    radial-gradient(circle at 78% 4%, rgba(0, 255, 204, 0.15), transparent 32%),
+    linear-gradient(135deg, rgba(8, 8, 13, 0.98) 0%, rgba(21, 0, 33, 0.90) 46%, rgba(5, 24, 28, 0.96) 100%);
+  border-color: rgba(0, 255, 204, 0.24);
+  box-shadow: 0 0 48px rgba(0, 255, 204, 0.10), 0 22px 70px rgba(0, 0, 0, 0.34);
+}
+
+body.page-wiki .wiki-hero::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.14;
+}
+
+body.page-wiki .wiki-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.page-wiki .wiki-hero h1,
+body.page-wiki .wiki-hero .page-title,
+body.page-wiki .wiki-hero .article-title {
+  color: #f7c948;
+  letter-spacing: 0;
+  text-shadow: 0 0 18px rgba(247, 201, 72, 0.34), 0 0 32px rgba(0, 255, 204, 0.16);
+  animation: ogHeroGlow 3.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-wiki .wiki-hero h1,
+  body.page-wiki .wiki-hero .page-title,
+  body.page-wiki .wiki-hero .article-title {
+    animation: none;
+  }
+}
+
+@keyframes ogHeroGlow {
+  0%,
+  100% {
+    text-shadow: 0 0 14px rgba(247, 201, 72, 0.28), 0 0 28px rgba(0, 255, 204, 0.12);
+  }
+
+  50% {
+    text-shadow: 0 0 26px rgba(247, 201, 72, 0.52), 0 0 42px rgba(0, 255, 204, 0.24);
+  }
+}
+
+body.page-wiki .og-data-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  color: #00ffcc;
+  background: rgba(0, 255, 204, 0.08);
+  border: 1px solid rgba(0, 255, 204, 0.34);
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body.page-wiki .og-collapsible-data.is-collapsed .wiki-stat-grid,
+body.page-wiki .og-collapsible-data.is-collapsed .wiki-table-wrap,
+body.page-wiki .og-collapsible-data.is-collapsed .gk-rarity-table {
+  max-height: 220px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 74%, transparent);
+  mask-image: linear-gradient(to bottom, #000 74%, transparent);
+}
+
+body.page-wiki .og-collapsible-data.is-expanded .wiki-stat-grid,
+body.page-wiki .og-collapsible-data.is-expanded .wiki-table-wrap,
+body.page-wiki .og-collapsible-data.is-expanded .gk-rarity-table {
+  max-height: none;
+  overflow: visible;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+body.page-wiki .citation-vote-panel,
+body.page-wiki .wiki-comments {
+  width: min(100%, 1120px);
+  margin: clamp(24px, 3vw, 42px) auto 0;
+  padding: clamp(20px, 2.4vw, 30px);
+}
+
+body.page-wiki .wiki-comments {
+  color: var(--color-text);
+  background: rgba(0, 255, 204, 0.052);
+  border: 1px solid rgba(0, 255, 204, 0.18);
+  border-left: 3px solid rgba(86, 220, 255, 0.62);
+  border-radius: 18px;
+  box-shadow: 0 0 30px rgba(0, 255, 204, 0.055);
+}
+
+body.page-wiki .citation-vote-panel-actions,
+body.page-wiki .comment-form-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+body.page-wiki .citation-vote-panel-actions {
+  margin-top: 14px;
+}
+
+body.page-wiki .comment-form,
+body.page-wiki .comment-form-identity {
+  display: grid;
+  gap: 14px;
+}
+
+body.page-wiki .comment-form-identity {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+}
+
+body.page-wiki .comment-form-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+body.page-wiki .comment-form label {
+  color: var(--color-text);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+body.page-wiki .comment-form input,
+body.page-wiki .comment-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 13px;
+  color: #e7f6ff;
+  background: rgba(3, 12, 23, 0.72);
+  border: 1px solid rgba(86, 220, 255, 0.24);
+  border-radius: var(--radius-sm);
+}
+
+body.page-wiki .comment-form textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+body.page-wiki .comment-form-note,
+body.page-wiki .comment-form-status,
+body.page-wiki .comments-empty,
+body.page-wiki .citation-vote-login-prompt,
+body.page-wiki .citation-vote-count {
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
 .swarmsy-form-button {
   padding: 12px 16px;
   color: #00ffcc;
