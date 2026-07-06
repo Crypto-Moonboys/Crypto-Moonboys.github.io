@@ -182,4 +182,24 @@ assert.ok(
 );
 console.log('PASS: npm run test:live-site is defined');
 
+// Local Node TLS inspection errors should not make the post-deploy verifier
+// report a broken site when browser-backed checks can still load the same
+// resources. Other network errors remain fatal in live-site-verify.mjs.
+assert.ok(
+  source.includes('function isLocalTlsInspectionError') &&
+    source.includes('SELF_SIGNED_CERT_IN_CHAIN') &&
+    source.includes('self-signed certificate in certificate chain'),
+  'live-site-verify.mjs must recognize local TLS interception errors',
+);
+assert.ok(
+  source.includes('site-shell.js direct source check skipped') &&
+    source.includes('direct HEAD skipped') &&
+    source.includes('totalWarnings') &&
+    source.includes('function warn') &&
+    source.includes('totalChecks++;') &&
+    source.includes('totalChecks - totalFailed - totalWarnings'),
+  'live-site-verify.mjs must downgrade local TLS inspection failures to warnings',
+);
+console.log('PASS: local TLS inspection failures are warnings, not deploy failures');
+
 console.log('\nlive-site-verify-static.test: PASS');
