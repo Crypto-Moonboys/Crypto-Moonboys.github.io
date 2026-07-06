@@ -58,7 +58,7 @@
   }
 
   function shouldRenderBridgeStatus(collection) {
-    return !!collection && !hasStaticTracker();
+    return shouldRenderFullBridgeData(collection);
   }
 
   function rowsFromTemplateRarity(templateRarity) {

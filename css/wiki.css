@@ -1196,7 +1196,8 @@ table {
 @media (max-width: 1180px) {
   .gk-relationship-grid,
   .gk-related-card-grid,
-  .gk-audit-card-grid {
+  .gk-audit-card-grid,
+  .gk-dashboard-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
