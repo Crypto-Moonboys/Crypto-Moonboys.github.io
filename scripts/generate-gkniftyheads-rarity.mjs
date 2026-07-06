@@ -1337,6 +1337,120 @@ function globalRankedCard(row) {
     </article>`;
 }
 
+const AUDIT_BANDS = ['Legendary', 'Ultra Rare', 'Rare', 'Uncommon', 'Common'];
+
+function auditTemplateCard(row) {
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-audit-card-image-link" href="${esc(row.url)}"><img class="gk-audit-card-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-audit-card-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  return `<article class="gk-audit-card" data-rarity-filter="${rarityFilterTokens(row)}">
+      ${image}
+      <div class="gk-audit-card-copy">
+        <div class="gk-audit-card-rank">Rank #${row.rank}</div>
+        <a class="gk-audit-card-title" href="${esc(row.url)}">${esc(row.title)}</a>
+        <div class="gk-audit-card-metrics">
+          ${deckMetric('Score', row.final_score.toFixed(2))}
+          ${deckMetric('Supply', `${row.live_supply}/${row.issued_supply}`)}
+        </div>
+        ${showcaseKeyTrait('Key trait', row.rarity_trait)}
+        ${actionLinks(row)}
+      </div>
+    </article>`;
+}
+
+function auditGlobalCard(row) {
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-audit-card-image-link" href="${esc(row.url)}"><img class="gk-audit-card-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-audit-card-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  const score = row.asset_final_score?.toFixed ? row.asset_final_score.toFixed(2) : row.asset_final_score;
+  return `<article class="gk-audit-card gk-audit-card--global">
+      ${image}
+      <div class="gk-audit-card-copy">
+        <div class="gk-audit-card-rank">Global #${row.asset_rank}</div>
+        <a class="gk-audit-card-title" href="${esc(row.url)}">${esc(row.title)}</a>
+        <div class="gk-audit-card-metrics">
+          ${deckMetric('Score', score)}
+          ${deckMetric('Mint', row.original_mint_number ?? 'Missing')}
+        </div>
+        ${showcaseKeyTrait('Live supply', row.live_supply)}
+        ${assetActionLinks(row)}
+      </div>
+    </article>`;
+}
+
+function groupedAuditCards(rows, { getBand, renderCard, emptyCopy }) {
+  if (!rows.length) return `<p class="lore-paragraph">${esc(emptyCopy || 'No audit rows available.')}</p>`;
+  const groups = AUDIT_BANDS
+    .map((band) => [band, rows.filter((row) => getBand(row) === band)])
+    .filter(([, bandRows]) => bandRows.length);
+  return `<div class="gk-audit-card-groups" aria-label="Grouped rarity audit cards">
+      ${groups.map(([band, bandRows]) => `<section class="gk-audit-card-group gk-audit-card-group--${bandClass(band)}">
+        <div class="gk-audit-card-group-heading">
+          <h4>${esc(band)}</h4>
+          <span>${bandRows.length} shown</span>
+        </div>
+        <div class="gk-audit-card-grid">
+          ${bandRows.map(renderCard).join('\n          ')}
+        </div>
+      </section>`).join('\n      ')}
+    </div>`;
+}
+
+function advancedTable(summary, tableMarkup) {
+  return `<details class="gk-advanced-table-details">
+      <summary>${esc(summary)}</summary>
+      ${tableMarkup}
+    </details>`;
+}
+
+function utilityBucket(row) {
+  const text = `${row.title || ''} ${row.rarity_trait || ''} ${row.variation_trait || ''} ${row.classification_reason || ''}`.toLowerCase();
+  if (/coupon|redeem|blend|burn/.test(text)) return 'Utility / Coupons';
+  if (/open|infinite|uncapped|max supply is zero/.test(text)) return 'Open Mint / Infinite Supply';
+  return 'Collection Utility';
+}
+
+function sideAuditCard(row, status) {
+  const imageSrc = row.thumbnail_url || row.image_url;
+  const image = imageSrc
+    ? `<a class="gk-audit-card-image-link" href="${esc(row.url)}"><img class="gk-audit-card-image" src="${esc(imageSrc)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
+    : `<div class="gk-audit-card-image-placeholder" aria-label="Image unavailable">Image unavailable</div>`;
+  return `<article class="gk-audit-card gk-audit-card--side" data-rarity-filter="${row.bucket === 'unissued' ? 'unissued' : 'utility-open-mint'}">
+      ${image}
+      <div class="gk-audit-card-copy">
+        <div class="gk-audit-card-rank">${esc(status)}</div>
+        <a class="gk-audit-card-title" href="${esc(row.url)}">${esc(row.title)}</a>
+        <div class="gk-audit-card-metrics">
+          ${deckMetric('Issued', row.issued_supply)}
+          ${deckMetric('Max', row.max_supply)}
+        </div>
+        ${showcaseKeyTrait('Why listed here', row.classification_reason)}
+        ${actionLinks(row)}
+      </div>
+    </article>`;
+}
+
+function groupedSideCards(rows, { status, getGroup }) {
+  if (!rows.length) return '<p class="lore-paragraph">No templates currently match this section.</p>';
+  const groups = [...new Set(rows.map(getGroup))];
+  return `<div class="gk-audit-card-groups gk-side-card-groups">
+      ${groups.map((group) => {
+        const groupRows = rows.filter((row) => getGroup(row) === group);
+        return `<section class="gk-audit-card-group">
+        <div class="gk-audit-card-group-heading">
+          <h4>${esc(group)}</h4>
+          <span>${groupRows.length} templates</span>
+        </div>
+        <div class="gk-audit-card-grid">
+          ${groupRows.map((row) => sideAuditCard(row, status)).join('\n          ')}
+        </div>
+      </section>`;
+      }).join('\n      ')}
+    </div>`;
+}
+
 function rankedRow(row) {
   return `<tr data-rarity-filter="${rarityFilterTokens(row)}">
     <td class="gk-rarity-nft-cell">${nftCard(row, { rank: true, band: true })}</td>
@@ -1493,9 +1607,14 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
           })}
 
           <details class="wiki-section gk-rarity-audit" data-rarity-audit>
-            <summary>Full Rarity Audit Table</summary>
-            <p class="lore-paragraph">Power-user view with every ranked template, score component context, supply counts, traits, and source links.</p>
-            ${rankingTable(model.ranked, { supplyLabel, rarityExposureLabel, variationExposureLabel })}
+            <summary>Full Rarity Audit</summary>
+            <p class="lore-paragraph">Collector-card audit grouped by rarity band first. The raw score table remains below for verification and source tracing.</p>
+            ${groupedAuditCards(model.ranked, {
+              getBand: (row) => row.band,
+              renderCard: auditTemplateCard,
+              emptyCopy: 'No ranked limited templates are available.',
+            })}
+            ${advancedTable('Advanced raw rarity table', rankingTable(model.ranked, { supplyLabel, rarityExposureLabel, variationExposureLabel }))}
           </details>
 
           <section class="wiki-section gk-rarity-method">
@@ -1536,16 +1655,21 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               cards: globalTopRanked.length ? globalTopRanked.map(globalRankedCard).join('\n              ') : '<p class="lore-paragraph">Pending asset-state sync.</p>',
             })}
             <details class="wiki-section gk-rarity-audit gk-global-rarity-audit">
-              <summary>Full Global Rarity Audit Table</summary>
-              <p class="lore-paragraph">Power-user view for exact NFT scoring, asset IDs, template ranks, original mint numbers, surviving mint ranks, and live supply.</p>
-              <div class="wiki-table-wrap">
+              <summary>Full Global Rarity Audit</summary>
+              <p class="lore-paragraph">Exact NFT ranking cards grouped by rarity band first. The raw asset table remains below for asset IDs, mint fields, and verification.</p>
+              ${groupedAuditCards(assetPreview, {
+                getBand: (row) => row.rarity_band || 'Common',
+                renderCard: auditGlobalCard,
+                emptyCopy: 'Pending asset-state sync.',
+              })}
+              ${advancedTable('Advanced raw global rarity table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-asset-version-table">
                   <thead>
                     <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
                   </thead>
                   <tbody>${assetPreview.length ? assetPreview.map(assetVersionRow).join('\n                ') : '<tr><td colspan="8">Pending asset-state sync.</td></tr>'}</tbody>
                 </table>
-              </div>
+              </div>`)}
             </details>
           </section>
 
@@ -1553,12 +1677,13 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             <details>
               <summary>Utility / Open Mint / Infinite Supply</summary>
               <p class="lore-paragraph">These templates are useful collection objects, but they are excluded from the limited-template rarity leaderboard because their supply behavior or purpose is not comparable to scarce art/card templates.</p>
-              <div class="wiki-table-wrap">
+              ${groupedSideCards(model.utility, { status: 'Utility / Open Mint', getGroup: utilityBucket })}
+              ${advancedTable('Advanced raw utility table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
                   <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.utility.map(utilityRow).join('\n                ')}</tbody>
                 </table>
-              </div>
+              </div>`)}
             </details>
           </section>
 
@@ -1566,12 +1691,13 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             <details>
               <summary>Unissued / Not Circulating</summary>
               <p class="lore-paragraph">These templates have zero issued supply and are not ranked as rare circulating NFTs.</p>
-              <div class="wiki-table-wrap">
+              ${groupedSideCards(model.unissued, { status: 'Unissued', getGroup: () => 'Not Circulating' })}
+              ${advancedTable('Advanced raw unissued table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
                   <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.unissued.map(utilityRow).join('\n                ')}</tbody>
                 </table>
-              </div>
+              </div>`)}
             </details>
           </section>
 
