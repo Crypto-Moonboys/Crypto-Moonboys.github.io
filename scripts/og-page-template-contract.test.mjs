@@ -101,6 +101,7 @@ for (const [relPath, pageType] of templates) {
   const html = requireFile(relPath);
   check(html.includes(`data-page-type="${pageType}"`), `${relPath} declares data-page-type="${pageType}"`);
   check(html.includes('page-wiki page-standard-shell'), `${relPath} uses the shared wiki shell`);
+  check(html.includes('<main id="content" role="main">'), `${relPath} preserves the generated wiki main landmark`);
   check(html.includes('<header class="wiki-hero">'), `${relPath} uses the shared top hero card`);
   check(html.includes('/js/battle-layer.js'), `${relPath} loads the engagement layer`);
   check(html.includes('/js/engagement.js') && html.includes('/js/comments.js'), `${relPath} loads live vote/comment scripts`);
@@ -463,9 +464,8 @@ function matchesSelector(node, selector) {
     if (index === 0) return true;
     current = current.parentNode;
     while (current && !matchesSimple(current, parts[index - 1])) current = current.parentNode;
-    index--;
   }
-  return true;
+  return false;
 }
 
 function mediaTemplateFromGeneratedPage() {

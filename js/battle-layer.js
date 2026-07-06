@@ -349,7 +349,8 @@
 
   function parseImageFallbacks(img) {
     try {
-      return JSON.parse(img.getAttribute('data-fallback-srcs') || '[]');
+      var parsed = JSON.parse(img.getAttribute('data-fallback-srcs') || '[]');
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
     } catch (_) {
       return [];
     }
