@@ -855,6 +855,352 @@ table {
   border-color: rgba(247, 201, 72, 0.42);
 }
 
+.nft-collection-article .breadcrumb {
+  gap: 10px;
+}
+
+.nft-collection-article .breadcrumb .sep {
+  color: var(--color-accent);
+  font-weight: 800;
+}
+
+.nft-collection-article .gk-premium-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(58px, 7vw, 96px) clamp(44px, 6vw, 88px);
+  background:
+    linear-gradient(135deg, rgba(8, 18, 34, 0.96), rgba(3, 6, 14, 0.98));
+  border-color: rgba(86, 220, 255, 0.28);
+  border-radius: 8px;
+  box-shadow: 0 0 32px rgba(0, 255, 204, 0.10), 0 22px 62px rgba(0, 0, 0, 0.34);
+}
+
+.nft-collection-article .gk-premium-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(86, 220, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(86, 220, 255, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 82%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 82%);
+}
+
+.nft-collection-article .gk-premium-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.nft-collection-article .gk-premium-hero .page-title {
+  max-width: 1040px;
+  margin-bottom: 8px;
+  color: #eaffff;
+  font-size: clamp(3.2rem, 6vw, 5.8rem);
+  line-height: 1.08;
+  letter-spacing: 0;
+  text-shadow:
+    2px 0 rgba(255, 106, 213, 0.42),
+    -2px 0 rgba(86, 220, 255, 0.58),
+    0 0 18px rgba(0, 255, 204, 0.26);
+}
+
+.nft-collection-article .gk-premium-hero .eyebrow,
+.nft-collection-article .gk-command-kicker {
+  color: #00ffcc;
+  letter-spacing: 0;
+}
+
+.gk-section-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+.gk-section-heading h2 {
+  margin: 0;
+}
+
+.gk-universe-relationships,
+.gk-collection-dashboard,
+.related-wiki-paths,
+.gk-wiki-intelligence-panel,
+.gk-community-intelligence-panel {
+  border-radius: 8px;
+}
+
+.gk-relationship-grid,
+.gk-related-card-grid,
+.gk-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.gk-dashboard-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gk-relationship-card,
+.gk-related-card,
+.gk-dashboard-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  min-height: 180px;
+  padding: 16px;
+  color: var(--color-text);
+  background: rgba(7, 11, 18, 0.72);
+  border: 1px solid rgba(86, 220, 255, 0.16);
+  border-radius: 8px;
+}
+
+.gk-relationship-card--primary,
+.gk-related-card--primary {
+  background: rgba(247, 201, 72, 0.08);
+  border-color: rgba(247, 201, 72, 0.34);
+}
+
+.gk-relationship-card span,
+.gk-related-card span,
+.gk-dashboard-card span,
+.gk-audit-card-rank {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.gk-relationship-card strong,
+.gk-related-card strong,
+.gk-dashboard-card strong {
+  color: var(--color-text);
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.gk-relationship-card em,
+.gk-related-card em,
+.gk-dashboard-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-style: normal;
+  line-height: 1.55;
+}
+
+.gk-dashboard-card--art {
+  grid-template-columns: minmax(110px, 0.45fr) minmax(0, 1fr);
+  align-items: center;
+}
+
+.gk-dashboard-card--art img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid rgba(86, 220, 255, 0.14);
+  border-radius: 8px;
+}
+
+.gk-dashboard-card a {
+  width: max-content;
+  max-width: 100%;
+  color: var(--color-accent-2);
+  font-weight: 800;
+}
+
+.gk-audit-card-groups {
+  display: grid;
+  gap: 22px;
+  padding: 0 16px 16px;
+}
+
+.gk-audit-card-group {
+  display: grid;
+  gap: 12px;
+}
+
+.gk-audit-card-group-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gk-audit-card-group-heading h4 {
+  margin: 0;
+  color: var(--color-accent);
+}
+
+.gk-audit-card-group-heading span {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.gk-audit-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gk-audit-card {
+  display: grid;
+  grid-template-columns: minmax(94px, 0.4fr) minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  background: rgba(7, 11, 18, 0.62);
+  border: 1px solid rgba(86, 220, 255, 0.14);
+  border-radius: 8px;
+}
+
+.gk-audit-card-image,
+.gk-audit-card-image-placeholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.34);
+  border-radius: 8px;
+}
+
+.gk-audit-card-image-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.gk-audit-card-copy {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  gap: 8px;
+}
+
+.gk-audit-card-title {
+  color: var(--color-text);
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.gk-audit-card-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gk-audit-card .gk-showcase-key-trait {
+  padding: 8px;
+}
+
+.gk-audit-card .gk-showcase-key-trait strong {
+  font-size: 0.84rem;
+}
+
+.gk-audit-card .gk-command-links a {
+  font-size: 0.78rem;
+}
+
+.gk-advanced-table-details {
+  margin: 6px 16px 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(86, 220, 255, 0.12);
+  border-radius: 8px;
+}
+
+.gk-advanced-table-details > summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.gk-advanced-table-details[open] > summary {
+  margin-bottom: 12px;
+}
+
+.related-wiki-paths .wiki-rabbit-group--nft-siblings {
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(86, 220, 255, 0.12);
+  border-radius: 8px;
+}
+
+.gk-wiki-intelligence-panel,
+.gk-community-intelligence-panel {
+  background: rgba(7, 11, 18, 0.78);
+  border: 1px solid rgba(86, 220, 255, 0.18);
+}
+
+.gk-wiki-intelligence-panel .citation-vote-panel-actions {
+  padding: 14px;
+  background: rgba(86, 220, 255, 0.045);
+  border: 1px solid rgba(86, 220, 255, 0.12);
+  border-radius: 8px;
+}
+
+.gk-community-intelligence-panel .wiki-comments {
+  display: grid;
+  gap: 16px;
+}
+
+.gk-community-intelligence-panel .comment-item,
+.gk-community-intelligence-panel .comment-form {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(86, 220, 255, 0.12);
+  border-radius: 8px;
+}
+
+.gk-community-intelligence-panel .comment-item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.gk-community-intelligence-panel .comment-avatar {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(247, 201, 72, 0.26);
+  border-radius: 50%;
+}
+
+.gk-community-intelligence-panel .comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gk-community-intelligence-panel .comment-vote-btn {
+  min-height: 32px;
+  padding: 6px 10px;
+  color: var(--color-accent-2);
+  background: rgba(86, 220, 255, 0.07);
+  border: 1px solid rgba(86, 220, 255, 0.22);
+  border-radius: 8px;
+}
+
+@media (max-width: 1180px) {
+  .gk-relationship-grid,
+  .gk-related-card-grid,
+  .gk-audit-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .developer-details {
   margin: 16px 0;
   padding: 12px 14px;

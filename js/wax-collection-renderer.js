@@ -57,6 +57,10 @@
     return !!collection && !hasStaticTracker();
   }
 
+  function shouldRenderBridgeStatus(collection) {
+    return !!collection && !hasStaticTracker();
+  }
+
   function rowsFromTemplateRarity(templateRarity) {
     var rows = []
       .concat(templateRarity.ranked_templates || [])
@@ -200,6 +204,7 @@
     var envelope;
     var payload;
     if (!collection || !client) return;
+    if (!shouldRenderBridgeStatus(collection)) return;
     statusCard = ensureStatusCard(collection);
     if (shouldRenderFullBridgeData(collection)) {
       dataSection = ensureBridgeSection(collection);
@@ -228,6 +233,7 @@
     currentCollection: currentCollection,
     ensureStatusCard: ensureStatusCard,
     ensureBridgeSection: ensureBridgeSection,
+    shouldRenderBridgeStatus: shouldRenderBridgeStatus,
     shouldRenderFullBridgeData: shouldRenderFullBridgeData,
     normalizePagePayload: normalizePagePayload,
     renderStatus: renderStatus,
