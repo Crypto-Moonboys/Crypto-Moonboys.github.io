@@ -39,7 +39,11 @@ const REQUIRED_ROOT_PAGES = [
   '/categories/tools.html',
   '/categories/gkniftyheads.html',
   '/hubs.html',
-  '/sam.html'
+  '/sam.html',
+  '/og-templates/wiki-page.html',
+  '/og-templates/nft-collection-page.html',
+  '/og-templates/nft-template-page.html',
+  '/og-templates/crypto-token-page.html'
 ];
 
 const REQUIRED_WIKI_PAGES = [

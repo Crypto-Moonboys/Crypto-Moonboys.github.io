@@ -9,6 +9,15 @@ This repo has four original page template families. Agents that create or update
 - `templates/og/nft-template-page.html` for individual WAX NFT template/item pages.
 - `templates/og/crypto-token-page.html` for crypto token pages that use approved live feed data.
 
+## Public Template Guides
+
+- `/og-templates/wiki-page.html` exposes the wiki page template guide.
+- `/og-templates/nft-collection-page.html` exposes the NFT collection page template guide.
+- `/og-templates/nft-template-page.html` exposes the individual NFT template/item page template guide.
+- `/og-templates/crypto-token-page.html` exposes the crypto token page template guide.
+
+The public guide pages must stay searchable and crawlable. They point agents and humans to the raw source templates in `templates/og/` without turning unresolved `{{PLACEHOLDER}}` source files into published article content.
+
 ## Shared Layout Rules
 
 - Use `body.page-wiki.page-standard-shell` and load the same shared CSS/JS shell assets as the template.

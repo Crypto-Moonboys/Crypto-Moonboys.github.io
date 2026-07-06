@@ -7,6 +7,13 @@ When creating or updating Crypto Moonboys pages, use the matching template in `t
 - Individual NFT template/item page: `templates/og/nft-template-page.html`.
 - Crypto token page: `templates/og/crypto-token-page.html`.
 
+Public guide pages are available at:
+
+- `/og-templates/wiki-page.html`.
+- `/og-templates/nft-collection-page.html`.
+- `/og-templates/nft-template-page.html`.
+- `/og-templates/crypto-token-page.html`.
+
 Required invariants:
 
 - Keep the shared SWARMSY shell assets and `body.page-wiki.page-standard-shell`.
