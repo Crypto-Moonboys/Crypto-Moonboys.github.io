@@ -13,6 +13,7 @@
  *  9. leaderboard Worker default CORS origins match frontend production hosts.
  * 10. blocktopia-district worker source still advertises X-Admin-Secret (browser-facing admin PUT routes).
  * 11. Other narrowed workers (anti-cheat, leaderboard, engagement, realtime) do not advertise X-Admin-Secret.
+ * 12. WORKER_DEPLOY_TRUTH_MAP.md does not present stub-blocked workers as deployable.
  */
 
 import assert from 'node:assert/strict';

@@ -15,8 +15,9 @@
  *  - empty id = ""
  *
  * Exit code 0 = all live-deployable workers are clean.
- * Exit code 1 = a live-deployable worker contains placeholder bindings, or an
- *               unlisted worker folder was found.
+ * Exit code 1 = a live-deployable worker contains placeholder bindings,
+ *               documented required secrets are missing from DEPLOY_STATUS.json,
+ *               or an unlisted worker folder was found.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
