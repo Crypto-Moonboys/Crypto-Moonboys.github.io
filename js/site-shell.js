@@ -149,6 +149,7 @@ window.__HUD_CONSOLIDATED__ = true;
           <button id="search-btn" type="submit" aria-label="Search">⌕</button>
           <div id="search-results" role="listbox" aria-label="Search suggestions"></div>
         </form>
+        <div id="moonboys-global-status-badge" aria-live="polite"></div>
         <nav id="global-nav" class="header-nav" aria-label="Global navigation">${navHtml}</nav>
       `;
   }
