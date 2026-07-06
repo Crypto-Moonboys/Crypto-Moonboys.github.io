@@ -29976,6 +29976,233 @@
     "brand": null
   },
   {
+    "title": "Crypto Token OG Template",
+    "desc": "Public Crypto Moonboys OG template guide for crypto token pages with approved live feed data.",
+    "url": "/og-templates/crypto-token-page.html",
+    "tags": [],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 123,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 119,
+      "keyword_bag_size": 15,
+      "heading_count": 4,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 3,
+      "section_count": 3,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 29,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 6,
+      "keyword_bag_points": 15,
+      "content_quality_points": 29,
+      "authority_points": 8,
+      "final_rank_score": 123,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "crypto token og template crypto moonboys wiki",
+      "tokens": [
+        "crypto",
+        "token",
+        "og",
+        "template",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "crypto",
+        "token",
+        "og",
+        "template",
+        "moonboys",
+        "wiki",
+        "public",
+        "guide",
+        "for",
+        "pages",
+        "with",
+        "approved",
+        "live",
+        "feed",
+        "data"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "NFT Template Page OG Template",
+    "desc": "Public Crypto Moonboys OG template guide for individual WAX NFT template and item pages.",
+    "url": "/og-templates/nft-template-page.html",
+    "tags": [],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 123,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 118,
+      "keyword_bag_size": 15,
+      "heading_count": 4,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 3,
+      "section_count": 3,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 29,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 6,
+      "keyword_bag_points": 15,
+      "content_quality_points": 29,
+      "authority_points": 8,
+      "final_rank_score": 123,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "nft template page og template crypto moonboys wiki",
+      "tokens": [
+        "nft",
+        "template",
+        "page",
+        "og",
+        "template",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nft",
+        "template",
+        "page",
+        "og",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "public",
+        "guide",
+        "for",
+        "individual",
+        "wax",
+        "and",
+        "item",
+        "pages"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "NFT Collection OG Template",
+    "desc": "Public Crypto Moonboys OG template guide for WAX AtomicAssets NFT collection pages.",
+    "url": "/og-templates/nft-collection-page.html",
+    "tags": [],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 120,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 107,
+      "keyword_bag_size": 13,
+      "heading_count": 4,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 3,
+      "section_count": 3,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 29,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 5,
+      "keyword_bag_points": 13,
+      "content_quality_points": 29,
+      "authority_points": 8,
+      "final_rank_score": 120,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "nft collection og template crypto moonboys wiki",
+      "tokens": [
+        "nft",
+        "collection",
+        "og",
+        "template",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nft",
+        "collection",
+        "og",
+        "template",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "public",
+        "guide",
+        "for",
+        "wax",
+        "atomicassets",
+        "pages"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "🧠 SAM Dashboard",
     "desc": "SAM Dashboard — system intelligence panel for the Crypto Moonboys Wiki. Entity map, stats, network graph, and activity feed.",
     "url": "/sam.html",
@@ -30041,6 +30268,79 @@
         "and",
         "activity",
         "feed"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "Wiki Page OG Template",
+    "desc": "Public Crypto Moonboys OG template guide for standard wiki knowledge pages.",
+    "url": "/og-templates/wiki-page.html",
+    "tags": [],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 115,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 112,
+      "keyword_bag_size": 12,
+      "heading_count": 4,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 3,
+      "section_count": 3,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 24,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 6,
+      "keyword_bag_points": 12,
+      "content_quality_points": 24,
+      "authority_points": 8,
+      "final_rank_score": 115,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "wiki page og template crypto moonboys wiki",
+      "tokens": [
+        "wiki",
+        "page",
+        "og",
+        "template",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wiki",
+        "page",
+        "og",
+        "template",
+        "crypto",
+        "moonboys",
+        "public",
+        "guide",
+        "for",
+        "standard",
+        "knowledge",
+        "pages"
       ]
     },
     "link_score": {

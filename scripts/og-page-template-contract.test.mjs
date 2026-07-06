@@ -39,6 +39,12 @@ const templates = [
   ['templates/og/nft-template-page.html', 'nft_template'],
   ['templates/og/crypto-token-page.html', 'crypto_token'],
 ];
+const publicTemplateGuides = [
+  ['og-templates/wiki-page.html', '/templates/og/wiki-page.html'],
+  ['og-templates/nft-collection-page.html', '/templates/og/nft-collection-page.html'],
+  ['og-templates/nft-template-page.html', '/templates/og/nft-template-page.html'],
+  ['og-templates/crypto-token-page.html', '/templates/og/crypto-token-page.html'],
+];
 const canonicalScripts = [
   '/js/api-config.js',
   '/js/arcade/core/global-event-bus.js',
@@ -96,6 +102,11 @@ check(
     instructions.includes('Keep live vote/comment sections at the bottom'),
   'vote/comment bottom placement is documented for future page agents',
 );
+check(
+  contract.includes('/og-templates/wiki-page.html') &&
+    instructions.includes('/og-templates/wiki-page.html'),
+  'public OG template guide routes are documented for future page agents',
+);
 
 for (const [relPath, pageType] of templates) {
   const html = requireFile(relPath);
@@ -121,6 +132,16 @@ for (const [relPath, pageType] of templates) {
 
 for (const [label, pattern] of generatedSeoPatterns) {
   check(pattern.test(generatedNftPage), `current generated NFT page exposes ${label}`);
+}
+
+for (const [relPath, sourcePath] of publicTemplateGuides) {
+  const html = requireFile(relPath);
+  check(html.includes('page-wiki page-standard-shell'), `${relPath} uses the public wiki shell`);
+  check(html.includes('<meta name="robots" content="index, follow">'), `${relPath} is crawlable`);
+  check(html.includes('<link rel="canonical" href="https://cryptomoonboys.com/'), `${relPath} has an absolute canonical URL`);
+  check(html.includes(`data-template-source="${sourcePath}"`), `${relPath} points to raw source template ${sourcePath}`);
+  check(html.includes(`href="${sourcePath}"`), `${relPath} links to raw source template ${sourcePath}`);
+  check(!html.includes('{{'), `${relPath} does not publish unresolved template placeholders`);
 }
 
 check(

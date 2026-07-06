@@ -20,6 +20,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { APPROVED_ROOT_PAGES } = require('./root-pages-config.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'sitemap.xml');
@@ -94,21 +95,34 @@ function addEntry(loc, changefreq, priority, lastmod = TODAY) {
 /* 1. Homepage */
 addEntry(`${BASE_URL}/`, 'weekly', '1.0');
 
-/* 2. Root pages */
-const ROOT_PAGES = [
-  { file: 'about.html', changefreq: 'weekly', priority: '0.9' },
-  { file: 'search.html', changefreq: 'weekly', priority: '1.0' },
-  { file: 'waxcash.html', changefreq: 'weekly', priority: '0.9' },
-  { file: 'hubs.html', changefreq: 'weekly', priority: '0.8' },
-  { file: 'sam.html', changefreq: 'weekly', priority: '0.8' },
-  // articles.html is a noindex redirect stub - excluded from sitemap
-  // agent.html is disallowed in robots.txt - excluded from sitemap
-  { file: 'block-topia.html', changefreq: 'daily', priority: '0.9' },
+/* 2. Approved root/tool pages */
+const SITEMAP_ROOT_PAGE_DEFAULTS = {
+  '/about.html': { changefreq: 'weekly', priority: '0.9' },
+  '/waxcash.html': { changefreq: 'weekly', priority: '0.9' },
+  '/hubs.html': { changefreq: 'weekly', priority: '0.8' },
+  '/sam.html': { changefreq: 'weekly', priority: '0.8' },
+};
+const SITEMAP_ONLY_ROOT_PAGES = [
+  { path: '/search.html', changefreq: 'weekly', priority: '1.0' },
+  { path: '/block-topia.html', changefreq: 'daily', priority: '0.9' },
 ];
 
-for (const page of ROOT_PAGES) {
-  if (fs.existsSync(path.join(ROOT, page.file))) {
-    addEntry(`${BASE_URL}/${page.file}`, page.changefreq, page.priority);
+for (const page of APPROVED_ROOT_PAGES) {
+  const urlPath = normalizeUrlPath(page.path);
+  const defaults = SITEMAP_ROOT_PAGE_DEFAULTS[urlPath] || {};
+  if (fs.existsSync(path.join(ROOT, urlPath.slice(1)))) {
+    addEntry(
+      `${BASE_URL}${urlPath}`,
+      page.changefreq || defaults.changefreq || 'monthly',
+      page.priority || defaults.priority || '0.6',
+    );
+  }
+}
+
+for (const page of SITEMAP_ONLY_ROOT_PAGES) {
+  const urlPath = normalizeUrlPath(page.path);
+  if (fs.existsSync(path.join(ROOT, urlPath.slice(1)))) {
+    addEntry(`${BASE_URL}${urlPath}`, page.changefreq, page.priority);
   }
 }
 

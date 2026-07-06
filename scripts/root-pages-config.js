@@ -24,7 +24,11 @@ const APPROVED_ROOT_PAGES = [
   { path: '/categories/tools.html', title: 'Tools' },
   { path: '/categories/gkniftyheads.html', title: 'GKniftyheads' },
   { path: '/hubs.html', title: 'Hubs' },
-  { path: '/sam.html', title: 'SAM' }
+  { path: '/sam.html', title: 'SAM' },
+  { path: '/og-templates/wiki-page.html', title: 'Wiki Page OG Template', changefreq: 'monthly', priority: '0.6' },
+  { path: '/og-templates/nft-collection-page.html', title: 'NFT Collection OG Template', changefreq: 'monthly', priority: '0.6' },
+  { path: '/og-templates/nft-template-page.html', title: 'NFT Template Page OG Template', changefreq: 'monthly', priority: '0.6' },
+  { path: '/og-templates/crypto-token-page.html', title: 'Crypto Token OG Template', changefreq: 'monthly', priority: '0.6' }
 ];
 
 function getRootPages() {
