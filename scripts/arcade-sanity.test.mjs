@@ -456,17 +456,18 @@ check(
 );
 check(
   workerSrc.includes('resolveSubmissionIdentity') &&
-    workerSrc.includes("telegram_auth_required_for_telegram_id"),
-  'leaderboard-worker.js supports anonymous score submissions while rejecting unsigned telegram_id claims',
+    workerSrc.includes("telegram_sync_required") &&
+    !workerSrc.includes("telegram_auth_required_for_telegram_id"),
+  'leaderboard-worker.js requires signed Telegram auth for all score submissions',
 );
 check(
-  workerSrc.includes('identity_mode') && workerSrc.includes('"anonymous"'),
-  'leaderboard-worker.js marks anonymous identity mode in accepted score responses',
+  workerSrc.includes('identity_mode: "telegram"'),
+  'leaderboard-worker.js marks accepted score responses as Telegram-authenticated only',
 );
 check(
-  workerSrc.includes('if (telegramId)') &&
+  workerSrc.includes('const telegramId = identity.telegramId;') &&
     workerSrc.includes('anticheat:blocked:${telegramId}'),
-  'leaderboard-worker.js guards anti-cheat KV check inside if (telegramId) so null never queries the KV',
+  'leaderboard-worker.js checks anti-cheat against the verified Telegram identity',
 );
 check(
   workerSrc.includes('!e.telegram_id') &&

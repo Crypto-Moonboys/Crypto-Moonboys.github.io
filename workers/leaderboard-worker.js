@@ -185,18 +185,9 @@ async function verifyLeaderboardTelegramAuth(body, env) {
 }
 
 async function resolveSubmissionIdentity(body, env) {
-  const hasSignedEvidence = !!(body && (body.telegram_auth != null || body.auth_evidence != null));
-  if (hasSignedEvidence) {
-    const authResult = await verifyLeaderboardTelegramAuth(body, env);
-    if (!authResult.ok) return authResult;
-    return { ok: true, authenticated: true, telegramId: authResult.telegramId };
-  }
-
-  if (body?.telegram_id != null && String(body.telegram_id).trim()) {
-    return { ok: false, error: 'telegram_auth_required_for_telegram_id', status: 403 };
-  }
-
-  return { ok: true, authenticated: false, telegramId: null };
+  const authResult = await verifyLeaderboardTelegramAuth(body, env);
+  if (!authResult.ok) return authResult;
+  return { ok: true, authenticated: true, telegramId: authResult.telegramId };
 }
 
 // ── CORS helpers ─────────────────────────────────────────────────────────────
@@ -354,8 +345,7 @@ export default {
         );
       }
 
-      // Public leaderboard scores may be submitted anonymously.
-      // If telegram_auth is supplied, it must verify successfully.
+      // Score writes are competitive state and require signed Telegram auth.
       const identity = await resolveSubmissionIdentity(body, env);
       if (!identity.ok) {
         return new Response(
@@ -371,23 +361,18 @@ export default {
       const faction = CANONICAL_FACTION_SET.has(resolvedFaction) ? resolvedFaction : "unaligned";
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
-      // Anti-cheat gate — only applies to submissions with a verified Telegram ID.
-      // Anonymous submissions (telegramId === null) are not checked against the
-      // block list; there is no signed identity to block. This also prevents a
-      // null KV key (`anticheat:blocked:null`) from matching anything.
+      // Anti-cheat gate for the verified Telegram identity.
       // KEY FORMAT: anticheat:blocked:{telegram_id}
       // This prefix must match exactly what the anti-cheat worker writes in
       // workers/anti-cheat/worker.js. If the key format changes in either worker,
       // both must be updated together. See workers/leaderboard/wrangler.toml for the
       // shared KV namespace requirement documentation.
-      if (telegramId) {
-        const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
-        if (blockStatus) {
-          return new Response(
-            JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
-            { status: 403, headers: corsHeaders }
-          );
-        }
+      const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
+      if (blockStatus) {
+        return new Response(
+          JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
+          { status: 403, headers: corsHeaders }
+        );
       }
 
       if (typeof player !== "string" || player.trim().length < 1 || player.trim().length > 40) {
@@ -442,15 +427,9 @@ export default {
           getBoard(env, `yearly:${gameKey}`)
         ]);
 
-        const existingEntry = telegramId
-          ? (board.find((row) => String(row?.telegram_id || '') === telegramId) || null)
-          : (board.find((row) =>
-            !row?.telegram_id &&
-            String(row?.player || '').toLowerCase() === playerName.toLowerCase()
-          ) || null);
+        const existingEntry = board.find((row) => String(row?.telegram_id || '') === telegramId) || null;
         previousBest = Number(existingEntry?.score || 0);
-        const entry = { player: playerName, score: floorScore, faction };
-        if (telegramId) entry.telegram_id = telegramId;
+        const entry = { player: playerName, score: floorScore, faction, telegram_id: telegramId };
         const updatedBoard = upsertEntry(board, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedSeasonal = upsertEntry(sBoard, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedYearly = upsertEntry(yBoard, entry, PER_GAME_LEADERBOARD_SIZE);
@@ -468,9 +447,9 @@ export default {
       if (gameKey !== "global") {
         responsePayload.leaderboard = {
           game: gameKey,
-          telegram_id: telegramId || null,
+          telegram_id: telegramId,
           previous_best: previousBest,
-          identity_mode: telegramId ? "telegram" : "anonymous",
+          identity_mode: "telegram",
         };
       }
       return new Response(JSON.stringify(responsePayload), { headers: corsHeaders });

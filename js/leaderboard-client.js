@@ -260,11 +260,23 @@ export async function submitScore(player, score, game = "global") {
   const apiInfo = getLeaderboardApiInfo("write");
   const api = getApiUrl("write");
 
+  if (!linked) {
+    result.state = "login_required";
+    result.message = "Log in with Telegram to save scores and earn XP.";
+    emitArcadeSubmissionStatus({
+      ...result,
+      state: "login_required",
+      message: result.message,
+    });
+    emitMicroNotification(result.message, "warning");
+    return result;
+  }
+
   if (linked) {
     try {
       telegramAuth = await ArcadeSync.getTelegramAuth();
     } catch (authErr) {
-      console.warn("[leaderboard-client] Telegram auth restore failed; using public fallback:", authErr);
+      console.warn("[leaderboard-client] Telegram auth restore failed; score not submitted:", authErr);
       telegramAuth = null;
     }
     hasSignedAuth = !!(telegramAuth && telegramAuth.hash && telegramAuth.auth_date);
@@ -275,15 +287,16 @@ export async function submitScore(player, score, game = "global") {
     });
 
     if (!hasSignedAuth) {
-      result.state = "public_submit_unsigned";
-      result.message = `${COPY.PUBLIC_SCORE_SUBMITTED || "Public score submitted"}. XP sync pending — Telegram auth refresh needed.`;
+      result.state = "auth_required";
+      result.message = "Fresh Telegram auth is required to save scores and earn XP.";
       markSyncHealth("bad", "auth_expired");
       emitArcadeSubmissionStatus({
         ...result,
-        state: "public_submit_unsigned",
+        state: "auth_required",
         message: result.message,
       });
-      emitMicroNotification("Public score submitted. Telegram auth refresh needed for XP sync.", "warning");
+      emitMicroNotification(result.message, "warning");
+      return result;
     }
   }
 
@@ -307,9 +320,9 @@ export async function submitScore(player, score, game = "global") {
   }
 
   if (!api) {
-    result.state = linked ? "sync_pending" : "local_cached_only";
-    result.message = getPendingApiMessage(apiInfo, !linked);
-    if (linked) markSyncHealth("bad", apiInfo && apiInfo.state ? apiInfo.state : "api_unavailable");
+    result.state = "sync_pending";
+    result.message = getPendingApiMessage(apiInfo, false);
+    markSyncHealth("bad", apiInfo && apiInfo.state ? apiInfo.state : "api_unavailable");
     emitArcadeSubmissionStatus({
       ...result,
       state: result.state,
@@ -359,10 +372,8 @@ export async function submitScore(player, score, game = "global") {
       emitMicroNotification(`${resolvedPlayer} score accepted (${score}).`, "success");
       emitArcadeSubmissionStatus({
         ...result,
-        state: linked && !hasSignedAuth ? "public_score_submitted" : "score_accepted",
-        message: linked && !hasSignedAuth
-          ? `${COPY.PUBLIC_SCORE_SUBMITTED || "Public score submitted"}. XP sync pending — Telegram auth refresh needed.`
-          : "Score accepted for ranking.",
+        state: "score_accepted",
+        message: "Score accepted for ranking.",
       });
       if (linked && hasSignedAuth) {
         try {
@@ -449,24 +460,23 @@ export async function submitScore(player, score, game = "global") {
   }
 
   let metaResult = null;
-  try {
-    // Meta is engagement-only and local-first: always track locally even when
-    // Telegram linking is missing; sync to worker remains linked-only below.
-    metaResult = ArcadeMeta.trackGameResult({
-      player: resolvedPlayer,
-      game: gameKey,
-      raw_score: score,
-      timestamp: Date.now(),
-      linked,
-      accepted: result.accepted,
-      faction: getCurrentFactionKey(),
-    });
-  } catch (err) {
-    console.error("[leaderboard-client] Meta tracking failed:", err);
+  if (result.accepted && linked && hasSignedAuth) {
+    try {
+      metaResult = ArcadeMeta.trackGameResult({
+        player: resolvedPlayer,
+        game: gameKey,
+        raw_score: score,
+        timestamp: Date.now(),
+        linked,
+        accepted: result.accepted,
+        faction: getCurrentFactionKey(),
+      });
+    } catch (err) {
+      console.error("[leaderboard-client] Meta tracking failed:", err);
+    }
   }
 
-  const shouldQueuePending =
-    (!linked) || (linked && result.accepted === true);
+  const shouldQueuePending = linked && hasSignedAuth && result.accepted === true;
   emitArcadeDebug("pending_queue_decision", {
     game: gameKey,
     score,
@@ -476,8 +486,7 @@ export async function submitScore(player, score, game = "global") {
   });
   if (shouldQueuePending) {
     try {
-      // Unsynced users always queue locally for later Telegram sync.
-      // Linked users queue only when leaderboard accepted the run.
+      // Only authenticated, accepted runs enter the server-progression retry queue.
       ArcadeSync.queuePendingProgress({
         game: gameKey,
         raw_score: score,
