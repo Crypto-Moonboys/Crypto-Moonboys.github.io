@@ -112,10 +112,10 @@
     if (!wrap) {
       wrap = document.createElement('div');
       wrap.className = 'mission-like-row';
+      wrap.setAttribute('role', 'group');
       wrap.setAttribute('aria-label', 'Article signal');
       var heat = missions.querySelector('.battle-heat-summary');
-      if (heat && heat.nextSibling) missions.insertBefore(wrap, heat.nextSibling);
-      else missions.insertBefore(wrap, missions.firstChild);
+      missions.insertBefore(wrap, heat ? heat.nextSibling : missions.firstChild);
     }
     wrap.appendChild(like);
   }
