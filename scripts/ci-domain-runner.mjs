@@ -21,6 +21,7 @@ const GROUPS = {
     ['node', 'scripts/wiki-engagement-api.test.mjs'],
     ['node', 'scripts/wiki-first-public-pages.test.mjs'],
     ['node', 'scripts/wiki-shell-guard.test.mjs'],
+    ['node', 'scripts/wiki-html-hygiene.test.mjs'],
     ['npm', 'run', 'test:wiki-structure'],
     ['node', 'scripts/wiki-index-drift-regression.test.mjs'],
     ['node', 'scripts/audit-published-vs-index.js'],
