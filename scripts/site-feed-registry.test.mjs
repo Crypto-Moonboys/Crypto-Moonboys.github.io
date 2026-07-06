@@ -20,6 +20,11 @@ function exists(relativePath) {
   return fs.existsSync(path.join(root, relativePath));
 }
 
+function optionalOutputSet(feed) {
+  const entries = Array.isArray(feed.optional_output_files) ? feed.optional_output_files : [];
+  return new Set(entries.map((entry) => typeof entry === 'string' ? entry : entry?.path).filter(Boolean));
+}
+
 function assertNoMarketScoringSignals(label, payload) {
   const forbiddenKey = /(?:floor|price|sale|listing|market)/i;
   const allowedMarketContractKeys = new Set([
@@ -97,12 +102,24 @@ for (const [feedId, expected] of requiredFeeds) {
   assert.ok(feed.page_paths.includes(expected.page), `${feedId} should affect ${expected.page}`);
   assert.ok(feed.updater && exists(feed.updater), `${feedId} updater must exist`);
   assert.ok(Array.isArray(feed.output_files) && feed.output_files.length > 0, `${feedId} must declare output files`);
+  const optionalOutputs = optionalOutputSet(feed);
+  for (const outputPath of feed.output_files) {
+    assert.ok(
+      exists(outputPath) || optionalOutputs.has(outputPath),
+      `${feedId} output must exist or be explicitly optional/fallback-only: ${outputPath}`,
+    );
+  }
+  for (const optionalPath of optionalOutputs) {
+    assert.ok(feed.output_files.includes(optionalPath), `${feedId} optional output must also be listed in output_files: ${optionalPath}`);
+  }
   assert.ok(feed.stale_after_hours > 0, `${feedId} must declare stale_after_hours`);
   assert.ok(feed.fallback_behavior, `${feedId} must declare fallback behavior`);
 }
 
 const waxonedgeFeed = registry.feeds.find((entry) => entry.feed_id === 'waxonedge_bubbles');
 assert.ok(!waxonedgeFeed.output_files.includes('data/waxonedge/waxcash-bubbles-bootstrap.json'), 'WaxOnEdge registry must not claim static bootstrap output unless updater writes it');
+assert.ok(optionalOutputSet(waxonedgeFeed).has('data/waxonedge_bubbles/waxcash-bubbles-lite.json'), 'WaxOnEdge live bubbles snapshot must be marked optional when not checked in');
+assert.ok(optionalOutputSet(waxonedgeFeed).has('data/waxonedge_bubbles/indexer-health.json'), 'WaxOnEdge live health snapshot must be marked optional when not checked in');
 
 function assertFeedSafetyMetadata(feedId, expectedMode) {
   const feed = registry.feeds.find((entry) => entry.feed_id === feedId);

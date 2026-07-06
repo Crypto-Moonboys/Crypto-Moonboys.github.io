@@ -40,6 +40,7 @@ const GROUPS = {
     ['node', 'scripts/scheduled-task-isolation.test.mjs'],
     ['node', 'scripts/cors-origins.test.mjs'],
     ['node', 'scripts/worker-rate-limit.test.mjs'],
+    ['node', 'scripts/leaderboard-hmac-test.mjs'],
     ['node', 'scripts/npc-chat-bridge.test.mjs'],
     ['node', 'scripts/sparky-telegram-gate.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.test.mjs'],

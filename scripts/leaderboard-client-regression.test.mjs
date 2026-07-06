@@ -523,6 +523,16 @@ await test('BEH: submitMetaScore skips POST when telegram_id is missing', async 
 // ── Source-level checks for PR #638 security/integrity fixes ─────────────────
 
 const workerLbSrc = await readFile('workers/leaderboard-worker.js');
+const ciDomainRunnerSrc = await readFile('scripts/ci-domain-runner.mjs');
+
+await test('CI: worker-api group runs leaderboard HMAC auth test', async () => {
+  const workerApiGroupMatch = ciDomainRunnerSrc.match(/'worker-api': \[[\s\S]*?\n\s*\],/);
+  assert(workerApiGroupMatch, 'ci-domain-runner.mjs must define a worker-api group');
+  assert(
+    workerApiGroupMatch[0].includes("['node', 'scripts/leaderboard-hmac-test.mjs']"),
+    'ci-domain-runner.mjs worker-api group must include scripts/leaderboard-hmac-test.mjs',
+  );
+});
 
 await test('Worker: upsertEntry deduplicates authenticated entries by telegram_id', async () => {
   const fnStart = workerLbSrc.indexOf('function upsertEntry(');
@@ -558,6 +568,15 @@ await test('Worker: anti-cheat block check runs against verified telegramId', as
   );
 });
 
+await test('Worker: score POST path is explicitly routed', async () => {
+  assert(
+    workerLbSrc.includes('request.method === "POST" && path !== "/" && path !== "/score"') &&
+      workerLbSrc.includes('JSON.stringify({ error: "Not Found" })') &&
+      workerLbSrc.includes('status: 404'),
+    'leaderboard-worker.js must reject POST score writes on unexpected paths',
+  );
+});
+
 await test('Block Topia leaderboard worker compares Telegram HMAC case-insensitively', async () => {
   const blocktopiaWorkerSrc = await readFile('workers/blocktopia-leaderboard/worker.js');
   const hmacStart = blocktopiaWorkerSrc.indexOf('async function verifyTelegramHmac(');
@@ -567,6 +586,15 @@ await test('Block Topia leaderboard worker compares Telegram HMAC case-insensiti
   assert(
     hmacBody.includes('String(hash).toLowerCase()'),
     'blocktopia leaderboard worker must normalize Telegram hash case before comparison',
+  );
+});
+
+await test('Block Topia leaderboard worker documents Telegram bot token secret', async () => {
+  const blocktopiaWorkerSrc = await readFile('workers/blocktopia-leaderboard/worker.js');
+  assert(
+    blocktopiaWorkerSrc.includes('TELEGRAM_BOT_TOKEN') &&
+      blocktopiaWorkerSrc.includes('signed Telegram score submissions'),
+    'blocktopia leaderboard worker header must document TELEGRAM_BOT_TOKEN for signed score submissions',
   );
 });
 
