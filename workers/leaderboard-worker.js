@@ -274,8 +274,7 @@ async function repairMetaToCanonical(env, now = Date.now()) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    // path is used for the structured /season/current route.
-    // Legacy GET/POST handlers use url.searchParams instead (no path routing).
+    // /season/current is path-routed; board GETs use query params and POST writes are explicitly routed.
     const path = url.pathname.replace(/\/$/, '') || '/';
 
     const corsHeaders = getCorsHeaders(request, env);
@@ -334,6 +333,13 @@ export default {
 
       const board = await getBoard(env, game);
       return new Response(JSON.stringify(board), { headers: corsHeaders });
+    }
+
+    if (request.method === "POST" && path !== "/" && path !== "/score") {
+      return new Response(
+        JSON.stringify({ error: "Not Found" }),
+        { status: 404, headers: corsHeaders }
+      );
     }
 
     if (request.method === "POST") {

@@ -21,6 +21,7 @@
  *
  * Secrets:
  *   ADMIN_SECRET — required X-Admin-Secret header for admin routes
+ *   TELEGRAM_BOT_TOKEN — required for signed Telegram score submissions
  */
 
 const ALLOWED_METHODS = 'GET, POST, OPTIONS';

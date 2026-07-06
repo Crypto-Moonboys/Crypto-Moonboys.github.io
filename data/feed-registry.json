@@ -112,6 +112,16 @@
         "data/waxonedge_bubbles/waxcash-bubbles-lite.json",
         "data/waxonedge_bubbles/indexer-health.json"
       ],
+      "optional_output_files": [
+        {
+          "path": "data/waxonedge_bubbles/waxcash-bubbles-lite.json",
+          "reason": "Live Worker snapshot is preserved only after a successful endpoint refresh; runtime uses live API with static bootstrap fallback."
+        },
+        {
+          "path": "data/waxonedge_bubbles/indexer-health.json",
+          "reason": "Live Worker health snapshot is preserved only after a successful endpoint refresh; feed status records stale/error when unavailable."
+        }
+      ],
       "updater": "scripts/update-waxonedge-feed.mjs",
       "update_frequency": "24h",
       "enabled": true,
@@ -137,6 +147,12 @@
       "output_files": [
         "data/waxcash_analytics/waxcash-analytics.json",
         "data/waxcash_analytics/sync-status.json"
+      ],
+      "optional_output_files": [
+        {
+          "path": "data/waxcash_analytics/waxcash-analytics.json",
+          "reason": "Live Worker analytics snapshot is preserved only after a successful endpoint refresh; runtime uses live API with stale/error status when unavailable."
+        }
       ],
       "updater": "scripts/update-waxcash-feed.mjs",
       "update_frequency": "24h",
@@ -168,6 +184,20 @@
         "data/wuffi_token_analytics/pairs-liquidity.json",
         "data/wuffi_token_analytics/pairs-volume24.json",
         "data/wuffi_token_analytics/sync-status.json"
+      ],
+      "optional_output_files": [
+        {
+          "path": "data/wuffi_token_analytics/token-page.json",
+          "reason": "Live Worker token-page snapshot is preserved only after a successful endpoint refresh; runtime uses live API with stale/error status when unavailable."
+        },
+        {
+          "path": "data/wuffi_token_analytics/pairs-liquidity.json",
+          "reason": "Live Worker liquidity snapshot is preserved only after a successful endpoint refresh; runtime uses live API with stale/error status when unavailable."
+        },
+        {
+          "path": "data/wuffi_token_analytics/pairs-volume24.json",
+          "reason": "Live Worker volume snapshot is preserved only after a successful endpoint refresh; runtime uses live API with stale/error status when unavailable."
+        }
       ],
       "updater": "scripts/update-wuffi-feed.mjs",
       "update_frequency": "24h",
