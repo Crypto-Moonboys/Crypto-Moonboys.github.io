@@ -760,16 +760,21 @@ body.conflict-active .community-card {
   font-size: .76rem;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template {
   grid-template-columns: minmax(260px, .9fr) minmax(300px, 1fr);
+  gap: 12px;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media .battle-shell-inner {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media .battle-shell-inner,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-shell--media .battle-shell-inner {
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  padding: clamp(12px, 1.5vw, 16px);
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-page-media {
   align-items: center;
   background: rgba(3, 12, 23, .72);
   border: 1px solid rgba(112, 240, 255, .18);
@@ -782,16 +787,19 @@ body.conflict-active .community-card {
   padding: 8px;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media img {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-page-media img,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-page-media img {
   max-height: min(34vh, 300px) !important;
   object-fit: contain;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--missions,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-shell--missions {
   opacity: 1;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-heat-summary {
   border: 1px solid rgba(112, 240, 255, .22);
   border-radius: 10px;
   background: rgba(3, 12, 23, .72);
@@ -801,21 +809,24 @@ body.conflict-active .community-card {
   padding: 9px;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-heat-summary-head {
   align-items: center;
   display: flex;
   gap: 10px;
   justify-content: space-between;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head span {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head span,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-heat-summary-head span {
   color: #fff8c8;
   font-size: .74rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head strong {
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary-head strong,
+.wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template .battle-heat-summary-head strong {
   color: #eafcff;
   font-size: .82rem;
 }
@@ -858,7 +869,7 @@ body.conflict-active .community-card {
 
 .nft-template-article + .wiki-engagement-module .battle-deck.battle-engagement-deck,
 .nft-template-article .wiki-engagement-module .battle-deck.battle-engagement-deck {
-  grid-template-columns: minmax(270px, .9fr) minmax(230px, .58fr);
+  grid-template-columns: minmax(270px, .9fr) minmax(300px, 1fr);
 }
 
 .nft-template-article + .wiki-engagement-module .battle-page-media img,
@@ -883,7 +894,8 @@ body.conflict-active .community-card {
   .wiki-engagement-module .battle-deck.battle-engagement-deck,
   .nft-template-article + .wiki-engagement-module .battle-deck.battle-engagement-deck,
   .nft-template-article .wiki-engagement-module .battle-deck.battle-engagement-deck,
-  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection {
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection,
+  .wiki-engagement-module .battle-deck.battle-engagement-deck--nft-template {
     grid-template-columns: 1fr;
   }
 }

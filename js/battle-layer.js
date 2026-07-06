@@ -311,10 +311,18 @@
       '</div></div>';
   }
 
-  function buildCollectionMediaShell() {
+  function buildBattleMediaShell(title) {
     return '<div class="battle-shell battle-shell--media"><div class="battle-shell-inner">' +
-      '<h3>Collection Art</h3>' +
+      '<h3>' + esc(title || 'Page Art') + '</h3>' +
       '</div></div>';
+  }
+
+  function buildCollectionMediaShell() {
+    return buildBattleMediaShell('Collection Art');
+  }
+
+  function buildTemplateMediaShell() {
+    return buildBattleMediaShell('Page Art');
   }
 
   function buildBattleMediaHTML(pageId) {
@@ -339,6 +347,41 @@
       '</div></div>';
   }
 
+  function parseImageFallbacks(img) {
+    try {
+      var parsed = JSON.parse(img.getAttribute('data-fallback-srcs') || '[]');
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function armImageFallback(img) {
+    if (!img || img.dataset.nftFallbackArmed === '1') return;
+    img.dataset.nftFallbackArmed = '1';
+    img.addEventListener('error', function () {
+      var fallbacks = parseImageFallbacks(img);
+      var next = fallbacks.shift();
+      if (!next) return;
+      img.setAttribute('data-fallback-srcs', JSON.stringify(fallbacks));
+      img.src = next;
+    });
+  }
+
+  function armImageFallbacks(root) {
+    (root || document).querySelectorAll('img[data-fallback-srcs]').forEach(armImageFallback);
+  }
+
+  function injectTemplateMedia(deck) {
+    var tpl = document.querySelector('template[data-battle-media="nft"]');
+    var mediaTarget = deck && deck.querySelector('.battle-shell--media .battle-shell-inner');
+    if (!tpl || !mediaTarget || mediaTarget.querySelector('.battle-page-media')) return;
+    var clone = tpl.content ? tpl.content.cloneNode(true) : null;
+    if (!clone) return;
+    mediaTarget.appendChild(clone);
+    armImageFallbacks(mediaTarget);
+  }
+
   async function computeEngagement(pageId) {
     if (!BASE || !FEATURES.COMMENTS) return 25;
     try {
@@ -352,6 +395,37 @@
     }
   }
 
+  function enhanceNftDataDisclosures() {
+    var sections = document.querySelectorAll(
+      '.nft-template-article .wiki-section, .nft-collection-article .wiki-section'
+    );
+    sections.forEach(function (section) {
+      if (section.dataset.ogCollapsibleReady === '1') return;
+      var heading = section.querySelector('h2');
+      if (!heading) return;
+      var id = heading.id || '';
+      var normalizedId = id.replace(/-title$/i, '');
+      if (!/^(nft-details|template-attributes|collection-summary|rarity-ranking|gkniftyheads-rarity-ranking)$/i.test(normalizedId)) return;
+      if (!section.querySelector('.wiki-stat-grid, .wiki-table-wrap, .gk-rarity-table')) return;
+
+      section.dataset.ogCollapsibleReady = '1';
+      section.classList.add('og-collapsible-data', 'is-collapsed');
+
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'og-data-toggle';
+      button.setAttribute('aria-expanded', 'false');
+      button.textContent = 'Show data';
+      button.addEventListener('click', function () {
+        var expanded = section.classList.toggle('is-expanded');
+        section.classList.toggle('is-collapsed', !expanded);
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        button.textContent = expanded ? 'Hide data' : 'Show data';
+      });
+      heading.insertAdjacentElement('afterend', button);
+    });
+  }
+
   async function injectArticleBattleLayer() {
     if (!window.location.pathname.startsWith('/wiki/')) return;
 
@@ -360,6 +434,7 @@
     enhanceCitations(pageId);
     ensurePageLikeWidget(pageId);
     wireMissionEvents(pageId);
+    enhanceNftDataDisclosures();
 
     var target = document.querySelector('.article-meta');
     if (!target || document.querySelector('.wiki-engagement-module, .battle-deck')) return;
@@ -373,12 +448,18 @@
     var deck = document.createElement('div');
     deck.className = 'battle-deck battle-engagement-deck';
     var article = target.closest('article');
-    var isCollection = article && article.dataset.pageType === 'nft_collection';
+    var pageType = article && article.dataset ? article.dataset.pageType : '';
+    var isCollection = pageType === 'nft_collection';
+    var isNftTemplate = pageType === 'nft_template';
     if (isCollection) deck.className += ' battle-engagement-deck--collection';
+    if (isNftTemplate) deck.className += ' battle-engagement-deck--nft-template';
     deck.innerHTML = isCollection
       ? buildCollectionMediaShell() + buildMissionHTML(pageId, engagement)
+      : isNftTemplate
+        ? buildTemplateMediaShell() + buildMissionHTML(pageId, engagement)
       : buildBattleMeterHTML(engagement, pageId) + buildMissionHTML(pageId);
     module.appendChild(deck);
+    if (isCollection || isNftTemplate) injectTemplateMedia(deck);
 
     if (isCollection) {
       var hero = article.querySelector('.wiki-hero');

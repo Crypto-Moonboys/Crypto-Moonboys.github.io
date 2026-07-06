@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{NFT_NAME}} - Crypto Moonboys Wiki</title>
+  <meta name="description" content="{{NFT_DESCRIPTION}}">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{{CANONICAL_URL}}">
+  <meta property="og:title" content="{{OG_TITLE}}">
+  <meta property="og:description" content="{{OG_DESCRIPTION}}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="{{CANONICAL_URL}}">
+  <meta property="og:image" content="{{OG_IMAGE}}">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+</head>
+<body class="page-wiki page-standard-shell">
+  <main id="content" role="main">
+    <article class="wiki-content nft-template-article og-page-template og-page-template--nft-template" data-page-type="nft_template" data-collection="{{COLLECTION}}" data-template-id="{{TEMPLATE_ID}}">
+      <header class="wiki-hero">
+        <p class="wiki-hero-breadcrumb">WAX AtomicAssets NFT Template</p>
+        <h1>{{NFT_NAME}}</h1>
+        <p>{{NFT_SUMMARY}}</p>
+        <template class="nft-battle-media-template" data-battle-media="nft" data-page-id="{{SLUG}}">
+          <figure class="battle-page-media nft-template-media-card">
+            <img class="wiki-hero-image nft-image" src="{{NFT_IMAGE}}" alt="{{NFT_NAME}} artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+          </figure>
+        </template>
+      </header>
+
+      <div class="article-meta">
+        <span class="tag">NFT Template</span>
+        <span class="tag">Template ID: {{TEMPLATE_ID}}</span>
+        <span class="tag">WAX</span>
+      </div>
+
+      <section class="wiki-section og-collapsible-data" aria-labelledby="nft-details-title">
+        <h2 id="nft-details-title">NFT Details</h2>
+        <div class="wiki-stat-grid">
+          <div class="wiki-card"><strong>Collection</strong><span>{{COLLECTION}}</span></div>
+          <div class="wiki-card"><strong>Template ID</strong><span>{{TEMPLATE_ID}}</span></div>
+          <div class="wiki-card"><strong>Chain</strong><span>WAX AtomicAssets</span></div>
+        </div>
+      </section>
+
+      <section class="wiki-section og-collapsible-data" aria-labelledby="template-attributes-title">
+        <h2 id="template-attributes-title">Template Attributes</h2>
+        <div class="wiki-table-wrap">{{ATTRIBUTE_TABLE}}</div>
+      </section>
+
+      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="{{SLUG}}" aria-labelledby="citation-vote-panel-title">
+        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
+        <p>Vote on citations to strengthen the credibility of this NFT file.</p>
+        <div class="citation-vote-panel-actions">
+          <span class="cite-vote" data-page-id="{{SLUG}}" data-cite-id="citation-panel"></span>
+          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
+        </div>
+      </section>
+    </article>
+
+    <div class="wiki-comments" data-page-id="{{SLUG}}"></div>
+  </main>
+
+  <script data-cfasync="false" src="/js/api-config.js"></script>
+  <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+  <script data-cfasync="false" src="/js/identity-gate.js"></script>
+  <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+  <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+  <script data-cfasync="false" src="/js/site-shell.js"></script>
+  <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+  <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+  <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+  <script data-cfasync="false" src="/js/faction-alignment.js"></script>
+  <script data-cfasync="false" src="/js/wiki.js"></script>
+  <script data-cfasync="false" src="/js/bible-loader.js"></script>
+  <script data-cfasync="false" src="/js/engagement.js"></script>
+  <script data-cfasync="false" src="/js/comments.js"></script>
+  <script data-cfasync="false" src="/js/battle-layer.js"></script>
+</body>
+</html>

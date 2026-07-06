@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{COLLECTION_NAME}} NFT Collection - Crypto Moonboys Wiki</title>
+  <meta name="description" content="{{COLLECTION_DESCRIPTION}}">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{{CANONICAL_URL}}">
+  <meta property="og:title" content="{{OG_TITLE}}">
+  <meta property="og:description" content="{{OG_DESCRIPTION}}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="{{CANONICAL_URL}}">
+  <meta property="og:image" content="{{OG_IMAGE}}">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+</head>
+<body class="page-wiki page-standard-shell">
+  <main id="content" role="main">
+    <article class="wiki-content nft-collection-article og-page-template og-page-template--nft-collection" data-page-type="nft_collection" data-collection="{{COLLECTION}}">
+      <header class="wiki-hero">
+        <p class="wiki-hero-breadcrumb">WAX AtomicAssets Collection</p>
+        <h1>{{COLLECTION_NAME}}</h1>
+        <p>{{COLLECTION_SUMMARY}}</p>
+        <template class="nft-battle-media-template" data-battle-media="nft" data-page-id="{{SLUG}}">
+          <figure class="battle-page-media nft-template-media-card">
+            <img class="wiki-hero-image nft-image" src="{{COLLECTION_IMAGE}}" alt="{{COLLECTION_NAME}} collection art" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+          </figure>
+        </template>
+      </header>
+
+      <div class="article-meta">
+        <span class="tag">WAX AtomicAssets only</span>
+        <span class="tag">Collection: {{COLLECTION}}</span>
+      </div>
+
+      <section class="wiki-section og-collapsible-data" aria-labelledby="collection-summary-title">
+        <h2 id="collection-summary-title">Collection Summary</h2>
+        <div class="wiki-stat-grid">
+          <div class="wiki-card"><strong>Collection</strong><span>{{COLLECTION}}</span></div>
+          <div class="wiki-card"><strong>Chain</strong><span>WAX</span></div>
+          <div class="wiki-card"><strong>Ranking source</strong><span>Approved AtomicAssets rarity and supply data</span></div>
+        </div>
+      </section>
+
+      <section class="wiki-section og-collapsible-data" aria-labelledby="rarity-ranking-title">
+        <h2 id="rarity-ranking-title">Rarity Ranking</h2>
+        <p>Ranking uses approved WAX AtomicAssets rarity and supply data; non-WAX markets are not included.</p>
+        <div class="wiki-table-wrap">{{RARITY_TABLE}}</div>
+      </section>
+
+      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="{{SLUG}}" aria-labelledby="citation-vote-panel-title">
+        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
+        <p>Vote on citations to strengthen the credibility of this collection file.</p>
+        <div class="citation-vote-panel-actions">
+          <span class="cite-vote" data-page-id="{{SLUG}}" data-cite-id="citation-panel"></span>
+          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
+        </div>
+      </section>
+    </article>
+
+    <div class="wiki-comments" data-page-id="{{SLUG}}"></div>
+  </main>
+
+  <script data-cfasync="false" src="/js/api-config.js"></script>
+  <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+  <script data-cfasync="false" src="/js/identity-gate.js"></script>
+  <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+  <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+  <script data-cfasync="false" src="/js/site-shell.js"></script>
+  <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+  <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+  <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+  <script data-cfasync="false" src="/js/faction-alignment.js"></script>
+  <script data-cfasync="false" src="/js/wiki.js"></script>
+  <script data-cfasync="false" src="/js/bible-loader.js"></script>
+  <script data-cfasync="false" src="/js/engagement.js"></script>
+  <script data-cfasync="false" src="/js/comments.js"></script>
+  <script data-cfasync="false" src="/js/battle-layer.js"></script>
+</body>
+</html>

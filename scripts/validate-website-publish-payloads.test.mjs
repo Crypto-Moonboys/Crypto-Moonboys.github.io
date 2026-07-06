@@ -203,6 +203,8 @@ assert.match(generatedTemplateBlock, /decoding="async"/);
 assert.match(generatedTemplateBlock, /referrerpolicy="no-referrer"/);
 assert.match(generatedTemplateBlock, /data-fallback-srcs=/);
 assert.doesNotMatch(nftPageHtml.replace(generatedTemplateBlock, ''), /<img\b[^>]*\bnft-image\b/);
+assert.doesNotMatch(nftPageHtml, /function\s+injectBattleMedia\b/);
+assert.doesNotMatch(nftPageHtml, /function\s+battleMediaTemplate\b/);
 
 for (const surface of AFFECTED_SYNC_SURFACES) {
   assert.ok(writeResult.sync.updatedSurfaces.includes(surface), `--write must update affected surface: ${surface}`);
