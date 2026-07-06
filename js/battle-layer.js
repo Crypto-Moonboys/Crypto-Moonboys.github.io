@@ -321,6 +321,34 @@
     return buildBattleMediaShell('Collection Art');
   }
 
+  function buildCollectionAboutHTML() {
+    return '<article class="battle-shell gk-collection-about-card" aria-labelledby="gk-collection-about-title">' +
+      '<div class="battle-shell-inner">' +
+        '<p class="gk-collection-about-kicker">About The Collection</p>' +
+        '<h3 id="gk-collection-about-title" class="gk-collection-about-title">GKNIFTYHEADS</h3>' +
+        '<p class="gk-collection-about-subtitle">THE ORIGINAL. THE ICONIC. THE 3008.</p>' +
+        '<p class="gk-collection-about-copy">The flagship NFT faction of The Crypto Moonboys universe. Born from GK&#39;s street art DNA, GKNIFTYHEADS combines graffiti culture, collectible characters and blockchain ownership into a living digital archive.</p>' +
+        '<div class="gk-collection-about-stats" aria-label="GKNIFTYHEADS collection stats">' +
+          '<span><strong>143</strong><small>Templates</small></span>' +
+          '<span><strong>877,527</strong><small>NFTs Created</small></span>' +
+          '<span><strong>WAX</strong><small>Blockchain</small></span>' +
+          '<span><strong>Rarity</strong><small>Ranking Active</small></span>' +
+        '</div>' +
+        '<p class="gk-collection-link-kicker">Explore GKNIFTYHEADS</p>' +
+        '<div class="gk-collection-link-grid">' +
+          '<a href="#gkniftyheads-rarity-ranking"><strong>Rarity Rankings</strong><span>See the rarest NFTs ranked</span></a>' +
+          '<a href="#schemas"><strong>Browse Traits</strong><span>Explore schemas and variations</span></a>' +
+          '<a href="/categories/gkniftyheads.html"><strong>Collections</strong><span>View GKniftyHEADS pages</span></a>' +
+          '<a href="/wiki/gkniftyheads.html"><strong>The Lore</strong><span>Discover the GKN story</span></a>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function buildCollectionEngagementHTML(pageId, engagement) {
+    return buildCollectionMediaShell() + buildCollectionAboutHTML() + buildMissionHTML(pageId, engagement);
+  }
+
   function buildTemplateMediaShell() {
     return buildBattleMediaShell('Page Art');
   }
@@ -454,7 +482,7 @@
     if (isCollection) deck.className += ' battle-engagement-deck--collection';
     if (isNftTemplate) deck.className += ' battle-engagement-deck--nft-template';
     deck.innerHTML = isCollection
-      ? buildCollectionMediaShell() + buildMissionHTML(pageId, engagement)
+      ? buildCollectionEngagementHTML(pageId, engagement)
       : isNftTemplate
         ? buildTemplateMediaShell() + buildMissionHTML(pageId, engagement)
       : buildBattleMeterHTML(engagement, pageId) + buildMissionHTML(pageId);

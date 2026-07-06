@@ -66,7 +66,9 @@ assert.match(html, /<nav class="breadcrumb" aria-label="Breadcrumb">[\s\S]*Home[
 assert.doesNotMatch(html, /<span class="sep" aria-hidden="true">\?<\/span>/, 'breadcrumb separators must not render broken question marks');
 assert.match(html, /gk-parent-hub-card[\s\S]*Primary parent[\s\S]*href="\/wiki\/crypto-moonboys\.html"[\s\S]*Crypto Moonboys/, 'collection page should identify Crypto Moonboys as the primary parent');
 assert.match(html, /gk-universe-relationships[\s\S]*Crypto Moonboys Universe Path[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Lore[\s\S]*GKniftyHEADS NFT Pages[\s\S]*HODL WARS Links/, 'page should surface canonical universe relationships above collector tools');
-assert.match(html, /gk-collection-dashboard[\s\S]*Collection Control Panel[\s\S]*Collection Art[\s\S]*Daily Missions[\s\S]*Collection Stats/, 'collection art, daily missions, and stats should render as a balanced dashboard');
+assert.match(html, /gk-collection-dashboard[\s\S]*Collection Research Panel[\s\S]*Artwork source[\s\S]*Collection Stats[\s\S]*Rarity Tools/, 'secondary collection dashboard should stay below the live showcase without duplicating Daily Missions');
+const staticDashboard = sliceBetween(html, '<section class="wiki-section gk-collection-dashboard"', '<section class="wiki-section">');
+assert.doesNotMatch(staticDashboard, /Daily Missions/, 'static collection dashboard must not duplicate the live Daily Missions component');
 
 assert.match(html, /GKniftyHEADS Rarity Tracker/, 'rarity tracker must remain on the page');
 assert.match(html, /gk-template-rarity-showcase[\s\S]*Template Rarity: Top 3[\s\S]*Rank #1[\s\S]*Rank #2[\s\S]*Rank #3/, 'template rarity top-three showcase cards must lead the ranking section');
@@ -126,6 +128,13 @@ assert.match(statusClient, /node\.setAttribute\('title', detailLabel\(status\)\)
 assert.doesNotMatch(statusClient, /node\.textContent = detailLabel/, 'detailed feed errors must not become visible badge text');
 
 const waxRenderer = read('js/wax-collection-renderer.js');
+const battleLayer = read('js/battle-layer.js');
+const battleCss = read('css/battle-layer.css');
+assert.match(battleLayer, /function buildCollectionAboutHTML\(\)[\s\S]*GKNIFTYHEADS[\s\S]*THE ORIGINAL\. THE ICONIC\. THE 3008\.[\s\S]*877,527[\s\S]*Rarity Rankings[\s\S]*Browse Traits[\s\S]*Collections[\s\S]*The Lore/, 'collection engagement deck should include the center About The Collection card');
+assert.match(battleLayer, /buildCollectionMediaShell\(\) \+ buildCollectionAboutHTML\(\) \+ buildMissionHTML\(pageId, engagement\)/, 'collection engagement deck should render art, about, and daily missions in order');
+assert.match(battleCss, /battle-engagement-deck--collection\s*\{[\s\S]*grid-template-columns:\s*minmax\(280px,\s*\.92fr\) minmax\(420px,\s*1\.34fr\) minmax\(260px,\s*\.74fr\)/, 'collection engagement deck should use the desktop three-column art/about/missions layout');
+assert.match(battleCss, /gkCollectionCardPulse[\s\S]*gkCollectionEdgeSweep[\s\S]*gkCollectionTitleFlow/, 'collection dashboard should include CSS-only glow and title animations');
+assert.match(battleCss, /prefers-reduced-motion:\s*reduce[\s\S]*animation:\s*none/, 'collection dashboard animations should respect reduced motion');
 assert.match(waxRenderer, /function shouldRenderFullBridgeData/, 'WAX bridge renderer should keep full bridge hydration behind a tracker-page guard');
 assert.match(waxRenderer, /function shouldRenderBridgeStatus/, 'WAX bridge status card should also be behind a tracker-page guard');
 assert.match(waxRenderer, /if \(!shouldRenderBridgeStatus\(collection\)\) return;/, 'static tracker pages should not append a WAX Bridge card');
