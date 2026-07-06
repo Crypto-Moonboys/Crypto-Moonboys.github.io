@@ -1,0 +1,55 @@
+name: Live Site Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      wait_seconds:
+        description: "Seconds to wait for Pages/Cloudflare propagation before verification"
+        required: false
+        default: "90"
+  workflow_run:
+    workflows: ["Deploy GitHub Pages"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-site-verify
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for live site propagation
+        shell: bash
+        run: |
+          WAIT_SECONDS="${{ github.event.inputs.wait_seconds || '90' }}"
+          if ! [[ "$WAIT_SECONDS" =~ ^[0-9]+$ ]]; then
+            echo "wait_seconds must be numeric"
+            exit 1
+          fi
+          echo "Waiting ${WAIT_SECONDS}s before live-site verification..."
+          sleep "$WAIT_SECONDS"
+
+      - name: Verify cryptomoonboys.com
+        run: npm run test:live-site

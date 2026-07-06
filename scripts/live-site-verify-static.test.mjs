@@ -26,13 +26,40 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT    = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT  = path.join(ROOT, 'scripts', 'live-site-verify.mjs');
+const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'live-site-verify.yml');
 const source  = readFileSync(SCRIPT, 'utf8');
+const workflowSource = readFileSync(WORKFLOW, 'utf8');
 const pkgJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 const { ARCADE_MANIFEST } = await import(pathToFileURL(path.join(ROOT, 'js', 'arcade', 'arcade-manifest.js')).href);
 
 // ── 1. Syntax check ───────────────────────────────────────────────────────────
 execFileSync(process.execPath, ['--check', SCRIPT], { encoding: 'utf8' });
 console.log('PASS: node --check scripts/live-site-verify.mjs');
+
+// ── 1b. Manual/post-deploy workflow exists, never a PR gate ─────────────
+assert.ok(workflowSource.includes('workflow_dispatch:'), 'live-site workflow must be manually triggerable');
+assert.ok(workflowSource.includes('default: "90"'), 'live-site workflow wait_seconds default must match the workflow fallback');
+assert.ok(workflowSource.includes('workflow_run:'), 'live-site workflow may run after Pages deployment');
+assert.ok(
+  workflowSource.includes('workflows: ["Deploy GitHub Pages"]') ||
+    workflowSource.includes("workflows: ['Deploy GitHub Pages']"),
+  'live-site workflow must only subscribe to the Pages deployment workflow',
+);
+assert.ok(
+  workflowSource.includes("github.event.workflow_run.conclusion == 'success'"),
+  'post-deploy live-site verification must run only after successful Pages deploys',
+);
+assert.ok(
+  workflowSource.includes("github.event.workflow_run.head_sha"),
+  'workflow_run live-site verification must checkout the deployed Pages revision',
+);
+assert.ok(!/^\s*pull_request:/m.test(workflowSource), 'live-site workflow must not run on pull_request');
+assert.ok(!/^\s*push:/m.test(workflowSource), 'live-site workflow must not run directly on push');
+assert.ok(!/^\s*schedule:/m.test(workflowSource), 'live-site workflow must not run on a schedule');
+assert.ok(workflowSource.includes('node-version: 22'), 'live-site workflow must use Node 22');
+assert.ok(workflowSource.includes('npx playwright install --with-deps chromium'), 'live-site workflow must install Playwright Chromium');
+assert.ok(workflowSource.includes('npm run test:live-site'), 'live-site workflow must run the live-site verifier');
+console.log('PASS: live-site workflow is manual/post-Pages only and runs the verifier');
 
 // ── 2. Critical page routes present ───────────────────────────────────────────
 const REQUIRED_ROUTES = [
