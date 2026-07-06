@@ -109,6 +109,7 @@ const SITEMAP_ONLY_ROOT_PAGES = [
 
 for (const page of APPROVED_ROOT_PAGES) {
   const urlPath = normalizeUrlPath(page.path);
+  if (urlPath.startsWith('/categories/')) continue;
   const defaults = SITEMAP_ROOT_PAGE_DEFAULTS[urlPath] || {};
   if (fs.existsSync(path.join(ROOT, urlPath.slice(1)))) {
     addEntry(

@@ -103,8 +103,9 @@ check(
   'vote/comment bottom placement is documented for future page agents',
 );
 check(
-  contract.includes('/og-templates/wiki-page.html') &&
-    instructions.includes('/og-templates/wiki-page.html'),
+  publicTemplateGuides.every(([relPath]) =>
+    contract.includes(`/${relPath}`) && instructions.includes(`/${relPath}`),
+  ),
   'public OG template guide routes are documented for future page agents',
 );
 
