@@ -3,9 +3,9 @@
     "status": "live-deployable",
     "deploy": true,
     "required_bindings": ["DB (D1: wikicoms)"],
-    "required_secrets": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_USERNAME", "ADMIN_TELEGRAM_IDS", "ADMIN_SECRET", "TELEGRAM_GROUP_CHAT_ID"],
+    "required_secrets": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_USERNAME", "ADMIN_TELEGRAM_IDS", "ADMIN_SECRET", "TELEGRAM_GROUP_CHAT_ID", "SWARMSY_BRIDGE_TOKEN"],
     "deploy_command": "cd workers/moonboys-api && npx wrangler deploy",
-    "notes": "Production moonboys-api. Requires D1 wikicoms and all Telegram secrets. Deploy independently of Block Topia server."
+    "notes": "Production moonboys-api. Requires D1 wikicoms, all Telegram secrets, and SWARMSY_BRIDGE_TOKEN for POST /public/npc-chat. Deploy independently of Block Topia server."
   },
   "workers/anti-cheat": {
     "status": "live-deployable",

@@ -19,7 +19,7 @@
 
 | Worker | Folder | Status | Required bindings | Required secrets | Safe deploy command | Deploy now? | Notes |
 |---|---|---|---|---|---|---|---|
-| moonboys-api | `workers/moonboys-api` | ✅ `live-deployable` | D1: wikicoms | TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, ADMIN_TELEGRAM_IDS, ADMIN_SECRET, TELEGRAM_GROUP_CHAT_ID | `cd workers/moonboys-api && npx wrangler deploy` | Yes | Production API. Telegram bot webhooks, admin grant routes, D1-backed user state. |
+| moonboys-api | `workers/moonboys-api` | ✅ `live-deployable` | D1: wikicoms | TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, ADMIN_TELEGRAM_IDS, ADMIN_SECRET, TELEGRAM_GROUP_CHAT_ID, SWARMSY_BRIDGE_TOKEN | `cd workers/moonboys-api && npx wrangler deploy` | Yes | Production API. Telegram bot webhooks, admin grant routes, D1-backed user state, Sparky NPC chat bridge. |
 | moonboys-anti-cheat | `workers/anti-cheat` | ✅ `live-deployable` | KV: LEADERBOARD (shared with leaderboard worker), D1: wikicoms | ADMIN_SECRET | `cd workers/anti-cheat && npx wrangler deploy` | Yes | ADMIN_SECRET must match moonboys-api. KV ID must stay in sync with workers/leaderboard. |
 | moonboys-leaderboard | `workers/leaderboard` | ✅ `live-deployable` | KV: LEADERBOARD (shared with anti-cheat worker), D1: wikicoms | TELEGRAM_BOT_TOKEN | `cd workers/leaderboard && npx wrangler deploy` | Yes | Shares LEADERBOARD KV namespace with anti-cheat. Both must reference the same KV ID. |
 | block-topia-score | `workers/block-topia` | ⚠️ `needs-binding-setup` | R2: R2_BUCKET (bucket_name must be confirmed) | — | `cd workers/block-topia && npx wrangler deploy` | No | No placeholder IDs present. Confirm R2 bucket_name against live Cloudflare account before first deploy. |

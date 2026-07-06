@@ -10,8 +10,9 @@
  *  6. Block Topia server CORS_ORIGIN env override still replaces the default list.
  *  7. Block Topia server allows localhost in non-production (IS_PRODUCTION = false) mode.
  *  8. js/api-config.js PRODUCTION_HOSTS recognises all 3 production hostnames.
- *  9. blocktopia-district worker source still advertises X-Admin-Secret (browser-facing admin PUT routes).
- * 10. Other narrowed workers (anti-cheat, leaderboard, engagement, realtime) do not advertise X-Admin-Secret.
+ *  9. leaderboard Worker default CORS origins match frontend production hosts.
+ * 10. blocktopia-district worker source still advertises X-Admin-Secret (browser-facing admin PUT routes).
+ * 11. Other narrowed workers (anti-cheat, leaderboard, engagement, realtime) do not advertise X-Admin-Secret.
  */
 
 import assert from 'node:assert/strict';
@@ -230,6 +231,32 @@ for (const host of PRODUCTION_HOSTS) {
   await test(`api-config.js PRODUCTION_HOSTS includes '${host}'`, () => {
     assert.ok(configHosts.includes(host),
       `PRODUCTION_HOSTS is missing '${host}'. Found: ${JSON.stringify(configHosts)}`);
+  });
+}
+
+console.log('\n[8] leaderboard Worker DEFAULT_ALLOWED_ORIGINS matches production hosts');
+
+const leaderboardSrc = await read('workers/leaderboard-worker.js');
+const leaderboardCorsMatch = leaderboardSrc.match(/const DEFAULT_ALLOWED_ORIGINS\s*=\s*\[([\s\S]*?)\];/);
+assert.ok(leaderboardCorsMatch, 'DEFAULT_ALLOWED_ORIGINS not found in workers/leaderboard-worker.js');
+const leaderboardDefaultOrigins = [...leaderboardCorsMatch[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+
+for (const origin of PRODUCTION_ORIGINS) {
+  await test(`leaderboard default CORS includes ${origin}`, () => {
+    assert.ok(
+      leaderboardDefaultOrigins.includes(origin),
+      `workers/leaderboard-worker.js DEFAULT_ALLOWED_ORIGINS is missing ${origin}. Found: ${JSON.stringify(leaderboardDefaultOrigins)}`,
+    );
+  });
+}
+
+const leaderboardWranglerSrc = await read('workers/leaderboard/wrangler.toml');
+for (const origin of PRODUCTION_ORIGINS) {
+  await test(`leaderboard wrangler docs include ${origin}`, () => {
+    assert.ok(
+      leaderboardWranglerSrc.includes(origin),
+      `workers/leaderboard/wrangler.toml CORS docs are missing ${origin}`,
+    );
   });
 }
 

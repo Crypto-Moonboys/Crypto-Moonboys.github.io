@@ -50,4 +50,9 @@ assert.ok(
   'npm test must compose the grouped CI domains',
 );
 
+assert.ok(
+  runner.includes("['node', 'scripts/no-dead-placeholder-copy.mjs']"),
+  'visual CI must run no-dead-placeholder-copy.mjs to guard public placeholder copy drift',
+);
+
 console.log('CI domain grouping tests PASSED.');
