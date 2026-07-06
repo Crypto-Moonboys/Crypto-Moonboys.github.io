@@ -42,6 +42,7 @@ check(!probe.stderr.includes('MODULE_TYPELESS_PACKAGE_JSON'), 'ESM imports do no
 if (failures.length) {
   console.error('\nmodule-type-boundaries.test.mjs failed:');
   for (const failure of failures) console.error(`- ${failure}`);
+  if (probe.error) console.error(`\nProbe error:\n${probe.error.stack || probe.error}`);
   if (probe.stderr) console.error(`\nProbe stderr:\n${probe.stderr}`);
   process.exit(1);
 }
