@@ -1,15 +1,15 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-05T06:53:04.941Z",
+  "generated_at": "2026-07-06T07:58:09.540Z",
   "source": "local website pages",
   "live_data_status": "atomicassets live asset count",
   "wax_get_info": {
     "used_for": "future scan checkpoint metadata only",
     "endpoint": "https://wax.eosusa.io/v1/chain/get_info",
-    "head_block_num": 443495774,
-    "head_block_time": "2026-07-05T06:53:05.500",
+    "head_block_num": 443676383,
+    "head_block_time": "2026-07-06T07:58:10.000",
     "chain_id": "1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4",
-    "checked_at": "2026-07-05T06:53:05.283Z"
+    "checked_at": "2026-07-06T07:58:09.895Z"
   },
   "burn_tracking_status": "baseline pending; no confirmed historic burn events claimed",
   "supply_counting": "atomicassets_current_assets_by_template",
@@ -20,6 +20,6 @@
     "mismatch_templates": 1,
     "burned_assets_tracked": 0,
     "surviving_mint_ranks_tracked": 22989,
-    "last_asset_delta_scan": "2026-07-05T06:52:20.691Z"
+    "last_asset_delta_scan": "2026-07-06T07:57:21.368Z"
   }
 }
