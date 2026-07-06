@@ -47,6 +47,7 @@ function hasBrokenDescription(description) {
 }
 
 function collectJsonLd(html) {
+  JSON_LD_RE.lastIndex = 0;
   const blocks = [];
   let match;
   while ((match = JSON_LD_RE.exec(html)) !== null) {
