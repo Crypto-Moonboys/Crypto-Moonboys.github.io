@@ -735,7 +735,7 @@ function safeImageUrl(row = {}) {
 
 function renderTemplateCell(row, options = {}) {
   const imageSrc = safeImageUrl(row);
-  const title = row.title || `NFT ${row.template_id}`;
+  const title = row.title || `#${row.template_id}`;
   const href = row.atomichub_url || row.atomicassets_url || '#';
   const meta = [
     options.rank ? `Rank #${row.rank}` : '',

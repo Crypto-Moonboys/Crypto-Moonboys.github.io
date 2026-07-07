@@ -153,6 +153,7 @@ const holders = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess
 const assetLeaderboard = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'asset-rarity-leaderboard.json'), 'utf8'));
 const html = fs.readFileSync(path.join(root, 'wiki', 'noballgamess-nft-collection.html'), 'utf8');
 const marketAnalytics = JSON.parse(fs.readFileSync(path.join(root, 'data', 'noballgamess', 'market-analytics.json'), 'utf8'));
+const trackerSource = fs.readFileSync(new URL('./noballgamess-tracker-lib.mjs', import.meta.url), 'utf8');
 
 assert.equal(templateRarity.ranked_templates.some((row) => row.template_id === 100001), true, 'fixed-supply template should rank');
 assert.equal(templateRarity.utility_open_mint_templates.some((row) => row.template_id === 100002), true, 'max_supply=0 template should be utility/open mint');
@@ -249,6 +250,7 @@ assert.match(html, /<h2>Utility \/ Open Mint<\/h2>[\s\S]*<img class="nft-thumb"/
 assert.match(html, /<h2>Asset Version Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'Asset Version Ranking rows should include image markup');
 assert.doesNotMatch(html, /src="[^"]*gkniftyheads/i, 'NoBallGames rendered image src must not point to gkniftyheads assets');
 assert.doesNotMatch(html, /Template Rarity Ranking|NFT Template|Template ID|Template #|Template Stats|Template Score|AtomicAssets Templates API/, 'visitor-facing NoBallGames collection copy should avoid template wording');
+assert.doesNotMatch(trackerSource, /row\.title \|\| `NFT \$\{row\.template_id\}`/, 'fallback NoBallGames titles should not create redundant "NFT 123 NFT artwork" alt text');
 assert.doesNotMatch(html, /src="[^"]*\/img\/noballgames(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgames path spelling');
 assert.doesNotMatch(html, /src="[^"]*\/img\/noballgame(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgame path spelling');
 for (const [, src] of html.matchAll(/<img class="nft-thumb"[^>]+src="([^"]+)"/g)) {

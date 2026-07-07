@@ -41,6 +41,7 @@ const rarityGenerator = read('scripts/generate-gkniftyheads-rarity.mjs');
 const css = read('css/wiki.css');
 const sharedHeaderHtml = read('wiki/components/header.html');
 const siteShell = read('js/site-shell.js');
+const generatedNftPage = read('wiki/gkniftyheads-token-temptress-783401.html');
 const templateShowcase = html.match(/<section class="gk-command-deck gk-showcase-section gk-template-rarity-showcase"[\s\S]*?<section class="gk-secondary-ranked-section"/)?.[0] || '';
 const globalShowcase = html.match(/<section class="gk-command-deck gk-global-rarity-deck gk-showcase-section gk-global-rarity-showcase"[\s\S]*?<section class="gk-secondary-ranked-section"/)?.[0] || '';
 const templateAuditSection = sliceBetween(html, '<details class="wiki-section gk-rarity-audit" data-rarity-audit>', '<section class="wiki-section gk-rarity-method">');
@@ -168,6 +169,7 @@ assert.doesNotMatch(stripDetails(html), /WAX Bridge|wax-bridge-status|wax-bridge
 assert.match(html, /gk-related-card-grid[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Collection[\s\S]*NFT Pages[\s\S]*Connected Lore/, 'related pages should render as relationship cards');
 assert.match(html, /Canonical connections[\s\S]*Wiki Relationship Map/, 'collection page relationship section should be titled as a map, not another related-pages dump');
 assert.doesNotMatch(html, /Related NFT Templates|Related NFTs|wiki-rabbit-card--nft-sibling|gkniftyheads-.+-\d{5,}\.html[\s\S]*is an NFT in the gkniftyheads WAX AtomicAssets collection/, 'collection page should not render the generated related NFT list');
+assert.doesNotMatch(generatedNftPage, /AtomicAssets template record/, 'generated GKniftyHEADS NFT pages should avoid visitor-facing template-record wording');
 assert.match(read('js/wiki.js'), /const existingRelationshipMap = document\.querySelector\('\[data-related-wiki-paths="true"\]'\);[\s\S]*renderRelatedPagesIntoRelationshipMap\(existingRelationshipMap, related, indexByUrl, MAX_DESC_LENGTH\);[\s\S]*return;/, 'runtime related pages should merge into an existing relationship map instead of rendering a separate Related Pages list');
 assert.match(read('js/wiki.js'), /data-related-group="Graph Related Pages"[\s\S]*Connected Wiki Nodes[\s\S]*wiki-rabbit-grid/, 'runtime related links should render as relationship-map cards');
 assert.doesNotMatch(html, /citation-vote-panel|Citation Credibility|data-cite-id="citation-panel"/, 'collection page should not render a separate citation credibility card');
