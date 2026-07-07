@@ -8,27 +8,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const PAGE_PATH = path.join(ROOT, 'wiki', 'gkniftyheads-nft-collection.html');
 
-const DESCRIPTION = 'GKniftyHEADS NFT collection hub with rarity ranking, WAX template links, collection actions, schema summary, and source references.';
+const DESCRIPTION = 'GKniftyHEADS NFT collection hub with rarity ranking, WAX NFT links, collection actions, schema summary, and source references.';
 
 const ATOMICHUB_FUN_COUPON_URL = 'https://wax.atomichub.io/market?blockchain=wax-mainnet&order=asc&primary_chain=wax-mainnet&sort=price&symbol=WAX&template_id=782888#sales';
 const NEFTY_BLEND_URL = 'https://neftyblocks.com/collection/gkniftyheads/blends';
 const ATOMICHUB_COLLECTION_URL = 'https://wax.atomichub.io/explorer/collection/gkniftyheads';
 
 const SCHEMA_LABELS = {
-  bmhodlwarsyo: ['HODL WARS Battle Mechs', 'HODL WARS / battle-card template schema'],
-  bshodlwarsyo: ['HODL WARS Blockstars / Battle Stars', 'HODL WARS / Blockstars battle-card template schema'],
-  darrencullen: ['Darren Cullen', 'Darren Cullen / creator template schema'],
-  dbhodlwarsyo: ['HODL WARS Ducky Boys', 'HODL WARS / Ducky Boys battle-card template schema'],
-  freemindsgk: ['Free Minds GK', 'Free Minds GK creator template schema'],
-  gkhodlwarsyo: ['GKniftyHEADS HODL WARS', 'GKniftyHEADS HODL WARS battle-card template schema'],
-  gkniftyheads: ['GKniftyHEADS', 'Core GKniftyHEADS collection template schema'],
-  killakelafam: ['Killa Kela Family', 'Killa Kela family / creator template schema'],
-  moongirlsexy: ['Crypto Moongirls', 'Crypto Moongirls related creator template schema'],
-  mrcheowaxnft: ['Mr Cheo WAX NFT', 'Mr Cheo creator template schema'],
-  noballgames: ['No Ball Games', 'No Ball Games creator template schema'],
-  cryptomoonboys: ['Crypto Moonboys', 'Crypto Moonboys related template schema'],
-  graffpunks: ['GraffPUNKS', 'GraffPUNKS related template schema'],
-  tphodlwarsyo: ['HODL WARS The Pu55ie$', 'HODL WARS / The Pu55ie$ battle-card template schema'],
+  bmhodlwarsyo: ['HODL WARS Battle Mechs', 'HODL WARS / battle-card NFT schema'],
+  bshodlwarsyo: ['HODL WARS Blockstars / Battle Stars', 'HODL WARS / Blockstars battle-card NFT schema'],
+  darrencullen: ['Darren Cullen', 'Darren Cullen / creator NFT schema'],
+  dbhodlwarsyo: ['HODL WARS Ducky Boys', 'HODL WARS / Ducky Boys battle-card NFT schema'],
+  freemindsgk: ['Free Minds GK', 'Free Minds GK creator NFT schema'],
+  gkhodlwarsyo: ['GKniftyHEADS HODL WARS', 'GKniftyHEADS HODL WARS battle-card NFT schema'],
+  gkniftyheads: ['GKniftyHEADS', 'Core GKniftyHEADS collection NFT schema'],
+  killakelafam: ['Killa Kela Family', 'Killa Kela family / creator NFT schema'],
+  moongirlsexy: ['Crypto Moongirls', 'Crypto Moongirls related creator NFT schema'],
+  mrcheowaxnft: ['Mr Cheo WAX NFT', 'Mr Cheo creator NFT schema'],
+  noballgames: ['No Ball Games', 'No Ball Games creator NFT schema'],
+  cryptomoonboys: ['Crypto Moonboys', 'Crypto Moonboys related NFT schema'],
+  graffpunks: ['GraffPUNKS', 'GraffPUNKS related NFT schema'],
+  tphodlwarsyo: ['HODL WARS The Pu55ie$', 'HODL WARS / The Pu55ie$ battle-card NFT schema'],
 };
 
 function esc(value = '') {
@@ -103,10 +103,10 @@ function cleanHeroHubCard(html) {
   if (html.includes('class="gk-info-card gk-parent-hub-card"')) return html;
   return replaceOrThrow(
     html,
-    /<p class="lore-paragraph">Parent hub: <a href="\/wiki\/gkniftyheads\.html">GKniftyHEADS<\/a>\. This generated collection index links the parent brand hub to the WAX AtomicAssets NFT template child pages\.<\/p>/,
+    /<p class="lore-paragraph">Parent hub: <a href="\/wiki\/gkniftyheads\.html">GKniftyHEADS<\/a>\. This generated collection index links the parent brand hub to the WAX AtomicAssets NFT (?:template child pages|pages)\.<\/p>/,
     `<div class="gk-info-card gk-parent-hub-card">
           <span>Parent hub</span>
-          <p><a href="/wiki/gkniftyheads.html">GKniftyHEADS</a> anchors this generated collection index and connects the parent brand hub to WAX AtomicAssets NFT template child pages.</p>
+          <p><a href="/wiki/gkniftyheads.html">GKniftyHEADS</a> anchors this generated collection index and connects the parent brand hub to WAX AtomicAssets NFT pages.</p>
         </div>`,
     'parent hub paragraph'
   );
@@ -135,7 +135,7 @@ function schemaRows(schemaTableHtml) {
   const rows = [...schemaTableHtml.matchAll(/<tr><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><\/tr>/gi)];
   return rows.map(([, slugHtml, formatHtml, createdHtml]) => {
     const slug = decodeHtml(slugHtml);
-    const [displayName, purpose] = SCHEMA_LABELS[slug] || [titleCaseSlug(slug), `${titleCaseSlug(slug)} template schema`];
+    const [displayName, purpose] = SCHEMA_LABELS[slug] || [titleCaseSlug(slug), `${titleCaseSlug(slug)} NFT schema`];
     const createdRaw = decodeHtml(createdHtml);
     const createdReadable = formatDate(createdRaw) || 'Unknown';
     return {
@@ -171,7 +171,7 @@ function cleanSchemas(html) {
               </tr>`).join('\n');
   const cleanSection = `<section class="wiki-section gk-schema-summary">
           <h2 id="schemas">Schema Summary</h2>
-          <p class="lore-paragraph">Schemas group GKniftyHEADS templates by creator, collaboration, or HODL WARS card family. The normal view shows readable labels; raw AtomicAssets field formats stay in the collapsed developer details.</p>
+          <p class="lore-paragraph">Schemas group GKniftyHEADS NFTs by creator, collaboration, or HODL WARS card family. The normal view shows readable labels; raw AtomicAssets field formats stay in the collapsed developer details.</p>
           <div class="wiki-table-wrap">
             <table class="wiki-table nft-schema-table">
               <thead>

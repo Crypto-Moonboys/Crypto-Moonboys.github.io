@@ -41,6 +41,7 @@ const rarityGenerator = read('scripts/generate-gkniftyheads-rarity.mjs');
 const css = read('css/wiki.css');
 const sharedHeaderHtml = read('wiki/components/header.html');
 const siteShell = read('js/site-shell.js');
+const generatedNftPage = read('wiki/gkniftyheads-token-temptress-783401.html');
 const templateShowcase = html.match(/<section class="gk-command-deck gk-showcase-section gk-template-rarity-showcase"[\s\S]*?<section class="gk-secondary-ranked-section"/)?.[0] || '';
 const globalShowcase = html.match(/<section class="gk-command-deck gk-global-rarity-deck gk-showcase-section gk-global-rarity-showcase"[\s\S]*?<section class="gk-secondary-ranked-section"/)?.[0] || '';
 const templateAuditSection = sliceBetween(html, '<details class="wiki-section gk-rarity-audit" data-rarity-audit>', '<section class="wiki-section gk-rarity-method">');
@@ -68,19 +69,19 @@ assert.doesNotMatch(collectionHero, /gk-parent-hub-card|Primary parent/, 'collec
 assert.match(html, /<nav class="breadcrumb" aria-label="Breadcrumb">[\s\S]*Home[\s\S]*&rarr;[\s\S]*NFTs[\s\S]*&rarr;[\s\S]*GKniftyHEADS NFT Collection/, 'breadcrumb should render clean Home -> NFTs -> collection hierarchy');
 assert.doesNotMatch(html, /<span class="sep" aria-hidden="true">\?<\/span>/, 'breadcrumb separators must not render broken question marks');
 assert.match(html, /<div class="article-meta gk-collection-meta-anchor" hidden><\/div>/, 'article like widget should keep a hidden hook without visible duplicate chips');
-assert.doesNotMatch(visible, /NFT Collection NFTs 143 templates/, 'article meta chips should not duplicate the dashboard labels');
+assert.doesNotMatch(visible, /NFT Collection NFTs 143 NFTs/, 'article meta chips should not duplicate the dashboard labels');
 assert.doesNotMatch(html, /gk-universe-relationships|Crypto Moonboys Universe Path/, 'canonical universe path section should not duplicate Related Pages');
 assert.doesNotMatch(html, /gk-collection-dashboard|Collection Research Panel/, 'static collection dashboard should not duplicate the live dashboard');
-assert.doesNotMatch(html, /id="collection-summary"|Collection Summary|NFT templates found|Total issued template supply/, 'collection summary stat dump should not repeat NFT counts above the rarity tools');
+assert.doesNotMatch(html, /id="collection-summary"|Collection Summary|NFTs found|Total issued NFT supply/, 'collection summary stat dump should not repeat NFT counts above the rarity tools');
 
 assert.match(html, /GKniftyHEADS Rarity Tracker/, 'rarity tracker must remain on the page');
-assert.match(html, /gk-template-rarity-showcase[\s\S]*Template Rarity: Top 3[\s\S]*Rank #1[\s\S]*Rank #2[\s\S]*Rank #3/, 'template rarity top-three showcase cards must lead the ranking section');
+assert.match(html, /gk-template-rarity-showcase[\s\S]*NFT Rarity: Top 3[\s\S]*Rank #1[\s\S]*Rank #2[\s\S]*Rank #3/, 'NFT rarity top-three showcase cards must lead the ranking section');
 assert.match(html, /gk-global-rarity-showcase[\s\S]*Exact NFT Global Rarity: Top 3[\s\S]*Global #1[\s\S]*Global #2[\s\S]*Global #3/, 'global exact NFT top-three showcase cards must lead the asset ranking section');
 assert.doesNotMatch(templateShowcase, /gk-command-traits|Variation trait|Missing \/ burned|Issued supply/, 'template showcase cards should stay collector-focused, not mini audit tables');
-assert.doesNotMatch(globalShowcase, /gk-command-traits|Template rank|Surviving mint rank|Asset \d{6,}/, 'global showcase cards should stay collector-focused, not mini audit tables');
+assert.doesNotMatch(globalShowcase, /gk-command-traits|NFT rank|Surviving mint rank|Asset \d{6,}/, 'global showcase cards should stay collector-focused, not mini audit tables');
 assert.match(templateShowcase, /gk-showcase-key-trait[\s\S]*Key trait/, 'template showcase cards should keep one key trait line');
 assert.match(globalShowcase, /gk-showcase-key-trait[\s\S]*Key trait/, 'global showcase cards should keep one key trait line');
-assert.match(html, /<h3>Top Ranked Templates<\/h3>/, 'top ranked templates should be the main table section');
+assert.match(html, /<h3>Top Ranked NFTs<\/h3>/, 'top ranked NFTs should be the main table section');
 assert.match(html, /<h3>Best Exact NFT Versions<\/h3>/, 'asset version ranking should use the collector-facing title');
 assert.ok(
   html.indexOf('gk-template-rarity-showcase') < html.indexOf('Full Rarity Audit'),
@@ -116,7 +117,7 @@ assert.doesNotMatch(globalAuditSection.slice(0, globalAuditSection.indexOf('Adva
 const visibleMethodMatches = visible.match(/How rarity works|Rarity Method/g) || [];
 assert.equal(visibleMethodMatches.length, 1, 'visible page should contain one concise rarity-method block');
 assert.doesNotMatch(visible, /Original mint numbers never change[\s\S]*Original mint numbers never change/, 'mint-number explanation should not be repeated visibly');
-assert.match(html, /<th>Asset Rank<\/th><th>NFT<\/th><th>Asset Score<\/th><th>Asset ID<\/th><th>Template ID<\/th><th>Original Mint Number<\/th><th>Surviving Mint Rank<\/th><th>Live Supply<\/th>/, 'asset table should omit owner/template debug columns');
+assert.match(html, /<th>Asset Rank<\/th><th>NFT<\/th><th>Asset Score<\/th><th>Asset ID<\/th><th>NFT Page ID<\/th><th>Original Mint Number<\/th><th>Surviving Mint Rank<\/th><th>Live Supply<\/th>/, 'asset table should omit owner/template debug columns');
 
 assert.match(html, /<details class="wiki-section gk-schema-summary">[\s\S]*<summary><span id="schemas" role="heading" aria-level="2">Schema Summary<\/span><\/summary>/, 'schema section should be collapsed behind a valid summary heading');
 assert.match(html, /<tr><th>Schema<\/th><th>Display Name<\/th><th>Purpose \/ Notes<\/th><th>Created<\/th><\/tr>/, 'schema table should use visitor-facing columns');
@@ -165,9 +166,10 @@ assert.match(rarityClient, /const auditGroups = Array\.from\(ranking\.querySelec
 assert.match(rarityClient, /for \(const card of auditCards\) \{[\s\S]*card\.hidden = !matchesFilter\(card, normalized\);[\s\S]*for \(const group of auditGroups\)/, 'audit cards should hide using the same filter matcher as table rows');
 assert.match(rarityClient, /group\.hidden = visibleCards\.length === 0/, 'empty audit card groups should hide after filtering');
 assert.doesNotMatch(stripDetails(html), /WAX Bridge|wax-bridge-status|wax-bridge-collection-data/, 'collection/wiki page should not show infrastructure WAX Bridge cards');
-assert.match(html, /gk-related-card-grid[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Collection[\s\S]*NFT Template Pages[\s\S]*Connected Lore/, 'related pages should render as relationship cards');
+assert.match(html, /gk-related-card-grid[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Collection[\s\S]*NFT Pages[\s\S]*Connected Lore/, 'related pages should render as relationship cards');
 assert.match(html, /Canonical connections[\s\S]*Wiki Relationship Map/, 'collection page relationship section should be titled as a map, not another related-pages dump');
-assert.doesNotMatch(html, /Related NFT Templates|wiki-rabbit-card--nft-sibling|gkniftyheads-.+-\d{5,}\.html[\s\S]*is an NFT template in the gkniftyheads WAX AtomicAssets collection/, 'collection page should not render the generated related NFT template list');
+assert.doesNotMatch(html, /Related NFT Templates|Related NFTs|wiki-rabbit-card--nft-sibling|gkniftyheads-.+-\d{5,}\.html[\s\S]*is an NFT in the gkniftyheads WAX AtomicAssets collection/, 'collection page should not render the generated related NFT list');
+assert.doesNotMatch(generatedNftPage, /AtomicAssets template record/, 'generated GKniftyHEADS NFT pages should avoid visitor-facing template-record wording');
 assert.match(read('js/wiki.js'), /const existingRelationshipMap = document\.querySelector\('\[data-related-wiki-paths="true"\]'\);[\s\S]*renderRelatedPagesIntoRelationshipMap\(existingRelationshipMap, related, indexByUrl, MAX_DESC_LENGTH\);[\s\S]*return;/, 'runtime related pages should merge into an existing relationship map instead of rendering a separate Related Pages list');
 assert.match(read('js/wiki.js'), /data-related-group="Graph Related Pages"[\s\S]*Connected Wiki Nodes[\s\S]*wiki-rabbit-grid/, 'runtime related links should render as relationship-map cards');
 assert.doesNotMatch(html, /citation-vote-panel|Citation Credibility|data-cite-id="citation-panel"/, 'collection page should not render a separate citation credibility card');

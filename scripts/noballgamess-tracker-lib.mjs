@@ -735,13 +735,13 @@ function safeImageUrl(row = {}) {
 
 function renderTemplateCell(row, options = {}) {
   const imageSrc = safeImageUrl(row);
-  const title = row.title || `Template ${row.template_id}`;
+  const title = row.title || `#${row.template_id}`;
   const href = row.atomichub_url || row.atomicassets_url || '#';
   const meta = [
     options.rank ? `Rank #${row.rank}` : '',
     options.band ? row.rarity_band : '',
     options.status || '',
-    row.template_id ? `Template #${row.template_id}` : '',
+    row.template_id ? `NFT Page ID ${row.template_id}` : '',
   ].filter(Boolean).join(' · ');
   const image = imageSrc
     ? `<a class="nft-template-image-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"><img class="nft-thumb" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(title)} NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
@@ -775,10 +775,10 @@ function renderRows(rows, ranked = false) {
 
 function renderStatCards(stats) {
   return `<div class="wiki-rabbit-grid">
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.total_templates || 0)}</span><span class="wiki-rabbit-card-desc">AtomicAssets-confirmed templates</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.ranked_templates || 0)}</span><span class="wiki-rabbit-card-desc">ranked fixed-supply templates</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.utility_open_mint_templates || 0)}</span><span class="wiki-rabbit-card-desc">utility/open mint templates</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.unissued_templates || 0)}</span><span class="wiki-rabbit-card-desc">unissued templates</span></div>
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.total_templates || 0)}</span><span class="wiki-rabbit-card-desc">AtomicAssets-confirmed NFTs</span></div>
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.ranked_templates || 0)}</span><span class="wiki-rabbit-card-desc">ranked fixed-supply NFTs</span></div>
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.utility_open_mint_templates || 0)}</span><span class="wiki-rabbit-card-desc">utility/open mint NFTs</span></div>
+            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${escapeHtml(stats.unissued_templates || 0)}</span><span class="wiki-rabbit-card-desc">unissued NFTs</span></div>
           </div>`;
 }
 
@@ -833,27 +833,27 @@ function renderPage(root, data, supplemental = {}) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki</title>
-  <meta name="description" content="NoBallGames / NoBallGamess AtomicAssets template rarity, live supply, and surviving mint rank tracker.">
+  <meta name="description" content="NoBallGames / NoBallGamess AtomicAssets NFT rarity, live supply, and surviving mint rank tracker.">
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="stylesheet" href="/css/wiki.css">
 </head>
 <body class="page-wiki page-standard-shell">
   <div id="layout">
-    <main id="content" class="wiki-page">
+    <main id="content" class="wiki-page" role="main">
       <article class="wiki-article">
         <header class="wiki-hero">
           <p class="wiki-kicker">AtomicAssets Collection Tracker</p>
           <h1>NoBallGames / NoBallGamess NFT Collection</h1>
-          <p class="wiki-lede">Template rarity, current live supply checks, holder snapshots, and surviving mint rank data for the NoBallGames WAX collection.</p>
+          <p class="wiki-lede">NFT rarity, current live supply checks, holder snapshots, and surviving mint rank data for the NoBallGames WAX collection.</p>
           <p class="wiki-feed-status" data-feed-status-id="${FEED_ID}">NoBallGames rarity snapshot active - AtomicAssets source of truth - ${escapeHtml(status.status || 'pending')}</p>
-          <p><a class="wiki-button" href="${atomichubUrl()}">View Collection on AtomicHub</a> <a class="wiki-button" href="https://wax.api.atomicassets.io/atomicassets/v1/templates?collection_name=${COLLECTION}">AtomicAssets Templates API</a></p>
+          <p><a class="wiki-button" href="${atomichubUrl()}">View Collection on AtomicHub</a> <a class="wiki-button" href="https://wax.api.atomicassets.io/atomicassets/v1/templates?collection_name=${COLLECTION}">AtomicAssets NFT API</a></p>
         </header>
         <section class="wiki-section">
           <h2>Rarity Method</h2>
-          <p>This is a Template Rarity Ranking using the shared adaptive weighted rarity framework. Separate AtomicAssets template IDs may share the same artwork or name. AtomicAssets is the source of truth; AtomicHub links are reference links only.</p>
-          <p>The base template formula is live surviving supply scarcity 50%, rarity trait/name exposure scarcity 25%, variation trait/name/metadata exposure scarcity 20%, and missing/burned supply bonus 5%. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of creating fake traits.</p>
-          <p>Thin metadata templates rank mostly by live surviving supply. Burns can increase rarity through lower live supply plus a small missing/burned bonus when supported by tracker data. Market price, floor, sales, listings, market cap, and volume are display-only and never scoring inputs.</p>
-          <p>Template Rarity Ranking scores the edition/template. Asset Version Ranking scores exact live NFTs using template score, original mint number, and surviving mint rank. Original mint numbers never change. Burns do not renumber NFTs; they only affect live supply and surviving mint rank.</p>
+          <p>This is an NFT Rarity Ranking using the shared adaptive weighted rarity framework. Separate AtomicAssets NFT page IDs may share the same artwork or name. AtomicAssets is the source of truth; AtomicHub links are reference links only.</p>
+          <p>The base NFT formula is live surviving supply scarcity 50%, rarity trait/name exposure scarcity 25%, variation trait/name/metadata exposure scarcity 20%, and missing/burned supply bonus 5%. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of creating fake traits.</p>
+          <p>Thin metadata NFTs rank mostly by live surviving supply. Burns can increase rarity through lower live supply plus a small missing/burned bonus when supported by tracker data. Market price, floor, sales, listings, market cap, and volume are display-only and never scoring inputs.</p>
+          <p>NFT Rarity Ranking scores the edition/NFT page. Asset Version Ranking scores exact live NFTs using NFT score, original mint number, and surviving mint rank. Original mint numbers never change. Burns do not renumber NFTs; they only affect live supply and surviving mint rank.</p>
           <p>Original mint numbers never change. If a lower mint is burned, higher mints do not get renumbered. The rarity system may track surviving mint rank separately, which means the asset's position among currently live/unburned NFTs.</p>
           <p>Pre-baseline missing/burned is a current supply delta. It is not confirmed historic burn tracking unless future snapshots prove disappearance after tracking began.</p>
         </section>
@@ -862,34 +862,34 @@ function renderPage(root, data, supplemental = {}) {
           ${renderStatCards(stats)}
         </section>
         <section class="wiki-section">
-          <h2>Template Rarity Ranking</h2>
+          <h2>NFT Rarity Ranking</h2>
           <table class="wiki-table">
-            <thead><tr><th>NFT Template</th><th>Template ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Asset State</th></tr></thead>
+            <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Asset State</th></tr></thead>
             <tbody>${renderRows(data.ranked, true)}</tbody>
           </table>
         </section>
         <section class="wiki-section">
           <h2>Utility / Open Mint</h2>
           <table class="wiki-table">
-            <thead><tr><th>NFT Template</th><th>Template ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Asset State</th></tr></thead>
+            <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Asset State</th></tr></thead>
             <tbody>${renderRows(data.utility)}</tbody>
           </table>
         </section>
         <section class="wiki-section">
           <h2>Unissued</h2>
           <table class="wiki-table">
-            <thead><tr><th>NFT Template</th><th>Template ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Asset State</th></tr></thead>
+            <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Asset State</th></tr></thead>
             <tbody>${renderRows(data.unissued)}</tbody>
           </table>
         </section>
         <section class="wiki-section">
-          <h2>Template Stats</h2>
+          <h2>NFT Stats</h2>
           ${renderStatCards(stats)}
         </section>
         <section class="wiki-section">
           <h2>Trait Exposure</h2>
           <table class="wiki-table">
-            <thead><tr><th>Schema</th><th>Templates</th><th>Live Supply</th></tr></thead>
+            <thead><tr><th>Schema</th><th>NFTs</th><th>Live Supply</th></tr></thead>
             <tbody>${renderTraitExposureRows(asArray(traitExposure.schemas))}</tbody>
           </table>
         </section>
@@ -902,9 +902,9 @@ function renderPage(root, data, supplemental = {}) {
         </section>
         <section class="wiki-section">
           <h2>Asset Version Ranking</h2>
-          <p>Exact live NFT assets are sorted by asset_final_score, built from template_final_score, original_mint_number, and surviving_mint_rank. Burned assets are excluded and market data is excluded.</p>
+          <p>Exact live NFT assets are sorted by asset_final_score, built from NFT score, original_mint_number, and surviving_mint_rank. Burned assets are excluded and market data is excluded.</p>
           <table class="wiki-table">
-            <thead><tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Template Rank</th><th>Template Score</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Owner</th></tr></thead>
+            <thead><tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>NFT Page ID</th><th>NFT Rank</th><th>NFT Score</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Owner</th></tr></thead>
             <tbody>${renderAssetRarityRows(asArray(assetRarityLeaderboard.assets))}</tbody>
           </table>
         </section>

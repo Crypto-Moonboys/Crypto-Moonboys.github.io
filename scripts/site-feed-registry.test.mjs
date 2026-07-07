@@ -361,7 +361,7 @@ const noballgamessHolderLeaderboard = readJson('data/noballgamess/holder-leaderb
 const noballgamessAssetState = read('data/noballgamess/asset-state-cache.json');
 assert.match(noballgamessPage, /Original mint numbers never change/, 'NoBallGames page must explain permanent original mint numbers');
 assert.match(noballgamessPage, /surviving mint rank/, 'NoBallGames page must explain surviving mint rank');
-assert.match(noballgamessPage, /Template Stats/, 'NoBallGames page must render template stats');
+assert.match(noballgamessPage, /NFT Stats/, 'NoBallGames page must render NFT stats');
 assert.match(noballgamessPage, /Trait Exposure/, 'NoBallGames page must render trait exposure');
 assert.match(noballgamessPage, /Holder Leaderboard/, 'NoBallGames page must render holder leaderboard');
 assert.match(noballgamessPage, /Asset Version Ranking/, 'NoBallGames page must render scored Asset Version Ranking');
