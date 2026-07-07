@@ -342,12 +342,12 @@
             '<textarea id="cm-text-' + pageId + '" name="text" rows="5" maxlength="2000" placeholder="HODL or NGMI? Drop your knowledge..." required></textarea>' +
             '<span class="comment-character-counter">0 / 2000</span>' +
           '</div>' +
+          '<div class="comment-form-footer">' +
+            '<span class="comment-form-note">Drop facts. Share alpha. Help level up the archive.</span>' +
+            '<button type="submit" class="swarmsy-form-button">Post Comment</button>' +
+          '</div>' +
         '</div>' +
         buildTopContributorsHTML() +
-      '</div>' +
-      '<div class="comment-form-footer">' +
-        '<span class="comment-form-note">Drop facts. Share alpha. Help level up the archive.</span>' +
-        '<button type="submit" class="swarmsy-form-button">Post Comment</button>' +
       '</div>' +
       '<div class="comment-form-status" role="status" aria-live="polite"></div>' +
       buildInfoCards() +
@@ -609,7 +609,6 @@
       '<section class="comments-section comments-battle-dashboard" aria-labelledby="comments-battle-title">' +
         '<header class="comments-battle-header">' +
           '<div>' +
-            '<p class="comments-battle-kicker">Community intelligence</p>' +
             '<h2 id="comments-battle-title" class="comments-heading">Comments &amp; Battle Layer</h2>' +
             '<p class="comments-battle-subtitle">Share knowledge. Earn XP. Build the archive.</p>' +
           '</div>' +

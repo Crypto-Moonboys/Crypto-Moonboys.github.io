@@ -170,7 +170,9 @@ assert.doesNotMatch(html, /Related NFT Templates|wiki-rabbit-card--nft-sibling|g
 assert.doesNotMatch(html, /citation-vote-panel|Citation Credibility|data-cite-id="citation-panel"/, 'collection page should not render a separate citation credibility card');
 assert.match(html, /<ul class="sources-list">[\s\S]*wax\.api\.atomicassets\.io[\s\S]*waxitems\.com/, 'sources list should remain the visible citation home');
 assert.match(battleLayer, /document\.querySelectorAll\('\.citations-list li, \.source-ref-list li, \.sources-list li'\)/, 'sources-list items should receive inline citation vote controls');
-assert.match(html, /gk-community-intelligence-panel[\s\S]*Community intelligence[\s\S]*Collector Notes[\s\S]*class="wiki-comments"/, 'comments should sit inside a community intelligence panel');
+assert.match(html, /gk-community-intelligence-panel[\s\S]*class="wiki-comments"/, 'comments should sit inside a community intelligence panel');
+assert.doesNotMatch(html, /<p class="gk-command-kicker">Community intelligence<\/p>|id="gk-community-intelligence-title">Collector Notes<\/h2>/, 'comments wrapper should not render duplicate community/collector labels');
+assert.doesNotMatch(read('js/comments.js'), /comments-battle-kicker">Community intelligence/, 'comments dashboard should not duplicate the community intelligence kicker');
 
 assert.match(css, /\.gk-collection-actions/, 'collection action row should have responsive styling');
 assert.match(css, /body\.page-wiki\.page-gkniftyheads-collection #content\s*\{[\s\S]*padding-top:\s*0/, 'collection page should remove the large gap below navigation');
