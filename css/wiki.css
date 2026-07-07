@@ -2077,6 +2077,7 @@ body.page-wiki .wiki-section {
 }
 
 body.page-wiki .wiki-section h2,
+body.page-wiki .wiki-section summary [role="heading"],
 body.page-wiki .wiki-section h3 {
   margin-top: 0;
   color: #00ffcc;
@@ -2084,6 +2085,7 @@ body.page-wiki .wiki-section h3 {
   border-left: 3px solid rgba(86, 220, 255, 0.62);
   border-bottom: 1px solid rgba(86, 220, 255, 0.2);
   border-radius: 10px;
+  display: block;
   font-family: var(--font-display);
   text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
 }

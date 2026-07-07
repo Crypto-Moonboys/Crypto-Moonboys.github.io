@@ -37,6 +37,7 @@ const html = read('wiki/gkniftyheads-nft-collection.html');
 const visible = visibleText(html);
 const statusClient = read('js/site-feed-status.js');
 const rarityClient = read('js/gkniftyheads-rarity.js');
+const rarityGenerator = read('scripts/generate-gkniftyheads-rarity.mjs');
 const css = read('css/wiki.css');
 const sharedHeaderHtml = read('wiki/components/header.html');
 const siteShell = read('js/site-shell.js');
@@ -117,7 +118,7 @@ assert.equal(visibleMethodMatches.length, 1, 'visible page should contain one co
 assert.doesNotMatch(visible, /Original mint numbers never change[\s\S]*Original mint numbers never change/, 'mint-number explanation should not be repeated visibly');
 assert.match(html, /<th>Asset Rank<\/th><th>NFT<\/th><th>Asset Score<\/th><th>Asset ID<\/th><th>Template ID<\/th><th>Original Mint Number<\/th><th>Surviving Mint Rank<\/th><th>Live Supply<\/th>/, 'asset table should omit owner/template debug columns');
 
-assert.match(html, /<details class="wiki-section gk-schema-summary">[\s\S]*<summary><h2 id="schemas">Schema Summary<\/h2><\/summary>/, 'schema section should be collapsed behind a readable summary');
+assert.match(html, /<details class="wiki-section gk-schema-summary">[\s\S]*<summary><span id="schemas" role="heading" aria-level="2">Schema Summary<\/span><\/summary>/, 'schema section should be collapsed behind a valid summary heading');
 assert.match(html, /<tr><th>Schema<\/th><th>Display Name<\/th><th>Purpose \/ Notes<\/th><th>Created<\/th><\/tr>/, 'schema table should use visitor-facing columns');
 assert.match(html, /<td><code>bmhodlwarsyo<\/code><\/td>\s*<td>HODL WARS Battle Mechs<\/td>/, 'known schema slug should have readable display name');
 assert.match(html, /<td><code>gkniftyheads<\/code><\/td>\s*<td>GKniftyHEADS<\/td>/, 'core schema should have readable display name');
@@ -129,6 +130,8 @@ assert.match(statusClient, /Rarity snapshot active - issued-supply fallback - li
 assert.match(statusClient, /node\.textContent = label\(status\)/, 'badge visible text should use visitor-safe label');
 assert.match(statusClient, /node\.setAttribute\('title', detailLabel\(status\)\)/, 'detailed feed errors should stay in title text');
 assert.doesNotMatch(statusClient, /node\.textContent = detailLabel/, 'detailed feed errors must not become visible badge text');
+assert.match(rarityGenerator, /data-feed-status-id="gkniftyheads_rarity" hidden aria-hidden="true"/, 'rarity generator should preserve the hidden feed status hook on refresh');
+assert.doesNotMatch(rarityGenerator, /data-feed-status-id="gkniftyheads_rarity">Rarity snapshot active/, 'rarity generator should not re-emit a visible feed status sentence');
 
 const waxRenderer = read('js/wax-collection-renderer.js');
 const battleLayer = read('js/battle-layer.js');
