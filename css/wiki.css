@@ -2409,7 +2409,7 @@ body.page-wiki .comments-battle-dashboard .comment-form-identity {
   padding: 16px;
 }
 
-body.page-wiki .comments-battle-dashboard .comment-form-field {
+body.page-wiki .comments-battle-dashboard .comment-form-identity .comment-form-field {
   grid-template-rows: minmax(2.8em, auto) 76px minmax(1.35em, auto);
   gap: 8px;
 }
@@ -2443,7 +2443,7 @@ body.page-wiki .comments-battle-dashboard .comment-form textarea {
   box-shadow: inset 0 0 18px rgba(37, 176, 255, .08);
 }
 
-body.page-wiki .comments-battle-dashboard .comment-form input {
+body.page-wiki .comments-battle-dashboard .comment-form-identity input {
   height: 76px;
 }
 
