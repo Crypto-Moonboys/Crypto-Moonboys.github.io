@@ -209,6 +209,7 @@ button {
 }
 
 #search-results .sr-item:hover,
+#search-results .sr-item:focus-visible,
 #search-results .search-result-item:hover,
 #search-results .search-result-item:focus-visible {
   background: rgba(86, 220, 255, 0.08);

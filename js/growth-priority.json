@@ -4025,7 +4025,7 @@
     },
     {
       "target_url": "/wiki/nbgx-token.html",
-      "target_slug": "nbgx",
+      "target_slug": "nbgx-token",
       "action_type": "expand_existing_page",
       "priority_score": 74,
       "reasons": [
