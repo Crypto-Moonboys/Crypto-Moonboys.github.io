@@ -175,15 +175,16 @@
   }
 
   function robotAvatar(color, name, uid) {
+    var avatarColor = normalizeContributorColor(color);
     var palette = {
       gold: ['#ffd447', '#ff9d00'],
       cyan: ['#32d7ff', '#0877ff'],
       purple: ['#d35cff', '#7d37ff'],
       green: ['#64ff76', '#0bbf61'],
       orange: ['#ff9a2f', '#ff4d18'],
-    }[color] || ['#32d7ff', '#0877ff'];
-    var gradientId = 'robot-' + String(color || 'cyan').replace(/[^a-z0-9_-]/gi, '') + '-' + String(uid || name || 'avatar').replace(/[^a-z0-9_-]/gi, '');
-    return '<span class="comment-robot-avatar comment-robot-avatar--' + esc(color) + '" aria-hidden="true">' +
+    }[avatarColor];
+    var gradientId = 'robot-' + avatarColor + '-' + String(uid || name || 'avatar').replace(/[^a-z0-9_-]/gi, '');
+    return '<span class="comment-robot-avatar comment-robot-avatar--' + esc(avatarColor) + '" aria-hidden="true">' +
       '<svg viewBox="0 0 64 64" focusable="false" aria-hidden="true">' +
         '<defs><linearGradient id="' + esc(gradientId) + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="' + palette[0] + '"/><stop offset="1" stop-color="' + palette[1] + '"/></linearGradient></defs>' +
         '<circle cx="32" cy="32" r="29" fill="rgba(2,8,18,.92)" stroke="url(#' + esc(gradientId) + ')" stroke-width="2"/>' +
@@ -195,10 +196,15 @@
     '</span>';
   }
 
+  function normalizeContributorColor(color) {
+    var key = String(color || '').trim().toLowerCase().replace(/[^a-z]/g, '');
+    return ['gold', 'cyan', 'purple', 'green', 'orange'].indexOf(key) >= 0 ? key : 'cyan';
+  }
+
   function contributorRows(list) {
     return list.slice(0, 5).map(function (item, index) {
       var rank = item.rank || index + 1;
-      var color = item.color || ['gold', 'cyan', 'purple', 'green', 'orange'][index] || 'cyan';
+      var color = normalizeContributorColor(item.color || ['gold', 'cyan', 'purple', 'green', 'orange'][index]);
       return '<li class="top-contributor-row top-contributor-row--' + esc(color) + '">' +
         '<span class="top-contributor-rank">' + esc(rank) + '</span>' +
         robotAvatar(color, item.name || 'Contributor', rank) +
@@ -334,7 +340,7 @@
           '<div class="comment-form-field comment-form-field--take">' +
             '<label for="cm-text-' + pageId + '">Your Take <span class="cm-required">*</span></label>' +
             '<textarea id="cm-text-' + pageId + '" name="text" rows="5" maxlength="2000" placeholder="HODL or NGMI? Drop your knowledge..." required></textarea>' +
-            '<span class="comment-character-counter" aria-live="polite">0 / 2000</span>' +
+            '<span class="comment-character-counter">0 / 2000</span>' +
           '</div>' +
         '</div>' +
         buildTopContributorsHTML() +

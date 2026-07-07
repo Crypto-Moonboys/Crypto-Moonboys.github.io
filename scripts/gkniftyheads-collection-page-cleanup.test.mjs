@@ -150,6 +150,7 @@ assert.match(battleCss, /battle-engagement-deck--collection \.battle-shell--miss
 assert.match(battleCss, /animation:\s*gkCollectionCardPulse 8\.8s ease-in-out infinite[\s\S]*animation:\s*gkCollectionEdgeSweep 10\.5s linear infinite/, 'collection card glow should be slowed down for a premium treatment');
 assert.match(battleCss, /mission-like-row\s*\{[\s\S]*background:\s*transparent;[\s\S]*border:\s*0;/, 'Daily Missions article like row should not draw a box behind the heart');
 assert.match(battleCss, /mission-like-row \.like-icon\s*\{[\s\S]*animation:\s*gkMissionHeartPulse 1\.9s ease-in-out infinite/, 'Daily Missions heart should pulse subtly');
+assert.match(battleCss, /mission-like-row \.like-btn\s*\{[\s\S]*min-height:\s*44px;[\s\S]*padding:\s*0 8px;/, 'Daily Missions like button should keep an accessible touch target without restoring the old box');
 assert.match(battleCss, /prefers-reduced-motion:\s*reduce[\s\S]*animation:\s*none/, 'collection dashboard animations should respect reduced motion');
 assert.match(sharedHeaderHtml, /id="moonboys-global-status-badge"[\s\S]*aria-live="polite"/, 'shared wiki header should include the Telegram/live sync badge slot');
 assert.match(siteShell, /id="moonboys-global-status-badge"[\s\S]*aria-live="polite"/, 'runtime fallback header should include the Telegram/live sync badge slot');
