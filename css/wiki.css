@@ -3542,6 +3542,27 @@ body.page-home .hero-stat {
   padding: 16px 18px;
 }
 
+@media (max-width: 760px) {
+  body.page-home .home-hero-inner {
+    display: block;
+    max-width: none;
+    padding: clamp(28px, 8vw, 44px) clamp(22px, 6vw, 34px) 0;
+  }
+
+  body.page-home .home-hero-copy {
+    max-width: none;
+  }
+
+  body.page-home .launch-cta-row,
+  body.page-home .launch-route,
+  body.page-home .hero-stats {
+    width: calc(100% - clamp(44px, 12vw, 68px));
+    max-width: none;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
 @media (max-width: 760px) and (orientation: portrait) {
   body.page-home .home-hero,
   body.page-home .launch-hero {
@@ -3565,25 +3586,6 @@ body.page-home .hero-stat {
     display: block;
     width: 100%;
     height: auto;
-  }
-
-  body.page-home .home-hero-inner {
-    display: block;
-    max-width: none;
-    padding: clamp(28px, 8vw, 44px) clamp(22px, 6vw, 34px) 0;
-  }
-
-  body.page-home .home-hero-copy {
-    max-width: none;
-  }
-
-  body.page-home .launch-cta-row,
-  body.page-home .launch-route,
-  body.page-home .hero-stats {
-    width: calc(100% - clamp(44px, 12vw, 68px));
-    max-width: none;
-    margin-right: auto;
-    margin-left: auto;
   }
 }
 
