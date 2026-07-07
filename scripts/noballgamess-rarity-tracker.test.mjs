@@ -230,7 +230,7 @@ assert.match(html, /Original mint numbers never change/, 'page should explain pe
 assert.match(html, /surviving mint rank/, 'page should explain surviving mint rank');
 assert.match(html, /data-feed-status-id="noballgamess_rarity"/, 'page should expose NoBallGames feed status badge');
 assert.match(html, /AtomicAssets is the source of truth/, 'page should name AtomicAssets as source of truth');
-assert.match(html, /Template Stats/, 'page should render template stats section');
+assert.match(html, /NFT Stats/, 'page should render NFT stats section');
 assert.match(html, /shared adaptive weighted rarity framework/, 'page should explain the shared adaptive weighted rarity framework');
 assert.match(html, /Final Score/, 'page should render final_score column');
 assert.match(html, /Rarity Scored/, 'page should render rarity scoring enabled state');
@@ -244,10 +244,11 @@ assert.match(html, /asset_final_score/, 'page should explain asset_final_score s
 assert.match(html, /Market analytics — display only, not rarity input/, 'page should render display-only market analytics section');
 
 assert.match(html, /<img class="nft-thumb"/, 'NoBallGames page should render NFT thumbnail images');
-assert.match(html, /<h2>Template Rarity Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'Template Rarity Ranking rows should include image markup');
+assert.match(html, /<h2>NFT Rarity Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'NFT Rarity Ranking rows should include image markup');
 assert.match(html, /<h2>Utility \/ Open Mint<\/h2>[\s\S]*<img class="nft-thumb"/, 'Utility/Open Mint rows should include image markup when image data exists');
 assert.match(html, /<h2>Asset Version Ranking<\/h2>[\s\S]*<img class="nft-thumb"/, 'Asset Version Ranking rows should include image markup');
 assert.doesNotMatch(html, /src="[^"]*gkniftyheads/i, 'NoBallGames rendered image src must not point to gkniftyheads assets');
+assert.doesNotMatch(html, /Template Rarity Ranking|NFT Template|Template ID|Template #|Template Stats|Template Score|AtomicAssets Templates API/, 'visitor-facing NoBallGames collection copy should avoid template wording');
 assert.doesNotMatch(html, /src="[^"]*\/img\/noballgames(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgames path spelling');
 assert.doesNotMatch(html, /src="[^"]*\/img\/noballgame(?:\/|-)/i, 'NoBallGames rendered image src must not use broken noballgame path spelling');
 for (const [, src] of html.matchAll(/<img class="nft-thumb"[^>]+src="([^"]+)"/g)) {

@@ -1192,7 +1192,7 @@ function featuredCard(row) {
   return `<article class="gk-command-featured-card gk-showcase-card" data-rarity-filter="${rarityFilterTokens(row)}">
       <div class="gk-command-featured-media">${image}</div>
       <div class="gk-command-featured-copy">
-        <div class="gk-command-eyebrow">Rank #${row.rank} template</div>
+        <div class="gk-command-eyebrow">Rank #${row.rank} NFT</div>
         <h3>${esc(row.title)}</h3>
         <div class="gk-command-badges">
           <span class="gk-command-badge gk-command-badge--rank">Rank #${row.rank}</span>
@@ -1239,7 +1239,7 @@ function rarityOverviewCards() {
   return `<div class="gk-section-card-grid gk-rarity-overview-cards" aria-label="Rarity overview">
             <div class="gk-info-card">
               <span>NFT rarity</span>
-              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate template IDs may share the same artwork or name.</p>
+              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate NFT page IDs may share the same artwork or name.</p>
             </div>
             <div class="gk-info-card">
               <span>Live supply first</span>
@@ -1311,7 +1311,7 @@ function globalRarityHeroCard(row) {
 
 function globalDeckNotes(assetPreview) {
   return `<div class="gk-command-support" aria-label="Global rarity guide">
-      ${commandNote('Exact NFT rarity', 'Ranks exact live NFTs, not just templates. These cards spotlight individual assets while full IDs, mint fields, and verification data stay in the audit table below.')}
+      ${commandNote('Exact NFT rarity', 'Ranks exact live NFTs as individual assets. These cards spotlight specific assets while full IDs, mint fields, and verification data stay in the audit table below.')}
       ${commandNote('Source rule', 'AtomicAssets remains the source of truth; marketplace data is not used for ranking.')}
     </div>`;
 }
@@ -1433,7 +1433,7 @@ function sideAuditCard(row, status) {
 }
 
 function groupedSideCards(rows, { status, getGroup }) {
-  if (!rows.length) return '<p class="lore-paragraph">No templates currently match this section.</p>';
+  if (!rows.length) return '<p class="lore-paragraph">No NFTs currently match this section.</p>';
   const groups = [...new Set(rows.map(getGroup))];
   return `<div class="gk-audit-card-groups gk-side-card-groups">
       ${groups.map((group) => {
@@ -1441,7 +1441,7 @@ function groupedSideCards(rows, { status, getGroup }) {
         return `<section class="gk-audit-card-group">
         <div class="gk-audit-card-group-heading">
           <h4>${esc(group)}</h4>
-          <span>${groupRows.length} templates</span>
+          <span>${groupRows.length} NFTs</span>
         </div>
         <div class="gk-audit-card-grid">
           ${groupRows.map((row) => sideAuditCard(row, status)).join('\n          ')}
@@ -1518,7 +1518,7 @@ function rankingTable(rows, {
               <thead>
                 <tr>
                   <th>NFT</th>
-                  <th>Template ID</th>
+                  <th>NFT Page ID</th>
                   <th>${supplyLabel}</th>
                   <th>Issued Supply</th>
                   <th>Pre-baseline Missing/Burned</th>
@@ -1562,7 +1562,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
     ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
     : '<strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.';
   const assetStateCopy = stats.asset_state_templates_tracked
-    ? `<strong>Asset state cache:</strong> ${stats.asset_state_ok_templates}/${stats.asset_state_templates_tracked} template states match current _count supply; ${stats.asset_state_mismatch_templates} mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> ${esc(stats.asset_state_last_checked_at || 'Not scanned')}.`
+    ? `<strong>Asset state cache:</strong> ${stats.asset_state_ok_templates}/${stats.asset_state_templates_tracked} NFT page records match current _count supply; ${stats.asset_state_mismatch_templates} mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> ${esc(stats.asset_state_last_checked_at || 'Not scanned')}.`
     : '<strong>Asset state cache:</strong> pending first successful asset delta scan.';
   const templateHeroCards = model.ranked.slice(0, 3);
   const secondaryTopRanked = model.ranked.slice(3, 9);
@@ -1621,8 +1621,8 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             <h3>How rarity works</h3>
             <div class="gk-section-card-grid gk-rarity-method-cards" aria-label="Rarity methodology notes">
               <div class="gk-info-card">
-                <span>Template formula</span>
-                <p>Template scores use 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available.</p>
+                <span>NFT formula</span>
+                <p>NFT scores use 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available.</p>
               </div>
               <div class="gk-info-card">
                 <span>Mint rules</span>
@@ -1665,7 +1665,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${advancedTable('Advanced raw global rarity table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-asset-version-table">
                   <thead>
-                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
+                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>NFT Page ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
                   </thead>
                   <tbody>${assetPreview.length ? assetPreview.map(assetVersionRow).join('\n                ') : '<tr><td colspan="8">Pending asset-state sync.</td></tr>'}</tbody>
                 </table>
@@ -1680,7 +1680,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${groupedSideCards(model.utility, { status: 'Utility / Open Mint', getGroup: utilityBucket })}
               ${advancedTable('Advanced raw utility table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.utility.map(utilityRow).join('\n                ')}</tbody>
                 </table>
               </div>`)}
@@ -1694,7 +1694,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${groupedSideCards(model.unissued, { status: 'Unissued', getGroup: () => 'Not Circulating' })}
               ${advancedTable('Advanced raw unissued table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.unissued.map(utilityRow).join('\n                ')}</tbody>
                 </table>
               </div>`)}
@@ -1712,12 +1712,12 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
             </section>
             <section class="wiki-section gk-rarity-source-note">
               <h3>Source Links / Methodology Note</h3>
-              <p class="lore-paragraph">Source data comes from AtomicAssets, existing website collection data, and local GKniftyHEADS template wiki pages. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
+              <p class="lore-paragraph">Source data comes from AtomicAssets, existing website collection data, and local GKniftyHEADS NFT pages. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
             </section>
           </details>
 
           <section class="wiki-section gk-rarity-raw-fallback" data-rarity-fallback hidden>
-            <p class="notice notice-warning">Live rarity data unavailable. Showing raw template list only. This is not the final rarity ranking.</p>
+            <p class="notice notice-warning">Live rarity data unavailable. Showing raw NFT list only. This is not the final rarity ranking.</p>
 ${rawSection}
           </section>
         </section>
@@ -1791,8 +1791,8 @@ function replaceSection(html, rankingSection) {
   if (html.includes(RARITY_BEGIN) && html.includes(RARITY_END)) {
     return html.replace(new RegExp(`${RARITY_BEGIN}[\\s\\S]*?${RARITY_END}`), rankingSection);
   }
-  const oldSection = html.match(/        <section class="wiki-section">\s*<h2 id="all-nfts">All NFTs \/ Templates<\/h2>[\s\S]*?        <\/section>/i)?.[0];
-  if (!oldSection) throw new Error('Could not find old All NFTs / Templates section to replace.');
+  const oldSection = html.match(/        <section class="wiki-section">\s*<h2 id="all-nfts">All NFTs(?: \/ Templates)?<\/h2>[\s\S]*?        <\/section>/i)?.[0];
+  if (!oldSection) throw new Error('Could not find old All NFTs section to replace.');
   return html.replace(oldSection, rankingSection);
 }
 
@@ -1800,7 +1800,7 @@ export async function runGenerateGkniftyheadsRarity(root = ROOT, options = {}) {
   const collectionPage = path.join(root, 'wiki', 'gkniftyheads-nft-collection.html');
   const html = fs.readFileSync(collectionPage, 'utf8');
   const oldSection = html.match(new RegExp(`${RAW_BEGIN}[\\s\\S]*?${RAW_END}`))?.[0]
-    || html.match(/        <section class="wiki-section">\s*<h2 id="all-nfts">All NFTs \/ Templates<\/h2>[\s\S]*?        <\/section>/i)?.[0];
+    || html.match(/        <section class="wiki-section">\s*<h2 id="all-nfts">All NFTs(?: \/ Templates)?<\/h2>[\s\S]*?        <\/section>/i)?.[0];
   if (!oldSection) throw new Error('Could not locate raw template table section.');
 
   const localRows = extractRows(html, root);
