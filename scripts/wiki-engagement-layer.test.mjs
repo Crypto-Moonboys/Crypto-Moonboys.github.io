@@ -30,6 +30,7 @@ const battleLayer = read('js/battle-layer.js');
 const engagement = read('js/engagement.js');
 const comments = read('js/comments.js');
 const css = read('css/battle-layer.css');
+const wikiCss = read('css/wiki.css');
 const apiConfig = read('js/api-config.js');
 const worker = read('workers/moonboys-api/worker.js');
 const wuffi = read('wiki/wuffi.html');
@@ -65,6 +66,22 @@ check(comments.includes('Telegram linked:') && comments.includes('Email optional
 check(comments.includes('if (!email && !telegramAuth)') && comments.includes('if (email)   payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
 check(comments.includes('Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.'), 'Unlinked users see a clean Telegram quick-fill fallback');
 check(comments.includes('Gravatar avatar ready from saved email.') && comments.includes('Email required for Gravatar avatar, never displayed.'), 'Gravatar copy reflects saved-email reality without fake account detection');
+check(comments.includes('Comments &amp; Battle Layer') && comments.includes('Share knowledge. Earn XP. Build the archive.'), 'Comment section renders the redesigned battle-layer dashboard header');
+check(comments.includes('name="discord_username"') && comments.includes('Gravatar used for avatar. Email never displayed.'), 'Comment form includes Discord and clear Gravatar privacy copy');
+check(comments.includes('maxlength="2000"') && comments.includes('comment-character-counter') && comments.includes("textEl.addEventListener('input', updateCounter)"), 'Comment form includes a 2000-character counter wired to textarea input');
+check(!/<span class="comment-character-counter"[^>]*aria-live/.test(comments), 'Comment character counter is not live-announced on every keystroke');
+for (const name of ['Swarmsy', 'Alfie Blaze', 'CrypticYuna', 'Boneidol INK', 'P-Fly']) {
+  check(comments.includes(name), `Fallback top contributors include ${name}`);
+}
+check(comments.includes('window.MOONBOYS_TOP_CONTRIBUTORS') && comments.includes('top-contributor-tab') && comments.includes('contributorRows(rows)') && comments.includes('data-top-contributor-leader') && comments.includes('aria-pressed'), 'Top Contributors card is data-driven with synced week/all-time toggles');
+check(comments.includes('function normalizeContributorColor(color)') && comments.includes("String(color || '').trim().toLowerCase()") && comments.includes('top-contributor-row--') && comments.includes('robotAvatar(color'), 'Top contributor colors are normalized before classes and avatars are rendered');
+for (const color of ['gold', 'cyan', 'purple', 'green', 'orange']) {
+  check(comments.includes("color: '" + color + "'") && comments.includes('comment-robot-avatar--'), `Top contributor fallback includes ${color} robot avatar variant`);
+}
+check(comments.includes('XP For Engagement') && comments.includes('Cite To Earn') && comments.includes('Quality Matters') && comments.includes('Real Community'), 'Comment dashboard includes four bottom guidance cards');
+check(wikiCss.includes('.comments-battle-dashboard') && wikiCss.includes('.comments-top-contributors') && wikiCss.includes('.comments-info-card--xp') && wikiCss.includes('commentsDashboardGlow'), 'Comment dashboard cyberpunk layout styles are present');
+check(wikiCss.includes('.comments-info-card--cite') && wikiCss.includes('.comments-info-card--quality') && wikiCss.includes('.comments-info-card--community'), 'Comment dashboard info cards have distinct color-family styles');
+check(wikiCss.includes('@media (max-width: 1180px)') && wikiCss.includes('@media (max-width: 720px)') && wikiCss.includes('prefers-reduced-motion: reduce'), 'Comment dashboard supports responsive and reduced-motion layouts');
 const profileSave = section(comments, 'function saveCommentProfile(profile)', 'function cleanTelegramUsername');
 check(profileSave.includes("'name'") && profileSave.includes("'email'") && profileSave.includes("'telegram_username'") && profileSave.includes("'discord_username'") && profileSave.includes("'avatar_url'"), 'Saved commenter profile includes only expected identity fields');
 check(!profileSave.includes('telegram_auth') && !profileSave.includes('text'), 'Saved commenter profile excludes raw Telegram auth and comment text');

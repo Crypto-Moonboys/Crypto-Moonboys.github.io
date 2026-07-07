@@ -1576,7 +1576,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               <p class="gk-command-kicker">GKniftyHEADS Rarity Tracker / Template Rarity Ranking</p>
               <h2 id="gkniftyheads-rarity-ranking">GKniftyHEADS Rarity Command Deck</h2>
             </div>
-            <span class="feed-status-badge" data-feed-status-id="gkniftyheads_rarity">Rarity snapshot active</span>
+            <span class="feed-status-badge" data-feed-status-id="gkniftyheads_rarity" hidden aria-hidden="true"></span>
           </div>
           ${rarityOverviewCards()}
           <div class="wiki-stat-grid gk-rarity-stats gk-command-stat-strip" data-rarity-stat-grid="true">

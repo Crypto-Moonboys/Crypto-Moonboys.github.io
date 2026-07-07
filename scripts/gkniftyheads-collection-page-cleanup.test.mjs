@@ -37,6 +37,7 @@ const html = read('wiki/gkniftyheads-nft-collection.html');
 const visible = visibleText(html);
 const statusClient = read('js/site-feed-status.js');
 const rarityClient = read('js/gkniftyheads-rarity.js');
+const rarityGenerator = read('scripts/generate-gkniftyheads-rarity.mjs');
 const css = read('css/wiki.css');
 const sharedHeaderHtml = read('wiki/components/header.html');
 const siteShell = read('js/site-shell.js');
@@ -63,14 +64,14 @@ assert.match(html, /class="howto-btn howto-btn-secondary"[^>]+>Burn \/ Blend<\/a
 assert.match(html, /class="howto-btn howto-btn-secondary"[^>]+>View AtomicHub<\/a>/, 'AtomicHub collection action button must render with How To Play button styling');
 const collectionHero = sliceBetween(html, '<header class="page-hero wiki-living-hero gk-collection-hero">', '<script type="application/json" class="nft-search-terms"');
 assert.doesNotMatch(collectionHero, /gk-info-card|wiki-action-button|<div class="page-title-line"/, 'collection hero should not contain nested cards, old wiki buttons, or article title chrome');
-assert.match(collectionHero, /gk-collection-actions[\s\S]*<div class="gk-parent-hub-card">[\s\S]*Primary parent/, 'parent hub copy should sit in the hero content stack after actions, not float over them');
+assert.doesNotMatch(collectionHero, /gk-parent-hub-card|Primary parent/, 'collection hero should not repeat the parent relationship card');
 assert.match(html, /<nav class="breadcrumb" aria-label="Breadcrumb">[\s\S]*Home[\s\S]*&rarr;[\s\S]*NFTs[\s\S]*&rarr;[\s\S]*GKniftyHEADS NFT Collection/, 'breadcrumb should render clean Home -> NFTs -> collection hierarchy');
 assert.doesNotMatch(html, /<span class="sep" aria-hidden="true">\?<\/span>/, 'breadcrumb separators must not render broken question marks');
-assert.match(html, /gk-parent-hub-card[\s\S]*Primary parent[\s\S]*href="\/wiki\/crypto-moonboys\.html"[\s\S]*Crypto Moonboys/, 'collection page should identify Crypto Moonboys as the primary parent');
-assert.match(html, /gk-universe-relationships[\s\S]*Crypto Moonboys Universe Path[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Lore[\s\S]*GKniftyHEADS NFT Pages[\s\S]*HODL WARS Links/, 'page should surface canonical universe relationships above collector tools');
-assert.match(html, /gk-collection-dashboard[\s\S]*Collection Research Panel[\s\S]*Artwork source[\s\S]*Collection Stats[\s\S]*Rarity Tools/, 'secondary collection dashboard should stay below the live showcase without duplicating Daily Missions');
-const staticDashboard = sliceBetween(html, '<section class="wiki-section gk-collection-dashboard"', '<section class="wiki-section">');
-assert.doesNotMatch(staticDashboard, /Daily Missions/, 'static collection dashboard must not duplicate the live Daily Missions component');
+assert.match(html, /<div class="article-meta gk-collection-meta-anchor" hidden><\/div>/, 'article like widget should keep a hidden hook without visible duplicate chips');
+assert.doesNotMatch(visible, /NFT Collection NFTs 143 templates/, 'article meta chips should not duplicate the dashboard labels');
+assert.doesNotMatch(html, /gk-universe-relationships|Crypto Moonboys Universe Path/, 'canonical universe path section should not duplicate Related Pages');
+assert.doesNotMatch(html, /gk-collection-dashboard|Collection Research Panel/, 'static collection dashboard should not duplicate the live dashboard');
+assert.doesNotMatch(html, /id="collection-summary"|Collection Summary|NFT templates found|Total issued template supply/, 'collection summary stat dump should not repeat NFT counts above the rarity tools');
 
 assert.match(html, /GKniftyHEADS Rarity Tracker/, 'rarity tracker must remain on the page');
 assert.match(html, /gk-template-rarity-showcase[\s\S]*Template Rarity: Top 3[\s\S]*Rank #1[\s\S]*Rank #2[\s\S]*Rank #3/, 'template rarity top-three showcase cards must lead the ranking section');
@@ -106,7 +107,8 @@ for (const phrase of ['gk-side-card-groups', 'Utility / Coupons', 'Open Mint / I
 for (const phrase of ['gk-side-card-groups', 'Not Circulating', 'Advanced raw unissued table']) {
   assert.ok(unissuedSection.includes(phrase), `unissued section should include ${phrase}`);
 }
-assert.match(html, /data-feed-status-id="gkniftyheads_rarity"/, 'feed status badge must remain');
+assert.match(html, /data-feed-status-id="gkniftyheads_rarity" hidden aria-hidden="true"/, 'feed status hook must remain hidden so the status sentence does not duplicate the dashboard');
+assert.doesNotMatch(visible, /Rarity snapshot active - live supply counted - burn baseline active|Feed status loading/, 'feed status sentence should not be visible on the collection page');
 assert.doesNotMatch(html, /\[object Object\]/, 'market analytics should not render object values as text');
 assert.doesNotMatch(templateAuditSection.slice(0, templateAuditSection.indexOf('Advanced raw rarity table')), /<table class="wiki-table gk-rarity-table/, 'template raw table should sit behind advanced details');
 assert.doesNotMatch(globalAuditSection.slice(0, globalAuditSection.indexOf('Advanced raw global rarity table')), /<table class="wiki-table gk-asset-version-table/, 'global raw table should sit behind advanced details');
@@ -116,7 +118,7 @@ assert.equal(visibleMethodMatches.length, 1, 'visible page should contain one co
 assert.doesNotMatch(visible, /Original mint numbers never change[\s\S]*Original mint numbers never change/, 'mint-number explanation should not be repeated visibly');
 assert.match(html, /<th>Asset Rank<\/th><th>NFT<\/th><th>Asset Score<\/th><th>Asset ID<\/th><th>Template ID<\/th><th>Original Mint Number<\/th><th>Surviving Mint Rank<\/th><th>Live Supply<\/th>/, 'asset table should omit owner/template debug columns');
 
-assert.match(html, /<h2 id="schemas">Schema Summary<\/h2>/, 'schema section should be a readable summary');
+assert.match(html, /<details class="wiki-section gk-schema-summary">[\s\S]*<summary><span id="schemas" role="heading" aria-level="2">Schema Summary<\/span><\/summary>/, 'schema section should be collapsed behind a valid summary heading');
 assert.match(html, /<tr><th>Schema<\/th><th>Display Name<\/th><th>Purpose \/ Notes<\/th><th>Created<\/th><\/tr>/, 'schema table should use visitor-facing columns');
 assert.match(html, /<td><code>bmhodlwarsyo<\/code><\/td>\s*<td>HODL WARS Battle Mechs<\/td>/, 'known schema slug should have readable display name');
 assert.match(html, /<td><code>gkniftyheads<\/code><\/td>\s*<td>GKniftyHEADS<\/td>/, 'core schema should have readable display name');
@@ -128,13 +130,16 @@ assert.match(statusClient, /Rarity snapshot active - issued-supply fallback - li
 assert.match(statusClient, /node\.textContent = label\(status\)/, 'badge visible text should use visitor-safe label');
 assert.match(statusClient, /node\.setAttribute\('title', detailLabel\(status\)\)/, 'detailed feed errors should stay in title text');
 assert.doesNotMatch(statusClient, /node\.textContent = detailLabel/, 'detailed feed errors must not become visible badge text');
+assert.match(rarityGenerator, /data-feed-status-id="gkniftyheads_rarity" hidden aria-hidden="true"/, 'rarity generator should preserve the hidden feed status hook on refresh');
+assert.doesNotMatch(rarityGenerator, /data-feed-status-id="gkniftyheads_rarity">Rarity snapshot active/, 'rarity generator should not re-emit a visible feed status sentence');
 
 const waxRenderer = read('js/wax-collection-renderer.js');
 const battleLayer = read('js/battle-layer.js');
 const battleCss = read('css/battle-layer.css');
 const connectionStatusPanel = read('js/components/connection-status-panel.js');
 const globalPlayerHeader = read('js/components/global-player-header.js');
-assert.match(battleLayer, /function buildCollectionAboutHTML\(\)[\s\S]*GKNIFTYHEADS[\s\S]*THE ORIGINAL\. THE ICONIC\. THE 3008\.[\s\S]*877,527[\s\S]*Rarity Rankings[\s\S]*Browse Traits[\s\S]*Collections[\s\S]*The Lore/, 'collection engagement deck should include the center About The Collection card');
+assert.match(battleLayer, /function buildCollectionAboutHTML\(\)[\s\S]*GKNIFTYHEADS[\s\S]*THE ORIGINAL\. THE ICONIC\. THE 3008\.[\s\S]*living digital archive/, 'collection engagement deck should include the focused center About The Collection card');
+assert.doesNotMatch(battleLayer, /gk-collection-about-stats|gk-collection-link-grid|Explore GKNIFTYHEADS|877,527|<span><strong>143<\/strong><small>Templates/, 'collection engagement deck should not repeat stats or duplicate navigation cards');
 assert.match(battleLayer, /buildCollectionMediaShell\(\) \+ buildCollectionAboutHTML\(\) \+ buildMissionHTML\(pageId, engagement\)/, 'collection engagement deck should render art, about, and daily missions in order');
 assert.match(battleLayer, /function movePageLikeIntoMissions\(\)[\s\S]*\.page-like-widget[\s\S]*\.battle-engagement-deck--collection \.battle-shell--missions \.battle-shell-inner[\s\S]*mission-like-row[\s\S]*role', 'group'[\s\S]*Article signal[\s\S]*insertBefore\(wrap, heat \? heat\.nextSibling : missions\.firstChild\)/, 'collection article like widget should move into Daily Missions as a labelled group without duplicating hooks');
 assert.match(battleCss, /battle-engagement-deck--collection\s*\{[\s\S]*grid-template-columns:\s*minmax\(280px,\s*\.92fr\) minmax\(420px,\s*1\.34fr\) minmax\(260px,\s*\.74fr\)/, 'collection engagement deck should use the desktop three-column art/about/missions layout');
@@ -143,6 +148,9 @@ assert.match(battleCss, /gkCollectionCardPulse[\s\S]*gkCollectionEdgeSweep[\s\S]
 assert.match(battleCss, /gk-collection-about-title\s*\{[\s\S]*font-size:\s*clamp\(3\.1rem,\s*5\.8vw,\s*5\.5rem\)[\s\S]*animation:\s*gkCollectionTitleFlow 12s linear infinite/, 'collection title should be larger and slower on desktop');
 assert.match(battleCss, /battle-engagement-deck--collection \.battle-shell--missions\s*\{[\s\S]*align-self:\s*stretch;[\s\S]*display:\s*flex/, 'Daily Missions card should stretch to the art card height while staying in the narrow column');
 assert.match(battleCss, /animation:\s*gkCollectionCardPulse 8\.8s ease-in-out infinite[\s\S]*animation:\s*gkCollectionEdgeSweep 10\.5s linear infinite/, 'collection card glow should be slowed down for a premium treatment');
+assert.match(battleCss, /mission-like-row\s*\{[\s\S]*background:\s*transparent;[\s\S]*border:\s*0;/, 'Daily Missions article like row should not draw a box behind the heart');
+assert.match(battleCss, /mission-like-row \.like-icon\s*\{[\s\S]*animation:\s*gkMissionHeartPulse 1\.9s ease-in-out infinite/, 'Daily Missions heart should pulse subtly');
+assert.match(battleCss, /mission-like-row \.like-btn\s*\{[\s\S]*min-height:\s*44px;[\s\S]*padding:\s*0 8px;/, 'Daily Missions like button should keep an accessible touch target without restoring the old box');
 assert.match(battleCss, /prefers-reduced-motion:\s*reduce[\s\S]*animation:\s*none/, 'collection dashboard animations should respect reduced motion');
 assert.match(sharedHeaderHtml, /id="moonboys-global-status-badge"[\s\S]*aria-live="polite"/, 'shared wiki header should include the Telegram/live sync badge slot');
 assert.match(siteShell, /id="moonboys-global-status-badge"[\s\S]*aria-live="polite"/, 'runtime fallback header should include the Telegram/live sync badge slot');
@@ -171,12 +179,10 @@ assert.match(css, /\.gk-collection-hero\s*\{[\s\S]*overflow:\s*hidden;[\s\S]*min
 assert.match(css, /\.gk-collection-hero::before\s*\{[\s\S]*background-image:[\s\S]*linear-gradient\(rgba\(86,\s*220,\s*255,\s*0\.06\) 1px,\s*transparent 1px\)/, 'collection hero should use the How To Play grid overlay');
 assert.match(css, /\.gk-collection-title-wrap \.howto-glitch-title\s*\{[\s\S]*font-size:\s*clamp\(3rem,\s*6\.1vw,\s*6\.05rem\)[\s\S]*text-shadow:[\s\S]*rgba\(255,\s*106,\s*213,\s*0\.6\)/, 'collection title should match How To Play typography and glow');
 assert.match(css, /\.gk-collection-route\s*\{[\s\S]*border-left:\s*5px solid #00ffcc[\s\S]*line-height:\s*1\.95/, 'collection route strip should match How To Play route styling');
-assert.match(css, /\.gk-parent-hub-card\s*\{[\s\S]*max-width:\s*620px;[\s\S]*color:\s*rgba\(235,\s*255,\s*255,\s*0\.82\)/, 'parent hub copy should be normal hero text, not an absolute overlay');
 assert.match(css, /\.gk-showcase-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'showcase rows should render as stable three-card grids on desktop');
 assert.match(css, /\.gk-top-ranked-list--cards/, 'secondary ranked lists should render as responsive cards');
 assert.match(css, /\.gk-rarity-audit\s*\{[\s\S]*background:\s*rgba\(7,\s*11,\s*18,\s*0\.46\)/, 'audit tables should be visually subdued below the showcase');
 assert.match(css, /\.gk-audit-card-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'audit sections should present collector cards before raw tables');
-assert.match(css, /\.gk-dashboard-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'collection dashboard should use a balanced three-card grid');
 assert.match(css, /\.gk-wiki-intelligence-panel/, 'citation credibility should use the wiki intelligence card treatment');
 assert.match(css, /\.gk-community-intelligence-panel/, 'comments should use the community intelligence card treatment');
 assert.match(css, /\.developer-details/, 'developer-only schema details should have collapsed detail styling');

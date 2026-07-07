@@ -345,19 +345,6 @@
         '<h3 id="gk-collection-about-title" class="gk-collection-about-title">GKNIFTYHEADS</h3>' +
         '<p class="gk-collection-about-subtitle">THE ORIGINAL. THE ICONIC. THE 3008.</p>' +
         '<p class="gk-collection-about-copy">The flagship NFT faction of The Crypto Moonboys universe. Born from GK&#39;s street art DNA, GKNIFTYHEADS combines graffiti culture, collectible characters and blockchain ownership into a living digital archive.</p>' +
-        '<div class="gk-collection-about-stats" aria-label="GKNIFTYHEADS collection stats">' +
-          '<span><strong>143</strong><small>Templates</small></span>' +
-          '<span><strong>877,527</strong><small>NFTs Created</small></span>' +
-          '<span><strong>WAX</strong><small>Blockchain</small></span>' +
-          '<span><strong>Rarity</strong><small>Ranking Active</small></span>' +
-        '</div>' +
-        '<p class="gk-collection-link-kicker">Explore GKNIFTYHEADS</p>' +
-        '<div class="gk-collection-link-grid">' +
-          '<a href="#gkniftyheads-rarity-ranking"><strong>Rarity Rankings</strong><span>See the rarest NFTs ranked</span></a>' +
-          '<a href="#schemas"><strong>Browse Traits</strong><span>Explore schemas and variations</span></a>' +
-          '<a href="/categories/gkniftyheads.html"><strong>Collections</strong><span>View GKniftyHEADS pages</span></a>' +
-          '<a href="/wiki/gkniftyheads.html"><strong>The Lore</strong><span>Discover the GKN story</span></a>' +
-        '</div>' +
       '</div>' +
     '</article>';
   }

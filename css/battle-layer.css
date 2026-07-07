@@ -1035,14 +1035,63 @@ body.conflict-active .community-card {
 .mission-like-row {
   display: grid;
   margin: 0 0 8px;
-  padding: 9px;
-  background: rgba(3, 12, 23, .62);
-  border: 1px solid rgba(247, 201, 72, .2);
-  border-radius: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 .mission-like-row .page-like-widget {
   margin: 0;
+}
+
+.mission-like-row .page-like-inner {
+  align-items: center;
+  color: rgba(232, 242, 255, .9);
+  display: flex;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.mission-like-row .like-btn {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 8px;
+}
+
+.mission-like-row .like-btn:focus-visible {
+  outline: 2px solid rgba(200, 80, 255, .62);
+  outline-offset: 3px;
+}
+
+.mission-like-row .like-icon {
+  display: inline-block;
+  filter: drop-shadow(0 0 8px rgba(255, 59, 112, .6));
+  transform-origin: center;
+  animation: gkMissionHeartPulse 1.9s ease-in-out infinite;
+}
+
+.mission-like-row .like-count,
+.mission-like-row .like-label {
+  color: rgba(232, 242, 255, .86);
+  font-size: .9rem;
+}
+
+@keyframes gkMissionHeartPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.16);
+  }
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-heat-summary,
@@ -1203,7 +1252,8 @@ body.page-gkniftyheads-collection .wiki-engagement-module,
 @media (prefers-reduced-motion: reduce) {
   .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell,
   .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::before,
-  .gk-collection-about-title {
+  .gk-collection-about-title,
+  .mission-like-row .like-icon {
     animation: none;
   }
 }
