@@ -3444,6 +3444,17 @@ body.page-home .launch-subcopy {
   line-height: 1.75;
 }
 
+body.page-home .launch-mantra {
+  max-width: 760px;
+  margin: 26px 0 0;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.4vw, 1.55rem);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(247, 201, 72, 0.18);
+}
+
 body.page-home .hud-hero-logo-wrap {
   position: relative;
   z-index: 1;
@@ -3625,6 +3636,62 @@ body.page-home .home-widget li {
   border: 1px solid rgba(0, 255, 204, 0.18);
   border-radius: 16px;
   box-shadow: 0 0 22px rgba(0, 255, 204, 0.045);
+}
+
+body.page-home .home-mission-panel .section-heading,
+body.page-home .home-cta-panel .section-heading {
+  margin-top: 0;
+}
+
+body.page-home .home-cta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+body.page-home .home-cta-card {
+  display: grid;
+  gap: 12px;
+  min-height: 180px;
+  padding: 18px;
+  color: var(--color-text);
+  text-decoration: none;
+  background: rgba(0, 255, 204, 0.052);
+  border: 1px solid rgba(0, 255, 204, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+}
+
+body.page-home .home-cta-card strong {
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+body.page-home .home-cta-step {
+  width: max-content;
+  padding: 5px 8px;
+  color: #050607;
+  background: var(--color-accent);
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+}
+
+body.page-home .home-system-panel .launch-route,
+body.page-home .home-system-panel .hero-stats {
+  max-width: none;
+}
+
+body.page-home .home-system-panel .launch-route {
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 body.page-home .category-grid,
