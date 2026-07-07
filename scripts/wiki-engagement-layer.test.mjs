@@ -72,7 +72,7 @@ check(comments.includes('maxlength="2000"') && comments.includes('comment-charac
 for (const name of ['Swarmsy', 'Alfie Blaze', 'CrypticYuna', 'Boneidol INK', 'P-Fly']) {
   check(comments.includes(name), `Fallback top contributors include ${name}`);
 }
-check(comments.includes('window.MOONBOYS_TOP_CONTRIBUTORS') && comments.includes('top-contributor-tab') && comments.includes('contributorRows(data[period]'), 'Top Contributors card is data-driven with week/all-time toggles');
+check(comments.includes('window.MOONBOYS_TOP_CONTRIBUTORS') && comments.includes('top-contributor-tab') && comments.includes('contributorRows(rows)') && comments.includes('data-top-contributor-leader') && comments.includes('aria-pressed'), 'Top Contributors card is data-driven with synced week/all-time toggles');
 for (const color of ['gold', 'cyan', 'purple', 'green', 'orange']) {
   check(comments.includes("color: '" + color + "'") && comments.includes('comment-robot-avatar--'), `Top contributor fallback includes ${color} robot avatar variant`);
 }

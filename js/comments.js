@@ -174,7 +174,7 @@
     };
   }
 
-  function robotAvatar(color, name) {
+  function robotAvatar(color, name, uid) {
     var palette = {
       gold: ['#ffd447', '#ff9d00'],
       cyan: ['#32d7ff', '#0877ff'],
@@ -182,12 +182,13 @@
       green: ['#64ff76', '#0bbf61'],
       orange: ['#ff9a2f', '#ff4d18'],
     }[color] || ['#32d7ff', '#0877ff'];
+    var gradientId = 'robot-' + String(color || 'cyan').replace(/[^a-z0-9_-]/gi, '') + '-' + String(uid || name || 'avatar').replace(/[^a-z0-9_-]/gi, '');
     return '<span class="comment-robot-avatar comment-robot-avatar--' + esc(color) + '" aria-hidden="true">' +
-      '<svg viewBox="0 0 64 64" focusable="false" role="img" aria-label="' + esc(name) + ' robot avatar">' +
-        '<defs><linearGradient id="robot-' + esc(color) + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="' + palette[0] + '"/><stop offset="1" stop-color="' + palette[1] + '"/></linearGradient></defs>' +
-        '<circle cx="32" cy="32" r="29" fill="rgba(2,8,18,.92)" stroke="url(#robot-' + esc(color) + ')" stroke-width="2"/>' +
-        '<path d="M20 25c0-6 4-10 12-10s12 4 12 10v11c0 7-5 12-12 12s-12-5-12-12V25z" fill="rgba(7,18,33,.96)" stroke="url(#robot-' + esc(color) + ')" stroke-width="2"/>' +
-        '<path d="M24 39h16M26 47l-4 6M38 47l4 6M32 15V9" stroke="url(#robot-' + esc(color) + ')" stroke-width="3" stroke-linecap="round"/>' +
+      '<svg viewBox="0 0 64 64" focusable="false" aria-hidden="true">' +
+        '<defs><linearGradient id="' + esc(gradientId) + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="' + palette[0] + '"/><stop offset="1" stop-color="' + palette[1] + '"/></linearGradient></defs>' +
+        '<circle cx="32" cy="32" r="29" fill="rgba(2,8,18,.92)" stroke="url(#' + esc(gradientId) + ')" stroke-width="2"/>' +
+        '<path d="M20 25c0-6 4-10 12-10s12 4 12 10v11c0 7-5 12-12 12s-12-5-12-12V25z" fill="rgba(7,18,33,.96)" stroke="url(#' + esc(gradientId) + ')" stroke-width="2"/>' +
+        '<path d="M24 39h16M26 47l-4 6M38 47l4 6M32 15V9" stroke="url(#' + esc(gradientId) + ')" stroke-width="3" stroke-linecap="round"/>' +
         '<circle cx="26" cy="30" r="4" fill="' + palette[0] + '"/><circle cx="38" cy="30" r="4" fill="' + palette[1] + '"/>' +
         '<path d="M27 38h10" stroke="' + palette[0] + '" stroke-width="2" stroke-linecap="round"/>' +
       '</svg>' +
@@ -200,7 +201,7 @@
       var color = item.color || ['gold', 'cyan', 'purple', 'green', 'orange'][index] || 'cyan';
       return '<li class="top-contributor-row top-contributor-row--' + esc(color) + '">' +
         '<span class="top-contributor-rank">' + esc(rank) + '</span>' +
-        robotAvatar(color, item.name || 'Contributor') +
+        robotAvatar(color, item.name || 'Contributor', rank) +
         '<span class="top-contributor-name">' + esc(item.name || 'Contributor') + '</span>' +
         '<strong class="top-contributor-xp">' + esc(formatXP(item.xp)) + '</strong>' +
       '</li>';
@@ -211,14 +212,14 @@
     var data = getContributorData();
     var leader = data.week[0] || FALLBACK_TOP_CONTRIBUTORS[0];
     return '<aside class="comments-top-contributors" aria-labelledby="comments-top-contributors-title">' +
-      '<div class="comments-top-mini"><span>Top Contributor</span><strong>' + esc(leader.name) + ' - ' + esc(formatXP(leader.xp)) + '</strong></div>' +
+      '<div class="comments-top-mini"><span>Top Contributor</span><strong data-top-contributor-leader>' + esc(leader.name) + ' - ' + esc(formatXP(leader.xp)) + '</strong></div>' +
       '<div class="comments-card-heading">' +
         '<span class="comments-card-icon comments-card-icon--gold" aria-hidden="true"></span>' +
         '<h3 id="comments-top-contributors-title">Top Contributors</h3>' +
       '</div>' +
-      '<div class="top-contributor-tabs" role="tablist" aria-label="Top contributors timeframe">' +
-        '<button type="button" class="top-contributor-tab is-active" data-period="week" role="tab" aria-selected="true">This Week</button>' +
-        '<button type="button" class="top-contributor-tab" data-period="all_time" role="tab" aria-selected="false">All Time</button>' +
+      '<div class="top-contributor-tabs" aria-label="Top contributors timeframe">' +
+        '<button type="button" class="top-contributor-tab is-active" data-period="week" aria-pressed="true">This Week</button>' +
+        '<button type="button" class="top-contributor-tab" data-period="all_time" aria-pressed="false">All Time</button>' +
       '</div>' +
       '<ol class="top-contributor-list" data-period="week">' + contributorRows(data.week) + '</ol>' +
     '</aside>';
@@ -568,19 +569,24 @@
     var card = container.querySelector('.comments-top-contributors');
     if (!card) return;
     var list = card.querySelector('.top-contributor-list');
+    var leaderSummary = card.querySelector('[data-top-contributor-leader]');
     var tabs = Array.prototype.slice.call(card.querySelectorAll('.top-contributor-tab'));
     var data = getContributorData();
     tabs.forEach(function (tab) {
       tab.addEventListener('click', function () {
         var period = tab.getAttribute('data-period') || 'week';
+        var rows = data[period] || data.week;
         tabs.forEach(function (other) {
           var active = other === tab;
           other.classList.toggle('is-active', active);
-          other.setAttribute('aria-selected', active ? 'true' : 'false');
+          other.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
         if (list) {
           list.setAttribute('data-period', period);
-          list.innerHTML = contributorRows(data[period] || data.week);
+          list.innerHTML = contributorRows(rows);
+        }
+        if (leaderSummary && rows[0]) {
+          leaderSummary.textContent = (rows[0].name || 'Contributor') + ' - ' + formatXP(rows[0].xp);
         }
       });
     });

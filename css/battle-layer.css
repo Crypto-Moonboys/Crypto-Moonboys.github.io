@@ -1058,11 +1058,17 @@ body.conflict-active .community-card {
   appearance: none;
   background: transparent;
   border: 0;
+  border-radius: 8px;
   color: inherit;
   cursor: pointer;
   display: inline-flex;
   gap: 4px;
   padding: 0;
+}
+
+.mission-like-row .like-btn:focus-visible {
+  outline: 2px solid rgba(200, 80, 255, .62);
+  outline-offset: 3px;
 }
 
 .mission-like-row .like-icon {
