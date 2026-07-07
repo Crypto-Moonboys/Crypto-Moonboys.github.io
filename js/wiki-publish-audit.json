@@ -1,8 +1,8 @@
 {
   "_generated": "2026-07-03T17:46:25.209Z",
   "summary": {
-    "total": 330,
-    "approved": 330,
+    "total": 329,
+    "approved": 329,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -1682,13 +1682,6 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4410
-    },
-    {
-      "slug": "nbgx",
-      "file": "nbgx.html",
-      "status": "APPROVED_CANON_PAGE",
-      "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 7318
     },
     {
       "slug": "nbgx-token",

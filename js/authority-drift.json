@@ -3129,18 +3129,6 @@
       "alert_level": "ok"
     },
     {
-      "url": "/wiki/nbgx.html",
-      "title": "NBGX — Crypto Moonboys Wiki",
-      "authority_score": 22,
-      "graph_centrality": 167,
-      "authority_rank": 26,
-      "centrality_rank": 144,
-      "rank_delta": -118,
-      "drift": 0.039,
-      "drift_direction": "authority_exceeds_centrality",
-      "alert_level": "ok"
-    },
-    {
       "url": "/wiki/graffpunks-ecosystem.html",
       "title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
       "authority_score": 24,

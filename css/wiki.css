@@ -200,15 +200,25 @@ button {
   display: block;
 }
 
-#search-results .sr-item {
+#search-results .sr-item,
+#search-results .search-result-item {
   display: flex;
   gap: 10px;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
 }
 
-#search-results .sr-item:hover {
+#search-results .sr-item:hover,
+#search-results .search-result-item:hover,
+#search-results .search-result-item:focus-visible {
   background: rgba(86, 220, 255, 0.08);
+}
+
+#search-results .search-result-item {
+  align-items: center;
+  min-height: 42px;
+  margin: 2px 0;
+  color: var(--color-text-link);
 }
 
 #search-results .sr-title {

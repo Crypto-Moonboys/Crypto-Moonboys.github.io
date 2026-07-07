@@ -5287,34 +5287,6 @@
     }
   },
   {
-    "entity_id": "nbgx",
-    "canonical_title": "nbgx — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/nbgx.html",
-    "category": "characters",
-    "aliases": [
-      "nbgx crypto moonboys wiki"
-    ],
-    "tags": [
-      "nbgx",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/nbgx.html"
-    ],
-    "brand": {
-      "brand_family": "nbg",
-      "concept_type": "mechanic",
-      "canonical_concept_id": "nbg:mechanic",
-      "canonical_slug": "nbgx",
-      "parent_concept": null
-    },
-    "alias_candidates": [
-      "nbgx"
-    ]
-  },
-  {
     "entity_id": "nbgx_token",
     "canonical_title": "NBGX Token — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/nbgx-token.html",

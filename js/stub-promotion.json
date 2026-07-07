@@ -402,22 +402,6 @@
       ]
     },
     {
-      "url": "/wiki/nbgx.html",
-      "title": "NBGX — Crypto Moonboys Wiki",
-      "promotion_score": 85,
-      "rank_score": 601,
-      "inbound_links": 0,
-      "entity_relevance": true,
-      "narrative_path_inclusion": false,
-      "growth_priority_action": "expand_existing_page",
-      "recommendation": "promote",
-      "reasons": [
-        "entity_relevance:true",
-        "rank_score:601",
-        "growth_priority_action:expand_existing_page"
-      ]
-    },
-    {
       "url": "/wiki/punk-token.html",
       "title": "$PUNK Token — Crypto Moonboys Wiki",
       "promotion_score": 85,

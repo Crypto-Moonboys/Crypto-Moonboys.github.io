@@ -419,22 +419,6 @@
       "rank_score": 599
     },
     {
-      "id": "nbgx",
-      "era": "characters",
-      "sort_key": 9999,
-      "title": "nbgx",
-      "url": "/wiki/nbgx.html",
-      "category": "characters",
-      "tags": [
-        "crypto",
-        "moonboys",
-        "nbgx",
-        "wiki"
-      ],
-      "is_event_page": false,
-      "rank_score": 589
-    },
-    {
       "id": "staking",
       "era": "characters",
       "sort_key": 9999,
@@ -5938,14 +5922,6 @@
           "rank_score": 599
         },
         {
-          "id": "nbgx",
-          "title": "nbgx",
-          "url": "/wiki/nbgx.html",
-          "category": "characters",
-          "is_event_page": false,
-          "rank_score": 589
-        },
-        {
           "id": "staking",
           "title": "staking",
           "url": "/wiki/staking.html",
@@ -8454,18 +8430,6 @@
             "crypto",
             "earn",
             "moonboys",
-            "wiki"
-          ]
-        },
-        {
-          "id": "nbgx",
-          "title": "nbgx",
-          "url": "/wiki/nbgx.html",
-          "rank_score": 589,
-          "tags": [
-            "crypto",
-            "moonboys",
-            "nbgx",
             "wiki"
           ]
         },

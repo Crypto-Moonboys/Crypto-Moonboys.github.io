@@ -77,8 +77,8 @@ const BRAND_CANON = {
         aliases: [],
       },
       mechanic: {
-        canonical: 'nbgx',
-        aliases: [],
+        canonical: 'nbgx-token',
+        aliases: ['nbgx'],
       },
     },
   },

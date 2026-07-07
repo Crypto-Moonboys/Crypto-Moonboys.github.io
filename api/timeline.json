@@ -6988,60 +6988,6 @@
       "rank_score": 583
     },
     {
-      "event_name": "NBGX",
-      "event_id": "nbgx",
-      "era": "characters",
-      "canonical_url": "/wiki/nbgx.html",
-      "category": "characters",
-      "sort_key": 9999,
-      "timeline_position": 131,
-      "narrative_weight": 0,
-      "related_entities": [
-        {
-          "url": "/wiki/graffpunks.html",
-          "title": "GraffPUNKS — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/block-topia.html",
-          "title": "Block Topia — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/bitcoin-kids.html",
-          "title": "Bitcoin Kids — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/null-the-prophet.html",
-          "title": "NULL THE PROPHET — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/hodl-wars.html",
-          "title": "HODL Wars — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/queen-sarah-p-fly.html",
-          "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/punk-token.html",
-          "title": "$PUNK Token — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/charlie-buster.html",
-          "title": "Charlie Buster — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/hodl-warriors.html",
-          "title": "HODL Warriors — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/alfie-bitcoin-kid-blaze.html",
-          "title": "Alfie Blaze — Crypto Moonboys Wiki"
-        }
-      ],
-      "is_event_page": false,
-      "rank_score": 601
-    },
-    {
       "event_name": "NeftyBlocks Midevilpunks Collection",
       "event_id": "neftyblocks-midevilpunks-collection",
       "era": "factions",

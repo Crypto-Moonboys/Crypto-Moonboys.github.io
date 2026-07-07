@@ -784,23 +784,6 @@
       ]
     },
     {
-      "id": "stub-promotion-candidate::nbgx",
-      "type": "stub-promotion-candidate",
-      "title": "NBGX — Crypto Moonboys Wiki",
-      "url": "/wiki/nbgx.html",
-      "target_url": "/wiki/nbgx.html",
-      "source": "js/growth-priority.json",
-      "confidence": 0.37,
-      "status": "pending",
-      "reasons": [
-        "action_type:expand_existing_page",
-        "underlinked_page",
-        "high_link_demand",
-        "strong_cluster_member",
-        "high_graph_centrality"
-      ]
-    },
-    {
       "id": "stub-promotion-candidate::null-the-prophet",
       "type": "stub-promotion-candidate",
       "title": "NULL THE PROPHET — Crypto Moonboys Wiki",

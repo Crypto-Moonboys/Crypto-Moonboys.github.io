@@ -82,18 +82,6 @@
       ]
     },
     {
-      "url": "/wiki/nbgx.html",
-      "score": 118,
-      "rank_score": 561,
-      "inbound_links": 0,
-      "injection_plan_hits": 0,
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:0",
-        "high_authority_underserved:22"
-      ]
-    },
-    {
       "url": "/wiki/pmsl.html",
       "score": 118,
       "rank_score": 555,
