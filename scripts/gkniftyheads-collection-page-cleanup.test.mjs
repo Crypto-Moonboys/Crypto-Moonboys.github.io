@@ -116,7 +116,7 @@ assert.doesNotMatch(globalAuditSection.slice(0, globalAuditSection.indexOf('Adva
 const visibleMethodMatches = visible.match(/How rarity works|Rarity Method/g) || [];
 assert.equal(visibleMethodMatches.length, 1, 'visible page should contain one concise rarity-method block');
 assert.doesNotMatch(visible, /Original mint numbers never change[\s\S]*Original mint numbers never change/, 'mint-number explanation should not be repeated visibly');
-assert.match(html, /<th>Asset Rank<\/th><th>NFT<\/th><th>Asset Score<\/th><th>Asset ID<\/th><th>NFT ID<\/th><th>Original Mint Number<\/th><th>Surviving Mint Rank<\/th><th>Live Supply<\/th>/, 'asset table should omit owner/template debug columns');
+assert.match(html, /<th>Asset Rank<\/th><th>NFT<\/th><th>Asset Score<\/th><th>Asset ID<\/th><th>NFT Page ID<\/th><th>Original Mint Number<\/th><th>Surviving Mint Rank<\/th><th>Live Supply<\/th>/, 'asset table should omit owner/template debug columns');
 
 assert.match(html, /<details class="wiki-section gk-schema-summary">[\s\S]*<summary><span id="schemas" role="heading" aria-level="2">Schema Summary<\/span><\/summary>/, 'schema section should be collapsed behind a valid summary heading');
 assert.match(html, /<tr><th>Schema<\/th><th>Display Name<\/th><th>Purpose \/ Notes<\/th><th>Created<\/th><\/tr>/, 'schema table should use visitor-facing columns');

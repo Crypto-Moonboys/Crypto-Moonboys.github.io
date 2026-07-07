@@ -76,7 +76,7 @@
           <div class="gk-section-card-grid gk-rarity-overview-cards" aria-label="Rarity overview">
             <div class="gk-info-card">
               <span>NFT rarity</span>
-              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate NFT IDs may share the same artwork or name.</p>
+              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate NFT page IDs may share the same artwork or name.</p>
             </div>
             <div class="gk-info-card">
               <span>Live supply first</span>
@@ -905,7 +905,7 @@
               <thead>
                 <tr>
                   <th>NFT</th>
-                  <th>NFT ID</th>
+                  <th>NFT Page ID</th>
                   <th>Live Supply</th>
                   <th>Issued Supply</th>
                   <th>Pre-baseline Missing/Burned</th>
@@ -2741,7 +2741,7 @@
       <div class="wiki-table-wrap">
                 <table class="wiki-table gk-asset-version-table">
                   <thead>
-                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>NFT ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
+                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>NFT Page ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
                   </thead>
                   <tbody><tr>
     <td>1</td>
@@ -5515,7 +5515,7 @@
       <summary>Advanced raw utility table</summary>
       <div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>NFT ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody><tr data-rarity-filter="utility-open-mint">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
       <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/782888.webp" alt="👉 GKniftyHEADS FUN COUPON ⚡️⚡️⚡️" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
@@ -7472,7 +7472,7 @@
       <summary>Advanced raw unissued table</summary>
       <div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>NFT ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody><tr data-rarity-filter="unissued">
     <td class="gk-rarity-nft-cell"><div class="gk-rarity-nft-card">
       <a class="gk-rarity-nft-image-link" href="/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html"><img class="gk-rarity-nft-image" src="/img/gkniftyheads/thumbs/776049.webp" alt="⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
@@ -7819,7 +7819,7 @@
               <thead>
                 <tr>
                   <th>NFT</th>
-                  <th>NFT ID</th>
+                  <th>NFT Page ID</th>
                   <th>Schema</th>
                   <th>Issued</th>
                   <th>Max</th>
@@ -8129,11 +8129,11 @@
 
         <section class="wiki-section">
           <h2 id="sources">Sources</h2>
-          <p class="lore-paragraph">Each NFT row cites its AtomicAssets NFT endpoint and AtomicHub public template view. WaxItems is included as a visual public collection view only; AtomicAssets remains the source of truth.</p>
+          <p class="lore-paragraph">Each NFT row cites its AtomicAssets API record and AtomicHub public NFT page view. WaxItems is included as a visual public collection view only; AtomicAssets remains the source of truth.</p>
           <ul class="sources-list">
           <li><a href="https://wax.api.atomicassets.io/atomicassets/v1/collections/gkniftyheads" target="_blank" rel="noopener noreferrer">wax.api.atomicassets.io</a><span> is the AtomicAssets collection endpoint used for collection metadata.</span></li>
           <li><a href="https://wax.api.atomicassets.io/atomicassets/v1/schemas?collection_name=gkniftyheads" target="_blank" rel="noopener noreferrer">wax.api.atomicassets.io</a><span> is the AtomicAssets schema endpoint used to identify NFT schema fields.</span></li>
-          <li><a href="https://wax.api.atomicassets.io/atomicassets/v1/templates?collection_name=gkniftyheads" target="_blank" rel="noopener noreferrer">wax.api.atomicassets.io</a><span> is the AtomicAssets NFT endpoint used to list every NFT in this collection.</span></li>
+          <li><a href="https://wax.api.atomicassets.io/atomicassets/v1/templates?collection_name=gkniftyheads" target="_blank" rel="noopener noreferrer">wax.api.atomicassets.io</a><span> is the AtomicAssets collection API index used to list every NFT page record in this collection.</span></li>
           <li><a href="https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads" target="_blank" rel="noopener noreferrer">wax.api.atomicassets.io</a><span> is the AtomicAssets asset endpoint used to count minted assets for the public summary.</span></li>
           <li><a href="https://wax.atomichub.io/explorer/collection/gkniftyheads" target="_blank" rel="noopener noreferrer">wax.atomichub.io</a><span> is the AtomicHub public collection view.</span></li>
           <li><a href="https://waxitems.com/atomicassets/collection/gkniftyheads#templates" target="_blank" rel="noopener noreferrer">waxitems.com</a><span> is the WaxItems public visual templates view supplied for this collection, not the source of truth.</span></li>

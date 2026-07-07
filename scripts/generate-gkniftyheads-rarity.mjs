@@ -716,7 +716,7 @@ function buildTemplateIntegrityAudit(localRows, root = ROOT) {
       normalized_name: normalizeText(record.immutable_data_name || record.local_title),
       templates: [],
       should_remain_separate_template_rows: true,
-      note: 'AtomicAssets confirms these as separate NFT IDs; group visually if desired, but do not merge scoring rows.',
+      note: 'AtomicAssets confirms these as separate template IDs; group visually if desired, but do not merge scoring rows.',
     };
     group.templates.push({
       template_id: record.template_id,
@@ -1239,7 +1239,7 @@ function rarityOverviewCards() {
   return `<div class="gk-section-card-grid gk-rarity-overview-cards" aria-label="Rarity overview">
             <div class="gk-info-card">
               <span>NFT rarity</span>
-              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate NFT IDs may share the same artwork or name.</p>
+              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate NFT page IDs may share the same artwork or name.</p>
             </div>
             <div class="gk-info-card">
               <span>Live supply first</span>
@@ -1518,7 +1518,7 @@ function rankingTable(rows, {
               <thead>
                 <tr>
                   <th>NFT</th>
-                  <th>NFT ID</th>
+                  <th>NFT Page ID</th>
                   <th>${supplyLabel}</th>
                   <th>Issued Supply</th>
                   <th>Pre-baseline Missing/Burned</th>
@@ -1665,7 +1665,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${advancedTable('Advanced raw global rarity table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-asset-version-table">
                   <thead>
-                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>NFT ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
+                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>NFT Page ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
                   </thead>
                   <tbody>${assetPreview.length ? assetPreview.map(assetVersionRow).join('\n                ') : '<tr><td colspan="8">Pending asset-state sync.</td></tr>'}</tbody>
                 </table>
@@ -1680,7 +1680,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${groupedSideCards(model.utility, { status: 'Utility / Open Mint', getGroup: utilityBucket })}
               ${advancedTable('Advanced raw utility table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>NFT ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.utility.map(utilityRow).join('\n                ')}</tbody>
                 </table>
               </div>`)}
@@ -1694,7 +1694,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${groupedSideCards(model.unissued, { status: 'Unissued', getGroup: () => 'Not Circulating' })}
               ${advancedTable('Advanced raw unissued table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>NFT ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.unissued.map(utilityRow).join('\n                ')}</tbody>
                 </table>
               </div>`)}
