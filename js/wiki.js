@@ -221,18 +221,18 @@ function renderRelatedPagesIntoRelationshipMap(section, related, indexByUrl, max
 
   const existingLinks = new Set(
     Array.from(section.querySelectorAll('a[href]'))
-      .map(a => normalisePath(a.getAttribute('href')))
+      .map(a => normalizePath(a.getAttribute('href')))
       .filter(Boolean),
   );
 
   const cards = related
-    .filter(r => r.target_url && !existingLinks.has(normalisePath(r.target_url)))
+    .filter(r => r.target_url && !existingLinks.has(normalizePath(r.target_url)))
     .map(r => {
       const entry = indexByUrl[r.target_url];
       const rawTitle = entry ? (entry.title || r.target_url) : r.target_url;
       const rawDesc = entry && entry.desc ? entry.desc : '';
       const desc = rawDesc
-        ? `<span class="wiki-rabbit-card-desc">${escapeHtml(rawDesc.length > maxDescLength ? rawDesc.slice(0, maxDescLength) + '...' : rawDesc)}</span>`
+        ? `<span class="wiki-rabbit-card-desc">${escapeHtml(rawDesc.length > maxDescLength ? rawDesc.slice(0, maxDescLength) + '…' : rawDesc)}</span>`
         : '';
       return `<a class="wiki-rabbit-card" href="${escapeHtml(r.target_url)}" role="listitem">
         <span class="wiki-rabbit-card-title">${escapeHtml(rawTitle)}</span>
@@ -251,7 +251,7 @@ function renderRelatedPagesIntoRelationshipMap(section, related, indexByUrl, max
   </details>`);
 }
 
-function normalisePath(value) {
+function normalizePath(value) {
   if (!value) return '';
   try {
     return new URL(value, window.location.origin).pathname.replace(/\/$/, '') || '/';
