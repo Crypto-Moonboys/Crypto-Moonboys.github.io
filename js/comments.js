@@ -27,6 +27,13 @@
   var FEATURES = cfg.FEATURES || {};
   var TG_BOT   = cfg.TELEGRAM_BOT_USERNAME || null;
   var COMMENT_PROFILE_KEY = 'moonboys_comment_profile_v1';
+  var FALLBACK_TOP_CONTRIBUTORS = [
+    { rank: 1, name: 'Swarmsy', xp: 9540, color: 'gold' },
+    { rank: 2, name: 'Alfie Blaze', xp: 7420, color: 'cyan' },
+    { rank: 3, name: 'CrypticYuna', xp: 6180, color: 'purple' },
+    { rank: 4, name: 'Boneidol INK', xp: 4860, color: 'green' },
+    { rank: 5, name: 'P-Fly', xp: 3990, color: 'orange' },
+  ];
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
@@ -152,6 +159,106 @@
       .replace(/'/g, '&#39;');
   }
 
+  function formatXP(value) {
+    var n = parseInt(value, 10) || 0;
+    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' XP';
+  }
+
+  function getContributorData() {
+    var live = window.MOONBOYS_TOP_CONTRIBUTORS || {};
+    var week = Array.isArray(live.week) ? live.week : Array.isArray(live.this_week) ? live.this_week : null;
+    var allTime = Array.isArray(live.all_time) ? live.all_time : Array.isArray(live.allTime) ? live.allTime : null;
+    return {
+      week: week && week.length ? week : FALLBACK_TOP_CONTRIBUTORS,
+      all_time: allTime && allTime.length ? allTime : FALLBACK_TOP_CONTRIBUTORS,
+    };
+  }
+
+  function robotAvatar(color, name) {
+    var palette = {
+      gold: ['#ffd447', '#ff9d00'],
+      cyan: ['#32d7ff', '#0877ff'],
+      purple: ['#d35cff', '#7d37ff'],
+      green: ['#64ff76', '#0bbf61'],
+      orange: ['#ff9a2f', '#ff4d18'],
+    }[color] || ['#32d7ff', '#0877ff'];
+    return '<span class="comment-robot-avatar comment-robot-avatar--' + esc(color) + '" aria-hidden="true">' +
+      '<svg viewBox="0 0 64 64" focusable="false" role="img" aria-label="' + esc(name) + ' robot avatar">' +
+        '<defs><linearGradient id="robot-' + esc(color) + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="' + palette[0] + '"/><stop offset="1" stop-color="' + palette[1] + '"/></linearGradient></defs>' +
+        '<circle cx="32" cy="32" r="29" fill="rgba(2,8,18,.92)" stroke="url(#robot-' + esc(color) + ')" stroke-width="2"/>' +
+        '<path d="M20 25c0-6 4-10 12-10s12 4 12 10v11c0 7-5 12-12 12s-12-5-12-12V25z" fill="rgba(7,18,33,.96)" stroke="url(#robot-' + esc(color) + ')" stroke-width="2"/>' +
+        '<path d="M24 39h16M26 47l-4 6M38 47l4 6M32 15V9" stroke="url(#robot-' + esc(color) + ')" stroke-width="3" stroke-linecap="round"/>' +
+        '<circle cx="26" cy="30" r="4" fill="' + palette[0] + '"/><circle cx="38" cy="30" r="4" fill="' + palette[1] + '"/>' +
+        '<path d="M27 38h10" stroke="' + palette[0] + '" stroke-width="2" stroke-linecap="round"/>' +
+      '</svg>' +
+    '</span>';
+  }
+
+  function contributorRows(list) {
+    return list.slice(0, 5).map(function (item, index) {
+      var rank = item.rank || index + 1;
+      var color = item.color || ['gold', 'cyan', 'purple', 'green', 'orange'][index] || 'cyan';
+      return '<li class="top-contributor-row top-contributor-row--' + esc(color) + '">' +
+        '<span class="top-contributor-rank">' + esc(rank) + '</span>' +
+        robotAvatar(color, item.name || 'Contributor') +
+        '<span class="top-contributor-name">' + esc(item.name || 'Contributor') + '</span>' +
+        '<strong class="top-contributor-xp">' + esc(formatXP(item.xp)) + '</strong>' +
+      '</li>';
+    }).join('');
+  }
+
+  function buildTopContributorsHTML() {
+    var data = getContributorData();
+    var leader = data.week[0] || FALLBACK_TOP_CONTRIBUTORS[0];
+    return '<aside class="comments-top-contributors" aria-labelledby="comments-top-contributors-title">' +
+      '<div class="comments-top-mini"><span>Top Contributor</span><strong>' + esc(leader.name) + ' - ' + esc(formatXP(leader.xp)) + '</strong></div>' +
+      '<div class="comments-card-heading">' +
+        '<span class="comments-card-icon comments-card-icon--gold" aria-hidden="true"></span>' +
+        '<h3 id="comments-top-contributors-title">Top Contributors</h3>' +
+      '</div>' +
+      '<div class="top-contributor-tabs" role="tablist" aria-label="Top contributors timeframe">' +
+        '<button type="button" class="top-contributor-tab is-active" data-period="week" role="tab" aria-selected="true">This Week</button>' +
+        '<button type="button" class="top-contributor-tab" data-period="all_time" role="tab" aria-selected="false">All Time</button>' +
+      '</div>' +
+      '<ol class="top-contributor-list" data-period="week">' + contributorRows(data.week) + '</ol>' +
+    '</aside>';
+  }
+
+  function buildTelegramIdentityCard(pageId) {
+    return '<section class="comments-link-card comments-link-card--telegram" aria-labelledby="comments-telegram-title">' +
+      '<div class="comments-card-heading">' +
+        '<span class="comments-card-icon comments-card-icon--telegram" aria-hidden="true"></span>' +
+        '<h3 id="comments-telegram-title">Telegram Identity</h3>' +
+      '</div>' +
+      '<div class="cm-tg-login" id="cm-tg-login-' + pageId + '"></div>' +
+      '<span class="cm-tg-status" id="cm-tg-status-' + pageId + '">Optional for comments. Required for rewards.</span>' +
+      '<p>Email optional when Telegram identity is linked.</p>' +
+    '</section>';
+  }
+
+  function buildTelegramBenefitsCard() {
+    return '<section class="comments-link-card comments-link-card--benefits" aria-labelledby="comments-benefits-title">' +
+      '<div class="comments-card-heading">' +
+        '<span class="comments-card-icon comments-card-icon--purple" aria-hidden="true"></span>' +
+        '<h3 id="comments-benefits-title">Why Connect Telegram?</h3>' +
+      '</div>' +
+      '<div class="comments-benefit-grid">' +
+        '<div><strong>Verified Identity</strong><span>Proves you are a real GKniftyHEAD in the Moonboys ecosystem.</span></div>' +
+        '<div><strong>Earn More XP</strong><span>Verified users earn more XP for engagement and contributions.</span></div>' +
+        '<div><strong>Climb The Ranks</strong><span>Top contributors get featured and earn exclusive rewards.</span></div>' +
+      '</div>' +
+    '</section>';
+  }
+
+  function buildInfoCards() {
+    return '<div class="comments-info-grid" aria-label="Community engagement guide">' +
+      '<article class="comments-info-card comments-info-card--xp"><h3>XP For Engagement</h3><p>Comments, likes and citations earn you XP.</p><ul><li>Comment = 10 XP</li><li>Like = 5 XP</li><li>Citation = 15 XP</li></ul></article>' +
+      '<article class="comments-info-card comments-info-card--cite"><h3>Cite To Earn</h3><p>Cite facts and sources to boost credibility and XP.</p><ul><li>Add credible source</li><li>Help verify the archive</li><li>Earn more XP</li></ul></article>' +
+      '<article class="comments-info-card comments-info-card--quality"><h3>Quality Matters</h3><p>High quality comments rise to the top.</p><ul><li>Helpful</li><li>Accurate</li><li>Respectful</li></ul></article>' +
+      '<article class="comments-info-card comments-info-card--community"><h3>Real Community</h3><p>Real GKniftyHEADS. Real knowledge. Real culture.</p><ul><li>Build the archive</li><li>Help others</li><li>Grow together</li></ul></article>' +
+    '</div>';
+  }
+
   // ── Avatar URL resolution (priority: avatar_url → Gravatar → identicon) ──
 
   function resolveAvatar(comment, size) {
@@ -196,11 +303,6 @@
   // ── Submit form builder ──────────────────────────────────────
 
   function buildForm(pageId) {
-    var tgBlock = '<div class="comment-form-field cm-tg-block">' +
-      '<label>Telegram identity</label>' +
-      '<div class="cm-tg-login" id="cm-tg-login-' + pageId + '"></div>' +
-      '<span class="cm-tg-status" id="cm-tg-status-' + pageId + '">Optional for comments. Required for rewards.</span>' +
-    '</div>';
     return '<form class="comment-form" data-page-id="' + pageId + '" novalidate>' +
       '<div class="comment-form-identity">' +
         '<div class="comment-form-field">' +
@@ -209,8 +311,8 @@
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-email-' + pageId + '">Email <span class="cm-required">*</span> <span class="cm-note">(Gravatar avatar, never displayed)</span></label>' +
-          '<input type="email" id="cm-email-' + pageId + '" name="email" placeholder="Email required for Gravatar avatar" maxlength="120" required autocomplete="email">' +
-          '<span class="cm-gravatar-status">Email required for Gravatar avatar, never displayed.</span>' +
+          '<input type="email" id="cm-email-' + pageId + '" name="email" placeholder="you@email.com" maxlength="120" required autocomplete="email">' +
+          '<span class="cm-gravatar-status">Gravatar used for avatar. Email never displayed.</span>' +
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-tg-' + pageId + '">Telegram <span class="cm-note">(optional)</span></label>' +
@@ -220,29 +322,44 @@
           '<label for="cm-discord-' + pageId + '">Discord <span class="cm-note">(optional)</span></label>' +
           '<input type="text" id="cm-discord-' + pageId + '" name="discord_username" placeholder="@username" maxlength="60">' +
         '</div>' +
-        tgBlock +
       '</div>' +
       '<input type="hidden" name="avatar_url" value="">' +
-      '<div class="comment-form-field">' +
-        '<label for="cm-text-' + pageId + '">Your take <span class="cm-required">*</span></label>' +
-        '<textarea id="cm-text-' + pageId + '" name="text" rows="3" maxlength="1000" placeholder="HODL or NGMI? Drop your knowledge…" required></textarea>' +
+      '<div class="comments-dashboard-grid">' +
+        '<div class="comments-main-stack">' +
+          '<div class="comments-link-grid">' +
+            buildTelegramIdentityCard(pageId) +
+            buildTelegramBenefitsCard() +
+          '</div>' +
+          '<div class="comment-form-field comment-form-field--take">' +
+            '<label for="cm-text-' + pageId + '">Your Take <span class="cm-required">*</span></label>' +
+            '<textarea id="cm-text-' + pageId + '" name="text" rows="5" maxlength="2000" placeholder="HODL or NGMI? Drop your knowledge..." required></textarea>' +
+            '<span class="comment-character-counter" aria-live="polite">0 / 2000</span>' +
+          '</div>' +
+        '</div>' +
+        buildTopContributorsHTML() +
       '</div>' +
       '<div class="comment-form-footer">' +
-        '<span class="comment-form-note">💡 Gravatar used for avatar. <a href="https://gravatar.com" target="_blank" rel="noopener noreferrer">Set yours up.</a></span>' +
+        '<span class="comment-form-note">Drop facts. Share alpha. Help level up the archive.</span>' +
         '<button type="submit" class="swarmsy-form-button">Post Comment</button>' +
       '</div>' +
       '<div class="comment-form-status" role="status" aria-live="polite"></div>' +
+      buildInfoCards() +
     '</form>';
   }
-
-  // ── Form submit handler ──────────────────────────────────────
 
   function wireForm(container, pageId) {
     var form     = container.querySelector('.comment-form');
     if (!form) return;
+    var textEl = form.querySelector('[name=text]');
+    var counterEl = form.querySelector('.comment-character-counter');
+    var updateCounter = function () {
+      if (!textEl || !counterEl) return;
+      counterEl.textContent = String(textEl.value || '').length + ' / ' + (textEl.getAttribute('maxlength') || '2000');
+    };
     applyCommentProfile(form);
     applyLinkedTelegramIdentity(form);
     updateCommentIdentityCopy(form);
+    updateCounter();
     var gate = getIdentityGate();
     if (gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked() && typeof gate.getFreshTelegramAuth === 'function') {
       Promise.resolve(gate.getFreshTelegramAuth())
@@ -260,6 +377,7 @@
         updateCommentIdentityCopy(form);
       });
     });
+    if (textEl) textEl.addEventListener('input', updateCounter);
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -334,6 +452,7 @@
           applyCommentProfile(form);
           applyLinkedTelegramIdentity(form);
           updateCommentIdentityCopy(form);
+          updateCounter();
           if (moderation === 'approved') {
             var listEl = container.querySelector('#comments-list-' + pageId);
             if (listEl) loadComments(pageId, listEl);
@@ -445,6 +564,28 @@
       });
   }
 
+  function wireTopContributors(container) {
+    var card = container.querySelector('.comments-top-contributors');
+    if (!card) return;
+    var list = card.querySelector('.top-contributor-list');
+    var tabs = Array.prototype.slice.call(card.querySelectorAll('.top-contributor-tab'));
+    var data = getContributorData();
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var period = tab.getAttribute('data-period') || 'week';
+        tabs.forEach(function (other) {
+          var active = other === tab;
+          other.classList.toggle('is-active', active);
+          other.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        if (list) {
+          list.setAttribute('data-period', period);
+          list.innerHTML = contributorRows(data[period] || data.week);
+        }
+      });
+    });
+  }
+
   function initSection(el) {
     var pageId = el.dataset.pageId ||
       document.location.pathname.split('/').pop().replace(/\.html$/, '');
@@ -453,14 +594,24 @@
     var listPlaceholder = '<div class="comments-empty">No comments yet — drop your knowledge! 🧠</div>';
 
     el.innerHTML =
-      '<section class="comments-section" aria-label="Comments">' +
-        '<h2 class="comments-heading">💬 Comments &amp; Battle Layer</h2>' +
-        '<div class="comments-list" id="comments-list-' + pageId + '">' + listPlaceholder + '</div>' +
+      '<section class="comments-section comments-battle-dashboard" aria-labelledby="comments-battle-title">' +
+        '<header class="comments-battle-header">' +
+          '<div>' +
+            '<p class="comments-battle-kicker">Community intelligence</p>' +
+            '<h2 id="comments-battle-title" class="comments-heading">Comments &amp; Battle Layer</h2>' +
+            '<p class="comments-battle-subtitle">Share knowledge. Earn XP. Build the archive.</p>' +
+          '</div>' +
+        '</header>' +
         buildForm(pageId) +
+        '<div class="comments-list-panel">' +
+          '<h3>Latest Collector Notes</h3>' +
+          '<div class="comments-list" id="comments-list-' + pageId + '">' + listPlaceholder + '</div>' +
+        '</div>' +
       '</section>';
 
     wireForm(el, pageId);
     wireVotes(el);
+    wireTopContributors(el);
     injectTelegramWidget(el);
 
     if (!BASE || !FEATURES.COMMENTS) return;

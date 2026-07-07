@@ -2298,6 +2298,514 @@ body.page-wiki .citation-vote-count {
   line-height: 1.55;
 }
 
+body.page-wiki .comments-battle-dashboard {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  overflow: hidden;
+}
+
+body.page-wiki .comments-battle-dashboard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 4%, rgba(53, 194, 255, .22), transparent 28%),
+    radial-gradient(circle at 86% 2%, rgba(214, 83, 255, .24), transparent 30%),
+    linear-gradient(135deg, rgba(22, 194, 255, .1), transparent 42%, rgba(255, 192, 39, .08));
+  opacity: .74;
+}
+
+body.page-wiki .comments-battle-dashboard > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.page-wiki .wiki-comments:has(.comments-battle-dashboard) {
+  max-width: 1480px;
+  width: min(100% - 32px, 1480px);
+  padding: clamp(18px, 2.2vw, 28px);
+  background: rgba(2, 7, 18, .9);
+  border: 1px solid rgba(85, 216, 255, .42);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 34px rgba(52, 199, 255, .08),
+    0 0 32px rgba(25, 174, 255, .14),
+    0 0 44px rgba(198, 69, 255, .13);
+}
+
+body.page-wiki .comments-battle-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+body.page-wiki .comments-battle-kicker {
+  margin: 0 0 5px;
+  color: rgba(108, 224, 255, .82);
+  font-family: var(--font-display);
+  font-size: .76rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+body.page-wiki .comments-battle-dashboard .comments-heading {
+  margin: 0;
+  padding: 0;
+  color: transparent;
+  background: linear-gradient(90deg, #45c8ff, #a86cff 45%, #ff6bd6 70%, #ffd347);
+  -webkit-background-clip: text;
+  background-clip: text;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 4.15rem);
+  line-height: .96;
+  text-shadow: 0 0 22px rgba(96, 206, 255, .24);
+  text-transform: uppercase;
+}
+
+body.page-wiki .comments-battle-subtitle {
+  margin: 10px 0 0;
+  color: rgba(233, 244, 255, .82);
+  font-size: clamp(1rem, 1.3vw, 1.18rem);
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form {
+  gap: 18px;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-identity,
+body.page-wiki .comments-dashboard-grid,
+body.page-wiki .comments-link-card,
+body.page-wiki .comments-top-contributors,
+body.page-wiki .comment-form-field--take,
+body.page-wiki .comments-info-card,
+body.page-wiki .comments-list-panel {
+  background:
+    linear-gradient(145deg, rgba(7, 18, 36, .9), rgba(5, 7, 21, .86)),
+    radial-gradient(circle at 18% 0, rgba(0, 219, 255, .16), transparent 36%);
+  border: 1px solid rgba(86, 220, 255, .26);
+  border-radius: 12px;
+  box-shadow: inset 0 0 22px rgba(87, 220, 255, .06), 0 14px 34px rgba(0, 0, 0, .34);
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-identity {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 16px;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-field {
+  gap: 8px;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form label {
+  color: rgba(246, 250, 255, .92);
+  font-family: var(--font-display);
+  letter-spacing: .02em;
+}
+
+body.page-wiki .comments-battle-dashboard .cm-note,
+body.page-wiki .comments-battle-dashboard .cm-gravatar-status {
+  color: rgba(216, 229, 255, .72);
+  font-family: var(--font-body);
+  font-size: .84rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form input,
+body.page-wiki .comments-battle-dashboard .comment-form textarea {
+  color: rgba(244, 250, 255, .96);
+  background: rgba(0, 0, 0, .62);
+  border: 1px solid rgba(89, 213, 255, .24);
+  border-radius: 8px;
+  box-shadow: inset 0 0 18px rgba(37, 176, 255, .08);
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form input:focus,
+body.page-wiki .comments-battle-dashboard .comment-form textarea:focus {
+  outline: 2px solid rgba(200, 80, 255, .36);
+  border-color: rgba(255, 207, 67, .54);
+}
+
+body.page-wiki .comments-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(290px, .38fr);
+  gap: 18px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+body.page-wiki .comments-main-stack {
+  display: grid;
+  gap: 18px;
+}
+
+body.page-wiki .comments-link-grid {
+  display: grid;
+  grid-template-columns: .62fr 1fr;
+  gap: 18px;
+}
+
+body.page-wiki .comments-link-card,
+body.page-wiki .comments-top-contributors,
+body.page-wiki .comment-form-field--take,
+body.page-wiki .comments-list-panel {
+  padding: clamp(16px, 1.7vw, 22px);
+  animation: commentsDashboardGlow 12s ease-in-out infinite;
+}
+
+body.page-wiki .comments-link-card--telegram {
+  border-color: rgba(34, 214, 255, .62);
+  box-shadow: inset 0 0 28px rgba(28, 198, 255, .1), 0 0 30px rgba(0, 198, 255, .14);
+}
+
+body.page-wiki .comments-link-card--benefits {
+  border-color: rgba(210, 74, 255, .62);
+  box-shadow: inset 0 0 28px rgba(185, 72, 255, .1), 0 0 30px rgba(174, 68, 255, .12);
+}
+
+body.page-wiki .comments-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+body.page-wiki .comments-card-heading h3,
+body.page-wiki .comments-list-panel h3,
+body.page-wiki .comments-info-card h3 {
+  margin: 0;
+  padding: 0;
+  color: #66e8ff;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font-size: 1.08rem;
+  text-transform: uppercase;
+}
+
+body.page-wiki .comments-card-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4bdcff, #7d6cff);
+  box-shadow: 0 0 18px rgba(57, 208, 255, .62);
+}
+
+body.page-wiki .comments-card-icon--purple {
+  background: linear-gradient(135deg, #ff61ef, #8b5cff);
+  box-shadow: 0 0 18px rgba(194, 74, 255, .62);
+}
+
+body.page-wiki .comments-card-icon--gold {
+  background: linear-gradient(135deg, #fff173, #ff9f1c);
+  box-shadow: 0 0 18px rgba(255, 203, 44, .62);
+}
+
+body.page-wiki .cm-tg-status {
+  display: block;
+  color: rgba(236, 246, 255, .88);
+  line-height: 1.7;
+}
+
+body.page-wiki .comments-link-card p {
+  margin: 12px 0 0;
+  color: rgba(219, 232, 255, .72);
+}
+
+body.page-wiki .comments-benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+body.page-wiki .comments-benefit-grid div {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-left: 1px solid rgba(208, 87, 255, .28);
+}
+
+body.page-wiki .comments-benefit-grid strong {
+  color: #ee6cff;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+body.page-wiki .comments-benefit-grid span {
+  color: rgba(234, 242, 255, .76);
+  line-height: 1.55;
+}
+
+body.page-wiki .comment-form-field--take {
+  position: relative;
+  border-color: rgba(205, 78, 255, .58);
+  box-shadow: inset 0 0 30px rgba(182, 72, 255, .09), 0 0 30px rgba(185, 72, 255, .12);
+}
+
+body.page-wiki .comment-form-field--take textarea {
+  min-height: 178px;
+}
+
+body.page-wiki .comment-character-counter {
+  position: absolute;
+  right: 26px;
+  bottom: 82px;
+  color: rgba(232, 240, 255, .72);
+  font-family: var(--font-mono);
+  font-size: .86rem;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-footer {
+  justify-content: space-between;
+  margin-top: -86px;
+  padding: 0 clamp(18px, 1.7vw, 24px) clamp(18px, 1.7vw, 24px);
+  pointer-events: none;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-note,
+body.page-wiki .comments-battle-dashboard .swarmsy-form-button {
+  pointer-events: auto;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-note {
+  color: rgba(235, 244, 255, .82);
+}
+
+body.page-wiki .comments-battle-dashboard .swarmsy-form-button {
+  min-width: 220px;
+  color: #fff7e5;
+  background: linear-gradient(135deg, rgba(158, 64, 255, .78), rgba(255, 195, 23, .86));
+  border-color: rgba(255, 221, 92, .7);
+  box-shadow: 0 0 24px rgba(207, 77, 255, .28), 0 0 30px rgba(255, 201, 34, .22);
+}
+
+body.page-wiki .comments-top-contributors {
+  display: grid;
+  align-content: start;
+  border-color: rgba(255, 204, 35, .68);
+  box-shadow: inset 0 0 32px rgba(255, 199, 40, .08), 0 0 32px rgba(255, 183, 25, .13);
+}
+
+body.page-wiki .comments-top-mini {
+  justify-self: end;
+  display: grid;
+  gap: 2px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  color: rgba(255, 240, 181, .92);
+  border: 1px solid rgba(226, 77, 255, .46);
+  border-radius: 18px;
+  box-shadow: 0 0 18px rgba(207, 70, 255, .18);
+}
+
+body.page-wiki .comments-top-mini span,
+body.page-wiki .top-contributor-tab {
+  font-family: var(--font-display);
+  font-size: .76rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+body.page-wiki .top-contributor-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 14px;
+  padding: 4px;
+  background: rgba(3, 12, 25, .78);
+  border: 1px solid rgba(86, 220, 255, .12);
+  border-radius: 14px;
+}
+
+body.page-wiki .top-contributor-tab {
+  color: rgba(233, 242, 255, .68);
+  background: transparent;
+  border: 0;
+  border-radius: 11px;
+  cursor: pointer;
+  padding: 11px 12px;
+}
+
+body.page-wiki .top-contributor-tab.is-active {
+  color: #ffe66b;
+  background: linear-gradient(135deg, rgba(255, 215, 64, .18), rgba(255, 145, 24, .12));
+}
+
+body.page-wiki .top-contributor-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.page-wiki .top-contributor-row {
+  display: grid;
+  grid-template-columns: 28px 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(158, 190, 255, .1);
+}
+
+body.page-wiki .top-contributor-rank {
+  color: rgba(238, 247, 255, .82);
+  font-family: var(--font-display);
+}
+
+body.page-wiki .top-contributor-name {
+  color: rgba(248, 252, 255, .94);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.page-wiki .top-contributor-xp {
+  color: #ffe54f;
+  font-family: var(--font-display);
+  font-size: .92rem;
+}
+
+body.page-wiki .comment-robot-avatar {
+  display: inline-grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 999px;
+}
+
+body.page-wiki .comment-robot-avatar svg {
+  width: 44px;
+  height: 44px;
+  filter: drop-shadow(0 0 10px rgba(86, 220, 255, .34));
+}
+
+body.page-wiki .top-contributor-row--gold .top-contributor-rank,
+body.page-wiki .top-contributor-row--gold .top-contributor-xp { color: #ffd84c; }
+body.page-wiki .top-contributor-row--cyan .top-contributor-rank,
+body.page-wiki .top-contributor-row--cyan .top-contributor-xp { color: #21dfff; }
+body.page-wiki .top-contributor-row--purple .top-contributor-rank,
+body.page-wiki .top-contributor-row--purple .top-contributor-xp { color: #d768ff; }
+body.page-wiki .top-contributor-row--green .top-contributor-rank,
+body.page-wiki .top-contributor-row--green .top-contributor-xp { color: #61ff7a; }
+body.page-wiki .top-contributor-row--orange .top-contributor-rank,
+body.page-wiki .top-contributor-row--orange .top-contributor-xp { color: #ff9d34; }
+
+body.page-wiki .comments-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+body.page-wiki .comments-info-card {
+  padding: 18px;
+  animation: commentsDashboardGlow 12s ease-in-out infinite;
+}
+
+body.page-wiki .comments-info-card p,
+body.page-wiki .comments-info-card li {
+  color: rgba(231, 242, 255, .78);
+  line-height: 1.55;
+}
+
+body.page-wiki .comments-info-card ul {
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+body.page-wiki .comments-info-card--xp {
+  border-color: rgba(206, 81, 255, .54);
+  box-shadow: inset 0 0 26px rgba(177, 72, 255, .1), 0 0 24px rgba(170, 65, 255, .12);
+}
+body.page-wiki .comments-info-card--xp h3 { color: #d85cff; }
+
+body.page-wiki .comments-info-card--cite {
+  border-color: rgba(39, 196, 255, .54);
+  box-shadow: inset 0 0 26px rgba(20, 180, 255, .1), 0 0 24px rgba(0, 199, 255, .12);
+}
+body.page-wiki .comments-info-card--cite h3 { color: #2bdfff; }
+
+body.page-wiki .comments-info-card--quality {
+  border-color: rgba(85, 238, 91, .48);
+  box-shadow: inset 0 0 26px rgba(76, 220, 88, .1), 0 0 24px rgba(71, 235, 84, .1);
+}
+body.page-wiki .comments-info-card--quality h3 { color: #6dff65; }
+
+body.page-wiki .comments-info-card--community {
+  border-color: rgba(255, 152, 34, .52);
+  box-shadow: inset 0 0 26px rgba(255, 166, 36, .1), 0 0 24px rgba(255, 154, 27, .12);
+}
+body.page-wiki .comments-info-card--community h3 { color: #ff9b28; }
+
+body.page-wiki .comments-list-panel {
+  border-color: rgba(86, 220, 255, .2);
+}
+
+@keyframes commentsDashboardGlow {
+  0%, 100% {
+    filter: saturate(1);
+  }
+  50% {
+    filter: saturate(1.14) brightness(1.04);
+  }
+}
+
+@media (max-width: 1180px) {
+  body.page-wiki .comments-battle-dashboard .comment-form-identity,
+  body.page-wiki .comments-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.page-wiki .comments-dashboard-grid,
+  body.page-wiki .comments-link-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-wiki .comments-battle-dashboard .comment-form-footer {
+    margin-top: 0;
+    padding: 0;
+  }
+
+  body.page-wiki .comment-character-counter {
+    position: static;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 720px) {
+  body.page-wiki .wiki-comments:has(.comments-battle-dashboard) {
+    width: min(100% - 18px, 1480px);
+    padding: 14px;
+  }
+
+  body.page-wiki .comments-battle-dashboard .comment-form-identity,
+  body.page-wiki .comments-info-grid,
+  body.page-wiki .comments-benefit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-wiki .comments-battle-dashboard .swarmsy-form-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-wiki .comments-battle-dashboard *,
+  body.page-wiki .comments-battle-dashboard::before {
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+}
+
 .swarmsy-form-button {
   padding: 12px 16px;
   color: #00ffcc;
