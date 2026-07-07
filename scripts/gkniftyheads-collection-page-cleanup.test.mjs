@@ -165,8 +165,8 @@ assert.match(rarityClient, /const auditGroups = Array\.from\(ranking\.querySelec
 assert.match(rarityClient, /for \(const card of auditCards\) \{[\s\S]*card\.hidden = !matchesFilter\(card, normalized\);[\s\S]*for \(const group of auditGroups\)/, 'audit cards should hide using the same filter matcher as table rows');
 assert.match(rarityClient, /group\.hidden = visibleCards\.length === 0/, 'empty audit card groups should hide after filtering');
 assert.doesNotMatch(stripDetails(html), /WAX Bridge|wax-bridge-status|wax-bridge-collection-data/, 'collection/wiki page should not show infrastructure WAX Bridge cards');
-assert.match(html, /<details class="wiki-rabbit-group wiki-rabbit-group--nft-siblings" data-related-group="Related NFT Templates">/, 'related NFT templates should be collapsed on the collection page');
 assert.match(html, /gk-related-card-grid[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Collection[\s\S]*NFT Template Pages[\s\S]*Connected Lore/, 'related pages should render as relationship cards');
+assert.doesNotMatch(html, /Related NFT Templates|wiki-rabbit-card--nft-sibling|gkniftyheads-.+-\d{5,}\.html[\s\S]*is an NFT template in the gkniftyheads WAX AtomicAssets collection/, 'collection page should not render the generated related NFT template list');
 assert.doesNotMatch(html, /citation-vote-panel|Citation Credibility|data-cite-id="citation-panel"/, 'collection page should not render a separate citation credibility card');
 assert.match(html, /<ul class="sources-list">[\s\S]*wax\.api\.atomicassets\.io[\s\S]*waxitems\.com/, 'sources list should remain the visible citation home');
 assert.match(battleLayer, /document\.querySelectorAll\('\.citations-list li, \.source-ref-list li, \.sources-list li'\)/, 'sources-list items should receive inline citation vote controls');

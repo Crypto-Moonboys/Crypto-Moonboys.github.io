@@ -84,11 +84,12 @@ function assertRelatedSection(relPath, html) {
   check(!/\bhref=["']https?:\/\//i.test(section), `${relPath} related section must not contain external links`);
   check(!/\.html\.html(?:["'#?]|$)/i.test(section), `${relPath} related section must not contain .html.html links`);
   check(!/\bwiki-rabbit-list\b/i.test(section), `${relPath} related section must use card/grid markup, not legacy rabbit lists`);
-  check(/\bwiki-rabbit-grid\b/i.test(section), `${relPath} related section must include card grids`);
-  check(/\bwiki-rabbit-card\b/i.test(section), `${relPath} related section must include rabbit-hole cards`);
+  const hasRelationshipCards = /\bgk-related-card-grid\b/i.test(section) && /\bgk-related-card\b/i.test(section);
+  check(hasRelationshipCards || /\bwiki-rabbit-grid\b/i.test(section), `${relPath} related section must include card grids`);
+  check(hasRelationshipCards || /\bwiki-rabbit-card\b/i.test(section), `${relPath} related section must include rabbit-hole cards`);
 
   const groups = extractGroups(section);
-  check(groups.length > 0, `${relPath} related section must contain grouped link blocks`);
+  check(hasRelationshipCards || groups.length > 0, `${relPath} related section must contain grouped link blocks`);
   for (const group of groups) {
     const items = (group.match(/<a\b[^>]*class=["'][^"']*\bwiki-rabbit-card\b/gi) || []).length;
     check(items <= MAX_GROUP_ITEMS, `${relPath} related group has ${items} links; cap is ${MAX_GROUP_ITEMS}`);

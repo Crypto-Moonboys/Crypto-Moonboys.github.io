@@ -789,7 +789,6 @@ function groupsForPage(context, currentUrl, html, kind) {
           categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.', context.root),
         ], currentUrl, GROUP_LIMIT, context.root),
       },
-      { title: 'Related NFT Templates', links: uniqueLinks(context.gkniftyTemplates.slice(0, TEMPLATE_LIMIT).map((entry) => linkFromEntry(entry, 'Featured child template page.', context.root)), currentUrl, TEMPLATE_LIMIT, context.root) },
     ];
   } else {
     fallbackGroups = genericGroups(context, currentUrl);
