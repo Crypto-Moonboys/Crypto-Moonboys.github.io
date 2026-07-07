@@ -42,6 +42,15 @@
     return document.location.pathname.split('/').pop().replace(/\.html$/, '') || 'home';
   }
 
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // ── Identity helpers ─────────────────────────────────────────
 
   function getGate() { return window.MOONBOYS_IDENTITY || null; }
@@ -183,17 +192,23 @@
 
   // ── Citation Vote Widget ─────────────────────────────────────
 
+  function citationLabel(el) {
+    var link = el.closest && el.closest('li') ? el.closest('li').querySelector('a') : null;
+    return link ? (link.textContent || '').trim() || 'source' : 'citation';
+  }
+
   function initCiteVote(el) {
     if (el.dataset.engagementReady === 'true') return;
     el.dataset.engagementReady = 'true';
     var citeId = el.dataset.citeId || '0';
     var pageId = el.dataset.pageId || defaultPageId();
 
+    var label = citationLabel(el);
     el.innerHTML =
       '<span class="cite-vote-inner">' +
-        '<button class="cite-vote-btn" data-action="up" aria-label="Upvote citation ' + citeId + '">▲</button>' +
+        '<button class="cite-vote-btn cite-vote-btn--up" data-action="up" aria-label="Upvote ' + esc(label) + ' source">▲</button>' +
         '<span class="cite-vote-score" aria-live="polite">—</span>' +
-        '<button class="cite-vote-btn" data-action="down" aria-label="Downvote citation ' + citeId + '">▼</button>' +
+        '<button class="cite-vote-btn cite-vote-btn--down" data-action="down" aria-label="Downvote ' + esc(label) + ' source">▼</button>' +
       '</span>' +
       '<span class="cite-vote-status" role="status" aria-live="polite"></span>';
 

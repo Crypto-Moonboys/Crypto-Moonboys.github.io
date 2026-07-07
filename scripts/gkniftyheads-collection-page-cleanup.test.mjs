@@ -167,7 +167,9 @@ assert.match(rarityClient, /group\.hidden = visibleCards\.length === 0/, 'empty 
 assert.doesNotMatch(stripDetails(html), /WAX Bridge|wax-bridge-status|wax-bridge-collection-data/, 'collection/wiki page should not show infrastructure WAX Bridge cards');
 assert.match(html, /<details class="wiki-rabbit-group wiki-rabbit-group--nft-siblings" data-related-group="Related NFT Templates">/, 'related NFT templates should be collapsed on the collection page');
 assert.match(html, /gk-related-card-grid[\s\S]*Crypto Moonboys Origin[\s\S]*GKniftyHEADS Collection[\s\S]*NFT Template Pages[\s\S]*Connected Lore/, 'related pages should render as relationship cards');
-assert.match(html, /citation-vote-panel gk-wiki-intelligence-panel[\s\S]*Wiki intelligence[\s\S]*Citation Credibility/, 'citation voting panel should use the wiki intelligence treatment');
+assert.doesNotMatch(html, /citation-vote-panel|Citation Credibility|data-cite-id="citation-panel"/, 'collection page should not render a separate citation credibility card');
+assert.match(html, /<ul class="sources-list">[\s\S]*wax\.api\.atomicassets\.io[\s\S]*waxitems\.com/, 'sources list should remain the visible citation home');
+assert.match(battleLayer, /document\.querySelectorAll\('\.citations-list li, \.source-ref-list li, \.sources-list li'\)/, 'sources-list items should receive inline citation vote controls');
 assert.match(html, /gk-community-intelligence-panel[\s\S]*Community intelligence[\s\S]*Collector Notes[\s\S]*class="wiki-comments"/, 'comments should sit inside a community intelligence panel');
 
 assert.match(css, /\.gk-collection-actions/, 'collection action row should have responsive styling');

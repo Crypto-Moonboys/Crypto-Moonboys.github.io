@@ -509,40 +509,6 @@ function updateCryptoMoonboysCategoryTags(html) {
   );
 }
 
-function pageIdFromUrl(url) {
-  return path.basename(String(url || '').split('?')[0], '.html');
-}
-
-function countSourceItems(html) {
-  const listMatches = String(html || '').matchAll(/<ul\b[^>]*class=["'][^"']*\b(?:citations-list|source-ref-list|sources-list)\b[^"']*["'][\s\S]*?<\/ul>/gi);
-  let count = 0;
-  for (const match of listMatches) count += (match[0].match(/<li\b/gi) || []).length;
-  return count;
-}
-
-function hasCitationSources(html) {
-  return countSourceItems(html) > 0 ||
-    /<section\b[^>]*class=["'][^"']*\bcitations-section\b/i.test(html) ||
-    /<h2\b[^>]*>\s*(?:Sources|Citations|Source References)\s*<\/h2>/i.test(html);
-}
-
-function renderCitationVotePanel(url, html) {
-  const pageId = pageIdFromUrl(url);
-  const sourceCount = countSourceItems(html);
-  const countText = sourceCount ? `<span class="citation-vote-count">${sourceCount} source${sourceCount === 1 ? '' : 's'} found on this page.</span>` : '';
-  return `${CITATION_VOTE_BEGIN}
-      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="${escapeHtml(pageId)}" aria-labelledby="citation-vote-panel-title">
-        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
-        <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
-        <div class="citation-vote-panel-actions">
-          <span class="cite-vote" data-page-id="${escapeHtml(pageId)}" data-cite-id="citation-panel"></span>
-          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          ${countText}
-        </div>
-      </section>
-${CITATION_VOTE_END}`;
-}
-
 function insertGeneratedBlock(html, block) {
   const commentsIndex = html.search(/\s*<div class=["'][^"']*\bwiki-comments\b/i);
   if (commentsIndex !== -1) return `${html.slice(0, commentsIndex)}\n${block}\n${html.slice(commentsIndex)}`;
@@ -554,9 +520,7 @@ function insertGeneratedBlock(html, block) {
 }
 
 function upsertCitationVotePanel(html, url) {
-  const withoutPanel = removeCitationVotePanel(html);
-  if (!hasCitationSources(withoutPanel)) return withoutPanel;
-  return insertGeneratedBlock(withoutPanel, renderCitationVotePanel(url, withoutPanel));
+  return removeCitationVotePanel(html);
 }
 
 function categoryTitle(url) {

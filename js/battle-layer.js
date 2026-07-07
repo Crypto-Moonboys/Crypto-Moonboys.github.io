@@ -68,7 +68,7 @@
   }
 
   function enhanceCitations(pageId) {
-    var list = document.querySelectorAll('.citations-list li, .source-ref-list li');
+    var list = document.querySelectorAll('.citations-list li, .source-ref-list li, .sources-list li');
     if (!list.length) return;
     list.forEach(function (li, index) {
       if (li.querySelector('.cite-vote')) return;

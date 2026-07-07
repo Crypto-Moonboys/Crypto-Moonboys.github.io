@@ -11,6 +11,7 @@ const CORE_PAGE = 'wiki/crypto-moonboys.html';
 const MAX_GROUP_ITEMS = 8;
 const MAX_NFT_LINKS_IN_SECTION = 8;
 const failures = [];
+const battleLayer = read('js/battle-layer.js');
 
 function read(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
@@ -68,12 +69,10 @@ function hasSourceList(html) {
 
 function assertCitationPanel(relPath, html) {
   if (!hasSourceList(html)) return;
-  check(/data-citation-vote-panel=["']true["']/i.test(html), `${relPath} must render the citation vote panel when citations/sources exist`);
   check(
-    html.includes('Vote on citations to strengthen the credibility of this intelligence file.'),
-    `${relPath} citation vote panel must use the required credibility prompt`
+    battleLayer.includes("'.citations-list li, .source-ref-list li, .sources-list li'"),
+    `${relPath} source lists must be covered by inline citation vote wiring`
   );
-  check(/class=["'][^"']*\bcite-vote\b/i.test(html), `${relPath} citation vote panel must expose a cite-vote hook`);
 }
 
 function assertRelatedSection(relPath, html) {
