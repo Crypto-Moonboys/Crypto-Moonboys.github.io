@@ -1882,14 +1882,6 @@
       "authority_score": 12
     },
     {
-      "id": "/wiki/nbgx.html",
-      "title": "nbgx — Crypto Moonboys Wiki",
-      "url": "/wiki/nbgx.html",
-      "category": "characters",
-      "rank_score": 589,
-      "authority_score": 18
-    },
-    {
       "id": "/wiki/neftyblocks.html",
       "title": "NeftyBlocks — Crypto Moonboys Wiki",
       "url": "/wiki/neftyblocks.html",
@@ -9587,7 +9579,7 @@
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/nbgx.html",
+      "target": "/wiki/nbgx-token.html",
       "score": 80,
       "weight": 0.8
     },
@@ -9646,31 +9638,31 @@
       "weight": 0.59
     },
     {
-      "source": "/wiki/nbgx.html",
+      "source": "/wiki/nbgx-token.html",
       "target": "/wiki/nbg.html",
       "score": 79,
       "weight": 0.79
     },
     {
-      "source": "/wiki/nbgx.html",
+      "source": "/wiki/nbgx-token.html",
       "target": "/wiki/block-topia.html",
       "score": 76,
       "weight": 0.76
     },
     {
-      "source": "/wiki/nbgx.html",
+      "source": "/wiki/nbgx-token.html",
       "target": "/wiki/graffpunks.html",
       "score": 67,
       "weight": 0.67
     },
     {
-      "source": "/wiki/nbgx.html",
+      "source": "/wiki/nbgx-token.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 63,
       "weight": 0.63
     },
     {
-      "source": "/wiki/nbgx.html",
+      "source": "/wiki/nbgx-token.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 62,
       "weight": 0.62

@@ -175,22 +175,6 @@
       "reason": "same brand (nbg), same concept type (token)"
     },
     {
-      "brand": "nbg",
-      "concept_type": "mechanic",
-      "canonical_slug": "nbgx",
-      "canonical_url": "/wiki/nbgx.html",
-      "canonical_concept_id": "nbg:mechanic",
-      "aliases": [],
-      "kept_separate": [
-        "nbg",
-        "nbg-token"
-      ],
-      "in_wiki_index": true,
-      "in_entity_map": true,
-      "in_entity_graph": true,
-      "reason": "same brand (nbg), same concept type (mechanic)"
-    },
-    {
       "brand": "one-million-free-nfts",
       "concept_type": "program",
       "canonical_slug": "1m-free-nfts-program",

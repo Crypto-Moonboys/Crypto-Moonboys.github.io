@@ -268,16 +268,6 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/nbgx.html",
-      "title": "NBGX — Crypto Moonboys Wiki",
-      "governance_priority_score": 43,
-      "trust_band": "medium",
-      "authority_band": "developing",
-      "narrative_importance": 0,
-      "editorial_risk": 3,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/staking.html",
       "title": "Staking — Crypto Moonboys Wiki",
       "governance_priority_score": 43,

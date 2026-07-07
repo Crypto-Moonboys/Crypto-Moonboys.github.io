@@ -47,7 +47,7 @@ assert.equal(canonicalizeSlug('graffpunks-collection'), 'graffpunks-collection',
 assert.equal(canonicalizeSlug('midevilpunks'), 'midevilpunks', 'game must stay separate from graffpunks faction');
 assert.equal(canonicalizeSlug('graffpunks-24-7-radio'), 'graffpunks-24-7-radio', 'radio must stay separate from graffpunks faction');
 assert.equal(canonicalizeSlug('nbg-token'), 'nbg-token', 'token must stay separate from nbg brand');
-assert.equal(canonicalizeSlug('nbgx'), 'nbgx', 'nbgx must stay separate from nbg brand');
+assert.equal(canonicalizeSlug('nbgx'), 'nbgx-token', 'nbgx routes to the canonical token page and stays separate from nbg brand');
 assert.equal(canonicalizeSlug('nbg'), 'nbg');
 assert.equal(canonicalizeSlug('hodl-warriors'), 'hodl-warriors', 'faction must stay separate from hodl-wars game');
 assert.equal(canonicalizeSlug('hodl-wars'), 'hodl-wars', 'game must stay separate from hodl-warriors faction');
@@ -65,6 +65,7 @@ assert.equal(canonicalizeWikiUrl('/search.html?q=graffpunks-247'), '/search.html
 assert.equal(isAliasSlug('hodl-wars-game'), true);
 assert.equal(isAliasSlug('hodl-wars'), false);
 assert.equal(isAliasSlug('nbg-token'), false, 'nbg-token is not an alias; it is a separate concept');
+assert.equal(isTrueAliasSlug('nbgx'), true, 'nbgx is an alias for the canonical nbgx-token page');
 assert.equal(isTrueAliasSlug('graffpunks-247'), true);
 assert.equal(isTrueAliasSlug('graffpunks-collection'), false, 'collection is a separate concept, not an alias');
 assert.equal(isTrueAliasSlug('midevilpunks'), false, 'game is a separate concept, not an alias');
@@ -89,6 +90,7 @@ assert.equal(getConceptType('hodl-wars'), 'game');
 assert.equal(getConceptType('nbg'), 'brand');
 assert.equal(getConceptType('nbg-token'), 'token');
 assert.equal(getConceptType('nbgx'), 'mechanic');
+assert.equal(getConceptType('nbgx-token'), 'mechanic');
 
 // ── classifyWikiSlug works through aliases ────────────────────────────────
 
@@ -163,7 +165,7 @@ const mustBeSeparate = [
   ['/wiki/graffpunks.html', '/wiki/midevilpunks.html'],
   ['/wiki/graffpunks.html', '/wiki/graffpunks-24-7-radio.html'],
   ['/wiki/nbg.html', '/wiki/nbg-token.html'],
-  ['/wiki/nbg.html', '/wiki/nbgx.html'],
+  ['/wiki/nbg.html', '/wiki/nbgx-token.html'],
   ['/wiki/hodl-warriors.html', '/wiki/hodl-wars.html'],
 ];
 

@@ -4494,7 +4494,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -5997,7 +5997,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -10103,7 +10103,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -13856,7 +13856,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -14623,7 +14623,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -16821,7 +16821,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -19170,7 +19170,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -20805,7 +20805,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 57,
         "base_score": 40,
         "reasons": [
@@ -22176,7 +22176,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -22978,7 +22978,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -26304,7 +26304,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -37465,7 +37465,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -38264,7 +38264,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -39057,7 +39057,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -148537,7 +148537,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -150140,7 +150140,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -153914,7 +153914,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -159233,7 +159233,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -160750,7 +160750,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -161475,7 +161475,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 57,
         "base_score": 40,
         "reasons": [
@@ -173384,7 +173384,7 @@
   "/wiki/nbg.html": {
     "related_pages": [
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 83,
         "base_score": 65,
         "reasons": [
@@ -174910,769 +174910,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 53
-        }
-      }
-    ]
-  },
-  "/wiki/nbgx.html": {
-    "related_pages": [
-      {
-        "target_url": "/wiki/nbg.html",
-        "score": 83,
-        "base_score": 65,
-        "reasons": [
-          "same_category:characters",
-          "same_brand_concept:nbg",
-          "rank_score_boost:5",
-          "content_depth_boost:6",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 5,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 6,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 79,
-        "score_breakdown": {
-          "base_score": 65,
-          "rank_score_boost": 5,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 6,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 79
-        }
-      },
-      {
-        "target_url": "/wiki/block-topia.html",
-        "score": 80,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:9",
-          "authority_score_boost:8",
-          "graph_centrality_boost:8",
-          "content_depth_boost:8",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 9,
-        "authority_score_boost": 8,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 8,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 76,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 9,
-          "authority_score_boost": 8,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 8,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 76
-        }
-      },
-      {
-        "target_url": "/wiki/graffpunks.html",
-        "score": 71,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:8",
-          "authority_score_boost:3",
-          "graph_centrality_boost:5",
-          "content_depth_boost:8",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 8,
-        "authority_score_boost": 3,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 8,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 67,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 8,
-          "authority_score_boost": 3,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 8,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 67
-        }
-      },
-      {
-        "target_url": "/wiki/crypto-moonboys.html",
-        "score": 67,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:4",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:2",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 63,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 4,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 63
-        }
-      },
-      {
-        "target_url": "/wiki/bitcoin-kids.html",
-        "score": 66,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:7",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:8",
-          "reinforcement_boost:2",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 7,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 8,
-        "reinforcement_boost": 2,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 62,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 7,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 8,
-          "reinforcement_boost": 2,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 62
-        }
-      },
-      {
-        "target_url": "/wiki/null-the-prophet.html",
-        "score": 59,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:7",
-          "content_depth_boost:8",
-          "cluster_support_boost:3",
-          "co_citation_boost:1"
-        ],
-        "rank_score_boost": 7,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 8,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 1,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 61,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 7,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 8,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 1,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 61
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads.html",
-        "score": 62,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:4",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:4",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 58,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 4,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/punk-token.html",
-        "score": 56,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:6",
-          "content_depth_boost:7",
-          "cluster_support_boost:3"
-        ],
-        "rank_score_boost": 6,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 7,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 58,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 6,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 7,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 58
-        }
-      },
-      {
-        "target_url": "/wiki/staking.html",
-        "score": 54,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:5",
-          "content_depth_boost:6",
-          "cluster_support_boost:3"
-        ],
-        "rank_score_boost": 5,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 6,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 56,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 5,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 6,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 56
-        }
-      },
-      {
-        "target_url": "/wiki/burn-to-earn.html",
-        "score": 58,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:5",
-          "content_depth_boost:6",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 5,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 6,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 54,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 5,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 6,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 54
-        }
-      },
-      {
-        "target_url": "/wiki/hodl-warriors.html",
-        "score": 58,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:4",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:4",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 54,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 4,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 54
-        }
-      },
-      {
-        "target_url": "/wiki/xrp-kids.html",
-        "score": 52,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:4",
-          "content_depth_boost:5",
-          "cluster_support_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 54,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 4,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 54
-        }
-      },
-      {
-        "target_url": "/wiki/gang-signs.html",
-        "score": 55,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:4",
-          "content_depth_boost:5",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 5,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 3,
-        "recency_balance": -3,
-        "final_score": 52,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 4,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 5,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 3,
-          "recency_balance": -3,
-          "final_score": 52
-        }
-      },
-      {
-        "target_url": "/wiki/diamond-hands.html",
-        "score": 49,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:2",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1",
-          "cluster_support_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 51,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 2,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 51
-        }
-      },
-      {
-        "target_url": "/wiki/hodl-x-warriors.html",
-        "score": 55,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:4",
-          "content_depth_boost:4",
-          "reinforcement_boost:1",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 1,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 4,
-        "recency_balance": -4,
-        "final_score": 51,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 4,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
-          "reinforcement_boost": 1,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 4,
-          "recency_balance": -4,
-          "final_score": 51
-        }
-      },
-      {
-        "target_url": "/wiki/ian-harrison.html",
-        "score": 49,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:2",
-          "content_depth_boost:2",
-          "cluster_support_boost:3",
-          "co_citation_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 2,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 51,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 2,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 51
-        }
-      },
-      {
-        "target_url": "/wiki/alien-worlds-tlm.html",
-        "score": 50,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:2",
-          "content_depth_boost:2",
-          "cluster_support_boost:3",
-          "co_citation_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 3,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 50,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 3,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 50
-        }
-      },
-      {
-        "target_url": "/wiki/wallets.html",
-        "score": 48,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:2",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1",
-          "cluster_support_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 50,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 50
-        }
-      },
-      {
-        "target_url": "/wiki/charlie-buster.html",
-        "score": 49,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:2",
-          "content_depth_boost:2",
-          "cluster_support_boost:3",
-          "co_citation_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 2,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 49,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 2,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 49
-        }
-      },
-      {
-        "target_url": "/wiki/genesis-spray-drop.html",
-        "score": 47,
-        "base_score": 40,
-        "reasons": [
-          "same_category:characters",
-          "rank_score_boost:2",
-          "content_depth_boost:2",
-          "cluster_support_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 3,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 49,
-        "score_breakdown": {
-          "base_score": 40,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 3,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 49
         }
       }
     ]
@@ -177600,7 +176837,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 58,
         "base_score": 40,
         "reasons": [
@@ -180535,7 +179772,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 56,
         "base_score": 40,
         "reasons": [
@@ -184391,7 +183628,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -187382,7 +186619,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -202591,7 +201828,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -233249,7 +232486,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -234015,7 +233252,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [
@@ -241452,7 +240689,7 @@
         }
       },
       {
-        "target_url": "/wiki/nbgx.html",
+        "target_url": "/wiki/nbgx-token.html",
         "score": 55,
         "base_score": 40,
         "reasons": [

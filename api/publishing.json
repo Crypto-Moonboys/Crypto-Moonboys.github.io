@@ -418,21 +418,6 @@
       }
     },
     {
-      "url": "/wiki/nbgx.html",
-      "readable_title": "NBGX",
-      "readiness_score": 58,
-      "summary_quality": 100,
-      "authority_score": 64,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": true,
-        "telegram": true,
-        "substack": false,
-        "paragraph": true
-      }
-    },
-    {
       "url": "/wiki/staking.html",
       "readable_title": "Staking",
       "readiness_score": 58,

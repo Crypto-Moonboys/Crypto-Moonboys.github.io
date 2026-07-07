@@ -300,8 +300,9 @@
       "title": "Keyword Hunt: NBGX",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on NBGX. What is its canonical name?",
-      "wiki_url": "/wiki/nbgx.html",
+      "wiki_url": "/wiki/nbgx-token.html",
       "accepted_answers": [
+        "NBGX TOKEN",
         "NBGX"
       ],
       "rewards": {
@@ -765,8 +766,9 @@
       "title": "Deep Dive: NBGX",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, NBGX is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/nbgx.html",
+      "wiki_url": "/wiki/nbgx-token.html",
       "accepted_answers": [
+        "NBGX TOKEN",
         "NBGX"
       ],
       "rewards": {

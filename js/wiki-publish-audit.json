@@ -1686,9 +1686,9 @@
     {
       "slug": "nbgx",
       "file": "nbgx.html",
-      "status": "APPROVED_CANON_PAGE",
-      "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 7318
+      "status": "APPROVED_ALIAS_REDIRECT",
+      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
+      "word_count": 0
     },
     {
       "slug": "nbgx-token",
