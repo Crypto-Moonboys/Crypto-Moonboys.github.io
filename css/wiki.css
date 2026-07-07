@@ -2410,6 +2410,7 @@ body.page-wiki .comments-battle-dashboard .comment-form-identity {
 }
 
 body.page-wiki .comments-battle-dashboard .comment-form-field {
+  grid-template-rows: minmax(2.8em, auto) 76px minmax(1.35em, auto);
   gap: 8px;
 }
 
@@ -2420,12 +2421,17 @@ body.page-wiki .comments-battle-dashboard .comment-form label {
 }
 
 body.page-wiki .comments-battle-dashboard .cm-note,
-body.page-wiki .comments-battle-dashboard .cm-gravatar-status {
+body.page-wiki .comments-battle-dashboard .cm-gravatar-status,
+body.page-wiki .comments-battle-dashboard .cm-field-helper {
   color: rgba(216, 229, 255, .72);
   font-family: var(--font-body);
   font-size: .84rem;
   font-weight: 500;
   letter-spacing: 0;
+}
+
+body.page-wiki .comments-battle-dashboard .cm-field-helper {
+  visibility: hidden;
 }
 
 body.page-wiki .comments-battle-dashboard .comment-form input,
@@ -2435,6 +2441,10 @@ body.page-wiki .comments-battle-dashboard .comment-form textarea {
   border: 1px solid rgba(89, 213, 255, .24);
   border-radius: 8px;
   box-shadow: inset 0 0 18px rgba(37, 176, 255, .08);
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form input {
+  height: 76px;
 }
 
 body.page-wiki .comments-battle-dashboard .comment-form input:focus,
@@ -2602,19 +2612,6 @@ body.page-wiki .comments-top-contributors {
   box-shadow: inset 0 0 32px rgba(255, 199, 40, .08), 0 0 32px rgba(255, 183, 25, .13);
 }
 
-body.page-wiki .comments-top-mini {
-  justify-self: end;
-  display: grid;
-  gap: 2px;
-  margin-bottom: 16px;
-  padding: 10px 14px;
-  color: rgba(255, 240, 181, .92);
-  border: 1px solid rgba(226, 77, 255, .46);
-  border-radius: 18px;
-  box-shadow: 0 0 18px rgba(207, 70, 255, .18);
-}
-
-body.page-wiki .comments-top-mini span,
 body.page-wiki .top-contributor-tab {
   font-family: var(--font-display);
   font-size: .76rem;

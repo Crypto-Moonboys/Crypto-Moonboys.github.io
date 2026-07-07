@@ -216,9 +216,7 @@
 
   function buildTopContributorsHTML() {
     var data = getContributorData();
-    var leader = data.week[0] || FALLBACK_TOP_CONTRIBUTORS[0];
     return '<aside class="comments-top-contributors" aria-labelledby="comments-top-contributors-title">' +
-      '<div class="comments-top-mini"><span>Top Contributor</span><strong data-top-contributor-leader>' + esc(leader.name) + ' - ' + esc(formatXP(leader.xp)) + '</strong></div>' +
       '<div class="comments-card-heading">' +
         '<span class="comments-card-icon comments-card-icon--gold" aria-hidden="true"></span>' +
         '<h3 id="comments-top-contributors-title">Top Contributors</h3>' +
@@ -295,7 +293,6 @@
             '<span class="comment-name">' + esc(c.name) + '</span>' +
             tgBadge +
             discordBadge +
-            '<span class="comment-time">' + esc(c.time_ago || '') + '</span>' +
           '</div>' +
           '<div class="comment-text">' + esc(c.text) + '</div>' +
           '<div class="comment-actions">' +
@@ -315,6 +312,7 @@
         '<div class="comment-form-field">' +
           '<label for="cm-name-' + pageId + '">Name / Handle <span class="cm-required">*</span></label>' +
           '<input type="text" id="cm-name-' + pageId + '" name="name" placeholder="Your display name" maxlength="60" required autocomplete="nickname">' +
+          '<span class="cm-field-helper" aria-hidden="true"></span>' +
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-email-' + pageId + '">Email <span class="cm-required">*</span> <span class="cm-note">(Gravatar avatar, never displayed)</span></label>' +
@@ -324,10 +322,12 @@
         '<div class="comment-form-field">' +
           '<label for="cm-tg-' + pageId + '">Telegram <span class="cm-note">(optional)</span></label>' +
           '<input type="text" id="cm-tg-' + pageId + '" name="telegram_username" placeholder="Telegram username" maxlength="60">' +
+          '<span class="cm-field-helper" aria-hidden="true"></span>' +
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-discord-' + pageId + '">Discord <span class="cm-note">(optional)</span></label>' +
           '<input type="text" id="cm-discord-' + pageId + '" name="discord_username" placeholder="@username" maxlength="60">' +
+          '<span class="cm-field-helper" aria-hidden="true"></span>' +
         '</div>' +
       '</div>' +
       '<input type="hidden" name="avatar_url" value="">' +
@@ -575,7 +575,6 @@
     var card = container.querySelector('.comments-top-contributors');
     if (!card) return;
     var list = card.querySelector('.top-contributor-list');
-    var leaderSummary = card.querySelector('[data-top-contributor-leader]');
     var tabs = Array.prototype.slice.call(card.querySelectorAll('.top-contributor-tab'));
     var data = getContributorData();
     tabs.forEach(function (tab) {
@@ -590,9 +589,6 @@
         if (list) {
           list.setAttribute('data-period', period);
           list.innerHTML = contributorRows(rows);
-        }
-        if (leaderSummary && rows[0]) {
-          leaderSummary.textContent = (rows[0].name || 'Contributor') + ' - ' + formatXP(rows[0].xp);
         }
       });
     });

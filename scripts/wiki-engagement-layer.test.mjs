@@ -73,7 +73,7 @@ check(!/<span class="comment-character-counter"[^>]*aria-live/.test(comments), '
 for (const name of ['Swarmsy', 'Alfie Blaze', 'CrypticYuna', 'Boneidol INK', 'P-Fly']) {
   check(comments.includes(name), `Fallback top contributors include ${name}`);
 }
-check(comments.includes('window.MOONBOYS_TOP_CONTRIBUTORS') && comments.includes('top-contributor-tab') && comments.includes('contributorRows(rows)') && comments.includes('data-top-contributor-leader') && comments.includes('aria-pressed'), 'Top Contributors card is data-driven with synced week/all-time toggles');
+check(comments.includes('window.MOONBOYS_TOP_CONTRIBUTORS') && comments.includes('top-contributor-tab') && comments.includes('contributorRows(rows)') && comments.includes('aria-pressed') && !comments.includes('data-top-contributor-leader'), 'Top Contributors card is data-driven with week/all-time toggles and no duplicate leader summary');
 check(comments.includes('function normalizeContributorColor(color)') && comments.includes("String(color || '').trim().toLowerCase()") && comments.includes('top-contributor-row--') && comments.includes('robotAvatar(color'), 'Top contributor colors are normalized before classes and avatars are rendered');
 for (const color of ['gold', 'cyan', 'purple', 'green', 'orange']) {
   check(comments.includes("color: '" + color + "'") && comments.includes('comment-robot-avatar--'), `Top contributor fallback includes ${color} robot avatar variant`);
