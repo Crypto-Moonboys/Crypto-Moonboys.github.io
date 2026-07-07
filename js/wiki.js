@@ -186,6 +186,12 @@ function renderRelatedPages() {
 
   if (!related.length) return;
 
+  const existingRelationshipMap = document.querySelector('[data-related-wiki-paths="true"]');
+  if (existingRelationshipMap) {
+    renderRelatedPagesIntoRelationshipMap(existingRelationshipMap, related, indexByUrl, MAX_DESC_LENGTH);
+    return;
+  }
+
   const items = related.map(r => {
     const entry = indexByUrl[r.target_url];
     const rawTitle = entry ? (entry.title || r.target_url) : r.target_url;
@@ -210,6 +216,50 @@ function renderRelatedPages() {
 }
 
 /* ── HTML ESCAPE ─────────────────────────────────────────────────────────── */
+function renderRelatedPagesIntoRelationshipMap(section, related, indexByUrl, maxDescLength) {
+  if (!section || section.querySelector('[data-related-group="Graph Related Pages"]')) return;
+
+  const existingLinks = new Set(
+    Array.from(section.querySelectorAll('a[href]'))
+      .map(a => normalizePath(a.getAttribute('href')))
+      .filter(Boolean),
+  );
+
+  const cards = related
+    .filter(r => r.target_url && !existingLinks.has(normalizePath(r.target_url)))
+    .map(r => {
+      const entry = indexByUrl[r.target_url];
+      const rawTitle = entry ? (entry.title || r.target_url) : r.target_url;
+      const rawDesc = entry && entry.desc ? entry.desc : '';
+      const desc = rawDesc
+        ? `<span class="wiki-rabbit-card-desc">${escapeHtml(rawDesc.length > maxDescLength ? rawDesc.slice(0, maxDescLength) + '…' : rawDesc)}</span>`
+        : '';
+      return `<a class="wiki-rabbit-card" href="${escapeHtml(r.target_url)}" role="listitem">
+        <span class="wiki-rabbit-card-title">${escapeHtml(rawTitle)}</span>
+        ${desc}
+      </a>`;
+    })
+    .join('');
+
+  if (!cards) return;
+
+  section.insertAdjacentHTML('beforeend', `<details class="wiki-rabbit-group wiki-rabbit-group--runtime-related" data-related-group="Graph Related Pages" open>
+    <summary>Connected Wiki Nodes</summary>
+    <div class="wiki-rabbit-grid" role="list">
+      ${cards}
+    </div>
+  </details>`);
+}
+
+function normalizePath(value) {
+  if (!value) return '';
+  try {
+    return new URL(value, window.location.origin).pathname.replace(/\/$/, '') || '/';
+  } catch {
+    return String(value).split(/[?#]/)[0].replace(/\/$/, '') || '/';
+  }
+}
+
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
