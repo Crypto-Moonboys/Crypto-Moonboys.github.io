@@ -2077,7 +2077,6 @@ body.page-wiki .wiki-section {
 }
 
 body.page-wiki .wiki-section h2,
-body.page-wiki .wiki-section summary [role="heading"],
 body.page-wiki .wiki-section h3 {
   margin-top: 0;
   color: #00ffcc;
@@ -2086,6 +2085,18 @@ body.page-wiki .wiki-section h3 {
   border-bottom: 1px solid rgba(86, 220, 255, 0.2);
   border-radius: 10px;
   display: block;
+  font-family: var(--font-display);
+  text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
+}
+
+body.page-wiki .wiki-section summary [role="heading"] {
+  display: block;
+  margin-top: 0;
+  color: #00ffcc;
+  background: rgba(86, 220, 255, 0.07);
+  border-left: 3px solid rgba(86, 220, 255, 0.62);
+  border-bottom: 1px solid rgba(86, 220, 255, 0.2);
+  border-radius: 10px;
   font-family: var(--font-display);
   text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
 }
@@ -2485,7 +2496,7 @@ body.page-wiki .comments-info-card h3 {
   color: #66e8ff;
   background: transparent;
   border: 0;
-  border-radius: 0;
+  border-radius: 14px;
   font-size: 1.08rem;
   text-transform: uppercase;
 }
@@ -2801,8 +2812,8 @@ body.page-wiki .comments-list-panel {
 @media (prefers-reduced-motion: reduce) {
   body.page-wiki .comments-battle-dashboard *,
   body.page-wiki .comments-battle-dashboard::before {
-    animation: none !important;
-    transition-duration: .01ms !important;
+    animation: none;
+    transition-duration: .01ms;
   }
 }
 
