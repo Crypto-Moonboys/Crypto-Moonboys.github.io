@@ -882,7 +882,7 @@ function utilityReason(row) {
     return 'Utility/open-mint wording in title, traits, or description.';
   }
   if (row.max_supply === 0) {
-    return 'Uncapped max_supply=0 NFT; excluded from limited scarcity ranking unless explicitly allowlisted.';
+    return 'Uncapped max_supply=0 template; excluded from limited scarcity ranking unless explicitly allowlisted.';
   }
   return '';
 }
@@ -1239,7 +1239,7 @@ function rarityOverviewCards() {
   return `<div class="gk-section-card-grid gk-rarity-overview-cards" aria-label="Rarity overview">
             <div class="gk-info-card">
               <span>NFT rarity</span>
-              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate NFT page IDs may share the same artwork or name.</p>
+              <p>Collector-facing ranking for GKniftyHEADS AtomicAssets NFTs. Separate template IDs may share the same artwork or name.</p>
             </div>
             <div class="gk-info-card">
               <span>Live supply first</span>
@@ -1518,7 +1518,7 @@ function rankingTable(rows, {
               <thead>
                 <tr>
                   <th>NFT</th>
-                  <th>NFT Page ID</th>
+                  <th>Template ID</th>
                   <th>${supplyLabel}</th>
                   <th>Issued Supply</th>
                   <th>Pre-baseline Missing/Burned</th>
@@ -1562,7 +1562,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
     ? `<strong>Live data status:</strong> ${esc(stats.live_data_status)}. <strong>Burn tracking:</strong> first AtomicAssets count baseline captured; missing supply is pre-baseline missing/burned, a current supply delta and not confirmed burn history. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.`
     : '<strong>Live data status:</strong> issued-supply fallback. <strong>Burn tracking:</strong> snapshot baseline pending. WAX chain get_info is only used for future scan checkpoint metadata, not NFT rarity data.';
   const assetStateCopy = stats.asset_state_templates_tracked
-    ? `<strong>Asset state cache:</strong> ${stats.asset_state_ok_templates}/${stats.asset_state_templates_tracked} NFT states match current _count supply; ${stats.asset_state_mismatch_templates} mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> ${esc(stats.asset_state_last_checked_at || 'Not scanned')}.`
+    ? `<strong>Asset state cache:</strong> ${stats.asset_state_ok_templates}/${stats.asset_state_templates_tracked} template states match current _count supply; ${stats.asset_state_mismatch_templates} mismatch records are flagged for audit. <strong>Last asset delta scan:</strong> ${esc(stats.asset_state_last_checked_at || 'Not scanned')}.`
     : '<strong>Asset state cache:</strong> pending first successful asset delta scan.';
   const templateHeroCards = model.ranked.slice(0, 3);
   const secondaryTopRanked = model.ranked.slice(3, 9);
@@ -1580,10 +1580,10 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
           </div>
           ${rarityOverviewCards()}
           <div class="wiki-stat-grid gk-rarity-stats gk-command-stat-strip" data-rarity-stat-grid="true">
-            ${statCard('NFTs scanned', stats.templates_scanned)}
-            ${statCard('Ranked limited NFTs', stats.ranked_limited_templates)}
-            ${statCard('Utility / open mint NFTs', stats.utility_open_mint_templates)}
-            ${statCard('Unissued NFTs', stats.unissued_templates)}
+            ${statCard('NFT pages scanned', stats.templates_scanned)}
+            ${statCard('Ranked limited NFT pages', stats.ranked_limited_templates)}
+            ${statCard('Utility / open mint NFT pages', stats.utility_open_mint_templates)}
+            ${statCard('Unissued NFT pages', stats.unissued_templates)}
             ${statCard('Live assets counted', liveAssetsValue)}
             ${statCard('Last updated', stats.last_scan_time)}
           </div>
@@ -1665,7 +1665,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${advancedTable('Advanced raw global rarity table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-asset-version-table">
                   <thead>
-                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>NFT Page ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
+                    <tr><th>Asset Rank</th><th>NFT</th><th>Asset Score</th><th>Asset ID</th><th>Template ID</th><th>Original Mint Number</th><th>Surviving Mint Rank</th><th>Live Supply</th></tr>
                   </thead>
                   <tbody>${assetPreview.length ? assetPreview.map(assetVersionRow).join('\n                ') : '<tr><td colspan="8">Pending asset-state sync.</td></tr>'}</tbody>
                 </table>
@@ -1680,7 +1680,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${groupedSideCards(model.utility, { status: 'Utility / Open Mint', getGroup: utilityBucket })}
               ${advancedTable('Advanced raw utility table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.utility.map(utilityRow).join('\n                ')}</tbody>
                 </table>
               </div>`)}
@@ -1694,7 +1694,7 @@ function buildRankingSection(model, stats, rawSection, marketAnalytics = null, a
               ${groupedSideCards(model.unissued, { status: 'Unissued', getGroup: () => 'Not Circulating' })}
               ${advancedTable('Advanced raw unissued table', `<div class="wiki-table-wrap">
                 <table class="wiki-table gk-rarity-side-table">
-                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <thead><tr><th>NFT</th><th>Template ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
                   <tbody>${model.unissued.map(utilityRow).join('\n                ')}</tbody>
                 </table>
               </div>`)}
