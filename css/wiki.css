@@ -3542,7 +3542,7 @@ body.page-home .hero-stat {
   padding: 16px 18px;
 }
 
-@media (max-width: 760px), (max-height: 520px) and (max-width: 960px) {
+@media (max-width: 760px) and (orientation: portrait) {
   body.page-home .home-hero,
   body.page-home .launch-hero {
     min-height: auto;
