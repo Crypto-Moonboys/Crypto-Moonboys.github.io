@@ -124,8 +124,8 @@ for (const [relPath, pageType] of templates) {
     );
   }
   check(html.includes('class="wiki-comments"'), `${relPath} keeps comments at the bottom`);
-  check(html.includes('citation-vote-panel'), `${relPath} keeps citation voting near the bottom`);
-  check(html.includes('data-cite-id="citation-panel"') && !html.includes('data-cite-id="page"'), `${relPath} uses the standard citation panel vote id`);
+  check(html.includes('class="sources-list"'), `${relPath} keeps source citations near the bottom`);
+  check(!html.includes('citation-vote-panel') && !html.includes('data-cite-id="citation-panel"'), `${relPath} omits the old separate citation vote panel`);
   for (const [label, pattern] of standardSeoPatterns) {
     check(pattern.test(html), `${relPath} preserves standard SEO/social metadata: ${label}`);
   }
@@ -206,9 +206,9 @@ check(
 check(
   wikiCss.includes('body.page-wiki .wiki-comments') &&
     wikiCss.includes('body.page-wiki .comment-form-identity') &&
-    wikiCss.includes('body.page-wiki .citation-vote-panel-actions') &&
+    battleLayer.includes("'.citations-list li, .source-ref-list li, .sources-list li'") &&
     wikiCss.includes('margin: clamp(24px, 3vw, 42px) auto 0;'),
-  'bottom comments and citation vote panels have shared spacing/padding styles',
+  'bottom comments and source-list citation vote hooks keep the shared page flow',
 );
 check(
   ciRunner.includes("['node', 'scripts/og-page-template-contract.test.mjs']"),
@@ -533,18 +533,25 @@ function buildNftPageDom(headingIds) {
   attributes.appendChild(el('div', 'wiki-table-wrap'));
   article.appendChild(attributes);
 
-  const citation = el('section', 'wiki-section citation-vote-panel');
-  citation.setAttribute('data-citation-vote-panel', 'true');
-  const vote = el('span', 'cite-vote');
-  vote.setAttribute('data-cite-id', 'citation-panel');
-  citation.appendChild(vote);
-  article.appendChild(citation);
+  const sources = el('section', 'wiki-section');
+  const sourcesHeading = el('h2');
+  sourcesHeading.setAttribute('id', 'sources');
+  sources.appendChild(sourcesHeading);
+  const sourceList = el('ul', 'sources-list');
+  const sourceItem = el('li');
+  const sourceLink = el('a');
+  sourceLink.setAttribute('href', 'https://wax.example/source');
+  sourceLink.textContent = 'Atomic source';
+  sourceItem.appendChild(sourceLink);
+  sourceList.appendChild(sourceItem);
+  sources.appendChild(sourceList);
+  article.appendChild(sources);
 
   const comments = el('div', 'wiki-comments');
   main.appendChild(article);
   main.appendChild(comments);
   document.body.appendChild(main);
-  return { document, main, article, citation, comments };
+  return { document, main, article, sources, comments };
 }
 
 async function runBattleLayerShape(headingIds) {
@@ -594,7 +601,7 @@ for (const headingIds of [
   ['nft-details', 'template-attributes'],
   ['nft-details-title', 'template-attributes-title'],
 ]) {
-  const { document, main, citation, comments } = await runBattleLayerShape(headingIds);
+  const { document, main, sources, comments } = await runBattleLayerShape(headingIds);
   check(document.querySelectorAll('.battle-engagement-deck--nft-template').length === 1, `NFT template page renders one engagement deck for headings ${headingIds.join(', ')}`);
   check(document.querySelectorAll('.battle-shell--media .battle-page-media').length === 1, `left NFT media card contains exactly one figure for headings ${headingIds.join(', ')}`);
   check(document.querySelectorAll('.battle-shell--media img.nft-image').length === 1, `left NFT media card contains exactly one image for headings ${headingIds.join(', ')}`);
@@ -603,8 +610,8 @@ for (const headingIds of [
   check(document.querySelectorAll('.og-data-toggle').length === 2, `NFT data Show/Hide controls attach for headings ${headingIds.join(', ')}`);
   runLegacyInlineInjection(document);
   check(document.querySelectorAll('.battle-shell--media .battle-page-media').length === 1, `legacy inline media injector cannot duplicate shared runtime media for headings ${headingIds.join(', ')}`);
-  check(main.children.at(-1) === comments && citation.parentNode.children.indexOf(citation) > citation.parentNode.children.indexOf(document.querySelector('.article-meta')), `citation voting and comments remain at the bottom for headings ${headingIds.join(', ')}`);
-  check(document.querySelectorAll('.cite-vote[data-cite-id="citation-panel"]').length === 1, `citation panel uses data-cite-id="citation-panel" for headings ${headingIds.join(', ')}`);
+  check(main.children.at(-1) === comments && sources.parentNode.children.indexOf(sources) > sources.parentNode.children.indexOf(document.querySelector('.article-meta')), `sources and comments remain at the bottom for headings ${headingIds.join(', ')}`);
+  check(document.querySelectorAll('.sources-list .cite-vote').length === 1, `source list receives inline citation vote controls for headings ${headingIds.join(', ')}`);
 }
 
 check(!read('scripts/import-website-publish-payloads.mjs').includes('function injectBattleMedia'), 'website payload importer does not emit duplicate inline NFT media injection');

@@ -50,7 +50,7 @@ check(battleLayer.includes('battle-engagement-deck--nft-template') && battleLaye
 check(css.includes('battle-engagement-deck--collection') && css.includes('gk-collection-about-title') && css.includes('gkCollectionCardPulse'), 'NFT collection engagement styles include the cyberpunk three-card dashboard treatment');
 check(css.includes('battle-engagement-deck--nft-template') && css.includes('battle-heat-summary') && css.includes('battle-shell--media') && css.includes('battle-page-media'), 'NFT template engagement card styles keep art separate from the Battle Heat meter');
 check(battleLayer.includes("ensurePageLikeWidget(pageId)") && battleLayer.includes("className = 'page-like-widget'"), 'Page-like widget is auto-injected when missing');
-check(battleLayer.includes("'.citations-list li, .source-ref-list li'"), 'Citation votes inject into both citations-list and source-ref-list items');
+check(battleLayer.includes("'.citations-list li, .source-ref-list li, .sources-list li'"), 'Citation votes inject into citations-list, source-ref-list, and sources-list items');
 check(wuffi.includes('class="source-ref-list"'), 'WUF uses source-ref-list and is covered by citation injection');
 
 check(engagement.includes('COPY.FEATURE_UNAVAILABLE') && battleLayer.includes('mission-status--unavailable'), 'Disabled engagement features show unavailable state');

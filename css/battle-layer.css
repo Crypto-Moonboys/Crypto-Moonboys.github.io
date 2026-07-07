@@ -396,7 +396,96 @@
 }
 
 .cite-vote-wrap {
-  margin-top: 8px;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.sources-list .cite-vote-wrap,
+.source-ref-list .cite-vote-wrap,
+.citations-list .cite-vote-wrap {
+  width: 100%;
+}
+
+.cite-vote {
+  display: inline-grid;
+  gap: 5px;
+}
+
+.cite-vote-inner {
+  align-items: center;
+  display: inline-flex;
+  gap: 7px;
+  padding: 4px 6px;
+  border: 1px solid rgba(0, 229, 255, .28);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, .1), rgba(189, 92, 255, .08));
+  box-shadow: 0 0 18px rgba(0, 229, 255, .12);
+}
+
+.cite-vote-btn {
+  align-items: center;
+  appearance: none;
+  border: 1px solid rgba(0, 229, 255, .34);
+  border-radius: 999px;
+  color: #e9fbff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: .92rem;
+  font-weight: 900;
+  justify-content: center;
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0;
+  text-shadow: 0 0 10px currentColor;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.cite-vote-btn--up {
+  background: radial-gradient(circle at 50% 20%, rgba(0, 255, 204, .36), rgba(0, 120, 255, .14) 58%, rgba(0, 9, 22, .84));
+  animation: citeArrowPulse 2.6s ease-in-out infinite;
+}
+
+.cite-vote-btn--down {
+  background: radial-gradient(circle at 50% 80%, rgba(255, 184, 64, .32), rgba(189, 92, 255, .13) 58%, rgba(0, 9, 22, .84));
+  animation: citeArrowPulse 3.1s ease-in-out infinite;
+}
+
+.cite-vote-btn:hover,
+.cite-vote-btn:focus-visible {
+  border-color: rgba(255, 211, 91, .75);
+  box-shadow: 0 0 18px rgba(255, 211, 91, .22), 0 0 24px rgba(0, 229, 255, .18);
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.cite-vote-btn:disabled {
+  cursor: wait;
+  opacity: .62;
+}
+
+.cite-vote-score {
+  min-width: 2ch;
+  color: #ffd75e;
+  font-weight: 900;
+  text-align: center;
+}
+
+.cite-vote-status {
+  color: rgba(218, 236, 255, .72);
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+@keyframes citeArrowPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 229, 255, .14);
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(0, 229, 255, .28), 0 0 24px rgba(189, 92, 255, .16);
+    transform: translateY(-1px) scale(1.045);
+  }
 }
 
 .community-empty,
@@ -1253,7 +1342,8 @@ body.page-gkniftyheads-collection .wiki-engagement-module,
   .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell,
   .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::before,
   .gk-collection-about-title,
-  .mission-like-row .like-icon {
+  .mission-like-row .like-icon,
+  .cite-vote-btn {
     animation: none;
   }
 }

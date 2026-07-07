@@ -11,6 +11,7 @@ const CORE_PAGE = 'wiki/crypto-moonboys.html';
 const MAX_GROUP_ITEMS = 8;
 const MAX_NFT_LINKS_IN_SECTION = 8;
 const failures = [];
+const battleLayer = read('js/battle-layer.js');
 
 function read(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
@@ -68,12 +69,10 @@ function hasSourceList(html) {
 
 function assertCitationPanel(relPath, html) {
   if (!hasSourceList(html)) return;
-  check(/data-citation-vote-panel=["']true["']/i.test(html), `${relPath} must render the citation vote panel when citations/sources exist`);
   check(
-    html.includes('Vote on citations to strengthen the credibility of this intelligence file.'),
-    `${relPath} citation vote panel must use the required credibility prompt`
+    battleLayer.includes("'.citations-list li, .source-ref-list li, .sources-list li'"),
+    `${relPath} source lists must be covered by inline citation vote wiring`
   );
-  check(/class=["'][^"']*\bcite-vote\b/i.test(html), `${relPath} citation vote panel must expose a cite-vote hook`);
 }
 
 function assertRelatedSection(relPath, html) {
@@ -85,11 +84,12 @@ function assertRelatedSection(relPath, html) {
   check(!/\bhref=["']https?:\/\//i.test(section), `${relPath} related section must not contain external links`);
   check(!/\.html\.html(?:["'#?]|$)/i.test(section), `${relPath} related section must not contain .html.html links`);
   check(!/\bwiki-rabbit-list\b/i.test(section), `${relPath} related section must use card/grid markup, not legacy rabbit lists`);
-  check(/\bwiki-rabbit-grid\b/i.test(section), `${relPath} related section must include card grids`);
-  check(/\bwiki-rabbit-card\b/i.test(section), `${relPath} related section must include rabbit-hole cards`);
+  const hasRelationshipCards = /\bgk-related-card-grid\b/i.test(section) && /\bgk-related-card\b/i.test(section);
+  check(hasRelationshipCards || /\bwiki-rabbit-grid\b/i.test(section), `${relPath} related section must include card grids`);
+  check(hasRelationshipCards || /\bwiki-rabbit-card\b/i.test(section), `${relPath} related section must include rabbit-hole cards`);
 
   const groups = extractGroups(section);
-  check(groups.length > 0, `${relPath} related section must contain grouped link blocks`);
+  check(hasRelationshipCards || groups.length > 0, `${relPath} related section must contain grouped link blocks`);
   for (const group of groups) {
     const items = (group.match(/<a\b[^>]*class=["'][^"']*\bwiki-rabbit-card\b/gi) || []).length;
     check(items <= MAX_GROUP_ITEMS, `${relPath} related group has ${items} links; cap is ${MAX_GROUP_ITEMS}`);

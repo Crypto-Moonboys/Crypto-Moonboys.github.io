@@ -195,9 +195,9 @@ for (const expected of [
 ]) {
   assert.ok(categoryBlock(nftHtml).includes(`href="${expected}"`), `NFT category tags include ${expected}`);
 }
-assert.ok(nftHtml.includes('Vote on citations to strengthen the credibility of this intelligence file.'), 'citation vote panel renders for pages with sources');
-assert.ok(nftHtml.includes('data-citation-vote-panel="true"'), 'citation panel is machine-auditable');
-assert.ok(nftHtml.includes('class="cite-vote"'), 'citation panel exposes existing cite-vote hook');
+assert.ok(!nftHtml.includes('Vote on citations to strengthen the credibility of this intelligence file.'), 'citation vote panel copy is not rendered as a separate card');
+assert.ok(!nftHtml.includes('data-citation-vote-panel="true"'), 'citation panel is not rendered as a separate card');
+assert.ok(fs.readFileSync(path.join(process.cwd(), 'js/battle-layer.js'), 'utf8').includes("'.citations-list li, .source-ref-list li, .sources-list li'"), 'source lists expose citation vote hooks through runtime enhancement');
 assert.ok((nftSection.match(/\/wiki\/gkniftyheads-.+-\d{5,}\.html/g) || []).length <= 8, 'NFT card output is capped');
 
 const noCitationHtml = fs.readFileSync(path.join(root, 'wiki/no-citations.html'), 'utf8');
