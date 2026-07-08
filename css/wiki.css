@@ -3712,6 +3712,21 @@ body.page-home .hero-stat {
     width: 100%;
     max-width: none;
     margin-top: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  body.page-home .home-hero-right-note p {
+    font-size: 0.96rem;
+    line-height: 1.58;
+  }
+
+  body.page-home .home-hero-right-note-mantra {
+    margin-top: 12px;
+    font-size: 1.02rem;
   }
 
   body.page-home .home-hero-right-note-copy {
