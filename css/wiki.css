@@ -3520,6 +3520,11 @@ body.page-home .launch-cta-secondary {
 body.page-home .launch-ip-card {
   position: relative;
   isolation: isolate;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding: 0;
+  overflow: visible;
 }
 
 body.page-home .launch-ip-card::before {
@@ -3528,6 +3533,7 @@ body.page-home .launch-ip-card::before {
   z-index: 1;
   content: "";
   pointer-events: none;
+  border-radius: 16px;
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.02) 38%, rgba(0, 0, 0, 0.36) 100%);
   opacity: 1;
@@ -3540,20 +3546,17 @@ body.page-home .launch-ip-card img {
   width: 100%;
   height: auto;
   object-fit: cover;
-  transform: scale(1);
+  border-radius: 16px;
+  transform: scale(1) translateY(0);
   transition: transform 220ms ease, filter 220ms ease;
 }
 
 body.page-home .launch-ip-card:hover {
   color: var(--color-text);
-  transform: translateY(-2px);
-  filter: saturate(1.04);
 }
 
 body.page-home .launch-ip-card:focus-visible {
   color: var(--color-text);
-  transform: translateY(-2px);
-  filter: saturate(1.04);
   outline: 2px solid rgba(247, 201, 72, 0.78);
   outline-offset: 4px;
 }
@@ -3565,8 +3568,8 @@ body.page-home .launch-ip-card:focus-visible::before {
 
 body.page-home .launch-ip-card:hover img,
 body.page-home .launch-ip-card:focus-visible img {
-  transform: scale(1.02);
-  filter: contrast(1.02) brightness(1.02);
+  transform: translateY(-4px) scale(1.02);
+  filter: contrast(1.02) brightness(1.02) saturate(1.04);
 }
 
 body.page-home .launch-cta-primary {
@@ -3576,30 +3579,26 @@ body.page-home .launch-cta-primary {
 
 body.page-home .launch-ip-card--identity:hover,
 body.page-home .launch-ip-card--identity:focus-visible {
-  border-color: rgba(247, 201, 72, 0.42);
+  border-color: transparent;
   box-shadow: none;
 }
 
 body.page-home .launch-ip-card--community {
-  border-color: rgba(255, 255, 255, 0.10);
-  box-shadow: none;
+  border-color: transparent;
 }
 
 body.page-home .launch-ip-card--community:hover,
 body.page-home .launch-ip-card--community:focus-visible {
-  border-color: rgba(255, 255, 255, 0.26);
-  box-shadow: none;
+  border-color: transparent;
 }
 
 body.page-home .launch-ip-card--universe {
-  border-color: rgba(255, 255, 255, 0.10);
-  box-shadow: none;
+  border-color: transparent;
 }
 
 body.page-home .launch-ip-card--universe:hover,
 body.page-home .launch-ip-card--universe:focus-visible {
-  border-color: rgba(255, 255, 255, 0.26);
-  box-shadow: none;
+  border-color: transparent;
 }
 
 body.page-home .launch-route,
