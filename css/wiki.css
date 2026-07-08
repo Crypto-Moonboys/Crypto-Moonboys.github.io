@@ -3395,7 +3395,7 @@ body.page-home .launch-hero {
     #000;
   border: 0;
   border-radius: 0;
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+  box-shadow: none;
 }
 
 /* Left-side text protection — fades to transparent where the cinematic artwork begins */
