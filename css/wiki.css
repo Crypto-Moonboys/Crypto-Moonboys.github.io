@@ -3560,20 +3560,23 @@ body.page-home .hero-stats {
 
 body.page-home .launch-cta-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-  gap: 18px;
-  margin-top: 30px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
+  width: 100%;
+  max-width: none;
+  margin-top: clamp(18px, 2.6vw, 30px);
 }
 
 body.page-home .launch-cta-primary,
 body.page-home .launch-cta-secondary {
   display: grid;
+  grid-template-areas: "card";
   align-content: start;
-  min-height: 108px;
-  gap: 8px;
-  padding: 18px 20px;
+  min-height: 0;
+  gap: 0;
+  padding: 0;
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
+  background: rgba(4, 6, 7, 0.94);
   border: 1px solid rgba(0, 255, 204, 0.18);
   border-radius: 16px;
   box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
@@ -3582,18 +3585,90 @@ body.page-home .launch-cta-secondary {
   line-height: 1.35;
   text-decoration: none;
   text-transform: uppercase;
+  overflow: hidden;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    filter 180ms ease;
+}
+
+body.page-home .launch-ip-card {
+  position: relative;
+  isolation: isolate;
+}
+
+body.page-home .launch-ip-card::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5, 6, 7, 0.06) 0%, rgba(5, 6, 7, 0.02) 38%, rgba(5, 6, 7, 0.36) 100%);
+  opacity: 0.9;
+  transition: opacity 180ms ease;
+}
+
+body.page-home .launch-ip-card img {
+  grid-area: card;
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+body.page-home .launch-ip-card:hover,
+body.page-home .launch-ip-card:focus-visible {
+  color: var(--color-text);
+  transform: translateY(-2px);
+  filter: saturate(1.04);
+}
+
+body.page-home .launch-ip-card:hover::before,
+body.page-home .launch-ip-card:focus-visible::before {
+  opacity: 0.72;
+}
+
+body.page-home .launch-ip-card:hover img,
+body.page-home .launch-ip-card:focus-visible img {
+  transform: scale(1.02);
+  filter: contrast(1.02) brightness(1.02);
 }
 
 body.page-home .launch-cta-primary {
-  color: var(--color-accent);
-  background: rgba(247, 201, 72, 0.08);
   border-color: rgba(247, 201, 72, 0.32);
+  box-shadow: 0 0 32px rgba(247, 201, 72, 0.10), 0 0 28px rgba(0, 255, 204, 0.055);
 }
 
-body.page-home .launch-cta-secondary[href="/gkniftyheads-incubator.html"] {
-  color: #ff66c7;
-  background: rgba(255, 0, 170, 0.07);
-  border-color: rgba(255, 0, 170, 0.28);
+body.page-home .launch-ip-card--identity:hover,
+body.page-home .launch-ip-card--identity:focus-visible {
+  border-color: rgba(247, 201, 72, 0.72);
+  box-shadow: 0 0 34px rgba(247, 201, 72, 0.16), 0 0 28px rgba(0, 255, 204, 0.07);
+}
+
+body.page-home .launch-ip-card--community {
+  border-color: rgba(159, 255, 74, 0.30);
+  box-shadow: 0 0 32px rgba(159, 255, 74, 0.10), 0 0 28px rgba(0, 255, 204, 0.055);
+}
+
+body.page-home .launch-ip-card--community:hover,
+body.page-home .launch-ip-card--community:focus-visible {
+  border-color: rgba(159, 255, 74, 0.64);
+  box-shadow: 0 0 34px rgba(159, 255, 74, 0.16), 0 0 28px rgba(0, 255, 204, 0.07);
+}
+
+body.page-home .launch-ip-card--universe {
+  border-color: rgba(86, 220, 255, 0.30);
+  box-shadow: 0 0 32px rgba(86, 220, 255, 0.10), 0 0 28px rgba(0, 255, 204, 0.055);
+}
+
+body.page-home .launch-ip-card--universe:hover,
+body.page-home .launch-ip-card--universe:focus-visible {
+  border-color: rgba(86, 220, 255, 0.68);
+  box-shadow: 0 0 34px rgba(86, 220, 255, 0.16), 0 0 28px rgba(0, 255, 204, 0.07);
 }
 
 body.page-home .launch-route,
@@ -3734,6 +3809,20 @@ body.page-home .hero-stat {
   body.page-home .launch-cta-row {
     order: 3;
     margin-top: 20px;
+  }
+}
+
+@media (max-width: 1100px) {
+  body.page-home .launch-cta-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  body.page-home .launch-cta-row {
+    width: calc(100% - clamp(44px, 12vw, 68px));
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 }
 
