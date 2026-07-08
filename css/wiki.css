@@ -108,11 +108,11 @@ body.page-onboarding-shell {
 
 body.page-onboarding-shell #site-header {
   position: sticky;
-  overflow: hidden;
   grid-template-columns: minmax(140px, 1fr) auto;
 }
 
 body.page-onboarding-shell #site-header::before {
+  z-index: -1;
   position: absolute;
   inset: 0 auto 0 0;
   width: clamp(240px, 38vw, 460px);
@@ -127,6 +127,7 @@ body.page-onboarding-shell #site-header::before {
 }
 
 body.page-onboarding-shell #site-header::after {
+  z-index: -1;
   position: absolute;
   inset: 0 auto 0 0;
   width: clamp(240px, 38vw, 460px);
@@ -3517,7 +3518,7 @@ body.page-home .home-hero-right-note-copy {
   font-family: var(--font-display);
   font-size: clamp(1.15rem, 2vw, 1.6rem);
   line-height: 1.08;
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   text-shadow: 0 0 18px rgba(247, 201, 72, 0.16), 0 0 42px rgba(0, 0, 0, 0.24);
 }
@@ -3719,16 +3720,6 @@ body.page-home .hero-stat {
     box-shadow: none;
   }
 
-  body.page-home .home-hero-right-note p {
-    font-size: 0.96rem;
-    line-height: 1.58;
-  }
-
-  body.page-home .home-hero-right-note-mantra {
-    margin-top: 12px;
-    font-size: 1.02rem;
-  }
-
   body.page-home .home-hero-right-note-copy {
     font-size: 1rem;
     line-height: 1.12;
@@ -3736,6 +3727,7 @@ body.page-home .hero-stat {
 
   body.page-home .home-hero-right-note-mantra {
     font-size: 1.02rem;
+    letter-spacing: 0.04em;
   }
 
   body.page-home .launch-cta-row,
