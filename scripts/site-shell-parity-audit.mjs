@@ -122,6 +122,19 @@ const CANONICAL_BOOT_SRCS = [
   '/js/components/live-activity-summary.js',
 ];
 
+const HOMEPAGE_BOOT_SRCS = [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
+  '/js/site-shell.js',
+];
+
+function expectedCanonicalBootSrcs(rel) {
+  return rel === 'index.html' ? HOMEPAGE_BOOT_SRCS : CANONICAL_BOOT_SRCS;
+}
+
 console.log('\n─── Site Shell Parity Audit ───────────────────────────────────\n');
 
 // 1. site-shell.js exists
@@ -296,7 +309,7 @@ console.log('\n[4] Shell pages: canonical daily-loop singleton boot order');
 for (const rel of SHELL_PAGES) {
   const html = read(rel);
   if (!html) continue;
-  assertScriptOrder(html, rel, CANONICAL_BOOT_SRCS);
+  assertScriptOrder(html, rel, expectedCanonicalBootSrcs(rel));
 
   const dailyLoopCount = scriptCount(html, '/js/core/daily-loop-state.js');
   if (dailyLoopCount !== 1) {
@@ -310,7 +323,7 @@ for (const rel of SHELL_PAGES) {
   const html = read(rel);
   if (!html) continue;
   let cfOk = true;
-  for (const src of CANONICAL_BOOT_SRCS) {
+  for (const src of expectedCanonicalBootSrcs(rel)) {
     // Match a <script tag for this src that contains data-cfasync="false"
     // A script tag is compliant if it has data-cfasync="false" before the src, or
     // simply if data-cfasync="false" appears on the same script tag.

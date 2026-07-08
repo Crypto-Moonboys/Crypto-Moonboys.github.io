@@ -176,6 +176,15 @@ const SHELL_BOOT_STACK = [
   '/js/components/live-activity-summary.js',
 ];
 
+const HOMEPAGE_BOOT_STACK = [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
+  '/js/site-shell.js',
+];
+
 // Helpers
 function isRedirectPage(html) {
   return html.includes('http-equiv="refresh"') || html.includes("http-equiv='refresh'");
@@ -225,20 +234,25 @@ function scriptCount(html, src) {
   return (html.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
 }
 
-function validateBootStack(html) {
+function expectedBootStackForPage(pagePath) {
+  return pagePath === 'index.html' ? HOMEPAGE_BOOT_STACK : SHELL_BOOT_STACK;
+}
+
+function validateBootStack(html, pagePath) {
   // Returns an array of error strings (empty = pass)
   const errors = [];
-  const positions = SHELL_BOOT_STACK.map(s => html.indexOf(s));
+  const expectedBootStack = expectedBootStackForPage(pagePath);
+  const positions = expectedBootStack.map(s => html.indexOf(s));
   for (let i = 0; i < positions.length; i++) {
     if (positions[i] === -1) {
-      errors.push(`missing boot script: ${SHELL_BOOT_STACK[i]}`);
+      errors.push(`missing boot script: ${expectedBootStack[i]}`);
     }
   }
   // Only check order when all scripts are present
   if (errors.length === 0) {
     for (let i = 1; i < positions.length; i++) {
       if (positions[i] < positions[i - 1]) {
-        errors.push(`boot order violation: ${SHELL_BOOT_STACK[i]} appears before ${SHELL_BOOT_STACK[i - 1]}`);
+        errors.push(`boot order violation: ${expectedBootStack[i]} appears before ${expectedBootStack[i - 1]}`);
       }
     }
   }
@@ -305,7 +319,7 @@ for (const pagePath of publicPages) {
   }
   
   // Regular content pages: validate full canonical shell boot stack (presence + order)
-  const bootErrors = validateBootStack(html);
+  const bootErrors = validateBootStack(html, pagePath);
   if (bootErrors.length > 0) {
     for (const e of bootErrors) fail(`${pagePath} - ${e}`);
     failingPages.push(pagePath);
