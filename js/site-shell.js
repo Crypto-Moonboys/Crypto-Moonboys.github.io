@@ -69,10 +69,6 @@ window.__HUD_CONSOLIDATED__ = true;
     return 'legacy';
   }
 
-  function isHomepageShellRoute(pathname) {
-    return normalizePathname(pathname) === '/index.html';
-  }
-
   function isWikiShellRoute(pathname) {
     const p = normalizePathname(pathname);
     return p === '/search.html' || p.startsWith('/wiki/') || p.startsWith('/categories/');
@@ -143,14 +139,6 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function buildHeaderHtml(navHtml) {
-    if (isHomepageShellRoute(window.location.pathname)) {
-      return `
-          <a class="site-logo" href="/index.html" aria-label="Crypto Moonboys home">
-            <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
-            <span><span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span><span class="logo-sub">LIVE KNOWLEDGE NETWORK</span></span>
-          </a>
-        `;
-    }
     return `
         <a class="site-logo" href="/index.html" aria-label="Crypto Moonboys home">
           <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
@@ -233,7 +221,6 @@ window.__HUD_CONSOLIDATED__ = true;
   function ensureHeader() {
     let header = document.getElementById('site-header');
     const navHtml = links.map((item) => navLinkHtml(item, 'global-nav-link')).join('');
-    const isHomeRoute = isHomepageShellRoute(window.location.pathname);
 
     if (!header) {
       header = document.createElement('header');
@@ -242,39 +229,25 @@ window.__HUD_CONSOLIDATED__ = true;
       header.innerHTML = buildHeaderHtml(navHtml);
       document.body.insertBefore(header, document.body.firstChild);
     } else {
-      if (isHomeRoute) {
-        const logo = header.querySelector('.site-logo');
-        if (!logo) {
-          header.innerHTML = buildHeaderHtml(navHtml);
-        } else {
-          const staleSearch = header.querySelector('#header-search');
-          const staleNav = header.querySelector('#global-nav');
-          const staleBadge = header.querySelector('#moonboys-global-status-badge');
-          if (staleSearch) staleSearch.remove();
-          if (staleNav) staleNav.remove();
-          if (staleBadge) staleBadge.remove();
-        }
-      } else {
-        let globalNav = document.getElementById('global-nav');
-        if (!globalNav) {
-          globalNav = document.createElement('nav');
-          globalNav.id = 'global-nav';
-          globalNav.className = 'header-nav';
-          globalNav.setAttribute('aria-label', 'Global navigation');
-          header.appendChild(globalNav);
-        }
-        if (globalNav.parentElement !== header) header.appendChild(globalNav);
+      let globalNav = document.getElementById('global-nav');
+      if (!globalNav) {
+        globalNav = document.createElement('nav');
+        globalNav.id = 'global-nav';
         globalNav.className = 'header-nav';
         globalNav.setAttribute('aria-label', 'Global navigation');
-        globalNav.innerHTML = navHtml;
-        if (!document.getElementById('search-input')) {
-          const form = document.createElement('form');
-          form.id = 'header-search';
-          form.setAttribute('role', 'search');
-          form.action = '/search.html';
-          form.innerHTML = '<input id="search-input" name="q" type="search" placeholder="Search the wiki…" autocomplete="off" aria-label="Search the wiki"><button id="search-btn" type="submit" aria-label="Search">⌕</button><div id="search-results" role="listbox" aria-label="Search suggestions"></div>';
-          header.insertBefore(form, globalNav);
-        }
+        header.appendChild(globalNav);
+      }
+      if (globalNav.parentElement !== header) header.appendChild(globalNav);
+      globalNav.className = 'header-nav';
+      globalNav.setAttribute('aria-label', 'Global navigation');
+      globalNav.innerHTML = navHtml;
+      if (!document.getElementById('search-input')) {
+        const form = document.createElement('form');
+        form.id = 'header-search';
+        form.setAttribute('role', 'search');
+        form.action = '/search.html';
+        form.innerHTML = '<input id="search-input" name="q" type="search" placeholder="Search the wiki…" autocomplete="off" aria-label="Search the wiki"><button id="search-btn" type="submit" aria-label="Search">⌕</button><div id="search-results" role="listbox" aria-label="Search suggestions"></div>';
+        header.insertBefore(form, globalNav);
       }
     }
 
@@ -502,11 +475,6 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function ensureSwarmsyAgent() {
-    if (isHomepageShellRoute(window.location.pathname)) {
-      const homeAgent = document.getElementById('site-paperclip-agent');
-      if (homeAgent) homeAgent.remove();
-      return;
-    }
     if (document.getElementById('site-paperclip-agent')) return;
     const sparkyAgent = document.createElement('a');
     sparkyAgent.id = 'site-paperclip-agent';

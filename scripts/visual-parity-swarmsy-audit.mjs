@@ -154,6 +154,7 @@ function isNormalPublicPage(rel, html) {
 }
 
 function isPageStandardShellExpected(rel) {
+  if (rel === 'index.html') return false;
   if (rel.startsWith('games/') && rel !== 'games/index.html' && rel !== 'games/leaderboard.html') return false;
   return true;
 }
@@ -222,7 +223,16 @@ for (const { rel, html } of normalPages) {
     fail(`${rel} - missing direct /css/wiki.css shell stylesheet`);
     shellPathOk = false;
   }
-  if (!html.includes('src="/js/site-shell.js"')) {
+  if (rel === 'index.html') {
+    if (html.includes('src="/js/site-shell.js"')) {
+      fail(`${rel} - homepage must not load /js/site-shell.js`);
+      shellPathOk = false;
+    }
+    if (bodyAttrs(html).includes('page-standard-shell')) {
+      fail(`${rel} - homepage must not use page-standard-shell`);
+      shellPathOk = false;
+    }
+  } else if (!html.includes('src="/js/site-shell.js"')) {
     fail(`${rel} - missing /js/site-shell.js`);
     shellPathOk = false;
   }
@@ -231,7 +241,7 @@ for (const { rel, html } of normalPages) {
     shellPathOk = false;
   }
 }
-if (shellPathOk) pass(`${normalPages.length} normal public pages use /css/wiki.css and /js/site-shell.js without old stack links`);
+if (shellPathOk) pass(`${normalPages.length} normal public pages use expected shell runtime without old stack links`);
 
 console.log('\n[2] No public debug text or removed banner path remains');
 let debugOk = true;
@@ -295,12 +305,21 @@ for (const rel of REQUIRED_RENDER_PATHS) {
     fail(`${rel} - required render-check page is not a normal public page`);
     requiredPagesOk = false;
   }
-  if (!html.includes('href="/css/wiki.css"') || !html.includes('src="/js/site-shell.js"')) {
-    fail(`${rel} - required render-check page missing direct shell CSS or JS`);
+  if (!html.includes('href="/css/wiki.css"')) {
+    fail(`${rel} - required render-check page missing direct shell CSS`);
+    requiredPagesOk = false;
+  }
+  if (rel === 'index.html') {
+    if (html.includes('src="/js/site-shell.js"')) {
+      fail(`${rel} - required render-check homepage must not load site-shell runtime`);
+      requiredPagesOk = false;
+    }
+  } else if (!html.includes('src="/js/site-shell.js"')) {
+    fail(`${rel} - required render-check page missing direct shell JS`);
     requiredPagesOk = false;
   }
 }
-if (requiredPagesOk) pass('All required render-check pages are normal direct-shell pages');
+if (requiredPagesOk) pass('All required render-check pages use expected direct shell assets');
 
 console.log('\n[5] Auditing CSS files for old UI systems');
 let cssOk = true;

@@ -96,7 +96,6 @@ function assertScriptOrder(html, rel, orderedScripts) {
 }
 
 const SHELL_PAGES = [
-  'index.html',
   'graph.html',
   'games/index.html',
   'games/leaderboard.html',
@@ -122,17 +121,8 @@ const CANONICAL_BOOT_SRCS = [
   '/js/components/live-activity-summary.js',
 ];
 
-const HOMEPAGE_BOOT_SRCS = [
-  '/js/api-config.js',
-  '/js/arcade/core/global-event-bus.js',
-  '/js/identity-gate.js',
-  '/js/core/moonboys-state.js',
-  '/js/core/daily-loop-state.js',
-  '/js/site-shell.js',
-];
-
-function expectedCanonicalBootSrcs(rel) {
-  return rel === 'index.html' ? HOMEPAGE_BOOT_SRCS : CANONICAL_BOOT_SRCS;
+function expectedCanonicalBootSrcs() {
+  return CANONICAL_BOOT_SRCS;
 }
 
 console.log('\n─── Site Shell Parity Audit ───────────────────────────────────\n');
@@ -283,7 +273,7 @@ const exemptShellPages = [];
 for (const rel of publicHtmlFiles) {
   if (rel.startsWith('_')) continue;
   const html = read(rel) || '';
-  if (isHtmlPartial(rel) || isRedirectPage(html) || isStandaloneToolPage(html)) {
+  if (isHtmlPartial(rel) || isRedirectPage(html) || isStandaloneToolPage(html) || rel === 'index.html') {
     exemptShellPages.push(rel);
     continue;
   }
@@ -300,6 +290,11 @@ if (exemptShellPages.includes('waxcash.html')) {
   pass('waxcash.html remains an explicit standalone tool exception');
 } else {
   fail('waxcash.html must remain categorized as a standalone tool exception');
+}
+if ((read('index.html') || '').includes('/js/site-shell.js')) {
+  fail('index.html - homepage must not load /js/site-shell.js');
+} else {
+  pass('index.html - homepage excludes /js/site-shell.js');
 }
 
 // 4. Shell pages: script load-order check
@@ -393,7 +388,6 @@ const indexHtml = read('index.html') || '';
 const shouldShowRightPanelBlock = functionBlock(shellJs, 'shouldShowRightPanel');
 const runtimeAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'allowed');
 const STATIC_STANDARD_PAGES = [
-  'index.html',
   'search.html',
   'timeline.html',
   'graph.html',
@@ -437,11 +431,16 @@ if (shouldShowRightPanelBlock.includes("'/wiki/'") || shouldShowRightPanelBlock.
   pass('site-shell.js: no /wiki/ or /categories/ right-panel prefix allowlist');
 }
 
-console.log('\n[6aa] Homepage standard shell fills right-panel-free layout');
-if (/<body\b[^>]*class=["'][^"']*\bpage-home\b[^"']*\bpage-standard-shell\b[^"']*["']/u.test(indexHtml)) {
-  pass('index.html: body has page-home page-standard-shell');
+console.log('\n[6aa] Homepage runs without shared shell runtime');
+if (/<body\b[^>]*class=["'][^"']*\bpage-home\b[^"']*["']/u.test(indexHtml) && !indexHtml.includes('page-standard-shell')) {
+  pass('index.html: body keeps page-home without page-standard-shell');
 } else {
-  fail('index.html - body must include page-home page-standard-shell');
+  fail('index.html - body must keep page-home and must not include page-standard-shell');
+}
+if (indexHtml.includes('/js/site-shell.js')) {
+  fail('index.html - must not load /js/site-shell.js');
+} else {
+  pass('index.html: /js/site-shell.js not loaded');
 }
 if (!indexHtml.includes('page-has-right-panel')) {
   pass('index.html: no page-has-right-panel opt-in');

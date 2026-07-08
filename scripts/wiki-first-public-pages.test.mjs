@@ -4,7 +4,7 @@
  *
  * Shell coverage guard v3:
  * 1. Global SWARMSY shell configuration validation
- * 2. All public pages (except redirects and standalone tools) must include full boot stack:
+ * 2. Shell-managed public pages (except redirects, standalone tools, and homepage) must include full boot stack:
  *    - /js/api-config.js
  *    - /js/arcade/core/global-event-bus.js
  *    - /js/identity-gate.js
@@ -176,15 +176,6 @@ const SHELL_BOOT_STACK = [
   '/js/components/live-activity-summary.js',
 ];
 
-const HOMEPAGE_BOOT_STACK = [
-  '/js/api-config.js',
-  '/js/arcade/core/global-event-bus.js',
-  '/js/identity-gate.js',
-  '/js/core/moonboys-state.js',
-  '/js/core/daily-loop-state.js',
-  '/js/site-shell.js',
-];
-
 // Helpers
 function isRedirectPage(html) {
   return html.includes('http-equiv="refresh"') || html.includes("http-equiv='refresh'");
@@ -234,14 +225,15 @@ function scriptCount(html, src) {
   return (html.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
 }
 
-function expectedBootStackForPage(pagePath) {
-  return pagePath === 'index.html' ? HOMEPAGE_BOOT_STACK : SHELL_BOOT_STACK;
+function isHomepage(pagePath) {
+  return pagePath === 'index.html';
 }
 
 function validateBootStack(html, pagePath) {
   // Returns an array of error strings (empty = pass)
   const errors = [];
-  const expectedBootStack = expectedBootStackForPage(pagePath);
+  if (isHomepage(pagePath)) return errors;
+  const expectedBootStack = SHELL_BOOT_STACK;
   const positions = expectedBootStack.map(s => html.indexOf(s));
   for (let i = 0; i < positions.length; i++) {
     if (positions[i] === -1) {
@@ -299,6 +291,24 @@ for (const pagePath of publicPages) {
   }
   
   const bodyAttrs = extractBodyAttrs(html);
+
+  if (isHomepage(pagePath)) {
+    const forbiddenHomepageShellSources = [
+      '/js/site-shell.js',
+      '/js/components/connection-status-panel.js',
+      '/js/components/global-player-header.js',
+      '/js/components/live-activity-summary.js',
+      '/js/home-widgets.js',
+      '/js/battle-layer.js',
+    ];
+    const loadedShellDeps = forbiddenHomepageShellSources.filter((src) => html.includes(src));
+    if (loadedShellDeps.length > 0) {
+      fail(`${pagePath} - homepage must not load shell/runtime deps: ${loadedShellDeps.join(', ')}`);
+    } else {
+      pass(`${pagePath} - homepage excludes shell/runtime deps`);
+    }
+    continue;
+  }
   
   // Redirect pages: verify they redirect to valid targets
   if (isRedirectPage(html)) {
@@ -318,7 +328,7 @@ for (const pagePath of publicPages) {
     continue;
   }
   
-  // Regular content pages: validate full canonical shell boot stack (presence + order)
+  // Regular shell-managed content pages: validate canonical shell boot stack (presence + order)
   const bootErrors = validateBootStack(html, pagePath);
   if (bootErrors.length > 0) {
     for (const e of bootErrors) fail(`${pagePath} - ${e}`);
