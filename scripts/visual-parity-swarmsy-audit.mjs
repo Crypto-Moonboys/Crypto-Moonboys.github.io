@@ -372,7 +372,7 @@ if (/retro-hero-bg/i.test(homepageHtml)) {
   fail('index.html - must not restore retro-hero-bg');
   homepageHeroOk = false;
 }
-if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || !htmlContainsClass(homepageHtml, 'home-hero-artwork')) {
+if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || (!htmlContainsClass(homepageHtml, 'home-hero-artwork') && !htmlContainsClass(homepageHtml, 'home-hero-mobile-art'))) {
   fail('index.html - homepage hero must use the split copy-and-artwork structure');
   homepageHeroOk = false;
 }
@@ -388,6 +388,7 @@ if (!wikiCss) {
     selectorBlock(wikiCss, 'body.page-home .home-hero h1,\nbody.page-home .launch-hero h1') ||
     selectorBlock(wikiCss, 'body.page-home .home-hero h1,\r\nbody.page-home .launch-hero h1');
   const artworkBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-artwork');
+  const mobileArtBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-mobile-art');
   const ctaBlock =
     selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\nbody.page-home .launch-cta-secondary') ||
     selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\r\nbody.page-home .launch-cta-secondary');
@@ -419,11 +420,10 @@ if (!wikiCss) {
     fail(`${GLOBAL_SHELL_CSS} - homepage hero copy must keep the SWARMSY display font and readable inner layout`);
     homepageHeroOk = false;
   }
-  if (
-    !blockHas(artworkBlock, /position\s*:\s*absolute/i) ||
-    !blockHas(artworkBlock, /height\s*:\s*100%/i) ||
-    !blockHas(artworkBlock, /object-fit\s*:\s*cover/i)
-  ) {
+  // Accept either the absolute-positioned artwork img approach or the stitched CSS-background approach
+  const usesArtworkImg = blockHas(artworkBlock, /position\s*:\s*absolute/i) && blockHas(artworkBlock, /height\s*:\s*100%/i) && blockHas(artworkBlock, /object-fit\s*:\s*cover/i);
+  const usesStitchedBg = blockHas(homeHeroBlock, /url\s*\(/i) && (artworkBlock === null || !blockHas(artworkBlock, /position\s*:\s*absolute/i)) && mobileArtBlock !== null;
+  if (!usesArtworkImg && !usesStitchedBg) {
     fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must fill the right side as cinematic layer without card treatment`);
     homepageHeroOk = false;
   }
