@@ -3415,7 +3415,7 @@ body.page-home .launch-hero {
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.54) 38%, rgba(0, 0, 0, 0.08) 70%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.68) 100%),
-    url("/img/homepage/crypto-moonboys-swarmsy-hero-combined.jpg") left top / 100% auto no-repeat,
+    url("/img/homepage/og-crypto-moonboys-swarmsy-bg-layer-2.jpg") left top / 100% auto no-repeat,
     #000;
   border-top: 1px solid rgba(0, 255, 204, 0.24);
   border-right: 0;
@@ -3517,16 +3517,16 @@ body.page-home .launch-cta-row {
 
 body.page-home .launch-cta-primary,
 body.page-home .launch-cta-secondary {
-  display: grid;
+  display: block;
   grid-template-areas: "card";
   align-content: start;
   min-height: 0;
   gap: 0;
   padding: 0;
   color: var(--color-text);
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   box-shadow: none;
   font-family: var(--font-sans);
   font-weight: 700;
@@ -3534,11 +3534,7 @@ body.page-home .launch-cta-secondary {
   text-decoration: none;
   text-transform: uppercase;
   overflow: hidden;
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease,
-    filter 180ms ease;
+  transition: transform 180ms ease, filter 180ms ease;
 }
 
 body.page-home .launch-ip-card {
@@ -3547,15 +3543,7 @@ body.page-home .launch-ip-card {
 }
 
 body.page-home .launch-ip-card::before {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  content: "";
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.02) 38%, rgba(0, 0, 0, 0.36) 100%);
-  opacity: 1;
-  transition: opacity 180ms ease;
+  display: none;
 }
 
 body.page-home .launch-ip-card img {
@@ -3594,35 +3582,29 @@ body.page-home .launch-ip-card:focus-visible img {
 }
 
 body.page-home .launch-cta-primary {
-  border-color: rgba(255, 255, 255, 0.10);
   box-shadow: none;
 }
 
 body.page-home .launch-ip-card--identity:hover,
 body.page-home .launch-ip-card--identity:focus-visible {
-  border-color: rgba(247, 201, 72, 0.42);
   box-shadow: none;
 }
 
 body.page-home .launch-ip-card--community {
-  border-color: rgba(255, 255, 255, 0.10);
   box-shadow: none;
 }
 
 body.page-home .launch-ip-card--community:hover,
 body.page-home .launch-ip-card--community:focus-visible {
-  border-color: rgba(255, 255, 255, 0.26);
   box-shadow: none;
 }
 
 body.page-home .launch-ip-card--universe {
-  border-color: rgba(255, 255, 255, 0.10);
   box-shadow: none;
 }
 
 body.page-home .launch-ip-card--universe:hover,
 body.page-home .launch-ip-card--universe:focus-visible {
-  border-color: rgba(255, 255, 255, 0.26);
   box-shadow: none;
 }
 
@@ -3635,7 +3617,7 @@ body.page-home .article-card {
   background: rgba(0, 255, 204, 0.052);
   border: 1px solid rgba(0, 255, 204, 0.18);
   border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  box-shadow: none;
 }
 
 body.page-home .launch-route {
