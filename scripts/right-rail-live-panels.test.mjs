@@ -408,7 +408,11 @@ for (const [route, html] of [
 ]) {
   check(!rightPanelAllowlist.includes(route), `site-shell.js right-panel allowlist excludes ${route}`);
   check(!html.includes('page-has-right-panel'), `${route} does not force page-has-right-panel`);
-  check(html.includes('page-standard-shell'), `${route} uses page-standard-shell`);
+  if (route === '/index.html') {
+    check(!html.includes('page-standard-shell'), `${route} does not use page-standard-shell`);
+  } else {
+    check(html.includes('page-standard-shell'), `${route} uses page-standard-shell`);
+  }
 }
 check(!rightPanelAllowlist.includes('/wiki/') && !shouldShowRightPanelBlock.includes("'/wiki/'"), 'site-shell.js does not auto-enable right rail for /wiki/ prefix');
 check(!rightPanelAllowlist.includes('/categories/') && !shouldShowRightPanelBlock.includes("'/categories/'"), 'site-shell.js does not auto-enable right rail for /categories/ prefix');

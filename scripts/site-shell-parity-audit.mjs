@@ -96,7 +96,6 @@ function assertScriptOrder(html, rel, orderedScripts) {
 }
 
 const SHELL_PAGES = [
-  'index.html',
   'graph.html',
   'games/index.html',
   'games/leaderboard.html',
@@ -121,6 +120,10 @@ const CANONICAL_BOOT_SRCS = [
   '/js/components/global-player-header.js',
   '/js/components/live-activity-summary.js',
 ];
+
+function expectedCanonicalBootSrcs() {
+  return CANONICAL_BOOT_SRCS;
+}
 
 console.log('\n─── Site Shell Parity Audit ───────────────────────────────────\n');
 
@@ -270,7 +273,7 @@ const exemptShellPages = [];
 for (const rel of publicHtmlFiles) {
   if (rel.startsWith('_')) continue;
   const html = read(rel) || '';
-  if (isHtmlPartial(rel) || isRedirectPage(html) || isStandaloneToolPage(html)) {
+  if (isHtmlPartial(rel) || isRedirectPage(html) || isStandaloneToolPage(html) || rel === 'index.html') {
     exemptShellPages.push(rel);
     continue;
   }
@@ -288,6 +291,11 @@ if (exemptShellPages.includes('waxcash.html')) {
 } else {
   fail('waxcash.html must remain categorized as a standalone tool exception');
 }
+if ((read('index.html') || '').includes('/js/site-shell.js')) {
+  fail('index.html - homepage must not load /js/site-shell.js');
+} else {
+  pass('index.html - homepage excludes /js/site-shell.js');
+}
 
 // 4. Shell pages: script load-order check
 // site-shell.js must appear before connection-status-panel.js, global-player-header.js,
@@ -296,7 +304,7 @@ console.log('\n[4] Shell pages: canonical daily-loop singleton boot order');
 for (const rel of SHELL_PAGES) {
   const html = read(rel);
   if (!html) continue;
-  assertScriptOrder(html, rel, CANONICAL_BOOT_SRCS);
+  assertScriptOrder(html, rel, expectedCanonicalBootSrcs(rel));
 
   const dailyLoopCount = scriptCount(html, '/js/core/daily-loop-state.js');
   if (dailyLoopCount !== 1) {
@@ -310,7 +318,7 @@ for (const rel of SHELL_PAGES) {
   const html = read(rel);
   if (!html) continue;
   let cfOk = true;
-  for (const src of CANONICAL_BOOT_SRCS) {
+  for (const src of expectedCanonicalBootSrcs(rel)) {
     // Match a <script tag for this src that contains data-cfasync="false"
     // A script tag is compliant if it has data-cfasync="false" before the src, or
     // simply if data-cfasync="false" appears on the same script tag.
@@ -380,7 +388,6 @@ const indexHtml = read('index.html') || '';
 const shouldShowRightPanelBlock = functionBlock(shellJs, 'shouldShowRightPanel');
 const runtimeAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'allowed');
 const STATIC_STANDARD_PAGES = [
-  'index.html',
   'search.html',
   'timeline.html',
   'graph.html',
@@ -424,11 +431,16 @@ if (shouldShowRightPanelBlock.includes("'/wiki/'") || shouldShowRightPanelBlock.
   pass('site-shell.js: no /wiki/ or /categories/ right-panel prefix allowlist');
 }
 
-console.log('\n[6aa] Homepage standard shell fills right-panel-free layout');
-if (/<body\b[^>]*class=["'][^"']*\bpage-home\b[^"']*\bpage-standard-shell\b[^"']*["']/u.test(indexHtml)) {
-  pass('index.html: body has page-home page-standard-shell');
+console.log('\n[6aa] Homepage runs without shared shell runtime');
+if (/<body\b[^>]*class=["'][^"']*\bpage-home\b[^"']*["']/u.test(indexHtml) && !indexHtml.includes('page-standard-shell')) {
+  pass('index.html: body keeps page-home without page-standard-shell');
 } else {
-  fail('index.html - body must include page-home page-standard-shell');
+  fail('index.html - body must keep page-home and must not include page-standard-shell');
+}
+if (indexHtml.includes('/js/site-shell.js')) {
+  fail('index.html - must not load /js/site-shell.js');
+} else {
+  pass('index.html: /js/site-shell.js not loaded');
 }
 if (!indexHtml.includes('page-has-right-panel')) {
   pass('index.html: no page-has-right-panel opt-in');

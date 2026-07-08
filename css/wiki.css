@@ -102,54 +102,6 @@ button {
   backdrop-filter: blur(16px);
 }
 
-body.page-onboarding-shell {
-  --shell-header-h: 68px;
-}
-
-body.page-onboarding-shell #site-header {
-  position: sticky;
-  isolation: isolate;
-  grid-template-columns: minmax(140px, 1fr) auto;
-  background: rgba(7, 11, 18, 0.94);
-}
-
-body.page-onboarding-shell #site-header::before {
-  z-index: 0;
-  position: absolute;
-  inset: 0;
-  content: "";
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(7, 11, 18, 0.16) 0%, rgba(7, 11, 18, 0.28) 100%),
-    url("/img/homepage/top-hazard-strip.jpg") top left / auto 100% repeat-x;
-  opacity: 0.95;
-  mix-blend-mode: normal;
-  filter: saturate(0.92) contrast(1.06);
-}
-
-body.page-onboarding-shell #site-header::after {
-  z-index: 0;
-  position: absolute;
-  inset: 0;
-  content: "";
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(7, 11, 18, 0.12) 0%, rgba(7, 11, 18, 0.46) 100%);
-}
-
-body.page-onboarding-shell > #site-header > * {
-  position: relative;
-  z-index: 1;
-}
-
-body.page-onboarding-shell #header-search,
-body.page-onboarding-shell #global-nav {
-  display: none;
-}
-
-body.page-onboarding-shell #moonboys-global-status-badge {
-  justify-self: end;
-}
-
 .site-logo {
   display: inline-flex;
   align-items: center;
