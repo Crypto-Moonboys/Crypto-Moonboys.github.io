@@ -3740,6 +3740,7 @@ body.page-home .hero-stat {
 
   body.page-home .home-hero-artwork {
     justify-self: center;
+    order: -1;
     width: min(100%, 560px);
     max-height: none;
   }
