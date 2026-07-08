@@ -411,8 +411,8 @@ if (!wikiCss) {
     homepageHeroOk = false;
   }
   if (
-    !blockHas(innerBlock, /display\s*:\s*grid/i) ||
-    !blockHas(innerBlock, /max-width\s*:\s*1280px/i) ||
+    !blockHas(innerBlock, /display\s*:\s*flex/i) ||
+    !blockHas(innerBlock, /z-index\s*:\s*2/i) ||
     !blockHas(titleBlock, /font-family\s*:\s*var\(--font-display\)/i) ||
     !blockHas(titleBlock, /text-shadow\s*:/i)
   ) {
@@ -420,14 +420,11 @@ if (!wikiCss) {
     homepageHeroOk = false;
   }
   if (
-    !blockHas(artworkBlock, /display\s*:\s*block/i) ||
-    !blockHas(artworkBlock, /justify-self\s*:\s*end/i) ||
-    !blockHas(artworkBlock, /width\s*:\s*min\(100%,\s*620px\)/i) ||
-    !blockHas(artworkBlock, /max-height\s*:\s*min\(72vh,\s*760px\)/i) ||
-    !blockHas(artworkBlock, /object-fit\s*:\s*contain/i) ||
-    !blockHas(artworkBlock, /filter\s*:\s*drop-shadow/i)
+    !blockHas(artworkBlock, /position\s*:\s*absolute/i) ||
+    !blockHas(artworkBlock, /height\s*:\s*100%/i) ||
+    !blockHas(artworkBlock, /object-fit\s*:\s*cover/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must be a single integrated image slot`);
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must fill the right side as cinematic layer without card treatment`);
     homepageHeroOk = false;
   }
   if (
@@ -443,7 +440,7 @@ if (!wikiCss) {
     homepageHeroOk = false;
   }
 }
-if (homepageHeroOk) pass('Homepage uses the split copy-and-artwork hero with one visible image slot');
+if (homepageHeroOk) pass('Homepage uses the cinematic hero with artwork as absolute right-side fill');
 
 console.log('\n[8] SWARMSY component classes keep their global styling contract');
 let swarmsyComponentsOk = true;

@@ -3400,18 +3400,15 @@ body.page-home #content {
 body.page-home .home-hero,
 body.page-home .launch-hero {
   position: relative;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   width: 100%;
   max-width: none;
   min-height: clamp(680px, 82vh, 880px);
   margin: 0;
   padding: clamp(34px, 5vw, 58px) clamp(28px, 6vw, 88px);
-  background:
-    radial-gradient(circle at 18% 18%, rgba(247, 201, 72, 0.14), transparent 30%),
-    radial-gradient(circle at 82% 10%, rgba(0, 255, 204, 0.11), transparent 28%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.58) 38%, rgba(0, 0, 0, 0.10) 70%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.68) 100%),
-    #050607;
+  background: #050607;
   border-top: 1px solid rgba(0, 255, 204, 0.24);
   border-right: 0;
   border-left: 0;
@@ -3419,31 +3416,30 @@ body.page-home .launch-hero {
   box-shadow: 0 0 48px rgba(0, 255, 204, 0.10), 0 22px 70px rgba(0, 0, 0, 0.34);
 }
 
+/* Left-side text protection — fades to transparent where the cinematic artwork begins */
 body.page-home .home-hero::before,
 body.page-home .launch-hero::before {
   position: absolute;
   inset: 0;
+  z-index: 1;
   content: "";
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 26px 26px;
-  opacity: 0.14;
+  background: linear-gradient(90deg, #050607 0%, #050607 28%, rgba(5, 6, 7, 0.82) 44%, rgba(5, 6, 7, 0.28) 56%, transparent 66%);
 }
 
 body.page-home .home-hero-inner {
   position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(300px, 0.78fr) minmax(280px, 1fr);
-  align-items: center;
-  max-width: 1280px;
-  gap: clamp(22px, 4vw, 56px);
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  max-width: 680px;
 }
 
 body.page-home .home-hero-copy {
-  max-width: 720px;
+  max-width: 680px;
 }
 
 body.page-home .launch-kicker {
@@ -3490,20 +3486,22 @@ body.page-home .launch-subcopy {
 }
 
 body.page-home .home-hero-artwork {
-  display: block;
-  justify-self: end;
-  align-self: center;
-  width: min(100%, 620px);
-  max-height: min(72vh, 760px);
-  object-fit: contain;
-  filter: drop-shadow(0 24px 60px rgba(0, 0, 0, 0.48));
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  width: 62%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 38% top;
 }
 
 body.page-home .launch-cta-row,
 body.page-home .launch-route,
 body.page-home .hero-stats {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 760px;
 }
 
@@ -3665,18 +3663,31 @@ body.page-home .hero-stat {
     flex-direction: column;
     min-height: auto;
     padding: 0 0 clamp(24px, 7vw, 42px);
-    background:
-      radial-gradient(circle at 18% 14%, rgba(247, 201, 72, 0.12), transparent 28%),
-      radial-gradient(circle at 82% 10%, rgba(0, 255, 204, 0.09), transparent 24%),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.88) 48%, rgba(0, 0, 0, 0.96) 100%),
-      #050607;
+    background: #050607;
+  }
+
+  /* No text-protection gradient needed on mobile — artwork is above copy */
+  body.page-home .home-hero::before,
+  body.page-home .launch-hero::before {
+    display: none;
+  }
+
+  /* Artwork back to normal flow, full-width, on top */
+  body.page-home .home-hero-artwork {
+    position: static;
+    width: 100%;
+    height: auto;
+    min-height: 56vw;
+    max-height: 80vw;
+    object-fit: cover;
+    object-position: 38% top;
   }
 
   body.page-home .home-hero-inner {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 22px;
-    order: 2;
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    justify-content: flex-start;
     max-width: none;
     padding: clamp(26px, 8vw, 42px) clamp(22px, 6vw, 34px) 0;
   }
@@ -3720,7 +3731,8 @@ body.page-home .hero-stat {
   }
 
   body.page-home .launch-cta-row {
-    order: 3;
+    grid-template-columns: 1fr;
+    gap: 14px;
     margin-top: 20px;
   }
 }
@@ -3731,19 +3743,6 @@ body.page-home .hero-stat {
   }
 }
 
-@media (max-width: 760px) {
-  body.page-home .launch-cta-row {
-    width: calc(100% - clamp(44px, 12vw, 68px));
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  body.page-home .home-hero-artwork {
-    justify-self: center;
-    width: min(100%, 560px);
-    max-height: none;
-  }
-}
 
 body.page-home .stat-num,
 body.page-home .swarmsy-info-header,
