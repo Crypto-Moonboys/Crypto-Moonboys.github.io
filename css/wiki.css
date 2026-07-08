@@ -102,6 +102,23 @@ button {
   backdrop-filter: blur(16px);
 }
 
+body.page-onboarding-shell {
+  --shell-header-h: 68px;
+}
+
+body.page-onboarding-shell #site-header {
+  grid-template-columns: minmax(180px, auto) auto;
+}
+
+body.page-onboarding-shell #header-search,
+body.page-onboarding-shell #global-nav {
+  display: none;
+}
+
+body.page-onboarding-shell #moonboys-global-status-badge {
+  justify-self: end;
+}
+
 .site-logo {
   display: inline-flex;
   align-items: center;
