@@ -3434,6 +3434,10 @@ body.page-home .launch-hero h1 span {
   color: #00ffcc;
 }
 
+body.page-home .mobile-hero-break {
+  display: none;
+}
+
 body.page-home .launch-manifesto,
 body.page-home .launch-subcopy {
   max-width: 760px;
@@ -3554,14 +3558,79 @@ body.page-home .hero-stat {
 }
 
 @media (max-width: 760px) {
+  body.page-home .home-hero,
+  body.page-home .launch-hero {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+    padding: 0 0 clamp(24px, 7vw, 42px);
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.88) 48%, rgba(0, 0, 0, 0.96) 100%),
+      url("/img/homepage/crypto-moonboys-swarmsy-layer-2.jpg") left top / cover no-repeat,
+      #050607;
+  }
+
+  body.page-home .home-hero-mobile-art {
+    position: relative;
+    z-index: 1;
+    display: block;
+    order: 1;
+    width: 100%;
+    height: clamp(320px, 52vh, 560px);
+    overflow: hidden;
+    background: #050607;
+  }
+
+  body.page-home .home-hero-mobile-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
   body.page-home .home-hero-inner {
     display: block;
+    order: 2;
     max-width: none;
-    padding: clamp(28px, 8vw, 44px) clamp(22px, 6vw, 34px) 0;
+    padding: clamp(26px, 8vw, 42px) clamp(22px, 6vw, 34px) 0;
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.95) 100%),
+      url("/img/homepage/crypto-moonboys-swarmsy-layer-2.jpg") left top / cover no-repeat,
+      #050607;
   }
 
   body.page-home .home-hero-copy {
     max-width: none;
+  }
+
+  body.page-home .home-hero h1,
+  body.page-home .launch-hero h1 {
+    max-width: 100%;
+    font-size: clamp(2rem, 8.2vw, 2.6rem);
+    line-height: 1.02;
+  }
+
+  body.page-home .home-hero h1 span,
+  body.page-home .launch-hero h1 span {
+    display: block;
+    max-width: none;
+    margin-top: 0.28em;
+  }
+
+  body.page-home .mobile-hero-break {
+    display: block;
+  }
+
+  body.page-home .launch-manifesto,
+  body.page-home .launch-subcopy {
+    margin-top: 16px;
+    font-size: 1rem;
+    line-height: 1.62;
+  }
+
+  body.page-home .launch-mantra {
+    margin-top: 18px;
   }
 
   body.page-home .launch-cta-row,
@@ -3572,31 +3641,10 @@ body.page-home .hero-stat {
     margin-right: auto;
     margin-left: auto;
   }
-}
 
-@media (max-width: 760px) and (orientation: portrait) {
-  body.page-home .home-hero,
-  body.page-home .launch-hero {
-    min-height: auto;
-    padding: 0 0 clamp(24px, 7vw, 42px);
-    background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.78) 100%),
-      url("/img/homepage/crypto-moonboys-swarmsy-layer-2.jpg") center top / cover no-repeat,
-      #050607;
-  }
-
-  body.page-home .home-hero-mobile-art {
-    position: relative;
-    z-index: 1;
-    display: block;
-    width: 100%;
-    background: #050607;
-  }
-
-  body.page-home .home-hero-mobile-art img {
-    display: block;
-    width: 100%;
-    height: auto;
+  body.page-home .launch-cta-row {
+    order: 3;
+    margin-top: 20px;
   }
 }
 
