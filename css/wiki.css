@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800&family=Share+Tech+Mono&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800&family=Share+Tech+Mono&display=swap');
 
 /* Crypto Moonboys global SWARMSY shell */
 
@@ -3409,7 +3409,7 @@ body.page-home .launch-hero {
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.54) 38%, rgba(0, 0, 0, 0.08) 70%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.68) 100%),
-    url("/img/homepage/crypto-moonboys-swarmsy-hero-combined.jpg") center top / 100% auto no-repeat,
+    url("/img/homepage/home-hero-swarmsy-layer-one-son.jpg") center top / 100% auto no-repeat,
     #050607;
   border-top: 1px solid rgba(0, 255, 204, 0.24);
   border-right: 0;
@@ -3496,32 +3496,6 @@ body.page-home .launch-subcopy {
   line-height: 1.68;
 }
 
-body.page-home .hud-hero-logo-wrap {
-  position: relative;
-  z-index: 1;
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  align-self: center;
-  width: min(100%, 620px);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 20px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
-  display: block;
-  overflow: hidden;
-}
-
-body.page-home .hero-logo-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: none;
-  object-fit: cover;
-}
 
 body.page-home .launch-cta-row,
 body.page-home .launch-route,
@@ -3691,7 +3665,7 @@ body.page-home .hero-stat {
     padding: 0 0 clamp(24px, 7vw, 42px);
     background:
       linear-gradient(180deg, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.88) 48%, rgba(0, 0, 0, 0.96) 100%),
-      url("/img/homepage/crypto-moonboys-swarmsy-layer-2.jpg") left top / cover no-repeat,
+      url("/img/homepage/home-hero-swarmsy-layer-one-son.jpg") left top / cover no-repeat,
       #050607;
   }
 
@@ -3721,7 +3695,7 @@ body.page-home .hero-stat {
     padding: clamp(26px, 8vw, 42px) clamp(22px, 6vw, 34px) 0;
     background:
       linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.95) 100%),
-      url("/img/homepage/crypto-moonboys-swarmsy-layer-2.jpg") left top / cover no-repeat,
+      url("/img/homepage/home-hero-swarmsy-layer-one-son.jpg") left top / cover no-repeat,
       #050607;
   }
 
@@ -4032,3 +4006,4 @@ body.page-home .article-card-cat {
     display: none;
   }
 }
+
