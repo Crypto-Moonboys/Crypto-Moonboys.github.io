@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-06T07:58:09.604Z",
+  "generated_at": "2026-07-08T06:09:33.943Z",
   "templates": [
     {
       "template_id": 773225,
@@ -135009,6 +135009,19 @@
       ]
     },
     {
+      "template_id": 783370,
+      "live_supply": 1,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099997790537",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
+          "burned": false
+        }
+      ]
+    },
+    {
       "template_id": 783371,
       "live_supply": 5,
       "burned_assets_count": 0,
@@ -138800,6 +138813,19 @@
           "asset_id": "1099933929767",
           "original_mint_number": 9,
           "surviving_mint_rank": 9,
+          "burned": false
+        }
+      ]
+    },
+    {
+      "template_id": 904071,
+      "live_supply": 1,
+      "burned_assets_count": 0,
+      "assets": [
+        {
+          "asset_id": "1099997790112",
+          "original_mint_number": 1,
+          "surviving_mint_rank": 1,
           "burned": false
         }
       ]

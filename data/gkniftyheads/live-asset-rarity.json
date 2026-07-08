@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-06T07:58:09.540Z",
+  "generated_at": "2026-07-08T06:09:33.881Z",
   "status": "atomicassets live asset count",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
@@ -447,7 +447,7 @@
     {
       "template_id": 783370,
       "issued_supply": 0,
-      "live_supply": 0,
+      "live_supply": 1,
       "live_supply_status": "counted",
       "pre_baseline_missing_or_burned": 0
     },
@@ -1014,7 +1014,7 @@
     {
       "template_id": 904071,
       "issued_supply": 0,
-      "live_supply": 0,
+      "live_supply": 1,
       "live_supply_status": "counted",
       "pre_baseline_missing_or_burned": 0
     }
