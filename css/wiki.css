@@ -107,7 +107,7 @@ body.page-onboarding-shell {
 }
 
 body.page-onboarding-shell #site-header {
-  grid-template-columns: minmax(180px, auto) auto;
+  grid-template-columns: minmax(140px, 1fr) auto;
 }
 
 body.page-onboarding-shell #header-search,
