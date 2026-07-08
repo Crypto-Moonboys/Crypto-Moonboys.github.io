@@ -3496,31 +3496,30 @@ body.page-home .launch-subcopy {
   line-height: 1.68;
 }
 
-body.page-home .hud-hero-logo-wrap {
+body.page-home .home-hero-art-quote {
   position: relative;
   z-index: 1;
   grid-column: 2;
   grid-row: 1;
   justify-self: end;
-  align-self: center;
-  width: min(100%, 620px);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 20px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
-  display: block;
-  overflow: hidden;
+  align-self: end;
+  max-width: 520px;
+  padding-bottom: clamp(12px, 2vw, 24px);
+  text-align: right;
 }
 
-body.page-home .hero-logo-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: none;
-  object-fit: cover;
+body.page-home .home-hero-right-note-line {
+  margin: 0;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.9vw, 1.48rem);
+  line-height: 1.22;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 14px rgba(247, 201, 72, 0.28), 0 1px 4px rgba(0, 0, 0, 0.72);
+}
+
+body.page-home .home-hero-right-note-line + .home-hero-right-note-line {
+  margin-top: 0.56em;
 }
 
 body.page-home .launch-cta-row,
@@ -3780,6 +3779,10 @@ body.page-home .hero-stat {
     width: calc(100% - clamp(44px, 12vw, 68px));
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+
+  body.page-home .home-hero-art-quote {
+    display: none;
   }
 }
 

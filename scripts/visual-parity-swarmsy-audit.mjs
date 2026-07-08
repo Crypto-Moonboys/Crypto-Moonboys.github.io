@@ -372,7 +372,7 @@ if (/retro-hero-bg/i.test(homepageHtml)) {
   fail('index.html - must not restore retro-hero-bg');
   homepageHeroOk = false;
 }
-if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || !htmlContainsClass(homepageHtml, 'hud-hero-logo-wrap')) {
+if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || (!htmlContainsClass(homepageHtml, 'hud-hero-logo-wrap') && !htmlContainsClass(homepageHtml, 'home-hero-art-quote'))) {
   fail('index.html - homepage hero must use the compact SWARMSY hero/logo structure');
   homepageHeroOk = false;
 }
@@ -389,6 +389,8 @@ if (!wikiCss) {
     selectorBlock(wikiCss, 'body.page-home .home-hero h1,\r\nbody.page-home .launch-hero h1');
   const logoBlock = selectorBlock(wikiCss, 'body.page-home .hud-hero-logo-wrap');
   const logoImgBlock = selectorBlock(wikiCss, 'body.page-home .hero-logo-img');
+  const artQuoteBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-art-quote');
+  const artQuoteLineBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-right-note-line');
   const ctaBlock =
     selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\nbody.page-home .launch-cta-secondary') ||
     selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\r\nbody.page-home .launch-cta-secondary');
@@ -436,6 +438,12 @@ if (!wikiCss) {
         blockHas(logoImgBlock, /height\s*:\s*auto/i) &&
         blockHas(logoImgBlock, /max-height\s*:\s*none/i) &&
         blockHas(logoImgBlock, /object-fit\s*:\s*cover/i)
+      ) ||
+      (
+        blockHas(artQuoteBlock, /grid-column\s*:\s*2/i) &&
+        blockHas(artQuoteBlock, /grid-row\s*:\s*1/i) &&
+        blockHas(artQuoteLineBlock, /font-family\s*:\s*var\(--font-display\)/i) &&
+        blockHas(artQuoteLineBlock, /color\s*:\s*var\(--color-accent\)/i)
       )
     )
   ) {
