@@ -421,11 +421,25 @@ if (!wikiCss) {
     homepageHeroOk = false;
   }
   if (
-    !blockHas(logoBlock, /width\s*:\s*clamp\(92px,\s*10vw,\s*150px\)/i) ||
-    !blockHas(logoBlock, /border-radius\s*:\s*22px/i) ||
-    !blockHas(logoImgBlock, /max-height\s*:\s*128px/i)
+    !(
+      (
+        blockHas(logoBlock, /width\s*:\s*clamp\(92px,\s*10vw,\s*150px\)/i) &&
+        blockHas(logoBlock, /border-radius\s*:\s*22px/i) &&
+        blockHas(logoImgBlock, /max-height\s*:\s*128px/i)
+      ) ||
+      (
+        blockHas(logoBlock, /grid-column\s*:\s*2/i) &&
+        blockHas(logoBlock, /grid-row\s*:\s*1/i) &&
+        blockHas(logoBlock, /width\s*:\s*min\(100%,\s*620px\)/i) &&
+        blockHas(logoBlock, /display\s*:\s*block/i) &&
+        blockHas(logoBlock, /overflow\s*:\s*hidden/i) &&
+        blockHas(logoImgBlock, /height\s*:\s*auto/i) &&
+        blockHas(logoImgBlock, /max-height\s*:\s*none/i) &&
+        blockHas(logoImgBlock, /object-fit\s*:\s*cover/i)
+      )
+    )
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - homepage Moonboy logo must stay compact inside a SWARMSY card`);
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must use the compact logo card or the new front-panel hero layout`);
     homepageHeroOk = false;
   }
   if (

@@ -3496,58 +3496,31 @@ body.page-home .launch-subcopy {
   line-height: 1.68;
 }
 
-body.page-home .home-hero-right-note {
+body.page-home .hud-hero-logo-wrap {
   position: relative;
   z-index: 1;
   grid-column: 2;
   grid-row: 1;
-  align-self: end;
   justify-self: end;
-  width: min(100%, 680px);
+  align-self: center;
+  width: min(100%, 620px);
+  min-width: 0;
   margin: 0;
   padding: 0;
-  border: 0;
-  border-radius: 0;
   background: transparent;
-  box-shadow: none;
-  display: grid;
-  justify-items: end;
-  gap: 0.24em;
-  text-align: right;
-}
-
-body.page-home .home-hero-right-note-line {
-  display: block;
-  margin: 0;
-  color: #f7d25a;
-  font-family: var(--font-display);
-  font-size: clamp(0.88rem, 0.98vw, 1.05rem);
-  line-height: 1.02;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  text-shadow: 0 0 18px rgba(247, 201, 72, 0.16), 0 0 42px rgba(0, 0, 0, 0.24);
-  white-space: normal;
-}
-
-body.page-home .hud-hero-logo-wrap {
-  position: relative;
-  z-index: 1;
-  width: clamp(92px, 10vw, 150px);
-  min-width: 0;
-  margin: 6px 0 0 auto;
-  padding: 14px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 22px;
+  border: 0;
+  border-radius: 20px;
   box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
-  display: none;
+  display: block;
+  overflow: hidden;
 }
 
 body.page-home .hero-logo-img {
   display: block;
   width: 100%;
-  max-height: 128px;
-  object-fit: contain;
+  height: auto;
+  max-height: none;
+  object-fit: cover;
 }
 
 body.page-home .launch-cta-row,
@@ -3772,29 +3745,6 @@ body.page-home .hero-stat {
     margin-top: 16px;
     font-size: 0.98rem;
     line-height: 1.6;
-  }
-
-  body.page-home .home-hero-right-note {
-    grid-column: auto;
-    grid-row: auto;
-    justify-self: start;
-    align-self: start;
-    width: 100%;
-    max-width: none;
-    margin-top: 18px;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
-    text-align: left;
-    justify-items: start;
-  }
-
-  body.page-home .home-hero-right-note-line {
-    white-space: normal;
-    font-size: 0.96rem;
-    line-height: 1.08;
   }
 
   body.page-home .launch-cta-row,
