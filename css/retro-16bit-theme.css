@@ -574,110 +574,6 @@ a:hover           { color: var(--neon-magenta); }
   image-rendering: pixelated;
 }
 
-/* ── CTA BUTTONS ─────────────────────────────────────────────── */
-.launch-cta-row {
-  position: relative;
-  z-index: 2;
-}
-
-.launch-cta-primary,
-.launch-cta-secondary {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.5rem !important;
-  letter-spacing: 0.10em !important;
-  border-radius: 0 !important;
-  font-weight: 400;
-  text-transform: uppercase;
-  transition: background 0.1s, box-shadow 0.1s;
-  padding: 14px 20px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-
-/* Button icon */
-.cta-btn-icon {
-  font-size: 1.1em;
-  line-height: 1;
-  font-style: normal;
-  image-rendering: pixelated;
-}
-
-/* Explore the Wiki — cyan */
-.launch-cta-row a:nth-child(1),
-.launch-cta-primary {
-  background: rgba(0, 0, 0, 0.90) !important;
-  border: 3px solid var(--neon-cyan) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 8px var(--neon-cyan), 1px 1px 0 #000 !important;
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.85),
-    0 0 0 1px rgba(0, 229, 255, 0.20),
-    0 0 14px rgba(0, 229, 255, 0.22) !important;
-}
-.launch-cta-row a:nth-child(1):hover,
-.launch-cta-primary:hover {
-  background: rgba(0, 229, 255, 0.16) !important;
-  box-shadow:
-    7px 7px 0 rgba(0, 229, 255, 0.45),
-    0 0 22px rgba(0, 229, 255, 0.35) !important;
-  text-decoration: none;
-}
-.launch-cta-row a:nth-child(1):active,
-.launch-cta-primary:active {
-  box-shadow:
-    2px 2px 0 rgba(0, 0, 0, 0.85),
-    0 0 10px rgba(0, 229, 255, 0.25) !important;
-}
-
-/* Play Arcade — magenta */
-.launch-cta-row a:nth-child(2) {
-  background: rgba(0, 0, 0, 0.90) !important;
-  border: 3px solid var(--neon-magenta) !important;
-  color: var(--neon-magenta) !important;
-  text-shadow: 0 0 8px var(--neon-magenta), 1px 1px 0 #000 !important;
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.85),
-    0 0 0 1px rgba(255, 45, 120, 0.20),
-    0 0 14px rgba(255, 45, 120, 0.22) !important;
-}
-.launch-cta-row a:nth-child(2):hover {
-  background: rgba(255, 45, 120, 0.18) !important;
-  box-shadow:
-    7px 7px 0 rgba(255, 45, 120, 0.45),
-    0 0 22px rgba(255, 45, 120, 0.35) !important;
-  text-decoration: none;
-}
-.launch-cta-row a:nth-child(2):active {
-  box-shadow:
-    2px 2px 0 rgba(0, 0, 0, 0.85),
-    0 0 10px rgba(255, 45, 120, 0.25) !important;
-}
-
-/* Link Telegram — green */
-.launch-cta-row a:nth-child(3) {
-  background: rgba(0, 0, 0, 0.90) !important;
-  border: 3px solid var(--neon-green) !important;
-  color: var(--neon-green) !important;
-  text-shadow: 0 0 8px var(--neon-green), 1px 1px 0 #000 !important;
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.85),
-    0 0 0 1px rgba(57, 255, 20, 0.18),
-    0 0 14px rgba(57, 255, 20, 0.18) !important;
-}
-.launch-cta-row a:nth-child(3):hover {
-  background: rgba(57, 255, 20, 0.14) !important;
-  box-shadow:
-    7px 7px 0 rgba(57, 255, 20, 0.40),
-    0 0 22px rgba(57, 255, 20, 0.28) !important;
-  text-decoration: none;
-}
-.launch-cta-row a:nth-child(3):active {
-  box-shadow:
-    2px 2px 0 rgba(0, 0, 0, 0.85),
-    0 0 10px rgba(57, 255, 20, 0.22) !important;
-}
-
 /* ── ROUTE BAR ───────────────────────────────────────────────── */
 .launch-route {
   background: rgba(2, 6, 14, 0.96) !important;
@@ -1214,12 +1110,6 @@ a.hero-stat-link:hover {
   .home-hero h1 {
     font-size: 0.85rem;
   }
-  .launch-cta-primary,
-  .launch-cta-secondary {
-    min-width: 140px !important;
-    font-size: 0.44rem !important;
-    padding: 10px 12px !important;
-  }
 }
 
 /* ── WIKI ARTICLE CONTENT ────────────────────────────────────── */
@@ -1393,7 +1283,6 @@ body.page-home .sidebar-heading,
 body.page-home .section-heading,
 body.page-home .retro-hud-title,
 body.page-home .launch-kicker,
-body.page-home .launch-cta-row a,
 body.page-home .launch-route-title,
 body.page-home .cat-name,
 body.page-home .article-card-title,
@@ -1649,23 +1538,6 @@ body.page-home .retro-hud-title-icon {
   image-rendering: pixelated;
 }
 
-/* Buttons / Route / Hero */
-body.page-home .launch-cta-row a {
-  font-size: 0.50rem !important;
-  line-height: 1.35 !important;
-  min-height: 48px;
-  padding: 14px 18px !important;
-  text-shadow: 0 0 8px currentColor, 2px 2px 0 #000 !important;
-  box-shadow:
-    6px 6px 0 rgba(0,0,0,.90),
-    0 0 0 2px rgba(0,229,255,.16),
-    0 0 16px rgba(255,45,120,.22) !important;
-}
-
-body.page-home .launch-cta-row a:active {
-  box-shadow: 2px 2px 0 rgba(0,0,0,.90), 0 0 10px currentColor !important;
-}
-
 body.page-home .launch-route-flow {
   font-size: clamp(0.42rem, 0.54vw, 0.58rem) !important;
   line-height: 1.85 !important;
@@ -1694,11 +1566,6 @@ body.page-home .launch-subcopy {
 
   body.page-home .retro-hud-body {
     font-size: 0.78rem !important;
-  }
-
-  body.page-home .launch-cta-row a {
-    width: 100%;
-    justify-content: center;
   }
 }
 
