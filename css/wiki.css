@@ -3526,7 +3526,7 @@ body.page-home .home-hero-right-note-line {
   letter-spacing: 0.03em;
   text-transform: uppercase;
   text-shadow: 0 0 18px rgba(247, 201, 72, 0.16), 0 0 42px rgba(0, 0, 0, 0.24);
-  white-space: nowrap;
+  white-space: normal;
 }
 
 body.page-home .home-hero-right-note-mantra {
@@ -3750,6 +3750,12 @@ body.page-home .hero-stat {
   body.page-home .launch-cta-row {
     order: 3;
     margin-top: 20px;
+  }
+}
+
+@media (min-width: 1200px) {
+  body.page-home .home-hero-right-note-line {
+    white-space: nowrap;
   }
 }
 
