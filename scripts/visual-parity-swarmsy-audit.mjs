@@ -421,13 +421,12 @@ if (!wikiCss) {
   }
   if (
     !blockHas(artworkBlock, /display\s*:\s*block/i) ||
-    !blockHas(artworkBlock, /justify-self\s*:\s*end/i) ||
-    !blockHas(artworkBlock, /width\s*:\s*min\(100%,\s*620px\)/i) ||
-    !blockHas(artworkBlock, /max-height\s*:\s*min\(72vh,\s*760px\)/i) ||
-    !blockHas(artworkBlock, /object-fit\s*:\s*contain/i) ||
-    !blockHas(artworkBlock, /filter\s*:\s*drop-shadow/i)
+    !blockHas(artworkBlock, /justify-self\s*:\s*stretch/i) ||
+    !blockHas(artworkBlock, /width\s*:\s*100%/i) ||
+    !blockHas(artworkBlock, /height\s*:\s*100%/i) ||
+    !blockHas(artworkBlock, /object-fit\s*:\s*cover/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must be a single integrated image slot`);
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must fill the right column without card treatment`);
     homepageHeroOk = false;
   }
   if (
