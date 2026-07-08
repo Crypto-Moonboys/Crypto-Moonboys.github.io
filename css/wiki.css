@@ -3491,96 +3491,29 @@ body.page-home .launch-cta-row {
   padding: 0 clamp(28px, 6vw, 88px);
 }
 
-body.page-home .launch-cta-primary,
-body.page-home .launch-cta-secondary {
-  display: grid;
-  grid-template-areas: "card";
-  align-content: start;
-  min-height: 0;
-  gap: 0;
-  padding: 0;
-  color: var(--color-text);
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 16px;
-  box-shadow: none;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  line-height: 1.35;
+body.page-home .launch-cta-row a {
+  display: block;
   text-decoration: none;
-  text-transform: uppercase;
-  overflow: hidden;
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease,
-    filter 180ms ease;
+  border-radius: 16px;
 }
 
-body.page-home .launch-ip-card {
-  position: relative;
-  isolation: isolate;
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-  padding: 0;
-  overflow: visible;
-}
-
-body.page-home .launch-ip-card img {
-  grid-area: card;
+body.page-home .launch-cta-row a img {
   display: block;
   width: 100%;
   height: auto;
-  object-fit: cover;
   border-radius: 16px;
-  transform: scale(1) translateY(0);
   transition: transform 220ms ease, filter 220ms ease;
 }
 
-body.page-home .launch-ip-card:hover {
-  color: var(--color-text);
-}
-
-body.page-home .launch-ip-card:focus-visible {
-  color: var(--color-text);
+body.page-home .launch-cta-row a:focus-visible {
   outline: 2px solid rgba(247, 201, 72, 0.78);
   outline-offset: 4px;
 }
 
-body.page-home .launch-ip-card:hover img,
-body.page-home .launch-ip-card:focus-visible img {
+body.page-home .launch-cta-row a:hover img,
+body.page-home .launch-cta-row a:focus-visible img {
   transform: translateY(-4px) scale(1.02);
   filter: contrast(1.02) brightness(1.02) saturate(1.04);
-}
-
-body.page-home .launch-cta-primary {
-  border-color: rgba(255, 255, 255, 0.10);
-  box-shadow: none;
-}
-
-body.page-home .launch-ip-card--identity:hover,
-body.page-home .launch-ip-card--identity:focus-visible {
-  border-color: transparent;
-  box-shadow: none;
-}
-
-body.page-home .launch-ip-card--community {
-  border-color: transparent;
-}
-
-body.page-home .launch-ip-card--community:hover,
-body.page-home .launch-ip-card--community:focus-visible {
-  border-color: transparent;
-}
-
-body.page-home .launch-ip-card--universe {
-  border-color: transparent;
-}
-
-body.page-home .launch-ip-card--universe:hover,
-body.page-home .launch-ip-card--universe:focus-visible {
-  border-color: transparent;
 }
 
 body.page-home .launch-route,

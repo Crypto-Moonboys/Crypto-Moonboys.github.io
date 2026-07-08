@@ -389,9 +389,8 @@ if (!wikiCss) {
     selectorBlock(wikiCss, 'body.page-home .home-hero h1,\r\nbody.page-home .launch-hero h1');
   const artworkBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-artwork');
   const mobileArtBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-mobile-art');
-  const ctaBlock =
-    selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\nbody.page-home .launch-cta-secondary') ||
-    selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\r\nbody.page-home .launch-cta-secondary');
+  const ipCardAnchorBlock = selectorBlock(wikiCss, 'body.page-home .launch-cta-row a');
+  const ipCardImgBlock = selectorBlock(wikiCss, 'body.page-home .launch-cta-row a img');
   const cardBlock =
     selectorBlock(wikiCss, 'body.page-home .launch-route,\nbody.page-home .hero-stat,\nbody.page-home .home-widget,\nbody.page-home .category-card,\nbody.page-home .article-card') ||
     selectorBlock(wikiCss, 'body.page-home .launch-route,\r\nbody.page-home .hero-stat,\r\nbody.page-home .home-widget,\r\nbody.page-home .category-card,\r\nbody.page-home .article-card');
@@ -428,15 +427,14 @@ if (!wikiCss) {
     homepageHeroOk = false;
   }
   if (
-    !blockHas(ctaBlock, /display\s*:\s*grid/i) ||
-    !blockHas(ctaBlock, /border\s*:/i) ||
-    !blockHas(ctaBlock, /border-radius\s*:\s*16px/i) ||
-    !blockHas(ctaBlock, /box-shadow\s*:/i) ||
+    !blockHas(ipCardAnchorBlock, /display\s*:\s*block/i) ||
+    !blockHas(ipCardImgBlock, /border-radius\s*:\s*16px/i) ||
+    !blockHas(ipCardImgBlock, /transition\s*:/i) ||
     !blockHas(cardBlock, /border\s*:/i) ||
     !blockHas(cardBlock, /border-radius\s*:\s*16px/i) ||
     !blockHas(cardBlock, /box-shadow\s*:/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - homepage actions, stats, info, category, and article cards must keep SWARMSY glowing card styling`);
+    fail(`${GLOBAL_SHELL_CSS} - homepage IP image cards must use .launch-cta-row a with border-radius/transition on img; stats, info, category, and article cards must keep SWARMSY glowing card styling`);
     homepageHeroOk = false;
   }
 }
