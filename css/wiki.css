@@ -3708,6 +3708,43 @@ body.page-home .home-section3-right img {
   }
 }
 
+body.page-home .home-section4 {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+}
+
+body.page-home .home-section4-left,
+body.page-home .home-section4-right {
+  flex: 1;
+}
+
+body.page-home .home-section4-left img,
+body.page-home .home-section4-right img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-section4 {
+    flex-direction: column;
+    margin-top: clamp(14px, 4vw, 20px);
+  }
+
+  body.page-home .home-section4-left,
+  body.page-home .home-section4-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Right image shows first on mobile */
+  body.page-home .home-section4-right {
+    order: -1;
+  }
+}
+
 /* ─────────────────────────────────────────────────────────────────────── */
 
 body.page-home .stat-num,
