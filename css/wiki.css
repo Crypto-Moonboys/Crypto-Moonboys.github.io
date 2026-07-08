@@ -3408,7 +3408,12 @@ body.page-home .launch-hero {
   min-height: clamp(680px, 82vh, 880px);
   margin: 0;
   padding: clamp(34px, 5vw, 58px) clamp(28px, 6vw, 88px);
-  background: #050607;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.54) 38%, rgba(0, 0, 0, 0.08) 70%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.68) 100%),
+    url("/img/homepage/home-hero-swarmsy-layer-one-son.jpg") right top / 50% auto no-repeat,
+    url("/img/homepage/crypto-moonboys-swarmsy-layer-1.jpg") left top / 50% auto no-repeat,
+    #050607;
   border-top: 1px solid rgba(0, 255, 204, 0.24);
   border-right: 0;
   border-left: 0;
@@ -3485,16 +3490,8 @@ body.page-home .launch-subcopy {
   line-height: 1.68;
 }
 
-body.page-home .home-hero-artwork {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 0;
-  width: 62%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 38% top;
+body.page-home .home-hero-mobile-art {
+  display: none;
 }
 
 body.page-home .launch-cta-row,
@@ -3512,6 +3509,7 @@ body.page-home .launch-cta-row {
   width: 100%;
   max-width: none;
   margin-top: clamp(18px, 2.6vw, 30px);
+  padding: 0 clamp(28px, 6vw, 88px);
 }
 
 body.page-home .launch-cta-primary,
@@ -3663,7 +3661,10 @@ body.page-home .hero-stat {
     flex-direction: column;
     min-height: auto;
     padding: 0 0 clamp(24px, 7vw, 42px);
-    background: #050607;
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.78) 100%),
+      url("/img/homepage/home-hero-swarmsy-layer-one-son.jpg") center top / cover no-repeat,
+      #050607;
   }
 
   /* No text-protection gradient needed on mobile — artwork is above copy */
@@ -3672,15 +3673,18 @@ body.page-home .hero-stat {
     display: none;
   }
 
-  /* Artwork back to normal flow, full-width, on top */
-  body.page-home .home-hero-artwork {
-    position: static;
+  body.page-home .home-hero-mobile-art {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    background: #050607;
+  }
+
+  body.page-home .home-hero-mobile-art img {
+    display: block;
     width: 100%;
     height: auto;
-    min-height: 56vw;
-    max-height: 80vw;
-    object-fit: cover;
-    object-position: 38% top;
   }
 
   body.page-home .home-hero-inner {
@@ -3734,6 +3738,7 @@ body.page-home .hero-stat {
     grid-template-columns: 1fr;
     gap: 14px;
     margin-top: 20px;
+    padding: 0;
   }
 }
 
