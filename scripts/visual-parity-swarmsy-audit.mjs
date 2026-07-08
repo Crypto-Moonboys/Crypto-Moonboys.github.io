@@ -372,8 +372,8 @@ if (/retro-hero-bg/i.test(homepageHtml)) {
   fail('index.html - must not restore retro-hero-bg');
   homepageHeroOk = false;
 }
-if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || (!htmlContainsClass(homepageHtml, 'hud-hero-logo-wrap') && !htmlContainsClass(homepageHtml, 'home-hero-art-quote'))) {
-  fail('index.html - homepage hero must use the compact SWARMSY hero/logo structure');
+if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || !htmlContainsClass(homepageHtml, 'home-hero-artwork')) {
+  fail('index.html - homepage hero must use the split copy-and-artwork structure');
   homepageHeroOk = false;
 }
 if (!wikiCss) {
@@ -387,10 +387,7 @@ if (!wikiCss) {
   const titleBlock =
     selectorBlock(wikiCss, 'body.page-home .home-hero h1,\nbody.page-home .launch-hero h1') ||
     selectorBlock(wikiCss, 'body.page-home .home-hero h1,\r\nbody.page-home .launch-hero h1');
-  const logoBlock = selectorBlock(wikiCss, 'body.page-home .hud-hero-logo-wrap');
-  const logoImgBlock = selectorBlock(wikiCss, 'body.page-home .hero-logo-img');
-  const artQuoteBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-art-quote');
-  const artQuoteLineBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-right-note-line');
+  const artworkBlock = selectorBlock(wikiCss, 'body.page-home .home-hero-artwork');
   const ctaBlock =
     selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\nbody.page-home .launch-cta-secondary') ||
     selectorBlock(wikiCss, 'body.page-home .launch-cta-primary,\r\nbody.page-home .launch-cta-secondary');
@@ -423,31 +420,14 @@ if (!wikiCss) {
     homepageHeroOk = false;
   }
   if (
-    !(
-      (
-        blockHas(logoBlock, /width\s*:\s*clamp\(92px,\s*10vw,\s*150px\)/i) &&
-        blockHas(logoBlock, /border-radius\s*:\s*22px/i) &&
-        blockHas(logoImgBlock, /max-height\s*:\s*128px/i)
-      ) ||
-      (
-        blockHas(logoBlock, /grid-column\s*:\s*2/i) &&
-        blockHas(logoBlock, /grid-row\s*:\s*1/i) &&
-        blockHas(logoBlock, /width\s*:\s*min\(100%,\s*620px\)/i) &&
-        blockHas(logoBlock, /display\s*:\s*block/i) &&
-        blockHas(logoBlock, /overflow\s*:\s*hidden/i) &&
-        blockHas(logoImgBlock, /height\s*:\s*auto/i) &&
-        blockHas(logoImgBlock, /max-height\s*:\s*none/i) &&
-        blockHas(logoImgBlock, /object-fit\s*:\s*cover/i)
-      ) ||
-      (
-        blockHas(artQuoteBlock, /grid-column\s*:\s*2/i) &&
-        blockHas(artQuoteBlock, /grid-row\s*:\s*1/i) &&
-        blockHas(artQuoteLineBlock, /font-family\s*:\s*var\(--font-display\)/i) &&
-        blockHas(artQuoteLineBlock, /color\s*:\s*var\(--color-accent\)/i)
-      )
-    )
+    !blockHas(artworkBlock, /display\s*:\s*block/i) ||
+    !blockHas(artworkBlock, /justify-self\s*:\s*end/i) ||
+    !blockHas(artworkBlock, /width\s*:\s*min\(100%,\s*620px\)/i) ||
+    !blockHas(artworkBlock, /max-height\s*:\s*min\(72vh,\s*760px\)/i) ||
+    !blockHas(artworkBlock, /object-fit\s*:\s*contain/i) ||
+    !blockHas(artworkBlock, /filter\s*:\s*drop-shadow/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must use the compact logo card or the new front-panel hero layout`);
+    fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must be a single integrated image slot`);
     homepageHeroOk = false;
   }
   if (
@@ -463,7 +443,7 @@ if (!wikiCss) {
     homepageHeroOk = false;
   }
 }
-if (homepageHeroOk) pass('Homepage uses the full-width SWARMSY glowing card/font system without the old hero image');
+if (homepageHeroOk) pass('Homepage uses the split copy-and-artwork hero with one visible image slot');
 
 console.log('\n[8] SWARMSY component classes keep their global styling contract');
 let swarmsyComponentsOk = true;
