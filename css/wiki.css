@@ -3786,12 +3786,6 @@ body.page-home .hero-stat {
   }
 }
 
-@media (min-width: 1200px) {
-  body.page-home .home-hero-right-note-line {
-    white-space: nowrap;
-  }
-}
-
 body.page-home .stat-num,
 body.page-home .swarmsy-info-header,
 body.page-home .section-heading {
