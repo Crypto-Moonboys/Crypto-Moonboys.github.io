@@ -3529,17 +3529,6 @@ body.page-home .home-hero-right-note-line {
   white-space: normal;
 }
 
-body.page-home .home-hero-right-note-mantra {
-  color: var(--color-accent);
-  font-family: var(--font-display);
-  font-size: clamp(0.92rem, 1.06vw, 1.12rem);
-  line-height: 1.08;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-weight: 700;
-  text-shadow: 0 0 18px rgba(247, 201, 72, 0.18), 0 0 26px rgba(0, 0, 0, 0.16);
-}
-
 body.page-home .hud-hero-logo-wrap {
   position: relative;
   z-index: 1;
@@ -3731,11 +3720,6 @@ body.page-home .hero-stat {
     white-space: normal;
     font-size: 0.96rem;
     line-height: 1.08;
-  }
-
-  body.page-home .home-hero-right-note-mantra {
-    font-size: 1rem;
-    letter-spacing: 0.05em;
   }
 
   body.page-home .launch-cta-row,
