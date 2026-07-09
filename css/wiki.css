@@ -1292,7 +1292,7 @@ th {
 .home-hero,
 .launch-hero {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .home-hero > :not(.swarmsy-hero-bg) {
@@ -3382,7 +3382,7 @@ body.page-home .launch-hero {
   position: relative;
   display: flex;
   flex-direction: row;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
   max-width: none;
   margin: 0;
@@ -3410,6 +3410,7 @@ body.page-home .home-hero-right img {
   display: block;
   width: 100%;
   height: auto;
+  object-fit: contain;
 }
 
 body.page-home .home-hero-right {
@@ -3570,11 +3571,18 @@ body.page-home .hero-stat {
   }
 
   body.page-home .home-hero-inner {
+    position: static;
+    inset: auto;
+    order: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     max-width: none;
     padding: clamp(26px, 8vw, 42px) clamp(22px, 6vw, 34px) clamp(24px, 7vw, 42px);
+  }
+
+  body.page-home .home-hero-left-art {
+    order: 0;
   }
 
   body.page-home .home-hero-copy {
