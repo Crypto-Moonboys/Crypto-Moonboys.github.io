@@ -416,7 +416,7 @@ if (!wikiCss) {
   }
   if (
     !blockHas(innerBlock, /display\s*:\s*flex/i) ||
-    !blockHas(innerBlock, /z-index\s*:\s*2/i) ||
+    !blockHas(innerBlock, /z-index\s*:\s*[23]/i) ||
     !blockHas(titleBlock, /font-family\s*:\s*var\(--font-display\)/i) ||
     !blockHas(titleBlock, /text-shadow\s*:/i)
   ) {
