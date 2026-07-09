@@ -3552,7 +3552,7 @@ body.page-home .hero-stat {
   padding: 16px 18px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   body.page-home .home-hero,
   body.page-home .launch-hero {
     flex-direction: column;
@@ -3565,7 +3565,7 @@ body.page-home .hero-stat {
     width: 100%;
   }
 
-  /* Art-heavy right image shows first on mobile */
+  /* Art-heavy right image shows first on mobile/tablet */
   body.page-home .home-hero-right {
     order: -1;
   }
