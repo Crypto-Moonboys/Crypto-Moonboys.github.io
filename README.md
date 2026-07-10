@@ -41,7 +41,7 @@ This repository should track only live routes, wired runtime systems, and active
 
 - Score writes require fresh signed Telegram auth.
 - Arcade XP is server-side progression after Telegram sync.
-- Block Topia entry requires a Telegram-linked account and at least 50 Arcade XP.
+- Block Topia entry requires a Telegram-linked account and at least 5000 Arcade XP.
 - The authoritative gate value comes from `/blocktopia/progression` and is configured in `workers/moonboys-api/blocktopia/config.js`.
 
 ## Frontend API + Telegram Auth Contract
