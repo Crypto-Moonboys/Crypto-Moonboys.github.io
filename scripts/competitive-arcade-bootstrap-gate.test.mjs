@@ -109,6 +109,43 @@ async function loadMountGame({ gateResult }) {
   assert.equal(typeof result.getScore, 'function', 'successful mountGame result should be the lifecycle object');
 }
 
+{
+  let resolveGate;
+  const { mountGame, Element } = await loadMountGame({
+    gateResult: new Promise((resolve) => {
+      resolveGate = resolve;
+    }),
+  });
+  let bootstrapped = 0;
+  let initCalled = 0;
+  const root = new Element();
+  const mountPromise = mountGame({
+    root,
+    requireCompetitiveGate: true,
+    gameId: 'snake-run',
+    bootstrap() {
+      bootstrapped += 1;
+      return {
+        async init() { initCalled += 1; },
+        start() {},
+        pause() {},
+        resume() {},
+        reset() {},
+        destroy() {},
+        getScore() { return 0; },
+      };
+    },
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(bootstrapped, 0, 'mountGame must wait for server verification before bootstrap');
+  assert.equal(initCalled, 0, 'mountGame must not initialize gameplay before server verification resolves');
+  resolveGate({ ok: true, game_id: 'snake-run', telegram_auth: { id: '123', hash: 'signed', auth_date: '1700000000' } });
+  await mountPromise;
+  assert.equal(bootstrapped, 1, 'mountGame should bootstrap only after server verification passes');
+  assert.equal(initCalled, 1, 'mountGame should initialize only after server verification passes');
+}
+
 for (const [gameId, relPath] of ACTIVE_PAGES) {
   const html = await fs.readFile(path.join(ROOT, relPath), 'utf8');
   assert(

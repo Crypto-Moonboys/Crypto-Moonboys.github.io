@@ -74,6 +74,7 @@ function createLocalStorage(seed = {}) {
 async function bootstrapIdentity({ storageSeed, fetchImpl }) {
   const { document, byId } = createDomStub();
   const localStorage = createLocalStorage(storageSeed);
+  const fetchCalls = [];
   const windowObj = {
     MOONBOYS_API: { BASE_URL: 'https://api.example.test' },
   };
@@ -81,7 +82,10 @@ async function bootstrapIdentity({ storageSeed, fetchImpl }) {
     window: windowObj,
     document,
     localStorage,
-    fetch: fetchImpl,
+    fetch: async function (...args) {
+      fetchCalls.push(args);
+      return fetchImpl(...args);
+    },
     CustomEvent: class CustomEvent {
       constructor(type, init = {}) {
         this.type = type;
@@ -94,7 +98,7 @@ async function bootstrapIdentity({ storageSeed, fetchImpl }) {
   };
   context.globalThis = context;
   vm.runInNewContext(source, context, { filename: 'js/identity-gate.js' });
-  return { api: windowObj.MOONBOYS_IDENTITY, byId, windowObj };
+  return { api: windowObj.MOONBOYS_IDENTITY, byId, windowObj, fetchCalls };
 }
 
 async function waitTick() {
@@ -343,39 +347,87 @@ async function waitTick() {
   assert.ok(byId.get('tg-sync-gate-modal'), 'Telegram-only identity should render the activation modal');
 }
 
-// expired/unrestorable signed auth is blocked
+// fabricated localStorage identity cannot bypass server verification
 {
   const { api, byId } = await bootstrapIdentity({
     storageSeed: {
       moonboys_tg_id: '123',
       moonboys_tg_linked: '1',
-      moonboys_tg_auth: JSON.stringify({ id: '123', hash: 'signed', auth_date: '1' }),
+      moonboys_tg_auth: JSON.stringify({ id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) }),
     },
     fetchImpl: async () => ({
       ok: true,
-      json: async () => ({ linked: true, telegram_id: '123' }),
+      json: async () => ({ linked: false, telegram_id: null, error: 'not_linked' }),
     }),
   });
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'crystal-quest' });
-  assert.equal(result.ok, false, 'expired auth must block competitive route access');
-  assert.equal(result.reason, 'auth_restore_failed', 'expired auth without restorable payload must fail closed');
-  assert.ok(byId.get('tg-sync-gate-modal'), 'expired auth should render the Telegram activation modal');
+  assert.equal(result.ok, false, 'fabricated local identity must not pass competitive route access');
+  assert.equal(result.reason, 'not_linked', 'fabricated local identity should fail as not_linked when the server cannot confirm /gklink');
+  assert.ok(byId.get('tg-sync-gate-modal'), 'fabricated local identity should render the Telegram activation modal');
 }
 
-// linked fresh auth is allowed immediately
+// fresh local auth with failed server verification is still blocked
 {
   const freshAuth = { id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) };
-  const { api } = await bootstrapIdentity({
+  const { api, byId } = await bootstrapIdentity({
     storageSeed: {
       moonboys_tg_id: '123',
       moonboys_tg_linked: '1',
       moonboys_tg_auth: JSON.stringify(freshAuth),
     },
-    fetchImpl: async () => ({ ok: true, json: async () => ({}) }),
+    fetchImpl: async () => ({ ok: true, json: async () => ({ linked: true, telegram_id: '123' }) }),
   });
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'invaders-3008' });
-  assert.equal(result.ok, true, 'linked fresh-auth user must be allowed through the competitive route gate');
-  assert.equal(result.telegram_auth && result.telegram_auth.id, '123', 'allowed route should return the fresh signed auth payload');
+  assert.equal(result.ok, false, 'missing server-restored signed auth must still block the competitive route gate');
+  assert.equal(result.reason, 'auth_restore_failed', 'missing server-restored signed auth must fail closed');
+  assert.ok(byId.get('tg-sync-gate-modal'), 'failed server verification should render the Telegram activation modal');
+}
+
+// network/preflight failure blocks gameplay
+{
+  const freshAuth = { id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) };
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+      moonboys_tg_auth: JSON.stringify(freshAuth),
+    },
+    fetchImpl: async () => {
+      throw new Error('network_down');
+    },
+  });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'invaders-3008' });
+  assert.equal(result.ok, false, 'preflight network failure must block gameplay');
+  assert.equal(result.reason, 'auth_restore_failed', 'preflight network failure must fail closed');
+  assert.ok(byId.get('tg-sync-gate-modal'), 'preflight network failure should render the Telegram activation modal');
+}
+
+// linked fresh auth is allowed only after server verification
+{
+  const freshAuth = { id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) };
+  const { api, fetchCalls } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+      moonboys_tg_auth: JSON.stringify(freshAuth),
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        linked: true,
+        telegram_id: '123',
+        telegram_auth: freshAuth,
+        anticheat: { is_blocked: false },
+      }),
+    }),
+  });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'invaders-3008' });
+  assert.equal(result.ok, true, 'server-verified linked fresh-auth user must be allowed through the competitive route gate');
+  assert.equal(result.telegram_auth && result.telegram_auth.id, '123', 'allowed route should return the server-verified signed auth payload');
+  assert.equal(result.verified_by_server, true, 'allowed route should be marked as server-verified');
+  assert.equal(fetchCalls.length, 1, 'competitive route gate must always hit the server preflight');
+  const requestBody = JSON.parse(fetchCalls[0][1].body);
+  assert.equal(requestBody.force, true, 'competitive route gate must force server-side verification');
 }
 
 console.log('Identity gate auth guard regression checks passed.');
