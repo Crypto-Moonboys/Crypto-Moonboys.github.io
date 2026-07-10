@@ -3958,12 +3958,43 @@ body.page-home .home-ai-bridge-end {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.page-home .home-ai-bridge::before,
-  body.page-home .home-ai-bridge::after,
-  body.page-home .home-ai-bridge-orbit,
-  body.page-home .home-ai-bridge-particles,
-  body.page-home .home-ai-bridge-noise::before,
-  body.page-home .home-ai-bridge-noise::after,
+  body.page-home .home-ai-bridge::before {
+    animation: none;
+    opacity: 0.34;
+    transform: none;
+  }
+
+  body.page-home .home-ai-bridge::after {
+    animation: none;
+    opacity: 0.26;
+    transform: none;
+  }
+
+  body.page-home .home-ai-bridge-orbit {
+    animation: none;
+    opacity: 0.34;
+    transform: none;
+  }
+
+  body.page-home .home-ai-bridge-particles {
+    animation: none;
+    opacity: 0.22;
+    transform: none;
+  }
+
+  body.page-home .home-ai-bridge-noise::before {
+    animation: none;
+    opacity: 0.035;
+    transform: none;
+  }
+
+  body.page-home .home-ai-bridge-noise::after {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+
+  body.page-home .home-ai-bridge-stage,
   body.page-home .home-ai-bridge-step,
   body.page-home .home-ai-bridge-connector,
   body.page-home .home-ai-bridge h2,
