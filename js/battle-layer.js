@@ -687,7 +687,7 @@
         },
         {
           tag: 'Block Topia Gate',
-          text: 'Reach 50 Arcade XP and link Telegram to unlock Block Topia Multiplayer.',
+          text: 'Reach 5000 Arcade XP and link Telegram to unlock Block Topia Multiplayer.',
           href: '/games/block-topia/',
           local: false
         },
