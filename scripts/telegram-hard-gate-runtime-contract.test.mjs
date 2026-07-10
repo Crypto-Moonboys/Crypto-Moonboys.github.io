@@ -19,7 +19,10 @@ console.log('\n--- Telegram Hard-Gate Runtime Contract ---\n');
 
 check(identityGate.includes('requireLinkedAccount'), 'shared identity gate exposes linked-account enforcement');
 check(identityGate.includes('getFreshTelegramAuth'), 'shared identity gate exposes fresh Telegram auth restoration');
-check(leaderboardClient.includes('if (!linked)'), 'score submission rejects unlinked identity');
+check(
+  leaderboardClient.includes('Log in with Telegram to save scores and earn XP.'),
+  'score submission rejects unlinked identity'
+);
 check(leaderboardClient.includes('Fresh Telegram auth is required to save scores and earn XP.'), 'score submission rejects missing or expired signed auth');
 check(!gamesIndex.includes('browser-local/pending'), 'Arcade hub rejects browser-local pending-run copy');
 check(!gamesIndex.includes('Local runs stay pending'), 'Arcade hub rejects local pending-run copy');

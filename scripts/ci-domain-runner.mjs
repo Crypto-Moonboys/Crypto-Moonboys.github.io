@@ -57,6 +57,7 @@ const GROUPS = {
     ['node', 'scripts/blocktopia-movement-hardening.test.mjs'],
     ['node', 'scripts/identity-gate-auth-guard.test.mjs'],
     ['node', 'scripts/leaderboard-client-regression.test.mjs'],
+    ['node', 'scripts/telegram-hard-gate-runtime-contract.test.mjs'],
     ['node', 'scripts/how-to-play-xp-copy.test.mjs'],
     ['node', 'scripts/ui-timer-ownership.test.mjs'],
     ['node', 'scripts/faction-canon-protection.test.mjs'],
