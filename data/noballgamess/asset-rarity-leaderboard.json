@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-09T06:58:22.107Z",
+  "generated_at": "2026-07-10T06:58:03.170Z",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "asset_ranking_enabled": true,
@@ -16972,7 +16972,7 @@
     {
       "asset_id": "1099636335028",
       "template_id": 438904,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 9,
       "template_final_score": 55.0349,
       "template_score_component": 33.0209,
@@ -35494,7 +35494,7 @@
     {
       "asset_id": "1099638226039",
       "template_id": 435457,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 46.2675,
       "template_score_component": 27.7605,
@@ -44167,7 +44167,7 @@
     {
       "asset_id": "1099808713627",
       "template_id": 435457,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 46.2675,
       "template_score_component": 27.7605,
@@ -44608,7 +44608,7 @@
     {
       "asset_id": "1099808713630",
       "template_id": 435457,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 46.2675,
       "template_score_component": 27.7605,
@@ -53820,7 +53820,7 @@
     {
       "asset_id": "1099833514263",
       "template_id": 435457,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 46.2675,
       "template_score_component": 27.7605,
@@ -53918,7 +53918,7 @@
     {
       "asset_id": "1099636414868",
       "template_id": 438904,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 9,
       "template_final_score": 55.0349,
       "template_score_component": 33.0209,
@@ -54114,7 +54114,7 @@
     {
       "asset_id": "1099636414869",
       "template_id": 438904,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 9,
       "template_final_score": 55.0349,
       "template_score_component": 33.0209,
@@ -55682,7 +55682,7 @@
     {
       "asset_id": "1099636424599",
       "template_id": 438904,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 9,
       "template_final_score": 55.0349,
       "template_score_component": 33.0209,
@@ -56564,7 +56564,7 @@
     {
       "asset_id": "1099833514283",
       "template_id": 435457,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 46.2675,
       "template_score_component": 27.7605,
@@ -74988,7 +74988,7 @@
     {
       "asset_id": "1099595973428",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -75674,7 +75674,7 @@
     {
       "asset_id": "1099595973433",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -83661,7 +83661,7 @@
     {
       "asset_id": "1099595973494",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -86160,7 +86160,7 @@
     {
       "asset_id": "1099595973513",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -86209,7 +86209,7 @@
     {
       "asset_id": "1099595990827",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -86454,7 +86454,7 @@
     {
       "asset_id": "1099597727754",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -90423,7 +90423,7 @@
     {
       "asset_id": "1099595973928",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -96205,7 +96205,7 @@
     {
       "asset_id": "1099597727829",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -104584,7 +104584,7 @@
     {
       "asset_id": "1099595975275",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -109141,7 +109141,7 @@
     {
       "asset_id": "1099595975310",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -113257,7 +113257,7 @@
     {
       "asset_id": "1099595975594",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -129182,7 +129182,7 @@
     {
       "asset_id": "1099598049330",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -129623,7 +129623,7 @@
     {
       "asset_id": "1099598049334",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -136532,7 +136532,7 @@
     {
       "asset_id": "1099598056896",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -150301,7 +150301,7 @@
     {
       "asset_id": "1099598057053",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -159317,7 +159317,7 @@
     {
       "asset_id": "1099598057181",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -159415,7 +159415,7 @@
     {
       "asset_id": "1099598057182",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -159513,7 +159513,7 @@
     {
       "asset_id": "1099598057183",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -159611,7 +159611,7 @@
     {
       "asset_id": "1099598057184",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -159807,7 +159807,7 @@
     {
       "asset_id": "1099598057186",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -159905,7 +159905,7 @@
     {
       "asset_id": "1099598057187",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -160003,7 +160003,7 @@
     {
       "asset_id": "1099598057188",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -172204,7 +172204,7 @@
     {
       "asset_id": "1099602912785",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -180485,7 +180485,7 @@
     {
       "asset_id": "1099602911282",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -180730,7 +180730,7 @@
     {
       "asset_id": "1099620811636",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -184209,7 +184209,7 @@
     {
       "asset_id": "1099629290456",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -192245,7 +192245,7 @@
     {
       "asset_id": "1099629290538",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -192931,7 +192931,7 @@
     {
       "asset_id": "1099629290545",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -202682,7 +202682,7 @@
     {
       "asset_id": "1099852896310",
       "template_id": 401910,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -203613,7 +203613,7 @@
     {
       "asset_id": "1099833514954",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -205083,7 +205083,7 @@
     {
       "asset_id": "1099833514969",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -205867,7 +205867,7 @@
     {
       "asset_id": "1099870386140",
       "template_id": 401911,
-      "owner": "wdluo.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
