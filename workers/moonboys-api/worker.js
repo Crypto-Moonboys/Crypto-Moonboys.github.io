@@ -1,4 +1,4 @@
-import { GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
+import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
@@ -5165,7 +5165,6 @@ export default {
           `SELECT xp, gems, tier FROM blocktopia_progression WHERE telegram_id = ? LIMIT 1`
         ).bind(telegramId).first().catch(() => null);
 
-        const BLOCKTOPIA_REQUIRED_XP = 50;
         const arcadeXpTotal = Math.max(0, Math.floor(Number(arcadeState?.arcade_xp_total) || 0));
 
         const gameMastery = {};
@@ -5198,8 +5197,8 @@ export default {
           faction: normalizedFaction,
           faction_rank: faction?.role || null,
           blocktopia: {
-            required_xp: BLOCKTOPIA_REQUIRED_XP,
-            can_enter_multiplayer: arcadeXpTotal >= BLOCKTOPIA_REQUIRED_XP,
+            required_xp: BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP,
+            can_enter_multiplayer: arcadeXpTotal >= BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP,
             xp: blocktopiaState ? Math.max(0, Math.floor(Number(blocktopiaState.xp) || 0)) : 0,
           },
           modifiers: modState ? {

@@ -7,7 +7,7 @@ export const GEMS_MAX = 10000;
 export const TIER_MIN = 1;
 export const TIER_MAX = 50;
 
-export const BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 50;
+export const BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 5000;
 
 export const BLOCKTOPIA_RATE_LIMIT_PER_MIN = 20;
 export const BLOCKTOPIA_DRAIN_BASE_PER_MINUTE = 5;

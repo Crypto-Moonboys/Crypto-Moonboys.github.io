@@ -91,7 +91,7 @@ function extractFunction(source, name) {
 
 let currentFetch = async () => ({ ok: false, json: async () => ({}) });
 const makeValidatedEntryHarness = new Function('callFetch', `
-  const BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 50;
+  const BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 5000;
   const PROGRESSION_FETCH_TIMEOUT_MS = 1000;
   const fetch = (...args) => callFetch(...args);
   function resolveApiBase() { return 'https://moonboys-api.test'; }
@@ -104,7 +104,7 @@ const validAuth = { id: '123', auth_date: Math.floor(Date.now() / 1000), hash: '
 let requestedBody = null;
 currentFetch = async (_url, options = {}) => {
   requestedBody = JSON.parse(String(options.body || '{}'));
-  return { ok: true, json: async () => ({ ok: true, progression: { arcade_xp_total: 50 } }) };
+  return { ok: true, json: async () => ({ ok: true, progression: { arcade_xp_total: 5000 } }) };
 };
 assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: true }, 'Telegram-linked user with required XP should enter Block Topia');
 assert.deepEqual(requestedBody.telegram_auth, validAuth, 'server progression check must receive the expected Telegram auth payload');

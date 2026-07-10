@@ -43,6 +43,10 @@ check(howToPlay.includes('Unlinked users cannot enter the competitive Arcade'), 
 check(howToPlay.includes('dedupe, caps, anti-farm checks, and final Arcade XP awards are decided'), 'manual documents server authority and anti-farm checks');
 check(howToPlay.includes('No unlinked Arcade XP is earned or retained.'), 'manual states no unlinked XP is earned or retained');
 check(howToPlay.includes('5000 Arcade XP'), 'manual documents Block Topia 5000 Arcade XP gate');
+check(!howToPlay.includes('runs stay browser-local/pending'), 'how-to-play rejects local/pending unlinked run copy');
+check(!howToPlay.includes('not final XP authority'), 'how-to-play rejects old local roguelite XP authority copy');
+check(!howToPlay.includes('play freely'), 'how-to-play rejects play-before-link copy');
+check(!/50 Arcade XP/i.test(howToPlay), 'how-to-play never references 50 XP gate');
 
 check(gamesIndex.includes('All active games feed the shared submit path.'), 'games hub documents shared submit path');
 check(gamesIndex.includes('Unlinked runs can stay browser-local/pending'), 'games hub documents unlinked pending state');
