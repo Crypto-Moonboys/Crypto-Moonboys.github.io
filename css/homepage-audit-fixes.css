@@ -1,0 +1,158 @@
+/* Homepage audit fixes: clear primary actions, reliable fallback content, and mobile CTA repair. */
+
+body.page-home .home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: clamp(18px, 2vw, 26px);
+}
+
+body.page-home .home-hero-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  color: var(--color-text);
+  background: rgba(7, 11, 18, 0.78);
+  border: 1px solid rgba(86, 220, 255, 0.42);
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+body.page-home .home-hero-action--primary {
+  color: #050607;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+body.page-home .home-hero-action:hover,
+body.page-home .home-hero-action:focus-visible {
+  color: var(--color-text);
+  background: rgba(86, 220, 255, 0.12);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+body.page-home .home-hero-action--primary:hover,
+body.page-home .home-hero-action--primary:focus-visible {
+  color: #050607;
+  background: #ffe07a;
+}
+
+body.page-home .home-hero-action:focus-visible,
+body.page-home .home-ai-bridge-toggle:focus-visible {
+  outline: 2px solid rgba(247, 201, 72, 0.9);
+  outline-offset: 3px;
+}
+
+/* Visible by default so no-JavaScript users receive the section content. */
+body.page-home .home-ai-bridge-static {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.6vh, 16px);
+  min-height: clamp(520px, 70vh, 860px);
+  padding: clamp(56px, 7vw, 96px) clamp(20px, 5vw, 64px);
+  text-align: center;
+}
+
+body.page-home .home-ai-bridge-static p {
+  margin: 0;
+  color: rgba(236, 243, 250, 0.9);
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body.page-home .home-ai-bridge-static .home-ai-bridge-identity {
+  color: #f7c948;
+  font-size: clamp(2.2rem, 6.5vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: 0.06em;
+}
+
+body.page-home .home-ai-bridge-static .home-ai-bridge-tagline {
+  color: rgba(247, 201, 72, 0.78);
+  font-size: clamp(0.82rem, 1.4vw, 1.05rem);
+  letter-spacing: 0.26em;
+}
+
+/* Keep the fallback available to assistive technology while the canvas is active. */
+body.page-home .home-ai-bridge.is-animated .home-ai-bridge-static {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+body.page-home .home-ai-bridge-toggle {
+  position: absolute;
+  right: clamp(12px, 2vw, 24px);
+  bottom: clamp(12px, 2vw, 24px);
+  z-index: 5;
+  min-height: 40px;
+  padding: 8px 12px;
+  color: var(--color-text);
+  background: rgba(7, 11, 18, 0.9);
+  border: 1px solid rgba(247, 201, 72, 0.5);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* wiki.css declares a later <=1100px two-column rule; restore the intended phone/tablet layout. */
+@media (max-width: 900px) {
+  body.page-home .home-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  body.page-home .home-hero-action {
+    width: 100%;
+  }
+
+  body.page-home .launch-cta-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-home .home-hero-action,
+  body.page-home .home-hero-action:hover,
+  body.page-home .home-hero-action:focus-visible {
+    transform: none;
+    transition: none;
+  }
+
+  body.page-home .home-ai-bridge.is-animated .home-ai-bridge-static {
+    position: static;
+    width: auto;
+    height: auto;
+    min-height: clamp(520px, 70vh, 860px);
+    margin: 0;
+    padding: clamp(56px, 7vw, 96px) clamp(20px, 5vw, 64px);
+    overflow: visible;
+    white-space: normal;
+    clip-path: none;
+  }
+
+  body.page-home .home-ai-bridge-toggle {
+    display: none;
+  }
+}
