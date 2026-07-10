@@ -7,7 +7,7 @@ The community builds on top.
 Before the wallet, there was the wall.
 The wiki is alive.
 
-Get Your 1/1 Moonboy -> Community / Battle Chamber -> Link Telegram Identity -> Choose a Faction -> Complete Live Battle Chamber Missions -> Play the Arcade -> Earn Server-Backed XP
+Get Your 1/1 Moonboy -> Community / Battle Chamber -> Link Telegram Identity -> Choose a Faction -> Complete Live Missions -> Play the Arcade -> Earn Server-Backed XP + Eligible NFT Drops -> Burn / Evolve -> Forge a Unique 1/1 Moonboy
 
 This repository is the live website repo for the project, including the wiki, arcade, shared frontend assets, and the active Block Topia runtime.
 
@@ -66,15 +66,17 @@ Telegram identity is a hard prerequisite for the competitive ecosystem:
 
 ## Progression Tracks
 
-After identity, faction, and Battle Chamber entry, progression splits into two connected tracks.
+Once identity and faction onboarding are active, both tracks open. The Creator Track begins immediately and runs in parallel with the Player Track — it does not wait for Block Topia.
 
 **Player Track (Live)**
 
 Battle Chamber missions + Arcade activity → server-backed XP → faction clout/progression → 5000 Arcade XP → Block Topia public beta
 
-**Creator Track (Coming Soon)**
+**Creator Track (SWARMSY Live / Forge Pipeline Coming Soon)**
 
-Eligible NFT drops → 3-NFT limit per Telegram account → burn/evolve → forge a unique 1/1 Moonboy → build its website, lore, media, games, merchandise and community using SWARMSY → submit approved creator-world links → dedicated Living Wiki Moonboy page plus connected subpages → SAM indexes and connects the creator world → future persistent 24/7 Block Topia NPC identity with spine, skills, memory, relationships, faction history and lore continuity
+SWARMSY is live now: begin building website, lore, media, games, merchandise and community as soon as identity and faction are active → the future forged 1/1 Moonboy anchors the creator world → approved creator-world links connect into dedicated Living Wiki pages and subpages → SAM indexes and connects the creator world → future persistent 24/7 Block Topia NPC identity with spine, skills, memory, relationships, faction history and lore continuity
+
+Coming soon: eligible NFT drops → 3-NFT limit per Telegram account → burn/evolve → forge a unique 1/1 Moonboy → creator/IP layer → dedicated Wiki pipeline → NPC integration
 
 ## Status Truth
 
