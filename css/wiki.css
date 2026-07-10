@@ -4084,6 +4084,52 @@ body.page-home .home-system-panel .launch-route {
   box-shadow: none;
 }
 
+body.page-home .launch-route-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 255, 204, 0.18);
+}
+
+body.page-home .launch-route-cta span {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: clamp(0.72rem, 0.9vw, 0.92rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+body.page-home .launch-route-how {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 255, 204, 0.18);
+}
+
+body.page-home .launch-route-how-title {
+  color: var(--color-accent);
+  font-weight: 800;
+  font-size: clamp(0.72rem, 0.9vw, 0.92rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+body.page-home .launch-route-how .launch-route-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.page-home .route-arrow {
+  display: block;
+  text-align: center;
+  color: rgba(0, 255, 204, 0.5);
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
 body.page-home .category-grid,
 body.page-home .article-grid {
   margin-right: clamp(20px, 3vw, 48px);
