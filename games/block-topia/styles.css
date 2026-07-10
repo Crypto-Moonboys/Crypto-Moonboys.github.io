@@ -42,12 +42,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background-image: url('/img/game/backgrounds/BLOCK%20TOPIA%20CRYPTO%20MOONBOYS%20SERVER.jpg');
+  justify-content: flex-start;
+  background-image: url('/img/game/backgrounds/block-topia-metaverse-portal.jpg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  overflow: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   text-align: center;
 }
 
@@ -119,41 +120,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 24px 64px;
+  padding: 40px 24px 56px;
   width: 100%;
   max-width: 720px;
-}
-
-/* ── Header ── */
-
-.bt-gate__logo {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: clamp(2.6rem, 8vw, 5.5rem);
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  color: #ffffff;
-  text-transform: uppercase;
-  text-shadow:
-    0 0 28px rgba(110, 190, 255, 0.85),
-    0 0 56px rgba(80, 150, 255, 0.50),
-    0 3px 6px rgba(0, 0, 0, 0.95);
-  margin-bottom: 10px;
-  animation: btTitleGlow 3.5s ease-in-out infinite alternate;
-}
-
-@keyframes btTitleGlow {
-  0%   { text-shadow: 0 0 28px rgba(110,190,255,0.85), 0 0 56px rgba(80,150,255,0.50), 0 3px 6px rgba(0,0,0,0.95); }
-  100% { text-shadow: 0 0 40px rgba(150,210,255,1.00), 0 0 80px rgba(110,180,255,0.70), 0 3px 6px rgba(0,0,0,0.95); }
-}
-
-.bt-gate__subtitle {
-  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
-  font-weight: 600;
-  letter-spacing: 0.40em;
-  text-transform: uppercase;
-  color: rgba(170, 205, 255, 0.90);
-  margin-bottom: 52px;
-  text-shadow: 0 0 14px rgba(100, 160, 255, 0.50);
 }
 
 /* ── Checking spinner ── */
@@ -171,12 +140,6 @@ body {
 }
 
 /* ── XP-locked gate ── */
-
-.bt-gate__lock-badge {
-  font-size: 2.4rem;
-  margin-bottom: 14px;
-  filter: drop-shadow(0 0 14px rgba(255, 210, 80, 0.85));
-}
 
 .bt-gate__xp-required {
   font-size: clamp(1.15rem, 4vw, 1.75rem);
@@ -300,18 +263,6 @@ body {
 
 /* ── Unlocked / Enter state ── */
 
-.bt-gate__unlocked-badge {
-  font-size: 3.2rem;
-  margin-bottom: 18px;
-  filter: drop-shadow(0 0 22px rgba(80, 255, 150, 0.90));
-  animation: btUnlockPulse 2.2s ease-in-out infinite;
-}
-
-@keyframes btUnlockPulse {
-  0%, 100% { transform: scale(1.00); filter: drop-shadow(0 0 22px rgba(80,255,150,0.90)); }
-  50%       { transform: scale(1.08); filter: drop-shadow(0 0 34px rgba(130,255,190,1.00)); }
-}
-
 .bt-gate__btn--enter {
   background: linear-gradient(135deg, #00b858, #00ff90);
   color: #001c0e;
@@ -351,4 +302,79 @@ body {
   text-transform: uppercase;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.90);
   margin: 0 0 28px;
+}
+
+/* ── Compact-height: phone landscape and short desktop windows ── */
+/* Covers: 667×375, 740×360, 844×390, 1024×600 and similar short viewports. */
+
+@media (max-height: 600px) {
+  .bt-gate__inner {
+    padding: 20px 20px 36px;
+  }
+
+  .bt-gate__xp-required {
+    font-size: clamp(1rem, 3.5vw, 1.35rem);
+    margin-bottom: 12px;
+  }
+
+  .bt-gate__xp-current {
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+  }
+
+  .bt-gate__xp-bar-wrap {
+    margin-bottom: 20px;
+  }
+
+  .bt-gate__actions {
+    gap: 10px;
+  }
+
+  .bt-gate__btn {
+    padding: 10px 22px;
+    font-size: 0.82rem;
+  }
+
+  .bt-gate__btn--enter {
+    font-size: 0.95rem;
+    padding: 12px 36px;
+  }
+
+  .bt-gate__gate-heading {
+    font-size: 1rem;
+    margin: 0 0 18px;
+  }
+
+  .bt-gate__checking {
+    font-size: 0.80rem;
+  }
+}
+
+@media (max-height: 420px) {
+  .bt-gate__inner {
+    padding: 12px 16px 24px;
+  }
+
+  .bt-gate__xp-bar-wrap {
+    margin-bottom: 14px;
+  }
+
+  .bt-gate__actions {
+    gap: 8px;
+  }
+}
+
+/* ── Reduced-motion: disable all looping animations ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-gate__fog,
+  .bt-gate__checking,
+  .bt-gate__btn--enter {
+    animation: none;
+  }
+
+  .bt-gate__btn,
+  .bt-gate__xp-bar {
+    transition: none;
+  }
 }

@@ -15,13 +15,9 @@
       <canvas id="bt-particles" aria-hidden="true"></canvas>
       <div class="bt-gate__fog" aria-hidden="true"></div>
       <div class="bt-gate__inner">
-        <div class="bt-gate__logo">BLOCK TOPIA</div>
-        <div class="bt-gate__subtitle">MULTIPLAYER CITY</div>
         <div id="bt-gate-content">
           <p class="bt-gate__checking">Checking access&hellip;</p>
         </div>
-        <!-- Status panel shown in the gate screen -->
-        <div id="bt-gate-status-panel" data-csp-panel style="margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto"></div>
       </div>
     </div>
 
@@ -79,6 +75,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Shared site-shell connection-status-panel hook — outside the gate overlay -->
+    <div data-csp-panel style="position:fixed;bottom:0;right:0;z-index:100;max-width:320px;pointer-events:none"></div>
 
     <script src="/js/api-config.js"></script>
     <script src="/js/identity-gate.js"></script>
@@ -158,14 +157,10 @@
 
       function buildUnlinkedGate() {
         return `
-          <div class="bt-gate__gate-icon" aria-hidden="true">🔒</div>
           <div class="bt-gate__gate-heading">TELEGRAM LINK REQUIRED</div>
           <div class="bt-gate__actions">
             <a class="bt-gate__btn bt-gate__btn--primary" href="/gkniftyheads-incubator.html">
               LINK TELEGRAM
-            </a>
-            <a class="bt-gate__btn bt-gate__btn--secondary" href="/games/invaders-3008/">
-              PLAY ARCADE
             </a>
           </div>`;
       }
@@ -174,11 +169,8 @@
         const pct = Math.min(100, Math.floor((current / required) * 100));
         const ariaXpNow = Math.min(required, Math.max(0, current));
         return `
-          <!-- server-accepted scores can convert into Arcade XP -->
-          <!-- accepted scores can become server-backed Arcade XP -->
-          <div class="bt-gate__lock-badge" aria-hidden="true">🔒</div>
           <div class="bt-gate__xp-required">${required.toLocaleString()} ARCADE XP REQUIRED</div>
-          <div class="bt-gate__xp-current">Current XP: ${current.toLocaleString()} / ${required.toLocaleString()}</div>
+          <div class="bt-gate__xp-current">${current.toLocaleString()} / ${required.toLocaleString()} XP</div>
           <div class="bt-gate__xp-bar-wrap" role="progressbar" aria-valuenow="${ariaXpNow}" aria-valuemin="0" aria-valuemax="${required}" aria-label="XP progress">
             <div class="bt-gate__xp-bar" style="width:${pct}%"></div>
           </div>
@@ -205,7 +197,6 @@
 
       function buildUnlockedGate() {
         return `
-          <div class="bt-gate__unlocked-badge" aria-hidden="true">⚡</div>
           <div class="bt-gate__actions">
             <button class="bt-gate__btn bt-gate__btn--enter" id="bt-enter-btn">
               ENTER BLOCK TOPIA
