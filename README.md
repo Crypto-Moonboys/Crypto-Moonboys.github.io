@@ -7,7 +7,7 @@ The community builds on top.
 Before the wallet, there was the wall.
 The wiki is alive.
 
-Read -> Play -> Earn XP -> Link -> Battle Chamber -> Block Topia -> Build
+Get Your 1/1 Moonboy -> Community / Battle Chamber -> Link Telegram Identity -> Choose a Faction -> Complete Live Missions -> Play the Arcade -> Earn Server-Backed XP + Eligible NFT Drops -> Burn / Evolve -> Forge a Unique 1/1 Moonboy
 
 This repository is the live website repo for the project, including the wiki, arcade, shared frontend assets, and the active Block Topia runtime.
 
@@ -50,20 +50,63 @@ This repository should track only live routes, wired runtime systems, and active
 
 - Score writes require fresh signed Telegram auth.
 - Arcade XP is server-side progression after Telegram sync.
-- Block Topia entry requires a Telegram-linked account and at least 50 Arcade XP.
+- Block Topia entry requires a Telegram-linked account and 5000 Arcade XP.
 - The authoritative gate value comes from `/blocktopia/progression` and is configured in `workers/moonboys-api/blocktopia/config.js`.
+
+## Target Public Contract
+
+Telegram identity is a hard prerequisite for the competitive ecosystem:
+
+- Unlinked users cannot enter the competitive Arcade.
+- No unlinked scores are submitted, saved, or calculated.
+- No unlinked Arcade XP is earned or retained.
+- No anonymous or hidden leaderboard exists.
+- Leaderboards represent Telegram-linked identities only.
+- Users must remain authenticated while grinding progression.
+
+## Progression Tracks
+
+Once identity and faction onboarding are active, both tracks open. The Creator Track begins immediately and runs in parallel with the Player Track — it does not wait for Block Topia.
+
+**Player Track (Live)**
+
+Battle Chamber missions + Arcade activity → server-backed XP → faction clout/progression → 5000 Arcade XP → Block Topia public beta
+
+**Creator Track (SWARMSY Live / Forge Pipeline Coming Soon)**
+
+SWARMSY is live now: begin building website, lore, media, games, merchandise and community as soon as identity and faction are active → the future forged 1/1 Moonboy anchors the creator world → approved creator-world links connect into dedicated Living Wiki pages and subpages → SAM indexes and connects the creator world → future persistent 24/7 Block Topia NPC identity with spine, skills, memory, relationships, faction history and lore continuity
+
+Coming soon: eligible NFT drops → 3-NFT limit per Telegram account → burn/evolve → forge a unique 1/1 Moonboy → creator/IP layer → dedicated Wiki pipeline → NPC integration
+
+## Status Truth
+
+**Live:**
+
+- SWARMSY, in its dedicated repository
+- Telegram identity link
+- Faction selection
+- Full Battle Chamber faction activity / missions / wars
+- Arcade and server-backed XP progression
+- Block Topia multiplayer survival/mission game server in public beta
+
+**Coming Soon:**
+
+- Eligible NFT drop and burn-to-forge creator pipeline
+- 1/1 Moonboy creator/IP layer
+- Dedicated creator-world Wiki page/subpage pipeline
+- Persistent 24/7 1/1 Moonboy NPC integration in Block Topia
 
 ## Frontend API + Telegram Auth Contract
 
 - `js/api-config.js` is the canonical frontend API source of truth for `MOONBOYS_API.BASE_URL`, `MOONBOYS_API.LEADERBOARD_URL`, runtime context detection, and production fallback policy.
 - Production fallback is allowed only on the live production hosts. Local/dev/preview contexts must provide explicit API config or stay read-only / pending.
 - Protected frontend writes must use fresh signed Telegram auth via `window.MOONBOYS_IDENTITY.getFreshTelegramAuth()` or the equivalent signed+restore path. Stale `getTelegramAuth()` cache alone is not proof of competitive write eligibility.
-- Anonymous and unsigned users can play locally, but score writes are rejected and no local leaderboard/progression queue is saved for later XP.
+- Anonymous and unsigned users are blocked from the competitive Arcade. Score writes are rejected, no unlinked scores are submitted or saved, and no local leaderboard or progression queue exists for later XP.
 - `ENV.BUILD_DATE` means an explicitly injected/static build timestamp only. Per-page-load timestamps must use `ENV.RUNTIME_LOADED_AT` and must not be shown as a build date.
 
 ## Block Topia Live Runtime
 
-`/games/block-topia/` is the current gated 2-player Colyseus survival/mission public beta.
+Block Topia is the live multiplayer survival/mission game server currently operating in public beta.
 
 Live now:
 
