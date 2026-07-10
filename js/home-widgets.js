@@ -1,26 +1,15 @@
 /**
  * Crypto Moonboys Wiki — Homepage Battle / Activity Widgets
  * ==========================================================
- * Renders five homepage widgets:
- *   #sam-status-widget    — SAM agent status
- *   #live-feed-widget     — recent site activity feed
- *   #leaderboard-widget   — top contributor leaderboard
- *   #activity-panel       — hot / trending pages
- *   #comments-teaser      — recent battle comments teaser
- *
- * All widgets are API-driven.  When BASE_URL is null or a feature flag is
- * false the widget renders a labelled placeholder — the page does NOT break.
- *
- * Config: js/api-config.js  →  window.MOONBOYS_API
+ * Renders five optional API-driven homepage widgets. Missing containers or
+ * disabled feature flags are treated as expected states and do not break the page.
  */
 (function () {
   'use strict';
 
-  var cfg      = window.MOONBOYS_API || {};
-  var BASE     = cfg.BASE_URL || null;
+  var cfg = window.MOONBOYS_API || {};
+  var BASE = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
-
-  // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
 
   function esc(str) {
     return String(str == null ? '' : str)
@@ -31,22 +20,17 @@
       .replace(/'/g, '&#39;');
   }
 
-  // ── Safe href: only allow relative paths and https:// URLs ──────────────
-
+  // Allow same-origin root-relative paths and absolute HTTPS URLs only.
   function safeHref(url) {
-    if (!url) return '#';
-    if (/^https?:\/\//i.test(url) || /^\//.test(url)) return esc(url);
+    var value = String(url || '').trim();
+    if (/^\/(?!\/)/.test(value) || /^https:\/\//i.test(value)) return esc(value);
     return '#';
   }
 
-  // ── Gravatar helper ──────────────────────────────────────────
-
   function avatarUrl(hash, size) {
-    return 'https://www.gravatar.com/avatar/' + (hash || '0') +
-           '?d=identicon&s=' + (size || 32);
+    var safeHash = /^[a-f0-9]{32}$/i.test(String(hash || '')) ? String(hash) : '0';
+    return 'https://www.gravatar.com/avatar/' + safeHash + '?d=identicon&s=' + (size || 32);
   }
-
-  // ── Generic placeholder renderer ────────────────────────────
 
   function placeholder(icon, text) {
     return '<div class="widget-placeholder">' +
@@ -54,8 +38,6 @@
       '<div class="widget-ph-text">' + text + '</div>' +
     '</div>';
   }
-
-  // ── SAM Status ───────────────────────────────────────────────
 
   function initSamStatus() {
     var el = document.getElementById('sam-status-widget');
@@ -81,7 +63,10 @@
     fetch(BASE + '/sam/status')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
-        if (!data) { el.innerHTML = '<div class="widget-error">SAM status unavailable</div>'; return; }
+        if (!data) {
+          el.innerHTML = '<div class="widget-error">SAM status unavailable</div>';
+          return;
+        }
         el.innerHTML =
           '<div class="sam-status-inner">' +
             '<div class="sam-status-icon" aria-hidden="true">🤖</div>' +
@@ -96,8 +81,6 @@
         el.innerHTML = '<div class="widget-error">SAM status unavailable</div>';
       });
   }
-
-  // ── Live Feed ────────────────────────────────────────────────
 
   function initLiveFeed() {
     var el = document.getElementById('live-feed-widget');
@@ -140,15 +123,13 @@
       });
   }
 
-  // ── Leaderboard ──────────────────────────────────────────────
-
   function initLeaderboard() {
     var el = document.getElementById('leaderboard-widget');
     if (!el) return;
 
     if (!BASE || !FEATURES.LEADERBOARD) {
-      el.innerHTML = '<div class="widget-unavailable"><p>Engagement leaderboard unavailable.</p>'
-        + '<a href="/games/leaderboard.html" class="swarmsy-action-card"><strong>Open arcade leaderboard</strong><span>View the full leaderboard route.</span></a></div>';
+      el.innerHTML = '<div class="widget-unavailable"><p>Engagement leaderboard unavailable.</p>' +
+        '<a href="/games/leaderboard.html" class="swarmsy-action-card"><strong>Open arcade leaderboard</strong><span>View the full leaderboard route.</span></a></div>';
       return;
     }
 
@@ -161,12 +142,12 @@
           el.innerHTML = '<div class="leaderboard-empty">No entries yet</div>';
           return;
         }
-        el.innerHTML = data.entries.map(function (e, i) {
+        el.innerHTML = data.entries.map(function (entry, index) {
           return '<div class="lb-row">' +
-            '<span class="lb-rank">' + (i + 1) + '</span>' +
-            '<img class="lb-avatar" src="' + esc(avatarUrl(e.email_hash, 32)) + '" alt="' + esc(e.name) + '" loading="lazy">' +
-            '<span class="lb-name">' + esc(e.name) + '</span>' +
-            '<span class="lb-score">' + esc(e.score) + ' pts</span>' +
+            '<span class="lb-rank">' + (index + 1) + '</span>' +
+            '<img class="lb-avatar" src="' + esc(avatarUrl(entry.email_hash, 32)) + '" alt="' + esc(entry.name) + '" loading="lazy">' +
+            '<span class="lb-name">' + esc(entry.name) + '</span>' +
+            '<span class="lb-score">' + esc(entry.score) + ' pts</span>' +
           '</div>';
         }).join('');
       })
@@ -174,8 +155,6 @@
         el.innerHTML = '<div class="widget-error">Leaderboard unavailable</div>';
       });
   }
-
-  // ── Activity / Page Heat ─────────────────────────────────────
 
   function initActivityPanel() {
     var el = document.getElementById('activity-panel');
@@ -186,11 +165,11 @@
         '<div class="explore-wiki-panel">' +
           '<p class="explore-wiki-desc">Explore the Living Wiki</p>' +
           '<ul class="explore-wiki-links">' +
-            '<li><a href="/search.html">\uD83D\uDCD6 All Articles</a></li>' +
-            '<li><a href="/timeline.html">\uD83D\uDCC5 Timeline</a></li>' +
-            '<li><a href="/graph.html">\uD83C\uDF10 Entity Graph</a></li>' +
-            '<li><a href="/wiki/hodl-wars.html">\u2694\uFE0F HODL Wars</a></li>' +
-            '<li><a href="/how-to-play.html">\u25C6 How To Play</a></li>' +
+            '<li><a href="/search.html">📖 All Articles</a></li>' +
+            '<li><a href="/timeline.html">📅 Timeline</a></li>' +
+            '<li><a href="/graph.html">🌐 Entity Graph</a></li>' +
+            '<li><a href="/wiki/hodl-wars.html">⚔️ HODL Wars</a></li>' +
+            '<li><a href="/how-to-play.html">◆ How To Play</a></li>' +
           '</ul>' +
         '</div>';
       return;
@@ -205,11 +184,11 @@
           el.innerHTML = '<div class="activity-empty">No activity data yet</div>';
           return;
         }
-        el.innerHTML = data.pages.map(function (p) {
+        el.innerHTML = data.pages.map(function (page) {
           return '<div class="activity-row">' +
-            '<span class="activity-icon" aria-hidden="true">' + esc(p.icon || '🔥') + '</span>' +
-            '<a href="' + safeHref(p.url) + '" class="activity-title">' + esc(p.title) + '</a>' +
-            '<span class="activity-heat">' + esc(p.views || 0) + ' views</span>' +
+            '<span class="activity-icon" aria-hidden="true">' + esc(page.icon || '🔥') + '</span>' +
+            '<a href="' + safeHref(page.url) + '" class="activity-title">' + esc(page.title) + '</a>' +
+            '<span class="activity-heat">' + esc(page.views || 0) + ' views</span>' +
           '</div>';
         }).join('');
       })
@@ -217,8 +196,6 @@
         el.innerHTML = '<div class="widget-error">Activity unavailable</div>';
       });
   }
-
-  // ── Comments / Battle Teaser ─────────────────────────────────
 
   function initCommentsTeaser() {
     var el = document.getElementById('comments-teaser');
@@ -249,12 +226,12 @@
         }
         el.innerHTML =
           '<div class="teaser-comments">' +
-          data.comments.map(function (c) {
+          data.comments.map(function (comment) {
             return '<div class="teaser-comment">' +
-              '<img class="tc-avatar" src="' + esc(avatarUrl(c.email_hash, 28)) + '" alt="' + esc(c.name) + '" loading="lazy">' +
+              '<img class="tc-avatar" src="' + esc(avatarUrl(comment.email_hash, 28)) + '" alt="' + esc(comment.name) + '" loading="lazy">' +
               '<div class="tc-body">' +
-                '<span class="tc-name">' + esc(c.name) + '</span> ' +
-                '<span class="tc-text">' + esc(c.text) + '</span>' +
+                '<span class="tc-name">' + esc(comment.name) + '</span> ' +
+                '<span class="tc-text">' + esc(comment.text) + '</span>' +
               '</div>' +
             '</div>';
           }).join('') +
@@ -262,14 +239,9 @@
           '</div>';
       })
       .catch(function () {
-        // Comments widget uses an empty-state message on error (rather than a
-        // generic "unavailable" banner) because seeing no comments yet is an
-        // expected state and this phrasing encourages first engagement.
         el.innerHTML = '<div class="comments-empty">No comments yet — start the battle! ⚔️</div>';
       });
   }
-
-  // ── Boot ─────────────────────────────────────────────────────
 
   function init() {
     initSamStatus();
