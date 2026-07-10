@@ -95,6 +95,7 @@ const GROUPS = {
     ['node', 'scripts/waxcash-standalone.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/portal-artwork.test.mjs'],
     ['node', 'scripts/right-rail-live-panels.test.mjs'],
     ['node', 'scripts/favicon-consistency.test.mjs'],
     ['node', 'scripts/anti-drift-check.mjs'],
