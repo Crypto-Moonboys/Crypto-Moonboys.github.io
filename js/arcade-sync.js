@@ -131,53 +131,54 @@ export const ArcadeSync = {
   },
 
   getPendingProgress() {
-    try {
-      const raw = localStorage.getItem(this.PENDING_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
-    } catch {
-      return [];
-    }
+    this.clearPendingProgress();
+    return [];
   },
 
   setPendingProgress(entries) {
+    this.clearPendingProgress();
+    return Array.isArray(entries) ? entries.length : 0;
+  },
+
+  clearPendingProgress() {
     try {
-      localStorage.setItem(this.PENDING_KEY, JSON.stringify(Array.isArray(entries) ? entries.slice(-this.PENDING_MAX) : []));
+      localStorage.removeItem(this.PENDING_KEY);
     } catch {}
   },
 
   queuePendingProgress(entry = {}) {
+    this.clearPendingProgress();
+    this.emitDebug("pending_queue_disabled", {
+      reason: "NO_LOCAL_PENDING_COMPETITIVE_RUNS",
+      game: this.normalizeGame(entry.game),
+    });
+    return null;
+  },
+
+  getPendingCount() {
+    return 0;
+  },
+
+  normalizeProgressEntry(entry = {}) {
     const game = this.normalizeGame(entry.game);
     const rawScore = Math.max(0, Math.floor(Number(entry.raw_score ?? entry.score) || 0));
     const metaPoints = Math.max(0, Math.floor(Number(entry.meta_points) || 0));
     if (!rawScore && !metaPoints) return null;
     const timestamp = Number.isFinite(Number(entry.timestamp)) ? Math.floor(Number(entry.timestamp)) : Date.now();
-    const clientRunId = String(entry.client_run_id || this.makeRunId({
-      game,
-      raw_score: rawScore,
-      meta_points: metaPoints,
-      timestamp,
-    }));
-
-    const pending = this.getPendingProgress();
-    if (pending.some((item) => String(item.client_run_id) === clientRunId)) return clientRunId;
-
-    pending.push({
-      client_run_id: clientRunId,
+    return {
+      client_run_id: String(entry.client_run_id || this.makeRunId({
+        game,
+        raw_score: rawScore,
+        meta_points: metaPoints,
+        timestamp,
+      })),
       game,
       raw_score: rawScore,
       meta_points: metaPoints,
       timestamp,
       queued_at: Date.now(),
       source: entry.source || "arcade_run",
-    });
-    this.setPendingProgress(pending);
-    return clientRunId;
-  },
-
-  getPendingCount() {
-    return this.getPendingProgress().length;
+    };
   },
 
   emitDebug(stage, detail = {}) {
@@ -190,10 +191,14 @@ export const ArcadeSync = {
   },
 
   async syncPendingArcadeProgress(options = {}) {
-    const pending = this.getPendingProgress();
+    const directEntries = Array.isArray(options.entries)
+      ? options.entries.map((entry) => this.normalizeProgressEntry(entry)).filter(Boolean)
+      : [];
+    const pending = directEntries.length ? directEntries : this.getPendingProgress();
     if (!pending.length) {
-      this.emitDebug("sync_skip", { reason: "empty_queue" });
-      return { synced: 0, remaining: 0, skipped: true, reason: "empty_queue" };
+      const reason = directEntries.length ? "empty_queue" : "no_local_pending_competitive_runs";
+      this.emitDebug("sync_skip", { reason });
+      return { synced: 0, rejected: 0, failed: 0, remaining: 0, skipped: true, reason };
     }
 
     const apiInfo = this.getApiInfo("write");
@@ -201,19 +206,19 @@ export const ArcadeSync = {
     if (!apiBase) {
       const reason = apiInfo && apiInfo.state ? apiInfo.state : "missing_api_base";
       this.emitDebug("sync_skip", { reason, pending: pending.length });
-      return { synced: 0, remaining: pending.length, skipped: true, reason };
+      return { synced: 0, rejected: 0, failed: pending.length, remaining: 0, skipped: true, reason };
     }
     const telegram_auth = await this.getTelegramAuth();
     if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {
       this.emitDebug("sync_skip", { reason: "missing_auth", pending: pending.length });
-      return { synced: 0, remaining: pending.length, skipped: true, reason: "missing_auth" };
+      return { synced: 0, rejected: 0, failed: pending.length, remaining: 0, skipped: true, reason: "missing_auth" };
     }
     this.emitDebug("sync_auth_restored", { pending: pending.length, hasHash: !!telegram_auth.hash, hasAuthDate: !!telegram_auth.auth_date });
 
     const onProgress = typeof options.onProgress === "function" ? options.onProgress : null;
-    const keep = [];
     let synced = 0;
     let rejected = 0;
+    let failed = 0;
 
     for (let index = 0; index < pending.length; index += this.PENDING_BATCH) {
       const batch = pending.slice(index, index + this.PENDING_BATCH);
@@ -229,11 +234,10 @@ export const ArcadeSync = {
           }),
         });
         payload = await res.json().catch(() => ({}));
-        this.emitDebug("sync_response_received", { httpStatus: res.status, batchSize: batch.length, resultCount: Array.isArray(payload?.results) ? payload.results.length : 0 });
+        this.emitDebug("sync_response_received", { httpStatus: res.status, batchSize: batch.length, resultCount: Array.isArray(payload?.results) ? payload.results.length : 0         });
         if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
       } catch (error) {
-        // Network or auth uncertainty: keep entire batch to avoid data loss.
-        keep.push(...batch);
+        failed += batch.length;
         if (onProgress) onProgress({ batch, synced, rejected, error: String(error && error.message || error) });
         continue;
       }
@@ -243,7 +247,7 @@ export const ArcadeSync = {
       for (const run of batch) {
         const verdict = byId.get(String(run.client_run_id));
         if (!verdict) {
-          keep.push(run);
+          failed += 1;
           continue;
         }
         if (verdict.status === "accepted" || verdict.status === "duplicate" || verdict.status === "rejected") {
@@ -251,16 +255,16 @@ export const ArcadeSync = {
           else rejected += 1;
           continue;
         }
-        keep.push(run);
+        failed += 1;
       }
       if (onProgress) onProgress({ batch, synced, rejected, results });
     }
 
-    this.setPendingProgress(keep);
     return {
       synced,
       rejected,
-      remaining: keep.length,
+      failed,
+      remaining: 0,
       total: pending.length,
     };
   },

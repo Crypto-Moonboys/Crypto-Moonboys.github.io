@@ -98,8 +98,14 @@
 import { mountGame }              from '/js/arcade/core/game-shell.js';
 import { bootstrapAsteroidFork }  from '/js/arcade/games/asteroid-fork/bootstrap.js';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
-mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapAsteroidFork });
-mountModifierPanel();
+mountGame({
+  root: document.querySelector('.game-card'),
+  bootstrap: bootstrapAsteroidFork,
+  requireCompetitiveGate: true,
+  gameId: 'asteroid-fork'
+}).then(function (game) {
+  if (game && !game.gateBlocked) mountModifierPanel();
+});
 </script>
 </body>
 </html>

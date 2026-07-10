@@ -39,6 +39,8 @@ export async function mountGame(options) {
   var root      = options.root;
   var bootstrap = options.bootstrap;
   var adapter = options.adapter || null;
+  var requireCompetitiveGate = options.requireCompetitiveGate === true;
+  var competitiveGameId = options.gameId || options.competitiveGameId || null;
 
   if (!(root instanceof Element)) {
     console.error('[game-shell] root must be a DOM Element');
@@ -54,6 +56,18 @@ export async function mountGame(options) {
   if (typeof bootstrap !== 'function') {
     console.error('[game-shell] bootstrap must be a function');
     return null;
+  }
+
+  if (requireCompetitiveGate) {
+    var identity = typeof window !== 'undefined' ? window.MOONBOYS_IDENTITY : null;
+    if (!identity || typeof identity.enforceCompetitiveArcadePageGate !== 'function') {
+      console.error('[game-shell] competitive gate is unavailable');
+      return { gateBlocked: true, gateResult: { ok: false, reason: 'gate_unavailable', game_id: competitiveGameId } };
+    }
+    var gateResult = await identity.enforceCompetitiveArcadePageGate({ gameId: competitiveGameId });
+    if (!gateResult || gateResult.ok !== true) {
+      return { gateBlocked: true, gateResult: gateResult || { ok: false, reason: 'gate_blocked', game_id: competitiveGameId } };
+    }
   }
 
   var game;

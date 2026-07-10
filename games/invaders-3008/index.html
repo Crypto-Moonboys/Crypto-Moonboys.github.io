@@ -108,9 +108,17 @@ import { mountGame }         from '/js/arcade/core/game-shell.js';
 import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
-mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapInvaders });
-mountModifierPanel();
-mountFactionHud();
+mountGame({
+  root: document.querySelector('.game-card'),
+  bootstrap: bootstrapInvaders,
+  requireCompetitiveGate: true,
+  gameId: 'invaders-3008'
+}).then(function (game) {
+  if (game && !game.gateBlocked) {
+    mountModifierPanel();
+    mountFactionHud();
+  }
+});
 </script>
 </body>
 </html>

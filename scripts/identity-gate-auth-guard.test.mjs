@@ -317,4 +317,65 @@ async function waitTick() {
   assert.ok(blockedModal, 'blocked modal should render for blocked account');
 }
 
+// guest direct competitive route is blocked and opens the Telegram activation modal
+{
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {},
+    fetchImpl: async () => ({ ok: true, json: async () => ({}) }),
+  });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'snake-run' });
+  assert.equal(result.ok, false, 'guest direct route must be blocked');
+  assert.equal(result.reason, 'not_linked', 'guest direct route should fail as not_linked');
+  assert.ok(byId.get('tg-sync-gate-modal'), 'guest direct route should render the Telegram activation modal');
+}
+
+// Telegram auth without /gklink activation is blocked
+{
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+    },
+    fetchImpl: async () => ({ ok: true, json: async () => ({}) }),
+  });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'pac-chain' });
+  assert.equal(result.ok, false, 'Telegram-only identity must not pass competitive route gate');
+  assert.equal(result.reason, 'not_linked', 'Telegram-only identity should still be treated as not_linked');
+  assert.ok(byId.get('tg-sync-gate-modal'), 'Telegram-only identity should render the activation modal');
+}
+
+// expired/unrestorable signed auth is blocked
+{
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+      moonboys_tg_auth: JSON.stringify({ id: '123', hash: 'signed', auth_date: '1' }),
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ linked: true, telegram_id: '123' }),
+    }),
+  });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'crystal-quest' });
+  assert.equal(result.ok, false, 'expired auth must block competitive route access');
+  assert.equal(result.reason, 'auth_restore_failed', 'expired auth without restorable payload must fail closed');
+  assert.ok(byId.get('tg-sync-gate-modal'), 'expired auth should render the Telegram activation modal');
+}
+
+// linked fresh auth is allowed immediately
+{
+  const freshAuth = { id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) };
+  const { api } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+      moonboys_tg_auth: JSON.stringify(freshAuth),
+    },
+    fetchImpl: async () => ({ ok: true, json: async () => ({}) }),
+  });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'invaders-3008' });
+  assert.equal(result.ok, true, 'linked fresh-auth user must be allowed through the competitive route gate');
+  assert.equal(result.telegram_auth && result.telegram_auth.id, '123', 'allowed route should return the fresh signed auth payload');
+}
+
 console.log('Identity gate auth guard regression checks passed.');

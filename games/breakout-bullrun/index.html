@@ -103,10 +103,14 @@ function mountManualFallback() {
       import('/js/arcade/systems/cross-game-modifier-ui.js').then(function (ui) {
         shell.mountGame({
           root: document.querySelector('.game-card'),
-          bootstrap: mod.bootstrapBreakoutBullrun
+          bootstrap: mod.bootstrapBreakoutBullrun,
+          requireCompetitiveGate: true,
+          gameId: 'breakout-bullrun'
+        }).then(function (game) {
+          if (!game || game.gateBlocked) return;
+          ui.mountModifierPanel();
+          mountFactionHud();
         });
-        ui.mountModifierPanel();
-        mountFactionHud();
       });
     });
   });
@@ -114,6 +118,7 @@ function mountManualFallback() {
 
 autoMountGame()
   .then(function (game) {
+    if (game && game.gateBlocked) return;
     if (!game) mountManualFallback();
     else mountFactionHud();
   })

@@ -54,6 +54,7 @@
   var MODAL_ID     = 'tg-sync-gate-modal';
   var STYLE_ID     = 'tg-sync-gate-styles';
   var bootstrapPromise = null;
+  var competitiveGatePromise = null;
 
   // ── localStorage helpers ────────────────────────────────────
 
@@ -220,6 +221,87 @@
       sync: sync,
       auth_status: authStatus,
     };
+  }
+
+  function buildCompetitiveGateResult(ok, reason, extras) {
+    var base = {
+      ok: !!ok,
+      allowed: !!ok,
+      reason: reason ? String(reason) : '',
+      linked: isTelegramLinked(),
+      telegram_id: getTelegramId() || null,
+      telegram_auth: null,
+      source: 'identity_gate',
+      game_id: null,
+    };
+    if (extras && typeof extras === 'object') {
+      for (var key in extras) {
+        if (Object.prototype.hasOwnProperty.call(extras, key)) {
+          base[key] = extras[key];
+        }
+      }
+    }
+    return base;
+  }
+
+  function failCompetitiveArcadePageGate(reason, options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var normalizedReason = reason ? String(reason) : 'auth_required';
+    if (normalizedReason === 'not_linked' || normalizedReason === 'missing_auth' || normalizedReason === 'auth_expired' || normalizedReason === 'auth_restore_failed' || normalizedReason === 'auth_mismatch') {
+      showSyncGateModal(true);
+    }
+    setSyncHealth('bad', normalizedReason);
+    return buildCompetitiveGateResult(false, normalizedReason, {
+      game_id: opts.game_id || null,
+    });
+  }
+
+  function enforceCompetitiveArcadePageGate(options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var gameId = opts.game_id || opts.gameId || null;
+
+    if (!isTelegramLinked()) {
+      return Promise.resolve(failCompetitiveArcadePageGate('not_linked', { game_id: gameId }));
+    }
+
+    var signedAuth = getSignedTelegramAuth();
+    if (signedAuth && !isTelegramAuthExpired(signedAuth)) {
+      setSyncHealth('good', 'arcade_gate_passed');
+      return Promise.resolve(buildCompetitiveGateResult(true, '', {
+        game_id: gameId,
+        telegram_auth: signedAuth,
+        source: 'cached_signed_auth',
+      }));
+    }
+
+    if (competitiveGatePromise) return competitiveGatePromise;
+
+    competitiveGatePromise = Promise.resolve(getFreshTelegramAuth({ force: !!opts.force }))
+      .then(function (restoredAuth) {
+        if (!restoredAuth || !restoredAuth.id || !restoredAuth.hash || !restoredAuth.auth_date) {
+          return failCompetitiveArcadePageGate('auth_restore_failed', { game_id: gameId });
+        }
+        if (String(restoredAuth.id) !== String(getTelegramId() || '')) {
+          return failCompetitiveArcadePageGate('auth_mismatch', { game_id: gameId });
+        }
+        if (isTelegramAuthExpired(restoredAuth)) {
+          return failCompetitiveArcadePageGate('auth_expired', { game_id: gameId });
+        }
+        setSyncHealth('good', 'arcade_gate_passed');
+        return buildCompetitiveGateResult(true, '', {
+          game_id: gameId,
+          telegram_auth: restoredAuth,
+          source: 'restored_signed_auth',
+        });
+      })
+      .catch(function () {
+        return failCompetitiveArcadePageGate('auth_restore_failed', { game_id: gameId });
+      })
+      .finally(function () {
+        competitiveGatePromise = null;
+      });
+
+    return competitiveGatePromise;
   }
 
   /**
@@ -825,6 +907,7 @@
      * Use this for leaderboard scores, votes, likes, faction, XP.
      */
     requireLinkedAccount: requireLinkedAccount,
+    enforceCompetitiveArcadePageGate: enforceCompetitiveArcadePageGate,
     showSyncGateModal:    showSyncGateModal,
     dismissSyncGateModal: dismissSyncGateModal,
   };

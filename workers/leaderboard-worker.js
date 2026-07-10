@@ -183,13 +183,32 @@ async function verifyLeaderboardTelegramAuth(body, env) {
     }
   }
 
-  return { ok: true, telegramId };
+  return { ok: true, telegramId, auth: tg };
 }
 
 async function resolveSubmissionIdentity(body, env) {
   const authResult = await verifyLeaderboardTelegramAuth(body, env);
   if (!authResult.ok) return authResult;
-  return { ok: true, authenticated: true, telegramId: authResult.telegramId };
+  return { ok: true, authenticated: true, telegramId: authResult.telegramId, auth: authResult.auth };
+}
+
+function isGuestLikePlayerName(value) {
+  const normalized = String(value || '').trim();
+  if (!normalized) return true;
+  return /^guest(?:-|$)/i.test(normalized) || /^player_\d+$/i.test(normalized);
+}
+
+function resolveAuthenticatedPlayerName(player, auth) {
+  const fullName = [auth?.first_name, auth?.last_name].filter(Boolean).join(' ').trim();
+  const username = auth?.username ? `@${String(auth.username).replace(/^@/, '')}` : '';
+  const submitted = String(player || '').trim();
+  const candidates = [submitted, fullName, username];
+  for (const candidate of candidates) {
+    const cleaned = String(candidate || '').trim();
+    if (!cleaned || isGuestLikePlayerName(cleaned)) continue;
+    return cleaned.slice(0, 40);
+  }
+  return null;
 }
 
 // ── CORS helpers ─────────────────────────────────────────────────────────────
@@ -362,6 +381,7 @@ export default {
         );
       }
       const telegramId = identity.telegramId;
+      const verifiedAuth = identity.auth || null;
 
       const { player, score, game } = body;
       const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
@@ -383,9 +403,10 @@ export default {
         );
       }
 
-      if (typeof player !== "string" || player.trim().length < 1 || player.trim().length > 40) {
+      const playerName = resolveAuthenticatedPlayerName(player, verifiedAuth);
+      if (!playerName || playerName.length > 40) {
         return new Response(
-          JSON.stringify({ error: "player must be a non-empty string (max 40 chars)" }),
+          JSON.stringify({ error: "player_identity_required" }),
           { status: 400, headers: corsHeaders }
         );
       }
@@ -402,7 +423,6 @@ export default {
       // Normalise game key — aliases (e.g. snake-run → snake) and sanitise
       const gameKey = normaliseGameKey(game);
 
-      const playerName = player.trim();
       const floorScore = Math.floor(parsedScore);
 
       if (submissionMode === "meta") {
@@ -419,6 +439,7 @@ export default {
           score: floorScore,
           game: gameKey,
           timestamp,
+          telegram_id: telegramId,
         });
         return new Response(
           JSON.stringify({ status: "ok", mode: "meta" }),
@@ -701,10 +722,7 @@ async function recomputeAllBoards(env) {
 function getAggregateIdentityKey(entry) {
   const telegramId = String(entry?.telegram_id || "").trim();
   if (telegramId) return `tg:${telegramId}`;
-
-  const player = String(entry?.player || "").trim();
-  if (!player) return null;
-  return `anon:${player.toLowerCase()}`;
+  return null;
 }
 
 async function recomputeAggregate(env, key, boards) {
@@ -745,12 +763,12 @@ async function recomputeAggregate(env, key, boards) {
     breakdown.variety_bonus = variety;
     return {
       identity_key: identityKey,
-      player: profile.player || "Guest",
+      player: profile.player || "",
       score: main_score,
       breakdown,
       ...(profile.telegram_id ? { telegram_id: profile.telegram_id } : {})
     };
-  });
+  }).filter((entry) => entry.player && entry.telegram_id && !isGuestLikePlayerName(entry.player));
 
   entries.sort((a, b) => {
     const diff = b.score - a.score;
@@ -771,13 +789,14 @@ async function updateMetaBoards(env, submission) {
   const ts = Number.isFinite(submission.timestamp) ? submission.timestamp : Date.now();
   const period = await getMetaPeriodContext(env, ts);
   const player = String(submission.player || "").trim();
+  const telegramId = String(submission.telegram_id || "").trim();
   const score = Math.max(0, Math.floor(Number(submission.score) || 0));
-  if (!player || !score) return;
+  if (!player || !telegramId || isGuestLikePlayerName(player) || !score) return;
 
   await Promise.all(META_WINDOWS.map(async (windowKey) => {
     const bucketKey = period[windowKey];
     const bucket = await getMetaBucket(env, bucketKey);
-    const merged = addToMetaBucket(bucket, player, score, ts, submission.game);
+    const merged = addToMetaBucket(bucket, player, telegramId, score, ts, submission.game);
     const ranked = rankMetaBucket(merged, GLOBAL_LEADERBOARD_SIZE);
     await Promise.all([
       env.LEADERBOARD.put(bucketKey, JSON.stringify(merged)),
@@ -832,12 +851,13 @@ async function getMetaBucket(env, kvKey) {
   }
 }
 
-function addToMetaBucket(existingBucket, player, score, timestamp, game) {
+function addToMetaBucket(existingBucket, player, telegramId, score, timestamp, game) {
   const bucket = { ...(existingBucket || {}) };
-  const key = player.toLowerCase();
-  const prev = bucket[key] || { player, score: 0 };
+  const key = `tg:${String(telegramId).trim()}`;
+  const prev = bucket[key] || { player, telegram_id: telegramId, score: 0 };
   bucket[key] = {
     player: prev.player || player,
+    telegram_id: prev.telegram_id || telegramId,
     score: Math.floor((Number(prev.score) || 0) + score),
     updated_at: new Date(timestamp).toISOString(),
     last_game: String(game || "unknown"),
@@ -849,7 +869,8 @@ function rankMetaBucket(bucket, limit) {
   const rows = Object.values(bucket || {}).map((entry) => ({
     player: String(entry.player || ""),
     score: Math.floor(Number(entry.score) || 0),
-  })).filter((entry) => entry.player && entry.score >= 0);
+    telegram_id: String(entry.telegram_id || "").trim(),
+  })).filter((entry) => entry.player && entry.telegram_id && !isGuestLikePlayerName(entry.player) && entry.score >= 0);
 
   rows.sort((a, b) => {
     const diff = b.score - a.score;
@@ -866,7 +887,13 @@ async function getBoard(env, game) {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((entry) => {
+          const telegramId = String(entry?.telegram_id || '').trim();
+          const playerName = String(entry?.player || '').trim();
+          return !!telegramId && !!playerName && !isGuestLikePlayerName(playerName);
+        })
+      : [];
   } catch {
     return [];
   }
