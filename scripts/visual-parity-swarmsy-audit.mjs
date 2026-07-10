@@ -372,7 +372,11 @@ if (/retro-hero-bg/i.test(homepageHtml)) {
   fail('index.html - must not restore retro-hero-bg');
   homepageHeroOk = false;
 }
-if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || (!htmlContainsClass(homepageHtml, 'home-hero-artwork') && !htmlContainsClass(homepageHtml, 'home-hero-mobile-art'))) {
+if (!htmlContainsClass(homepageHtml, 'home-hero-inner') || (
+  !htmlContainsClass(homepageHtml, 'home-hero-artwork') &&
+  !htmlContainsClass(homepageHtml, 'home-hero-mobile-art') &&
+  !htmlContainsClass(homepageHtml, 'home-hero-right')
+)) {
   fail('index.html - homepage hero must use the split copy-and-artwork structure');
   homepageHeroOk = false;
 }
@@ -412,17 +416,19 @@ if (!wikiCss) {
   }
   if (
     !blockHas(innerBlock, /display\s*:\s*flex/i) ||
-    !blockHas(innerBlock, /z-index\s*:\s*2/i) ||
+    !blockHas(innerBlock, /z-index\s*:\s*[23]/i) ||
     !blockHas(titleBlock, /font-family\s*:\s*var\(--font-display\)/i) ||
     !blockHas(titleBlock, /text-shadow\s*:/i)
   ) {
     fail(`${GLOBAL_SHELL_CSS} - homepage hero copy must keep the SWARMSY display font and readable inner layout`);
     homepageHeroOk = false;
   }
-  // Accept either the absolute-positioned artwork img approach or the stitched CSS-background approach
+  // Accept the absolute-positioned artwork img approach, the stitched CSS-background approach,
+  // or the new split-div approach (home-hero-left / home-hero-right flex siblings)
+  const usesSplitDiv = htmlContainsClass(homepageHtml, 'home-hero-right') && htmlContainsClass(homepageHtml, 'home-hero-left');
   const usesArtworkImg = blockHas(artworkBlock, /position\s*:\s*absolute/i) && blockHas(artworkBlock, /height\s*:\s*100%/i) && blockHas(artworkBlock, /object-fit\s*:\s*cover/i);
   const usesStitchedBg = blockHas(homeHeroBlock, /url\s*\(/i) && (artworkBlock === null || !blockHas(artworkBlock, /position\s*:\s*absolute/i)) && mobileArtBlock !== null;
-  if (!usesArtworkImg && !usesStitchedBg) {
+  if (!usesArtworkImg && !usesStitchedBg && !usesSplitDiv) {
     fail(`${GLOBAL_SHELL_CSS} - homepage hero artwork must fill the right side as cinematic layer without card treatment`);
     homepageHeroOk = false;
   }

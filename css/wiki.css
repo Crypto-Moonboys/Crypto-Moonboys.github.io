@@ -1292,7 +1292,7 @@ th {
 .home-hero,
 .launch-hero {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .home-hero > :not(.swarmsy-hero-bg) {
@@ -3381,43 +3381,50 @@ body.page-home .home-hero,
 body.page-home .launch-hero {
   position: relative;
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  flex-direction: row;
+  overflow: visible;
   width: 100%;
   max-width: none;
-  min-height: max(52vw, 460px);
   margin: 0;
-  padding: clamp(34px, 5vw, 58px) clamp(28px, 6vw, 88px);
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.54) 38%, rgba(0, 0, 0, 0.08) 70%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.68) 100%),
-    url("/img/homepage/crypto-moonboys-swarmsy-hero-combined.jpg") left top / 100% auto no-repeat,
-    #000;
+  padding: 0;
+  background: #000;
   border: 0;
   border-radius: 0;
   box-shadow: none;
 }
 
-/* Left-side text protection — fades to transparent where the cinematic artwork begins */
 body.page-home .home-hero::before,
 body.page-home .launch-hero::before {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  content: "";
-  pointer-events: none;
-  background: linear-gradient(90deg, #050607 0%, #050607 28%, rgba(5, 6, 7, 0.82) 44%, rgba(5, 6, 7, 0.28) 56%, transparent 66%);
+  display: none;
+}
+
+body.page-home .home-hero-left {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+body.page-home .home-hero-left img,
+body.page-home .home-hero-right img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+body.page-home .home-hero-right {
+  flex: 1;
 }
 
 body.page-home .home-hero-inner {
-  position: relative;
-  z-index: 2;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
   display: flex;
-  flex: 1;
   flex-direction: column;
   justify-content: center;
-  min-height: 0;
-  max-width: 680px;
+  padding: clamp(18px, 2.5vw, 38px) clamp(22px, 4vw, 64px);
 }
 
 body.page-home .home-hero-copy {
@@ -3442,8 +3449,8 @@ body.page-home .launch-hero h1 {
   margin: 0;
   color: #ffffff;
   font-family: var(--font-display);
-  font-size: clamp(2.7rem, 7vw, 5.25rem);
-  line-height: 0.92;
+  font-size: clamp(2rem, 4.2vw, 3.8rem);
+  line-height: 0.95;
   letter-spacing: 0;
   text-shadow: 0 0 24px rgba(247, 201, 72, 0.24);
 }
@@ -3460,11 +3467,11 @@ body.page-home .mobile-hero-break {
 body.page-home .launch-manifesto,
 body.page-home .launch-subcopy {
   max-width: 700px;
-  margin: 18px 0 0;
+  margin: clamp(8px, 1vw, 12px) 0 0;
   color: var(--color-text-muted);
   font-family: var(--font-sans);
-  font-size: 1.04rem;
-  line-height: 1.68;
+  font-size: clamp(0.84rem, 0.9vw, 0.96rem);
+  line-height: 1.38;
 }
 
 body.page-home .home-hero-mobile-art {
@@ -3545,46 +3552,37 @@ body.page-home .hero-stat {
   padding: 16px 18px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   body.page-home .home-hero,
   body.page-home .launch-hero {
-    display: flex;
     flex-direction: column;
-    min-height: auto;
-    padding: 0 0 clamp(24px, 7vw, 42px);
-    background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.78) 100%),
-      url("/img/homepage/home-hero-swarmsy-layer-one-son.jpg") center top / cover no-repeat,
-      #050607;
-  }
-
-  /* No text-protection gradient needed on mobile — artwork is above copy */
-  body.page-home .home-hero::before,
-  body.page-home .launch-hero::before {
-    display: none;
-  }
-
-  body.page-home .home-hero-mobile-art {
-    position: relative;
-    z-index: 1;
-    display: block;
-    width: 100%;
     background: #050607;
   }
 
-  body.page-home .home-hero-mobile-art img {
-    display: block;
+  body.page-home .home-hero-left,
+  body.page-home .home-hero-right {
+    flex: none;
     width: 100%;
-    height: auto;
+  }
+
+  /* Art-heavy right image shows first on mobile/tablet */
+  body.page-home .home-hero-right {
+    order: -1;
   }
 
   body.page-home .home-hero-inner {
+    position: static;
+    inset: auto;
+    order: 1;
     display: flex;
     flex-direction: column;
-    flex: none;
     justify-content: flex-start;
     max-width: none;
-    padding: clamp(26px, 8vw, 42px) clamp(22px, 6vw, 34px) 0;
+    padding: clamp(26px, 8vw, 42px) clamp(22px, 6vw, 34px) clamp(24px, 7vw, 42px);
+  }
+
+  body.page-home .home-hero-left-art {
+    order: 0;
   }
 
   body.page-home .home-hero-copy {
@@ -3639,6 +3637,81 @@ body.page-home .hero-stat {
   }
 }
 
+/* ── AI Bridge: Staged Loading Sequence ────────────────────────────── */
+/* Canvas animation is driven by js/home-ai-bridge.js.                 */
+/* CSS only handles section sizing and canvas/fallback positioning.     */
+
+body.page-home .home-ai-bridge {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: clamp(520px, 70vh, 860px);
+  margin-top: clamp(18px, 2.6vw, 30px);
+  background: #000;
+  border-top: 1px solid rgba(247, 201, 72, 0.14);
+  border-bottom: 1px solid rgba(247, 201, 72, 0.14);
+}
+
+body.page-home .home-ai-bridge-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Static fallback: hidden by default; shown for reduced-motion or no-JS */
+body.page-home .home-ai-bridge-static {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-home .home-ai-bridge-canvas {
+    display: none;
+  }
+
+  body.page-home .home-ai-bridge-static {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 1.6vh, 16px);
+    min-height: clamp(520px, 70vh, 860px);
+    padding: clamp(56px, 7vw, 96px) clamp(20px, 5vw, 64px);
+    text-align: center;
+  }
+
+  body.page-home .home-ai-bridge-static p {
+    margin: 0;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+    color: rgba(236, 243, 250, 0.9);
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    letter-spacing: 0.16em;
+  }
+
+  body.page-home .home-ai-bridge-static .home-ai-bridge-identity {
+    color: #F7C948;
+    font-size: clamp(2.2rem, 6.5vw, 5rem);
+    line-height: 0.95;
+    letter-spacing: 0.06em;
+  }
+
+  body.page-home .home-ai-bridge-static .home-ai-bridge-tagline {
+    color: rgba(247, 201, 72, 0.78);
+    font-size: clamp(0.82rem, 1.4vw, 1.05rem);
+    letter-spacing: 0.26em;
+  }
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-ai-bridge {
+    min-height: clamp(500px, 72vh, 780px);
+  }
+}
+
+
 /* ── Section 2: split-image hero block ──────────────────────────────── */
 body.page-home .home-section2 {
   display: flex;
@@ -3671,6 +3744,193 @@ body.page-home .home-section2-right img {
     width: 100%;
   }
 }
+body.page-home .home-section3 {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+}
+
+body.page-home .home-section3-left,
+body.page-home .home-section3-right {
+  flex: 1;
+}
+
+body.page-home .home-section3-left img,
+body.page-home .home-section3-right img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-section3 {
+    flex-direction: column;
+    margin-top: clamp(14px, 4vw, 20px);
+  }
+
+  body.page-home .home-section3-left,
+  body.page-home .home-section3-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Art-heavy right image shows first on mobile */
+  body.page-home .home-section3-right {
+    order: -1;
+  }
+}
+
+body.page-home .home-section4 {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+}
+
+body.page-home .home-section4-left,
+body.page-home .home-section4-right {
+  flex: 1;
+}
+
+body.page-home .home-section4-left img,
+body.page-home .home-section4-right img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-section4 {
+    flex-direction: column;
+    margin-top: clamp(14px, 4vw, 20px);
+  }
+
+  body.page-home .home-section4-left,
+  body.page-home .home-section4-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Right image shows first on mobile */
+  body.page-home .home-section4-right {
+    order: -1;
+  }
+}
+
+body.page-home .home-section5 {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+}
+
+body.page-home .home-section5-left,
+body.page-home .home-section5-right {
+  flex: 1;
+}
+
+body.page-home .home-section5-left img,
+body.page-home .home-section5-right img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-section5 {
+    flex-direction: column;
+    margin-top: clamp(14px, 4vw, 20px);
+  }
+
+  body.page-home .home-section5-left,
+  body.page-home .home-section5-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Left image shows first on mobile */
+  body.page-home .home-section5-left {
+    order: -1;
+  }
+}
+
+body.page-home .home-section6 {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+}
+
+body.page-home .home-section6-left,
+body.page-home .home-section6-right {
+  flex: 1;
+}
+
+body.page-home .home-section6-left img,
+body.page-home .home-section6-right img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-section6 {
+    flex-direction: column;
+    margin-top: clamp(14px, 4vw, 20px);
+  }
+
+  body.page-home .home-section6-left,
+  body.page-home .home-section6-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Right image shows first on mobile */
+  body.page-home .home-section6-right {
+    order: -1;
+  }
+}
+
+body.page-home .home-section7 {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+}
+
+body.page-home .home-section7-left,
+body.page-home .home-section7-right {
+  flex: 1;
+}
+
+body.page-home .home-section7-left img,
+body.page-home .home-section7-right img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-section7 {
+    flex-direction: column;
+    margin-top: clamp(14px, 4vw, 20px);
+  }
+
+  body.page-home .home-section7-left,
+  body.page-home .home-section7-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Right image shows first on mobile */
+  body.page-home .home-section7-right {
+    order: -1;
+  }
+}
+
 /* ─────────────────────────────────────────────────────────────────────── */
 
 body.page-home .stat-num,
@@ -3822,6 +4082,135 @@ body.page-home .home-system-panel .launch-route {
   background: transparent;
   border: 0;
   box-shadow: none;
+}
+
+/* ── Home dropdown row: 3 collapsible section cards ─────────────────── */
+body.page-home .home-dropdown-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(12px, 1.6vw, 18px);
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+  padding: 0 clamp(28px, 6vw, 88px);
+}
+
+body.page-home .home-section-dropdown {
+  color: var(--color-text);
+  background: rgba(0, 255, 204, 0.052);
+  border: 1px solid rgba(0, 255, 204, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  overflow: hidden;
+}
+
+body.page-home .home-section-dropdown[open] {
+  border-color: rgba(0, 255, 204, 0.32);
+}
+
+body.page-home .home-section-dropdown-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: clamp(0.82rem, 1vw, 1rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+body.page-home .home-section-dropdown-title::-webkit-details-marker {
+  display: none;
+}
+
+body.page-home .home-section-dropdown-title::after {
+  content: '▼';
+  margin-left: auto;
+  font-size: 0.6em;
+  opacity: 0.6;
+  transition: transform 200ms ease;
+}
+
+body.page-home .home-section-dropdown[open] .home-section-dropdown-title::after {
+  transform: rotate(180deg);
+}
+
+body.page-home .home-section-dropdown-title:hover {
+  background: rgba(0, 255, 204, 0.07);
+}
+
+body.page-home .home-section-dropdown-body {
+  padding: 0 14px 14px;
+}
+
+body.page-home .home-section-dropdown .launch-route {
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+body.page-home .home-section-dropdown .hero-stats {
+  max-width: none;
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  body.page-home .home-dropdown-row {
+    grid-template-columns: 1fr;
+    padding: 0 clamp(22px, 6vw, 34px);
+  }
+}
+
+body.page-home .launch-route-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 255, 204, 0.18);
+}
+
+body.page-home .launch-route-cta span {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: clamp(0.72rem, 0.9vw, 0.92rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+body.page-home .launch-route-how {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 255, 204, 0.18);
+}
+
+body.page-home .launch-route-how-title {
+  color: var(--color-accent);
+  font-weight: 800;
+  font-size: clamp(0.72rem, 0.9vw, 0.92rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+body.page-home .launch-route-how .launch-route-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.page-home .route-arrow {
+  display: block;
+  text-align: center;
+  color: rgba(0, 255, 204, 0.5);
+  font-size: 1.1em;
+  line-height: 1.2;
 }
 
 body.page-home .category-grid,

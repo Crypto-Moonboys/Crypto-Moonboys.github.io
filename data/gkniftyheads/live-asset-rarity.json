@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-08T06:09:33.881Z",
+  "generated_at": "2026-07-10T06:57:57.785Z",
   "status": "atomicassets live asset count",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
@@ -5394,7 +5394,7 @@
     {
       "asset_id": "1099929499727",
       "template_id": 784340,
-      "owner": "wdsra.wam",
+      "owner": "nsdbk.wam",
       "template_rank": 20,
       "template_final_score": 51.6476,
       "template_score_component": 30.9886,
@@ -5535,7 +5535,7 @@
     {
       "asset_id": "1099929499786",
       "template_id": 784344,
-      "owner": "wdsra.wam",
+      "owner": "nsdbk.wam",
       "template_rank": 19,
       "template_final_score": 56.4646,
       "template_score_component": 33.8788,
@@ -5817,7 +5817,7 @@
     {
       "asset_id": "1099929499750",
       "template_id": 783759,
-      "owner": "wdsra.wam",
+      "owner": "nsdbk.wam",
       "template_rank": 16,
       "template_final_score": 61.2814,
       "template_score_component": 36.7688,
@@ -6148,7 +6148,7 @@
     {
       "asset_id": "1099930734291",
       "template_id": 784340,
-      "owner": "wdsra.wam",
+      "owner": "nsdbk.wam",
       "template_rank": 20,
       "template_final_score": 51.6476,
       "template_score_component": 30.9886,
@@ -6619,7 +6619,7 @@
     {
       "asset_id": "1099929499749",
       "template_id": 783760,
-      "owner": "wdsra.wam",
+      "owner": "nsdbk.wam",
       "template_rank": 17,
       "template_final_score": 61.2814,
       "template_score_component": 36.7688,
@@ -6996,7 +6996,7 @@
     {
       "asset_id": "1099933870507",
       "template_id": 784340,
-      "owner": "wdsra.wam",
+      "owner": "nsdbk.wam",
       "template_rank": 20,
       "template_final_score": 51.6476,
       "template_score_component": 30.9886,

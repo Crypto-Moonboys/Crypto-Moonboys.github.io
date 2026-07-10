@@ -2,7 +2,7 @@
   "collection": "gkniftyheads",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-08T06:09:33.641Z",
+  "generated_at": "2026-07-10T06:57:57.281Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-08T06:09:28.111Z"
+      "checked_at": "2026-07-10T06:57:51.617Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-08T06:09:29.050Z"
+      "checked_at": "2026-07-10T06:57:53.124Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-08T06:09:31.892Z"
+      "checked_at": "2026-07-10T06:57:54.929Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-08T06:09:32.079Z"
+      "checked_at": "2026-07-10T06:57:55.137Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-08T06:09:32.767Z"
+      "checked_at": "2026-07-10T06:57:55.826Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-08T06:09:33.197Z"
+      "checked_at": "2026-07-10T06:57:56.828Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-08T06:09:33.386Z"
+      "checked_at": "2026-07-10T06:57:57.043Z"
     }
   },
   "data": {
     "collection_stats": {
-      "numUsers": 116189,
-      "usdMarketCap": 32511.39818065967,
-      "waxMarketCap": 524822.7292572781,
+      "numUsers": 116187,
+      "usdMarketCap": 32511.398180656608,
+      "waxMarketCap": 524822.7292572437,
       "numAssets": 123351
     },
     "num_assets": {
       "numberOfAssets": 123351,
-      "estimatedWaxValue": 524822.7292572259,
-      "estimatedUsdValue": 32511.398180656266
+      "estimatedWaxValue": 524822.7292572426,
+      "estimatedUsdValue": 32511.39818065777
     },
     "marketcap": {
       "waxMarketCap": 458438.5664333417,
@@ -112,7 +112,7 @@
           "template_id": 782888,
           "schema": "gkniftyheads"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -121,7 +121,7 @@
         "stats": {
           "days": "30",
           "waxVolume": 20254.822917917205,
-          "usdVolume": 1072.7225518019752,
+          "usdVolume": 1072.722551801975,
           "waxFloor": 15.99999999,
           "change": 0,
           "buyers": 120,
@@ -143,7 +143,7 @@
           "template_id": 783470,
           "schema": "bmhodlwarsyo"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -158,7 +158,67 @@
           "buyers": 2,
           "sellers": 3,
           "sales": 3,
-          "rank": 65
+          "rank": 66
+        }
+      },
+      {
+        "template": {
+          "Description": "$ay hello to GKniftyHEADS member Drift Doodle 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "GKniftyHEADS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
+          "id": "86",
+          "img": "bafybeiayoujdoeyr3prmbqt3rprweatkcqy6xuqgob7t4vxomnjrnvch6i",
+          "name": "Drift Doodle 👑👈",
+          "rarity": "Graffiti Guru",
+          "variation": "#HODLWARS",
+          "website": "https://medium.com/@GKniftyHEADS",
+          "template_id": 783252,
+          "schema": "gkhodlwarsyo"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 545,
+          "usdVolume": 2.5615,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 2,
+          "sellers": 2,
+          "sales": 2,
+          "rank": 13
+        }
+      },
+      {
+        "template": {
+          "DESCRIPTION": "👉 Say hello to #GKniftyHEADS member Binary Blitzer 👑👈 a #GraffitiKings ArT Collectable & #P2E HODLWARS gaming card with its own game powers, more details @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "ID": "34563454445",
+          "img": "bafybeieecpxe7pkjs5jvudpi6leepaksmthkqweaeyreuz4p5dqa5jz3vy",
+          "name": "⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬",
+          "rarity": "⚡️⚡️⚡️ Bit Blunted Brotherhood 🌬",
+          "variation": "Token Toking Taskforce 🌬",
+          "template_id": 784277,
+          "schema": "gkniftyheads"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 519,
+          "usdVolume": 2.4393000000000002,
+          "waxFloor": 350,
+          "change": 0,
+          "buyers": 1,
+          "sellers": 2,
+          "sales": 2,
+          "rank": 77
         }
       },
       {
@@ -173,7 +233,7 @@
           "template_id": 783455,
           "schema": "bshodlwarsyo"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -188,7 +248,38 @@
           "buyers": 7,
           "sellers": 31,
           "sales": 31,
-          "rank": 56
+          "rank": 57
+        }
+      },
+      {
+        "template": {
+          "Description": "$ay hello to GKniftyHEADS member Stencil Siren 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "GKniftyHEADS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
+          "id": "9",
+          "img": "bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
+          "name": "Stencil Siren 👑👈",
+          "rarity": "Scribe Sentinel",
+          "variation": "#HODLWARS",
+          "website": "https://medium.com/@GKniftyHEADS",
+          "template_id": 783296,
+          "schema": "gkhodlwarsyo"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 510.3555,
+          "usdVolume": 19.94438085,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 5,
+          "sellers": 6,
+          "sales": 6,
+          "rank": 21
         }
       },
       {
@@ -204,7 +295,7 @@
           "template_id": 783760,
           "schema": "bmhodlwarsyo"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -212,14 +303,105 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 402.7777777,
-          "usdVolume": 24.559722216209998,
-          "waxFloor": 89,
+          "waxVolume": 491.7777777,
+          "usdVolume": 24.97802221621,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 4,
+          "sellers": 5,
+          "sales": 5,
+          "rank": 70
+        }
+      },
+      {
+        "template": {
+          "DESCRIPTION": "👉 Say hello to #GKniftyHEADS member 👉 Nova Shadow Shredder 👑👈 a #GraffitiKings ArT Collectable & #P2E HODLWARS gaming card with its own game powers, more details @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "ID": "56455674",
+          "img": "bafybeidbiyvnzxhmvebdbhhabbswh43it62v7kqo5qrlsbptlxduvspix4",
+          "name": "👉 Nova Shadow Shredder 👑👈",
+          "rarity": "Echo Fury Shadow Sentinel Cyber Shadow  🎯",
+          "variation": "Shadow Shifter 🎯",
+          "template_id": 784419,
+          "schema": "gkniftyheads"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 404,
+          "usdVolume": 6.0733,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 2,
+          "sellers": 3,
+          "sales": 3,
+          "rank": 84
+        }
+      },
+      {
+        "template": {
+          "Description": "$ay hello to GKniftyHEADS member Chromatic Crusader 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "GKniftyHEADS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
+          "id": "464",
+          "img": "bafybeifcqaa4vzrxe5qxrv3awvuqlgwkmmuibmxcy2rpjbszjsjmvdmubq",
+          "name": "Chromatic Crusader 🌎💥💥💥🚀",
+          "rarity": "Vandal Vanguard 👀",
+          "variation": "#HODLWARS",
+          "website": "https://medium.com/@GKniftyHEADS",
+          "template_id": 783301,
+          "schema": "gkhodlwarsyo"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 400,
+          "usdVolume": 1.8800000000000001,
+          "waxFloor": 250,
+          "change": 0,
+          "buyers": 2,
+          "sellers": 2,
+          "sales": 2,
+          "rank": 24
+        }
+      },
+      {
+        "template": {
+          "Description": "👉 Say hello to THΞ ₿LØ℃K$TΔR̸$ member Marco \"Coin Conqueror\" Moretti 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "THΞ ₿LØ℃K$TΔR̸$": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
+          "id": "8766554",
+          "img": "bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
+          "name": "🤘 Marco \"Coin Conqueror\" Moretti 👑",
+          "rarity": "Coin Conqueror 👑",
+          "variation": "#HODLWARS",
+          "website": "https://medium.com/@GKniftyHEADS",
+          "template_id": 783464,
+          "schema": "bshodlwarsyo"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 395.5454,
+          "usdVolume": 11.122489960000001,
+          "waxFloor": 0,
           "change": 0,
           "buyers": 3,
-          "sellers": 4,
-          "sales": 4,
-          "rank": 69
+          "sellers": 3,
+          "sales": 3,
+          "rank": 63
         }
       },
       {
@@ -233,7 +415,7 @@
           "template_id": 776145,
           "schema": "gkniftyheads"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -262,7 +444,7 @@
           "template_id": 784284,
           "schema": "gkniftyheads"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -277,7 +459,128 @@
           "buyers": 3,
           "sellers": 3,
           "sales": 3,
-          "rank": 75
+          "rank": 79
+        }
+      },
+      {
+        "template": {
+          "Description": "👉 Say hello to THΞ ₿LØ℃K$TΔR̸$ member Martina \"Cryptocurrency Crusader\" Lombardi 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "THΞ ₿LØ℃K$TΔR̸$": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
+          "id": "4445555",
+          "img": "bafybeigpcp5vtteds56od2q3rnmutz57sum6biijykcvra5vqytthv3m7e",
+          "name": "🤘 Martina \"Cryptocurrency Crusader\" Lombardi 👑",
+          "rarity": "Cryptocurrency Crusader ⚡️⚡️⚡️",
+          "variation": "#HODLWARS",
+          "website": "https://medium.com/@GKniftyHEADS",
+          "template_id": 783466,
+          "schema": "bshodlwarsyo"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 360.62684,
+          "usdVolume": 10.379946148,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 2,
+          "sellers": 3,
+          "sales": 3,
+          "rank": 64
+        }
+      },
+      {
+        "template": {
+          "Description": "👉 Say hello to THΞ ₿LØ℃K$TΔR̸$ member Giulia \"Satoshi Sorceress\" Espositooo 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "THΞ ₿LØ℃K$TΔR̸$": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
+          "id": "9899009",
+          "img": "bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
+          "name": "🤘 Giulia \"Satoshi Sorceress\" Espositooo 👑",
+          "rarity": "Bitcoin Bandit ⚡️⚡️⚡️",
+          "variation": "#HODLWARS",
+          "website": "https://medium.com/@GKniftyHEADS",
+          "template_id": 783463,
+          "schema": "bshodlwarsyo"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 349.299,
+          "usdVolume": 16.181027399999998,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 5,
+          "sellers": 5,
+          "sales": 6,
+          "rank": 62
+        }
+      },
+      {
+        "template": {
+          "BATTLE MECHS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
+          "Description": "👉 Say hello to BATTLE MECHS member Zenith Zephyr Zealot 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "id": "546544446",
+          "img": "bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
+          "name": "⚡️⚡️⚡️ Zenith Zephyr Zealot 🤖",
+          "rarity": "Shadow Seraph 🤖",
+          "variation": "Frostfire Elemental ⚡️⚡️⚡️",
+          "template_id": 783759,
+          "schema": "bmhodlwarsyo"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 339.00999999,
+          "usdVolume": 14.008473999826,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 3,
+          "sellers": 3,
+          "sales": 3,
+          "rank": 69
+        }
+      },
+      {
+        "template": {
+          "DESCRIPTION": "👉 Say hello to #GKniftyHEADS member ⚡️⚡️⚡️Freddie CryptoCrusader 👑👈 a #GraffitiKings ArT Collectable & #P2E HODLWARS gaming card with its own game powers, more details @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "ID": "566776634000",
+          "img": "bafybeic2nazvjnmddr43dtyrzdmomqnwm32cvca4xk3galj2kbffwzwth4",
+          "name": "⚡️⚡️⚡️ Freddie CryptoCrusader ☠️",
+          "rarity": "⚡️⚡️⚡️ Ethereal Seraphim ☠️",
+          "variation": "Chrono Celestia ⚡️⚡️⚡️",
+          "template_id": 784269,
+          "schema": "gkniftyheads"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 329,
+          "usdVolume": 5.3413,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 2,
+          "sellers": 2,
+          "sales": 2,
+          "rank": 74
         }
       },
       {
@@ -293,7 +596,7 @@
           "template_id": 783298,
           "schema": "gkhodlwarsyo"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -324,7 +627,7 @@
           "template_id": 783468,
           "schema": "bmhodlwarsyo"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -339,144 +642,21 @@
           "buyers": 4,
           "sellers": 4,
           "sales": 4,
-          "rank": 64
+          "rank": 65
         }
       },
       {
         "template": {
-          "Description": "$ay hello to GKniftyHEADS member Stencil Siren 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "GKniftyHEADS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "9",
-          "img": "bafybeia333ktwxfpibava4lsoyoo46ady5mzjazx4czi7cjn7uwzaypjvm",
-          "name": "Stencil Siren 👑👈",
-          "rarity": "Scribe Sentinel",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783296,
-          "schema": "gkhodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 300.3555,
-          "usdVolume": 18.95738085,
-          "waxFloor": 60,
-          "change": 0,
-          "buyers": 4,
-          "sellers": 4,
-          "sales": 4,
-          "rank": 21
-        }
-      },
-      {
-        "template": {
-          "BATTLE MECHS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "Description": "👉 Say hello to BATTLE MECHS member Zenith Zephyr Zealot 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "id": "546544446",
-          "img": "bafybeihw3xeu6l6u5novbhtlorcfzfztinsczivfxt6igtqmxlqzfjfjja",
-          "name": "⚡️⚡️⚡️ Zenith Zephyr Zealot 🤖",
-          "rarity": "Shadow Seraph 🤖",
-          "variation": "Frostfire Elemental ⚡️⚡️⚡️",
-          "template_id": 783759,
-          "schema": "bmhodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 250.00999998999998,
-          "usdVolume": 13.590173999826,
-          "waxFloor": 89,
-          "change": 0,
-          "buyers": 2,
-          "sellers": 2,
-          "sales": 2,
-          "rank": 68
-        }
-      },
-      {
-        "template": {
-          "Description": "👉 Say hello to THΞ ₿LØ℃K$TΔR̸$ member Giulia \"Satoshi Sorceress\" Espositooo 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "THΞ ₿LØ℃K$TΔR̸$": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "9899009",
-          "img": "bafybeignuca7zr6rphoi3dmas6y25cmduvdasg6khmyrcqhjy5gqjaqjgy",
-          "name": "🤘 Giulia \"Satoshi Sorceress\" Espositooo 👑",
-          "rarity": "Bitcoin Bandit ⚡️⚡️⚡️",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783463,
-          "schema": "bshodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 249.299,
-          "usdVolume": 15.7110274,
-          "waxFloor": 100,
-          "change": 0,
-          "buyers": 4,
-          "sellers": 4,
-          "sales": 5,
-          "rank": 61
-        }
-      },
-      {
-        "template": {
-          "BATTLE MECHS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "Description": "👉 Say hello to BATTLE MECHS member Cyber Shinobi Strike 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "id": "977765449",
-          "img": "bafybeifuk4ufdhwvpq2xzzpvb3nojz7ihc5sqns553nrbm6vwprzraoleq",
-          "name": "⚡️⚡️⚡️ Cyber Shinobi Strike 🤖",
-          "rarity": "Abyssal Leviathan ☠️",
-          "variation": "Celestial Sentinel 🤖",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783757,
-          "schema": "bmhodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 234,
-          "usdVolume": 7.4596,
-          "waxFloor": 0,
-          "change": 0,
-          "buyers": 2,
-          "sellers": 2,
-          "sales": 2,
-          "rank": 67
-        }
-      },
-      {
-        "template": {
-          "DESCRIPTION": "#GKniftyHEADS P2E NFT - WHAT YOU HAVE FOUND HERE IS A DIGITAL COLLECTABLE PIECE OF ART ⚡️⚡️⚡️ OR IS IT MORE???... 🤡🤡🤡 ONLY WHEN THIS NFT HAS BEEN USED IN-GAME WILL ITS REAL POWER BE UNLEASHED 👑👈 YOU MAY NEED TO BURN IT, GRIND IT BUT YOU CAN PLAY WITH IT XXX 🎯 ITS 2024 AND @GRAFFITIKINGS 👑 FACTIONS ARE RISING 🌏 🎯 The world’s financial institutions that once controlled the government’s stronghold on its citizens have crumbled, Leaving only the fractured remnants of monolithic structures, blotting the scorched #TinderSAUCE landscape, streets worldwide are left naked & BROKEN 🙏 everyone is selling the shirts on their backs to buy Crypto ⚡️⚡️⚡️ Crypto became our Currency ⚡️ Hip Hop became our Gospel 🙏 Tracksuits became our Armor 🦸 The streets are now a lawless, barren shadow of what once was 🎯 The Great Reset is fast approaching 🤡 👑 It's an awakening 🐸 the worlds darkest secrets, & conspiracy’s are the new normal 🤡🌍 🎯 Society’s BROKEN 🙏 we reverted to joining the infamous Crypto MOONBOYS in order to distinguish new safer communities within the New World Order ⚡️⚡️⚡️ ITS A @GKniftyHEADS TAKEOVER 🤟🤑🤞 GET READY TO BATTLE WITH THIS KILLA DIGITAL ART PIECE IN #HODLWARS 2024 ⚡️⚡️⚡️ & MORE 🕹 JOIN U$ ⚡️⚡️⚡️ 🕹 PLAY NOW 🕹 EARN ⚡️⚡️⚡️ PLAY>> https://open.spotify.com/playlist/7ezlDgVjwxdIu9IBrq9aa3?si=78384d31e95043cb ✨",
-          "ID": "420",
-          "img": "bafkreieoo6ucz2yvwzyuyh5tw2iangyjly6j7f5wn3q6o4s2vhqyciajri",
-          "name": "VANDAL ⚡️⚡️⚡️",
-          "rarity": "ROCKIN HORSE INFINITY SHIT",
-          "variation": "👑 GKniftyHEADS ⚡️⚡️⚡️",
-          "template_id": 776147,
+          "DESCRIPTION": "👉 Say hello to #GKniftyHEADS member ⚡️⚡️⚡️ Satoshi Knight 👑👈 a #GraffitiKings ArT Collectable & #P2E HODLWARS gaming card with its own game powers, more details @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "ID": "454545446",
+          "img": "bafybeihfi4ugnmb2dneeldvpczaffusmdwmaqveggcrm6gnvykx4ihpjeq",
+          "name": "⚡️⚡️⚡️ Satoshi Knight 🦇",
+          "rarity": "⚡️⚡️⚡️ Bitcoin Batboy 🦇",
+          "variation": "HODL Hero ⚡️⚡️⚡️",
+          "template_id": 784264,
           "schema": "gkniftyheads"
         },
-        "total": 79,
+        "total": 85,
         "collection": {
           "name": "gkniftyheads",
           "displayName": "gkniftyheads",
@@ -484,249 +664,51 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 211.34470719,
-          "usdVolume": 6.454021187603001,
-          "waxFloor": 222,
-          "change": 0,
-          "buyers": 3,
-          "sellers": 5,
-          "sales": 7,
-          "rank": 8
-        }
-      },
-      {
-        "template": {
-          "Description": "💋 Say hello to The PU55IE$ member Virtual Vixen 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "THE PU55IE$": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "86808",
-          "img": "bafybeids2r2kj53bfzznzvzid2idohjdb5k3ws6kg346kmcidymyrtvqfi",
-          "name": "🍒 Virtual Vixen 💋",
-          "rarity": "Amber Archangels 🌈",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783398,
-          "schema": "tphodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 199.99999999,
-          "usdVolume": 12.519999999374,
+          "waxVolume": 298.99,
+          "usdVolume": 9.624368,
           "waxFloor": 0,
           "change": 0,
-          "buyers": 1,
-          "sellers": 1,
-          "sales": 1,
-          "rank": 39
-        }
-      },
-      {
-        "template": {
-          "Description": "💋 Say hello to The PU55IE$ member Decentralized Duchess 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "THE PU55IE$": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "876800",
-          "img": "bafybeia3uoo6jsuuerhwquw4tzdmlcwlxv4chqsaaoghx25yposb2om2oa",
-          "name": "🍒 Decentralized Duchess 💋",
-          "rarity": "💋 Topaz Tyrants",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783399,
-          "schema": "tphodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 199.99999999,
-          "usdVolume": 12.519999999374,
-          "waxFloor": 0,
-          "change": 0,
-          "buyers": 1,
-          "sellers": 1,
-          "sales": 1,
-          "rank": 40
-        }
-      },
-      {
-        "template": {
-          "Description": "👉 Say hello to THΞ ₿LØ℃K$TΔR̸$ member Marco \"Coin Conqueror\" Moretti 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "THΞ ₿LØ℃K$TΔR̸$": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "8766554",
-          "img": "bafybeihihzlmodncubcz6rogjkbzvaeo3rwubrs3ef6xflqzopzrrudqj4",
-          "name": "🤘 Marco \"Coin Conqueror\" Moretti 👑",
-          "rarity": "Coin Conqueror 👑",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783464,
-          "schema": "bshodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 195.5454,
-          "usdVolume": 10.18248996,
-          "waxFloor": 200,
-          "change": 0,
           "buyers": 2,
-          "sellers": 2,
-          "sales": 2,
-          "rank": 62
-        }
-      },
-      {
-        "template": {
-          "Description": "$ay hello to GKniftyHEADS member Marker Maven 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "GKniftyHEADS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "432",
-          "img": "bafybeibshf5dok27323mha444h5t7adbqt6wgms2jre6npwp43h25tbvyy",
-          "name": "Marker Maven 👑👈",
-          "rarity": "Metro Master",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783253,
-          "schema": "gkhodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 195,
-          "usdVolume": 9.601500000000001,
-          "waxFloor": 5555,
-          "change": 0,
-          "buyers": 2,
-          "sellers": 2,
-          "sales": 2,
-          "rank": 14
-        }
-      },
-      {
-        "template": {
-          "Description": "$ay hello to GKniftyHEADS member Urban Oracle 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "GKniftyHEADS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "135",
-          "img": "bafybeihrjvcxhl6z7ebfb3ew6eykkj7n4kwai67ahr2bkez64d4wq2dz7m",
-          "name": "Urban Oracle 👑👈",
-          "rarity": "Rustic Rascal",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783306,
-          "schema": "gkhodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 195,
-          "usdVolume": 9.601500000000001,
-          "waxFloor": 5555,
-          "change": 0,
-          "buyers": 2,
-          "sellers": 2,
-          "sales": 2,
-          "rank": 25
-        }
-      },
-      {
-        "template": {
-          "DESCRIPTION": "#GKniftyHEADS P2E NFT - WHAT YOU HAVE FOUND HERE IS A DIGITAL COLLECTABLE PIECE OF ART ⚡️⚡️⚡️ OR IS IT MORE???... 🤡🤡🤡 ONLY WHEN THIS NFT HAS BEEN USED IN-GAME WILL ITS REAL POWER BE UNLEASHED 👑👈 YOU MAY NEED TO BURN IT, GRIND IT BUT YOU CAN PLAY WITH IT XXX 🎯 ITS 2024 AND @GRAFFITIKINGS 👑 FACTIONS ARE RISING 🌏 🎯 The world’s financial institutions that once controlled the government’s stronghold on its citizens have crumbled, Leaving only the fractured remnants of monolithic structures, blotting the scorched #TinderSAUCE landscape, streets worldwide are left naked & BROKEN 🙏 everyone is selling the shirts on their backs to buy Crypto ⚡️⚡️⚡️ Crypto became our Currency ⚡️ Hip Hop became our Gospel 🙏 Tracksuits became our Armor 🦸 The streets are now a lawless, barren shadow of what once was 🎯 The Great Reset is fast approaching 🤡 👑 It's an awakening 🐸 the worlds darkest secrets, & conspiracy’s are the new normal 🤡🌍 🎯 Society’s BROKEN 🙏 we reverted to joining the infamous Crypto MOONBOYS in order to distinguish new safer communities within the New World Order ⚡️⚡️⚡️ ITS A @GKniftyHEADS TAKEOVER 🤟🤑🤞 GET READY TO BATTLE WITH THIS KILLA DIGITAL ART PIECE IN #HODLWARS 2024 ⚡️⚡️⚡️ & MORE 🕹 JOIN U$ ⚡️⚡️⚡️ 🕹 PLAY NOW 🕹 EARN ⚡️⚡️⚡️ PLAY>> https://open.spotify.com/playlist/7ezlDgVjwxdIu9IBrq9aa3?si=78384d31e95043cb ✨",
-          "ID": "420",
-          "img": "bafybeidch5o5c5lnhcikxkctkbk4qfsdzinvhguay6bvw3pxnmt7f5cspu",
-          "name": "👉 WE ARE VANDALS ⚡️⚡️⚡️",
-          "rarity": "ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
-          "variation": "VANDALS ⚡️⚡️⚡️",
-          "template_id": 776146,
-          "schema": "gkniftyheads"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 188.073,
-          "usdVolume": 7.3588915,
-          "waxFloor": 121,
-          "change": 0,
-          "buyers": 4,
-          "sellers": 4,
-          "sales": 6,
-          "rank": 7
-        }
-      },
-      {
-        "template": {
-          "Description": "$ay hello to GKniftyHEADS member Daring Doodle 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE <<<>>> each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
-          "GKniftyHEADS": "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈",
-          "id": "100",
-          "img": "bafybeigjuexr2ypaxpgcftoq2hvdka6qvk6dwrn57x2adnh43mszm4qmcu",
-          "name": "Daring Doodle 🐸🐸🐸",
-          "rarity": "Chroma Chieftain 🐸🐸🐸",
-          "variation": "#HODLWARS",
-          "website": "https://medium.com/@GKniftyHEADS",
-          "template_id": 783300,
-          "schema": "gkhodlwarsyo"
-        },
-        "total": 79,
-        "collection": {
-          "name": "gkniftyheads",
-          "displayName": "gkniftyheads",
-          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 183.6965,
-          "usdVolume": 6.4746316,
-          "waxFloor": 95,
-          "change": 0,
-          "buyers": 3,
           "sellers": 3,
           "sales": 3,
-          "rank": 23
+          "rank": 72
+        }
+      },
+      {
+        "template": {
+          "DESCRIPTION": "👉 Say hello to #GKniftyHEADS member WAXP JOKE$TER 👑👈 a #GraffitiKings ArT Collectable & #P2E HODLWARS gaming card with its own game powers, more details @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲",
+          "ID": "788665579",
+          "img": "bafybeifqbtpwtp3xxhv7gjzenxxq5hobqoo44okgcwb6us3rej22xynnue",
+          "name": "⚡️⚡️⚡️ WAXP JOKE$TER ⚡️⚡️⚡️",
+          "rarity": "Bitcoinker of Chaos 👀",
+          "variation": "Pancake Prankster ⚡️⚡️⚡️",
+          "template_id": 784344,
+          "schema": "gkniftyheads"
+        },
+        "total": 85,
+        "collection": {
+          "name": "gkniftyheads",
+          "displayName": "gkniftyheads",
+          "image": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 294,
+          "usdVolume": 13.479300000000002,
+          "waxFloor": 0,
+          "change": 0,
+          "buyers": 3,
+          "sellers": 4,
+          "sales": 4,
+          "rank": 81
         }
       }
     ],
     "volume": {
-      "waxVolume": 1682.7049957099998,
-      "usdVolume": 7.976313480006001
+      "waxVolume": 8269.831835699999,
+      "usdVolume": 38.93580962795901
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-09"
-      },
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-10"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -820,7 +802,7 @@
       {
         "waxVolume": 1677.2049956900003,
         "sales": 50,
-        "usdVolume": 7.882863479743004,
+        "usdVolume": 7.882863479743002,
         "date": "2026-06-26"
       },
       {
@@ -890,10 +872,22 @@
         "date": "2026-07-07"
       },
       {
+        "waxVolume": 6587.12683999,
+        "sales": 31,
+        "usdVolume": 30.959496147952997,
+        "date": "2026-07-08"
+      },
+      {
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
-        "date": "2026-07-08"
+        "date": "2026-07-09"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-07-10"
       }
     ]
   },

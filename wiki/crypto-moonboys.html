@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboys is a core NFT collection in the unified universe with GraffPUNKS, representing tokenized characters and assets that fuel the rebellion and lore ">
+  <meta name="description" content="Crypto Moonboys is the gateway to a living creator universe where players start free, earn XP, unlock NFT drops, forge a unique 1/1 Moonboy, and build their own connected world.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="crypto_moonboys — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Crypto Moonboys is a core NFT collection in the unified universe with GraffPUNKS, representing tokenized characters and assets that fuel the rebellion and lore ">
-  <meta property="og:type" content="website">
+  <meta property="og:title" content="Crypto Moonboys — Build Your Identity, Forge Your Universe">
+  <meta property="og:description" content="Start free, play games, earn rewards, forge your Moonboy, and build your own connected creator universe inside Crypto Moonboys.">
+  <meta property="og:type" content="article">
   <link rel="canonical" href="https://cryptomoonboys.com/wiki/crypto-moonboys.html">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/crypto-moonboys.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
-  <title>crypto_moonboys — Crypto Moonboys Wiki</title>
+  <title>Crypto Moonboys — Build Your Identity, Forge Your Universe | Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
 <link rel="icon" href="/favicon.png" type="image/png">
@@ -50,8 +50,187 @@
       flex-wrap: wrap;
       gap: 1em;
       font-size: 0.85em;
-      color: #555;
+      color: rgba(200, 222, 238, 0.8);
       margin-top: 0.5em;
+    }
+    .cm-wiki-hero {
+      display: grid;
+      gap: 1.4rem;
+    }
+    .cm-hero-copy {
+      display: grid;
+      gap: 0.9rem;
+      max-width: 52rem;
+    }
+    .cm-hero-kicker,
+    .cm-section-kicker {
+      margin: 0;
+      color: #00ffcc;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .cm-hero-title {
+      margin: 0;
+      color: #f7c948;
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 5vw, 4.6rem);
+      line-height: 0.95;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(247, 201, 72, 0.32), 0 0 32px rgba(0, 255, 204, 0.16);
+    }
+    .cm-hero-title span {
+      display: block;
+      margin-top: 0.7rem;
+      color: #f5f7fa;
+      font-size: clamp(1.15rem, 2vw, 1.8rem);
+      line-height: 1.15;
+      letter-spacing: 0.08em;
+    }
+    .cm-hero-body {
+      display: grid;
+      gap: 0.65rem;
+      max-width: 44rem;
+    }
+    .cm-hero-body p,
+    .cm-flow-step p,
+    .cm-system-card p,
+    .cm-network-statement p {
+      margin: 0;
+    }
+    .cm-hero-body .cm-hero-lead,
+    .cm-declaration {
+      color: #f7c948;
+      font-size: 1.14rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .cm-declaration {
+      margin: 0 0 0.8rem 0;
+      line-height: 1.35;
+    }
+    .cm-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 0.4rem;
+    }
+    .cm-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0.8rem 1.2rem;
+      color: #050607;
+      background: linear-gradient(135deg, #f7c948, #00ffcc);
+      border: 1px solid rgba(247, 201, 72, 0.58);
+      border-radius: 999px;
+      box-shadow: 0 0 24px rgba(247, 201, 72, 0.18);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .cm-cta.cm-cta-secondary {
+      color: #f5f7fa;
+      background: rgba(0, 255, 204, 0.08);
+      border-color: rgba(0, 255, 204, 0.24);
+      box-shadow: 0 0 24px rgba(0, 255, 204, 0.08);
+    }
+    .cm-cta:hover,
+    .cm-cta:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 0 28px rgba(247, 201, 72, 0.24), 0 0 28px rgba(0, 255, 204, 0.14);
+    }
+    .cm-hero-grid,
+    .cm-system-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .cm-identity-card,
+    .cm-flow-step,
+    .cm-system-card,
+    .cm-network-statement {
+      padding: 1.1rem 1.15rem;
+      background: rgba(0, 255, 204, 0.055);
+      border: 1px solid rgba(0, 255, 204, 0.16);
+      border-radius: 16px;
+      box-shadow: 0 0 26px rgba(0, 255, 204, 0.05);
+    }
+    .cm-identity-card strong,
+    .cm-flow-step strong,
+    .cm-system-card strong {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: #f7c948;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .cm-flow {
+      display: grid;
+      gap: 0.85rem;
+      margin-top: 1.2rem;
+    }
+    .cm-flow-arrow {
+      text-align: center;
+      color: #00ffcc;
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+    .cm-system-grid {
+      margin-top: 1.15rem;
+    }
+    .cm-token-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin: 1rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .cm-token-list li {
+      padding: 0.5rem 0.78rem;
+      color: #f5f7fa;
+      background: rgba(247, 201, 72, 0.08);
+      border: 1px solid rgba(247, 201, 72, 0.2);
+      border-radius: 999px;
+      font-size: 0.92rem;
+      line-height: 1.2;
+    }
+    .cm-network-statement {
+      margin-top: 1.2rem;
+      background:
+        radial-gradient(circle at top left, rgba(247, 201, 72, 0.18), transparent 36%),
+        rgba(0, 255, 204, 0.055);
+      border-color: rgba(247, 201, 72, 0.26);
+    }
+    .cm-network-statement p + p {
+      margin-top: 0.5rem;
+    }
+    @media (max-width: 900px) {
+      .cm-hero-grid,
+      .cm-system-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .cm-hero-title span {
+        letter-spacing: 0.05em;
+      }
+      .cm-hero-actions {
+        flex-direction: column;
+      }
+      .cm-cta {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -79,13 +258,115 @@
       </div>
 
       <article class="wiki-content" data-entity-slug="crypto-moonboys">
-
-          <p class="lead-paragraph">Crypto Moonboys is a core NFT collection and living wiki universe within the GraffPUNKS / GKniftyHEADS ecosystem, representing tokenized characters and assets that fuel the rebellion and lore of Block Topia through unique digital identities.</p>
+        <header class="wiki-hero cm-wiki-hero">
+          <div class="cm-hero-copy">
+            <p class="cm-hero-kicker">Crypto Moonboys / onboarding gateway</p>
+            <p class="cm-hero-title">CRYPTO MOONBOYS<span>YOUR CHARACTER.<br>YOUR IDENTITY.<br>YOUR UNIVERSE.</span></p>
+            <div class="cm-hero-body">
+              <p class="cm-hero-lead">THIS IS NOT JUST SOMETHING YOU OWN.</p>
+              <p class="cm-hero-lead">IT IS SOMETHING YOU BUILD.</p>
+              <p>Start free. Play. Earn XP. Receive NFT drops. Burn and evolve toward a 1/1 Moonboy that can become your character, your identity, and your universe.</p>
+              <p>Crypto Moonboys turns NFT ownership into participation, creation, storytelling, and worldbuilding inside a connected creator grid built from 40+ years of Graffiti Kings culture.</p>
+            </div>
+            <div class="cm-hero-actions" role="navigation" aria-label="Crypto Moonboys onboarding actions">
+              <a class="cm-cta" href="/games/index.html">Start the arcade</a>
+              <a class="cm-cta cm-cta-secondary" href="#journey">See the journey</a>
+              <a class="cm-cta cm-cta-secondary" href="/community.html">Enter the live universe</a>
+            </div>
+          </div>
+          <div class="cm-hero-grid" aria-label="Crypto Moonboys identity system">
+            <div class="cm-identity-card">
+              <strong>Why care</strong>
+              <p>Crypto Moonboys turns a player journey into a creator journey where identity grows into story, ownership, and worldbuilding.</p>
+            </div>
+            <div class="cm-identity-card">
+              <strong>What you become</strong>
+              <p>Your Moonboy can evolve from a drop into your character, your avatar, your brand, and the signal that anchors your place in the Grid.</p>
+            </div>
+            <div class="cm-identity-card">
+              <strong>How you enter</strong>
+              <p>You start free, play your way in, earn momentum, and forge a 1/1 Moonboy that can become the foundation of your own universe.</p>
+            </div>
+          </div>
+        </header>
 
         <div class="article-stats">
           <span>📊 Verified across <strong>801154681</strong> SAM cycles</span>
           <span>🤖 Auto-published by SAM</span>
         </div>
+
+        <section class="wiki-section" id="journey">
+          <p class="cm-section-kicker">Progression flow</p>
+          <h2>YOUR JOURNEY STARTS HERE</h2>
+          <p class="lore-paragraph">You do not enter this world by already owning everything. You enter by showing up, playing, and building momentum.</p>
+          <div class="cm-flow" aria-label="Crypto Moonboys player journey">
+            <div class="cm-flow-step"><strong>Start free</strong><p>Step into the Grid without needing to own anything first.</p></div>
+            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
+            <div class="cm-flow-step"><strong>Play</strong><p>Learn the world through games, systems, missions, and live community activity.</p></div>
+            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
+            <div class="cm-flow-step"><strong>Earn XP</strong><p>Progress through participation and build momentum inside the ecosystem.</p></div>
+            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
+            <div class="cm-flow-step"><strong>Receive NFT drops</strong><p>Collect the assets that begin shaping your place in the network.</p></div>
+            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
+            <div class="cm-flow-step"><strong>Burn / evolve</strong><p>Transform earned drops into the next version of your identity.</p></div>
+            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
+            <div class="cm-flow-step"><strong>Forge your 1/1 Moonboy</strong><p>Create a one-of-one character that becomes distinctly yours.</p></div>
+            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
+            <div class="cm-flow-step"><strong>Build your own universe</strong><p>Expand from character ownership into worldbuilding, publishing, and connected creator infrastructure.</p></div>
+          </div>
+        </section>
+
+        <section class="wiki-section" id="forge-your-own-moonboy">
+          <p class="cm-section-kicker">Ownership evolution</p>
+          <h2>FORGE YOUR OWN MOONBOY</h2>
+          <p class="cm-declaration">YOUR 1/1 MOONBOY IS NOT THE END.<br>IT IS THE BEGINNING.</p>
+          <p class="lore-paragraph">By burning collected NFTs, players can forge a unique 1/1 Moonboy that marks the shift from collector to creator.</p>
+          <p class="lore-paragraph">Your 1/1 Moonboy can become your character, your brand, your avatar, your story, and your universe.</p>
+          <p class="lore-paragraph">You are not finishing a collection. You are opening a world you can keep building inside the wider Crypto Moonboys Grid.</p>
+        </section>
+
+        <section class="wiki-section" id="from-nft-to-universe">
+          <p class="cm-section-kicker">Creator universe loop</p>
+          <h2>CREATE YOUR WORLD</h2>
+          <p class="lore-paragraph">A forged Moonboy gives you a center point for everything you want to build around it.</p>
+          <ul class="cm-token-list" aria-label="Creator universe building blocks">
+            <li>✓ Website</li>
+            <li>✓ Lore</li>
+            <li>✓ Artwork</li>
+            <li>✓ Videos</li>
+            <li>✓ Games</li>
+            <li>✓ Communities</li>
+            <li>✓ Merchandise</li>
+            <li>✓ Stories</li>
+          </ul>
+          <p class="cm-declaration" style="margin-top:1rem;">CONNECT IT BACK TO THE GRID.</p>
+          <p class="lore-paragraph">When your world is live, it can connect back into Crypto Moonboys so your character, story, and universe become part of a larger network.</p>
+        </section>
+
+        <section class="wiki-section" id="the-living-wiki-remembers">
+          <p class="cm-section-kicker">SAM / AI archivist</p>
+          <h2>THE LIVING WIKI REMEMBERS</h2>
+          <p class="cm-declaration">YOU BUILD THE WORLD.<br>SAM REMEMBERS IT.</p>
+          <div class="cm-system-grid">
+            <div class="cm-system-card">
+              <strong>Creators submit approved links</strong>
+              <p>When creators publish their Moonboy universe, they submit the links that represent their character, world, and canon.</p>
+            </div>
+            <div class="cm-system-card">
+              <strong>SAM crawls creator worlds</strong>
+              <p>SAM and the website agents crawl approved creator worlds, organise what is there, and preserve it as connected memory.</p>
+            </div>
+            <div class="cm-system-card">
+              <strong>The wiki links it together</strong>
+              <p>Characters, stories, locations, and universes become connected pages instead of isolated posts.</p>
+            </div>
+          </div>
+          <div class="cm-network-statement">
+            <p class="cm-declaration">ONE UNIVERSE.<br>UNLIMITED CREATORS.<br>INFINITE WORLDS.</p>
+            <p>Crypto Moonboys does not create every story alone. The community expands the universe, and every Moonboy can become another connected world.</p>
+            <p class="cm-section-kicker">GK PROVIDES THE FLOOR. THE COMMUNITY BUILDS ON TOP.</p>
+          </div>
+        </section>
 
         <section class="wiki-section">
           <h2 id="faction">Faction</h2>
@@ -383,6 +664,9 @@
 
 <script src="/js/wiki.js" data-cfasync="false"></script>
 <script src="/js/bible-loader.js" data-cfasync="false"></script>
+<script src="/js/engagement.js" data-cfasync="false"></script>
+<script src="/js/comments.js" data-cfasync="false"></script>
+<script src="/js/battle-layer.js" data-cfasync="false"></script>
 </body>
 </html>
 

@@ -53,6 +53,16 @@
     return document.location.pathname.split('/').pop().replace(/\.html$/, '') || 'home';
   }
 
+  function resolveWikiEngagementAnchor() {
+    var target = document.querySelector('.article-meta');
+    if (!target) return null;
+    var article = document.querySelector('article.wiki-content');
+    if (article && article.querySelector('.cm-wiki-hero') && !target.closest('article')) {
+      return { element: article, position: 'afterend' };
+    }
+    return { element: target, position: 'afterend' };
+  }
+
   function ensureCommentsContainer(pageId) {
     if (document.querySelector('.wiki-comments')) return;
     var main = document.querySelector('main');
@@ -92,12 +102,12 @@
       if (!existing.dataset.pageId) existing.dataset.pageId = pageId;
       return;
     }
-    var target = document.querySelector('.article-meta');
-    if (!target) return;
+    var anchor = resolveWikiEngagementAnchor();
+    if (!anchor) return;
     var div = document.createElement('div');
     div.className = 'page-like-widget';
     div.dataset.pageId = pageId;
-    target.insertAdjacentElement('afterend', div);
+    anchor.element.insertAdjacentElement(anchor.position, div);
     if (window.MOONBOYS_ENGAGEMENT && window.MOONBOYS_ENGAGEMENT.initPageLike) {
       window.MOONBOYS_ENGAGEMENT.initPageLike(div);
     }
@@ -468,8 +478,9 @@
     wireMissionEvents(pageId);
     enhanceNftDataDisclosures();
 
-    var target = document.querySelector('.article-meta');
-    if (!target || document.querySelector('.wiki-engagement-module, .battle-deck')) return;
+    var anchor = resolveWikiEngagementAnchor();
+    if (!anchor || document.querySelector('.wiki-engagement-module, .battle-deck')) return;
+    var target = anchor.element;
 
     var engagement = await computeEngagement(pageId);
 
@@ -479,7 +490,7 @@
 
     var deck = document.createElement('div');
     deck.className = 'battle-deck battle-engagement-deck';
-    var article = target.closest('article');
+    var article = document.querySelector('article.wiki-content') || target.closest('article');
     var pageType = article && article.dataset ? article.dataset.pageType : '';
     var isCollection = pageType === 'nft_collection';
     var isNftTemplate = pageType === 'nft_template';
@@ -498,7 +509,7 @@
       (hero || target).insertAdjacentElement('afterend', module);
       movePageLikeIntoMissions();
     } else {
-      target.insertAdjacentElement('afterend', module);
+      target.insertAdjacentElement(anchor.position, module);
     }
     hydrateMissionStatus(pageId);
   }
