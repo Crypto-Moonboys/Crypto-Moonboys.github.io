@@ -51,5 +51,10 @@ jobs:
           echo "Waiting ${WAIT_SECONDS}s before live-site verification..."
           sleep "$WAIT_SECONDS"
 
-      - name: Verify cryptomoonboys.com
+      - name: Verify cryptomoonboys.com runtime
         run: npm run test:live-site
+
+      - name: Verify deployed homepage commit and copy
+        env:
+          EXPECTED_DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        run: npm run test:live-homepage-parity
