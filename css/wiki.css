@@ -3637,6 +3637,111 @@ body.page-home .hero-stat {
   }
 }
 
+@keyframes creatorPulse {
+  0%,
+  100% {
+    opacity: 0.76;
+    text-shadow:
+      0 0 10px rgba(247, 201, 72, 0.26),
+      0 0 18px rgba(0, 255, 204, 0.18);
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 22px rgba(247, 201, 72, 0.46),
+      0 0 38px rgba(0, 255, 204, 0.3);
+    transform: translateY(-1px);
+  }
+}
+
+body.page-home .home-ai-bridge {
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+  padding: clamp(52px, 8vw, 110px) clamp(20px, 5vw, 64px);
+  background: #000;
+  border-top: 1px solid rgba(0, 255, 204, 0.18);
+  border-bottom: 1px solid rgba(247, 201, 72, 0.2);
+}
+
+body.page-home .home-ai-bridge-inner {
+  display: grid;
+  justify-items: center;
+  gap: clamp(14px, 1.8vw, 20px);
+  width: min(100%, 940px);
+  margin: 0 auto;
+  text-align: center;
+}
+
+body.page-home .home-ai-bridge-kicker {
+  margin: 0;
+  color: rgba(226, 236, 246, 0.92);
+  font-family: var(--font-mono);
+  font-size: clamp(0.76rem, 1vw, 0.9rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  animation: creatorPulse 6.5s ease-in-out infinite;
+}
+
+body.page-home .home-ai-bridge h2 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5.6vw, 4.6rem);
+  line-height: 0.95;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: creatorPulse 6.5s ease-in-out infinite;
+  animation-delay: 0.35s;
+}
+
+body.page-home .home-ai-bridge-line {
+  margin: 0;
+  color: rgba(226, 236, 246, 0.98);
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.35vw, 1.9rem);
+  line-height: 1.15;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  animation: creatorPulse 6.5s ease-in-out infinite;
+  animation-delay: 0.7s;
+}
+
+body.page-home .home-ai-bridge-end {
+  color: var(--color-accent);
+  animation-delay: 1.05s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-home .home-ai-bridge-kicker,
+  body.page-home .home-ai-bridge h2,
+  body.page-home .home-ai-bridge-line {
+    animation: none;
+    transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  body.page-home .home-ai-bridge {
+    padding: clamp(34px, 11vw, 56px) clamp(16px, 6vw, 24px);
+  }
+
+  body.page-home .home-ai-bridge h2 {
+    font-size: clamp(1.6rem, 10vw, 2.3rem);
+    letter-spacing: 0.04em;
+  }
+
+  body.page-home .home-ai-bridge-line {
+    font-size: clamp(1.02rem, 5.8vw, 1.26rem);
+    line-height: 1.2;
+  }
+
+  body.page-home .home-ai-bridge br {
+    display: block;
+  }
+}
+
 /* ── Section 2: split-image hero block ──────────────────────────────── */
 body.page-home .home-section2 {
   display: flex;
