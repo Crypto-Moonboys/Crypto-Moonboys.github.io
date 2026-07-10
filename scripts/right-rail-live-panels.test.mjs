@@ -294,7 +294,10 @@ check(!opsBlock.includes('csp-live-cta') && !wtfSectionBlock.includes('csp-live-
 check(liveFeedBlock.includes('csp-live-cta') && liveFeedBlock.includes('Link Telegram') && liveFeedBlock.includes('RELINK Telegram'), 'Player Live Feed retains the main Link Telegram / RELINK CTA for unlinked/relink states');
 // Standalone pages still mount data-csp-panel outside the right-rail shell
 check(incubator.includes('data-csp-panel') && !incubator.includes('homepage-right-panel'), 'gkniftyheads-incubator standalone data-csp-panel mount remains outside homepage-right-panel shell');
+check(blockTopiaPage.includes('data-csp-panel') && blockTopiaPage.includes('bt-gate__status-compat-mount') && blockTopiaPage.includes('hidden') && blockTopiaPage.includes('aria-hidden="true"'), 'games/block-topia retains a hidden compatibility data-csp-panel mount');
 check(blockTopiaPage.includes('data-csp-panel') && !blockTopiaPage.includes('homepage-right-panel'), 'games/block-topia standalone data-csp-panel mount remains outside homepage-right-panel shell');
+check(read('games/block-topia/styles.css').includes('.bt-gate__status-compat-mount {\n  display: none !important;\n}'), 'compatibility mount is forced non-visual in CSS');
+check(!blockTopiaPage.includes('class="csp-panel') && !blockTopiaPage.includes("class='csp-panel") && !blockTopiaPage.includes('Player Live Feed'), 'games/block-topia entrance does not render a visible csp-panel card or Player Live Feed copy');
 // Top comment reflects new architecture
 check(!csp.includes('data-csp-panel) is the single right-rail live source'), 'top comment no longer claims data-csp-panel is the only right-rail source');
 check(csp.includes('Standalon') && csp.includes('framed `.csp-panel` wrapper'), 'top comment documents standalone data-csp-panel framed exception');

@@ -12,13 +12,19 @@
   <body class="page-standalone-tool">
     <!-- Entry gate — shown while checking or when access is denied -->
     <div id="bt-gate" role="main" aria-live="polite">
-      <div class="bt-gate__logo">Block Topia</div>
-      <div class="bt-gate__subtitle">Multiplayer City</div>
-      <div id="bt-gate-content">
-        <p class="bt-gate__checking">Checking access&hellip;</p>
+      <canvas id="bt-particles" aria-hidden="true"></canvas>
+      <div class="bt-gate__fog" aria-hidden="true"></div>
+      <div
+        data-csp-panel
+        hidden
+        aria-hidden="true"
+        class="bt-gate__status-compat-mount"
+      ></div>
+      <div class="bt-gate__inner">
+        <div id="bt-gate-content">
+          <p class="bt-gate__checking">Checking access&hellip;</p>
+        </div>
       </div>
-      <!-- Status panel shown in the gate screen -->
-      <div id="bt-gate-status-panel" data-csp-panel style="margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto"></div>
     </div>
 
     <!-- Game shell — hidden until gate passes -->
@@ -114,6 +120,13 @@
         if (overlay) overlay.style.display = "flex";
       }
 
+      function keepCompatMountHidden() {
+        const mount = document.querySelector(".bt-gate__status-compat-mount");
+        if (!mount) return;
+        mount.hidden = true;
+        mount.setAttribute("aria-hidden", "true");
+      }
+
       function safeGetStorage(key) {
         try { return window.localStorage.getItem(key); } catch { return null; }
       }
@@ -154,18 +167,10 @@
 
       function buildUnlinkedGate() {
         return `
-          <div class="bt-gate__icon" aria-hidden="true">🔒</div>
-          <h1 class="bt-gate__heading">Telegram link required</h1>
-          <p class="bt-gate__body">
-            Link your Telegram account to enter Block Topia multiplayer.<br>
-            Arcade games remain free to play.
-          </p>
+          <div class="bt-gate__gate-heading">TELEGRAM LINK REQUIRED</div>
           <div class="bt-gate__actions">
             <a class="bt-gate__btn bt-gate__btn--primary" href="/gkniftyheads-incubator.html">
-              Link Telegram
-            </a>
-            <a class="bt-gate__btn bt-gate__btn--secondary" href="/games/invaders-3008/">
-              Play Invaders 3008 (Free)
+              LINK TELEGRAM
             </a>
           </div>`;
       }
@@ -173,38 +178,38 @@
       function buildXpGate(current, required) {
         const pct = Math.min(100, Math.floor((current / required) * 100));
         const ariaXpNow = Math.min(required, Math.max(0, current));
-        const xpLabel = current === 0
-          ? `Your Arcade XP is 0 / ${required}. Play arcade games, then sync Telegram so server-accepted scores can convert into Arcade XP.`
-          : `Your Arcade XP: ${current} / ${required}`;
         return `
-          <div class="bt-gate__icon" aria-hidden="true">🎮</div>
-          <h1 class="bt-gate__heading">You need ${required} Arcade XP to enter</h1>
-          <p class="bt-gate__body">
-            Play arcade games and sync Telegram so accepted scores can become server-backed Arcade XP.<br>
-            Block Topia multiplayer unlocks at ${required} Arcade XP.
-          </p>
-          <p class="bt-gate__xp-label">${xpLabel}</p>
+          <div class="bt-gate__xp-required">${required.toLocaleString()} ARCADE XP REQUIRED</div>
+          <div class="bt-gate__xp-current">${current.toLocaleString()} / ${required.toLocaleString()} XP</div>
           <div class="bt-gate__xp-bar-wrap" role="progressbar" aria-valuenow="${ariaXpNow}" aria-valuemin="0" aria-valuemax="${required}" aria-label="XP progress">
             <div class="bt-gate__xp-bar" style="width:${pct}%"></div>
           </div>
           <div class="bt-gate__actions">
             <a class="bt-gate__btn bt-gate__btn--primary" href="/games/invaders-3008/">
-              Play Invaders 3008
+              PLAY ARCADE
             </a>
             <a class="bt-gate__btn bt-gate__btn--secondary" href="/games/leaderboard.html">
-              Arcade Leaderboard
+              ARCADE LEADERBOARD
             </a>
           </div>`;
       }
 
       function buildErrorGate(message) {
         return `
-          <div class="bt-gate__icon" aria-hidden="true">⚠️</div>
-          <h1 class="bt-gate__heading">Access check failed</h1>
-          <p class="bt-gate__body">${message}</p>
+          <div class="bt-gate__gate-icon" aria-hidden="true">⚠️</div>
+          <div class="bt-gate__gate-heading">ACCESS CHECK FAILED</div>
           <div class="bt-gate__actions">
             <button class="bt-gate__btn bt-gate__btn--primary" onclick="location.reload()">
-              Try Again
+              TRY AGAIN
+            </button>
+          </div>`;
+      }
+
+      function buildUnlockedGate() {
+        return `
+          <div class="bt-gate__actions">
+            <button class="bt-gate__btn bt-gate__btn--enter" id="bt-enter-btn">
+              ENTER BLOCK TOPIA
             </button>
           </div>`;
       }
@@ -318,13 +323,30 @@
           status: "pass",
         }));
 
-        // ── Gate passed: mount the map, then connect multiplayer ─────
-        try {
-          await mountAndConnect(telegramAuth, arcadeXpTotal);
-        } catch (_mountErr) {
-          showGateScreen(
-            buildErrorGate("Unable to start Block Topia right now. Please try again.")
-          );
+        // ── Gate passed: show Enter CTA, then mount on click ─────────
+        showGateScreen(buildUnlockedGate());
+        const enterBtn = document.getElementById("bt-enter-btn");
+        if (enterBtn) {
+          enterBtn.addEventListener("click", async () => {
+            enterBtn.disabled = true;
+            enterBtn.textContent = "ENTERING…";
+            try {
+              await mountAndConnect(telegramAuth, arcadeXpTotal);
+            } catch (_mountErr) {
+              showGateScreen(
+                buildErrorGate("Unable to start Block Topia right now. Please try again.")
+              );
+            }
+          });
+        } else {
+          // Fallback: launch immediately if button not found
+          try {
+            await mountAndConnect(telegramAuth, arcadeXpTotal);
+          } catch (_mountErr) {
+            showGateScreen(
+              buildErrorGate("Unable to start Block Topia right now. Please try again.")
+            );
+          }
         }
       }
 
@@ -341,6 +363,7 @@
           throw new Error("BlockTopiaMap API unavailable after import");
         }
         api.mount(mountOptions);
+        keepCompatMountHidden();
         api.pushFeedback?.("Survive the patrol and hold the city line.");
         api.setInputEnabled?.(false);
 
@@ -560,6 +583,114 @@
 
       window.addEventListener("pagehide", cleanup, { once: true });
       window.addEventListener("beforeunload", cleanup, { once: true });
+    </script>
+
+    <!-- Cinematic particle system for the gate screen -->
+    <script>
+    (function () {
+      'use strict';
+      var canvas = document.getElementById('bt-particles');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var W = 0, H = 0, raf = null;
+      var particles = [];
+      var PARTICLE_COUNT = 90;
+
+      var COLORS = ['#80c0ff', '#c080ff', '#ffffff', '#60a0ff', '#a060ff'];
+
+      var reduceMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      function prefersReducedMotion() {
+        return reduceMotionMQ.matches;
+      }
+
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      function makeParticle(initY) {
+        return {
+          x:     Math.random() * W,
+          y:     initY !== undefined ? initY : Math.random() * H,
+          r:     Math.random() * 1.4 + 0.4,
+          vx:    (Math.random() - 0.5) * 0.28,
+          vy:    -(Math.random() * 0.55 + 0.15),
+          alpha: Math.random() * 0.55 + 0.18,
+          da:    Math.random() * 0.0018 + 0.0008,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)]
+        };
+      }
+
+      function stop() {
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        ctx.clearRect(0, 0, W, H);
+        particles = [];
+      }
+
+      function start() {
+        if (prefersReducedMotion()) return;
+        resize();
+        particles = [];
+        for (var i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(makeParticle());
+        }
+        draw();
+      }
+
+      function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        if (!prefersReducedMotion()) {
+          for (var i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push(makeParticle());
+          }
+          draw();
+        }
+        reduceMotionMQ.addEventListener('change', function (e) {
+          if (e.matches) {
+            stop();
+          } else {
+            start();
+          }
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fill();
+          p.x    += p.vx;
+          p.y    += p.vy;
+          p.alpha -= p.da;
+          if (p.alpha <= 0 || p.y < -10) {
+            particles[i] = makeParticle(H + 10);
+          }
+        }
+        ctx.globalAlpha = 1;
+        raf = requestAnimationFrame(draw);
+      }
+
+      // Pause particles when gate is hidden to save resources
+      var gate = document.getElementById('bt-gate');
+      if (gate) {
+        var obs = new MutationObserver(function () {
+          if (gate.classList.contains('bt-gate--hidden')) {
+            if (raf) { cancelAnimationFrame(raf); raf = null; }
+          } else if (!raf && !prefersReducedMotion()) {
+            draw();
+          }
+        });
+        obs.observe(gate, { attributes: true, attributeFilter: ['class'] });
+      }
+
+      init();
+    }());
     </script>
   </body>
 </html>

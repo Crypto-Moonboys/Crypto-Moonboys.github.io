@@ -33,6 +33,7 @@ const howToPlay = read('how-to-play.html');
 const gamesIndex = read('games/index.html');
 const leaderboard = read('games/leaderboard.html');
 const blockTopia = read('games/block-topia/index.html');
+const blockTopiaStyles = read('games/block-topia/styles.css');
 const corpus = [howToPlay, gamesIndex, leaderboard, blockTopia].join('\n');
 
 console.log('\n--- How To Play XP Copy Contract ---\n');
@@ -69,8 +70,30 @@ check(leaderboard.includes('Score = leaderboard ranking only.'), 'leaderboard ke
 check(leaderboard.includes('only after Telegram sync and server acceptance'), 'leaderboard requires server acceptance for Arcade XP');
 check(leaderboard.includes('unsynced runs stay local/pending'), 'leaderboard documents local/pending unlinked runs');
 
-check(blockTopia.includes('server-accepted scores can convert into Arcade XP'), 'Block Topia gate requires server-accepted score conversion');
-check(blockTopia.includes('accepted scores can become server-backed Arcade XP'), 'Block Topia gate copy says server-backed Arcade XP');
+check(blockTopia.includes('ARCADE XP REQUIRED'), 'Block Topia gate renders dynamic XP required text');
+check(blockTopia.includes('BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP'), 'Block Topia gate uses live required-XP constant');
+check(blockTopia.includes('aria-label="XP progress"'), 'Block Topia gate includes XP progress bar');
+check(!blockTopia.includes('server-accepted scores can convert into Arcade XP'), 'Block Topia gate has no hidden copy comments gaming the test');
+check(!blockTopia.includes('accepted scores can become server-backed Arcade XP'), 'Block Topia gate has no hidden copy comments gaming the test (2)');
+check(blockTopia.includes('ENTER BLOCK TOPIA'), 'Block Topia gate has unlocked ENTER CTA');
+check(blockTopia.includes('LINK TELEGRAM'), 'Block Topia gate has unlinked LINK TELEGRAM CTA');
+check(blockTopiaStyles.includes('overflow-y: auto'), 'Block Topia gate CSS permits vertical overflow on short viewports');
+check(blockTopiaStyles.includes('max-height: 600px'), 'Block Topia gate CSS has compact-height media query for phone landscape');
+check(blockTopiaStyles.includes('prefers-reduced-motion'), 'Block Topia gate CSS respects prefers-reduced-motion');
+check(blockTopiaStyles.includes('block-topia-metaverse-portal'), 'Block Topia gate CSS references new portal artwork');
+
+// Particle script must check prefers-reduced-motion at the JS runtime level
+check(blockTopia.includes("matchMedia('(prefers-reduced-motion: reduce)')"), 'Block Topia particle script checks prefers-reduced-motion via matchMedia');
+check(blockTopia.includes('prefersReducedMotion()'), 'Block Topia particle script guards init/draw behind prefersReducedMotion helper');
+check(blockTopia.includes("reduceMotionMQ.addEventListener('change'"), 'Block Topia particle script reacts to preference changes via change listener');
+
+// Portal hero asset must be a real full-size image, not a placeholder
+const portalImagePath = path.join(ROOT, 'img/game/backgrounds/block-topia-metaverse-portal.jpg');
+const MIN_PORTAL_BYTES = 10000; // a real cinematic background image should be at least 10 KB
+let portalStat;
+try { portalStat = fs.statSync(portalImagePath); } catch (_) { portalStat = null; }
+check(portalStat !== null, 'Block Topia portal image exists at img/game/backgrounds/block-topia-metaverse-portal.jpg');
+check(portalStat !== null && portalStat.size >= MIN_PORTAL_BYTES, `Block Topia portal image is a real asset (>= ${MIN_PORTAL_BYTES} bytes; got ${portalStat ? portalStat.size : 0})`);
 
 check(!/Score\s*=\s*Arcade XP/i.test(corpus), 'public onboarding copy never equates score with Arcade XP');
 check(!/XP proves a player/i.test(corpus), 'manual avoids vague old XP claim');
