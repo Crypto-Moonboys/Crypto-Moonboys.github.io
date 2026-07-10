@@ -56,6 +56,10 @@ body {
   display: none;
 }
 
+.bt-gate__status-compat-mount {
+  display: none !important;
+}
+
 /* Cinematic dark gradient overlay */
 #bt-gate::before {
   content: '';

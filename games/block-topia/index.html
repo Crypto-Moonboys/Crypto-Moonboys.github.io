@@ -14,6 +14,12 @@
     <div id="bt-gate" role="main" aria-live="polite">
       <canvas id="bt-particles" aria-hidden="true"></canvas>
       <div class="bt-gate__fog" aria-hidden="true"></div>
+      <div
+        data-csp-panel
+        hidden
+        aria-hidden="true"
+        class="bt-gate__status-compat-mount"
+      ></div>
       <div class="bt-gate__inner">
         <div id="bt-gate-content">
           <p class="bt-gate__checking">Checking access&hellip;</p>
@@ -112,6 +118,13 @@
         if (shell) shell.style.display = "";
         const overlay = document.getElementById("bt-start-overlay");
         if (overlay) overlay.style.display = "flex";
+      }
+
+      function keepCompatMountHidden() {
+        const mount = document.querySelector(".bt-gate__status-compat-mount");
+        if (!mount) return;
+        mount.hidden = true;
+        mount.setAttribute("aria-hidden", "true");
       }
 
       function safeGetStorage(key) {
@@ -350,6 +363,7 @@
           throw new Error("BlockTopiaMap API unavailable after import");
         }
         api.mount(mountOptions);
+        keepCompatMountHidden();
         api.pushFeedback?.("Survive the patrol and hold the city line.");
         api.setInputEnabled?.(false);
 
