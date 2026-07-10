@@ -328,9 +328,14 @@
 import { mountGame } from '/js/arcade/core/game-shell.js';
 import { bootstrapBlockTopiaQuestMaze } from '/js/arcade/games/block-topia-quest-maze/bootstrap.js';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
-
-mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapBlockTopiaQuestMaze });
-mountModifierPanel();
+mountGame({
+  root: document.querySelector('.game-card'),
+  bootstrap: bootstrapBlockTopiaQuestMaze,
+  requireCompetitiveGate: true,
+  gameId: 'block-topia-quest-maze'
+}).then(function (game) {
+  if (game && !game.gateBlocked) mountModifierPanel();
+});
 </script>
 </body>
 </html>

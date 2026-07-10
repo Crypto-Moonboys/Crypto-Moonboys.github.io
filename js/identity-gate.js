@@ -54,6 +54,7 @@
   var MODAL_ID     = 'tg-sync-gate-modal';
   var STYLE_ID     = 'tg-sync-gate-styles';
   var bootstrapPromise = null;
+  var competitiveGatePromise = null;
 
   // ── localStorage helpers ────────────────────────────────────
 
@@ -222,6 +223,108 @@
     };
   }
 
+  function buildCompetitiveGateResult(ok, reason, extras) {
+    var base = {
+      ok: !!ok,
+      allowed: !!ok,
+      reason: reason ? String(reason) : '',
+      linked: isTelegramLinked(),
+      telegram_id: getTelegramId() || null,
+      telegram_auth: null,
+      source: 'identity_gate',
+      game_id: null,
+    };
+    if (extras && typeof extras === 'object') {
+      for (var key in extras) {
+        if (Object.prototype.hasOwnProperty.call(extras, key)) {
+          base[key] = extras[key];
+        }
+      }
+    }
+    return base;
+  }
+
+  function normalizeCompetitiveGateFailureReason(reason) {
+    var raw = reason ? String(reason) : '';
+    if (!raw) return 'auth_restore_failed';
+    if (raw === 'not_linked') return 'not_linked';
+    if (raw === 'account_blocked') return 'account_blocked';
+    if (raw === 'auth_expired' || raw === 'telegram_auth_expired') return 'auth_expired';
+    if (raw === 'auth_mismatch' || raw === 'telegram_id_mismatch') return 'auth_mismatch';
+    return 'auth_restore_failed';
+  }
+
+  function failCompetitiveArcadePageGate(reason, options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var normalizedReason = normalizeCompetitiveGateFailureReason(reason || 'auth_required');
+    if (normalizedReason === 'account_blocked') {
+      showBlockedModal((opts.anticheat && opts.anticheat.blocked_reason) || 'Competitive activity violation detected.');
+    } else if (normalizedReason === 'not_linked' || normalizedReason === 'missing_auth' || normalizedReason === 'auth_expired' || normalizedReason === 'auth_restore_failed' || normalizedReason === 'auth_mismatch') {
+      showSyncGateModal(true);
+    }
+    setSyncHealth('bad', normalizedReason);
+    return buildCompetitiveGateResult(false, normalizedReason, {
+      game_id: opts.game_id || null,
+      anticheat: opts.anticheat || null,
+    });
+  }
+
+  function enforceCompetitiveArcadePageGate(options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var gameId = opts.game_id || opts.gameId || null;
+
+    if (!isTelegramLinked()) {
+      return Promise.resolve(failCompetitiveArcadePageGate('not_linked', { game_id: gameId }));
+    }
+
+    if (competitiveGatePromise) return competitiveGatePromise;
+
+    competitiveGatePromise = Promise.resolve(restoreLinkedTelegramAuth({
+      force: true,
+      purpose: 'competitive_arcade_page_gate',
+      game_id: gameId,
+    }))
+      .then(function (restoreResult) {
+        if (!restoreResult || restoreResult.ok !== true) {
+          return failCompetitiveArcadePageGate(
+            restoreResult && restoreResult.reason ? restoreResult.reason : 'auth_restore_failed',
+            { game_id: gameId, anticheat: restoreResult && restoreResult.anticheat },
+          );
+        }
+        var restoredAuth = restoreResult.telegram_auth;
+        if (!restoredAuth || !restoredAuth.id || !restoredAuth.hash || !restoredAuth.auth_date) {
+          return failCompetitiveArcadePageGate('auth_restore_failed', { game_id: gameId, anticheat: restoreResult.anticheat });
+        }
+        if (restoreResult.anticheat && restoreResult.anticheat.is_blocked === true) {
+          return failCompetitiveArcadePageGate('account_blocked', { game_id: gameId, anticheat: restoreResult.anticheat });
+        }
+        if (String(restoredAuth.id) !== String(getTelegramId() || '')) {
+          return failCompetitiveArcadePageGate('auth_mismatch', { game_id: gameId, anticheat: restoreResult.anticheat });
+        }
+        if (isTelegramAuthExpired(restoredAuth)) {
+          return failCompetitiveArcadePageGate('auth_expired', { game_id: gameId, anticheat: restoreResult.anticheat });
+        }
+        setSyncHealth('good', 'arcade_gate_server_verified');
+        return buildCompetitiveGateResult(true, '', {
+          game_id: gameId,
+          telegram_auth: restoredAuth,
+          source: restoreResult.source || 'server_verified_competitive_gate',
+          linked: true,
+          verified_by_server: true,
+          anticheat: restoreResult.anticheat || null,
+          recovery: restoreResult.recovery || null,
+        });
+      })
+      .catch(function () {
+        return failCompetitiveArcadePageGate('auth_restore_failed', { game_id: gameId });
+      })
+      .finally(function () {
+        competitiveGatePromise = null;
+      });
+
+    return competitiveGatePromise;
+  }
+
   /**
    * Returns true when both Telegram auth (Step 1) AND the bot link flow (Step 2) are complete.
    * Only a linked account is fully competition-active.
@@ -361,6 +464,9 @@
         linked: isTelegramLinked(),
         telegram_name: getTelegramName() || null,
         sync: getSyncHealth(),
+        force: force,
+        purpose: opts.purpose || null,
+        competitive_game_id: opts.game_id || opts.gameId || null,
       }),
     })
       .then(function (response) {
@@ -375,22 +481,54 @@
           : null;
         var linked = data.linked === true || data.link_confirmed === true;
         var displayName = data.display_name || data.telegram_name || getTelegramName() || null;
+        var anticheat = data.anticheat && typeof data.anticheat === 'object' ? data.anticheat : null;
 
         if (!result.ok) {
-          setSyncHealth('bad', data && data.error ? String(data.error) : 'bootstrap_failed');
+          var errorReason = normalizeCompetitiveGateFailureReason(data && data.error ? String(data.error) : 'bootstrap_failed');
+          setSyncHealth('bad', errorReason);
           return {
             ok: false,
-            reason: data && data.error ? String(data.error) : 'bootstrap_failed',
+            reason: errorReason,
             status: result.status,
+            linked: linked,
+            anticheat: anticheat,
+            recovery: data.recovery || null,
+          };
+        }
+
+        if (anticheat && anticheat.is_blocked === true) {
+          setSyncHealth('bad', 'account_blocked');
+          return {
+            ok: false,
+            reason: 'account_blocked',
+            status: result.status,
+            linked: linked,
+            anticheat: anticheat,
+            recovery: data.recovery || null,
           };
         }
 
         if (!linked || !restoredAuth) {
-          setSyncHealth('bad', linked ? 'missing_bootstrap_auth' : 'not_linked');
+          var missingReason = linked ? 'auth_restore_failed' : 'not_linked';
+          setSyncHealth('bad', missingReason);
           return {
             ok: false,
-            reason: linked ? 'missing_bootstrap_auth' : 'not_linked',
+            reason: missingReason,
             status: result.status,
+            linked: linked,
+            anticheat: anticheat,
+            recovery: data.recovery || null,
+          };
+        }
+        if (String(data.telegram_id || telegramId || '') !== String(restoredAuth.id || '')) {
+          setSyncHealth('bad', 'auth_mismatch');
+          return {
+            ok: false,
+            reason: 'auth_mismatch',
+            status: result.status,
+            linked: linked,
+            anticheat: anticheat,
+            recovery: data.recovery || null,
           };
         }
 
@@ -402,6 +540,9 @@
             ok: false,
             reason: 'bootstrap_persist_failed',
             status: result.status,
+            linked: linked,
+            anticheat: anticheat,
+            recovery: data.recovery || null,
           };
         }
 
@@ -412,13 +553,16 @@
           telegram_id: String(data.telegram_id || telegramId),
           telegram_auth: restoredAuth,
           linked: true,
+          anticheat: anticheat,
+          recovery: data.recovery || null,
         };
       })
       .catch(function (error) {
         setSyncHealth('bad', 'bootstrap_network_error');
         return {
           ok: false,
-          reason: error && error.message ? error.message : String(error),
+          reason: 'auth_restore_failed',
+          error_reason: error && error.message ? error.message : String(error),
           status: 0,
         };
       })
@@ -825,6 +969,7 @@
      * Use this for leaderboard scores, votes, likes, faction, XP.
      */
     requireLinkedAccount: requireLinkedAccount,
+    enforceCompetitiveArcadePageGate: enforceCompetitiveArcadePageGate,
     showSyncGateModal:    showSyncGateModal,
     dismissSyncGateModal: dismissSyncGateModal,
   };

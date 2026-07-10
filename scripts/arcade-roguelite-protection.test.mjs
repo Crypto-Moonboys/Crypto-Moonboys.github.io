@@ -58,13 +58,12 @@ for (const [name, relPath] of ACTIVE_GAMES) {
 const leaderboard = await read('js/leaderboard-client.js');
 assertContains(leaderboard, 'export async function submitScore', 'submitScore export must remain present');
 assertContains(leaderboard, 'ArcadeMeta.trackGameResult', 'submitScore() must call ArcadeMeta.trackGameResult()');
-assertContains(leaderboard, 'ArcadeSync.queuePendingProgress', 'ArcadeSync.queuePendingProgress() must stay in score flow');
 assertContains(leaderboard, 'ArcadeSync.syncPendingArcadeProgress', 'ArcadeSync.syncPendingArcadeProgress() must stay in linked user flow');
 assertContains(leaderboard, 'callFactionEarn("score_accept", score)', 'faction earn must stay in accepted linked score flow');
 assertOrdered(
   leaderboard,
-  ['data && data.accepted === true', 'callFactionEarn("score_accept", score)', 'ArcadeMeta.trackGameResult', 'ArcadeSync.queuePendingProgress', 'ArcadeSync.syncPendingArcadeProgress'],
-  'accepted linked score path must keep faction, meta, queue, and sync wiring',
+  ['data && data.accepted === true', 'callFactionEarn("score_accept", score)', 'ArcadeMeta.trackGameResult', 'const competitiveProgressEntry', 'ArcadeSync.syncPendingArcadeProgress'],
+  'accepted linked score path must keep faction, meta, and direct sync wiring without a local queue',
 );
 
 const meta = await read('js/arcade-meta-system.js');
@@ -153,7 +152,7 @@ for (const alias of [
   assertContains(arcadeSync, `"${alias}"`, `ArcadeSync.normalizeGame must map canonical game ID: ${alias}`);
 }
 
-// ── Pending queue key must remain centralized in arcade-sync.js ───────────────
+// ── No-local-pending contract must remain centralized in arcade-sync.js ───────
 
 assertContains(arcadeSync, 'moonboys_arcade_pending_progress_v1', 'arcade-sync.js must define the pending queue key');
 assert.match(
@@ -165,6 +164,12 @@ assert.doesNotMatch(
   leaderboard,
   /moonboys_arcade_pending_progress_v1/,
   'leaderboard-client.js must not duplicate the pending queue key literal; use ArcadeSync.PENDING_KEY',
+);
+assertContains(leaderboard, 'NO_LOCAL_PENDING_COMPETITIVE_RUNS', 'leaderboard-client.js must declare the no-local-pending competitive marker');
+assert.doesNotMatch(
+  leaderboard,
+  /ArcadeSync\.queuePendingProgress\s*\(/,
+  'leaderboard-client.js must not queue competitive runs locally',
 );
 
 // ── Unlinked users must never have XP falsely claimed as synced ───────────────
@@ -189,7 +194,7 @@ for (const stateLabel of [
   assertContains(leaderboard, stateLabel, `leaderboard-client.js must expose separate sync state: ${stateLabel}`);
 }
 
-// ── API unavailable must queue/pend, not claim sync ───────────────────────────
+// ── API unavailable must stop local queueing, not claim sync ──────────────────
 
 assert.match(
   leaderboard,
@@ -198,8 +203,8 @@ assert.match(
 );
 assertOrdered(
   leaderboard,
-  ['if (!api)', 'result.state = "sync_pending";', 'const shouldQueuePending', 'ArcadeSync.queuePendingProgress'],
-  'API-unavailable branch must fall through without claiming sync',
+  ['if (!api)', 'result.state = "sync_pending";', 'const competitiveProgressEntry', 'ArcadeSync.syncPendingArcadeProgress({ entries: [competitiveProgressEntry] })'],
+  'API-unavailable branch must not reintroduce local queueing before direct sync attempts',
 );
 assertContains(leaderboard, '"sync_pending"', 'leaderboard-client.js must use sync_pending state when API unavailable for linked users');
 

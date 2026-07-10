@@ -109,7 +109,13 @@ export async function autoMountGame() {
   }
 
   try {
-    var game = await mountGame({ root: root, bootstrap: bootstrapFn });
+    var game = await mountGame({
+      root: root,
+      bootstrap: bootstrapFn,
+      requireCompetitiveGate: true,
+      competitiveGameId: gameId,
+    });
+    if (game && game.gateBlocked) return game;
     mountModifierPanel();
     return game;
   } catch (err) {

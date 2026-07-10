@@ -11,6 +11,7 @@ import '/js/arcade-retention-engine.js';
 // localStorage key shared with identity-gate.js
 const TG_ID_KEY = "moonboys_tg_id";
 const LEADERBOARD_DEBUG_BUILD = "leaderboard-client-debug-v2";
+const NO_LOCAL_PENDING_COMPETITIVE_RUNS = true;
 
 
 function dispatchUiState(name, detail = {}) {
@@ -155,23 +156,35 @@ function getLinkedIdentityLabel() {
   if (tgName && tgUser) return `${tgName} (@${tgUser.replace(/^@/, "")})`;
   if (tgName) return tgName;
   if (tgUser) return `@${tgUser.replace(/^@/, "")}`;
-  return "Linked Telegram account";
+  return "";
 }
 
-function resolvePublicPlayerName(player, linkedName = null) {
-  const preferred = (linkedName && String(linkedName).trim())
-    ? String(linkedName).trim()
-    : String(player || "").trim();
-  if (preferred) return preferred.slice(0, 40);
-  const fallback = (() => {
-    try {
-      return ArcadeSync.getPlayer();
-    } catch {
-      return null;
-    }
-  })();
-  const resolved = String(fallback || `Guest-${Math.floor(Math.random() * 1000000)}`).trim();
-  return (resolved || "Guest").slice(0, 40);
+function isGuestLikePlayerName(value) {
+  const normalized = String(value || "").trim();
+  if (!normalized) return true;
+  return /^guest(?:-|$)/i.test(normalized) || /^player_\d+$/i.test(normalized);
+}
+
+function resolveCompetitivePlayerName({ player, linkedName = null, telegramAuth = null } = {}) {
+  const authFullName = telegramAuth
+    ? [telegramAuth.first_name, telegramAuth.last_name].filter(Boolean).join(" ").trim()
+    : "";
+  const authUsername = telegramAuth && telegramAuth.username
+    ? `@${String(telegramAuth.username).replace(/^@/, "")}`
+    : "";
+  const candidates = [
+    linkedName,
+    getLinkedIdentityLabel(),
+    authFullName,
+    authUsername,
+    player,
+  ];
+  for (const candidate of candidates) {
+    const cleaned = String(candidate || "").trim();
+    if (!cleaned || isGuestLikePlayerName(cleaned)) continue;
+    return cleaned.slice(0, 40);
+  }
+  return null;
 }
 
 function getCurrentFactionKey() {
@@ -253,7 +266,6 @@ export async function submitScore(player, score, game = "global") {
   const telegramId = getTelegramId();
   const linkedName = getTelegramName();
   result.identityLabel = linked ? getLinkedIdentityLabel() : null;
-  const resolvedPlayer = resolvePublicPlayerName(player, linked ? linkedName : null);
   let shouldSyncMeta = false;
   let telegramAuth = null;
   let hasSignedAuth = false;
@@ -307,6 +319,21 @@ export async function submitScore(player, score, game = "global") {
   const effectiveTelegramId = hasSignedAuth
     ? (telegramId || (telegramAuth && String(telegramAuth.id || "").trim()) || null)
     : null;
+  const resolvedPlayer = linked
+    ? resolveCompetitivePlayerName({ player, linkedName, telegramAuth })
+    : null;
+  if (linked && !resolvedPlayer) {
+    result.state = "identity_required";
+    result.message = "Linked Telegram identity is incomplete. Run /gklink again to refresh your Telegram link.";
+    markSyncHealth("bad", "identity_incomplete");
+    emitArcadeSubmissionStatus({
+      ...result,
+      state: result.state,
+      message: result.message,
+    });
+    emitMicroNotification(result.message, "warning");
+    return result;
+  }
 
   const requestBody = {
     player: resolvedPlayer,
@@ -476,38 +503,23 @@ export async function submitScore(player, score, game = "global") {
     }
   }
 
-  const shouldQueuePending = linked && hasSignedAuth && result.accepted === true;
-  emitArcadeDebug("pending_queue_decision", {
-    game: gameKey,
-    score,
-    linked,
-    accepted: result.accepted,
-    shouldQueuePending,
-  });
-  if (shouldQueuePending) {
-    try {
-      // Only authenticated, accepted runs enter the server-progression retry queue.
-      ArcadeSync.queuePendingProgress({
+  const competitiveProgressEntry = (linked && hasSignedAuth && result.accepted === true)
+    ? {
         game: gameKey,
         raw_score: score,
         meta_points: Number(metaResult?.meta_points) || 0,
         timestamp: Number(metaResult?.timestamp) || Date.now(),
         source: "score_submit",
-      });
-      emitArcadeDebug("pending_queue_write", {
-        game: gameKey,
-        score,
-        pendingAfter: ArcadeSync.getPendingCount(),
-      });
-    } catch (err) {
-      console.warn("[leaderboard-client] Pending progress queue failed:", err);
-      emitArcadeDebug("pending_queue_write_error", {
-        game: gameKey,
-        score,
-        error: String((err && err.message) || err || "unknown_error"),
-      });
-    }
-  }
+      }
+    : null;
+  emitArcadeDebug("pending_queue_decision", {
+    game: gameKey,
+    score,
+    linked,
+    accepted: result.accepted,
+    shouldQueuePending: false,
+    NO_LOCAL_PENDING_COMPETITIVE_RUNS,
+  });
 
   if (shouldSyncMeta && metaResult && metaResult.tracked) {
     try {
@@ -524,8 +536,8 @@ export async function submitScore(player, score, game = "global") {
     }
   }
 
-  const pendingBeforeSync = ArcadeSync.getPendingCount();
-  const shouldSyncPending = linked && hasSignedAuth && pendingBeforeSync > 0;
+  const pendingBeforeSync = 0;
+  const shouldSyncPending = linked && hasSignedAuth && !!competitiveProgressEntry;
   emitArcadeDebug("pending_sync_decision", {
     game: gameKey,
     score,
@@ -533,7 +545,8 @@ export async function submitScore(player, score, game = "global") {
     accepted: result.accepted,
     pendingBeforeSync,
     shouldSyncPending,
-    reason: shouldSyncPending ? "linked_with_signed_auth_and_pending_queue" : (!linked ? "not_linked" : (!hasSignedAuth ? "missing_signed_auth" : "empty_queue")),
+    reason: shouldSyncPending ? "direct_competitive_progress_sync" : (!linked ? "not_linked" : (!hasSignedAuth ? "missing_signed_auth" : "empty_queue")),
+    NO_LOCAL_PENDING_COMPETITIVE_RUNS,
   });
   emitArcadeDebug("sync_trigger_check", {
     game: gameKey,
@@ -551,7 +564,7 @@ export async function submitScore(player, score, game = "global") {
         score,
         pendingBeforeSync,
       });
-      const syncSummary = await ArcadeSync.syncPendingArcadeProgress();
+      const syncSummary = await ArcadeSync.syncPendingArcadeProgress({ entries: [competitiveProgressEntry] });
       emitArcadeDebug("pending_sync_response", {
         game: gameKey,
         score,
@@ -607,12 +620,13 @@ async function submitMetaScore({ player, telegram_id, game, score, timestamp, te
   if (!telegram_id || !isTelegramLinked()) return;
   if (!Number.isFinite(Number(score)) || Number(score) < 0) return;
   if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) return;
+  if (!player || isGuestLikePlayerName(player)) return;
   const api = getApiUrl();
   await fetch(api, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      player: String(player || "Guest"),
+      player: String(player || "").trim(),
       score: Math.floor(Number(score)),
       game: String(game || "global"),
       telegram_id: String(telegram_id),

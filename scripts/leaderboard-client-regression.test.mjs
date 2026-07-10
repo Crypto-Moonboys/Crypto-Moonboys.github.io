@@ -183,10 +183,13 @@ await test('faction earn only runs when linked + signed auth are present', async
 
 await test('pending progression sync requires signed auth and avoids false synced emits when skipped', async () => {
   assert(
-    submitScoreBody.includes('const shouldSyncPending = linked && hasSignedAuth && pendingBeforeSync > 0;') &&
+    submitScoreBody.includes('const shouldSyncPending = linked && hasSignedAuth && !!competitiveProgressEntry;') &&
+      submitScoreBody.includes('NO_LOCAL_PENDING_COMPETITIVE_RUNS') &&
+      !submitScoreBody.includes('ArcadeSync.queuePendingProgress(') &&
+      submitScoreBody.includes('ArcadeSync.syncPendingArcadeProgress({ entries: [competitiveProgressEntry] })') &&
       submitScoreBody.includes('if (!syncSummary?.skipped) {') &&
       submitScoreBody.includes('state: "progression_synced"'),
-    'pending sync must require signed auth and only emit progression_synced on non-skipped sync',
+    'competitive progression must use direct signed sync with no local pending queue and only emit progression_synced on non-skipped sync',
   );
 });
 
@@ -340,6 +343,7 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
   const fetchCalls  = [];
   const healthCalls = [];
   const statusCalls = [];
+  let localQueueWrites = 0;
 
   const result = { state: 'pending_submit', accepted: false, linked };
   let hasSignedAuth = false;
@@ -350,7 +354,7 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
     result.message = 'Log in with Telegram to save scores and earn XP.';
     healthCalls.push({ state: 'bad', reason: 'not_linked' });
     statusCalls.push({ state: 'login_required' });
-    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls };
+    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls, localQueueWrites };
   }
 
   if (authThrows) {
@@ -358,7 +362,7 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
     result.message = 'Fresh Telegram auth is required to save scores and earn XP.';
     healthCalls.push({ state: 'bad', reason: 'auth_expired' });
     statusCalls.push({ state: 'auth_required' });
-    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls };
+    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls, localQueueWrites };
   }
 
   resolvedAuth = telegramAuth;
@@ -368,7 +372,7 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
     result.message = 'Fresh Telegram auth is required to save scores and earn XP.';
     healthCalls.push({ state: 'bad', reason: 'auth_expired' });
     statusCalls.push({ state: 'auth_required' });
-    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls };
+    return { outcome: 'rejected', result, fetchCalls, healthCalls, statusCalls, localQueueWrites };
   }
 
   if (!apiAvailable) {
@@ -377,7 +381,7 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
       ? 'Endpoint disabled. Sync pending.'
       : (apiState === 'config_required' ? 'API config required. Sync pending.' : 'Server unavailable. Sync pending.');
     statusCalls.push({ state: result.state });
-    return { outcome: 'skipped', result, fetchCalls, healthCalls, statusCalls };
+    return { outcome: 'skipped', result, fetchCalls, healthCalls, statusCalls, localQueueWrites };
   }
 
   fetchCalls.push({
@@ -391,7 +395,7 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
     },
   });
 
-  return { outcome: 'posted', result, fetchCalls, healthCalls, statusCalls };
+  return { outcome: 'posted', result, fetchCalls, healthCalls, statusCalls, localQueueWrites };
 }
 await test('BEH: linked user with valid telegram_auth POSTs with telegram_auth in body', async () => {
   const auth = makeValidAuth();
@@ -448,6 +452,18 @@ await test('BEH: guest user without write API is rejected before local-only save
   assert(fetchCalls.length === 0, 'guest no-config path must not POST to leaderboard worker');
   assert(result.state === 'login_required', `expected login_required, got ${result.state}`);
   assert(statusCalls.some(s => s.state === 'login_required'), 'guest no-config path must emit login_required');
+});
+
+await test('BEH: unlinked submitScore creates no local queue', async () => {
+  const { localQueueWrites } = await runSubmitScoreGuard({ linked: false, telegramAuth: null });
+  assert.equal(localQueueWrites, 0, 'unlinked competitive submit must not create any local queue entry');
+});
+
+await test('BEH: pre-link run cannot flush after later linking', async () => {
+  const beforeLink = await runSubmitScoreGuard({ linked: false, telegramAuth: null });
+  const afterLink = await runSubmitScoreGuard({ linked: true, telegramAuth: makeValidAuth(), apiAvailable: true });
+  assert.equal(beforeLink.localQueueWrites, 0, 'pre-link attempt must not persist a local queue');
+  assert.equal(afterLink.localQueueWrites, 0, 'later linking must not flush or create a local competitive queue');
 });
 await test('BEH: disabled write API reports disabled copy instead of server unavailable', async () => {
   const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({
@@ -607,9 +623,8 @@ await test('Worker: recomputeAggregate keys profiles by identity namespace, not 
     recomputeBody.includes('identityMap') &&
       recomputeBody.includes('getAggregateIdentityKey(entry)') &&
       recomputeBody.includes('identity_key: identityKey') &&
-      recomputeBody.includes('anon:') &&
       recomputeBody.includes('tg:'),
-    'recomputeAggregate must build aggregate rows by identity key namespace (tg:* / anon:*), not by player display name',
+    'recomputeAggregate must build aggregate rows from Telegram identity keys, not player display names',
   );
 });
 
@@ -721,19 +736,13 @@ await test('Crystal Quest and Block Topia bootstrap no longer include unused can
 
 function upsertEntryBehavior(existing, newEntry, limit = 100) {
   let list = Array.isArray(existing) ? existing.slice() : [];
-  let idx = -1;
-  if (newEntry.telegram_id) {
-    idx = list.findIndex(
-      (e) => e.telegram_id && String(e.telegram_id) === String(newEntry.telegram_id),
-    );
-  } else {
-    const nameLower = newEntry.player.toLowerCase();
-    idx = list.findIndex(
-      (e) => !e.telegram_id &&
-        typeof e.player === 'string' &&
-        e.player.toLowerCase() === nameLower,
-    );
+  if (!newEntry.telegram_id) {
+    return list.slice(0, limit).map((e, i) => ({ ...e, rank: i + 1 }));
   }
+  let idx = -1;
+  idx = list.findIndex(
+    (e) => e.telegram_id && String(e.telegram_id) === String(newEntry.telegram_id),
+  );
   if (idx !== -1) {
     if (newEntry.score > (Number(list[idx].score) || 0)) {
       list[idx] = { ...list[idx], ...newEntry };
@@ -762,27 +771,26 @@ await test('BEH upsertEntry: authenticated entry dedupes by telegram_id not name
   assert(updated[0].player === 'AliceRenamed', 'must update display name on telegram_id match');
 });
 
-await test('BEH upsertEntry: anonymous submission cannot overwrite authenticated record by same name', async () => {
+await test('BEH upsertEntry: unauthenticated submission is ignored before any leaderboard row write', async () => {
   const existing = [
     { player: 'CryptoKing', score: 5000, telegram_id: 'tg_999', rank: 1 },
   ];
-  // Anonymous submission with same display name
   const updated = upsertEntryBehavior(existing,
     { player: 'CryptoKing', score: 9000 /* no telegram_id */ });
-  assert(updated.length === 2, 'anonymous entry with same name must create a new row, not overwrite authenticated record');
+  assert(updated.length === 1, 'unauthenticated row must not be inserted');
   const authRow = updated.find((e) => e.telegram_id === 'tg_999');
   assert(authRow, 'authenticated row must still exist');
-  assert(authRow.score === 5000, 'authenticated row score must not be overwritten by anonymous submission');
+  assert(authRow.score === 5000, 'authenticated row score must not be overwritten by unauthenticated submission');
 });
 
-await test('BEH upsertEntry: anonymous entries dedupe among themselves by name', async () => {
+await test('BEH upsertEntry: unauthenticated entries do not create standalone leaderboard rows', async () => {
   const existing = [
-    { player: 'GuestA', score: 200, rank: 1 }, // no telegram_id
+    { player: 'Moonboy', score: 200, telegram_id: 'tg_1', rank: 1 },
   ];
   const updated = upsertEntryBehavior(existing,
     { player: 'GuestA', score: 300 /* no telegram_id */ });
-  assert(updated.length === 1, 'anonymous entries with the same name must dedupe');
-  assert(updated[0].score === 300, 'score must update when new score is higher');
+  assert(updated.length === 1, 'unauthenticated rows must be ignored entirely');
+  assert(updated[0].score === 200, 'authenticated row must remain unchanged');
 });
 
 await test('BEH upsertEntry: authenticated entries deduplicate by telegram_id across name changes', async () => {
@@ -843,9 +851,7 @@ await test('BEH: effectiveTelegramId fallback derives id from telegramAuth.id', 
 function aggregateIdentityKeyBehavior(entry) {
   const telegramId = String(entry?.telegram_id || '').trim();
   if (telegramId) return `tg:${telegramId}`;
-  const player = String(entry?.player || '').trim();
-  if (!player) return null;
-  return `anon:${player.toLowerCase()}`;
+  return null;
 }
 
 function recomputeAggregateBehavior(gameEntriesByGame, games) {
@@ -893,17 +899,15 @@ await test('BEH aggregate: two Telegram users sharing display name remain separa
   assert(rows.some((r) => r.identity_key === 'tg:222' && r.total === 200), 'tg:222 aggregate row should exist with own total');
 });
 
-await test('BEH aggregate: anonymous user with same name as Telegram user does not merge', async () => {
+await test('BEH aggregate: unauthenticated rows are excluded from aggregate leaderboards', async () => {
   const games = ['snake', 'tetris'];
   const rows = recomputeAggregateBehavior({
     snake: [{ player: 'Moonboy', score: 300, telegram_id: '999' }],
     tetris: [{ player: 'Moonboy', score: 50 }],
   }, games);
-  assert(rows.length === 2, 'anonymous and telegram identities with same name must remain separate rows');
+  assert(rows.length === 1, 'aggregate leaderboard must exclude unauthenticated rows');
   const tgRow = rows.find((r) => r.identity_key === 'tg:999');
-  const anonRow = rows.find((r) => r.identity_key === 'anon:moonboy');
   assert(tgRow && tgRow.total === 300, 'telegram identity total must include only telegram rows');
-  assert(anonRow && anonRow.total === 50, 'anonymous identity total must include only anonymous rows');
 });
 
 await test('BEH aggregate: same Telegram user rename updates same aggregate identity', async () => {
@@ -931,11 +935,9 @@ await test('BEH aggregate: totals are keyed by identity, not display name', asyn
       { player: 'Guest', score: 90, telegram_id: '777' },
     ],
   }, games);
-  const anon = rows.find((r) => r.identity_key === 'anon:guest');
   const tg = rows.find((r) => r.identity_key === 'tg:777');
-  assert(anon && anon.total === 100, 'anonymous total should be 40 + 60');
   assert(tg && tg.total === 170, 'telegram total should be 80 + 90');
-  assert(rows.length === 2, 'display-name collision should not collapse separate identities');
+  assert(rows.length === 1, 'display-name collisions must not reintroduce anonymous aggregate identities');
 });
 
 

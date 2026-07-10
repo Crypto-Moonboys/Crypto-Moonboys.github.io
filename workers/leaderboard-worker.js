@@ -183,13 +183,127 @@ async function verifyLeaderboardTelegramAuth(body, env) {
     }
   }
 
-  return { ok: true, telegramId };
+  return { ok: true, telegramId, auth: tg };
+}
+
+async function getAuthoritativeLinkedTelegramState(env, telegramId) {
+  if (!env?.DB) {
+    return { ok: false, error: 'server_config_error', status: 503 };
+  }
+  const normalizedTelegramId = String(telegramId || '').trim();
+  if (!/^\d{1,20}$/.test(normalizedTelegramId)) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
+
+  try {
+    const [user, anticheat, linkEvent, blockTopiaProgression] = await Promise.all([
+      env.DB.prepare(
+        `SELECT telegram_id, username, first_name, last_name
+         FROM telegram_users
+         WHERE telegram_id = ?
+         LIMIT 1`
+      ).bind(normalizedTelegramId).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT is_blocked, block_type, blocked_reason
+         FROM telegram_anticheat_state
+         WHERE telegram_id = ?
+         LIMIT 1`
+      ).bind(normalizedTelegramId).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT action, created_at
+         FROM telegram_activity_log
+         WHERE telegram_id = ? AND action = 'link_confirmed'
+         ORDER BY created_at DESC
+         LIMIT 1`
+      ).bind(normalizedTelegramId).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT telegram_id
+         FROM blocktopia_progression
+         WHERE telegram_id = ?
+         LIMIT 1`
+      ).bind(normalizedTelegramId).first().catch(() => null),
+    ]);
+
+    if (!user?.telegram_id) {
+      return { ok: false, error: 'telegram_link_required', status: 403 };
+    }
+
+    if (anticheat?.is_blocked === 1) {
+      return {
+        ok: false,
+        error: 'account_blocked',
+        status: 403,
+        block_type: anticheat.block_type || null,
+      };
+    }
+
+    const linked = Boolean(linkEvent || blockTopiaProgression);
+    if (!linked) {
+      return { ok: false, error: 'telegram_link_required', status: 403 };
+    }
+
+    return {
+      ok: true,
+      telegramId: String(user.telegram_id),
+      user,
+      anticheat,
+      linked: true,
+    };
+  } catch {
+    return { ok: false, error: 'identity_lookup_failed', status: 503 };
+  }
 }
 
 async function resolveSubmissionIdentity(body, env) {
   const authResult = await verifyLeaderboardTelegramAuth(body, env);
   if (!authResult.ok) return authResult;
-  return { ok: true, authenticated: true, telegramId: authResult.telegramId };
+  const linkedState = await getAuthoritativeLinkedTelegramState(env, authResult.telegramId);
+  if (!linkedState.ok) return linkedState;
+  return {
+    ok: true,
+    authenticated: true,
+    telegramId: authResult.telegramId,
+    auth: authResult.auth,
+    linkedAccount: linkedState.user,
+  };
+}
+
+function isGuestLikePlayerName(value) {
+  const normalized = String(value || '').trim();
+  if (!normalized) return true;
+  return /^guest(?:-|$)/i.test(normalized) || /^player_\d+$/i.test(normalized);
+}
+
+function resolveAuthenticatedPlayerName(player, auth) {
+  const fullName = [auth?.first_name, auth?.last_name].filter(Boolean).join(' ').trim();
+  const username = auth?.username ? `@${String(auth.username).replace(/^@/, '')}` : '';
+  const submitted = String(player || '').trim();
+  const candidates = [submitted, fullName, username];
+  for (const candidate of candidates) {
+    const cleaned = String(candidate || '').trim();
+    if (!cleaned || isGuestLikePlayerName(cleaned)) continue;
+    return cleaned.slice(0, 40);
+  }
+  return null;
+}
+
+function sanitizePublicPlayerName(player, telegramId) {
+  const normalizedTelegramId = String(telegramId || '').trim();
+  if (!normalizedTelegramId) return null;
+  const cleaned = String(player || '').trim();
+  if (!cleaned || isGuestLikePlayerName(cleaned)) return 'Telegram Player';
+  return cleaned.slice(0, 40);
+}
+
+function sanitizePublicBoardEntry(entry) {
+  const telegramId = String(entry?.telegram_id || '').trim();
+  const player = sanitizePublicPlayerName(entry?.player, telegramId);
+  if (!telegramId || !player) return null;
+  return {
+    ...entry,
+    telegram_id: telegramId,
+    player,
+  };
 }
 
 // ── CORS helpers ─────────────────────────────────────────────────────────────
@@ -362,6 +476,7 @@ export default {
         );
       }
       const telegramId = identity.telegramId;
+      const verifiedAuth = identity.auth || null;
 
       const { player, score, game } = body;
       const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
@@ -383,9 +498,10 @@ export default {
         );
       }
 
-      if (typeof player !== "string" || player.trim().length < 1 || player.trim().length > 40) {
+      const playerName = resolveAuthenticatedPlayerName(player, verifiedAuth);
+      if (!playerName || playerName.length > 40) {
         return new Response(
-          JSON.stringify({ error: "player must be a non-empty string (max 40 chars)" }),
+          JSON.stringify({ error: "player_identity_required" }),
           { status: 400, headers: corsHeaders }
         );
       }
@@ -402,7 +518,6 @@ export default {
       // Normalise game key — aliases (e.g. snake-run → snake) and sanitise
       const gameKey = normaliseGameKey(game);
 
-      const playerName = player.trim();
       const floorScore = Math.floor(parsedScore);
 
       if (submissionMode === "meta") {
@@ -419,6 +534,7 @@ export default {
           score: floorScore,
           game: gameKey,
           timestamp,
+          telegram_id: telegramId,
         });
         return new Response(
           JSON.stringify({ status: "ok", mode: "meta" }),
@@ -430,9 +546,9 @@ export default {
       if (gameKey !== "global") {
         // Update all three per-game boards (all-time, seasonal, yearly) in parallel
         const [board, sBoard, yBoard] = await Promise.all([
-          getBoard(env, gameKey),
-          getBoard(env, `seasonal:${gameKey}`),
-          getBoard(env, `yearly:${gameKey}`)
+          getStoredBoard(env, gameKey),
+          getStoredBoard(env, `seasonal:${gameKey}`),
+          getStoredBoard(env, `yearly:${gameKey}`)
         ]);
 
         const existingEntry = board.find((row) => String(row?.telegram_id || '') === telegramId) || null;
@@ -511,7 +627,7 @@ async function checkAndRunResets(env) {
  */
 async function runSeasonalReset(env, meta, now) {
   // 1. Push top seasonal qualifiers into the all-time board
-  const seasonalBoard = await getBoard(env, "seasonal");
+  const seasonalBoard = await getStoredBoard(env, "seasonal");
   if (seasonalBoard.length > 0) {
     await updateAllTimeBoard(env, seasonalBoard);
   }
@@ -550,7 +666,7 @@ async function runSeasonalReset(env, meta, now) {
  */
 async function runYearlyReset(env, meta, now) {
   // 1. Close current season (final all-time eval + seasonal archive + seasonal reset)
-  const seasonalBoard = await getBoard(env, "seasonal");
+  const seasonalBoard = await getStoredBoard(env, "seasonal");
   if (seasonalBoard.length > 0) {
     await updateAllTimeBoard(env, seasonalBoard);
   }
@@ -570,7 +686,7 @@ async function runYearlyReset(env, meta, now) {
   ]);
 
   // 2. Archive yearly winners
-  const yearlyBoard = await getBoard(env, "yearly");
+  const yearlyBoard = await getStoredBoard(env, "yearly");
   const prevYear    = new Date(meta.year_start).getUTCFullYear();
   await env.LEADERBOARD.put(
     `leaderboard:archive:year-${prevYear}`,
@@ -606,7 +722,7 @@ async function runYearlyReset(env, meta, now) {
  *  - Board is always sorted by qualifying_score descending.
  */
 async function updateAllTimeBoard(env, seasonalBoard) {
-  let allTimeList = await getBoard(env, "all-time");
+  let allTimeList = await getStoredBoard(env, "all-time");
 
   const candidates = seasonalBoard.slice(0, ALL_TIME_TOP_SEASONAL);
 
@@ -686,9 +802,9 @@ async function updateAllTimeBoard(env, seasonalBoard) {
  */
 async function recomputeAllBoards(env) {
   const [allTimeBoards, seasonalBoards, yearlyBoards] = await Promise.all([
-    Promise.all(GAMES.map(g => getBoard(env, g))),
-    Promise.all(GAMES.map(g => getBoard(env, `seasonal:${g}`))),
-    Promise.all(GAMES.map(g => getBoard(env, `yearly:${g}`)))
+    Promise.all(GAMES.map(g => getStoredBoard(env, g))),
+    Promise.all(GAMES.map(g => getStoredBoard(env, `seasonal:${g}`))),
+    Promise.all(GAMES.map(g => getStoredBoard(env, `yearly:${g}`)))
   ]);
 
   await Promise.all([
@@ -701,10 +817,7 @@ async function recomputeAllBoards(env) {
 function getAggregateIdentityKey(entry) {
   const telegramId = String(entry?.telegram_id || "").trim();
   if (telegramId) return `tg:${telegramId}`;
-
-  const player = String(entry?.player || "").trim();
-  if (!player) return null;
-  return `anon:${player.toLowerCase()}`;
+  return null;
 }
 
 async function recomputeAggregate(env, key, boards) {
@@ -745,12 +858,15 @@ async function recomputeAggregate(env, key, boards) {
     breakdown.variety_bonus = variety;
     return {
       identity_key: identityKey,
-      player: profile.player || "Guest",
+      player: profile.player || "",
       score: main_score,
       breakdown,
       ...(profile.telegram_id ? { telegram_id: profile.telegram_id } : {})
     };
-  });
+  }).map((entry) => {
+    const sanitized = sanitizePublicBoardEntry(entry);
+    return sanitized ? { ...entry, ...sanitized } : null;
+  }).filter((entry) => entry && entry.telegram_id);
 
   entries.sort((a, b) => {
     const diff = b.score - a.score;
@@ -771,13 +887,14 @@ async function updateMetaBoards(env, submission) {
   const ts = Number.isFinite(submission.timestamp) ? submission.timestamp : Date.now();
   const period = await getMetaPeriodContext(env, ts);
   const player = String(submission.player || "").trim();
+  const telegramId = String(submission.telegram_id || "").trim();
   const score = Math.max(0, Math.floor(Number(submission.score) || 0));
-  if (!player || !score) return;
+  if (!player || !telegramId || isGuestLikePlayerName(player) || !score) return;
 
   await Promise.all(META_WINDOWS.map(async (windowKey) => {
     const bucketKey = period[windowKey];
     const bucket = await getMetaBucket(env, bucketKey);
-    const merged = addToMetaBucket(bucket, player, score, ts, submission.game);
+    const merged = addToMetaBucket(bucket, player, telegramId, score, ts, submission.game);
     const ranked = rankMetaBucket(merged, GLOBAL_LEADERBOARD_SIZE);
     await Promise.all([
       env.LEADERBOARD.put(bucketKey, JSON.stringify(merged)),
@@ -832,12 +949,13 @@ async function getMetaBucket(env, kvKey) {
   }
 }
 
-function addToMetaBucket(existingBucket, player, score, timestamp, game) {
+function addToMetaBucket(existingBucket, player, telegramId, score, timestamp, game) {
   const bucket = { ...(existingBucket || {}) };
-  const key = player.toLowerCase();
-  const prev = bucket[key] || { player, score: 0 };
+  const key = `tg:${String(telegramId).trim()}`;
+  const prev = bucket[key] || { player, telegram_id: telegramId, score: 0 };
   bucket[key] = {
     player: prev.player || player,
+    telegram_id: prev.telegram_id || telegramId,
     score: Math.floor((Number(prev.score) || 0) + score),
     updated_at: new Date(timestamp).toISOString(),
     last_game: String(game || "unknown"),
@@ -846,10 +964,15 @@ function addToMetaBucket(existingBucket, player, score, timestamp, game) {
 }
 
 function rankMetaBucket(bucket, limit) {
-  const rows = Object.values(bucket || {}).map((entry) => ({
-    player: String(entry.player || ""),
-    score: Math.floor(Number(entry.score) || 0),
-  })).filter((entry) => entry.player && entry.score >= 0);
+  const rows = Object.values(bucket || {}).map((entry) => {
+    const score = Math.floor(Number(entry.score) || 0);
+    const sanitized = sanitizePublicBoardEntry({
+      ...entry,
+      score,
+      telegram_id: String(entry.telegram_id || "").trim(),
+    });
+    return sanitized ? { ...sanitized, score } : null;
+  }).filter((entry) => entry && entry.score >= 0);
 
   rows.sort((a, b) => {
     const diff = b.score - a.score;
@@ -862,11 +985,18 @@ function rankMetaBucket(bucket, limit) {
 /* ── Board helpers ────────────────────────────────────────────────────────── */
 
 async function getBoard(env, game) {
+  const stored = await getStoredBoard(env, game);
+  return stored.map((entry) => sanitizePublicBoardEntry(entry)).filter(Boolean);
+}
+
+async function getStoredBoard(env, game) {
   const raw = await env.LEADERBOARD.get(`leaderboard:${game}`);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((entry) => !!String(entry?.telegram_id || '').trim())
+      : [];
   } catch {
     return [];
   }
