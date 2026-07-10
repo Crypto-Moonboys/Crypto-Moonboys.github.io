@@ -42,7 +42,7 @@ check(howToPlay.includes('All active arcade games submit through the shared <cod
 check(howToPlay.includes('runs stay browser-local/pending until Telegram is linked'), 'manual documents local/pending unlinked runs');
 check(howToPlay.includes('dedupe, caps, anti-farm checks, and final Arcade XP awards are decided'), 'manual documents server authority and anti-farm checks');
 check(howToPlay.includes('not final XP authority'), 'manual distinguishes local roguelite previews from final XP authority');
-check(howToPlay.includes('The default multiplayer gate is 50 Arcade XP.'), 'manual documents Block Topia default Arcade XP gate');
+check(howToPlay.includes('The default multiplayer gate is 5000 Arcade XP.'), 'manual documents Block Topia default Arcade XP gate');
 
 check(gamesIndex.includes('All active games feed the shared submit path.'), 'games hub documents shared submit path');
 check(gamesIndex.includes('Unlinked runs can stay browser-local/pending'), 'games hub documents unlinked pending state');
