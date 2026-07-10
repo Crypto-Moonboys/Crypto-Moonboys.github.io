@@ -76,9 +76,6 @@
       </div>
     </div>
 
-    <!-- Shared site-shell connection-status-panel hook — outside the gate overlay -->
-    <div data-csp-panel style="position:fixed;bottom:0;right:0;z-index:100;max-width:320px;pointer-events:none"></div>
-
     <script src="/js/api-config.js"></script>
     <script src="/js/identity-gate.js"></script>
     <script src="/js/components/ui-status-copy.js"></script>
@@ -587,6 +584,12 @@
 
       var COLORS = ['#80c0ff', '#c080ff', '#ffffff', '#60a0ff', '#a060ff'];
 
+      var reduceMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      function prefersReducedMotion() {
+        return reduceMotionMQ.matches;
+      }
+
       function resize() {
         W = canvas.width  = window.innerWidth;
         H = canvas.height = window.innerHeight;
@@ -605,14 +608,38 @@
         };
       }
 
-      function init() {
+      function stop() {
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        ctx.clearRect(0, 0, W, H);
+        particles = [];
+      }
+
+      function start() {
+        if (prefersReducedMotion()) return;
         resize();
-        window.addEventListener('resize', resize);
         particles = [];
         for (var i = 0; i < PARTICLE_COUNT; i++) {
           particles.push(makeParticle());
         }
         draw();
+      }
+
+      function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        if (!prefersReducedMotion()) {
+          for (var i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push(makeParticle());
+          }
+          draw();
+        }
+        reduceMotionMQ.addEventListener('change', function (e) {
+          if (e.matches) {
+            stop();
+          } else {
+            start();
+          }
+        });
       }
 
       function draw() {
@@ -641,7 +668,7 @@
         var obs = new MutationObserver(function () {
           if (gate.classList.contains('bt-gate--hidden')) {
             if (raf) { cancelAnimationFrame(raf); raf = null; }
-          } else if (!raf) {
+          } else if (!raf && !prefersReducedMotion()) {
             draw();
           }
         });

@@ -82,6 +82,19 @@ check(blockTopiaStyles.includes('max-height: 600px'), 'Block Topia gate CSS has 
 check(blockTopiaStyles.includes('prefers-reduced-motion'), 'Block Topia gate CSS respects prefers-reduced-motion');
 check(blockTopiaStyles.includes('block-topia-metaverse-portal'), 'Block Topia gate CSS references new portal artwork');
 
+// Particle script must check prefers-reduced-motion at the JS runtime level
+check(blockTopia.includes("matchMedia('(prefers-reduced-motion: reduce)')"), 'Block Topia particle script checks prefers-reduced-motion via matchMedia');
+check(blockTopia.includes('prefersReducedMotion()'), 'Block Topia particle script guards init/draw behind prefersReducedMotion helper');
+check(blockTopia.includes("reduceMotionMQ.addEventListener('change'"), 'Block Topia particle script reacts to preference changes via change listener');
+
+// Portal hero asset must be a real full-size image, not a placeholder
+const portalImagePath = path.join(ROOT, 'img/game/backgrounds/block-topia-metaverse-portal.jpg');
+const MIN_PORTAL_BYTES = 10000; // a real cinematic background image should be at least 10 KB
+let portalStat;
+try { portalStat = fs.statSync(portalImagePath); } catch (_) { portalStat = null; }
+check(portalStat !== null, 'Block Topia portal image exists at img/game/backgrounds/block-topia-metaverse-portal.jpg');
+check(portalStat !== null && portalStat.size >= MIN_PORTAL_BYTES, `Block Topia portal image is a real asset (>= ${MIN_PORTAL_BYTES} bytes; got ${portalStat ? portalStat.size : 0})`);
+
 check(!/Score\s*=\s*Arcade XP/i.test(corpus), 'public onboarding copy never equates score with Arcade XP');
 check(!/XP proves a player/i.test(corpus), 'manual avoids vague old XP claim');
 check(!/accepted long-term progression/i.test(corpus), 'manual removes vague old accepted-progression wording');
