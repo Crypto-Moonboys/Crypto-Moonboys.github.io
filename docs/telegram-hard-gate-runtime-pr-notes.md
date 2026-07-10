@@ -17,10 +17,15 @@ Runtime files in scope on this branch now include:
 - `games/snake-run/index.html`
 - `games/tetris-block-topia/index.html`
 - `workers/leaderboard-worker.js`
+- `scripts/ci-domain-runner.mjs`
+- `scripts/leaderboard-worker-identity-filter.test.mjs`
+- `scripts/leaderboard-worker-p1-regression.test.mjs`
+- `scripts/telegram-hard-gate-runtime-contract.test.mjs`
 
 Current runtime state:
 
 - Direct game URLs wait for server-backed Telegram verification before bootstrap.
 - Competitive submission stays fail-closed on missing, invalid, mismatched, expired, or unlinked auth.
+- Leaderboard writes now require authoritative server-side `/gklink` linkage in addition to valid Telegram Login auth.
 - No local pending competitive queue survives or flushes after linking.
-- Leaderboard reads/writes stay restricted to Telegram-backed competitive identities.
+- Public leaderboard reads hide guest-like legacy names without deleting the stored authenticated score rows.

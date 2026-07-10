@@ -25,8 +25,11 @@ function extractFunction(name) {
 const harness = new Function(`
   ${extractFunction('isGuestLikePlayerName')}
   ${extractFunction('resolveAuthenticatedPlayerName')}
+  ${extractFunction('sanitizePublicPlayerName')}
+  ${extractFunction('sanitizePublicBoardEntry')}
+  ${extractFunction('getStoredBoard')}
   ${extractFunction('getBoard')}
-  return { isGuestLikePlayerName, resolveAuthenticatedPlayerName, getBoard };
+  return { isGuestLikePlayerName, resolveAuthenticatedPlayerName, sanitizePublicPlayerName, sanitizePublicBoardEntry, getStoredBoard, getBoard };
 `)();
 
 {
@@ -57,6 +60,7 @@ const harness = new Function(`
         return JSON.stringify([
           { player: 'Linked Alpha', score: 900, telegram_id: '111', rank: 1 },
           { player: 'Guest-2222', score: 800, telegram_id: '222', rank: 2 },
+          { player: 'Player_1234', score: 750, telegram_id: '333', rank: 3 },
           { player: 'Anonymous', score: 700, rank: 3 },
         ]);
       },
@@ -65,8 +69,30 @@ const harness = new Function(`
   const board = await harness.getBoard(env, 'snake');
   assert.deepEqual(
     board,
-    [{ player: 'Linked Alpha', score: 900, telegram_id: '111', rank: 1 }],
-    'leaderboard reads must exclude anonymous and guest-like rows',
+    [
+      { player: 'Linked Alpha', score: 900, telegram_id: '111', rank: 1 },
+      { player: 'Telegram Player', score: 800, telegram_id: '222', rank: 2 },
+      { player: 'Telegram Player', score: 750, telegram_id: '333', rank: 3 },
+    ],
+    'leaderboard public reads must preserve authenticated rows while hiding guest-like display names',
+  );
+}
+
+{
+  const env = {
+    LEADERBOARD: {
+      async get() {
+        return JSON.stringify([
+          { player: 'Guest-2222', score: 800, telegram_id: '222', rank: 1 },
+        ]);
+      },
+    },
+  };
+  const stored = await harness.getStoredBoard(env, 'snake');
+  assert.deepEqual(
+    stored,
+    [{ player: 'Guest-2222', score: 800, telegram_id: '222', rank: 1 }],
+    'raw leaderboard reads must preserve authenticated legacy rows for mutation/recompute paths',
   );
 }
 
