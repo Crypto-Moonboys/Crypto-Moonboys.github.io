@@ -1,6 +1,15 @@
 # Crypto Moonboys
 
-Crypto Moonboys is the live website repository for the project, including the wiki, arcade, shared frontend assets, and the active Block Topia runtime.
+Crypto Moonboys is the world's first Living Web3 Wiki.
+It is built from 40+ years of Graffiti Kings street culture.
+GKniftyHEADS provides the foundation.
+The community builds on top.
+Before the wallet, there was the wall.
+The wiki is alive.
+
+Read -> Play -> Earn XP -> Link -> Battle Chamber -> Block Topia -> Build
+
+This repository is the live website repo for the project, including the wiki, arcade, shared frontend assets, and the active Block Topia runtime.
 
 ## Repository Scope
 
@@ -54,7 +63,7 @@ This repository should track only live routes, wired runtime systems, and active
 
 ## Block Topia Live Runtime
 
-`/games/block-topia/` is the current gated 2-player Colyseus survival/mission prototype.
+`/games/block-topia/` is the current gated 2-player Colyseus survival/mission public beta.
 
 Live now:
 

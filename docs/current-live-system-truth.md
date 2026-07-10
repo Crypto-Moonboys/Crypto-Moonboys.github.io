@@ -11,7 +11,7 @@
 
 ## Active Block Topia truth
 
-`/games/block-topia/` is the current live gated 2-player Colyseus survival/mission prototype.
+`/games/block-topia/` is the current live gated 2-player Colyseus survival/mission public beta.
 
 Live now:
 
