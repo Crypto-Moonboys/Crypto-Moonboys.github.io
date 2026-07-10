@@ -37,12 +37,12 @@ const corpus = [howToPlay, gamesIndex, leaderboard, blockTopia].join('\n');
 
 console.log('\n--- How To Play XP Copy Contract ---\n');
 
-check(howToPlay.includes('Score ranks the run. Arcade XP is awarded only after accepted sync through the server progression flow.'), 'manual separates score ranking from awarded Arcade XP');
+check(howToPlay.includes('Score alone is not an XP award.'), 'manual separates score ranking from awarded Arcade XP');
 check(howToPlay.includes('All active arcade games submit through the shared <code>submitScore()</code> path.'), 'manual documents shared submitScore path');
-check(howToPlay.includes('runs stay browser-local/pending until Telegram is linked'), 'manual documents local/pending unlinked runs');
+check(howToPlay.includes('Unlinked users cannot enter the competitive Arcade'), 'manual documents hard Telegram identity gate for Arcade');
 check(howToPlay.includes('dedupe, caps, anti-farm checks, and final Arcade XP awards are decided'), 'manual documents server authority and anti-farm checks');
-check(howToPlay.includes('not final XP authority'), 'manual distinguishes local roguelite previews from final XP authority');
-check(howToPlay.includes('The default multiplayer gate is 50 Arcade XP.'), 'manual documents Block Topia default Arcade XP gate');
+check(howToPlay.includes('No unlinked Arcade XP is earned or retained.'), 'manual states no unlinked XP is earned or retained');
+check(howToPlay.includes('5000 Arcade XP'), 'manual documents Block Topia 5000 Arcade XP gate');
 
 check(gamesIndex.includes('All active games feed the shared submit path.'), 'games hub documents shared submit path');
 check(gamesIndex.includes('Unlinked runs can stay browser-local/pending'), 'games hub documents unlinked pending state');
