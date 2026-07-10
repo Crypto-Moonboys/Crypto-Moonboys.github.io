@@ -49,14 +49,21 @@ check(!howToPlay.includes('play freely'), 'how-to-play rejects play-before-link 
 check(!/50 Arcade XP/i.test(howToPlay), 'how-to-play never references 50 XP gate');
 
 check(gamesIndex.includes('All active games feed the shared submit path.'), 'games hub documents shared submit path');
-check(gamesIndex.includes('Unlinked runs can stay browser-local/pending'), 'games hub documents unlinked pending state');
+check(!gamesIndex.includes('browser-local/pending'), 'games hub rejects browser-local/pending copy');
+check(!gamesIndex.includes('Local runs stay pending'), 'games hub rejects local-runs-stay-pending copy');
+check(!gamesIndex.includes('Unlinked runs'), 'games hub rejects unlinked runs copy');
+check(!gamesIndex.includes('play freely before'), 'games hub rejects play-before-link copy');
+check(!gamesIndex.includes('anonymous leaderboard'), 'games hub rejects anonymous leaderboard copy');
 check(gamesIndex.includes('server, where dedupe, caps, and anti-farm checks decide final awards'), 'games hub documents server-award authority');
 check(gamesIndex.includes('Score ranks runs; server-accepted XP does not affect rank.'), 'games hub keeps score and XP rank separate');
 check(gamesIndex.includes('after Telegram link and server acceptance'), 'games hub top notice requires server acceptance');
 check(gamesIndex.includes('only after Telegram sync and server acceptance'), 'games hub system notice requires Telegram sync and server acceptance');
-check(gamesIndex.includes('Unlinked runs stay local/pending until <code>/gklink</code>'), 'games hub system notice documents local/pending runs');
 check(gamesIndex.includes('after server acceptance'), 'games hub game cards mention server acceptance for XP sync');
 check(gamesIndex.includes('after Telegram sync and server acceptance'), 'BTQM card mentions server acceptance for XP conversion');
+check(gamesIndex.includes('Telegram identity is required before competitive Arcade access'), 'games hub states Telegram identity required before Arcade');
+check(gamesIndex.includes('no unlinked scores are submitted'), 'games hub states no unlinked scores are submitted or saved');
+check(gamesIndex.includes('no unlinked Arcade XP is earned or retained'), 'games hub states no unlinked Arcade XP earned or retained');
+check(gamesIndex.includes('5000 server-accepted Arcade XP'), 'games hub documents 5000 Arcade XP Block Topia gate');
 
 check(leaderboard.includes('Score = leaderboard ranking only.'), 'leaderboard keeps score ranking language');
 check(leaderboard.includes('only after Telegram sync and server acceptance'), 'leaderboard requires server acceptance for Arcade XP');
