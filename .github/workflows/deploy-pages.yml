@@ -40,9 +40,12 @@ jobs:
       - name: Hydrate generated BTQM PNG assets
         run: node scripts/hydrate-btqm-generated-assets.mjs --clean-base64
 
+      - name: Stamp homepage deploy commit
+        run: node scripts/stamp-build-meta.mjs "$GITHUB_SHA"
+
       - name: Prune non-static backend directories
         # server/ and workers/ contain backend source code that is not served
-        # by GitHub Pages.  Remove them before packaging the artifact so the
+        # by GitHub Pages. Remove them before packaging the artifact so the
         # upload is smaller and deployment is faster.
         run: |
           rm -rf server/ workers/ scripts/ patches/
