@@ -3578,6 +3578,30 @@ body.page-home .launch-cta-row a:focus-visible img {
   filter: contrast(1.02) brightness(1.02) saturate(1.04);
 }
 
+body.page-home .home-hidden-stats {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+body.page-home .home-gknifty-banner {
+  display: block;
+  width: 100%;
+  margin-top: clamp(18px, 2.6vw, 30px);
+  text-decoration: none;
+  line-height: 0;
+}
+
+body.page-home .home-gknifty-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
 body.page-home .launch-route,
 body.page-home .hero-stat,
 body.page-home .home-widget,
