@@ -142,7 +142,13 @@ window.__HUD_CONSOLIDATED__ = true;
     return `
         <a class="site-logo" href="/index.html" aria-label="Crypto Moonboys home">
           <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
-          <span><span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span><span class="logo-sub">LIVE KNOWLEDGE NETWORK</span></span>
+          <span>
+            <span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span>
+            <span class="logo-sub">
+              LIVE KNOWLEDGE NETWORK
+              <span class="logo-live-feed" aria-live="polite"> · WIKI PAGES: <span class="logo-live-value" data-stat="article-count">-</span> · ARTICLES: <span class="logo-live-value" data-stat="total-articles">-</span></span>
+            </span>
+          </span>
         </a>
         <form id="header-search" role="search" action="/search.html">
           <input id="search-input" name="q" type="search" placeholder="Search the wiki…" autocomplete="off" aria-label="Search the wiki">

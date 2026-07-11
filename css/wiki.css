@@ -192,6 +192,27 @@ body.page-onboarding-shell #moonboys-global-status-badge {
   text-transform: uppercase;
 }
 
+.site-logo .logo-live-feed {
+  font: inherit;
+}
+
+.site-logo .logo-live-value {
+  color: #f7c948;
+  animation: logo-live-value-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes logo-live-value-pulse {
+  0%,
+  100% {
+    color: #f7c948;
+    text-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    color: #fffbe0;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.85);
+  }
+}
+
 #header-search {
   position: relative;
   width: 100%;
