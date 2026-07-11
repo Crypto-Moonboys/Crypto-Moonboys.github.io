@@ -54,6 +54,19 @@ function getPlayerShipImage() {
 /** Exposed for integration tests only — do not use in gameplay code. */
 export const __playerShipLoader = _playerShip;
 
+// ── Bitcoin projectile sprite loader ──────────────────────────────────────────
+const BITCOIN_PROJECTILE_SRC = '/art/invaders/generated/invaders-3008-bitcoin-projectile-transparent.png?v=bitcoin-projectile-wtf-20260711';
+const _bitcoinProjectile = (() => {
+  if (typeof Image === 'undefined') return { status: 'unsupported', image: null };
+  const entry = { status: 'loading', image: new Image() };
+  entry.image.decoding = 'async';
+  entry.image.onload = () => { entry.status = entry.image.naturalWidth > 0 ? 'ready' : 'error'; };
+  entry.image.onerror = () => { entry.status = 'error'; };
+  entry.image.src = BITCOIN_PROJECTILE_SRC;
+  return entry;
+})();
+
+
 /**
  * @param {CanvasRenderingContext2D} ctx
  * @param {number} W  canvas logical width
@@ -1247,6 +1260,57 @@ export function createRenderer(ctx, W, H) {
     ctx.restore();
   }
 
+  function drawBitcoinProjectile(b, elapsed) {
+    const cx = b.x + b.w / 2;
+    const cy = b.y + b.h / 2;
+    const pulse = 1 + Math.sin((elapsed || 0) * 18 + b.y * 0.08) * 0.12;
+    const size = 15 * pulse;
+
+    ctx.save();
+    // WTF energy trail: stacked gold plasma fading behind the rising projectile.
+    for (let i = 1; i <= 5; i++) {
+      const alpha = (6 - i) * 0.055;
+      const radius = Math.max(1, 4.5 - i * 0.55);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = i % 2 ? '#ff9d00' : '#fff06a';
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = '#ffb000';
+      ctx.beginPath();
+      ctx.arc(cx + Math.sin((elapsed || 0) * 22 + i) * 1.8, cy + i * 5, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.globalAlpha = 0.32;
+    ctx.strokeStyle = '#ffd43b';
+    ctx.lineWidth = 2.5;
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = '#ffb000';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + 4);
+    ctx.lineTo(cx, cy + 27);
+    ctx.stroke();
+
+    ctx.globalAlpha = 1;
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.sin((elapsed || 0) * 10 + b.y * 0.03) * 0.08);
+    ctx.shadowBlur = 24;
+    ctx.shadowColor = '#ffd43b';
+    if (_bitcoinProjectile.status === 'ready') {
+      ctx.drawImage(_bitcoinProjectile.image, -size / 2, -size / 2, size, size);
+    } else {
+      // Gold fallback remains unmistakably Bitcoin if the PNG is unavailable.
+      ctx.fillStyle = '#ffd43b';
+      ctx.strokeStyle = '#6b3500';
+      ctx.lineWidth = 1.5;
+      ctx.font = 'bold 15px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeText('₿', 0, 0);
+      ctx.fillText('₿', 0, 0);
+    }
+    ctx.restore();
+  }
+
   // ── Main draw ─────────────────────────────────────────────────────────────────
 
   /**
@@ -1310,17 +1374,11 @@ export function createRenderer(ctx, W, H) {
     drawMiniEnemies(s.miniEnemies);
     drawAsteroids(s.asteroids);
 
-    // Player bullets — regular (cyan) and bomb (orange glow)
-    ctx.save();
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = '#2ec5ff';
-    ctx.fillStyle   = '#2ec5ff';
+    // Player bullets — Bitcoin ₿ projectiles with WTF gold plasma effects.
     for (const b of s.bullets) {
       if (b.isBomb) continue;
-      ctx.fillRect(b.x, b.y, b.w, b.h);
+      drawBitcoinProjectile(b, s.elapsed);
     }
-    ctx.shadowBlur  = 0;
-    ctx.restore();
     for (const b of s.bullets) {
       if (!b.isBomb) continue;
       ctx.save();

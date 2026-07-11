@@ -81,7 +81,7 @@ import {
   BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
 } from '/js/arcade/systems/boss-system.js';
 
-import { createRenderer } from './render-system.js?v=bitcoin-cannon-level-1-20260711';
+import { createRenderer } from './render-system.js?v=bitcoin-projectile-wtf-20260711';
 
 const INVADERS_BUILD_TAG = "invaders-bootstrap-debug-v1";
 
