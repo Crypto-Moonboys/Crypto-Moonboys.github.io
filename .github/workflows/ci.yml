@@ -73,6 +73,9 @@ jobs:
             npm install
           fi
 
+      - name: Hydrate Invaders player-ship PNG asset
+        run: npm run invaders:ship:hydrate
+
       - name: Run arcade tests
         run: npm run ci:arcade
 

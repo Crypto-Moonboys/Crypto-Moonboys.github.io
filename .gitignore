@@ -15,3 +15,9 @@ workers/**/.wrangler/
 *.sqlite-wal
 # Locally hydrated BTQM generated PNGs; source-of-truth payloads are .png.base64.
 art/btqm/generated/**/*.png
+
+# Locally hydrated Invaders generated PNGs; source-of-truth payloads are .png.base64.
+art/invaders/generated/*.png
+
+# Hydrated Invaders runtime PNGs (produced by hydrate-invaders-player-ship.mjs).
+games/invaders-3008/assets/ships/player-ship.png

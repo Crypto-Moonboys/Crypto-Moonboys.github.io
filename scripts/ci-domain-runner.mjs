@@ -70,6 +70,7 @@ const GROUPS = {
     ['node', 'scripts/faction-reward-system.test.mjs'],
     ['node', 'scripts/battle-chamber-server-authority.test.mjs'],
     ['node', 'scripts/faction-season-lock.test.mjs'],
+    ['npm', 'run', 'test:invaders-ship'],
   ],
   waxonedge: [
     ['node', 'scripts/audit-nft-pages-and-feed-sync.mjs'],

@@ -13,6 +13,46 @@ import { BOSS_ARCHETYPE_DEFS } from './boss-archetypes.js';
 // Boss phase colour palette — shared between drawBoss() and the phase label.
 const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
 
+// ── Player-ship sprite loader ─────────────────────────────────────────────────
+// Loads a transparent PNG asset for the player ship.
+// Falls back to full primitive rendering when the asset is missing, still
+// loading, or invalid.  No gameplay logic is touched.
+//
+// PLAYER_SHIP_ASSET_W / _H are the hitbox contract dimensions that must match
+// SHIP_W/SHIP_H in bootstrap.js.  The loaded sprite is drawn at its natural
+// (visual) dimensions, anchored to the hitbox's bottom-centre, so wider
+// artwork (e.g. Bitcoin Cannon) is presented without distortion while keeping
+// collision boundaries unchanged.
+const PLAYER_SHIP_ASSET_W = 36;
+const PLAYER_SHIP_ASSET_H = 20;
+const PLAYER_SHIP_ASSET_SRC = '/games/invaders-3008/assets/ships/player-ship.png';
+
+const _playerShip = (() => {
+  if (typeof Image === 'undefined') return { status: 'unsupported', image: null };
+  const entry = { status: 'loading', image: new Image() };
+  entry.image.decoding = 'async';
+  entry.image.onload = () => {
+    const h = entry.image.naturalHeight;
+    if (h > 0) {
+      entry.status = 'ready';
+    } else {
+      entry.status = 'error';
+      console.warn('[invaders] player-ship asset reported zero height. Using primitive fallback.');
+    }
+  };
+  entry.image.onerror = () => { entry.status = 'error'; };
+  entry.image.src = PLAYER_SHIP_ASSET_SRC;
+  return entry;
+})();
+
+/** Returns the loaded player-ship Image, or null when the primitive should be used. */
+function getPlayerShipImage() {
+  return _playerShip.status === 'ready' ? _playerShip.image : null;
+}
+
+/** Exposed for integration tests only — do not use in gameplay code. */
+export const __playerShipLoader = _playerShip;
+
 /**
  * @param {CanvasRenderingContext2D} ctx
  * @param {number} W  canvas logical width
@@ -35,8 +75,7 @@ export function createRenderer(ctx, W, H) {
 
   // ── Ship ─────────────────────────────────────────────────────────────────────
 
-  function drawShip(player) {
-    const { x, y, w, h, shielded } = player;
+  function drawShipPrimitive(x, y, w, h) {
     ctx.fillStyle = '#2ec5ff';
     ctx.beginPath();
     ctx.moveTo(x + w / 2, y);
@@ -53,6 +92,32 @@ export function createRenderer(ctx, W, H) {
     ctx.fillStyle = '#1a9acc';
     ctx.fillRect(x,         y + h - 8, 8, 4);
     ctx.fillRect(x + w - 8, y + h - 8, 8, 4);
+  }
+
+  function drawShip(player) {
+    const { x, y, w, h, shielded } = player;
+    const shipImg = getPlayerShipImage();
+    if (shipImg) {
+      // Asset path: draw sprite at its natural visual dimensions, anchored to
+      // the hitbox bottom-centre.  This lets wider artwork (e.g. Bitcoin Cannon)
+      // render without distortion while gameplay hitbox stays at w×h.
+      const natW = shipImg.naturalWidth;
+      const natH = shipImg.naturalHeight;
+      // Scale visual height to match the hitbox height; scale width proportionally.
+      const scale   = h / natH;
+      const visualW = natW * scale;
+      const visualH = h;
+      // Anchor: bottom-centre of hitbox
+      const drawX = x + w / 2 - visualW / 2;
+      const drawY = y;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(shipImg, drawX, drawY, visualW, visualH);
+      ctx.restore();
+    } else {
+      // Primitive fallback — always safe
+      drawShipPrimitive(x, y, w, h);
+    }
     if (shielded) {
       ctx.save();
       ctx.strokeStyle = 'rgba(63,185,80,0.7)';

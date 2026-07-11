@@ -34,6 +34,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Hydrate Invaders player-ship PNG asset
+        # Must run before npm test so invaders-player-ship-asset.test.mjs can
+        # find the runtime PNG at games/invaders-3008/assets/ships/player-ship.png.
+        run: node scripts/hydrate-invaders-player-ship.mjs
+
       - name: Run repository tests
         run: npm test
 
