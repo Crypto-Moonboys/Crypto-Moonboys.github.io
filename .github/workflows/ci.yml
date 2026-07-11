@@ -74,7 +74,7 @@ jobs:
           fi
 
       - name: Hydrate Invaders player-ship PNG asset
-        run: node scripts/hydrate-invaders-player-ship.mjs
+        run: npm run invaders:ship:hydrate
 
       - name: Run arcade tests
         run: npm run ci:arcade
