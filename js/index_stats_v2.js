@@ -54,17 +54,28 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    fetch('/js/site-stats.json')
+  function loadSiteStats() {
+    const shell = window.MOONBOYS_WIKI_SHELL;
+    if (shell && typeof shell.getSiteStats === 'function') {
+      return shell.getSiteStats();
+    }
+    return fetch('/js/site-stats.json')
       .then(response => (response.ok ? response.json() : null))
+      .catch(() => null);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    loadSiteStats()
       .then(stats => {
         if (!stats) return;
 
         const totalArticles = pickNumber(stats, ['total_wiki_pages', 'totalArticles', 'article_count']);
+        const totalWikiArticles = pickNumber(stats, ['total_articles']);
         const totalCategories = pickNumber(stats, ['totalCategories', 'total_categories', 'category_count']);
         const totalEntities = pickNumber(stats, ['totalEntities', 'total_entities', 'entity_count']);
 
         setText('.stat-total-articles, [data-stat="article-count"]', totalArticles);
+        setText('[data-stat="total-articles"]', totalWikiArticles);
         setText('.stat-total-categories, [data-stat="category-count"]', totalCategories);
         setText('.stat-total-entities, [data-stat="total_entities"]', totalEntities);
 
