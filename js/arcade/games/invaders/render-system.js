@@ -14,11 +14,15 @@ import { BOSS_ARCHETYPE_DEFS } from './boss-archetypes.js';
 const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
 
 // ── Player-ship sprite loader ─────────────────────────────────────────────────
-// Loads a single transparent PNG asset (36×20) for the player ship.
+// Loads a transparent PNG asset for the player ship.
 // Falls back to full primitive rendering when the asset is missing, still
-// loading, invalid, or fails dimension checks.  No gameplay logic is touched.
+// loading, or invalid.  No gameplay logic is touched.
 //
-// Contract dimensions must match SHIP_W/SHIP_H in bootstrap.js exactly.
+// PLAYER_SHIP_ASSET_W / _H are the hitbox contract dimensions that must match
+// SHIP_W/SHIP_H in bootstrap.js.  The loaded sprite is drawn at its natural
+// (visual) dimensions, anchored to the hitbox's bottom-centre, so wider
+// artwork (e.g. Bitcoin Cannon) is presented without distortion while keeping
+// collision boundaries unchanged.
 const PLAYER_SHIP_ASSET_W = 36;
 const PLAYER_SHIP_ASSET_H = 20;
 const PLAYER_SHIP_ASSET_SRC = '/games/invaders-3008/assets/ships/player-ship.png';
@@ -28,15 +32,12 @@ const _playerShip = (() => {
   const entry = { status: 'loading', image: new Image() };
   entry.image.decoding = 'async';
   entry.image.onload = () => {
-    const w = entry.image.naturalWidth;
     const h = entry.image.naturalHeight;
-    if (w === PLAYER_SHIP_ASSET_W && h === PLAYER_SHIP_ASSET_H) {
+    if (h > 0) {
       entry.status = 'ready';
     } else {
-      entry.status = 'dimension-mismatch';
-      console.warn(
-        `[invaders] player-ship asset dimension mismatch: expected ${PLAYER_SHIP_ASSET_W}×${PLAYER_SHIP_ASSET_H}, got ${w}×${h}. Using primitive fallback.`
-      );
+      entry.status = 'error';
+      console.warn('[invaders] player-ship asset reported zero height. Using primitive fallback.');
     }
   };
   entry.image.onerror = () => { entry.status = 'error'; };
@@ -97,10 +98,21 @@ export function createRenderer(ctx, W, H) {
     const { x, y, w, h, shielded } = player;
     const shipImg = getPlayerShipImage();
     if (shipImg) {
-      // Asset path: draw sprite scaled to the game-logic dimensions
+      // Asset path: draw sprite at its natural visual dimensions, anchored to
+      // the hitbox bottom-centre.  This lets wider artwork (e.g. Bitcoin Cannon)
+      // render without distortion while gameplay hitbox stays at w×h.
+      const natW = shipImg.naturalWidth;
+      const natH = shipImg.naturalHeight;
+      // Scale visual height to match the hitbox height; scale width proportionally.
+      const scale   = h / natH;
+      const visualW = natW * scale;
+      const visualH = h;
+      // Anchor: bottom-centre of hitbox
+      const drawX = x + w / 2 - visualW / 2;
+      const drawY = y;
       ctx.save();
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(shipImg, x, y, w, h);
+      ctx.drawImage(shipImg, drawX, drawY, visualW, visualH);
       ctx.restore();
     } else {
       // Primitive fallback — always safe
