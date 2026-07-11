@@ -399,27 +399,81 @@ export function createRenderer(ctx, W, H) {
     ctx.textBaseline = 'alphabetic';
   }
 
+  // Meme Mode keeps the original lightweight procedural renderer, but replaces
+  // anonymous alien geometry with recognisable coin-culture silhouettes.  The
+  // seed makes a formation varied yet stable from frame to frame.
+  const MEME_STYLE = {
+    basic:    ['frog', '#55d94b', '#173b1a'], fast:     ['doge', '#f7b955', '#6b3515'],
+    tank:     ['ape', '#a97858', '#241a18'], shooter:  ['wojak', '#d9d9d9', '#4a4a55'],
+    shield:   ['cat', '#8c5cff', '#21174d'], bomber:   ['poop', '#9b552f', '#3c1d10'],
+    hunter:   ['pepe', '#42c957', '#112f17'], zigzag:  ['unicorn', '#f7f7ff', '#6f3cff'],
+    splitter: ['twins', '#25d9df', '#083b48'], healer: ['moon', '#ffe66d', '#735800'],
+    sniper:   ['skull', '#eeeeee', '#321020'], kamikaze:['rocket', '#ff7043', '#501010'],
+    cloaked:  ['ghost', '#bd68ff', '#321055'], golden: ['coin', '#ffd43b', '#6b3d00'],
+    cursed:   ['rug', '#ff3bd4', '#4a123e'],
+  };
+
+  function memeEye(cx, cy, r, angry, laser) {
+    ctx.fillStyle = laser ? '#ff284c' : '#fff';
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = laser ? '#fff' : '#080b12';
+    ctx.beginPath(); ctx.arc(cx + (angry ? 1 : 0), cy, Math.max(1.2, r * 0.42), 0, Math.PI * 2); ctx.fill();
+    if (laser) {
+      ctx.strokeStyle = 'rgba(255,25,70,.55)'; ctx.lineWidth = 1; ctx.shadowBlur = 7; ctx.shadowColor = '#ff1744';
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + 13); ctx.stroke(); ctx.shadowBlur = 0;
+    }
+  }
+
+  function drawMemeEnemy(inv, hf, hpRatio, elapsed) {
+    const [kind, color, dark] = MEME_STYLE[inv.type] || MEME_STYLE.basic;
+    const x = inv.x, y = inv.y, w = inv.w, h = inv.h;
+    const cx = x + w / 2, cy = y + h / 2;
+    const pulse = 0.5 + 0.5 * Math.sin(elapsed * 5 + inv.seed);
+    const angry = hf > 0 || inv.type === 'hunter' || inv.type === 'sniper';
+    ctx.save();
+    if (kind === 'ghost') ctx.globalAlpha = Math.max(.22, inv.cloakAlpha ?? 1);
+    ctx.shadowBlur = 5 + pulse * 5; ctx.shadowColor = color;
+    ctx.fillStyle = hf > 0 ? '#fff' : color; ctx.strokeStyle = dark; ctx.lineWidth = 2;
+
+    if (kind === 'rocket') {
+      ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(x + w - 5, y + h - 6); ctx.lineTo(cx, y + h - 2); ctx.lineTo(x + 5, y + h - 6); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#58e7ff'; ctx.beginPath(); ctx.arc(cx, cy - 3, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = pulse > .5 ? '#fff42d' : '#ff3b21'; ctx.fillRect(cx - 4, y + h - 3, 8, 6);
+    } else if (kind === 'coin' || kind === 'moon') {
+      ctx.beginPath(); ctx.arc(cx, cy, h * .46, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = dark; ctx.font = 'bold 16px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(kind === 'coin' ? '₿' : '☾', cx, cy + 1);
+    } else if (kind === 'poop') {
+      ctx.beginPath(); ctx.moveTo(x + 4, y + h - 3); ctx.quadraticCurveTo(cx, y - 8, x + w - 4, y + h - 3); ctx.closePath(); ctx.fill(); ctx.stroke();
+      memeEye(cx - 6, cy + 2, 3, true, angry); memeEye(cx + 6, cy + 2, 3, true, angry);
+    } else {
+      // Face base plus type-specific ears/horns/crowns.
+      if (kind === 'cat' || kind === 'doge') { ctx.beginPath(); ctx.moveTo(x + 3,y + 8); ctx.lineTo(x + 7,y); ctx.lineTo(x + 13,y + 7); ctx.moveTo(x+w-13,y+7); ctx.lineTo(x+w-7,y); ctx.lineTo(x+w-3,y+8); ctx.fill(); ctx.stroke(); }
+      if (kind === 'unicorn') { ctx.fillStyle='#ffd43b'; ctx.beginPath(); ctx.moveTo(cx,y-7); ctx.lineTo(cx+4,y+5); ctx.lineTo(cx-4,y+5); ctx.closePath(); ctx.fill(); }
+      ctx.fillStyle = hf > 0 ? '#fff' : color; ctx.beginPath(); ctx.ellipse(cx, cy, w * .43, h * .43, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (kind === 'twins') { ctx.strokeStyle='#fff'; ctx.beginPath(); ctx.moveTo(cx,y+3); ctx.lineTo(cx,y+h-3); ctx.stroke(); }
+      memeEye(cx - 7, cy - 3, kind === 'frog' || kind === 'pepe' ? 4.5 : 3.4, angry, angry);
+      memeEye(cx + 7, cy - 3, kind === 'frog' || kind === 'pepe' ? 4.5 : 3.4, angry, angry);
+      ctx.shadowBlur = 0; ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.beginPath();
+      if (angry) { ctx.moveTo(cx-8,cy+7); ctx.quadraticCurveTo(cx,cy+2,cx+8,cy+7); }
+      else { ctx.moveTo(cx-9,cy+5); ctx.quadraticCurveTo(cx,cy+12,cx+10,cy+4); }
+      ctx.stroke();
+      if (kind === 'skull') { ctx.fillStyle=dark; ctx.fillRect(cx-6,cy+8,3,4); ctx.fillRect(cx+3,cy+8,3,4); }
+      if (kind === 'rug') { ctx.strokeStyle='#ffe65c'; for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(x+5+i*8,y+h-3);ctx.lineTo(x+3+i*8,y+h+4);ctx.stroke();} }
+    }
+    ctx.restore();
+    // Animated spawn/build brackets and circulating coin pixels make the
+    // existing primitive style feel intentionally holographic.
+    ctx.save(); ctx.globalAlpha = .28 + pulse * .35; ctx.strokeStyle = inv.mutations?.length ? '#ff42e6' : '#35e8ff'; ctx.lineWidth = 1;
+    const pad = 2 + pulse * 2; ctx.strokeRect(x-pad, y-pad, w+pad*2, h+pad*2);
+    ctx.fillStyle = '#ffd43b'; const a = elapsed * 2.4 + inv.seed; ctx.fillRect(cx+Math.cos(a)*22-1,cy+Math.sin(a)*16-1,3,3); ctx.restore();
+    if (hpRatio < 1) { ctx.fillStyle='#160817'; ctx.fillRect(x,y+h+2,w,3); ctx.fillStyle=hpRatio>.5?'#ffd43b':'#ff3158'; ctx.fillRect(x,y+h+2,w*hpRatio,3); }
+  }
+
   function drawInvader(inv, elapsed) {
     const hf      = clamp(inv.hitTimer / 0.12, 0, 1);
     const sf      = inv.maxShieldHp > 0 ? inv.shieldHp / inv.maxShieldHp : 0;
     const hpRatio = clamp(inv.hp / inv.maxHp, 0, 1);
-    switch (inv.type) {
-      case 'fast':     drawInvaderFast(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'tank':     drawInvaderTank(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
-      case 'shooter':  drawInvaderShooter(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'shield':   drawInvaderShield(inv.x, inv.y, inv.w, inv.h, hf, sf); break;
-      case 'bomber':   drawInvaderBomber(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'hunter':   drawInvaderHunter(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'zigzag':   drawInvaderZigzag(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'splitter': drawInvaderSplitter(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
-      case 'healer':   drawInvaderHealer(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'sniper':   drawInvaderSniper(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'kamikaze': drawInvaderKamikaze(inv.x, inv.y, inv.w, inv.h, hf); break;
-      case 'cloaked':  drawInvaderCloaked(inv.x, inv.y, inv.w, inv.h, hf, inv.cloakAlpha); break;
-      case 'golden':   drawInvaderGolden(inv.x, inv.y, inv.w, inv.h, hf, elapsed); break;
-      case 'cursed':   drawInvaderCursed(inv.x, inv.y, inv.w, inv.h, hf); break;
-      default:         drawInvaderBasic(inv.x, inv.y, inv.w, inv.h, hf);
-    }
+    drawMemeEnemy(inv, hf, hpRatio, elapsed || 0);
     drawHitTint(inv.x, inv.y, inv.w, inv.h, hf);
     if (sf > 0 && inv.type !== 'shield') {
       ctx.save();
@@ -1392,15 +1446,15 @@ export function createRenderer(ctx, W, H) {
       ctx.restore();
     }
 
-    ctx.save();
-    ctx.shadowBlur  = 6;
-    ctx.shadowColor = '#ff4fd1';
-    ctx.fillStyle   = '#ff4fd1';
+    // Enemy ammunition: toxic animated poop drops. Collision geometry is
+    // unchanged; only the visual identity is gloriously less dignified.
     for (const b of s.invBullets) {
-      ctx.fillRect(b.x, b.y, b.w, b.h);
+      const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(Math.sin(s.elapsed*9+b.y*.04)*.16);
+      ctx.shadowBlur=10; ctx.shadowColor='#80ff35'; ctx.fillStyle='#8a4b27'; ctx.strokeStyle='#32170c'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(-5,5); ctx.quadraticCurveTo(0,-8,5,5); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#fff'; ctx.fillRect(-3,-1,2,2); ctx.fillRect(2,-1,2,2); ctx.restore();
     }
-    ctx.shadowBlur  = 0;
-    ctx.restore();
 
     drawPowerupItems(s.powerupItems);
     drawEffects(s.particles, s.scoreTexts, s.hitFlashes);
