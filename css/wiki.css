@@ -151,11 +151,20 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 }
 
 .site-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.site-logo .site-logo-home {
   display: inline-flex;
   align-items: center;
   min-width: 0;
   gap: 10px;
-  color: var(--color-text);
+  color: inherit;
   text-decoration: none;
 }
 
@@ -194,6 +203,23 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 
 .site-logo .logo-live-feed {
   font: inherit;
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  margin-left: 50px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.site-logo .logo-live-feed-link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.site-logo .logo-live-feed-link:hover,
+.site-logo .logo-live-feed-link:focus-visible {
+  color: var(--color-accent);
+  text-decoration: underline;
 }
 
 .site-logo .logo-live-feed[hidden] {
