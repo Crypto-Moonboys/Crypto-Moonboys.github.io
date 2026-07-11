@@ -429,7 +429,8 @@ export function createRenderer(ctx, W, H) {
     const x = inv.x, y = inv.y, w = inv.w, h = inv.h;
     const cx = x + w / 2, cy = y + h / 2;
     const pulse = 0.5 + 0.5 * Math.sin(elapsed * 5 + inv.seed);
-    const angry = hf > 0 || inv.type === 'hunter' || inv.type === 'sniper';
+    // These are hostile corrupted memes, never friendly emoji faces.
+    const angry = true;
     ctx.save();
     if (kind === 'ghost') ctx.globalAlpha = Math.max(.22, inv.cloakAlpha ?? 1);
     ctx.shadowBlur = 5 + pulse * 5; ctx.shadowColor = color;
@@ -451,19 +452,26 @@ export function createRenderer(ctx, W, H) {
       if (kind === 'unicorn') { ctx.fillStyle='#ffd43b'; ctx.beginPath(); ctx.moveTo(cx,y-7); ctx.lineTo(cx+4,y+5); ctx.lineTo(cx-4,y+5); ctx.closePath(); ctx.fill(); }
       ctx.fillStyle = hf > 0 ? '#fff' : color; ctx.beginPath(); ctx.ellipse(cx, cy, w * .43, h * .43, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       if (kind === 'twins') { ctx.strokeStyle='#fff'; ctx.beginPath(); ctx.moveTo(cx,y+3); ctx.lineTo(cx,y+h-3); ctx.stroke(); }
-      memeEye(cx - 7, cy - 3, kind === 'frog' || kind === 'pepe' ? 4.5 : 3.4, angry, angry);
-      memeEye(cx + 7, cy - 3, kind === 'frog' || kind === 'pepe' ? 4.5 : 3.4, angry, angry);
-      ctx.shadowBlur = 0; ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.beginPath();
-      if (angry) { ctx.moveTo(cx-8,cy+7); ctx.quadraticCurveTo(cx,cy+2,cx+8,cy+7); }
-      else { ctx.moveTo(cx-9,cy+5); ctx.quadraticCurveTo(cx,cy+12,cx+10,cy+4); }
-      ctx.stroke();
+      memeEye(cx - 7, cy - 2, kind === 'frog' || kind === 'pepe' ? 4.5 : 3.4, true, hf > 0 || kind === 'skull');
+      memeEye(cx + 7, cy - 2, kind === 'frog' || kind === 'pepe' ? 4.5 : 3.4, true, hf > 0 || kind === 'skull');
+      // Thick inward-sloping brows instantly remove the emoji/smiley read.
+      ctx.shadowBlur = 0; ctx.strokeStyle = dark; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(cx-13,cy-9); ctx.lineTo(cx-3,cy-5); ctx.moveTo(cx+13,cy-9); ctx.lineTo(cx+3,cy-5); ctx.stroke();
+      // Black snarl with bright uneven teeth and corner fangs.
+      ctx.fillStyle = dark; ctx.beginPath(); ctx.moveTo(cx-12,cy+5); ctx.quadraticCurveTo(cx,cy-1,cx+12,cy+5); ctx.quadraticCurveTo(cx,cy+15,cx-12,cy+5); ctx.fill();
+      ctx.fillStyle = '#fff2cf';
+      for (let tooth = -2; tooth <= 2; tooth++) {
+        const tx = cx + tooth * 4;
+        ctx.beginPath(); ctx.moveTo(tx-2,cy+5); ctx.lineTo(tx+2,cy+5); ctx.lineTo(tx,cy+9+(Math.abs(tooth)%2)); ctx.closePath(); ctx.fill();
+      }
+      ctx.fillStyle = '#ff3158'; ctx.fillRect(cx-5,cy+11,10,2);
       if (kind === 'skull') { ctx.fillStyle=dark; ctx.fillRect(cx-6,cy+8,3,4); ctx.fillRect(cx+3,cy+8,3,4); }
       if (kind === 'rug') { ctx.strokeStyle='#ffe65c'; for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(x+5+i*8,y+h-3);ctx.lineTo(x+3+i*8,y+h+4);ctx.stroke();} }
     }
     ctx.restore();
     // Animated spawn/build brackets and circulating coin pixels make the
     // existing primitive style feel intentionally holographic.
-    ctx.save(); ctx.globalAlpha = .28 + pulse * .35; ctx.strokeStyle = inv.mutations?.length ? '#ff42e6' : '#35e8ff'; ctx.lineWidth = 1;
+    ctx.save(); ctx.globalAlpha = .38 + pulse * .42; ctx.strokeStyle = inv.mutations?.length ? '#ff42e6' : '#ff3158'; ctx.lineWidth = 1;
     const pad = 2 + pulse * 2; ctx.strokeRect(x-pad, y-pad, w+pad*2, h+pad*2);
     ctx.fillStyle = '#ffd43b'; const a = elapsed * 2.4 + inv.seed; ctx.fillRect(cx+Math.cos(a)*22-1,cy+Math.sin(a)*16-1,3,3); ctx.restore();
     if (hpRatio < 1) { ctx.fillStyle='#160817'; ctx.fillRect(x,y+h+2,w,3); ctx.fillStyle=hpRatio>.5?'#ffd43b':'#ff3158'; ctx.fillRect(x,y+h+2,w*hpRatio,3); }
