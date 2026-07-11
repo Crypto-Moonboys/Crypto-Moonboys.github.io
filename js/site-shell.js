@@ -16,6 +16,7 @@ window.__HUD_CONSOLIDATED__ = true;
     js: '/wiki/components/header.js',
   });
   let sharedHeaderMarkupPromise = null;
+  let siteStatsPromise = null;
 
   const links = [
     { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
@@ -160,6 +161,77 @@ window.__HUD_CONSOLIDATED__ = true;
       `;
   }
 
+  function pickNumber(stats, keys) {
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      if (stats && Object.prototype.hasOwnProperty.call(stats, key)) {
+        const value = Number(stats[key]);
+        if (!Number.isNaN(value)) return value;
+      }
+    }
+    return null;
+  }
+
+  function formatStat(value) {
+    if (value === null || value === undefined) return '';
+    const n = Number(value);
+    if (Number.isNaN(n)) return '';
+    return n.toLocaleString('en-GB');
+  }
+
+  function hideHeaderLiveFeeds(scope) {
+    const root = scope || document;
+    const feeds = root.querySelectorAll('.logo-live-feed');
+    feeds.forEach((feed) => {
+      feed.hidden = true;
+      feed.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  function applyHeaderLiveStats(stats, scope) {
+    const root = scope || document;
+    const pageCount = pickNumber(stats, ['total_wiki_pages', 'totalArticles', 'article_count']);
+    const articleCount = pickNumber(stats, ['total_articles']);
+    if (pageCount === null && articleCount === null) {
+      hideHeaderLiveFeeds(root);
+      return;
+    }
+    root.querySelectorAll('[data-stat="article-count"]').forEach((node) => {
+      node.textContent = pageCount === null ? 'N/A' : formatStat(pageCount);
+    });
+    root.querySelectorAll('[data-stat="total-articles"]').forEach((node) => {
+      node.textContent = articleCount === null ? 'N/A' : formatStat(articleCount);
+    });
+    root.querySelectorAll('.logo-live-feed').forEach((feed) => {
+      feed.hidden = false;
+      feed.removeAttribute('aria-hidden');
+    });
+  }
+
+  function getSiteStats() {
+    if (siteStatsPromise) return siteStatsPromise;
+    if (typeof window.fetch !== 'function') {
+      siteStatsPromise = Promise.resolve(null);
+      return siteStatsPromise;
+    }
+    siteStatsPromise = window.fetch('/js/site-stats.json', { credentials: 'same-origin' })
+      .then((response) => (response.ok ? response.json() : null))
+      .catch(() => null);
+    return siteStatsPromise;
+  }
+
+  function hydrateHeaderLiveStats(scope) {
+    const root = scope || document;
+    if (!root.querySelector('.logo-live-feed')) return;
+    getSiteStats().then((stats) => {
+      if (!stats) {
+        hideHeaderLiveFeeds(root);
+        return;
+      }
+      applyHeaderLiveStats(stats, root);
+    });
+  }
+
   function ensureSharedHeaderAssets() {
     if (!isWikiShellRoute(window.location.pathname)) return;
     if (!document.querySelector(`link[data-wiki-shared-header-css], link[href="${SHARED_WIKI_HEADER.css}"]`)) {
@@ -221,6 +293,7 @@ window.__HUD_CONSOLIDATED__ = true;
       const globalNav = document.getElementById('global-nav');
       if (globalNav) globalNav.innerHTML = navHtml;
       bindSearchForm();
+      hydrateHeaderLiveStats(header);
     });
   }
 
@@ -505,6 +578,7 @@ window.__HUD_CONSOLIDATED__ = true;
     ensureSwarmsyLandingTighten();
     ensureInlineLiveStats(shell.content);
     bindSearchForm();
+    hydrateHeaderLiveStats();
     bindHudIdentityRefresh();
     scheduleHudIdentityRefresh();
     ensureBackToTop();
@@ -546,6 +620,7 @@ window.__HUD_CONSOLIDATED__ = true;
     isWikiShellRoute,
     shouldShowInlineStats,
     shouldShowRightPanel,
+    getSiteStats,
   });
 
   if (document.readyState === 'loading') {

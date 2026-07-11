@@ -54,9 +54,18 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    fetch('/js/site-stats.json')
+  function loadSiteStats() {
+    const shell = window.MOONBOYS_WIKI_SHELL;
+    if (shell && typeof shell.getSiteStats === 'function') {
+      return shell.getSiteStats();
+    }
+    return fetch('/js/site-stats.json')
       .then(response => (response.ok ? response.json() : null))
+      .catch(() => null);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    loadSiteStats()
       .then(stats => {
         if (!stats) return;
 
