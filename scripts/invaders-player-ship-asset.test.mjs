@@ -3,7 +3,7 @@
  *
  * Validation proving:
  *   1. PNG payload is valid (correct magic bytes)
- *   2. Exact dimensions match the asset contract (36×20)
+ *   2. Exact dimensions match the Level 1 Bitcoin Cannon asset contract (80×40)
  *   3. Transparency exists (at least one pixel with alpha < 255)
  *   4. Hydrated output path matches the manifest runtimePath
  *   5. Runtime renderer (render-system.js) requests and draws the asset
@@ -78,14 +78,16 @@ assert.ok(
 );
 console.log('✅  Test 1 — PNG payload is valid');
 
-// ── Test 2: exact dimensions match the contract (36×20) ──────────────────────
+// ── Test 2: exact dimensions match the cannon asset contract (80×40) ──────────────────────
 
-const CONTRACT_W = 36;
-const CONTRACT_H = 20;
+const ASSET_W = 80;
+const ASSET_H = 40;
+const HITBOX_W = 36;
+const HITBOX_H = 20;
 const { width, height } = parsePngDimensions(pngBuf);
 
-assert.equal(width,  CONTRACT_W, `PNG width must be ${CONTRACT_W}, got ${width}`);
-assert.equal(height, CONTRACT_H, `PNG height must be ${CONTRACT_H}, got ${height}`);
+assert.equal(width,  ASSET_W, `PNG width must be ${ASSET_W}, got ${width}`);
+assert.equal(height, ASSET_H, `PNG height must be ${ASSET_H}, got ${height}`);
 console.log(`✅  Test 2 — Exact dimensions ${width}×${height} match contract`);
 
 // ── Test 3: transparency exists ───────────────────────────────────────────────
@@ -178,12 +180,12 @@ assert.ok(shipWMatch, 'bootstrap.js must still declare SHIP_W');
 assert.ok(shipHMatch, 'bootstrap.js must still declare SHIP_H');
 
 assert.equal(
-  Number(shipWMatch[1]), CONTRACT_W,
-  `bootstrap.js SHIP_W must remain ${CONTRACT_W} — gameplay dimension unchanged`
+  Number(shipWMatch[1]), HITBOX_W,
+  `bootstrap.js SHIP_W must remain ${HITBOX_W} — gameplay dimension unchanged`
 );
 assert.equal(
-  Number(shipHMatch[1]), CONTRACT_H,
-  `bootstrap.js SHIP_H must remain ${CONTRACT_H} — gameplay dimension unchanged`
+  Number(shipHMatch[1]), HITBOX_H,
+  `bootstrap.js SHIP_H must remain ${HITBOX_H} — gameplay dimension unchanged`
 );
 
 // render-system must not import or reference old sheet/atlas paths

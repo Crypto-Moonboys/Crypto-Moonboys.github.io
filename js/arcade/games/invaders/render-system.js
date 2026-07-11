@@ -25,6 +25,7 @@ const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
 // collision boundaries unchanged.
 const PLAYER_SHIP_ASSET_W = 36;
 const PLAYER_SHIP_ASSET_H = 20;
+const PLAYER_SHIP_VISUAL_H = 40;
 const PLAYER_SHIP_ASSET_SRC = '/games/invaders-3008/assets/ships/player-ship.png';
 
 const _playerShip = (() => {
@@ -104,12 +105,12 @@ export function createRenderer(ctx, W, H) {
       const natW = shipImg.naturalWidth;
       const natH = shipImg.naturalHeight;
       // Scale visual height to match the hitbox height; scale width proportionally.
-      const scale   = h / natH;
+      const scale   = PLAYER_SHIP_VISUAL_H / natH;
       const visualW = natW * scale;
-      const visualH = h;
-      // Anchor: bottom-centre of hitbox
+      const visualH = PLAYER_SHIP_VISUAL_H;
+      // Anchor: bottom-centre of hitbox; artwork rises above the collision box.
       const drawX = x + w / 2 - visualW / 2;
-      const drawY = y;
+      const drawY = y + h - visualH;
       ctx.save();
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(shipImg, drawX, drawY, visualW, visualH);
