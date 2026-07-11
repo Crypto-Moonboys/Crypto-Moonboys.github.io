@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-10T06:58:03.170Z",
+  "generated_at": "2026-07-11T05:56:50.648Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -37,7 +37,7 @@
     },
     {
       "owner": "pepperstake",
-      "live_assets": 832
+      "live_assets": 833
     },
     {
       "owner": "q4oia.wam",
@@ -1345,10 +1345,6 @@
     },
     {
       "owner": "qooei.wam",
-      "live_assets": 1
-    },
-    {
-      "owner": "aelbo.wam",
       "live_assets": 1
     },
     {
