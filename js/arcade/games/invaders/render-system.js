@@ -13,6 +13,45 @@ import { BOSS_ARCHETYPE_DEFS } from './boss-archetypes.js';
 // Boss phase colour palette — shared between drawBoss() and the phase label.
 const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
 
+// ── Player-ship sprite loader ─────────────────────────────────────────────────
+// Loads a single transparent PNG asset (36×20) for the player ship.
+// Falls back to full primitive rendering when the asset is missing, still
+// loading, invalid, or fails dimension checks.  No gameplay logic is touched.
+//
+// Contract dimensions must match SHIP_W/SHIP_H in bootstrap.js exactly.
+const PLAYER_SHIP_ASSET_W = 36;
+const PLAYER_SHIP_ASSET_H = 20;
+const PLAYER_SHIP_ASSET_SRC = '/games/invaders-3008/assets/ships/player-ship.png';
+
+const _playerShip = (() => {
+  if (typeof Image === 'undefined') return { status: 'unsupported', image: null };
+  const entry = { status: 'loading', image: new Image() };
+  entry.image.decoding = 'async';
+  entry.image.onload = () => {
+    const w = entry.image.naturalWidth;
+    const h = entry.image.naturalHeight;
+    if (w === PLAYER_SHIP_ASSET_W && h === PLAYER_SHIP_ASSET_H) {
+      entry.status = 'ready';
+    } else {
+      entry.status = 'dimension-mismatch';
+      console.warn(
+        `[invaders] player-ship asset dimension mismatch: expected ${PLAYER_SHIP_ASSET_W}×${PLAYER_SHIP_ASSET_H}, got ${w}×${h}. Using primitive fallback.`
+      );
+    }
+  };
+  entry.image.onerror = () => { entry.status = 'error'; };
+  entry.image.src = PLAYER_SHIP_ASSET_SRC;
+  return entry;
+})();
+
+/** Returns the loaded player-ship Image, or null when the primitive should be used. */
+function getPlayerShipImage() {
+  return _playerShip.status === 'ready' ? _playerShip.image : null;
+}
+
+/** Exposed for integration tests only — do not use in gameplay code. */
+export const __playerShipLoader = _playerShip;
+
 /**
  * @param {CanvasRenderingContext2D} ctx
  * @param {number} W  canvas logical width
@@ -35,8 +74,7 @@ export function createRenderer(ctx, W, H) {
 
   // ── Ship ─────────────────────────────────────────────────────────────────────
 
-  function drawShip(player) {
-    const { x, y, w, h, shielded } = player;
+  function drawShipPrimitive(x, y, w, h) {
     ctx.fillStyle = '#2ec5ff';
     ctx.beginPath();
     ctx.moveTo(x + w / 2, y);
@@ -53,6 +91,21 @@ export function createRenderer(ctx, W, H) {
     ctx.fillStyle = '#1a9acc';
     ctx.fillRect(x,         y + h - 8, 8, 4);
     ctx.fillRect(x + w - 8, y + h - 8, 8, 4);
+  }
+
+  function drawShip(player) {
+    const { x, y, w, h, shielded } = player;
+    const shipImg = getPlayerShipImage();
+    if (shipImg) {
+      // Asset path: draw sprite scaled to the game-logic dimensions
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(shipImg, x, y, w, h);
+      ctx.restore();
+    } else {
+      // Primitive fallback — always safe
+      drawShipPrimitive(x, y, w, h);
+    }
     if (shielded) {
       ctx.save();
       ctx.strokeStyle = 'rgba(63,185,80,0.7)';

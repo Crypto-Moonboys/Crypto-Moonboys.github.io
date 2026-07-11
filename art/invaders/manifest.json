@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "game": "Invaders 3008",
+  "generatedAt": "2026-07-11T16:00:00.000Z",
+  "outputRoot": "art/invaders/generated",
+  "assets": [
+    {
+      "id": "invaders-player-ship",
+      "category": "player",
+      "name": "Player ship",
+      "status": "generated",
+      "size": {
+        "width": 36,
+        "height": 20
+      },
+      "output": "art/invaders/generated/player-ship.png",
+      "encodedOutput": "art/invaders/generated/player-ship.png.base64",
+      "runtimePath": "/games/invaders-3008/assets/ships/player-ship.png"
+    }
+  ]
+}
