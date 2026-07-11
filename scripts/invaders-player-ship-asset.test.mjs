@@ -128,7 +128,7 @@ const renderSystem = readRootFile('js/arcade/games/invaders/render-system.js');
 
 assert.match(
   renderSystem,
-  /PLAYER_SHIP_ASSET_SRC\s*=\s*['"]\/games\/invaders-3008\/assets\/ships\/player-ship\.png['"]/,
+  /PLAYER_SHIP_ASSET_SRC\s*=\s*['"]\/games\/invaders-3008\/assets\/ships\/player-ship\.png(?:\?[^'"]+)?['"]/,
   'render-system.js must declare PLAYER_SHIP_ASSET_SRC pointing to the runtime PNG'
 );
 assert.match(
