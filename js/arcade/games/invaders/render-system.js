@@ -26,7 +26,7 @@ const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
 const PLAYER_SHIP_ASSET_W = 36;
 const PLAYER_SHIP_ASSET_H = 20;
 const PLAYER_SHIP_VISUAL_H = 40;
-const PLAYER_SHIP_ASSET_SRC = '/games/invaders-3008/assets/ships/player-ship.png';
+const PLAYER_SHIP_ASSET_SRC = '/games/invaders-3008/assets/ships/player-ship.png?v=bitcoin-cannon-level-1-20260711';
 
 const _playerShip = (() => {
   if (typeof Image === 'undefined') return { status: 'unsupported', image: null };
