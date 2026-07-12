@@ -79,8 +79,8 @@ assert.ok(bootstrapSrc.includes("from './invader-system.js'"),
   "bootstrap.js must import from './invader-system.js'");
 assert.ok(bootstrapSrc.includes("from './powerup-system.js'"),
   "bootstrap.js must import from './powerup-system.js'");
-assert.ok(bootstrapSrc.includes("from './render-system.js'"),
-  "bootstrap.js must import from './render-system.js'");
+assert.match(bootstrapSrc, /from '\.\/render-system\.js(?:\?[^']+)?'/,
+  "bootstrap.js must import from './render-system.js' with an optional cache version");
 
 // Gameplay wiring still intact in orchestrator
 assert.ok(bootstrapSrc.includes('buildBunkers'),
@@ -133,6 +133,18 @@ assert.ok(!renderSysSrc.includes('createInvadersAssetSystem('),
   'render-system.js must not initialize runtime contact-sheet asset systems');
 assert.ok(!renderSysSrc.includes('drawAtlasSpriteCentered('),
   'render-system.js must not draw runtime atlas sprites');
+
+// Full Meme Swarm uses the 25 individually supplied transparent PNGs (not the
+// old contact-sheet atlas) and retains a primitive fallback while they load.
+assert.ok(renderSysSrc.includes('const MEME_ENEMY_FILES = ['),
+  'render-system.js must declare the individual meme enemy asset manifest');
+assert.equal((renderSysSrc.match(/'[^']+\.png'/g) || []).filter((name) =>
+  !name.includes('player-ship') && !name.includes('projectile')).length, 25,
+  'meme enemy asset manifest must contain all 25 uploaded PNGs');
+assert.ok(renderSysSrc.includes('drawPngMemeEnemy('),
+  'render-system.js must draw individual PNG meme enemies');
+assert.ok(renderSysSrc.includes('grayscale(${grayscale})'),
+  'damaged meme enemies must progressively dim/desaturate');
 
 // Drawing primitives present
 for (const fn of ['drawShip', 'drawBoss', 'drawBunkers', 'drawBackground',
