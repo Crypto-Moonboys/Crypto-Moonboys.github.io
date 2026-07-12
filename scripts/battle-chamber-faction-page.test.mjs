@@ -14,7 +14,8 @@
  *   - community.html does not load telegram-community.js
  *   - community.html does not load battle-chamber-factions.js
  *   - community.html does not load the bridge before the renderer
- *   - community.html contains old live faction names "Diamond Hands" or "HODL Warriors"
+ *   - community.html contains old live faction name "Diamond Hands"
+ *   - community.html presents "HODL Warriors" as a live faction chamber instead of a builder role
  *   - community.html uses forbidden reward wording
  *   - battle-chamber-factions.js references old faction names as current live factions
  *   - battle-chamber-factions.js does not import/reference existing faction systems
@@ -169,10 +170,10 @@ check(communityHtml.includes('battle-chamber-faction-bridge.js'), 'community.htm
 
 console.log('\n[7] community.html — no old live faction names');
 // "Diamond Hands" must not appear as a current faction reference.
-// We allow it in migration/alias comments inside JS, but not in HTML page content.
+// HODL Warriors is allowed as a 1/1 builder-army role, but not as a live faction chamber.
 const htmlLower = communityHtml.toLowerCase();
 check(!htmlLower.includes('diamond hands'), 'community.html does not contain "Diamond Hands"');
-check(!htmlLower.includes('hodl warriors'), 'community.html does not contain "HODL Warriors"');
+check(!/hodl warriors chamber/i.test(communityHtml), 'community.html does not present HODL Warriors as a live faction chamber');
 
 // ── community.html: forbidden reward wording ──────────────────────────────────
 
