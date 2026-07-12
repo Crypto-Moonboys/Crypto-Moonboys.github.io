@@ -2,6 +2,54 @@
   if (typeof window === 'undefined' || window.__INVADERS_MEME_VISUAL_HOTFIX__) return;
   window.__INVADERS_MEME_VISUAL_HOTFIX__ = true;
 
+  const CANNON_LEVEL_COUNT = 9;
+  const CANNON_VERSION = 'bitcoin-cannon-levels-20260712';
+  const CANNON_BASE = '/art/invaders/generated/';
+  let cannonLevel = 1;
+  let upgradePromptSeenUntil = 0;
+
+  function cannonSrc(level) {
+    const slug = level === 7 ? 'bitcoin-blaster-tank' : 'bitcoin-cannon';
+    return `${CANNON_BASE}invaders-3008-level-${level}-${slug}-transparent.png?v=${CANNON_VERSION}`;
+  }
+
+  const cannonImages = Array.from({ length: CANNON_LEVEL_COUNT }, (_, idx) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = cannonSrc(idx + 1);
+    return image;
+  });
+
+  function setCannonLevel(level) {
+    cannonLevel = Math.max(1, Math.min(CANNON_LEVEL_COUNT, Number(level) || 1));
+  }
+
+  function advanceCannonLevel() {
+    setCannonLevel(cannonLevel + 1);
+  }
+
+  function isInvadersPlayerShipImage(image) {
+    const src = String(image && image.currentSrc || image && image.src || '');
+    return src.includes('/games/invaders-3008/assets/ships/player-ship.png');
+  }
+
+  function resetCannonSoon() {
+    setTimeout(() => setCannonLevel(1), 0);
+  }
+
+  window.__INVADERS_SET_CANNON_LEVEL__ = setCannonLevel;
+
+  window.addEventListener('keydown', (event) => {
+    if (!/^[123]$/.test(event.key)) return;
+    if (performance.now() > upgradePromptSeenUntil) return;
+    advanceCannonLevel();
+  }, true);
+
+  window.addEventListener('click', (event) => {
+    const id = event.target && event.target.id;
+    if (id === 'startBtn' || id === 'resetBtn') resetCannonSoon();
+  }, true);
+
   const imageProto = window.HTMLImageElement && window.HTMLImageElement.prototype;
   const srcDescriptor = imageProto && Object.getOwnPropertyDescriptor(imageProto, 'src');
   if (srcDescriptor && srcDescriptor.set && srcDescriptor.get) {
@@ -21,6 +69,46 @@
 
   const ctxProto = window.CanvasRenderingContext2D && window.CanvasRenderingContext2D.prototype;
   if (!ctxProto) return;
+
+  const originalDrawImage = ctxProto.drawImage;
+  ctxProto.drawImage = function (image, ...args) {
+    if (this.canvas && this.canvas.id === 'invCanvas' && isInvadersPlayerShipImage(image)) {
+      const cannon = cannonImages[cannonLevel - 1];
+      if (cannon && cannon.complete && cannon.naturalWidth > 0 && args.length >= 4) {
+        const dx = Number(args[0]);
+        const dy = Number(args[1]);
+        const dw = Number(args[2]);
+        const dh = Number(args[3]);
+        if ([dx, dy, dw, dh].every(Number.isFinite)) {
+          const targetH = dh + Math.min(18, (cannonLevel - 1) * 2);
+          const targetW = cannon.naturalWidth * (targetH / cannon.naturalHeight);
+          const cx = dx + dw / 2;
+          const bottom = dy + dh;
+          this.save();
+          this.imageSmoothingEnabled = false;
+          this.shadowBlur = 10 + cannonLevel * 2;
+          this.shadowColor = cannonLevel >= 8 ? '#ff4fd1' : cannonLevel >= 5 ? '#f7c948' : '#2ee8ff';
+          originalDrawImage.call(this, cannon, cx - targetW / 2, bottom - targetH, targetW, targetH);
+          this.restore();
+          return;
+        }
+      }
+    }
+    return originalDrawImage.call(this, image, ...args);
+  };
+
+  const originalFillText = ctxProto.fillText;
+  ctxProto.fillText = function (text, ...args) {
+    if (this.canvas && this.canvas.id === 'invCanvas') {
+      const label = String(text || '');
+      if (label.includes('Choose an upgrade')) {
+        upgradePromptSeenUntil = performance.now() + 8000;
+      } else if (label === 'Press Start' || label === 'GAME OVER') {
+        setCannonLevel(1);
+      }
+    }
+    return originalFillText.call(this, text, ...args);
+  };
 
   const originalStrokeRect = ctxProto.strokeRect;
   ctxProto.strokeRect = function (x, y, w, h) {
