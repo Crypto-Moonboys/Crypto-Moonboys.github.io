@@ -5,8 +5,13 @@
   const CANNON_LEVEL_COUNT = 9;
   const CANNON_VERSION = 'bitcoin-cannon-levels-20260712';
   const CANNON_BASE = '/art/invaders/generated/';
+  const BOMB_VERSION = 'bitcoin-bomb-skins-20260712';
   let cannonLevel = 1;
   let upgradePromptSeenUntil = 0;
+  let activeBombSkin = -1;
+  let lastBombSeenAt = 0;
+  let queuedBombSkin = -1;
+  let pendingBombArc = null;
 
   function cannonSrc(level) {
     const slug = level === 7 ? 'bitcoin-blaster-tank' : 'bitcoin-cannon';
@@ -19,6 +24,31 @@
     image.src = cannonSrc(idx + 1);
     return image;
   });
+
+  const bombImages = [
+    'invaders-3008-btc-fire.png',
+    'invaders-3008-btc-fire-2.png',
+    'invaders-3008-god-bomb.png',
+  ].map((file) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = `/art/invaders/generated/${file}?v=${BOMB_VERSION}`;
+    return image;
+  });
+
+  function randomBombSkin() {
+    return Math.floor(Math.random() * bombImages.length);
+  }
+
+  function getActiveBombSkin() {
+    const now = performance.now();
+    if (now - lastBombSeenAt > 300) {
+      activeBombSkin = queuedBombSkin >= 0 ? queuedBombSkin : randomBombSkin();
+      queuedBombSkin = -1;
+    }
+    lastBombSeenAt = now;
+    return Math.max(0, activeBombSkin);
+  }
 
   function setCannonLevel(level) {
     cannonLevel = Math.max(1, Math.min(CANNON_LEVEL_COUNT, Number(level) || 1));
@@ -40,6 +70,9 @@
   window.__INVADERS_SET_CANNON_LEVEL__ = setCannonLevel;
 
   window.addEventListener('keydown', (event) => {
+    if (event.key === 'b' || event.key === 'B') {
+      queuedBombSkin = randomBombSkin();
+    }
     if (!/^[123]$/.test(event.key)) return;
     if (performance.now() > upgradePromptSeenUntil) return;
     advanceCannonLevel();
@@ -95,6 +128,49 @@
       }
     }
     return originalDrawImage.call(this, image, ...args);
+  };
+
+  const originalArc = ctxProto.arc;
+  ctxProto.arc = function (x, y, radius, ...args) {
+    pendingBombArc = null;
+    if (
+      this.canvas &&
+      this.canvas.id === 'invCanvas' &&
+      Math.abs(Number(radius) - 18) < 0.75 &&
+      this.fillStyle === '#ff6b2b' &&
+      this.shadowColor === '#ff6b2b' &&
+      Number(this.shadowBlur) >= 20
+    ) {
+      pendingBombArc = { x: Number(x), y: Number(y), radius: Number(radius), skin: getActiveBombSkin() };
+    }
+    return originalArc.call(this, x, y, radius, ...args);
+  };
+
+  const originalFill = ctxProto.fill;
+  ctxProto.fill = function (...args) {
+    if (pendingBombArc && this.canvas && this.canvas.id === 'invCanvas') {
+      const bomb = bombImages[pendingBombArc.skin % bombImages.length];
+      if (bomb && bomb.complete && bomb.naturalWidth > 0) {
+        const t = performance.now() * 0.001;
+        const size = pendingBombArc.radius * (3.15 + pendingBombArc.skin * 0.22) * (1 + Math.sin(t * 10) * 0.08);
+        const ratio = bomb.naturalWidth / bomb.naturalHeight;
+        const visualW = ratio >= 1 ? size : size * ratio;
+        const visualH = ratio >= 1 ? size / ratio : size;
+        this.save();
+        this.translate(pendingBombArc.x, pendingBombArc.y);
+        this.rotate(Math.sin(t * 7 + pendingBombArc.y * 0.03) * 0.18);
+        this.imageSmoothingEnabled = false;
+        this.globalCompositeOperation = 'screen';
+        this.shadowBlur = 22 + pendingBombArc.skin * 8;
+        this.shadowColor = pendingBombArc.skin === 2 ? '#ff2ed1' : pendingBombArc.skin === 1 ? '#ff6b2b' : '#f7c948';
+        originalDrawImage.call(this, bomb, -visualW / 2, -visualH / 2, visualW, visualH);
+        this.restore();
+        pendingBombArc = null;
+        return;
+      }
+    }
+    pendingBombArc = null;
+    return originalFill.call(this, ...args);
   };
 
   const originalFillText = ctxProto.fillText;
