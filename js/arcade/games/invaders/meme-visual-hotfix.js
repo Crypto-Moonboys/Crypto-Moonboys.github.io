@@ -6,13 +6,15 @@
   const CANNON_VERSION = 'bitcoin-cannon-levels-20260712';
   const CANNON_BASE = '/art/invaders/generated/';
   const BOMB_VERSION = 'bitcoin-bomb-skins-20260712';
-  const EXPLOSION_VERSION = 'bitcoin-punk-explosions-20260712';
+  const EXPLOSION_VERSION = 'reactive-hit-lights-20260712';
   let cannonLevel = 1;
   let upgradePromptSeenUntil = 0;
   let activeBombSkin = -1;
   let lastBombSeenAt = 0;
   let queuedBombSkin = -1;
   let pendingBombArc = null;
+  const backgroundHitPulses = [];
+  let lastBackgroundPulseAt = 0;
 
   function cannonSrc(level) {
     const slug = level === 7 ? 'bitcoin-blaster-tank' : 'bitcoin-cannon';
@@ -85,6 +87,53 @@
       ctx.translate(-(cx + ox), -(cy + oy));
     }
     ctx.restore();
+  }
+
+  function rememberBackgroundHitPulse(x, y, color, strength = 1) {
+    const now = performance.now();
+    if (now - lastBackgroundPulseAt < 18 && backgroundHitPulses.length > 0) return;
+    lastBackgroundPulseAt = now;
+    backgroundHitPulses.push({
+      x,
+      y,
+      color: String(color || '#ff4fd1'),
+      born: now,
+      life: 520 + Math.random() * 220,
+      strength,
+    });
+    while (backgroundHitPulses.length > 28) backgroundHitPulses.shift();
+  }
+
+  function drawReactiveBackgroundPulses(ctx, W, H) {
+    const now = performance.now();
+    for (let i = backgroundHitPulses.length - 1; i >= 0; i--) {
+      const pulse = backgroundHitPulses[i];
+      const age = now - pulse.born;
+      const t = age / pulse.life;
+      if (t >= 1) {
+        backgroundHitPulses.splice(i, 1);
+        continue;
+      }
+
+      const ease = Math.pow(1 - t, 1.8);
+      const strobe = 0.55 + Math.sin(now * 0.055 + i * 2.4) * 0.45;
+      const radius = 70 + pulse.strength * 46 + t * 130;
+      const gx = Math.max(0, Math.min(W, pulse.x));
+      const gy = Math.max(0, Math.min(H, pulse.y));
+      const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
+      grad.addColorStop(0, pulse.color + Math.round(95 * ease * (0.65 + strobe * 0.35)).toString(16).padStart(2, '0'));
+      grad.addColorStop(0.34, pulse.color + Math.round(48 * ease).toString(16).padStart(2, '0'));
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      originalFillRect.call(ctx, 0, 0, W, H);
+
+      if (i % 3 === 0 && strobe > 0.72) {
+        ctx.globalAlpha = 0.08 * ease;
+        ctx.fillStyle = pulse.color;
+        originalFillRect.call(ctx, 0, 0, W, H);
+        ctx.globalAlpha = 1;
+      }
+    }
   }
 
   const bombImages = [
@@ -268,6 +317,7 @@
         : null;
     if (explosionKind) {
       drawExplosionSpriteParticle(this, Number(x), Number(y), Number(w), Number(h), explosionKind);
+      rememberBackgroundHitPulse(Number(x), Number(y), this.fillStyle, explosionKind === 'btc' ? 1.35 : 1);
     }
 
     const isInvadersFullBackground =
@@ -301,6 +351,7 @@
       this.fillStyle = grad;
       originalFillRect.call(this, 0, 0, W, H);
     }
+    drawReactiveBackgroundPulses(this, W, H);
     this.restore();
     return result;
   };
