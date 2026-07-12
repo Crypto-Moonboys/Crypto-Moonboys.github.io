@@ -55,11 +55,16 @@
     var section = document.querySelector('.home-ai-bridge');
     if (!section) { return; }
 
+    var staticEl = section.querySelector('.home-ai-bridge-static');
+
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (staticEl) {
+        staticEl.setAttribute('aria-hidden', 'false');
+        staticEl.style.display = '';
+      }
       return;
     }
 
-    var staticEl = section.querySelector('.home-ai-bridge-static');
     if (staticEl) {
       staticEl.setAttribute('aria-hidden', 'true');
       staticEl.style.display = 'none';
