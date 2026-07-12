@@ -66,6 +66,47 @@ const _bitcoinProjectile = (() => {
   return entry;
 })();
 
+// Full Meme Swarm — individual transparent PNGs supplied for Invaders 3008.
+// The order is a stable gameplay contract: an invader's seed deterministically
+// selects one sprite, so its identity never changes between frames.
+const MEME_ENEMY_FILES = [
+  '41810c66-ee60-46d0-8766-6095a9956746.png',
+  'e-bitcoin.png',
+  'invaders-3008-ape-1.png', 'invaders-3008-ape-2.png', 'invaders-3008-ape-3.png',
+  'invaders-3008-catlash-2.png', 'invaders-3008-catlash.png',
+  'invaders-3008-davy.png', 'invaders-3008-frank-1.png', 'invaders-3008-frank-2.png',
+  'invaders-3008-godammm.png', 'invaders-3008-og-bear.png',
+  'invaders-3008-og-bob-bot.png', 'invaders-3008-og-boby-bobber.png',
+  'invaders-3008-og-king-gee.png', 'invaders-3008-ogbull.png',
+  'invaders-3008-pepe.png', 'invaders-3008-pepe2.png',
+  'invaders-3008-shib-1.png', 'invaders-3008-shib-2.png', 'invaders-3008-shib-3.png',
+  'invaders-3008-uni-1.png', 'invaders-3008-uni-2.png', 'invaders-3008-uni-3.png',
+  'invaders-dfrog-1.png',
+];
+const MEME_FX_COLORS = [
+  '#ff3158','#ffd43b','#ff6b2b','#ff2ed1','#ad5cff',
+  '#2ee8ff','#ff4fd1','#ff7849','#9cff31','#f7c948',
+  '#ff173d','#9b7bff','#00e5ff','#ff9f1c','#f72585',
+  '#ff3b30','#42f56c','#18d966','#ff8c42','#f0d44b',
+  '#ff3f81','#bc6cff','#00d9ff','#fc49a3','#65ff45',
+];
+
+const _memeEnemies = MEME_ENEMY_FILES.map((file) => {
+  if (typeof Image === 'undefined') return { status: 'unsupported', image: null, file };
+  const entry = { status: 'loading', image: new Image(), file };
+  entry.image.decoding = 'async';
+  entry.image.onload = () => { entry.status = entry.image.naturalWidth > 0 ? 'ready' : 'error'; };
+  entry.image.onerror = () => { entry.status = 'error'; };
+  entry.image.src = '/art/invaders/generated/' + file + '?v=meme-swarm-png-20260712';
+  return entry;
+});
+
+function memeSpriteIndex(inv) {
+  const seed = Number.isFinite(inv.seed) ? inv.seed : 0;
+  const row = Number.isFinite(inv.row) ? inv.row : 0;
+  return Math.abs(Math.floor(seed * 10007 + row * 97)) % MEME_ENEMY_FILES.length;
+}
+
 
 /**
  * @param {CanvasRenderingContext2D} ctx
@@ -477,11 +518,74 @@ export function createRenderer(ctx, W, H) {
     if (hpRatio < 1) { ctx.fillStyle='#160817'; ctx.fillRect(x,y+h+2,w,3); ctx.fillStyle=hpRatio>.5?'#ffd43b':'#ff3158'; ctx.fillRect(x,y+h+2,w*hpRatio,3); }
   }
 
+  function drawPngMemeEnemy(inv, hf, hpRatio, elapsed) {
+    const index = memeSpriteIndex(inv);
+    const entry = _memeEnemies[index];
+    if (!entry || entry.status !== 'ready') {
+      drawMemeEnemy(inv, hf, hpRatio, elapsed);
+      return;
+    }
+
+    const x = inv.x, y = inv.y, w = inv.w, h = inv.h;
+    const cx = x + w / 2, cy = y + h / 2;
+    const color = MEME_FX_COLORS[index];
+    const mode = index % 5;
+    const pulse = .5 + .5 * Math.sin(elapsed * (4.5 + mode * .35) + inv.seed);
+    const damage = 1 - hpRatio;
+    const visualH = Math.max(34, h * 1.42);
+    const visualW = Math.min(48, visualH * entry.image.naturalWidth / entry.image.naturalHeight);
+    const drawX = cx - visualW / 2;
+    const drawY = cy - visualH / 2;
+
+    ctx.save();
+    // A different live aura language for each fifth of the 25-piece roster.
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1;
+    ctx.globalAlpha = .18 + pulse * .22;
+    ctx.shadowBlur = 9 + pulse * 9; ctx.shadowColor = color;
+    if (mode === 0) {
+      ctx.beginPath(); ctx.arc(cx, cy, 17 + pulse * 3, 0, Math.PI * 2); ctx.stroke();
+    } else if (mode === 1) {
+      ctx.strokeRect(x - 3 - pulse * 2, y - 3 - pulse * 2, w + 6 + pulse * 4, h + 6 + pulse * 4);
+    } else if (mode === 2) {
+      for (let k=0;k<4;k++) { const a=elapsed*2+inv.seed+k*Math.PI/2; ctx.fillRect(cx+Math.cos(a)*21-1,cy+Math.sin(a)*15-1,2,2); }
+    } else if (mode === 3) {
+      ctx.beginPath(); for(let k=0;k<6;k++){const a=k*Math.PI/3; const px=cx+Math.cos(a)*21, py=cy+Math.sin(a)*16; k?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.closePath(); ctx.stroke();
+    } else {
+      for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(cx-22,cy+k*7+pulse*2);ctx.lineTo(cx+22,cy+k*7-pulse*2);ctx.stroke();}
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    // Surviving a hit permanently drains colour and brightness. The immediate
+    // impact also jolts, squashes and white-flashes the art.
+    const hitJolt = hf * Math.sin(elapsed * 95 + inv.seed) * 3;
+    ctx.translate(cx + hitJolt, cy);
+    ctx.rotate(hf * Math.sin(elapsed * 70 + inv.seed) * .12);
+    ctx.scale(1 + hf * .16, 1 - hf * .18);
+    ctx.translate(-cx, -cy);
+    const brightness = Math.max(.42, 1 - damage * .52) + hf * 1.2;
+    const grayscale = Math.min(1, damage * .72 + hf * .8);
+    ctx.filter = `brightness(${brightness}) grayscale(${grayscale}) contrast(${1 + hf * .8}) drop-shadow(0 0 ${5 + hf*9}px ${color})`;
+    ctx.globalAlpha = Math.max(.52, 1 - damage * .28);
+    ctx.drawImage(entry.image, drawX, drawY, visualW, visualH);
+    ctx.restore();
+
+    // Damage cracks and chromatic glitch slices remain procedural and cheap.
+    if (damage > 0 || hf > 0) {
+      ctx.save(); ctx.globalAlpha = .35 + damage * .5; ctx.strokeStyle = hf > 0 ? '#fff' : color; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cx-7,drawY+5); ctx.lineTo(cx-2,cy-3); ctx.lineTo(cx-6,cy+4); ctx.lineTo(cx+2,drawY+visualH-3); ctx.stroke();
+      if (hf > 0) { ctx.globalCompositeOperation='screen'; ctx.fillStyle=color; ctx.fillRect(drawX-3,cy-5,visualW+6,2); ctx.fillRect(drawX+3,cy+4,visualW-3,2); }
+      ctx.restore();
+    }
+    if (hpRatio < 1) { ctx.fillStyle='#160817'; ctx.fillRect(x,y+h+3,w,3); ctx.fillStyle=hpRatio>.5?'#ffd43b':'#ff3158'; ctx.fillRect(x,y+h+3,w*hpRatio,3); }
+  }
+
   function drawInvader(inv, elapsed) {
     const hf      = clamp(inv.hitTimer / 0.12, 0, 1);
     const sf      = inv.maxShieldHp > 0 ? inv.shieldHp / inv.maxShieldHp : 0;
     const hpRatio = clamp(inv.hp / inv.maxHp, 0, 1);
-    drawMemeEnemy(inv, hf, hpRatio, elapsed || 0);
+    drawPngMemeEnemy(inv, hf, hpRatio, elapsed || 0);
     drawHitTint(inv.x, inv.y, inv.w, inv.h, hf);
     if (sf > 0 && inv.type !== 'shield') {
       ctx.save();
