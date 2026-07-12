@@ -82,13 +82,107 @@ SWARMSY is used by both paths. Path 1 uses it to build and grow Moonboy creator 
 | Battle Chamber | Public activity, missions, faction movement and proof layer |
 | Block Topia | Gated playable world layer inside the wider umbrella |
 
+## What a Moonboy Is
+
+A Moonboy is not merely an NFT, avatar or collectible image.
+
+A Moonboy is an original creator identity that can become the recognisable face of a brand, story, product range, channel, community or connected creator world.
+
+The simplest public explanation is:
+
+> **A Moonboy is a character identity you can build an empire around.**
+
+A Moonboy may become:
+
+- a mascot or public alter ego
+- a logo and visual brand signal
+- a YouTube, streaming or social-media identity
+- a clothing or streetwear brand
+- merchandise, stickers, prints and posters
+- product packaging and product characters
+- a comic, animation or storytelling property
+- a music, podcast or media identity
+- a game character or playable world identity
+- a website and community identity
+- a family of connected characters across multiple factions
+
+The public site must visually show this transformation. It is not enough to say “build a Moonboy” or “build an empire.” Visitors must be able to see a Moonboy moving from character artwork into real creator and business uses.
+
+Canonical Path 1 value chain:
+
+Moonboy character → recognisable identity → logo and visual system → content and storytelling → products and merchandise → website and channels → community → creator world → lasting cultural presence
+
+## Visual Communication Rule
+
+Every major umbrella or Path 1 onboarding surface must answer these questions visually before explaining detailed mechanics:
+
+1. **What is a Moonboy?**
+2. **What can I build with it?**
+3. **Why would I choose this route?**
+4. **How do I earn or forge one?**
+
+The homepage and primary onboarding pages must follow **desire before mechanics**:
+
+1. Show multiple Moonboys with distinct personalities and faction identities.
+2. Show that each Moonboy can become a recognisable creator or brand identity.
+3. Show Moonboys applied to realistic outcomes such as clothing, caps, stickers, posters, packaging, products, websites, video channels, comics, games and communities.
+4. State that the user can build around one Moonboy or several connected characters.
+5. Then explain Telegram, faction choice, tasks, Arcade play, XP, eligible drops, keep/flip/burn choices and the 1/1 route.
+
+Do not lead with XP, burns or technical progression before the user understands the end value.
+
+Wrong order:
+
+XP → NFT → burn → 1/1 → unexplained “empire”
+
+Correct order:
+
+See the identity → understand what it can become → want the outcome → learn how to enter and progress
+
+### Required two-path visual model
+
+The homepage hero/infographic must make both choices visually obvious:
+
+**Option 1 — Build a new identity**
+
+Moonboy character → recognisable creator identity → brand → products → content → community → creator world
+
+Ownership, licence and royalty claims belong only to a qualifying unique 1/1 Moonboy and must follow the published creator terms. Earlier drops, progression assets or generic Moonboy characters must not be presented as granting those rights.
+
+**Option 2 — Keep your existing identity**
+
+Existing artist, business, product, brand or alter ego → SWARMSY → positioning → content and campaigns → visibility → community → maintained momentum
+
+Option 2 must remain a credible and attractive route, not a footnote. A visitor who does not want a Moonboy should still immediately understand that SWARMSY can be the correct fit.
+
+### Visual proof requirements
+
+When suitable approved assets exist, pages should use real Moonboy artwork rather than generic icons or text-only diagrams.
+
+Visuals should demonstrate use cases, not merely display character galleries. A character image alone says “collectible.” A character shown across products, media and community surfaces says “identity and intellectual property.”
+
+Approved visual examples may include:
+
+- Moonboy on a T-shirt, hoodie or jacket
+- Moonboy on a cap or accessory
+- Moonboy as product packaging or label art
+- Moonboy as a sticker, poster or print
+- Moonboy as a website or channel banner
+- Moonboy in a comic panel or story world
+- Moonboy as a game or animation character
+- Moonboy representing a creator community or business
+- several Moonboys forming a wider character universe
+
+Do not use mockups that imply a live product, commercial partnership, licence or retail availability unless that status is verified.
+
 ## Public Positioning Rules
 
 Use these statements:
 
 - **Crypto Moonboys is the creator umbrella.**
 - **There are two ways to join.**
-- **Forge a Moonboy identity, or bring the identity you already own.**
+- **Build a new identity with a Moonboy, or bring the identity you already own.**
+- **A Moonboy is a character identity you can build a brand, products, stories and community around.**
 - **Moonboys are the new Graffiti Kings identities in the Web3 and blockchain world.**
 - **Every 1/1 holder is a HODL Warrior.**
 - **SWARMSY helps both paths create, plan, brand, grow and keep momentum.**
@@ -194,52 +288,72 @@ General sequence:
 
 1. Explain what the page is for.
 2. State whether it belongs to Path 1, Path 2 or both.
-3. Offer the alternate path briefly when relevant.
-4. Explain the first required action.
-5. Explain why that action matters.
-6. Present the action control or CTA.
-7. Explain the next step.
-8. Show rewards, dashboards, standings, advanced tools and historical data only after onboarding is understood.
+3. Show the desired outcome or user value visually.
+4. Offer the alternate path briefly when relevant.
+5. Explain the first required action.
+6. Explain why that action matters.
+7. Present the action control or CTA.
+8. Explain the next step.
+9. Show rewards, dashboards, standings, advanced tools and historical data only after onboarding is understood.
 
-Do not put scoreboards before the mission, advanced dashboards before identity setup, or reward language before the user understands the required action.
+Every page must answer **“Why does this matter?”** before explaining **“How does it work?”**
+
+Do not put scoreboards before the mission, advanced dashboards before identity setup, reward language before the user understands the required action, or technical progression before the user can see the desired outcome.
 
 ### Required Path 1 page order
 
 For `community.html` and any Path 1 onboarding page, use this order:
 
 1. Explain that this is the Moonboy identity route.
-2. Show the SWARMSY-only alternative as a short secondary option.
-3. Link Telegram so identity, XP and proof can persist.
-4. Choose a current live faction.
-5. Explain daily, weekly, monthly and seasonal tasks, quests, missions and Arcade activity.
-6. Earn server-backed XP and public proof.
-7. Explain eligible NFT drops using current verified status.
-8. Explain keep, flip and burn choices only where supported.
-9. Explain the 1/1 Moonboy route using current verified status.
-10. Explain the HODL Warrior builder role.
-11. Then show Battle Chamber standings, boards, proof feeds and contributor rankings.
+2. Visually explain what a Moonboy is and what it can become.
+3. Show the SWARMSY-only alternative as a short secondary option.
+4. Link Telegram so identity, XP and proof can persist.
+5. Choose a current live faction.
+6. Explain daily, weekly, monthly and seasonal tasks, quests, missions and Arcade activity.
+7. Earn server-backed XP and public proof.
+8. Explain eligible NFT drops using current verified status.
+9. Explain keep, flip and burn choices only where supported.
+10. Explain the 1/1 Moonboy route using current verified status.
+11. Explain the HODL Warrior builder role and the creator-army advantage.
+12. Then show Battle Chamber standings, boards, proof feeds and contributor rankings.
 
 Canonical Path 1 shorthand:
 
-Link Telegram → choose faction → complete tasks and quests → play Arcade → earn server-backed XP and proof → qualify for active reward routes → keep, flip or burn where supported → build toward a 1/1 Moonboy → become a HODL Warrior → use the Battle Chamber boards
+See what a Moonboy can become → choose the Moonboy route → link Telegram → choose faction → complete tasks and quests → play Arcade → earn server-backed XP and proof → qualify for active reward routes → keep, flip or burn where supported → build toward a 1/1 Moonboy → become a HODL Warrior → build products, content, community and a creator world
 
 ### Required Path 2 page order
 
 For `swarmsy.html` and related Path 2 pages, use this order:
 
 1. Identify the person, business, product, brand or alter ego that already exists.
-2. Explain the visibility or momentum problem.
-3. Define identity and positioning.
-4. Establish voice, visual signal and story.
-5. Plan content, campaigns and launches.
-6. Publish and coordinate activity.
-7. Grow community and recognition.
-8. Maintain momentum after launch.
-9. Link back to Crypto Moonboys as the umbrella without forcing the Moonboy/NFT route.
+2. Show the desired visibility, brand or momentum outcome.
+3. Explain the visibility or momentum problem.
+4. Define identity and positioning.
+5. Establish voice, visual signal and story.
+6. Plan content, campaigns and launches.
+7. Publish and coordinate activity.
+8. Grow community and recognition.
+9. Maintain momentum after launch.
+10. Link back to Crypto Moonboys as the umbrella without forcing the Moonboy/NFT route.
 
 Canonical Path 2 shorthand:
 
 Existing identity → positioning → voice and visual signal → story → campaign planning → publishing → visibility → community → maintained momentum
+
+## Homepage Infographic Requirement
+
+The homepage bridge animation or its replacement must function as a clear two-option hero infographic, not as decorative motion or a text-only progression sequence.
+
+It must communicate within one viewing cycle:
+
+- Crypto Moonboys is the umbrella.
+- Option 1 builds a new Moonboy identity.
+- A Moonboy can become a brand, products, content, story, community and creator world.
+- Option 1 progression is how the user works toward that identity; progression is not the identity's purpose.
+- Option 2 keeps an existing identity and uses SWARMSY to grow it.
+- Both paths use SWARMSY and belong to the same creator movement.
+
+The strongest visual emphasis should be on the transformation and end use of a Moonboy. Mechanics should appear after the transformation is understood.
 
 ## Agent Audit Instructions
 
@@ -252,11 +366,13 @@ When auditing non-`/wiki` pages against this README:
 5. Flag pages that present SWARMSY as unrelated to Crypto Moonboys.
 6. Flag pages that confuse HODL Warriors with a selectable live faction.
 7. Flag future reward or forge features written as live.
-8. Reorder each page according to the relevant flow rule.
-9. Preserve runtime IDs, auth behavior, scripts, forms, data mounts and API contracts.
-10. Keep dashboards and advanced status sections after onboarding explanation.
-11. Update metadata, headings, CTA copy and accessible labels to match the corrected page purpose.
-12. Run the repository test suite and update affected guards only when the guard itself encodes outdated product truth.
+8. Flag text-only pages that explain Moonboy mechanics without visually demonstrating Moonboy identity use cases.
+9. Reorder each page according to the relevant flow rule.
+10. Preserve runtime IDs, auth behavior, scripts, forms, data mounts and API contracts.
+11. Keep dashboards and advanced status sections after onboarding explanation.
+12. Update metadata, headings, CTA copy and accessible labels to match the corrected page purpose.
+13. Use approved Moonboy artwork and truthful product/brand applications where visual explanation is required.
+14. Run the repository test suite and update affected guards only when the guard itself encodes outdated product truth.
 
 Do not rewrite runtime behavior merely to make copy tests pass. Update obsolete guards when the approved product truth has changed, while preserving real safety checks.
 
@@ -378,7 +494,10 @@ Active server/runtime files:
 - Do not imply every visitor must buy or own an NFT before joining.
 - Do not invent ownership language beyond the published creator licence and royalty terms.
 - Do not present planned reward, burn, evolution or forge routes as live.
-- Do not place dashboards or scoreboards before the user understands the page purpose and onboarding actions.
+- Do not explain Moonboys only as collectibles, avatars or progression rewards.
+- Do not use text alone where the visitor needs to understand a visual identity or product outcome.
+- Do not place dashboards, scoreboards or technical mechanics before the user understands the page purpose, desired outcome and onboarding actions.
+- Do not use product mockups that imply unverified live merchandise, partnerships or commercial availability.
 - Do not add archived or placeholder runtime claims.
 - Do not document speculative systems as live.
 - Do not reintroduce removed admin shells, disabled route families or legacy Block Topia systems.
