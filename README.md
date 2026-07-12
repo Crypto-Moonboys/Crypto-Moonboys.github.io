@@ -145,7 +145,9 @@ The homepage hero/infographic must make both choices visually obvious:
 
 **Option 1 — Build a new identity**
 
-Moonboy character → owned creator identity → brand → products → content → community → creator world
+Moonboy character → recognisable creator identity → brand → products → content → community → creator world
+
+Ownership, licence and royalty claims belong only to a qualifying unique 1/1 Moonboy and must follow the published creator terms. Earlier drops, progression assets or generic Moonboy characters must not be presented as granting those rights.
 
 **Option 2 — Keep your existing identity**
 
