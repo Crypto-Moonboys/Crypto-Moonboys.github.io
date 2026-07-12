@@ -72,7 +72,7 @@ function checkNoOldLiveLabels() {
     [EFFECTS_FILE, ["label:           'Diamond Hands'", "label:           'HODL Warriors'"]],
     [MISSIONS_FILE, ['Diamond Hands', 'HODL Warriors', "'diamond-hands': Object.freeze([", "'hodl-warriors': Object.freeze(["]],
     [GAMES_FILE, ['Diamond Hands', 'HODL Warriors']],
-    [COMMUNITY_FILE, ['Diamond Hands', 'HODL Warriors']],
+    [COMMUNITY_FILE, ['Diamond Hands', 'HODL Warriors Chamber']],
     [DOCS_FILE, ['#### Diamond Hands', '#### HODL Warriors', '| Game | Diamond Hands | HODL Warriors |']],
   ];
 
