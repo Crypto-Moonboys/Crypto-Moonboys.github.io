@@ -6,6 +6,7 @@
   const CANNON_VERSION = 'bitcoin-cannon-levels-20260712';
   const CANNON_BASE = '/art/invaders/generated/';
   const BOMB_VERSION = 'bitcoin-bomb-skins-20260712';
+  const EXPLOSION_VERSION = 'bitcoin-punk-explosions-20260712';
   let cannonLevel = 1;
   let upgradePromptSeenUntil = 0;
   let activeBombSkin = -1;
@@ -24,6 +25,67 @@
     image.src = cannonSrc(idx + 1);
     return image;
   });
+
+  const explosionImages = {
+    btc: new Image(),
+    punk: new Image(),
+  };
+  explosionImages.btc.decoding = 'async';
+  explosionImages.punk.decoding = 'async';
+  explosionImages.btc.src = `/art/invaders/generated/invaders-3008-btc-explosion.png?v=${EXPLOSION_VERSION}`;
+  explosionImages.punk.src = `/art/invaders/generated/invaders-3008-punk-explosion.png?v=${EXPLOSION_VERSION}`;
+
+  function classifyExplosionSprite(fillStyle) {
+    const color = String(fillStyle || '').toLowerCase();
+    if (color === '#ff6b2b' || color === '#f7c948' || color === '#ffd43b') return 'btc';
+    if (
+      color === '#ff4fd1' ||
+      color === '#ff4444' ||
+      color === '#ff3333' ||
+      color === '#ff8888' ||
+      color === '#80d8ff' ||
+      color === '#2ec5ff'
+    ) return 'punk';
+    return null;
+  }
+
+  function drawExplosionSpriteParticle(ctx, x, y, w, h, kind) {
+    const image = explosionImages[kind];
+    if (!image || !image.complete || image.naturalWidth <= 0) return;
+
+    const t = performance.now() * 0.001;
+    const seed = Math.sin((x + 17.3) * 12.9898 + (y + 41.7) * 78.233) * 43758.5453;
+    const jitter = seed - Math.floor(seed);
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const base = Math.max(16, Math.min(72, (w + h) * (4.2 + jitter * 5.5)));
+    const flashes = kind === 'btc' ? 3 : 4;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = 'screen';
+    for (let i = 0; i < flashes; i++) {
+      const phase = t * (18 + i * 5) + jitter * 9.7 + i * 1.13;
+      const strobe = (Math.sin(phase) + 1) / 2;
+      if (strobe < 0.24 && i > 0) continue;
+      const size = base * (0.72 + i * 0.38 + strobe * 0.42);
+      const ratio = image.naturalWidth / image.naturalHeight;
+      const visualW = ratio >= 1 ? size : size * ratio;
+      const visualH = ratio >= 1 ? size / ratio : size;
+      const angle = Math.sin(phase * 0.71) * 0.35 + i * 0.22;
+      const ox = Math.cos(phase + i) * (3 + i * 2.5);
+      const oy = Math.sin(phase * 1.17 + i) * (3 + i * 2.5);
+      ctx.globalAlpha = Math.min(0.95, (Number(ctx.globalAlpha) || 1) * (0.38 + strobe * 0.46));
+      ctx.shadowBlur = kind === 'btc' ? 18 + i * 5 : 24 + i * 7;
+      ctx.shadowColor = kind === 'btc' ? '#ffd43b' : (i % 2 ? '#2ee8ff' : '#ff2ed1');
+      ctx.translate(cx + ox, cy + oy);
+      ctx.rotate(angle);
+      originalDrawImage.call(ctx, image, -visualW / 2, -visualH / 2, visualW, visualH);
+      ctx.rotate(-angle);
+      ctx.translate(-(cx + ox), -(cy + oy));
+    }
+    ctx.restore();
+  }
 
   const bombImages = [
     'invaders-3008-btc-fire.png',
@@ -196,6 +258,18 @@
 
   const originalFillRect = ctxProto.fillRect;
   ctxProto.fillRect = function (x, y, w, h) {
+    const explosionKind =
+      this.canvas &&
+      this.canvas.id === 'invCanvas' &&
+      Number(this.globalAlpha) < 0.99 &&
+      Number(w) <= 8 &&
+      Number(h) <= 8
+        ? classifyExplosionSprite(this.fillStyle)
+        : null;
+    if (explosionKind) {
+      drawExplosionSpriteParticle(this, Number(x), Number(y), Number(w), Number(h), explosionKind);
+    }
+
     const isInvadersFullBackground =
       this.canvas &&
       this.canvas.id === 'invCanvas' &&
