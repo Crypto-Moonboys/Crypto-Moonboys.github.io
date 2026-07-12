@@ -81,7 +81,19 @@ import {
   BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
 } from '/js/arcade/systems/boss-system.js';
 
-import { createRenderer } from './render-system.js?v=bitcoin-projectile-wtf-20260711';
+import { createRenderer } from './render-system.js?v=meme-swarm-png-20260712';
+
+const MEME_IMPACT_COLORS = [
+  '#ff3158','#ffd43b','#ff6b2b','#ff2ed1','#ad5cff','#2ee8ff','#ff4fd1','#ff7849','#9cff31','#f7c948',
+  '#ff173d','#9b7bff','#00e5ff','#ff9f1c','#f72585','#ff3b30','#42f56c','#18d966','#ff8c42','#f0d44b',
+  '#ff3f81','#bc6cff','#00d9ff','#fc49a3','#65ff45',
+];
+
+function memeImpactIndex(inv) {
+  const seed = Number.isFinite(inv.seed) ? inv.seed : 0;
+  const row = Number.isFinite(inv.row) ? inv.row : 0;
+  return Math.abs(Math.floor(seed * 10007 + row * 97)) % MEME_IMPACT_COLORS.length;
+}
 
 const INVADERS_BUILD_TAG = "invaders-bootstrap-debug-v1";
 
@@ -394,6 +406,32 @@ function createLegacybootstrapInvaders(root) {
       });
     }
     hitFlashes.push({ x, y, r: 10 + intensity * 15, life: 0.12, maxLife: 0.12 });
+  }
+
+  function spawnMemeImpact(inv, lethal) {
+    const index = memeImpactIndex(inv);
+    const color = MEME_IMPACT_COLORS[index];
+    const cx = inv.x + inv.w * .5;
+    const cy = inv.y + inv.h * .5;
+    const mode = index % 5;
+    spawnExplosion(cx, cy, lethal ? 1.15 : .48, color);
+    // Every uploaded character gets its own stable colour and one of five WTF
+    // motion signatures: crown burst, vertical geyser, side blast, implosion,
+    // or chaotic nova. These supplement the normal gameplay explosion.
+    const count = lethal ? 14 : 6;
+    for (let k = 0; k < count; k++) {
+      let angle;
+      if (mode === 0) angle = -Math.PI + (k / Math.max(1,count-1)) * Math.PI;
+      else if (mode === 1) angle = -Math.PI/2 + (Math.random()-.5)*.7;
+      else if (mode === 2) angle = (k%2 ? 0 : Math.PI) + (Math.random()-.5)*.45;
+      else if (mode === 3) angle = Math.atan2(cy - (cy + Math.sin(k)*20), cx - (cx + Math.cos(k)*20));
+      else angle = Math.random()*Math.PI*2;
+      const speed = rand(lethal ? 90 : 45, lethal ? 245 : 125);
+      const life = rand(.28, lethal ? .78 : .48);
+      particles.push({ x:cx, y:cy, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+        size:rand(1.5,lethal?5:3.2), life, maxLife:life, color });
+    }
+    screenShake(lethal ? 5.5 : 2.2, lethal ? .2 : .09);
   }
 
   function updateEffects(dt) {
@@ -1281,6 +1319,7 @@ function createLegacybootstrapInvaders(root) {
             const dmg = b.dmg || 1;
             inv.hp -= dmg;
             inv.hitTimer = 0.12;
+            spawnMemeImpact(inv, inv.hp <= 0);
             // Explosive rounds
             if (!empActive && upgrades.explosiveRounds > 0) {
               spawnExplosion(b.x, b.y, 0.5, '#ff6b2b');
