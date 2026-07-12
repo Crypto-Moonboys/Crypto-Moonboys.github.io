@@ -3,669 +3,526 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboys is the gateway to a living creator universe where players start free, earn XP, unlock NFT drops, forge a unique 1/1 Moonboy, and build their own connected world.">
+  <meta name="description" content="Crypto Moonboys is the Graffiti Kings creator umbrella. Forge a 1/1 Moonboy and join the HODL Warriors, or grow your existing identity with SWARMSY.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Crypto Moonboys — Build Your Identity, Forge Your Universe">
-  <meta property="og:description" content="Start free, play games, earn rewards, forge your Moonboy, and build your own connected creator universe inside Crypto Moonboys.">
+  <meta property="og:title" content="Crypto Moonboys — One Umbrella, Two Creator Paths">
+  <meta property="og:description" content="Forge a Moonboy identity and join the HODL Warriors, or bring the artist, business, product or identity you already own and grow it with SWARMSY.">
   <meta property="og:type" content="article">
-  <link rel="canonical" href="https://cryptomoonboys.com/wiki/crypto-moonboys.html">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/crypto-moonboys.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
-  <title>Crypto Moonboys — Build Your Identity, Forge Your Universe | Crypto Moonboys Wiki</title>
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/crypto-moonboys.html">
+  <title>Crypto Moonboys — One Umbrella, Two Creator Paths | Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/wiki/components/header.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
-<link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.png" type="image/png">
   <style>
-    .wiki-section {
-      margin: 1.6em 0;
+    .cm-page {
+      --cm-gold: #f7c948;
+      --cm-cyan: #00e8f0;
+      --cm-pink: #ff3ca6;
+      --cm-panel: rgba(8, 12, 17, 0.92);
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 1.25rem;
     }
-    .lore-paragraph {
-      line-height: 1.75;
-      margin: 0 0 1em 0;
+    .cm-hero,
+    .cm-section,
+    .cm-path,
+    .cm-truth {
+      border: 1px solid rgba(247, 201, 72, 0.2);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at top right, rgba(0, 232, 240, 0.08), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(247, 201, 72, 0.08), transparent 36%),
+        var(--cm-panel);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
     }
-    .lead-paragraph {
-      font-size: 1.06em;
-      line-height: 1.8;
-      margin: 0 0 1em 0;
+    .cm-hero {
+      padding: clamp(1.35rem, 4vw, 3.25rem);
+      margin-bottom: 1.25rem;
     }
-    .lore-facts-stack {
-      display: block;
-    }
-    .lore-fact-block {
-      margin: 0 0 1.2em 0;
-      padding: 1em 1.1em;
-      background: rgba(255,255,255,0.03);
-      border-left: 4px solid #5b8cff;
-      border-radius: 6px;
-    }
-    .sources-list {
-      padding-left: 1.4em;
-    }
-    .sources-list li {
-      margin-bottom: 0.3em;
-      word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: rgba(200, 222, 238, 0.8);
-      margin-top: 0.5em;
-    }
-    .cm-wiki-hero {
-      display: grid;
-      gap: 1.4rem;
-    }
-    .cm-hero-copy {
-      display: grid;
-      gap: 0.9rem;
-      max-width: 52rem;
-    }
-    .cm-hero-kicker,
-    .cm-section-kicker {
-      margin: 0;
-      color: #00ffcc;
+    .cm-kicker {
+      margin: 0 0 0.75rem;
+      color: var(--cm-cyan);
       font-size: 0.82rem;
-      font-weight: 800;
-      letter-spacing: 0.22em;
+      font-weight: 900;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
     }
-    .cm-hero-title {
+    .cm-title {
       margin: 0;
-      color: #f7c948;
+      color: var(--cm-gold);
       font-family: var(--font-display);
-      font-size: clamp(2.25rem, 5vw, 4.6rem);
-      line-height: 0.95;
+      font-size: clamp(2.5rem, 7vw, 6rem);
+      line-height: 0.9;
       text-transform: uppercase;
-      text-shadow: 0 0 18px rgba(247, 201, 72, 0.32), 0 0 32px rgba(0, 255, 204, 0.16);
+      text-shadow: 0 0 28px rgba(247, 201, 72, 0.25);
     }
-    .cm-hero-title span {
+    .cm-title span {
       display: block;
-      margin-top: 0.7rem;
-      color: #f5f7fa;
-      font-size: clamp(1.15rem, 2vw, 1.8rem);
-      line-height: 1.15;
+      margin-top: 0.9rem;
+      color: #f4f7fa;
+      font-size: clamp(1.05rem, 2.2vw, 1.85rem);
+      line-height: 1.25;
       letter-spacing: 0.08em;
     }
-    .cm-hero-body {
-      display: grid;
-      gap: 0.65rem;
-      max-width: 44rem;
+    .cm-lead {
+      max-width: 820px;
+      margin: 1.3rem 0 0;
+      color: #e7edf2;
+      font-size: clamp(1.05rem, 1.7vw, 1.28rem);
+      line-height: 1.75;
     }
-    .cm-hero-body p,
-    .cm-flow-step p,
-    .cm-system-card p,
-    .cm-network-statement p {
-      margin: 0;
-    }
-    .cm-hero-body .cm-hero-lead,
     .cm-declaration {
-      color: #f7c948;
-      font-size: 1.14rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
+      margin: 1.1rem 0 0;
+      color: var(--cm-gold);
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 2.5vw, 2rem);
+      line-height: 1.25;
       text-transform: uppercase;
     }
-    .cm-declaration {
-      margin: 0 0 0.8rem 0;
-      line-height: 1.35;
-    }
-    .cm-hero-actions {
+    .cm-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-top: 0.4rem;
+      gap: 0.75rem;
+      margin-top: 1.35rem;
     }
-    .cm-cta {
+    .cm-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 44px;
-      padding: 0.8rem 1.2rem;
-      color: #050607;
-      background: linear-gradient(135deg, #f7c948, #00ffcc);
-      border: 1px solid rgba(247, 201, 72, 0.58);
+      min-height: 46px;
+      padding: 0.82rem 1.15rem;
+      border: 1px solid rgba(247, 201, 72, 0.5);
       border-radius: 999px;
-      box-shadow: 0 0 24px rgba(247, 201, 72, 0.18);
+      color: #050607;
+      background: linear-gradient(135deg, var(--cm-gold), var(--cm-cyan));
       font-family: var(--font-display);
       font-size: 0.9rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
+      font-weight: 900;
+      letter-spacing: 0.05em;
       text-decoration: none;
       text-transform: uppercase;
-      transition: transform 160ms ease, box-shadow 160ms ease;
     }
-    .cm-cta.cm-cta-secondary {
-      color: #f5f7fa;
-      background: rgba(0, 255, 204, 0.08);
-      border-color: rgba(0, 255, 204, 0.24);
-      box-shadow: 0 0 24px rgba(0, 255, 204, 0.08);
+    .cm-button--secondary {
+      color: #f4f7fa;
+      background: rgba(0, 232, 240, 0.08);
+      border-color: rgba(0, 232, 240, 0.3);
     }
-    .cm-cta:hover,
-    .cm-cta:focus-visible {
-      transform: translateY(-2px);
-      box-shadow: 0 0 28px rgba(247, 201, 72, 0.24), 0 0 28px rgba(0, 255, 204, 0.14);
+    .cm-section {
+      padding: clamp(1.25rem, 3vw, 2.2rem);
+      margin-bottom: 1.25rem;
     }
-    .cm-hero-grid,
-    .cm-system-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1rem;
-    }
-    .cm-identity-card,
-    .cm-flow-step,
-    .cm-system-card,
-    .cm-network-statement {
-      padding: 1.1rem 1.15rem;
-      background: rgba(0, 255, 204, 0.055);
-      border: 1px solid rgba(0, 255, 204, 0.16);
-      border-radius: 16px;
-      box-shadow: 0 0 26px rgba(0, 255, 204, 0.05);
-    }
-    .cm-identity-card strong,
-    .cm-flow-step strong,
-    .cm-system-card strong {
-      display: block;
-      margin-bottom: 0.45rem;
-      color: #f7c948;
+    .cm-section h2,
+    .cm-path h2 {
+      margin: 0 0 0.8rem;
+      color: var(--cm-gold);
       font-family: var(--font-display);
-      font-size: 1rem;
+      font-size: clamp(1.65rem, 3vw, 2.7rem);
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .cm-section h3,
+    .cm-path h3 {
+      margin: 1.25rem 0 0.45rem;
+      color: var(--cm-cyan);
+      font-family: var(--font-display);
+      font-size: 1.15rem;
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
-    .cm-flow {
+    .cm-section p,
+    .cm-path p,
+    .cm-section li,
+    .cm-path li,
+    .cm-truth p {
+      color: #dbe5eb;
+      line-height: 1.72;
+    }
+    .cm-grid,
+    .cm-path-grid,
+    .cm-role-grid {
       display: grid;
-      gap: 0.85rem;
-      margin-top: 1.2rem;
+      gap: 1rem;
     }
-    .cm-flow-arrow {
-      text-align: center;
-      color: #00ffcc;
-      font-size: 1.35rem;
-      line-height: 1;
+    .cm-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-    .cm-system-grid {
-      margin-top: 1.15rem;
+    .cm-path-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 1.25rem;
     }
-    .cm-token-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.55rem;
+    .cm-role-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 1rem;
+    }
+    .cm-card,
+    .cm-role-card {
+      padding: 1rem 1.05rem;
+      border: 1px solid rgba(0, 232, 240, 0.16);
+      border-radius: 14px;
+      background: rgba(0, 232, 240, 0.045);
+    }
+    .cm-card strong,
+    .cm-role-card strong {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: var(--cm-gold);
+      font-family: var(--font-display);
+      text-transform: uppercase;
+    }
+    .cm-path {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(1.25rem, 3vw, 2.2rem);
+    }
+    .cm-path::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      content: '';
+      background: linear-gradient(90deg, var(--cm-gold), var(--cm-cyan));
+    }
+    .cm-path--swarmsy::before {
+      background: linear-gradient(90deg, var(--cm-pink), var(--cm-cyan));
+    }
+    .cm-path-number {
+      display: inline-block;
+      margin-bottom: 0.75rem;
+      color: var(--cm-cyan);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .cm-steps {
       margin: 1rem 0 0;
-      padding: 0;
-      list-style: none;
+      padding-left: 1.2rem;
     }
-    .cm-token-list li {
-      padding: 0.5rem 0.78rem;
-      color: #f5f7fa;
+    .cm-steps li + li {
+      margin-top: 0.55rem;
+    }
+    .cm-highlight {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-left: 4px solid var(--cm-gold);
+      border-radius: 8px;
       background: rgba(247, 201, 72, 0.08);
-      border: 1px solid rgba(247, 201, 72, 0.2);
-      border-radius: 999px;
-      font-size: 0.92rem;
-      line-height: 1.2;
+      color: #f7f2dc;
+      font-weight: 700;
+      line-height: 1.6;
     }
-    .cm-network-statement {
-      margin-top: 1.2rem;
-      background:
-        radial-gradient(circle at top left, rgba(247, 201, 72, 0.18), transparent 36%),
-        rgba(0, 255, 204, 0.055);
-      border-color: rgba(247, 201, 72, 0.26);
+    .cm-truth {
+      padding: 1.15rem 1.2rem;
+      margin: 0 0 1.25rem;
+      border-color: rgba(255, 60, 166, 0.3);
     }
-    .cm-network-statement p + p {
-      margin-top: 0.5rem;
+    .cm-truth strong {
+      color: var(--cm-pink);
+      text-transform: uppercase;
     }
-    @media (max-width: 900px) {
-      .cm-hero-grid,
-      .cm-system-grid {
+    .cm-compare {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+    .cm-compare th,
+    .cm-compare td {
+      padding: 0.8rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      text-align: left;
+      vertical-align: top;
+    }
+    .cm-compare th {
+      color: var(--cm-gold);
+      background: rgba(247, 201, 72, 0.08);
+      font-family: var(--font-display);
+      text-transform: uppercase;
+    }
+    .cm-compare td {
+      color: #dbe5eb;
+    }
+    @media (max-width: 860px) {
+      .cm-grid,
+      .cm-path-grid,
+      .cm-role-grid {
         grid-template-columns: 1fr;
       }
-    }
-    @media (max-width: 640px) {
-      .cm-hero-title span {
-        letter-spacing: 0.05em;
-      }
-      .cm-hero-actions {
+      .cm-actions {
         flex-direction: column;
       }
-      .cm-cta {
+      .cm-button {
         width: 100%;
+      }
+      .cm-compare,
+      .cm-compare tbody,
+      .cm-compare tr,
+      .cm-compare th,
+      .cm-compare td {
+        display: block;
+      }
+      .cm-compare th {
+        margin-top: 0.8rem;
       }
     }
   </style>
 </head>
 <body class="page-wiki page-standard-shell" data-entity-hash="a4b462cb5857">
 <main id="content" role="main">
+  <div class="cm-page">
 <!-- SAM:BEGIN:article -->
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <a href="/categories/community-people.html">Community & People</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">crypto_moonboys</span>
-      </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/index.html">Home</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <a href="/categories/community-people.html">Community &amp; People</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <span aria-current="page">Crypto Moonboys</span>
+    </nav>
 
-      <h1 class="page-title">
-        🏷️ crypto_moonboys
-        <span>✅ SAM-VERIFIED</span>
-      </h1>
-      <div class="page-title-line" aria-hidden="true"></div>
+    <article class="wiki-content" data-entity-slug="crypto-moonboys">
+      <header class="cm-hero">
+        <p class="cm-kicker">Graffiti Kings legacy / creator umbrella / two paths</p>
+        <h1 class="cm-title">CRYPTO MOONBOYS<span>ONE UMBRELLA. TWO WAYS TO JOIN.</span></h1>
+        <p class="cm-lead">Crypto Moonboys carries more than 40 years of Graffiti Kings culture into the Web3 and blockchain world. The Moonboys are the new generation of Graffiti Kings identities: characters, factions and creator worlds led through GKniftyHEADS and other Moonboy factions connected to OG Graffiti Kings artists.</p>
+        <p class="cm-lead">Crypto Moonboys is not a game. It is the umbrella, the movement and the reason to onboard. Games, XP, free NFT drops, burn routes, the wiki, factions and Block Topia are systems inside that umbrella.</p>
+        <p class="cm-declaration">Choose the path that fits who you are.</p>
+        <div class="cm-actions" role="navigation" aria-label="Choose a Crypto Moonboys path">
+          <a class="cm-button" href="#path-moonboy">Path 1: Forge a Moonboy</a>
+          <a class="cm-button cm-button--secondary" href="#path-swarmsy">Path 2: Use SWARMSY</a>
+          <a class="cm-button cm-button--secondary" href="/community.html">Enter the community</a>
+        </div>
+      </header>
 
-      <div class="article-meta">
-        <span class="article-badge">🏷️ Community & People</span>
-        <span class="meta-item">📅 Last updated: June 2026</span>
-        <span class="meta-item">📂 <a href="/categories/community-people.html">Community & People</a></span>
+      <section class="cm-truth" aria-label="Core positioning truth">
+        <p><strong>Core truth:</strong> Crypto Moonboys helps people build identities that get seen and keep momentum. A user can build that identity through one or many original 1/1 Moonboys, or bring an existing artist, business, product, brand or public identity and use SWARMSY without adopting a Moonboy.</p>
+      </section>
+
+      <section class="cm-section" id="what-it-is">
+        <p class="cm-kicker">The umbrella</p>
+        <h2>WHAT CRYPTO MOONBOYS ACTUALLY IS</h2>
+        <div class="cm-grid">
+          <div class="cm-card">
+            <strong>Culture first</strong>
+            <p>The foundation is Graffiti Kings: identity, public signal, reputation, crews, collaboration, storytelling and the discipline of staying visible.</p>
+          </div>
+          <div class="cm-card">
+            <strong>Creator onboarding</strong>
+            <p>The project gives people a route into a larger creator world, whether they need a new identity or already have one.</p>
+          </div>
+          <div class="cm-card">
+            <strong>Shared momentum</strong>
+            <p>SWARMSY, the wiki, community, factions and HODL Warriors turn isolated creators into a connected movement that helps members keep building.</p>
+          </div>
+        </div>
+        <p class="cm-highlight">The internet gave everyone a voice, but not everyone has an identity. Crypto Moonboys exists to help people become recognisable, build a story around what they do, get seen and keep moving after the first burst of attention.</p>
+      </section>
+
+      <div class="cm-path-grid" aria-label="The two Crypto Moonboys onboarding paths">
+        <section class="cm-path" id="path-moonboy">
+          <span class="cm-path-number">Path 1</span>
+          <h2>BUILD A MOONBOY IDENTITY</h2>
+          <p>This route is for someone who wants to enter the Crypto Moonboys universe through an original character identity. A creator can build around one unique 1/1 Moonboy or develop several characters across the wider Moonboy factions.</p>
+          <h3>How the route works</h3>
+          <ol class="cm-steps">
+            <li>Join the website, connect identity and choose a faction.</li>
+            <li>Play the arcade, complete activity and grind server-backed XP.</li>
+            <li>Receive eligible free NFT drops through the reward route.</li>
+            <li>Keep the NFTs, flip them, or burn eligible drops.</li>
+            <li>Use burn routes to evolve into new or rarer NFTs and ultimately forge a unique 1/1 Moonboy.</li>
+            <li>Build a character, alter ego, brand, story, world, products and community around the 1/1.</li>
+          </ol>
+          <h3>What the 1/1 means</h3>
+          <p>The 1/1 Moonboy is not merely an image. It is a creator identity anchor. Under the published creator terms, the holder owns the licence and royalties assigned to that unique character and can build a wider creative world around it.</p>
+          <h3>What you join</h3>
+          <p>All 1/1 Moonboy holders are HODL Warriors. They are not passive holders. They are the creator army inside the umbrella: builders who use SWARMSY, support one another, share momentum, amplify each other's work and expand the larger Crypto Moonboys network.</p>
+          <p class="cm-highlight">This path gives you more than a solo identity. It gives you a character you own, a faction position, an army of other builders and a connected universe to build into.</p>
+          <div class="cm-actions">
+            <a class="cm-button" href="/games/index.html">Start the XP route</a>
+            <a class="cm-button cm-button--secondary" href="/community.html">Join the HODL Warriors</a>
+          </div>
+        </section>
+
+        <section class="cm-path cm-path--swarmsy" id="path-swarmsy">
+          <span class="cm-path-number">Path 2</span>
+          <h2>KEEP YOUR IDENTITY. USE SWARMSY.</h2>
+          <p>This route is for people who already have something real to build around. You may already be an artist, musician, writer, designer, filmmaker, business owner, product creator, brand, organisation or public personality.</p>
+          <h3>No Moonboy required</h3>
+          <p>You do not need to adopt a Moonboy character, grind for a 1/1 or enter through NFTs. Keep your existing name, face, business, product, art or alter ego. SWARMSY is the system that helps it stand out.</p>
+          <h3>What SWARMSY helps with</h3>
+          <ul class="cm-steps">
+            <li>Identity and positioning: define what you represent and why people should remember it.</li>
+            <li>Storytelling and creative direction: shape the voice, visual language and public narrative.</li>
+            <li>Planning and publishing: turn ideas into a repeatable content and campaign system.</li>
+            <li>Brand and community growth: reach the right people and give them a reason to stay.</li>
+            <li>Momentum: keep current, remain visible and continue building after launch day.</li>
+          </ul>
+          <h3>Who this path is for</h3>
+          <p>Artists, businesses and product creators who need support with identity, visibility, strategy, campaigns, content, community and long-term momentum — without replacing the identity they already own.</p>
+          <p class="cm-highlight">You already have the subject. SWARMSY helps you make it recognisable, organise the work, get it seen and keep the momentum alive.</p>
+          <div class="cm-actions">
+            <a class="cm-button" href="/swarmsy.html">Open SWARMSY</a>
+            <a class="cm-button cm-button--secondary" href="/community.html">Connect with the network</a>
+          </div>
+        </section>
       </div>
 
-      <article class="wiki-content" data-entity-slug="crypto-moonboys">
-        <header class="wiki-hero cm-wiki-hero">
-          <div class="cm-hero-copy">
-            <p class="cm-hero-kicker">Crypto Moonboys / onboarding gateway</p>
-            <p class="cm-hero-title">CRYPTO MOONBOYS<span>YOUR CHARACTER.<br>YOUR IDENTITY.<br>YOUR UNIVERSE.</span></p>
-            <div class="cm-hero-body">
-              <p class="cm-hero-lead">THIS IS NOT JUST SOMETHING YOU OWN.</p>
-              <p class="cm-hero-lead">IT IS SOMETHING YOU BUILD.</p>
-              <p>Start free. Play. Earn XP. Receive NFT drops. Burn and evolve toward a 1/1 Moonboy that can become your character, your identity, and your universe.</p>
-              <p>Crypto Moonboys turns NFT ownership into participation, creation, storytelling, and worldbuilding inside a connected creator grid built from 40+ years of Graffiti Kings culture.</p>
-            </div>
-            <div class="cm-hero-actions" role="navigation" aria-label="Crypto Moonboys onboarding actions">
-              <a class="cm-cta" href="/games/index.html">Start the arcade</a>
-              <a class="cm-cta cm-cta-secondary" href="#journey">See the journey</a>
-              <a class="cm-cta cm-cta-secondary" href="/community.html">Enter the live universe</a>
-            </div>
-          </div>
-          <div class="cm-hero-grid" aria-label="Crypto Moonboys identity system">
-            <div class="cm-identity-card">
-              <strong>Why care</strong>
-              <p>Crypto Moonboys turns a player journey into a creator journey where identity grows into story, ownership, and worldbuilding.</p>
-            </div>
-            <div class="cm-identity-card">
-              <strong>What you become</strong>
-              <p>Your Moonboy can evolve from a drop into your character, your avatar, your brand, and the signal that anchors your place in the Grid.</p>
-            </div>
-            <div class="cm-identity-card">
-              <strong>How you enter</strong>
-              <p>You start free, play your way in, earn momentum, and forge a 1/1 Moonboy that can become the foundation of your own universe.</p>
-            </div>
-          </div>
-        </header>
-
-        <div class="article-stats">
-          <span>🤖 Auto-published by SAM</span>
+      <section class="cm-section" id="how-the-parts-fit">
+        <p class="cm-kicker">System hierarchy</p>
+        <h2>THE PARTS SERVE THE UMBRELLA</h2>
+        <div class="cm-role-grid">
+          <div class="cm-role-card"><strong>Crypto Moonboys</strong><p>The umbrella movement, onboarding world and shared creator network.</p></div>
+          <div class="cm-role-card"><strong>Moonboys and factions</strong><p>Original character identities carrying the Graffiti Kings legacy into the blockchain world.</p></div>
+          <div class="cm-role-card"><strong>GKniftyHEADS</strong><p>The primary foundation and leading Moonboy/Graffiti Kings identity layer, alongside other factions connected to OG GK artists.</p></div>
+          <div class="cm-role-card"><strong>SWARMSY</strong><p>The identity, strategy, planning, branding, publishing, growth and momentum system used by both paths.</p></div>
+          <div class="cm-role-card"><strong>Arcade and XP</strong><p>The earned onboarding and progression route for users building toward drops, burn evolution and a 1/1 Moonboy.</p></div>
+          <div class="cm-role-card"><strong>NFTs and burn routes</strong><p>Free artefacts, tradeable choices and evolution materials inside Path 1 — not the mission of the umbrella.</p></div>
+          <div class="cm-role-card"><strong>HODL Warriors</strong><p>The collective of 1/1 holders who build, collaborate, amplify and create momentum together.</p></div>
+          <div class="cm-role-card"><strong>The wiki and SAM</strong><p>The memory system that documents factions, identities, creator worlds, lore, approved links and the network as it grows.</p></div>
         </div>
+      </section>
 
-        <section class="wiki-section" id="journey">
-          <p class="cm-section-kicker">Progression flow</p>
-          <h2>YOUR JOURNEY STARTS HERE</h2>
-          <p class="lore-paragraph">You do not enter this world by already owning everything. You enter by showing up, playing, and building momentum.</p>
-          <div class="cm-flow" aria-label="Crypto Moonboys player journey">
-            <div class="cm-flow-step"><strong>Start free</strong><p>Step into the Grid without needing to own anything first.</p></div>
-            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
-            <div class="cm-flow-step"><strong>Play</strong><p>Learn the world through games, systems, missions, and live community activity.</p></div>
-            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
-            <div class="cm-flow-step"><strong>Earn XP</strong><p>Progress through participation and build momentum inside the ecosystem.</p></div>
-            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
-            <div class="cm-flow-step"><strong>Receive NFT drops</strong><p>Collect the assets that begin shaping your place in the network.</p></div>
-            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
-            <div class="cm-flow-step"><strong>Burn / evolve</strong><p>Transform earned drops into the next version of your identity.</p></div>
-            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
-            <div class="cm-flow-step"><strong>Forge your 1/1 Moonboy</strong><p>Create a one-of-one character that becomes distinctly yours.</p></div>
-            <div class="cm-flow-arrow" aria-hidden="true">↓</div>
-            <div class="cm-flow-step"><strong>Build your own universe</strong><p>Expand from character ownership into worldbuilding, publishing, and connected creator infrastructure.</p></div>
-          </div>
-        </section>
+      <section class="cm-section" id="compare-paths">
+        <p class="cm-kicker">Choose the right route</p>
+        <h2>THE TWO PATHS COMPARED</h2>
+        <table class="cm-compare">
+          <thead><tr><th scope="col">Question</th><th scope="col">Path 1: Moonboy identity</th><th scope="col">Path 2: Existing identity</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Who is it for?</th><td>People who want an original character, avatar, alter ego or creator identity inside the Crypto Moonboys world.</td><td>Artists, businesses, product creators and brands that already have an identity or subject.</td></tr>
+            <tr><th scope="row">Do I need a Moonboy?</th><td>Yes. The goal is to forge and build around one or more unique 1/1 Moonboy identities.</td><td>No. Keep the name, face, business, art, product or alter ego you already use.</td></tr>
+            <tr><th scope="row">How do I enter?</th><td>Connect, choose a faction, grind XP, receive eligible free drops, keep/flip/burn and forge.</td><td>Start with SWARMSY and use its identity, strategy, content, branding and momentum systems.</td></tr>
+            <tr><th scope="row">What community do I get?</th><td>The HODL Warriors: a connected army of 1/1 holders building and amplifying together.</td><td>The wider Crypto Moonboys creator network and SWARMSY support without needing a 1/1.</td></tr>
+            <tr><th scope="row">What is the end goal?</th><td>Own a unique creator identity and build a connected character world, brand, products and legacy around it.</td><td>Make the existing identity stand out, reach people, build community and maintain long-term momentum.</td></tr>
+          </tbody>
+        </table>
+      </section>
 
-        <section class="wiki-section" id="forge-your-own-moonboy">
-          <p class="cm-section-kicker">Ownership evolution</p>
-          <h2>FORGE YOUR OWN MOONBOY</h2>
-          <p class="cm-declaration">YOUR 1/1 MOONBOY IS NOT THE END.<br>IT IS THE BEGINNING.</p>
-          <p class="lore-paragraph">By burning collected NFTs, players can forge a unique 1/1 Moonboy that marks the shift from collector to creator.</p>
-          <p class="lore-paragraph">Your 1/1 Moonboy can become your character, your brand, your avatar, your story, and your universe.</p>
-          <p class="lore-paragraph">You are not finishing a collection. You are opening a world you can keep building inside the wider Crypto Moonboys Grid.</p>
-        </section>
+      <section class="cm-section" id="mission">
+        <p class="cm-kicker">Mission</p>
+        <h2>BUILD AN IDENTITY PEOPLE REMEMBER</h2>
+        <p>Crypto Moonboys exists to turn the street-earned lessons of Graffiti Kings into creator infrastructure for the next generation. The aim is not to make everyone play a game or buy an NFT. The aim is to help people create a recognisable identity, get seen, build community and keep enough momentum to turn an idea into a movement.</p>
+        <p>Path 1 creates new Moonboy identities and brings their holders into the HODL Warriors. Path 2 strengthens identities that already exist through SWARMSY. Both paths share the same culture, systems, community and belief: identity is built by showing up, telling a clear story, helping others and continuing after the hype disappears.</p>
+        <p class="cm-declaration">The wall created identity. Crypto Moonboys carries it forward.</p>
+      </section>
 
-        <section class="wiki-section" id="from-nft-to-universe">
-          <p class="cm-section-kicker">Creator universe loop</p>
-          <h2>CREATE YOUR WORLD</h2>
-          <p class="lore-paragraph">A forged Moonboy gives you a center point for everything you want to build around it.</p>
-          <ul class="cm-token-list" aria-label="Creator universe building blocks">
-            <li>✓ Website</li>
-            <li>✓ Lore</li>
-            <li>✓ Artwork</li>
-            <li>✓ Videos</li>
-            <li>✓ Games</li>
-            <li>✓ Communities</li>
-            <li>✓ Merchandise</li>
-            <li>✓ Stories</li>
-          </ul>
-          <p class="cm-declaration" style="margin-top:1rem;">CONNECT IT BACK TO THE GRID.</p>
-          <p class="lore-paragraph">When your world is live, it can connect back into Crypto Moonboys so your character, story, and universe become part of a larger network.</p>
-        </section>
+      <section class="cm-section" id="lore-and-world">
+        <p class="cm-kicker">Lore and worldbuilding</p>
+        <h2>THE CREATOR WORLD BEHIND THE MISSION</h2>
+        <p>The 3008 lore, Block Topia, GraffPUNKS, Crypto Moongirls, Bitcoin Kids, factions and the wider GK universe give creators a shared world to explore and build into. The lore is a cultural and creative layer, not the definition of the project.</p>
+        <p>Moonboy characters can become websites, stories, artwork, videos, merchandise, games, communities and connected creator worlds. Approved creator links can be organised through the living wiki so individual worlds do not disappear as isolated posts. SAM and the website agents support that memory system.</p>
+        <p class="cm-highlight">GK provides the floor. Moonboy holders, artists, businesses and creators build on top.</p>
+      </section>
 
-        <section class="wiki-section" id="the-living-wiki-remembers">
-          <p class="cm-section-kicker">SAM / AI archivist</p>
-          <h2>THE LIVING WIKI REMEMBERS</h2>
-          <p class="cm-declaration">YOU BUILD THE WORLD.<br>SAM REMEMBERS IT.</p>
-          <div class="cm-system-grid">
-            <div class="cm-system-card">
-              <strong>Creators submit approved links</strong>
-              <p>When creators publish their Moonboy universe, they submit the links that represent their character, world, and canon.</p>
-            </div>
-            <div class="cm-system-card">
-              <strong>SAM crawls creator worlds</strong>
-              <p>SAM and the website agents crawl approved creator worlds, organise what is there, and preserve it as connected memory.</p>
-            </div>
-            <div class="cm-system-card">
-              <strong>The wiki links it together</strong>
-              <p>Characters, stories, locations, and universes become connected pages instead of isolated posts.</p>
-            </div>
-          </div>
-          <div class="cm-network-statement">
-            <p class="cm-declaration">ONE UNIVERSE.<br>UNLIMITED CREATORS.<br>INFINITE WORLDS.</p>
-            <p>Crypto Moonboys does not create every story alone. The community expands the universe, and every Moonboy can become another connected world.</p>
-            <p class="cm-section-kicker">GK PROVIDES THE FLOOR. THE COMMUNITY BUILDS ON TOP.</p>
-          </div>
-        </section>
+      <section class="cm-section" id="start">
+        <p class="cm-kicker">Start here</p>
+        <h2>CHOOSE YOUR DIRECTION</h2>
+        <div class="cm-actions">
+          <a class="cm-button" href="/games/index.html">I want to forge a Moonboy</a>
+          <a class="cm-button cm-button--secondary" href="/swarmsy.html">I already have an identity</a>
+          <a class="cm-button cm-button--secondary" href="/community.html">Join the Crypto Moonboys community</a>
+        </div>
+      </section>
 
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p class="lore-paragraph"><strong>Allegiance:</strong> Crypto Moonboys / GraffPUNKS (Unified Universe)</p>
-        </section>
+      <div id="bible-content"></div>
+    </article>
 
-        <section class="wiki-section">
-          <h2 id="known-facts">Known Facts</h2>
-          <div class="lore-facts-stack">
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>Crypto Moonboys is both a collection and a living Web3 wiki universe.</strong> It sits inside the wider GraffPUNKS / GKniftyHEADS ecosystem and acts as a memory layer for lore, identity, factions, games, and future creator paths. The collection is one part of the system; the wiki is what connects the parts.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>The route is action-first.</strong> Play first, then link Telegram if you want your Arcade XP to persist. Unlinked runs can still create local points, but linked accounts are the ones that can grind XP and carry progress forward. Score measures performance in a run; XP measures persistent participation after identity is linked.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>Telegram is the identity bridge.</strong> Linking a Telegram profile turns a temporary browser session into a persistent player identity, which is what makes Arcade XP and later access layers trackable. Without that link, points stay local; with it, the wiki can remember movement and progression.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>The Battle Chamber is the proof layer.</strong> It is where activity becomes visible through leaderboards, XP, faction movement, profile signals, and other public markers. The page should reflect who is active and what has actually happened, not just describe the world in abstract terms.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>Block Topia is the current gate.</strong> In live product terms, it is a clean 2-player isometric map base that currently requires Telegram-linked identity plus 5000 Arcade XP. Bigger systems may exist in the lore, but only the verified live layer should be described as active today.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>Factions and artifacts are identity tools.</strong> Moonboys, GraffPUNKS, Bitcoin Kids, Crypto Moongirls, and the other faction layers are part of the social architecture of the universe. NFTs function as artifacts and access objects inside that world, not as empty assets detached from the story.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>Product truth stays ahead of hype.</strong> The wiki should clearly separate what is live, what is planned, and what belongs to lore. That includes keeping future gameplay, creator/IP features, and other expansion layers labelled as future unless they are already verified on the site.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph"><strong>The clean summary is simple:</strong> play, link Telegram to persist XP, keep grinding to 5000, enter the proof layer, unlock the gate, then build. That is the actual system underneath the mythology and the section should point people toward that structure instead of repeating the same lore in different words.</p>
-          </div>
-          </div>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p class="lore-paragraph">The core story begins in 3008, after the collapse of the World Chain and the Great Unravelling. Reality splits into competing records, cities fall apart, and Block Topia rises in Queens as the last major chain-lit stronghold. Inside the walls, the Crypto Moongirls govern order through Queen Sarah P-fly, while the outside world survives through the street logic of graffiti, memory, and faction allegiance.</p>
-          <p class="lore-paragraph">The world is split between control and resistance. Block Topia represents sterilized safety, ledger discipline, and chain governance. The Street Kingdoms and GraffPUNKS represent the archive that cannot be erased, using murals, tags, and coded walls as the real public record. That tension is the spine of the setting: clean order on one side, messy truth on the other.</p>
-          <p class="lore-paragraph">The HARD FORK is the filtering system that turns that conflict into ritual. Men who survive the Games are pushed through tiers of training until the strongest become Block Node Defenders. The path is not framed as privilege; it is framed as survival, discipline, and selection inside a controlled world that treats people as inputs to the chain.</p>
-          <p class="lore-paragraph">The bloodline layer matters because it defines the next generation. Elite defenders and Crypto Moongirls are paired through chain-compatible logic, producing the Bitcoin X Kids, who carry on-chain identity from birth. The lore uses that idea to show how deeply Block Topia tries to control family, memory, and continuity.</p>
-          <p class="lore-paragraph">Jodie ZOOM and the Forkborn arc push the story toward fracture and recovery. Jodie discovers that the system is not as clean as it claims, that Moongirl leadership is compromised, and that street-coded signals can break open sealed timelines. The Forkborn then become the response to that discovery: a rebel order that does not seek to rule, but to remember, reroute, and rewrite what the chain tried to lock down.</p>
-          <p class="lore-paragraph">That is the long-form lore in plain terms: the chain collapses, Block Topia hardens, the streets keep the truth alive, and the next generation decides whether the future belongs to control, memory, or a new fork entirely.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="real-world-basis">Real World Basis</h2>
-          <p class="lore-paragraph">Crypto Moonboys borrows from real graffiti culture, crypto identity, fandom-driven worldbuilding, and the broader NFT era, then turns those ideas into a fictional system about memory, ownership, and participation. The street tag becomes identity, the wall becomes a public record, and the chain becomes the layer the story argues with instead of worshipping.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="sources">Sources</h2>
-          <ul class="sources-list">
-          <li><a href="https://graffpunks.live/the-lore/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/the-lore/</a></li>
-          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a></li>
-          <li><a href="https://graffpunks.live/graffiti-nfts/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/graffiti-nfts/</a></li>
-          </ul>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="observed-images">Observed Images</h2>
-          <ul class="sources-list">
-          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a> <span class="image-source-domain">(fandom.com)</span></li>
-          </ul>
-        </section>
-
-        <div id="bible-content"></div>
-
-      </article>
 <!-- RELATED_WIKI_PATHS:BEGIN -->
-      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
-        <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
-        <p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>
-        <div class="wiki-rabbit-group" data-related-group="Core Project Links">
-          <h3>Core Project Links</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads.html" role="listitem">
-              <span class="wiki-rabbit-card-title">GKniftyHEADS</span>
-              <span class="wiki-rabbit-card-desc">Parent brand and faction hub connected to the project.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-nft-collection.html" role="listitem">
-              <span class="wiki-rabbit-card-title">GKniftyHEADS NFT Collection</span>
-              <span class="wiki-rabbit-card-desc">Generated collection index for WAX AtomicAssets template pages.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/graffpunks.html" role="listitem">
-              <span class="wiki-rabbit-card-title">GraffPUNKS</span>
-              <span class="wiki-rabbit-card-desc">Related street-art and faction context.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem">
-              <span class="wiki-rabbit-card-title">HODL WARS</span>
-              <span class="wiki-rabbit-card-desc">Game and lore context connected to the project.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/hodl-warriors.html" role="listitem">
-              <span class="wiki-rabbit-card-title">HODL Warriors</span>
-              <span class="wiki-rabbit-card-desc">Related character and faction page.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/block-topia.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Block Topia</span>
-              <span class="wiki-rabbit-card-desc">Connected game/world page where present in the wiki.</span>
-            </a>
-          </div>
+    <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
+      <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
+      <p class="lore-paragraph">Follow the creator umbrella into connected identities, factions, collections, lore, games and site maps.</p>
+
+      <div class="wiki-rabbit-group" data-related-group="Core Project Links">
+        <h3>Core Project Links</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/gkniftyheads.html" role="listitem"><span class="wiki-rabbit-card-title">GKniftyHEADS</span><span class="wiki-rabbit-card-desc">Primary Graffiti Kings and Moonboy identity foundation.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-nft-collection.html" role="listitem"><span class="wiki-rabbit-card-title">GKniftyHEADS NFT Collection</span><span class="wiki-rabbit-card-desc">Collection and artefact index for the wider identity layer.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/graffpunks.html" role="listitem"><span class="wiki-rabbit-card-title">GraffPUNKS</span><span class="wiki-rabbit-card-desc">Street-art, memory and faction context.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem"><span class="wiki-rabbit-card-title">HODL WARS</span><span class="wiki-rabbit-card-desc">Faction activity and conflict layer.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hodl-warriors.html" role="listitem"><span class="wiki-rabbit-card-title">HODL Warriors</span><span class="wiki-rabbit-card-desc">The creator army of unique 1/1 holders.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/block-topia.html" role="listitem"><span class="wiki-rabbit-card-title">Block Topia</span><span class="wiki-rabbit-card-desc">Gated playable world layer inside the umbrella.</span></a>
         </div>
-        <div class="wiki-rabbit-group" data-related-group="Related Categories">
-          <h3>Related Categories</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/categories/nfts.html" role="listitem">
-              <span class="wiki-rabbit-card-title">NFTs</span>
-              <span class="wiki-rabbit-card-desc">NFT category hub.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/categories/wax-nfts.html" role="listitem">
-              <span class="wiki-rabbit-card-title">WAX NFTs</span>
-              <span class="wiki-rabbit-card-desc">WAX NFT category hub.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/categories/nfts-digital-art.html" role="listitem">
-              <span class="wiki-rabbit-card-title">NFTs &amp; Digital Art</span>
-              <span class="wiki-rabbit-card-desc">NFT and digital art category hub.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/categories/lore.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Lore</span>
-              <span class="wiki-rabbit-card-desc">Lore category hub.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/categories/gaming.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Gaming</span>
-              <span class="wiki-rabbit-card-desc">Gaming category hub.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/categories/technology.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Web3 / Technology</span>
-              <span class="wiki-rabbit-card-desc">Web3 and technology category hub.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/categories/gkniftyheads.html" role="listitem">
-              <span class="wiki-rabbit-card-title">GKniftyHEADS</span>
-              <span class="wiki-rabbit-card-desc">GKniftyHEADS category hub.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/categories/graffiti-street-art.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Graffiti / Street Art</span>
-              <span class="wiki-rabbit-card-desc">Graffiti and street-art category hub.</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Related Games">
-          <h3>Related Games</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/community.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Battle Chamber</span>
-              <span class="wiki-rabbit-card-desc">Live community and faction activity page.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/games/index.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Games</span>
-              <span class="wiki-rabbit-card-desc">Game hub for playable Crypto Moonboys experiences.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/games/leaderboard.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Leaderboard</span>
-              <span class="wiki-rabbit-card-desc">Game leaderboard and live/action surface.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gang-signs-card-game.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Gang Signs (Card Game)</span>
-              <span class="wiki-rabbit-card-desc">Gang Signs Card Game is a strategic masterpiece embedded in the Crypto Moonboys universe, merging the raw edge of street culture with blockchain me...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/metaverse-battles.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Metaverse Battles</span>
-              <span class="wiki-rabbit-card-desc">Metaverse battles are the fiery crucibles of the Crypto Moonboys universe, virtual warzones where factions like HODL Warriors and The GRAFFPUNKS cl...</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Related Tokens">
-          <h3>Related Tokens</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/punk-token.html" role="listitem">
-              <span class="wiki-rabbit-card-title">punk token</span>
-              <span class="wiki-rabbit-card-desc">$PUNK is the pulsating heart of rebellion in the Crypto Moonboys universe, a primary token of the GraffPUNKS and a vital currency that fuels the ch...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/waxp.html" role="listitem">
-              <span class="wiki-rabbit-card-title">$WAXP</span>
-              <span class="wiki-rabbit-card-desc">Full source-cited Crypto Moonboys wiki guide to WAXP, the native token of the WAX blockchain ecosystem.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/wax-blockchain.html" role="listitem">
-              <span class="wiki-rabbit-card-title">WAX Blockchain</span>
-              <span class="wiki-rabbit-card-desc">Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/xrp-ledger.html" role="listitem">
-              <span class="wiki-rabbit-card-title">XRP Ledger</span>
-              <span class="wiki-rabbit-card-desc">Crypto Moonboys wiki guide to the XRP Ledger, XRPL accounts, XRP, trust lines, issued tokens, DEX trading, NFTs and meme-token culture.</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Related NFT Templates">
-          <h3>Related NFT Templates</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-binary-blitzer-784277.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-bit-skull-784280.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Bit-Skull ☠️</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Bit-Skull ☠️ is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-bitcoin-barbarian-784284.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Bitcoin Barbarian ⚡️⚡️⚡️</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Bitcoin Barbarian ⚡️⚡️⚡️ is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Bitforce Bitcoin Battler ⚡️⚡️⚡️</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Bitforce Bitcoin Battler ⚡️⚡️⚡️ is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-bitman-784220.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Bitman 🦇</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Bitman 🦇 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-bitman-784229.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Bitman 🦇</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Bitman 🦇 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-cryptofrank-784266.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ CryptoFrank ☠️</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ CryptoFrank ☠️ is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html" role="listitem">
-              <span class="wiki-rabbit-card-title">⚡️⚡️⚡️ Cyber Shinobi Shroud 🤖</span>
-              <span class="wiki-rabbit-card-desc">⚡️⚡️⚡️ Cyber Shinobi Shroud 🤖 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Timeline / Graph / Dashboard Links">
-          <h3>Timeline / Graph / Dashboard Links</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/timeline.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Timeline</span>
-              <span class="wiki-rabbit-card-desc">Chronological route through project and lore entries.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem">
-              <span class="wiki-rabbit-card-title">Graph</span>
-              <span class="wiki-rabbit-card-desc">Visual relationship map for wiki entities.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/dashboard.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Dashboard</span>
-              <span class="wiki-rabbit-card-desc">Site-wide wiki and project metrics.</span>
-            </a>
-          </div>
-        </div>
-      </section>
-<!-- RELATED_WIKI_PATHS:END -->
-      <div class="category-tags" aria-label="Article categories">
-        <span class="cat-label">Categories:</span>
-        <a href="/categories/community-people.html">Community &amp; People</a>
-        <a href="/wiki/crypto-moonboys.html">Crypto Moonboys</a>
-        <a href="/categories/nfts.html">NFTs</a>
-        <a href="/categories/wax-nfts.html">WAX NFTs</a>
-        <a href="/categories/nfts-digital-art.html">NFTs &amp; Digital Art</a>
-        <a href="/categories/lore.html">Lore</a>
-        <a href="/categories/gaming.html">Gaming</a>
-        <a href="/categories/technology.html">Web3</a>
-        <a href="/categories/gkniftyheads.html">GKniftyHEADS</a>
-        <a href="/categories/graffiti-street-art.html">Graffiti / Street Art</a>
-        <a href="/categories/cryptocurrencies.html">Tokens / Crypto</a>
       </div>
-<!-- SAM:END:article -->
-      <!-- Manual sections preserved during SAM migration -->
-<!-- CITATION_VOTE_PANEL:BEGIN -->
-      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="crypto-moonboys" aria-labelledby="citation-vote-panel-title">
-        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
-        <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
-        <div class="citation-vote-panel-actions">
-          <span class="cite-vote" data-page-id="crypto-moonboys" data-cite-id="citation-panel"></span>
-          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          <span class="citation-vote-count">4 sources found on this page.</span>
+
+      <div class="wiki-rabbit-group" data-related-group="Related Categories">
+        <h3>Related Categories</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/categories/nfts.html" role="listitem"><span class="wiki-rabbit-card-title">NFTs</span><span class="wiki-rabbit-card-desc">Digital artefact category.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/wax-nfts.html" role="listitem"><span class="wiki-rabbit-card-title">WAX NFTs</span><span class="wiki-rabbit-card-desc">WAX collection and artefact routes.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/nfts-digital-art.html" role="listitem"><span class="wiki-rabbit-card-title">NFTs &amp; Digital Art</span><span class="wiki-rabbit-card-desc">Identity art and digital ownership context.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/lore.html" role="listitem"><span class="wiki-rabbit-card-title">Lore</span><span class="wiki-rabbit-card-desc">Shared worldbuilding and story layer.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/gaming.html" role="listitem"><span class="wiki-rabbit-card-title">Gaming</span><span class="wiki-rabbit-card-desc">Playable onboarding and world routes.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/technology.html" role="listitem"><span class="wiki-rabbit-card-title">Web3 / Technology</span><span class="wiki-rabbit-card-desc">Blockchain and creator infrastructure.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/gkniftyheads.html" role="listitem"><span class="wiki-rabbit-card-title">GKniftyHEADS</span><span class="wiki-rabbit-card-desc">Primary identity architecture category.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/graffiti-street-art.html" role="listitem"><span class="wiki-rabbit-card-title">Graffiti / Street Art</span><span class="wiki-rabbit-card-desc">The cultural origin of the umbrella.</span></a>
         </div>
-      </section>
+      </div>
+
+      <div class="wiki-rabbit-group" data-related-group="Related NFT Templates">
+        <h3>Related NFT Templates</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-binary-blitzer-784277.html" role="listitem"><span class="wiki-rabbit-card-title">Binary Blitzer</span><span class="wiki-rabbit-card-desc">A GKniftyHEADS WAX artefact example.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-bit-skull-784280.html" role="listitem"><span class="wiki-rabbit-card-title">Bit-Skull</span><span class="wiki-rabbit-card-desc">A GKniftyHEADS WAX artefact example.</span></a>
+        </div>
+      </div>
+
+      <div class="wiki-rabbit-group" data-related-group="Timeline / Graph / Dashboard Links">
+        <h3>Timeline / Graph / Dashboard Links</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/timeline.html" role="listitem"><span class="wiki-rabbit-card-title">Timeline</span><span class="wiki-rabbit-card-desc">Chronological project and lore route.</span></a>
+          <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem"><span class="wiki-rabbit-card-title">Graph</span><span class="wiki-rabbit-card-desc">Visual map of connected identities and systems.</span></a>
+          <a class="wiki-rabbit-card" href="/dashboard.html" role="listitem"><span class="wiki-rabbit-card-title">Dashboard</span><span class="wiki-rabbit-card-desc">Site-wide project and wiki metrics.</span></a>
+        </div>
+      </div>
+    </section>
+<!-- RELATED_WIKI_PATHS:END -->
+
+    <div class="category-tags" aria-label="Article categories">
+      <span class="cat-label">Categories:</span>
+      <a href="/categories/community-people.html">Community &amp; People</a>
+      <a href="/wiki/crypto-moonboys.html">Crypto Moonboys</a>
+      <a href="/categories/nfts.html">NFTs</a>
+      <a href="/categories/wax-nfts.html">WAX NFTs</a>
+      <a href="/categories/nfts-digital-art.html">NFTs &amp; Digital Art</a>
+      <a href="/categories/lore.html">Lore</a>
+      <a href="/categories/gaming.html">Gaming</a>
+      <a href="/categories/technology.html">Web3</a>
+      <a href="/categories/gkniftyheads.html">GKniftyHEADS</a>
+      <a href="/categories/graffiti-street-art.html">Graffiti / Street Art</a>
+    </div>
+<!-- SAM:END:article -->
+
+<!-- CITATION_VOTE_PANEL:BEGIN -->
+    <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="crypto-moonboys" aria-labelledby="citation-vote-panel-title">
+      <h2 id="citation-vote-panel-title">Citation Credibility</h2>
+      <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
+      <div class="citation-vote-panel-actions">
+        <span class="cite-vote" data-page-id="crypto-moonboys" data-cite-id="citation-panel"></span>
+        <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
+        <span class="citation-vote-count">Mission copy is governed by the repository source of truth.</span>
+      </div>
+    </section>
 <!-- CITATION_VOTE_PANEL:END -->
 
-      <div class="wiki-comments" data-page-id="crypto-moonboys"></div>
-
-
-    </main>
+    <div class="wiki-comments" data-page-id="crypto-moonboys"></div>
+  </div>
+</main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 7. Page-specific scripts -->
-
-<script src="/js/wiki.js" data-cfasync="false"></script>
-<script src="/js/bible-loader.js" data-cfasync="false"></script>
-<script src="/js/engagement.js" data-cfasync="false"></script>
-<script src="/js/comments.js" data-cfasync="false"></script>
-<script src="/js/battle-layer.js" data-cfasync="false"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/bible-loader.js"></script>
+<script data-cfasync="false" src="/js/engagement.js"></script>
+<script data-cfasync="false" src="/js/comments.js"></script>
+<script data-cfasync="false" src="/js/battle-layer.js"></script>
 </body>
 </html>
-
