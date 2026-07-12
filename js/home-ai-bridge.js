@@ -1,387 +1,279 @@
-/* home-ai-bridge.js — Staged loading sequence (canvas animation)
- * Black/yellow/orange block-built title lettering.
- * Words assemble from rectangular slice fragments one stage at a time.
+/* home-ai-bridge.js — Crypto Moonboys two-path onboarding animation.
+ * Crypto Moonboys is the umbrella. Visitors can either forge a Moonboy
+ * identity and join the HODL Warriors, or keep an existing identity and
+ * use SWARMSY to build visibility and momentum.
  */
 (function () {
   'use strict';
 
-  /* ── Sequence stages ────────────────────────────────────────────── */
   var STAGES = [
-    { lines: ['FREE TO ENTER.'],          dur: 4200 },
-    { lines: ['PLAY.'],                   dur: 2800 },
-    { lines: ['CREATE.'],                 dur: 2800 },
-    { lines: ['EVOLVE.'],                 dur: 3000 },
-    { lines: ['BUILD YOUR', 'IDENTITY.'], dur: 5800, final: true  },
-    { lines: ['YOUR STORY', 'STARTS HERE.'], dur: 4000, outro: true },
+    {
+      kicker: 'CRYPTO MOONBOYS — THE CREATOR UMBRELLA',
+      lines: ['TWO WAYS', 'TO JOIN.'],
+      dur: 4600
+    },
+    {
+      kicker: 'PATH 1 — BUILD A MOONBOY IDENTITY',
+      lines: ['GRIND XP.', 'EARN FREE DROPS.'],
+      dur: 5200
+    },
+    {
+      kicker: 'KEEP. FLIP. OR BURN.',
+      lines: ['FORGE A UNIQUE', '1/1 MOONBOY.'],
+      dur: 5600
+    },
+    {
+      kicker: 'YOUR CHARACTER. YOUR LICENCE. YOUR ROYALTIES.',
+      lines: ['JOIN THE', 'HODL WARRIORS.'],
+      dur: 6000,
+      final: true
+    },
+    {
+      kicker: 'PATH 2 — KEEP YOUR EXISTING IDENTITY',
+      lines: ['ARTIST. BUSINESS.', 'CREATOR. PRODUCT.'],
+      dur: 5400
+    },
+    {
+      kicker: 'USE SWARMSY TO STAND OUT',
+      lines: ['CREATE. PLAN.', 'BRAND. GROW.'],
+      dur: 5600
+    },
+    {
+      kicker: 'ONE UMBRELLA. TWO PATHS. ONE MOVEMENT.',
+      lines: ['BUILD IDENTITY.', 'BUILD MOMENTUM.'],
+      dur: 6200,
+      final: true
+    }
   ];
 
-  /* ── Palette ────────────────────────────────────────────────────── */
-  var COL_YELLOW  = '#F7C948';
-  var COL_ORANGE  = '#E8601A';
-  var COL_ECHO1   = '#7A2800';
-  var COL_ECHO2   = '#3A0F00';
-  var COL_BG      = '#000000';
+  var COL_YELLOW = '#F7C948';
+  var COL_ORANGE = '#E8601A';
+  var COL_CYAN = '#00E8F0';
+  var COL_BG = '#000000';
 
-  /* ── Bootstrap ──────────────────────────────────────────────────── */
   function init() {
     var section = document.querySelector('.home-ai-bridge');
     if (!section) { return; }
 
-    /* Reduced motion: leave the CSS-handled static version visible */
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }
 
-    /* Hide static fallback now that canvas will run */
     var staticEl = section.querySelector('.home-ai-bridge-static');
-    if (staticEl) { staticEl.setAttribute('aria-hidden', 'true'); staticEl.style.display = 'none'; }
+    if (staticEl) {
+      staticEl.setAttribute('aria-hidden', 'true');
+      staticEl.style.display = 'none';
+    }
 
-    /* Build canvas */
     var canvas = document.createElement('canvas');
-    canvas.setAttribute('aria-hidden', 'true');
     canvas.className = 'home-ai-bridge-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
     section.appendChild(canvas);
 
     var ctx = canvas.getContext('2d');
-    var W = 0, H = 0, DPR = 1;
+    var width = 0;
+    var height = 0;
+    var dpr = 1;
+    var stageIndex = 0;
+    var stageStartedAt = performance.now();
+    var frameId = null;
 
     function resize() {
-      var r = section.getBoundingClientRect();
-      DPR = Math.min(window.devicePixelRatio || 1, 2);
-      W = r.width || window.innerWidth;
-      H = r.height || 520;
-      canvas.width  = Math.round(W * DPR);
-      canvas.height = Math.round(H * DPR);
-      canvas.style.width  = W + 'px';
-      canvas.style.height = H + 'px';
+      var bounds = section.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = bounds.width || window.innerWidth;
+      height = bounds.height || 520;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
     }
-    resize();
 
-    /* Use ResizeObserver if available, otherwise listen on window */
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function easeOut(value) {
+      var t = clamp(value, 0, 1);
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function fitFont(lines, maxWidth, maxSize, minSize) {
+      var size = maxSize;
+      while (size > minSize) {
+        ctx.font = '900 ' + size + 'px Impact, "Arial Black", sans-serif';
+        var fits = lines.every(function (line) {
+          return ctx.measureText(line).width <= maxWidth;
+        });
+        if (fits) { return size; }
+        size -= 2;
+      }
+      return minSize;
+    }
+
+    function drawBackground(now) {
+      ctx.fillStyle = COL_BG;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.globalAlpha = 0.03;
+      ctx.fillStyle = '#FFFFFF';
+      for (var y = 0; y < height; y += 4) {
+        ctx.fillRect(0, y, width, 1);
+      }
+
+      var pulse = 0.04 + (Math.sin(now * 0.0018) + 1) * 0.015;
+      var glow = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height) * 0.62);
+      glow.addColorStop(0, 'rgba(247,201,72,' + pulse + ')');
+      glow.addColorStop(0.52, 'rgba(232,96,26,0.025)');
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawKicker(text, opacity) {
+      var maxWidth = width * 0.86;
+      var size = Math.max(12, Math.min(20, width * 0.018));
+      ctx.save();
+      ctx.globalAlpha = opacity * 0.95;
+      ctx.fillStyle = COL_CYAN;
+      ctx.font = '800 ' + size + 'px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = COL_CYAN;
+      ctx.shadowBlur = 18;
+
+      var display = text;
+      while (ctx.measureText(display).width > maxWidth && size > 10) {
+        size -= 1;
+        ctx.font = '800 ' + size + 'px "Courier New", monospace';
+      }
+      ctx.fillText(display, width / 2, height * 0.22);
+      ctx.restore();
+    }
+
+    function drawHeadline(stage, build, opacity, now) {
+      var lines = stage.lines;
+      var maxWidth = width * 0.88;
+      var maxSize = Math.round(Math.min(height * 0.27, width * 0.12, 126));
+      var fontSize = fitFont(lines, maxWidth, maxSize, 30);
+      var lineHeight = fontSize * 1.08;
+      var totalHeight = lines.length * lineHeight;
+      var startY = height * 0.48 - totalHeight / 2 + lineHeight / 2;
+
+      ctx.font = '900 ' + fontSize + 'px Impact, "Arial Black", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      lines.forEach(function (line, index) {
+        var localDelay = index * 0.12;
+        var localBuild = easeOut(clamp((build - localDelay) / (1 - localDelay), 0, 1));
+        var y = startY + index * lineHeight;
+        var jitter = build < 0.82 ? Math.sin(now * 0.028 + index * 4) * (1 - build) * 12 : 0;
+        var textWidth = ctx.measureText(line).width;
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.beginPath();
+        ctx.rect(width / 2 - textWidth * 0.56, y - fontSize * 0.62, textWidth * 1.12 * localBuild, fontSize * 1.24);
+        ctx.clip();
+
+        ctx.fillStyle = '#6B2100';
+        ctx.globalAlpha = opacity * 0.45;
+        ctx.fillText(line, width / 2 + 8 + jitter, y + 7);
+
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = COL_YELLOW;
+        ctx.shadowColor = COL_YELLOW;
+        ctx.shadowBlur = stage.final ? 32 : 18;
+        ctx.fillText(line, width / 2 + jitter, y);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(width / 2 - textWidth * 0.6, y + 2, textWidth * 1.2, fontSize);
+        ctx.clip();
+        ctx.fillStyle = COL_ORANGE;
+        ctx.shadowBlur = 0;
+        ctx.fillText(line, width / 2 + jitter, y);
+        ctx.restore();
+        ctx.restore();
+      });
+    }
+
+    function drawPathMarker(index, opacity) {
+      var barWidth = Math.min(width * 0.48, 420);
+      var x = (width - barWidth) / 2;
+      var y = height * 0.77;
+
+      ctx.save();
+      ctx.globalAlpha = opacity * 0.25;
+      ctx.fillStyle = '#777777';
+      ctx.fillRect(x, y, barWidth, 2);
+
+      ctx.globalAlpha = opacity * 0.95;
+      ctx.fillStyle = index <= 3 ? COL_YELLOW : COL_CYAN;
+      ctx.fillRect(x, y, barWidth * ((index + 1) / STAGES.length), 2);
+
+      for (var i = 0; i < STAGES.length; i += 1) {
+        ctx.beginPath();
+        ctx.arc(x + (barWidth / (STAGES.length - 1)) * i, y + 1, i <= index ? 3 : 2, 0, Math.PI * 2);
+        ctx.fillStyle = i <= index ? (i <= 3 ? COL_YELLOW : COL_CYAN) : '#333333';
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function loop(now) {
+      var stage = STAGES[stageIndex];
+      var elapsed = now - stageStartedAt;
+      var progress = clamp(elapsed / stage.dur, 0, 1);
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawBackground(now);
+
+      var fadeIn = clamp(progress / 0.12, 0, 1);
+      var fadeOut = clamp((1 - progress) / 0.1, 0, 1);
+      var opacity = Math.min(fadeIn, fadeOut);
+      var build = clamp((progress - 0.08) / 0.56, 0, 1);
+
+      drawKicker(stage.kicker, opacity);
+      drawHeadline(stage, build, opacity, now);
+      drawPathMarker(stageIndex, opacity);
+
+      if (progress >= 1) {
+        stageIndex = (stageIndex + 1) % STAGES.length;
+        stageStartedAt = now;
+      }
+
+      frameId = requestAnimationFrame(loop);
+    }
+
+    resize();
     if (typeof ResizeObserver !== 'undefined') {
       new ResizeObserver(resize).observe(section);
     } else {
       window.addEventListener('resize', resize, { passive: true });
     }
 
-    /* ── Math helpers ─────────────────────────────────────────────── */
-    function easeOut(t) {
-      var c = Math.min(t, 1);
-      return 1 - Math.pow(1 - c, 2.6);
-    }
+    frameId = requestAnimationFrame(loop);
 
-    function stepped(t, n) {
-      /* Hard stepped easing — the "crack intro" chunky snap */
-      return Math.ceil(Math.min(t, 1) * n) / n;
-    }
-
-    /* ── Font fitting ─────────────────────────────────────────────── */
-    function fitFont(lines, maxW, maxPx, minPx) {
-      var sz = maxPx;
-      while (sz > minPx) {
-        ctx.font = '900 ' + sz + 'px Impact, "Arial Black", sans-serif';
-        var fits = true;
-        for (var i = 0; i < lines.length; i++) {
-          if (ctx.measureText(lines[i]).width > maxW) { fits = false; break; }
-        }
-        if (fits) { break; }
-        sz -= 3;
-      }
-      return sz;
-    }
-
-    /* ── Glitch strip generator ───────────────────────────────────── */
-    function makeGlitchStrips(stage, totalH, topY, now, glitchT) {
-      if (glitchT <= 0 || glitchT >= 0.95) { return []; }
-      var strips = [];
-      var n = stage.final ? 5 : 3;
-      /* Fast-changing seed (40 ms buckets) creates jittery displacement */
-      var seed = Math.floor(now / 40);
-      for (var i = 0; i < n; i++) {
-        var p1 = (Math.sin(seed * 1.23 + i * 7.43) * 0.5 + 0.5);
-        var p2 = (Math.cos(seed * 0.87 + i * 3.21) * 0.5 + 0.5);
-        strips.push({
-          y:  topY + p1 * totalH,
-          h:  totalH * 0.06 + p2 * totalH * 0.08,
-          dx: (Math.sin(seed * 2.1 + i) > 0 ? 1 : -1) * (4 + p2 * 14),
-        });
-      }
-      return strips;
-    }
-
-    /* ── Draw one line with slice-based reveal ────────────────────── */
-    function drawLine(line, CX, CY, fontSize, buildT, glitchStrips) {
-      var metrics = ctx.measureText(line);
-      var TW = metrics.width;
-      var TH = fontSize * 1.15;
-      var SLICES = 14;
-      var sliceH = TH / SLICES;
-
-      for (var s = 0; s < SLICES; s++) {
-        var sy = CY - TH / 2 + s * sliceH;
-
-        /* Staggered reveal — lower slices start slightly later */
-        var delay = (s / SLICES) * 0.65;
-        var rawP  = (buildT < 1) ? Math.max(0, (buildT - delay) / (1 - delay)) : 1;
-        /* 7-step hard snap */
-        var p = (buildT >= 1) ? 1 : stepped(easeOut(rawP), 7);
-        if (p <= 0) { continue; }
-
-        /* Glitch displacement for this strip */
-        var dx = 0;
-        for (var g = 0; g < glitchStrips.length; g++) {
-          var gs = glitchStrips[g];
-          if (sy + sliceH * 0.5 >= gs.y && sy + sliceH * 0.5 < gs.y + gs.h) {
-            dx = gs.dx;
-            break;
-          }
-        }
-
-        /* Alternate reveal direction: even slices from left, odd from right */
-        var fromLeft = (s % 2 === 0);
-        var clipW = TW * 1.28 * p;
-        var clipX = fromLeft ? CX - TW * 0.64 + dx : CX + TW * 0.64 - clipW + dx;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(clipX, sy - 1, clipW, sliceH + 2);
-        ctx.clip();
-
-        var tx = CX + dx;
-
-        /* Echo layer 1 — offset shadow (chunky 3D depth) */
-        ctx.globalAlpha = 0.42;
-        ctx.fillStyle = COL_ECHO1;
-        ctx.fillText(line, tx + 5, CY + 4);
-
-        /* Echo layer 2 — deeper shadow */
-        ctx.globalAlpha = 0.22;
-        ctx.fillStyle = COL_ECHO2;
-        ctx.fillText(line, tx + 9, CY + 7);
-
-        /* Main yellow fill */
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = COL_YELLOW;
-        ctx.fillText(line, tx, CY);
-
-        /* Orange lower-half clipped layer */
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(CX - TW * 0.7 + dx, CY + fontSize * 0.06, TW * 1.4, TH * 2);
-        ctx.clip();
-        ctx.fillStyle = COL_ORANGE;
-        ctx.fillText(line, tx, CY);
-        ctx.restore();
-
-        /* Thin white top-edge highlight */
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(CX - TW * 0.7 + dx, CY - fontSize * 0.52, TW * 1.4, fontSize * 0.065);
-        ctx.clip();
-        ctx.globalAlpha = 0.28;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(line, tx, CY);
-        ctx.restore();
-
-        ctx.restore();
-      }
-
-      /* Scan line — thin bright stripe that sweeps downward during build */
-      if (buildT > 0 && buildT < 1) {
-        var scanY = CY - TH / 2 + buildT * TH;
-        ctx.save();
-        ctx.globalAlpha = 0.55;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(CX - TW * 0.72, scanY - 1, TW * 1.44, 2);
-        ctx.restore();
-      }
-    }
-
-    /* ── Draw entire stage (all lines) ───────────────────────────── */
-    function drawStage(stage, buildT, glitchT, holdT, now) {
-      var maxFontW = W * 0.88;
-      var maxPx    = Math.round(Math.min(H * 0.38, W * 0.18, 160));
-      var minPx    = 34;
-
-      var fontSize = fitFont(stage.lines, maxFontW, maxPx, minPx);
-      ctx.font = '900 ' + fontSize + 'px Impact, "Arial Black", sans-serif';
-      ctx.textAlign    = 'center';
-      ctx.textBaseline = 'middle';
-
-      var lineH  = fontSize * 1.18;
-      var totalH = stage.lines.length * lineH;
-      var topY   = H / 2 - totalH / 2;
-      /* Push slightly above centre to give room for progress bar */
-      var baseY  = topY - 20;
-
-      var glitchStrips = makeGlitchStrips(stage, totalH, topY - 20, now, glitchT);
-
-      for (var li = 0; li < stage.lines.length; li++) {
-        var CY = baseY + (li + 0.5) * lineH;
-        drawLine(stage.lines[li], W / 2, CY, fontSize, buildT, glitchStrips);
-
-        /* Hold-phase glow pulse (subtle breathing after lock) */
-        if (holdT > 0) {
-          ctx.save();
-          ctx.globalAlpha = (0.12 + 0.06 * Math.sin(now * 0.0035)) * holdT;
-          ctx.shadowColor = COL_YELLOW;
-          ctx.shadowBlur  = 50;
-          ctx.fillStyle   = COL_YELLOW;
-          ctx.fillText(stage.lines[li], W / 2, CY);
-          ctx.restore();
-        }
-      }
-
-      /* "FINAL" stage: extra flicker burst just before hold */
-      if (stage.final && glitchT > 0.75 && glitchT < 0.88) {
-        var flicker = (Math.sin(now * 0.04) > 0) ? 0.15 : 0;
-        if (flicker > 0) {
-          ctx.save();
-          ctx.globalAlpha = flicker;
-          ctx.fillStyle = COL_YELLOW;
-          ctx.shadowColor = COL_YELLOW;
-          ctx.shadowBlur = 80;
-          for (var fi = 0; fi < stage.lines.length; fi++) {
-            var FCY = baseY + (fi + 0.5) * lineH;
-            ctx.fillText(stage.lines[fi], W / 2, FCY);
-          }
-          ctx.restore();
-        }
-      }
-    }
-
-    /* ── Progress bar ────────────────────────────────────────────── */
-    function drawProgress(t, idx) {
-      var barW = Math.min(W * 0.38, 320);
-      var barH = 2;
-      var bx   = (W - barW) / 2;
-      var by   = H * 0.73;
-
-      /* Track */
-      ctx.globalAlpha = 0.18;
-      ctx.fillStyle = '#888';
-      ctx.fillRect(bx, by, barW, barH);
-
-      /* Fill */
-      ctx.globalAlpha = 0.85;
-      ctx.fillStyle = COL_YELLOW;
-      ctx.fillRect(bx, by, barW * t, barH);
-
-      /* Stage tick marks */
-      ctx.globalAlpha = 0.4;
-      for (var i = 0; i <= STAGES.length; i++) {
-        var tx = bx + (barW / STAGES.length) * i;
-        ctx.fillStyle = (i <= idx) ? COL_YELLOW : '#333';
-        ctx.beginPath();
-        ctx.arc(tx, by + barH / 2, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      /* Percentage */
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = COL_YELLOW;
-      ctx.font = '11px "Courier New", monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText(Math.round(t * 100) + '%', bx + barW, by + 14);
-      ctx.textAlign = 'center';
-      ctx.globalAlpha = 1;
-    }
-
-    /* ── Background scanlines (subtle texture) ───────────────────── */
-    function drawBackground() {
-      ctx.fillStyle = COL_BG;
-      ctx.fillRect(0, 0, W, H);
-
-      /* Faint horizontal scanlines */
-      ctx.globalAlpha = 0.025;
-      ctx.fillStyle = '#FFFFFF';
-      for (var y = 0; y < H; y += 4) {
-        ctx.fillRect(0, y, W, 1);
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    /* ── Main animation loop ─────────────────────────────────────── */
-    var stageIdx   = 0;
-    var stageStart = performance.now();
-    var rafId      = null;
-
-    function loop(now) {
-      var stage   = STAGES[stageIdx];
-      var elapsed = now - stageStart;
-      var t       = Math.min(elapsed / stage.dur, 1);
-
-      /* Apply DPR transform */
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      drawBackground();
-
-      /* Phase thresholds (normalized 0–1 within stage duration):
-       *  INTRO : black / fade-in
-       *  BUILD : slice-reveal
-       *  GLITCH: displacement lock-in
-       *  HOLD  : clean hold with glow
-       *  FADE  : fade to black, next stage */
-      var INTRO_END  = 0.10;
-      var BUILD_END  = stage.final  ? 0.62 : 0.65;
-      var GLITCH_END = stage.final  ? 0.82 : 0.78;
-      var HOLD_END   = stage.final  ? 0.94 : 0.91;
-
-      var buildT      = 0;
-      var glitchT     = 0;
-      var holdT       = 0;
-      var masterAlpha = 1;
-
-      if (t <= INTRO_END) {
-        masterAlpha = t / INTRO_END;
-        buildT = 0;
-      } else if (t <= BUILD_END) {
-        buildT  = (t - INTRO_END) / (BUILD_END - INTRO_END);
-      } else if (t <= GLITCH_END) {
-        buildT  = 1;
-        glitchT = (t - BUILD_END) / (GLITCH_END - BUILD_END);
-      } else if (t <= HOLD_END) {
-        buildT  = 1;
-        holdT   = (t - GLITCH_END) / (HOLD_END - GLITCH_END);
-      } else {
-        buildT  = 1;
-        masterAlpha = Math.max(0, 1 - ((t - HOLD_END) / (1 - HOLD_END)));
-      }
-
-      if (masterAlpha > 0.005) {
-        ctx.globalAlpha = masterAlpha;
-        drawStage(stage, buildT, glitchT, holdT, now);
-        drawProgress(t, stageIdx);
-        ctx.globalAlpha = 1;
-      }
-
-      if (t >= 1) {
-        stageIdx   = (stageIdx + 1) % STAGES.length;
-        stageStart = now;
-      }
-
-      rafId = requestAnimationFrame(loop);
-    }
-
-    rafId = requestAnimationFrame(loop);
-
-    /* Pause animation when tab is hidden (saves CPU) */
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) {
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-      } else {
-        if (!rafId) {
-          stageStart = performance.now() - (STAGES[stageIdx].dur * 0.1);
-          rafId = requestAnimationFrame(loop);
+        if (frameId) {
+          cancelAnimationFrame(frameId);
+          frameId = null;
         }
+      } else if (!frameId) {
+        stageStartedAt = performance.now();
+        frameId = requestAnimationFrame(loop);
       }
     });
 
     window.addEventListener('pagehide', function () {
-      if (rafId) { cancelAnimationFrame(rafId); }
+      if (frameId) { cancelAnimationFrame(frameId); }
     });
   }
 
-  /* DOMContentLoaded guard */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
