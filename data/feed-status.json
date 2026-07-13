@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-12T06:18:58.196Z",
+  "generated_at": "2026-07-13T06:36:21.326Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -23,10 +23,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-12T06:16:01.627Z",
-      "last_successful_check": "2026-07-12T06:16:01.627Z",
-      "last_successful_update": "2026-07-12T06:16:01.279Z",
-      "source_updated_at": "2026-07-12T06:16:01.279Z",
+      "checked_at": "2026-07-13T06:33:25.069Z",
+      "last_successful_check": "2026-07-13T06:33:25.069Z",
+      "last_successful_update": "2026-07-13T06:33:24.767Z",
+      "source_updated_at": "2026-07-13T06:33:24.767Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -71,10 +71,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-12T06:16:06.601Z",
-      "last_successful_check": "2026-07-12T06:16:06.601Z",
-      "last_successful_update": "2026-07-12T06:16:06.601Z",
-      "source_updated_at": "2026-07-12T06:16:06.601Z",
+      "checked_at": "2026-07-13T06:33:29.363Z",
+      "last_successful_check": "2026-07-13T06:33:29.363Z",
+      "last_successful_update": "2026-07-13T06:33:29.363Z",
+      "source_updated_at": "2026-07-13T06:33:29.363Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -102,9 +102,9 @@
       "status": "degraded",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-12T06:17:07.201Z",
-      "last_successful_check": "2026-07-12T06:17:07.201Z",
-      "last_successful_update": "2026-07-12T06:17:07.201Z",
+      "checked_at": "2026-07-13T06:34:30.029Z",
+      "last_successful_check": "2026-07-13T06:34:30.029Z",
+      "last_successful_update": "2026-07-13T06:34:30.029Z",
       "source_updated_at": null,
       "source_age_minutes": null,
       "last_error": "health: Feed fetch timeout after 15000ms; bubbles_lite: Feed fetch timeout after 15000ms",
@@ -120,7 +120,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-12T06:16:36.855Z"
+          "checked_at": "2026-07-13T06:33:59.617Z"
         },
         "bubbles_lite": {
           "ok": false,
@@ -131,7 +131,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-12T06:16:06.602Z"
+          "checked_at": "2026-07-13T06:33:29.364Z"
         },
         "static_bootstrap": {
           "ok": true,
@@ -10944,7 +10944,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-07-12T06:17:07.107Z"
+          "checked_at": "2026-07-13T06:34:29.868Z"
         }
       },
       "notes": [
@@ -10967,7 +10967,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-12T06:17:26.688Z",
+      "checked_at": "2026-07-13T06:34:49.818Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -10985,7 +10985,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-12T06:17:07.204Z"
+          "checked_at": "2026-07-13T06:34:30.032Z"
         }
       },
       "notes": [
@@ -11009,7 +11009,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-12T06:18:58.195Z",
+      "checked_at": "2026-07-13T06:36:21.325Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -11027,7 +11027,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-12T06:17:26.689Z",
+          "checked_at": "2026-07-13T06:34:49.820Z",
           "key": "token_page"
         },
         "pairs_liquidity": {
@@ -11039,7 +11039,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-12T06:17:57.190Z",
+          "checked_at": "2026-07-13T06:35:20.321Z",
           "key": "pairs_liquidity"
         },
         "pairs_volume24": {
@@ -11051,7 +11051,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-12T06:18:27.692Z",
+          "checked_at": "2026-07-13T06:35:50.823Z",
           "key": "pairs_volume24"
         }
       },
