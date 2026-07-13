@@ -30,12 +30,43 @@ Core truth:
 - Eligible free NFT drops belong to the progression route, but public pages must state whether each drop route is live, limited, paused, planned or coming soon.
 - Earned NFTs may be kept, flipped or burned only through supported routes that are actually live.
 - Burn routes may create new or rarer NFTs and ultimately lead toward a unique 1/1 Moonboy where the published route is active.
-- Ownership, licence and royalty language must match the final published creator terms exactly.
+- A qualifying unique 1/1 Moonboy holder owns that character identity, its creator licence and 100% of the royalties generated from what they build with it. Crypto Moonboys and Graffiti Kings take no royalty share.
+- Ownership is not dependent on wiki approval, SAM indexing or community canon status.
 - Every 1/1 Moonboy holder is a HODL Warrior.
 - HODL Warriors are not passive holders. They are the creator army: builders who use SWARMSY, support one another, amplify work and create shared momentum.
 - HODL Warriors is a builder role for 1/1 holders. It is **not** one of the nine current selectable Battle Chamber factions.
 
 The Arcade is an onboarding and progression tool for this path. It is not the definition of Crypto Moonboys.
+
+## 1/1 Ownership, Royalties and Community Canon
+
+The public ownership rule is:
+
+> **Your character. Your licence. Your royalties.**
+
+For every qualifying unique 1/1 Moonboy:
+
+- the holder owns the character identity under the published creator terms
+- the holder keeps 100% of the royalties generated from their approved commercial use of that character
+- Crypto Moonboys and Graffiti Kings take no royalty percentage
+- the holder may build stories, products, content, brands and creator worlds around the character
+- ownership remains with the holder whether or not every piece of submitted lore is accepted into the shared official canon
+
+Ownership and canon approval are separate:
+
+> **Ownership is automatic under the qualifying 1/1 creator terms. Canon status is community-governed.**
+
+Creators may write their own Moonboy stories and lore. However, highly explicit, extreme or otherwise unsuitable lore may be rejected by community vote and may not be added to the official Crypto Moonboys wiki, indexed by SAM or recognised as community-approved Moonboy canon.
+
+A rejected lore submission does **not** remove ownership of the character or the creator's underlying work. It only means that the submitted lore is not accepted into the shared official universe or recorded as approved canon.
+
+Public copy must use clear terms:
+
+- **creator-owned lore** — lore the holder has created
+- **community-approved lore** — lore accepted through the published community process
+- **official canon** — approved lore indexed into the shared Crypto Moonboys record
+
+Do not describe unapproved creator lore as official canon, and do not imply that wiki rejection removes the creator's ownership.
 
 ## Path 2 — Keep Your Existing Identity and Use SWARMSY
 
@@ -78,7 +109,7 @@ SWARMSY is used by both paths. Path 1 uses it to build and grow Moonboy creator 
 | Arcade and XP | Earned progression route for Path 1 |
 | NFT drops and burns | Optional artefacts, tradeable choices and evolution materials inside Path 1 |
 | HODL Warriors | Builder army of 1/1 holders who create and amplify together; not a current selectable faction |
-| Wiki and SAM | Memory system for identities, factions, lore, approved creator worlds and connected links |
+| Wiki and SAM | Memory system for identities, factions, community-approved lore, approved creator worlds and connected links |
 | Battle Chamber | Public activity, missions, faction movement and proof layer |
 | Block Topia | Gated playable world layer inside the wider umbrella |
 
@@ -147,7 +178,7 @@ The homepage hero/infographic must make both choices visually obvious:
 
 Moonboy character → recognisable creator identity → brand → products → content → community → creator world
 
-Ownership, licence and royalty claims belong only to a qualifying unique 1/1 Moonboy and must follow the published creator terms. Earlier drops, progression assets or generic Moonboy characters must not be presented as granting those rights.
+Ownership, licence and royalty claims belong only to a qualifying unique 1/1 Moonboy. The holder owns the character identity, creator licence and 100% of the royalties under the published creator terms; Crypto Moonboys and Graffiti Kings take no royalty share. Earlier drops, progression assets or generic Moonboy characters must not be presented as granting those rights.
 
 **Option 2 — Keep your existing identity**
 
@@ -184,6 +215,9 @@ Use these statements:
 - **Build a new identity with a Moonboy, or bring the identity you already own.**
 - **A Moonboy is a character identity you can build a brand, products, stories and community around.**
 - **Moonboys are the new Graffiti Kings identities in the Web3 and blockchain world.**
+- **Your character. Your licence. Your royalties.**
+- **Qualifying 1/1 holders keep 100% of their royalties; Crypto Moonboys and Graffiti Kings take nothing.**
+- **Ownership is automatic under the qualifying 1/1 creator terms. Canon status is community-governed.**
 - **Every 1/1 holder is a HODL Warrior.**
 - **SWARMSY helps both paths create, plan, brand, grow and keep momentum.**
 - **Games and NFTs are tools inside the system, not the mission.**
@@ -206,7 +240,9 @@ Those are components, not the umbrella.
 
 Public copy must separate **live now** from **planned, limited, activation-dependent or coming soon**.
 
-Never describe a reward, burn, evolution, forge, ownership, licence, royalty, creator-world or persistent-character feature as live unless the current runtime and published terms confirm it.
+Never describe a reward, burn, evolution, forge, creator-world or persistent-character feature as live unless the current runtime confirms it.
+
+The ownership and royalty policy for a qualifying 1/1 Moonboy is fixed: the holder owns the character identity and creator licence under the published terms, keeps 100% of the royalties, and Crypto Moonboys and Graffiti Kings take no royalty share. Public pages must still distinguish that fixed policy from whether the 1/1 forge or assignment route is currently live.
 
 ### Live now
 
@@ -228,9 +264,9 @@ These features must be labelled according to their verified state on the day the
 - eligible free NFT airdrops or reward drops
 - keep, flip and burn progression routes
 - burn evolution into new or rarer NFTs
-- unique 1/1 Moonboy forging
-- automatic creator licence or royalty assignment
+- unique 1/1 Moonboy forging or assignment
 - dedicated creator-world wiki publishing and SAM indexing
+- community voting and official-canon approval workflows where not yet active
 - persistent Moonboy character integration across connected world layers
 
 Status words must be specific. Use terms such as:
@@ -350,6 +386,7 @@ It must communicate within one viewing cycle:
 - Option 1 builds a new Moonboy identity.
 - A Moonboy can become a brand, products, content, story, community and creator world.
 - Option 1 progression is how the user works toward that identity; progression is not the identity's purpose.
+- A qualifying unique 1/1 holder owns the character identity, creator licence and 100% of the royalties; Crypto Moonboys and Graffiti Kings take nothing.
 - Option 2 keeps an existing identity and uses SWARMSY to grow it.
 - Both paths use SWARMSY and belong to the same creator movement.
 
@@ -367,12 +404,14 @@ When auditing non-`/wiki` pages against this README:
 6. Flag pages that confuse HODL Warriors with a selectable live faction.
 7. Flag future reward or forge features written as live.
 8. Flag text-only pages that explain Moonboy mechanics without visually demonstrating Moonboy identity use cases.
-9. Reorder each page according to the relevant flow rule.
-10. Preserve runtime IDs, auth behavior, scripts, forms, data mounts and API contracts.
-11. Keep dashboards and advanced status sections after onboarding explanation.
-12. Update metadata, headings, CTA copy and accessible labels to match the corrected page purpose.
-13. Use approved Moonboy artwork and truthful product/brand applications where visual explanation is required.
-14. Run the repository test suite and update affected guards only when the guard itself encodes outdated product truth.
+9. Flag ownership copy that suggests Crypto Moonboys or Graffiti Kings takes a royalty share from qualifying 1/1 holders.
+10. Flag copy that confuses creator ownership with community approval, wiki inclusion or official canon status.
+11. Reorder each page according to the relevant flow rule.
+12. Preserve runtime IDs, auth behavior, scripts, forms, data mounts and API contracts.
+13. Keep dashboards and advanced status sections after onboarding explanation.
+14. Update metadata, headings, CTA copy and accessible labels to match the corrected page purpose.
+15. Use approved Moonboy artwork and truthful product/brand applications where visual explanation is required.
+16. Run the repository test suite and update affected guards only when the guard itself encodes outdated product truth.
 
 Do not rewrite runtime behavior merely to make copy tests pass. Update obsolete guards when the approved product truth has changed, while preserving real safety checks.
 
@@ -492,7 +531,10 @@ Active server/runtime files:
 - Do not add HODL Warriors to the current selectable faction roster.
 - Do not present NFTs as the mission; they are optional earned artefacts and evolution tools inside Path 1.
 - Do not imply every visitor must buy or own an NFT before joining.
-- Do not invent ownership language beyond the published creator licence and royalty terms.
+- Do not state or imply that Crypto Moonboys or Graffiti Kings takes a royalty share from qualifying 1/1 holders.
+- Do not make creator ownership conditional on wiki inclusion, SAM indexing, community voting or official canon approval.
+- Do not present creator-written lore as official canon until it has passed the published community approval process.
+- Do not imply that rejection from official canon removes ownership of the character or creator-written lore.
 - Do not present planned reward, burn, evolution or forge routes as live.
 - Do not explain Moonboys only as collectibles, avatars or progression rewards.
 - Do not use text alone where the visitor needs to understand a visual identity or product outcome.
