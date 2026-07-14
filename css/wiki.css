@@ -3602,6 +3602,10 @@ body.page-home .home-gknifty-banner img {
   max-width: 100%;
 }
 
+body.page-home .home-cta-primary {
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 4vw, 3rem);
+}
+
 body.page-home .launch-route,
 body.page-home .hero-stat,
 body.page-home .home-widget,
