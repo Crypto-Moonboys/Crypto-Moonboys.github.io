@@ -10,7 +10,7 @@
  *
  * The rendered banner:
  *   - Explains that /gklink syncs Arcade XP server-side for Telegram-linked users.
- *   - Uses one Telegram Web CTA to avoid blank t.me handoff pages.
+ *   - Opens the canonical public Telegram bot link.
  *   - Secondary info link leads to /gkniftyheads-incubator.html for more details.
  *   - Fits within the viewport on desktop and mobile (no horizontal overflow).
  *
@@ -22,7 +22,7 @@
 (function () {
   'use strict';
 
-  var BOT_HREF       = 'https://web.telegram.org/k/#@WIKICOMSBOT';
+  var BOT_HREF       = 'https://t.me/WIKICOMSBOT';
   var INCUBATOR_HREF = '/gkniftyheads-incubator.html';
 
   var TEMPLATE =
@@ -36,7 +36,7 @@
           '<a href="' + INCUBATOR_HREF + '">Learn more</a>.' +
         '</span>' +
       '</div>' +
-      '<a href="' + BOT_HREF + '" class="swarmsy-action-card tg-sync-cta-btn" target="_blank" rel="noopener noreferrer"><strong>Open Telegram Bot</strong><span>Open @WIKICOMSBOT in Telegram Web.</span></a>' +
+      '<a href="' + BOT_HREF + '" class="swarmsy-action-card tg-sync-cta-btn" target="_blank" rel="noopener noreferrer"><strong>Open Telegram Bot</strong><span>Open the public @WIKICOMSBOT bot in Telegram.</span></a>' +
     '</div>';
 
   function mount(el) {
