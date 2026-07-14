@@ -10,8 +10,7 @@
  *
  * The rendered banner:
  *   - Explains that /gklink syncs Arcade XP server-side for Telegram-linked users.
- *   - Uses Telegram Web as the primary browser-safe route.
- *   - Provides a direct Telegram app deep link as an alternative.
+ *   - Uses one Telegram Web CTA to avoid blank t.me handoff pages.
  *   - Secondary info link leads to /gkniftyheads-incubator.html for more details.
  *   - Fits within the viewport on desktop and mobile (no horizontal overflow).
  *
@@ -23,8 +22,7 @@
 (function () {
   'use strict';
 
-  var BOT_WEB_HREF   = 'https://web.telegram.org/k/#@WIKICOMSBOT';
-  var BOT_APP_HREF   = 'tg://resolve?domain=WIKICOMSBOT';
+  var BOT_HREF       = 'https://web.telegram.org/k/#@WIKICOMSBOT';
   var INCUBATOR_HREF = '/gkniftyheads-incubator.html';
 
   var TEMPLATE =
@@ -38,10 +36,7 @@
           '<a href="' + INCUBATOR_HREF + '">Learn more</a>.' +
         '</span>' +
       '</div>' +
-      '<div class="tg-sync-cta-actions">' +
-        '<a href="' + BOT_WEB_HREF + '" class="swarmsy-action-card tg-sync-cta-btn" target="_blank" rel="noopener noreferrer"><strong>Open Telegram Web</strong><span>Browser-safe route to @WIKICOMSBOT.</span></a>' +
-        '<a href="' + BOT_APP_HREF + '" class="swarmsy-action-card tg-sync-cta-btn"><strong>Open Telegram App</strong><span>Use this when Telegram is installed.</span></a>' +
-      '</div>' +
+      '<a href="' + BOT_HREF + '" class="swarmsy-action-card tg-sync-cta-btn" target="_blank" rel="noopener noreferrer"><strong>Open Telegram Bot</strong><span>Open @WIKICOMSBOT in Telegram Web.</span></a>' +
     '</div>';
 
   function mount(el) {
