@@ -10,7 +10,7 @@
  *
  * The rendered banner:
  *   - Explains that /gklink syncs Arcade XP server-side for Telegram-linked users.
- *   - Primary "Link Telegram" button opens the Telegram bot (https://t.me/WIKICOMSBOT).
+ *   - Primary "Open Telegram Bot" button opens the Telegram bot in the current tab.
  *   - Secondary info link leads to /gkniftyheads-incubator.html for more details.
  *   - Fits within the viewport on desktop and mobile (no horizontal overflow).
  *
@@ -26,18 +26,17 @@
   var INCUBATOR_HREF  = '/gkniftyheads-incubator.html';
 
   var TEMPLATE =
-    '<div class="tg-sync-cta" role="note" aria-label="Link Telegram to sync Arcade XP">' +
+    '<div class="tg-sync-cta" role="note" aria-label="Open the Telegram bot to sync Arcade XP">' +
       '<span class="tg-sync-cta-icon" aria-hidden="true">🔗</span>' +
       '<div class="tg-sync-cta-body">' +
         '<strong>Link Telegram — sync Arcade XP</strong>' +
         '<span>' +
-          'Use <code>/gklink</code> in the Telegram bot to store Arcade XP server-side. ' +
-          'Telegram-linked users earn persistent Arcade XP across sessions. ' +
-          'Unlinked users have local/browser-only progress. ' +
+          'Open the Telegram bot, press Start, then run <code>/gkstart</code> and <code>/gklink</code>. ' +
+          'Use the signed link the bot sends you to connect your website identity and store Arcade XP server-side. ' +
           '<a href="' + INCUBATOR_HREF + '">Learn more</a>.' +
         '</span>' +
       '</div>' +
-      '<a href="' + BOT_HREF + '" class="swarmsy-action-card tg-sync-cta-btn" target="_blank" rel="noopener noreferrer"><strong>Link Telegram</strong><span>Open the bot and run /gklink.</span></a>' +
+      '<a href="' + BOT_HREF + '" class="swarmsy-action-card tg-sync-cta-btn"><strong>Open Telegram Bot</strong><span>Press Start, then run /gkstart and /gklink.</span></a>' +
     '</div>';
 
   function mount(el) {
