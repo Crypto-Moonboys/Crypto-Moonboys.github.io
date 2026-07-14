@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-13T06:33:29.000Z",
+  "generated_at": "2026-07-14T05:43:19.187Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-13T06:33:25.094Z"
+      "checked_at": "2026-07-14T05:43:15.923Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-13T06:33:25.271Z"
+      "checked_at": "2026-07-14T05:43:16.075Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-13T06:33:27.351Z"
+      "checked_at": "2026-07-14T05:43:17.752Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-13T06:33:27.530Z"
+      "checked_at": "2026-07-14T05:43:17.901Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-13T06:33:28.211Z"
+      "checked_at": "2026-07-14T05:43:18.547Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-13T06:33:28.568Z"
+      "checked_at": "2026-07-14T05:43:18.786Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-13T06:33:28.746Z"
+      "checked_at": "2026-07-14T05:43:18.936Z"
     }
   },
   "data": {
     "collection_stats": {
       "numUsers": 707,
-      "usdMarketCap": 96479.94594447575,
-      "waxMarketCap": 344602.5336048647,
+      "usdMarketCap": 96479.94594447572,
+      "waxMarketCap": 344602.5336048645,
       "numAssets": 4918
     },
     "num_assets": {
       "numberOfAssets": 4918,
-      "estimatedWaxValue": 344602.5336048639,
-      "estimatedUsdValue": 96479.94594447591
+      "estimatedWaxValue": 344602.53360486403,
+      "estimatedUsdValue": 96479.94594447587
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -362,6 +362,38 @@
           "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
           "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
           "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "Hodl Warriors P2E Battle Game NFT by Charlie Buster. - 1) it's a cool Art Collectable. 2) Is a Gaming NFT. 3) Rewards weekly $LFGK. - more info here https://discord.gg/graffiti-kings The Price Rise Structure for “Busters A Stoned Boy” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR). When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT. NFT’s Sold - Price Rise x1.61 1 to 34 - (420 WAX) 34 to 55 - (720 WAX) 55 to 89 - (1,170 WAX) 89 to 144 - (1,888 WAX) 144 to 233 - (3,050+ WAX) (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711. Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More",
+          "id": "420",
+          "img": "QmXfX6UFhzcV5MKokFyNz7DCcHGvEybfA2BWyqssGNF23k",
+          "name": "\"Buster's A Stoned Boy\"",
+          "rarity ": "Smokey Sessions ",
+          "variation ": "Original Artwork",
+          "template_id": 438904,
+          "schema": "airdropsbycb"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 5165.548546989998,
+          "usdVolume": 618.2898433164298,
+          "waxFloor": 1888,
+          "change": 0,
+          "buyers": 53,
+          "sellers": 63,
+          "sales": 137,
+          "rank": 11
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
           "description ": "This is the 1st $LFGK P2E GraffPUNK MidEVIL NFT for the Hodl Warriors NFT Battle Game - 1) it's a cool Art Collectable 2) Is a Gaming NFT 3) Rewards weekly $LFGK - more info here https://discord.gg/graffiti-kings The Price Rise Structure for “BROTHER OF THE QUILL” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR). When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT.       NFT’s Sold - Price Rise x1.61    1 to 377 - (150 WAX)    377 to 610 - (250 WAX)    610 to 987 - (420 WAX)    987 to 1,597 - (700 WAX)    1,597 to 2,584 - (1,150+ WAX)       (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.    Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More Info...       *THE ARK OF THE COVENANT MINT* - aka The Golden Ratio Mint #1618. This Mind Meltingly Rare As F**K Mint and can be swapped for for 21 Random Collector’s Mints.       Price rise Only based on the First 1 to 100 Collector’s Mint NFT’s, Price’s will also rise for the remaining Burn Mints due to a controlled amount of Airdrop’s and Weekly Blend’s Available Every Friday At 4:20pm GMT, Once all 5 Stages are Completed the NFT will now go into Price Discovery and The Sky is the Limit... https://wax.atomichub.io/market?collection_name=noballgamess&schema_name=airdropsbycb ",
           "id": "1618",
           "img": "QmPDCWchTUuqFQzphM5pQEcNJFWebA6BzsXT2nSSP3vwVQ",
@@ -387,38 +419,6 @@
           "sellers": 143,
           "sales": 311,
           "rank": 8
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "Hodl Warriors P2E Battle Game NFT by Charlie Buster. - 1) it's a cool Art Collectable. 2) Is a Gaming NFT. 3) Rewards weekly $LFGK. - more info here https://discord.gg/graffiti-kings The Price Rise Structure for “Busters A Stoned Boy” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR). When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT. NFT’s Sold - Price Rise x1.61 1 to 34 - (420 WAX) 34 to 55 - (720 WAX) 55 to 89 - (1,170 WAX) 89 to 144 - (1,888 WAX) 144 to 233 - (3,050+ WAX) (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711. Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More",
-          "id": "420",
-          "img": "QmXfX6UFhzcV5MKokFyNz7DCcHGvEybfA2BWyqssGNF23k",
-          "name": "\"Buster's A Stoned Boy\"",
-          "rarity ": "Smokey Sessions ",
-          "variation ": "Original Artwork",
-          "template_id": 438904,
-          "schema": "airdropsbycb"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 4915.548546989998,
-          "usdVolume": 617.1148433164299,
-          "waxFloor": 250,
-          "change": 0,
-          "buyers": 53,
-          "sellers": 62,
-          "sales": 136,
-          "rank": 11
         }
       },
       {
@@ -679,16 +679,10 @@
       }
     ],
     "volume": {
-      "waxVolume": 3721,
-      "usdVolume": 17.488700000000005
+      "waxVolume": 3971,
+      "usdVolume": 18.663700000000006
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-14"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -698,7 +692,7 @@
       {
         "waxVolume": 2228,
         "sales": 9,
-        "usdVolume": 10.471600000000002,
+        "usdVolume": 10.4716,
         "date": "2026-06-16"
       },
       {
@@ -812,7 +806,7 @@
       {
         "waxVolume": 1459,
         "sales": 24,
-        "usdVolume": 6.857299999999996,
+        "usdVolume": 6.857299999999999,
         "date": "2026-07-05"
       },
       {
@@ -858,10 +852,16 @@
         "date": "2026-07-12"
       },
       {
+        "waxVolume": 250,
+        "sales": 1,
+        "usdVolume": 1.175,
+        "date": "2026-07-13"
+      },
+      {
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
-        "date": "2026-07-13"
+        "date": "2026-07-14"
       }
     ]
   },

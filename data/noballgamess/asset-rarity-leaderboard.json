@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-13T06:33:29.294Z",
+  "generated_at": "2026-07-14T05:43:19.586Z",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "asset_ranking_enabled": true,
@@ -75380,7 +75380,7 @@
     {
       "asset_id": "1099636764966",
       "template_id": 438904,
-      "owner": "pwuki.c.wam",
+      "owner": "pepperstake",
       "template_rank": 9,
       "template_final_score": 55.0349,
       "template_score_component": 33.0209,
