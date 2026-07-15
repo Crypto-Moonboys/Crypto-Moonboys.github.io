@@ -133,14 +133,14 @@
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Today's Active Options</span></summary>
       <div id="battle-todays-active-options">
-        <p>Today’s active opportunities reset at UTC midnight. Daily WTF signals currently open every four hours and run for 90 minutes. The live system below is the source of truth for what is active now.</p>
+        <p>Today’s active opportunities reset at UTC midnight. Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Each signal runs for 90 minutes. The live system below is the source of truth for what is active now.</p>
       </div>
     </details>
 
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Missed Days / Missed Perks</span></summary>
       <div id="battle-missed-perks-history">
-        <p>Daily options reset. Missed history can accumulate and does not reset.</p>
+        <p>Daily options reset. Missed perks history builds over time. Missed history does not reset.</p>
       </div>
     </details>
 
@@ -192,35 +192,41 @@
 
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction War Standings</span></summary>
-      <p class="bc-standings-note">Battle Chamber loads server-backed standings when available.</p>
+      <p class="bc-standings-note">Battle Chamber loads server-backed standings when available. Current standings and status are shown below.</p>
       <div id="battle-faction-standings"><div class="community-loading">Loading faction standings&#8230;</div></div>
     </details>
+
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Weekly Faction War</span></summary>
       <div id="battle-weekly-war"><div class="community-loading">Loading weekly war&#8230;</div></div>
     </details>
+
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Monthly Clout Chase</span></summary>
       <div id="battle-monthly-clout"><div class="community-loading">Loading monthly clout&#8230;</div></div>
     </details>
+
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Seasonal Campaign</span></summary>
       <div id="battle-seasonal-campaign"><div class="community-loading">Loading seasonal campaign&#8230;</div></div>
     </details>
+
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Live Proof Feed</span></summary>
       <div id="battle-faction-proof-feed"></div>
       <div id="tg-activity-feed"><div class="community-loading">Loading live activity&#8230;</div></div>
     </details>
+
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Top Contributors</span></summary>
-      <p>Community XP and synced Arcade activity from the Battle Chamber proof board.</p>
+      <p>Community XP and synced Arcade activity. These are the most active faction members on the Battle Chamber proof board.</p>
       <div class="tg-user-list" id="tg-community-leaderboard"><div class="community-loading">Loading community leaderboard&#8230;</div></div>
     </details>
+
     <details class="section bc-disclosure" id="faction-chambers-live">
-      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction Chambers</span></summary>
+      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction Chambers are open</span></summary>
       <div class="bc-coming-next">
-        <p>Open a dedicated faction chamber for identity, lore, perks, missions, war status and participation controls.</p>
+        <p>Each current live faction has a dedicated chamber for identity, missions, status and participation.</p>
         <ul>
           <li><a href="/battle-chamber/factions/hard-fork-rockers.html">Hard Fork Rockers Chamber</a></li>
           <li><a href="/battle-chamber/factions/rugpull-miners.html">Rugpull Miners Chamber</a></li>
@@ -240,15 +246,24 @@
 </main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
+<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script -->
+<!-- so placeholder nodes are never injected into the boot sequence. -->
+<!-- 1. Core config -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
+<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
+<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<!-- 7. Page-specific scripts -->
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script data-cfasync="false" src="/js/components/xp-burst-animation.js"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
