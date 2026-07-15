@@ -19,6 +19,7 @@
     "daily-loop:checklist": "node scripts/daily-loop-post-merge-checklist.mjs",
     "lint:shell": "node --check js/site-shell.js",
     "test:live-site": "node scripts/live-site-verify.mjs",
+    "test:live-content": "node scripts/live-content-truth-verify.mjs",
     "deploy:status": "node scripts/pages-deploy-status.mjs",
     "btqm:assets:dry": "node scripts/generate-btqm-assets.mjs",
     "btqm:assets": "node scripts/generate-btqm-assets.mjs",
