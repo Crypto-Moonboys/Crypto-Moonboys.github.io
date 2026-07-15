@@ -2,7 +2,7 @@
 /**
  * live-content-truth-verify.mjs
  *
- * Post-deploy guard for stale public HTML and mission drift on cryptomoonboys.com.
+ * Manual/post-deploy guard for stale public HTML and mission drift on cryptomoonboys.com.
  *
  * The browser-facing site can look current while crawlers, curl, or CDN variants still
  * receive old machine-readable HTML. This script fetches raw public HTML with several
@@ -162,9 +162,9 @@ function fetchText(url, userAgent) {
       {
         headers: {
           'User-Agent': userAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
+          Pragma: 'no-cache',
         },
       },
       (res) => {
@@ -186,8 +186,20 @@ function fetchText(url, userAgent) {
   });
 }
 
+function normalise(value) {
+  return String(value || '').toLocaleLowerCase('en-GB');
+}
+
+function includesCaseInsensitive(body, needle) {
+  return normalise(body).includes(normalise(needle));
+}
+
+function findCaseInsensitive(body, needle) {
+  return normalise(body).indexOf(normalise(needle));
+}
+
 function compactSnippet(body, needle) {
-  const index = body.indexOf(needle);
+  const index = findCaseInsensitive(body, needle);
   if (index < 0) return '';
   const start = Math.max(0, index - 80);
   const end = Math.min(body.length, index + needle.length + 80);
@@ -214,7 +226,7 @@ async function verifyPage(spec, userAgent) {
     fail(`${spec.path} returned HTTP ${response.status}`);
   }
 
-  if (body.includes('<html') || body.includes('<!DOCTYPE html')) {
+  if (includesCaseInsensitive(body, '<html') || includesCaseInsensitive(body, '<!DOCTYPE html')) {
     ok(`${spec.path} returned HTML`);
   } else {
     fail(`${spec.path} did not return recognisable HTML`);
@@ -230,8 +242,8 @@ async function verifyPage(spec, userAgent) {
 
   const banned = [...GLOBAL_BANNED.map((entry) => entry.needle), ...(spec.banned || [])];
   for (const needle of [...new Set(banned)]) {
-    if (body.includes(needle)) {
-      const globalMatch = GLOBAL_BANNED.find((entry) => entry.needle === needle);
+    if (includesCaseInsensitive(body, needle)) {
+      const globalMatch = GLOBAL_BANNED.find((entry) => normalise(entry.needle) === normalise(needle));
       const reason = globalMatch ? ` — ${globalMatch.reason}` : '';
       const snippet = compactSnippet(body, needle);
       fail(`${spec.path} contains banned stale/conflicting copy: ${needle}${reason}${snippet ? `\n       snippet: ${snippet}` : ''}`);
