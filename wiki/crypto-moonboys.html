@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboys is the Graffiti Kings creator umbrella. Forge a 1/1 Moonboy and join the HODL Warriors, or grow your existing identity with SWARMSY.">
+  <meta name="description" content="Crypto Moonboys is the Graffiti Kings creator umbrella. Build a Moonboy identity through verified Path 1 routes, or keep your existing identity and use SWARMSY.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Crypto Moonboys — One Umbrella, Two Creator Paths">
-  <meta property="og:description" content="Forge a Moonboy identity and join the HODL Warriors, or bring the artist, business, product or identity you already own and grow it with SWARMSY.">
+  <meta property="og:description" content="Build a Moonboy character identity through verified progression routes, or bring the identity, art, business, product or brand you already own and grow it with SWARMSY.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/crypto-moonboys.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -17,257 +17,7 @@
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="icon" href="/favicon.png" type="image/png">
   <style>
-    .cm-page {
-      --cm-gold: #f7c948;
-      --cm-cyan: #00e8f0;
-      --cm-pink: #ff3ca6;
-      --cm-panel: rgba(8, 12, 17, 0.92);
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 1.25rem;
-    }
-    .cm-hero,
-    .cm-section,
-    .cm-path,
-    .cm-truth {
-      border: 1px solid rgba(247, 201, 72, 0.2);
-      border-radius: 18px;
-      background:
-        radial-gradient(circle at top right, rgba(0, 232, 240, 0.08), transparent 34%),
-        radial-gradient(circle at bottom left, rgba(247, 201, 72, 0.08), transparent 36%),
-        var(--cm-panel);
-      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
-    }
-    .cm-hero {
-      padding: clamp(1.35rem, 4vw, 3.25rem);
-      margin-bottom: 1.25rem;
-    }
-    .cm-kicker {
-      margin: 0 0 0.75rem;
-      color: var(--cm-cyan);
-      font-size: 0.82rem;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-    .cm-title {
-      margin: 0;
-      color: var(--cm-gold);
-      font-family: var(--font-display);
-      font-size: clamp(2.5rem, 7vw, 6rem);
-      line-height: 0.9;
-      text-transform: uppercase;
-      text-shadow: 0 0 28px rgba(247, 201, 72, 0.25);
-    }
-    .cm-title span {
-      display: block;
-      margin-top: 0.9rem;
-      color: #f4f7fa;
-      font-size: clamp(1.05rem, 2.2vw, 1.85rem);
-      line-height: 1.25;
-      letter-spacing: 0.08em;
-    }
-    .cm-lead {
-      max-width: 820px;
-      margin: 1.3rem 0 0;
-      color: #e7edf2;
-      font-size: clamp(1.05rem, 1.7vw, 1.28rem);
-      line-height: 1.75;
-    }
-    .cm-declaration {
-      margin: 1.1rem 0 0;
-      color: var(--cm-gold);
-      font-family: var(--font-display);
-      font-size: clamp(1.2rem, 2.5vw, 2rem);
-      line-height: 1.25;
-      text-transform: uppercase;
-    }
-    .cm-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 1.35rem;
-    }
-    .cm-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 46px;
-      padding: 0.82rem 1.15rem;
-      border: 1px solid rgba(247, 201, 72, 0.5);
-      border-radius: 999px;
-      color: #050607;
-      background: linear-gradient(135deg, var(--cm-gold), var(--cm-cyan));
-      font-family: var(--font-display);
-      font-size: 0.9rem;
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      text-decoration: none;
-      text-transform: uppercase;
-    }
-    .cm-button--secondary {
-      color: #f4f7fa;
-      background: rgba(0, 232, 240, 0.08);
-      border-color: rgba(0, 232, 240, 0.3);
-    }
-    .cm-section {
-      padding: clamp(1.25rem, 3vw, 2.2rem);
-      margin-bottom: 1.25rem;
-    }
-    .cm-section h2,
-    .cm-path h2 {
-      margin: 0 0 0.8rem;
-      color: var(--cm-gold);
-      font-family: var(--font-display);
-      font-size: clamp(1.65rem, 3vw, 2.7rem);
-      line-height: 1;
-      text-transform: uppercase;
-    }
-    .cm-section h3,
-    .cm-path h3 {
-      margin: 1.25rem 0 0.45rem;
-      color: var(--cm-cyan);
-      font-family: var(--font-display);
-      font-size: 1.15rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .cm-section p,
-    .cm-path p,
-    .cm-section li,
-    .cm-path li,
-    .cm-truth p {
-      color: #dbe5eb;
-      line-height: 1.72;
-    }
-    .cm-grid,
-    .cm-path-grid,
-    .cm-role-grid {
-      display: grid;
-      gap: 1rem;
-    }
-    .cm-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-    .cm-path-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-bottom: 1.25rem;
-    }
-    .cm-role-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-top: 1rem;
-    }
-    .cm-card,
-    .cm-role-card {
-      padding: 1rem 1.05rem;
-      border: 1px solid rgba(0, 232, 240, 0.16);
-      border-radius: 14px;
-      background: rgba(0, 232, 240, 0.045);
-    }
-    .cm-card strong,
-    .cm-role-card strong {
-      display: block;
-      margin-bottom: 0.45rem;
-      color: var(--cm-gold);
-      font-family: var(--font-display);
-      text-transform: uppercase;
-    }
-    .cm-path {
-      position: relative;
-      overflow: hidden;
-      padding: clamp(1.25rem, 3vw, 2.2rem);
-    }
-    .cm-path::before {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      content: '';
-      background: linear-gradient(90deg, var(--cm-gold), var(--cm-cyan));
-    }
-    .cm-path--swarmsy::before {
-      background: linear-gradient(90deg, var(--cm-pink), var(--cm-cyan));
-    }
-    .cm-path-number {
-      display: inline-block;
-      margin-bottom: 0.75rem;
-      color: var(--cm-cyan);
-      font-family: var(--font-display);
-      font-size: 0.9rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-    .cm-steps {
-      margin: 1rem 0 0;
-      padding-left: 1.2rem;
-    }
-    .cm-steps li + li {
-      margin-top: 0.55rem;
-    }
-    .cm-highlight {
-      margin-top: 1rem;
-      padding: 0.9rem 1rem;
-      border-left: 4px solid var(--cm-gold);
-      border-radius: 8px;
-      background: rgba(247, 201, 72, 0.08);
-      color: #f7f2dc;
-      font-weight: 700;
-      line-height: 1.6;
-    }
-    .cm-truth {
-      padding: 1.15rem 1.2rem;
-      margin: 0 0 1.25rem;
-      border-color: rgba(255, 60, 166, 0.3);
-    }
-    .cm-truth strong {
-      color: var(--cm-pink);
-      text-transform: uppercase;
-    }
-    .cm-compare {
-      width: 100%;
-      margin-top: 1rem;
-      border-collapse: collapse;
-    }
-    .cm-compare th,
-    .cm-compare td {
-      padding: 0.8rem;
-      border: 1px solid rgba(255,255,255,0.1);
-      text-align: left;
-      vertical-align: top;
-    }
-    .cm-compare th {
-      color: var(--cm-gold);
-      background: rgba(247, 201, 72, 0.08);
-      font-family: var(--font-display);
-      text-transform: uppercase;
-    }
-    .cm-compare td {
-      color: #dbe5eb;
-    }
-    @media (max-width: 860px) {
-      .cm-grid,
-      .cm-path-grid,
-      .cm-role-grid {
-        grid-template-columns: 1fr;
-      }
-      .cm-actions {
-        flex-direction: column;
-      }
-      .cm-button {
-        width: 100%;
-      }
-      .cm-compare,
-      .cm-compare tbody,
-      .cm-compare tr,
-      .cm-compare th,
-      .cm-compare td {
-        display: block;
-      }
-      .cm-compare th {
-        margin-top: 0.8rem;
-      }
-    }
+    .cm-page{--cm-gold:#f7c948;--cm-cyan:#00e8f0;--cm-pink:#ff3ca6;--cm-panel:rgba(8,12,17,.92);max-width:1180px;margin:0 auto;padding:1.25rem}.cm-hero,.cm-section,.cm-path,.cm-truth{border:1px solid rgba(247,201,72,.2);border-radius:18px;background:radial-gradient(circle at top right,rgba(0,232,240,.08),transparent 34%),radial-gradient(circle at bottom left,rgba(247,201,72,.08),transparent 36%),var(--cm-panel);box-shadow:0 24px 80px rgba(0,0,0,.28)}.cm-hero,.cm-section,.cm-path{padding:clamp(1.25rem,3vw,2.2rem);margin-bottom:1.25rem}.cm-kicker{margin:0 0 .75rem;color:var(--cm-cyan);font-size:.82rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.cm-title{margin:0;color:var(--cm-gold);font-family:var(--font-display);font-size:clamp(2.5rem,7vw,6rem);line-height:.9;text-transform:uppercase;text-shadow:0 0 28px rgba(247,201,72,.25)}.cm-title span{display:block;margin-top:.9rem;color:#f4f7fa;font-size:clamp(1.05rem,2.2vw,1.85rem);line-height:1.25;letter-spacing:.08em}.cm-lead{max-width:900px;margin:1.3rem 0 0;color:#e7edf2;font-size:clamp(1.05rem,1.7vw,1.28rem);line-height:1.75}.cm-declaration{margin:1.1rem 0 0;color:var(--cm-gold);font-family:var(--font-display);font-size:clamp(1.2rem,2.5vw,2rem);line-height:1.25;text-transform:uppercase}.cm-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.35rem}.cm-button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:.82rem 1.15rem;border:1px solid rgba(247,201,72,.5);border-radius:999px;color:#050607;background:linear-gradient(135deg,var(--cm-gold),var(--cm-cyan));font-family:var(--font-display);font-size:.9rem;font-weight:900;letter-spacing:.05em;text-decoration:none;text-transform:uppercase}.cm-button--secondary{color:#f4f7fa;background:rgba(0,232,240,.08);border-color:rgba(0,232,240,.3)}.cm-section h2,.cm-path h2{margin:0 0 .8rem;color:var(--cm-gold);font-family:var(--font-display);font-size:clamp(1.65rem,3vw,2.7rem);line-height:1;text-transform:uppercase}.cm-section h3,.cm-path h3{margin:1.25rem 0 .45rem;color:var(--cm-cyan);font-family:var(--font-display);font-size:1.15rem;letter-spacing:.04em;text-transform:uppercase}.cm-section p,.cm-path p,.cm-section li,.cm-path li,.cm-truth p{color:#dbe5eb;line-height:1.72}.cm-grid,.cm-path-grid,.cm-role-grid{display:grid;gap:1rem}.cm-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.cm-path-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:1.25rem}.cm-role-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:1rem}.cm-card,.cm-role-card{padding:1rem 1.05rem;border:1px solid rgba(0,232,240,.16);border-radius:14px;background:rgba(0,232,240,.045)}.cm-card strong,.cm-role-card strong{display:block;margin-bottom:.45rem;color:var(--cm-gold);font-family:var(--font-display);text-transform:uppercase}.cm-path{position:relative;overflow:hidden}.cm-path::before{position:absolute;top:0;left:0;width:100%;height:4px;content:'';background:linear-gradient(90deg,var(--cm-gold),var(--cm-cyan))}.cm-path--swarmsy::before{background:linear-gradient(90deg,var(--cm-pink),var(--cm-cyan))}.cm-path-number{display:inline-block;margin-bottom:.75rem;color:var(--cm-cyan);font-family:var(--font-display);font-size:.9rem;letter-spacing:.16em;text-transform:uppercase}.cm-steps{margin:1rem 0 0;padding-left:1.2rem}.cm-steps li+li{margin-top:.55rem}.cm-highlight{margin-top:1rem;padding:.9rem 1rem;border-left:4px solid var(--cm-gold);border-radius:8px;background:rgba(247,201,72,.08);color:#f7f2dc;font-weight:700;line-height:1.6}.cm-truth{padding:1.15rem 1.2rem;margin:0 0 1.25rem;border-color:rgba(255,60,166,.3)}.cm-truth strong{color:var(--cm-pink);text-transform:uppercase}.cm-compare{width:100%;margin-top:1rem;border-collapse:collapse}.cm-compare th,.cm-compare td{padding:.8rem;border:1px solid rgba(255,255,255,.1);text-align:left;vertical-align:top}.cm-compare th{color:var(--cm-gold);background:rgba(247,201,72,.08);font-family:var(--font-display);text-transform:uppercase}.cm-compare td{color:#dbe5eb}@media(max-width:860px){.cm-grid,.cm-path-grid,.cm-role-grid{grid-template-columns:1fr}.cm-actions{flex-direction:column}.cm-button{width:100%}.cm-compare,.cm-compare tbody,.cm-compare tr,.cm-compare th,.cm-compare td{display:block}.cm-compare th{margin-top:.8rem}}
   </style>
 </head>
 <body class="page-wiki page-standard-shell" data-entity-hash="a4b462cb5857">
@@ -287,35 +37,26 @@
         <p class="cm-kicker">Graffiti Kings legacy / creator umbrella / two paths</p>
         <h1 class="cm-title">CRYPTO MOONBOYS<span>ONE UMBRELLA. TWO WAYS TO JOIN.</span></h1>
         <p class="cm-lead">Crypto Moonboys carries more than 40 years of Graffiti Kings culture into the Web3 and blockchain world. The Moonboys are the new generation of Graffiti Kings identities: characters, factions and creator worlds led through GKniftyHEADS and other Moonboy factions connected to OG Graffiti Kings artists.</p>
-        <p class="cm-lead">Crypto Moonboys is not a game. It is the umbrella, the movement and the reason to onboard. Games, XP, free NFT drops, burn routes, the wiki, factions and Block Topia are systems inside that umbrella.</p>
+        <p class="cm-lead">Crypto Moonboys is not a game. It is the public creator umbrella, community and shared record. Games, XP, eligible NFT rewards, burn routes, the wiki, factions, Battle Chamber and Block Topia are systems inside that umbrella, not the mission itself.</p>
         <p class="cm-declaration">Choose the path that fits who you are.</p>
         <div class="cm-actions" role="navigation" aria-label="Choose a Crypto Moonboys path">
-          <a class="cm-button" href="#path-moonboy">Path 1: Forge a Moonboy</a>
+          <a class="cm-button" href="#path-moonboy">Path 1: Build a Moonboy</a>
           <a class="cm-button cm-button--secondary" href="#path-swarmsy">Path 2: Use SWARMSY</a>
           <a class="cm-button cm-button--secondary" href="/community.html">Enter the community</a>
         </div>
       </header>
 
       <section class="cm-truth" aria-label="Core positioning truth">
-        <p><strong>Core truth:</strong> Crypto Moonboys helps people build identities that get seen and keep momentum. A user can build that identity through one or many original 1/1 Moonboys, or bring an existing artist, business, product, brand or public identity and use SWARMSY without adopting a Moonboy.</p>
+        <p><strong>Core truth:</strong> Crypto Moonboys helps people build identities that get seen and keep momentum. A user can build that identity through one or many Moonboy characters, or bring an existing artist, business, product, brand or public identity and use SWARMSY without adopting a Moonboy.</p>
       </section>
 
       <section class="cm-section" id="what-it-is">
         <p class="cm-kicker">The umbrella</p>
         <h2>WHAT CRYPTO MOONBOYS ACTUALLY IS</h2>
         <div class="cm-grid">
-          <div class="cm-card">
-            <strong>Culture first</strong>
-            <p>The foundation is Graffiti Kings: identity, public signal, reputation, crews, collaboration, storytelling and the discipline of staying visible.</p>
-          </div>
-          <div class="cm-card">
-            <strong>Creator onboarding</strong>
-            <p>The project gives people a route into a larger creator world, whether they need a new identity or already have one.</p>
-          </div>
-          <div class="cm-card">
-            <strong>Shared momentum</strong>
-            <p>SWARMSY, the wiki, community, factions and HODL Warriors turn isolated creators into a connected movement that helps members keep building.</p>
-          </div>
+          <div class="cm-card"><strong>Culture first</strong><p>The foundation is Graffiti Kings: identity, public signal, reputation, crews, collaboration, storytelling and the discipline of staying visible.</p></div>
+          <div class="cm-card"><strong>Creator onboarding</strong><p>The project gives people a route into a larger creator world, whether they need a new character identity or already have something real to build around.</p></div>
+          <div class="cm-card"><strong>Shared momentum</strong><p>SWARMSY, the wiki, community, factions and qualifying 1/1 HODL Warriors connect creators into a movement that helps members keep building.</p></div>
         </div>
         <p class="cm-highlight">The internet gave everyone a voice, but not everyone has an identity. Crypto Moonboys exists to help people become recognisable, build a story around what they do, get seen and keep moving after the first burst of attention.</p>
       </section>
@@ -324,43 +65,41 @@
         <section class="cm-path" id="path-moonboy">
           <span class="cm-path-number">Path 1</span>
           <h2>BUILD A MOONBOY IDENTITY</h2>
-          <p>This route is for someone who wants to enter the Crypto Moonboys universe through an original character identity. A creator can build around one unique 1/1 Moonboy or develop several characters across the wider Moonboy factions.</p>
+          <p>This route is for someone who wants to enter the Crypto Moonboys universe through an original character identity. A creator may build around one Moonboy or connect several characters across the wider Moonboy factions.</p>
           <h3>How the route works</h3>
           <ol class="cm-steps">
-            <li>Join the website, connect identity and choose a faction.</li>
-            <li>Play the arcade, complete activity and grind server-backed XP.</li>
-            <li>Receive eligible free NFT drops through the reward route.</li>
-            <li>Keep the NFTs, flip them, or burn eligible drops.</li>
-            <li>Use burn routes to evolve into new or rarer NFTs and ultimately forge a unique 1/1 Moonboy.</li>
-            <li>Build a character, alter ego, brand, story, world, products and community around the 1/1.</li>
+            <li>See what a Moonboy can become: a character identity, alter ego, mascot, product face, content signal, story world or community anchor.</li>
+            <li>Connect identity, link Telegram where required and choose a current live faction.</li>
+            <li>Complete current missions, play accepted Arcade runs and build server-backed XP and public proof.</li>
+            <li>Use eligible NFT reward routes only where the current runtime labels them live, limited or active for eligible users.</li>
+            <li>Keep, flip, burn or evolve assets only where the relevant route is supported and currently active.</li>
+            <li>Build toward a qualifying unique 1/1 Moonboy only where the published route is active or correctly labelled as planned, limited, beta or coming soon.</li>
           </ol>
-          <h3>What the 1/1 means</h3>
-          <p>The 1/1 Moonboy is not merely an image. It is a creator identity anchor. Under the published creator terms, the holder owns the licence and royalties assigned to that unique character and can build a wider creative world around it.</p>
-          <h3>What you join</h3>
-          <p>All 1/1 Moonboy holders are HODL Warriors. They are not passive holders. They are the creator army inside the umbrella: builders who use SWARMSY, support one another, share momentum, amplify each other's work and expand the larger Crypto Moonboys network.</p>
-          <p class="cm-highlight">This path gives you more than a solo identity. It gives you a character you own, a faction position, an army of other builders and a connected universe to build into.</p>
+          <h3>What the qualifying 1/1 means</h3>
+          <p>A qualifying unique 1/1 Moonboy is not merely an image. Under the published creator terms, it anchors an assigned character identity and creator licence. The holder keeps 100% of approved commercial royalties from that character; Crypto Moonboys and Graffiti Kings take no royalty share.</p>
+          <h3>HODL Warrior role</h3>
+          <p>Every qualifying unique 1/1 holder becomes a HODL Warrior: a creator-builder who uses SWARMSY, supports other builders, shares work, amplifies launches and helps connect creator worlds. HODL Warriors is a role for qualifying 1/1 holders, not a selectable live faction.</p>
+          <p class="cm-highlight">This path is not an NFT reward farm. The Arcade, XP, drops and burns are progression tools that support the identity route; they do not define the umbrella.</p>
           <div class="cm-actions">
-            <a class="cm-button" href="/games/index.html">Start the XP route</a>
-            <a class="cm-button cm-button--secondary" href="/community.html">Join the HODL Warriors</a>
+            <a class="cm-button" href="/community.html">Start the Moonboy route</a>
+            <a class="cm-button cm-button--secondary" href="/wiki/hodl-warriors.html">Read the HODL Warrior role</a>
           </div>
         </section>
 
         <section class="cm-path cm-path--swarmsy" id="path-swarmsy">
           <span class="cm-path-number">Path 2</span>
           <h2>KEEP YOUR IDENTITY. USE SWARMSY.</h2>
-          <p>This route is for people who already have something real to build around. You may already be an artist, musician, writer, designer, filmmaker, business owner, product creator, brand, organisation or public personality.</p>
+          <p>This route is for people who already have something real to build around. You may already be an artist, graffiti or street artist, musician, writer, designer, filmmaker, photographer, tattoo artist, business owner, product creator, brand, organisation or public personality.</p>
           <h3>No Moonboy required</h3>
-          <p>You do not need to adopt a Moonboy character, grind for a 1/1 or enter through NFTs. Keep your existing name, face, business, product, art or alter ego. SWARMSY is the system that helps it stand out.</p>
+          <p>You do not need to adopt a Moonboy character, grind for a 1/1, enter a faction, play the Arcade or understand blockchain. Keep your existing name, face, business, product, art or alter ego. SWARMSY is the private creator operating environment that helps it stand out.</p>
           <h3>What SWARMSY helps with</h3>
           <ul class="cm-steps">
             <li>Identity and positioning: define what you represent and why people should remember it.</li>
-            <li>Storytelling and creative direction: shape the voice, visual language and public narrative.</li>
+            <li>Storytelling and creative direction: shape voice, visual language and public narrative.</li>
             <li>Planning and publishing: turn ideas into a repeatable content and campaign system.</li>
-            <li>Brand and community growth: reach the right people and give them a reason to stay.</li>
+            <li>Proof Review and Memory Locks: separate claims from evidence and protect approved decisions.</li>
             <li>Momentum: keep current, remain visible and continue building after launch day.</li>
           </ul>
-          <h3>Who this path is for</h3>
-          <p>Artists, businesses and product creators who need support with identity, visibility, strategy, campaigns, content, community and long-term momentum — without replacing the identity they already own.</p>
           <p class="cm-highlight">You already have the subject. SWARMSY helps you make it recognisable, organise the work, get it seen and keep the momentum alive.</p>
           <div class="cm-actions">
             <a class="cm-button" href="/swarmsy.html">Open SWARMSY</a>
@@ -369,18 +108,32 @@
         </section>
       </div>
 
+      <section class="cm-section" id="ownership-and-canon">
+        <p class="cm-kicker">Ownership / licence / canon</p>
+        <h2>OWNERSHIP AND CANON ARE SEPARATE</h2>
+        <p><strong>Your character. Your licence. Your royalties.</strong> applies to qualifying unique 1/1 Moonboys under the published creator terms. It does not automatically apply to every NFT, generic progression asset, earlier drop, faction item or game reward.</p>
+        <p>Ownership of a qualifying 1/1 character is not dependent on wiki inclusion, SAM indexing or official-canon approval. A creator may own the character and still have a lore submission rejected from the shared official universe.</p>
+        <div class="cm-grid">
+          <div class="cm-card"><strong>Creator-owned lore</strong><p>Lore the holder creates for their own character or world.</p></div>
+          <div class="cm-card"><strong>Community-approved lore</strong><p>Lore accepted through the published community process.</p></div>
+          <div class="cm-card"><strong>Official canon</strong><p>Approved lore indexed into the shared Crypto Moonboys record.</p></div>
+        </div>
+      </section>
+
       <section class="cm-section" id="how-the-parts-fit">
         <p class="cm-kicker">System hierarchy</p>
         <h2>THE PARTS SERVE THE UMBRELLA</h2>
         <div class="cm-role-grid">
-          <div class="cm-role-card"><strong>Crypto Moonboys</strong><p>The umbrella movement, onboarding world and shared creator network.</p></div>
-          <div class="cm-role-card"><strong>Moonboys and factions</strong><p>Original character identities carrying the Graffiti Kings legacy into the blockchain world.</p></div>
-          <div class="cm-role-card"><strong>GKniftyHEADS</strong><p>The primary foundation and leading Moonboy/Graffiti Kings identity layer, alongside other factions connected to OG GK artists.</p></div>
-          <div class="cm-role-card"><strong>SWARMSY</strong><p>The identity, strategy, planning, branding, publishing, growth and momentum system used by both paths.</p></div>
-          <div class="cm-role-card"><strong>Arcade and XP</strong><p>The earned onboarding and progression route for users building toward drops, burn evolution and a 1/1 Moonboy.</p></div>
-          <div class="cm-role-card"><strong>NFTs and burn routes</strong><p>Free artefacts, tradeable choices and evolution materials inside Path 1 — not the mission of the umbrella.</p></div>
-          <div class="cm-role-card"><strong>HODL Warriors</strong><p>The collective of 1/1 holders who build, collaborate, amplify and create momentum together.</p></div>
-          <div class="cm-role-card"><strong>The wiki and SAM</strong><p>The memory system that documents factions, identities, creator worlds, lore, approved links and the network as it grows.</p></div>
+          <div class="cm-role-card"><strong>Crypto Moonboys</strong><p>The public creator umbrella, onboarding world, community and shared cultural network.</p></div>
+          <div class="cm-role-card"><strong>Graffiti Kings / GKniftyHEADS</strong><p>The cultural foundation and primary Moonboy identity architecture.</p></div>
+          <div class="cm-role-card"><strong>Moonboys and factions</strong><p>Original creator identities and character worlds carrying the Graffiti Kings legacy into the blockchain world.</p></div>
+          <div class="cm-role-card"><strong>SWARMSY</strong><p>The private identity, strategy, planning, branding, publishing, growth and momentum environment used by both paths.</p></div>
+          <div class="cm-role-card"><strong>AnythingLLM / SPARKY</strong><p>AnythingLLM provides the retrieval/workspace foundation; SPARKY remains the permanent visible operator and project-context manager.</p></div>
+          <div class="cm-role-card"><strong>Wiki Packs / Memory Locks / Proof Review</strong><p>Action-aware guidance, approved continuity and claim discipline that help creators avoid drift and fake authority.</p></div>
+          <div class="cm-role-card"><strong>Arcade, XP and Battle Chamber</strong><p>Participation, progression, faction missions, proof and public activity surfaces for Path 1.</p></div>
+          <div class="cm-role-card"><strong>NFT drops and burn routes</strong><p>Optional artefacts, tradeable choices and evolution materials inside Path 1, only where verified active or correctly status-labelled.</p></div>
+          <div class="cm-role-card"><strong>HODL Warriors</strong><p>The creator army of qualifying unique 1/1 holders; not a selectable live faction.</p></div>
+          <div class="cm-role-card"><strong>Wiki, SAM, Block Topia and lore</strong><p>Public memory, approved links, playable world layers, shared worldbuilding and inspiration inside the wider umbrella.</p></div>
         </div>
       </section>
 
@@ -391,10 +144,10 @@
           <thead><tr><th scope="col">Question</th><th scope="col">Path 1: Moonboy identity</th><th scope="col">Path 2: Existing identity</th></tr></thead>
           <tbody>
             <tr><th scope="row">Who is it for?</th><td>People who want an original character, avatar, alter ego or creator identity inside the Crypto Moonboys world.</td><td>Artists, businesses, product creators and brands that already have an identity or subject.</td></tr>
-            <tr><th scope="row">Do I need a Moonboy?</th><td>Yes. The goal is to forge and build around one or more unique 1/1 Moonboy identities.</td><td>No. Keep the name, face, business, art, product or alter ego you already use.</td></tr>
-            <tr><th scope="row">How do I enter?</th><td>Connect, choose a faction, grind XP, receive eligible free drops, keep/flip/burn and forge.</td><td>Start with SWARMSY and use its identity, strategy, content, branding and momentum systems.</td></tr>
-            <tr><th scope="row">What community do I get?</th><td>The HODL Warriors: a connected army of 1/1 holders building and amplifying together.</td><td>The wider Crypto Moonboys creator network and SWARMSY support without needing a 1/1.</td></tr>
-            <tr><th scope="row">What is the end goal?</th><td>Own a unique creator identity and build a connected character world, brand, products and legacy around it.</td><td>Make the existing identity stand out, reach people, build community and maintain long-term momentum.</td></tr>
+            <tr><th scope="row">Do I need a Moonboy?</th><td>Yes. The goal is to build around one or more Moonboy identities and, where active, progress toward a qualifying unique 1/1.</td><td>No. Keep the name, face, business, art, product or alter ego you already use.</td></tr>
+            <tr><th scope="row">How do I enter?</th><td>Understand the identity route, connect identity, choose a live faction, participate and follow only verified active reward/evolution routes.</td><td>Start with SWARMSY and use its identity, strategy, content, branding, proof and momentum systems.</td></tr>
+            <tr><th scope="row">What community do I get?</th><td>Faction activity, Battle Chamber participation and, for qualifying unique 1/1 holders, the HODL Warrior builder role.</td><td>The wider Crypto Moonboys creator network and SWARMSY support without needing a 1/1.</td></tr>
+            <tr><th scope="row">What is the end goal?</th><td>Build a character identity, creator world, brand, products, story and community around a supported Moonboy route.</td><td>Make the existing identity stand out, reach people, build community and maintain long-term momentum.</td></tr>
           </tbody>
         </table>
       </section>
@@ -403,7 +156,7 @@
         <p class="cm-kicker">Mission</p>
         <h2>BUILD AN IDENTITY PEOPLE REMEMBER</h2>
         <p>Crypto Moonboys exists to turn the street-earned lessons of Graffiti Kings into creator infrastructure for the next generation. The aim is not to make everyone play a game or buy an NFT. The aim is to help people create a recognisable identity, get seen, build community and keep enough momentum to turn an idea into a movement.</p>
-        <p>Path 1 creates new Moonboy identities and brings their holders into the HODL Warriors. Path 2 strengthens identities that already exist through SWARMSY. Both paths share the same culture, systems, community and belief: identity is built by showing up, telling a clear story, helping others and continuing after the hype disappears.</p>
+        <p>Path 1 creates Moonboy identities and may lead to qualifying unique 1/1 ownership where the route is active. Path 2 strengthens identities that already exist through SWARMSY. Both paths share the same culture, systems, community and belief: identity is built by showing up, telling a clear story, helping others and continuing after the hype disappears.</p>
         <p class="cm-declaration">The wall created identity. Crypto Moonboys carries it forward.</p>
       </section>
 
@@ -419,9 +172,9 @@
         <p class="cm-kicker">Start here</p>
         <h2>CHOOSE YOUR DIRECTION</h2>
         <div class="cm-actions">
-          <a class="cm-button" href="/games/index.html">I want to forge a Moonboy</a>
+          <a class="cm-button" href="/community.html">I want to build a Moonboy identity</a>
           <a class="cm-button cm-button--secondary" href="/swarmsy.html">I already have an identity</a>
-          <a class="cm-button cm-button--secondary" href="/community.html">Join the Crypto Moonboys community</a>
+          <a class="cm-button cm-button--secondary" href="/wiki/hodl-warriors.html">Read HODL Warrior role</a>
         </div>
       </section>
 
@@ -440,7 +193,7 @@
           <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-nft-collection.html" role="listitem"><span class="wiki-rabbit-card-title">GKniftyHEADS NFT Collection</span><span class="wiki-rabbit-card-desc">Collection and artefact index for the wider identity layer.</span></a>
           <a class="wiki-rabbit-card" href="/wiki/graffpunks.html" role="listitem"><span class="wiki-rabbit-card-title">GraffPUNKS</span><span class="wiki-rabbit-card-desc">Street-art, memory and faction context.</span></a>
           <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem"><span class="wiki-rabbit-card-title">HODL WARS</span><span class="wiki-rabbit-card-desc">Faction activity and conflict layer.</span></a>
-          <a class="wiki-rabbit-card" href="/wiki/hodl-warriors.html" role="listitem"><span class="wiki-rabbit-card-title">HODL Warriors</span><span class="wiki-rabbit-card-desc">The creator army of unique 1/1 holders.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hodl-warriors.html" role="listitem"><span class="wiki-rabbit-card-title">HODL Warriors</span><span class="wiki-rabbit-card-desc">The creator army of qualifying unique 1/1 holders.</span></a>
           <a class="wiki-rabbit-card" href="/wiki/block-topia.html" role="listitem"><span class="wiki-rabbit-card-title">Block Topia</span><span class="wiki-rabbit-card-desc">Gated playable world layer inside the umbrella.</span></a>
         </div>
       </div>
