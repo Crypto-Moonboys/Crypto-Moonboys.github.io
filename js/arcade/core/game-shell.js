@@ -1,4 +1,5 @@
 import { bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
+import { mountArcadeRadio } from '/js/arcade/core/radio.js';
 /**
  * game-shell.js — Arcade Game Shell
  *
@@ -108,6 +109,14 @@ export async function mountGame(options) {
       }
     }
   }, { once: true });
+
+  // Mount the GraffPUNKS Radio widget into the arcade HUD for every game.
+  // The radio module is idempotent — calling it multiple times is safe.
+  try {
+    mountArcadeRadio();
+  } catch (e) {
+    console.warn('[game-shell] mountArcadeRadio() threw:', e);
+  }
 
   return game;
 }
