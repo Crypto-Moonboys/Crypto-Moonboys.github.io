@@ -33,6 +33,24 @@ The public world and private creator system are separate but connected:
 
 > **Crypto Moonboys is where the movement, community and public record live. SWARMSY is where each creator privately develops the identity, project and intelligence behind their work.**
 
+## Cultural Succession
+
+The Moonboys are the new generation of Graffiti Kings identities inside the Web3 and blockchain world.
+
+GKniftyHEADS is the primary foundation and leading Moonboy identity architecture. Other Moonboy factions remain connected to and led through OG Graffiti Kings artists and the wider GK cultural network.
+
+This is not a collection-first idea. It is cultural succession:
+
+- a graffiti tag becomes identity;
+- a crew becomes a faction;
+- a public wall becomes a public signal;
+- repetition becomes recognition;
+- reputation comes from showing up;
+- a character becomes a creator world;
+- the community becomes the amplification network.
+
+The Moonboys carry Graffiti Kings culture forward without replacing the original street history.
+
 ## The Mission
 
 The internet gave everyone a voice, but not everyone has an identity.
@@ -113,9 +131,11 @@ The intended progression route is:
 Core truth:
 
 - A user may build around one Moonboy or several characters from different factions.
+- Eligible free NFT drops belong to the progression route, but every drop route must state whether it is live, limited, paused, planned or coming soon.
+- Earned NFTs may be kept, flipped or burned only through supported routes that are actually live.
+- Burn routes may create new or rarer NFTs and ultimately lead toward a qualifying unique 1/1 where the published route is active.
 - The Arcade is an onboarding and progression tool, not the mission.
 - NFT drops, burns and evolution routes are optional artefacts and progression systems.
-- Every reward, burn, evolution or forge route must be labelled according to verified runtime state.
 - Earlier drops, generic characters or progression assets must not be presented as granting qualifying 1/1 ownership rights.
 
 ### Path 2 — Keep the Identity You Already Have
@@ -141,6 +161,66 @@ Canonical Path 2 shorthand:
 **Existing identity → positioning → voice and visual signal → story → campaign planning → publishing → visibility → community → maintained momentum**
 
 Path 2 must remain a credible and attractive route, not a footnote.
+
+## Product Hierarchy
+
+| Layer | Correct role |
+|---|---|
+| Crypto Moonboys | Public creator umbrella, onboarding world and shared cultural network |
+| Graffiti Kings / GKniftyHEADS | Cultural foundation and primary Moonboy identity architecture |
+| Moonboys and factions | Original creator identities and character worlds |
+| SWARMSY | Private identity, strategy, planning, branding, publishing, growth and momentum environment |
+| AnythingLLM | General intelligence, retrieval and advanced workspace foundation beneath SWARMSY |
+| SPARKY | Permanent guide, operator and project-context manager |
+| Wiki Packs | Minimum situational context and action awareness |
+| Memory Locks / Proof Review | Approved continuity and claim discipline |
+| Arcade and XP | Earned participation and progression route for Path 1 |
+| NFT drops and burns | Optional artefacts, tradeable choices and evolution materials inside Path 1 |
+| HODL Warriors | Builder army of qualifying 1/1 holders; not a selectable live faction |
+| Wiki and SAM | Public memory, knowledge, creator worlds, approved canon and connected links |
+| Battle Chamber | Public activity, missions, faction movement and proof layer |
+| Block Topia | Gated playable world layer inside the wider umbrella |
+
+## Visual Communication Rule
+
+Every major umbrella or Path 1 onboarding surface must visually answer:
+
+1. **What is a Moonboy?**
+2. **What can I build with it?**
+3. **Why would I choose this route?**
+4. **How do I earn or forge one?**
+
+The homepage and primary onboarding pages must follow **desire before mechanics**:
+
+1. Show multiple Moonboys with distinct personalities and faction identities.
+2. Show that each Moonboy can become a recognisable creator or brand identity.
+3. Show Moonboys applied to realistic outcomes.
+4. State that the user may build around one Moonboy or several connected characters.
+5. Only then explain Telegram, factions, tasks, Arcade play, XP, eligible drops, keep/flip/burn choices and the qualifying 1/1 route.
+
+Wrong order:
+
+**XP → NFT → burn → 1/1 → unexplained empire**
+
+Correct order:
+
+**See the identity → understand what it can become → want the outcome → learn how to enter and progress**
+
+Approved visual examples include:
+
+- Moonboy on a T-shirt, hoodie or jacket;
+- Moonboy on a cap or accessory;
+- Moonboy as product packaging or label art;
+- Moonboy as a sticker, poster or print;
+- Moonboy as a website or channel banner;
+- Moonboy in a comic panel or story world;
+- Moonboy as a game or animation character;
+- Moonboy representing a creator community or business;
+- several Moonboys forming a wider character universe.
+
+A character image alone says **collectible**. A character shown across products, media and community surfaces says **identity and intellectual property**.
+
+Do not use mockups that imply a live product, partnership, licence or retail availability unless that status is verified.
 
 ## What SWARMSY Is
 
@@ -265,7 +345,40 @@ Use these terms consistently:
 - **community-approved lore** — lore accepted through the published community process;
 - **official canon** — approved lore indexed into the shared Crypto Moonboys record.
 
+A rejected lore submission does not remove ownership of the character or the creator’s underlying work. It only means that submission is not accepted into the shared official universe.
+
 HODL Warriors is the collective creator-builder role for qualifying 1/1 holders. It is not one of the current selectable Battle Chamber factions.
+
+Correct usage:
+
+- qualifying 1/1 holders become HODL Warriors;
+- HODL Warriors build, promote, collaborate and maintain momentum together;
+- HODL Warriors may belong to different live factions.
+
+Incorrect usage:
+
+- “Choose HODL Warriors as your faction”;
+- adding HODL Warriors to the live faction directory;
+- treating HODL Warriors as a normal collector label or legacy faction alias.
+
+## Public Positioning Rules
+
+Use these statements:
+
+- **Crypto Moonboys is the creator umbrella.**
+- **There are two ways to join.**
+- **Build a new identity with a Moonboy, or bring the identity you already own.**
+- **A Moonboy is a character identity you can build a brand, products, stories and community around.**
+- **Moonboys are the new Graffiti Kings identities in the Web3 and blockchain world.**
+- **Your character. Your licence. Your royalties.**
+- **Qualifying 1/1 holders keep 100% of their royalties; Crypto Moonboys and Graffiti Kings take nothing.**
+- **Ownership is automatic under the qualifying 1/1 creator terms. Canon status is community-governed.**
+- **Every qualifying 1/1 holder is a HODL Warrior.**
+- **SWARMSY helps both paths create, plan, brand, grow and keep momentum.**
+- **Games and NFTs are tools inside the system, not the mission.**
+- **GK provides the floor. The community builds on top.**
+
+Do not reduce Crypto Moonboys to a game, NFT project, Arcade, Wiki, token project, lore archive, Telegram group, chatbot or Block Topia.
 
 ## Runtime Truth Rule
 
@@ -279,6 +392,7 @@ Never describe reward drops, burns, evolution, forging, creator-world publishing
 - Telegram identity linking;
 - current faction selection;
 - Battle Chamber activity, missions and boards where wired;
+- daily, weekly, monthly and seasonal activity surfaces where wired;
 - Arcade play;
 - server-backed Arcade XP progression;
 - public leaderboards and proof surfaces where wired;
@@ -337,9 +451,11 @@ Every page must answer **why this matters** before explaining **how it works**.
 5. Choose a live faction.
 6. Explain tasks, quests, missions and Arcade activity.
 7. Earn server-backed XP and proof.
-8. Explain drops, burns and 1/1 routes using verified status.
-9. Explain HODL Warriors.
-10. Then show standings and dashboards.
+8. Explain eligible drops using verified status.
+9. Explain keep, flip and burn only where supported.
+10. Explain the qualifying 1/1 route using verified status.
+11. Explain HODL Warriors.
+12. Then show standings, boards, proof feeds and contributor rankings.
 
 ### Required Path 2 order
 
@@ -384,7 +500,8 @@ This repository includes:
 - leaderboard worker;
 - anti-cheat worker;
 - Battle Chamber faction activity and mission routes;
-- Block Topia runtime and server files;
+- Block Topia live city runtime under `/games/block-topia/`;
+- Block Topia server files under `server/block-topia/`;
 - worker configuration under `workers/`.
 
 Important repository references:
@@ -393,6 +510,7 @@ Important repository references:
 - `Crypto_Moonboys_Master_Source_of_Truth_v1.md` — detailed mission and agent truth despite the legacy filename.
 - `AGENT_EDITING_RULES.md` — editing and runtime safety rules.
 - `.copilot-instructions.md` — repository agent instructions.
+- `robots.txt` — remains at the repository root and controls public crawler guidance; it is not a security boundary.
 
 Source-of-truth order:
 
@@ -420,34 +538,91 @@ The SWARMSY repository remains authoritative for SWARMSY runtime, provider, desk
 - `/games/snake-run/`
 - `/games/tetris-block-topia/`
 
-## Arcade, Telegram and Block Topia Contracts
+## Progression Tracks
 
-- Competitive Arcade requires a fresh signed Telegram identity.
-- Arcade XP is server-backed after Telegram sync.
+The two onboarding paths are not the same as the two runtime tracks.
+
+### Moonboy / Player Progression
+
+**Faction onboarding + Battle Chamber activity + Arcade play → server-backed XP → eligible free NFT drops when active → keep / flip / burn where supported → evolve where active → forge a qualifying unique 1/1 when live → HODL Warrior creator world**
+
+### SWARMSY / Existing Identity
+
+**Existing artist, business, product, brand or alter ego → SWARMSY identity strategy → creative direction → content and campaign planning → visibility → community → maintained momentum**
+
+A Moonboy is not required for the SWARMSY-only path.
+
+## Arcade XP and Telegram Truth
+
+- The competitive Arcade requires a fresh signed Telegram identity.
+- Arcade XP is server-backed progression after Telegram sync.
 - Score and XP are separate signals.
-- Unlinked scores are not submitted, saved or calculated.
-- Unlinked Arcade XP is not earned or retained.
+- Score measures performance in a run.
+- Arcade XP measures persistent accepted activity.
+- Unlinked users cannot enter the competitive Arcade.
+- No unlinked scores are submitted, saved or calculated.
+- No unlinked Arcade XP is earned or retained.
 - No anonymous or hidden competitive leaderboard exists.
-- The authoritative Block Topia gate value comes from live configuration.
-- Block Topia is a playable layer, not the definition of Crypto Moonboys.
-- The current Block Topia runtime is multiplayer survival/mission public beta.
+- Leaderboards represent Telegram-linked identities only.
+- Users must remain authenticated while grinding progression.
+- The authoritative Block Topia gate value comes from `/blocktopia/progression` and `workers/moonboys-api/blocktopia/config.js`.
+- Public copy must read the current gate value from live configuration before stating a number.
+
+## Frontend API and Telegram Auth Contract
+
+- `js/api-config.js` is the canonical frontend API source of truth for `MOONBOYS_API.BASE_URL`, `MOONBOYS_API.LEADERBOARD_URL`, runtime context detection and production fallback policy.
+- Production fallback is allowed only on live production hosts.
+- Local, development and preview contexts must provide explicit API configuration or remain read-only or pending.
+- Protected frontend writes must use fresh signed Telegram auth through `window.MOONBOYS_IDENTITY.getFreshTelegramAuth()` or the equivalent signed restore path.
+- Anonymous and unsigned users are blocked from the competitive Arcade.
+- `ENV.BUILD_DATE` means an explicitly injected or static build timestamp only.
+- Per-page-load timestamps must use `ENV.RUNTIME_LOADED_AT` and must not be presented as build dates.
+
+## Block Topia Live Runtime
+
+Block Topia is a playable layer inside Crypto Moonboys, not the definition of the umbrella.
+
+The current live runtime is the multiplayer survival/mission public beta.
+
+Live systems include:
+
+- NPCs;
+- attacks;
+- HP;
+- respawns;
+- phases;
+- extraction;
+- upgrades;
+- ready/start/restart;
+- Telegram and XP gate.
+
+Active server/runtime files:
+
+- `games/block-topia/index.html`;
+- `games/block-topia/main.js`;
+- `games/block-topia/network.js`;
+- `server/block-topia/src/index.js`;
+- `server/block-topia/src/rooms/MinimalCityRoom.js`;
+- `workers/moonboys-api/blocktopia/routes.js`.
 
 ## Agent Audit Instructions
 
 When auditing public pages:
 
-1. Assign each non-Wiki page one primary purpose.
-2. Flag copy reducing Crypto Moonboys to a game, NFT project, Wiki or single product.
-3. Flag pages making Path 1 mandatory.
-4. Flag pages presenting SWARMSY as unrelated or merely a chatbot.
-5. Flag pages misrepresenting SPARKY, AnythingLLM, local models, API models or Wiki Packs.
-6. Flag future functionality written as live.
-7. Flag ownership and canon confusion.
-8. Flag text-only explanations where visual identity outcomes are required.
-9. Preserve runtime IDs, auth behaviour, scripts, forms, data mounts and API contracts.
-10. Keep dashboards after onboarding explanation.
-11. Update metadata, headings, CTAs and accessible labels to match page purpose.
-12. Run the repository test suite and update guards only when a guard encodes outdated approved truth.
+1. Inventory every public HTML page outside `/wiki` where a full site audit is requested.
+2. Assign each non-Wiki page one primary purpose.
+3. Flag copy reducing Crypto Moonboys to a game, NFT project, Wiki or single product.
+4. Flag pages making Path 1 mandatory.
+5. Flag pages presenting SWARMSY as unrelated or merely a chatbot.
+6. Flag pages misrepresenting SPARKY, AnythingLLM, local models, API models or Wiki Packs.
+7. Flag future functionality written as live.
+8. Flag ownership and canon confusion.
+9. Flag text-only explanations where visual identity outcomes are required.
+10. Preserve runtime IDs, auth behaviour, scripts, forms, data mounts and API contracts.
+11. Keep dashboards after onboarding explanation.
+12. Update metadata, headings, CTAs and accessible labels to match page purpose.
+13. Use approved Moonboy artwork and truthful product/brand applications where visual explanation is required.
+14. Run the repository test suite and update guards only when a guard encodes outdated approved truth.
 
 Do not rewrite runtime behaviour merely to make copy tests pass.
 
@@ -462,12 +637,16 @@ Do not rewrite runtime behaviour merely to make copy tests pass.
 - Do not present NFTs as the mission.
 - Do not imply every visitor must buy or own an NFT.
 - Do not confuse HODL Warriors with a selectable faction.
-- Do not condition creator ownership on canon approval.
-- Do not present planned systems as live.
+- Do not state or imply Crypto Moonboys or Graffiti Kings takes a royalty share from qualifying 1/1 holders.
+- Do not condition creator ownership on Wiki inclusion, SAM indexing, community voting or canon approval.
+- Do not present creator-written lore as official canon before approval.
+- Do not imply canon rejection removes creator ownership.
+- Do not present planned reward, burn, evolution, forge or action tools as live.
+- Do not explain Moonboys only as collectibles, avatars or progression rewards.
 - Do not use fake data, fake proof, fake engagement or unverified product claims.
 - Do not use product mockups that imply unverified availability or partnerships.
 - Do not place dashboards or technical mechanics before purpose and outcome.
-- Do not reintroduce dead routes, retired systems or disabled compatibility shells.
+- Do not reintroduce dead routes, retired systems, removed admin shells or disabled compatibility layers.
 
 ## Final Definition
 
