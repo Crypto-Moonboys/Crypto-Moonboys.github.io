@@ -51,5 +51,9 @@ jobs:
           echo "Waiting ${WAIT_SECONDS}s before live-site verification..."
           sleep "$WAIT_SECONDS"
 
-      - name: Verify cryptomoonboys.com
+      - name: Verify cryptomoonboys.com runtime shell
         run: npm run test:live-site
+
+      - name: Verify cryptomoonboys.com public content truth
+        if: github.event_name == 'workflow_dispatch'
+        run: npm run test:live-content
