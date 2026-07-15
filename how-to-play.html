@@ -64,6 +64,7 @@
 
     <section class="section">
       <h2>Four Things That Are Not the Same</h2>
+      <p><strong>Score alone is not an XP award.</strong> Score ranks a run; Arcade XP is separate server-accepted progression.</p>
       <table class="guide-table">
         <thead><tr><th>System</th><th>What it records</th><th>What it affects</th></tr></thead>
         <tbody>
@@ -80,7 +81,7 @@
       <div class="guide-grid">
         <div class="guide-card">
           <h3>Why linking matters</h3>
-          <p>The platform needs a persistent identity before it can submit competitive scores, connect faction activity or request server-backed Arcade XP.</p>
+          <p>The platform needs a persistent identity before it can submit competitive scores, connect faction activity or request server-backed Arcade XP. <strong>Unlinked users cannot enter the competitive Arcade.</strong></p>
           <p>Open the Incubator, follow <code>/gkstart</code>, then use <code>/gklink</code> in <strong>@WIKICOMSBOT</strong>.</p>
           <div data-tg-sync-cta></div>
         </div>
@@ -105,7 +106,7 @@
       <div class="guide-grid">
         <div class="guide-card">
           <h3>During the game</h3>
-          <p>Play for score. Each active game uses the shared competitive submit path after the run ends.</p>
+          <p>Play for score. All active arcade games submit through the shared <code>submitScore()</code> path. The shared path runs after each game ends.</p>
         </div>
         <div class="guide-card">
           <h3>After the game</h3>
@@ -127,7 +128,7 @@
       <div class="guide-grid">
         <div class="guide-card"><h3>Signed identity</h3><p>The run must be connected to valid linked authentication.</p></div>
         <div class="guide-card"><h3>Accepted score</h3><p>The score endpoint must accept the run before it becomes a competitive record.</p></div>
-        <div class="guide-card"><h3>Progression checks</h3><p>Dedupe, caps, anti-farm and eligibility rules determine the final Arcade XP award.</p></div>
+        <div class="guide-card"><h3>Progression checks</h3><p>The server is where dedupe, caps, anti-farm checks, and final Arcade XP awards are decided.</p></div>
         <div class="guide-card"><h3>Sync state</h3><p>If the service is unavailable, a linked run may show a pending state rather than falsely claiming confirmed XP.</p></div>
       </div>
     </section>
@@ -150,7 +151,7 @@
         </div>
         <div class="guide-card guide-card--warning">
           <h3>Use the live threshold</h3>
-          <p>Access requires a linked identity and the Arcade XP threshold shown by the live status panel. Do not hard-code a different value into public copy if the runtime changes.</p>
+          <p>Access currently requires a linked identity and <strong>5000 Arcade XP</strong>. The live status panel remains the runtime source of truth if that threshold changes.</p>
         </div>
       </div>
       <div class="guide-actions">
