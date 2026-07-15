@@ -84,9 +84,7 @@ Meaningful outcomes include:
 
 This route is for users who want to create one or many original character-led identities inside the Crypto Moonboys universe.
 
-A Moonboy is not merely an NFT, avatar or collectible image.
-
-A Moonboy is an original creator identity that can become:
+A Moonboy is not merely an NFT, avatar or collectible image. It is an original creator identity that may become:
 
 - a mascot or public alter ego;
 - a logo and visual brand signal;
@@ -116,29 +114,13 @@ Core truth:
 
 - A user may build around one Moonboy or several characters from different factions.
 - The Arcade is an onboarding and progression tool, not the mission.
-- NFT drops, burns and evolution routes are optional artefacts and progression systems, not the definition of the project.
-- Every reward, burn, evolution or forge route must be labelled according to its verified runtime state.
+- NFT drops, burns and evolution routes are optional artefacts and progression systems.
+- Every reward, burn, evolution or forge route must be labelled according to verified runtime state.
 - Earlier drops, generic characters or progression assets must not be presented as granting qualifying 1/1 ownership rights.
 
 ### Path 2 — Keep the Identity You Already Have
 
-This route is for people who already have something real to build around:
-
-- artists;
-- graffiti and street artists;
-- musicians;
-- writers;
-- designers;
-- filmmakers;
-- photographers;
-- tattoo artists;
-- businesses;
-- products;
-- clothing brands;
-- organisations;
-- public personalities;
-- existing alter egos;
-- unfinished projects.
+This route is for people who already have something real to build around, including artists, graffiti and street artists, musicians, writers, designers, filmmakers, photographers, tattoo artists, businesses, products, clothing brands, organisations, public personalities, existing alter egos and unfinished projects.
 
 No Moonboy, NFT, faction, Arcade activity or blockchain knowledge is required.
 
@@ -184,7 +166,7 @@ SPARKY remains the visible operator regardless of the underlying model.
 
 > **The selected AI helps SPARKY think. SPARKY manages the user’s questions, ideas, approved decisions and saved project memory.**
 
-The full runtime and technical truth for SWARMSY belongs in the SWARMSY repository:
+The full SWARMSY runtime and technical truth belongs in:
 
 `https://github.com/HODLKONG64/DIZ-A-REMIX`
 
@@ -204,64 +186,29 @@ A pack exists to tell SPARKY:
 - what risks, laws, ownership or safety boundaries may matter;
 - what useful action-ready output the user is probably trying to create.
 
-Example: a legal-wall starter pack does not need to contain every legal wall. It can remind SPARKY to establish location, verify current information, distinguish legal and tolerated surfaces, identify who controls the property, avoid treating an online listing as permission, prepare an owner request and preserve written approval.
+A legal-wall starter pack does not need to contain every legal wall. It can remind SPARKY to establish location, verify current information, distinguish legal and tolerated surfaces, identify who controls the property, avoid treating an online listing as permission, prepare an owner request and preserve written approval.
 
-The model supplies capability.
-
-SPARKY supplies responsibility and continuity.
-
-The pack supplies situational awareness.
+The model supplies capability. SPARKY supplies responsibility and continuity. The pack supplies situational awareness.
 
 ## User-Grown Project Intelligence
 
 Every user may begin with the same small starter pack. They should not remain the same.
 
-As the user creates and learns, their workspace may accumulate:
-
-- approved identity decisions;
-- visual and verbal rules;
-- local laws and professional guidance;
-- contracts and permissions;
-- budgets and suppliers;
-- campaign history;
-- successful and rejected methods;
-- audience information;
-- collaborators and contacts;
-- evidence and proof;
-- industry-specific processes;
-- lessons learned.
+As the user creates and learns, their workspace may accumulate approved identity decisions, visual and verbal rules, local laws, contracts, permissions, budgets, suppliers, campaign history, successful and rejected methods, audience information, collaborators, contacts, evidence, proof, industry processes and lessons learned.
 
 Over time, each workspace becomes a different personal creator intelligence system.
 
 The application does not mould every creator into one fixed template. It provides a controlled starting point and helps each creator build the system required by their identity, project, location, industry and future.
 
-## Local Intelligence and API-Backed Intelligence
+## Local and API-Backed Intelligence
 
 SWARMSY may use local models or configured API-backed models.
 
-### Local mode
+Local mode prioritises privacy, control, local continuity and reduced dependence on paid external services. Its creative depth depends on the selected model and hardware. Smaller local models may produce more obvious, cautious or predictable ideas. Stronger local models may perform substantially better.
 
-Local mode prioritises:
+A stronger connected model may provide deeper reasoning, wider cultural pattern recognition, stronger strategic challenge, more unexpected combinations, better ambiguity handling and broader current research or tool capability where actually connected.
 
-- privacy;
-- control;
-- local continuity;
-- reduced dependence on paid external services.
-
-Its creative depth depends on the selected model and hardware. Smaller local models may produce more obvious, cautious or predictable ideas. Stronger local models may perform substantially better.
-
-### API-backed mode
-
-A stronger connected model may provide:
-
-- deeper reasoning;
-- wider cultural pattern recognition;
-- stronger strategic challenge;
-- more unexpected combinations;
-- better ambiguity handling;
-- broader current research or tool capability where actually connected.
-
-The provider does not replace SPARKY. It raises SPARKY’s reasoning ceiling while the project rules, Memory Locks, packs and user approvals remain in control.
+The provider does not replace SPARKY. It raises SPARKY’s reasoning ceiling while project rules, Memory Locks, packs and user approvals remain in control.
 
 Public pages must not claim that every local and API model produces identical quality or has identical tools.
 
@@ -269,19 +216,7 @@ Public pages must not claim that every local and API model produces identical qu
 
 SPARKY should treat many user questions as potentially actionable rather than merely curious.
 
-Where relevant, SPARKY should establish missing context such as:
-
-- location;
-- intended outcome;
-- audience;
-- ownership;
-- permission;
-- budget;
-- timescale;
-- public safety;
-- proof;
-- legal or professional limits;
-- what the user expects to do next.
+Where relevant, SPARKY should establish missing context such as location, intended outcome, audience, ownership, permission, budget, timescale, public safety, proof, legal or professional limits and what the user expects to do next.
 
 SPARKY may help research, reason, draft, organise and prepare actions according to the tools and information actually available.
 
@@ -291,45 +226,18 @@ It must not:
 - treat inspiration as permission;
 - present a draft risk assessment as professional approval;
 - claim an action was completed when it was only planned;
-- send, publish, buy, sign or commit on the user’s behalf without explicit approval and a connected tool capable of doing so;
+- send, publish, buy, sign or commit without explicit approval and a connected capable tool;
 - describe external tool capability as live when it is not wired.
 
 ## The Public Wiki
 
 The Wiki is not merely a fictional lore archive.
 
-It may contain:
+It may contain Graffiti Kings and street-culture history, creator identities, Moonboys and factions, practical creator guidance, operational Wiki Packs, legal and professional source material, business and campaign education, real project case studies, verified proof, creator-world pages, creator-owned lore, community-approved lore, official canon and live system status.
 
-- Graffiti Kings history;
-- street-culture history;
-- creator identities;
-- Moonboys and factions;
-- practical creator guidance;
-- operational Wiki Packs;
-- legal and professional source material;
-- business and campaign education;
-- real project case studies;
-- verified proof;
-- creator-world pages;
-- creator-owned lore;
-- community-approved lore;
-- official canon;
-- live system status.
+Content must clearly identify whether it is historical fact, sourced guidance, jurisdiction-specific information, opinion, practical template, creator-owned lore, community-approved lore, official canon, live runtime truth or planned functionality.
 
-Content must clearly identify whether it is:
-
-- historical fact;
-- sourced guidance;
-- jurisdiction-specific information;
-- opinion;
-- practical template;
-- creator-owned lore;
-- community-approved lore;
-- official canon;
-- live runtime truth;
-- planned functionality.
-
-Authority must come from useful, well-maintained content with named responsibility, sources, dates, jurisdiction, revision history, correction routes and specialist review where appropriate.
+Authority must come from useful, maintained content with named responsibility, sources, dates, jurisdiction, revision history, correction routes and specialist review where appropriate.
 
 ## 1/1 Ownership, Royalties and Community Canon
 
@@ -340,18 +248,12 @@ The public ownership rule is:
 For every qualifying unique 1/1 Moonboy under the published creator terms:
 
 - the holder owns the assigned character identity and creator licence within the exact published scope;
-- the holder keeps 100% of the royalties generated from their approved commercial use of that character;
+- the holder keeps 100% of royalties generated from approved commercial use of that character;
 - Crypto Moonboys and Graffiti Kings take no royalty percentage;
-- the holder may build stories, products, content, brands and creator worlds around the character within the licence;
+- the holder may build stories, products, content, brands and creator worlds within the licence;
 - ownership is not dependent on Wiki inclusion, SAM indexing or official-canon approval.
 
-Ownership does not automatically include:
-
-- the entire Crypto Moonboys brand;
-- Graffiti Kings trademarks;
-- other factions;
-- another creator’s character;
-- unlimited rights beyond the published creator terms.
+Ownership does not automatically include the entire Crypto Moonboys brand, Graffiti Kings trademarks, other factions, another creator’s character or unlimited rights beyond published terms.
 
 Ownership and canon approval are separate:
 
@@ -363,138 +265,28 @@ Use these terms consistently:
 - **community-approved lore** — lore accepted through the published community process;
 - **official canon** — approved lore indexed into the shared Crypto Moonboys record.
 
-A rejected lore submission does not remove ownership of the character or the creator’s underlying work. It only means that submission was not accepted into the shared official canon.
-
-## HODL Warriors
-
-HODL Warriors is the collective creator-army role for qualifying 1/1 Moonboy holders.
-
-HODL Warriors are active builders who:
-
-- use SWARMSY;
-- develop their own creator worlds;
-- support other creators;
-- amplify launches;
-- collaborate;
-- maintain shared momentum;
-- connect projects into the wider cultural network.
-
-HODL Warriors is **not** one of the nine current selectable Battle Chamber factions.
-
-Do not add it to the live faction roster, standings, join controls or faction keys.
-
-## Product Hierarchy
-
-| Layer | Correct role |
-|---|---|
-| Graffiti Kings | Cultural origin and real-world foundation |
-| Crypto Moonboys | Public creator umbrella, onboarding world and shared network |
-| SWARMSY | Private beginner-first creator operating environment |
-| AnythingLLM | General intelligence, retrieval and advanced workspace foundation |
-| SPARKY | Permanent operator, guide and project-context manager |
-| Selected AI provider | Local or API-backed reasoning engine helping SPARKY think |
-| Starter Wiki Packs | Minimum situational context, boundaries and action awareness |
-| User-grown intelligence | Project-specific rules, documents, proof, laws, methods and experience |
-| Memory Locks | Approved truths and decisions protected from silent drift |
-| Proof Review | Evidence and public-claim discipline |
-| Graffiti Kings / GKniftyHEADS | Primary Moonboy cultural and identity architecture |
-| Moonboys and factions | Original creator identities and character worlds |
-| Arcade and XP | Optional earned progression for Path 1 |
-| NFT drops and burns | Optional artefacts and evolution materials inside Path 1 |
-| HODL Warriors | Builder army of qualifying 1/1 holders; not a selectable faction |
-| Wiki and SAM | Public memory, knowledge, approved canon and connected creator worlds |
-| Battle Chamber | Public activity, missions, faction movement and proof layer |
-| Block Topia | Gated playable world inside the wider umbrella |
-
-## Public Positioning Rules
-
-Use these statements:
-
-- **Crypto Moonboys is the public creator umbrella.**
-- **SWARMSY is the private creator operating system.**
-- **There are two ways to join.**
-- **Build a new identity with a Moonboy, or bring the identity you already own.**
-- **Anyone can begin; no prior artistic, AI or blockchain knowledge is required.**
-- **A Moonboy is a character identity you can build a brand, products, stories and community around.**
-- **SPARKY remains the guide while the selected AI helps it think.**
-- **Wiki Packs provide minimum context and alertness; they do not replace the model’s broad intelligence.**
-- **Every user’s workspace should grow into different project intelligence.**
-- **Your character. Your licence. Your royalties.**
-- **Qualifying 1/1 holders keep 100% of their royalties; Crypto Moonboys and Graffiti Kings take no royalty share.**
-- **Ownership is automatic under the qualifying 1/1 creator terms. Canon status is community-governed.**
-- **Games and NFTs are tools inside the system, not the mission.**
-- **GK provides the floor. The community builds on top.**
-
-Do not reduce Crypto Moonboys to:
-
-- a game;
-- an NFT project;
-- an Arcade;
-- a wiki;
-- a token project;
-- a lore archive;
-- a Telegram group;
-- Block Topia;
-- a generic AI chat product.
-
-Do not describe SWARMSY as:
-
-- a new foundation model;
-- an unrelated side product;
-- a generic AnythingLLM rebrand;
-- a complete encyclopaedia preloaded with every answer;
-- a system with live external tools that are not actually connected.
-
-## Visual Communication Rule
-
-Every major umbrella or Path 1 onboarding surface must visually answer:
-
-1. What is a Moonboy?
-2. What can I build with it?
-3. Why would I choose this route?
-4. How do I enter and progress?
-
-Every major SWARMSY or Path 2 surface must answer:
-
-1. What does SWARMSY do for me?
-2. What does SPARKY do?
-3. What changes between local and API-backed intelligence?
-4. What are starter packs and Memory Locks?
-5. What will I have after the first useful session?
-6. How does my workspace become more specialised over time?
-
-Use **desire and outcome before mechanics**.
-
-Wrong order:
-
-**XP → NFT → burn → 1/1 → unexplained empire**
-
-Correct order:
-
-**See the identity or project outcome → understand what it can become → choose the route → learn the mechanics required to continue**
-
-Approved Moonboy visuals may show truthful applications such as clothing, packaging, posters, websites, channels, comics, games and communities. Do not imply a live product, partnership, licence or retail release unless verified.
+HODL Warriors is the collective creator-builder role for qualifying 1/1 holders. It is not one of the current selectable Battle Chamber factions.
 
 ## Runtime Truth Rule
 
 Public copy must separate **live**, **live for eligible users**, **limited**, **beta**, **paused**, **being built**, **coming soon** and **planned**.
 
-Never describe a reward, burn, evolution, forge, creator-world, persistent-character, external-tool or automated-action feature as live unless the current runtime confirms it.
+Never describe reward drops, burns, evolution, forging, creator-world publishing, local/API capability or external action tools as live unless current runtime proves it.
 
-### Live in this repository
+### Live now in this repository
 
-- Crypto Moonboys public homepage and Wiki;
-- Telegram identity link;
+- public homepage and Wiki;
+- Telegram identity linking;
 - current faction selection;
-- Battle Chamber activity, proof, missions and boards where wired;
-- daily, weekly, monthly and seasonal activity surfaces where wired;
+- Battle Chamber activity, missions and boards where wired;
 - Arcade play;
 - server-backed Arcade XP progression;
 - public leaderboards and proof surfaces where wired;
-- Block Topia multiplayer survival/mission public beta;
-- public SWARMSY and SPARKY bridge pages.
+- Block Topia multiplayer survival/mission public beta.
 
-### Status must be verified before publication
+### Planned, limited or activation-dependent
+
+Status must be verified for:
 
 - eligible NFT reward drops;
 - keep, flip and burn routes;
@@ -507,89 +299,82 @@ Never describe a reward, burn, evolution, forge, creator-world, persistent-chara
 - local and API model capability;
 - external web search, file writing, email, scheduling or other action tools.
 
-The detailed SWARMSY runtime truth belongs to the SWARMSY README and its current code, not to assumptions made in this website repository.
+Detailed SWARMSY runtime truth belongs to the SWARMSY README and current code.
 
-## Public Page Purpose Rule
+## Public Page Purpose and Flow
 
-Every non-`/wiki` public page must declare one primary purpose near the top:
+Every non-`/wiki` public page must have one primary purpose:
 
-- **Umbrella explanation** — explains Crypto Moonboys and the two paths.
-- **Path 1 onboarding** — Moonboy, Telegram, faction, activity, XP, proof and qualifying ownership route.
-- **Path 2 onboarding** — SWARMSY for an existing identity or project.
-- **Gameplay** — explains and launches a game or playable layer.
-- **Proof/dashboard** — standings, activity, faction movement or status.
-- **Tool** — performs one specific task.
-- **Live world** — Block Topia or another active world layer.
+- **Umbrella explanation**;
+- **Path 1 onboarding**;
+- **Path 2 onboarding**;
+- **Gameplay**;
+- **Proof/dashboard**;
+- **Tool**;
+- **Live world**.
 
 A page must not try to perform all roles at once.
 
-General public-page order:
+General order:
 
 1. Explain what the page is for.
 2. State whether it belongs to Path 1, Path 2 or both.
-3. Show the desired outcome or user value.
+3. Show desired outcome or user value.
 4. Offer the alternate path briefly where relevant.
-5. Explain the first action.
-6. Explain why it matters.
-7. Present the CTA or control.
-8. Explain the next step.
-9. Show rewards, dashboards, standings and advanced systems only after onboarding is understood.
+5. Explain the first action and why it matters.
+6. Present the CTA or control.
+7. Explain the next step.
+8. Show rewards, dashboards and advanced systems only after onboarding is understood.
 
 Every page must answer **why this matters** before explaining **how it works**.
 
-## Required Path 1 Page Order
+### Required Path 1 order
 
-For `community.html` and any Path 1 onboarding page:
-
-1. Explain that this is the Moonboy identity route.
-2. Visually explain what a Moonboy is and what it can become.
+1. Explain the Moonboy identity route.
+2. Visually show what a Moonboy is and what it can become.
 3. Show the SWARMSY-only alternative briefly.
-4. Link Telegram so identity, XP and proof can persist.
-5. Choose a current live faction.
+4. Link Telegram.
+5. Choose a live faction.
 6. Explain tasks, quests, missions and Arcade activity.
-7. Earn server-backed XP and public proof.
-8. Explain eligible drops using verified status.
-9. Explain keep, flip and burn only where supported.
-10. Explain the qualifying 1/1 route using verified status.
-11. Explain the HODL Warrior builder role.
-12. Then show standings, boards, proof feeds and contributor rankings.
+7. Earn server-backed XP and proof.
+8. Explain drops, burns and 1/1 routes using verified status.
+9. Explain HODL Warriors.
+10. Then show standings and dashboards.
 
-## Required Path 2 Page Order
+### Required Path 2 order
 
-For `swarmsy.html` and related Path 2 pages:
-
-1. Identify the person, identity, business, product or project that already exists.
+1. Identify the existing identity, business, product or project.
 2. Show the desired outcome.
 3. Explain the identity, visibility or momentum problem.
 4. Explain SWARMSY as the private operating environment.
-5. Explain SPARKY and the selected model relationship.
+5. Explain SPARKY and selected-model roles.
 6. Explain local versus API-backed intelligence honestly.
-7. Explain starter Wiki Packs as minimum context, not complete answer databases.
+7. Explain starter packs as minimum context.
 8. Explain Memory Locks, approval states and Proof Review.
-9. Show how user-grown project intelligence develops.
+9. Show how user-grown intelligence develops.
 10. Show the first practical action.
-11. Link back to Crypto Moonboys without forcing the Moonboy or NFT route.
+11. Link back to Crypto Moonboys without forcing Moonboys or NFTs.
 
 ## Homepage Requirement
 
-The homepage hero or its replacement must communicate within one viewing cycle:
+The homepage must communicate within one viewing cycle:
 
-- Crypto Moonboys is the public creator umbrella.
-- Anyone can begin.
-- Option 1 builds a new Moonboy identity.
-- A Moonboy can become a brand, products, content, story, community and creator world.
-- Option 1 progression supports the identity; progression is not the identity’s purpose.
-- A qualifying unique 1/1 holder receives the character identity, creator licence and royalty position under published terms.
-- Option 2 keeps an existing identity and uses SWARMSY.
-- SWARMSY is the private creator operating environment, not merely a site chatbot.
-- SPARKY remains the operator while local or API-backed models help it think.
-- Both paths belong to one creator movement.
+- Crypto Moonboys is the public creator umbrella;
+- anyone can begin;
+- Option 1 builds a new Moonboy identity;
+- a Moonboy can become a brand, products, content, story, community and creator world;
+- progression supports the identity rather than defining it;
+- qualifying 1/1 rights are governed by published creator terms;
+- Option 2 keeps an existing identity and uses SWARMSY;
+- SWARMSY is a private creator operating environment, not merely a site chatbot;
+- SPARKY remains the operator while models help it think;
+- both paths belong to one movement.
 
 The homepage must not force a first-time visitor to understand every mechanic before choosing a route.
 
 ## Repository Scope
 
-This repository is the live website repository for Crypto Moonboys, including:
+This repository includes:
 
 - GitHub Pages static frontend;
 - public Wiki and shared site shell;
@@ -599,14 +384,20 @@ This repository is the live website repository for Crypto Moonboys, including:
 - leaderboard worker;
 - anti-cheat worker;
 - Battle Chamber faction activity and mission routes;
-- Block Topia live city runtime under `/games/block-topia/`;
-- Block Topia server files under `server/block-topia/`;
+- Block Topia runtime and server files;
 - worker configuration under `workers/`.
+
+Important repository references:
+
+- [`docs/nft-rarity-methodology.md`](docs/nft-rarity-methodology.md) — GKniftyHEADS and NoBallGames NFT rarity tracker methodology.
+- `Crypto_Moonboys_Master_Source_of_Truth_v1.md` — detailed mission and agent truth despite the legacy filename.
+- `AGENT_EDITING_RULES.md` — editing and runtime safety rules.
+- `.copilot-instructions.md` — repository agent instructions.
 
 Source-of-truth order:
 
-1. `README.md` — top-level public product and repository truth.
-2. `Crypto_Moonboys_Master_Source_of_Truth_v1.md` — detailed mission and agent truth despite the legacy filename.
+1. `README.md`.
+2. `Crypto_Moonboys_Master_Source_of_Truth_v1.md`.
 3. Live runtime code and configuration.
 4. `AGENT_EDITING_RULES.md`.
 5. `.copilot-instructions.md`.
@@ -629,121 +420,63 @@ The SWARMSY repository remains authoritative for SWARMSY runtime, provider, desk
 - `/games/snake-run/`
 - `/games/tetris-block-topia/`
 
-## Arcade XP Truth
+## Arcade, Telegram and Block Topia Contracts
 
-- The competitive Arcade requires a fresh signed Telegram identity.
-- Arcade XP is server-backed progression after Telegram sync.
+- Competitive Arcade requires a fresh signed Telegram identity.
+- Arcade XP is server-backed after Telegram sync.
 - Score and XP are separate signals.
-- Score measures performance in a run.
-- Arcade XP measures persistent accepted activity.
-- The authoritative Block Topia gate value comes from `/blocktopia/progression` and `workers/moonboys-api/blocktopia/config.js`.
-- Public copy must read the current gate value from live configuration before stating a number.
-- Unlinked users cannot enter the competitive Arcade.
-- No unlinked scores or XP are submitted, saved or calculated.
+- Unlinked scores are not submitted, saved or calculated.
+- Unlinked Arcade XP is not earned or retained.
 - No anonymous or hidden competitive leaderboard exists.
-
-## Frontend API and Telegram Auth Contract
-
-- `js/api-config.js` is the canonical frontend API source of truth for API URLs, runtime detection and production fallback policy.
-- Production fallback is allowed only on live production hosts.
-- Local, development and preview contexts must provide explicit API configuration or remain read-only or pending.
-- Protected frontend writes must use fresh signed Telegram authentication through `window.MOONBOYS_IDENTITY.getFreshTelegramAuth()` or the equivalent signed restore path.
-- Anonymous and unsigned users are blocked from competitive Arcade actions.
-- `ENV.BUILD_DATE` means an explicitly injected or static build timestamp only.
-- Per-page-load timestamps must use `ENV.RUNTIME_LOADED_AT` and must not be presented as build dates.
-
-## Block Topia Runtime
-
-Block Topia is a playable layer inside Crypto Moonboys, not the definition of the umbrella.
-
-The current live runtime is the multiplayer survival/mission public beta.
-
-Live systems include NPCs, attacks, HP, respawns, phases, extraction, upgrades, ready/start/restart and Telegram plus XP gating.
-
-Active runtime files include:
-
-- `games/block-topia/index.html`
-- `games/block-topia/main.js`
-- `games/block-topia/network.js`
-- `server/block-topia/src/index.js`
-- `server/block-topia/src/rooms/MinimalCityRoom.js`
-- `workers/moonboys-api/blocktopia/routes.js`
+- The authoritative Block Topia gate value comes from live configuration.
+- Block Topia is a playable layer, not the definition of Crypto Moonboys.
+- The current Block Topia runtime is multiplayer survival/mission public beta.
 
 ## Agent Audit Instructions
 
 When auditing public pages:
 
-1. Inventory every non-Wiki public page.
-2. Assign each page one primary purpose.
-3. Flag copy that calls Crypto Moonboys a game, NFT project, wiki or single product.
-4. Flag copy that presents SWARMSY as unrelated, generic chat or a new language model.
-5. Flag pages that make Path 1 mandatory for artists, businesses or product creators.
-6. Flag pages that fail to explain the public-world/private-workspace relationship.
-7. Flag pages that imply Wiki Packs contain every answer rather than minimum operating context.
-8. Flag pages that hide user-grown project intelligence, Memory Locks or approval states where these are central to understanding SWARMSY.
-9. Flag pages that promise identical capability across every local and API model.
-10. Flag external-tool or automated-action claims not confirmed by runtime.
-11. Flag HODL Warriors presented as a selectable faction.
-12. Flag future reward or forge features written as live.
-13. Flag ownership copy that exceeds the published creator terms.
-14. Flag creator ownership confused with official-canon approval.
-15. Flag text-only Moonboy explanations that do not show identity use cases.
-16. Preserve runtime IDs, authentication behaviour, scripts, forms, data mounts and API contracts.
-17. Keep dashboards and advanced status after onboarding explanation.
-18. Update metadata, headings, CTAs and accessible labels to match corrected purpose.
-19. Run the repository test suite and update guards only where the guard itself encodes outdated product truth.
+1. Assign each non-Wiki page one primary purpose.
+2. Flag copy reducing Crypto Moonboys to a game, NFT project, Wiki or single product.
+3. Flag pages making Path 1 mandatory.
+4. Flag pages presenting SWARMSY as unrelated or merely a chatbot.
+5. Flag pages misrepresenting SPARKY, AnythingLLM, local models, API models or Wiki Packs.
+6. Flag future functionality written as live.
+7. Flag ownership and canon confusion.
+8. Flag text-only explanations where visual identity outcomes are required.
+9. Preserve runtime IDs, auth behaviour, scripts, forms, data mounts and API contracts.
+10. Keep dashboards after onboarding explanation.
+11. Update metadata, headings, CTAs and accessible labels to match page purpose.
+12. Run the repository test suite and update guards only when a guard encodes outdated approved truth.
 
 Do not rewrite runtime behaviour merely to make copy tests pass.
 
 ## Drift Rules
 
-- Do not call Crypto Moonboys a game, NFT project, wiki, token project or chatbot.
-- Do not present SWARMSY as separate from the Crypto Moonboys creator umbrella.
-- Do not reduce SWARMSY to the public SPARKY Q&A bridge.
-- Do not claim SWARMSY is a new foundation model.
-- Do not claim starter Wiki Packs must contain every answer.
-- Do not hide that workspaces become different through user-grown project intelligence.
-- Do not promise identical reasoning quality across every model.
-- Do not claim external tools or actions are live without runtime proof.
-- Do not make the Moonboy route mandatory for users who only need SWARMSY.
-- Do not reduce HODL Warriors to passive holders or a normal faction.
-- Do not add HODL Warriors to the selectable faction roster.
+- Do not call Crypto Moonboys a game, NFT project, Wiki, token or chatbot.
+- Do not make the Moonboy route mandatory.
+- Do not make SWARMSY appear separate from the umbrella.
+- Do not describe SWARMSY as a generic chat wrapper.
+- Do not imply packs contain every answer.
+- Do not imply identical quality or tools across models.
 - Do not present NFTs as the mission.
-- Do not imply every visitor must buy or own an NFT before joining.
-- Do not exceed published 1/1 ownership and royalty terms.
-- Do not make creator ownership conditional on Wiki inclusion, SAM indexing, voting or canon approval.
-- Do not present creator-written lore as official canon before approval.
-- Do not present planned reward, burn, evolution or forge routes as live.
-- Do not explain Moonboys only as collectibles or progression rewards.
-- Do not place dashboards, scoreboards or mechanics before purpose and desired outcome.
-- Do not use mockups that imply unverified live products, partnerships or retail availability.
-- Do not add fake live data, fake engagement or invented proof.
-- Do not document speculative systems as live.
-- Do not reintroduce removed admin shells, disabled route families or legacy Block Topia systems.
-- Do not keep dead routes, dead docs or disabled compatibility shells.
+- Do not imply every visitor must buy or own an NFT.
+- Do not confuse HODL Warriors with a selectable faction.
+- Do not condition creator ownership on canon approval.
+- Do not present planned systems as live.
+- Do not use fake data, fake proof, fake engagement or unverified product claims.
+- Do not use product mockups that imply unverified availability or partnerships.
+- Do not place dashboards or technical mechanics before purpose and outcome.
+- Do not reintroduce dead routes, retired systems or disabled compatibility shells.
 
 ## Final Definition
 
-Crypto Moonboys is the public, street-born creator movement and cultural world.
+Crypto Moonboys is the Graffiti Kings public creator umbrella and shared cultural world.
 
-SWARMSY is its private, beginner-first creator intelligence and operating environment.
+A person can build a new character-led Moonboy identity or keep the identity, business, product or project they already own.
 
-AnythingLLM and the selected AI model provide broad capability.
+SWARMSY is the private beginner-first creator operating environment used to develop that work. AnythingLLM and the selected model provide broad intelligence. SPARKY keeps the real project context, starter packs provide situational awareness, Memory Locks preserve approved direction, Proof Review protects public truth, and user-grown project intelligence makes every workspace increasingly unique.
 
-SPARKY keeps that capability focused on the user’s real identity, project, approved decisions and likely actions.
+Games, XP, NFTs, burns, factions, the Wiki, Battle Chamber and Block Topia support the movement. They are not the reason it exists.
 
-Starter Wiki Packs provide minimum operating awareness.
-
-User-grown project intelligence makes every workspace different.
-
-Memory Locks preserve approved truths.
-
-Proof Review separates ideas from evidence.
-
-The public Wiki records shared knowledge, culture and verified outcomes.
-
-The community provides crews, momentum and collaboration.
-
-The application does not decide what every user should become.
-
-It helps each user build an increasingly unique intelligence system around the identity, project, industry and future they choose.
+> **One umbrella. Two paths. Build identity. Build momentum. Turn the spark into culture.**
