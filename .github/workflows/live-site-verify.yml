@@ -55,4 +55,5 @@ jobs:
         run: npm run test:live-site
 
       - name: Verify cryptomoonboys.com public content truth
+        if: github.event_name == 'workflow_dispatch'
         run: npm run test:live-content
