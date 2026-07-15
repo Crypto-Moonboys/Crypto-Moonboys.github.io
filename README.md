@@ -55,6 +55,17 @@ The Moonboys carry Graffiti Kings culture forward without replacing the original
 
 The internet gave everyone a voice, but not everyone has an identity.
 
+Many people can post, sell, create and launch but still struggle to answer:
+
+- Who am I in public?
+- What do I represent?
+- Why should people remember me?
+- How do I stand out?
+- How do I turn one launch into sustained momentum?
+- How do I build a community instead of temporary reach?
+- How do I create an alter ego without losing ownership?
+- How do I keep current without becoming generic content noise?
+
 Crypto Moonboys exists to help people of any age or background:
 
 - discover or strengthen who they are publicly;
@@ -180,6 +191,7 @@ Path 2 must remain a credible and attractive route, not a footnote.
 | Wiki and SAM | Public memory, knowledge, creator worlds, approved canon and connected links |
 | Battle Chamber | Public activity, missions, faction movement and proof layer |
 | Block Topia | Gated playable world layer inside the wider umbrella |
+| Lore | Shared worldbuilding and inspiration layer |
 
 ## Visual Communication Rule
 
@@ -349,6 +361,21 @@ A rejected lore submission does not remove ownership of the character or the cre
 
 HODL Warriors is the collective creator-builder role for qualifying 1/1 holders. It is not one of the current selectable Battle Chamber factions.
 
+HODL Warriors are not passive holders. They are the creator army inside the umbrella.
+
+They:
+
+- use SWARMSY to build their own character worlds;
+- support other 1/1 holders;
+- share work;
+- amplify launches;
+- collaborate;
+- maintain momentum;
+- connect creator worlds into the wider cultural network;
+- expand the collective footprint together.
+
+The advantage of Path 1 is not merely ownership of a character. It is ownership plus an army of other active builders.
+
 Correct usage:
 
 - qualifying 1/1 holders become HODL Warriors;
@@ -357,7 +384,7 @@ Correct usage:
 
 Incorrect usage:
 
-- “Choose HODL Warriors as your faction”;
+- "Choose HODL Warriors as your faction";
 - adding HODL Warriors to the live faction directory;
 - treating HODL Warriors as a normal collector label or legacy faction alias.
 
@@ -507,6 +534,7 @@ This repository includes:
 Important repository references:
 
 - [`docs/nft-rarity-methodology.md`](docs/nft-rarity-methodology.md) — GKniftyHEADS and NoBallGames NFT rarity tracker methodology.
+- `wiki/crypto-moonboys.html` — main public explanation of the umbrella; must cover both paths, Graffiti Kings succession, Moonboy progression, 1/1 meaning, HODL Warriors and where games/XP/NFTs/wiki/Battle Chamber/Block Topia fit; must not read as if everyone must earn NFTs to participate.
 - `Crypto_Moonboys_Master_Source_of_Truth_v1.md` — detailed mission and agent truth despite the legacy filename.
 - `AGENT_EDITING_RULES.md` — editing and runtime safety rules.
 - `.copilot-instructions.md` — repository agent instructions.
@@ -625,6 +653,17 @@ When auditing public pages:
 14. Run the repository test suite and update guards only when a guard encodes outdated approved truth.
 
 Do not rewrite runtime behaviour merely to make copy tests pass.
+
+Before publishing copy, verify:
+
+- Is Crypto Moonboys presented as the umbrella?
+- Are both paths visible?
+- Is the Moonboy path optional for existing artists and businesses?
+- Is SWARMSY correctly positioned?
+- Are HODL Warriors active builders?
+- Are games and NFTs presented as tools rather than the mission?
+- Is live versus planned status accurate?
+- Is ownership language limited to published terms?
 
 ## Drift Rules
 
