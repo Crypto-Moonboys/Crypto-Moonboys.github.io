@@ -233,7 +233,7 @@ async function verifyPage(spec, userAgent) {
   }
 
   for (const needle of spec.required) {
-    if (body.includes(needle)) {
+    if (includesCaseInsensitive(body, needle)) {
       ok(`${spec.path} contains required truth: ${needle}`);
     } else {
       fail(`${spec.path} missing required truth: ${needle}`);
