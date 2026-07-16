@@ -4,51 +4,6 @@
 
   const ASSET_VERSION = 'invaders-lean-sprites-20260716';
   const ASSET_BASE = '/art/invaders/generated/';
-  const invaderFiles = [
-    'invader meme one.png',
-    'invader meme two.png',
-    'invader meme 3.png',
-    'invader meme 4.png',
-    'invader meme 5.png',
-    'invader meme 6.png',
-    'invader meme 7.png',
-    'invader meme 8.png',
-    'invader meme 9.png',
-    'invader meme 10.png',
-    'invader meme 11.png',
-    'invader meme 12.png',
-    'invader meme 13.png',
-    'invader meme 14.png',
-    'invader meme 15.png',
-    'invader meme 16.png',
-    'invader meme 17.png',
-    'invader meme 18.png',
-    'invader meme 19.png',
-    'invader meme 20.png',
-    'invader meme 21.png',
-    'invader meme 22.png',
-    'invader meme 23.png',
-    'invader meme 24.png',
-    'invader meme 25.png',
-    'invader meme 26.png',
-    'invader meme 27.png',
-    'invader meme 28.png',
-    'invader meme 29.png',
-    'invader meme 30.png',
-    'invader meme 31.png',
-    'invader meme 32.png',
-    'invader meme 33.png',
-    'invader meme 34.png',
-    'invader meme 35.png',
-    'invader meme 36.png',
-    'invader meme 37.png',
-  ];
-  const invaderImages = invaderFiles.map((file) => {
-    const image = new Image();
-    image.decoding = 'async';
-    image.src = `${ASSET_BASE}${encodeURIComponent(file)}?v=${ASSET_VERSION}`;
-    return { file, image };
-  });
   const bossFiles = [
     'invader meme boss.png',
     'invader meme boss 2.png',
@@ -88,7 +43,6 @@
   ];
 
   let activeBoss = null;
-  const invaderTracks = [];
 
   function isBossLabel(text) {
     const label = String(text || '').toUpperCase();
@@ -164,97 +118,11 @@
     ctx.restore();
   }
 
-  function isOldMemeInvaderImage(image) {
-    const src = String(image && (image.currentSrc || image.src) || '');
-    return src.includes('/art/invaders/generated/') &&
-      !src.includes('invader%20meme') &&
-      !src.includes('invader meme') &&
-      !src.includes('boss') &&
-      !src.includes('bitcoin') &&
-      !src.includes('btc-') &&
-      !src.includes('god-bomb') &&
-      !src.includes('explosion') &&
-      !src.includes('level-');
-  }
-
-  function chooseInvaderSkin(x, y, w, h) {
-    const now = performance.now();
-    const frame = Math.floor(now / 24);
-    const cx = Number(x) + Number(w) / 2;
-    const cy = Number(y) + Number(h) / 2;
-    let best = null;
-    let bestDist = Infinity;
-
-    for (let i = invaderTracks.length - 1; i >= 0; i--) {
-      const track = invaderTracks[i];
-      if (now - track.lastSeen > 1800) {
-        invaderTracks.splice(i, 1);
-        continue;
-      }
-      if (track.frame === frame) continue;
-      if (Math.abs(track.w - Number(w)) > 8 || Math.abs(track.h - Number(h)) > 8) continue;
-      const dist = Math.hypot(track.cx - cx, track.cy - cy);
-      if (dist < bestDist) {
-        best = track;
-        bestDist = dist;
-      }
-    }
-
-    if (!best || bestDist > 34) {
-      const seed = Math.abs(Math.sin(cx * 12.9898 + cy * 78.233 + now * 0.013) * 43758.5453);
-      best = {
-        cx,
-        cy,
-        w: Number(w),
-        h: Number(h),
-        skin: Math.floor((seed - Math.floor(seed)) * invaderImages.length) % invaderImages.length,
-        lastSeen: now,
-        frame,
-      };
-      invaderTracks.push(best);
-      while (invaderTracks.length > 120) invaderTracks.shift();
-    } else {
-      best.cx = cx;
-      best.cy = cy;
-      best.w = Number(w);
-      best.h = Number(h);
-      best.lastSeen = now;
-      best.frame = frame;
-    }
-
-    return best.skin;
-  }
-
   const proto = window.CanvasRenderingContext2D && window.CanvasRenderingContext2D.prototype;
   if (!proto) return;
 
   const previousFillText = proto.fillText;
   const previousDrawImage = proto.drawImage;
-  proto.drawImage = function (image, ...args) {
-    if (this.canvas && this.canvas.id === 'invCanvas' && isOldMemeInvaderImage(image) && args.length >= 4) {
-      const dx = Number(args[0]);
-      const dy = Number(args[1]);
-      const dw = Number(args[2]);
-      const dh = Number(args[3]);
-      if ([dx, dy, dw, dh].every(Number.isFinite)) {
-        const skin = chooseInvaderSkin(dx, dy, dw, dh);
-        const replacement = invaderImages[skin] && invaderImages[skin].image;
-        if (replacement && replacement.complete && replacement.naturalWidth > 0) {
-          const ratio = replacement.naturalWidth / replacement.naturalHeight;
-          const targetH = Math.max(18, Math.min(30, dh * 1.04));
-          const targetW = Math.min(dw * 1.08, targetH * ratio);
-          const cx = dx + dw / 2;
-          const cy = dy + dh / 2;
-          this.save();
-          this.imageSmoothingEnabled = false;
-          previousDrawImage.call(this, replacement, cx - targetW / 2, cy - targetH / 2, targetW, targetH);
-          this.restore();
-          return;
-        }
-      }
-    }
-    return previousDrawImage.call(this, image, ...args);
-  };
 
   proto.fillText = function (text, ...args) {
     if (this.canvas && this.canvas.id === 'invCanvas' && isBossLabel(text) && args.length >= 2) {
