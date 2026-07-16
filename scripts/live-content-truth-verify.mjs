@@ -38,6 +38,14 @@ const GLOBAL_BANNED = [
     reason: 'old wiki-first About positioning still being served',
   },
   {
+    needle: 'Living Web3 Wiki',
+    reason: 'old wiki-first branding is no longer current positioning',
+  },
+  {
+    needle: 'Play. Earn. Build.',
+    reason: 'old arcade shell branding still being served',
+  },
+  {
     needle: 'BECOME A MOONBOY — JOIN THE HODL WARRIOR ARMY',
     reason: 'old community page reduces onboarding to HODL Warrior recruitment',
   },
@@ -86,7 +94,7 @@ const PAGES = [
     required: [
       'PATH 1 / MOONBOY IDENTITY / BATTLE CHAMBER',
       'A Moonboy is a character identity you can build a brand, products, stories, content and community around.',
-      'Already have an artist, business, product, brand or alter ego?',
+      'Already an artist, business, product, brand or project?',
       'This is a creator-army role—not one of the nine selectable factions.',
     ],
     banned: [
@@ -99,10 +107,10 @@ const PAGES = [
     path: '/about.html',
     label: 'about',
     required: [
-      'Creator identity movement',
-      'There are two clear paths',
-      'Path 1: Build a Moonboy Identity',
-      'Path 2: Grow the Identity You Have',
+      'Crypto Moonboys is the Graffiti Kings creator umbrella',
+      'Build a Moonboy identity or bring the identity you already own.',
+      'It carries more than 40 years of Graffiti Kings street culture into a connected creator movement using modern AI, community systems, public knowledge, games, optional blockchain ownership and creator-led worldbuilding.',
+      'Crypto Moonboys is not a game, NFT project, wiki, token project or chatbot. Those are tools and layers inside the wider system.',
     ],
     banned: [
       'world\'s first Living Web3 Wiki',
@@ -131,6 +139,7 @@ const PAGES = [
     required: [
       'CRYPTO MOONBOYS',
       'ONE UMBRELLA. TWO WAYS TO JOIN.',
+      'The holder keeps 100% of approved commercial royalties from that character; Crypto Moonboys and Graffiti Kings take no royalty share.',
       'Crypto Moonboys is not a game.',
       'THE TWO PATHS COMPARED',
     ],

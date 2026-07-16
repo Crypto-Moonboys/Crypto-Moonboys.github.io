@@ -20,7 +20,6 @@ const SCAN_TARGETS = [
   'js/components/ui-status-copy.js',
   'workers/moonboys-api/README.md',
   'workers/moonboys-api/blocktopia',
-  'scripts',
   'workers',
 ];
 
@@ -46,6 +45,11 @@ const FORBIDDEN_PATHS = [
 ];
 
 const FORBIDDEN_TERMS = [
+  { label: 'living-web3-wiki', value: ['Living', 'Web3', 'Wiki'].join(' ') },
+  { label: 'play-earn-build', value: ['Play.', 'Earn.', 'Build.'].join(' ') },
+  { label: 'join-hodl-warriors', value: ['Join', 'the', 'HODL', 'Warriors'].join(' ') },
+  { label: 'claim-free-nfts', value: ['Claim', 'free', 'NFTs'].join(' ') },
+  { label: 'automatic-hodl-warrior', value: ['crypto', 'holders', 'automatically', 'become', 'HODL', 'Warriors'].join(' ') },
   { label: 'term-1', value: ['Space', 'Agent'].join(' ') },
   { label: 'term-2', value: ['space', 'agent'].join('-') },
   { label: 'term-3', value: ['space', 'cryptomoonboys', 'com'].join('.') },
