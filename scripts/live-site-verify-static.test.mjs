@@ -15,7 +15,7 @@
  *   ✓ site-shell.js source MUST contain includes current hooks, not legacy ones
  *   ✓ SHELL_SOURCE_MUST_NOT_CONTAIN list includes data-las-panel
  *   ✓ dashboard is in NO_RIGHT_PANEL_PAGES, not RIGHT_PANEL_PAGES
- *   ✓ 8-game roster constant is present and complete
+ *   ✓ arcade roster constant is present and complete
  */
 
 import assert from 'node:assert/strict';
@@ -174,10 +174,10 @@ console.log('PASS: no Telegram credentials required');
 // ── 9. Canonical roster is manifest-backed and complete ───────────────────────
 const canonicalGamesBlock = source.match(/CANONICAL_GAMES\s*=\s*\[[\s\S]*?\];/);
 assert.ok(canonicalGamesBlock, 'CANONICAL_GAMES constant must be present');
-assert.equal(ARCADE_MANIFEST.length, 8, 'ARCADE_MANIFEST must contain exactly 8 live games');
+assert.equal(ARCADE_MANIFEST.length, 7, 'ARCADE_MANIFEST must contain exactly 7 live games');
 const expectedGames = ARCADE_MANIFEST.map(entry => entry.label.replace(/^[^\p{L}\p{N}]+/u, '').trim());
 const canonicalGames = [...canonicalGamesBlock[0].matchAll(/'([^']+)'/g)].map(match => match[1]);
-assert.equal(canonicalGames.length, 8, 'CANONICAL_GAMES must contain exactly 8 labels');
+assert.equal(canonicalGames.length, 7, 'CANONICAL_GAMES must contain exactly 7 labels');
 for (const name of expectedGames) {
   assert.ok(
     canonicalGames.includes(name),

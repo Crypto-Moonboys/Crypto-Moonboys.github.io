@@ -796,7 +796,7 @@ async function updateAllTimeBoard(env, seasonalBoard) {
  *
  * main_score formula (same for all three boards):
  *   main_score = sum(best per-game scores across all active games)
- *              + variety_bonus   (VARIETY_BONUS when all 8 games have a score > 0)
+ *              + variety_bonus   (VARIETY_BONUS when all active games have a score > 0)
  *              + SEASONAL_BONUS  (flat season-wide bonus, 0 by default)
  */
 async function recomputeAllBoards(env) {
