@@ -33,9 +33,6 @@ const STALE_REFERENCE_FILES = [
   'js/entity-map.json',
   'js/entity-graph.json',
   'sitemap.xml',
-  'games/data/question_pack_001.json',
-  'games/data/question_pack_002.json',
-  'games/data/crystal-maze-seed.json',
 ];
 
 function normalizeSlug(slug) {

@@ -71,7 +71,7 @@ Games should offer upgrades at safe, natural moments:
 - Boss defeated
 - Interval milestone (e.g. every 60 seconds alive)
 
-### Games without canvas/physics upgrades (e.g. Crystal Quest):
+### Games without canvas/physics upgrades:
 Quiz-format games are exempt from the upgrade layer. Streak bonuses, rare question events, and faction-biased scoring serve as the equivalent progression layer. This is a documented exception — not a gap.
 
 ### Emit on upgrade selected (emit the real category from the def):
@@ -223,7 +223,6 @@ Faction perks must be implemented using shared helpers from `faction-effect-syst
 | Breakout Bullrun | Long rally multiplier + fewer chaos penalties | Floor shield bonus + ball-save assist | Explosive bricks more frequent + combo spikes |
 | SnakeRun 3008 | Length/endurance score bonus | One mistake buffer + shield pickup | More golden food + riskier speed boost |
 | Tetris Block Topia | Clean-stack endurance bonus | Panic-clear / mistake recovery | More golden/mutation pieces + chaos clear |
-| Crystal Quest | Deeper run survival bonus (streak) | Safer skip/recovery bias | Rare question spawn bias + combo burst |
 
 ---
 

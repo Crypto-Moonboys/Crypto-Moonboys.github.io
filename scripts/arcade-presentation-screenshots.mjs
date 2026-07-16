@@ -87,7 +87,6 @@ function chromePath() {
 
 const pages = [
   { key: 'snake-run', path: '/games/snake-run/' },
-  { key: 'crystal-quest', path: '/games/crystal-quest/' },
   { key: 'block-topia-quest-maze', path: '/games/block-topia-quest-maze/' },
   { key: 'tetris-block-topia', path: '/games/tetris-block-topia/' },
 ];

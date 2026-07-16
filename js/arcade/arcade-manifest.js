@@ -10,7 +10,7 @@
  *   crossGameTags — compatibility tags for cross-game modifier system
  *
  * Live arcade games: invaders-3008, pac-chain, asteroid-fork, breakout-bullrun,
- *   tetris-block-topia, crystal-quest, block-topia-quest-maze, snake-run
+ *   tetris-block-topia, block-topia-quest-maze, snake-run
  *
  * Consumed by:
  *   js/arcade/core/auto-mount-game.js   (browser auto-mount)
@@ -73,14 +73,6 @@ export const ARCADE_MANIFEST = Object.freeze([
     bootstrapPath: '/js/arcade/games/block-topia-quest-maze/bootstrap.js',
     adapterExport: 'BTQM_ADAPTER',
     crossGameTags: Object.freeze(['maze']),
-  },
-  {
-    id: 'crystal',
-    label: '🧩 Crystal Quest',
-    page: '/games/crystal-quest/',
-    bootstrapPath: '/js/arcade/games/crystal-quest/bootstrap.js',
-    adapterExport: 'CRYSTAL_QUEST_ADAPTER',
-    crossGameTags: Object.freeze(['puzzle']),
   },
 ]);
 

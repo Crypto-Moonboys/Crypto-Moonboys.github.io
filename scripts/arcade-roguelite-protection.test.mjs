@@ -30,7 +30,6 @@ const ACTIVE_GAMES = [
   ['Pac-Chain', 'js/arcade/games/pac-chain/bootstrap.js'],
   ['Tetris Block Topia', 'js/arcade/games/tetris/bootstrap.js'],
   ['Asteroid Fork', 'js/arcade/games/asteroid-fork/bootstrap.js'],
-  ['Crystal Quest', 'js/arcade/games/crystal-quest/bootstrap.js'],
   ['Block Topia Quest Maze', 'js/arcade/games/block-topia-quest-maze/bootstrap.js'],
 ];
 
@@ -145,7 +144,6 @@ for (const alias of [
   'asteroid-fork',
   'breakout-bullrun',
   'tetris-block-topia',
-  'crystal-quest',
   'block-topia-quest-maze',
   'snake-run',
 ]) {

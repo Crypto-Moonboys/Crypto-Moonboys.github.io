@@ -18,7 +18,6 @@ Where a game cannot comply, the reason must be documented in its bootstrap file.
 | Asteroid Fork | `/games/asteroid-fork/` | `asteroids` | `js/arcade/games/asteroid-fork/bootstrap.js` |
 | Breakout Bullrun | `/games/breakout-bullrun/` | `breakout` | `js/arcade/games/breakout-bullrun/bootstrap.js` |
 | Tetris Block Topia | `/games/tetris-block-topia/` | `tetris` | `js/arcade/games/tetris/bootstrap.js` |
-| Crystal Quest | `/games/crystal-quest/` | `crystal` | `js/arcade/games/crystal-quest/bootstrap.js` |
 | Block Topia Quest Maze | `/games/block-topia-quest-maze/` | `blocktopia` | `js/arcade/games/block-topia-quest-maze/bootstrap.js` |
 | Snake Run | `/games/snake-run/` | `snake` | `js/arcade/games/snake-run/bootstrap.js` |
 

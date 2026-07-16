@@ -492,9 +492,8 @@ body.overlay-open #faction-hud {
   margin-bottom: 0;
 }
 
-/* Crystal Quest is DOM/text-based and keeps its own card content flow; canvas-first
-   games hide HUD rows in fullscreen to maximize playable area. */
-#game-overlay .game-card:not(.crystal-quest-card) .hud {
+/* Hide in-page HUD rows in fullscreen to maximize playable area. */
+#game-overlay .game-card .hud {
   display: none !important;
 }
 
@@ -1283,86 +1282,3 @@ body.conflict-active #game-overlay {
   background: radial-gradient(circle at 20% 12%, rgba(255,0,80,.07), transparent 50%), #090c16;
 }
 
-/* ===== CRYSTAL QUEST (text-based quiz game) FULLSCREEN OVERRIDES =====
-   Compact arcade-terminal HUD rules are scoped to Crystal Quest only.
-   The desktop overlay must fit the active play controls without page scroll;
-   Wiki Trail can scroll internally when opened.
-   ===================================================================== */
-
-#game-overlay .crystal-quest-card {
-  max-width: min(1120px, calc(100vw - 32px)) !important;
-  width: 100% !important;
-  height: auto !important;
-  max-height: calc(100vh - 96px) !important;
-  overflow: hidden !important;
-  align-self: center;
-  align-items: stretch;
-  padding: 10px 12px !important;
-}
-
-#game-overlay .crystal-quest-card .layer-top {
-  width: 100%;
-  max-height: calc(100vh - 118px) !important;
-  overflow: hidden !important;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-}
-
-#game-overlay .crystal-quest-card .cq-cockpit {
-  min-height: 0;
-}
-
-#game-overlay .crystal-quest-card .row {
-  display: flex !important;
-  width: 100%;
-  align-self: stretch;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-#game-overlay .crystal-quest-card .quest-box {
-  display: block !important;
-}
-
-#game-overlay .crystal-quest-card #crystalParticles,
-#game-overlay .crystal-quest-card .crystal-particle {
-  display: none !important;
-  max-height: 0 !important;
-  overflow: hidden !important;
-  animation: none !important;
-}
-
-#game-overlay .crystal-quest-card .wiki-trail-panel {
-  max-height: min(30vh, 220px);
-  overflow: auto;
-}
-
-@supports selector(:has(*)) {
-  #game-overlay .game-stage:has(.crystal-quest-card) {
-    overflow: hidden !important;
-    align-items: center;
-    padding: 12px;
-  }
-}
-
-@media (max-width: 980px) {
-  #game-overlay .crystal-quest-card,
-  #game-overlay .crystal-quest-card .layer-top {
-    max-height: calc(100vh - 76px) !important;
-    overflow-y: auto !important;
-  }
-
-  @supports selector(:has(*)) {
-    #game-overlay .game-stage:has(.crystal-quest-card) {
-      overflow-y: auto !important;
-      align-items: flex-start;
-    }
-  }
-}
-
-@media (max-width: 600px) {
-  #game-overlay .crystal-quest-card {
-    padding: 10px 10px !important;
-  }
-}

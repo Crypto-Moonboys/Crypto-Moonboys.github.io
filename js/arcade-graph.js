@@ -21,7 +21,6 @@ const C = {
 function makeOverviewNodes(cx, cy, r) {
   const games = [
     { id: 'snake',      label: '🐍 Snake',      color: C.cyan   },
-    { id: 'crystal',    label: '🧩 Crystal',    color: C.pink   },
     { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple },
     { id: 'invaders',   label: '👾 Invaders',   color: C.green  },
     { id: 'pacchain',   label: '🟡 Pac-Chain',  color: C.gold   },
@@ -46,7 +45,6 @@ function makeOverviewNodes(cx, cy, r) {
 
 const OVERVIEW_EDGES = [
   { source: 'global', target: 'snake'      },
-  { source: 'global', target: 'crystal'    },
   { source: 'global', target: 'blocktopia' },
   { source: 'global', target: 'invaders'   },
   { source: 'global', target: 'pacchain'   },
@@ -233,7 +231,6 @@ export function setPlayerState(entry) {
   const bd = entry.breakdown || {};
   const games = [
     { id: 'snake',      label: '🐍 Snake',      color: C.cyan,   score: bd.snake      ?? null },
-    { id: 'crystal',    label: '🧩 Crystal',    color: C.pink,   score: bd.crystal    ?? null },
     { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple, score: bd.blocktopia ?? null },
     { id: 'invaders',   label: '👾 Invaders',   color: C.green,  score: bd.invaders   ?? null },
     { id: 'pacchain',   label: '🟡 Pac-Chain',  color: C.gold,   score: bd.pacchain   ?? null },

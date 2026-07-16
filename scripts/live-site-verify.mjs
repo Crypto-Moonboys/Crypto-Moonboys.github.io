@@ -241,7 +241,6 @@ const CANONICAL_GAMES = [
   'Asteroid Fork',
   'Breakout Bullrun',
   'Tetris Block Topia',
-  'Crystal Quest',
   'Block Topia Quest Maze',
   'SnakeRun 3008',
 ];

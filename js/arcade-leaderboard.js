@@ -20,7 +20,6 @@ const COPY = window.UI_STATUS_COPY || {
 const RAW_TABS = [
   { key: 'global',     label: '🌐 Global',     icon: '🌐' },
   { key: 'snake',      label: '🐍 Snake',       icon: '🐍' },
-  { key: 'crystal',    label: '🧩 Crystal',     icon: '🧩' },
   { key: 'blocktopia', label: '🧱 BlockTopia',  icon: '🧱' },
   { key: 'invaders',   label: '👾 Invaders',    icon: '👾' },
   { key: 'pacchain',   label: '🟡 Pac-Chain',   icon: '🟡' },
@@ -40,7 +39,6 @@ const AGGREGATE_TABS = new Set(['global']);
 
 const GAME_LABELS = {
   snake:      '🐍 Snake',
-  crystal:    '🧩 Crystal',
   blocktopia: '🧱 BlockTopia',
   invaders:   '👾 Invaders',
   pacchain:   '🟡 Pac-Chain',
@@ -50,7 +48,7 @@ const GAME_LABELS = {
   bonus:      '⭐ Bonus',
 };
 
-const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris'];
+const BREAKDOWN_GAMES = ['snake', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris'];
 
 // ── State ─────────────────────────────────────────────────────────────────
 let currentMode = DEFAULT_MODE;

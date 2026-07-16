@@ -535,7 +535,7 @@ function randomInRange(min, max) {
 }
 
 function getChaosGameRotation() {
-  return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroids'];
+  return ['snake', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroids'];
 }
 
 function getFeaturedChaosWindow(now = nowMs()) {
@@ -706,7 +706,6 @@ const DAILY_ROGUELITE_QUESTS = [
   { id: 'daily-pacchain', type: 'score_target', path: 'competitive', title: 'Chain Pac-Chain to 800+', description: 'Combo path toward leaderboard pressure.', game: 'pacchain', target: 800 },
   { id: 'daily-breakout', type: 'score_target', path: 'risk', title: 'Bullrun Breakout 750+', description: 'Risk path with brick-break combo momentum.', game: 'breakout', target: 750 },
   { id: 'daily-tetris', type: 'score_target', path: 'easy', title: 'Stack Tetris to 700+', description: 'Safe score-chase path.', game: 'tetris', target: 700 },
-  { id: 'daily-crystal', type: 'score_target', path: 'exploration', title: 'Solve Crystal Quest 600+', description: 'Exploration path through clue-hunt energy.', game: 'crystal', target: 600 },
   { id: 'daily-asteroids', type: 'score_target', path: 'risk', title: 'Survive Asteroid Fork 800+', description: 'High-risk survival branch.', game: 'asteroids', target: 800 },
   { id: 'daily-faction-signal', type: 'multi_game_burst', path: 'faction', title: 'Feed your faction signal', description: 'Complete 2 runs in different games to help faction momentum.', required_runs: 2, required_unique_games: 2, window_ms: MS_PER_DAY },
 ];

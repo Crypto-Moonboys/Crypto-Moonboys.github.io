@@ -23,9 +23,6 @@ const wikiIndexPath = path.join(ROOT, 'js', 'wiki-index.json');
 const entityMapPath = path.join(ROOT, 'js', 'entity-map.json');
 const entityGraphPath = path.join(ROOT, 'js', 'entity-graph.json');
 const sitemapPath = path.join(ROOT, 'sitemap.xml');
-const questionPack1Path = path.join(ROOT, 'games', 'data', 'question_pack_001.json');
-const questionPack2Path = path.join(ROOT, 'games', 'data', 'question_pack_002.json');
-const crystalTrailPath = path.join(ROOT, 'games', 'data', 'crystal-maze-seed.json');
 
 const wikiFiles = fs.readdirSync(wikiDir).filter((file) => file.endsWith('.html') && file !== 'index.html');
 const wikiSlugs = new Set(wikiFiles.map((file) => file.replace(/\.html$/, '')));
@@ -94,9 +91,6 @@ const wikiIndexText = fs.readFileSync(wikiIndexPath, 'utf8');
 const entityMapText = fs.readFileSync(entityMapPath, 'utf8');
 const entityGraphText = fs.readFileSync(entityGraphPath, 'utf8');
 const sitemapText = fs.readFileSync(sitemapPath, 'utf8');
-const q1Text = fs.readFileSync(questionPack1Path, 'utf8');
-const q2Text = fs.readFileSync(questionPack2Path, 'utf8');
-const crystalTrailText = fs.readFileSync(crystalTrailPath, 'utf8');
 
 for (const slug of wikiSlugs) {
   assert.ok(
@@ -109,9 +103,6 @@ assertAllWikiUrlsResolve(wikiIndexText, 'js/wiki-index.json');
 assertAllWikiUrlsResolve(entityMapText, 'js/entity-map.json');
 assertAllWikiUrlsResolve(entityGraphText, 'js/entity-graph.json');
 assertAllWikiUrlsResolve(sitemapText, 'sitemap.xml');
-assertAllWikiUrlsResolve(q1Text, 'games/data/question_pack_001.json');
-assertAllWikiUrlsResolve(q2Text, 'games/data/question_pack_002.json');
-assertAllWikiUrlsResolve(crystalTrailText, 'games/data/crystal-maze-seed.json');
 
 const purgeSummary = JSON.parse(fs.readFileSync(purgeSummaryPath, 'utf8'));
 

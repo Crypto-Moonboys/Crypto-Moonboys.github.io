@@ -11,7 +11,6 @@ Runtime files in scope on this branch now include:
 - `games/asteroid-fork/index.html`
 - `games/block-topia-quest-maze/index.html`
 - `games/breakout-bullrun/index.html`
-- `games/crystal-quest/index.html`
 - `games/invaders-3008/index.html`
 - `games/pac-chain/index.html`
 - `games/snake-run/index.html`

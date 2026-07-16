@@ -560,7 +560,6 @@ The SWARMSY repository remains authoritative for SWARMSY runtime, provider, desk
 - `/games/block-topia/`
 - `/games/block-topia-quest-maze/`
 - `/games/breakout-bullrun/`
-- `/games/crystal-quest/`
 - `/games/invaders-3008/`
 - `/games/pac-chain/`
 - `/games/snake-run/`

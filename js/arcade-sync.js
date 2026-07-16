@@ -105,8 +105,6 @@ export const ArcadeSync = {
       breakout_bullrun: "breakout",
       "tetris-block-topia": "tetris",
       tetris_block_topia: "tetris",
-      "crystal-quest": "crystal",
-      crystal_quest: "crystal",
       "snake-run": "snake",
       snake_run: "snake",
       "block-topia-quest-maze": "btqm",

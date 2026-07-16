@@ -27,7 +27,6 @@
     "btqm:assets:hydrate": "node scripts/hydrate-btqm-generated-assets.mjs",
     "invaders:ship:hydrate": "node scripts/hydrate-invaders-player-ship.mjs",
     "test:invaders-ship": "npm run invaders:ship:hydrate && node scripts/invaders-player-ship-asset.test.mjs",
-    "test:crystal-quest": "node scripts/crystal-quest-signal-vault.test.mjs && node scripts/crystal-quest-wiki-trail.test.mjs && node scripts/crystal-quest-mobile-fullscreen-polish.test.mjs && node scripts/crystal-quest-living-machine-effects.test.mjs",
     "test:wiki-structure": "node wiki/validators/wiki-structure-check.js"
   },
   "keywords": [],
