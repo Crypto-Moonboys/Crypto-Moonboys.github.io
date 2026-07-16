@@ -30,6 +30,8 @@ const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'live-site-verify.yml')
 const source  = readFileSync(SCRIPT, 'utf8');
 const workflowSource = readFileSync(WORKFLOW, 'utf8');
 const pkgJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+const arcadeHubHtml = readFileSync(path.join(ROOT, 'games', 'index.html'), 'utf8');
+const leaderboardHtml = readFileSync(path.join(ROOT, 'games', 'leaderboard.html'), 'utf8');
 const { ARCADE_MANIFEST } = await import(pathToFileURL(path.join(ROOT, 'js', 'arcade', 'arcade-manifest.js')).href);
 
 // ── 1. Syntax check ───────────────────────────────────────────────────────────
@@ -208,6 +210,25 @@ assert.ok(
   'package.json must expose npm run test:live-site',
 );
 console.log('PASS: npm run test:live-site is defined');
+
+// ── 12. Public arcade copy rejects retired game/counter drift ──────────────────
+assert.ok(
+  !/crystal(?:\s|-)?quest/i.test(arcadeHubHtml) && !/crystal(?:\s|-)?quest/i.test(leaderboardHtml),
+  'public arcade pages must not reference Crystal Quest',
+);
+assert.ok(
+  !/\b8[\s-]?games?\b/i.test(arcadeHubHtml) &&
+    !/\beight[\s-]?games?\b/i.test(arcadeHubHtml) &&
+    !/\b8[\s-]?games?\b/i.test(leaderboardHtml) &&
+    !/\beight[\s-]?games?\b/i.test(leaderboardHtml),
+  'public arcade pages must not use outdated eight-game wording',
+);
+assert.ok(
+  arcadeHubHtml.includes('seven active Arcade games') &&
+    leaderboardHtml.includes('seven active Arcade games'),
+  'public arcade pages must state "seven active Arcade games"',
+);
+console.log('PASS: public arcade pages enforce seven-game copy and no Crystal Quest references');
 
 // Local Node TLS inspection errors should not make the post-deploy verifier
 // report a broken site when browser-backed checks can still load the same

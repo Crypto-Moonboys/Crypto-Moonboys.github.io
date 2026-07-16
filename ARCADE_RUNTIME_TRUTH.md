@@ -11,7 +11,7 @@ this document, it is not part of the live Moonboys Arcade runtime paths.
 
 ## Active Arcade Roster
 
-Eight games. All entries are in `js/arcade/arcade-manifest.js`.
+Seven games. All entries are in `js/arcade/arcade-manifest.js`.
 
 | Manifest ID | URL path | Bootstrap |
 |---|---|---|

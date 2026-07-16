@@ -49,7 +49,7 @@ check(!howToPlay.includes('not final XP authority'), 'how-to-play rejects old lo
 check(!howToPlay.includes('play freely'), 'how-to-play rejects play-before-link copy');
 check(!/50 Arcade XP/i.test(howToPlay), 'how-to-play never references 50 XP gate');
 
-check(gamesIndex.includes('All active games feed the shared submit path.'), 'games hub documents shared submit path');
+check(gamesIndex.includes('All seven active Arcade games feed the shared submit path.'), 'games hub documents shared submit path');
 check(!gamesIndex.includes('browser-local/pending'), 'games hub rejects browser-local/pending copy');
 check(!gamesIndex.includes('Local runs stay pending'), 'games hub rejects local-runs-stay-pending copy');
 check(!gamesIndex.includes('Unlinked runs'), 'games hub rejects unlinked runs copy');

@@ -1281,4 +1281,3 @@ body.sync-error #game-overlay {
 body.conflict-active #game-overlay {
   background: radial-gradient(circle at 20% 12%, rgba(255,0,80,.07), transparent 50%), #090c16;
 }
-

@@ -9,7 +9,7 @@ Where a game cannot comply, the reason must be documented in its bootstrap file.
 
 ---
 
-## Canonical 8-Game Roster
+## Canonical 7-Game Roster
 
 | Public title | URL path | Manifest ID | Bootstrap |
 |---|---|---|---|
@@ -211,7 +211,7 @@ The following CI tests enforce this contract:
 
 | Test file | What it enforces |
 |---|---|
-| `scripts/arcade-roguelite-protection.test.mjs` | All 8 games import and call `submitScore`; no HexGL; no bypass of shared path; sync-state separation; audit comment presence; pending queue key consistency |
+| `scripts/arcade-roguelite-protection.test.mjs` | All 7 games import and call `submitScore`; no HexGL; no bypass of shared path; sync-state separation; audit comment presence; pending queue key consistency |
 | `scripts/leaderboard-client-regression.test.mjs` | `submitScore` behavior: signed auth, unsigned fallback, API-unavailable queuing, unlinked local-only, state separation |
 | `scripts/arcade-architecture-audit.mjs` | Manifest integrity; no orphaned game directories |
 | `scripts/arcade-game-parity-audit.mjs` | Faction + mission hooks present in all active bootstraps |
