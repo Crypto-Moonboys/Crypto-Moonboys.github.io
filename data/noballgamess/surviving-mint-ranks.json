@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-15T05:44:33.696Z",
+  "generated_at": "2026-07-16T06:03:10.062Z",
   "templates": [
     {
       "template_id": 0,
@@ -603,7 +603,7 @@
     },
     {
       "template_id": 401910,
-      "live_assets": 1575,
+      "live_assets": 1875,
       "assets": [
         {
           "asset_id": "1099595973415",
@@ -8479,12 +8479,1512 @@
           "asset_id": "1099997877762",
           "original_mint_number": 1575,
           "surviving_mint_rank": 1575
+        },
+        {
+          "asset_id": "1099998385814",
+          "original_mint_number": 1576,
+          "surviving_mint_rank": 1576
+        },
+        {
+          "asset_id": "1099998385815",
+          "original_mint_number": 1577,
+          "surviving_mint_rank": 1577
+        },
+        {
+          "asset_id": "1099998385816",
+          "original_mint_number": 1578,
+          "surviving_mint_rank": 1578
+        },
+        {
+          "asset_id": "1099998385817",
+          "original_mint_number": 1579,
+          "surviving_mint_rank": 1579
+        },
+        {
+          "asset_id": "1099998385818",
+          "original_mint_number": 1580,
+          "surviving_mint_rank": 1580
+        },
+        {
+          "asset_id": "1099998385819",
+          "original_mint_number": 1581,
+          "surviving_mint_rank": 1581
+        },
+        {
+          "asset_id": "1099998385820",
+          "original_mint_number": 1582,
+          "surviving_mint_rank": 1582
+        },
+        {
+          "asset_id": "1099998385821",
+          "original_mint_number": 1583,
+          "surviving_mint_rank": 1583
+        },
+        {
+          "asset_id": "1099998385822",
+          "original_mint_number": 1584,
+          "surviving_mint_rank": 1584
+        },
+        {
+          "asset_id": "1099998385823",
+          "original_mint_number": 1585,
+          "surviving_mint_rank": 1585
+        },
+        {
+          "asset_id": "1099998385824",
+          "original_mint_number": 1586,
+          "surviving_mint_rank": 1586
+        },
+        {
+          "asset_id": "1099998385825",
+          "original_mint_number": 1587,
+          "surviving_mint_rank": 1587
+        },
+        {
+          "asset_id": "1099998385826",
+          "original_mint_number": 1588,
+          "surviving_mint_rank": 1588
+        },
+        {
+          "asset_id": "1099998385827",
+          "original_mint_number": 1589,
+          "surviving_mint_rank": 1589
+        },
+        {
+          "asset_id": "1099998385828",
+          "original_mint_number": 1590,
+          "surviving_mint_rank": 1590
+        },
+        {
+          "asset_id": "1099998385829",
+          "original_mint_number": 1591,
+          "surviving_mint_rank": 1591
+        },
+        {
+          "asset_id": "1099998385830",
+          "original_mint_number": 1592,
+          "surviving_mint_rank": 1592
+        },
+        {
+          "asset_id": "1099998385831",
+          "original_mint_number": 1593,
+          "surviving_mint_rank": 1593
+        },
+        {
+          "asset_id": "1099998385832",
+          "original_mint_number": 1594,
+          "surviving_mint_rank": 1594
+        },
+        {
+          "asset_id": "1099998385833",
+          "original_mint_number": 1595,
+          "surviving_mint_rank": 1595
+        },
+        {
+          "asset_id": "1099998385834",
+          "original_mint_number": 1596,
+          "surviving_mint_rank": 1596
+        },
+        {
+          "asset_id": "1099998385835",
+          "original_mint_number": 1597,
+          "surviving_mint_rank": 1597
+        },
+        {
+          "asset_id": "1099998385836",
+          "original_mint_number": 1598,
+          "surviving_mint_rank": 1598
+        },
+        {
+          "asset_id": "1099998385837",
+          "original_mint_number": 1599,
+          "surviving_mint_rank": 1599
+        },
+        {
+          "asset_id": "1099998385838",
+          "original_mint_number": 1600,
+          "surviving_mint_rank": 1600
+        },
+        {
+          "asset_id": "1099998385839",
+          "original_mint_number": 1601,
+          "surviving_mint_rank": 1601
+        },
+        {
+          "asset_id": "1099998385840",
+          "original_mint_number": 1602,
+          "surviving_mint_rank": 1602
+        },
+        {
+          "asset_id": "1099998385841",
+          "original_mint_number": 1603,
+          "surviving_mint_rank": 1603
+        },
+        {
+          "asset_id": "1099998385842",
+          "original_mint_number": 1604,
+          "surviving_mint_rank": 1604
+        },
+        {
+          "asset_id": "1099998385843",
+          "original_mint_number": 1605,
+          "surviving_mint_rank": 1605
+        },
+        {
+          "asset_id": "1099998385844",
+          "original_mint_number": 1606,
+          "surviving_mint_rank": 1606
+        },
+        {
+          "asset_id": "1099998385845",
+          "original_mint_number": 1607,
+          "surviving_mint_rank": 1607
+        },
+        {
+          "asset_id": "1099998385846",
+          "original_mint_number": 1608,
+          "surviving_mint_rank": 1608
+        },
+        {
+          "asset_id": "1099998385847",
+          "original_mint_number": 1609,
+          "surviving_mint_rank": 1609
+        },
+        {
+          "asset_id": "1099998385848",
+          "original_mint_number": 1610,
+          "surviving_mint_rank": 1610
+        },
+        {
+          "asset_id": "1099998385849",
+          "original_mint_number": 1611,
+          "surviving_mint_rank": 1611
+        },
+        {
+          "asset_id": "1099998385850",
+          "original_mint_number": 1612,
+          "surviving_mint_rank": 1612
+        },
+        {
+          "asset_id": "1099998385851",
+          "original_mint_number": 1613,
+          "surviving_mint_rank": 1613
+        },
+        {
+          "asset_id": "1099998385852",
+          "original_mint_number": 1614,
+          "surviving_mint_rank": 1614
+        },
+        {
+          "asset_id": "1099998385853",
+          "original_mint_number": 1615,
+          "surviving_mint_rank": 1615
+        },
+        {
+          "asset_id": "1099998385854",
+          "original_mint_number": 1616,
+          "surviving_mint_rank": 1616
+        },
+        {
+          "asset_id": "1099998385855",
+          "original_mint_number": 1617,
+          "surviving_mint_rank": 1617
+        },
+        {
+          "asset_id": "1099998385856",
+          "original_mint_number": 1618,
+          "surviving_mint_rank": 1618
+        },
+        {
+          "asset_id": "1099998385857",
+          "original_mint_number": 1619,
+          "surviving_mint_rank": 1619
+        },
+        {
+          "asset_id": "1099998385858",
+          "original_mint_number": 1620,
+          "surviving_mint_rank": 1620
+        },
+        {
+          "asset_id": "1099998385859",
+          "original_mint_number": 1621,
+          "surviving_mint_rank": 1621
+        },
+        {
+          "asset_id": "1099998385860",
+          "original_mint_number": 1622,
+          "surviving_mint_rank": 1622
+        },
+        {
+          "asset_id": "1099998385861",
+          "original_mint_number": 1623,
+          "surviving_mint_rank": 1623
+        },
+        {
+          "asset_id": "1099998385862",
+          "original_mint_number": 1624,
+          "surviving_mint_rank": 1624
+        },
+        {
+          "asset_id": "1099998385863",
+          "original_mint_number": 1625,
+          "surviving_mint_rank": 1625
+        },
+        {
+          "asset_id": "1099998386082",
+          "original_mint_number": 1626,
+          "surviving_mint_rank": 1626
+        },
+        {
+          "asset_id": "1099998386083",
+          "original_mint_number": 1627,
+          "surviving_mint_rank": 1627
+        },
+        {
+          "asset_id": "1099998386084",
+          "original_mint_number": 1628,
+          "surviving_mint_rank": 1628
+        },
+        {
+          "asset_id": "1099998386085",
+          "original_mint_number": 1629,
+          "surviving_mint_rank": 1629
+        },
+        {
+          "asset_id": "1099998386086",
+          "original_mint_number": 1630,
+          "surviving_mint_rank": 1630
+        },
+        {
+          "asset_id": "1099998386087",
+          "original_mint_number": 1631,
+          "surviving_mint_rank": 1631
+        },
+        {
+          "asset_id": "1099998386088",
+          "original_mint_number": 1632,
+          "surviving_mint_rank": 1632
+        },
+        {
+          "asset_id": "1099998386089",
+          "original_mint_number": 1633,
+          "surviving_mint_rank": 1633
+        },
+        {
+          "asset_id": "1099998386090",
+          "original_mint_number": 1634,
+          "surviving_mint_rank": 1634
+        },
+        {
+          "asset_id": "1099998386091",
+          "original_mint_number": 1635,
+          "surviving_mint_rank": 1635
+        },
+        {
+          "asset_id": "1099998386092",
+          "original_mint_number": 1636,
+          "surviving_mint_rank": 1636
+        },
+        {
+          "asset_id": "1099998386093",
+          "original_mint_number": 1637,
+          "surviving_mint_rank": 1637
+        },
+        {
+          "asset_id": "1099998386094",
+          "original_mint_number": 1638,
+          "surviving_mint_rank": 1638
+        },
+        {
+          "asset_id": "1099998386095",
+          "original_mint_number": 1639,
+          "surviving_mint_rank": 1639
+        },
+        {
+          "asset_id": "1099998386096",
+          "original_mint_number": 1640,
+          "surviving_mint_rank": 1640
+        },
+        {
+          "asset_id": "1099998386097",
+          "original_mint_number": 1641,
+          "surviving_mint_rank": 1641
+        },
+        {
+          "asset_id": "1099998386098",
+          "original_mint_number": 1642,
+          "surviving_mint_rank": 1642
+        },
+        {
+          "asset_id": "1099998386099",
+          "original_mint_number": 1643,
+          "surviving_mint_rank": 1643
+        },
+        {
+          "asset_id": "1099998386100",
+          "original_mint_number": 1644,
+          "surviving_mint_rank": 1644
+        },
+        {
+          "asset_id": "1099998386101",
+          "original_mint_number": 1645,
+          "surviving_mint_rank": 1645
+        },
+        {
+          "asset_id": "1099998386102",
+          "original_mint_number": 1646,
+          "surviving_mint_rank": 1646
+        },
+        {
+          "asset_id": "1099998386103",
+          "original_mint_number": 1647,
+          "surviving_mint_rank": 1647
+        },
+        {
+          "asset_id": "1099998386104",
+          "original_mint_number": 1648,
+          "surviving_mint_rank": 1648
+        },
+        {
+          "asset_id": "1099998386105",
+          "original_mint_number": 1649,
+          "surviving_mint_rank": 1649
+        },
+        {
+          "asset_id": "1099998386106",
+          "original_mint_number": 1650,
+          "surviving_mint_rank": 1650
+        },
+        {
+          "asset_id": "1099998386107",
+          "original_mint_number": 1651,
+          "surviving_mint_rank": 1651
+        },
+        {
+          "asset_id": "1099998386108",
+          "original_mint_number": 1652,
+          "surviving_mint_rank": 1652
+        },
+        {
+          "asset_id": "1099998386109",
+          "original_mint_number": 1653,
+          "surviving_mint_rank": 1653
+        },
+        {
+          "asset_id": "1099998386110",
+          "original_mint_number": 1654,
+          "surviving_mint_rank": 1654
+        },
+        {
+          "asset_id": "1099998386111",
+          "original_mint_number": 1655,
+          "surviving_mint_rank": 1655
+        },
+        {
+          "asset_id": "1099998386112",
+          "original_mint_number": 1656,
+          "surviving_mint_rank": 1656
+        },
+        {
+          "asset_id": "1099998386113",
+          "original_mint_number": 1657,
+          "surviving_mint_rank": 1657
+        },
+        {
+          "asset_id": "1099998386114",
+          "original_mint_number": 1658,
+          "surviving_mint_rank": 1658
+        },
+        {
+          "asset_id": "1099998386115",
+          "original_mint_number": 1659,
+          "surviving_mint_rank": 1659
+        },
+        {
+          "asset_id": "1099998386116",
+          "original_mint_number": 1660,
+          "surviving_mint_rank": 1660
+        },
+        {
+          "asset_id": "1099998386117",
+          "original_mint_number": 1661,
+          "surviving_mint_rank": 1661
+        },
+        {
+          "asset_id": "1099998386118",
+          "original_mint_number": 1662,
+          "surviving_mint_rank": 1662
+        },
+        {
+          "asset_id": "1099998386119",
+          "original_mint_number": 1663,
+          "surviving_mint_rank": 1663
+        },
+        {
+          "asset_id": "1099998386120",
+          "original_mint_number": 1664,
+          "surviving_mint_rank": 1664
+        },
+        {
+          "asset_id": "1099998386121",
+          "original_mint_number": 1665,
+          "surviving_mint_rank": 1665
+        },
+        {
+          "asset_id": "1099998386122",
+          "original_mint_number": 1666,
+          "surviving_mint_rank": 1666
+        },
+        {
+          "asset_id": "1099998386123",
+          "original_mint_number": 1667,
+          "surviving_mint_rank": 1667
+        },
+        {
+          "asset_id": "1099998386124",
+          "original_mint_number": 1668,
+          "surviving_mint_rank": 1668
+        },
+        {
+          "asset_id": "1099998386125",
+          "original_mint_number": 1669,
+          "surviving_mint_rank": 1669
+        },
+        {
+          "asset_id": "1099998386126",
+          "original_mint_number": 1670,
+          "surviving_mint_rank": 1670
+        },
+        {
+          "asset_id": "1099998386127",
+          "original_mint_number": 1671,
+          "surviving_mint_rank": 1671
+        },
+        {
+          "asset_id": "1099998386128",
+          "original_mint_number": 1672,
+          "surviving_mint_rank": 1672
+        },
+        {
+          "asset_id": "1099998386129",
+          "original_mint_number": 1673,
+          "surviving_mint_rank": 1673
+        },
+        {
+          "asset_id": "1099998386130",
+          "original_mint_number": 1674,
+          "surviving_mint_rank": 1674
+        },
+        {
+          "asset_id": "1099998386131",
+          "original_mint_number": 1675,
+          "surviving_mint_rank": 1675
+        },
+        {
+          "asset_id": "1099998386134",
+          "original_mint_number": 1676,
+          "surviving_mint_rank": 1676
+        },
+        {
+          "asset_id": "1099998386135",
+          "original_mint_number": 1677,
+          "surviving_mint_rank": 1677
+        },
+        {
+          "asset_id": "1099998386136",
+          "original_mint_number": 1678,
+          "surviving_mint_rank": 1678
+        },
+        {
+          "asset_id": "1099998386137",
+          "original_mint_number": 1679,
+          "surviving_mint_rank": 1679
+        },
+        {
+          "asset_id": "1099998386138",
+          "original_mint_number": 1680,
+          "surviving_mint_rank": 1680
+        },
+        {
+          "asset_id": "1099998386139",
+          "original_mint_number": 1681,
+          "surviving_mint_rank": 1681
+        },
+        {
+          "asset_id": "1099998386140",
+          "original_mint_number": 1682,
+          "surviving_mint_rank": 1682
+        },
+        {
+          "asset_id": "1099998386141",
+          "original_mint_number": 1683,
+          "surviving_mint_rank": 1683
+        },
+        {
+          "asset_id": "1099998386142",
+          "original_mint_number": 1684,
+          "surviving_mint_rank": 1684
+        },
+        {
+          "asset_id": "1099998386143",
+          "original_mint_number": 1685,
+          "surviving_mint_rank": 1685
+        },
+        {
+          "asset_id": "1099998386144",
+          "original_mint_number": 1686,
+          "surviving_mint_rank": 1686
+        },
+        {
+          "asset_id": "1099998386145",
+          "original_mint_number": 1687,
+          "surviving_mint_rank": 1687
+        },
+        {
+          "asset_id": "1099998386146",
+          "original_mint_number": 1688,
+          "surviving_mint_rank": 1688
+        },
+        {
+          "asset_id": "1099998386147",
+          "original_mint_number": 1689,
+          "surviving_mint_rank": 1689
+        },
+        {
+          "asset_id": "1099998386148",
+          "original_mint_number": 1690,
+          "surviving_mint_rank": 1690
+        },
+        {
+          "asset_id": "1099998386149",
+          "original_mint_number": 1691,
+          "surviving_mint_rank": 1691
+        },
+        {
+          "asset_id": "1099998386150",
+          "original_mint_number": 1692,
+          "surviving_mint_rank": 1692
+        },
+        {
+          "asset_id": "1099998386151",
+          "original_mint_number": 1693,
+          "surviving_mint_rank": 1693
+        },
+        {
+          "asset_id": "1099998386152",
+          "original_mint_number": 1694,
+          "surviving_mint_rank": 1694
+        },
+        {
+          "asset_id": "1099998386153",
+          "original_mint_number": 1695,
+          "surviving_mint_rank": 1695
+        },
+        {
+          "asset_id": "1099998386154",
+          "original_mint_number": 1696,
+          "surviving_mint_rank": 1696
+        },
+        {
+          "asset_id": "1099998386155",
+          "original_mint_number": 1697,
+          "surviving_mint_rank": 1697
+        },
+        {
+          "asset_id": "1099998386156",
+          "original_mint_number": 1698,
+          "surviving_mint_rank": 1698
+        },
+        {
+          "asset_id": "1099998386157",
+          "original_mint_number": 1699,
+          "surviving_mint_rank": 1699
+        },
+        {
+          "asset_id": "1099998386158",
+          "original_mint_number": 1700,
+          "surviving_mint_rank": 1700
+        },
+        {
+          "asset_id": "1099998386159",
+          "original_mint_number": 1701,
+          "surviving_mint_rank": 1701
+        },
+        {
+          "asset_id": "1099998386160",
+          "original_mint_number": 1702,
+          "surviving_mint_rank": 1702
+        },
+        {
+          "asset_id": "1099998386161",
+          "original_mint_number": 1703,
+          "surviving_mint_rank": 1703
+        },
+        {
+          "asset_id": "1099998386162",
+          "original_mint_number": 1704,
+          "surviving_mint_rank": 1704
+        },
+        {
+          "asset_id": "1099998386163",
+          "original_mint_number": 1705,
+          "surviving_mint_rank": 1705
+        },
+        {
+          "asset_id": "1099998386164",
+          "original_mint_number": 1706,
+          "surviving_mint_rank": 1706
+        },
+        {
+          "asset_id": "1099998386165",
+          "original_mint_number": 1707,
+          "surviving_mint_rank": 1707
+        },
+        {
+          "asset_id": "1099998386166",
+          "original_mint_number": 1708,
+          "surviving_mint_rank": 1708
+        },
+        {
+          "asset_id": "1099998386167",
+          "original_mint_number": 1709,
+          "surviving_mint_rank": 1709
+        },
+        {
+          "asset_id": "1099998386168",
+          "original_mint_number": 1710,
+          "surviving_mint_rank": 1710
+        },
+        {
+          "asset_id": "1099998386169",
+          "original_mint_number": 1711,
+          "surviving_mint_rank": 1711
+        },
+        {
+          "asset_id": "1099998386170",
+          "original_mint_number": 1712,
+          "surviving_mint_rank": 1712
+        },
+        {
+          "asset_id": "1099998386171",
+          "original_mint_number": 1713,
+          "surviving_mint_rank": 1713
+        },
+        {
+          "asset_id": "1099998386172",
+          "original_mint_number": 1714,
+          "surviving_mint_rank": 1714
+        },
+        {
+          "asset_id": "1099998386173",
+          "original_mint_number": 1715,
+          "surviving_mint_rank": 1715
+        },
+        {
+          "asset_id": "1099998386174",
+          "original_mint_number": 1716,
+          "surviving_mint_rank": 1716
+        },
+        {
+          "asset_id": "1099998386175",
+          "original_mint_number": 1717,
+          "surviving_mint_rank": 1717
+        },
+        {
+          "asset_id": "1099998386176",
+          "original_mint_number": 1718,
+          "surviving_mint_rank": 1718
+        },
+        {
+          "asset_id": "1099998386177",
+          "original_mint_number": 1719,
+          "surviving_mint_rank": 1719
+        },
+        {
+          "asset_id": "1099998386178",
+          "original_mint_number": 1720,
+          "surviving_mint_rank": 1720
+        },
+        {
+          "asset_id": "1099998386179",
+          "original_mint_number": 1721,
+          "surviving_mint_rank": 1721
+        },
+        {
+          "asset_id": "1099998386180",
+          "original_mint_number": 1722,
+          "surviving_mint_rank": 1722
+        },
+        {
+          "asset_id": "1099998386181",
+          "original_mint_number": 1723,
+          "surviving_mint_rank": 1723
+        },
+        {
+          "asset_id": "1099998386182",
+          "original_mint_number": 1724,
+          "surviving_mint_rank": 1724
+        },
+        {
+          "asset_id": "1099998386183",
+          "original_mint_number": 1725,
+          "surviving_mint_rank": 1725
+        },
+        {
+          "asset_id": "1099998386185",
+          "original_mint_number": 1726,
+          "surviving_mint_rank": 1726
+        },
+        {
+          "asset_id": "1099998386186",
+          "original_mint_number": 1727,
+          "surviving_mint_rank": 1727
+        },
+        {
+          "asset_id": "1099998386187",
+          "original_mint_number": 1728,
+          "surviving_mint_rank": 1728
+        },
+        {
+          "asset_id": "1099998386188",
+          "original_mint_number": 1729,
+          "surviving_mint_rank": 1729
+        },
+        {
+          "asset_id": "1099998386189",
+          "original_mint_number": 1730,
+          "surviving_mint_rank": 1730
+        },
+        {
+          "asset_id": "1099998386190",
+          "original_mint_number": 1731,
+          "surviving_mint_rank": 1731
+        },
+        {
+          "asset_id": "1099998386191",
+          "original_mint_number": 1732,
+          "surviving_mint_rank": 1732
+        },
+        {
+          "asset_id": "1099998386192",
+          "original_mint_number": 1733,
+          "surviving_mint_rank": 1733
+        },
+        {
+          "asset_id": "1099998386193",
+          "original_mint_number": 1734,
+          "surviving_mint_rank": 1734
+        },
+        {
+          "asset_id": "1099998386194",
+          "original_mint_number": 1735,
+          "surviving_mint_rank": 1735
+        },
+        {
+          "asset_id": "1099998386195",
+          "original_mint_number": 1736,
+          "surviving_mint_rank": 1736
+        },
+        {
+          "asset_id": "1099998386196",
+          "original_mint_number": 1737,
+          "surviving_mint_rank": 1737
+        },
+        {
+          "asset_id": "1099998386197",
+          "original_mint_number": 1738,
+          "surviving_mint_rank": 1738
+        },
+        {
+          "asset_id": "1099998386198",
+          "original_mint_number": 1739,
+          "surviving_mint_rank": 1739
+        },
+        {
+          "asset_id": "1099998386199",
+          "original_mint_number": 1740,
+          "surviving_mint_rank": 1740
+        },
+        {
+          "asset_id": "1099998386200",
+          "original_mint_number": 1741,
+          "surviving_mint_rank": 1741
+        },
+        {
+          "asset_id": "1099998386201",
+          "original_mint_number": 1742,
+          "surviving_mint_rank": 1742
+        },
+        {
+          "asset_id": "1099998386202",
+          "original_mint_number": 1743,
+          "surviving_mint_rank": 1743
+        },
+        {
+          "asset_id": "1099998386203",
+          "original_mint_number": 1744,
+          "surviving_mint_rank": 1744
+        },
+        {
+          "asset_id": "1099998386204",
+          "original_mint_number": 1745,
+          "surviving_mint_rank": 1745
+        },
+        {
+          "asset_id": "1099998386205",
+          "original_mint_number": 1746,
+          "surviving_mint_rank": 1746
+        },
+        {
+          "asset_id": "1099998386206",
+          "original_mint_number": 1747,
+          "surviving_mint_rank": 1747
+        },
+        {
+          "asset_id": "1099998386207",
+          "original_mint_number": 1748,
+          "surviving_mint_rank": 1748
+        },
+        {
+          "asset_id": "1099998386208",
+          "original_mint_number": 1749,
+          "surviving_mint_rank": 1749
+        },
+        {
+          "asset_id": "1099998386209",
+          "original_mint_number": 1750,
+          "surviving_mint_rank": 1750
+        },
+        {
+          "asset_id": "1099998386210",
+          "original_mint_number": 1751,
+          "surviving_mint_rank": 1751
+        },
+        {
+          "asset_id": "1099998386211",
+          "original_mint_number": 1752,
+          "surviving_mint_rank": 1752
+        },
+        {
+          "asset_id": "1099998386212",
+          "original_mint_number": 1753,
+          "surviving_mint_rank": 1753
+        },
+        {
+          "asset_id": "1099998386213",
+          "original_mint_number": 1754,
+          "surviving_mint_rank": 1754
+        },
+        {
+          "asset_id": "1099998386214",
+          "original_mint_number": 1755,
+          "surviving_mint_rank": 1755
+        },
+        {
+          "asset_id": "1099998386215",
+          "original_mint_number": 1756,
+          "surviving_mint_rank": 1756
+        },
+        {
+          "asset_id": "1099998386216",
+          "original_mint_number": 1757,
+          "surviving_mint_rank": 1757
+        },
+        {
+          "asset_id": "1099998386217",
+          "original_mint_number": 1758,
+          "surviving_mint_rank": 1758
+        },
+        {
+          "asset_id": "1099998386218",
+          "original_mint_number": 1759,
+          "surviving_mint_rank": 1759
+        },
+        {
+          "asset_id": "1099998386219",
+          "original_mint_number": 1760,
+          "surviving_mint_rank": 1760
+        },
+        {
+          "asset_id": "1099998386220",
+          "original_mint_number": 1761,
+          "surviving_mint_rank": 1761
+        },
+        {
+          "asset_id": "1099998386221",
+          "original_mint_number": 1762,
+          "surviving_mint_rank": 1762
+        },
+        {
+          "asset_id": "1099998386222",
+          "original_mint_number": 1763,
+          "surviving_mint_rank": 1763
+        },
+        {
+          "asset_id": "1099998386223",
+          "original_mint_number": 1764,
+          "surviving_mint_rank": 1764
+        },
+        {
+          "asset_id": "1099998386224",
+          "original_mint_number": 1765,
+          "surviving_mint_rank": 1765
+        },
+        {
+          "asset_id": "1099998386225",
+          "original_mint_number": 1766,
+          "surviving_mint_rank": 1766
+        },
+        {
+          "asset_id": "1099998386226",
+          "original_mint_number": 1767,
+          "surviving_mint_rank": 1767
+        },
+        {
+          "asset_id": "1099998386227",
+          "original_mint_number": 1768,
+          "surviving_mint_rank": 1768
+        },
+        {
+          "asset_id": "1099998386228",
+          "original_mint_number": 1769,
+          "surviving_mint_rank": 1769
+        },
+        {
+          "asset_id": "1099998386229",
+          "original_mint_number": 1770,
+          "surviving_mint_rank": 1770
+        },
+        {
+          "asset_id": "1099998386230",
+          "original_mint_number": 1771,
+          "surviving_mint_rank": 1771
+        },
+        {
+          "asset_id": "1099998386231",
+          "original_mint_number": 1772,
+          "surviving_mint_rank": 1772
+        },
+        {
+          "asset_id": "1099998386232",
+          "original_mint_number": 1773,
+          "surviving_mint_rank": 1773
+        },
+        {
+          "asset_id": "1099998386233",
+          "original_mint_number": 1774,
+          "surviving_mint_rank": 1774
+        },
+        {
+          "asset_id": "1099998386234",
+          "original_mint_number": 1775,
+          "surviving_mint_rank": 1775
+        },
+        {
+          "asset_id": "1099998386329",
+          "original_mint_number": 1776,
+          "surviving_mint_rank": 1776
+        },
+        {
+          "asset_id": "1099998386330",
+          "original_mint_number": 1777,
+          "surviving_mint_rank": 1777
+        },
+        {
+          "asset_id": "1099998386331",
+          "original_mint_number": 1778,
+          "surviving_mint_rank": 1778
+        },
+        {
+          "asset_id": "1099998386332",
+          "original_mint_number": 1779,
+          "surviving_mint_rank": 1779
+        },
+        {
+          "asset_id": "1099998386333",
+          "original_mint_number": 1780,
+          "surviving_mint_rank": 1780
+        },
+        {
+          "asset_id": "1099998386334",
+          "original_mint_number": 1781,
+          "surviving_mint_rank": 1781
+        },
+        {
+          "asset_id": "1099998386335",
+          "original_mint_number": 1782,
+          "surviving_mint_rank": 1782
+        },
+        {
+          "asset_id": "1099998386336",
+          "original_mint_number": 1783,
+          "surviving_mint_rank": 1783
+        },
+        {
+          "asset_id": "1099998386337",
+          "original_mint_number": 1784,
+          "surviving_mint_rank": 1784
+        },
+        {
+          "asset_id": "1099998386338",
+          "original_mint_number": 1785,
+          "surviving_mint_rank": 1785
+        },
+        {
+          "asset_id": "1099998386339",
+          "original_mint_number": 1786,
+          "surviving_mint_rank": 1786
+        },
+        {
+          "asset_id": "1099998386340",
+          "original_mint_number": 1787,
+          "surviving_mint_rank": 1787
+        },
+        {
+          "asset_id": "1099998386341",
+          "original_mint_number": 1788,
+          "surviving_mint_rank": 1788
+        },
+        {
+          "asset_id": "1099998386342",
+          "original_mint_number": 1789,
+          "surviving_mint_rank": 1789
+        },
+        {
+          "asset_id": "1099998386343",
+          "original_mint_number": 1790,
+          "surviving_mint_rank": 1790
+        },
+        {
+          "asset_id": "1099998386344",
+          "original_mint_number": 1791,
+          "surviving_mint_rank": 1791
+        },
+        {
+          "asset_id": "1099998386345",
+          "original_mint_number": 1792,
+          "surviving_mint_rank": 1792
+        },
+        {
+          "asset_id": "1099998386346",
+          "original_mint_number": 1793,
+          "surviving_mint_rank": 1793
+        },
+        {
+          "asset_id": "1099998386347",
+          "original_mint_number": 1794,
+          "surviving_mint_rank": 1794
+        },
+        {
+          "asset_id": "1099998386348",
+          "original_mint_number": 1795,
+          "surviving_mint_rank": 1795
+        },
+        {
+          "asset_id": "1099998386349",
+          "original_mint_number": 1796,
+          "surviving_mint_rank": 1796
+        },
+        {
+          "asset_id": "1099998386350",
+          "original_mint_number": 1797,
+          "surviving_mint_rank": 1797
+        },
+        {
+          "asset_id": "1099998386351",
+          "original_mint_number": 1798,
+          "surviving_mint_rank": 1798
+        },
+        {
+          "asset_id": "1099998386352",
+          "original_mint_number": 1799,
+          "surviving_mint_rank": 1799
+        },
+        {
+          "asset_id": "1099998386353",
+          "original_mint_number": 1800,
+          "surviving_mint_rank": 1800
+        },
+        {
+          "asset_id": "1099998386354",
+          "original_mint_number": 1801,
+          "surviving_mint_rank": 1801
+        },
+        {
+          "asset_id": "1099998386355",
+          "original_mint_number": 1802,
+          "surviving_mint_rank": 1802
+        },
+        {
+          "asset_id": "1099998386356",
+          "original_mint_number": 1803,
+          "surviving_mint_rank": 1803
+        },
+        {
+          "asset_id": "1099998386357",
+          "original_mint_number": 1804,
+          "surviving_mint_rank": 1804
+        },
+        {
+          "asset_id": "1099998386358",
+          "original_mint_number": 1805,
+          "surviving_mint_rank": 1805
+        },
+        {
+          "asset_id": "1099998386359",
+          "original_mint_number": 1806,
+          "surviving_mint_rank": 1806
+        },
+        {
+          "asset_id": "1099998386360",
+          "original_mint_number": 1807,
+          "surviving_mint_rank": 1807
+        },
+        {
+          "asset_id": "1099998386361",
+          "original_mint_number": 1808,
+          "surviving_mint_rank": 1808
+        },
+        {
+          "asset_id": "1099998386362",
+          "original_mint_number": 1809,
+          "surviving_mint_rank": 1809
+        },
+        {
+          "asset_id": "1099998386363",
+          "original_mint_number": 1810,
+          "surviving_mint_rank": 1810
+        },
+        {
+          "asset_id": "1099998386364",
+          "original_mint_number": 1811,
+          "surviving_mint_rank": 1811
+        },
+        {
+          "asset_id": "1099998386365",
+          "original_mint_number": 1812,
+          "surviving_mint_rank": 1812
+        },
+        {
+          "asset_id": "1099998386366",
+          "original_mint_number": 1813,
+          "surviving_mint_rank": 1813
+        },
+        {
+          "asset_id": "1099998386367",
+          "original_mint_number": 1814,
+          "surviving_mint_rank": 1814
+        },
+        {
+          "asset_id": "1099998386368",
+          "original_mint_number": 1815,
+          "surviving_mint_rank": 1815
+        },
+        {
+          "asset_id": "1099998386369",
+          "original_mint_number": 1816,
+          "surviving_mint_rank": 1816
+        },
+        {
+          "asset_id": "1099998386370",
+          "original_mint_number": 1817,
+          "surviving_mint_rank": 1817
+        },
+        {
+          "asset_id": "1099998386371",
+          "original_mint_number": 1818,
+          "surviving_mint_rank": 1818
+        },
+        {
+          "asset_id": "1099998386372",
+          "original_mint_number": 1819,
+          "surviving_mint_rank": 1819
+        },
+        {
+          "asset_id": "1099998386373",
+          "original_mint_number": 1820,
+          "surviving_mint_rank": 1820
+        },
+        {
+          "asset_id": "1099998386374",
+          "original_mint_number": 1821,
+          "surviving_mint_rank": 1821
+        },
+        {
+          "asset_id": "1099998386375",
+          "original_mint_number": 1822,
+          "surviving_mint_rank": 1822
+        },
+        {
+          "asset_id": "1099998386376",
+          "original_mint_number": 1823,
+          "surviving_mint_rank": 1823
+        },
+        {
+          "asset_id": "1099998386377",
+          "original_mint_number": 1824,
+          "surviving_mint_rank": 1824
+        },
+        {
+          "asset_id": "1099998386378",
+          "original_mint_number": 1825,
+          "surviving_mint_rank": 1825
+        },
+        {
+          "asset_id": "1099998386389",
+          "original_mint_number": 1826,
+          "surviving_mint_rank": 1826
+        },
+        {
+          "asset_id": "1099998386390",
+          "original_mint_number": 1827,
+          "surviving_mint_rank": 1827
+        },
+        {
+          "asset_id": "1099998386391",
+          "original_mint_number": 1828,
+          "surviving_mint_rank": 1828
+        },
+        {
+          "asset_id": "1099998386392",
+          "original_mint_number": 1829,
+          "surviving_mint_rank": 1829
+        },
+        {
+          "asset_id": "1099998386393",
+          "original_mint_number": 1830,
+          "surviving_mint_rank": 1830
+        },
+        {
+          "asset_id": "1099998386394",
+          "original_mint_number": 1831,
+          "surviving_mint_rank": 1831
+        },
+        {
+          "asset_id": "1099998386395",
+          "original_mint_number": 1832,
+          "surviving_mint_rank": 1832
+        },
+        {
+          "asset_id": "1099998386396",
+          "original_mint_number": 1833,
+          "surviving_mint_rank": 1833
+        },
+        {
+          "asset_id": "1099998386397",
+          "original_mint_number": 1834,
+          "surviving_mint_rank": 1834
+        },
+        {
+          "asset_id": "1099998386398",
+          "original_mint_number": 1835,
+          "surviving_mint_rank": 1835
+        },
+        {
+          "asset_id": "1099998386399",
+          "original_mint_number": 1836,
+          "surviving_mint_rank": 1836
+        },
+        {
+          "asset_id": "1099998386400",
+          "original_mint_number": 1837,
+          "surviving_mint_rank": 1837
+        },
+        {
+          "asset_id": "1099998386401",
+          "original_mint_number": 1838,
+          "surviving_mint_rank": 1838
+        },
+        {
+          "asset_id": "1099998386402",
+          "original_mint_number": 1839,
+          "surviving_mint_rank": 1839
+        },
+        {
+          "asset_id": "1099998386403",
+          "original_mint_number": 1840,
+          "surviving_mint_rank": 1840
+        },
+        {
+          "asset_id": "1099998386404",
+          "original_mint_number": 1841,
+          "surviving_mint_rank": 1841
+        },
+        {
+          "asset_id": "1099998386405",
+          "original_mint_number": 1842,
+          "surviving_mint_rank": 1842
+        },
+        {
+          "asset_id": "1099998386406",
+          "original_mint_number": 1843,
+          "surviving_mint_rank": 1843
+        },
+        {
+          "asset_id": "1099998386407",
+          "original_mint_number": 1844,
+          "surviving_mint_rank": 1844
+        },
+        {
+          "asset_id": "1099998386408",
+          "original_mint_number": 1845,
+          "surviving_mint_rank": 1845
+        },
+        {
+          "asset_id": "1099998386409",
+          "original_mint_number": 1846,
+          "surviving_mint_rank": 1846
+        },
+        {
+          "asset_id": "1099998386410",
+          "original_mint_number": 1847,
+          "surviving_mint_rank": 1847
+        },
+        {
+          "asset_id": "1099998386411",
+          "original_mint_number": 1848,
+          "surviving_mint_rank": 1848
+        },
+        {
+          "asset_id": "1099998386412",
+          "original_mint_number": 1849,
+          "surviving_mint_rank": 1849
+        },
+        {
+          "asset_id": "1099998386413",
+          "original_mint_number": 1850,
+          "surviving_mint_rank": 1850
+        },
+        {
+          "asset_id": "1099998386414",
+          "original_mint_number": 1851,
+          "surviving_mint_rank": 1851
+        },
+        {
+          "asset_id": "1099998386415",
+          "original_mint_number": 1852,
+          "surviving_mint_rank": 1852
+        },
+        {
+          "asset_id": "1099998386416",
+          "original_mint_number": 1853,
+          "surviving_mint_rank": 1853
+        },
+        {
+          "asset_id": "1099998386417",
+          "original_mint_number": 1854,
+          "surviving_mint_rank": 1854
+        },
+        {
+          "asset_id": "1099998386418",
+          "original_mint_number": 1855,
+          "surviving_mint_rank": 1855
+        },
+        {
+          "asset_id": "1099998386419",
+          "original_mint_number": 1856,
+          "surviving_mint_rank": 1856
+        },
+        {
+          "asset_id": "1099998386420",
+          "original_mint_number": 1857,
+          "surviving_mint_rank": 1857
+        },
+        {
+          "asset_id": "1099998386421",
+          "original_mint_number": 1858,
+          "surviving_mint_rank": 1858
+        },
+        {
+          "asset_id": "1099998386422",
+          "original_mint_number": 1859,
+          "surviving_mint_rank": 1859
+        },
+        {
+          "asset_id": "1099998386423",
+          "original_mint_number": 1860,
+          "surviving_mint_rank": 1860
+        },
+        {
+          "asset_id": "1099998386424",
+          "original_mint_number": 1861,
+          "surviving_mint_rank": 1861
+        },
+        {
+          "asset_id": "1099998386425",
+          "original_mint_number": 1862,
+          "surviving_mint_rank": 1862
+        },
+        {
+          "asset_id": "1099998386426",
+          "original_mint_number": 1863,
+          "surviving_mint_rank": 1863
+        },
+        {
+          "asset_id": "1099998386427",
+          "original_mint_number": 1864,
+          "surviving_mint_rank": 1864
+        },
+        {
+          "asset_id": "1099998386428",
+          "original_mint_number": 1865,
+          "surviving_mint_rank": 1865
+        },
+        {
+          "asset_id": "1099998386429",
+          "original_mint_number": 1866,
+          "surviving_mint_rank": 1866
+        },
+        {
+          "asset_id": "1099998386430",
+          "original_mint_number": 1867,
+          "surviving_mint_rank": 1867
+        },
+        {
+          "asset_id": "1099998386431",
+          "original_mint_number": 1868,
+          "surviving_mint_rank": 1868
+        },
+        {
+          "asset_id": "1099998386432",
+          "original_mint_number": 1869,
+          "surviving_mint_rank": 1869
+        },
+        {
+          "asset_id": "1099998386433",
+          "original_mint_number": 1870,
+          "surviving_mint_rank": 1870
+        },
+        {
+          "asset_id": "1099998386434",
+          "original_mint_number": 1871,
+          "surviving_mint_rank": 1871
+        },
+        {
+          "asset_id": "1099998386435",
+          "original_mint_number": 1872,
+          "surviving_mint_rank": 1872
+        },
+        {
+          "asset_id": "1099998386436",
+          "original_mint_number": 1873,
+          "surviving_mint_rank": 1873
+        },
+        {
+          "asset_id": "1099998386437",
+          "original_mint_number": 1874,
+          "surviving_mint_rank": 1874
+        },
+        {
+          "asset_id": "1099998386438",
+          "original_mint_number": 1875,
+          "surviving_mint_rank": 1875
         }
       ]
     },
     {
       "template_id": 401911,
-      "live_assets": 1575,
+      "live_assets": 1625,
       "assets": [
         {
           "asset_id": "1099595990729",
@@ -16360,6 +17860,256 @@
           "asset_id": "1099997877468",
           "original_mint_number": 1575,
           "surviving_mint_rank": 1575
+        },
+        {
+          "asset_id": "1099998386262",
+          "original_mint_number": 1576,
+          "surviving_mint_rank": 1576
+        },
+        {
+          "asset_id": "1099998386263",
+          "original_mint_number": 1577,
+          "surviving_mint_rank": 1577
+        },
+        {
+          "asset_id": "1099998386264",
+          "original_mint_number": 1578,
+          "surviving_mint_rank": 1578
+        },
+        {
+          "asset_id": "1099998386265",
+          "original_mint_number": 1579,
+          "surviving_mint_rank": 1579
+        },
+        {
+          "asset_id": "1099998386266",
+          "original_mint_number": 1580,
+          "surviving_mint_rank": 1580
+        },
+        {
+          "asset_id": "1099998386267",
+          "original_mint_number": 1581,
+          "surviving_mint_rank": 1581
+        },
+        {
+          "asset_id": "1099998386268",
+          "original_mint_number": 1582,
+          "surviving_mint_rank": 1582
+        },
+        {
+          "asset_id": "1099998386269",
+          "original_mint_number": 1583,
+          "surviving_mint_rank": 1583
+        },
+        {
+          "asset_id": "1099998386270",
+          "original_mint_number": 1584,
+          "surviving_mint_rank": 1584
+        },
+        {
+          "asset_id": "1099998386271",
+          "original_mint_number": 1585,
+          "surviving_mint_rank": 1585
+        },
+        {
+          "asset_id": "1099998386272",
+          "original_mint_number": 1586,
+          "surviving_mint_rank": 1586
+        },
+        {
+          "asset_id": "1099998386273",
+          "original_mint_number": 1587,
+          "surviving_mint_rank": 1587
+        },
+        {
+          "asset_id": "1099998386274",
+          "original_mint_number": 1588,
+          "surviving_mint_rank": 1588
+        },
+        {
+          "asset_id": "1099998386275",
+          "original_mint_number": 1589,
+          "surviving_mint_rank": 1589
+        },
+        {
+          "asset_id": "1099998386276",
+          "original_mint_number": 1590,
+          "surviving_mint_rank": 1590
+        },
+        {
+          "asset_id": "1099998386277",
+          "original_mint_number": 1591,
+          "surviving_mint_rank": 1591
+        },
+        {
+          "asset_id": "1099998386278",
+          "original_mint_number": 1592,
+          "surviving_mint_rank": 1592
+        },
+        {
+          "asset_id": "1099998386279",
+          "original_mint_number": 1593,
+          "surviving_mint_rank": 1593
+        },
+        {
+          "asset_id": "1099998386280",
+          "original_mint_number": 1594,
+          "surviving_mint_rank": 1594
+        },
+        {
+          "asset_id": "1099998386281",
+          "original_mint_number": 1595,
+          "surviving_mint_rank": 1595
+        },
+        {
+          "asset_id": "1099998386282",
+          "original_mint_number": 1596,
+          "surviving_mint_rank": 1596
+        },
+        {
+          "asset_id": "1099998386283",
+          "original_mint_number": 1597,
+          "surviving_mint_rank": 1597
+        },
+        {
+          "asset_id": "1099998386284",
+          "original_mint_number": 1598,
+          "surviving_mint_rank": 1598
+        },
+        {
+          "asset_id": "1099998386285",
+          "original_mint_number": 1599,
+          "surviving_mint_rank": 1599
+        },
+        {
+          "asset_id": "1099998386286",
+          "original_mint_number": 1600,
+          "surviving_mint_rank": 1600
+        },
+        {
+          "asset_id": "1099998386287",
+          "original_mint_number": 1601,
+          "surviving_mint_rank": 1601
+        },
+        {
+          "asset_id": "1099998386288",
+          "original_mint_number": 1602,
+          "surviving_mint_rank": 1602
+        },
+        {
+          "asset_id": "1099998386289",
+          "original_mint_number": 1603,
+          "surviving_mint_rank": 1603
+        },
+        {
+          "asset_id": "1099998386290",
+          "original_mint_number": 1604,
+          "surviving_mint_rank": 1604
+        },
+        {
+          "asset_id": "1099998386291",
+          "original_mint_number": 1605,
+          "surviving_mint_rank": 1605
+        },
+        {
+          "asset_id": "1099998386292",
+          "original_mint_number": 1606,
+          "surviving_mint_rank": 1606
+        },
+        {
+          "asset_id": "1099998386293",
+          "original_mint_number": 1607,
+          "surviving_mint_rank": 1607
+        },
+        {
+          "asset_id": "1099998386294",
+          "original_mint_number": 1608,
+          "surviving_mint_rank": 1608
+        },
+        {
+          "asset_id": "1099998386295",
+          "original_mint_number": 1609,
+          "surviving_mint_rank": 1609
+        },
+        {
+          "asset_id": "1099998386296",
+          "original_mint_number": 1610,
+          "surviving_mint_rank": 1610
+        },
+        {
+          "asset_id": "1099998386297",
+          "original_mint_number": 1611,
+          "surviving_mint_rank": 1611
+        },
+        {
+          "asset_id": "1099998386298",
+          "original_mint_number": 1612,
+          "surviving_mint_rank": 1612
+        },
+        {
+          "asset_id": "1099998386299",
+          "original_mint_number": 1613,
+          "surviving_mint_rank": 1613
+        },
+        {
+          "asset_id": "1099998386300",
+          "original_mint_number": 1614,
+          "surviving_mint_rank": 1614
+        },
+        {
+          "asset_id": "1099998386301",
+          "original_mint_number": 1615,
+          "surviving_mint_rank": 1615
+        },
+        {
+          "asset_id": "1099998386302",
+          "original_mint_number": 1616,
+          "surviving_mint_rank": 1616
+        },
+        {
+          "asset_id": "1099998386303",
+          "original_mint_number": 1617,
+          "surviving_mint_rank": 1617
+        },
+        {
+          "asset_id": "1099998386304",
+          "original_mint_number": 1618,
+          "surviving_mint_rank": 1618
+        },
+        {
+          "asset_id": "1099998386305",
+          "original_mint_number": 1619,
+          "surviving_mint_rank": 1619
+        },
+        {
+          "asset_id": "1099998386306",
+          "original_mint_number": 1620,
+          "surviving_mint_rank": 1620
+        },
+        {
+          "asset_id": "1099998386307",
+          "original_mint_number": 1621,
+          "surviving_mint_rank": 1621
+        },
+        {
+          "asset_id": "1099998386308",
+          "original_mint_number": 1622,
+          "surviving_mint_rank": 1622
+        },
+        {
+          "asset_id": "1099998386309",
+          "original_mint_number": 1623,
+          "surviving_mint_rank": 1623
+        },
+        {
+          "asset_id": "1099998386310",
+          "original_mint_number": 1624,
+          "surviving_mint_rank": 1624
+        },
+        {
+          "asset_id": "1099998386311",
+          "original_mint_number": 1625,
+          "surviving_mint_rank": 1625
         }
       ]
     },
