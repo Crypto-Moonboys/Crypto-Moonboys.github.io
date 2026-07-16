@@ -78,7 +78,7 @@
       controls: ['↑↓←→ / WASD — Move', 'SPACE / Bomb button — Place bomb', 'ESC — Return to title', 'Touch: D-pad + Bomb button in fullscreen'],
       tips: ['Defeat boss to unlock exit', 'Daily quests reset at UTC midnight', 'Clear all 6 zones = 2× score bonus']
     },
-    
+
   };
 
   function detectMeta() {
