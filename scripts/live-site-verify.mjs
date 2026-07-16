@@ -23,7 +23,7 @@
  *   /                         home — centered single-column layout
  *   /index.html               home — centered single-column layout
  *   /search.html              wiki search
- *   /games/                   arcade hub — 8-game roster
+ *   /games/                   arcade hub — live roster
  *   /games/leaderboard.html   leaderboard page
  *   /community.html
  *   /dashboard.html           editorial wiki intelligence
@@ -74,7 +74,7 @@
  *   ✓ no 404s for generated runtime asset categories
  *
  * Arcade / Roguelite XP Loop (/games/):
- *   ✓ canonical 8-game roster is present (by text/link)
+ *   ✓ canonical arcade roster is present (by text/link)
  *   ✓ no HexGL reference visible
  *   ✓ arcade event bus script requested
  *
@@ -234,14 +234,13 @@ const BTQM_LIVE_ASSET_CHECKS = [
   { label: 'fx (slash)',       path: '/art/btqm/generated/fx/slash-6f.png' },
 ];
 
-// Canonical 8-game arcade roster — must be visible on /games/.
+// Canonical arcade roster — must be visible on /games/.
 const CANONICAL_GAMES = [
   'Invaders 3008',
   'Pac-Chain',
   'Asteroid Fork',
   'Breakout Bullrun',
   'Tetris Block Topia',
-  'Crystal Quest',
   'Block Topia Quest Maze',
   'SnakeRun 3008',
 ];
@@ -804,7 +803,7 @@ async function testPage(page, pathname) {
 
 // ── /games/ arcade hub checks ────────────────────────────────────────────────
 async function testGamesHub(page, url) {
-  process.stdout.write(`\n  [arcade-hub] Checking 8-game roster and XP Loop signals…\n`);
+  process.stdout.write(`\n  [arcade-hub] Checking arcade roster and XP Loop signals…\n`);
 
   const hubDiag = await page.evaluate((games) => {
     const text = document.body.textContent;

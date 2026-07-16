@@ -62,7 +62,6 @@ function detectGameId() {
   if (path.includes('tetris')) return 'tetris';
   if (path.includes('asteroid')) return 'asteroid-fork';
   if (path.includes('block-topia-quest-maze')) return 'btqm';
-  if (path.includes('crystal-quest')) return 'crystal';
   return 'global';
 }
 

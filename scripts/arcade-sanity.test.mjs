@@ -8,7 +8,6 @@
  *   - Asteroid Fork
  *   - Pac-Chain
  *   - Tetris Block Topia
- *   - Crystal Quest
  *
  * Each game is tested for:
  *   1. config.js exports canonical game id and label
@@ -80,16 +79,6 @@ const GAMES = [
     canonicalId: 'tetris',
     adapterExport: 'TETRIS_ADAPTER',
   },
-  {
-    name: 'Crystal Quest',
-    gameDir: 'games/crystal-quest',
-    configPath: 'js/arcade/games/crystal-quest/config.js',
-    bootstrapPath: 'js/arcade/games/crystal-quest/bootstrap.js',
-    canonicalId: 'crystal',
-    adapterExport: 'CRYSTAL_QUEST_ADAPTER',
-    /** Crystal Quest uses a DOM renderer — no canvas element expected. */
-    noCanvas: true,
-  },
 ];
 
 // All arcade game pages that use the fullscreen-only shell path.
@@ -100,7 +89,6 @@ const FULLSCREEN_ARCADE_LINKS = [
   '/games/breakout-bullrun/',
   '/games/tetris-block-topia/',
   '/games/block-topia-quest-maze/',
-  '/games/crystal-quest/',
   '/games/snake-run/',
   '/games/block-topia/',
 ];

@@ -708,25 +708,12 @@ await test('Client: auth-expired error copy is accurate', async () => {
   );
 });
 
-await test('Crystal Quest: completion message is plain valid text (no mojibake)', async () => {
-  const cqSrc = await readFile('js/arcade/games/crystal-quest/bootstrap.js');
-  // The corrupted bytes 0xc3 0xb0 0xc5 0xb8 etc encode as ðŸ† in Latin-1-interpreted UTF-8.
-  // Check that neither the literal mojibake sequence nor the raw byte sequence is present.
-  assert(
-    !cqSrc.includes('\u00f0\u0178\u008f\u2020') &&
-      !cqSrc.includes('\xc3\xb0\xc5\xb8') &&
-      cqSrc.includes('Run complete. Score submitted to leaderboard.'),
-    'Crystal Quest completion string must not contain mojibake and must contain valid plain-text copy',
-  );
-});
 
-await test('Crystal Quest and Block Topia bootstrap no longer include unused canSubmitIdentity helper', async () => {
-  const cqSrc = await readFile('js/arcade/games/crystal-quest/bootstrap.js');
+await test('Block Topia bootstrap no longer includes unused canSubmitIdentity helper', async () => {
   const btqmSrc = await readFile('js/arcade/games/block-topia-quest-maze/bootstrap.js');
   assert(
-    !cqSrc.includes('function canSubmitIdentity(') &&
-      !btqmSrc.includes('function canSubmitIdentity('),
-    'unused canSubmitIdentity helper should be removed from both bootstraps',
+    !btqmSrc.includes('function canSubmitIdentity('),
+    'Block Topia should not ship unused canSubmitIdentity helper',
   );
 });
 

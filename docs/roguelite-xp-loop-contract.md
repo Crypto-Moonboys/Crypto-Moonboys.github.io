@@ -9,7 +9,7 @@ Where a game cannot comply, the reason must be documented in its bootstrap file.
 
 ---
 
-## Canonical 8-Game Roster
+## Canonical 7-Game Roster
 
 | Public title | URL path | Manifest ID | Bootstrap |
 |---|---|---|---|
@@ -18,7 +18,6 @@ Where a game cannot comply, the reason must be documented in its bootstrap file.
 | Asteroid Fork | `/games/asteroid-fork/` | `asteroids` | `js/arcade/games/asteroid-fork/bootstrap.js` |
 | Breakout Bullrun | `/games/breakout-bullrun/` | `breakout` | `js/arcade/games/breakout-bullrun/bootstrap.js` |
 | Tetris Block Topia | `/games/tetris-block-topia/` | `tetris` | `js/arcade/games/tetris/bootstrap.js` |
-| Crystal Quest | `/games/crystal-quest/` | `crystal` | `js/arcade/games/crystal-quest/bootstrap.js` |
 | Block Topia Quest Maze | `/games/block-topia-quest-maze/` | `blocktopia` | `js/arcade/games/block-topia-quest-maze/bootstrap.js` |
 | Snake Run | `/games/snake-run/` | `snake` | `js/arcade/games/snake-run/bootstrap.js` |
 
@@ -212,7 +211,7 @@ The following CI tests enforce this contract:
 
 | Test file | What it enforces |
 |---|---|
-| `scripts/arcade-roguelite-protection.test.mjs` | All 8 games import and call `submitScore`; no HexGL; no bypass of shared path; sync-state separation; audit comment presence; pending queue key consistency |
+| `scripts/arcade-roguelite-protection.test.mjs` | All 7 games import and call `submitScore`; no HexGL; no bypass of shared path; sync-state separation; audit comment presence; pending queue key consistency |
 | `scripts/leaderboard-client-regression.test.mjs` | `submitScore` behavior: signed auth, unsigned fallback, API-unavailable queuing, unlinked local-only, state separation |
 | `scripts/arcade-architecture-audit.mjs` | Manifest integrity; no orphaned game directories |
 | `scripts/arcade-game-parity-audit.mjs` | Faction + mission hooks present in all active bootstraps |

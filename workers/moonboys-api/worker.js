@@ -1010,8 +1010,6 @@ function normalizeArcadeGameKey(value) {
     breakout_bullrun: 'breakout',
     'tetris-block-topia': 'tetris',
     tetris_block_topia: 'tetris',
-    'crystal-quest': 'crystal',
-    crystal_quest: 'crystal',
     'snake-run': 'snake',
     snake_run: 'snake',
     'block-topia-quest-maze': 'btqm',
@@ -1019,7 +1017,7 @@ function normalizeArcadeGameKey(value) {
     blocktopia: 'btqm',
   };
   const normalized = aliases[key] || key || 'global';
-  const allowed = new Set(['invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'crystal', 'snake', 'btqm', 'global']);
+  const allowed = new Set(['invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'snake', 'btqm', 'global']);
   return allowed.has(normalized) ? normalized : 'global';
 }
 
@@ -1044,7 +1042,6 @@ function computeNormalizedArcadePoints(game, rawScore, localMetaPoints) {
     asteroids: 1.15,
     breakout: 1.15,
     tetris: 1.05,
-    crystal: 1.0,
     snake: 0.95,
     btqm: 1.25,
     global: 1.0,

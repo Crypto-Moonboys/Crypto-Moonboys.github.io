@@ -12,7 +12,7 @@
  *      top-level page HTML or unrelated JS modules.
  *
  * Active games: invaders-3008, pac-chain, asteroid-fork, breakout-bullrun,
- *   tetris-block-topia, crystal-quest, block-topia-quest-maze, snake-run
+ *   tetris-block-topia, block-topia-quest-maze, snake-run
  *
  * Usage:
  *   node scripts/arcade-architecture-audit.mjs
@@ -151,7 +151,6 @@ const ACTIVE_GAME_DIRS = [
   'games/snake-run',
   'games/tetris-block-topia',
   'games/block-topia-quest-maze',
-  'games/crystal-quest',
 ];
 
 // Mapping from game directory to expected manifest id.
@@ -163,7 +162,6 @@ const DIR_TO_ID = {
   'games/snake-run': 'snake',
   'games/tetris-block-topia': 'tetris',
   'games/block-topia-quest-maze': 'blocktopia',
-  'games/crystal-quest': 'crystal',
 };
 
 // Pages that do NOT need data-game-id because they use a legacy bootstrap

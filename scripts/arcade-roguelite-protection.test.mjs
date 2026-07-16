@@ -6,11 +6,11 @@
  * feeding the shared ArcadeMeta/ArcadeSync/faction path after accepted runs.
  *
  * Additional checks added by the XP Loop audit (2026-05):
- *   - All 8 canonical games are present in ACTIVE_GAMES
+ *   - All canonical live games are present in ACTIVE_GAMES
  *   - No HexGL game IDs or bootstrap paths appear in active game files or manifest
  *   - Unlinked users are never incorrectly shown as XP synced
  *   - Sync-state labels: public score, pending, and XP sync are separated
- *   - ArcadeSync.normalizeGame maps all 8 canonical game-directory IDs
+ *   - ArcadeSync.normalizeGame maps all canonical game-directory IDs
  *   - Pending XP queue key is defined only in arcade-sync and consumed through import
  *   - Post-run audit comment blocks are present in each bootstrap (documentation)
  */
@@ -30,7 +30,6 @@ const ACTIVE_GAMES = [
   ['Pac-Chain', 'js/arcade/games/pac-chain/bootstrap.js'],
   ['Tetris Block Topia', 'js/arcade/games/tetris/bootstrap.js'],
   ['Asteroid Fork', 'js/arcade/games/asteroid-fork/bootstrap.js'],
-  ['Crystal Quest', 'js/arcade/games/crystal-quest/bootstrap.js'],
   ['Block Topia Quest Maze', 'js/arcade/games/block-topia-quest-maze/bootstrap.js'],
 ];
 
@@ -136,7 +135,7 @@ for (const [name, relPath] of ACTIVE_GAMES) {
   assert.doesNotMatch(source, /hexgl/i, `${name} bootstrap must not reference HexGL`);
 }
 
-// ── Canonical game IDs: all 8 game-directory names must map via normalizeGame ─
+// ── Canonical game IDs: all game-directory names must map via normalizeGame ─
 
 const arcadeSync = await read('js/arcade-sync.js');
 for (const alias of [
@@ -145,7 +144,6 @@ for (const alias of [
   'asteroid-fork',
   'breakout-bullrun',
   'tetris-block-topia',
-  'crystal-quest',
   'block-topia-quest-maze',
   'snake-run',
 ]) {

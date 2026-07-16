@@ -11,7 +11,7 @@ this document, it is not part of the live Moonboys Arcade runtime paths.
 
 ## Active Arcade Roster
 
-Eight games. All entries are in `js/arcade/arcade-manifest.js`.
+Seven games. All entries are in `js/arcade/arcade-manifest.js`.
 
 | Manifest ID | URL path | Bootstrap |
 |---|---|---|
@@ -22,7 +22,6 @@ Eight games. All entries are in `js/arcade/arcade-manifest.js`.
 | `snake` | `/games/snake-run/` | `js/arcade/games/snake-run/bootstrap.js` |
 | `tetris` | `/games/tetris-block-topia/` | `js/arcade/games/tetris/bootstrap.js` |
 | `blocktopia` | `/games/block-topia-quest-maze/` | `js/arcade/games/block-topia-quest-maze/bootstrap.js` |
-| `crystal` | `/games/crystal-quest/` | `js/arcade/games/crystal-quest/bootstrap.js` |
 
 Any game not in this list is **not active**. Do not create new game directories
 without adding a manifest entry.
@@ -121,7 +120,6 @@ and touch chrome). The bootstrap reads `.game-stage` dimensions and sets
 | breakout-bullrun | resize handler in bootstrap | `brkCanvas` |
 | tetris-block-topia | resize handler in bootstrap | `tetCanvas` |
 | block-topia-quest-maze | Phaser ScaleManager + `arcade-overlay-resize` | `btqmCanvas` |
-| crystal-quest | CSS-driven (text layout, no canvas resize needed) | `questTitle` (element) |
 
 There is **no** separate canvas sizing layer in `game-fullscreen.js`. The shell
 only manages the stage container. Each game owns its own canvas dimensions.
@@ -140,7 +138,6 @@ only manages the stage container. Each game owns its own canvas dimensions.
 | `lr-fire` | invaders-3008 | ← → + fire button |
 | `asteroid` | asteroid-fork | rotate-L / thrust / rotate-R / fire row |
 | `tetris` | tetris-block-topia | ← rotate → / soft-drop / hard-drop |
-| `null` | crystal-quest | no touch pad (keyboard input game) |
 
 **Landscape split** (coarse pointer, landscape orientation):
 - Class: `.overlay-touch-landscape` / `.touch-gamepad-split`
@@ -211,7 +208,7 @@ identity/state/faction components), then use one of the following mount paths.
 
 | Games | Pattern | Notes |
 |---|---|---|
-| invaders-3008, pac-chain, asteroid-fork, tetris-block-topia, crystal-quest, snake-run, block-topia-quest-maze | direct `mountGame()` + explicit `bootstrapXxx` import | Current default live path |
+| invaders-3008, pac-chain, asteroid-fork, tetris-block-topia, snake-run, block-topia-quest-maze | direct `mountGame()` + explicit `bootstrapXxx` import | Current default live path |
 | breakout-bullrun | `autoMountGame()` pilot via `data-game-id=\"breakout\"`, with manual fallback to `bootstrapBreakoutBullrun` | Uses `js/arcade/core/auto-mount-game.js` |
 
 `arcade-manifest.js` keeps `adapterExport` metadata for audit/manifest parity, but

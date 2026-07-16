@@ -360,7 +360,7 @@ async function waitTick() {
       json: async () => ({ linked: false, telegram_id: null, error: 'not_linked' }),
     }),
   });
-  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'crystal-quest' });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'snake-run' });
   assert.equal(result.ok, false, 'fabricated local identity must not pass competitive route access');
   assert.equal(result.reason, 'not_linked', 'fabricated local identity should fail as not_linked when the server cannot confirm /gklink');
   assert.ok(byId.get('tg-sync-gate-modal'), 'fabricated local identity should render the Telegram activation modal');

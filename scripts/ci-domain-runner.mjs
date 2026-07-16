@@ -52,7 +52,6 @@ const GROUPS = {
     ['npm', 'run', 'test:btqm-runtime-assets'],
     ['node', 'scripts/btqm-bonus-battle-mode.test.mjs'],
     ['node', 'scripts/arcade-roguelite-protection.test.mjs'],
-    ['npm', 'run', 'test:crystal-quest'],
     ['node', 'scripts/arcade-leaderboard-layout.test.mjs'],
     ['node', 'scripts/blocktopia-entry-auth.test.mjs'],
     ['node', 'scripts/blocktopia-reconnect-protection.test.mjs'],

@@ -78,11 +78,7 @@
       controls: ['↑↓←→ / WASD — Move', 'SPACE / Bomb button — Place bomb', 'ESC — Return to title', 'Touch: D-pad + Bomb button in fullscreen'],
       tips: ['Defeat boss to unlock exit', 'Daily quests reset at UTC midnight', 'Clear all 6 zones = 2× score bonus']
     },
-    questTitle: {
-      label: '🧩 Crystal Quest', color: '#7adcff', touchScheme: null,
-      controls: ['Type answer in the input field', 'Press Enter or Submit Answer', 'Use Skip — 2 per run', 'Correct streak = bonus score'],
-      tips: ['Follow the wiki signal trail', 'Read the clue + linked page carefully', 'Build streak for max bonus', 'Wrong answer stays on same question']
-    }
+
   };
 
   function detectMeta() {
@@ -1659,7 +1655,7 @@
     }
     if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
       // Only fire if the currently focused element is NOT a game control input
-      // (e.g. text input in Crystal Quest) to avoid double-firing.
+      // (e.g. text input fields) to avoid double-firing.
       var focused = document.activeElement;
       var tag = focused ? focused.tagName : '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
