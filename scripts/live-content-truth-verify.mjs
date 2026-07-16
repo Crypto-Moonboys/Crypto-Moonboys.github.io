@@ -107,10 +107,10 @@ const PAGES = [
     path: '/about.html',
     label: 'about',
     required: [
-      'Crypto Moonboys is the creator umbrella',
-      'There are two valid routes',
-      'Path 1: build a Moonboy character identity.',
-      'Path 2: keep an existing identity, business, product, brand or project and use SWARMSY.',
+      'Crypto Moonboys is the Graffiti Kings creator umbrella',
+      'Build a Moonboy identity or bring the identity, art, business, product or brand you already own.',
+      'Crypto Moonboys is not a game, NFT project, wiki, token project or chatbot.',
+      'The tools serve the umbrella.',
     ],
     banned: [
       'world\'s first Living Web3 Wiki',
@@ -138,7 +138,7 @@ const PAGES = [
     label: 'canonical wiki entry',
     required: [
       'CRYPTO MOONBOYS',
-      'ONE UMBRELLA. TWO PATHS.',
+      'ONE UMBRELLA. TWO WAYS TO JOIN.',
       'Crypto Moonboys is not a game.',
       'THE TWO PATHS COMPARED',
     ],

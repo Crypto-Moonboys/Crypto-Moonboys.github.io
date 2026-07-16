@@ -49,7 +49,7 @@ const FORBIDDEN_TERMS = [
   { label: 'play-earn-build', value: ['Play.', 'Earn.', 'Build.'].join(' ') },
   { label: 'join-hodl-warriors', value: ['Join', 'the', 'HODL', 'Warriors'].join(' ') },
   { label: 'claim-free-nfts', value: ['Claim', 'free', 'NFTs'].join(' ') },
-  { label: 'automatic-hodl-warrior', value: ['every', 'qualifying', 'unique', '1/1', 'holder', 'becomes', 'a', 'HODL', 'Warrior'].join(' ') },
+  { label: 'automatic-hodl-warrior', value: ['crypto', 'holders', 'automatically', 'become', 'HODL', 'Warriors'].join(' ') },
   { label: 'term-1', value: ['Space', 'Agent'].join(' ') },
   { label: 'term-2', value: ['space', 'agent'].join('-') },
   { label: 'term-3', value: ['space', 'cryptomoonboys', 'com'].join('.') },

@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+const normalizeEol = (value) => String(value).replace(/\r\n/g, '\n');
 const checks = [];
 function check(condition, message) {
   checks.push({ ok: !!condition, message });
@@ -296,7 +297,7 @@ check(liveFeedBlock.includes('csp-live-cta') && liveFeedBlock.includes('Link Tel
 check(incubator.includes('data-csp-panel') && !incubator.includes('homepage-right-panel'), 'gkniftyheads-incubator standalone data-csp-panel mount remains outside homepage-right-panel shell');
 check(blockTopiaPage.includes('data-csp-panel') && blockTopiaPage.includes('bt-gate__status-compat-mount') && blockTopiaPage.includes('hidden') && blockTopiaPage.includes('aria-hidden="true"'), 'games/block-topia retains a hidden compatibility data-csp-panel mount');
 check(blockTopiaPage.includes('data-csp-panel') && !blockTopiaPage.includes('homepage-right-panel'), 'games/block-topia standalone data-csp-panel mount remains outside homepage-right-panel shell');
-check(read('games/block-topia/styles.css').includes('.bt-gate__status-compat-mount {\n  display: none !important;\n}'), 'compatibility mount is forced non-visual in CSS');
+check(normalizeEol(read('games/block-topia/styles.css')).includes('.bt-gate__status-compat-mount {\n  display: none !important;\n}'), 'compatibility mount is forced non-visual in CSS');
 check(!blockTopiaPage.includes('class="csp-panel') && !blockTopiaPage.includes("class='csp-panel") && !blockTopiaPage.includes('Player Live Feed'), 'games/block-topia entrance does not render a visible csp-panel card or Player Live Feed copy');
 // Top comment reflects new architecture
 check(!csp.includes('data-csp-panel) is the single right-rail live source'), 'top comment no longer claims data-csp-panel is the only right-rail source');
