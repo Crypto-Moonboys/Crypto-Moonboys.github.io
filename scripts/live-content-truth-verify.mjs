@@ -108,7 +108,7 @@ const PAGES = [
     label: 'about',
     required: [
       'Crypto Moonboys is the Graffiti Kings creator umbrella',
-      'Build a Moonboy identity or bring the identity, art, business, product or brand you already own and use SWARMSY to create, plan, brand and grow.',
+      'Build a Moonboy identity or bring the identity you already own.',
       'It carries more than 40 years of Graffiti Kings street culture into a connected creator movement using modern AI, community systems, public knowledge, games, optional blockchain ownership and creator-led worldbuilding.',
       'Crypto Moonboys is not a game, NFT project, wiki, token project or chatbot. Those are tools and layers inside the wider system.',
     ],
