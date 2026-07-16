@@ -2,7 +2,7 @@
   if (typeof window === 'undefined' || window.__INVADERS_RANDOM_ASSET_LAYER__) return;
   window.__INVADERS_RANDOM_ASSET_LAYER__ = true;
 
-  const ASSET_VERSION = 'invaders-random-assets-20260716';
+  const ASSET_VERSION = 'invaders-stable-skins-20260716';
   const ASSET_BASE = '/art/invaders/generated/';
   const invaderFiles = [
     'invader meme one.png',
@@ -92,7 +92,7 @@
   ];
 
   let activeBoss = null;
-  const invaderSkinByCell = new Map();
+  const invaderTracks = [];
 
   function isBossLabel(text) {
     const label = String(text || '').toUpperCase();
@@ -189,20 +189,51 @@
   }
 
   function chooseInvaderSkin(x, y, w, h) {
-    const gridX = Math.round(Number(x) / 6);
-    const gridY = Math.round(Number(y) / 6);
-    const key = `${gridX}|${gridY}|${Math.round(Number(w))}|${Math.round(Number(h))}`;
-    let skin = invaderSkinByCell.get(key);
-    if (skin === undefined) {
-      const seed = Math.abs(Math.sin(gridX * 12.9898 + gridY * 78.233 + Number(w) * 4.17) * 43758.5453);
-      skin = Math.floor((seed - Math.floor(seed)) * invaderImages.length) % invaderImages.length;
-      invaderSkinByCell.set(key, skin);
-      if (invaderSkinByCell.size > 220) {
-        const first = invaderSkinByCell.keys().next().value;
-        invaderSkinByCell.delete(first);
+    const now = performance.now();
+    const frame = Math.floor(now / 24);
+    const cx = Number(x) + Number(w) / 2;
+    const cy = Number(y) + Number(h) / 2;
+    let best = null;
+    let bestDist = Infinity;
+
+    for (let i = invaderTracks.length - 1; i >= 0; i--) {
+      const track = invaderTracks[i];
+      if (now - track.lastSeen > 1800) {
+        invaderTracks.splice(i, 1);
+        continue;
+      }
+      if (track.frame === frame) continue;
+      if (Math.abs(track.w - Number(w)) > 8 || Math.abs(track.h - Number(h)) > 8) continue;
+      const dist = Math.hypot(track.cx - cx, track.cy - cy);
+      if (dist < bestDist) {
+        best = track;
+        bestDist = dist;
       }
     }
-    return skin;
+
+    if (!best || bestDist > 34) {
+      const seed = Math.abs(Math.sin(cx * 12.9898 + cy * 78.233 + now * 0.013) * 43758.5453);
+      best = {
+        cx,
+        cy,
+        w: Number(w),
+        h: Number(h),
+        skin: Math.floor((seed - Math.floor(seed)) * invaderImages.length) % invaderImages.length,
+        lastSeen: now,
+        frame,
+      };
+      invaderTracks.push(best);
+      while (invaderTracks.length > 120) invaderTracks.shift();
+    } else {
+      best.cx = cx;
+      best.cy = cy;
+      best.w = Number(w);
+      best.h = Number(h);
+      best.lastSeen = now;
+      best.frame = frame;
+    }
+
+    return best.skin;
   }
 
   function drawInvaderAura(ctx, x, y, w, h, skin) {
