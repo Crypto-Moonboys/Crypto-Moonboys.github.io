@@ -27,6 +27,14 @@ const EXCLUDED_FILE_PATTERNS = [
 ];
 
 const FORBIDDEN_COPY = [
+  { label: 'living-web3-wiki', pattern: /\bLiving\s+Web3\s+Wiki\b/i },
+  { label: 'crypto-moonboys-living-web3-wiki', pattern: /\bCrypto\s+Moonboys\s+is\s+the\s+living\s+Web3\s+wiki\b/i },
+  { label: 'join-hodl-warriors', pattern: /\bJoin\s+the\s+HODL\s+Warriors\b/i },
+  { label: 'become-hodl-warrior', pattern: /\bBecome\s+a\s+HODL\s+Warrior\b/i },
+  { label: 'automatic-hodl-warrior', pattern: /\bevery\s+qualifying\s+unique\s+1\/1\s+holder\s+becomes\s+a\s+HODL\s+Warrior\b/i },
+  { label: 'claim-free-nfts', pattern: /\bClaim\s+free\s+NFTs\b/i },
+  { label: 'earn-play-build', pattern: /\bPlay\.\s*Earn\.\s*Build\./i },
+  { label: 'all-holders-hodl-warrior', pattern: /\banyone\s+who\s+holds\s+crypto\s+automatically\s+becomes\s+a\s+HODL\s+Warrior\b/i },
   { label: 'coming-soon', pattern: /\bcoming\s+soon\b/i },
   { label: 'comming-soon-typo', pattern: /\bcomming\s+soon\b/i },
   { label: 'under-construction', pattern: /\bunder\s+construction\b/i },
