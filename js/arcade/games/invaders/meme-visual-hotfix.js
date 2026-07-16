@@ -2,7 +2,7 @@
   if (typeof window === 'undefined' || window.__INVADERS_RANDOM_ASSET_LAYER__) return;
   window.__INVADERS_RANDOM_ASSET_LAYER__ = true;
 
-  const ASSET_VERSION = 'invaders-stable-skins-20260716';
+  const ASSET_VERSION = 'invaders-lean-sprites-20260716';
   const ASSET_BASE = '/art/invaders/generated/';
   const invaderFiles = [
     'invader meme one.png',
@@ -42,10 +42,6 @@
     'invader meme 35.png',
     'invader meme 36.png',
     'invader meme 37.png',
-  ];
-  const invaderColors = [
-    '#ff3158', '#ffd43b', '#ff6b2b', '#ff2ed1', '#ad5cff',
-    '#2ee8ff', '#ff4fd1', '#ff7849', '#9cff31', '#f7c948',
   ];
   const invaderImages = invaderFiles.map((file) => {
     const image = new Image();
@@ -143,8 +139,6 @@
       ctx.stroke();
     }
 
-    ctx.globalAlpha = 0.2 + pulse * 0.15;
-    ctx.strokeRect(cx - w * 0.56, y - 4, w * 1.12, h + 8);
     ctx.restore();
   }
 
@@ -167,11 +161,6 @@
     ctx.shadowColor = config.color;
     drawBossEffects(ctx, config, Number(cx), y, visualW, visualH, time);
     drawImage.call(ctx, image, x, y, visualW, visualH);
-    ctx.globalCompositeOperation = 'screen';
-    ctx.globalAlpha = 0.32;
-    ctx.strokeStyle = config.secondary;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x - 4, y - 4, visualW + 8, visualH + 8);
     ctx.restore();
   }
 
@@ -236,41 +225,6 @@
     return best.skin;
   }
 
-  function drawInvaderAura(ctx, x, y, w, h, skin) {
-    const color = invaderColors[skin % invaderColors.length];
-    const time = performance.now() * 0.001;
-    const pulse = 0.5 + Math.sin(time * 7 + skin) * 0.5;
-    const cx = Number(x) + Number(w) / 2;
-    const cy = Number(y) + Number(h) / 2;
-    ctx.save();
-    ctx.globalCompositeOperation = 'screen';
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.22 + pulse * 0.16;
-    ctx.shadowBlur = 8 + pulse * 10;
-    ctx.shadowColor = color;
-    if (skin % 4 === 0) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, Math.max(w, h) * (0.58 + pulse * 0.12), 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (skin % 4 === 1) {
-      ctx.strokeRect(Number(x) - 3 - pulse * 2, Number(y) - 3 - pulse * 2, Number(w) + 6 + pulse * 4, Number(h) + 6 + pulse * 4);
-    } else if (skin % 4 === 2) {
-      for (let i = 0; i < 4; i++) {
-        const a = time * 3 + skin + i * Math.PI / 2;
-        ctx.fillRect(cx + Math.cos(a) * 20 - 1, cy + Math.sin(a) * 15 - 1, 3, 3);
-      }
-    } else {
-      for (let i = -1; i <= 1; i++) {
-        ctx.beginPath();
-        ctx.moveTo(cx - 22, cy + i * 7 + pulse * 2);
-        ctx.lineTo(cx + 22, cy + i * 7 - pulse * 2);
-        ctx.stroke();
-      }
-    }
-    ctx.restore();
-  }
-
   const proto = window.CanvasRenderingContext2D && window.CanvasRenderingContext2D.prototype;
   if (!proto) return;
 
@@ -287,14 +241,12 @@
         const replacement = invaderImages[skin] && invaderImages[skin].image;
         if (replacement && replacement.complete && replacement.naturalWidth > 0) {
           const ratio = replacement.naturalWidth / replacement.naturalHeight;
-          const targetH = Math.max(34, dh * 1.42);
-          const targetW = Math.min(54, targetH * ratio);
+          const targetH = Math.max(18, Math.min(30, dh * 1.04));
+          const targetW = Math.min(dw * 1.08, targetH * ratio);
           const cx = dx + dw / 2;
           const cy = dy + dh / 2;
-          drawInvaderAura(this, dx, dy, dw, dh, skin);
           this.save();
           this.imageSmoothingEnabled = false;
-          this.filter = `drop-shadow(0 0 7px ${invaderColors[skin % invaderColors.length]})`;
           previousDrawImage.call(this, replacement, cx - targetW / 2, cy - targetH / 2, targetW, targetH);
           this.restore();
           return;
