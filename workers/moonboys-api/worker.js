@@ -94,6 +94,7 @@ import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/da
  * Secrets required (set via `wrangler secret put`):
  *   TELEGRAM_BOT_TOKEN    — BotFather token for HMAC verification and sendMessage
  *   TELEGRAM_BOT_USERNAME — @username (used in widget docs only)
+ *   TELEGRAM_PETS_BOT_SECRET — pet-only bot-to-API secret for /telegram-pets/* writes
  *   ADMIN_TELEGRAM_IDS    — comma-separated Telegram user IDs allowed to run admin commands
  *   ADMIN_SECRET          — shared secret forwarded to the anti-cheat worker (X-Admin-Secret)
  *   TELEGRAM_GROUP_CHAT_ID   — main Telegram group chat ID for group announcements
@@ -112,6 +113,9 @@ const ANTI_CHEAT_WORKER_URL_DEFAULT = 'https://moonboys-anti-cheat.sercullen.wor
 const XP_FIRST_START = 50;
 const XP_DAILY_CLAIM = 20;
 const XP_GROUP_JOIN  = 10;
+const PETS_DAILY_COMMUNITY_XP_CAP = 250;
+const PETS_DAILY_PET_XP_CAP = 1200;
+const PETS_ACTION_COOLDOWN_SECONDS = 45;
 const ARCADE_XP_PER_POINT = 0.02;
 const ARCADE_XP_MAX_PER_RUN = 120;
 const ARCADE_XP_DAILY_CAP = 2200;
@@ -611,6 +615,20 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}) {
   }
 }
 
+async function answerTelegramCallback(botToken, callbackQueryId, text = '') {
+  if (!botToken || !callbackQueryId) return { ok: false, error: 'missing_callback_id' };
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId, text }),
+    });
+    return { ok: response.ok, status: response.status };
+  } catch (error) {
+    return { ok: false, error: error?.message || String(error) };
+  }
+}
+
 /**
  * Verify a Telegram Login Widget auth payload against the bot token.
  * Algorithm: https://core.telegram.org/widgets/login#checking-authorization
@@ -769,9 +787,9 @@ async function upsertTelegramUser(db, user) {
  * The level formula uses the new xp value (old xp + xp_change) which in SQLite
  * SET expressions is computed from the pre-update column value — correct.
  */
-async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
+async function awardCommunityXp(db, telegramId, xpChange, action, referenceId = '') {
   if (!xpChange || xpChange < 0) {
-    if (xpChange < 0) console.log('awardXp: negative xpChange ignored', JSON.stringify({ telegramId, xpChange, action }));
+    if (xpChange < 0) console.log('awardCommunityXp: negative xpChange ignored', JSON.stringify({ telegramId, xpChange, action }));
     return;
   }
   await db.prepare(`
@@ -786,6 +804,28 @@ async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
         updated_at = CURRENT_TIMESTAMP
     WHERE telegram_id = ?
   `).bind(xpChange, xpChange, telegramId).run();
+
+  const season = await getCurrentSeason(db).catch(() => null);
+  if (season?.id) {
+    await db.prepare(`
+      INSERT INTO telegram_leaderboard (telegram_id, season_id, xp)
+      VALUES (?, ?, ?)
+      ON CONFLICT(telegram_id, season_id) DO UPDATE SET
+        xp = xp + excluded.xp,
+        updated_at = CURRENT_TIMESTAMP
+    `).bind(telegramId, season.id, xpChange).run().catch((error) => {
+      logApiFailure('community_xp_leaderboard_upsert_failed', {
+        telegramId,
+        action,
+        season_id: season.id,
+        message: error?.message || String(error),
+      });
+    });
+  }
+}
+
+async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
+  return awardCommunityXp(db, telegramId, xpChange, action, referenceId);
 }
 
 function normalizeWikiPageId(value) {
@@ -1177,6 +1217,360 @@ async function getCurrentSeason(db) {
   return db.prepare(
     `SELECT * FROM telegram_seasons ORDER BY id DESC LIMIT 1`
   ).first().catch(() => null);
+}
+
+const PET_STAGE_THRESHOLDS = [
+  { stage: 'egg', min_xp: 0 },
+  { stage: 'hatchling', min_xp: 25 },
+  { stage: 'runner', min_xp: 120 },
+  { stage: 'street scout', min_xp: 360 },
+  { stage: 'moon guardian', min_xp: 900 },
+  { stage: 'legendary companion', min_xp: 1800 },
+];
+
+const PET_ACTIONS = Object.freeze({
+  feed:  { pet_xp: 6,  community_xp: 2,  hunger: -28, happiness: 2,  cleanliness: -2, energy: 4 },
+  play:  { pet_xp: 10, community_xp: 3,  hunger: 8,   happiness: 22, cleanliness: -6, energy: -12 },
+  clean: { pet_xp: 6,  community_xp: 2,  hunger: 2,   happiness: 4,  cleanliness: 32, energy: -3 },
+  sleep: { pet_xp: 5,  community_xp: 1,  hunger: 10,  happiness: 1,  cleanliness: -2, energy: 36 },
+  train: { pet_xp: 20, community_xp: 6,  hunger: 12,  happiness: 8,  cleanliness: -4, energy: -18 },
+});
+
+function clampPetStat(value) {
+  return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+}
+
+function getPetStage(petXp) {
+  return PET_STAGE_THRESHOLDS.reduce((current, candidate) => (
+    Number(petXp || 0) >= candidate.min_xp ? candidate : current
+  ), PET_STAGE_THRESHOLDS[0]).stage;
+}
+
+function getPetDayKey(now = new Date()) {
+  return now.toISOString().slice(0, 10);
+}
+
+function getPreviousPetDayKey(dayKey) {
+  const date = new Date(`${dayKey}T00:00:00.000Z`);
+  if (!Number.isFinite(date.getTime())) return null;
+  date.setUTCDate(date.getUTCDate() - 1);
+  return getPetDayKey(date);
+}
+
+function getPetWeekKey(now = new Date()) {
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+function getPetSeasonInfo(now = new Date()) {
+  const year = now.getUTCFullYear();
+  const yearStart = Date.UTC(year, 0, 1);
+  const dayOfYear = Math.floor((Date.UTC(year, now.getUTCMonth(), now.getUTCDate()) - yearStart) / 86400000);
+  const seasonNumber = Math.floor(dayOfYear / 90) + 1;
+  const start = new Date(yearStart + ((seasonNumber - 1) * 90 * 86400000));
+  const end = new Date(Math.min(Date.UTC(year + 1, 0, 1), start.getTime() + 90 * 86400000));
+  return {
+    key: `pet-s${year}-${String(seasonNumber).padStart(3, '0')}`,
+    season_number: seasonNumber,
+    start_at: start.toISOString(),
+    end_at: end.toISOString(),
+  };
+}
+
+function calculatePetHealth(pet) {
+  const hungerScore = 100 - Number(pet.hunger || 0);
+  return clampPetStat((hungerScore + Number(pet.happiness || 0) + Number(pet.cleanliness || 0) + Number(pet.energy || 0)) / 4);
+}
+
+function applyPetDecay(pet, now = new Date()) {
+  const last = new Date(pet.last_decay_at || pet.updated_at || pet.created_at || now.toISOString()).getTime();
+  const elapsedHours = Math.max(0, (now.getTime() - last) / 3600000);
+  if (elapsedHours < 0.01) return pet;
+  pet.hunger = clampPetStat(Number(pet.hunger || 0) + elapsedHours * 4.5);
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) - elapsedHours * 2.8);
+  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) - elapsedHours * 3.2);
+  pet.energy = clampPetStat(Number(pet.energy || 0) - elapsedHours * 2.2);
+  pet.health = calculatePetHealth(pet);
+  pet.last_decay_at = now.toISOString();
+  return pet;
+}
+
+function normalizePetAction(value) {
+  const action = String(value || '').trim().toLowerCase();
+  return PET_ACTIONS[action] ? action : null;
+}
+
+function normalizePetName(value) {
+  const name = String(value || '').trim().replace(/\s+/g, ' ').slice(0, 32);
+  return name || null;
+}
+
+function verifyPetsBotSecret(request, env) {
+  const expected = String(env.TELEGRAM_PETS_BOT_SECRET || '').trim();
+  const supplied = request.headers.get('X-Pets-Bot-Secret') || request.headers.get('x-pets-bot-secret') || '';
+  return !!expected && !!supplied && supplied === expected;
+}
+
+async function getPetProfile(db, telegramId) {
+  const pet = await db.prepare(`
+    SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
+  `).bind(telegramId).first().catch(() => null);
+  return pet ? applyPetDecay(pet) : null;
+}
+
+async function getOrCreatePetProfile(db, telegramId, options = {}) {
+  let pet = await getPetProfile(db, telegramId);
+  if (!pet) {
+    const petName = normalizePetName(options.pet_name) || 'Moonpet';
+    const species = normalizePetName(options.species) || 'moonbeast';
+    await db.prepare(`
+      INSERT INTO telegram_pet_profiles (telegram_id, pet_name, species)
+      VALUES (?, ?, ?)
+    `).bind(telegramId, petName, species).run();
+    pet = await db.prepare(`
+      SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
+    `).bind(telegramId).first();
+  }
+  return applyPetDecay(pet);
+}
+
+function updatePetStreakForAction(pet, dayKey) {
+  const previousDay = pet.last_active_day || null;
+  const currentStreak = Math.max(0, Math.floor(Number(pet.streak_days) || 0));
+  if (previousDay === dayKey) {
+    pet.streak_days = Math.max(1, currentStreak);
+  } else if (previousDay === getPreviousPetDayKey(dayKey)) {
+    pet.streak_days = currentStreak + 1;
+  } else {
+    pet.streak_days = 1;
+  }
+  pet.last_active_day = dayKey;
+}
+
+async function savePetProfile(db, pet) {
+  pet.stage = getPetStage(pet.pet_xp);
+  pet.health = calculatePetHealth(pet);
+  await db.prepare(`
+    UPDATE telegram_pet_profiles
+    SET pet_name = ?, species = ?, stage = ?, pet_xp = ?, level = ?,
+        hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
+        streak_days = ?, last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE telegram_id = ?
+  `).bind(
+    pet.pet_name,
+    pet.species,
+    pet.stage,
+    Math.max(0, Math.floor(Number(pet.pet_xp) || 0)),
+    Math.max(1, Math.floor((Number(pet.pet_xp) || 0) / 100) + 1),
+    clampPetStat(pet.hunger),
+    clampPetStat(pet.happiness),
+    clampPetStat(pet.cleanliness),
+    clampPetStat(pet.energy),
+    clampPetStat(pet.health),
+    Math.max(0, Math.floor(Number(pet.streak_days) || 0)),
+    pet.last_active_day || null,
+    pet.last_decay_at || new Date().toISOString(),
+    pet.telegram_id,
+  ).run();
+}
+
+async function getPetWindowTotals(db, telegramId, dayKey, weekKey) {
+  const day = await db.prepare(`
+    SELECT COALESCE(SUM(xp_awarded), 0) AS community_xp,
+           COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+    FROM telegram_pet_events
+    WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+  `).bind(telegramId, dayKey).first().catch(() => ({ community_xp: 0, pet_xp: 0 }));
+  const week = await db.prepare(`
+    SELECT COALESCE(SUM(xp_awarded), 0) AS community_xp,
+           COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+    FROM telegram_pet_events
+    WHERE telegram_id = ? AND week_key = ? AND status = 'accepted'
+  `).bind(telegramId, weekKey).first().catch(() => ({ community_xp: 0, pet_xp: 0 }));
+  return {
+    day: { community_xp: Number(day?.community_xp || 0), pet_xp: Number(day?.pet_xp || 0) },
+    week: { community_xp: Number(week?.community_xp || 0), pet_xp: Number(week?.pet_xp || 0) },
+  };
+}
+
+async function processPetAction(db, telegramId, action, options = {}) {
+  const normalizedAction = normalizePetAction(action);
+  if (!normalizedAction && action !== 'adopt' && action !== 'rename') {
+    return { accepted: false, reason: 'invalid_action', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:${normalizedAction || action}:${telegramId}:${Date.now()}`).slice(0, 120);
+
+  if (action === 'adopt') {
+    const pet = await getOrCreatePetProfile(db, telegramId, options);
+    await savePetProfile(db, pet);
+    return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  let pet = await getPetProfile(db, telegramId);
+  if (!pet) {
+    return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+
+  if (action === 'rename') {
+    const petName = normalizePetName(options.pet_name);
+    if (!petName) return { accepted: false, reason: 'invalid_pet_name', pet };
+    pet.pet_name = petName;
+    await savePetProfile(db, pet);
+    return { accepted: true, reason: 'renamed', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  const existing = await db.prepare(`
+    SELECT id, xp_awarded, pet_xp_awarded FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_key = ?
+    LIMIT 1
+  `).bind(telegramId, eventKey).first().catch(() => null);
+  if (existing) {
+    return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  const lastAction = await db.prepare(`
+    SELECT created_at FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
+    ORDER BY created_at DESC LIMIT 1
+  `).bind(telegramId, normalizedAction).first().catch(() => null);
+  if (lastAction?.created_at) {
+    const elapsedSeconds = (now.getTime() - new Date(lastAction.created_at).getTime()) / 1000;
+    if (elapsedSeconds < PETS_ACTION_COOLDOWN_SECONDS) {
+      return {
+        accepted: false,
+        reason: 'cooldown',
+        retry_after_seconds: Math.max(1, Math.ceil(PETS_ACTION_COOLDOWN_SECONDS - elapsedSeconds)),
+        xp_awarded: 0,
+        pet_xp_awarded: 0,
+        pet,
+      };
+    }
+  }
+
+  const rule = PET_ACTIONS[normalizedAction];
+  if (normalizedAction === 'train' && Number(pet.energy || 0) < 18) {
+    return { accepted: false, reason: 'pet_tired', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  let communityXp = rule.community_xp;
+  let petXp = rule.pet_xp;
+  let reason = 'accepted';
+  if (totals.day.community_xp >= PETS_DAILY_COMMUNITY_XP_CAP) {
+    communityXp = 0;
+    reason = 'community_daily_cap_reached';
+  } else if (totals.day.community_xp + communityXp > PETS_DAILY_COMMUNITY_XP_CAP) {
+    communityXp = Math.max(0, PETS_DAILY_COMMUNITY_XP_CAP - totals.day.community_xp);
+    reason = 'community_daily_cap_clamped';
+  }
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) {
+    petXp = 0;
+    reason = reason === 'accepted' ? 'pet_daily_cap_reached' : reason;
+  } else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) {
+    petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+    reason = reason === 'accepted' ? 'pet_daily_cap_clamped' : reason;
+  }
+
+  pet.hunger = clampPetStat(Number(pet.hunger || 0) + rule.hunger);
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) + rule.happiness);
+  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + rule.cleanliness);
+  pet.energy = clampPetStat(Number(pet.energy || 0) + rule.energy);
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+
+  await db.prepare(`
+    INSERT INTO telegram_pet_events
+      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', ?, ?)
+  `).bind(
+    crypto.randomUUID(),
+    telegramId,
+    normalizedAction,
+    eventKey,
+    communityXp,
+    petXp,
+    season.key,
+    dayKey,
+    weekKey,
+    reason,
+    JSON.stringify({ source: options.source || 'telegram_bot' }),
+  ).run();
+
+  if (communityXp > 0) {
+    await awardCommunityXp(db, telegramId, communityXp, `pet_${normalizedAction}`, eventKey);
+  }
+
+  await savePetProfile(db, pet);
+  await db.prepare(`
+    INSERT INTO telegram_pet_season_state
+      (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(telegram_id, season_key) DO UPDATE SET
+      season_xp = season_xp + excluded.season_xp,
+      weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
+      daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
+      daily_key = excluded.daily_key,
+      weekly_key = excluded.weekly_key,
+      updated_at = CURRENT_TIMESTAMP
+  `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
+
+  return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp, pet, season };
+}
+
+function serializePet(pet) {
+  if (!pet) return null;
+  const decayed = applyPetDecay({ ...pet });
+  return {
+    telegram_id: decayed.telegram_id,
+    pet_name: decayed.pet_name,
+    species: decayed.species,
+    stage: getPetStage(decayed.pet_xp),
+    pet_xp: Number(decayed.pet_xp || 0),
+    level: Math.max(1, Math.floor(Number(decayed.pet_xp || 0) / 100) + 1),
+    hunger: clampPetStat(decayed.hunger),
+    happiness: clampPetStat(decayed.happiness),
+    cleanliness: clampPetStat(decayed.cleanliness),
+    energy: clampPetStat(decayed.energy),
+    health: calculatePetHealth(decayed),
+    streak_days: Number(decayed.streak_days || 0),
+    last_active_day: decayed.last_active_day || null,
+    updated_at: decayed.updated_at || null,
+  };
+}
+
+async function buildPetMissions(db, telegramId) {
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const events = await db.prepare(`
+    SELECT event_type, COUNT(*) AS count
+    FROM telegram_pet_events
+    WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+    GROUP BY event_type
+  `).bind(telegramId, dayKey).all().catch(() => ({ results: [] }));
+  const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
+  const fullCareDone = ['feed', 'play', 'clean'].every((key) => counts[key] > 0);
+  return {
+    day_key: dayKey,
+    week_key: weekKey,
+    season,
+    daily: [
+      { key: `pet-daily-feed:${dayKey}`, title: 'Feed your Moonpet', completed: Number(counts.feed || 0) > 0 },
+      { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: Number(counts.train || 0) > 0 },
+      { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone },
+    ],
+  };
 }
 
 // ── Player state helpers ──────────────────────────────────────────────────────
@@ -3319,6 +3713,147 @@ export default {
         });
       }
       return json({ ok: true });
+    }
+
+    // ── Crypto Moonboys Pets API ──────────────────────────────────────────
+    if (path === '/telegram-pets/season/current' && request.method === 'GET') {
+      return json({ season: getPetSeasonInfo(new Date()) });
+    }
+
+    if (path === '/telegram-pets/state' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
+      if (!pet) return err('Pet profile not found', 404);
+      return json({ pet: serializePet(pet), missions: await buildPetMissions(env.DB, telegramId) });
+    }
+
+    if (path === '/telegram-pets/missions' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      return json({ missions: await buildPetMissions(env.DB, telegramId) });
+    }
+
+    if (path === '/telegram-pets/activity' && request.method === 'GET') {
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
+      const rows = await env.DB.prepare(`
+        SELECT e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
+               p.pet_name, p.stage, u.username, u.first_name, u.last_name
+        FROM telegram_pet_events e
+        LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
+        LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
+        WHERE e.status = 'accepted'
+        ORDER BY e.created_at DESC
+        LIMIT ?
+      `).bind(limit).all().catch(() => ({ results: [] }));
+      return json({ items: (rows.results || []).map((row) => ({
+        text: `${displayNameFromRow(row)} ${row.event_type} ${row.pet_name || 'Moonpet'} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
+        event_type: row.event_type,
+        pet_name: row.pet_name || 'Moonpet',
+        stage: row.stage || 'egg',
+        xp_awarded: Number(row.xp_awarded || 0),
+        pet_xp_awarded: Number(row.pet_xp_awarded || 0),
+        created_at: row.created_at,
+        time_ago: timeAgo(row.created_at),
+      })) });
+    }
+
+    if (path === '/telegram-pets/leaderboard' && request.method === 'GET') {
+      const period = String(url.searchParams.get('period') || 'seasonal').toLowerCase();
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '25', 10), 1), 100);
+      const now = new Date();
+      const dayKey = getPetDayKey(now);
+      const weekKey = getPetWeekKey(now);
+      const season = getPetSeasonInfo(now);
+      let rows;
+      if (period === 'daily') {
+        rows = await env.DB.prepare(`
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_events e
+          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
+          LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
+          WHERE e.day_key = ? AND e.status = 'accepted'
+          GROUP BY e.telegram_id
+          ORDER BY pet_xp DESC
+          LIMIT ?
+        `).bind(dayKey, limit).all().catch(() => ({ results: [] }));
+      } else if (period === 'weekly') {
+        rows = await env.DB.prepare(`
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_events e
+          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
+          LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
+          WHERE e.week_key = ? AND e.status = 'accepted'
+          GROUP BY e.telegram_id
+          ORDER BY pet_xp DESC
+          LIMIT ?
+        `).bind(weekKey, limit).all().catch(() => ({ results: [] }));
+      } else if (period === 'all_time') {
+        rows = await env.DB.prepare(`
+          SELECT p.telegram_id, p.pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_profiles p
+          LEFT JOIN telegram_users u ON u.telegram_id = p.telegram_id
+          ORDER BY p.pet_xp DESC
+          LIMIT ?
+        `).bind(limit).all().catch(() => ({ results: [] }));
+      } else {
+        rows = await env.DB.prepare(`
+          SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_season_state s
+          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
+          LEFT JOIN telegram_users u ON u.telegram_id = s.telegram_id
+          WHERE s.season_key = ?
+          ORDER BY s.season_xp DESC
+          LIMIT ?
+        `).bind(season.key, limit).all().catch(() => ({ results: [] }));
+      }
+      return json({
+        period,
+        season,
+        entries: (rows.results || []).map((row, index) => ({
+          rank: index + 1,
+          display_name: displayNameFromRow(row),
+          username: row.username || null,
+          pet_name: row.pet_name || 'Moonpet',
+          stage: row.stage || 'egg',
+          level: Number(row.level || 1),
+          pet_xp: Number(row.pet_xp || 0),
+          streak_days: Number(row.streak_days || 0),
+          last_active_label: timeAgo(row.updated_at),
+        })),
+      });
+    }
+
+    if (path === '/telegram-pets/action' && request.method === 'POST') {
+      if (!verifyPetsBotSecret(request, env)) {
+        return err('pet bot secret required', 401);
+      }
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return err('invalid json', 400);
+      }
+      const user = body?.user || {};
+      const telegramId = String(body?.telegram_id || user.id || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      await upsertTelegramUser(env.DB, {
+        id: telegramId,
+        username: user.username || body.username || null,
+        first_name: user.first_name || body.first_name || null,
+        last_name: user.last_name || body.last_name || null,
+      });
+      const result = await processPetAction(env.DB, telegramId, body.action, {
+        event_key: body.event_key,
+        pet_name: body.pet_name,
+        species: body.species,
+        source: 'telegram_pets_api',
+      });
+      return json({ ...result, pet: serializePet(result.pet) }, result.accepted ? 200 : 409);
     }
 
     // ── GET /telegram/profile?telegram_id= ────────────────────────────────
@@ -6113,6 +6648,24 @@ async function handleTelegramUpdate(update, env) {
 
   const msg = update.message || update.edited_message;
 
+  if (update.callback_query) {
+    const query = update.callback_query;
+    const data = String(query.data || '');
+    const fromUser = query.from || {};
+    const telegramId = String(fromUser.id || '');
+    const chatId = String(query.message?.chat?.id || telegramId || '');
+    if (data.startsWith('pet:') && telegramId && chatId) {
+      const action = normalizePetAction(data.slice(4));
+      if (action) {
+        await answerTelegramCallback(tok, query.id, `/${action}`);
+        await cmdPetAction(db, tok, chatId, telegramId, fromUser, action);
+      } else {
+        await answerTelegramCallback(tok, query.id, 'Unknown pet action');
+      }
+    }
+    return;
+  }
+
   // ── Group-level events ───────────────────────────────────────────────────
 
   // New chat members — upsert user, log activity, award join XP once
@@ -6207,6 +6760,17 @@ async function handleTelegramUpdate(update, env) {
     case 'daily':        await cmdDaily(env, tok, chatId, telegramId, fromUser);     break;
     case 'solve':        await cmdSolve(tok, chatId);                                break;
     case 'profile':      await cmdProfile(db, tok, chatId, telegramId);              break;
+    case 'pet':          await cmdPetStatus(db, tok, chatId, telegramId);            break;
+    case 'adopt':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, 'adopt'); break;
+    case 'feed':
+    case 'play':
+    case 'clean':
+    case 'sleep':
+    case 'train':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, cmdBase); break;
+    case 'petname':      await cmdPetRename(db, tok, chatId, telegramId, argStr);    break;
+    case 'petmissions':  await cmdPetMissions(db, tok, chatId, telegramId);          break;
+    case 'petleaderboard':
+    case 'petscore':     await cmdPetLeaderboard(db, tok, chatId);                   break;
     // ── Admin-only moderation commands ───────────────────────────────────────
     case 'gkban':          await cmdGkBan(db, tok, chatId, telegramId, argStr, env);         break;
     case 'gkunban':        await cmdGkUnban(db, tok, chatId, telegramId, argStr, env);       break;
@@ -6290,6 +6854,10 @@ async function cmdGkHelp(tok, chatId) {
     `/gkseason — Current season info\n` +
     `/gkleaderboard — Leaderboard\n` +
     `/gkquests — Active missions\n` +
+    `/pet — View your Crypto Moonboy Pet\n` +
+    `/adopt — Adopt a Crypto Moonboy Pet\n` +
+    `/feed /play /clean /sleep /train — Grow your pet\n` +
+    `/petleaderboard — Pet-only leaderboard\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
     `/daily — Claim daily XP\n` +
@@ -6305,6 +6873,108 @@ async function cmdGkHelp(tok, chatId) {
     `<i>Legacy aliases: /start /help /link are still supported.</i>`,
     { reply_markup: replyMarkup },
   );
+}
+
+function formatPetStatus(pet, missions = null) {
+  const p = serializePet(pet);
+  if (!p) return 'No Crypto Moonboy Pet found. Use /adopt to start.';
+  const missionLine = missions?.daily
+    ? `\n\n<b>Daily Missions</b>\n${missions.daily.map((m) => `${m.completed ? '✓' : '•'} ${escapeHtml(m.title)}`).join('\n')}`
+    : '';
+  return `<b>${escapeHtml(p.pet_name)}</b> — Crypto Moonboy Pet\n` +
+    `Stage: ${escapeHtml(p.stage)} · Level ${p.level}\n` +
+    `Pet XP: ${p.pet_xp}\n` +
+    `Health: ${p.health}/100\n` +
+    `Hunger: ${p.hunger}/100 · Happiness: ${p.happiness}/100\n` +
+    `Cleanliness: ${p.cleanliness}/100 · Energy: ${p.energy}/100\n` +
+    `Streak: ${p.streak_days} day(s)` +
+    missionLine;
+}
+
+function petReplyMarkup() {
+  return {
+    inline_keyboard: [
+      [
+        { text: 'Feed', callback_data: 'pet:feed' },
+        { text: 'Play', callback_data: 'pet:play' },
+        { text: 'Clean', callback_data: 'pet:clean' },
+      ],
+      [
+        { text: 'Sleep', callback_data: 'pet:sleep' },
+        { text: 'Train', callback_data: 'pet:train' },
+      ],
+      [
+        { text: 'How To Play', url: `${SITE_URL}/how-to-play-crypto-moonboy-pets.html` },
+        { text: 'Pet Leaderboard', url: `${SITE_URL}/crypto-moonboy-pets-leaderboard.html` },
+      ],
+    ],
+  };
+}
+
+async function cmdPetStatus(db, tok, chatId, telegramId) {
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  const missions = await buildPetMissions(db, telegramId).catch(() => null);
+  await sendTelegramMessage(tok, chatId, formatPetStatus(pet, missions), { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action) {
+  await upsertTelegramUser(db, fromUser).catch(() => {});
+  const result = await processPetAction(db, telegramId, action, {
+    event_key: `tg:${telegramId}:${action}:${Date.now()}`,
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_action_failed' }));
+  if (!result.accepted) {
+    const retry = result.retry_after_seconds ? ` Try again in ${result.retry_after_seconds}s.` : '';
+    await sendTelegramMessage(tok, chatId, `Moonpet action blocked: ${escapeHtml(result.reason || 'not accepted')}.${retry}`);
+    return;
+  }
+  const prefix = action === 'adopt'
+    ? 'Crypto Moonboy Pet adopted.'
+    : `Action accepted: /${escapeHtml(action)} (+${result.pet_xp_awarded || 0} pet XP, +${result.xp_awarded || 0} Community XP).`;
+  await sendTelegramMessage(tok, chatId, `${prefix}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
+  const petName = normalizePetName(argStr);
+  if (!petName) {
+    await sendTelegramMessage(tok, chatId, 'Use it like this: /petname Moon Runner');
+    return;
+  }
+  const result = await processPetAction(db, telegramId, 'rename', { pet_name: petName, source: 'telegram_command' });
+  await sendTelegramMessage(tok, chatId, `Pet renamed.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetMissions(db, tok, chatId, telegramId) {
+  const missions = await buildPetMissions(db, telegramId);
+  const daily = missions.daily.map((m) => `${m.completed ? '✓' : '•'} ${escapeHtml(m.title)}`).join('\n');
+  await sendTelegramMessage(tok, chatId,
+    `<b>Crypto Moonboy Pets Missions</b>\n` +
+    `Day: ${escapeHtml(missions.day_key)}\n` +
+    `Week: ${escapeHtml(missions.week_key)}\n` +
+    `Season: ${escapeHtml(missions.season.key)}\n\n${daily}`
+  );
+}
+
+async function cmdPetLeaderboard(db, tok, chatId) {
+  const season = getPetSeasonInfo(new Date());
+  const rows = await db.prepare(`
+    SELECT s.telegram_id, s.season_xp, p.pet_name, p.stage, p.level,
+           u.username, u.first_name, u.last_name
+    FROM telegram_pet_season_state s
+    LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
+    LEFT JOIN telegram_users u ON u.telegram_id = s.telegram_id
+    WHERE s.season_key = ?
+    ORDER BY s.season_xp DESC
+    LIMIT 10
+  `).bind(season.key).all().catch(() => ({ results: [] }));
+  if (!rows.results?.length) {
+    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pets leaderboard entries yet. Use /adopt to start.');
+    return;
+  }
+  const lines = rows.results.map((row, index) => (
+    `${index + 1}. ${escapeHtml(displayNameFromRow(row))} — ${escapeHtml(row.pet_name || 'Moonpet')} (${escapeHtml(row.stage || 'egg')}) ${row.season_xp || 0} pet XP`
+  ));
+  await sendTelegramMessage(tok, chatId, `<b>Crypto Moonboy Pets Leaderboard</b>\n${escapeHtml(season.key)}\n\n${lines.join('\n')}`);
 }
 
 async function cmdGkLink(db, tok, chatId, telegramId) {

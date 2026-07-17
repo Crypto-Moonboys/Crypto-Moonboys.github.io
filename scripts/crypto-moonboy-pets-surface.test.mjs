@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const wikiPage = fs.readFileSync(new URL('../wiki/crypto-moonboy-pets.html', import.meta.url), 'utf8');
+const howTo = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
+const leaderboard = fs.readFileSync(new URL('../crypto-moonboy-pets-leaderboard.html', import.meta.url), 'utf8');
+const community = fs.readFileSync(new URL('../community.html', import.meta.url), 'utf8');
+const games = fs.readFileSync(new URL('../games/index.html', import.meta.url), 'utf8');
+const index = JSON.parse(fs.readFileSync(new URL('../js/wiki-index.json', import.meta.url), 'utf8'));
+
+assert.ok(wikiPage.includes('Crypto Moonboy Pets'), 'wiki page must name Crypto Moonboy Pets');
+assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page must link How To Play page');
+assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
+assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
+
+assert.ok(howTo.includes('/adopt'), 'How To Play must explain /adopt');
+assert.ok(howTo.includes('/feed'), 'How To Play must explain /feed');
+assert.ok(howTo.includes('/train'), 'How To Play must explain /train');
+assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
+assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
+assert.ok(howTo.includes('no financial promises'), 'How To Play must include no-financial-promises note');
+
+assert.ok(leaderboard.includes('data-crypto-pets-leaderboard'), 'pet leaderboard page must use pet leaderboard data hook');
+assert.ok(leaderboard.includes('data-period="seasonal"'), 'pet leaderboard must show seasonal period');
+assert.ok(leaderboard.includes('data-period="daily"'), 'pet leaderboard must show daily period');
+assert.ok(leaderboard.includes('data-period="weekly"'), 'pet leaderboard must show weekly period');
+assert.ok(leaderboard.includes('data-period="all_time"'), 'pet leaderboard must show all-time period');
+
+assert.ok(community.includes('data-crypto-pets-summary'), 'community page must have compact pet summary only');
+assert.ok(!community.includes('data-crypto-pets-leaderboard'), 'community page must not dump full pet leaderboard');
+assert.ok(games.includes('Crypto Moonboy Pets — Telegram Game'), 'games index must list Pets as a Telegram Game');
+
+const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
+assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');
+const searchText = JSON.stringify(entry).toLowerCase();
+for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi', 'roguelite', 'pet leaderboard']) {
+  assert.ok(searchText.includes(term), `wiki index entry must include search term: ${term}`);
+}
+
+console.log('crypto-moonboy-pets-surface.test.mjs passed');

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crypto Moonboy Pets leaderboard for daily, weekly, seasonal and all-time pet XP.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Crypto Moonboy Pets Leaderboard | Crypto Moonboys">
+  <meta property="og:description" content="Track pet-only progression separately from the main Community XP leaderboard.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cryptomoonboys.com/crypto-moonboy-pets-leaderboard.html">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/crypto-moonboy-pets-leaderboard.html">
+  <title>Crypto Moonboy Pets Leaderboard | Crypto Moonboys</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/action-page-cards.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body class="page-standard-shell">
+<main id="content" role="main">
+  <section class="wiki-living-hero swarmsy-hero" aria-labelledby="pets-lb-title">
+    <div class="swarmsy-hero-inner">
+      <nav class="breadcrumb wiki-hero-breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a>
+        <span class="sep">›</span>
+        <a href="/wiki/crypto-moonboy-pets.html">Crypto Moonboy Pets</a>
+        <span class="sep">›</span>
+        <span aria-current="page">Leaderboard</span>
+      </nav>
+      <div class="swarmsy-kicker">PET-ONLY RANKS</div>
+      <h1 id="pets-lb-title" class="swarmsy-title wiki-living-title">CRYPTO MOONBOY<br><span>PETS LEADERBOARD</span></h1>
+      <p class="swarmsy-lead">This page tracks pet progression only. The main Community XP leaderboard still includes accepted pet-earned XP alongside arcade, Telegram and wiki mission XP.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Current Season</h2>
+    <div data-crypto-pets-leaderboard data-period="seasonal"></div>
+  </section>
+
+  <section class="section">
+    <h2>Today</h2>
+    <div data-crypto-pets-leaderboard data-period="daily"></div>
+  </section>
+
+  <section class="section">
+    <h2>This Week</h2>
+    <div data-crypto-pets-leaderboard data-period="weekly"></div>
+  </section>
+
+  <section class="section">
+    <h2>All Time</h2>
+    <div data-crypto-pets-leaderboard data-period="all_time"></div>
+  </section>
+</main>
+
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/crypto-moonboy-pets.js"></script>
+</body>
+</html>
