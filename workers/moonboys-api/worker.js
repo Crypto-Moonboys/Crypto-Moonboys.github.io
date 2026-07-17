@@ -119,6 +119,9 @@ const PETS_ACTION_COOLDOWN_SECONDS = 45;
 const PET_TRADE_MIN_GOLD = 10;
 const PET_TRADE_MAX_GOLD = 250;
 const PET_TRADE_COOLDOWN_SECONDS = 300;
+const PET_ADVENTURE_COOLDOWN_SECONDS = 1800;
+const PET_NOTIFICATION_COOLDOWN_MINUTES = 180;
+const PET_NOTIFICATION_BATCH_LIMIT = 35;
 const ARCADE_XP_PER_POINT = 0.02;
 const ARCADE_XP_MAX_PER_RUN = 120;
 const ARCADE_XP_DAILY_CAP = 2200;
@@ -1280,7 +1283,67 @@ const PET_SHOP_ITEMS = Object.freeze({
     cost: { moon_gold: 180, moon_crystals: 8, style_tokens: 12 },
     min_level: 8,
   },
+  crystal_bowl: {
+    key: 'crystal_bowl',
+    slot: 'food',
+    title: 'Crystal Bowl',
+    description: 'Endgame food: feed restores more hunger, health and +18 pet XP.',
+    cost: { moon_gold: 360, moon_crystals: 18, style_tokens: 0 },
+    min_level: 12,
+  },
+  hoverboard: {
+    key: 'hoverboard',
+    slot: 'toy',
+    title: 'Moon Hoverboard',
+    description: 'Adventure toy: play gives more happiness and adventures can find extra gold.',
+    cost: { moon_gold: 240, moon_crystals: 10, style_tokens: 4 },
+    min_level: 7,
+  },
+  crown_jacket: {
+    key: 'crown_jacket',
+    slot: 'outfit',
+    title: 'Crown Jacket',
+    description: 'Season flex: all care actions add +8 pet XP, +2 gold and +1 style.',
+    cost: { moon_gold: 520, moon_crystals: 22, style_tokens: 30 },
+    min_level: 15,
+  },
 });
+
+const PET_ADVENTURES = Object.freeze([
+  {
+    key: 'moon_alley',
+    title: 'Moon Alley Run',
+    min_level: 1,
+    energy_cost: 18,
+    hunger_cost: 8,
+    pet_xp: 26,
+    gold: 22,
+    crystals: 0,
+    style_tokens: 1,
+  },
+  {
+    key: 'graffiti_vault',
+    title: 'Graffiti Vault Raid',
+    min_level: 4,
+    energy_cost: 26,
+    hunger_cost: 12,
+    pet_xp: 44,
+    gold: 42,
+    crystals: 1,
+    style_tokens: 3,
+  },
+  {
+    key: 'nebula_market',
+    title: 'Nebula Market Flip',
+    min_level: 9,
+    energy_cost: 34,
+    hunger_cost: 16,
+    pet_xp: 72,
+    gold: 76,
+    crystals: 3,
+    style_tokens: 5,
+  },
+]);
 
 function clampPetStat(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
@@ -1378,6 +1441,11 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
     rule.hunger -= 12;
     rewards.pet_xp += 4;
   }
+  if (action === 'feed' && food?.key === 'crystal_bowl') {
+    rule.hunger -= 32;
+    rule.energy += 10;
+    rewards.pet_xp += 18;
+  }
   if (action === 'feed' && food?.key === 'nebula_snack') {
     rule.hunger -= 22;
     rule.energy += 6;
@@ -1387,6 +1455,11 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
     rule.happiness += 10;
     rewards.pet_xp += 5;
   }
+  if (action === 'play' && toy?.key === 'hoverboard') {
+    rule.happiness += 16;
+    rewards.pet_xp += 8;
+    rewards.moon_gold += 2;
+  }
   if (outfit?.key === 'street_hoodie') {
     rewards.pet_xp += 2;
   }
@@ -1394,11 +1467,22 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
     rewards.pet_xp += 5;
     rewards.moon_gold += 1;
   }
+  if (['feed', 'play', 'clean', 'sleep', 'train'].includes(action) && outfit?.key === 'crown_jacket') {
+    rewards.pet_xp += 8;
+    rewards.moon_gold += 2;
+    rewards.style_tokens += 1;
+  }
 }
 
 function normalizePetShopItemKey(value) {
   const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
   return PET_SHOP_ITEMS[key] ? key : null;
+}
+
+function normalizePetAdventureKey(value) {
+  const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
+  if (!key) return null;
+  return PET_ADVENTURES.some((adventure) => adventure.key === key) ? key : null;
 }
 
 function canAffordPetItem(pet, item) {
@@ -1415,6 +1499,15 @@ function petShopItemsForPet(pet) {
     unlocked: level >= item.min_level,
     affordable: !!pet && level >= item.min_level && canAffordPetItem(pet, item),
     equipped: !!pet && String(pet[`equipped_${item.slot}`] || '') === item.key,
+  }));
+}
+
+function petAdventuresForPet(pet) {
+  const level = getPetLevel(pet?.pet_xp);
+  return PET_ADVENTURES.map((adventure) => ({
+    ...adventure,
+    unlocked: level >= adventure.min_level,
+    ready: !!pet && level >= adventure.min_level && clampPetStat(pet.energy) >= adventure.energy_cost,
   }));
 }
 
@@ -1591,6 +1684,8 @@ async function processPetAction(db, telegramId, action, options = {}) {
     set pet_xp(value) { petXp = value; },
     get moon_gold() { return tokenRewards.moon_gold; },
     set moon_gold(value) { tokenRewards.moon_gold = clampPetCurrency(value); },
+    get style_tokens() { return tokenRewards.style_tokens; },
+    set style_tokens(value) { tokenRewards.style_tokens = clampPetCurrency(value); },
   });
   let reason = 'accepted';
   if (totals.day.community_xp >= PETS_DAILY_COMMUNITY_XP_CAP) {
@@ -1784,6 +1879,116 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   return { accepted: true, reason: won ? 'trade_won' : 'trade_lost', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, xp_awarded: 0, pet_xp_awarded: petXp, pet };
 }
 
+async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}) {
+  const requestedKey = normalizePetAdventureKey(adventureKeyRaw);
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const available = petAdventuresForPet(pet);
+  const adventure = (requestedKey
+    ? available.find((item) => item.key === requestedKey)
+    : [...available].reverse().find((item) => item.unlocked)) || available[0];
+  if (!adventure) return { accepted: false, reason: 'adventure_unavailable', pet };
+  if (!adventure.unlocked) return { accepted: false, reason: 'level_locked', adventure, pet };
+  if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: 'pet_tired', adventure, pet };
+
+  const lastAdventure = await db.prepare(`
+    SELECT created_at FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type = 'adventure' AND status = 'accepted'
+    ORDER BY created_at DESC LIMIT 1
+  `).bind(telegramId).first().catch(() => null);
+  if (lastAdventure?.created_at) {
+    const elapsedSeconds = (now.getTime() - new Date(lastAdventure.created_at).getTime()) / 1000;
+    if (elapsedSeconds < PET_ADVENTURE_COOLDOWN_SECONDS) {
+      return {
+        accepted: false,
+        reason: 'adventure_cooldown',
+        retry_after_seconds: Math.max(1, Math.ceil(PET_ADVENTURE_COOLDOWN_SECONDS - elapsedSeconds)),
+        xp_awarded: 0,
+        pet_xp_awarded: 0,
+        adventure,
+        pet,
+      };
+    }
+  }
+
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  let petXp = adventure.pet_xp;
+  let capReason = null;
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) {
+    petXp = 0;
+    capReason = 'pet_daily_cap_reached';
+  } else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) {
+    petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+    capReason = 'pet_daily_cap_clamped';
+  }
+  const toy = getPetEquippedItem(pet, 'toy');
+  const outfit = getPetEquippedItem(pet, 'outfit');
+  const bonusGold = toy?.key === 'hoverboard' ? 10 : 0;
+  const bonusStyle = outfit?.key === 'crown_jacket' ? 2 : 0;
+
+  pet.energy = clampPetStat(Number(pet.energy || 0) - adventure.energy_cost);
+  pet.hunger = clampPetStat(Number(pet.hunger || 0) + adventure.hunger_cost);
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) + 8);
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + adventure.gold + bonusGold);
+  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + adventure.crystals);
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + adventure.style_tokens + bonusStyle);
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+
+  const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${adventure.key}:${Date.now()}`).slice(0, 120);
+  await db.prepare(`
+    INSERT INTO telegram_pet_events
+      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+    VALUES (?, ?, 'adventure', ?, 0, ?, ?, ?, ?, 'accepted', ?, ?)
+  `).bind(
+    crypto.randomUUID(),
+    telegramId,
+    eventKey,
+    petXp,
+    season.key,
+    dayKey,
+    weekKey,
+    capReason || 'adventure_complete',
+    JSON.stringify({
+      source: options.source || 'telegram_bot',
+      adventure_key: adventure.key,
+      requested_pet_xp: adventure.pet_xp,
+      awarded_pet_xp: petXp,
+      rewards: {
+        moon_gold: adventure.gold + bonusGold,
+        moon_crystals: adventure.crystals,
+        style_tokens: adventure.style_tokens + bonusStyle,
+      },
+      costs: {
+        energy: adventure.energy_cost,
+        hunger: adventure.hunger_cost,
+      },
+      cap_reason: capReason,
+    }),
+  ).run();
+
+  await savePetProfile(db, pet);
+  await db.prepare(`
+    INSERT INTO telegram_pet_season_state
+      (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(telegram_id, season_key) DO UPDATE SET
+      season_xp = season_xp + excluded.season_xp,
+      weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
+      daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
+      daily_key = excluded.daily_key,
+      weekly_key = excluded.weekly_key,
+      updated_at = CURRENT_TIMESTAMP
+  `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
+
+  return { accepted: true, reason: capReason || 'adventure_complete', adventure, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+}
+
 function serializePet(pet) {
   if (!pet) return null;
   const decayed = applyPetDecay({ ...pet });
@@ -1840,9 +2045,83 @@ async function buildPetMissions(db, telegramId) {
       { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone },
       { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: Number(counts.trade || 0) > 0 },
       { key: `pet-daily-shop:${dayKey}`, title: 'Buy or equip one pet upgrade', completed: Number(counts.buy || 0) > 0 },
+      { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: Number(counts.adventure || 0) > 0 },
       { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: clampPetCurrency(pet?.moon_gold) >= 50 },
     ],
   };
+}
+
+function getPetNeedsAlert(pet, missions = null) {
+  const p = serializePet(pet);
+  if (!p) return null;
+  const unfinishedMission = missions?.daily?.find((mission) => !mission.completed);
+  if (p.health <= 45) return { reason: 'health_low', text: `${p.pet_name} health is low. Run /pet, then feed, clean, sleep or play.` };
+  if (p.hunger >= 75) return { reason: 'hungry', text: `${p.pet_name} is hungry. Use /feed before health drops.` };
+  if (p.cleanliness <= 35) return { reason: 'dirty', text: `${p.pet_name} needs cleaning. Use /clean to restore cleanliness.` };
+  if (p.energy <= 25) return { reason: 'tired', text: `${p.pet_name} is tired. Use /sleep before training or adventures.` };
+  if (p.happiness <= 35) return { reason: 'lonely', text: `${p.pet_name} wants attention. Use /play to lift happiness.` };
+  if (unfinishedMission) return { reason: 'mission_open', text: `${p.pet_name} still has a daily mission open: ${unfinishedMission.title}. Use /petmissions.` };
+  return null;
+}
+
+async function setPetNotificationPreference(db, telegramId, enabled) {
+  await db.prepare(`
+    INSERT INTO telegram_pet_notification_settings (telegram_id, enabled)
+    VALUES (?, ?)
+    ON CONFLICT(telegram_id) DO UPDATE SET
+      enabled = excluded.enabled,
+      updated_at = CURRENT_TIMESTAMP
+  `).bind(telegramId, enabled ? 1 : 0).run();
+  return { telegram_id: telegramId, enabled: enabled ? 1 : 0 };
+}
+
+async function getPetNotificationPreference(db, telegramId) {
+  const row = await db.prepare(`
+    SELECT telegram_id, enabled, last_notified_at, last_reason
+    FROM telegram_pet_notification_settings
+    WHERE telegram_id = ?
+  `).bind(telegramId).first().catch(() => null);
+  return row || { telegram_id: telegramId, enabled: 0, last_notified_at: null, last_reason: null };
+}
+
+async function runPetNeedsNotifications(env, options = {}) {
+  const tok = env.TELEGRAM_BOT_TOKEN;
+  if (!tok) return { ok: false, error: 'telegram_bot_token_missing' };
+  const limit = Math.min(Math.max(Number(options.limit || PET_NOTIFICATION_BATCH_LIMIT), 1), 100);
+  const rows = await env.DB.prepare(`
+    SELECT p.*, n.last_notified_at, n.last_reason
+    FROM telegram_pet_profiles p
+    JOIN telegram_pet_notification_settings n ON n.telegram_id = p.telegram_id
+    WHERE n.enabled = 1
+      AND (n.last_notified_at IS NULL OR n.last_notified_at <= datetime('now', ?))
+    ORDER BY p.health ASC, p.updated_at ASC
+    LIMIT ?
+  `).bind(`-${PET_NOTIFICATION_COOLDOWN_MINUTES} minutes`, limit).all().catch(() => ({ results: [] }));
+
+  let sent = 0;
+  let skipped = 0;
+  let failed = 0;
+  for (const row of rows.results || []) {
+    const pet = applyPetDecay({ ...row });
+    const missions = await buildPetMissions(env.DB, String(row.telegram_id)).catch(() => null);
+    const alert = getPetNeedsAlert(pet, missions);
+    if (!alert) {
+      skipped += 1;
+      continue;
+    }
+    const result = await sendTelegramMessage(tok, String(row.telegram_id), `<b>Crypto Moonboy Pet Update</b>\n${escapeHtml(alert.text)}\n\nNotifications: /petnotify off\nStatus: /pet`, { reply_markup: petReplyMarkup() });
+    if (result?.ok) {
+      sent += 1;
+      await env.DB.prepare(`
+        UPDATE telegram_pet_notification_settings
+        SET last_notified_at = CURRENT_TIMESTAMP, last_reason = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ?
+      `).bind(alert.reason, String(row.telegram_id)).run().catch(() => {});
+    } else {
+      failed += 1;
+    }
+  }
+  return { ok: true, considered: rows.results?.length || 0, sent, skipped, failed };
 }
 
 // ── Player state helpers ──────────────────────────────────────────────────────
@@ -4137,6 +4416,11 @@ export default {
         });
       } else if (body.action === 'trade') {
         result = await processPetGoldTrade(env.DB, telegramId, body.wager, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'adventure') {
+        result = await processPetAdventure(env.DB, telegramId, body.adventure_key, {
           event_key: body.event_key,
           source: 'telegram_pets_api',
         });
@@ -6833,6 +7117,7 @@ export default {
     const cron = String(event?.cron || '');
     const shouldRunDigest = !cron || cron === '0 9 * * *';
     const shouldRunDailySummary = !cron || cron === '0 9 * * *';
+    const shouldRunPetNotifications = !cron || cron === '*/5 * * * *';
     const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
     const shouldRunWaxOnEdge = !cron || cron === '* * * * *';
     const scheduledResults = [];
@@ -6883,6 +7168,30 @@ export default {
           skipped_already_sent: summary.skipped_already_sent,
           skipped_pending_recent: summary.skipped_pending_recent,
           failed: summary.failed,
+        });
+      }
+    }
+
+    if (shouldRunPetNotifications) {
+      const petNotifications = await runPetNeedsNotifications(env, {
+        trigger: 'scheduled_cron',
+      }).catch((error) => ({
+        ok: false,
+        error: error?.message || String(error),
+      }));
+      scheduledResults.push({
+        task: 'telegram_pet_notifications',
+        ok: !!petNotifications?.ok,
+        error: petNotifications?.ok ? null : (petNotifications?.error || 'unknown_error'),
+      });
+      if (!petNotifications?.ok) {
+        logApiFailure('telegram_pet_notifications_scheduled_failed', petNotifications);
+      } else {
+        logApiEvent('telegram_pet_notifications_scheduled_complete', {
+          considered: petNotifications.considered,
+          sent: petNotifications.sent,
+          skipped: petNotifications.skipped,
+          failed: petNotifications.failed,
         });
       }
     }
@@ -6954,6 +7263,11 @@ async function handleTelegramUpdate(update, env) {
       if (payload === 'shop') {
         await answerTelegramCallback(tok, query.id, '/petshop');
         await cmdPetShop(db, tok, chatId, telegramId);
+        return;
+      }
+      if (payload === 'adventure') {
+        await answerTelegramCallback(tok, query.id, '/petadventure');
+        await cmdPetAdventure(db, tok, chatId, telegramId);
         return;
       }
       const action = normalizePetAction(payload);
@@ -7073,6 +7387,8 @@ async function handleTelegramUpdate(update, env) {
     case 'petmissions':  await cmdPetMissions(db, tok, chatId, telegramId);          break;
     case 'petshop':      await cmdPetShop(db, tok, chatId, telegramId);              break;
     case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr);       break;
+    case 'petadventure': await cmdPetAdventure(db, tok, chatId, telegramId, argStr); break;
+    case 'petnotify':    await cmdPetNotify(db, tok, chatId, telegramId, argStr);    break;
     case 'petleaderboard':
     case 'petscore':     await cmdPetLeaderboard(db, tok, chatId);                   break;
     // ── Admin-only moderation commands ───────────────────────────────────────
@@ -7164,6 +7480,8 @@ async function cmdGkHelp(tok, chatId) {
     `/petshop — View food, toy and clothing upgrades\n` +
     `/petbuy moon_kibble — Buy/equip a pet upgrade\n` +
     `/pettrade 25 — Risk in-game Moon Gold for game rewards\n` +
+    `/petadventure — Run a pet adventure for pet-only rewards\n` +
+    `/petnotify on — Enable pet needs alerts\n` +
     `/petleaderboard — Pet-only leaderboard\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
@@ -7214,7 +7532,7 @@ function petReplyMarkup() {
       ],
       [
         { text: 'Shop', callback_data: 'pet:shop' },
-        { text: 'Trade Gold', callback_data: 'pet:shop' },
+        { text: 'Adventure', callback_data: 'pet:adventure' },
       ],
       [
         { text: 'How To Play', url: `${SITE_URL}/how-to-play-crypto-moonboy-pets.html` },
@@ -7306,7 +7624,9 @@ async function cmdPetShop(db, tok, chatId, telegramId) {
     `Balance: ${p.moon_gold} gold · ${p.moon_crystals} crystals · ${p.style_tokens} style\n\n` +
     `${lines}\n\n` +
     `Buy/equip: <code>/petbuy moon_kibble</code>\n` +
-    `Risk game gold: <code>/pettrade 25</code>`,
+    `Risk game gold: <code>/pettrade 25</code>\n` +
+    `Adventures: <code>/petadventure</code>\n` +
+    `Alerts: <code>/petnotify on</code>`,
     { reply_markup: petReplyMarkup() },
   );
 }
@@ -7329,6 +7649,43 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
     `Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`,
     { reply_markup: petReplyMarkup() },
   );
+}
+
+async function cmdPetAdventure(db, tok, chatId, telegramId, argStr = '') {
+  const result = await processPetAdventure(db, telegramId, argStr, {
+    event_key: `tg:${telegramId}:adventure:${Date.now()}`,
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_adventure_failed' }));
+  if (!result.accepted) {
+    const retry = result.retry_after_seconds ? ` Try again in ${result.retry_after_seconds}s.` : '';
+    await sendTelegramMessage(tok, chatId, `Pet adventure blocked: ${escapeHtml(result.reason || 'not accepted')}.${retry}`);
+    return;
+  }
+  const title = result.adventure?.title || 'Pet adventure complete';
+  await sendTelegramMessage(tok, chatId,
+    `${escapeHtml(title)}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`,
+    { reply_markup: petReplyMarkup() },
+  );
+}
+
+async function cmdPetNotify(db, tok, chatId, telegramId, argStr = '') {
+  const setting = String(argStr || '').trim().toLowerCase();
+  if (!setting || setting === 'status') {
+    const pref = await getPetNotificationPreference(db, telegramId);
+    await sendTelegramMessage(tok, chatId, `Pet needs alerts are ${pref.enabled ? 'enabled' : 'disabled'}. Use /petnotify on or /petnotify off.`);
+    return;
+  }
+  if (setting === 'on' || setting === 'enable') {
+    await setPetNotificationPreference(db, telegramId, true);
+    await sendTelegramMessage(tok, chatId, 'Pet needs alerts enabled. Use /petnotify off to stop them.');
+    return;
+  }
+  if (setting === 'off' || setting === 'disable') {
+    await setPetNotificationPreference(db, telegramId, false);
+    await sendTelegramMessage(tok, chatId, 'Pet needs alerts disabled.');
+    return;
+  }
+  await sendTelegramMessage(tok, chatId, 'Use /petnotify on, /petnotify off, or /petnotify status.');
 }
 
 async function cmdPetLeaderboard(db, tok, chatId) {
