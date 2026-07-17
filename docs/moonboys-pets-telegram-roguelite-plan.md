@@ -23,6 +23,7 @@ Existing production patterns already present in the repo:
 
 - `workers/moonboys-api/worker.js`
   - `awardXp(db, telegramId, xpChange, action, referenceId)`
+  - active-season `telegram_leaderboard` writes used by `/telegram/leaderboard`
   - Telegram auth verification
   - `/telegram/profile`
   - `/telegram/leaderboard`
@@ -184,7 +185,15 @@ Recommended awards:
 | Weekly streak 5/7 | 100 | 50 | Strong retention loop |
 | Seasonal boss/milestone | 250+ | 100+ | Event reward, capped |
 
-Call existing `awardXp(...)` only after the pet action passes validation. Use action names such as:
+Call existing `awardXp(...)` only after the pet action passes validation.
+
+Important: `awardXp(...)` alone is not enough for seasonal leaderboard visibility. The pet XP award path must also upsert the active-season row in `telegram_leaderboard` when an active `telegram_seasons` row exists, or update `/telegram/leaderboard` so it aggregates seasonal XP from `telegram_xp_log` including `pet_%` actions. Preferred implementation: add a shared helper such as `awardCommunityXp(...)` that performs both writes atomically:
+
+1. insert `telegram_xp_log`
+2. update `telegram_users.xp` and `telegram_users.level`
+3. upsert `telegram_leaderboard(telegram_id, season_id, xp)` for the active season
+
+Use action names such as:
 
 - `pet_feed`
 - `pet_play`
@@ -317,11 +326,11 @@ Website display rule:
 flowchart TD
   A[Telegram user action] --> B[Bot receives command/button]
   B --> C[POST /telegram-pets/action]
-  C --> D[Verify bot/admin secret or Telegram evidence]
+  C --> D[Verify pet-only bot secret]
   D --> E[Apply decay + cooldown + caps]
   E --> F[Write pet event]
   F --> G[Update pet profile + pet season state]
-  G --> H[awardXp to community XP]
+  G --> H[award community XP + active leaderboard row]
   H --> I[Website reads profile/leaderboards]
 ```
 
@@ -329,25 +338,34 @@ flowchart TD
 
 Do not expose a public endpoint that lets anyone grant pet XP by posting a Telegram ID.
 
-Use one of these approaches:
+Use a pet-only bot secret for bot-to-API writes.
 
-1. Bot-only server calls with `X-Admin-Secret`, plus a strict route allowlist for pet actions.
-2. Signed Telegram auth evidence where the website user submits actions directly. This is less useful because play happens inside Telegram.
+Required approach:
 
-Recommended for this game: bot-only calls with an internal secret.
+1. Add a dedicated secret such as `TELEGRAM_PETS_BOT_SECRET`.
+2. The bot sends that secret in a pet-specific header such as `X-Pets-Bot-Secret`.
+3. Only `/telegram-pets/*` write routes may honor this secret.
+4. Existing global admin helpers such as `X-Admin-Secret` must not be accepted for normal pet gameplay actions.
+5. The pet secret must not authorize unrelated admin, grant, link-token, anti-cheat, or maintenance routes.
 
-The bot already receives trusted Telegram update payloads from Telegram. The bot should forward the Telegram user identity to the API with a bot secret. The API verifies the secret and then validates/caps the action.
+Do not give the Telegram pet bot the site-wide `ADMIN_SECRET` or `X-Admin-Secret`. A leaked pet bot credential should only expose pet gameplay routes, not existing admin-secret routes.
+
+Signed Telegram auth evidence can still be used for website reads or future user-submitted flows, but the core Telegram gameplay loop should use the pet-only bot secret because play happens inside Telegram.
+
+The bot already receives trusted Telegram update payloads from Telegram. The bot should forward the Telegram user identity to the API with the pet-only bot secret. The API verifies the pet secret, then validates/caps the action.
 
 ### 11. Implementation Order
 
 1. Add D1 migration for pet tables.
 2. Add pet season/date helper functions to `workers/moonboys-api/worker.js` or a small route module.
-3. Add `/telegram-pets/state`, `/telegram-pets/action`, `/telegram-pets/missions`, and `/telegram-pets/leaderboard`.
-4. Add Telegram bot commands/buttons to call those API routes.
-5. Add website pet panel to `community.html` and `js/telegram-community.js`.
-6. Add a Telegram game card to `games/index.html`.
-7. Add tests for dedupe, cooldown, daily caps, season rollover, and website fetch fallback.
-8. Update docs to state that Pets is a Telegram game source, not an arcade browser game.
+3. Add a pet-only secret verifier for `X-Pets-Bot-Secret` that is scoped to `/telegram-pets/*` write routes only.
+4. Add `/telegram-pets/state`, `/telegram-pets/action`, `/telegram-pets/missions`, and `/telegram-pets/leaderboard`.
+5. Add a shared XP award helper that writes `telegram_xp_log`, `telegram_users`, and active-season `telegram_leaderboard` rows together for pet Community XP.
+6. Add Telegram bot commands/buttons to call those API routes.
+7. Add website pet panel to `community.html` and `js/telegram-community.js`.
+8. Add a Telegram game card to `games/index.html`.
+9. Add tests for dedupe, cooldown, daily caps, season rollover, leaderboard writes, pet-secret scoping, and website fetch fallback.
+10. Update docs to state that Pets is a Telegram game source, not an arcade browser game.
 
 ### 12. Tests To Add
 
@@ -359,11 +377,14 @@ Suggested test files:
 
 Test cases:
 
-- `/telegram-pets/action` rejects missing bot secret.
+- `/telegram-pets/action` rejects a missing pet bot secret.
+- `/telegram-pets/action` rejects the global admin secret when the pet secret is absent.
+- the pet bot secret does not authorize non-pet admin routes.
 - duplicate `event_key` does not award XP twice.
 - daily cap clamps Community XP.
 - season key rolls over automatically.
 - pet XP updates pet stage.
+- pet Community XP writes `telegram_xp_log`, `telegram_users`, and the active `telegram_leaderboard` row.
 - website panel shows empty state when Telegram is not linked.
 - pet leaderboard is separate from total Community XP leaderboard.
 
@@ -373,8 +394,9 @@ The implementation PR is not done until:
 
 - Telegram users can adopt a Crypto Moonboys pet.
 - Pet actions persist in D1.
-- Valid pet actions award Community XP through `awardXp(...)`.
-- `/telegram/leaderboard` includes pet-earned Community XP.
+- Valid pet actions award Community XP through the shared XP helper.
+- Pet Community XP writes `telegram_xp_log`, `telegram_users`, and active-season `telegram_leaderboard` rows, or `/telegram/leaderboard` is updated to aggregate from `telegram_xp_log`.
+- `/telegram/leaderboard` includes pet-earned Community XP in active seasonal environments.
 - Pet-specific leaderboard is available separately.
 - Daily/weekly/seasonal mission state is visible from the API.
 - Season rollover requires no manual intervention.
@@ -391,7 +413,7 @@ Implement Crypto Moonboys Pets as a Telegram-first roguelite game source in Cryp
 
 Follow docs/moonboys-pets-telegram-roguelite-plan.md exactly.
 
-Add D1 pet tables, Moonboys API routes under /telegram-pets/*, server-authoritative cooldown/dedupe/caps, automatic daily/weekly/90-day seasonal keys, Community XP awards through existing awardXp(...), pet-specific leaderboard, website community pet panel, games/index.html Telegram game card, and tests for auth, dedupe, caps, season rollover, and panel fallback.
+Add D1 pet tables, Moonboys API routes under /telegram-pets/*, a pet-only bot secret that never reuses ADMIN_SECRET, server-authoritative cooldown/dedupe/caps, automatic daily/weekly/90-day seasonal keys, Community XP awards that update telegram_xp_log, telegram_users, and active-season telegram_leaderboard rows, pet-specific leaderboard, website community pet panel, games/index.html Telegram game card, and tests for pet-secret scoping, auth, dedupe, caps, season rollover, leaderboard writes, and panel fallback.
 
-Do not replace the existing arcade XP path. Pets must become another official XP source feeding telegram_users.xp and telegram_xp_log while keeping a separate pet-specific season leaderboard.
+Do not replace the existing arcade XP path. Pets must become another official XP source feeding telegram_users.xp, telegram_xp_log, and active-season telegram_leaderboard rows while keeping a separate pet-specific season leaderboard.
 ```
