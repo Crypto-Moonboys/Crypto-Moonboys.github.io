@@ -116,6 +116,9 @@ const XP_GROUP_JOIN  = 10;
 const PETS_DAILY_COMMUNITY_XP_CAP = 250;
 const PETS_DAILY_PET_XP_CAP = 1200;
 const PETS_ACTION_COOLDOWN_SECONDS = 45;
+const PET_TRADE_MIN_GOLD = 10;
+const PET_TRADE_MAX_GOLD = 250;
+const PET_TRADE_COOLDOWN_SECONDS = 300;
 const ARCADE_XP_PER_POINT = 0.02;
 const ARCADE_XP_MAX_PER_RUN = 120;
 const ARCADE_XP_DAILY_CAP = 2200;
@@ -1699,7 +1702,14 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
 }
 
 async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
-  const wager = Math.max(PET_TRADE_MIN_GOLD, Math.min(PET_TRADE_MAX_GOLD, Math.floor(Number(wagerRaw) || 0)));
+  const wagerText = String(wagerRaw ?? '').trim();
+  if (!/^\d+$/.test(wagerText)) {
+    return { accepted: false, reason: 'invalid_trade_wager', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const wager = Number(wagerText);
+  if (!Number.isFinite(wager) || wager < PET_TRADE_MIN_GOLD || wager > PET_TRADE_MAX_GOLD) {
+    return { accepted: false, reason: 'invalid_trade_wager', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   const now = new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
@@ -1727,11 +1737,17 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     }
   }
 
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
   const roll = Math.random();
   const won = roll >= 0.46;
   const goldDelta = won ? Math.max(6, Math.floor(wager * 0.75)) : -wager;
   const crystalDelta = won && wager >= 50 ? 1 : 0;
-  const petXp = won ? Math.max(3, Math.floor(wager / 8)) : 1;
+  let petXp = won ? Math.max(3, Math.floor(wager / 8)) : 1;
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) {
+    petXp = 0;
+  } else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) {
+    petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+  }
   pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + goldDelta);
   pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + crystalDelta);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
@@ -7056,6 +7072,7 @@ async function handleTelegramUpdate(update, env) {
     case 'clean':
     case 'sleep':
     case 'train':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, cmdBase); break;
+    case 'pettrade':     await cmdPetTrade(db, tok, chatId, telegramId, argStr);     break;
     case 'petname':      await cmdPetRename(db, tok, chatId, telegramId, argStr);    break;
     case 'petmissions':  await cmdPetMissions(db, tok, chatId, telegramId);          break;
     case 'petshop':      await cmdPetShop(db, tok, chatId, telegramId);              break;
@@ -7233,6 +7250,25 @@ async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action) {
     ? 'Crypto Moonboy Pet adopted.'
     : `Action accepted: /${escapeHtml(action)} (+${result.pet_xp_awarded || 0} pet XP, +${result.xp_awarded || 0} Community XP).`;
   await sendTelegramMessage(tok, chatId, `${prefix}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetTrade(db, tok, chatId, telegramId, argStr) {
+  const result = await processPetGoldTrade(db, telegramId, argStr, {
+    event_key: `tg:${telegramId}:trade:${Date.now()}`,
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_trade_failed' }));
+  if (!result.accepted) {
+    const retry = result.retry_after_seconds ? ` Try again in ${result.retry_after_seconds}s.` : '';
+    await sendTelegramMessage(tok, chatId, `Moon Gold trade blocked: ${escapeHtml(result.reason || 'not accepted')}.${retry}`);
+    return;
+  }
+  const outcome = result.won
+    ? `Trade won: +${result.gold_delta} gold, +${result.crystal_delta} crystals, +${result.pet_xp_awarded || 0} pet XP.`
+    : `Trade lost: ${result.gold_delta} gold, +${result.pet_xp_awarded || 0} pet XP.`;
+  await sendTelegramMessage(tok, chatId,
+    `${escapeHtml(outcome)}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`,
+    { reply_markup: petReplyMarkup() },
+  );
 }
 
 async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
