@@ -6,13 +6,35 @@ export const KAIJU_STICKER_BATTLE_CONFIG = Object.freeze({
 });
 
 export const KAIJU_CATEGORIES = Object.freeze([
-  Object.freeze({ roll: 1, key: 'pwr', label: 'PWR', name: 'Power' }),
-  Object.freeze({ roll: 2, key: 'size', label: 'SIZE', name: 'Size' }),
-  Object.freeze({ roll: 3, key: 'atk', label: 'ATK', name: 'Attack' }),
-  Object.freeze({ roll: 4, key: 'def', label: 'DEF', name: 'Defence' }),
-  Object.freeze({ roll: 5, key: 'spd', label: 'SPD', name: 'Speed' }),
-  Object.freeze({ roll: 6, key: 'lgcy', label: 'LGCY', name: 'Legacy' }),
+  Object.freeze({ roll: 1, key: 'pwr', label: 'PWR', name: 'Power', asset: '/img/game/kong3008/grimey5.png' }),
+  Object.freeze({ roll: 2, key: 'size', label: 'SIZE', name: 'Size', asset: '/img/game/kong3008/grimey6.png' }),
+  Object.freeze({ roll: 3, key: 'atk', label: 'ATK', name: 'Attack', asset: '/img/game/kong3008/grimey7.png' }),
+  Object.freeze({ roll: 4, key: 'def', label: 'DEF', name: 'Defence', asset: '/img/game/kong3008/grimey8.png' }),
+  Object.freeze({ roll: 5, key: 'spd', label: 'SPD', name: 'Speed', asset: '/img/game/kong3008/grimey9.png' }),
+  Object.freeze({ roll: 6, key: 'lgcy', label: 'LGCY', name: 'Legacy', asset: '/img/game/kong3008/grimey10.png' }),
 ]);
+
+export const KAIJU_ASSETS = Object.freeze({
+  rollBattle: '/img/game/kong3008/grimey1.png',
+  reset: '/img/game/kong3008/grimey2.png',
+  playAgain: '/img/game/kong3008/grimey3.png',
+  claimXp: '/img/game/kong3008/grimey4.png',
+  cardFrameGold: '/img/game/kong3008/grimey11.png',
+  cardFrameSilver: '/img/game/kong3008/grimey12.png',
+  win: '/img/game/kong3008/grimey13.png',
+  draw: '/img/game/kong3008/grimey14.png',
+  xp: '/img/game/kong3008/grimey15.png',
+  diceSix: '/img/game/kong3008/grimey16.png',
+  diceOne: '/img/game/kong3008/grimey17.png',
+  telegramLinked: '/img/game/kong3008/grimey18.png',
+  xpReady: '/img/game/kong3008/grimey19.png',
+  versus: '/img/game/kong3008/grimey20.png',
+  resultSlash: '/img/game/kong3008/grimey21.png',
+  deck: '/img/game/kong3008/grimey22.png',
+  crown: '/img/game/kong3008/grimey23.png',
+  trophy: '/img/game/kong3008/grimey24.png',
+  winnerCard: '/img/game/kong3008/grimey25winner.png',
+});
 
 export const KAIJU_CARDS = Object.freeze([
   Object.freeze({ id: 'big-daddy-kong', name: 'Big Daddy Kong', stats: Object.freeze({ pwr: 8, size: 6, atk: 7, def: 3, spd: 4, lgcy: 8 }) }),

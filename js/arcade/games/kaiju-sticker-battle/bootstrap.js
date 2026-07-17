@@ -1,6 +1,6 @@
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
-import { KAIJU_CARDS, KAIJU_CATEGORIES, KAIJU_STICKER_BATTLE_CONFIG } from './config.js';
+import { KAIJU_ASSETS, KAIJU_CARDS, KAIJU_CATEGORIES, KAIJU_STICKER_BATTLE_CONFIG } from './config.js';
 
 const GAME_ID = KAIJU_STICKER_BATTLE_CONFIG.id;
 const BATTLES_PER_MATCH = 5;
@@ -17,28 +17,43 @@ function pickOpponent(playerCard) {
 function statRows(card) {
   return KAIJU_CATEGORIES.map((cat) => {
     const value = Number(card.stats[cat.key]) || 0;
-    return `<li><span>${cat.label}</span><strong>${value}</strong></li>`;
+    return `<li><img src="${cat.asset}" alt="${cat.name}"><strong>${value}</strong></li>`;
   }).join('');
 }
 
 function renderCard(card, selected) {
+  const initials = card.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 3).toUpperCase();
   return `
     <button class="kaiju-card${selected ? ' selected' : ''}" type="button" data-card-id="${card.id}" aria-pressed="${selected ? 'true' : 'false'}">
       <span class="kaiju-card-name">${card.name}</span>
-      <span class="kaiju-card-art" aria-hidden="true">${card.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 3).toUpperCase()}</span>
+      <span class="kaiju-card-art" aria-hidden="true">
+        <img src="${selected ? KAIJU_ASSETS.cardFrameGold : KAIJU_ASSETS.cardFrameSilver}" alt="">
+        <span>${initials}</span>
+      </span>
       <ol class="kaiju-stat-list">${statRows(card)}</ol>
     </button>
   `;
 }
 
 function renderResult(result) {
-  if (!result) return 'Choose your sticker card, then roll the battle category.';
+  if (!result) {
+    return `
+      <span class="kaiju-result-badges" aria-hidden="true">
+        <img src="${KAIJU_ASSETS.telegramLinked}" alt="">
+        <img src="${KAIJU_ASSETS.xpReady}" alt="">
+      </span>
+      <span>Choose your sticker card, then roll the battle category.</span>
+    `;
+  }
   const outcome = result.tie ? 'Draw' : (result.playerWon ? 'You win' : 'CPU wins');
+  const outcomeAsset = result.tie ? KAIJU_ASSETS.draw : (result.playerWon ? KAIJU_ASSETS.win : KAIJU_ASSETS.winnerCard);
   const submitLine = result.submitted
-    ? `<span>Match submitted: ${result.totalScore}</span>`
+    ? `<span class="kaiju-result-badges"><img src="${KAIJU_ASSETS.xp}" alt=""> <span>Match submitted: ${result.totalScore}</span></span>`
     : `<span>Match progress: ${result.matchBattle}/${BATTLES_PER_MATCH}</span>`;
   return `
+    <img class="kaiju-result-stamp" src="${outcomeAsset}" alt="">
     <strong>${outcome}: ${result.category.name}</strong>
+    <img class="kaiju-result-category" src="${result.category.asset}" alt="${result.category.name}">
     <span>${result.player.name} ${result.playerValue} vs ${result.opponent.name} ${result.opponentValue}</span>
     ${submitLine}
   `;
@@ -105,8 +120,12 @@ export function bootstrapKaijuStickerBattle(root) {
     scoreEl.textContent = String(state.score);
     bestEl.textContent = String(ArcadeSync.getHighScore(GAME_ID));
     winsEl.textContent = `${state.wins}/${state.battles}`;
-    rollEl.textContent = state.lastResult ? String(state.lastResult.roll) : '-';
-    categoryEl.textContent = state.lastResult ? state.lastResult.category.label : '-';
+    rollEl.innerHTML = state.lastResult
+      ? `<span class="kaiju-hud-roll"><img src="${state.lastResult.roll === 1 ? KAIJU_ASSETS.diceOne : KAIJU_ASSETS.diceSix}" alt=""> ${state.lastResult.roll}</span>`
+      : '-';
+    categoryEl.innerHTML = state.lastResult
+      ? `<img class="kaiju-hud-category" src="${state.lastResult.category.asset}" alt="${state.lastResult.category.name}">`
+      : '-';
     resultEl.innerHTML = renderResult(state.lastResult);
     cardGrid.innerHTML = KAIJU_CARDS.map((card) => renderCard(card, card.id === state.playerCard.id)).join('');
     drawCanvas(canvas, state);

@@ -29,6 +29,7 @@ assert(bootstrap.includes("from '/js/leaderboard-client.js'"), 'bootstrap import
 assert(bootstrap.includes('const BATTLES_PER_MATCH = 5'), 'battle has a fixed match boundary');
 assert(bootstrap.includes('if (shouldSubmit)'), 'battle submits only at the match boundary');
 assert(bootstrap.includes('submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID)'), 'match submits cumulative accepted score');
+assert(config.includes('/img/game/kong3008/grimey1.png'), 'config exposes cropped Kaiju UI PNG assets');
 assert(page.includes('requireCompetitiveGate: true'), 'page uses competitive gate');
 assert(page.includes("gameId: 'kaiju-sticker-battle'"), 'page passes route game id to identity gate');
 assert(manifest.includes("id: 'kaiju'"), 'manifest exposes canonical kaiju game key');
