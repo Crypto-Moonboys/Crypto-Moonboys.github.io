@@ -13,6 +13,7 @@ const config = await read('js/arcade/games/kaiju-sticker-battle/config.js');
 const bootstrap = await read('js/arcade/games/kaiju-sticker-battle/bootstrap.js');
 const page = await read('games/kaiju-sticker-battle/index.html');
 const manifest = await read('js/arcade/arcade-manifest.js');
+const apiWorker = await read('workers/moonboys-api/worker.js');
 const leaderboardWorker = await read('workers/leaderboard-worker.js');
 const arcadeSync = await read('js/arcade-sync.js');
 
@@ -25,11 +26,16 @@ for (const key of ['pwr', 'size', 'atk', 'def', 'spd', 'lgcy']) {
 }
 
 assert(bootstrap.includes("from '/js/leaderboard-client.js'"), 'bootstrap imports leaderboard client');
-assert(bootstrap.includes('submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID)'), 'battle submits cumulative accepted score');
+assert(bootstrap.includes('const BATTLES_PER_MATCH = 5'), 'battle has a fixed match boundary');
+assert(bootstrap.includes('if (shouldSubmit)'), 'battle submits only at the match boundary');
+assert(bootstrap.includes('submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID)'), 'match submits cumulative accepted score');
 assert(page.includes('requireCompetitiveGate: true'), 'page uses competitive gate');
 assert(page.includes("gameId: 'kaiju-sticker-battle'"), 'page passes route game id to identity gate');
 assert(manifest.includes("id: 'kaiju'"), 'manifest exposes canonical kaiju game key');
+assert(apiWorker.includes("'kaiju-sticker-battle': 'kaiju'"), 'moonboys API normalizes kaiju route key');
+assert(apiWorker.includes("'btqm', 'kaiju', 'global'"), 'moonboys API allows kaiju XP progression');
 assert(leaderboardWorker.includes('"kaiju"'), 'leaderboard worker includes kaiju board');
+assert(leaderboardWorker.includes('VARIETY_BONUS_GAMES'), 'leaderboard worker keeps variety bonus roster versioned');
 assert(arcadeSync.includes('"kaiju-sticker-battle": "kaiju"'), 'ArcadeSync normalizes kaiju route key');
 
 console.log('kaiju-sticker-battle-contract.test: PASS');

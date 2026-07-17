@@ -243,6 +243,7 @@ const CANONICAL_GAMES = [
   'Tetris Block Topia',
   'Block Topia Quest Maze',
   'SnakeRun 3008',
+  'Kaiju Sticker Battle',
 ];
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

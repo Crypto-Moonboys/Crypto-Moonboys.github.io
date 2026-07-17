@@ -3,6 +3,7 @@ import { submitScore } from '/js/leaderboard-client.js';
 import { KAIJU_CARDS, KAIJU_CATEGORIES, KAIJU_STICKER_BATTLE_CONFIG } from './config.js';
 
 const GAME_ID = KAIJU_STICKER_BATTLE_CONFIG.id;
+const BATTLES_PER_MATCH = 5;
 
 function byId(id) {
   return KAIJU_CARDS.find((card) => card.id === id) || KAIJU_CARDS[0];
@@ -33,10 +34,13 @@ function renderCard(card, selected) {
 function renderResult(result) {
   if (!result) return 'Choose your sticker card, then roll the battle category.';
   const outcome = result.tie ? 'Draw' : (result.playerWon ? 'You win' : 'CPU wins');
+  const submitLine = result.submitted
+    ? `<span>Match submitted: ${result.totalScore}</span>`
+    : `<span>Match progress: ${result.matchBattle}/${BATTLES_PER_MATCH}</span>`;
   return `
     <strong>${outcome}: ${result.category.name}</strong>
     <span>${result.player.name} ${result.playerValue} vs ${result.opponent.name} ${result.opponentValue}</span>
-    <span>Score submitted: ${result.score}</span>
+    ${submitLine}
   `;
 }
 
@@ -122,11 +126,15 @@ export function bootstrapKaijuStickerBattle(root) {
     state.battles += 1;
     if (playerWon) state.wins += 1;
     state.score += score;
-    state.lastResult = { roll, category, player: state.playerCard, opponent: state.opponentCard, playerValue, opponentValue, tie, playerWon, score };
+    const matchBattle = state.battles % BATTLES_PER_MATCH || BATTLES_PER_MATCH;
+    const shouldSubmit = matchBattle === BATTLES_PER_MATCH;
+    state.lastResult = { roll, category, player: state.playerCard, opponent: state.opponentCard, playerValue, opponentValue, tie, playerWon, score, totalScore: state.score, matchBattle, submitted: shouldSubmit };
     ArcadeSync.setHighScore(GAME_ID, state.score);
     updateHud();
 
-    await submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID);
+    if (shouldSubmit) {
+      await submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID);
+    }
   }
 
   function reset() {
