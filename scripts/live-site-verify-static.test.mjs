@@ -72,6 +72,7 @@ const REQUIRED_ROUTES = [
   '/games/leaderboard.html',
   '/gkniftyheads-incubator.html',
   '/games/block-topia-quest-maze/',
+  '/games/kaiju-sticker-battle/',
   '/dashboard.html',
 ];
 
@@ -176,10 +177,10 @@ console.log('PASS: no Telegram credentials required');
 // ── 9. Canonical roster is manifest-backed and complete ───────────────────────
 const canonicalGamesBlock = source.match(/CANONICAL_GAMES\s*=\s*\[[\s\S]*?\];/);
 assert.ok(canonicalGamesBlock, 'CANONICAL_GAMES constant must be present');
-assert.equal(ARCADE_MANIFEST.length, 7, 'ARCADE_MANIFEST must contain exactly 7 live games');
+assert.equal(ARCADE_MANIFEST.length, 8, 'ARCADE_MANIFEST must contain exactly 8 live games');
 const expectedGames = ARCADE_MANIFEST.map(entry => entry.label.replace(/^[^\p{L}\p{N}]+/u, '').trim());
 const canonicalGames = [...canonicalGamesBlock[0].matchAll(/'([^']+)'/g)].map(match => match[1]);
-assert.equal(canonicalGames.length, 7, 'CANONICAL_GAMES must contain exactly 7 labels');
+assert.equal(canonicalGames.length, 8, 'CANONICAL_GAMES must contain exactly 8 labels');
 for (const name of expectedGames) {
   assert.ok(
     canonicalGames.includes(name),
@@ -217,18 +218,18 @@ assert.ok(
   'public arcade pages must not reference Crystal Quest',
 );
 assert.ok(
-  !/\b8[\s-]?games?\b/i.test(arcadeHubHtml) &&
-    !/\beight[\s-]?games?\b/i.test(arcadeHubHtml) &&
-    !/\b8[\s-]?games?\b/i.test(leaderboardHtml) &&
-    !/\beight[\s-]?games?\b/i.test(leaderboardHtml),
-  'public arcade pages must not use outdated eight-game wording',
+  !/\b7[\s-]?games?\b/i.test(arcadeHubHtml) &&
+    !/\bseven[\s-]?games?\b/i.test(arcadeHubHtml) &&
+    !/\b7[\s-]?games?\b/i.test(leaderboardHtml) &&
+    !/\bseven[\s-]?games?\b/i.test(leaderboardHtml),
+  'public arcade pages must not use outdated seven-game wording',
 );
 assert.ok(
-  arcadeHubHtml.includes('seven active Arcade games') &&
-    leaderboardHtml.includes('seven active Arcade games'),
-  'public arcade pages must state "seven active Arcade games"',
+  arcadeHubHtml.includes('eight active Arcade games') &&
+    leaderboardHtml.includes('eight active Arcade games'),
+  'public arcade pages must state "eight active Arcade games"',
 );
-console.log('PASS: public arcade pages enforce seven-game copy and no Crystal Quest references');
+console.log('PASS: public arcade pages enforce eight-game copy and no Crystal Quest references');
 
 // Local Node TLS inspection errors should not make the post-deploy verifier
 // report a broken site when browser-backed checks can still load the same

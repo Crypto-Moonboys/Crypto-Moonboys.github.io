@@ -110,6 +110,9 @@ export const ArcadeSync = {
       "block-topia-quest-maze": "btqm",
       block_topia_quest_maze: "btqm",
       blocktopia: "btqm",
+      "kaiju-sticker-battle": "kaiju",
+      kaiju_sticker_battle: "kaiju",
+      "telegram-kaiju": "kaiju",
     };
     return aliases[cleaned] || cleaned || "global";
   },

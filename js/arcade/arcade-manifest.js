@@ -10,7 +10,7 @@
  *   crossGameTags — compatibility tags for cross-game modifier system
  *
  * Live arcade games: invaders-3008, pac-chain, asteroid-fork, breakout-bullrun,
- *   tetris-block-topia, block-topia-quest-maze, snake-run
+ *   tetris-block-topia, block-topia-quest-maze, snake-run, kaiju-sticker-battle
  *
  * Consumed by:
  *   js/arcade/core/auto-mount-game.js   (browser auto-mount)
@@ -73,6 +73,14 @@ export const ARCADE_MANIFEST = Object.freeze([
     bootstrapPath: '/js/arcade/games/block-topia-quest-maze/bootstrap.js',
     adapterExport: 'BTQM_ADAPTER',
     crossGameTags: Object.freeze(['maze']),
+  },
+  {
+    id: 'kaiju',
+    label: 'Kaiju Sticker Battle',
+    page: '/games/kaiju-sticker-battle/',
+    bootstrapPath: '/js/arcade/games/kaiju-sticker-battle/bootstrap.js',
+    adapterExport: 'KAIJU_STICKER_BATTLE_ADAPTER',
+    crossGameTags: Object.freeze(['cards', 'telegram']),
   },
 ]);
 

@@ -1061,9 +1061,12 @@ function normalizeArcadeGameKey(value) {
     'block-topia-quest-maze': 'btqm',
     block_topia_quest_maze: 'btqm',
     blocktopia: 'btqm',
+    'kaiju-sticker-battle': 'kaiju',
+    kaiju_sticker_battle: 'kaiju',
+    'telegram-kaiju': 'kaiju',
   };
   const normalized = aliases[key] || key || 'global';
-  const allowed = new Set(['invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'snake', 'btqm', 'global']);
+  const allowed = new Set(['invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'snake', 'btqm', 'kaiju', 'global']);
   return allowed.has(normalized) ? normalized : 'global';
 }
 
@@ -1090,6 +1093,7 @@ function computeNormalizedArcadePoints(game, rawScore, localMetaPoints) {
     tetris: 1.05,
     snake: 0.95,
     btqm: 1.25,
+    kaiju: 0.9,
     global: 1.0,
   };
   const gameWeight = Number(difficultyWeights[normalizeArcadeGameKey(game)]) || 1;

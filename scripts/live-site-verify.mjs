@@ -32,6 +32,7 @@
  * Arcade/runtime:
  *   /games/block-topia-quest-maze/   BTQM — Phaser boot smoke, no 404 for generated assets
  *   /games/invaders-3008/            simple arcade game — shell smoke
+ *   /games/kaiju-sticker-battle/     card battle game — shell/bootstrap smoke
  *
  * ── Per-page assertions ───────────────────────────────────────────────────────
  *
@@ -139,11 +140,13 @@ const NO_RIGHT_PANEL_PAGES = [
 const ARCADE_PAGES = [
   '/games/block-topia-quest-maze/',
   '/games/invaders-3008/',
+  '/games/kaiju-sticker-battle/',
 ];
 
 const ARCADE_PAGE_SOURCE_FILES = {
   '/games/block-topia-quest-maze/': 'games/block-topia-quest-maze/index.html',
   '/games/invaders-3008/': 'games/invaders-3008/index.html',
+  '/games/kaiju-sticker-battle/': 'games/kaiju-sticker-battle/index.html',
 };
 
 const ARCADE_HTML_DIAGNOSTIC_PATHS = {
@@ -158,6 +161,12 @@ const ARCADE_HTML_DIAGNOSTIC_PATHS = {
     '/js/api-config.js',
     '/js/arcade/core/game-shell.js',
     '/js/arcade/games/invaders/bootstrap.js',
+  ],
+  '/games/kaiju-sticker-battle/': [
+    '/js/site-shell.js',
+    '/js/api-config.js',
+    '/js/arcade/core/game-shell.js',
+    '/js/arcade/games/kaiju-sticker-battle/bootstrap.js',
   ],
 };
 
@@ -207,6 +216,9 @@ const ARCADE_PAGE_CRITICAL_BOOTSTRAP_PATHS = {
   '/games/invaders-3008/': [
     '/js/arcade/games/invaders/bootstrap.js',
   ],
+  '/games/kaiju-sticker-battle/': [
+    '/js/arcade/games/kaiju-sticker-battle/bootstrap.js',
+  ],
 };
 
 // Strings that site-shell.js source MUST contain.
@@ -243,6 +255,7 @@ const CANONICAL_GAMES = [
   'Tetris Block Topia',
   'Block Topia Quest Maze',
   'SnakeRun 3008',
+  'Kaiju Sticker Battle',
 ];
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

@@ -8,6 +8,7 @@
  *   - Asteroid Fork
  *   - Pac-Chain
  *   - Tetris Block Topia
+ *   - Kaiju Sticker Battle
  *
  * Each game is tested for:
  *   1. config.js exports canonical game id and label
@@ -79,6 +80,14 @@ const GAMES = [
     canonicalId: 'tetris',
     adapterExport: 'TETRIS_ADAPTER',
   },
+  {
+    name: 'Kaiju Sticker Battle',
+    gameDir: 'games/kaiju-sticker-battle',
+    configPath: 'js/arcade/games/kaiju-sticker-battle/config.js',
+    bootstrapPath: 'js/arcade/games/kaiju-sticker-battle/bootstrap.js',
+    canonicalId: 'kaiju',
+    adapterExport: 'KAIJU_STICKER_BATTLE_ADAPTER',
+  },
 ];
 
 // All arcade game pages that use the fullscreen-only shell path.
@@ -90,6 +99,7 @@ const FULLSCREEN_ARCADE_LINKS = [
   '/games/tetris-block-topia/',
   '/games/block-topia-quest-maze/',
   '/games/snake-run/',
+  '/games/kaiju-sticker-battle/',
   '/games/block-topia/',
 ];
 // Block Topia has a separate shell/runtime and is intentionally excluded.

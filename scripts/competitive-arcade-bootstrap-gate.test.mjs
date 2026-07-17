@@ -11,6 +11,7 @@ const ACTIVE_PAGES = [
   ['block-topia-quest-maze', 'games/block-topia-quest-maze/index.html'],
   ['breakout-bullrun', 'games/breakout-bullrun/index.html'],
   ['invaders-3008', 'games/invaders-3008/index.html'],
+  ['kaiju-sticker-battle', 'games/kaiju-sticker-battle/index.html'],
   ['pac-chain', 'games/pac-chain/index.html'],
   ['snake-run', 'games/snake-run/index.html'],
   ['tetris-block-topia', 'games/tetris-block-topia/index.html'],

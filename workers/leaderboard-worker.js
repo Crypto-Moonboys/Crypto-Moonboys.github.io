@@ -1,5 +1,6 @@
-const GAMES = ["snake", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris"];
-const VARIETY_BONUS = 500;           // bonus points when a player has scored in all active games
+const GAMES = ["snake", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris", "kaiju"];
+const VARIETY_BONUS_GAMES = ["snake", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris"];
+const VARIETY_BONUS = 500;           // bonus points when a player has scored in all legacy variety games
 const SEASONAL_BONUS = 0;            // flat seasonal bonus (extend per-season via config if needed)
 const MAX_SCORE = 1_000_000_000;     // upper bound for submitted scores
 const MAX_META_SCORE = 1_000_000_000;
@@ -39,6 +40,8 @@ const GAME_KEY_ALIASES = {
   'pac-chain':           'pacchain',
   'tetris-block-topia':  'tetris',
   'block-topia-quest-maze': 'blocktopia',
+  'kaiju-sticker-battle': 'kaiju',
+  'telegram-kaiju':      'kaiju',
 };
 
 const CANONICAL_FACTIONS = [
@@ -796,7 +799,7 @@ async function updateAllTimeBoard(env, seasonalBoard) {
  *
  * main_score formula (same for all three boards):
  *   main_score = sum(best per-game scores across all active games)
- *              + variety_bonus   (VARIETY_BONUS when all active games have a score > 0)
+ *              + variety_bonus   (VARIETY_BONUS when all legacy variety games have a score > 0)
  *              + SEASONAL_BONUS  (flat season-wide bonus, 0 by default)
  */
 async function recomputeAllBoards(env) {
@@ -850,7 +853,7 @@ async function recomputeAggregate(env, key, boards) {
   const entries = Object.entries(identityMap).map(([identityKey, profile]) => {
     const scores = profile.scores || {};
     const gameTotal = GAMES.reduce((sum, g) => sum + (scores[g] || 0), 0);
-    const variety   = GAMES.every(g => (scores[g] || 0) > 0) ? VARIETY_BONUS : 0;
+    const variety   = VARIETY_BONUS_GAMES.every(g => (scores[g] || 0) > 0) ? VARIETY_BONUS : 0;
     const main_score = gameTotal + variety + SEASONAL_BONUS;
     const breakdown  = {};
     GAMES.forEach(g => { breakdown[g] = scores[g] || 0; });
