@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 89357)
-Total output lines: 8389
-
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
@@ -1064,12 +1061,9 @@ function normalizeArcadeGameKey(value) {
     'block-topia-quest-maze': 'btqm',
     block_topia_quest_maze: 'btqm',
     blocktopia: 'btqm',
-    'kaiju-sticker-battle': 'kaiju',
-    kaiju_sticker_battle: 'kaiju',
-    'telegram-kaiju': 'kaiju',
   };
   const normalized = aliases[key] || key || 'global';
-  const allowed = new Set(['invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'snake', 'btqm', 'kaiju', 'global']);
+  const allowed = new Set(['invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'snake', 'btqm', 'global']);
   return allowed.has(normalized) ? normalized : 'global';
 }
 
@@ -1096,7 +1090,6 @@ function computeNormalizedArcadePoints(game, rawScore, localMetaPoints) {
     tetris: 1.05,
     snake: 0.95,
     btqm: 1.25,
-    kaiju: 0.9,
     global: 1.0,
   };
   const gameWeight = Number(difficultyWeights[normalizeArcadeGameKey(game)]) || 1;
@@ -2657,7 +2650,3507 @@ async function upsertWtfMissedEntry(db, { telegramId, utcDay, eventRow, reason }
   await insertMissedPerkEntry(db, {
     telegramId,
     utcDay,
-    factionId: even…39357 tokens truncated…request.method === 'POST')) {
+    factionId: eventRow?.faction_id || null,
+    source: 'daily_wtf_timed_event',
+    opportunityType: 'timed_event_window',
+    title: safeTitle,
+    description: 'The city kept moving while you were away.',
+    missedReason: reason || 'event_expired',
+    statusValue: 1,
+    missedXpValue: MISSED_XP_PER_TIMED_EVENT,
+    metadataJson: {
+      event_id: eventRow?.event_id || null,
+      reward_preview: eventRow?.reward_key || null,
+      starts_at: eventRow?.starts_at || null,
+      ends_at: eventRow?.ends_at || null,
+    },
+    missedAt: eventRow?.ends_at || new Date().toISOString(),
+  });
+}
+
+async function verifyWtfCompletionProof(db, { telegramId, source, sourceId, event, utcDay }) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const safeSourceId = String(sourceId || '').trim();
+  if (!safeSourceId) {
+    return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
+  }
+  if (source === 'arcade_run_accepted') {
+    const row = await db.prepare(`
+      SELECT client_run_id, status
+      FROM arcade_progression_events
+      WHERE telegram_id = ? AND client_run_id = ? AND status = 'accepted'
+      LIMIT 1
+    `).bind(safeTelegramId, safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Accepted arcade run proof was not verified.' };
+    return { ok: true, proof: { type: 'arcade_run_accepted', source_id: safeSourceId } };
+  }
+  if (source === 'faction_daily_mission') {
+    const row = await db.prepare(`
+      SELECT mission_id, completed
+      FROM player_daily_mission_state
+      WHERE telegram_id = ? AND mission_date = ? AND mission_id = ? AND completed = 1
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Faction mission completion proof was not verified.' };
+    return { ok: true, proof: { type: 'faction_daily_mission', source_id: safeSourceId } };
+  }
+  if (source === 'battle_chamber_proof') {
+    const sourceNumeric = Number.parseInt(safeSourceId, 10);
+    if (!Number.isFinite(sourceNumeric) || sourceNumeric <= 0) {
+      return { ok: false, error: 'proof_required', message: 'Battle Chamber proof id is required.' };
+    }
+    const row = await db.prepare(`
+      SELECT id, event_type
+      FROM battle_chamber_activity_log
+      WHERE id = ? AND telegram_id = ?
+      LIMIT 1
+    `).bind(sourceNumeric, safeTelegramId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Battle Chamber proof was not verified.' };
+    return { ok: true, proof: { type: 'battle_chamber_proof', source_id: sourceNumeric } };
+  }
+  if (source === 'roguelite_branch') {
+    const row = await db.prepare(`
+      SELECT option_id, status
+      FROM daily_wtf_chain_options
+      WHERE telegram_id = ? AND utc_day = ? AND option_id = ? AND status IN ('chosen', 'completed')
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Roguelite branch proof was not verified.' };
+    return { ok: true, proof: { type: 'roguelite_branch', source_id: safeSourceId } };
+  }
+  return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
+}
+
+async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
+  const rows = await db.prepare(`
+    SELECT e.event_id, e.utc_day, e.title, e.faction_id, e.reward_key, e.starts_at, e.ends_at, p.status, p.checked_in_at, p.completed_at
+    FROM daily_wtf_events e
+    LEFT JOIN daily_wtf_player_events p
+      ON p.event_id = e.event_id AND p.utc_day = e.utc_day AND p.telegram_id = ?
+    WHERE e.utc_day = ?
+  `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  const officialIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+  for (const row of (rows?.results || [])) {
+    if (!officialIds.has(String(row.event_id))) continue;
+    const endMs = Date.parse(row.ends_at);
+    if (!Number.isFinite(endMs) || nowMs < endMs) continue;
+    if (row.completed_at) continue;
+    const priorStatus = String(row.status || '').trim();
+    const nextStatus = row.checked_in_at ? 'missed' : 'expired';
+    await db.prepare(`
+      INSERT INTO daily_wtf_player_events
+        (telegram_id, event_id, utc_day, status, checked_in_at, completed_at, missed_at, chain_depth, reward_status, metadata_json, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, NULL, ?, 0, 'none', ?, ?, ?)
+      ON CONFLICT(telegram_id, event_id, utc_day) DO UPDATE SET
+        status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE excluded.status END,
+        missed_at = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN daily_wtf_player_events.missed_at ELSE excluded.missed_at END,
+        updated_at = excluded.updated_at
+    `).bind(
+      String(telegramId), row.event_id, row.utc_day, nextStatus, row.checked_in_at || null,
+      new Date(endMs).toISOString(),
+      JSON.stringify({ prior_status: priorStatus || 'none', reason: 'window_expired' }),
+      new Date().toISOString(),
+      new Date().toISOString(),
+    ).run();
+    await upsertWtfMissedEntry(db, {
+      telegramId,
+      utcDay,
+      eventRow: row,
+      reason: row.checked_in_at ? 'checked_in_not_completed_before_expiry' : 'not_checked_in_before_expiry',
+    });
+  }
+}
+
+function buildWtfScheduleRow(utcDay, event) {
+  const startsAt = buildWtfIso(utcDay, event.startHour, 0);
+  return {
+    event_id: event.event_id,
+    utc_day: utcDay,
+    event_type: event.event_type,
+    title: event.title,
+    description: 'Check in during the signal window, complete the objective, and trigger a status burst.',
+    starts_at: startsAt,
+    ends_at: new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString(),
+    required_action: event.required_action,
+    reward_key: event.reward_key,
+    xp_multiplier_display: '5x XP opportunity',
+    theme: event.theme,
+    metadata_json: JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH, duration_minutes: event.durationMinutes, official_schedule: true }),
+  };
+}
+
+function wtfScheduleRowMatches(row, expected) {
+  if (!row || !expected) return false;
+  return String(row.event_id) === expected.event_id &&
+    String(row.utc_day) === expected.utc_day &&
+    String(row.event_type || '') === expected.event_type &&
+    String(row.title || '') === expected.title &&
+    String(row.description || '') === expected.description &&
+    String(row.starts_at || '') === expected.starts_at &&
+    String(row.ends_at || '') === expected.ends_at &&
+    String(row.required_action || '') === expected.required_action &&
+    String(row.reward_key || '') === expected.reward_key &&
+    String(row.xp_multiplier_display || '') === expected.xp_multiplier_display &&
+    String(row.theme || '') === expected.theme &&
+    String(row.metadata_json || '') === expected.metadata_json;
+}
+
+async function ensureWtfEventsForDay(db, utcDay) {
+  const scheduleRows = getWtfDailySchedule(utcDay).map((event) => buildWtfScheduleRow(utcDay, event));
+  const officialIds = new Set(scheduleRows.map((event) => event.event_id));
+  const existingRows = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+  const existingById = new Map((existingRows?.results || []).filter((row) => officialIds.has(String(row.event_id))).map((row) => [String(row.event_id), row]));
+  const scheduleAlreadyCurrent = existingById.size === scheduleRows.length && scheduleRows.every((expected) => wtfScheduleRowMatches(existingById.get(expected.event_id), expected));
+  if (scheduleAlreadyCurrent) return;
+
+  for (const event of scheduleRows) {
+    await db.prepare(`
+      INSERT INTO daily_wtf_events
+        (event_id, utc_day, event_type, title, description, starts_at, ends_at, required_action, reward_key, xp_multiplier_display, faction_id, game_key, theme, metadata_json, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?)
+      ON CONFLICT(event_id, utc_day) DO UPDATE SET
+        event_type = excluded.event_type,
+        title = excluded.title,
+        description = excluded.description,
+        starts_at = excluded.starts_at,
+        ends_at = excluded.ends_at,
+        required_action = excluded.required_action,
+        reward_key = excluded.reward_key,
+        xp_multiplier_display = excluded.xp_multiplier_display,
+        theme = excluded.theme,
+        metadata_json = excluded.metadata_json
+      WHERE daily_wtf_events.event_type IS NOT excluded.event_type
+        OR daily_wtf_events.title IS NOT excluded.title
+        OR daily_wtf_events.description IS NOT excluded.description
+        OR daily_wtf_events.starts_at IS NOT excluded.starts_at
+        OR daily_wtf_events.ends_at IS NOT excluded.ends_at
+        OR daily_wtf_events.required_action IS NOT excluded.required_action
+        OR daily_wtf_events.reward_key IS NOT excluded.reward_key
+        OR daily_wtf_events.xp_multiplier_display IS NOT excluded.xp_multiplier_display
+        OR daily_wtf_events.theme IS NOT excluded.theme
+        OR daily_wtf_events.metadata_json IS NOT excluded.metadata_json
+    `).bind(
+      event.event_id, event.utc_day, event.event_type, event.title,
+      event.description, event.starts_at, event.ends_at, event.required_action,
+      event.reward_key, event.xp_multiplier_display, event.theme,
+      event.metadata_json, new Date().toISOString(),
+    ).run();
+  }
+}
+
+function clampText(value, maxLen, fallback = '') {
+  const safe = String(value == null ? fallback : value).trim();
+  if (!safe) return String(fallback || '').slice(0, maxLen);
+  return safe.slice(0, maxLen);
+}
+
+function getUtcDayFromIso(isoLike) {
+  if (!isoLike) return null;
+  const ts = Date.parse(String(isoLike));
+  if (!Number.isFinite(ts)) return null;
+  return new Date(ts).toISOString().slice(0, 10);
+}
+
+function getPreviousUtcDay(utcDay) {
+  const ts = Date.parse(`${String(utcDay)}T00:00:00Z`);
+  if (!Number.isFinite(ts)) return null;
+  return new Date(ts - 86400000).toISOString().slice(0, 10);
+}
+
+/**
+ * Returns UTC day keys between start and end, excluding both boundary days.
+ */
+function listUtcDaysBetweenExclusive(startUtcDay, endUtcDay, maxDays = 45) {
+  const startTs = Date.parse(`${String(startUtcDay)}T00:00:00Z`);
+  const endTs = Date.parse(`${String(endUtcDay)}T00:00:00Z`);
+  if (!Number.isFinite(startTs) || !Number.isFinite(endTs) || endTs <= startTs) return [];
+  const days = [];
+  let cursor = startTs + 86400000;
+  while (cursor < endTs && days.length < maxDays) {
+    days.push(new Date(cursor).toISOString().slice(0, 10));
+    cursor += 86400000;
+  }
+  return days;
+}
+
+function normaliseMissedMetadata(metadata) {
+  if (!metadata) return null;
+  if (typeof metadata === 'string') {
+    const parsed = safeJsonParse(metadata, null);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return JSON.stringify(parsed).slice(0, 4000);
+    }
+    return null;
+  }
+  if (typeof metadata === 'object' && !Array.isArray(metadata)) {
+    return JSON.stringify(metadata).slice(0, 4000);
+  }
+  return null;
+}
+
+function formatMissionIdLabel(missionId) {
+  const base = String(missionId || '').replace(/[_-]+/g, ' ').trim();
+  if (!base) return 'Mission';
+  return base.replace(/\b\w/g, (m) => m.toUpperCase()).slice(0, 60);
+}
+
+async function insertMissedPerkEntry(db, {
+  telegramId,
+  utcDay,
+  factionId,
+  source,
+  opportunityType,
+  title,
+  description,
+  missedReason,
+  statusValue,
+  missedXpValue,
+  metadataJson,
+  missedAt,
+  missedXpValueAvailable,
+}) {
+  const safeTelegramId = String(telegramId || '').trim();
+  if (!safeTelegramId) return null;
+  const fallbackToday = getTodayUtcDate();
+  const safeUtcDay = clampText(utcDay || fallbackToday, 10, fallbackToday);
+  const normalizedFaction = factionId ? normalizeBattleChamberFaction(factionId) : null;
+  const safeSource = clampText(source, DAILY_MISSED_TEXT_LIMITS.source, 'unknown');
+  const safeType = clampText(opportunityType, DAILY_MISSED_TEXT_LIMITS.opportunityType, 'daily_opportunity');
+  const safeTitle = clampText(title, DAILY_MISSED_TEXT_LIMITS.title, 'Missed daily opportunity');
+  const safeDescription = clampText(description, DAILY_MISSED_TEXT_LIMITS.description, '');
+  const safeReason = clampText(missedReason, DAILY_MISSED_TEXT_LIMITS.missedReason, 'not_played');
+  const safeStatusValue = Math.max(0, Math.floor(Number(statusValue) || 0));
+  // missed_xp_value: notional XP forfeited (never awarded to player; tracking only)
+  const safeMissedXpValue = Math.max(0, Math.floor(Number(missedXpValue) || 0));
+  const safeMetadata = normaliseMissedMetadata(metadataJson);
+  const safeMissedAt = missedAt && Number.isFinite(Date.parse(String(missedAt)))
+    ? new Date(missedAt).toISOString()
+    : new Date().toISOString();
+  const safeCreatedAt = new Date().toISOString();
+  const hasMissedXpValue = missedXpValueAvailable == null
+    ? await hasDailyMissedXpValueColumn(db)
+    : !!missedXpValueAvailable;
+
+  const runInsertWithXp = () => db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMissedXpValue,
+    safeMetadata,
+    safeMissedAt,
+    safeCreatedAt,
+  ).run();
+
+  const runInsertWithoutXp = () => db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMetadata,
+    safeMissedAt,
+    safeCreatedAt,
+  ).run();
+
+  let result = null;
+  if (hasMissedXpValue) {
+    result = await runInsertWithXp().catch(async (error) => {
+      const message = String(error?.message || error || '').toLowerCase();
+      if (message.includes('no such column') || message.includes('missed_xp_value')) {
+        return runInsertWithoutXp().catch(() => null);
+      }
+      return null;
+    });
+  } else {
+    result = await runInsertWithoutXp().catch(() => null);
+  }
+  return result;
+}
+
+async function ensureDailyOpportunityStateForToday(db, telegramId, utcDay) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const dayKey = clampText(utcDay || getTodayUtcDate(), 10, getTodayUtcDate());
+  await db.prepare(`
+    INSERT INTO daily_opportunity_state
+      (telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at)
+    VALUES (?, ?, ?, 0, ?, NULL, ?, ?)
+    ON CONFLICT(telegram_id, utc_day) DO NOTHING
+  `).bind(
+    safeTelegramId,
+    dayKey,
+    crypto.randomUUID(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+  ).run();
+  return db.prepare(`
+    SELECT telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at
+    FROM daily_opportunity_state
+    WHERE telegram_id = ? AND utc_day = ?
+    LIMIT 1
+  `).bind(safeTelegramId, dayKey).first().catch(() => null);
+}
+
+async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcDay, factionId) {
+  const prior = await db.prepare(`
+    SELECT utc_day
+    FROM daily_opportunity_state
+    WHERE telegram_id = ? AND utc_day < ?
+    ORDER BY utc_day DESC
+    LIMIT 1
+  `).bind(String(telegramId), todayUtcDay).first().catch(() => null);
+  if (!prior?.utc_day) return { days_backfilled: 0, entries_created: 0, created: 0, missed_days: [] };
+  const missedDays = listUtcDaysBetweenExclusive(prior.utc_day, todayUtcDay, 45);
+  const missedXpValueAvailable = await hasDailyMissedXpValueColumn(db);
+  let entriesCreated = 0;
+  let daysFilledCount = 0;
+  for (const missedDay of missedDays) {
+    const existing = await db.prepare(`
+      SELECT id
+      FROM daily_missed_perks
+      WHERE telegram_id = ? AND utc_day = ? AND source = 'daily_reset' AND opportunity_type = 'daily_activation_window'
+      LIMIT 1
+    `).bind(String(telegramId), missedDay).first().catch(() => null);
+    if (existing?.id) continue;
+    const dailyResetInsert = await insertMissedPerkEntry(db, {
+      telegramId,
+      utcDay: missedDay,
+      factionId: factionId || null,
+      source: 'daily_reset',
+      opportunityType: 'daily_activation_window',
+      title: 'Daily activation window expired',
+      description: 'The city kept moving while you were away.',
+      missedReason: 'inactive_utc_day',
+      statusValue: 1,
+      missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
+      metadataJson: { trigger: 'utc_reset_backfill' },
+      missedAt: `${missedDay}T23:59:59.000Z`,
+      missedXpValueAvailable,
+    });
+    entriesCreated += Number(dailyResetInsert?.meta?.changes || 0);
+    daysFilledCount += 1;
+    const factionNormalized = normalizeBattleChamberFaction(factionId);
+    if (factionNormalized) {
+      const factionInsert = await insertMissedPerkEntry(db, {
+        telegramId,
+        utcDay: missedDay,
+        factionId: factionNormalized,
+        source: 'faction_missions',
+        opportunityType: 'daily_mission_window',
+        title: 'Faction daily mission window missed',
+        description: 'Faction daily missions reset at UTC midnight.',
+        missedReason: 'faction_mission_window_expired',
+        statusValue: 1,
+        missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
+        metadataJson: { trigger: 'utc_reset_backfill' },
+        missedAt: `${missedDay}T23:59:59.000Z`,
+        missedXpValueAvailable,
+      });
+      entriesCreated += Number(factionInsert?.meta?.changes || 0);
+    } else {
+      const factionSelectionInsert = await insertMissedPerkEntry(db, {
+        telegramId,
+        utcDay: missedDay,
+        factionId: null,
+        source: 'faction_selection',
+        opportunityType: 'faction_unselected',
+        title: 'Faction clout window missed',
+        description: 'No faction selected. Join a faction to activate faction war opportunities.',
+        missedReason: 'faction_not_selected',
+        statusValue: 1,
+        missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
+        metadataJson: { trigger: 'utc_reset_backfill' },
+        missedAt: `${missedDay}T23:59:59.000Z`,
+        missedXpValueAvailable,
+      });
+      entriesCreated += Number(factionSelectionInsert?.meta?.changes || 0);
+    }
+  }
+  return {
+    days_backfilled: daysFilledCount,
+    entries_created: entriesCreated,
+    created: entriesCreated,
+    missed_days: missedDays,
+  };
+}
+
+async function hasDailyMissedXpValueColumn(db) {
+  const info = await db.prepare(`PRAGMA table_info(daily_missed_perks)`).all().catch(() => ({ results: [] }));
+  return (info?.results || []).some((column) => String(column?.name || '') === 'missed_xp_value');
+}
+
+async function getMissedPerkTotals(db, telegramId, utcDay = null, missedXpValueAvailable = null) {
+  const hasMissedXpValue = missedXpValueAvailable == null
+    ? await hasDailyMissedXpValueColumn(db)
+    : !!missedXpValueAvailable;
+  const countRow = utcDay
+    ? await db.prepare(`
+        SELECT COUNT(*) AS events_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(String(telegramId), String(utcDay)).first().catch(() => ({ events_total: 0 }))
+    : await db.prepare(`
+        SELECT COUNT(*) AS events_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ?
+      `).bind(String(telegramId)).first().catch(() => ({ events_total: 0 }));
+  if (!hasMissedXpValue) {
+    return {
+      events_total: Math.max(0, Math.floor(Number(countRow?.events_total) || 0)),
+      xp_total: 0,
+      has_missed_xp_value: false,
+    };
+  }
+  const xpRow = utcDay
+    ? await db.prepare(`
+        SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(String(telegramId), String(utcDay)).first().catch(() => ({ xp_total: 0 }))
+    : await db.prepare(`
+        SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ?
+      `).bind(String(telegramId)).first().catch(() => ({ xp_total: 0 }));
+  return {
+    events_total: Math.max(0, Math.floor(Number(countRow?.events_total) || 0)),
+    xp_total: Math.max(0, Math.floor(Number(xpRow?.xp_total) || 0)),
+    has_missed_xp_value: true,
+  };
+}
+
+async function getMissedPerkRows(db, telegramId, limit = 5, utcDay = null, missedXpValueAvailable = null) {
+  const safeLimit = Math.max(1, Math.floor(Number(limit) || 5));
+  const hasMissedXpValue = missedXpValueAvailable == null
+    ? await hasDailyMissedXpValueColumn(db)
+    : !!missedXpValueAvailable;
+  const query = hasMissedXpValue
+    ? (utcDay
+      ? db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ? AND utc_day = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), String(utcDay), safeLimit)
+      : db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), safeLimit))
+    : (utcDay
+      ? db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ? AND utc_day = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), String(utcDay), safeLimit)
+      : db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), safeLimit));
+  const rows = await query.all().catch(() => ({ results: [] }));
+  return {
+    rows: rows?.results || [],
+    has_missed_xp_value: hasMissedXpValue,
+  };
+}
+
+async function getMissedHistorySnapshot(db, telegramId, limit = 5, missedXpValueAvailable = null) {
+  const [totals, rowResult] = await Promise.all([
+    getMissedPerkTotals(db, telegramId, null, missedXpValueAvailable),
+    getMissedPerkRows(db, telegramId, limit, null, missedXpValueAvailable),
+  ]);
+  return {
+    total: totals.events_total,
+    xp_total: totals.xp_total,
+    recent: (rowResult.rows || []).map((row) => ({
+      id: row.id,
+      utc_day: row.utc_day,
+      faction_id: row.faction_id || null,
+      source: row.source,
+      opportunity_type: row.opportunity_type,
+      title: row.title,
+      description: row.description || null,
+      missed_reason: row.missed_reason || null,
+      status_value: Number(row.status_value) || 0,
+      missed_xp_value: rowResult.has_missed_xp_value ? Math.max(0, Math.floor(Number(row.missed_xp_value) || 0)) : 0,
+      metadata: safeJsonParse(row.metadata_json, {}),
+      missed_at: row.missed_at || null,
+      created_at: row.created_at || null,
+    })),
+  };
+}
+
+async function getMissionDigestRows(db, telegramId, utcDay) {
+  const rows = await db.prepare(`
+    SELECT mission_id, progress, completed
+    FROM player_daily_mission_state
+    WHERE telegram_id = ? AND mission_date = ?
+    ORDER BY mission_id ASC
+    LIMIT 3
+  `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  return (rows?.results || []).map((row) => ({
+    mission_id: row.mission_id,
+    title: formatMissionIdLabel(row.mission_id),
+    progress: Math.max(0, Math.floor(Number(row.progress) || 0)),
+    target: null,
+    completed: Number(row.completed) === 1,
+  }));
+}
+
+async function getFactionDailyLog(db, telegramId, factionId, utcDay) {
+  const weekKey = getIsoWeekKey();
+  const normalizedFaction = normalizeBattleChamberFaction(factionId);
+  const [dailyRow, weeklyRow] = await Promise.all([
+    normalizedFaction
+      ? db.prepare(`
+          SELECT contribution
+          FROM player_faction_signal_state
+          WHERE telegram_id = ? AND faction_id = ? AND day_key = ?
+          LIMIT 1
+        `).bind(String(telegramId), normalizedFaction, utcDay).first().catch(() => null)
+      : Promise.resolve(null),
+    normalizedFaction
+      ? db.prepare(`
+          SELECT SUM(contribution) AS total
+          FROM player_faction_signal_state
+          WHERE telegram_id = ? AND faction_id = ? AND week_key = ?
+        `).bind(String(telegramId), normalizedFaction, weekKey).first().catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
+  let weeklyStanding = null;
+  let momentum = null;
+  const bcCheck = await ensureBattleChamberTables(db);
+  if (!bcCheck && normalizedFaction) {
+    const weeklyPeriodKey = await getBattlePeriodKey('weekly', db, Date.now());
+    const rows = await db.prepare(`
+      SELECT faction_id, clout_total
+      FROM battle_chamber_faction_clout
+      WHERE period_type = 'weekly' AND period_key = ?
+      ORDER BY clout_total DESC, faction_id ASC
+    `).bind(weeklyPeriodKey).all().catch(() => ({ results: [] }));
+    const list = rows?.results || [];
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].faction_id === normalizedFaction) {
+        weeklyStanding = i + 1;
+        const lead = Number(list[0]?.clout_total) || 0;
+        const mine = Number(list[i]?.clout_total) || 0;
+        const ratio = lead > 0 ? mine / lead : 0;
+        momentum = ratio >= 0.95 ? 'Dominant' : (ratio >= 0.7 ? 'Hot' : (ratio >= 0.45 ? 'Rising' : 'Building'));
+        break;
+      }
+    }
+  }
+
+  return {
+    daily_contribution: Math.max(0, Math.floor(Number(dailyRow?.contribution) || 0)),
+    weekly_contribution: Math.max(0, Math.floor(Number(weeklyRow?.total) || 0)),
+    momentum: momentum || 'Building',
+    weekly_standing: weeklyStanding,
+  };
+}
+
+function buildDigestNextBestAction({ factionId, missions, missedTotal }) {
+  if (!normalizeBattleChamberFaction(factionId)) {
+    return 'Pick a faction to activate faction war missions and clout opportunities.';
+  }
+  const pendingMission = (missions || []).find((mission) => !mission.completed);
+  if (pendingMission) {
+    return `Complete ${pendingMission.title} in Battle Chamber to push faction clout today.`;
+  }
+  if (Number(missedTotal) > 0) {
+    return 'Open Battle Chamber and clear today’s opportunities to slow missed-history growth.';
+  }
+  return 'Log a Battle Chamber proof action and run Arcade to keep momentum up.';
+}
+
+function buildFactionChamberLink(factionId) {
+  const normalizedFaction = normalizeBattleChamberFaction(factionId);
+  if (!normalizedFaction) return `${SITE_URL}/battle-chamber/factions/index.html`;
+  return `${SITE_URL}/battle-chamber/factions/${encodeURIComponent(normalizedFaction)}.html`;
+}
+
+async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
+  const nowIso = new Date().toISOString();
+  const retryCutoffTs = Date.now() - DIGEST_PENDING_STALE_MS;
+  const retryCutoffIso = new Date(retryCutoffTs).toISOString();
+  const forceRetry = !!options.forceRetry;
+  const safeMetadata = normaliseMissedMetadata({
+    claim_source: 'daily_digest_run',
+    trigger: options.trigger || null,
+    retry_override: forceRetry,
+  });
+  const insertResult = await db.prepare(`
+    INSERT INTO telegram_daily_digest_log
+      (telegram_id, utc_day, sent_at, status, error_message, metadata_json, created_at, updated_at)
+    VALUES (?, ?, NULL, 'pending', NULL, ?, ?, ?)
+    ON CONFLICT(telegram_id, utc_day) DO NOTHING
+  `).bind(
+    String(telegramId),
+    String(utcDay),
+    safeMetadata,
+    nowIso,
+    nowIso,
+  ).run().catch(() => null);
+  if (Number(insertResult?.meta?.changes || 0) === 1) {
+    return { claimed: true, reason: 'created' };
+  }
+  const existing = await db.prepare(`
+    SELECT status, sent_at, updated_at
+    FROM telegram_daily_digest_log
+    WHERE telegram_id = ? AND utc_day = ?
+    LIMIT 1
+  `).bind(String(telegramId), String(utcDay)).first().catch(() => null);
+  const status = String(existing?.status || '').toLowerCase();
+  if (status === 'sent') {
+    return { claimed: false, reason: 'already_sent' };
+  }
+  const updatedAtTs = Date.parse(String(existing?.updated_at || ''));
+  const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= retryCutoffTs);
+  if (!forceRetry && status === 'pending' && !isStalePending) {
+    return { claimed: false, reason: 'pending_recent' };
+  }
+  if (!forceRetry && status !== 'failed' && !isStalePending) {
+    return { claimed: false, reason: status || 'blocked' };
+  }
+  const retryUpdate = await db.prepare(`
+    UPDATE telegram_daily_digest_log
+    SET status = 'pending', sent_at = NULL, error_message = NULL, metadata_json = ?, updated_at = ?
+    WHERE telegram_id = ? AND utc_day = ?
+      AND (
+        (? = 1 AND status <> 'sent')
+        OR status = 'failed'
+        OR (status = 'pending' AND (updated_at IS NULL OR updated_at <= ?))
+      )
+  `).bind(
+    safeMetadata,
+    nowIso,
+    String(telegramId),
+    String(utcDay),
+    forceRetry ? 1 : 0,
+    retryCutoffIso,
+  ).run().catch(() => null);
+  if (Number(retryUpdate?.meta?.changes || 0) === 1) {
+    return { claimed: true, reason: forceRetry ? 'retry_override' : (status === 'failed' ? 'retry_failed' : 'retry_stale_pending') };
+  }
+  return { claimed: false, reason: status === 'pending' ? 'pending_recent' : (status || 'blocked') };
+}
+
+async function finalizeDailyDigestLog(db, telegramId, utcDay, status, payload = {}) {
+  const safeStatus = status === 'sent' ? 'sent' : 'failed';
+  const safeError = payload?.error ? String(payload.error).slice(0, 500) : null;
+  const safeMetadata = normaliseMissedMetadata(payload?.metadata || null);
+  const nowIso = new Date().toISOString();
+  const sentAt = safeStatus === 'sent' ? nowIso : null;
+  await db.prepare(`
+    UPDATE telegram_daily_digest_log
+    SET sent_at = ?, status = ?, error_message = ?, metadata_json = ?, updated_at = ?
+    WHERE telegram_id = ? AND utc_day = ?
+  `).bind(
+    sentAt,
+    safeStatus,
+    safeError,
+    safeMetadata,
+    nowIso,
+    String(telegramId),
+    String(utcDay),
+  ).run().catch(() => {});
+}
+
+async function getLinkedTelegramUsersForDigest(db, targetTelegramId = null) {
+  if (targetTelegramId) {
+    const row = await db.prepare(`
+      SELECT u.telegram_id
+      FROM telegram_users u
+      WHERE u.telegram_id = ?
+        AND (
+          EXISTS (
+            SELECT 1 FROM telegram_activity_log al
+            WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
+          )
+          OR EXISTS (
+            SELECT 1 FROM blocktopia_progression bp
+            WHERE bp.telegram_id = u.telegram_id
+          )
+        )
+      LIMIT 1
+    `).bind(String(targetTelegramId)).first().catch(() => null);
+    return row?.telegram_id ? [String(row.telegram_id)] : [];
+  }
+
+  const rows = await db.prepare(`
+    SELECT u.telegram_id
+    FROM telegram_users u
+    WHERE
+      EXISTS (
+        SELECT 1 FROM telegram_activity_log al
+        WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
+      )
+      OR EXISTS (
+        SELECT 1 FROM blocktopia_progression bp
+        WHERE bp.telegram_id = u.telegram_id
+      )
+    ORDER BY u.updated_at DESC, u.telegram_id DESC
+  `).all().catch(() => ({ results: [] }));
+  return (rows?.results || []).map((row) => String(row.telegram_id)).filter(Boolean);
+}
+
+async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
+  const [faction, missions, missedSnapshot, yesterdayCountRow] = await Promise.all([
+    getUserFaction(db, telegramId),
+    getMissionDigestRows(db, telegramId, utcDay),
+    getMissedHistorySnapshot(db, telegramId, 1),
+    db.prepare(`
+      SELECT COUNT(*) AS total
+      FROM daily_missed_perks
+      WHERE telegram_id = ? AND utc_day = ?
+    `).bind(String(telegramId), getPreviousUtcDay(utcDay) || '').first().catch(() => ({ total: 0 })),
+  ]);
+
+  const factionId = normalizeBattleChamberFaction(faction?.id || faction?.name) || null;
+  const factionLabel = factionId ? (BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId) : 'Unaligned';
+  const factionLogData = await getFactionDailyLog(db, telegramId, factionId, utcDay);
+  const missedTotal = Number(missedSnapshot?.total) || 0;
+  const yesterdayMissed = Number(yesterdayCountRow?.total) || 0;
+  const recentMissed = missedSnapshot?.recent && missedSnapshot.recent.length ? missedSnapshot.recent[0] : null;
+  const nextBestAction = buildDigestNextBestAction({
+    factionId,
+    missions,
+    missedTotal,
+  });
+  await ensureWtfEventsForDay(db, utcDay).catch(() => {});
+  const nextWtfRows = await db.prepare(`
+    SELECT event_id, title, starts_at, ends_at
+    FROM daily_wtf_events
+    WHERE utc_day = ? AND ends_at >= ?
+    ORDER BY starts_at ASC
+  `).bind(utcDay, new Date().toISOString()).all().catch(() => ({ results: [] }));
+  const officialWtfIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+  const nextWtf = (nextWtfRows?.results || []).find((row) => officialWtfIds.has(String(row.event_id))) || null;
+
+  const missionLines = missions.length
+    ? missions.map((mission, idx) => {
+        const progressLabel = mission.completed ? 'complete' : `${mission.progress} / ${mission.target || '?'}`;
+        return `${idx + 1}. <b>${escapeHtml(mission.title)}</b> — ${escapeHtml(progressLabel)} — clout/status push`;
+      }).join('\n')
+    : 'No synced mission progress yet. Open Battle Chamber to activate today’s faction missions.';
+
+  const missedLine = recentMissed
+    ? `Recent missed: ${escapeHtml(recentMissed.title)} (${escapeHtml(recentMissed.utc_day)})`
+    : 'Recent missed: none recorded yet';
+
+  const weeklyStanding = factionLogData.weekly_standing ? `#${factionLogData.weekly_standing}` : '—';
+  const wtfSignalLine = nextWtf
+    ? `${nextWtf.title} (${String(nextWtf.starts_at).slice(11, 16)}-${String(nextWtf.ends_at).slice(11, 16)} UTC)`
+    : 'No live window right now. Next signal loads soon.';
+  const message =
+    `GM, the Battle Chamber has reset. Your faction has new work.\n\n` +
+    `<b>Faction:</b> ${escapeHtml(factionLabel)}\n\n` +
+    `<b>Today’s faction daily missions</b>\n${missionLines}\n\n` +
+    `<b>WTF timed signal</b>\n${escapeHtml(wtfSignalLine)}\nCheck in when the signal opens.\n\n` +
+    `<b>Missed perks update</b>\n` +
+    `You have ${missedTotal} missed opportunities in your Battle Chamber history. The city kept moving while you were away.\n` +
+    `Yesterday missed: ${yesterdayMissed}\n` +
+    `${missedLine}\n\n` +
+    `<b>Faction daily log</b>\n` +
+    `Daily contribution: ${factionLogData.daily_contribution}\n` +
+    `Weekly contribution: ${factionLogData.weekly_contribution}\n` +
+    `Momentum: ${escapeHtml(factionLogData.momentum)}\n` +
+    `Weekly standing: ${escapeHtml(weeklyStanding)}\n` +
+    `Next best action: ${escapeHtml(nextBestAction)}`;
+
+  const sendResult = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, telegramId, message, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '⚔️ Open Battle Chamber', url: `${SITE_URL}/community.html` },
+          { text: '🕹️ Play Arcade', url: `${SITE_URL}/games/index.html` },
+        ],
+        [
+          { text: '🏛️ View Faction Chamber', url: buildFactionChamberLink(factionId) },
+          { text: '🔗 Refresh Telegram Link', url: `${SITE_URL}/gkniftyheads-incubator.html` },
+        ],
+      ],
+    },
+  });
+
+  return {
+    ok: !!sendResult?.ok,
+    status: sendResult?.status || null,
+    error: sendResult?.ok ? null : (sendResult?.error || sendResult?.response || 'telegram_send_failed'),
+    context: {
+      faction_id: factionId,
+      missions_count: missions.length,
+      missed_total: missedTotal,
+      yesterday_missed: yesterdayMissed,
+      next_best_action: nextBestAction,
+      daily_contribution: factionLogData.daily_contribution,
+      weekly_contribution: factionLogData.weekly_contribution,
+      momentum: factionLogData.momentum,
+      weekly_standing: factionLogData.weekly_standing,
+      utc_day: utcDay,
+    },
+  };
+}
+
+async function runTelegramDailyDigest(env, options = {}) {
+  const db = env.DB;
+  const utcDay = options.utcDay || getTodayUtcDate();
+  const targetTelegramId = options.targetTelegramId ? String(options.targetTelegramId) : null;
+  const forceRetry = !!options.forceRetry;
+  const dbCheck = await ensureDailyDigestTables(db);
+  if (dbCheck) {
+    return { ok: false, error: 'daily_digest_unavailable', reason: dbCheck.tableName };
+  }
+  const linkedIds = await getLinkedTelegramUsersForDigest(db, targetTelegramId);
+  const summary = {
+    ok: true,
+    utc_day: utcDay,
+    trigger: options.trigger || 'manual',
+    linked_users_considered: linkedIds.length,
+    processed: 0,
+    sent: 0,
+    skipped: targetTelegramId && !linkedIds.length ? 1 : 0,
+    skipped_already_sent: 0,
+    skipped_pending_recent: 0,
+    skipped_unlinked: targetTelegramId && !linkedIds.length ? 1 : 0,
+    failed: 0,
+    failures: [],
+  };
+  const processTelegramId = async (telegramId) => {
+    const claim = await claimDailyDigestSlot(db, telegramId, utcDay, {
+      forceRetry,
+      trigger: options.trigger || 'manual',
+    });
+    if (!claim?.claimed) {
+      return { kind: 'skipped', telegram_id: telegramId, reason: claim?.reason || 'blocked' };
+    }
+    const result = await sendDailyDigestMessage(db, env, telegramId, utcDay).catch((error) => ({
+      ok: false,
+      error: error?.message || String(error),
+      context: {},
+    }));
+    if (result.ok) {
+      await finalizeDailyDigestLog(db, telegramId, utcDay, 'sent', {
+        metadata: {
+          trigger: options.trigger || 'manual',
+          ...result.context,
+        },
+      });
+      return { kind: 'sent', telegram_id: telegramId };
+    }
+    await finalizeDailyDigestLog(db, telegramId, utcDay, 'failed', {
+      error: result.error || 'telegram_send_failed',
+      metadata: {
+        trigger: options.trigger || 'manual',
+        status: result.status || null,
+        ...result.context,
+      },
+    });
+    return {
+      kind: 'failed',
+      telegram_id: telegramId,
+      error: result.error || 'telegram_send_failed',
+    };
+  };
+  for (let i = 0; i < linkedIds.length; i += DIGEST_SEND_BATCH_SIZE) {
+    const batch = linkedIds.slice(i, i + DIGEST_SEND_BATCH_SIZE);
+    for (let j = 0; j < batch.length; j += DIGEST_SEND_MAX_CONCURRENCY) {
+      const concurrencySlice = batch.slice(j, j + DIGEST_SEND_MAX_CONCURRENCY);
+      const results = await Promise.all(concurrencySlice.map((telegramId) => processTelegramId(telegramId)));
+      for (const entry of results) {
+        if (entry.kind === 'sent') {
+          summary.processed += 1;
+          summary.sent += 1;
+          continue;
+        }
+        if (entry.kind === 'failed') {
+          summary.processed += 1;
+          summary.failed += 1;
+          summary.failures.push({
+            telegram_id: entry.telegram_id,
+            error: entry.error,
+          });
+          continue;
+        }
+        summary.skipped += 1;
+        if (entry.reason === 'already_sent') summary.skipped_already_sent += 1;
+        if (entry.reason === 'pending_recent') summary.skipped_pending_recent += 1;
+      }
+    }
+  }
+  return summary;
+}
+
+
+const TELEGRAM_GROUP_ANNOUNCEMENT_TYPES = Object.freeze({
+  TIMED_EVENTS: 'timed_events',
+  DAILY_SUMMARY: 'daily_summary',
+  ALL: 'all',
+});
+const TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS = 15 * 60 * 1000;
+const TELEGRAM_GROUP_PRE_EVENT_MINUTES = 10;
+const TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS = 10 * 60 * 1000;
+
+async function ensureTelegramGroupAnnouncementTables(db) {
+  for (const tableName of TELEGRAM_GROUP_ANNOUNCEMENT_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isTelegramGroupAnnouncementsUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'telegram_group_announcements_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Telegram group announcement tables are not yet configured. Apply migration 020.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+function getTelegramGroupConfig(env) {
+  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID || '').trim();
+  const threadId = String(env.TELEGRAM_GROUP_THREAD_ID || '').trim();
+  return {
+    configured: !!chatId,
+    chat_id: chatId || null,
+    message_thread_id: threadId || null,
+  };
+}
+
+function describeWtfRequiredAction(requiredAction) {
+  if (requiredAction === 'complete_faction_or_battle_action') return 'Complete a faction mission or Battle Chamber proof while the signal is live.';
+  if (requiredAction === 'score_target_any_game') return 'Post an accepted arcade score while the burst is live.';
+  if (requiredAction === 'choose_and_complete_chaos_path') return 'Choose a roguelite chaos path and complete the objective.';
+  return 'Open an accepted arcade run while the signal is live.';
+}
+
+function formatUtcHm(iso) {
+  return String(iso || '').slice(11, 16);
+}
+
+function buildWtfPreEventGroupAnnouncement(eventRow) {
+  const durationMinutes = Math.round((Date.parse(eventRow.ends_at) - Date.parse(eventRow.starts_at)) / 60000) || 90;
+  return [
+    '🚨 WTF SIGNAL IN 10 MINUTES',
+    '',
+    `${eventRow.title} opens at ${formatUtcHm(eventRow.starts_at)} UTC.`,
+    '',
+    `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
+    `Window: ${durationMinutes} minutes.`,
+    '',
+    'Check in when it opens, complete the objective, and unlock roguelite options.',
+    '',
+    `Battle Chamber: ${SITE_URL}/community.html`,
+    `Arcade: ${SITE_URL}/games/`,
+    '',
+    'Fun community gameplay/status event only — not a market signal.',
+  ].join('\n');
+}
+
+function buildDailyGroupSummaryMessage(utcDay) {
+  const windows = getWtfDailySchedule(utcDay)
+    .map((event) => `${String(event.startHour).padStart(2, '0')}:00`)
+    .join(', ');
+  return [
+    '⚡ Battle Chamber Daily Board is live.',
+    '',
+    `Six Daily WTF signals open today at ${windows} UTC.`,
+    '',
+    'Current focus: Battle Chamber proof, faction clout, accepted arcade runs, and missed opportunity history.',
+    '',
+    'Daily faction missions are live. Faction chambers have mission boards, and missed history does not reset. The city keeps moving while you are away.',
+    '',
+    'Check the site for current tasks, timed quests, roguelite options, and XP/status preview details.',
+    '',
+    `Battle Chamber: ${SITE_URL}/community.html`,
+    `Arcade: ${SITE_URL}/games/`,
+    `Faction Chambers: ${SITE_URL}/battle-chamber/factions/index.html`,
+  ].join('\n');
+}
+
+function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
+  const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
+  const force = !!options.force;
+  const announcementKeyFilter = options.announcementKey ? String(options.announcementKey).trim() : null;
+  const eventIdFilter = options.eventId ? String(options.eventId).trim() : null;
+  const utcDayFilter = options.utcDay ? String(options.utcDay).trim().slice(0, 10) : null;
+  const now = new Date(nowMs);
+  const today = now.toISOString().slice(0, 10);
+  const days = [...new Set([today, addUtcDays(today, 1), addUtcDays(today, -1)].filter(Boolean))];
+  const candidates = [];
+  for (const utcDay of days) {
+    if (utcDayFilter && utcDay !== utcDayFilter) continue;
+    for (const event of getWtfDailySchedule(utcDay)) {
+      const row = buildWtfScheduleRow(utcDay, event);
+      const announcementKey = `wtf:${utcDay}:${row.event_id}:minus_10`;
+      if (announcementKeyFilter && announcementKey !== announcementKeyFilter) continue;
+      if (eventIdFilter && row.event_id !== eventIdFilter) continue;
+      const scheduledMs = Date.parse(row.starts_at) - TELEGRAM_GROUP_PRE_EVENT_MINUTES * 60 * 1000;
+      const dueByTime = nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs;
+      const explicitlyForced = force && (announcementKeyFilter || (eventIdFilter && utcDayFilter));
+      const due = dueByTime || explicitlyForced;
+      if (!due) continue;
+      candidates.push({
+        announcement_key: announcementKey,
+        utc_day: utcDay,
+        event_id: row.event_id,
+        announcement_type: 'wtf_pre_event_minus_10',
+        scheduled_for: new Date(scheduledMs).toISOString(),
+        message: buildWtfPreEventGroupAnnouncement(row),
+        metadata: {
+          title: row.title,
+          starts_at: row.starts_at,
+          ends_at: row.ends_at,
+          required_action: row.required_action,
+          pre_event_minutes: TELEGRAM_GROUP_PRE_EVENT_MINUTES,
+        },
+      });
+    }
+  }
+  return candidates.sort((a, b) => String(a.scheduled_for).localeCompare(String(b.scheduled_for)) || String(a.announcement_key).localeCompare(String(b.announcement_key)));
+}
+
+function getDailyGroupSummaryCandidates(nowMs, options = {}) {
+  const force = !!options.force;
+  const now = new Date(nowMs);
+  const utcDay = now.toISOString().slice(0, 10);
+  const scheduledMs = Date.parse(`${utcDay}T09:00:00.000Z`);
+  const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
+  if (!force && !(nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs)) return [];
+  return [{
+    announcement_key: `daily-summary:${utcDay}`,
+    utc_day: utcDay,
+    event_id: null,
+    announcement_type: 'daily_summary',
+    scheduled_for: new Date(scheduledMs).toISOString(),
+    message: buildDailyGroupSummaryMessage(utcDay),
+    metadata: {
+      wtf_windows_utc: getWtfDailySchedule(utcDay).map((event) => `${String(event.startHour).padStart(2, '0')}:00`),
+      coverage: ['daily_faction_missions', 'battle_chamber_proof', 'missed_opportunities'],
+    },
+  }];
+}
+
+function getTelegramGroupAnnouncementCandidates(type, nowMs, options = {}) {
+  const normalized = String(type || TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL).trim().toLowerCase();
+  const candidates = [];
+  if (normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL || normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.TIMED_EVENTS) {
+    candidates.push(...getTimedGroupAnnouncementCandidates(nowMs, options));
+  }
+  if (normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL || normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.DAILY_SUMMARY) {
+    candidates.push(...getDailyGroupSummaryCandidates(nowMs, options));
+  }
+  return candidates;
+}
+
+async function getTelegramGroupAnnouncementLog(db, announcementKey) {
+  return db.prepare(`
+    SELECT announcement_key, status, sent_at, updated_at
+    FROM telegram_group_announcement_log
+    WHERE announcement_key = ?
+    LIMIT 1
+  `).bind(announcementKey).first().catch(() => null);
+}
+
+async function claimTelegramGroupAnnouncement(db, candidate, options = {}) {
+  const nowMs = Number.isFinite(Number(options.nowMs)) ? Number(options.nowMs) : Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+  const staleBeforeIso = new Date(nowMs - TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS).toISOString();
+  const insertResult = await db.prepare(`
+    INSERT OR IGNORE INTO telegram_group_announcement_log
+      (announcement_key, utc_day, event_id, announcement_type, scheduled_for, status, metadata_json, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 'sending', ?, ?, ?)
+  `).bind(
+    candidate.announcement_key,
+    candidate.utc_day,
+    candidate.event_id || null,
+    candidate.announcement_type,
+    candidate.scheduled_for,
+    JSON.stringify(candidate.metadata || {}),
+    nowIso,
+    nowIso,
+  ).run();
+  if (Number(insertResult?.meta?.changes || 0) === 1) return { claimed: true, reason: 'new' };
+
+  const updateResult = await db.prepare(`
+    UPDATE telegram_group_announcement_log
+    SET utc_day = ?, event_id = ?, announcement_type = ?, scheduled_for = ?, status = 'sending', error_message = NULL, metadata_json = ?, updated_at = ?
+    WHERE announcement_key = ?
+      AND (
+        status = 'failed'
+        OR (status IN ('pending', 'sending') AND updated_at <= ?)
+      )
+  `).bind(
+    candidate.utc_day,
+    candidate.event_id || null,
+    candidate.announcement_type,
+    candidate.scheduled_for,
+    JSON.stringify(candidate.metadata || {}),
+    nowIso,
+    candidate.announcement_key,
+    staleBeforeIso,
+  ).run();
+  if (Number(updateResult?.meta?.changes || 0) === 1) return { claimed: true, reason: 'retry' };
+
+  const existing = await getTelegramGroupAnnouncementLog(db, candidate.announcement_key);
+  if (existing?.status === 'sent') return { claimed: false, reason: 'already_sent' };
+  if (existing?.status === 'pending' || existing?.status === 'sending') return { claimed: false, reason: 'already_claimed' };
+  return { claimed: false, reason: 'duplicate' };
+}
+
+async function finalizeTelegramGroupAnnouncement(db, candidate, status, payload = {}) {
+  const nowIso = new Date().toISOString();
+  const sentAt = status === 'sent' ? nowIso : null;
+  await db.prepare(`
+    UPDATE telegram_group_announcement_log
+    SET sent_at = COALESCE(?, sent_at), status = ?, error_message = ?, metadata_json = ?, updated_at = ?
+    WHERE announcement_key = ?
+  `).bind(
+    sentAt,
+    status,
+    payload.error ? clampText(payload.error, 500, 'telegram_group_send_failed') : null,
+    JSON.stringify({ ...(candidate.metadata || {}), ...(payload.metadata || {}) }),
+    nowIso,
+    candidate.announcement_key,
+  ).run().catch((error) => {
+    logApiFailure('telegram_group_announcement_finalize_failed', {
+      announcement_key: candidate.announcement_key,
+      message: error?.message || String(error),
+    });
+  });
+}
+
+async function sendTelegramGroupAnnouncement(env, candidate) {
+  const groupConfig = getTelegramGroupConfig(env);
+  if (!groupConfig.configured) {
+    console.log('telegram_group_not_configured', JSON.stringify({ announcement_key: candidate?.announcement_key || null }));
+    return { ok: false, skipped: true, error: 'telegram_group_not_configured' };
+  }
+  const extra = { disable_web_page_preview: true };
+  if (groupConfig.message_thread_id) extra.message_thread_id = Number(groupConfig.message_thread_id) || groupConfig.message_thread_id;
+  const result = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, groupConfig.chat_id, candidate.message, extra);
+  if (!result?.ok) {
+    logApiFailure('telegram_group_send_failed', {
+      announcement_key: candidate.announcement_key,
+      status: result?.status || null,
+      response: clampText(result?.response || result?.error || 'telegram_send_failed', 500, 'telegram_send_failed'),
+    });
+  }
+  return result;
+}
+
+async function runTelegramGroupAnnouncements(env, options = {}) {
+  const nowMs = Number.isFinite(Date.parse(options.now || '')) ? Date.parse(options.now) : Date.now();
+  const type = options.type || TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL;
+  const dryRun = options.dry_run === true || options.dryRun === true;
+  const force = options.force === true;
+  const groupConfig = getTelegramGroupConfig(env);
+  const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, {
+    force,
+    announcementKey: options.announcement_key || options.announcementKey || null,
+    eventId: options.event_id || options.eventId || null,
+    utcDay: options.utc_day || options.utcDay || null,
+  });
+  const summary = {
+    ok: true,
+    group_configured: groupConfig.configured,
+    group_thread_configured: !!groupConfig.message_thread_id,
+    type,
+    now: new Date(nowMs).toISOString(),
+    due_announcements: dueAnnouncements.map((candidate) => ({
+      announcement_key: candidate.announcement_key,
+      utc_day: candidate.utc_day,
+      event_id: candidate.event_id,
+      announcement_type: candidate.announcement_type,
+      scheduled_for: candidate.scheduled_for,
+    })),
+    sent_count: 0,
+    skipped_count: 0,
+    failed_count: 0,
+    dry_run: dryRun,
+    errors: [],
+  };
+  if (!groupConfig.configured) {
+    if (dueAnnouncements.length > 0) console.log('telegram_group_not_configured');
+    summary.skipped_count = dueAnnouncements.length;
+    return summary;
+  }
+  if (dryRun) {
+    summary.skipped_count = dueAnnouncements.length;
+    return summary;
+  }
+  const dbCheck = await ensureTelegramGroupAnnouncementTables(env.DB);
+  if (dbCheck) {
+    summary.ok = false;
+    summary.failed_count = dueAnnouncements.length;
+    summary.errors.push(dbCheck.tableName || 'telegram_group_announcement_log');
+    return summary;
+  }
+  for (const candidate of dueAnnouncements) {
+    const claim = await claimTelegramGroupAnnouncement(env.DB, candidate, { force });
+    if (!claim?.claimed) {
+      summary.skipped_count += 1;
+      continue;
+    }
+    const result = await sendTelegramGroupAnnouncement(env, candidate).catch((error) => ({ ok: false, error: error?.message || String(error) }));
+    if (result?.ok) {
+      await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'sent', { metadata: { telegram_status: result.status || null } });
+      summary.sent_count += 1;
+      continue;
+    }
+    const errorMessage = result?.response || result?.error || 'telegram_group_send_failed';
+    await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'failed', { error: errorMessage });
+    summary.failed_count += 1;
+    summary.errors.push({ announcement_key: candidate.announcement_key, error: clampText(errorMessage, 500, 'telegram_group_send_failed') });
+  }
+  return summary;
+}
+
+// ── Main fetch handler ────────────────────────────────────────────────────────
+
+export default {
+  async fetch(request, env) {
+    const url  = new URL(request.url);
+    const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '');
+    const corsHeaders = buildCorsHeaders(request, env);
+    const json = makeJsonResponder(corsHeaders);
+    const err = makeErrorResponder(corsHeaders);
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    // ── GET /health ────────────────────────────────────────────────────────
+    if (path === '/health' && request.method === 'GET') {
+      return json({ ok: true });
+    }
+
+    // ── GET /sam/status ────────────────────────────────────────────────────
+    if (path === '/sam/status' && request.method === 'GET') {
+      return json({ ok: true, message: 'SAM active and monitoring the wiki.' });
+    }
+
+    if (path === '/api/waxonedge' || path.startsWith('/api/waxonedge/')) {
+      return handleWaxOnEdgeRoute(request, env, corsHeaders);
+    }
+
+    if (path === '/api/wax' || path.startsWith('/api/wax/')) {
+      return handleWaxBridgeRoute(request, env, corsHeaders);
+    }
+
+    if (path === '/daily-loop/state') {
+      const dailyLoopResponse = await handleDailyLoopStateRoute(request, env, {
+        json,
+        err,
+        verifyTelegramAuth,
+        upsertTelegramUser,
+        logApiFailure,
+      });
+      if (dailyLoopResponse) return dailyLoopResponse;
+    }
+
+    // ── POST /admin/blocktopia/access ─────────────────────────────────────
+    // Admin access probe for hidden tooling UIs.
+    // Requires verified Telegram auth payload and returns only coarse capability flags.
+    if (path === '/admin/blocktopia/access' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      return json({
+        ok: true,
+        telegram_id: verified.telegramId,
+        admin_allowlisted: isAdminTelegramUser(verified.telegramId, env),
+        admin_secret_configured: !!String(env.ADMIN_SECRET || '').trim(),
+      });
+    }
+
+    // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
+    // Admin-only tooling endpoint for Block Topia test/ops XP + gems grants.
+    if (path === '/admin/blocktopia/grant-xp' && request.method === 'POST') {
+      const missingAdminConfig = ensureAdminGrantConfigured(env);
+      if (missingAdminConfig.length) {
+        logApiFailure('admin_blocktopia_grant_xp_not_configured', { missing: missingAdminConfig });
+        return err('Admin grant route is not configured', 503);
+      }
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const telegramId = String(body?.telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
+      const hasXpInput = body && Object.prototype.hasOwnProperty.call(body, 'xp');
+      const hasGemsInput = body && Object.prototype.hasOwnProperty.call(body, 'gems');
+      const rawXp = hasXpInput ? Number(body?.xp) : null;
+      const rawGems = hasGemsInput ? Number(body?.gems) : null;
+      const reason = String(body?.reason || '').trim().slice(0, 280);
+
+      if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
+        return err('Valid target telegram_id is required', 400);
+      }
+      if (!isAdminTelegramUser(adminTelegramId, env)) {
+        return err('Forbidden: admin not allowed', 403);
+      }
+      if (!hasXpInput && !hasGemsInput) {
+        return err('At least one of xp or gems must be provided', 400);
+      }
+      if (hasXpInput && (!Number.isInteger(rawXp) || rawXp <= 0)) {
+        return err('xp must be a positive integer', 400);
+      }
+      if (hasGemsInput && (!Number.isInteger(rawGems) || rawGems <= 0)) {
+        return err('gems must be a positive integer', 400);
+      }
+      const grantXp = hasXpInput ? Math.min(rawXp, BLOCKTOPIA_ADMIN_XP_GRANT_MAX) : 0;
+      const grantGems = hasGemsInput ? Math.min(rawGems, BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX) : 0;
+
+      try {
+        const row = await getOrCreateBlockTopiaProgression(env.DB, telegramId);
+        // Admin grants are trusted tooling actions and must stay outside Phase 4
+        // player enforcement. Do not clamp through reward caps or mutate
+        // pressure/cooldown-adjacent activity state here.
+        const currentXp = Math.max(XP_MIN, Math.floor(Number(row?.xp) || 0));
+        const currentGems = Math.max(GEMS_MIN, Math.floor(Number(row?.gems) || 0));
+        const nextXp = currentXp + grantXp;
+        const nextGems = currentGems + grantGems;
+        const appliedXpDelta = nextXp - currentXp;
+        const appliedGemsDelta = nextGems - currentGems;
+        if (appliedXpDelta <= 0 && appliedGemsDelta <= 0) {
+          return err('Grant cannot be applied at current cap', 409);
+        }
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET xp = ?, gems = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextXp, nextGems, telegramId).run();
+
+        await writeBlockTopiaAdminGrantAudit(env.DB, {
+          telegramId,
+          adminTelegramId,
+          xpChange: appliedXpDelta,
+          gemsChange: appliedGemsDelta,
+          reason,
+        });
+
+        return json({
+          ok: true,
+          target_telegram_id: telegramId,
+          admin_telegram_id: adminTelegramId,
+          requested_xp: hasXpInput ? rawXp : null,
+          requested_gems: hasGemsInput ? rawGems : null,
+          granted_xp: grantXp,
+          granted_gems: grantGems,
+          applied_xp: appliedXpDelta,
+          applied_gems: appliedGemsDelta,
+          progression: {
+            telegram_id: telegramId,
+            xp_before: currentXp,
+            xp_after: nextXp,
+            gems_before: currentGems,
+            gems_after: nextGems,
+          },
+        });
+      } catch (error) {
+        logApiFailure('admin_blocktopia_grant_xp_failed', {
+          telegramId,
+          adminTelegramId,
+          xp: rawXp,
+          gems: rawGems,
+          message: error?.message || String(error),
+        });
+        return err('Failed to grant Block Topia progression resources', 500);
+      }
+    }
+
+    // ── POST /admin/arcade/grant-xp ───────────────────────────────────────
+    // Admin-only tooling endpoint to grant Arcade XP (arcade_progression_state.arcade_xp_total).
+    // This is the value checked by the Block Topia multiplayer gate.
+    if (path === '/admin/arcade/grant-xp' && request.method === 'POST') {
+      const missingAdminConfig = ensureAdminGrantConfigured(env);
+      if (missingAdminConfig.length) {
+        logApiFailure('admin_arcade_grant_xp_not_configured', { missing: missingAdminConfig });
+        return err('Admin grant route is not configured', 503);
+      }
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const telegramId = String(body?.telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
+      const rawXp = body && Object.prototype.hasOwnProperty.call(body, 'xp') ? Number(body.xp) : null;
+      const reason = String(body?.reason || '').trim().slice(0, 280);
+
+      if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
+        return err('Valid target telegram_id is required', 400);
+      }
+      if (!isAdminTelegramUser(adminTelegramId, env)) {
+        return err('Forbidden: admin not allowed', 403);
+      }
+      if (rawXp === null) {
+        return err('xp is required', 400);
+      }
+      if (!Number.isInteger(rawXp) || rawXp <= 0) {
+        return err('xp must be a positive integer', 400);
+      }
+      const grantXp = Math.min(rawXp, ARCADE_ADMIN_XP_GRANT_MAX);
+
+      try {
+        const currentArcadeDailyKey = new Date().toISOString().slice(0, 10);
+
+        const rowBefore = await env.DB.prepare(`
+          SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
+        `).bind(telegramId).first();
+        const xpBefore = Math.max(0, Math.floor(Number(rowBefore?.arcade_xp_total) || 0));
+
+        await env.DB.prepare(`
+          INSERT INTO arcade_progression_state
+            (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
+          VALUES (?, ?, 0, ?, 0, NULL, CURRENT_TIMESTAMP)
+          ON CONFLICT(telegram_id)
+          DO UPDATE SET
+            arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
+            updated_at = CURRENT_TIMESTAMP
+        `).bind(telegramId, grantXp, currentArcadeDailyKey).run();
+
+        const rowAfter = await env.DB.prepare(`
+          SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
+        `).bind(telegramId).first();
+        const xpAfter = Math.max(0, Math.floor(Number(rowAfter?.arcade_xp_total) || 0));
+
+        const auditReason = reason
+          ? `arcade_xp_admin_grant: ${reason}`
+          : 'arcade_xp_admin_grant';
+
+        // Reuse the shared Block Topia audit log for arcade admin grants to avoid schema duplication.
+        // The reason field (prefixed 'arcade_xp_admin_grant') distinguishes these entries from BT grants.
+        await writeBlockTopiaAdminGrantAudit(env.DB, {
+          telegramId,
+          adminTelegramId,
+          xpChange: grantXp,
+          gemsChange: 0,
+          reason: auditReason,
+        });
+
+        return json({
+          ok: true,
+          target_telegram_id: telegramId,
+          admin_telegram_id: adminTelegramId,
+          requested_xp: rawXp,
+          granted_xp: grantXp,
+          arcade_progression: {
+            telegram_id: telegramId,
+            arcade_xp_total_before: xpBefore,
+            arcade_xp_total_after: xpAfter,
+          },
+        });
+      } catch (error) {
+        logApiFailure('admin_arcade_grant_xp_failed', {
+          telegramId,
+          adminTelegramId,
+          xp: rawXp,
+          message: error?.message || String(error),
+        });
+        return err('Failed to grant Arcade XP', 500);
+      }
+    }
+
+    // ── POST /telegram/auth ────────────────────────────────────────────────
+    // Accepts the Telegram Login Widget payload, verifies the HMAC signature,
+    // and returns a normalised identity object (never exposes the bot token).
+    if (path === '/telegram/auth' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/auth', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const { id, first_name, last_name, username, photo_url, auth_date, hash } = body || {};
+
+      if (!id || !auth_date || !hash) {
+        return err('Missing required Telegram auth fields');
+      }
+
+      const now = Math.floor(Date.now() / 1000);
+      if (now - parseInt(auth_date, 10) > TELEGRAM_AUTH_MAX_AGE) {
+        logApiFailure('telegram_auth_expired', { telegramId: String(id) });
+        return err('Telegram auth data has expired', 401);
+      }
+
+      const valid = await verifyTelegramAuth(
+        { id, first_name, last_name, username, photo_url, auth_date, hash },
+        env.TELEGRAM_BOT_TOKEN,
+      );
+      if (!valid) {
+        logApiFailure('telegram_auth_verification_failed', { telegramId: String(id) });
+        return err('Telegram auth verification failed', 401);
+      }
+
+      const displayName = [first_name, last_name].filter(Boolean).join(' ') || username || String(id);
+      const signedAuthPayload = await buildSignedTelegramAuthPayload({
+        id: String(id),
+        first_name,
+        last_name,
+        username,
+        photo_url,
+      }, env.TELEGRAM_BOT_TOKEN, auth_date);
+      if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+        logApiFailure('telegram_auth_payload_sign_failed', { telegramId: String(id) });
+        return err('Failed to generate signed Telegram auth payload', 500);
+      }
+      return json({
+        ok: true,
+        identity: {
+          telegram_id:       String(id),
+          telegram_username: username  || null,
+          display_name:      displayName,
+          avatar_url:        photo_url || null,
+        },
+        telegram_auth: signedAuthPayload,
+      });
+    }
+
+    // ── POST /telegram/webhook ─────────────────────────────────────────────
+    // Always returns 200 OK so Telegram stops retrying regardless of errors.
+    if (path === '/telegram/webhook' && request.method === 'POST') {
+      let update;
+      try {
+        update = await request.json();
+      } catch (e) {
+        console.log('webhook parse failure:', e?.message || String(e));
+        return json({ ok: true });
+      }
+      if (update) {
+        await handleTelegramUpdate(update, env).catch((e) => {
+          console.log('handleTelegramUpdate error:', e?.message || String(e));
+          if (e?.stack) console.log(e.stack);
+        });
+      }
+      return json({ ok: true });
+    }
+
+    // ── Crypto Moonboys Pets API ──────────────────────────────────────────
+    if (path === '/telegram-pets/season/current' && request.method === 'GET') {
+      return json({ season: getPetSeasonInfo(new Date()) });
+    }
+
+    if (path === '/telegram-pets/state' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
+      if (!pet) return err('Pet profile not found', 404);
+      return json({ pet: serializePet(pet), missions: await buildPetMissions(env.DB, telegramId) });
+    }
+
+    if (path === '/telegram-pets/missions' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      return json({ missions: await buildPetMissions(env.DB, telegramId) });
+    }
+
+    if (path === '/telegram-pets/shop' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      const pet = /^\d{1,20}$/.test(telegramId) ? await getPetProfile(env.DB, telegramId).catch(() => null) : null;
+      return json({
+        currencies: ['moon_gold', 'moon_crystals', 'style_tokens'],
+        pet: serializePet(pet),
+        items: petShopItemsForPet(pet),
+      });
+    }
+
+    if (path === '/telegram-pets/activity' && request.method === 'GET') {
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
+      const rows = await env.DB.prepare(`
+        SELECT e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
+               p.pet_name, p.stage, u.username, u.first_name, u.last_name
+        FROM telegram_pet_events e
+        LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
+        LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
+        WHERE e.status = 'accepted'
+        ORDER BY e.created_at DESC
+        LIMIT ?
+      `).bind(limit).all().catch(() => ({ results: [] }));
+      return json({ items: (rows.results || []).map((row) => ({
+        text: `${displayNameFromRow(row)} ${row.event_type} ${row.pet_name || 'Moonpet'} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
+        event_type: row.event_type,
+        pet_name: row.pet_name || 'Moonpet',
+        stage: row.stage || 'egg',
+        xp_awarded: Number(row.xp_awarded || 0),
+        pet_xp_awarded: Number(row.pet_xp_awarded || 0),
+        created_at: row.created_at,
+        time_ago: timeAgo(row.created_at),
+      })) });
+    }
+
+    if (path === '/telegram-pets/leaderboard' && request.method === 'GET') {
+      const period = String(url.searchParams.get('period') || 'seasonal').toLowerCase();
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '25', 10), 1), 100);
+      const now = new Date();
+      const dayKey = getPetDayKey(now);
+      const weekKey = getPetWeekKey(now);
+      const season = getPetSeasonInfo(now);
+      let rows;
+      if (period === 'daily') {
+        rows = await env.DB.prepare(`
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_events e
+          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
+          LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
+          WHERE e.day_key = ? AND e.status = 'accepted'
+          GROUP BY e.telegram_id
+          ORDER BY pet_xp DESC
+          LIMIT ?
+        `).bind(dayKey, limit).all().catch(() => ({ results: [] }));
+      } else if (period === 'weekly') {
+        rows = await env.DB.prepare(`
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_events e
+          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
+          LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
+          WHERE e.week_key = ? AND e.status = 'accepted'
+          GROUP BY e.telegram_id
+          ORDER BY pet_xp DESC
+          LIMIT ?
+        `).bind(weekKey, limit).all().catch(() => ({ results: [] }));
+      } else if (period === 'all_time') {
+        rows = await env.DB.prepare(`
+          SELECT p.telegram_id, p.pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_profiles p
+          LEFT JOIN telegram_users u ON u.telegram_id = p.telegram_id
+          ORDER BY p.pet_xp DESC
+          LIMIT ?
+        `).bind(limit).all().catch(() => ({ results: [] }));
+      } else {
+        rows = await env.DB.prepare(`
+          SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+                 u.username, u.first_name, u.last_name
+          FROM telegram_pet_season_state s
+          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
+          LEFT JOIN telegram_users u ON u.telegram_id = s.telegram_id
+          WHERE s.season_key = ?
+          ORDER BY s.season_xp DESC
+          LIMIT ?
+        `).bind(season.key, limit).all().catch(() => ({ results: [] }));
+      }
+      return json({
+        period,
+        season,
+        entries: (rows.results || []).map((row, index) => ({
+          rank: index + 1,
+          display_name: displayNameFromRow(row),
+          username: row.username || null,
+          pet_name: row.pet_name || 'Moonpet',
+          stage: row.stage || 'egg',
+          level: Number(row.level || 1),
+          pet_xp: Number(row.pet_xp || 0),
+          streak_days: Number(row.streak_days || 0),
+          last_active_label: timeAgo(row.updated_at),
+        })),
+      });
+    }
+
+    if (path === '/telegram-pets/action' && request.method === 'POST') {
+      if (!verifyPetsBotSecret(request, env)) {
+        return err('pet bot secret required', 401);
+      }
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return err('invalid json', 400);
+      }
+      const user = body?.user || {};
+      const telegramId = String(body?.telegram_id || user.id || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      await upsertTelegramUser(env.DB, {
+        id: telegramId,
+        username: user.username || body.username || null,
+        first_name: user.first_name || body.first_name || null,
+        last_name: user.last_name || body.last_name || null,
+      });
+      let result;
+      if (body.action === 'buy') {
+        result = await processPetShopPurchase(env.DB, telegramId, body.item_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'trade') {
+        result = await processPetGoldTrade(env.DB, telegramId, body.wager, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'adventure') {
+        result = await processPetAdventure(env.DB, telegramId, body.adventure_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else {
+        result = await processPetAction(env.DB, telegramId, body.action, {
+          event_key: body.event_key,
+          pet_name: body.pet_name,
+          species: body.species,
+          source: 'telegram_pets_api',
+        });
+      }
+      return json({ ...result, pet: serializePet(result.pet) }, result.accepted ? 200 : 409);
+    }
+
+    // ── GET /telegram/profile?telegram_id= ────────────────────────────────
+    // Reads from telegram_users; includes faction via telegram_faction_members.
+    if (path === '/telegram/profile' && request.method === 'GET') {
+      const telegramId = url.searchParams.get('telegram_id');
+      if (!telegramId) return err('telegram_id required');
+      try {
+        const [user, faction] = await Promise.all([
+          env.DB.prepare(
+            `SELECT telegram_id, username, first_name, last_name,
+                    wallet_address, xp, level, created_at, updated_at
+             FROM telegram_users WHERE telegram_id = ?`
+          ).bind(telegramId).first(),
+          getUserFaction(env.DB, telegramId),
+        ]);
+        if (!user) return err('Profile not found', 404);
+        return json({ profile: { ...user, faction: faction || null } });
+      } catch {
+        return err('Failed to load profile', 500);
+      }
+    }
+
+    // ── GET /telegram/leaderboard?limit= ──────────────────────────────────
+    // Uses current season from telegram_seasons; falls back to telegram_users.xp.
+    if (path === '/telegram/leaderboard' && request.method === 'GET') {
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+      try {
+        const season = await getCurrentSeason(env.DB);
+        let entries;
+
+        if (season?.id) {
+          const rows = await env.DB.prepare(
+            `SELECT tl.telegram_id, tl.xp, tl.rank,
+                    tu.username, tu.first_name, tu.last_name
+             FROM telegram_leaderboard tl
+             LEFT JOIN telegram_users tu ON tu.telegram_id = tl.telegram_id
+             WHERE tl.season_id = ?
+             ORDER BY tl.xp DESC
+             LIMIT ?`
+          ).bind(season.id, limit).all();
+          entries = (rows.results || []).map((r, i) => ({
+            rank:         r.rank || i + 1,
+            telegram_id:  r.telegram_id,
+            username:     r.username || null,
+            display_name: displayNameFromRow(r),
+            xp:           r.xp || 0,
+          }));
+        }
+
+        // Fallback: top users by xp from telegram_users
+        if (!entries || !entries.length) {
+          const rows = await env.DB.prepare(
+            `SELECT telegram_id, username, first_name, last_name, xp, level
+             FROM telegram_users ORDER BY xp DESC LIMIT ?`
+          ).bind(limit).all();
+          entries = (rows.results || []).map((r, i) => ({
+            rank:         i + 1,
+            telegram_id:  r.telegram_id,
+            username:     r.username || null,
+            display_name: displayNameFromRow(r),
+            xp:           r.xp || 0,
+          }));
+        }
+
+        return json({ type: 'community_xp', season: season || null, entries });
+      } catch {
+        return err('Failed to load leaderboard', 500);
+      }
+    }
+
+    // ── GET /telegram/quests ──────────────────────────────────────────────
+    // Returns active quests filtered by start_date / end_date.
+    if (path === '/telegram/quests' && request.method === 'GET') {
+      try {
+        const now = new Date().toISOString();
+        const rows = await env.DB.prepare(
+          `SELECT id, title, description, xp_reward, start_date, end_date
+           FROM telegram_quests
+           WHERE is_active = 1
+             AND (start_date IS NULL OR start_date <= ?)
+             AND (end_date IS NULL OR end_date >= ?)
+           ORDER BY created_at DESC`
+        ).bind(now, now).all();
+        return json({ quests: rows.results || [] });
+      } catch {
+        return err('Failed to load quests', 500);
+      }
+    }
+
+    // ── POST /telegram/link ────────────────────────────────────────────────
+    // Internal/admin only. Body: { telegram_id }
+    // Invalidates outstanding tokens and generates a new one-time token
+    // stored in telegram_link_tokens (15-minute TTL).
+    // Rejects if the user's anti-cheat state is blocked.
+    if (path === '/telegram/link' && request.method === 'POST') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link', null, corsHeaders, { includeTelegram: false }); if (_rateLimit) return _rateLimit; }
+      if (!(await isAuthorizedByAdminSecret(request, env))) {
+        logApiFailure('telegram_link_token_mint_denied', {
+          hasAdminSecret: !!String(env.ADMIN_SECRET || '').trim(),
+          hasHeaderSecret: !!readAdminSecret(request),
+        });
+        return err('Unauthorized', 401);
+      }
+
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link', body, corsHeaders, { includeIp: false }); if (_rateLimit) return _rateLimit; }
+      const { telegram_id } = body || {};
+      const telegramId = String(telegram_id || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id invalid');
+
+      // Anti-cheat gate: reject competitive link action if account is blocked.
+      try {
+        const acState = await env.DB.prepare(
+          `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+        ).bind(telegramId).first();
+        if (acState && acState.is_blocked === 1) {
+          return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
+        }
+      } catch (error) {
+        logApiFailure('telegram_link_anticheat_check_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+      }
+
+      try {
+        const linkToken = await createTelegramLinkToken(env.DB, telegramId);
+        return json({ ok: true, ...linkToken });
+      } catch (error) {
+        logApiFailure('telegram_link_token_create_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+        return err('Failed to generate link token', 500);
+      }
+    }
+
+    // ── GET /telegram/link/confirm?token= ─────────────────────────────────
+    // Validates a one-time token from telegram_link_tokens.
+    // Checks is_used = 0 and expires_at; marks is_used = 1 on success.
+    if (path === '/telegram/link/confirm' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link/confirm', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const token = url.searchParams.get('token');
+      if (!token || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
+        return err('token required');
+      }
+      const now = new Date().toISOString();
+      try {
+        const row = await env.DB.prepare(
+          `SELECT telegram_id FROM telegram_link_tokens
+           WHERE token = ? AND is_used = 0 AND expires_at > ?`
+        ).bind(token, now).first();
+        if (!row) return err('Invalid or expired link token', 410);
+
+        await env.DB.prepare(
+          `UPDATE telegram_link_tokens SET is_used = 1 WHERE token = ?`
+        ).bind(token).run();
+
+        const user = await env.DB.prepare(
+          `SELECT telegram_id, username, first_name, last_name
+           FROM telegram_users WHERE telegram_id = ?`
+        ).bind(String(row.telegram_id)).first().catch(() => null);
+
+        const signedAuthPayload = await buildSignedTelegramAuthPayload({
+          id: String(row.telegram_id),
+          username: user?.username || null,
+          first_name: user?.first_name || null,
+          last_name: user?.last_name || null,
+          photo_url: null,
+        }, env.TELEGRAM_BOT_TOKEN);
+        if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+          logApiFailure('telegram_link_confirm_auth_payload_sign_failed', { telegramId: String(row.telegram_id) });
+          return err('Failed to generate signed Telegram auth payload', 500);
+        }
+
+        return json({
+          ok: true,
+          telegram_id: row.telegram_id,
+          telegram_name: displayNameFromRow(user || { telegram_id: row.telegram_id }),
+          telegram_auth: signedAuthPayload,
+        });
+      } catch {
+        return err('Failed to confirm link token', 500);
+      }
+    }
+
+    // ── POST /telegram/link/confirm ────────────────────────────────────────
+    // Body: { telegram_auth }
+    // Verifies a signed Telegram auth payload directly from the /gklink URL.
+    if (path === '/telegram/link/confirm' && request.method === 'POST') {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'invalid_json',
+          timestamp: new Date().toISOString(),
+        }));
+        return err('Invalid JSON');
+      }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link/confirm', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      console.log('[telegram_link_confirm]', JSON.stringify({
+        event: 'payload_received',
+        hasTelegramAuth: !!verified?.authPayload,
+        telegramId: verified?.authPayload?.id ? String(verified.authPayload.id) : null,
+        timestamp: new Date().toISOString(),
+      }));
+      if (verified?.error) {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'verification_failed',
+          telegramId: verified?.authPayload?.id ? String(verified.authPayload.id) : null,
+          reason: verified.error,
+          status: verified.status || 401,
+          timestamp: new Date().toISOString(),
+        }));
+        return err(verified.error, verified.status || 401);
+      }
+
+      try {
+        const acState = await env.DB.prepare(
+          `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+        ).bind(String(verified.telegramId)).first().catch(() => null);
+        if (acState && acState.is_blocked === 1) {
+          return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
+        }
+
+        await upsertTelegramUser(env.DB, verified.user);
+        try {
+          await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        } catch (error) {
+          logApiFailure('telegram_link_confirm_progression_create_failed', {
+            telegramId: verified.telegramId,
+            message: error?.message || String(error),
+          });
+        }
+        await logTelegramActivity(env.DB, verified.telegramId, 'link_confirmed', JSON.stringify({
+          source: 'signed_payload',
+          linked_at: new Date().toISOString(),
+        })).catch((error) => {
+          logApiFailure('telegram_link_confirm_activity_log_failed', {
+            telegramId: verified.telegramId,
+            message: error?.message || String(error),
+          });
+        });
+
+        const user = await env.DB.prepare(
+          `SELECT telegram_id, username, first_name, last_name
+           FROM telegram_users WHERE telegram_id = ?`
+        ).bind(String(verified.telegramId)).first().catch(() => null);
+
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'verification_succeeded',
+          telegramId: verified.telegramId,
+          timestamp: new Date().toISOString(),
+        }));
+
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          telegram_name: displayNameFromRow(user || { telegram_id: verified.telegramId }),
+          telegram_auth: verified.authPayload,
+        });
+      } catch (error) {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'confirm_exception',
+          telegramId: verified.telegramId,
+          reason: error?.message || String(error),
+          timestamp: new Date().toISOString(),
+        }));
+        return err('Failed to confirm Telegram link', 500);
+      }
+    }
+
+    // ── GET /telegram/activity?limit= ─────────────────────────────────────
+    // Reads from telegram_activity_log joined to telegram_users for display name.
+    if (path === '/telegram/activity' && request.method === 'GET') {
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT al.telegram_id, al.action, al.metadata, al.created_at,
+                  tu.username, tu.first_name, tu.last_name
+           FROM telegram_activity_log al
+           LEFT JOIN telegram_users tu ON tu.telegram_id = al.telegram_id
+           ORDER BY al.created_at DESC
+           LIMIT ?`
+        ).bind(limit).all();
+
+        const items = (rows.results || []).map(r => ({
+          icon:     '⚡',
+          text:     `${displayNameFromRow(r)}: ${r.action}`,
+          time_ago: timeAgo(r.created_at),
+        }));
+        return json({ items });
+      } catch {
+        return err('Failed to load activity', 500);
+      }
+    }
+
+    // ── GET /telegram/daily-status?telegram_id= ───────────────────────────
+    // Determines daily claim status from telegram_xp_log where action='daily_claim'
+    // and created_at falls within today UTC.
+    if (path === '/telegram/daily-status' && request.method === 'GET') {
+      const telegramId = url.searchParams.get('telegram_id');
+      if (!telegramId) return err('telegram_id required');
+      const today = getTodayUtcDate();
+      try {
+        const claimed = await hasDailyClaimToday(env.DB, telegramId);
+        return json({ claimed, date: today });
+      } catch {
+        return err('Failed to check daily status', 500);
+      }
+    }
+
+    // ── GET /telegram/season/current ──────────────────────────────────────
+    // Uses telegram_seasons if present; returns a safe fallback without crashing.
+    if (path === '/telegram/season/current' && request.method === 'GET') {
+      try {
+        const season = await getCurrentSeason(env.DB);
+        if (!season) {
+          return json({
+            season:  null,
+            message: 'No active season found',
+            year:    new Date().getUTCFullYear(),
+          });
+        }
+        return json({ season, year: new Date().getUTCFullYear() });
+      } catch {
+        return json({
+          season:  null,
+          message: 'Season info temporarily unavailable',
+          year:    new Date().getUTCFullYear(),
+        });
+      }
+    }
+
+    // ── GET/POST /telegram/user/status ─────────────────────────────────────
+    // GET keeps the direct telegram_id status lookup for existing pages.
+    // POST additionally accepts signed browser auth evidence so the frontend
+    // can restore a linked identity without already knowing telegram_id.
+    if (path === '/telegram/user/status' && (request.method === 'GET' || request.method === 'POST')) {
+      let requestBody = null;
+      if (request.method === 'POST') {
+        try {
+          requestBody = await request.json();
+        } catch {
+          requestBody = {};
+        }
+      }
+      const restoreEvidence = request.method === 'POST'
+        ? await verifyTelegramAuthEvidenceForRestore(requestBody, env)
+        : null;
+      const requestedTelegramId = String(
+        url.searchParams.get('telegram_id')
+        || requestBody?.telegram_id
+        || ''
+      ).trim();
+      if (
+        restoreEvidence?.telegramId
+        && requestedTelegramId
+        && String(restoreEvidence.telegramId) !== requestedTelegramId
+      ) {
+        return err('Telegram auth does not match requested user', 401);
+      }
+      const telegramId = String(
+        restoreEvidence?.telegramId
+        || requestedTelegramId
+        || ''
+      ).trim();
+      if (!telegramId) {
+        return json({
+          ok: true,
+          linked: false,
+          link_confirmed: false,
+          recovery: {
+            attempted: request.method === 'POST',
+            restored_from: null,
+          },
+          error: 'not_linked',
+        });
+      }
+
+      try {
+        // Fetch user profile, anti-cheat state, and server-side linked evidence in parallel.
+        const [user, acState, linkEvent, blockTopiaProgression] = await Promise.all([
+          env.DB.prepare(
+            `SELECT telegram_id, username, first_name, last_name, xp, level, created_at
+             FROM telegram_users WHERE telegram_id = ?`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT is_blocked, block_type, blocked_reason, lifetime_strikes,
+                    season_risk_score, year_risk_score, last_scan_at
+             FROM telegram_anticheat_state WHERE telegram_id = ?`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT action, created_at
+             FROM telegram_activity_log
+             WHERE telegram_id = ? AND action = 'link_confirmed'
+             ORDER BY created_at DESC
+             LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT telegram_id, xp, gems, tier, rpg_mode_active, updated_at
+             FROM blocktopia_progression
+             WHERE telegram_id = ?
+             LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+        ]);
+
+        if (!user) {
+          return json({
+            ok: true,
+            linked: false,
+            link_confirmed: false,
+            recovery: {
+              attempted: request.method === 'POST',
+              restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
+            },
+            error: 'not_linked',
+          });
+        }
+
+        const linked = Boolean(linkEvent || blockTopiaProgression);
+        const canRestoreSignedAuth = request.method === 'POST'
+          && !!restoreEvidence
+          && String(restoreEvidence.telegramId || '') === String(user.telegram_id || '');
+        const signedAuthPayload = (linked && canRestoreSignedAuth)
+          ? await buildSignedTelegramAuthPayload({
+            id: String(user.telegram_id),
+            username: user.username || null,
+            first_name: user.first_name || null,
+            last_name: user.last_name || null,
+            photo_url: null,
+          }, env.TELEGRAM_BOT_TOKEN, restoreEvidence?.authPayload?.auth_date)
+          : null;
+
+        return json({
+          telegram_id:      user.telegram_id,
+          username:         user.username    || null,
+          display_name:     displayNameFromRow(user),
+          xp:               user.xp          || 0,
+          level:            user.level        || 1,
+          member_since:     (user.created_at || '').slice(0, 10),
+          linked,
+          link_confirmed: linked,
+          ok: true,
+          link_source: linkEvent ? 'telegram_activity_log' : (blockTopiaProgression ? 'blocktopia_progression' : null),
+          ...(signedAuthPayload ? { telegram_auth: signedAuthPayload } : {}),
+          recovery: {
+            attempted: request.method === 'POST',
+            restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
+          },
+          blocktopia_progression: blockTopiaProgression ? {
+            xp: Number(blockTopiaProgression.xp || 0),
+            gems: Number(blockTopiaProgression.gems || 0),
+            tier: Number(blockTopiaProgression.tier || 1),
+            rpg_mode_active: Number(blockTopiaProgression.rpg_mode_active || 0) === 1,
+            updated_at: blockTopiaProgression.updated_at || null,
+          } : null,
+          anticheat: acState ? {
+            is_blocked:       acState.is_blocked       === 1,
+            block_type:       acState.block_type        || null,
+            blocked_reason:   acState.blocked_reason    || null,
+            lifetime_strikes: acState.lifetime_strikes  || 0,
+            season_risk_score: acState.season_risk_score || 0,
+            year_risk_score:   acState.year_risk_score   || 0,
+            last_scan_at:      acState.last_scan_at      || null,
+          } : {
+            is_blocked: false,
+            block_type: null,
+            blocked_reason: null,
+            lifetime_strikes: 0,
+            season_risk_score: 0,
+            year_risk_score: 0,
+            last_scan_at: null,
+          },
+        });
+      } catch {
+        return err('Failed to load user status', 500);
+      }
+    }
+
+    // ── GET /roguelite/daily-state (legacy) OR POST JSON { telegram_auth }
+    const isRogueliteDailyRoute =
+      path === '/roguelite/daily-state' ||
+      path === '/roguelite/missed-history' ||
+      path === '/roguelite/mark-missed' ||
+      path === '/telegram/daily-digest/run';
+
+    if (isRogueliteDailyRoute) {
+      const rogueliteDailyResponse = await handleRogueliteDailyRoutes(request, env, url, {
+        path,
+        json,
+        err,
+        verifyTelegramAuth,
+        upsertTelegramUser,
+        logApiFailure,
+        readAdminSecret,
+        isAdminTelegramUser,
+        runTelegramDailyDigest,
+      });
+      if (rogueliteDailyResponse) return rogueliteDailyResponse;
+    }
+
+    if (path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      }
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      await ensureWtfEventsForDay(env.DB, utcDay);
+      const nowMs = Date.now();
+      const events = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+      const officialEventIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+      const officialRows = (events?.results || []).filter((row) => officialEventIds.has(String(row.event_id)));
+
+      if (request.method === 'GET') {
+        const normalizedPublic = officialRows.map((row) => ({
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: getWtfEventStatus(nowMs, row.starts_at, row.ends_at, 'upcoming'),
+        }));
+        const activeEvent = normalizedPublic.find((row) => row.status === 'active') || null;
+        let upcomingEvents = normalizedPublic.filter((row) => row.status === 'upcoming');
+        let nextEvent = upcomingEvents[0] || null;
+        if (!activeEvent && !nextEvent) {
+          nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, (row) => ({
+            event_id: row.event_id,
+            utc_day: row.utc_day,
+            start_at: row.starts_at,
+            end_at: row.ends_at,
+            event_type: row.event_type,
+            title: row.title,
+            description: row.description,
+            required_action: row.required_action,
+            reward_preview: row.reward_key,
+            multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+            visual_theme: row.theme || 'neon-signal',
+            status: 'upcoming',
+          }));
+          if (nextEvent) upcomingEvents = [nextEvent];
+        }
+        const countdownTarget = activeEvent ? activeEvent.end_at : nextEvent ? nextEvent.start_at : null;
+        return json({
+          ok: true,
+          auth_mode: 'public_schedule',
+          utc_day: utcDay,
+          active_event: activeEvent,
+          upcoming_events: upcomingEvents,
+          next_event: nextEvent,
+          countdown_seconds: countdownTarget ? Math.max(0, Math.floor((Date.parse(countdownTarget) - nowMs) / 1000)) : 0,
+        });
+      }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      await upsertTelegramUser(env.DB, verified.user);
+      await reconcileWtfExpiryForUser(env.DB, verified.telegramId, utcDay, nowMs);
+
+      const playerRows = await env.DB.prepare(`
+        SELECT event_id, status, checked_in_at, completed_at, missed_at, chain_depth, reward_status
+        FROM daily_wtf_player_events
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
+      const byEvent = new Map((playerRows?.results || []).map((row) => [String(row.event_id), row]));
+      const chainOptions = await env.DB.prepare(`
+        SELECT event_id, option_id, option_type, status, reward_key, display_title, display_text
+        FROM daily_wtf_chain_options
+        WHERE telegram_id = ? AND utc_day = ? AND status = 'available'
+        ORDER BY created_at DESC
+      `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
+      const availableByEvent = {};
+      for (const opt of (chainOptions?.results || [])) {
+        const key = String(opt.event_id);
+        if (!availableByEvent[key]) availableByEvent[key] = [];
+        availableByEvent[key].push(opt);
+      }
+
+      const normalized = officialRows.map((row) => {
+        const player = byEvent.get(String(row.event_id)) || null;
+        const scheduleStatus = getWtfEventStatus(nowMs, row.starts_at, row.ends_at, player?.status || 'upcoming');
+        let playerStatus = 'not_checked_in';
+        if (player?.completed_at) playerStatus = 'completed';
+        else if (player?.status === 'missed') playerStatus = 'missed';
+        else if (player?.checked_in_at && scheduleStatus === 'active') playerStatus = 'checked_in';
+        else if (scheduleStatus === 'expired') playerStatus = (player?.status === 'missed' ? 'missed' : 'expired');
+        return {
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: scheduleStatus,
+          player_status: playerStatus,
+          checked_in_at: player?.checked_in_at || null,
+          completed_at: player?.completed_at || null,
+          chain_depth: Math.max(0, Math.floor(Number(player?.chain_depth) || 0)),
+          chain_options: availableByEvent[String(row.event_id)] || [],
+        };
+      });
+      const activeEvent = normalized.find((row) => row.status === 'active') || null;
+      let upcomingEvents = normalized.filter((row) => row.status === 'upcoming');
+      let nextEvent = upcomingEvents[0] || null;
+      if (!activeEvent && !nextEvent) {
+        nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, (row) => ({
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: 'upcoming',
+          player_status: 'not_checked_in',
+          checked_in_at: null,
+          completed_at: null,
+          chain_depth: 0,
+          chain_options: [],
+        }));
+        if (nextEvent) upcomingEvents = [nextEvent];
+      }
+      const countdownTarget = activeEvent ? activeEvent.end_at : nextEvent ? nextEvent.start_at : null;
+      const missedXpValueAvailable = await hasDailyMissedXpValueColumn(env.DB);
+      const [allTimeMissedTotals, todayMissedTotals] = await Promise.all([
+        getMissedPerkTotals(env.DB, verified.telegramId, null, missedXpValueAvailable),
+        getMissedPerkTotals(env.DB, verified.telegramId, utcDay, missedXpValueAvailable),
+      ]);
+      return json({
+        ok: true,
+        auth_mode: 'telegram_verified',
+        telegram_id: verified.telegramId,
+        utc_day: utcDay,
+        active_event: activeEvent,
+        upcoming_events: upcomingEvents,
+        next_event: nextEvent,
+        countdown_seconds: countdownTarget ? Math.max(0, Math.floor((Date.parse(countdownTarget) - nowMs) / 1000)) : 0,
+        checked_in: !!(activeEvent && activeEvent.player_status === 'checked_in'),
+        current_task: activeEvent ? activeEvent.required_action : null,
+        completed_today: normalized.filter((row) => row.player_status === 'completed').length,
+        missed_today: normalized.filter((row) => row.player_status === 'missed' || row.player_status === 'expired').length,
+        missed_history_count: allTimeMissedTotals.events_total,
+        missed_events_all_time: allTimeMissedTotals.events_total,
+        missed_xp_all_time: allTimeMissedTotals.xp_total,
+        missed_events_today: todayMissedTotals.events_total,
+        missed_xp_today: todayMissedTotals.xp_total,
+        chain_options: activeEvent ? (activeEvent.chain_options || []) : ((chainOptions?.results || []).slice(0, 3)),
+      });
+    }
+
+    if (path === '/wtf/events/check-in' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      await upsertTelegramUser(env.DB, verified.user);
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const event = await env.DB.prepare(`SELECT event_id, starts_at, ends_at, required_action FROM daily_wtf_events WHERE utc_day = ? AND event_id = ? LIMIT 1`).bind(utcDay, eventId).first().catch(() => null);
+      if (!event) return err('event_id not found for UTC day', 404);
+      const nowMs = Date.now();
+      if (nowMs < Date.parse(event.starts_at) || nowMs >= Date.parse(event.ends_at)) return err('Event is not active', 409);
+      const existing = await env.DB.prepare(`SELECT status, checked_in_at, completed_at FROM daily_wtf_player_events WHERE telegram_id = ? AND event_id = ? AND utc_day = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay).first().catch(() => null);
+      if (existing?.completed_at) {
+        return json({ ok: true, event_id: eventId, status: 'completed', already_completed: true, current_task: event.required_action });
+      }
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(`
+        INSERT INTO daily_wtf_player_events
+          (telegram_id, event_id, utc_day, status, checked_in_at, completed_at, chain_depth, reward_status, metadata_json, created_at, updated_at)
+        VALUES (?, ?, ?, 'checked_in', ?, NULL, 0, 'none', ?, ?, ?)
+        ON CONFLICT(telegram_id, event_id, utc_day) DO UPDATE SET
+          status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE 'checked_in' END,
+          checked_in_at = COALESCE(daily_wtf_player_events.checked_in_at, excluded.checked_in_at),
+          updated_at = excluded.updated_at
+      `).bind(verified.telegramId, eventId, utcDay, nowIso, JSON.stringify({ source: 'daily_wtf_checkin' }), nowIso, nowIso).run();
+      return json({ ok: true, event_id: eventId, status: 'checked_in', current_task: event.required_action });
+    }
+
+    if (path === '/wtf/events/complete' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const source = clampText(body?.completion_source, 80, '');
+      if (!WTF_ALLOWED_COMPLETION_SOURCES.has(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
+      const event = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? AND event_id = ? LIMIT 1`).bind(utcDay, eventId).first().catch(() => null);
+      if (!event) return err('event not found', 404);
+      const nowMs = Date.now();
+      const startsAtMs = Date.parse(event.starts_at);
+      const endsAtMs = Date.parse(event.ends_at);
+      if (Number.isFinite(startsAtMs) && nowMs < startsAtMs) return err('event_inactive', 409);
+      if (Number.isFinite(endsAtMs) && nowMs >= endsAtMs) {
+        await upsertWtfMissedEntry(env.DB, { telegramId: verified.telegramId, utcDay, eventRow: event, reason: 'attempted_completion_after_expiry' });
+        return err('event_expired', 409);
+      }
+      const allowedForEvent = getAllowedSourcesForWtfEvent(event);
+      if (!allowedForEvent.includes(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof source does not match this WTF objective.',
+        }, 409);
+      }
+      const proofResult = await verifyWtfCompletionProof(env.DB, {
+        telegramId: verified.telegramId,
+        source,
+        sourceId: clampText(body?.source_id, 120, ''),
+        event,
+        utcDay,
+      });
+      if (!proofResult?.ok) {
+        return json({
+          error: 'proof_required',
+          message: proofResult?.message || 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
+      const player = await env.DB.prepare(`SELECT * FROM daily_wtf_player_events WHERE telegram_id = ? AND event_id = ? AND utc_day = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay).first().catch(() => null);
+      if (!player || !player.checked_in_at) return err('check-in required', 409);
+      if (player.completed_at) return json({ ok: true, event_id: eventId, already_completed: true });
+      const dailyTriggers = await env.DB.prepare(`SELECT COUNT(*) AS total FROM daily_wtf_player_events WHERE telegram_id = ? AND utc_day = ? AND completed_at IS NOT NULL`).bind(verified.telegramId, utcDay).first().catch(() => ({ total: 0 }));
+      if (Number(dailyTriggers?.total || 0) >= WTF_MAX_CHAIN_TRIGGERS_PER_DAY) return err('daily chain cap reached', 429);
+      const completedToday = Math.max(0, Math.floor(Number(dailyTriggers?.total || 0)));
+      const chainDepth = Math.min(WTF_MAX_CHAIN_DEPTH, completedToday + 1);
+      const nowIso = new Date().toISOString();
+      const bonusXp = Math.min(WTF_MAX_BONUS_XP_PER_EVENT, 100 * chainDepth);
+      await env.DB.prepare(`UPDATE daily_wtf_player_events SET status='completed', completed_at=?, chain_depth=?, reward_status='previewed', updated_at=?, metadata_json=? WHERE telegram_id=? AND event_id=? AND utc_day=?`)
+        .bind(nowIso, chainDepth, nowIso, JSON.stringify({
+          completion_source: source,
+          source_id: clampText(body?.source_id, 120, ''),
+          proof: proofResult?.proof || null,
+          bonus_xp_preview: bonusXp,
+          persisted_xp_awarded: false,
+        }), verified.telegramId, eventId, utcDay).run();
+      const options = ['comeback', 'chaos', 'faction'].map((type, idx) => ({
+        option_id: `${eventId}-o${idx + 1}`,
+        option_type: type,
+        reward_key: `${event.reward_key}:${type}`,
+        display_title: type === 'comeback' ? 'Comeback Route' : (type === 'chaos' ? 'Chaos Route' : 'Faction Route'),
+        display_text: 'Choose one path to unlock the next objective.',
+      }));
+      for (const option of options) {
+        await env.DB.prepare(`
+          INSERT INTO daily_wtf_chain_options
+            (telegram_id, event_id, utc_day, option_id, option_type, status, reward_key, display_title, display_text, created_at)
+          VALUES (?, ?, ?, ?, ?, 'available', ?, ?, ?, ?)
+          ON CONFLICT(telegram_id, event_id, utc_day, option_id) DO NOTHING
+        `).bind(verified.telegramId, eventId, utcDay, option.option_id, option.option_type, option.reward_key, option.display_title, option.display_text, nowIso).run();
+      }
+      return json({
+        ok: true,
+        event_id: eventId,
+        status: 'completed',
+        xp_burst: {
+          title: 'WTF BONUS PREVIEW',
+          base_xp: 0,
+          bonus_xp: bonusXp,
+          total_xp: bonusXp,
+          milestones: [100, 250, 500],
+          event_id: eventId,
+          chain_options: options,
+          reduced_motion_fallback: true,
+          persisted_xp_awarded: false,
+          reward_status: 'previewed',
+          message: 'XP opportunity preview only. Persistent XP award is server-authority gated.',
+        },
+        reward_status: 'previewed',
+        chain_options: options,
+      });
+    }
+
+    if (path === '/wtf/events/choose-option' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const optionId = clampText(body?.option_id, 120, '');
+      const option = await env.DB.prepare(`SELECT * FROM daily_wtf_chain_options WHERE telegram_id = ? AND event_id = ? AND utc_day = ? AND option_id = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay, optionId).first().catch(() => null);
+      if (!option) return err('option not found', 404);
+      if (option.status !== 'available') return err('option already claimed', 409);
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(`UPDATE daily_wtf_chain_options SET status='chosen', chosen_at=? WHERE telegram_id = ? AND event_id = ? AND utc_day = ? AND option_id = ?`)
+        .bind(nowIso, verified.telegramId, eventId, utcDay, optionId).run();
+      return json({
+        ok: true,
+        event_id: eventId,
+        option_id: optionId,
+        status: 'chosen',
+        next_objective: `Complete the ${option.display_title.toLowerCase()} objective before the next signal window.`,
+      });
+    }
+    if (path === '/telegram/group-announcements/run' && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch { body = {}; }
+      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
+      const headerSecret = readAdminSecret(request);
+      let allowed = false;
+      let authMode = null;
+      if (configuredSecret && headerSecret === configuredSecret) {
+        allowed = true;
+        authMode = 'admin_secret';
+      } else if (body && body.telegram_auth) {
+        const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+        if (!verified.error && isAdminTelegramUser(verified.telegramId, env)) {
+          allowed = true;
+          authMode = 'admin_telegram_auth';
+        }
+      }
+      if (!allowed) return err('Unauthorized', 401);
+      const type = ['timed_events', 'daily_summary', 'all'].includes(String(body?.type || 'all')) ? String(body?.type || 'all') : 'all';
+      const summary = await runTelegramGroupAnnouncements(env, {
+        trigger: 'manual_route',
+        dry_run: body?.dry_run === true,
+        force: body?.force === true,
+        now: body?.now ? String(body.now) : undefined,
+        type,
+        announcement_key: body?.announcement_key ? String(body.announcement_key) : null,
+        event_id: body?.event_id ? String(body.event_id) : null,
+        utc_day: body?.utc_day ? String(body.utc_day) : null,
+      });
+      return json({
+        ok: !!summary?.ok,
+        auth_mode: authMode,
+        ...summary,
+      }, summary?.ok ? 200 : 503);
+    }
+
+    // ── GET /faction/status with telegram_auth query payload ──────────────
+    // Shared arcade progression sync endpoint.
+    if (path === '/arcade/progression/sync' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const entries = Array.isArray(body?.entries) ? body.entries.slice(0, ARCADE_MAX_BATCH_ENTRIES) : [];
+      if (!entries.length) return json({ ok: true, results: [], synced: { accepted: 0, duplicate: 0, rejected: 0 } });
+
+      try {
+        await ensureArcadeProgressionTables(env.DB);
+        await upsertTelegramUser(env.DB, verified.user);
+
+        const nowMs = Date.now();
+        let state = await getOrCreateArcadeProgressionState(env.DB, verified.telegramId, nowMs);
+        const nowSql = sqliteNowFromMs(nowMs);
+        const restrictedUntilMs = parseSqliteTs(state.restricted_until);
+        if (restrictedUntilMs && restrictedUntilMs > nowMs) {
+          return json({
+            ok: false,
+            error: 'Arcade progression is temporarily restricted',
+            restricted_until: new Date(restrictedUntilMs).toISOString(),
+          }, 429);
+        }
+
+        const results = [];
+        let acceptedCount = 0;
+        let duplicateCount = 0;
+        let rejectedCount = 0;
+        let xpBatchAwarded = 0;
+
+        for (const input of entries) {
+          const clientRunId = String(input?.client_run_id || '').trim().slice(0, 128);
+          if (!clientRunId) {
+            rejectedCount += 1;
+            results.push({ client_run_id: null, status: 'rejected', reason: 'missing_client_run_id', xp_awarded: 0 });
+            continue;
+          }
+
+          const game = normalizeArcadeGameKey(input?.game);
+          const rawScore = normalizeScore(input?.raw_score);
+          const localMetaPoints = normalizeMetaPoints(input?.meta_points);
+          const normalizedPoints = computeNormalizedArcadePoints(game, rawScore, localMetaPoints);
+
+          const claimed = await env.DB.prepare(`
+            INSERT INTO arcade_progression_events
+              (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'processing', 'claim_pending', CURRENT_TIMESTAMP)
+            ON CONFLICT(telegram_id, client_run_id) DO NOTHING
+          `).bind(
+            crypto.randomUUID(),
+            verified.telegramId,
+            clientRunId,
+            game,
+            rawScore,
+            localMetaPoints,
+            normalizedPoints,
+          ).run();
+          const claimChanges = Number(claimed?.meta?.changes ?? claimed?.changes ?? 0);
+          if (claimChanges !== 1) {
+            duplicateCount += 1;
+            results.push({
+              client_run_id: clientRunId,
+              status: 'duplicate',
+              reason: 'already_processed',
+              xp_awarded: 0,
+            });
+            continue;
+          }
+
+          const perGameCeiling = Math.max(200, Math.floor(6000 * (game === 'invaders' ? 1.2 : 1)));
+          let enforcement = await getOrCreateGameEnforcementState(env.DB, verified.telegramId, game);
+          const lockoutUntilMs = parseSqliteTs(enforcement.lockout_until);
+          const cooldownUntilMs = parseSqliteTs(enforcement.cooldown_until);
+          const repeatWindowUntilMs = parseSqliteTs(enforcement.repeat_window_expires_at);
+
+          if (lockoutUntilMs && lockoutUntilMs > nowMs) {
+            rejectedCount += 1;
+            await env.DB.prepare(`
+              UPDATE arcade_progression_events
+              SET status = 'rejected', reason = ?, xp_awarded = 0, processed_at = CURRENT_TIMESTAMP
+              WHERE telegram_id = ? AND client_run_id = ?
+            `).bind(
+              'game_lockout_active',
+              verified.telegramId,
+              clientRunId,
+            ).run();
+            results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_lockout_active', xp_awarded: 0 });
+            continue;
+          }
+
+          if (cooldownUntilMs && cooldownUntilMs > nowMs) {
+            rejectedCount += 1;
+            await env.DB.prepare(`
+              UPDATE arcade_progression_events
+              SET status = 'rejected', reason = ?, xp_awarded = 0, processed_at = CURRENT_TIMESTAMP
+              WHERE telegram_id = ? AND client_run_id = ?
+            `).bind(
+              'game_cooldown_active',
+              verified.telegramId,
+              clientRunId,
+            ).run();
+            results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_cooldown_active', xp_awarded: 0 });
+            continue;
+          }
+
+          let xpWeight = Math.max(0.2, Math.min(1, Number(enforcement.xp_weight) || 1));
+          let ceilingHits = Math.max(0, Math.floor(Number(enforcement.ceiling_hits) || 0));
+          let cooldownLevel = Math.max(0, Math.floor(Number(enforcement.cooldown_level) || 0));
+          let nextCooldownUntil = null;
+          let nextRepeatWindow = null;
+          let lockoutUntil = null;
+          let lockoutCount = Math.max(0, Math.floor(Number(enforcement.lockout_count) || 0));
+          let reason = 'accepted';
+
+          const hitCeiling = normalizedPoints >= perGameCeiling;
+          if (hitCeiling) {
+            ceilingHits += 1;
+            const repeatedHit = repeatWindowUntilMs && repeatWindowUntilMs > nowMs;
+            cooldownLevel = Math.min(5, repeatedHit ? cooldownLevel + 1 : Math.max(1, cooldownLevel));
+            const cooldownMins = [0, 5, 12, 30, 90, 360][cooldownLevel] || 360;
+            nextCooldownUntil = new Date(nowMs + cooldownMins * 60 * 1000).toISOString();
+            nextRepeatWindow = new Date(nowMs + ARCADE_REPEAT_COOLDOWN_MINUTES * 60 * 1000 + ARCADE_REPEAT_WINDOW_MINUTES * 60 * 1000).toISOString();
+            xpWeight = Math.max(0.2, Number((xpWeight - 0.08).toFixed(4)));
+            reason = repeatedHit ? 'repeat_window_ceiling_hit' : 'per_game_ceiling_hit';
+            if (ceilingHits >= 8 || xpWeight <= 0.2) {
+              lockoutCount += 1;
+              lockoutUntil = new Date(nowMs + Math.min(7, lockoutCount) * 60 * 60 * 1000).toISOString();
+              reason = 'game_lockout_triggered';
+            }
+          } else if (xpWeight < 1) {
+            xpWeight = Math.min(1, Number((xpWeight + 0.01).toFixed(4)));
+          }
+
+          const baseXp = Math.min(ARCADE_XP_MAX_PER_RUN, Math.floor(normalizedPoints * ARCADE_XP_PER_POINT));
+          let xpAwarded = Math.floor(baseXp * xpWeight);
+          if (state.arcade_daily_xp >= ARCADE_XP_DAILY_CAP) {
+            xpAwarded = 0;
+            reason = 'daily_cap_reached';
+          } else if (state.arcade_daily_xp + xpAwarded > ARCADE_XP_DAILY_CAP) {
+            xpAwarded = Math.max(0, ARCADE_XP_DAILY_CAP - state.arcade_daily_xp);
+            reason = 'daily_cap_clamped';
+          }
+
+          await env.DB.prepare(`
+            UPDATE arcade_game_enforcement_state
+            SET ceiling_hits = ?, cooldown_level = ?, cooldown_until = ?, last_ceiling_hit_at = ?,
+                repeat_window_expires_at = ?, xp_weight = ?, lockout_until = ?, lockout_count = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ? AND game = ?
+          `).bind(
+            ceilingHits,
+            cooldownLevel,
+            nextCooldownUntil,
+            hitCeiling ? nowSql : enforcement.last_ceiling_hit_at || null,
+            nextRepeatWindow,
+            xpWeight,
+            lockoutUntil,
+            lockoutCount,
+            verified.telegramId,
+            game,
+          ).run();
+
+          if (xpAwarded > 0) {
+            await awardXp(env.DB, verified.telegramId, xpAwarded, 'arcade_progress_sync', `${game}:${clientRunId}`);
+            xpBatchAwarded += xpAwarded;
+          }
+
+          await env.DB.prepare(`
+            UPDATE arcade_progression_events
+            SET game = ?, raw_score = ?, local_meta_points = ?, normalized_points = ?,
+                xp_awarded = ?, status = 'accepted', reason = ?, processed_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ? AND client_run_id = ?
+          `).bind(
+            game,
+            rawScore,
+            localMetaPoints,
+            normalizedPoints,
+            xpAwarded,
+            reason,
+            verified.telegramId,
+            clientRunId,
+          ).run();
+
+          acceptedCount += 1;
+          state.arcade_xp_total = Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0) + xpAwarded);
+          state.arcade_daily_xp = Math.max(0, Math.floor(Number(state.arcade_daily_xp) || 0) + xpAwarded);
+          results.push({
+            client_run_id: clientRunId,
+            status: 'accepted',
+            reason,
+            game,
+            xp_awarded: xpAwarded,
+            normalized_points: normalizedPoints,
+            xp_weight: xpWeight,
+            cooldown_until: nextCooldownUntil,
+            lockout_until: lockoutUntil,
+          });
+        }
+
+        await env.DB.prepare(`
+          UPDATE arcade_progression_state
+          SET arcade_xp_total = ?, arcade_daily_xp = ?, arcade_daily_key = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(
+          Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0)),
+          Math.max(0, Math.floor(Number(state.arcade_daily_xp) || 0)),
+          isoDayFromMs(nowMs),
+          verified.telegramId,
+        ).run();
+
+        if (xpBatchAwarded > 0) {
+          await logTelegramActivity(env.DB, verified.telegramId, 'arcade_progress_sync', JSON.stringify({
+            runs_synced: acceptedCount,
+            xp_awarded: xpBatchAwarded,
+            at: new Date(nowMs).toISOString(),
+          }));
+        }
+
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          results,
+          synced: {
+            accepted: acceptedCount,
+            duplicate: duplicateCount,
+            rejected: rejectedCount,
+            xp_awarded: xpBatchAwarded,
+          },
+        });
+      } catch (syncError) {
+        logApiFailure('arcade_progression_sync_failed', {
+          telegramId: verified.telegramId,
+          message: syncError?.message || String(syncError),
+        });
+        return err('Failed to sync arcade progression', 500);
+      }
+    }
+
+    if (path === '/faction/status' && request.method === 'GET') {
+      const rawAuth = url.searchParams.get('telegram_auth');
+      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+      let tgBody;
+      try {
+        tgBody = { telegram_auth: JSON.parse(rawAuth) };
+      } catch {
+        return err('Invalid telegram_auth payload', 400);
+      }
+      const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          const fallback = factionMeta(FACTION_UNALIGNED);
+          return json({
+            ok: true,
+            schema_pending: true,
+            faction: fallback.key,
+            faction_label: fallback.label,
+            faction_xp: 0,
+            bonuses: {
+              label: fallback.label,
+              icon: fallback.icon,
+              color: fallback.color,
+              bonus: fallback.bonus,
+              xp_multiplier: fallback.xp_multiplier,
+            },
+            cooldown_ms_remaining: 0,
+          });
+        }
+        const progression = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const faction = factionMeta(progression?.faction || FACTION_UNALIGNED);
+        return json({
+          ok: true,
+          faction: faction.key,
+          faction_label: faction.label,
+          faction_xp: Math.max(0, Math.floor(Number(progression?.faction_xp) || 0)),
+          bonuses: {
+            label: faction.label,
+            icon: faction.icon,
+            color: faction.color,
+            bonus: faction.bonus,
+            xp_multiplier: faction.xp_multiplier,
+          },
+          cooldown_ms_remaining: Math.max(
+            0,
+            (Number(progression?.faction_last_switch) || 0) + FACTION_SWITCH_COOLDOWN_MS - Date.now(),
+          ),
+        });
+      } catch {
+        return err('Failed to load faction status', 500);
+      }
+    }
+
+    // ── POST /faction/join ─────────────────────────────────────────────────
+    if (path === '/faction/join' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const requestedFaction = normalizeFaction(body?.faction);
+      if (!requestedFaction || requestedFaction === FACTION_UNALIGNED) {
+        return err('Invalid faction selection', 400);
+      }
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          return json({
+            ok: false,
+            error: 'missing_required_table',
+            reason: 'migration_pending:blocktopia_progression_faction_columns',
+            message: 'Faction progression schema is pending migration. Apply required D1 migrations before joining.',
+          }, 503);
+        }
+
+        // ── Season lock check + backfill ──────────────────────────────────
+        const seasonKey = await getBattleSeasonKey(env.DB);
+        const lockTableRow = await env.DB.prepare(
+          `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'telegram_faction_season_locks' LIMIT 1`
+        ).first().catch(() => null);
+        const lockTableExists = !!(lockTableRow?.name);
+
+        // Read existing progression first — needed for both cooldown logic and backfill.
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const existingFaction = normalizeFaction(row?.faction) || FACTION_UNALIGNED;
+
+        if (lockTableExists) {
+          const existingLock = await env.DB.prepare(
+            `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+          ).bind(verified.telegramId, seasonKey).first();
+
+          if (existingLock) {
+            if (existingLock.faction_id === requestedFaction) {
+              // Same faction — idempotent OK
+              const meta = factionMeta(requestedFaction);
+              return json({
+                ok: true,
+                faction: meta.key,
+                faction_label: meta.label,
+                faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+                bonuses: { icon: meta.icon, color: meta.color, bonus: meta.bonus, xp_multiplier: meta.xp_multiplier },
+                first_join: false,
+                switched: false,
+                cooldown_ms: 0,
+                season_key: seasonKey,
+                locked_until: 'next season reset',
+              });
+            }
+            // Different faction — blocked for this season
+            const lockedMeta = factionMeta(existingLock.faction_id);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: existingLock.faction_id,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+
+          // No lock row yet. If the user already has a non-unaligned faction from before
+          // migration 017 deployed, backfill a lock for that faction before allowing any change.
+          if (existingFaction !== FACTION_UNALIGNED) {
+            const nowIso = new Date().toISOString();
+            // Backfill: INSERT ... DO NOTHING — first writer wins (race-safe).
+            await env.DB.prepare(`
+              INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
+              VALUES (?, ?, ?, ?, ?)
+              ON CONFLICT(telegram_id, season_key) DO NOTHING
+            `).bind(verified.telegramId, seasonKey, existingFaction, nowIso, nowIso).run();
+
+            // Re-read the authoritative stored lock.
+            const backfilledLock = await env.DB.prepare(
+              `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+            ).bind(verified.telegramId, seasonKey).first();
+            // After INSERT DO NOTHING the row must exist (either we wrote it or it already existed).
+            // If re-read returns null something is seriously wrong with the DB — surface as 500.
+            if (!backfilledLock?.faction_id) throw new Error('season_lock_reread_failed');
+            const storedFaction = backfilledLock.faction_id;
+
+            if (storedFaction === requestedFaction) {
+              // Idempotent — same faction as what is stored
+              const meta = factionMeta(requestedFaction);
+              return json({
+                ok: true,
+                faction: meta.key,
+                faction_label: meta.label,
+                faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+                bonuses: { icon: meta.icon, color: meta.color, bonus: meta.bonus, xp_multiplier: meta.xp_multiplier },
+                first_join: false,
+                switched: false,
+                cooldown_ms: 0,
+                season_key: seasonKey,
+                locked_until: 'next season reset',
+              });
+            }
+            // Attempting to switch away from backfilled faction — reject
+            const lockedMeta = factionMeta(storedFaction);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: storedFaction,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+        }
+
+        // ── No lock, no existing faction (fresh user) ──────────────────────
+        // Cooldown check (legacy guard, kept intact).
+        const lastSwitch = Number(row?.faction_last_switch) || 0;
+        const now = Date.now();
+        const firstJoin = existingFaction === FACTION_UNALIGNED;
+        const isSwitching = existingFaction !== requestedFaction;
+        if (!firstJoin && isSwitching && lastSwitch > 0 && now - lastSwitch < FACTION_SWITCH_COOLDOWN_MS) {
+          const retryAt = lastSwitch + FACTION_SWITCH_COOLDOWN_MS;
+          return json({
+            error: 'Faction switch cooldown active',
+            retry_at: retryAt,
+            cooldown_ms_remaining: retryAt - now,
+          }, 429);
+        }
+
+        // ── Atomic season lock insert (race-safe) ──────────────────────────
+        // DO NOTHING: the first concurrent writer wins; subsequent writers for a
+        // different faction will be rejected in the re-read below.
+        if (lockTableExists) {
+          const nowIso = new Date().toISOString();
+          await env.DB.prepare(`
+            INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(telegram_id, season_key) DO NOTHING
+          `).bind(verified.telegramId, seasonKey, requestedFaction, nowIso, nowIso).run();
+
+          // Re-read: if another concurrent request won the INSERT race for a different
+          // faction, this request loses and must return 409.
+          const storedLock = await env.DB.prepare(
+            `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+          ).bind(verified.telegramId, seasonKey).first();
+
+          if (storedLock && storedLock.faction_id !== requestedFaction) {
+            const lockedMeta = factionMeta(storedLock.faction_id);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: storedLock.faction_id,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+        }
+
+        // ── Update progression (only reached when lock is confirmed) ───────
+        const shouldStampSwitch = isSwitching || firstJoin;
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET faction = ?, faction_last_switch = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(
+          requestedFaction,
+          shouldStampSwitch ? now : lastSwitch || null,
+          verified.telegramId,
+        ).run();
+
+        const meta = factionMeta(requestedFaction);
+        return json({
+          ok: true,
+          faction: meta.key,
+          faction_label: meta.label,
+          faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+          bonuses: {
+            icon: meta.icon,
+            color: meta.color,
+            bonus: meta.bonus,
+            xp_multiplier: meta.xp_multiplier,
+          },
+          first_join: firstJoin,
+          switched: isSwitching,
+          cooldown_ms: FACTION_SWITCH_COOLDOWN_MS,
+          season_key: seasonKey,
+          locked_until: 'next season reset',
+        });
+      } catch {
+        return err('Failed to join faction', 500);
+      }
+    }
+
+    // ── POST /faction/earn ─────────────────────────────────────────────────
+    if (path === '/faction/earn' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        const source = String(body?.source || body?.action || 'score_accept').trim().toLowerCase();
+        const baseXpInput = Math.max(0, Math.floor(Number(body?.base_xp) || Number(body?.xp) || 0));
+        const fallbackBase = source === 'mission_complete' ? 60 : (source === 'blocktopia_action' ? 30 : 25);
+        const baseXp = baseXpInput > 0 ? baseXpInput : fallbackBase;
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          const fallbackFaction = factionMeta(FACTION_UNALIGNED);
+          return json({
+            ok: true,
+            skipped: true,
+            source,
+            reason: 'faction_progression_schema_pending',
+            faction: fallbackFaction.key,
+            faction_label: fallbackFaction.label,
+            base_xp: baseXp,
+            multiplier: 1,
+            faction_xp_awarded: 0,
+            faction_xp_delta: 0,
+            faction_xp_earned: 0,
+            faction_xp_total: 0,
+            xp_awarded: 0,
+            xp_delta: 0,
+            bonuses: {
+              icon: fallbackFaction.icon,
+              color: fallbackFaction.color,
+              bonus: fallbackFaction.bonus,
+            },
+          });
+        }
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const faction = factionMeta(row?.faction || FACTION_UNALIGNED);
+        const multiplier = faction.xp_multiplier || 1;
+        const awardedFactionXp = faction.key === FACTION_UNALIGNED
+          ? 0
+          : Math.max(1, Math.floor(baseXp * multiplier));
+        const nextFactionXp = Math.max(0, Math.floor(Number(row?.faction_xp) || 0) + awardedFactionXp);
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET faction_xp = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextFactionXp, verified.telegramId).run();
+
+        return json({
+          ok: true,
+          source,
+          faction: faction.key,
+          faction_label: faction.label,
+          base_xp: baseXp,
+          multiplier,
+          faction_xp_earned: awardedFactionXp,
+          faction_xp_total: nextFactionXp,
+          bonuses: {
+            icon: faction.icon,
+            color: faction.color,
+            bonus: faction.bonus,
+          },
+        });
+      } catch {
+        return err('Failed to award faction XP', 500);
+      }
+    }
+
+    // ── GET /player/state ─────────────────────────────────────────────────
+    // Returns full server-backed player state for a Telegram-linked user.
+    // Requires a signed telegram_auth payload in the query string or POST body.
+    if (path === '/comments' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      if (!pageId) return err('page_id required', 400);
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 1), 50);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const rows = await env.DB.prepare(`
+          SELECT id, page_id, telegram_id, name, email_hash, avatar_url, telegram_username,
+                 discord_username, text, status, votes_up, votes_down, created_at
+          FROM wiki_comments
+          WHERE page_id = ? AND status = 'approved'
+          ORDER BY created_at DESC
+          LIMIT ?
+        `).bind(pageId, limit).all();
+        return json({
+          ok: true,
+          page_id: pageId,
+          comments: (rows.results || []).map((comment) => ({
+            ...comment,
+            time_ago: timeAgo(comment.created_at),
+          })),
+        });
+      } catch (error) {
+        logApiFailure('wiki_comments_get_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to load comments', 500);
+      }
+    }
+
+    if (path === '/comments' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      const name = normalizeTextField(body?.name, 60);
+      const text = normalizeTextField(body?.text, 1000);
+      if (!pageId) return err('page_id required', 400);
+      if (!name) return err('name required', 400);
+      if (!text) return err('text required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyOptionalWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const emailHash = await hashEmail(body?.email);
+        const commentIdentityHash = emailHash || await hashTelegramCommentIdentity(auth.verified?.telegramId);
+        if (!commentIdentityHash) return err('valid email or linked Telegram auth required', 400);
+        const avatarUrl = normalizeTextField(body?.avatar_url, 500)
+          || normalizeTextField(auth.verified?.user?.photo_url, 500)
+          || null;
+        const commentId = crypto.randomUUID();
+        await env.DB.prepare(`
+          INSERT INTO wiki_comments
+            (id, page_id, telegram_id, name, email_hash, avatar_url, telegram_username, discord_username, text, status)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        `).bind(
+          commentId,
+          pageId,
+          auth.verified?.telegramId || null,
+          name,
+          commentIdentityHash,
+          avatarUrl,
+          normalizeTextField(body?.telegram_username, 60) || null,
+          normalizeTextField(body?.discord_username, 60) || null,
+          text,
+        ).run();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'engage',
+          source: 'comments',
+          sourceId: commentId,
+        });
+        let finalModerationStatus = auth.verified?.telegramId ? 'approved' : 'pending';
+        if (finalModerationStatus === 'approved') {
+          try {
+            await env.DB.prepare(`
+              UPDATE wiki_comments
+              SET status = ?
+              WHERE id = ?
+            `).bind(finalModerationStatus, commentId).run();
+          } catch (error) {
+            logApiFailure('wiki_comment_auto_approval_status_update_failed', {
+              comment_id: commentId,
+              page_id: pageId,
+              target_status: 'approved',
+              error_type: 'd1_update_failed',
+            });
+            finalModerationStatus = 'pending';
+          }
+        }
+        return json({
+          ok: true,
+          page_id: pageId,
+          comment_id: commentId,
+          status: finalModerationStatus,
+          moderation: finalModerationStatus,
+          message: getWikiCommentModerationMessage(finalModerationStatus),
+          mission,
+        }, 201);
+      } catch (error) {
+        logApiFailure('wiki_comments_post_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to post comment', 500);
+      }
+    }
+
+    const commentVoteMatch = path.match(/^\/comments\/([^/]+)\/vote$/);
+    if (commentVoteMatch && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const commentId = normalizeTextField(decodeURIComponent(commentVoteMatch[1]), 80);
+      const vote = normalizeWikiVote(body?.vote);
+      if (!commentId) return err('comment_id required', 400);
+      if (!vote) return err('vote must be up or down', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const comment = await env.DB.prepare(`SELECT id FROM wiki_comments WHERE id = ? LIMIT 1`).bind(commentId).first();
+        if (!comment) return err('Comment not found', 404);
+        const existing = await env.DB.prepare(`
+          SELECT vote FROM wiki_comment_votes WHERE comment_id = ? AND telegram_id = ? LIMIT 1
+        `).bind(commentId, auth.verified.telegramId).first().catch(() => null);
+        if (!existing) {
+          await env.DB.prepare(`
+            INSERT INTO wiki_comment_votes (comment_id, telegram_id, vote) VALUES (?, ?, ?)
+          `).bind(commentId, auth.verified.telegramId, vote).run();
+          await env.DB.prepare(`
+            UPDATE wiki_comments
+            SET votes_up = votes_up + CASE WHEN ? = 'up' THEN 1 ELSE 0 END,
+                votes_down = votes_down + CASE WHEN ? = 'down' THEN 1 ELSE 0 END
+            WHERE id = ?
+          `).bind(vote, vote, commentId).run();
+        }
+        const counts = await env.DB.prepare(`
+          SELECT votes_up, votes_down FROM wiki_comments WHERE id = ? LIMIT 1
+        `).bind(commentId).first();
+        return json({
+          ok: true,
+          comment_id: commentId,
+          vote,
+          already_voted: !!existing,
+          votes_up: Number(counts?.votes_up || 0),
+          votes_down: Number(counts?.votes_down || 0),
+        });
+      } catch (error) {
+        logApiFailure('wiki_comment_vote_failed', { commentId, message: error?.message || String(error) });
+        return err('Failed to vote on comment', 500);
+      }
+    }
+
+    if (path === '/likes' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/likes', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      if (!pageId) return err('page_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const row = await env.DB.prepare(`SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?`).bind(pageId).first();
+        return json({ ok: true, page_id: pageId, count: Number(row?.count || 0) });
+      } catch (error) {
+        logApiFailure('wiki_likes_get_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to load likes', 500);
+      }
+    }
+
+    if (path === '/likes' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/likes', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      if (!pageId) return err('page_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const insertResult = await env.DB.prepare(`
+          INSERT OR IGNORE INTO wiki_page_likes (page_id, telegram_id) VALUES (?, ?)
+        `).bind(pageId, auth.verified.telegramId).run();
+        const row = await env.DB.prepare(`SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?`).bind(pageId).first();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'signal',
+          source: 'likes',
+          sourceId: pageId,
+        });
+        return json({
+          ok: true,
+          page_id: pageId,
+          count: Number(row?.count || 0),
+          already_liked: Number(insertResult?.meta?.changes || 0) === 0,
+          mission,
+        });
+      } catch (error) {
+        logApiFailure('wiki_likes_post_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to like page', 500);
+      }
+    }
+
+    if (path === '/citation-votes' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/citation-votes', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      const citeId = normalizeWikiId(url.searchParams.get('cite_id'), 80);
+      if (!pageId) return err('page_id required', 400);
+      if (!citeId) return err('cite_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const row = await env.DB.prepare(`
+          SELECT
+            SUM(CASE WHEN vote = 'up' THEN 1 WHEN vote = 'down' THEN -1 ELSE 0 END) AS score,
+            SUM(CASE WHEN vote = 'up' THEN 1 ELSE 0 END) AS up,
+            SUM(CASE WHEN vote = 'down' THEN 1 ELSE 0 END) AS down
+          FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ?
+        `).bind(pageId, citeId).first();
+        return json({
+          ok: true,
+          page_id: pageId,
+          cite_id: citeId,
+          score: Number(row?.score || 0),
+          up: Number(row?.up || 0),
+          down: Number(row?.down || 0),
+        });
+      } catch (error) {
+        logApiFailure('wiki_citation_votes_get_failed', { pageId, citeId, message: error?.message || String(error) });
+        return err('Failed to load citation votes', 500);
+      }
+    }
+
+    if (path === '/citation-votes' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/citation-votes', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      const citeId = normalizeWikiId(body?.cite_id, 80);
+      const vote = normalizeWikiVote(body?.vote);
+      if (!pageId) return err('page_id required', 400);
+      if (!citeId) return err('cite_id required', 400);
+      if (!vote) return err('vote must be up or down', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const existing = await env.DB.prepare(`
+          SELECT vote FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ? AND telegram_id = ?
+          LIMIT 1
+        `).bind(pageId, citeId, auth.verified.telegramId).first().catch(() => null);
+        if (!existing) {
+          await env.DB.prepare(`
+            INSERT INTO wiki_citation_votes (page_id, cite_id, telegram_id, vote)
+            VALUES (?, ?, ?, ?)
+          `).bind(pageId, citeId, auth.verified.telegramId, vote).run();
+        }
+        const row = await env.DB.prepare(`
+          SELECT
+            SUM(CASE WHEN vote = 'up' THEN 1 WHEN vote = 'down' THEN -1 ELSE 0 END) AS score,
+            SUM(CASE WHEN vote = 'up' THEN 1 ELSE 0 END) AS up,
+            SUM(CASE WHEN vote = 'down' THEN 1 ELSE 0 END) AS down
+          FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ?
+        `).bind(pageId, citeId).first();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'cite',
+          source: 'citation-votes',
+          sourceId: citeId,
+        });
+        return json({
+          ok: true,
+          page_id: pageId,
+          cite_id: citeId,
+          vote,
+          already_voted: !!existing,
+          score: Number(row?.score || 0),
+          up: Number(row?.up || 0),
+          down: Number(row?.down || 0),
+          mission,
+        });
+      } catch (error) {
+        logApiFailure('wiki_citation_votes_post_failed', { pageId, citeId, message: error?.message || String(error) });
+        return err('Failed to vote on citation', 500);
+      }
+    }
+
+    if (path === '/wiki-missions/status' && (request.method === 'GET' || request.method === 'POST')) {
       let body = {};
       if (request.method === 'POST') {
         try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
