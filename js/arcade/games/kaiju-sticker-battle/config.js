@@ -37,11 +37,11 @@ export const KAIJU_ASSETS = Object.freeze({
 });
 
 export const KAIJU_CARDS = Object.freeze([
-  Object.freeze({ id: 'big-daddy-kong', name: 'Big Daddy Kong', stats: Object.freeze({ pwr: 8, size: 6, atk: 7, def: 3, spd: 4, lgcy: 8 }) }),
-  Object.freeze({ id: 'god-dzilla', name: 'God-Dzilla', stats: Object.freeze({ pwr: 9, size: 7, atk: 6, def: 6, spd: 3, lgcy: 10 }) }),
-  Object.freeze({ id: 'jet-jaguar', name: 'Jet Jaguar', stats: Object.freeze({ pwr: 5, size: 7, atk: 6, def: 7, spd: 7, lgcy: 4 }) }),
-  Object.freeze({ id: 'mc-rodan', name: 'MC Rodan', stats: Object.freeze({ pwr: 8, size: 4, atk: 8, def: 5, spd: 8, lgcy: 5 }) }),
-  Object.freeze({ id: 'mf-gidorah', name: 'MF Gidorah', stats: Object.freeze({ pwr: 7, size: 9, atk: 6, def: 5, spd: 3, lgcy: 9 }) }),
-  Object.freeze({ id: 'moth-def', name: 'Moth Def', stats: Object.freeze({ pwr: 6, size: 7, atk: 6, def: 5, spd: 9, lgcy: 5 }) }),
-  Object.freeze({ id: 'mecha-zilla', name: 'Mecha-Zilla', stats: Object.freeze({ pwr: 6, size: 6, atk: 8, def: 8, spd: 2, lgcy: 4 }) }),
+  Object.freeze({ id: 'big-daddy-kong', name: 'Big Daddy Kong', image: '/img/game/kong3008/cards/big-daddy-kong.png', stats: Object.freeze({ pwr: 8, size: 6, atk: 7, def: 3, spd: 4, lgcy: 8 }) }),
+  Object.freeze({ id: 'god-dzilla', name: 'God-Dzilla', image: '/img/game/kong3008/cards/god-dzilla.png', stats: Object.freeze({ pwr: 9, size: 7, atk: 6, def: 6, spd: 3, lgcy: 10 }) }),
+  Object.freeze({ id: 'jet-jaguar', name: 'Jet Jaguar', image: '/img/game/kong3008/cards/jet-jaguar.png', stats: Object.freeze({ pwr: 5, size: 7, atk: 6, def: 7, spd: 7, lgcy: 4 }) }),
+  Object.freeze({ id: 'mc-rodan', name: 'MC Rodan', image: '/img/game/kong3008/cards/mc-rodan.png', stats: Object.freeze({ pwr: 8, size: 4, atk: 8, def: 5, spd: 8, lgcy: 5 }) }),
+  Object.freeze({ id: 'mf-gidorah', name: 'MF Gidorah', image: '/img/game/kong3008/cards/mf-gidorah.png', stats: Object.freeze({ pwr: 7, size: 9, atk: 6, def: 5, spd: 3, lgcy: 9 }) }),
+  Object.freeze({ id: 'moth-def', name: 'Moth Def', image: '/img/game/kong3008/cards/moth-def.png', stats: Object.freeze({ pwr: 6, size: 7, atk: 6, def: 5, spd: 9, lgcy: 5 }) }),
+  Object.freeze({ id: 'mecha-zilla', name: 'Mecha-Zilla', image: '/img/game/kong3008/cards/mecha-zilla.png', stats: Object.freeze({ pwr: 6, size: 6, atk: 8, def: 8, spd: 2, lgcy: 4 }) }),
 ]);

@@ -22,13 +22,11 @@ function statRows(card) {
 }
 
 function renderCard(card, selected) {
-  const initials = card.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 3).toUpperCase();
   return `
     <button class="kaiju-card${selected ? ' selected' : ''}" type="button" data-card-id="${card.id}" aria-pressed="${selected ? 'true' : 'false'}">
       <span class="kaiju-card-name">${card.name}</span>
       <span class="kaiju-card-art" aria-hidden="true">
-        <img src="${selected ? KAIJU_ASSETS.cardFrameGold : KAIJU_ASSETS.cardFrameSilver}" alt="">
-        <span>${initials}</span>
+        <img src="${card.image}" alt="">
       </span>
       <ol class="kaiju-stat-list">${statRows(card)}</ol>
     </button>
