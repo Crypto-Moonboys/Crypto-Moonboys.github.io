@@ -1,4 +1,4 @@
-const GAMES = ["snake", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris"];
+const GAMES = ["snake", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris", "kaiju"];
 const VARIETY_BONUS = 500;           // bonus points when a player has scored in all active games
 const SEASONAL_BONUS = 0;            // flat seasonal bonus (extend per-season via config if needed)
 const MAX_SCORE = 1_000_000_000;     // upper bound for submitted scores
@@ -39,6 +39,8 @@ const GAME_KEY_ALIASES = {
   'pac-chain':           'pacchain',
   'tetris-block-topia':  'tetris',
   'block-topia-quest-maze': 'blocktopia',
+  'kaiju-sticker-battle': 'kaiju',
+  'telegram-kaiju':      'kaiju',
 };
 
 const CANONICAL_FACTIONS = [
