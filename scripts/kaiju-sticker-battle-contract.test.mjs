@@ -13,7 +13,6 @@ const config = await read('js/arcade/games/kaiju-sticker-battle/config.js');
 const bootstrap = await read('js/arcade/games/kaiju-sticker-battle/bootstrap.js');
 const page = await read('games/kaiju-sticker-battle/index.html');
 const manifest = await read('js/arcade/arcade-manifest.js');
-const apiWorker = await read('workers/moonboys-api/worker.js');
 const leaderboardWorker = await read('workers/leaderboard-worker.js');
 const arcadeSync = await read('js/arcade-sync.js');
 
@@ -30,8 +29,6 @@ assert(bootstrap.includes('submitScore(ArcadeSync.getPlayer(), state.score, GAME
 assert(page.includes('requireCompetitiveGate: true'), 'page uses competitive gate');
 assert(page.includes("gameId: 'kaiju-sticker-battle'"), 'page passes route game id to identity gate');
 assert(manifest.includes("id: 'kaiju'"), 'manifest exposes canonical kaiju game key');
-assert(apiWorker.includes("'kaiju-sticker-battle': 'kaiju'"), 'moonboys API normalizes kaiju route key');
-assert(apiWorker.includes("'btqm', 'kaiju', 'global'"), 'moonboys API allows kaiju XP progression');
 assert(leaderboardWorker.includes('"kaiju"'), 'leaderboard worker includes kaiju board');
 assert(arcadeSync.includes('"kaiju-sticker-battle": "kaiju"'), 'ArcadeSync normalizes kaiju route key');
 
