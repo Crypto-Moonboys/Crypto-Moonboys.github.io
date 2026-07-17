@@ -1282,10 +1282,6 @@ const PET_SHOP_ITEMS = Object.freeze({
   },
 });
 
-const PET_TRADE_MIN_GOLD = 10;
-const PET_TRADE_MAX_GOLD = 250;
-const PET_TRADE_COOLDOWN_SECONDS = 300;
-
 function clampPetStat(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 }
@@ -7077,7 +7073,6 @@ async function handleTelegramUpdate(update, env) {
     case 'petmissions':  await cmdPetMissions(db, tok, chatId, telegramId);          break;
     case 'petshop':      await cmdPetShop(db, tok, chatId, telegramId);              break;
     case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr);       break;
-    case 'pettrade':     await cmdPetTrade(db, tok, chatId, telegramId, argStr);     break;
     case 'petleaderboard':
     case 'petscore':     await cmdPetLeaderboard(db, tok, chatId);                   break;
     // ── Admin-only moderation commands ───────────────────────────────────────
@@ -7332,30 +7327,6 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
   }
   await sendTelegramMessage(tok, chatId,
     `Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`,
-    { reply_markup: petReplyMarkup() },
-  );
-}
-
-async function cmdPetTrade(db, tok, chatId, telegramId, argStr) {
-  const wager = Math.floor(Number(String(argStr || '').trim()) || 0);
-  if (wager < PET_TRADE_MIN_GOLD) {
-    await sendTelegramMessage(tok, chatId, `Use it like this: /pettrade ${PET_TRADE_MIN_GOLD}. This risks in-game Moon Gold only.`);
-    return;
-  }
-  const result = await processPetGoldTrade(db, telegramId, wager, {
-    event_key: `tg:${telegramId}:trade:${Date.now()}`,
-    source: 'telegram_command',
-  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_trade_failed' }));
-  if (!result.accepted) {
-    const retry = result.retry_after_seconds ? ` Try again in ${result.retry_after_seconds}s.` : '';
-    await sendTelegramMessage(tok, chatId, `Moon Gold trade blocked: ${escapeHtml(result.reason || 'not accepted')}.${retry}`);
-    return;
-  }
-  const outcome = result.won
-    ? `Trade won: +${result.gold_delta} gold, +${result.crystal_delta} crystals, +${result.pet_xp_awarded} pet XP.`
-    : `Trade lost: ${result.gold_delta} gold, +${result.pet_xp_awarded} pet XP.`;
-  await sendTelegramMessage(tok, chatId,
-    `${escapeHtml(outcome)}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`,
     { reply_markup: petReplyMarkup() },
   );
 }
