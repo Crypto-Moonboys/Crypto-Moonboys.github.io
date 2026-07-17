@@ -72,6 +72,7 @@ const REQUIRED_ROUTES = [
   '/games/leaderboard.html',
   '/gkniftyheads-incubator.html',
   '/games/block-topia-quest-maze/',
+  '/games/kaiju-sticker-battle/',
   '/dashboard.html',
 ];
 
