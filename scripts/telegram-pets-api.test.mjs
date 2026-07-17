@@ -101,6 +101,9 @@ assert.ok(adventure.includes("'adventure'"), 'adventures must use adventure even
 assert.ok(adventure.includes('PET_ADVENTURE_COOLDOWN_SECONDS'), 'adventures must have a cooldown');
 assert.ok(adventure.includes('PETS_DAILY_PET_XP_CAP'), 'adventures must apply the daily pet XP cap');
 assert.ok(adventure.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'adventures must read daily totals before awarding pet XP');
+assert.ok(adventure.includes("getPetEquippedItem(pet, 'toy')"), 'adventures must read equipped toy bonuses');
+assert.ok(adventure.includes("bonusGold"), 'adventures must calculate bonus gold');
+assert.ok(adventure.includes("bonusStyle"), 'adventures must calculate bonus style tokens');
 assert.ok(adventure.includes('telegram_pet_season_state'), 'adventures must update season state');
 assert.ok(adventure.includes('pet_xp_awarded: petXp'), 'adventures must persist the capped pet XP amount');
 assert.ok(adventure.includes("capReason || 'adventure_complete'"), 'adventures must report completion');
@@ -113,6 +116,10 @@ assert.ok(notifications.includes('sendTelegramMessage'), 'pet notifications must
 
 const scheduled = worker.slice(worker.indexOf('async scheduled(event, env, _ctx)'), worker.indexOf('async function cmdGkStart'));
 assert.ok(scheduled.includes('shouldRunPetNotifications'), 'scheduled pet notifications must be gated by the cron check');
+
+assert.ok(worker.includes("food?.key === 'crystal_bowl'"), 'crystal_bowl must affect feed bonuses');
+assert.ok(worker.includes("toy?.key === 'hoverboard'"), 'hoverboard must affect play bonuses');
+assert.ok(worker.includes("outfit?.key === 'crown_jacket'"), 'crown_jacket must affect care bonuses');
 
 const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');

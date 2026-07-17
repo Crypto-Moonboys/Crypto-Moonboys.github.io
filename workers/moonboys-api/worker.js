@@ -1441,6 +1441,11 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
     rule.hunger -= 12;
     rewards.pet_xp += 4;
   }
+  if (action === 'feed' && food?.key === 'crystal_bowl') {
+    rule.hunger -= 32;
+    rule.energy += 10;
+    rewards.pet_xp += 18;
+  }
   if (action === 'feed' && food?.key === 'nebula_snack') {
     rule.hunger -= 22;
     rule.energy += 6;
@@ -1450,12 +1455,22 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
     rule.happiness += 10;
     rewards.pet_xp += 5;
   }
+  if (action === 'play' && toy?.key === 'hoverboard') {
+    rule.happiness += 16;
+    rewards.pet_xp += 8;
+    rewards.moon_gold += 2;
+  }
   if (outfit?.key === 'street_hoodie') {
     rewards.pet_xp += 2;
   }
   if (outfit?.key === 'moon_armor') {
     rewards.pet_xp += 5;
     rewards.moon_gold += 1;
+  }
+  if (['feed', 'play', 'clean', 'sleep', 'train'].includes(action) && outfit?.key === 'crown_jacket') {
+    rewards.pet_xp += 8;
+    rewards.moon_gold += 2;
+    rewards.style_tokens += 1;
   }
 }
 
@@ -1910,14 +1925,18 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
     petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
     capReason = 'pet_daily_cap_clamped';
   }
+  const toy = getPetEquippedItem(pet, 'toy');
+  const outfit = getPetEquippedItem(pet, 'outfit');
+  const bonusGold = toy?.key === 'hoverboard' ? 10 : 0;
+  const bonusStyle = outfit?.key === 'crown_jacket' ? 2 : 0;
 
   pet.energy = clampPetStat(Number(pet.energy || 0) - adventure.energy_cost);
   pet.hunger = clampPetStat(Number(pet.hunger || 0) + adventure.hunger_cost);
   pet.happiness = clampPetStat(Number(pet.happiness || 0) + 8);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + adventure.gold);
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + adventure.gold + bonusGold);
   pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + adventure.crystals);
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + adventure.style_tokens);
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + adventure.style_tokens + bonusStyle);
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 
@@ -1941,9 +1960,9 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
       requested_pet_xp: adventure.pet_xp,
       awarded_pet_xp: petXp,
       rewards: {
-        moon_gold: adventure.gold,
+        moon_gold: adventure.gold + bonusGold,
         moon_crystals: adventure.crystals,
-        style_tokens: adventure.style_tokens,
+        style_tokens: adventure.style_tokens + bonusStyle,
       },
       costs: {
         energy: adventure.energy_cost,
