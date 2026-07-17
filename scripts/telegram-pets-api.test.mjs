@@ -25,6 +25,14 @@ function asyncBlock(name) {
   throw new Error(`Could not extract ${name}`);
 }
 
+function routeBlock(route) {
+  const marker = `path === '${route}'`;
+  const start = worker.indexOf(marker);
+  assert.notEqual(start, -1, `${route} route must exist`);
+  const nextRoute = worker.indexOf("\n    if (path === '", start + marker.length);
+  return worker.slice(start, nextRoute === -1 ? worker.length : nextRoute);
+}
+
 assert.ok(worker.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet-only bot secret must be used');
 assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');
 assert.ok(worker.includes("path === '/telegram-pets/action'"), '/telegram-pets/action route must exist');
@@ -51,6 +59,20 @@ const petAction = asyncBlock('processPetAction');
 assert.ok(petAction.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'pet action must apply Community XP daily cap');
 assert.ok(petAction.includes('PETS_DAILY_PET_XP_CAP'), 'pet action must apply pet XP daily cap');
 assert.ok(petAction.includes('awardCommunityXp'), 'pet action must award through shared Community XP helper');
+assert.ok(petAction.includes('updatePetStreakForAction(pet, dayKey)'), 'accepted pet actions must update streaks before saving the active day');
+
+const stateRoute = routeBlock('/telegram-pets/state');
+assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
+assert.ok(!stateRoute.includes('getOrCreatePetProfile'), 'GET /telegram-pets/state must not create pets');
+
+const petStatus = asyncBlock('cmdPetStatus');
+assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
+assert.ok(!petStatus.includes('getOrCreatePetProfile'), '/pet status command must not create pets');
+
+const streakHelper = worker.slice(worker.indexOf('function updatePetStreakForAction'), worker.indexOf('async function savePetProfile'));
+assert.ok(streakHelper.includes('getPreviousPetDayKey(dayKey)'), 'pet streak helper must compare against yesterday');
+assert.ok(streakHelper.includes('pet.streak_days = currentStreak + 1'), 'pet streak helper must increment consecutive-day streaks');
+assert.ok(streakHelper.includes('pet.streak_days = 1'), 'pet streak helper must reset after missed days');
 
 for (const table of ['telegram_pet_profiles', 'telegram_pet_events', 'telegram_pet_season_state', 'telegram_pet_mission_completions']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);

@@ -1250,6 +1250,13 @@ function getPetDayKey(now = new Date()) {
   return now.toISOString().slice(0, 10);
 }
 
+function getPreviousPetDayKey(dayKey) {
+  const date = new Date(`${dayKey}T00:00:00.000Z`);
+  if (!Number.isFinite(date.getTime())) return null;
+  date.setUTCDate(date.getUTCDate() - 1);
+  return getPetDayKey(date);
+}
+
 function getPetWeekKey(now = new Date()) {
   const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const day = date.getUTCDay() || 7;
@@ -1308,10 +1315,15 @@ function verifyPetsBotSecret(request, env) {
   return !!expected && !!supplied && supplied === expected;
 }
 
-async function getOrCreatePetProfile(db, telegramId, options = {}) {
-  let pet = await db.prepare(`
+async function getPetProfile(db, telegramId) {
+  const pet = await db.prepare(`
     SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
   `).bind(telegramId).first().catch(() => null);
+  return pet ? applyPetDecay(pet) : null;
+}
+
+async function getOrCreatePetProfile(db, telegramId, options = {}) {
+  let pet = await getPetProfile(db, telegramId);
   if (!pet) {
     const petName = normalizePetName(options.pet_name) || 'Moonpet';
     const species = normalizePetName(options.species) || 'moonbeast';
@@ -1324,6 +1336,19 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
     `).bind(telegramId).first();
   }
   return applyPetDecay(pet);
+}
+
+function updatePetStreakForAction(pet, dayKey) {
+  const previousDay = pet.last_active_day || null;
+  const currentStreak = Math.max(0, Math.floor(Number(pet.streak_days) || 0));
+  if (previousDay === dayKey) {
+    pet.streak_days = Math.max(1, currentStreak);
+  } else if (previousDay === getPreviousPetDayKey(dayKey)) {
+    pet.streak_days = currentStreak + 1;
+  } else {
+    pet.streak_days = 1;
+  }
+  pet.last_active_day = dayKey;
 }
 
 async function savePetProfile(db, pet) {
@@ -1455,7 +1480,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
   pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + rule.cleanliness);
   pet.energy = clampPetStat(Number(pet.energy || 0) + rule.energy);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  pet.last_active_day = dayKey;
+  updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 
   await db.prepare(`
@@ -3693,7 +3718,7 @@ export default {
     if (path === '/telegram-pets/state' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
-      const pet = await getOrCreatePetProfile(env.DB, telegramId).catch(() => null);
+      const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
       if (!pet) return err('Pet profile not found', 404);
       return json({ pet: serializePet(pet), missions: await buildPetMissions(env.DB, telegramId) });
     }
@@ -6882,7 +6907,7 @@ function petReplyMarkup() {
 }
 
 async function cmdPetStatus(db, tok, chatId, telegramId) {
-  const pet = await getOrCreatePetProfile(db, telegramId).catch(() => null);
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
   const missions = await buildPetMissions(db, telegramId).catch(() => null);
   await sendTelegramMessage(tok, chatId, formatPetStatus(pet, missions), { reply_markup: petReplyMarkup() });
 }
