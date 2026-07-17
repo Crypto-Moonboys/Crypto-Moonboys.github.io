@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-07-03T17:46:25.209Z",
+  "_generated": "2026-07-17T17:06:20.020Z",
   "summary": {
-    "total": 330,
-    "approved": 330,
+    "total": 331,
+    "approved": 331,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -71,7 +71,7 @@
       "file": "alien-worlds-tlm.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1496
+      "word_count": 1497
     },
     {
       "slug": "altcoins",
@@ -85,7 +85,7 @@
       "file": "atomicassets.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 987
+      "word_count": 988
     },
     {
       "slug": "atomichub",
@@ -106,7 +106,7 @@
       "file": "ava-chen.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 781
+      "word_count": 782
     },
     {
       "slug": "battlemech-blast",
@@ -211,7 +211,7 @@
       "file": "block-topia.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 10468
+      "word_count": 10469
     },
     {
       "slug": "blockchain",
@@ -232,7 +232,7 @@
       "file": "burn-to-earn.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 7321
+      "word_count": 7322
     },
     {
       "slug": "canvas-clash",
@@ -246,7 +246,7 @@
       "file": "charlie-buster.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1101
+      "word_count": 1102
     },
     {
       "slug": "croydon-tower-blocks",
@@ -256,11 +256,18 @@
       "word_count": 542
     },
     {
+      "slug": "crypto-moonboy-pets",
+      "file": "crypto-moonboy-pets.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 335
+    },
+    {
       "slug": "crypto-moonboys",
       "file": "crypto-moonboys.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2208
+      "word_count": 1657
     },
     {
       "slug": "darren-cullen",
@@ -295,14 +302,14 @@
       "file": "diamond-hands.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 881
+      "word_count": 882
     },
     {
       "slug": "dragan-volkov",
       "file": "dragan-volkov.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 755
+      "word_count": 756
     },
     {
       "slug": "dream-sovereign",
@@ -372,14 +379,14 @@
       "file": "forklord-you.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 763
+      "word_count": 764
     },
     {
       "slug": "forksplit",
       "file": "forksplit.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 794
+      "word_count": 795
     },
     {
       "slug": "games-graffpunks",
@@ -400,7 +407,7 @@
       "file": "gang-signs.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4470
+      "word_count": 4471
     },
     {
       "slug": "gang-signs-card-game",
@@ -449,1008 +456,1008 @@
       "file": "gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 578
+      "word_count": 569
     },
     {
       "slug": "gkniftyheads-alessandro-satoshi-samurai-ferrari-783442",
       "file": "gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-alessandro-token-titan-marini-783461",
       "file": "gkniftyheads-alessandro-token-titan-marini-783461.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 576
+      "word_count": 567
     },
     {
       "slug": "gkniftyheads-altcoin-avenger-783406",
       "file": "gkniftyheads-altcoin-avenger-783406.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 534
+      "word_count": 525
     },
     {
       "slug": "gkniftyheads-andrea-blockchain-buccaneer-moretti-783455",
       "file": "gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 579
+      "word_count": 570
     },
     {
       "slug": "gkniftyheads-antonio-ether-emperor-costa-783448",
       "file": "gkniftyheads-antonio-ether-emperor-costa-783448.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-binary-blitzer-784277",
       "file": "gkniftyheads-binary-blitzer-784277.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 479
+      "word_count": 470
     },
     {
       "slug": "gkniftyheads-bit-boss-783395",
       "file": "gkniftyheads-bit-boss-783395.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-bit-brawler-the-byte-battler-783415",
       "file": "gkniftyheads-bit-brawler-the-byte-battler-783415.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 550
+      "word_count": 541
     },
     {
       "slug": "gkniftyheads-bit-skull-784280",
       "file": "gkniftyheads-bit-skull-784280.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 465
+      "word_count": 456
     },
     {
       "slug": "gkniftyheads-bitcoin-barbarian-784284",
       "file": "gkniftyheads-bitcoin-barbarian-784284.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 467
+      "word_count": 458
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-infinite-776002",
       "file": "gkniftyheads-bitcoin-kid-infinite-776002.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 612
+      "word_count": 603
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-infinite-776003",
       "file": "gkniftyheads-bitcoin-kid-infinite-776003.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 611
+      "word_count": 602
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-infinite-776005",
       "file": "gkniftyheads-bitcoin-kid-infinite-776005.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 618
+      "word_count": 609
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-infinite-776056",
       "file": "gkniftyheads-bitcoin-kid-infinite-776056.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 651
+      "word_count": 642
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-infinite-776058",
       "file": "gkniftyheads-bitcoin-kid-infinite-776058.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 652
+      "word_count": 643
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-infinite-776059",
       "file": "gkniftyheads-bitcoin-kid-infinite-776059.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 652
+      "word_count": 643
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-royale-776145",
       "file": "gkniftyheads-bitcoin-kid-royale-776145.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 652
+      "word_count": 643
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-tv-heads-100-776074",
       "file": "gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 660
+      "word_count": 651
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004",
       "file": "gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 700
+      "word_count": 691
     },
     {
       "slug": "gkniftyheads-bitcoin-kid-x-sarahpfly-773225",
       "file": "gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 436
+      "word_count": 427
     },
     {
       "slug": "gkniftyheads-bitforce-bitcoin-battler-784332",
       "file": "gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 483
+      "word_count": 474
     },
     {
       "slug": "gkniftyheads-bitman-784220",
       "file": "gkniftyheads-bitman-784220.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 544
+      "word_count": 535
     },
     {
       "slug": "gkniftyheads-bitman-784229",
       "file": "gkniftyheads-bitman-784229.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 463
+      "word_count": 454
     },
     {
       "slug": "gkniftyheads-blockchain-belle-783392",
       "file": "gkniftyheads-blockchain-belle-783392.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-blockchain-bombshell-783407",
       "file": "gkniftyheads-blockchain-bombshell-783407.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-blockchain-furie-infinite-776007",
       "file": "gkniftyheads-blockchain-furie-infinite-776007.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 613
+      "word_count": 604
     },
     {
       "slug": "gkniftyheads-blockchain-furie-infinite-776055",
       "file": "gkniftyheads-blockchain-furie-infinite-776055.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 660
+      "word_count": 651
     },
     {
       "slug": "gkniftyheads-blockchain-furie-infinite-776057",
       "file": "gkniftyheads-blockchain-furie-infinite-776057.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 658
+      "word_count": 649
     },
     {
       "slug": "gkniftyheads-brick-burner-783282",
       "file": "gkniftyheads-brick-burner-783282.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 543
+      "word_count": 534
     },
     {
       "slug": "gkniftyheads-carmine-the-conductor-cimino-783380",
       "file": "gkniftyheads-carmine-the-conductor-cimino-783380.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 570
+      "word_count": 561
     },
     {
       "slug": "gkniftyheads-chroma-kid-783237",
       "file": "gkniftyheads-chroma-kid-783237.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-chroma-kid-783247",
       "file": "gkniftyheads-chroma-kid-783247.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 523
+      "word_count": 514
     },
     {
       "slug": "gkniftyheads-chromatic-crusader-783301",
       "file": "gkniftyheads-chromatic-crusader-783301.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 530
+      "word_count": 521
     },
     {
       "slug": "gkniftyheads-cipher-seraph-783413",
       "file": "gkniftyheads-cipher-seraph-783413.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 532
+      "word_count": 523
     },
     {
       "slug": "gkniftyheads-cipherella-783408",
       "file": "gkniftyheads-cipherella-783408.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 516
+      "word_count": 507
     },
     {
       "slug": "gkniftyheads-coin-conqueress-783412",
       "file": "gkniftyheads-coin-conqueress-783412.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 528
+      "word_count": 519
     },
     {
       "slug": "gkniftyheads-crypto-charmcaster-783411",
       "file": "gkniftyheads-crypto-charmcaster-783411.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-cryptofrank-784266",
       "file": "gkniftyheads-cryptofrank-784266.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 470
+      "word_count": 461
     },
     {
       "slug": "gkniftyheads-cyber-shinobi-shroud-783468",
       "file": "gkniftyheads-cyber-shinobi-shroud-783468.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 560
+      "word_count": 551
     },
     {
       "slug": "gkniftyheads-cyber-shinobi-strike-783757",
       "file": "gkniftyheads-cyber-shinobi-strike-783757.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 551
+      "word_count": 542
     },
     {
       "slug": "gkniftyheads-czen-zone-zero-zealot-783755",
       "file": "gkniftyheads-czen-zone-zero-zealot-783755.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 559
+      "word_count": 550
     },
     {
       "slug": "gkniftyheads-daring-doodle-783300",
       "file": "gkniftyheads-daring-doodle-783300.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 526
+      "word_count": 517
     },
     {
       "slug": "gkniftyheads-darknet-lord-784276",
       "file": "gkniftyheads-darknet-lord-784276.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 477
+      "word_count": 468
     },
     {
       "slug": "gkniftyheads-davide-altcoin-alchemist-marino-783454",
       "file": "gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 579
+      "word_count": 570
     },
     {
       "slug": "gkniftyheads-decentralized-duchess-783399",
       "file": "gkniftyheads-decentralized-duchess-783399.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-defi-dame-783400",
       "file": "gkniftyheads-defi-dame-783400.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 520
+      "word_count": 511
     },
     {
       "slug": "gkniftyheads-defi-dame-788015",
       "file": "gkniftyheads-defi-dame-788015.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-deko-904071",
       "file": "gkniftyheads-deko-904071.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 451
+      "word_count": 442
     },
     {
       "slug": "gkniftyheads-digital-diva-783394",
       "file": "gkniftyheads-digital-diva-783394.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-digital-duchess-783404",
       "file": "gkniftyheads-digital-duchess-783404.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 519
+      "word_count": 510
     },
     {
       "slug": "gkniftyheads-dizzy-drip-783255",
       "file": "gkniftyheads-dizzy-drip-783255.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 552
+      "word_count": 543
     },
     {
       "slug": "gkniftyheads-doughnut-ninja-nova-783764",
       "file": "gkniftyheads-doughnut-ninja-nova-783764.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 560
+      "word_count": 551
     },
     {
       "slug": "gkniftyheads-drift-doodle-783252",
       "file": "gkniftyheads-drift-doodle-783252.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 549
+      "word_count": 540
     },
     {
       "slug": "gkniftyheads-follow-darren-cullen-776123",
       "file": "gkniftyheads-follow-darren-cullen-776123.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 684
+      "word_count": 675
     },
     {
       "slug": "gkniftyheads-forever-darren-cullen-776124",
       "file": "gkniftyheads-forever-darren-cullen-776124.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 686
+      "word_count": 677
     },
     {
       "slug": "gkniftyheads-frankie-the-phoenix-piccioli-783374",
       "file": "gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 574
+      "word_count": 565
     },
     {
       "slug": "gkniftyheads-freddie-cryptocrusader-784269",
       "file": "gkniftyheads-freddie-cryptocrusader-784269.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 473
+      "word_count": 464
     },
     {
       "slug": "gkniftyheads-free-minds-gk-beats-genesis-776049",
       "file": "gkniftyheads-free-minds-gk-beats-genesis-776049.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 660
+      "word_count": 651
     },
     {
       "slug": "gkniftyheads-fume-fury-783298",
       "file": "gkniftyheads-fume-fury-783298.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 535
+      "word_count": 526
     },
     {
       "slug": "gkniftyheads-giorgio-cryptochieftain-bianco-783453",
       "file": "gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 574
+      "word_count": 565
     },
     {
       "slug": "gkniftyheads-giovanni-cryptocartel-ricci-783451",
       "file": "gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 570
+      "word_count": 561
     },
     {
       "slug": "gkniftyheads-giovanni-gas-guzzler-giordano-783433",
       "file": "gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 576
+      "word_count": 567
     },
     {
       "slug": "gkniftyheads-giulia-satoshi-sorceress-espositooo-783463",
       "file": "gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-gkniftyheads-fun-coupon-782888",
       "file": "gkniftyheads-gkniftyheads-fun-coupon-782888.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 571
+      "word_count": 562
     },
     {
       "slug": "gkniftyheads-graphite-ghost-783307",
       "file": "gkniftyheads-graphite-ghost-783307.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 552
+      "word_count": 543
     },
     {
       "slug": "gkniftyheads-inked-fury-783258",
       "file": "gkniftyheads-inked-fury-783258.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 535
+      "word_count": 526
     },
     {
       "slug": "gkniftyheads-joey-the-juggernaut-jablonski-783383",
       "file": "gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 577
+      "word_count": 568
     },
     {
       "slug": "gkniftyheads-joey-the-oracle-olivieri-783373",
       "file": "gkniftyheads-joey-the-oracle-olivieri-783373.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 577
+      "word_count": 568
     },
     {
       "slug": "gkniftyheads-johnny-the-jetstream-jankovic-783384",
       "file": "gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 576
+      "word_count": 567
     },
     {
       "slug": "gkniftyheads-lotus-luminary-charlie-buster-lancer-783470",
       "file": "gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 569
+      "word_count": 560
     },
     {
       "slug": "gkniftyheads-louie-hay-you-guys-lupo-783389",
       "file": "gkniftyheads-louie-hay-you-guys-lupo-783389.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-luca-altcoin-assassin-bianchi-783444",
       "file": "gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-marco-coin-conqueror-moretti-783464",
       "file": "gkniftyheads-marco-coin-conqueror-moretti-783464.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-marco-crypto-maestro-rossi-783432",
       "file": "gkniftyheads-marco-crypto-maestro-rossi-783432.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 576
+      "word_count": 567
     },
     {
       "slug": "gkniftyheads-marco-the-maestro-mancini-783378",
       "file": "gkniftyheads-marco-the-maestro-mancini-783378.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 574
+      "word_count": 565
     },
     {
       "slug": "gkniftyheads-marker-maven-783253",
       "file": "gkniftyheads-marker-maven-783253.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 559
+      "word_count": 550
     },
     {
       "slug": "gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466",
       "file": "gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-matteo-bitcoin-bandit-gallo-783447",
       "file": "gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457",
       "file": "gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 582
+      "word_count": 573
     },
     {
       "slug": "gkniftyheads-matteo-token-tactician-romano-783462",
       "file": "gkniftyheads-matteo-token-tactician-romano-783462.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 578
+      "word_count": 569
     },
     {
       "slug": "gkniftyheads-mr-cheo-boom-head-776121",
       "file": "gkniftyheads-mr-cheo-boom-head-776121.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 680
+      "word_count": 671
     },
     {
       "slug": "gkniftyheads-mr-cheo-bristol-776100",
       "file": "gkniftyheads-mr-cheo-bristol-776100.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 629
+      "word_count": 620
     },
     {
       "slug": "gkniftyheads-mr-cheo-bristol-776109",
       "file": "gkniftyheads-mr-cheo-bristol-776109.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 678
+      "word_count": 669
     },
     {
       "slug": "gkniftyheads-mr-cheo-lap-head-776102",
       "file": "gkniftyheads-mr-cheo-lap-head-776102.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 635
+      "word_count": 626
     },
     {
       "slug": "gkniftyheads-mr-cheo-lap-head-776114",
       "file": "gkniftyheads-mr-cheo-lap-head-776114.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 678
+      "word_count": 669
     },
     {
       "slug": "gkniftyheads-mr-cheo-pill-head-776118",
       "file": "gkniftyheads-mr-cheo-pill-head-776118.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 680
+      "word_count": 671
     },
     {
       "slug": "gkniftyheads-mr-cheo-pinky-stains-776119",
       "file": "gkniftyheads-mr-cheo-pinky-stains-776119.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 679
+      "word_count": 670
     },
     {
       "slug": "gkniftyheads-mr-cheo-purple-pains-776101",
       "file": "gkniftyheads-mr-cheo-purple-pains-776101.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 633
+      "word_count": 624
     },
     {
       "slug": "gkniftyheads-mr-cheo-purple-pains-776110",
       "file": "gkniftyheads-mr-cheo-purple-pains-776110.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 681
+      "word_count": 672
     },
     {
       "slug": "gkniftyheads-mr-cheo-spit-head-776103",
       "file": "gkniftyheads-mr-cheo-spit-head-776103.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 635
+      "word_count": 626
     },
     {
       "slug": "gkniftyheads-mr-cheo-spit-head-776117",
       "file": "gkniftyheads-mr-cheo-spit-head-776117.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 678
+      "word_count": 669
     },
     {
       "slug": "gkniftyheads-mr-cheo-tab-head-776120",
       "file": "gkniftyheads-mr-cheo-tab-head-776120.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 679
+      "word_count": 670
     },
     {
       "slug": "gkniftyheads-mr-cheo-test-press-776099",
       "file": "gkniftyheads-mr-cheo-test-press-776099.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 680
+      "word_count": 671
     },
     {
       "slug": "gkniftyheads-myerscoin13-784272",
       "file": "gkniftyheads-myerscoin13-784272.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 469
+      "word_count": 460
     },
     {
       "slug": "gkniftyheads-neon-nova-knightmare-784413",
       "file": "gkniftyheads-neon-nova-knightmare-784413.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 470
+      "word_count": 461
     },
     {
       "slug": "gkniftyheads-nft-collection",
       "file": "gkniftyheads-nft-collection.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT collection page metadata.",
-      "word_count": 7344
+      "word_count": 11419
     },
     {
       "slug": "gkniftyheads-nicky-the-ninja-napolitano-783385",
       "file": "gkniftyheads-nicky-the-ninja-napolitano-783385.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 575
+      "word_count": 566
     },
     {
       "slug": "gkniftyheads-nova-shadow-shredder-784419",
       "file": "gkniftyheads-nova-shadow-shredder-784419.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 471
+      "word_count": 462
     },
     {
       "slug": "gkniftyheads-paint-patriot-783295",
       "file": "gkniftyheads-paint-patriot-783295.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 541
+      "word_count": 532
     },
     {
       "slug": "gkniftyheads-raze-rebel-783250",
       "file": "gkniftyheads-raze-rebel-783250.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 535
+      "word_count": 526
     },
     {
       "slug": "gkniftyheads-rebel-riff-783269",
       "file": "gkniftyheads-rebel-riff-783269.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 527
+      "word_count": 518
     },
     {
       "slug": "gkniftyheads-richie-the-ricochet-ricci-783377",
       "file": "gkniftyheads-richie-the-ricochet-ricci-783377.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 568
+      "word_count": 559
     },
     {
       "slug": "gkniftyheads-robin-ronin-rampage-783747",
       "file": "gkniftyheads-robin-ronin-rampage-783747.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 556
+      "word_count": 547
     },
     {
       "slug": "gkniftyheads-rocco-the-rocket-radic-783379",
       "file": "gkniftyheads-rocco-the-rocket-radic-783379.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 574
+      "word_count": 565
     },
     {
       "slug": "gkniftyheads-sarah-p2fly-784350",
       "file": "gkniftyheads-sarah-p2fly-784350.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 531
+      "word_count": 522
     },
     {
       "slug": "gkniftyheads-sarah-pfly-784349",
       "file": "gkniftyheads-sarah-pfly-784349.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 507
+      "word_count": 498
     },
     {
       "slug": "gkniftyheads-satoshi-knight-784264",
       "file": "gkniftyheads-satoshi-knight-784264.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 490
+      "word_count": 481
     },
     {
       "slug": "gkniftyheads-scribe-serpent-783260",
       "file": "gkniftyheads-scribe-serpent-783260.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 543
+      "word_count": 534
     },
     {
       "slug": "gkniftyheads-shadow-streak-783245",
       "file": "gkniftyheads-shadow-streak-783245.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 545
+      "word_count": 536
     },
     {
       "slug": "gkniftyheads-slickshot-783235",
       "file": "gkniftyheads-slickshot-783235.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 529
+      "word_count": 520
     },
     {
       "slug": "gkniftyheads-stencil-siren-783296",
       "file": "gkniftyheads-stencil-siren-783296.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 543
+      "word_count": 534
     },
     {
       "slug": "gkniftyheads-stencil-storm-783291",
       "file": "gkniftyheads-stencil-storm-783291.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 551
+      "word_count": 542
     },
     {
       "slug": "gkniftyheads-tagger-tempest-783263",
       "file": "gkniftyheads-tagger-tempest-783263.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 559
+      "word_count": 550
     },
     {
       "slug": "gkniftyheads-token-temptress-783401",
       "file": "gkniftyheads-token-temptress-783401.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 538
+      "word_count": 529
     },
     {
       "slug": "gkniftyheads-token-tycooness-783405",
       "file": "gkniftyheads-token-tycooness-783405.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 538
+      "word_count": 529
     },
     {
       "slug": "gkniftyheads-tommy-the-titan-tucci-783369",
       "file": "gkniftyheads-tommy-the-titan-tucci-783369.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 566
+      "word_count": 557
     },
     {
       "slug": "gkniftyheads-tommy-the-titan-tucci-783372",
       "file": "gkniftyheads-tommy-the-titan-tucci-783372.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 569
+      "word_count": 560
     },
     {
       "slug": "gkniftyheads-tony-the-technician-toscano-783376",
       "file": "gkniftyheads-tony-the-technician-toscano-783376.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 572
+      "word_count": 563
     },
     {
       "slug": "gkniftyheads-tsunami-btc-titan-783760",
       "file": "gkniftyheads-tsunami-btc-titan-783760.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 555
+      "word_count": 546
     },
     {
       "slug": "gkniftyheads-urban-oracle-783306",
       "file": "gkniftyheads-urban-oracle-783306.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 559
+      "word_count": 550
     },
     {
       "slug": "gkniftyheads-vandal-776147",
       "file": "gkniftyheads-vandal-776147.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 647
+      "word_count": 638
     },
     {
       "slug": "gkniftyheads-vgiovanni-nft-ninja-rossi-783459",
       "file": "gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 569
+      "word_count": 560
     },
     {
       "slug": "gkniftyheads-vin-the-vanguard-ventura-783370",
       "file": "gkniftyheads-vin-the-vanguard-ventura-783370.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 562
+      "word_count": 553
     },
     {
       "slug": "gkniftyheads-vin-the-vanguard-ventura-783371",
       "file": "gkniftyheads-vin-the-vanguard-ventura-783371.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 567
+      "word_count": 558
     },
     {
       "slug": "gkniftyheads-vincenzo-il-criptografo-russo-783431",
       "file": "gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 580
+      "word_count": 571
     },
     {
       "slug": "gkniftyheads-vinny-the-visionary-valenti-783375",
       "file": "gkniftyheads-vinny-the-visionary-valenti-783375.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 575
+      "word_count": 566
     },
     {
       "slug": "gkniftyheads-virtual-valkyrie-783403",
       "file": "gkniftyheads-virtual-valkyrie-783403.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-virtual-vixen-783398",
       "file": "gkniftyheads-virtual-vixen-783398.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 522
+      "word_count": 513
     },
     {
       "slug": "gkniftyheads-waxp-banshee-783409",
       "file": "gkniftyheads-waxp-banshee-783409.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 528
+      "word_count": 519
     },
     {
       "slug": "gkniftyheads-waxp-banshee-783410",
       "file": "gkniftyheads-waxp-banshee-783410.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 528
+      "word_count": 519
     },
     {
       "slug": "gkniftyheads-waxp-bobby-torm-784340",
       "file": "gkniftyheads-waxp-bobby-torm-784340.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 482
+      "word_count": 473
     },
     {
       "slug": "gkniftyheads-waxp-femme-fatale-the-token-temptress-783414",
       "file": "gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 536
+      "word_count": 527
     },
     {
       "slug": "gkniftyheads-waxp-joke-ter-784344",
       "file": "gkniftyheads-waxp-joke-ter-784344.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 478
+      "word_count": 469
     },
     {
       "slug": "gkniftyheads-waxp-sentinel-solar-savior-784274",
       "file": "gkniftyheads-waxp-sentinel-solar-savior-784274.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 484
+      "word_count": 475
     },
     {
       "slug": "gkniftyheads-we-are-vandals-776146",
       "file": "gkniftyheads-we-are-vandals-776146.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 655
+      "word_count": 646
     },
     {
       "slug": "gkniftyheads-we-are-vandals-not-vanduls-775997",
       "file": "gkniftyheads-we-are-vandals-not-vanduls-775997.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 457
+      "word_count": 448
     },
     {
       "slug": "gkniftyheads-we-are-vandals-not-vanduls-775999",
       "file": "gkniftyheads-we-are-vandals-not-vanduls-775999.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 637
+      "word_count": 628
     },
     {
       "slug": "gkniftyheads-we-are-vandals-not-vanduls-776000",
       "file": "gkniftyheads-we-are-vandals-not-vanduls-776000.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 640
+      "word_count": 631
     },
     {
       "slug": "gkniftyheads-we-are-vandals-not-vanduls-776001",
       "file": "gkniftyheads-we-are-vandals-not-vanduls-776001.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 640
+      "word_count": 631
     },
     {
       "slug": "gkniftyheads-we-are-vandals-not-vanduls-776063",
       "file": "gkniftyheads-we-are-vandals-not-vanduls-776063.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 671
+      "word_count": 662
     },
     {
       "slug": "gkniftyheads-we-are-vandals-not-vanduls-776065",
       "file": "gkniftyheads-we-are-vandals-not-vanduls-776065.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 681
+      "word_count": 672
     },
     {
       "slug": "gkniftyheads-we-are-vandals-not-vanduls-776066",
       "file": "gkniftyheads-we-are-vandals-not-vanduls-776066.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 676
+      "word_count": 667
     },
     {
       "slug": "gkniftyheads-zenith-zephyr-zealot-783759",
       "file": "gkniftyheads-zenith-zephyr-zealot-783759.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Approved as mechanical NFT template page with Battle Heat media metadata.",
-      "word_count": 541
+      "word_count": 532
     },
     {
       "slug": "graffiti-kings",
@@ -1506,14 +1513,14 @@
       "file": "grit.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 747
+      "word_count": 748
     },
     {
       "slug": "grit42",
       "file": "grit42.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 777
+      "word_count": 778
     },
     {
       "slug": "hard-fork-games",
@@ -1541,7 +1548,7 @@
       "file": "hex-tagger-prime.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 853
+      "word_count": 854
     },
     {
       "slug": "hodl-warriors",
@@ -1569,7 +1576,7 @@
       "file": "ian-harrison.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1067
+      "word_count": 1068
     },
     {
       "slug": "iris-7",
@@ -1590,7 +1597,7 @@
       "file": "jodie-zoom-2000.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1038
+      "word_count": 1039
     },
     {
       "slug": "jonny-laurence-nelson-tag-records",
@@ -1604,7 +1611,7 @@
       "file": "lady-ink.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1018
+      "word_count": 1019
     },
     {
       "slug": "lfgk",
@@ -1618,14 +1625,14 @@
       "file": "loopfiend.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 857
+      "word_count": 858
     },
     {
       "slug": "m1ntr-k1ll",
       "file": "m1ntr-k1ll.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 839
+      "word_count": 840
     },
     {
       "slug": "maidstone-base",
@@ -1674,7 +1681,7 @@
       "file": "nbg.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 6945
+      "word_count": 6946
     },
     {
       "slug": "nbg-token",
@@ -1695,7 +1702,7 @@
       "file": "nbgx-token.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 667
+      "word_count": 645
     },
     {
       "slug": "neftyblocks",
@@ -1716,7 +1723,7 @@
       "file": "nfts.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1605
+      "word_count": 1606
     },
     {
       "slug": "ngmi-chronicles",
@@ -1744,7 +1751,7 @@
       "file": "noballgamess-nft-collection.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1149
+      "word_count": 1220
     },
     {
       "slug": "null-the-prophet",
@@ -1765,7 +1772,7 @@
       "file": "patchwork.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1432
+      "word_count": 1433
     },
     {
       "slug": "phygital-prints",
@@ -1786,7 +1793,7 @@
       "file": "pixil-mini.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 980
+      "word_count": 981
     },
     {
       "slug": "playable-nft-murals",
@@ -1821,7 +1828,7 @@
       "file": "pyralith.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1380
+      "word_count": 1381
     },
     {
       "slug": "queen-sarah-p-fly",
@@ -1835,7 +1842,7 @@
       "file": "quell.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1407
+      "word_count": 1408
     },
     {
       "slug": "rave-relics",
@@ -1856,7 +1863,7 @@
       "file": "rune-tag.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1442
+      "word_count": 1443
     },
     {
       "slug": "rust2riches",
@@ -1877,14 +1884,14 @@
       "file": "samaelexe.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1362
+      "word_count": 1363
     },
     {
       "slug": "satorebel",
       "file": "satorebel.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1445
+      "word_count": 1446
     },
     {
       "slug": "satoshi-scroll",
@@ -1905,7 +1912,7 @@
       "file": "sister-halcyon.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1433
+      "word_count": 1434
     },
     {
       "slug": "sneakar",
@@ -1919,7 +1926,7 @@
       "file": "snipey-d-man-sirus.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 856
+      "word_count": 857
     },
     {
       "slug": "solana",
@@ -1954,7 +1961,7 @@
       "file": "staking.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 7111
+      "word_count": 7112
     },
     {
       "slug": "stikfamwars",
@@ -2199,7 +2206,7 @@
       "file": "thera-9.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 777
+      "word_count": 778
     },
     {
       "slug": "thorne-the-architect",
@@ -2241,7 +2248,7 @@
       "file": "wallets.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1548
+      "word_count": 1549
     },
     {
       "slug": "wax-blockchain",
