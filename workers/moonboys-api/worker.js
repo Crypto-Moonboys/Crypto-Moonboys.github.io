@@ -1229,12 +1229,59 @@ const PET_STAGE_THRESHOLDS = [
 ];
 
 const PET_ACTIONS = Object.freeze({
-  feed:  { pet_xp: 6,  community_xp: 2,  hunger: -28, happiness: 2,  cleanliness: -2, energy: 4 },
-  play:  { pet_xp: 10, community_xp: 3,  hunger: 8,   happiness: 22, cleanliness: -6, energy: -12 },
-  clean: { pet_xp: 6,  community_xp: 2,  hunger: 2,   happiness: 4,  cleanliness: 32, energy: -3 },
-  sleep: { pet_xp: 5,  community_xp: 1,  hunger: 10,  happiness: 1,  cleanliness: -2, energy: 36 },
-  train: { pet_xp: 20, community_xp: 6,  hunger: 12,  happiness: 8,  cleanliness: -4, energy: -18 },
+  feed:  { pet_xp: 6,  community_xp: 2,  hunger: -28, happiness: 2,  cleanliness: -2, energy: 4,   gold: 5,  crystals: 0, style_tokens: 0 },
+  play:  { pet_xp: 10, community_xp: 3,  hunger: 8,   happiness: 22, cleanliness: -6, energy: -12, gold: 7,  crystals: 0, style_tokens: 1 },
+  clean: { pet_xp: 6,  community_xp: 2,  hunger: 2,   happiness: 4,  cleanliness: 32, energy: -3,  gold: 4,  crystals: 0, style_tokens: 0 },
+  sleep: { pet_xp: 5,  community_xp: 1,  hunger: 10,  happiness: 1,  cleanliness: -2, energy: 36,  gold: 3,  crystals: 0, style_tokens: 0 },
+  train: { pet_xp: 20, community_xp: 6,  hunger: 12,  happiness: 8,  cleanliness: -4, energy: -18, gold: 10, crystals: 1, style_tokens: 0 },
 });
+
+const PET_SHOP_ITEMS = Object.freeze({
+  moon_kibble: {
+    key: 'moon_kibble',
+    slot: 'food',
+    title: 'Moon Kibble',
+    description: 'Better food: feed restores more hunger and adds +4 pet XP.',
+    cost: { moon_gold: 45, moon_crystals: 0, style_tokens: 0 },
+    min_level: 1,
+  },
+  nebula_snack: {
+    key: 'nebula_snack',
+    slot: 'food',
+    title: 'Nebula Snack Pack',
+    description: 'Premium food: feed restores more hunger, energy and +10 pet XP.',
+    cost: { moon_gold: 120, moon_crystals: 4, style_tokens: 0 },
+    min_level: 4,
+  },
+  laser_ball: {
+    key: 'laser_ball',
+    slot: 'toy',
+    title: 'Laser Ball',
+    description: 'Better toy: play gives more happiness and +5 pet XP.',
+    cost: { moon_gold: 75, moon_crystals: 1, style_tokens: 0 },
+    min_level: 2,
+  },
+  street_hoodie: {
+    key: 'street_hoodie',
+    slot: 'outfit',
+    title: 'Street Hoodie',
+    description: 'Clothing upgrade: all care actions add +2 pet XP.',
+    cost: { moon_gold: 60, moon_crystals: 0, style_tokens: 6 },
+    min_level: 2,
+  },
+  moon_armor: {
+    key: 'moon_armor',
+    slot: 'outfit',
+    title: 'Moon Armor',
+    description: 'High-tier clothing: all care actions add +5 pet XP and +1 gold.',
+    cost: { moon_gold: 180, moon_crystals: 8, style_tokens: 12 },
+    min_level: 8,
+  },
+});
+
+const PET_TRADE_MIN_GOLD = 10;
+const PET_TRADE_MAX_GOLD = 250;
+const PET_TRADE_COOLDOWN_SECONDS = 300;
 
 function clampPetStat(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
@@ -1309,6 +1356,69 @@ function normalizePetName(value) {
   return name || null;
 }
 
+function clampPetCurrency(value) {
+  return Math.max(0, Math.min(999999, Math.floor(Number(value) || 0)));
+}
+
+function getPetLevel(petXp) {
+  return Math.max(1, Math.floor((Number(petXp) || 0) / 100) + 1);
+}
+
+function getPetEquippedItem(pet, slot) {
+  const key = String(pet?.[`equipped_${slot}`] || '').trim();
+  const item = PET_SHOP_ITEMS[key];
+  return item && item.slot === slot ? item : null;
+}
+
+function applyPetItemActionBonuses(pet, action, rule, rewards) {
+  const food = getPetEquippedItem(pet, 'food');
+  const toy = getPetEquippedItem(pet, 'toy');
+  const outfit = getPetEquippedItem(pet, 'outfit');
+
+  if (action === 'feed' && food?.key === 'moon_kibble') {
+    rule.hunger -= 12;
+    rewards.pet_xp += 4;
+  }
+  if (action === 'feed' && food?.key === 'nebula_snack') {
+    rule.hunger -= 22;
+    rule.energy += 6;
+    rewards.pet_xp += 10;
+  }
+  if (action === 'play' && toy?.key === 'laser_ball') {
+    rule.happiness += 10;
+    rewards.pet_xp += 5;
+  }
+  if (outfit?.key === 'street_hoodie') {
+    rewards.pet_xp += 2;
+  }
+  if (outfit?.key === 'moon_armor') {
+    rewards.pet_xp += 5;
+    rewards.moon_gold += 1;
+  }
+}
+
+function normalizePetShopItemKey(value) {
+  const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
+  return PET_SHOP_ITEMS[key] ? key : null;
+}
+
+function canAffordPetItem(pet, item) {
+  const cost = item.cost || {};
+  return clampPetCurrency(pet.moon_gold) >= (cost.moon_gold || 0) &&
+    clampPetCurrency(pet.moon_crystals) >= (cost.moon_crystals || 0) &&
+    clampPetCurrency(pet.style_tokens) >= (cost.style_tokens || 0);
+}
+
+function petShopItemsForPet(pet) {
+  const level = getPetLevel(pet?.pet_xp);
+  return Object.values(PET_SHOP_ITEMS).map((item) => ({
+    ...item,
+    unlocked: level >= item.min_level,
+    affordable: !!pet && level >= item.min_level && canAffordPetItem(pet, item),
+    equipped: !!pet && String(pet[`equipped_${item.slot}`] || '') === item.key,
+  }));
+}
+
 function verifyPetsBotSecret(request, env) {
   const expected = String(env.TELEGRAM_PETS_BOT_SECRET || '').trim();
   const supplied = request.headers.get('X-Pets-Bot-Secret') || request.headers.get('x-pets-bot-secret') || '';
@@ -1358,20 +1468,28 @@ async function savePetProfile(db, pet) {
     UPDATE telegram_pet_profiles
     SET pet_name = ?, species = ?, stage = ?, pet_xp = ?, level = ?,
         hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
-        streak_days = ?, last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+        streak_days = ?, moon_gold = ?, moon_crystals = ?, style_tokens = ?,
+        equipped_food = ?, equipped_toy = ?, equipped_outfit = ?,
+        last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
     WHERE telegram_id = ?
   `).bind(
     pet.pet_name,
     pet.species,
     pet.stage,
     Math.max(0, Math.floor(Number(pet.pet_xp) || 0)),
-    Math.max(1, Math.floor((Number(pet.pet_xp) || 0) / 100) + 1),
+    getPetLevel(pet.pet_xp),
     clampPetStat(pet.hunger),
     clampPetStat(pet.happiness),
     clampPetStat(pet.cleanliness),
     clampPetStat(pet.energy),
     clampPetStat(pet.health),
     Math.max(0, Math.floor(Number(pet.streak_days) || 0)),
+    clampPetCurrency(pet.moon_gold),
+    clampPetCurrency(pet.moon_crystals),
+    clampPetCurrency(pet.style_tokens),
+    pet.equipped_food || null,
+    pet.equipped_toy || null,
+    pet.equipped_outfit || null,
     pet.last_active_day || null,
     pet.last_decay_at || new Date().toISOString(),
     pet.telegram_id,
@@ -1456,7 +1574,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     }
   }
 
-  const rule = PET_ACTIONS[normalizedAction];
+  const rule = { ...PET_ACTIONS[normalizedAction] };
   if (normalizedAction === 'train' && Number(pet.energy || 0) < 18) {
     return { accepted: false, reason: 'pet_tired', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
@@ -1464,6 +1582,17 @@ async function processPetAction(db, telegramId, action, options = {}) {
   const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
   let communityXp = rule.community_xp;
   let petXp = rule.pet_xp;
+  const tokenRewards = {
+    moon_gold: clampPetCurrency(rule.gold),
+    moon_crystals: clampPetCurrency(rule.crystals),
+    style_tokens: clampPetCurrency(rule.style_tokens),
+  };
+  applyPetItemActionBonuses(pet, normalizedAction, rule, {
+    get pet_xp() { return petXp; },
+    set pet_xp(value) { petXp = value; },
+    get moon_gold() { return tokenRewards.moon_gold; },
+    set moon_gold(value) { tokenRewards.moon_gold = clampPetCurrency(value); },
+  });
   let reason = 'accepted';
   if (totals.day.community_xp >= PETS_DAILY_COMMUNITY_XP_CAP) {
     communityXp = 0;
@@ -1485,6 +1614,9 @@ async function processPetAction(db, telegramId, action, options = {}) {
   pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + rule.cleanliness);
   pet.energy = clampPetStat(Number(pet.energy || 0) + rule.energy);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + tokenRewards.moon_gold);
+  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + tokenRewards.moon_crystals);
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + tokenRewards.style_tokens);
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 
@@ -1503,7 +1635,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     dayKey,
     weekKey,
     reason,
-    JSON.stringify({ source: options.source || 'telegram_bot' }),
+    JSON.stringify({ source: options.source || 'telegram_bot', rewards: tokenRewards }),
   ).run();
 
   if (communityXp > 0) {
@@ -1527,6 +1659,119 @@ async function processPetAction(db, telegramId, action, options = {}) {
   return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp, pet, season };
 }
 
+async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
+  const key = normalizePetShopItemKey(itemKey);
+  if (!key) return { accepted: false, reason: 'invalid_shop_item', xp_awarded: 0, pet_xp_awarded: 0 };
+  const item = PET_SHOP_ITEMS[key];
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', pet };
+  if (!canAffordPetItem(pet, item)) return { accepted: false, reason: 'not_enough_pet_currency', pet };
+
+  const cost = item.cost || {};
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) - (cost.moon_gold || 0));
+  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) - (cost.moon_crystals || 0));
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) - (cost.style_tokens || 0));
+  pet[`equipped_${item.slot}`] = item.key;
+  pet.last_decay_at = now.toISOString();
+
+  const eventKey = String(options.event_key || `pet:buy:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
+  await db.prepare(`
+    INSERT INTO telegram_pet_events
+      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+    VALUES (?, ?, 'buy', ?, 0, 0, ?, ?, ?, 'accepted', 'shop_purchase', ?)
+  `).bind(
+    crypto.randomUUID(),
+    telegramId,
+    eventKey,
+    season.key,
+    dayKey,
+    weekKey,
+    JSON.stringify({ source: options.source || 'telegram_bot', item_key: item.key, slot: item.slot, cost }),
+  ).run();
+
+  await savePetProfile(db, pet);
+  return { accepted: true, reason: 'shop_purchase', item, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+}
+
+async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
+  const wager = Math.max(PET_TRADE_MIN_GOLD, Math.min(PET_TRADE_MAX_GOLD, Math.floor(Number(wagerRaw) || 0)));
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (clampPetCurrency(pet.moon_gold) < wager) return { accepted: false, reason: 'not_enough_moon_gold', pet };
+
+  const lastTrade = await db.prepare(`
+    SELECT created_at FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type = 'trade' AND status = 'accepted'
+    ORDER BY created_at DESC LIMIT 1
+  `).bind(telegramId).first().catch(() => null);
+  if (lastTrade?.created_at) {
+    const elapsedSeconds = (now.getTime() - new Date(lastTrade.created_at).getTime()) / 1000;
+    if (elapsedSeconds < PET_TRADE_COOLDOWN_SECONDS) {
+      return {
+        accepted: false,
+        reason: 'trade_cooldown',
+        retry_after_seconds: Math.max(1, Math.ceil(PET_TRADE_COOLDOWN_SECONDS - elapsedSeconds)),
+        xp_awarded: 0,
+        pet_xp_awarded: 0,
+        pet,
+      };
+    }
+  }
+
+  const roll = Math.random();
+  const won = roll >= 0.46;
+  const goldDelta = won ? Math.max(6, Math.floor(wager * 0.75)) : -wager;
+  const crystalDelta = won && wager >= 50 ? 1 : 0;
+  const petXp = won ? Math.max(3, Math.floor(wager / 8)) : 1;
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + goldDelta);
+  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + crystalDelta);
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+
+  const eventKey = String(options.event_key || `pet:trade:${telegramId}:${Date.now()}`).slice(0, 120);
+  await db.prepare(`
+    INSERT INTO telegram_pet_events
+      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+    VALUES (?, ?, 'trade', ?, 0, ?, ?, ?, ?, 'accepted', ?, ?)
+  `).bind(
+    crypto.randomUUID(),
+    telegramId,
+    eventKey,
+    petXp,
+    season.key,
+    dayKey,
+    weekKey,
+    won ? 'trade_won' : 'trade_lost',
+    JSON.stringify({ source: options.source || 'telegram_bot', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, roll }),
+  ).run();
+
+  await savePetProfile(db, pet);
+  await db.prepare(`
+    INSERT INTO telegram_pet_season_state
+      (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(telegram_id, season_key) DO UPDATE SET
+      season_xp = season_xp + excluded.season_xp,
+      weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
+      daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
+      daily_key = excluded.daily_key,
+      weekly_key = excluded.weekly_key,
+      updated_at = CURRENT_TIMESTAMP
+  `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
+
+  return { accepted: true, reason: won ? 'trade_won' : 'trade_lost', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+}
+
 function serializePet(pet) {
   if (!pet) return null;
   const decayed = applyPetDecay({ ...pet });
@@ -1536,12 +1781,18 @@ function serializePet(pet) {
     species: decayed.species,
     stage: getPetStage(decayed.pet_xp),
     pet_xp: Number(decayed.pet_xp || 0),
-    level: Math.max(1, Math.floor(Number(decayed.pet_xp || 0) / 100) + 1),
+    level: getPetLevel(decayed.pet_xp),
     hunger: clampPetStat(decayed.hunger),
     happiness: clampPetStat(decayed.happiness),
     cleanliness: clampPetStat(decayed.cleanliness),
     energy: clampPetStat(decayed.energy),
     health: calculatePetHealth(decayed),
+    moon_gold: clampPetCurrency(decayed.moon_gold),
+    moon_crystals: clampPetCurrency(decayed.moon_crystals),
+    style_tokens: clampPetCurrency(decayed.style_tokens),
+    equipped_food: decayed.equipped_food || null,
+    equipped_toy: decayed.equipped_toy || null,
+    equipped_outfit: decayed.equipped_outfit || null,
     streak_days: Number(decayed.streak_days || 0),
     last_active_day: decayed.last_active_day || null,
     updated_at: decayed.updated_at || null,
@@ -1560,15 +1811,24 @@ async function buildPetMissions(db, telegramId) {
     GROUP BY event_type
   `).bind(telegramId, dayKey).all().catch(() => ({ results: [] }));
   const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
   const fullCareDone = ['feed', 'play', 'clean'].every((key) => counts[key] > 0);
   return {
     day_key: dayKey,
     week_key: weekKey,
     season,
+    balances: pet ? {
+      moon_gold: clampPetCurrency(pet.moon_gold),
+      moon_crystals: clampPetCurrency(pet.moon_crystals),
+      style_tokens: clampPetCurrency(pet.style_tokens),
+    } : null,
     daily: [
       { key: `pet-daily-feed:${dayKey}`, title: 'Feed your Moonpet', completed: Number(counts.feed || 0) > 0 },
       { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: Number(counts.train || 0) > 0 },
       { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone },
+      { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: Number(counts.trade || 0) > 0 },
+      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or equip one pet upgrade', completed: Number(counts.buy || 0) > 0 },
+      { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: clampPetCurrency(pet?.moon_gold) >= 50 },
     ],
   };
 }
@@ -3734,6 +3994,16 @@ export default {
       return json({ missions: await buildPetMissions(env.DB, telegramId) });
     }
 
+    if (path === '/telegram-pets/shop' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      const pet = /^\d{1,20}$/.test(telegramId) ? await getPetProfile(env.DB, telegramId).catch(() => null) : null;
+      return json({
+        currencies: ['moon_gold', 'moon_crystals', 'style_tokens'],
+        pet: serializePet(pet),
+        items: petShopItemsForPet(pet),
+      });
+    }
+
     if (path === '/telegram-pets/activity' && request.method === 'GET') {
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
       const rows = await env.DB.prepare(`
@@ -3847,12 +4117,25 @@ export default {
         first_name: user.first_name || body.first_name || null,
         last_name: user.last_name || body.last_name || null,
       });
-      const result = await processPetAction(env.DB, telegramId, body.action, {
-        event_key: body.event_key,
-        pet_name: body.pet_name,
-        species: body.species,
-        source: 'telegram_pets_api',
-      });
+      let result;
+      if (body.action === 'buy') {
+        result = await processPetShopPurchase(env.DB, telegramId, body.item_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'trade') {
+        result = await processPetGoldTrade(env.DB, telegramId, body.wager, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else {
+        result = await processPetAction(env.DB, telegramId, body.action, {
+          event_key: body.event_key,
+          pet_name: body.pet_name,
+          species: body.species,
+          source: 'telegram_pets_api',
+        });
+      }
       return json({ ...result, pet: serializePet(result.pet) }, result.accepted ? 200 : 409);
     }
 
@@ -6655,7 +6938,13 @@ async function handleTelegramUpdate(update, env) {
     const telegramId = String(fromUser.id || '');
     const chatId = String(query.message?.chat?.id || telegramId || '');
     if (data.startsWith('pet:') && telegramId && chatId) {
-      const action = normalizePetAction(data.slice(4));
+      const payload = data.slice(4);
+      if (payload === 'shop') {
+        await answerTelegramCallback(tok, query.id, '/petshop');
+        await cmdPetShop(db, tok, chatId, telegramId);
+        return;
+      }
+      const action = normalizePetAction(payload);
       if (action) {
         await answerTelegramCallback(tok, query.id, `/${action}`);
         await cmdPetAction(db, tok, chatId, telegramId, fromUser, action);
@@ -6769,6 +7058,9 @@ async function handleTelegramUpdate(update, env) {
     case 'train':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, cmdBase); break;
     case 'petname':      await cmdPetRename(db, tok, chatId, telegramId, argStr);    break;
     case 'petmissions':  await cmdPetMissions(db, tok, chatId, telegramId);          break;
+    case 'petshop':      await cmdPetShop(db, tok, chatId, telegramId);              break;
+    case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr);       break;
+    case 'pettrade':     await cmdPetTrade(db, tok, chatId, telegramId, argStr);     break;
     case 'petleaderboard':
     case 'petscore':     await cmdPetLeaderboard(db, tok, chatId);                   break;
     // ── Admin-only moderation commands ───────────────────────────────────────
@@ -6857,6 +7149,9 @@ async function cmdGkHelp(tok, chatId) {
     `/pet — View your Crypto Moonboy Pet\n` +
     `/adopt — Adopt a Crypto Moonboy Pet\n` +
     `/feed /play /clean /sleep /train — Grow your pet\n` +
+    `/petshop — View food, toy and clothing upgrades\n` +
+    `/petbuy moon_kibble — Buy/equip a pet upgrade\n` +
+    `/pettrade 25 — Risk in-game Moon Gold for game rewards\n` +
     `/petleaderboard — Pet-only leaderboard\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
@@ -6884,6 +7179,8 @@ function formatPetStatus(pet, missions = null) {
   return `<b>${escapeHtml(p.pet_name)}</b> — Crypto Moonboy Pet\n` +
     `Stage: ${escapeHtml(p.stage)} · Level ${p.level}\n` +
     `Pet XP: ${p.pet_xp}\n` +
+    `Gold: ${p.moon_gold} · Crystals: ${p.moon_crystals} · Style: ${p.style_tokens}\n` +
+    `Food: ${escapeHtml(p.equipped_food || 'basic')} · Toy: ${escapeHtml(p.equipped_toy || 'basic')} · Outfit: ${escapeHtml(p.equipped_outfit || 'none')}\n` +
     `Health: ${p.health}/100\n` +
     `Hunger: ${p.hunger}/100 · Happiness: ${p.happiness}/100\n` +
     `Cleanliness: ${p.cleanliness}/100 · Energy: ${p.energy}/100\n` +
@@ -6902,6 +7199,10 @@ function petReplyMarkup() {
       [
         { text: 'Sleep', callback_data: 'pet:sleep' },
         { text: 'Train', callback_data: 'pet:train' },
+      ],
+      [
+        { text: 'Shop', callback_data: 'pet:shop' },
+        { text: 'Trade Gold', callback_data: 'pet:shop' },
       ],
       [
         { text: 'How To Play', url: `${SITE_URL}/how-to-play-crypto-moonboy-pets.html` },
@@ -6952,6 +7253,74 @@ async function cmdPetMissions(db, tok, chatId, telegramId) {
     `Day: ${escapeHtml(missions.day_key)}\n` +
     `Week: ${escapeHtml(missions.week_key)}\n` +
     `Season: ${escapeHtml(missions.season.key)}\n\n${daily}`
+  );
+}
+
+async function cmdPetShop(db, tok, chatId, telegramId) {
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  if (!pet) {
+    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
+    return;
+  }
+  const p = serializePet(pet);
+  const lines = petShopItemsForPet(pet).map((item) => {
+    const cost = item.cost || {};
+    const state = item.equipped ? 'equipped' : item.affordable ? 'ready' : item.unlocked ? 'need currency' : `level ${item.min_level}`;
+    return `${item.equipped ? '✓' : '•'} <code>${escapeHtml(item.key)}</code> — ${escapeHtml(item.title)} [${escapeHtml(state)}]\n` +
+      `  Cost: ${cost.moon_gold || 0} gold, ${cost.moon_crystals || 0} crystals, ${cost.style_tokens || 0} style\n` +
+      `  ${escapeHtml(item.description)}`;
+  }).join('\n\n');
+  await sendTelegramMessage(tok, chatId,
+    `<b>Crypto Moonboy Pets Shop</b>\n` +
+    `Balance: ${p.moon_gold} gold · ${p.moon_crystals} crystals · ${p.style_tokens} style\n\n` +
+    `${lines}\n\n` +
+    `Buy/equip: <code>/petbuy moon_kibble</code>\n` +
+    `Risk game gold: <code>/pettrade 25</code>`,
+    { reply_markup: petReplyMarkup() },
+  );
+}
+
+async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
+  const itemKey = normalizePetShopItemKey(argStr);
+  if (!itemKey) {
+    await sendTelegramMessage(tok, chatId, 'Use it like this: /petbuy moon_kibble. Run /petshop to see item keys.');
+    return;
+  }
+  const result = await processPetShopPurchase(db, telegramId, itemKey, {
+    event_key: `tg:${telegramId}:buy:${itemKey}:${Date.now()}`,
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_buy_failed' }));
+  if (!result.accepted) {
+    await sendTelegramMessage(tok, chatId, `Pet shop purchase blocked: ${escapeHtml(result.reason || 'not accepted')}. Run /petshop.`);
+    return;
+  }
+  await sendTelegramMessage(tok, chatId,
+    `Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`,
+    { reply_markup: petReplyMarkup() },
+  );
+}
+
+async function cmdPetTrade(db, tok, chatId, telegramId, argStr) {
+  const wager = Math.floor(Number(String(argStr || '').trim()) || 0);
+  if (wager < PET_TRADE_MIN_GOLD) {
+    await sendTelegramMessage(tok, chatId, `Use it like this: /pettrade ${PET_TRADE_MIN_GOLD}. This risks in-game Moon Gold only.`);
+    return;
+  }
+  const result = await processPetGoldTrade(db, telegramId, wager, {
+    event_key: `tg:${telegramId}:trade:${Date.now()}`,
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_trade_failed' }));
+  if (!result.accepted) {
+    const retry = result.retry_after_seconds ? ` Try again in ${result.retry_after_seconds}s.` : '';
+    await sendTelegramMessage(tok, chatId, `Moon Gold trade blocked: ${escapeHtml(result.reason || 'not accepted')}.${retry}`);
+    return;
+  }
+  const outcome = result.won
+    ? `Trade won: +${result.gold_delta} gold, +${result.crystal_delta} crystals, +${result.pet_xp_awarded} pet XP.`
+    : `Trade lost: ${result.gold_delta} gold, +${result.pet_xp_awarded} pet XP.`;
+  await sendTelegramMessage(tok, chatId,
+    `${escapeHtml(outcome)}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`,
+    { reply_markup: petReplyMarkup() },
   );
 }
 

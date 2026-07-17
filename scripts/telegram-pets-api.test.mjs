@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/030_telegram_pets.sql', import.meta.url), 'utf8');
+const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/031_telegram_pets_economy.sql', import.meta.url), 'utf8');
 
 function asyncBlock(name) {
   const marker = `async function ${name}(`;
@@ -40,6 +41,7 @@ assert.ok(worker.includes("path === '/telegram-pets/leaderboard'"), '/telegram-p
 assert.ok(worker.includes("path === '/telegram-pets/state'"), '/telegram-pets/state route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
+assert.ok(worker.includes("path === '/telegram-pets/shop'"), '/telegram-pets/shop route must exist');
 
 const verifierStart = worker.indexOf('function verifyPetsBotSecret');
 const verifierEnd = worker.indexOf('async function getOrCreatePetProfile');
@@ -73,6 +75,16 @@ assert.ok(
   'rename must require an existing pet profile'
 );
 
+const shopPurchase = asyncBlock('processPetShopPurchase');
+assert.ok(shopPurchase.includes("event_type, event_key"), 'shop purchases must be audited as pet events');
+assert.ok(shopPurchase.includes("'buy'"), 'shop purchases must use buy event type');
+assert.ok(!shopPurchase.includes('awardCommunityXp'), 'shop purchases must not award Community XP');
+
+const goldTrade = asyncBlock('processPetGoldTrade');
+assert.ok(goldTrade.includes("'trade'"), 'gold trades must use trade event type');
+assert.ok(goldTrade.includes('PET_TRADE_COOLDOWN_SECONDS'), 'gold trades must have a cooldown');
+assert.ok(!goldTrade.includes('awardCommunityXp'), 'gold trades must not award Community XP');
+
 const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
 assert.ok(!stateRoute.includes('getOrCreatePetProfile'), 'GET /telegram-pets/state must not create pets');
@@ -91,7 +103,12 @@ for (const table of ['telegram_pet_profiles', 'telegram_pet_events', 'telegram_p
   assert.ok(migration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in migration`);
 }
 
-for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petleaderboard':"]) {
+for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_food', 'equipped_toy', 'equipped_outfit']) {
+  assert.ok(schema.includes(column), `schema.sql must include ${column}`);
+  assert.ok(economyMigration.includes(`ADD COLUMN ${column}`), `economy migration must add ${column}`);
+}
+
+for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbuy':", "case 'pettrade':", "case 'petleaderboard':"]) {
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
 

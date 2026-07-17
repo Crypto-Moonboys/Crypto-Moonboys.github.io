@@ -43,6 +43,8 @@
           '<span class="tg-badge tg-badge-faction">Level ' + escapeHtml(pet.level || 1) + '</span>' +
         '</div>' +
         '<div class="tg-profile-xp">Pet XP: ' + escapeHtml(pet.pet_xp || 0) + ' · Health: ' + escapeHtml(pet.health || 0) + '/100 · Streak: ' + escapeHtml(pet.streak_days || 0) + '</div>' +
+        '<div class="tg-profile-xp">Gold: ' + escapeHtml(pet.moon_gold || 0) + ' · Crystals: ' + escapeHtml(pet.moon_crystals || 0) + ' · Style: ' + escapeHtml(pet.style_tokens || 0) + '</div>' +
+        '<div class="tg-profile-xp">Food: ' + escapeHtml(pet.equipped_food || 'basic') + ' · Toy: ' + escapeHtml(pet.equipped_toy || 'basic') + ' · Outfit: ' + escapeHtml(pet.equipped_outfit || 'none') + '</div>' +
       '</div>' +
     '</div>';
   }
