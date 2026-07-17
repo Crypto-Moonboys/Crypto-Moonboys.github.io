@@ -110,7 +110,8 @@ Required behavior:
 
 - Pet Community XP is added to `telegram_users.xp`.
 - Pet Community XP is logged in `telegram_xp_log` with action names prefixed by `pet_`.
-- Existing `/telegram/leaderboard` includes pet-earned XP naturally.
+- Pet Community XP is also written into the active-season `telegram_leaderboard` row when an active `telegram_seasons` row exists.
+- Existing `/telegram/leaderboard` includes pet-earned XP in active seasonal environments. Do not rely on `awardXp(...)` alone if the endpoint reads `telegram_leaderboard` first.
 - Existing Community XP graph uses the same XP log source, so pet XP contributes to the graph.
 - The graph may show source/category breakdown if supported, but must not require all pet stats to be dumped into current pages.
 
@@ -164,7 +165,7 @@ The implementation PR is not complete until all of these are true:
 - A dedicated How To Play page exists and is linked from the pet wiki page.
 - A dedicated pet leaderboard page or page section exists.
 - The pet leaderboard is separate from the main Community XP leaderboard.
-- Pet XP contributes to the main Community XP leaderboard via existing XP tables.
+- Pet XP contributes to the main Community XP leaderboard via `telegram_users`, `telegram_xp_log`, and active-season `telegram_leaderboard` writes.
 - Pet XP contributes to the current XP graph through the existing XP log/source path.
 - Existing pages do not receive a heavy dump of every pet stat.
 - `community.html` gets only a compact pet summary or CTA.
@@ -176,5 +177,5 @@ The implementation PR is not complete until all of these are true:
 Use this with the main build prompt:
 
 ```text
-Also implement the website surfaces from docs/moonboys-pets-website-surface-requirements.md. Create wiki/crypto-moonboy-pets.html, a dedicated How To Play page, and a dedicated pet leaderboard. Ensure the pet wiki page appears in website search. Pet-earned Community XP must feed the existing main XP leaderboard and graph through telegram_users.xp and telegram_xp_log, while detailed pet stats stay on the new Crypto Moonboy Pets pages and do not data-dump onto existing community pages.
+Also implement the website surfaces from docs/moonboys-pets-website-surface-requirements.md. Create wiki/crypto-moonboy-pets.html, a dedicated How To Play page, and a dedicated pet leaderboard. Ensure the pet wiki page appears in website search. Pet-earned Community XP must feed the existing main XP leaderboard and graph through telegram_users.xp, telegram_xp_log, and active-season telegram_leaderboard writes, while detailed pet stats stay on the new Crypto Moonboy Pets pages and do not data-dump onto existing community pages.
 ```
