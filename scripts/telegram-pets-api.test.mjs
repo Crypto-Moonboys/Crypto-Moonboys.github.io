@@ -5,6 +5,7 @@ const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', impo
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/030_telegram_pets.sql', import.meta.url), 'utf8');
 const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/031_telegram_pets_economy.sql', import.meta.url), 'utf8');
+const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/032_telegram_pets_notifications.sql', import.meta.url), 'utf8');
 
 function asyncBlock(name) {
   const marker = `async function ${name}(`;
@@ -43,6 +44,7 @@ assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/shop'"), '/telegram-pets/shop route must exist');
 assert.ok(worker.includes("body.action === 'trade'"), 'telegram pets action route must dispatch trade actions');
+assert.ok(worker.includes("body.action === 'adventure'"), 'telegram pets action route must dispatch adventure actions');
 
 const verifierStart = worker.indexOf('function verifyPetsBotSecret');
 const verifierEnd = worker.indexOf('async function getOrCreatePetProfile');
@@ -94,6 +96,24 @@ assert.ok(goldTrade.includes('telegram_pet_season_state'), 'gold trades must upd
 assert.ok(goldTrade.includes("xp_awarded: 0"), 'gold trades must not award Community XP');
 assert.ok(!goldTrade.includes('awardCommunityXp'), 'gold trades must not call the shared Community XP helper');
 
+const adventure = asyncBlock('processPetAdventure');
+assert.ok(adventure.includes("'adventure'"), 'adventures must use adventure event type');
+assert.ok(adventure.includes('PET_ADVENTURE_COOLDOWN_SECONDS'), 'adventures must have a cooldown');
+assert.ok(adventure.includes('PETS_DAILY_PET_XP_CAP'), 'adventures must apply the daily pet XP cap');
+assert.ok(adventure.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'adventures must read daily totals before awarding pet XP');
+assert.ok(adventure.includes('telegram_pet_season_state'), 'adventures must update season state');
+assert.ok(adventure.includes('pet_xp_awarded: petXp'), 'adventures must persist the capped pet XP amount');
+assert.ok(adventure.includes("capReason || 'adventure_complete'"), 'adventures must report completion');
+assert.ok(!adventure.includes('awardCommunityXp'), 'adventures must not award Community XP');
+
+const notifications = asyncBlock('runPetNeedsNotifications');
+assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');
+assert.ok(notifications.includes('PET_NOTIFICATION_COOLDOWN_MINUTES'), 'pet notifications must apply a cooldown');
+assert.ok(notifications.includes('sendTelegramMessage'), 'pet notifications must send Telegram messages');
+
+const scheduled = worker.slice(worker.indexOf('async scheduled(event, env, _ctx)'), worker.indexOf('async function cmdGkStart'));
+assert.ok(scheduled.includes('shouldRunPetNotifications'), 'scheduled pet notifications must be gated by the cron check');
+
 const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
 assert.ok(!stateRoute.includes('getOrCreatePetProfile'), 'GET /telegram-pets/state must not create pets');
@@ -111,13 +131,16 @@ for (const table of ['telegram_pet_profiles', 'telegram_pet_events', 'telegram_p
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
   assert.ok(migration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in migration`);
 }
+assert.ok(schema.includes('telegram_pet_notification_settings'), 'schema.sql must include telegram_pet_notification_settings');
+assert.ok(notificationsMigration.includes('telegram_pet_notification_settings'), 'notifications migration must create telegram_pet_notification_settings');
+assert.ok(notificationsMigration.includes('idx_telegram_pet_notification_settings_due'), 'notifications migration must add the notification index');
 
 for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_food', 'equipped_toy', 'equipped_outfit']) {
   assert.ok(schema.includes(column), `schema.sql must include ${column}`);
   assert.ok(economyMigration.includes(`ADD COLUMN ${column}`), `economy migration must add ${column}`);
 }
 
-for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbuy':", "case 'pettrade':", "case 'petleaderboard':"]) {
+for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbuy':", "case 'pettrade':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
 
