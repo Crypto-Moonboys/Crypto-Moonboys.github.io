@@ -1731,6 +1731,37 @@ body.page-standard-shell .wiki-living-hero .wiki-living-title,
   margin: 0 0 22px;
 }
 
+body.page-how-to-play .wiki-living-hero {
+  min-height: min(760px, calc(100vh - 64px));
+  background:
+    linear-gradient(90deg, rgba(3, 7, 13, 0.96) 0%, rgba(3, 7, 13, 0.88) 28%, rgba(3, 7, 13, 0.42) 57%, rgba(3, 7, 13, 0.10) 100%),
+    linear-gradient(180deg, rgba(3, 7, 13, 0.18) 0%, rgba(3, 7, 13, 0.78) 100%),
+    url("/img/pets/crypto-moonboy-pets-how-to-play-hero.jpg") center right / cover no-repeat;
+  border-color: rgba(86, 220, 255, 0.20);
+}
+
+body.page-how-to-play .wiki-living-hero::before {
+  opacity: 0.16;
+}
+
+body.page-how-to-play .wiki-living-hero::after {
+  background:
+    radial-gradient(circle at 20% 24%, rgba(0, 255, 204, 0.18), transparent 24%),
+    radial-gradient(circle at 62% 62%, rgba(247, 201, 72, 0.14), transparent 25%),
+    radial-gradient(circle at 84% 44%, rgba(86, 220, 255, 0.16), transparent 28%);
+  opacity: 0.46;
+}
+
+body.page-how-to-play .wiki-living-hero .swarmsy-hero-inner {
+  max-width: 760px;
+  margin-left: 0;
+}
+
+body.page-how-to-play .swarmsy-lead {
+  color: rgba(234, 246, 255, 0.88);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.72);
+}
+
 .wiki-hero-search {
   display: flex;
   width: min(100%, 720px);
@@ -1812,6 +1843,19 @@ body.page-standard-shell .wiki-living-hero .wiki-living-title,
   .wiki-alive-kicker,
   .wiki-living-title {
     animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  body.page-how-to-play .wiki-living-hero {
+    min-height: 680px;
+    background:
+      linear-gradient(180deg, rgba(3, 7, 13, 0.88) 0%, rgba(3, 7, 13, 0.54) 46%, rgba(3, 7, 13, 0.94) 100%),
+      url("/img/pets/crypto-moonboy-pets-how-to-play-hero.jpg") 62% center / cover no-repeat;
+  }
+
+  body.page-how-to-play .wiki-living-hero .swarmsy-hero-inner {
+    max-width: none;
   }
 }
 
