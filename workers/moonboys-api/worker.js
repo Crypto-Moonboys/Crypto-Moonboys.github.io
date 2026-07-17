@@ -1408,7 +1408,17 @@ async function processPetAction(db, telegramId, action, options = {}) {
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
   const eventKey = String(options.event_key || `pet:${normalizedAction || action}:${telegramId}:${Date.now()}`).slice(0, 120);
-  let pet = await getOrCreatePetProfile(db, telegramId, options);
+
+  if (action === 'adopt') {
+    const pet = await getOrCreatePetProfile(db, telegramId, options);
+    await savePetProfile(db, pet);
+    return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  let pet = await getPetProfile(db, telegramId);
+  if (!pet) {
+    return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
 
   if (action === 'rename') {
     const petName = normalizePetName(options.pet_name);
@@ -1416,11 +1426,6 @@ async function processPetAction(db, telegramId, action, options = {}) {
     pet.pet_name = petName;
     await savePetProfile(db, pet);
     return { accepted: true, reason: 'renamed', xp_awarded: 0, pet_xp_awarded: 0, pet };
-  }
-
-  if (action === 'adopt') {
-    await savePetProfile(db, pet);
-    return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
 
   const existing = await db.prepare(`

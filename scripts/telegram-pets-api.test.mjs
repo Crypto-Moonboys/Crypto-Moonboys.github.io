@@ -60,6 +60,18 @@ assert.ok(petAction.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'pet action must ap
 assert.ok(petAction.includes('PETS_DAILY_PET_XP_CAP'), 'pet action must apply pet XP daily cap');
 assert.ok(petAction.includes('awardCommunityXp'), 'pet action must award through shared Community XP helper');
 assert.ok(petAction.includes('updatePetStreakForAction(pet, dayKey)'), 'accepted pet actions must update streaks before saving the active day');
+assert.ok(petAction.includes("if (action === 'adopt')"), 'adopt branch must be explicit');
+assert.ok(petAction.includes('const pet = await getOrCreatePetProfile(db, telegramId, options)'), 'adopt branch must create the pet profile');
+assert.ok(petAction.includes('let pet = await getPetProfile(db, telegramId)'), 'non-adopt actions must use read-only pet lookup first');
+assert.ok(petAction.includes("reason: 'pet_not_adopted'"), 'non-adopt actions must fail when the pet was not adopted');
+assert.ok(
+  petAction.indexOf("if (action === 'adopt')") < petAction.indexOf('let pet = await getPetProfile(db, telegramId)'),
+  'adopt creation must happen before non-adopt read-only lookup'
+);
+assert.ok(
+  petAction.indexOf('let pet = await getPetProfile(db, telegramId)') < petAction.indexOf("if (action === 'rename')"),
+  'rename must require an existing pet profile'
+);
 
 const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
