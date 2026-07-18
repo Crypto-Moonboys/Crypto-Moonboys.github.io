@@ -15,6 +15,43 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/action-page-cards.css">
   <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    .pet-card-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+    }
+    .pet-card-gallery figure {
+      margin: 0;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(10, 12, 18, 0.82);
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.24);
+    }
+    .pet-card-gallery img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #10131b;
+    }
+    .pet-card-gallery figcaption {
+      padding: 0.8rem 0.9rem 0.95rem;
+      font-size: 0.88rem;
+      line-height: 1.35;
+      color: rgba(244, 243, 239, 0.84);
+    }
+    .pet-card-group {
+      margin-top: 1.5rem;
+    }
+    .pet-card-group h3 {
+      margin: 0 0 0.85rem;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
 <body class="page-how-to-play page-standard-shell">
 <main id="content" role="main">
@@ -70,6 +107,49 @@
         <tr><td><code>/petname Name</code></td><td>Renames your pet.</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="section">
+    <h2>Telegram Card Preview</h2>
+    <p>The Telegram bot now pairs the existing text flow with matching image cards, so the action you tap is easier to read at a glance while the stats and buttons stay exactly where they belong.</p>
+
+    <div class="pet-card-group">
+      <h3>Care And Status</h3>
+      <div class="pet-card-gallery">
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20HOW%20TO%20PLAY.jpg" alt="Crypto Moonboys Pet How To Play card" loading="lazy" decoding="async"><figcaption><code>/pet</code> and how-to-play overview</figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20FEED.jpg" alt="Crypto Moonboys Pet Feed card" loading="lazy" decoding="async"><figcaption><code>/feed</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20PLAY.jpg" alt="Crypto Moonboys Pet Play card" loading="lazy" decoding="async"><figcaption><code>/play</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20CLEAN.jpg" alt="Crypto Moonboys Pet Clean card" loading="lazy" decoding="async"><figcaption><code>/clean</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20SLEEP.jpg" alt="Crypto Moonboys Pet Sleep card" loading="lazy" decoding="async"><figcaption><code>/sleep</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20TRAIN%20HARD.jpg" alt="Crypto Moonboys Pet Train Hard card" loading="lazy" decoding="async"><figcaption><code>/train</code></figcaption></figure>
+      </div>
+    </div>
+
+    <div class="pet-card-group">
+      <h3>Inventory And Economy</h3>
+      <div class="pet-card-gallery">
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20BAG.jpg" alt="Crypto Moonboys Pet Moon Bag card" loading="lazy" decoding="async"><figcaption><code>/petbag</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20SHOP.jpg" alt="Crypto Moonboys Pet Moon Shop card" loading="lazy" decoding="async"><figcaption><code>/petshop</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20HUSTLE.jpg" alt="Crypto Moonboys Pet Moon Hustle card" loading="lazy" decoding="async"><figcaption><code>/petwork</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20DAILY%20DROP.jpg" alt="Crypto Moonboys Daily Drop card" loading="lazy" decoding="async"><figcaption><code>/petdaily</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20EVENT.jpg" alt="Crypto Moonboys Pet Moon Event card" loading="lazy" decoding="async"><figcaption><code>/petevent</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20MOON%20RUN.jpg" alt="Crypto Moonboys Moon Run card" loading="lazy" decoding="async"><figcaption><code>/petadventure</code></figcaption></figure>
+      </div>
+    </div>
+
+    <div class="pet-card-group">
+      <h3>Results And Rewards</h3>
+      <div class="pet-card-gallery">
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20GOLD%20TRADE.jpg" alt="Crypto Moonboys Pet Gold Trade card" loading="lazy" decoding="async"><figcaption><code>/pettrade</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20TRADE%20WIN.jpg" alt="Crypto Moonboys Pet Trade Win card" loading="lazy" decoding="async"><figcaption>Trade win</figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20TRADE%20LOSS.jpg" alt="Crypto Moonboys Pet Trade Loss card" loading="lazy" decoding="async"><figcaption>Trade loss</figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20PURCHASE%20COMPLETE.jpg" alt="Crypto Moonboys Pet Purchase Complete card" loading="lazy" decoding="async"><figcaption><code>/petbuy</code></figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20LEVEL%20UP.jpg" alt="Crypto Moonboys Pet Level Up card" loading="lazy" decoding="async"><figcaption>Level up</figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20ADVENTURE%20WIN.jpg" alt="Crypto Moonboys Pet Adventure Win card" loading="lazy" decoding="async"><figcaption>Adventure win</figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20RUN%20FAILED.jpg" alt="Crypto Moonboys Pet Run Failed card" loading="lazy" decoding="async"><figcaption>Adventure fail</figcaption></figure>
+        <figure><img src="https://cryptomoonboys.com/img/pets/CRYPTO%20MOONBOYS%20PET%20LEADERBOARD.jpg" alt="Crypto Moonboys Pet Leaderboard card" loading="lazy" decoding="async"><figcaption><code>/petleaderboard</code></figcaption></figure>
+      </div>
+    </div>
   </section>
 
   <section class="section">

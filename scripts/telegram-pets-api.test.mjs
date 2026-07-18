@@ -1,11 +1,19 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/030_telegram_pets.sql', import.meta.url), 'utf8');
 const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/031_telegram_pets_economy.sql', import.meta.url), 'utf8');
 const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/032_telegram_pets_notifications.sql', import.meta.url), 'utf8');
+
+const {
+  PET_MEDIA_MANIFEST,
+  buildPetMediaUrl,
+  resolvePetMediaKey,
+  sendTelegramPetReply,
+} = __petMediaTestHooks;
 
 function asyncBlock(name) {
   const marker = `async function ${name}(`;
@@ -50,6 +58,57 @@ assert.ok(worker.includes("body.action === 'use_item'"), 'telegram pets action r
 assert.ok(worker.includes("body.action === 'work'"), 'telegram pets action route must dispatch work actions');
 assert.ok(worker.includes("body.action === 'daily_chest'"), 'telegram pets action route must dispatch daily_chest actions');
 assert.ok(worker.includes("body.action === 'random_event'"), 'telegram pets action route must dispatch random_event actions');
+assert.ok(worker.includes('export const __petMediaTestHooks'), 'pet media test hooks must be exported');
+
+for (const [mediaKey, filename] of Object.entries(PET_MEDIA_MANIFEST)) {
+  assert.ok(fs.existsSync(new URL(`../img/pets/${filename}`, import.meta.url)), `pet media file must exist: ${filename}`);
+  const url = buildPetMediaUrl(mediaKey);
+  assert.ok(url.startsWith('https://cryptomoonboys.com/img/pets/'), `pet media URL must be absolute for ${mediaKey}`);
+  assert.equal(new URL(url).protocol, 'https:', `pet media URL must use HTTPS for ${mediaKey}`);
+  assert.equal(decodeURIComponent(new URL(url).pathname.split('/').pop()), filename, `pet media URL must point at ${filename}`);
+}
+
+assert.equal(resolvePetMediaKey('feed'), 'feed');
+assert.equal(resolvePetMediaKey('play'), 'play');
+assert.equal(resolvePetMediaKey('clean'), 'clean');
+assert.equal(resolvePetMediaKey('sleep'), 'sleep');
+assert.equal(resolvePetMediaKey('train'), 'train');
+assert.equal(resolvePetMediaKey('bag'), 'bag');
+assert.equal(resolvePetMediaKey('work'), 'work');
+assert.equal(resolvePetMediaKey('event'), 'event');
+assert.equal(resolvePetMediaKey('daily'), 'daily');
+assert.equal(resolvePetMediaKey('adventure'), 'adventure_win');
+assert.equal(resolvePetMediaKey('shop'), 'shop');
+assert.equal(resolvePetMediaKey('trade', { won: true }), 'trade_win');
+assert.equal(resolvePetMediaKey('trade', { won: false }), 'trade_loss');
+assert.equal(resolvePetMediaKey('how to play'), 'how_to_play');
+assert.equal(resolvePetMediaKey('leaderboard'), 'leaderboard');
+assert.equal(resolvePetMediaKey('purchase'), 'purchase_complete');
+assert.equal(resolvePetMediaKey('adopt'), 'level_up');
+assert.equal(resolvePetMediaKey('pettrade', { won: true }), 'trade_win');
+assert.equal(resolvePetMediaKey('petadventure', { accepted: false }), 'adventure_fail');
+
+const originalFetch = globalThis.fetch;
+const calls = [];
+globalThis.fetch = async (url, init = {}) => {
+  calls.push({ url: String(url), init });
+  if (String(url).includes('/sendPhoto')) {
+    return { ok: false, status: 500, text: async () => 'photo failed' };
+  }
+  if (String(url).includes('/sendMessage')) {
+    return { ok: true, status: 200, text: async () => 'message sent' };
+  }
+  return { ok: true, status: 200, text: async () => 'ok' };
+};
+try {
+  const fallback = await sendTelegramPetReply('bot-token', '123', 'Fallback text', { reply_markup: { inline_keyboard: [] } }, 'feed');
+  assert.ok(fallback.ok, 'sendTelegramPetReply must succeed when photo sending fails');
+  assert.equal(calls.length, 2, 'sendTelegramPetReply must attempt photo first and then fall back to text');
+  assert.ok(calls[0].url.includes('/sendPhoto'), 'sendTelegramPetReply must attempt Telegram photo first');
+  assert.ok(calls[1].url.includes('/sendMessage'), 'sendTelegramPetReply must fall back to Telegram text');
+} finally {
+  globalThis.fetch = originalFetch;
+}
 
 const verifierStart = worker.indexOf('function verifyPetsBotSecret');
 const verifierEnd = worker.indexOf('async function getOrCreatePetProfile');
