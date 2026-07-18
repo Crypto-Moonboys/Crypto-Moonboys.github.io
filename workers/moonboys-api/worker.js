@@ -7602,6 +7602,7 @@ async function handleTelegramUpdate(update, env) {
   const rawCmd   = spaceIdx === -1 ? text.slice(1) : text.slice(1, spaceIdx);
   const cmdBase  = rawCmd.split('@')[0].toLowerCase(); // strip @botname suffix
   const argStr   = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
+  const petEventKey = getTelegramPetCommandEventKey(msg, telegramId, cmdBase, argStr);
 
   switch (cmdBase) {
     // ── GK command set ────────────────────────────────────────────────────
@@ -7637,10 +7638,10 @@ async function handleTelegramUpdate(update, env) {
     case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr);       break;
     case 'petadventure': await cmdPetAdventure(db, tok, chatId, telegramId, argStr); break;
     case 'petbag':       await cmdPetBag(db, tok, chatId, telegramId);               break;
-    case 'petuse':       await cmdPetUse(db, tok, chatId, telegramId, argStr);       break;
-    case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr);      break;
-    case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId);             break;
-    case 'petevent':     await cmdPetEvent(db, tok, chatId, telegramId, argStr);     break;
+    case 'petuse':       await cmdPetUse(db, tok, chatId, telegramId, argStr, petEventKey);       break;
+    case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr, petEventKey);      break;
+    case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId, petEventKey);             break;
+    case 'petevent':     await cmdPetEvent(db, tok, chatId, telegramId, argStr, petEventKey);     break;
     case 'petnotify':    await cmdPetNotify(db, tok, chatId, telegramId, argStr);    break;
     case 'petleaderboard':
     case 'petscore':     await cmdPetLeaderboard(db, tok, chatId);                   break;
@@ -7795,6 +7796,41 @@ function petReplyMarkup() {
   };
 }
 
+function buildStablePetEventKey(parts = []) {
+  return ['tg_pet', ...parts.map((part) => String(part ?? '').trim().replace(/\s+/g, '_'))]
+    .filter(Boolean)
+    .join(':')
+    .slice(0, 120);
+}
+
+function getTelegramPetCallbackEventKey(query) {
+  if (!query) return null;
+  const callbackId = String(query.id || '').trim();
+  if (!callbackId) return null;
+  const callbackData = String(query.data || '').trim();
+  return buildStablePetEventKey([
+    'callback',
+    callbackId,
+    query.from?.id || '',
+    query.message?.chat?.id || '',
+    query.message?.message_id || '',
+    callbackData,
+  ]);
+}
+
+function getTelegramPetCommandEventKey(message, telegramId, cmdBase, argStr, fallback = 'command') {
+  const messageId = message?.message_id || message?.reply_to_message?.message_id || '';
+  const chatId = message?.chat?.id || '';
+  return buildStablePetEventKey([
+    fallback,
+    chatId,
+    telegramId,
+    messageId,
+    cmdBase,
+    argStr,
+  ]);
+}
+
 async function cmdPetStatus(db, tok, chatId, telegramId) {
   const pet = await getPetProfile(db, telegramId).catch(() => null);
   const missions = await buildPetMissions(db, telegramId).catch(() => null);
@@ -7931,9 +7967,9 @@ async function cmdPetBag(db, tok, chatId, telegramId) {
   await sendTelegramMessage(tok, chatId, `<b>Crypto Moonboy Pet Bag</b>\n\n${lines}`);
 }
 
-async function cmdPetUse(db, tok, chatId, telegramId, argStr = '') {
+async function cmdPetUse(db, tok, chatId, telegramId, argStr = '', eventKey = '') {
   const itemKey = String(argStr || '').trim().toLowerCase();
-  const result = await processPetItemUse(db, telegramId, itemKey, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_use_failed' }));
+  const result = await processPetItemUse(db, telegramId, itemKey, { source: 'telegram_command', event_key: eventKey }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_use_failed' }));
   if (!result.accepted) {
     await sendTelegramMessage(tok, chatId, `Pet item use blocked: ${escapeHtml(result.reason || 'not accepted')}. Use /petbag.`);
     return;
@@ -7941,9 +7977,9 @@ async function cmdPetUse(db, tok, chatId, telegramId, argStr = '') {
   await sendTelegramMessage(tok, chatId, `Item used: ${escapeHtml(result.item.title)}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetWork(db, tok, chatId, telegramId, argStr = '') {
+async function cmdPetWork(db, tok, chatId, telegramId, argStr = '', eventKey = '') {
   const jobKey = String(argStr || '').trim().toLowerCase();
-  const result = await processPetWork(db, telegramId, jobKey, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_work_failed' }));
+  const result = await processPetWork(db, telegramId, jobKey, { source: 'telegram_command', event_key: eventKey }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_work_failed' }));
   if (!result.accepted) {
     await sendTelegramMessage(tok, chatId, `Pet work blocked: ${escapeHtml(result.reason || 'not accepted')}. Use /petwork courier.`);
     return;
@@ -7951,8 +7987,8 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr = '') {
   await sendTelegramMessage(tok, chatId, `Job complete: ${escapeHtml(result.job.title)}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetDaily(db, tok, chatId, telegramId) {
-  const result = await processPetDailyChest(db, telegramId, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_daily_failed' }));
+async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = '') {
+  const result = await processPetDailyChest(db, telegramId, { source: 'telegram_command', event_key: eventKey }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_daily_failed' }));
   if (!result.accepted) {
     await sendTelegramMessage(tok, chatId, `Daily chest blocked: ${escapeHtml(result.reason || 'not accepted')}.`);
     return;
@@ -7960,9 +7996,9 @@ async function cmdPetDaily(db, tok, chatId, telegramId) {
   await sendTelegramMessage(tok, chatId, `Daily chest claimed.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetEvent(db, tok, chatId, telegramId, argStr = '') {
+async function cmdPetEvent(db, tok, chatId, telegramId, argStr = '', eventKey = '') {
   const choice = String(argStr || '').trim().toLowerCase();
-  const result = await processPetRandomEventChoice(db, telegramId, choice, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_event_failed' }));
+  const result = await processPetRandomEventChoice(db, telegramId, choice, { source: 'telegram_command', event_key: eventKey }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_event_failed' }));
   if (!result.accepted) {
     await sendTelegramMessage(tok, chatId, `Event choice blocked: ${escapeHtml(result.reason || 'not accepted')}. Use /petevent open|sell|ignore.`);
     return;

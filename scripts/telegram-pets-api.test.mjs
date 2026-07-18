@@ -151,6 +151,14 @@ assert.ok(petRandomEvent.indexOf('getPetEventByKey') < petRandomEvent.indexOf('g
 assert.ok(petRandomEvent.includes('PET_EVENT_COOLDOWN_SECONDS'), 'random events must have a cooldown');
 assert.ok(!petRandomEvent.includes('awardCommunityXp'), 'random events must not award Community XP');
 
+assert.ok(worker.includes('function buildStablePetEventKey'), 'worker must define a stable pet event key helper');
+assert.ok(worker.includes('function getTelegramPetCommandEventKey'), 'worker must derive stable keys for text commands');
+assert.ok(worker.includes('function getTelegramPetCallbackEventKey'), 'worker must derive stable keys for callbacks');
+assert.ok(worker.includes("event_key: eventKey"), 'pet command handlers must forward stable event keys');
+assert.ok(worker.includes('message?.message_id'), 'stable command keys must include message identity');
+assert.ok(worker.includes('query.id'), 'stable callback keys must use callback identity');
+assert.ok(worker.includes('query.data'), 'stable callback keys must include callback data');
+
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');
 assert.ok(notifications.includes('PET_NOTIFICATION_COOLDOWN_MINUTES'), 'pet notifications must apply a cooldown');
