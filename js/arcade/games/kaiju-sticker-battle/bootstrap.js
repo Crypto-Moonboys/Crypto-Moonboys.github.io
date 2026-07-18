@@ -108,6 +108,7 @@ async function drawCanvas(canvas, state) {
   ctx.font = 'bold 28px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('KAIJU STICKER BATTLE', w / 2, 58);
+
   const [playerImg, opponentImg] = await Promise.all([
     loadImage(state.playerCard.image),
     loadImage(state.opponentCard ? state.opponentCard.image : ''),
