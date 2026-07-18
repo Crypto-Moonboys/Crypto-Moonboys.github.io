@@ -7928,7 +7928,6 @@ function formatPetBlockedCopy(kind, reason, extra = {}) {
   }
   return `Pet ${kind} blocked: ${code}.`;
 }
-
 async function cmdPetUse(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const itemKey = normalizePetInventoryItemKey(argStr);
   const result = await processPetUseItem(db, telegramId, itemKey || argStr, {
