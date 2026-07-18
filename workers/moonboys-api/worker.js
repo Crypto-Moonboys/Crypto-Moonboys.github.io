@@ -1332,19 +1332,19 @@ const PET_ACTIONS = Object.freeze({
 });
 
 const PET_MEDIA_CATALOG = Object.freeze({
-  feed: [{ type: 'photo', url: `${SITE_URL}/img/crypto-moonboy-pets/feed-card.png`, chance: 0.28, min_level: 1, caption: 'Moon Snack time.' }],
-  play: [{ type: 'animation', url: `${SITE_URL}/img/crypto-moonboy-pets/play-loop.gif`, chance: 0.28, min_level: 1, caption: 'Play boost unlocked.' }],
-  clean: [{ type: 'photo', url: `${SITE_URL}/img/crypto-moonboy-pets/clean-card.png`, chance: 0.22, min_level: 1, caption: 'Fresh and tidy.' }],
-  sleep: [{ type: 'animation', url: `${SITE_URL}/img/crypto-moonboy-pets/sleep-loop.gif`, chance: 0.22, min_level: 1, caption: 'Nap mode engaged.' }],
-  train: [{ type: 'animation', url: `${SITE_URL}/img/crypto-moonboy-pets/train-loop.gif`, chance: 0.25, min_level: 2, caption: 'Training gains.' }],
-  shop_purchase: [{ type: 'photo', url: `${SITE_URL}/img/crypto-moonboy-pets/shop-purchase-card.png`, min_level: 1, caption: 'New gear acquired.' }],
-  daily_chest: [{ type: 'photo', url: `${SITE_URL}/img/crypto-moonboy-pets/daily-chest-card.png`, min_level: 1, caption: 'Daily chest opened.' }],
-  trade_win: [{ type: 'animation', url: `${SITE_URL}/img/crypto-moonboy-pets/trade-win.gif`, min_level: 1, caption: 'Big trade win.' }],
-  trade_loss: [{ type: 'photo', url: `${SITE_URL}/img/crypto-moonboy-pets/trade-loss-card.png`, chance: 0.18, min_level: 1, caption: 'Trade loss, but the pet learned something.' }],
-  adventure: [{ type: 'animation', url: `${SITE_URL}/img/crypto-moonboy-pets/adventure-run.gif`, min_level: 1, caption: 'Adventure complete.' }],
-  level_up: [{ type: 'animation', url: `${SITE_URL}/img/crypto-moonboy-pets/level-up.gif`, min_level: 1, caption: 'Level up!' }],
-  stage_up: [{ type: 'photo', url: `${SITE_URL}/img/crypto-moonboy-pets/stage-up-card.png`, min_level: 1, caption: 'New stage unlocked.' }],
-  mission_complete: [{ type: 'photo', url: `${SITE_URL}/img/crypto-moonboy-pets/mission-card.png`, chance: 0.2, min_level: 1, caption: 'Mission complete.' }],
+  feed: [{ type: 'photo', url: '/img/crypto-moonboy-pets/feed-card.png', chance: 0.28, min_level: 1, caption: 'Moon Snack time.' }],
+  play: [{ type: 'animation', url: '/img/crypto-moonboy-pets/play-loop.gif', chance: 0.28, min_level: 1, caption: 'Play boost unlocked.' }],
+  clean: [{ type: 'photo', url: '/img/crypto-moonboy-pets/clean-card.png', chance: 0.22, min_level: 1, caption: 'Fresh and tidy.' }],
+  sleep: [{ type: 'animation', url: '/img/crypto-moonboy-pets/sleep-loop.gif', chance: 0.22, min_level: 1, caption: 'Nap mode engaged.' }],
+  train: [{ type: 'animation', url: '/img/crypto-moonboy-pets/train-loop.gif', chance: 0.25, min_level: 2, caption: 'Training gains.' }],
+  shop_purchase: [{ type: 'photo', url: '/img/crypto-moonboy-pets/shop-purchase-card.png', min_level: 1, caption: 'New gear acquired.' }],
+  daily_chest: [{ type: 'photo', url: '/img/crypto-moonboy-pets/daily-chest-card.png', min_level: 1, caption: 'Daily chest opened.' }],
+  trade_win: [{ type: 'animation', url: '/img/crypto-moonboy-pets/trade-win.gif', min_level: 1, caption: 'Big trade win.' }],
+  trade_loss: [{ type: 'photo', url: '/img/crypto-moonboy-pets/trade-loss-card.png', chance: 0.18, min_level: 1, caption: 'Trade loss, but the pet learned something.' }],
+  adventure: [{ type: 'animation', url: '/img/crypto-moonboy-pets/adventure-run.gif', min_level: 1, caption: 'Adventure complete.' }],
+  level_up: [{ type: 'animation', url: '/img/crypto-moonboy-pets/level-up.gif', min_level: 1, caption: 'Level up!' }],
+  stage_up: [{ type: 'photo', url: '/img/crypto-moonboy-pets/stage-up-card.png', min_level: 1, caption: 'New stage unlocked.' }],
+  mission_complete: [{ type: 'photo', url: '/img/crypto-moonboy-pets/mission-card.png', chance: 0.2, min_level: 1, caption: 'Mission complete.' }],
 });
 
 const PET_MEDIA_DEFAULT_CHANCE = 0.25;
