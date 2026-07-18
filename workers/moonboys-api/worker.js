@@ -1722,27 +1722,77 @@ async function processPetDailyChest(db, telegramId, options = {}) {
 }
 
 async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
-  const choice = normalizePetEventChoice(choiceRaw);
-  if (!choice) return { accepted: false, reason: 'invalid_event_choice', xp_awarded: 0, pet_xp_awarded: 0 };
+  const requestedChoice = normalizePetRandomEventChoice(choiceRaw);
   const now = new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
-  const eventKey = String(options.event_key || `pet:event:${telegramId}:${choice}:${Date.now()}`).slice(0, 120);
+  const encounter = resolvePetRandomEncounter(options.event_key || options.encounter_key || options.eventKey) || options.encounter || selectPetRandomEncounter();
+  if (!encounter) return { accepted: false, reason: 'event_unavailable', xp_awarded: 0, pet_xp_awarded: 0 };
+  const legacyChoiceIndex = { open: 0, sell: 1, ignore: 2 }[requestedChoice];
+  const choice = legacyChoiceIndex !== undefined
+    ? encounter.choices[legacyChoiceIndex] || encounter.choices[0]
+    : encounter.choices.find((entry) => entry.key === requestedChoice) || null;
+  if (!choice) return { accepted: false, reason: 'invalid_event_choice', encounter, xp_awarded: 0, pet_xp_awarded: 0 };
+  const eventKey = String(options.event_key || encounter.event_key || `${encounter.key}-${Date.now().toString(36)}`).slice(0, 120);
   const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
-  const bonus = choice === 'sell' ? 24 : choice === 'open' ? 32 : 6;
-  const petXp = Math.min(PETS_DAILY_PET_XP_CAP, bonus);
-  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + (choice === 'sell' ? 35 : choice === 'open' ? 18 : 0));
+  const outcome = pickPetRandomEventOutcome(choice);
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  const petXpAwarded = Math.min(PETS_DAILY_PET_XP_CAP, Math.max(0, rollPetRange(outcome.rewards.pet_xp, 0)));
+  const applied = applyPetRandomEventDeltas(
+    pet,
+    { ...outcome.rewards, pet_xp: petXpAwarded },
+    outcome.costs,
+  );
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) {
+    pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) - petXpAwarded));
+    applied.rewardsApplied.pet_xp = 0;
+    applied.deltas.pet_xp = 0;
+  } else if (totals.day.pet_xp + petXpAwarded > PETS_DAILY_PET_XP_CAP) {
+    const clampedPetXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+    pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) - (petXpAwarded - clampedPetXp)));
+    applied.rewardsApplied.pet_xp = clampedPetXp;
+    applied.deltas.pet_xp = clampedPetXp;
+  }
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
   await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'random_event', ?, 0, ?, ?, ?, ?, 'accepted', ?, ?)`)
-    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, choice, JSON.stringify({ source: options.source || 'telegram_bot', choice })).run();
+    .bind(
+      crypto.randomUUID(),
+      telegramId,
+      eventKey,
+      applied.deltas.pet_xp,
+      season.key,
+      dayKey,
+      weekKey,
+      `${encounter.key}:${choice.key}:${outcome.kind}`,
+      JSON.stringify({
+        source: options.source || 'telegram_bot',
+        encounter_key: encounter.key,
+        encounter_title: encounter.title,
+        choice_key: choice.key,
+        choice_label: choice.label,
+        result_kind: outcome.kind,
+        rewards: applied.rewardsApplied,
+        costs: applied.costsApplied,
+        copy: outcome.copy,
+      }),
+    ).run();
   await savePetProfile(db, pet);
-  return { accepted: true, reason: choice, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+  return {
+    accepted: true,
+    reason: `${encounter.key}:${choice.key}`,
+    encounter,
+    choice,
+    result_copy: outcome.copy,
+    applied,
+    xp_awarded: 0,
+    pet_xp_awarded: applied.deltas.pet_xp,
+    pet,
+  };
 }
 
 function canAffordPetItem(pet, item) {
@@ -7565,6 +7615,191 @@ const PET_MEDIA_MANIFEST = Object.freeze({
   adventure_fail: 'CRYPTO MOONBOYS PET RUN FAILED.jpg',
 });
 
+const PET_RANDOM_EVENTS = Object.freeze({
+  moon_crate_found: Object.freeze({
+    key: 'moon_crate_found',
+    title: 'Moon Crate Found',
+    intro: 'A dusty crate rattles under a neon sign. The latch looks warm.',
+    choices: Object.freeze([
+      Object.freeze({
+        key: 'crack_it_open',
+        label: 'Crack It Open',
+        copy: 'You pry it open and a moon-bright puff spills out.',
+        rewards: Object.freeze({ pet_xp: [12, 18], moon_gold: [6, 12], moon_crystals: [0, 1] }),
+        costs: Object.freeze({ energy: [0, 0] }),
+        risk: Object.freeze({
+          chance: 0.3,
+          copy: 'The latch jams, but your pet still learns a trick or two.',
+          rewards: Object.freeze({ pet_xp: [5, 8], moon_gold: [0, 4] }),
+          costs: Object.freeze({ energy: [1, 2] }),
+        }),
+      }),
+      Object.freeze({
+        key: 'flip_it_fast',
+        label: 'Flip It Fast',
+        copy: 'You flip the crate to a buyer and pocket the easy cash.',
+        rewards: Object.freeze({ pet_xp: [6, 10], moon_gold: [10, 18] }),
+        costs: Object.freeze({ energy: [0, 0] }),
+        risk: Object.freeze({
+          chance: 0.2,
+          copy: 'The buyer flakes, so you salvage a smaller cut.',
+          rewards: Object.freeze({ pet_xp: [3, 5], moon_gold: [4, 8] }),
+          costs: Object.freeze({ energy: [0, 1] }),
+        }),
+      }),
+      Object.freeze({
+        key: 'leave_it',
+        label: 'Leave It',
+        copy: 'You leave the crate alone and keep moving smart.',
+        rewards: Object.freeze({ pet_xp: [3, 6], moon_gold: [0, 2] }),
+        costs: Object.freeze({ energy: [0, 0] }),
+      }),
+    ]),
+  }),
+  alley_ambush: Object.freeze({
+    key: 'alley_ambush',
+    title: 'Alley Ambush',
+    intro: 'A rival pet crew blocks the alley with a grin and a challenge.',
+    choices: Object.freeze([
+      Object.freeze({
+        key: 'fight_back',
+        label: 'Fight Back',
+        copy: 'Your pet squares up and turns the ambush into a win.',
+        rewards: Object.freeze({ pet_xp: [14, 20], moon_gold: [8, 16], style_tokens: [0, 1] }),
+        costs: Object.freeze({ energy: [2, 4] }),
+        risk: Object.freeze({
+          chance: 0.35,
+          copy: 'The crew scrambles you a bit, but you still break through.',
+          rewards: Object.freeze({ pet_xp: [7, 12], moon_gold: [2, 8] }),
+          costs: Object.freeze({ energy: [4, 6] }),
+        }),
+      }),
+      Object.freeze({
+        key: 'run_route',
+        label: 'Run Route',
+        copy: 'You dart through the back lane and escape with a clean win.',
+        rewards: Object.freeze({ pet_xp: [9, 14], moon_gold: [5, 10] }),
+        costs: Object.freeze({ energy: [1, 2] }),
+      }),
+      Object.freeze({
+        key: 'hide_out',
+        label: 'Hide Out',
+        copy: 'You duck into a hidden nook and wait out the noise.',
+        rewards: Object.freeze({ pet_xp: [4, 8], energy: [1, 3] }),
+        costs: Object.freeze({}),
+      }),
+    ]),
+  }),
+  black_market_tip: Object.freeze({
+    key: 'black_market_tip',
+    title: 'Black Market Tip',
+    intro: 'A shady whisper promises a shortcut to better gear or fast cash.',
+    choices: Object.freeze([
+      Object.freeze({
+        key: 'follow_lead',
+        label: 'Follow Lead',
+        copy: 'You follow the tip and find a risky but juicy stash.',
+        rewards: Object.freeze({ pet_xp: [10, 16], moon_crystals: [0, 2], style_tokens: [0, 2] }),
+        costs: Object.freeze({ moon_gold: [4, 8] }),
+        risk: Object.freeze({
+          chance: 0.45,
+          copy: 'The tip was half-baked, but you still pick up a few scraps.',
+          rewards: Object.freeze({ pet_xp: [4, 7], moon_crystals: [0, 1], style_tokens: [0, 1] }),
+          costs: Object.freeze({ moon_gold: [2, 4] }),
+        }),
+      }),
+      Object.freeze({
+        key: 'sell_info',
+        label: 'Sell Info',
+        copy: 'You sell the rumor and take the clean payout.',
+        rewards: Object.freeze({ pet_xp: [6, 10], moon_gold: [10, 18] }),
+        costs: Object.freeze({}),
+      }),
+      Object.freeze({
+        key: 'ignore_tip',
+        label: 'Ignore Tip',
+        copy: 'You ignore the whisper and keep your head straight.',
+        rewards: Object.freeze({ pet_xp: [3, 6] }),
+        costs: Object.freeze({}),
+      }),
+    ]),
+  }),
+  rooftop_shortcut: Object.freeze({
+    key: 'rooftop_shortcut',
+    title: 'Rooftop Shortcut',
+    intro: 'A glowing rooftop path cuts the travel time in half if you dare it.',
+    choices: Object.freeze([
+      Object.freeze({
+        key: 'take_jump',
+        label: 'Take Jump',
+        copy: 'You sprint, leap, and land with style to spare.',
+        rewards: Object.freeze({ pet_xp: [15, 24], moon_gold: [8, 14] }),
+        costs: Object.freeze({ energy: [2, 4] }),
+        risk: Object.freeze({
+          chance: 0.35,
+          copy: 'You slip on the edge and come up with fewer rewards.',
+          rewards: Object.freeze({ pet_xp: [6, 10], moon_gold: [0, 6] }),
+          costs: Object.freeze({ energy: [4, 6] }),
+        }),
+      }),
+      Object.freeze({
+        key: 'climb_down',
+        label: 'Climb Down',
+        copy: 'You take the safe path and still pick up a solid gain.',
+        rewards: Object.freeze({ pet_xp: [9, 14], moon_gold: [4, 8] }),
+        costs: Object.freeze({ energy: [0, 1] }),
+      }),
+      Object.freeze({
+        key: 'skip_route',
+        label: 'Skip Route',
+        copy: 'You skip the shortcut and keep the day calm.',
+        rewards: Object.freeze({ pet_xp: [3, 5] }),
+        costs: Object.freeze({}),
+      }),
+    ]),
+  }),
+  rival_pet_challenge: Object.freeze({
+    key: 'rival_pet_challenge',
+    title: 'Rival Pet Challenge',
+    intro: 'A rival pet steps forward with a grin and a challenge sign.',
+    choices: Object.freeze([
+      Object.freeze({
+        key: 'battle',
+        label: 'Battle',
+        copy: 'Your pet wins the faceoff and comes away sharper.',
+        rewards: Object.freeze({ pet_xp: [15, 22], style_tokens: [1, 2], moon_gold: [6, 12] }),
+        costs: Object.freeze({ energy: [2, 4] }),
+        risk: Object.freeze({
+          chance: 0.4,
+          copy: 'The fight gets messy, but you still walk away with something.',
+          rewards: Object.freeze({ pet_xp: [7, 12], style_tokens: [0, 1], moon_gold: [2, 6] }),
+          costs: Object.freeze({ energy: [4, 6] }),
+        }),
+      }),
+      Object.freeze({
+        key: 'trick_them',
+        label: 'Trick Them',
+        copy: "You bluff your way through and earn the crowd's respect.",
+        rewards: Object.freeze({ pet_xp: [8, 14], moon_gold: [4, 10], style_tokens: [0, 1] }),
+        costs: Object.freeze({}),
+        risk: Object.freeze({
+          chance: 0.25,
+          copy: 'The trick lands awkwardly, but you still salvage a reward.',
+          rewards: Object.freeze({ pet_xp: [4, 8], moon_gold: [1, 5] }),
+          costs: Object.freeze({}),
+        }),
+      }),
+      Object.freeze({
+        key: 'walk_away',
+        label: 'Walk Away',
+        copy: 'You walk away cool-headed and keep the streak alive.',
+        rewards: Object.freeze({ pet_xp: [3, 7] }),
+        costs: Object.freeze({}),
+      }),
+    ]),
+  }),
+});
+
 function buildPetMediaUrl(mediaKey) {
   const filename = PET_MEDIA_MANIFEST[mediaKey];
   if (!filename) return null;
@@ -7598,6 +7833,180 @@ function resolvePetMediaKey(action, result = null) {
   if (key === 'pettrade') return resolvePetMediaKey('trade', result);
   if (key === 'petadventure') return resolvePetMediaKey('adventure', result);
   return PET_MEDIA_MANIFEST[key] ? key : (PET_MEDIA_MANIFEST[String(result?.media_key || '').trim()] ? String(result.media_key).trim() : null);
+}
+
+function normalizePetRandomEventChoice(value) {
+  const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
+  if (!key) return null;
+  if (key === 'open' || key === 'sell' || key === 'ignore') return key;
+  for (const event of Object.values(PET_RANDOM_EVENTS)) {
+    if (event.choices.some((choice) => choice.key === key)) return key;
+  }
+  return null;
+}
+
+function splitPetRandomEventKey(eventKey) {
+  const key = String(eventKey || '').trim().toLowerCase();
+  if (!key) return null;
+  const baseKey = key.split('-')[0];
+  return PET_RANDOM_EVENTS[baseKey] ? baseKey : null;
+}
+
+function resolvePetRandomEncounter(eventKey) {
+  const baseKey = splitPetRandomEventKey(eventKey);
+  return baseKey ? PET_RANDOM_EVENTS[baseKey] : null;
+}
+
+function selectPetRandomEncounter() {
+  const encounters = Object.values(PET_RANDOM_EVENTS);
+  const encounter = encounters[Math.floor(Math.random() * encounters.length)] || encounters[0] || null;
+  if (!encounter) return null;
+  const nonce = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  return Object.freeze({
+    ...encounter,
+    event_key: `${encounter.key}-${nonce}`.slice(0, 120),
+  });
+}
+
+function buildPetRandomEventReplyMarkup(encounter) {
+  return {
+    inline_keyboard: [
+      encounter.choices.map((choice) => ({
+        text: choice.label,
+        callback_data: `pet:event:${encounter.event_key}:${choice.key}`,
+      })),
+      [{ text: 'Back', callback_data: 'pet:bag' }],
+    ],
+  };
+}
+
+function rollPetRange(range, fallback = 0) {
+  if (Array.isArray(range) && range.length) {
+    const min = Number(range[0] ?? fallback);
+    const max = Number(range[1] ?? range[0] ?? fallback);
+    if (Number.isFinite(min) && Number.isFinite(max)) {
+      const low = Math.min(min, max);
+      const high = Math.max(min, max);
+      return Math.floor(low + Math.random() * (high - low + 1));
+    }
+  }
+  if (Number.isFinite(Number(range))) return Number(range);
+  return fallback;
+}
+
+function pickPetRandomEventOutcome(choice) {
+  const risk = choice?.risk || null;
+  if (risk && Number.isFinite(Number(risk.chance)) && Math.random() < Number(risk.chance)) {
+    return {
+      copy: String(risk.copy || choice.copy || ''),
+      rewards: risk.rewards || {},
+      costs: risk.costs || {},
+      kind: 'risk',
+    };
+  }
+  return {
+    copy: String(choice.copy || ''),
+    rewards: choice.rewards || {},
+    costs: choice.costs || {},
+    kind: 'success',
+  };
+}
+
+function applyPetRandomEventDeltas(pet, rewards = {}, costs = {}) {
+  const deltas = {
+    pet_xp: 0,
+    moon_gold: 0,
+    moon_crystals: 0,
+    style_tokens: 0,
+    energy: 0,
+    happiness: 0,
+    cleanliness: 0,
+    hunger: 0,
+  };
+  const rewardsApplied = {};
+  const costsApplied = {};
+  for (const [stat, value] of Object.entries(rewards)) {
+    const delta = rollPetRange(value, 0);
+    rewardsApplied[stat] = delta;
+    deltas[stat] = delta;
+    if (stat === 'pet_xp') {
+      pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + delta));
+    } else if (stat === 'moon_gold') {
+      pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + delta);
+    } else if (stat === 'moon_crystals') {
+      pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + delta);
+    } else if (stat === 'style_tokens') {
+      pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + delta);
+    } else if (stat === 'energy') {
+      pet.energy = clampPetStat(Number(pet.energy || 0) + delta);
+    } else if (stat === 'happiness') {
+      pet.happiness = clampPetStat(Number(pet.happiness || 0) + delta);
+    } else if (stat === 'cleanliness') {
+      pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + delta);
+    } else if (stat === 'hunger') {
+      pet.hunger = clampPetStat(Number(pet.hunger || 0) + delta);
+    }
+  }
+  for (const [stat, value] of Object.entries(costs)) {
+    const delta = rollPetRange(value, 0);
+    costsApplied[stat] = Math.abs(delta);
+    deltas[stat] = -(Math.abs(delta));
+    if (stat === 'moon_gold') {
+      pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) - Math.abs(delta));
+    } else if (stat === 'moon_crystals') {
+      pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) - Math.abs(delta));
+    } else if (stat === 'style_tokens') {
+      pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) - Math.abs(delta));
+    } else if (stat === 'energy') {
+      pet.energy = clampPetStat(Number(pet.energy || 0) - Math.abs(delta));
+    } else if (stat === 'happiness') {
+      pet.happiness = clampPetStat(Number(pet.happiness || 0) - Math.abs(delta));
+    } else if (stat === 'cleanliness') {
+      pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) - Math.abs(delta));
+    } else if (stat === 'hunger') {
+      pet.hunger = clampPetStat(Number(pet.hunger || 0) + Math.abs(delta));
+    }
+  }
+  return { rewardsApplied, costsApplied, deltas };
+}
+
+function formatPetRandomEventSummary(event, choice, outcome, applied = {}) {
+  const rewardsApplied = applied.rewardsApplied || {};
+  const costsApplied = applied.costsApplied || {};
+  const rewardParts = [];
+  const costParts = [];
+  const addRewardPart = (label, value) => {
+    if (!Number.isFinite(value) || value <= 0) return;
+    rewardParts.push(`+${Math.abs(value)} ${label}`);
+  };
+  const addCostPart = (label, value) => {
+    if (!Number.isFinite(value) || value <= 0) return;
+    costParts.push(`${Math.abs(value)} ${label}`);
+  };
+  addRewardPart('pet XP', rewardsApplied.pet_xp || 0);
+  addRewardPart('gold', rewardsApplied.moon_gold || 0);
+  addRewardPart('crystals', rewardsApplied.moon_crystals || 0);
+  addRewardPart('style', rewardsApplied.style_tokens || 0);
+  addRewardPart('energy', rewardsApplied.energy || 0);
+  addRewardPart('happiness', rewardsApplied.happiness || 0);
+  addRewardPart('cleanliness', rewardsApplied.cleanliness || 0);
+  addRewardPart('hunger', rewardsApplied.hunger || 0);
+
+  if (!rewardParts.length) rewardParts.push('none');
+  addCostPart('energy', costsApplied.energy || 0);
+  addCostPart('hunger', costsApplied.hunger || 0);
+  addCostPart('happiness', costsApplied.happiness || 0);
+  addCostPart('cleanliness', costsApplied.cleanliness || 0);
+  addCostPart('gold', costsApplied.moon_gold || 0);
+  addCostPart('crystals', costsApplied.moon_crystals || 0);
+  addCostPart('style', costsApplied.style_tokens || 0);
+
+  return [
+    `<b>${escapeHtml(event.title)}</b>`,
+    escapeHtml(outcome.copy || choice.copy || event.intro),
+    `Rewards: ${rewardParts.join(', ')}`,
+    `Costs: ${costParts.length ? costParts.join(', ') : 'none'}`,
+  ].join('\n');
 }
 
 async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
@@ -7643,9 +8052,14 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 
 export const __petMediaTestHooks = Object.freeze({
   PET_MEDIA_MANIFEST,
+  PET_RANDOM_EVENTS,
   buildPetMediaUrl,
+  buildPetRandomEventReplyMarkup,
+  formatPetRandomEventSummary,
   resolvePetMediaKey,
+  resolvePetRandomEncounter,
   resolvePetOutcomeMediaKey,
+  selectPetRandomEncounter,
   sendTelegramPhoto,
   sendTelegramPetReply,
 });
@@ -7692,7 +8106,16 @@ async function handleTelegramUpdate(update, env) {
         return;
       }
       if (payload.startsWith('event:')) {
-        const choice = payload.slice(6);
+        const eventPayload = payload.slice(6);
+        const eventParts = eventPayload.split(':');
+        if (eventParts.length >= 2) {
+          const choice = eventParts.pop();
+          const encounterKey = eventParts.join(':');
+          await answerTelegramCallback(tok, query.id, `/petevent ${choice}`);
+          await cmdPetEvent(db, tok, chatId, telegramId, choice, encounterKey);
+          return;
+        }
+        const choice = eventParts[0];
         await answerTelegramCallback(tok, query.id, `/petevent ${choice}`);
         await cmdPetEvent(db, tok, chatId, telegramId, choice, eventKey);
         return;
@@ -8095,20 +8518,21 @@ async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
 }
 
 async function cmdPetEvent(db, tok, chatId, telegramId, argStr, eventKey = null) {
-  const choice = normalizePetEventChoice(argStr);
-  if (!choice) {
-    await sendTelegramPetReply(tok, chatId, '<b>🎲 Random Event</b>\nChoose /petevent open, /petevent sell, or /petevent ignore.', {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: 'Open', callback_data: 'pet:event:open' },
-            { text: 'Sell', callback_data: 'pet:event:sell' },
-            { text: 'Ignore', callback_data: 'pet:event:ignore' },
-          ],
-          [{ text: 'Back', callback_data: 'pet:bag' }],
-        ],
-      },
-    }, 'event');
+  const choice = normalizePetRandomEventChoice(argStr);
+  if (!choice || (!eventKey && choice !== 'open' && choice !== 'sell' && choice !== 'ignore')) {
+    const encounter = selectPetRandomEncounter();
+    if (!encounter) {
+      await sendTelegramMessage(tok, chatId, 'No pet encounters are available right now.');
+      return;
+    }
+    await sendTelegramPetReply(tok, chatId,
+      `<b>${escapeHtml(encounter.title)}</b>
+${escapeHtml(encounter.intro)}
+
+Choose one of the actions below.`,
+      { reply_markup: buildPetRandomEventReplyMarkup(encounter) },
+      'event',
+    );
     return;
   }
   const result = await processPetRandomEvent(db, telegramId, choice, {
@@ -8119,9 +8543,11 @@ async function cmdPetEvent(db, tok, chatId, telegramId, argStr, eventKey = null)
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('event', result.reason, result));
     return;
   }
-  await sendTelegramPetReply(tok, chatId, `Event resolved: ${escapeHtml(result.reason)}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'event');
-}
+  const summary = formatPetRandomEventSummary(result.encounter, result.choice, { copy: result.result_copy }, result.applied);
+  await sendTelegramPetReply(tok, chatId, `${summary}
 
+${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, "event");
+}
 async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action, stableEventKey = null) {
   await upsertTelegramUser(db, fromUser).catch(() => {});
   const result = await processPetAction(db, telegramId, action, {
