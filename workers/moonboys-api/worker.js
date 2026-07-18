@@ -8159,7 +8159,7 @@ async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
 
 async function cmdPetMissions(db, tok, chatId, telegramId) {
   const missions = await buildPetMissions(db, telegramId);
-  const daily = missions.daily.map((m) => `${m.completed ? '?' : '?'} ${escapeHtml(m.title)}`).join('\n');
+  const daily = missions.daily.map((m) => `${m.completed ? '✅' : '⬜'} ${escapeHtml(m.title)}`).join('\n');
   await sendTelegramPetReply(tok, chatId,
     `<b>🎯 Crypto Moonboy Pets Missions</b>\n` +
     `Day: ${escapeHtml(missions.day_key)}\n` +
@@ -8180,13 +8180,13 @@ async function cmdPetShop(db, tok, chatId, telegramId) {
   const lines = petShopItemsForPet(pet).map((item) => {
     const cost = item.cost || {};
     const state = item.equipped ? 'equipped' : item.affordable ? 'ready' : item.unlocked ? 'need currency' : `level ${item.min_level}`;
-    return `${item.equipped ? '?' : '?'} <code>${escapeHtml(item.key)}</code> ? ${escapeHtml(item.title)} [${escapeHtml(state)}]\n` +
+    return `${item.equipped ? '✅' : '⬜'} <code>${escapeHtml(item.key)}</code> — ${escapeHtml(item.title)} [${escapeHtml(state)}]\n` +
       `  Cost: ${cost.moon_gold || 0} gold, ${cost.moon_crystals || 0} crystals, ${cost.style_tokens || 0} style\n` +
       `  ${escapeHtml(item.description)}`;
   }).join('\n\n');
   await sendTelegramPetReply(tok, chatId,
     `<b>🛒 Crypto Moonboy Pet Shop</b>\n` +
-    `Balance: ${p.moon_gold} gold ? ${p.moon_crystals} crystals ? ${p.style_tokens} style\n\n` +
+    `Balance: ${p.moon_gold} gold · ${p.moon_crystals} crystals · ${p.style_tokens} style\n\n` +
     `${lines}\n\n` +
     `Buy/equip: <code>/petbuy moon_kibble</code>\n` +
     `🎰 Risk game gold: <code>/pettrade 25</code>\n` +
@@ -8942,4 +8942,3 @@ async function cmdGkClearStrikes(db, tok, chatId, callerTelegramId, argStr, env)
       `⚠️ Failed to clear strikes for ${escapeHtml(label)}: ${escapeHtml(result?.error || 'unknown error')}`);
   }
 }
-
