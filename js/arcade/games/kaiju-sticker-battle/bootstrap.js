@@ -90,28 +90,20 @@ async function drawCanvas(canvas, state) {
   const w = canvas.width;
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#080a12';
-  ctx.fillRect(0, 0, w, h);
-  ctx.strokeStyle = '#f7ab1a';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(10, 10, w - 20, h - 20);
-  ctx.fillStyle = '#f7ab1a';
-  ctx.font = 'bold 28px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('KAIJU STICKER BATTLE', w / 2, 58);
 
-  const [playerImg, opponentImg, diceImg, categoryImg] = await Promise.all([
+  const [playerImg, opponentImg, diceImg, categoryImg, versusImg, winImg, drawImg, winnerImg, slashImg, crownImg, trophyImg] = await Promise.all([
     loadImage(state.playerCard.image),
     loadImage(state.opponentCard ? state.opponentCard.image : ''),
     loadImage(state.lastResult && !state.lastResult.matchComplete ? diceAsset(state.lastResult.roll) : ''),
     loadImage(state.lastResult && !state.lastResult.matchComplete ? state.lastResult.category.asset : ''),
+    loadImage(KAIJU_ASSETS.versus),
+    loadImage(KAIJU_ASSETS.win),
+    loadImage(KAIJU_ASSETS.draw),
+    loadImage(KAIJU_ASSETS.winnerCard),
+    loadImage(KAIJU_ASSETS.resultSlash),
+    loadImage(KAIJU_ASSETS.crown),
+    loadImage(KAIJU_ASSETS.trophy),
   ]);
-
-  const cardW = 255;
-  const cardH = 340;
-  const leftX = 185;
-  const rightX = w - leftX - cardW;
-  const topY = 138;
 
   function roundRect(x, y, width, height, radius) {
     ctx.beginPath();
@@ -123,68 +115,151 @@ async function drawCanvas(canvas, state) {
     ctx.closePath();
   }
 
-  function drawCard(image, x, y, title, value) {
+  function drawContain(image, x, y, width, height) {
+    if (!image) return;
+    const scale = Math.min(width / image.width, height / image.height);
+    const drawW = image.width * scale;
+    const drawH = image.height * scale;
+    ctx.drawImage(image, x + (width - drawW) / 2, y + (height - drawH) / 2, drawW, drawH);
+  }
+
+  function drawPill(x, y, width, height, label, value, accent) {
     ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,.08)';
-    roundRect(x, y, cardW, cardH, 24);
+    roundRect(x, y, width, height, 16);
+    ctx.fillStyle = 'rgba(0,0,0,.46)';
     ctx.fill();
-    ctx.strokeStyle = '#f7ab1a';
-    ctx.lineWidth = 3;
-    roundRect(x, y, cardW, cardH, 24);
+    ctx.strokeStyle = accent || 'rgba(247,171,26,.5)';
+    ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.fillStyle = '#f8d680';
+    ctx.font = '900 16px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(label, x + 16, y + 23);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px system-ui, sans-serif';
-    ctx.fillText(title, x + cardW / 2, y + 30);
-    if (image) {
-      const artW = cardW - 26;
-      const artH = 240;
-      const artX = x + 13;
-      const artY = y + 48;
-      ctx.fillStyle = '#080a12';
-      roundRect(artX, artY, artW, artH, 18);
-      ctx.fill();
-      const scale = Math.min(artW / image.width, artH / image.height);
-      const drawW = image.width * scale;
-      const drawH = image.height * scale;
-      ctx.drawImage(image, artX + (artW - drawW) / 2, artY + (artH - drawH) / 2, drawW, drawH);
-    }
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = 'bold 20px system-ui, sans-serif';
-    ctx.fillText(`Stat: ${value}`, x + cardW / 2, y + cardH - 18);
+    ctx.font = '900 26px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(value, x + width - 16, y + 29);
     ctx.restore();
   }
 
+  function drawCard(image, x, y, cardW, cardH, title, value, side, won) {
+    ctx.save();
+    ctx.shadowColor = won ? 'rgba(100,255,53,.55)' : 'rgba(0,0,0,.55)';
+    ctx.shadowBlur = won ? 28 : 18;
+    ctx.shadowOffsetY = 12;
+    roundRect(x, y, cardW, cardH, 22);
+    ctx.fillStyle = 'rgba(255,255,255,.07)';
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = won ? '#64ff35' : '#f7ab1a';
+    ctx.lineWidth = won ? 5 : 3;
+    roundRect(x, y, cardW, cardH, 22);
+    ctx.stroke();
+    ctx.fillStyle = side === 'player' ? '#20c7ff' : '#ff6b6b';
+    ctx.font = '900 15px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(side === 'player' ? 'YOUR PICK' : 'CPU RIVAL', x + 18, y + 25);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 27px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, x + cardW / 2, y + 58);
+    if (image) {
+      const artW = cardW - 30;
+      const artH = cardH - 122;
+      const artX = x + 15;
+      const artY = y + 76;
+      ctx.fillStyle = '#080a12';
+      roundRect(artX, artY, artW, artH, 18);
+      ctx.fill();
+      drawContain(image, artX, artY, artW, artH);
+    }
+    const statText = value === '-' ? 'STAT -' : `STAT ${value}`;
+    ctx.fillStyle = value === '-' ? '#cbd5e1' : (won ? '#64ff35' : '#ffffff');
+    ctx.font = '900 25px system-ui, sans-serif';
+    ctx.fillText(statText, x + cardW / 2, y + cardH - 24);
+    ctx.restore();
+  }
+
+  const bg = ctx.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, '#0c101b');
+  bg.addColorStop(.54, '#060812');
+  bg.addColorStop(1, '#03050b');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+  for (let y = 30; y < h; y += 42) {
+    ctx.strokeStyle = y % 84 === 30 ? 'rgba(247,171,26,.08)' : 'rgba(255,255,255,.025)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(24, y);
+    ctx.lineTo(w - 24, y);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = '#f7ab1a';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(18, 18, w - 36, h - 36);
+  ctx.strokeStyle = 'rgba(32,199,255,.26)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(34, 34, w - 68, h - 68);
+  ctx.fillStyle = '#f7ab1a';
+  ctx.font = '900 30px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('KAIJU STICKER BATTLE', w / 2, 62);
+  drawPill(54, 44, 152, 42, 'ROUND', `${Math.min(state.battles + (state.matchComplete ? 0 : 1), BATTLES_PER_MATCH)}/${BATTLES_PER_MATCH}`, '#f7ab1a');
+  drawPill(w - 206, 44, 152, 42, 'WINS', `${state.wins}`, '#20c7ff');
+
+  const cardW = 296;
+  const cardH = 440;
+  const leftX = 118;
+  const rightX = w - leftX - cardW;
+  const topY = 150;
   const playerValue = state.lastResult && !state.lastResult.matchComplete ? state.lastResult.playerValue : '-';
   const opponentValue = state.lastResult && !state.lastResult.matchComplete ? state.lastResult.opponentValue : '-';
-  drawCard(playerImg, leftX, topY, state.playerCard.name, playerValue);
-  drawCard(opponentImg, rightX, topY, state.opponentCard ? state.opponentCard.name : 'CPU Kaiju', opponentValue);
+  const playerWon = state.lastResult && !state.lastResult.matchComplete && state.lastResult.playerWon;
+  const opponentWon = state.lastResult && !state.lastResult.matchComplete && !state.lastResult.playerWon && !state.lastResult.tie;
+  drawCard(playerImg, leftX, topY, cardW, cardH, state.playerCard.name, playerValue, 'player', playerWon);
+  drawCard(opponentImg, rightX, topY, cardW, cardH, state.opponentCard ? state.opponentCard.name : 'CPU Kaiju', opponentValue, 'opponent', opponentWon);
+
+  const centerX = w / 2;
+  const centerPanelW = 370;
+  const centerPanelX = centerX - centerPanelW / 2;
+  roundRect(centerPanelX, 170, centerPanelW, 360, 20);
+  ctx.fillStyle = 'rgba(0,0,0,.34)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(247,171,26,.34)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
   if (state.matchComplete) {
+    drawContain(trophyImg, centerX - 68, 188, 136, 128);
     ctx.fillStyle = '#f7ab1a';
-    ctx.font = 'bold 54px system-ui, sans-serif';
-    ctx.fillText('MATCH COMPLETE', w / 2, 315);
+    ctx.font = '900 46px system-ui, sans-serif';
+    ctx.fillText('MATCH', centerX, 350);
+    ctx.fillText('COMPLETE', centerX, 398);
     ctx.fillStyle = '#cbd5e1';
-    ctx.font = '22px system-ui, sans-serif';
-    ctx.fillText(`XP submitted: ${state.score}`, w / 2, 360);
+    ctx.font = '900 24px system-ui, sans-serif';
+    ctx.fillText(`XP submitted: ${state.score}`, centerX, 456);
     return;
   }
 
   if (state.lastResult) {
-    ctx.fillStyle = state.lastResult.tie ? '#cbd5e1' : (state.lastResult.playerWon ? '#7dff72' : '#ff6b6b');
-    ctx.font = 'bold 64px system-ui, sans-serif';
-    ctx.fillText(state.lastResult.tie ? 'DRAW' : (state.lastResult.playerWon ? 'YOU WIN' : 'CPU WINS'), w / 2, 305);
-    if (diceImg) ctx.drawImage(diceImg, w / 2 - 42, 330, 84, 84);
-    if (categoryImg) ctx.drawImage(categoryImg, w / 2 - 70, 425, 140, 52);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = '20px system-ui, sans-serif';
-    ctx.fillText(`${state.lastResult.category.label}: ${state.lastResult.playerValue} - ${state.lastResult.opponentValue}`, w / 2, 505);
+    const outcome = state.lastResult.tie ? 'DRAW' : (state.lastResult.playerWon ? 'YOU WIN' : 'CPU WINS');
+    const stamp = state.lastResult.tie ? drawImg : (state.lastResult.playerWon ? winImg : winnerImg);
+    drawContain(stamp, centerX - 76, 182, 152, 116);
+    ctx.fillStyle = state.lastResult.tie ? '#cbd5e1' : (state.lastResult.playerWon ? '#64ff35' : '#ff6b6b');
+    ctx.font = '900 50px system-ui, sans-serif';
+    ctx.fillText(outcome, centerX, 336);
+    drawContain(diceImg, centerX - 66, 356, 70, 70);
+    drawContain(categoryImg, centerX + 12, 363, 150, 60);
+    drawContain(slashImg, centerX - 144, 430, 288, 76);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 24px system-ui, sans-serif';
+    ctx.fillText(`${state.lastResult.playerValue}  vs  ${state.lastResult.opponentValue}`, centerX, 494);
   } else {
-    ctx.fillStyle = '#f7ab1a';
-    ctx.font = 'bold 76px system-ui, sans-serif';
-    ctx.fillText('VS', w / 2, 338);
+    drawContain(versusImg, centerX - 113, 224, 226, 156);
+    drawContain(crownImg, centerX - 44, 384, 88, 76);
     ctx.fillStyle = '#cbd5e1';
-    ctx.font = '20px system-ui, sans-serif';
-    ctx.fillText('Roll the dice to choose the stat category.', w / 2, 386);
+    ctx.font = '900 23px system-ui, sans-serif';
+    ctx.fillText('Roll battle to choose the stat.', centerX, 498);
   }
 }
 
@@ -252,7 +327,8 @@ export function bootstrapKaijuStickerBattle(root) {
     ArcadeSync.setHighScore(GAME_ID, state.score);
     updateHud();
 
-    if (matchBattle >= BATTLES_PER_MATCH) {
+    const shouldSubmit = matchBattle >= BATTLES_PER_MATCH;
+    if (shouldSubmit) {
       await submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID);
       state.matchComplete = true;
       updateHud();
