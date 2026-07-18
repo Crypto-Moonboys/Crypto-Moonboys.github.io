@@ -38,6 +38,8 @@ assert(config.includes('/img/game/kong3008/grimey1.png'), 'config exposes croppe
 assert(config.includes('/img/game/kong3008/cards/big-daddy-kong.png'), 'config exposes playable full-card PNG assets');
 assert(page.includes('kaiju-layout'), 'page includes the redesigned cabinet layout');
 assert(page.includes('kaiju-arena-shell'), 'page includes the large battle arena shell');
+assert(page.includes('grid-template-rows:auto auto minmax(0,1fr)'), 'game card gives titlebar, HUD, and arena/deck layout explicit rows');
+assert(page.includes('grid-template-rows:minmax(0,1fr) auto'), 'arena keeps the canvas shell in the shrinking row above controls');
 assert(page.includes('kaiju-side-prompt'), 'page includes a deck picker prompt');
 assert(page.includes('kaiju-deck-badge'), 'page uses the deck sticker asset in the side panel');
 assert(page.includes('kaiju-stat-list'), 'page renders visible stat rows for deck cards');
