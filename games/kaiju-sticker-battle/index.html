@@ -9,129 +9,56 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
   <style>
-    :root{--kaiju-gold:#f7ab1a;--kaiju-gold-2:#ffe08a;--kaiju-panel:#080a12;--kaiju-panel-2:#10131d;--kaiju-line:rgba(247,171,26,.58)}
+    :root{--kaiju-gold:#f7ab1a;--kaiju-gold-2:#ffe08a;--kaiju-line:rgba(247,171,26,.58)}
     html,body{min-height:100%;overflow:hidden;background:#050812;color:#fff}
     body.page-standalone-tool{margin:0;background:radial-gradient(circle at 50% 0,rgba(247,171,26,.14),transparent 34rem),linear-gradient(180deg,#090d18 0,#050812 100%)}
     #site-header,.breadcrumb,.category-header,.page-title-line,#site-footer,#back-to-top,[data-tg-sync-cta]{display:none!important}
     #layout,#main-wrapper,#content{width:100%;max-width:none!important;margin:0!important;padding:0!important}
     #content{min-height:100vh;display:grid;place-items:center;padding:10px!important;box-sizing:border-box}
-    .game-card{width:min(1780px,calc(100vw - 20px));height:min(980px,calc(100vh - 20px));position:relative;overflow:hidden;box-sizing:border-box;border:1px solid var(--kaiju-line);border-radius:18px;background:linear-gradient(135deg,rgba(247,171,26,.08),transparent 24%),linear-gradient(180deg,rgba(15,18,27,.98),rgba(5,8,18,.98));box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06) inset;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:10px;padding:14px}
+    .game-card{width:min(1780px,calc(100vw - 20px));height:min(980px,calc(100vh - 20px));position:relative;overflow:hidden;box-sizing:border-box;border:1px solid var(--kaiju-line);border-radius:18px;background:linear-gradient(135deg,rgba(247,171,26,.08),transparent 24%),linear-gradient(180deg,rgba(15,18,27,.98),rgba(5,8,18,.98));box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06) inset;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:10px;padding:14px}
     .game-card::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(247,171,26,.08),transparent 12%,transparent 88%,rgba(247,171,26,.08));opacity:.7}
     .kaiju-titlebar{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;border-bottom:1px solid rgba(247,171,26,.36);padding:0 4px 10px}
     .kaiju-brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.08em;color:var(--kaiju-gold-2);text-transform:uppercase;font-size:clamp(.78rem,1vw,1rem)}
     .kaiju-brand-mark{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(247,171,26,.16);border:1px solid var(--kaiju-line);color:var(--kaiju-gold)}
     .kaiju-titlebar h1{margin:0;text-align:center;font-size:clamp(2rem,4vw,4.5rem);line-height:.9;letter-spacing:.055em;text-transform:uppercase;color:var(--kaiju-gold);text-shadow:0 3px 0 #3d2500,0 0 24px rgba(247,171,26,.22)}
-    .kaiju-xp{justify-self:end;min-width:260px;border:1px solid rgba(247,171,26,.42);border-radius:12px;background:rgba(0,0,0,.28);padding:10px 12px;display:grid;gap:7px;font-weight:800}
-    .kaiju-xp-row{display:flex;justify-content:space-between;gap:12px;color:#fff;font-size:.85rem}.kaiju-xp-track{height:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;overflow:hidden;background:#050812}.kaiju-xp-fill{height:100%;width:61%;background:linear-gradient(90deg,#f7ab1a,#ffe08a)}
-    .hud{position:relative;z-index:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0}
-    .hud .stat{min-width:0;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(247,171,26,.32);border-radius:10px;padding:8px 10px;text-align:center;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
-    .hud .label{font-size:.72rem;color:#f8d680;text-transform:uppercase;font-weight:900;letter-spacing:.05em}.hud .value{font-weight:900;font-size:clamp(1rem,1.55vw,1.7rem);min-height:28px;display:grid;place-items:center;color:#fff}
+    .kaiju-xp{justify-self:end;min-width:260px;border:1px solid rgba(247,171,26,.42);border-radius:12px;background:rgba(0,0,0,.28);padding:10px 12px;display:grid;gap:7px;font-weight:800}.kaiju-xp-row{display:flex;justify-content:space-between;gap:12px;color:#fff;font-size:.85rem}.kaiju-xp-track{height:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;overflow:hidden;background:#050812}.kaiju-xp-fill{height:100%;width:61%;background:linear-gradient(90deg,#f7ab1a,#ffe08a)}
+    .hud{position:relative;z-index:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0}.hud .stat{min-width:0;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(247,171,26,.32);border-radius:10px;padding:8px 10px;text-align:center;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}.hud .label{font-size:.72rem;color:#f8d680;text-transform:uppercase;font-weight:900;letter-spacing:.05em}.hud .value{font-weight:900;font-size:clamp(1rem,1.55vw,1.7rem);min-height:28px;display:grid;place-items:center;color:#fff}
     .kaiju-hud-roll{display:inline-flex;align-items:center;justify-content:center;gap:6px}.kaiju-hud-roll img{width:28px;height:28px;object-fit:contain}.kaiju-hud-category{max-width:78px;width:100%;height:auto;display:block}
-    .kaiju-layout{position:relative;z-index:1;min-height:0;display:grid;grid-template-columns:minmax(0,2.2fr) minmax(330px,.82fr);gap:12px;align-items:stretch}
-    .kaiju-layout>div{min-width:0;min-height:0}.kaiju-arena{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}
-    .kaiju-arena-shell{min-height:0;border:2px solid var(--kaiju-gold);border-radius:14px;background:radial-gradient(circle at 50% 45%,rgba(247,171,26,.12),transparent 34%),#050812;box-shadow:0 0 30px rgba(247,171,26,.16) inset;padding:10px;overflow:hidden}
-    #kaijuCanvas{width:100%;height:100%;display:block;background:#080a12;border:1px solid rgba(247,171,26,.55);border-radius:10px;box-shadow:0 0 30px rgba(247,171,26,.16) inset}
-    .kaiju-side{min-height:0;border:1px solid rgba(247,171,26,.34);border-radius:14px;background:rgba(0,0,0,.22);padding:10px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;overflow:hidden}
-    .kaiju-side-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(247,171,26,.42);padding-bottom:8px}.kaiju-side-head h2{margin:0;color:var(--kaiju-gold);font-size:clamp(1.05rem,1.5vw,1.45rem);letter-spacing:.04em;text-transform:uppercase}.kaiju-side-head span{font-weight:900;color:#fff}
-    .kaiju-card-grid{min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:8px;padding-right:2px;scrollbar-width:thin;scrollbar-color:var(--kaiju-gold) transparent}
-    .kaiju-card{min-width:0;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:rgba(255,255,255,.045);color:#fff;text-align:left;padding:5px;cursor:pointer;display:grid;gap:4px}.kaiju-card:hover,.kaiju-card.selected{border-color:var(--kaiju-gold);background:rgba(247,171,26,.12)}
-    .kaiju-card-name{display:block;font-size:.64rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kaiju-card-art{display:grid;place-items:center;aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:#080a12}.kaiju-card-art img{width:100%;height:100%;display:block;object-fit:contain}.kaiju-stat-list{display:none}
-    .kaiju-legend{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.kaiju-legend span{font-size:.64rem;font-weight:900;color:#f8d680;text-align:center;text-transform:uppercase}
-    .kaiju-modebar{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.kaiju-action-btn{position:relative;border:none;background:transparent;padding:0;cursor:pointer;min-width:0}.kaiju-action-btn img{display:block;width:100%;max-height:56px;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.35))}.kaiju-action-btn span{position:absolute;inset:auto 0 8px 0;text-align:center;font-size:.62rem;font-weight:900;letter-spacing:.04em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.9)}.kaiju-action-btn:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:12px}.kaiju-action-btn[data-active="true"]{transform:translateY(-2px)}
-    .kaiju-status{display:none}.kaiju-status-row{display:flex}.kaiju-status-pill{display:inline-flex}
-    .battle-prompts{display:grid;grid-template-columns:minmax(160px,260px) minmax(220px,1fr) minmax(130px,200px);gap:10px;align-items:stretch}.game-btn{padding:0;border:none;background:transparent;color:#111;font-weight:700;cursor:pointer;line-height:0}.game-btn img{display:block;width:100%;height:58px;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.28))}.game-btn:focus-visible{outline:3px solid #fff;outline-offset:3px;border-radius:8px}
-    .battle-result{min-height:0;border:1px solid rgba(247,171,26,.45);border-radius:10px;padding:10px 14px;background:rgba(0,0,0,.26);display:flex;align-items:center;justify-content:center;gap:10px;color:#dbe4f1;text-align:center;overflow:hidden}.battle-result strong{color:#fff}.kaiju-result-stamp{width:48px;height:48px;object-fit:contain}.kaiju-result-category{max-width:72px;width:auto;height:40px;object-fit:contain}.kaiju-result-badges{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.kaiju-result-badges img{max-height:28px;width:auto}.battle-box{display:flex;align-items:center;gap:10px}.battle-card{display:none}.battle-vs{font-weight:900;color:var(--kaiju-gold)}.note{display:none}
+    .kaiju-layout{position:relative;z-index:1;min-height:0;display:grid;grid-template-columns:minmax(0,2.2fr) minmax(330px,.82fr);gap:12px;align-items:stretch}.kaiju-layout>div{min-width:0;min-height:0}.kaiju-arena{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}.kaiju-arena-shell{min-height:0;border:2px solid var(--kaiju-gold);border-radius:14px;background:radial-gradient(circle at 50% 45%,rgba(247,171,26,.12),transparent 34%),#050812;box-shadow:0 0 30px rgba(247,171,26,.16) inset;padding:10px;overflow:hidden}#kaijuCanvas{width:100%;height:100%;display:block;background:#080a12;border:1px solid rgba(247,171,26,.55);border-radius:10px;box-shadow:0 0 30px rgba(247,171,26,.16) inset}
+    .kaiju-side{min-height:0;border:1px solid rgba(247,171,26,.34);border-radius:14px;background:rgba(0,0,0,.22);padding:10px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;overflow:hidden}.kaiju-side-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(247,171,26,.42);padding-bottom:8px}.kaiju-side-head h2{margin:0;color:var(--kaiju-gold);font-size:clamp(1.05rem,1.5vw,1.45rem);letter-spacing:.04em;text-transform:uppercase}.kaiju-side-head span{font-weight:900;color:#fff}.kaiju-card-grid{min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:8px;padding-right:2px;scrollbar-width:thin;scrollbar-color:var(--kaiju-gold) transparent}
+    .kaiju-card{min-width:0;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:rgba(255,255,255,.045);color:#fff;text-align:left;padding:5px;cursor:pointer;display:grid;gap:4px}.kaiju-card:hover,.kaiju-card.selected{border-color:var(--kaiju-gold);background:rgba(247,171,26,.12)}.kaiju-card-name{display:block;font-size:.64rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kaiju-card-art{display:grid;place-items:center;aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:#080a12}.kaiju-card-art img{width:100%;height:100%;display:block;object-fit:contain}.kaiju-stat-list{display:none}.kaiju-legend{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.kaiju-legend span{font-size:.64rem;font-weight:900;color:#f8d680;text-align:center;text-transform:uppercase}
+    .battle-prompts{display:grid;grid-template-columns:minmax(170px,280px) minmax(220px,1fr) minmax(140px,220px);gap:10px;align-items:stretch}.game-btn{padding:0;border:none;background:transparent;color:#111;font-weight:700;cursor:pointer;line-height:0}.game-btn img{display:block;width:100%;height:72px;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.28))}.game-btn:focus-visible{outline:3px solid #fff;outline-offset:3px;border-radius:8px}
+    .battle-result{min-height:0;border:1px solid rgba(247,171,26,.45);border-radius:10px;padding:10px 14px;background:rgba(0,0,0,.26);display:flex;align-items:center;justify-content:center;gap:10px;color:#dbe4f1;text-align:center;overflow:hidden;flex-wrap:wrap}.battle-result strong{color:#fff}.kaiju-result-stamp{width:46px;height:46px;object-fit:contain}.kaiju-result-badges{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.kaiju-result-badges img{max-height:38px;width:auto}.battle-card,.kaiju-status,.kaiju-modebar,.note{display:none!important}
     @media(max-width:1180px){html,body{overflow:auto}.game-card{height:auto;min-height:calc(100vh - 20px)}.kaiju-titlebar{grid-template-columns:1fr}.kaiju-brand,.kaiju-xp{justify-self:center}.kaiju-layout{grid-template-columns:1fr}.kaiju-side{max-height:42vh}.kaiju-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.kaiju-arena-shell{height:48vh}.battle-prompts{grid-template-columns:1fr 1fr}.battle-result{grid-column:1/-1;order:-1}}
-    @media(max-width:720px){#content{padding:6px!important}.game-card{width:calc(100vw - 12px);padding:10px}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.hud .stat{grid-template-columns:1fr}.kaiju-modebar{grid-template-columns:repeat(2,minmax(0,1fr))}.kaiju-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kaiju-titlebar h1{font-size:2rem}.kaiju-xp{min-width:0;width:100%}}
+    @media(max-width:720px){#content{padding:6px!important}.game-card{width:calc(100vw - 12px);padding:10px}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.hud .stat{grid-template-columns:1fr}.kaiju-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kaiju-titlebar h1{font-size:2rem}.kaiju-xp{min-width:0;width:100%}}
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-standalone-tool kaiju-arcade-page">
-<header id="site-header" role="banner">
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home"><img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true"><span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Play. Score. Progress.</span></span></a>
-  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the wiki..." aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">Search</button><div id="search-results" role="listbox"></div></div>
-  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav>
-</header>
+<header id="site-header" role="banner"><a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home"><img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true"><span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Play. Score. Progress.</span></span></a><div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the wiki..." aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">Search</button><div id="search-results" role="listbox"></div></div><nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav></header>
 <div id="layout"><div id="main-wrapper"><main id="content" role="main">
   <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Kaiju Sticker Battle</span></nav>
   <div class="category-header"><span class="cat-big-icon" aria-hidden="true">K</span><div><h1 class="page-title">Kaiju Sticker Battle</h1><p style="color:var(--color-text-muted)">Pick one public Telegram sticker card, roll the category, and let the highest stat win.</p></div></div>
   <div class="page-title-line" aria-hidden="true"></div>
 
   <div class="game-card">
-    <div class="kaiju-titlebar">
-      <div class="kaiju-brand"><span class="kaiju-brand-mark">K</span><span>Moonboys Arcade</span></div>
-      <h1>Kaiju Sticker Battle</h1>
-      <div class="kaiju-xp" aria-label="Arcade XP status"><div class="kaiju-xp-row"><span>XP Ready</span><span>Telegram Linked</span></div><div class="kaiju-xp-track"><div class="kaiju-xp-fill"></div></div></div>
-    </div>
-
-    <div class="hud">
-      <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-      <div class="stat"><div class="label">Wins</div><div class="value" id="wins">0/0</div></div>
-      <div class="stat"><div class="label">Roll</div><div class="value" id="roll">-</div></div>
-      <div class="stat"><div class="label">Category</div><div class="value" id="category">-</div></div>
-    </div>
-
+    <div class="kaiju-titlebar"><div class="kaiju-brand"><span class="kaiju-brand-mark">K</span><span>Moonboys Arcade</span></div><h1>Kaiju Sticker Battle</h1><div class="kaiju-xp" aria-label="Arcade XP status"><div class="kaiju-xp-row"><span>Telegram Linked</span><span>XP Ready</span></div><div class="kaiju-xp-track"><div class="kaiju-xp-fill"></div></div></div></div>
+    <div class="hud"><div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div><div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div><div class="stat"><div class="label">Wins</div><div class="value" id="wins">0/0</div></div><div class="stat"><div class="label">Dice Roll</div><div class="value" id="roll">-</div></div><div class="stat"><div class="label">Category</div><div class="value" id="category">-</div></div></div>
     <div class="kaiju-layout">
-      <div class="kaiju-arena">
-        <div class="kaiju-arena-shell"><canvas id="kaijuCanvas" width="1280" height="720" aria-label="Kaiju Sticker Battle arena"></canvas></div>
-        <div class="battle-prompts">
-          <button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true" aria-label="Roll Battle"><img src="/img/game/kong3008/grimey1.png" alt=""></button>
-          <div id="battleResult" class="battle-result" aria-live="polite"></div>
-          <button class="game-btn alt" id="resetBtn" aria-label="Reset"><img src="/img/game/kong3008/grimey2.png" alt=""></button>
-        </div>
-      </div>
-      <aside class="kaiju-side" aria-label="Kaiju deck">
-        <div class="kaiju-side-head"><h2>Your Deck</h2><span>7 / 7</span></div>
-        <div id="kaijuCardGrid" class="kaiju-card-grid" aria-label="Choose your Kaiju sticker card"></div>
-        <div class="kaiju-legend" aria-hidden="true"><span>PWR</span><span>SIZE</span><span>ATK</span><span>DEF</span><span>SPD</span><span>LGCY</span></div>
-      </aside>
-    </div>
-
-    <div class="kaiju-modebar" aria-label="Kaiju match modes">
-      <button class="kaiju-action-btn" id="cpuModeBtn" type="button" data-mode="cpu"><img src="/img/game/kong3008/grimey18.png" alt=""><span>VS CPU</span></button>
-      <button class="kaiju-action-btn" id="duelModeBtn" type="button" data-mode="duel"><img src="/img/game/kong3008/grimey20.png" alt=""><span>WAITING</span></button>
-      <button class="kaiju-action-btn" id="inviteModeBtn" type="button" data-mode="invite"><img src="/img/game/kong3008/grimey23.png" alt=""><span>2 TELEGRAM USERS</span></button>
-      <button class="kaiju-action-btn" id="restartModeBtn" type="button" data-mode="restart"><img src="/img/game/kong3008/grimey3.png" alt=""><span>RESET MATCH</span></button>
-    </div>
-
-    <div class="kaiju-status">
-      <div class="kaiju-status-row"><strong id="modeTitle">Mode: VS CPU</strong><span class="kaiju-status-pill" id="modePill" data-mode="cpu">Ready to battle</span></div>
-      <div class="kaiju-status-row"><span id="modeCopy">Pick a Kaiju, then roll against a CPU opponent.</span><span id="roomCopy">Waiting button sets the game into a matchmaking-ready state.</span></div>
+      <div class="kaiju-arena"><div class="kaiju-arena-shell"><canvas id="kaijuCanvas" width="1280" height="720" aria-label="Kaiju Sticker Battle arena"></canvas></div><div class="battle-prompts"><button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true" aria-label="Roll Battle"><img src="/img/game/kong3008/grimey1.png" alt="Roll Battle"></button><div id="battleResult" class="battle-result" aria-live="polite"></div><button class="game-btn alt" id="resetBtn" aria-label="Reset"><img src="/img/game/kong3008/grimey3.png" alt="Play Again"></button></div></div>
+      <aside class="kaiju-side" aria-label="Kaiju deck"><div class="kaiju-side-head"><h2>Your Deck</h2><span>7 / 7</span></div><div id="kaijuCardGrid" class="kaiju-card-grid" aria-label="Choose your Kaiju sticker card"></div><div class="kaiju-legend" aria-hidden="true"><span>PWR</span><span>SIZE</span><span>ATK</span><span>DEF</span><span>SPD</span><span>LGCY</span></div></aside>
     </div>
   </div>
   <div data-tg-sync-cta></div>
 </main><footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki</p></div></footer></div></div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script src="/js/identity-gate.js"></script>
-<script src="/js/scroll-shell.js"></script>
-<script src="/js/game-fullscreen.js"></script>
-<script src="/js/api-config.js"></script>
-<script src="/js/components/ui-status-copy.js"></script>
-<script src="/js/arcade/core/global-event-bus.js"></script>
-<script src="/js/core/moonboys-state.js"></script>
-<script src="/js/faction-alignment.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
-<script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script><script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script type="module">
 import { mountGame } from '/js/arcade/core/game-shell.js';
 import { bootstrapKaijuStickerBattle } from '/js/arcade/games/kaiju-sticker-battle/bootstrap.js';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
-mountGame({
-  root: document.querySelector('.game-card'),
-  bootstrap: bootstrapKaijuStickerBattle,
-  requireCompetitiveGate: true,
-  gameId: 'kaiju-sticker-battle'
-}).then(function (game) {
-  if (game && !game.gateBlocked) {
-    mountModifierPanel();
-    mountFactionHud();
-  }
-});
+mountGame({root: document.querySelector('.game-card'),bootstrap: bootstrapKaijuStickerBattle,requireCompetitiveGate: true,gameId: 'kaiju-sticker-battle'}).then(function (game) {if (game && !game.gateBlocked) {mountModifierPanel();mountFactionHud();}});
 </script>
 </body>
 </html>
