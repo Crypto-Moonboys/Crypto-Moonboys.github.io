@@ -29,8 +29,15 @@ assert(bootstrap.includes("from '/js/leaderboard-client.js'"), 'bootstrap import
 assert(bootstrap.includes('const BATTLES_PER_MATCH = 5'), 'battle has a fixed match boundary');
 assert(bootstrap.includes('if (shouldSubmit)'), 'battle submits only at the match boundary');
 assert(bootstrap.includes('submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID)'), 'match submits cumulative accepted score');
+assert(bootstrap.includes('battle-box'), 'bootstrap renders card images inside the battle box');
+assert(bootstrap.includes('handleDuelMode'), 'bootstrap includes a waiting-for-players mode button handler');
+assert(bootstrap.includes('drawCard(playerImg'), 'bootstrap draws card art into the battle arena');
 assert(config.includes('/img/game/kong3008/grimey1.png'), 'config exposes cropped Kaiju UI PNG assets');
 assert(config.includes('/img/game/kong3008/cards/big-daddy-kong.png'), 'config exposes playable full-card PNG assets');
+assert(page.includes('VS CPU'), 'page includes CPU match mode button');
+assert(page.includes('WAITING FOR PLAYERS'), 'page includes waiting-for-players mode button');
+assert(page.includes('2 TELEGRAM USERS'), 'page includes 2 Telegram users mode button');
+assert(page.includes('battle-box'), 'page includes the battle box layout for card images');
 assert(page.includes('requireCompetitiveGate: true'), 'page uses competitive gate');
 assert(page.includes("gameId: 'kaiju-sticker-battle'"), 'page passes route game id to identity gate');
 assert(manifest.includes("id: 'kaiju'"), 'manifest exposes canonical kaiju game key');
