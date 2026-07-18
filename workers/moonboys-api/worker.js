@@ -8054,7 +8054,7 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) 
   const jobKey = normalizePetJobKey(argStr);
   if (!jobKey) {
     const jobs = Object.values(PET_JOBS).map((job) => `- /petwork ${job.key} - ${job.title}`).join("\n");
-    await sendTelegramPetReply(tok, chatId, `<b>?? Pet Jobs</b>\n${jobs}`, {
+    await sendTelegramPetReply(tok, chatId, `<b>💼 Pet Jobs</b>\n${jobs}`, {
       reply_markup: {
         inline_keyboard: [
           Object.values(PET_JOBS).map((job) => ({ text: job.title, callback_data: `pet:work:${job.key}` })),
@@ -8091,7 +8091,7 @@ async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
 async function cmdPetEvent(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const choice = normalizePetEventChoice(argStr);
   if (!choice) {
-    await sendTelegramPetReply(tok, chatId, '<b>?? Random Event</b>\nChoose /petevent open, /petevent sell, or /petevent ignore.', {
+    await sendTelegramPetReply(tok, chatId, '<b>🎲 Random Event</b>\nChoose /petevent open, /petevent sell, or /petevent ignore.', {
       reply_markup: {
         inline_keyboard: [
           [
@@ -8142,8 +8142,8 @@ async function cmdPetTrade(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const outcome = result.won
-    ? `?? Trade won: +${result.gold_delta} gold, +${result.crystal_delta} crystals, +${result.pet_xp_awarded || 0} pet XP.`
-    : `?? Trade lost: ${result.gold_delta} gold, +${result.pet_xp_awarded || 0} pet XP.`;
+    ? `🎰 Trade won: +${result.gold_delta} gold, +${result.crystal_delta} crystals, +${result.pet_xp_awarded || 0} pet XP.`
+    : `🎰 Trade lost: ${result.gold_delta} gold, +${result.pet_xp_awarded || 0} pet XP.`;
   await sendTelegramPetReply(tok, chatId, `${escapeHtml(outcome)}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, result.won ? 'trade_win' : 'trade_loss');
 }
 
@@ -8154,14 +8154,14 @@ async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const result = await processPetAction(db, telegramId, 'rename', { pet_name: petName, source: 'telegram_command' });
-  await sendTelegramPetReply(tok, chatId, `?? Pet renamed.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'level_up');
+  await sendTelegramPetReply(tok, chatId, `🌕 Pet renamed.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'level_up');
 }
 
 async function cmdPetMissions(db, tok, chatId, telegramId) {
   const missions = await buildPetMissions(db, telegramId);
   const daily = missions.daily.map((m) => `${m.completed ? '?' : '?'} ${escapeHtml(m.title)}`).join('\n');
   await sendTelegramPetReply(tok, chatId,
-    `<b>?? Crypto Moonboy Pets Missions</b>\n` +
+    `<b>🎯 Crypto Moonboy Pets Missions</b>\n` +
     `Day: ${escapeHtml(missions.day_key)}\n` +
     `Week: ${escapeHtml(missions.week_key)}\n` +
     `Season: ${escapeHtml(missions.season.key)}\n\n${daily}`,
@@ -8185,13 +8185,13 @@ async function cmdPetShop(db, tok, chatId, telegramId) {
       `  ${escapeHtml(item.description)}`;
   }).join('\n\n');
   await sendTelegramPetReply(tok, chatId,
-    `<b>?? Crypto Moonboy Pet Shop</b>\n` +
+    `<b>🛒 Crypto Moonboy Pet Shop</b>\n` +
     `Balance: ${p.moon_gold} gold ? ${p.moon_crystals} crystals ? ${p.style_tokens} style\n\n` +
     `${lines}\n\n` +
     `Buy/equip: <code>/petbuy moon_kibble</code>\n` +
-    `?? Risk game gold: <code>/pettrade 25</code>\n` +
-    `?? Adventures: <code>/petadventure</code>\n` +
-    `?? Alerts: <code>/petnotify on</code>`,
+    `🎰 Risk game gold: <code>/pettrade 25</code>\n` +
+    `🚀 Adventures: <code>/petadventure</code>\n` +
+    `🔔 Alerts: <code>/petnotify on</code>`,
     { reply_markup: petReplyMarkup() },
     'shop',
   );
@@ -8211,7 +8211,7 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('shop purchase', result.reason, result));
     return;
   }
-  await sendTelegramPetReply(tok, chatId, `?? Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'purchase_complete');
+  await sendTelegramPetReply(tok, chatId, `🛒 Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'purchase_complete');
 }
 
 async function cmdPetAdventure(db, tok, chatId, telegramId, argStr = '') {
@@ -8223,7 +8223,7 @@ async function cmdPetAdventure(db, tok, chatId, telegramId, argStr = '') {
     await sendTelegramPetReply(tok, chatId, formatPetBlockedCopy('adventure', result.reason, result), {}, 'adventure_fail');
     return;
   }
-  const title = result.adventure?.title || '?? Adventure Complete';
+  const title = result.adventure?.title || '🚀 Adventure Complete';
   await sendTelegramPetReply(tok, chatId, `${escapeHtml(title)}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'adventure_win');
 }
 
@@ -8264,7 +8264,7 @@ async function cmdPetLeaderboard(db, tok, chatId) {
     return;
   }
   const lines = rows.results.map((row, index) => (
-    `${index + 1}. ${escapeHtml(displayNameFromRow(row))} ? ${escapeHtml(row.pet_name || 'Moonpet')} (${escapeHtml(row.stage || 'egg')}) ${row.season_xp || 0} pet XP`
+    `${index + 1}. ${escapeHtml(displayNameFromRow(row))} — ${escapeHtml(row.pet_name || 'Moonpet')} (${escapeHtml(row.stage || 'egg')}) ${row.season_xp || 0} pet XP`
   ));
   await sendTelegramPetReply(tok, chatId, `<b>Crypto Moonboy Pets Leaderboard</b>\n${escapeHtml(season.key)}\n\n${lines.join('\n')}`, {}, 'leaderboard');
 }
