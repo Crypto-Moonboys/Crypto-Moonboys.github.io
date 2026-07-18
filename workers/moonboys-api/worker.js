@@ -1610,11 +1610,13 @@ async function getPetInventory(db, telegramId) {
   for (const row of rows.results || []) {
     try {
       const metadata = JSON.parse(row.metadata || '{}');
-      const itemKey = metadata.item_key || metadata.inventory_key;
-      if (itemKey && inventory[itemKey] !== undefined) inventory[itemKey] += Number(row.count || 0);
+      const grantedItemKey = metadata.item_key || metadata.inventory_key;
+      const consumedItemKey = metadata.consumed_item_key;
+      if (grantedItemKey && inventory[grantedItemKey] !== undefined) inventory[grantedItemKey] += Number(row.count || 0);
+      if (consumedItemKey && inventory[consumedItemKey] !== undefined) inventory[consumedItemKey] -= Number(row.count || 0);
     } catch {}
   }
-  return Object.entries(PET_INVENTORY_ITEMS).map(([key, item]) => ({ ...item, count: inventory[key] || 0 }));
+  return Object.entries(PET_INVENTORY_ITEMS).map(([key, item]) => ({ ...item, count: Math.max(0, inventory[key] || 0) }));
 }
 
 async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
@@ -1653,7 +1655,7 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
   await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'use_item', ?, 0, ?, ?, ?, ?, 'accepted', 'item_used', ?)`)
-    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, JSON.stringify({ source: options.source || 'telegram_bot', item_key: key })).run();
+    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, JSON.stringify({ source: options.source || 'telegram_bot', consumed_item_key: key })).run();
   await savePetProfile(db, pet);
   return { accepted: true, reason: 'item_used', item, xp_awarded: 0, pet_xp_awarded: petXp, pet };
 }
@@ -7561,29 +7563,29 @@ async function handleTelegramUpdate(update, env) {
       }
       if (payload === 'work') {
         await answerTelegramCallback(tok, query.id, '/petwork');
-        await cmdPetWork(db, tok, chatId, telegramId, '');
+        await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);
         return;
       }
       if (payload.startsWith('work:')) {
         const jobKey = payload.slice(5);
         await answerTelegramCallback(tok, query.id, `/petwork ${jobKey}`);
-        await cmdPetWork(db, tok, chatId, telegramId, jobKey);
+        await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);
         return;
       }
       if (payload === 'event') {
         await answerTelegramCallback(tok, query.id, '/petevent');
-        await cmdPetEvent(db, tok, chatId, telegramId, '');
+        await cmdPetEvent(db, tok, chatId, telegramId, '', eventKey);
         return;
       }
       if (payload.startsWith('event:')) {
         const choice = payload.slice(6);
         await answerTelegramCallback(tok, query.id, `/petevent ${choice}`);
-        await cmdPetEvent(db, tok, chatId, telegramId, choice, { event_key: eventKey });
+        await cmdPetEvent(db, tok, chatId, telegramId, choice, eventKey);
         return;
       }
       if (payload === 'daily') {
         await answerTelegramCallback(tok, query.id, '/petdaily');
-        await cmdPetDaily(db, tok, chatId, telegramId);
+        await cmdPetDaily(db, tok, chatId, telegramId, eventKey);
         return;
       }
       if (payload === 'adventure') {
@@ -7710,10 +7712,10 @@ async function handleTelegramUpdate(update, env) {
     case 'petshop':      await cmdPetShop(db, tok, chatId, telegramId);              break;
     case 'petbag':       await cmdPetBag(db, tok, chatId, telegramId);               break;
     case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr);       break;
-    case 'petuse':       await cmdPetUse(db, tok, chatId, telegramId, argStr);       break;
-    case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr);      break;
-    case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId);             break;
-    case 'petevent':     await cmdPetEvent(db, tok, chatId, telegramId, argStr);     break;
+    case 'petuse':       await cmdPetUse(db, tok, chatId, telegramId, argStr, stableEventKey); break;
+    case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr, stableEventKey); break;
+    case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId, stableEventKey); break;
+    case 'petevent':     await cmdPetEvent(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petadventure': await cmdPetAdventure(db, tok, chatId, telegramId, argStr); break;
     case 'petnotify':    await cmdPetNotify(db, tok, chatId, telegramId, argStr);    break;
     case 'petleaderboard':
@@ -7887,14 +7889,14 @@ async function cmdPetBag(db, tok, chatId, telegramId) {
     return;
   }
   const inventory = await getPetInventory(db, telegramId);
-  const lines = inventory.map((item) => `${item.count > 0 ? 'â€¢' : 'âšª'} ${escapeHtml(item.key)} â€” ${escapeHtml(item.title)} x${item.count}`).join('\n');
+  const lines = inventory.map((item) => `${item.count > 0 ? '- ' : 'o '} ${escapeHtml(item.key)} - ${escapeHtml(item.title)} x${item.count}`).join('\n');
   await sendTelegramMessage(tok, chatId, `<b>Crypto Moonboy Pet Bag</b>\n\n${lines}`, { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetUse(db, tok, chatId, telegramId, argStr) {
+async function cmdPetUse(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const itemKey = normalizePetInventoryItemKey(argStr);
   const result = await processPetUseItem(db, telegramId, itemKey || argStr, {
-    event_key: buildStablePetEventKey(['tg', telegramId, 'use_item', itemKey || argStr, 'msg']),
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petuse', argStr || '']),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_use_failed' }));
   if (!result.accepted) {
@@ -7904,10 +7906,10 @@ async function cmdPetUse(db, tok, chatId, telegramId, argStr) {
   await sendTelegramMessage(tok, chatId, `Item used: ${escapeHtml(result.item?.title || itemKey || 'item')}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetWork(db, tok, chatId, telegramId, argStr) {
+async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const jobKey = normalizePetJobKey(argStr);
   if (!jobKey) {
-    const jobs = Object.values(PET_JOBS).map((job) => `â€¢ /petwork ${job.key} â€” ${job.title}`).join('\n');
+    const jobs = Object.values(PET_JOBS).map((job) => `- /petwork ${job.key} - ${job.title}`).join('\n');
     await sendTelegramMessage(tok, chatId, `<b>Pet Jobs</b>\n${jobs}`, {
       reply_markup: {
         inline_keyboard: [
@@ -7919,7 +7921,7 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const result = await processPetJob(db, telegramId, jobKey, {
-    event_key: buildStablePetEventKey(['tg', telegramId, 'work', jobKey, 'msg']),
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petwork', jobKey]),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_work_failed' }));
   if (!result.accepted) {
@@ -7930,9 +7932,10 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr) {
   await sendTelegramMessage(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetDaily(db, tok, chatId, telegramId) {
+async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
+  const dayKey = getPetDayKey(new Date());
   const result = await processPetDailyChest(db, telegramId, {
-    event_key: buildStablePetEventKey(['tg', telegramId, 'daily', 'msg']),
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'daily', dayKey]),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_daily_failed' }));
   if (!result.accepted) {
@@ -7942,7 +7945,7 @@ async function cmdPetDaily(db, tok, chatId, telegramId) {
   await sendTelegramMessage(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetEvent(db, tok, chatId, telegramId, argStr) {
+async function cmdPetEvent(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const choice = normalizePetEventChoice(argStr);
   if (!choice) {
     await sendTelegramMessage(tok, chatId, '<b>Random Event</b>\nChoose /petevent open, /petevent sell, or /petevent ignore.', {
@@ -7960,7 +7963,7 @@ async function cmdPetEvent(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const result = await processPetRandomEvent(db, telegramId, choice, {
-    event_key: buildStablePetEventKey(['tg', telegramId, 'event', choice, 'msg']),
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petevent', choice]),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_event_failed' }));
   if (!result.accepted) {

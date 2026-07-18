@@ -94,12 +94,14 @@ assert.ok(useItem.includes('duplicate'), 'use_item must short-circuit duplicate 
 assert.ok(useItem.includes('PETS_DAILY_PET_XP_CAP'), 'use_item must respect the daily pet XP cap');
 assert.ok(useItem.includes('telegram_pet_events'), 'use_item must audit accepted items');
 assert.ok(useItem.includes('item_used'), 'use_item must write item_used results');
+assert.ok(useItem.includes('consumed_item_key'), 'use_item must write consumed item metadata');
 assert.ok(useItem.includes("moon_snack"), 'use_item must support moon_snack');
 assert.ok(useItem.includes("energy_drink"), 'use_item must support energy_drink');
 assert.ok(useItem.includes("clean_wipe"), 'use_item must support clean_wipe');
 assert.ok(useItem.includes("lucky_charm"), 'use_item must support lucky_charm');
 assert.ok(useItem.includes("style_patch"), 'use_item must support style_patch');
 assert.ok(useItem.includes("adventure_map"), 'use_item must support adventure_map');
+assert.ok(worker.includes('consumed_item_key'), 'inventory counting must subtract consumed items');
 
 const work = asyncBlock('processPetJob');
 assert.ok(work.includes('duplicate'), 'work must short-circuit duplicate event keys');
@@ -178,16 +180,36 @@ assert.ok(petBag.includes('getPetInventory(db, telegramId)'), '/petbag command m
 
 const petUse = asyncBlock('cmdPetUse');
 assert.ok(petUse.includes('processPetUseItem'), '/petuse command must route to processPetUseItem');
+assert.ok(petUse.includes('eventKey = null'), '/petuse command must accept optional eventKey');
+assert.ok(petUse.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petuse'"), '/petuse command must use stable text keys');
 
 const petWork = asyncBlock('cmdPetWork');
 assert.ok(petWork.includes('processPetJob'), '/petwork command must route to processPetJob');
 assert.ok(petWork.includes('callback_data: `pet:work:${job.key}`'), '/petwork menu buttons must remain interactive');
+assert.ok(petWork.includes('eventKey = null'), '/petwork command must accept optional eventKey');
+assert.ok(petWork.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petwork', jobKey])"), '/petwork command must use stable text keys');
 
 const petDaily = asyncBlock('cmdPetDaily');
 assert.ok(petDaily.includes('processPetDailyChest'), '/petdaily command must route to processPetDailyChest');
+assert.ok(petDaily.includes('eventKey = null'), '/petdaily command must accept optional eventKey');
+assert.ok(petDaily.includes('dayKey = getPetDayKey(new Date())'), '/petdaily command must include the UTC day in the fallback key');
+assert.ok(petDaily.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'daily', dayKey])"), '/petdaily command must day-scope text retries');
 
 const petEvent = asyncBlock('cmdPetEvent');
 assert.ok(petEvent.includes('processPetRandomEvent'), '/petevent command must route to processPetRandomEvent');
+assert.ok(petEvent.includes('eventKey = null'), '/petevent command must accept optional eventKey');
+assert.ok(petEvent.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petevent', choice])"), '/petevent command must use stable text keys');
+
+const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// â”€â”€ Group-level events â”€â”€'));
+for (const call of [
+  "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
+  "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
+  "await cmdPetDaily(db, tok, chatId, telegramId, eventKey);",
+  "await cmdPetEvent(db, tok, chatId, telegramId, '', eventKey);",
+  "await cmdPetEvent(db, tok, chatId, telegramId, choice, eventKey);",
+]) {
+  assert.ok(callbackBranch.includes(call), `callback branch must include ${call}`);
+}
 
 const streakHelper = worker.slice(worker.indexOf('function updatePetStreakForAction'), worker.indexOf('async function savePetProfile'));
 assert.ok(streakHelper.includes('getPreviousPetDayKey(dayKey)'), 'pet streak helper must compare against yesterday');
