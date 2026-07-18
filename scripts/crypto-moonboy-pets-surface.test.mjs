@@ -26,6 +26,11 @@ assert.ok(howTo.includes('/petnotify on'), 'How To Play must explain pet notific
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
 assert.ok(howTo.includes('no financial promises'), 'How To Play must include no-financial-promises note');
+assert.ok(howTo.includes('pet-card-gallery'), 'How To Play must include a pet card gallery');
+assert.ok(howTo.includes('Crypto Moonboys Pet Feed card'), 'How To Play must preview the feed card');
+assert.ok(howTo.includes('Crypto Moonboys Pet How To Play card'), 'How To Play must preview the how-to-play card');
+assert.ok(!leaderboard.includes('pet-card-gallery'), 'Leaderboard page must not dump the pet card gallery');
+assert.ok(!community.includes('pet-card-gallery'), 'Community page must not dump the pet card gallery');
 
 assert.ok(leaderboard.includes('data-crypto-pets-leaderboard'), 'pet leaderboard page must use pet leaderboard data hook');
 assert.ok(leaderboard.includes('data-period="seasonal"'), 'pet leaderboard must show seasonal period');
