@@ -177,6 +177,7 @@ export function bootstrapKaijuStickerBattle(root) {
     opponentCard: KAIJU_CARDS[1],
     mode: 'cpu',
     roomState: 'ready',
+    matchComplete: false,
     score: 0,
     battles: 0,
     wins: 0,
@@ -229,7 +230,9 @@ export function bootstrapKaijuStickerBattle(root) {
       ? 'Ready to battle'
       : (state.mode === 'duel' ? 'Waiting for players' : 'Invite another Telegram user');
     modeCopy.textContent = state.mode === 'cpu'
-      ? 'Pick a Kaiju, then roll against a CPU opponent.'
+      ? (state.matchComplete
+        ? 'Match complete. Reset to start a new five-round set.'
+        : 'Pick a Kaiju, then roll against a CPU opponent.')
       : (state.mode === 'duel'
         ? 'Tap waiting to hold your place while another player joins.'
         : 'Use this mode to challenge another Telegram user when paired.');
@@ -240,6 +243,23 @@ export function bootstrapKaijuStickerBattle(root) {
   }
 
   async function battle() {
+    if (state.matchComplete) {
+      state.lastResult = {
+        tie: false,
+        playerWon: false,
+        category: { name: 'Match complete', label: 'Match Complete', asset: KAIJU_ASSETS.winnerCard },
+        player: state.playerCard,
+        opponent: state.opponentCard,
+        playerValue: state.score,
+        opponentValue: state.score,
+        submitted: true,
+        totalScore: state.score,
+        matchBattle: BATTLES_PER_MATCH,
+        mode: state.mode,
+      };
+      updateHud();
+      return;
+    }
     if (state.mode !== 'cpu') {
       state.roomState = state.mode === 'duel' ? 'waiting_for_player' : 'awaiting_telegram_pair';
       state.lastResult = null;
@@ -267,6 +287,8 @@ export function bootstrapKaijuStickerBattle(root) {
 
     if (shouldSubmit) {
       await submitScore(ArcadeSync.getPlayer(), state.score, GAME_ID);
+      state.matchComplete = true;
+      updateHud();
     }
   }
 
@@ -277,6 +299,7 @@ export function bootstrapKaijuStickerBattle(root) {
     state.lastResult = null;
     state.opponentCard = pickOpponent(state.playerCard);
     state.roomState = 'ready';
+    state.matchComplete = false;
     updateHud();
   }
 
@@ -285,6 +308,7 @@ export function bootstrapKaijuStickerBattle(root) {
     if (mode === 'cpu') state.roomState = 'ready';
     if (mode === 'duel') state.roomState = 'waiting_for_player';
     if (mode === 'invite') state.roomState = 'invite_wait';
+    if (mode !== 'cpu') state.matchComplete = false;
     state.lastResult = null;
     updateHud();
   }

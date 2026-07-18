@@ -15,6 +15,7 @@ const page = await read('games/kaiju-sticker-battle/index.html');
 const manifest = await read('js/arcade/arcade-manifest.js');
 const apiWorker = await read('workers/moonboys-api/worker.js');
 const leaderboardWorker = await read('workers/leaderboard-worker.js');
+const leaderboardUi = await read('js/arcade-leaderboard.js');
 const arcadeSync = await read('js/arcade-sync.js');
 
 for (const name of ['Big Daddy Kong', 'God-Dzilla', 'Jet Jaguar', 'MC Rodan', 'MF Gidorah', 'Moth Def', 'Mecha-Zilla']) {
@@ -45,6 +46,9 @@ assert(apiWorker.includes("'kaiju-sticker-battle': 'kaiju'"), 'moonboys API norm
 assert(apiWorker.includes("'btqm', 'kaiju', 'global'"), 'moonboys API allows kaiju XP progression');
 assert(leaderboardWorker.includes('"kaiju"'), 'leaderboard worker includes kaiju board');
 assert(leaderboardWorker.includes('VARIETY_BONUS_GAMES'), 'leaderboard worker keeps variety bonus roster versioned');
+assert(leaderboardUi.includes("key: 'kaiju'"), 'leaderboard UI includes kaiju raw tab');
+assert(leaderboardUi.includes("kaiju:      'K Kaiju'"), 'leaderboard UI includes kaiju label');
+assert(leaderboardUi.includes("BREAKDOWN_GAMES = ['snake', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'kaiju']"), 'leaderboard UI includes kaiju in breakdown tabs');
 assert(arcadeSync.includes('"kaiju-sticker-battle": "kaiju"'), 'ArcadeSync normalizes kaiju route key');
 
 console.log('kaiju-sticker-battle-contract.test: PASS');

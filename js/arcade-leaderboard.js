@@ -26,6 +26,7 @@ const RAW_TABS = [
   { key: 'asteroids',  label: '🌑 Asteroids',   icon: '🌑' },
   { key: 'breakout',   label: '🧱 Bullrun',     icon: '🧱' },
   { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
+  { key: 'kaiju',      label: 'K Kaiju',       icon: 'K' },
 ];
 
 const META_TABS = [
@@ -45,10 +46,11 @@ const GAME_LABELS = {
   asteroids:  '🌑 Asteroids',
   breakout:   '🧱 Bullrun',
   tetris:     '🟦 Tetris',
+  kaiju:      'K Kaiju',
   bonus:      '⭐ Bonus',
 };
 
-const BREAKDOWN_GAMES = ['snake', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris'];
+const BREAKDOWN_GAMES = ['snake', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'kaiju'];
 
 // ── State ─────────────────────────────────────────────────────────────────
 let currentMode = DEFAULT_MODE;
