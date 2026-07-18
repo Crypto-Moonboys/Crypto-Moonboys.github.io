@@ -174,33 +174,64 @@ assert.ok(shopRoute.includes('jobs'), 'GET /telegram-pets/shop must expose jobs'
 const petStatus = asyncBlock('cmdPetStatus');
 assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
 assert.ok(!petStatus.includes('getOrCreatePetProfile'), '/pet status command must not create pets');
+assert.ok(worker.includes('function formatPetStatus(pet, missions = null)'), 'formatPetStatus must exist');
+const statusFormatter = worker.slice(worker.indexOf('function formatPetStatus(pet, missions = null)'), worker.indexOf('function petReplyMarkup()'));
+for (const label of ['Pet', 'Wallet', 'Gear', 'Needs', 'Daily Missions', 'Streak']) {
+  assert.ok(statusFormatter.includes(label), `formatPetStatus must include ${label}`);
+}
+for (const stat of ['Health', 'Hunger', 'Happiness', 'Cleanliness', 'Energy']) {
+  assert.ok(statusFormatter.includes(`${stat} `), `formatPetStatus must include ${stat} bars`);
+  assert.ok(statusFormatter.includes('bar('), `formatPetStatus must render ${stat.toLowerCase()} bars dynamically`);
+}
+for (const warning of ['Low health: urgent care needed', 'High hunger: feed soon', 'Low cleanliness: clean soon', 'Low happiness: play soon', 'Low energy: sleep before adventure']) {
+  assert.ok(statusFormatter.includes(warning), `formatPetStatus must include warning: ${warning}`);
+}
+assert.ok(statusFormatter.includes('Daily Missions'), 'formatPetStatus must include the mission section');
+assert.ok(statusFormatter.includes('m.completed') || statusFormatter.includes('completed ?') || statusFormatter.includes('completed ✅'), 'formatPetStatus must distinguish mission completion state');
 
 const petBag = asyncBlock('cmdPetBag');
 assert.ok(petBag.includes('getPetInventory(db, telegramId)'), '/petbag command must show the inventory');
+
+assert.ok(worker.includes('formatPetBlockedCopy(kind, reason, extra = {})'), 'blocked copy helper must exist');
+for (const message of ['Moonpet is too tired for a', 'Moonpet needs a short break before another', 'You need a Moonpet first', 'not available right now']) {
+  assert.ok(worker.includes(message), `blocked copy helper must include ${message}`);
+}
 
 const petUse = asyncBlock('cmdPetUse');
 assert.ok(petUse.includes('processPetUseItem'), '/petuse command must route to processPetUseItem');
 assert.ok(petUse.includes('eventKey = null'), '/petuse command must accept optional eventKey');
 assert.ok(petUse.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petuse'"), '/petuse command must use stable text keys');
+assert.ok(petUse.includes('formatPetBlockedCopy('), '/petuse command must use friendly blocked copy');
 
 const petWork = asyncBlock('cmdPetWork');
 assert.ok(petWork.includes('processPetJob'), '/petwork command must route to processPetJob');
 assert.ok(petWork.includes('callback_data: `pet:work:${job.key}`'), '/petwork menu buttons must remain interactive');
 assert.ok(petWork.includes('eventKey = null'), '/petwork command must accept optional eventKey');
 assert.ok(petWork.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petwork', jobKey])"), '/petwork command must use stable text keys');
+assert.ok(petWork.includes('formatPetBlockedCopy('), '/petwork command must use friendly blocked copy');
 
 const petDaily = asyncBlock('cmdPetDaily');
 assert.ok(petDaily.includes('processPetDailyChest'), '/petdaily command must route to processPetDailyChest');
 assert.ok(petDaily.includes('eventKey = null'), '/petdaily command must accept optional eventKey');
 assert.ok(petDaily.includes('dayKey = getPetDayKey(new Date())'), '/petdaily command must include the UTC day in the fallback key');
 assert.ok(petDaily.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'daily', dayKey])"), '/petdaily command must day-scope text retries');
+assert.ok(petDaily.includes('formatPetBlockedCopy('), '/petdaily command must use friendly blocked copy');
 
 const petEvent = asyncBlock('cmdPetEvent');
 assert.ok(petEvent.includes('processPetRandomEvent'), '/petevent command must route to processPetRandomEvent');
 assert.ok(petEvent.includes('eventKey = null'), '/petevent command must accept optional eventKey');
 assert.ok(petEvent.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petevent', choice])"), '/petevent command must use stable text keys');
+assert.ok(petEvent.includes('formatPetBlockedCopy('), '/petevent command must use friendly blocked copy');
 
-const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// â”€â”€ Group-level events â”€â”€'));
+const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
+for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
+  assert.ok(petReply.includes(label), `petReplyMarkup must include ${label}`);
+}
+for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:adventure']) {
+  assert.ok(petReply.includes(callback), `petReplyMarkup must preserve ${callback}`);
+}
+
+const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// Group-level events'));
 for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
   "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
@@ -234,3 +265,4 @@ for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'pl
 }
 
 console.log('telegram-pets-api.test.mjs passed');
+
