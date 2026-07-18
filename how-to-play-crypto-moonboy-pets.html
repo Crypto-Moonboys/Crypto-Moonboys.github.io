@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="How to play Crypto Moonboy Pets on Telegram: adopt, feed, train, complete missions, earn pet XP and Community XP.">
+  <meta name="description" content="How to play Crypto Moonboy Pets on Telegram: adopt, feed, train, use inventory, work jobs, complete missions, and earn pet XP and Community XP.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="How To Play Crypto Moonboy Pets | Crypto Moonboys">
-  <meta property="og:description" content="Adopt and grow a Crypto Moonboys pet on Telegram through care, training, missions and seasons.">
+  <meta property="og:description" content="Adopt and grow a Crypto Moonboys pet on Telegram through care, inventory, jobs, missions and seasons.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/how-to-play-crypto-moonboy-pets.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/pets/crypto-moonboy-pets-how-to-play-hero.jpg">
@@ -29,7 +29,7 @@
       </nav>
       <div class="swarmsy-kicker">TELEGRAM PET GAME / 24-7 ROGUELITE</div>
       <h1 id="pets-guide-title" class="swarmsy-title wiki-living-title">HOW TO PLAY<br><span>CRYPTO MOONBOY PETS</span></h1>
-      <p class="swarmsy-lead">Adopt a Crypto Moonboys companion in Telegram, care for it every day, complete missions, climb the pet leaderboard and add accepted Community XP to your main Moonboys profile.</p>
+      <p class="swarmsy-lead">Adopt a Crypto Moonboys companion in Telegram, care for it every day, use the pet bag, run jobs, complete missions, climb the pet leaderboard and add accepted Community XP to your main Moonboys profile.</p>
       <div class="swarmsy-action-grid" role="navigation" aria-label="Pets guide actions">
         <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer"><strong>OPEN TELEGRAM BOT</strong><span>Use /adopt to start.</span></a>
         <a class="swarmsy-action-card" href="/crypto-moonboy-pets-leaderboard.html"><strong>PET LEADERBOARD</strong><span>View pet-only ranks.</span></a>
@@ -57,6 +57,11 @@
         <tr><td><code>/train</code></td><td>Higher pet XP, but costs energy and hunger.</td></tr>
         <tr><td><code>/petmissions</code></td><td>Shows current pet missions.</td></tr>
         <tr><td><code>/petshop</code></td><td>Shows food, toy and clothing upgrades.</td></tr>
+        <tr><td><code>/petbag</code></td><td>Shows your inventory from Telegram pet events.</td></tr>
+        <tr><td><code>/petuse moon_snack</code></td><td>Uses a bag item for a pet-only effect.</td></tr>
+        <tr><td><code>/petwork courier</code></td><td>Sends your pet to work a job for pet-only rewards.</td></tr>
+        <tr><td><code>/petdaily</code></td><td>Claims the once-per-day UTC chest.</td></tr>
+        <tr><td><code>/petevent open</code></td><td>Handles a random crate event choice.</td></tr>
         <tr><td><code>/petbuy moon_kibble</code></td><td>Buys or equips an upgrade using in-game pet currencies.</td></tr>
         <tr><td><code>/pettrade 25</code></td><td>Risks in-game Moon Gold for game-only rewards.</td></tr>
         <tr><td><code>/petadventure</code></td><td>Sends your pet on a cooldown-based run for pet XP and game currencies.</td></tr>
@@ -71,6 +76,13 @@
     <h2>Pet Economy</h2>
     <p>Care actions can drop <strong>Moon Gold</strong>, <strong>Moon Crystals</strong> and <strong>Style Tokens</strong>. These are in-game pet currencies only. They buy better food, toys and clothing through <code>/petshop</code> and <code>/petbuy</code>.</p>
     <p>Pet XP unlocks higher shop tiers. Upgrades improve care actions, add pet XP bonuses or change what your pet has equipped. These upgrades do not create real-world value and do not bypass Community XP caps.</p>
+    <p>The pet bag is separate from shop gear. Items like <code>moon_snack</code>, <code>energy_drink</code>, <code>clean_wipe</code>, <code>lucky_charm</code>, <code>style_patch</code> and <code>adventure_map</code> live in inventory and are used with <code>/petuse</code>.</p>
+  </section>
+
+  <section class="section">
+    <h2>Jobs And Events</h2>
+    <p><code>/petwork</code> gives the pet a short job like <code>street_artist</code>, <code>courier</code>, <code>crystal_miner</code> or <code>vault_guard</code>. Job and adventure rewards stay pet-only and respect the daily pet XP cap.</p>
+    <p><code>/petdaily</code> opens a once-per-UTC-day chest, and <code>/petevent</code> handles random crate choices such as open, sell or ignore. Duplicate retries short-circuit safely.</p>
   </section>
 
   <section class="section">
@@ -86,7 +98,7 @@
 
   <section class="section">
     <h2>Pet XP vs Community XP</h2>
-    <p><strong>Pet XP</strong> grows the pet, unlocks stages and powers the pet-only leaderboard. <strong>Community XP</strong> is added to your existing Crypto Moonboys profile and appears on the current main XP leaderboard and graph after server acceptance.</p>
+    <p><strong>Pet XP</strong> grows the pet, unlocks stages and powers the pet-only leaderboard. <strong>Community XP</strong> is added to your existing Crypto Moonboys profile and appears on the current main XP leaderboard and graph after server acceptance. New pet jobs, events and inventory loops do not award Community XP.</p>
     <p>The server decides accepted XP, cooldowns, caps and duplicate protection. Telegram messages are the play surface, but the Moonboys API is the authority.</p>
   </section>
 

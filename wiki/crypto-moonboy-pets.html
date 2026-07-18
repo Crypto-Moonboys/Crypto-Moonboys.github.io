@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboy Pets is the Telegram-first roguelite pet game where players grow a living Moonboys companion and earn Community XP.">
-  <meta name="keywords" content="Crypto Moonboy Pets, Moonboys Pets, Telegram pet, pet game, Tamagotchi, roguelite, pet leaderboard, pet XP">
+  <meta name="description" content="Crypto Moonboy Pets is the Telegram-first roguelite pet game where players grow a living Moonboys companion, manage inventory, run jobs and earn Community XP.">
+  <meta name="keywords" content="Crypto Moonboy Pets, Moonboys Pets, Telegram pet, pet game, Tamagotchi, roguelite, pet leaderboard, pet XP, pet bag, pet jobs, daily chest, random event">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Crypto Moonboy Pets — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Grow a Crypto Moonboys pet on Telegram through care, training, missions, streaks and seasons.">
+  <meta property="og:description" content="Grow a Crypto Moonboys pet on Telegram through care, inventory, jobs, missions, streaks and seasons.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/crypto-moonboy-pets.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -32,7 +32,7 @@
 
   <article class="wiki-content" data-entity-slug="crypto-moonboy-pets">
     <p class="lead-paragraph">
-      Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, complete daily and seasonal missions, and build pet progression over time.
+      Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, manage a pet bag, work jobs, open daily chests, handle random crate events, and build pet progression over time.
     </p>
     <p>
       The game is played in Telegram through the Moonboys bot. The website records the public proof layer: combined Community XP, pet-specific leaderboards, how-to-play rules, and the searchable wiki home for the pet system.
@@ -45,19 +45,23 @@
         <li>Use <code>/pet</code> to see health, hunger, happiness, cleanliness, energy, stage, level and missions.</li>
         <li>Use <code>/feed</code>, <code>/play</code>, <code>/clean</code>, <code>/sleep</code> and <code>/train</code> to grow the pet.</li>
         <li>Care actions can earn Moon Gold, Moon Crystals and Style Tokens.</li>
+        <li>Use <code>/petbag</code> and <code>/petuse</code> to manage inventory from Telegram pet events.</li>
+        <li>Use <code>/petwork</code> to run pet jobs like courier or crystal miner.</li>
+        <li>Use <code>/petdaily</code> once per UTC day to claim the chest.</li>
+        <li>Use <code>/petevent</code> to open, sell or ignore random crate events.</li>
         <li>Use <code>/petshop</code> and <code>/petbuy</code> to equip better food, toys and clothing.</li>
         <li>Use <code>/pettrade</code> to risk in-game Moon Gold for game-only rewards.</li>
         <li>Use <code>/petadventure</code> for energy-gated runs with cooldowns and pet-only rewards.</li>
         <li>Use <code>/petnotify on</code> to opt into rate-limited Telegram needs alerts.</li>
         <li>Pet XP grows the companion and powers the pet-only leaderboard.</li>
-        <li>Accepted pet actions also award Community XP into the existing main XP leaderboard and graph.</li>
+        <li>Accepted pet actions also award Community XP into the existing main XP leaderboard and graph, but inventory, jobs, daily chests and random events stay pet-only.</li>
       </ul>
     </section>
 
     <section class="wiki-section">
       <h2>24/7 Pet Loop</h2>
       <p>
-        Pet notifications are opt-in. When enabled, the bot can DM a player if their pet needs food, cleaning, sleep or play, if a daily mission is still open, if an upgrade is affordable, or if an adventure is ready.
+        Pet notifications are opt-in. When enabled, the bot can DM a player if their pet needs food, cleaning, sleep or play, if a daily mission is still open, if an upgrade is affordable, or if an adventure, job or crate choice is ready.
       </p>
       <p>
         Adventures add roguelite runs on top of care actions. They cost energy, use cooldowns, award pet XP and in-game currencies, and stay separate from Community XP.
@@ -67,7 +71,7 @@
     <section class="wiki-section">
       <h2>In-Game Economy</h2>
       <p>
-        Crypto Moonboy Pets uses three non-transferable pet currencies: Moon Gold for common upgrades and trades, Moon Crystals for rarer upgrades, and Style Tokens for clothing. These currencies are gameplay counters only and cannot be cashed out.
+        Crypto Moonboy Pets uses three non-transferable pet currencies: Moon Gold for common upgrades and trades, Moon Crystals for rarer upgrades, and Style Tokens for clothing. The pet bag also contains usable items such as moon_snack, energy_drink, clean_wipe, lucky_charm, style_patch and adventure_map. These currencies and items are gameplay counters only and cannot be cashed out.
       </p>
       <p>
         Pet XP unlocks higher shop tiers. Shop upgrades make the daily care loop stronger, but Community XP remains separately capped and server-accepted.
@@ -77,7 +81,7 @@
     <section class="wiki-section">
       <h2>XP Separation</h2>
       <p>
-        Crypto Moonboy Pets has its own pet progression, but it is not a separate identity universe. Accepted pet actions write to the existing Telegram XP system, so pet-earned Community XP is included in the current main XP leaderboard and graph.
+        Crypto Moonboy Pets has its own pet progression, but it is not a separate identity universe. Accepted care actions and trades can write to the existing Telegram XP system, so pet-earned Community XP is included in the current main XP leaderboard and graph. Inventory uses, jobs, daily chests and random events do not award Community XP.
       </p>
       <p>
         Detailed pet stats stay on Crypto Moonboy Pets pages. Current community pages only show a compact pet summary or call to action.

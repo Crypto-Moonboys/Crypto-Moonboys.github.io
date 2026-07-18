@@ -29423,7 +29423,7 @@
   },
   {
     "title": "Crypto Moonboy Pets",
-    "desc": "Crypto Moonboy Pets is the Telegram-first roguelite pet game where players grow a living Moonboys companion and earn Community XP.",
+    "desc": "Crypto Moonboy Pets is the Telegram-first roguelite pet game where players grow a living Moonboys companion, manage inventory, run jobs and earn Community XP.",
     "url": "/wiki/crypto-moonboy-pets.html",
     "tags": [
       "Crypto Moonboy Pets",
@@ -29433,7 +29433,11 @@
       "Tamagotchi",
       "roguelite",
       "pet leaderboard",
-      "pet XP"
+      "pet XP",
+      "pet bag",
+      "pet jobs",
+      "daily chest",
+      "random event"
     ],
     "category": "misc",
     "aliases": [],
@@ -29503,9 +29507,13 @@
         "xp",
         "tamagotchi",
         "leaderboard",
+        "pet bag",
+        "pet jobs",
         "pet adventure",
         "pet notifications",
-        "moon gold"
+        "moon gold",
+        "daily chest",
+        "random event"
       ]
     },
     "link_score": {
