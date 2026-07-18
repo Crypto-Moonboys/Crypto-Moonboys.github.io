@@ -224,12 +224,15 @@ assert.ok(petEvent.includes("event_key: eventKey || buildStablePetEventKey(['tg'
 assert.ok(petEvent.includes('formatPetBlockedCopy('), '/petevent command must use friendly blocked copy');
 
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
-for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
+for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
   assert.ok(petReply.includes(label), `petReplyMarkup must include ${label}`);
 }
-for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:adventure']) {
+for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:shop', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:adventure']) {
   assert.ok(petReply.includes(callback), `petReplyMarkup must preserve ${callback}`);
 }
+assert.ok(!statusFormatter.includes('??'), 'formatPetStatus must not contain placeholder question marks');
+assert.ok(!petReply.includes('??'), 'petReplyMarkup must not contain placeholder question marks');
+assert.ok(!worker.includes('??? Train'), 'telegram pet UI must not contain the old Train placeholder');
 
 const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// Group-level events'));
 for (const call of [
