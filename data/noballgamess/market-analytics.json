@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-17T06:01:43.412Z",
+  "generated_at": "2026-07-18T05:38:59.631Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-17T06:01:38.374Z"
+      "checked_at": "2026-07-18T05:38:54.903Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-17T06:01:38.583Z"
+      "checked_at": "2026-07-18T05:38:55.107Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-17T06:01:40.761Z"
+      "checked_at": "2026-07-18T05:38:57.103Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-17T06:01:40.969Z"
+      "checked_at": "2026-07-18T05:38:57.305Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-17T06:01:41.673Z"
+      "checked_at": "2026-07-18T05:38:58.004Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-17T06:01:42.952Z"
+      "checked_at": "2026-07-18T05:38:59.175Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-17T06:01:43.171Z"
+      "checked_at": "2026-07-18T05:38:59.379Z"
     }
   },
   "data": {
     "collection_stats": {
       "numUsers": 706,
-      "usdMarketCap": 97566.97634018185,
-      "waxMarketCap": 348910.9098929355,
+      "usdMarketCap": 97566.9763401828,
+      "waxMarketCap": 348910.90989293484,
       "numAssets": 5268
     },
     "num_assets": {
       "numberOfAssets": 5268,
-      "estimatedWaxValue": 348910.90989293484,
-      "estimatedUsdValue": 97566.97634018198
+      "estimatedWaxValue": 348910.90989293426,
+      "estimatedUsdValue": 97566.97634018285
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -381,7 +381,7 @@
           "days": "30",
           "waxVolume": 5165.548546989998,
           "usdVolume": 618.2898433164298,
-          "waxFloor": 1888,
+          "waxFloor": 233,
           "change": 0,
           "buyers": 53,
           "sellers": 63,
@@ -477,7 +477,7 @@
           "days": "30",
           "waxVolume": 4389.299,
           "usdVolume": 205.435909,
-          "waxFloor": 3720,
+          "waxFloor": 1597,
           "change": 0,
           "buyers": 4,
           "sellers": 9,
@@ -637,7 +637,7 @@
           "days": "30",
           "waxVolume": 1297.99,
           "usdVolume": 44.687579,
-          "waxFloor": 2583,
+          "waxFloor": 2584,
           "change": 0,
           "buyers": 4,
           "sellers": 4,
@@ -680,15 +680,9 @@
     ],
     "volume": {
       "waxVolume": 1798,
-      "usdVolume": 8.450600000000003
+      "usdVolume": 8.450600000000001
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-18"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -788,7 +782,7 @@
       {
         "waxVolume": 1459,
         "sales": 24,
-        "usdVolume": 6.857299999999998,
+        "usdVolume": 6.8572999999999995,
         "date": "2026-07-05"
       },
       {
@@ -862,6 +856,12 @@
         "sales": 0,
         "usdVolume": 0,
         "date": "2026-07-17"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-07-18"
       }
     ]
   },

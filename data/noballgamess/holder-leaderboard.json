@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-17T06:01:43.750Z",
+  "generated_at": "2026-07-18T05:38:59.899Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -33,7 +33,7 @@
   "holders": [
     {
       "owner": "yoitscharlie",
-      "live_assets": 2102
+      "live_assets": 5533
     },
     {
       "owner": "pepperstake",
@@ -2616,7 +2616,7 @@
       "live_assets": 1
     },
     {
-      "owner": "thhd.wam",
+      "owner": "aptbs.wam",
       "live_assets": 1
     },
     {
