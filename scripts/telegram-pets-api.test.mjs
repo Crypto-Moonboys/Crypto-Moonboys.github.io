@@ -120,10 +120,16 @@ assert.ok(petInventory.includes("row.event_type === 'use_item'"), 'pet inventory
 
 const petItemUse = asyncBlock('processPetItemUse');
 assert.ok(petItemUse.includes("'use_item'"), 'pet item uses must use use_item event type');
+assert.ok(petItemUse.includes('duplicate: true'), 'pet item uses must return duplicate marker for repeated event_key');
+assert.ok(petItemUse.includes("reason: 'duplicate'"), 'pet item uses must short-circuit duplicate event_key');
+assert.ok(petItemUse.indexOf('getPetEventByKey') < petItemUse.indexOf('getPetProfile(db, telegramId)'), 'pet item duplicate detection must happen before stat changes');
 assert.ok(!petItemUse.includes('awardCommunityXp'), 'pet item uses must not award Community XP');
 
 const petWork = asyncBlock('processPetWork');
 assert.ok(petWork.includes("'work'"), 'pet jobs must use work event type');
+assert.ok(petWork.includes('duplicate: true'), 'pet jobs must return duplicate marker for repeated event_key');
+assert.ok(petWork.includes("reason: 'duplicate'"), 'pet jobs must short-circuit duplicate event_key');
+assert.ok(petWork.indexOf('getPetEventByKey') < petWork.indexOf('getPetProfile(db, telegramId)'), 'pet job duplicate detection must happen before stat changes');
 assert.ok(petWork.includes('PET_WORK_COOLDOWN_SECONDS'), 'pet jobs must have a cooldown');
 assert.ok(petWork.includes('PETS_DAILY_PET_XP_CAP'), 'pet jobs must enforce the daily pet XP cap');
 assert.ok(petWork.includes('telegram_pet_season_state'), 'pet jobs must update season state');
@@ -131,11 +137,17 @@ assert.ok(!petWork.includes('awardCommunityXp'), 'pet jobs must not award Commun
 
 const petDaily = asyncBlock('processPetDailyChest');
 assert.ok(petDaily.includes("'daily_chest'"), 'daily chest must use daily_chest event type');
+assert.ok(petDaily.includes('duplicate: true'), 'daily chest must return duplicate marker for repeated event_key');
+assert.ok(petDaily.includes("reason: 'duplicate'"), 'daily chest must short-circuit duplicate event_key');
+assert.ok(petDaily.indexOf('getPetEventByKey') < petDaily.indexOf('getPetProfile(db, telegramId)'), 'daily chest duplicate detection must happen before day checks');
 assert.ok(petDaily.includes('day_key = ?'), 'daily chest must be limited by UTC day');
 assert.ok(!petDaily.includes('awardCommunityXp'), 'daily chest must not award Community XP');
 
 const petRandomEvent = asyncBlock('processPetRandomEventChoice');
 assert.ok(petRandomEvent.includes("'random_event'"), 'random events must use random_event event type');
+assert.ok(petRandomEvent.includes('duplicate: true'), 'random events must return duplicate marker for repeated event_key');
+assert.ok(petRandomEvent.includes("reason: 'duplicate'"), 'random events must short-circuit duplicate event_key');
+assert.ok(petRandomEvent.indexOf('getPetEventByKey') < petRandomEvent.indexOf('getPetProfile(db, telegramId)'), 'random event duplicate detection must happen before cooldown checks');
 assert.ok(petRandomEvent.includes('PET_EVENT_COOLDOWN_SECONDS'), 'random events must have a cooldown');
 assert.ok(!petRandomEvent.includes('awardCommunityXp'), 'random events must not award Community XP');
 
