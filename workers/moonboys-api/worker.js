@@ -1246,6 +1246,76 @@ const PET_ACTIONS = Object.freeze({
   train: { pet_xp: 20, community_xp: 6,  hunger: 12,  happiness: 8,  cleanliness: -4, energy: -18, gold: 10, crystals: 1, style_tokens: 0 },
 });
 
+const PET_INVENTORY_ITEMS = Object.freeze({
+  moon_snack: {
+    key: 'moon_snack',
+    title: 'Moon Snack',
+    kind: 'usable_item',
+    description: 'Restores hunger and a bit of energy.',
+  },
+  energy_drink: {
+    key: 'energy_drink',
+    title: 'Energy Drink',
+    kind: 'usable_item',
+    description: 'Restores energy and gives a small pet XP boost.',
+  },
+  clean_wipe: {
+    key: 'clean_wipe',
+    title: 'Clean Wipe',
+    kind: 'usable_item',
+    description: 'Improves cleanliness and happiness.',
+  },
+  lucky_charm: {
+    key: 'lucky_charm',
+    title: 'Lucky Charm',
+    kind: 'usable_item',
+    description: 'Boosts random event outcomes for one use.',
+  },
+  style_patch: {
+    key: 'style_patch',
+    title: 'Style Patch',
+    kind: 'usable_item',
+    description: 'Adds style tokens and a little pet XP.',
+  },
+  adventure_map: {
+    key: 'adventure_map',
+    title: 'Adventure Map',
+    kind: 'usable_item',
+    description: 'Reduces adventure fatigue and improves job luck.',
+  },
+});
+
+const PET_JOBS = Object.freeze({
+  street_artist: {
+    key: 'street_artist',
+    title: 'Street Artist',
+    pet_xp: 18,
+    moon_gold: 18,
+    style_tokens: 2,
+  },
+  courier: {
+    key: 'courier',
+    title: 'Courier',
+    pet_xp: 24,
+    moon_gold: 26,
+    style_tokens: 0,
+  },
+  crystal_miner: {
+    key: 'crystal_miner',
+    title: 'Crystal Miner',
+    pet_xp: 30,
+    moon_gold: 12,
+    moon_crystals: 2,
+  },
+  vault_guard: {
+    key: 'vault_guard',
+    title: 'Vault Guard',
+    pet_xp: 36,
+    moon_gold: 30,
+    style_tokens: 1,
+  },
+});
+
 const PET_SHOP_ITEMS = Object.freeze({
   moon_kibble: {
     key: 'moon_kibble',
@@ -1487,6 +1557,192 @@ function normalizePetAdventureKey(value) {
   const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
   if (!key) return null;
   return PET_ADVENTURES.some((adventure) => adventure.key === key) ? key : null;
+}
+
+function normalizePetInventoryItemKey(value) {
+  const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
+  return PET_INVENTORY_ITEMS[key] ? key : null;
+}
+
+function normalizePetJobKey(value) {
+  const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
+  return PET_JOBS[key] ? key : null;
+}
+
+function normalizePetEventChoice(value) {
+  const key = String(value || '').trim().toLowerCase();
+  return ['open', 'sell', 'ignore'].includes(key) ? key : null;
+}
+
+function buildStablePetEventKey(parts = []) {
+  return parts.map((part) => String(part || '').trim()).filter(Boolean).join(':').slice(0, 120);
+}
+
+function buildTelegramMessagePetEventKey(message, telegramId, command, args = '') {
+  return buildStablePetEventKey([
+    message?.message_id || 'msg',
+    message?.chat?.id || 'chat',
+    telegramId || 'telegram',
+    command || 'command',
+    args || '',
+  ]);
+}
+
+function buildTelegramCallbackPetEventKey(query, telegramId, data) {
+  return buildStablePetEventKey([
+    query?.id || 'callback',
+    data || 'data',
+    query?.message?.message_id || 'msg',
+    query?.message?.chat?.id || 'chat',
+    telegramId || 'telegram',
+  ]);
+}
+
+async function getPetInventory(db, telegramId) {
+  const rows = await db.prepare(`
+    SELECT event_type, metadata, COUNT(*) AS count
+    FROM telegram_pet_events
+    WHERE telegram_id = ? AND status = 'accepted'
+    GROUP BY event_type, metadata
+  `).bind(telegramId).all().catch(() => ({ results: [] }));
+  const inventory = {};
+  for (const item of Object.values(PET_INVENTORY_ITEMS)) inventory[item.key] = 0;
+  for (const row of rows.results || []) {
+    try {
+      const metadata = JSON.parse(row.metadata || '{}');
+      const grantedItemKey = metadata.item_key || metadata.inventory_key;
+      const consumedItemKey = metadata.consumed_item_key;
+      if (grantedItemKey && inventory[grantedItemKey] !== undefined) inventory[grantedItemKey] += Number(row.count || 0);
+      if (consumedItemKey && inventory[consumedItemKey] !== undefined) inventory[consumedItemKey] -= Number(row.count || 0);
+    } catch {}
+  }
+  return Object.entries(PET_INVENTORY_ITEMS).map(([key, item]) => ({ ...item, count: Math.max(0, inventory[key] || 0) }));
+}
+
+async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
+  const key = normalizePetInventoryItemKey(itemKeyRaw);
+  if (!key) return { accepted: false, reason: 'invalid_item', xp_awarded: 0, pet_xp_awarded: 0 };
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:use_item:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const inventory = await getPetInventory(db, telegramId);
+  const item = inventory.find((entry) => entry.key === key);
+  if (!item || item.count <= 0) return { accepted: false, reason: 'item_not_found', pet };
+  const effects = {
+    moon_snack: { hunger: -18, energy: 8, pet_xp: 4 },
+    energy_drink: { energy: 22, pet_xp: 6 },
+    clean_wipe: { cleanliness: 24, happiness: 4, pet_xp: 4 },
+    lucky_charm: { pet_xp: 8 },
+    style_patch: { style_tokens: 2, pet_xp: 5 },
+    adventure_map: { energy: 6, pet_xp: 5 },
+  }[key];
+  pet.hunger = clampPetStat(Number(pet.hunger || 0) + (effects.hunger || 0));
+  pet.energy = clampPetStat(Number(pet.energy || 0) + (effects.energy || 0));
+  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + (effects.cleanliness || 0));
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) + (effects.happiness || 0));
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + (effects.style_tokens || 0));
+  let petXp = Math.max(0, effects.pet_xp || 0);
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
+  else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+  await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'use_item', ?, 0, ?, ?, ?, ?, 'accepted', 'item_used', ?)`)
+    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, JSON.stringify({ source: options.source || 'telegram_bot', consumed_item_key: key })).run();
+  await savePetProfile(db, pet);
+  return { accepted: true, reason: 'item_used', item, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+}
+
+async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
+  const key = normalizePetJobKey(jobKeyRaw);
+  if (!key) return { accepted: false, reason: 'invalid_job', xp_awarded: 0, pet_xp_awarded: 0 };
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:work:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const lastWork = await db.prepare(`SELECT created_at FROM telegram_pet_events WHERE telegram_id = ? AND event_type = 'work' AND status = 'accepted' ORDER BY created_at DESC LIMIT 1`).bind(telegramId).first().catch(() => null);
+  if (lastWork?.created_at) {
+    const elapsedSeconds = (now.getTime() - new Date(lastWork.created_at).getTime()) / 1000;
+    if (elapsedSeconds < PETS_ACTION_COOLDOWN_SECONDS) {
+      return { accepted: false, reason: 'cooldown', retry_after_seconds: Math.max(1, Math.ceil(PETS_ACTION_COOLDOWN_SECONDS - elapsedSeconds)), pet };
+    }
+  }
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  let petXp = PET_JOBS[key].pet_xp;
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
+  else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+  const rewards = PET_JOBS[key];
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + (rewards.moon_gold || 0));
+  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + (rewards.moon_crystals || 0));
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + (rewards.style_tokens || 0));
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+  await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'work', ?, 0, ?, ?, ?, ?, 'accepted', ?, ?)`)
+    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, key, JSON.stringify({ source: options.source || 'telegram_bot', job_key: key, rewards })).run();
+  await savePetProfile(db, pet);
+  await db.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(telegram_id, season_key) DO UPDATE SET season_xp = season_xp + excluded.season_xp, weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END, daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END, daily_key = excluded.daily_key, weekly_key = excluded.weekly_key, updated_at = CURRENT_TIMESTAMP`).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
+  return { accepted: true, reason: key, job: PET_JOBS[key], xp_awarded: 0, pet_xp_awarded: petXp, pet };
+}
+
+async function processPetDailyChest(db, telegramId, options = {}) {
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:daily:${telegramId}:${dayKey}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const claimed = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_type = 'daily_chest' AND day_key = ? AND status = 'accepted'`).bind(telegramId, dayKey).first().catch(() => null);
+  if (claimed) return { accepted: false, reason: 'daily_claimed', pet };
+  const petXp = Math.min(PETS_DAILY_PET_XP_CAP, 40);
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + 40);
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + 2);
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+  await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'daily_chest', ?, 0, ?, ?, ?, ?, 'accepted', 'daily_chest', ?)`)
+    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, JSON.stringify({ source: options.source || 'telegram_bot' })).run();
+  await savePetProfile(db, pet);
+  return { accepted: true, reason: 'daily_chest', xp_awarded: 0, pet_xp_awarded: petXp, pet };
+}
+
+async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
+  const choice = normalizePetEventChoice(choiceRaw);
+  if (!choice) return { accepted: false, reason: 'invalid_event_choice', xp_awarded: 0, pet_xp_awarded: 0 };
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:event:${telegramId}:${choice}:${Date.now()}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const bonus = choice === 'sell' ? 24 : choice === 'open' ? 32 : 6;
+  const petXp = Math.min(PETS_DAILY_PET_XP_CAP, bonus);
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + (choice === 'sell' ? 35 : choice === 'open' ? 18 : 0));
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+  await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'random_event', ?, 0, ?, ?, ?, ?, 'accepted', ?, ?)`)
+    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, choice, JSON.stringify({ source: options.source || 'telegram_bot', choice })).run();
+  await savePetProfile(db, pet);
+  return { accepted: true, reason: choice, xp_awarded: 0, pet_xp_awarded: petXp, pet };
 }
 
 function canAffordPetItem(pet, item) {
@@ -4283,6 +4539,14 @@ export default {
       return json({ pet: serializePet(pet), missions: await buildPetMissions(env.DB, telegramId) });
     }
 
+    if (path === '/telegram-pets/inventory' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
+      if (!pet) return err('Pet profile not found', 404);
+      return json({ pet: serializePet(pet), inventory: await getPetInventory(env.DB, telegramId) });
+    }
+
     if (path === '/telegram-pets/missions' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
@@ -4296,6 +4560,8 @@ export default {
         currencies: ['moon_gold', 'moon_crystals', 'style_tokens'],
         pet: serializePet(pet),
         items: petShopItemsForPet(pet),
+        usable_items: Object.values(PET_INVENTORY_ITEMS),
+        jobs: Object.values(PET_JOBS),
       });
     }
 
@@ -4425,6 +4691,26 @@ export default {
         });
       } else if (body.action === 'adventure') {
         result = await processPetAdventure(env.DB, telegramId, body.adventure_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'use_item') {
+        result = await processPetUseItem(env.DB, telegramId, body.item_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'work') {
+        result = await processPetJob(env.DB, telegramId, body.job_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'daily_chest') {
+        result = await processPetDailyChest(env.DB, telegramId, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'random_event') {
+        result = await processPetRandomEvent(env.DB, telegramId, body.choice, {
           event_key: body.event_key,
           source: 'telegram_pets_api',
         });
@@ -7264,9 +7550,42 @@ async function handleTelegramUpdate(update, env) {
     const chatId = String(query.message?.chat?.id || telegramId || '');
     if (data.startsWith('pet:') && telegramId && chatId) {
       const payload = data.slice(4);
+      const eventKey = buildTelegramCallbackPetEventKey(query, telegramId, data);
       if (payload === 'shop') {
         await answerTelegramCallback(tok, query.id, '/petshop');
         await cmdPetShop(db, tok, chatId, telegramId);
+        return;
+      }
+      if (payload === 'bag') {
+        await answerTelegramCallback(tok, query.id, '/petbag');
+        await cmdPetBag(db, tok, chatId, telegramId);
+        return;
+      }
+      if (payload === 'work') {
+        await answerTelegramCallback(tok, query.id, '/petwork');
+        await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);
+        return;
+      }
+      if (payload.startsWith('work:')) {
+        const jobKey = payload.slice(5);
+        await answerTelegramCallback(tok, query.id, `/petwork ${jobKey}`);
+        await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);
+        return;
+      }
+      if (payload === 'event') {
+        await answerTelegramCallback(tok, query.id, '/petevent');
+        await cmdPetEvent(db, tok, chatId, telegramId, '', eventKey);
+        return;
+      }
+      if (payload.startsWith('event:')) {
+        const choice = payload.slice(6);
+        await answerTelegramCallback(tok, query.id, `/petevent ${choice}`);
+        await cmdPetEvent(db, tok, chatId, telegramId, choice, eventKey);
+        return;
+      }
+      if (payload === 'daily') {
+        await answerTelegramCallback(tok, query.id, '/petdaily');
+        await cmdPetDaily(db, tok, chatId, telegramId, eventKey);
         return;
       }
       if (payload === 'adventure') {
@@ -7277,7 +7596,7 @@ async function handleTelegramUpdate(update, env) {
       const action = normalizePetAction(payload);
       if (action) {
         await answerTelegramCallback(tok, query.id, `/${action}`);
-        await cmdPetAction(db, tok, chatId, telegramId, fromUser, action);
+        await cmdPetAction(db, tok, chatId, telegramId, fromUser, action, eventKey);
       } else {
         await answerTelegramCallback(tok, query.id, 'Unknown pet action');
       }
@@ -7358,6 +7677,7 @@ async function handleTelegramUpdate(update, env) {
   const rawCmd   = spaceIdx === -1 ? text.slice(1) : text.slice(1, spaceIdx);
   const cmdBase  = rawCmd.split('@')[0].toLowerCase(); // strip @botname suffix
   const argStr   = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
+  const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
 
   switch (cmdBase) {
     // ── GK command set ────────────────────────────────────────────────────
@@ -7380,17 +7700,22 @@ async function handleTelegramUpdate(update, env) {
     case 'solve':        await cmdSolve(tok, chatId);                                break;
     case 'profile':      await cmdProfile(db, tok, chatId, telegramId);              break;
     case 'pet':          await cmdPetStatus(db, tok, chatId, telegramId);            break;
-    case 'adopt':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, 'adopt'); break;
+    case 'adopt':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, 'adopt', stableEventKey); break;
     case 'feed':
     case 'play':
     case 'clean':
     case 'sleep':
-    case 'train':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, cmdBase); break;
+    case 'train':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, cmdBase, stableEventKey); break;
     case 'pettrade':     await cmdPetTrade(db, tok, chatId, telegramId, argStr);     break;
     case 'petname':      await cmdPetRename(db, tok, chatId, telegramId, argStr);    break;
     case 'petmissions':  await cmdPetMissions(db, tok, chatId, telegramId);          break;
     case 'petshop':      await cmdPetShop(db, tok, chatId, telegramId);              break;
+    case 'petbag':       await cmdPetBag(db, tok, chatId, telegramId);               break;
     case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr);       break;
+    case 'petuse':       await cmdPetUse(db, tok, chatId, telegramId, argStr, stableEventKey); break;
+    case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr, stableEventKey); break;
+    case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId, stableEventKey); break;
+    case 'petevent':     await cmdPetEvent(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petadventure': await cmdPetAdventure(db, tok, chatId, telegramId, argStr); break;
     case 'petnotify':    await cmdPetNotify(db, tok, chatId, telegramId, argStr);    break;
     case 'petleaderboard':
@@ -7535,7 +7860,12 @@ function petReplyMarkup() {
         { text: 'Train', callback_data: 'pet:train' },
       ],
       [
-        { text: 'Shop', callback_data: 'pet:shop' },
+        { text: 'Bag', callback_data: 'pet:bag' },
+        { text: 'Work', callback_data: 'pet:work' },
+        { text: 'Event', callback_data: 'pet:event' },
+      ],
+      [
+        { text: 'Daily', callback_data: 'pet:daily' },
         { text: 'Adventure', callback_data: 'pet:adventure' },
       ],
       [
@@ -7552,10 +7882,101 @@ async function cmdPetStatus(db, tok, chatId, telegramId) {
   await sendTelegramMessage(tok, chatId, formatPetStatus(pet, missions), { reply_markup: petReplyMarkup() });
 }
 
-async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action) {
+async function cmdPetBag(db, tok, chatId, telegramId) {
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  if (!pet) {
+    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
+    return;
+  }
+  const inventory = await getPetInventory(db, telegramId);
+  const lines = inventory.map((item) => `${item.count > 0 ? '- ' : 'o '} ${escapeHtml(item.key)} - ${escapeHtml(item.title)} x${item.count}`).join('\n');
+  await sendTelegramMessage(tok, chatId, `<b>Crypto Moonboy Pet Bag</b>\n\n${lines}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetUse(db, tok, chatId, telegramId, argStr, eventKey = null) {
+  const itemKey = normalizePetInventoryItemKey(argStr);
+  const result = await processPetUseItem(db, telegramId, itemKey || argStr, {
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petuse', argStr || '']),
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_use_failed' }));
+  if (!result.accepted) {
+    await sendTelegramMessage(tok, chatId, `Pet item use blocked: ${escapeHtml(result.reason || 'not accepted')}.`);
+    return;
+  }
+  await sendTelegramMessage(tok, chatId, `Item used: ${escapeHtml(result.item?.title || itemKey || 'item')}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) {
+  const jobKey = normalizePetJobKey(argStr);
+  if (!jobKey) {
+    const jobs = Object.values(PET_JOBS).map((job) => `- /petwork ${job.key} - ${job.title}`).join('\n');
+    await sendTelegramMessage(tok, chatId, `<b>Pet Jobs</b>\n${jobs}`, {
+      reply_markup: {
+        inline_keyboard: [
+          Object.values(PET_JOBS).map((job) => ({ text: job.title, callback_data: `pet:work:${job.key}` })),
+          [{ text: 'Back', callback_data: 'pet:bag' }],
+        ],
+      },
+    });
+    return;
+  }
+  const result = await processPetJob(db, telegramId, jobKey, {
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petwork', jobKey]),
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_work_failed' }));
+  if (!result.accepted) {
+    const retry = result.retry_after_seconds ? ` Try again in ${result.retry_after_seconds}s.` : '';
+    await sendTelegramMessage(tok, chatId, `Pet job blocked: ${escapeHtml(result.reason || 'not accepted')}.${retry}`);
+    return;
+  }
+  await sendTelegramMessage(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
+  const dayKey = getPetDayKey(new Date());
+  const result = await processPetDailyChest(db, telegramId, {
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'daily', dayKey]),
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_daily_failed' }));
+  if (!result.accepted) {
+    await sendTelegramMessage(tok, chatId, `Daily chest blocked: ${escapeHtml(result.reason || 'not accepted')}.`);
+    return;
+  }
+  await sendTelegramMessage(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetEvent(db, tok, chatId, telegramId, argStr, eventKey = null) {
+  const choice = normalizePetEventChoice(argStr);
+  if (!choice) {
+    await sendTelegramMessage(tok, chatId, '<b>Random Event</b>\nChoose /petevent open, /petevent sell, or /petevent ignore.', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: 'Open', callback_data: 'pet:event:open' },
+            { text: 'Sell', callback_data: 'pet:event:sell' },
+            { text: 'Ignore', callback_data: 'pet:event:ignore' },
+          ],
+          [{ text: 'Back', callback_data: 'pet:bag' }],
+        ],
+      },
+    });
+    return;
+  }
+  const result = await processPetRandomEvent(db, telegramId, choice, {
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petevent', choice]),
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_event_failed' }));
+  if (!result.accepted) {
+    await sendTelegramMessage(tok, chatId, `Event blocked: ${escapeHtml(result.reason || 'not accepted')}.`);
+    return;
+  }
+  await sendTelegramMessage(tok, chatId, `Event resolved: ${escapeHtml(result.reason)}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() });
+}
+
+async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action, stableEventKey = null) {
   await upsertTelegramUser(db, fromUser).catch(() => {});
   const result = await processPetAction(db, telegramId, action, {
-    event_key: `tg:${telegramId}:${action}:${Date.now()}`,
+    event_key: stableEventKey || buildStablePetEventKey(['tg', telegramId, action, 'msg', fromUser?.id || telegramId]),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_action_failed' }));
   if (!result.accepted) {
@@ -7571,7 +7992,7 @@ async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action) {
 
 async function cmdPetTrade(db, tok, chatId, telegramId, argStr) {
   const result = await processPetGoldTrade(db, telegramId, argStr, {
-    event_key: `tg:${telegramId}:trade:${Date.now()}`,
+    event_key: buildStablePetEventKey(['tg', telegramId, 'trade', argStr || 'msg']),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_trade_failed' }));
   if (!result.accepted) {
@@ -7642,7 +8063,7 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const result = await processPetShopPurchase(db, telegramId, itemKey, {
-    event_key: `tg:${telegramId}:buy:${itemKey}:${Date.now()}`,
+    event_key: buildStablePetEventKey(['tg', telegramId, 'buy', itemKey, 'msg']),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_buy_failed' }));
   if (!result.accepted) {
@@ -7657,7 +8078,7 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
 
 async function cmdPetAdventure(db, tok, chatId, telegramId, argStr = '') {
   const result = await processPetAdventure(db, telegramId, argStr, {
-    event_key: `tg:${telegramId}:adventure:${Date.now()}`,
+    event_key: buildStablePetEventKey(['tg', telegramId, 'adventure', argStr || 'msg']),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_adventure_failed' }));
   if (!result.accepted) {

@@ -17,6 +17,11 @@ assert.ok(howTo.includes('/adopt'), 'How To Play must explain /adopt');
 assert.ok(howTo.includes('/feed'), 'How To Play must explain /feed');
 assert.ok(howTo.includes('/train'), 'How To Play must explain /train');
 assert.ok(howTo.includes('/petadventure'), 'How To Play must explain /petadventure');
+assert.ok(howTo.includes('/petbag'), 'How To Play must explain /petbag');
+assert.ok(howTo.includes('/petuse moon_snack'), 'How To Play must explain /petuse');
+assert.ok(howTo.includes('/petwork courier'), 'How To Play must explain /petwork');
+assert.ok(howTo.includes('/petdaily'), 'How To Play must explain /petdaily');
+assert.ok(howTo.includes('/petevent open'), 'How To Play must explain /petevent');
 assert.ok(howTo.includes('/petnotify on'), 'How To Play must explain pet notifications');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
@@ -35,7 +40,7 @@ assert.ok(games.includes('Crypto Moonboy Pets — Telegram Game'), 'games index 
 const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
 assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');
 const searchText = JSON.stringify(entry).toLowerCase();
-for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi', 'roguelite', 'pet leaderboard', 'pet adventure', 'pet notifications', 'moon gold']) {
+for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi', 'roguelite', 'pet leaderboard', 'pet adventure', 'pet notifications', 'moon gold', 'pet bag', 'pet jobs', 'daily chest', 'random event']) {
   assert.ok(searchText.includes(term), `wiki index entry must include search term: ${term}`);
 }
 
