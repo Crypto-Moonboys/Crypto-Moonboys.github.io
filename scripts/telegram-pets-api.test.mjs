@@ -37,6 +37,9 @@ function routeBlock(route) {
 
 assert.ok(worker.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet-only bot secret must be used');
 assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');
+assert.ok(worker.includes('const PET_MEDIA_CATALOG'), 'pet media catalog must exist');
+assert.ok(worker.includes('async function sendTelegramPetMedia'), 'pet media sender must exist');
+assert.ok(worker.includes('Pet media send failed but ignored'), 'pet media failures must be caught and ignored');
 assert.ok(worker.includes("path === '/telegram-pets/action'"), '/telegram-pets/action route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/leaderboard'"), '/telegram-pets/leaderboard route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/state'"), '/telegram-pets/state route must exist');
@@ -159,6 +162,7 @@ assert.ok(worker.includes("toy?.key === 'hoverboard'"), 'hoverboard must affect 
 assert.ok(worker.includes("outfit?.key === 'crown_jacket'"), 'crown_jacket must affect care bonuses');
 assert.ok(worker.includes('buildTelegramMessagePetEventKey'), 'message event keys must be centralized');
 assert.ok(worker.includes('buildTelegramCallbackPetEventKey'), 'callback event keys must be centralized');
+assert.ok(worker.includes("case 'petmedia':"), "Telegram bot command case 'petmedia' must exist");
 
 const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
@@ -230,6 +234,9 @@ for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', '
 for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:shop', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:adventure']) {
   assert.ok(petReply.includes(callback), `petReplyMarkup must preserve ${callback}`);
 }
+for (const callback of ['callback_data: \'pet:feed\'', 'callback_data: \'pet:play\'', 'callback_data: \'pet:clean\'', 'callback_data: \'pet:sleep\'', 'callback_data: \'pet:train\'']) {
+  assert.ok(petReply.includes(callback), `petReplyMarkup must keep ${callback} unchanged`);
+}
 assert.ok(!statusFormatter.includes('??'), 'formatPetStatus must not contain placeholder question marks');
 assert.ok(!petReply.includes('??'), 'petReplyMarkup must not contain placeholder question marks');
 assert.ok(!worker.includes('??? Train'), 'telegram pet UI must not contain the old Train placeholder');
@@ -267,7 +274,7 @@ for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_fo
   assert.ok(economyMigration.includes(`ADD COLUMN ${column}`), `economy migration must add ${column}`);
 }
 
-for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
+for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petadventure':", "case 'petmedia':", "case 'petnotify':", "case 'petleaderboard':"]) {
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
 
