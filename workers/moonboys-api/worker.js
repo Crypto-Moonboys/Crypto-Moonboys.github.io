@@ -7506,6 +7506,7 @@ async function handleTelegramUpdate(update, env) {
     const fromUser = query.from || {};
     const telegramId = String(fromUser.id || '');
     const chatId = String(query.message?.chat?.id || telegramId || '');
+    const petEventKey = getTelegramPetCallbackEventKey(query);
     if (data.startsWith('pet:') && telegramId && chatId) {
       const payload = data.slice(4);
       if (payload === 'shop') {
@@ -7513,9 +7514,31 @@ async function handleTelegramUpdate(update, env) {
         await cmdPetShop(db, tok, chatId, telegramId);
         return;
       }
+      if (payload === 'bag') {
+        await answerTelegramCallback(tok, query.id, '/petbag');
+        await cmdPetBag(db, tok, chatId, telegramId);
+        return;
+      }
       if (payload === 'adventure') {
         await answerTelegramCallback(tok, query.id, '/petadventure');
         await cmdPetAdventure(db, tok, chatId, telegramId);
+        return;
+      }
+      if (payload.startsWith('work:')) {
+        const jobKey = payload.slice(5);
+        await answerTelegramCallback(tok, query.id, `/petwork ${jobKey}`);
+        await cmdPetWork(db, tok, chatId, telegramId, jobKey, petEventKey);
+        return;
+      }
+      if (payload === 'daily') {
+        await answerTelegramCallback(tok, query.id, '/petdaily');
+        await cmdPetDaily(db, tok, chatId, telegramId, petEventKey);
+        return;
+      }
+      if (payload.startsWith('event:')) {
+        const choice = payload.slice(6);
+        await answerTelegramCallback(tok, query.id, `/petevent ${choice}`);
+        await cmdPetEvent(db, tok, chatId, telegramId, choice, petEventKey);
         return;
       }
       const action = normalizePetAction(payload);

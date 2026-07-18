@@ -158,6 +158,14 @@ assert.ok(worker.includes("event_key: eventKey"), 'pet command handlers must for
 assert.ok(worker.includes('message?.message_id'), 'stable command keys must include message identity');
 assert.ok(worker.includes('query.id'), 'stable callback keys must use callback identity');
 assert.ok(worker.includes('query.data'), 'stable callback keys must include callback data');
+assert.ok(worker.includes("payload === 'bag'"), 'callback pet bag action must exist');
+assert.ok(worker.includes("payload === 'daily'"), 'callback pet daily action must exist');
+assert.ok(worker.includes("payload.startsWith('work:')"), 'callback pet work action must exist');
+assert.ok(worker.includes("payload.startsWith('event:')"), 'callback pet event action must exist');
+assert.ok(worker.includes('cmdPetWork(db, tok, chatId, telegramId, jobKey, petEventKey)'), 'callback pet work must forward the stable callback key');
+assert.ok(worker.includes('cmdPetDaily(db, tok, chatId, telegramId, petEventKey)'), 'callback pet daily must forward the stable callback key');
+assert.ok(worker.includes('cmdPetEvent(db, tok, chatId, telegramId, choice, petEventKey)'), 'callback pet event must forward the stable callback key');
+assert.ok(worker.includes('cmdPetBag(db, tok, chatId, telegramId)'), 'callback pet bag must remain read-only and not need an event key');
 
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');
