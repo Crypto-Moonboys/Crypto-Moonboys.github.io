@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
   <style>
-    .game-card{position:relative;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px;max-width:min(1600px,100%);margin:0 auto}
+    .game-card{position:relative;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px;max-width:min(1600px,100%);margin:0 auto}
     .hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
     .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .hud .label{font-size:.7rem;color:var(--color-text-muted)}
@@ -18,9 +18,10 @@
     .kaiju-hud-roll img{width:28px;height:28px;object-fit:contain}
     .kaiju-hud-category{max-width:86px;width:100%;height:auto;display:block}
     .kaiju-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(340px,.85fr);gap:16px;align-items:start}
+    .kaiju-layout>div{min-width:0}
     .kaiju-arena{display:grid;gap:12px}
     .kaiju-arena-shell{position:relative;border:2px solid #f7ab1a;border-radius:18px;background:linear-gradient(180deg,rgba(8,10,18,.98),rgba(11,13,24,.92));box-shadow:0 0 30px rgba(247,171,26,.16) inset;padding:14px;overflow:hidden}
-    #kaijuCanvas{width:100%;aspect-ratio:16/9;display:block;background:#080a12;border-radius:14px}
+    #kaijuCanvas{width:100%;max-height:48vh;aspect-ratio:16/9;display:block;background:#080a12;border:2px solid #f7ab1a;border-radius:14px;box-shadow:0 0 30px rgba(247,171,26,.16) inset}
     .kaiju-modebar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .kaiju-action-btn{position:relative;border:none;background:transparent;padding:0;cursor:pointer;min-width:0}
     .kaiju-action-btn img{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 16px rgba(0,0,0,.35))}
@@ -32,16 +33,16 @@
     .kaiju-status-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#dbe4f1}
     .kaiju-status-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(247,171,26,.13);border:1px solid rgba(247,171,26,.45);color:#fff;font-weight:700}
     .kaiju-status-pill[data-mode="duel"]{background:rgba(40,172,255,.15);border-color:rgba(40,172,255,.55)}
-    .kaiju-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .kaiju-card{border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.055);color:#fff;text-align:left;padding:10px;cursor:pointer;min-width:0}
+    .kaiju-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+    .kaiju-card{min-width:0;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.045);color:#fff;text-align:left;padding:6px;cursor:pointer}
     .kaiju-card:hover,.kaiju-card.selected{border-color:#f7ab1a;background:rgba(247,171,26,.13)}
-    .kaiju-card-name{display:block;font-weight:800;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .kaiju-card-art{display:block;border-radius:10px;margin-bottom:8px;overflow:hidden;background:#080a12;aspect-ratio:3/4}
-    .kaiju-card-art img{width:100%;height:100%;object-fit:cover;display:block}
-    .kaiju-stat-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-    .kaiju-stat-list li{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,.24);border-radius:8px;padding:6px 4px;font-size:.72rem;text-align:center}
-    .kaiju-stat-list img{max-width:36px;width:100%;height:auto;object-fit:contain}
-    .battle-result{min-height:86px;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;background:rgba(0,0,0,.22);display:grid;gap:10px;color:#dbe4f1}
+    .kaiju-card-name{display:block;font-size:.72rem;font-weight:800;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .kaiju-card-art{display:grid;place-items:center;height:112px;border-radius:8px;overflow:hidden;background:#080a12}
+    .kaiju-card-art img{width:100%;height:112px;display:block;object-fit:contain}
+    .kaiju-stat-list{display:none}
+    .kaiju-stat-list li{display:flex;align-items:center;justify-content:space-between;gap:4px;background:rgba(0,0,0,.24);border-radius:8px;padding:4px 5px;font-size:.7rem}
+    .kaiju-stat-list img{max-width:42px;width:68%;height:auto;object-fit:contain}
+    .battle-result{min-height:86px;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;background:rgba(0,0,0,.22);display:grid;gap:6px;color:#dbe4f1}
     .battle-result strong{color:#fff}
     .kaiju-result-stamp{width:72px;height:72px;object-fit:contain;justify-self:center}
     .kaiju-result-category{max-width:112px;width:45%;height:auto}
@@ -60,7 +61,7 @@
     .game-btn:focus-visible{outline:3px solid #fff;outline-offset:3px;border-radius:8px}
     .note{margin-top:14px;color:var(--color-text-muted);font-size:.86rem;line-height:1.5}
     @media(max-width:1120px){.kaiju-layout{grid-template-columns:1fr}.kaiju-modebar{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:860px){.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.battle-box{grid-template-columns:1fr}.battle-vs{order:-1}.kaiju-card-grid{grid-template-columns:repeat(2,minmax(130px,1fr))}}
+    @media(max-width:860px){.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.battle-box{grid-template-columns:1fr}.battle-vs{order:-1}.kaiju-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.kaiju-card-art,.kaiju-card-art img{height:104px}}
     @media(max-width:520px){.kaiju-card-grid,.kaiju-modebar{grid-template-columns:1fr}}
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
