@@ -43,8 +43,13 @@ assert.ok(worker.includes("path === '/telegram-pets/state'"), '/telegram-pets/st
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/shop'"), '/telegram-pets/shop route must exist');
+assert.ok(worker.includes("path === '/telegram-pets/inventory'"), '/telegram-pets/inventory route must exist');
 assert.ok(worker.includes("body.action === 'trade'"), 'telegram pets action route must dispatch trade actions');
 assert.ok(worker.includes("body.action === 'adventure'"), 'telegram pets action route must dispatch adventure actions');
+assert.ok(worker.includes("body.action === 'use_item'"), 'telegram pets action route must dispatch item use actions');
+assert.ok(worker.includes("body.action === 'work'"), 'telegram pets action route must dispatch job actions');
+assert.ok(worker.includes("body.action === 'daily_chest'"), 'telegram pets action route must dispatch daily chest actions');
+assert.ok(worker.includes("body.action === 'random_event'"), 'telegram pets action route must dispatch random event choices');
 
 const verifierStart = worker.indexOf('function verifyPetsBotSecret');
 const verifierEnd = worker.indexOf('async function getOrCreatePetProfile');
@@ -109,6 +114,31 @@ assert.ok(adventure.includes('pet_xp_awarded: petXp'), 'adventures must persist 
 assert.ok(adventure.includes("capReason || 'adventure_complete'"), 'adventures must report completion');
 assert.ok(!adventure.includes('awardCommunityXp'), 'adventures must not award Community XP');
 
+const petInventory = asyncBlock('getPetInventory');
+assert.ok(petInventory.includes('telegram_pet_events'), 'pet inventory must derive from existing pet event audit log');
+assert.ok(petInventory.includes("row.event_type === 'use_item'"), 'pet inventory must subtract used items');
+
+const petItemUse = asyncBlock('processPetItemUse');
+assert.ok(petItemUse.includes("'use_item'"), 'pet item uses must use use_item event type');
+assert.ok(!petItemUse.includes('awardCommunityXp'), 'pet item uses must not award Community XP');
+
+const petWork = asyncBlock('processPetWork');
+assert.ok(petWork.includes("'work'"), 'pet jobs must use work event type');
+assert.ok(petWork.includes('PET_WORK_COOLDOWN_SECONDS'), 'pet jobs must have a cooldown');
+assert.ok(petWork.includes('PETS_DAILY_PET_XP_CAP'), 'pet jobs must enforce the daily pet XP cap');
+assert.ok(petWork.includes('telegram_pet_season_state'), 'pet jobs must update season state');
+assert.ok(!petWork.includes('awardCommunityXp'), 'pet jobs must not award Community XP');
+
+const petDaily = asyncBlock('processPetDailyChest');
+assert.ok(petDaily.includes("'daily_chest'"), 'daily chest must use daily_chest event type');
+assert.ok(petDaily.includes('day_key = ?'), 'daily chest must be limited by UTC day');
+assert.ok(!petDaily.includes('awardCommunityXp'), 'daily chest must not award Community XP');
+
+const petRandomEvent = asyncBlock('processPetRandomEventChoice');
+assert.ok(petRandomEvent.includes("'random_event'"), 'random events must use random_event event type');
+assert.ok(petRandomEvent.includes('PET_EVENT_COOLDOWN_SECONDS'), 'random events must have a cooldown');
+assert.ok(!petRandomEvent.includes('awardCommunityXp'), 'random events must not award Community XP');
+
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');
 assert.ok(notifications.includes('PET_NOTIFICATION_COOLDOWN_MINUTES'), 'pet notifications must apply a cooldown');
@@ -147,7 +177,7 @@ for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_fo
   assert.ok(economyMigration.includes(`ADD COLUMN ${column}`), `economy migration must add ${column}`);
 }
 
-for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbuy':", "case 'pettrade':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
+for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbuy':", "case 'pettrade':", "case 'petadventure':", "case 'petbag':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'petnotify':", "case 'petleaderboard':"]) {
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
 
