@@ -43,6 +43,12 @@ function routeBlock(route) {
   return worker.slice(start, nextRoute === -1 ? worker.length : nextRoute);
 }
 
+function assertOrder(block, earlier, later, message) {
+  assert.ok(block.includes(earlier), `${message} (earlier snippet missing)`);
+  assert.ok(block.includes(later), `${message} (later snippet missing)`);
+  assert.ok(block.indexOf(earlier) < block.indexOf(later), message);
+}
+
 assert.ok(worker.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet-only bot secret must be used');
 assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');
 assert.ok(worker.includes("path === '/telegram-pets/action'"), '/telegram-pets/action route must exist');
@@ -147,6 +153,19 @@ const shopPurchase = asyncBlock('processPetShopPurchase');
 assert.ok(shopPurchase.includes("event_type, event_key"), 'shop purchases must be audited as pet events');
 assert.ok(shopPurchase.includes("'buy'"), 'shop purchases must use buy event type');
 assert.ok(!shopPurchase.includes('awardCommunityXp'), 'shop purchases must not award Community XP');
+assert.ok(shopPurchase.includes("duplicate: true"), 'shop purchases must short-circuit duplicate event keys');
+assertOrder(
+  shopPurchase,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const pet = await getPetProfile(db, telegramId);',
+  'shop purchases must check duplicate event keys before loading the pet'
+);
+assertOrder(
+  shopPurchase,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'if (!canAffordPetItem(pet, item)) return { accepted: false, reason: \'not_enough_pet_currency\', pet };',
+  'shop purchases must check duplicate event keys before spending currency'
+);
 
 const useItem = asyncBlock('processPetUseItem');
 assert.ok(useItem.includes('duplicate'), 'use_item must short-circuit duplicate event keys');
@@ -191,6 +210,25 @@ assert.ok(goldTrade.includes('pet_xp_awarded: petXp'), 'gold trades must persist
 assert.ok(goldTrade.includes('telegram_pet_season_state'), 'gold trades must update season state');
 assert.ok(goldTrade.includes("xp_awarded: 0"), 'gold trades must not award Community XP');
 assert.ok(!goldTrade.includes('awardCommunityXp'), 'gold trades must not call the shared Community XP helper');
+assert.ok(goldTrade.includes("duplicate: true"), 'gold trades must short-circuit duplicate event keys');
+assertOrder(
+  goldTrade,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const pet = await getPetProfile(db, telegramId);',
+  'gold trades must check duplicate event keys before loading the pet'
+);
+assertOrder(
+  goldTrade,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const lastTrade = await db.prepare(`',
+  'gold trades must check duplicate event keys before the cooldown lookup'
+);
+assertOrder(
+  goldTrade,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const roll = Math.random();',
+  'gold trades must check duplicate event keys before the random roll'
+);
 
 const adventure = asyncBlock('processPetAdventure');
 assert.ok(adventure.includes("'adventure'"), 'adventures must use adventure event type');
@@ -204,6 +242,25 @@ assert.ok(adventure.includes('telegram_pet_season_state'), 'adventures must upda
 assert.ok(adventure.includes('pet_xp_awarded: petXp'), 'adventures must persist the capped pet XP amount');
 assert.ok(adventure.includes("capReason || 'adventure_complete'"), 'adventures must report completion');
 assert.ok(!adventure.includes('awardCommunityXp'), 'adventures must not award Community XP');
+assert.ok(adventure.includes("duplicate: true"), 'adventures must short-circuit duplicate event keys');
+assertOrder(
+  adventure,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const pet = await getPetProfile(db, telegramId);',
+  'adventures must check duplicate event keys before loading the pet'
+);
+assertOrder(
+  adventure,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: \'pet_tired\', adventure, pet };',
+  'adventures must check duplicate event keys before energy spend'
+);
+assertOrder(
+  adventure,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const lastAdventure = await db.prepare(`',
+  'adventures must check duplicate event keys before the cooldown lookup'
+);
 
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');

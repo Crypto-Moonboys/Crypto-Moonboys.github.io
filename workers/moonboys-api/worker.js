@@ -2021,6 +2021,9 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:buy:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', pet };
@@ -2033,7 +2036,6 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   pet[`equipped_${item.slot}`] = item.key;
   pet.last_decay_at = now.toISOString();
 
-  const eventKey = String(options.event_key || `pet:buy:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
   await db.prepare(`
     INSERT INTO telegram_pet_events
       (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
@@ -2065,6 +2067,9 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:trade:${telegramId}:${Date.now()}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   if (clampPetCurrency(pet.moon_gold) < wager) return { accepted: false, reason: 'not_enough_moon_gold', pet };
@@ -2105,7 +2110,6 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 
-  const eventKey = String(options.event_key || `pet:trade:${telegramId}:${Date.now()}`).slice(0, 120);
   await db.prepare(`
     INSERT INTO telegram_pet_events
       (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
@@ -2145,6 +2149,9 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${requestedKey || adventureKeyRaw || 'msg'}:${Date.now()}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const available = petAdventuresForPet(pet);
@@ -2200,7 +2207,6 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 
-  const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${adventure.key}:${Date.now()}`).slice(0, 120);
   await db.prepare(`
     INSERT INTO telegram_pet_events
       (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
