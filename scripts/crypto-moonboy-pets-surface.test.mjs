@@ -29,6 +29,8 @@ assert.ok(howTo.includes('no financial promises'), 'How To Play must include no-
 assert.ok(howTo.includes('pet-card-gallery'), 'How To Play must include a pet card gallery');
 assert.ok(howTo.includes('Crypto Moonboys Pet Feed card'), 'How To Play must preview the feed card');
 assert.ok(howTo.includes('Crypto Moonboys Pet How To Play card'), 'How To Play must preview the how-to-play card');
+assert.match(howTo, /\.pet-card-gallery img\s*\{[\s\S]*aspect-ratio:\s*4 \/ 5;[\s\S]*object-fit:\s*contain;/, 'pet card gallery must show full portrait card art without cropping');
+assert.doesNotMatch(howTo, /\.pet-card-gallery img\s*\{[\s\S]*object-fit:\s*cover;/, 'pet card gallery must not crop card art');
 assert.ok(!leaderboard.includes('pet-card-gallery'), 'Leaderboard page must not dump the pet card gallery');
 assert.ok(!community.includes('pet-card-gallery'), 'Community page must not dump the pet card gallery');
 
