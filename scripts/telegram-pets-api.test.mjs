@@ -202,6 +202,8 @@ assert.ok(shopPurchase.includes("event_type, event_key"), 'shop purchases must b
 assert.ok(shopPurchase.includes("'buy'"), 'shop purchases must use buy event type');
 assert.ok(!shopPurchase.includes('awardCommunityXp'), 'shop purchases must not award Community XP');
 assert.ok(shopPurchase.includes("duplicate: true"), 'shop purchases must short-circuit duplicate event keys');
+assert.ok(shopPurchase.includes("reason: 'already_equipped'"), 'shop purchases must not charge again for already equipped upgrades');
+assert.ok(shopPurchase.includes("reason: 'not_enough_pet_currency'"), 'shop purchases must reject unaffordable shop buttons');
 assertOrder(
   shopPurchase,
   "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
@@ -211,7 +213,7 @@ assertOrder(
 assertOrder(
   shopPurchase,
   "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
-  'if (!canAffordPetItem(pet, item)) return { accepted: false, reason: \'not_enough_pet_currency\', pet };',
+  'if (!canAffordPetItem(pet, item)) return { accepted: false, reason: \'not_enough_pet_currency\', item, pet };',
   'shop purchases must check duplicate event keys before spending currency'
 );
 
@@ -411,6 +413,16 @@ assert.ok(petAdventure.includes('That adventure button was already handled'), '/
 assert.ok(!petAdventure.includes('Adventure Complete'), '/petadventure command must not emit the old instant-complete copy');
 assert.ok(worker.includes('callback_data: `pet:adventure:${encounter.key}:${choice.key}`'), 'adventure buttons must carry encounter and choice keys');
 
+const petShop = asyncBlock('cmdPetShop');
+assert.ok(petShop.includes('buildPetShopReplyMarkup(items)'), '/petshop command must render clickable shop buttons');
+assert.ok(worker.includes('function buildPetShopReplyMarkup'), 'shop must have a dedicated reply markup builder');
+assert.ok(worker.includes('callback_data: `pet:buy:${item.key}`'), 'shop item buttons must carry item buy callbacks');
+
+const petBuy = asyncBlock('cmdPetBuy');
+assert.ok(petBuy.includes('eventKey = null'), '/petbuy command must accept an optional eventKey');
+assert.ok(petBuy.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'buy', itemKey, 'msg'])"), '/petbuy command must use callback/message event keys before fallback keys');
+assert.ok(petBuy.includes('if (result.duplicate)'), '/petbuy command must guard duplicate button taps');
+
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
 for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
   assert.ok(petReply.includes(label), `petReplyMarkup must include ${label}`);
@@ -442,6 +454,7 @@ assert.ok(
 for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
   "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
+  "await cmdPetBuy(db, tok, chatId, telegramId, itemKey, eventKey);",
   "await cmdPetDaily(db, tok, chatId, telegramId, eventKey);",
   "await cmdPetEvent(db, tok, chatId, telegramId, '', eventKey);",
   "const eventParts = eventPayload.split(':');",
@@ -454,6 +467,12 @@ for (const call of [
 ]) {
   assert.ok(callbackBranch.includes(call), `callback branch must include ${call}`);
 }
+
+const commandSwitch = worker.slice(worker.indexOf('switch (cmdBase)'), worker.indexOf('async function cmdGkStart'));
+assert.ok(
+  commandSwitch.includes("case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr, stableEventKey); break;"),
+  '/petbuy text command must pass the Telegram message stableEventKey'
+);
 
 const petBag = asyncBlock('cmdPetBag');
 assert.ok(petBag.includes('getPetInventory(db, telegramId)'), '/petbag command must show the inventory');
@@ -482,4 +501,3 @@ for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'pl
 }
 
 console.log('telegram-pets-api.test.mjs passed');
-

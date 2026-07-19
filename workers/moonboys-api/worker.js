@@ -2192,8 +2192,9 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
-  if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', pet };
-  if (!canAffordPetItem(pet, item)) return { accepted: false, reason: 'not_enough_pet_currency', pet };
+  if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', item, pet };
+  if (String(pet[`equipped_${item.slot}`] || '') === item.key) return { accepted: false, reason: 'already_equipped', item, pet };
+  if (!canAffordPetItem(pet, item)) return { accepted: false, reason: 'not_enough_pet_currency', item, pet };
 
   const cost = item.cost || {};
   pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) - (cost.moon_gold || 0));
@@ -8051,6 +8052,27 @@ function buildPetAdventureReplyMarkup(encounter) {
   };
 }
 
+function buildPetShopReplyMarkup(items = []) {
+  const rows = [];
+  for (let index = 0; index < items.length; index += 2) {
+    rows.push(items.slice(index, index + 2).map((item) => {
+      const label = item.equipped
+        ? `Equipped ${item.title}`
+        : item.affordable
+          ? `Buy ${item.title}`
+          : item.unlocked
+            ? `Need currency ${item.title}`
+            : `Level ${item.min_level} ${item.title}`;
+      return {
+        text: label,
+        callback_data: `pet:buy:${item.key}`,
+      };
+    }));
+  }
+  rows.push([{ text: 'Back', callback_data: 'pet:bag' }]);
+  return { inline_keyboard: rows };
+}
+
 function rollPetRange(range, fallback = 0) {
   if (Array.isArray(range) && range.length) {
     const min = Number(range[0] ?? fallback);
@@ -8231,6 +8253,7 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetMediaUrl,
   buildPetRandomEventReplyMarkup,
   buildPetAdventureReplyMarkup,
+  buildPetShopReplyMarkup,
   formatPetRandomEventSummary,
   formatPetAdventureSummary,
   resolvePetMediaKey,
@@ -8261,6 +8284,12 @@ async function handleTelegramUpdate(update, env) {
       if (payload === 'shop') {
         await answerTelegramCallback(tok, query.id, '/petshop');
         await cmdPetShop(db, tok, chatId, telegramId);
+        return;
+      }
+      if (payload.startsWith('buy:')) {
+        const itemKey = payload.slice(4);
+        await answerTelegramCallback(tok, query.id, `/petbuy ${itemKey}`);
+        await cmdPetBuy(db, tok, chatId, telegramId, itemKey, eventKey);
         return;
       }
       if (payload === 'bag') {
@@ -8442,7 +8471,7 @@ async function handleTelegramUpdate(update, env) {
     case 'petmissions':  await cmdPetMissions(db, tok, chatId, telegramId);          break;
     case 'petshop':      await cmdPetShop(db, tok, chatId, telegramId);              break;
     case 'petbag':       await cmdPetBag(db, tok, chatId, telegramId);               break;
-    case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr);       break;
+    case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petuse':       await cmdPetUse(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId, stableEventKey); break;
@@ -8655,6 +8684,9 @@ function formatPetBlockedCopy(kind, reason, extra = {}) {
     return `Moonpet needs a short break before another ${kind}. Try again in ${extra.retry_after_seconds || 0}s.`;
   }
   if (code === 'pet_not_adopted') return `You need a Moonpet first. Use /adopt to start.`;
+  if (code === 'already_equipped') return `That ${kind} is already equipped.`;
+  if (code === 'level_locked') return `That ${kind} unlocks at level ${extra.item?.min_level || '?'}.`;
+  if (code === 'not_enough_pet_currency') return `Not enough pet currency for that ${kind}. Run /petshop to check the cost.`;
   if (code === 'item_not_found' || code === 'insufficient_gold' || code === 'insufficient_crystals' || code === 'insufficient_style') {
     return `That ${kind} is not available right now. Check /petbag or /petshop and try again.`;
   }
@@ -8803,7 +8835,8 @@ async function cmdPetShop(db, tok, chatId, telegramId) {
     return;
   }
   const p = serializePet(pet);
-  const lines = petShopItemsForPet(pet).map((item) => {
+  const items = petShopItemsForPet(pet);
+  const lines = items.map((item) => {
     const cost = item.cost || {};
     const state = item.equipped ? 'equipped' : item.affordable ? 'ready' : item.unlocked ? 'need currency' : `level ${item.min_level}`;
     return `${item.equipped ? '✅' : '⬜'} <code>${escapeHtml(item.key)}</code> — ${escapeHtml(item.title)} [${escapeHtml(state)}]\n` +
@@ -8818,21 +8851,25 @@ async function cmdPetShop(db, tok, chatId, telegramId) {
     `🎰 Risk game gold: <code>/pettrade 25</code>\n` +
     `🚀 Adventures: <code>/petadventure</code>\n` +
     `🔔 Alerts: <code>/petnotify on</code>`,
-    { reply_markup: petReplyMarkup() },
+    { reply_markup: buildPetShopReplyMarkup(items) },
     'shop',
   );
 }
 
-async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
+async function cmdPetBuy(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const itemKey = normalizePetShopItemKey(argStr);
   if (!itemKey) {
     await sendTelegramMessage(tok, chatId, 'Use it like this: /petbuy moon_kibble. Run /petshop to see item keys.');
     return;
   }
   const result = await processPetShopPurchase(db, telegramId, itemKey, {
-    event_key: buildStablePetEventKey(['tg', telegramId, 'buy', itemKey, 'msg']),
+    event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'buy', itemKey, 'msg']),
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_buy_failed' }));
+  if (result.duplicate) {
+    await sendTelegramMessage(tok, chatId, 'That shop button was already handled. Open Shop again to buy another upgrade.');
+    return;
+  }
   if (!result.accepted) {
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('shop purchase', result.reason, result));
     return;
