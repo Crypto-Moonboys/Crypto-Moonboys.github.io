@@ -1419,6 +1419,122 @@ const PET_ADVENTURES = Object.freeze([
   },
 ]);
 
+function hashPetAdventureSeed(value) {
+  let hash = 0;
+  const text = String(value || '');
+  for (let index = 0; index < text.length; index += 1) {
+    hash = ((hash * 31) + text.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function scalePetAdventureRange(baseValue, minRatio, maxRatio, floor = 0) {
+  const base = Math.max(0, Number(baseValue) || 0);
+  const min = Math.max(floor, Math.floor(base * minRatio));
+  const max = Math.max(min, Math.ceil(base * maxRatio));
+  return [min, max];
+}
+
+function buildPetAdventureEncounter(adventure) {
+  const energy = Math.max(1, Number(adventure.energy_cost) || 1);
+  const hunger = Math.max(0, Number(adventure.hunger_cost) || 0);
+  const petXp = Math.max(1, Number(adventure.pet_xp) || 1);
+  const gold = Math.max(0, Number(adventure.gold) || 0);
+  const crystals = Math.max(0, Number(adventure.crystals) || 0);
+  const styleTokens = Math.max(0, Number(adventure.style_tokens) || 0);
+  return Object.freeze({
+    key: adventure.key,
+    title: adventure.title,
+    intro: `The ${adventure.title.toLowerCase()} splits into a few dangerous lines. Pick your move.`,
+    adventure,
+    choices: Object.freeze([
+      Object.freeze({
+        key: 'push_forward',
+        label: 'Push Forward',
+        copy: 'You lean into the run and squeeze out the biggest haul.',
+        rewards: Object.freeze({
+          pet_xp: scalePetAdventureRange(petXp, 0.95, 1.25, 8),
+          moon_gold: scalePetAdventureRange(gold, 0.75, 1.2, 4),
+          moon_crystals: scalePetAdventureRange(crystals + 1, 0, 1, 0),
+          style_tokens: scalePetAdventureRange(styleTokens + 1, 0, 1, 0),
+        }),
+        costs: Object.freeze({
+          energy: scalePetAdventureRange(energy, 0.55, 0.85, 1),
+          hunger: scalePetAdventureRange(hunger, 0.55, 1.05, 0),
+        }),
+        risk: Object.freeze({
+          chance: 0.35,
+          copy: 'The route gets messy, but you still salvage a win.',
+          rewards: Object.freeze({
+            pet_xp: scalePetAdventureRange(petXp, 0.5, 0.85, 4),
+            moon_gold: scalePetAdventureRange(gold, 0.35, 0.7, 2),
+          }),
+          costs: Object.freeze({
+            energy: scalePetAdventureRange(energy, 0.75, 1.15, 1),
+            hunger: scalePetAdventureRange(hunger, 0.8, 1.2, 0),
+          }),
+        }),
+      }),
+      Object.freeze({
+        key: 'scan_the_route',
+        label: 'Scan the Route',
+        copy: 'You read the scene first and take the smarter opening.',
+        rewards: Object.freeze({
+          pet_xp: scalePetAdventureRange(petXp, 0.75, 1.05, 6),
+          moon_gold: scalePetAdventureRange(gold, 0.6, 0.9, 3),
+          style_tokens: scalePetAdventureRange(styleTokens + 1, 0, 1, 0),
+        }),
+        costs: Object.freeze({
+          energy: scalePetAdventureRange(energy, 0.35, 0.65, 0),
+          hunger: scalePetAdventureRange(hunger, 0.4, 0.8, 0),
+        }),
+        risk: Object.freeze({
+          chance: 0.25,
+          copy: 'The detour takes longer, but you still come out ahead.',
+          rewards: Object.freeze({
+            pet_xp: scalePetAdventureRange(petXp, 0.45, 0.75, 3),
+            moon_gold: scalePetAdventureRange(gold, 0.25, 0.55, 1),
+          }),
+          costs: Object.freeze({
+            energy: scalePetAdventureRange(energy, 0.45, 0.9, 0),
+            hunger: scalePetAdventureRange(hunger, 0.5, 1.0, 0),
+          }),
+        }),
+      }),
+      Object.freeze({
+        key: 'cash_out',
+        label: 'Cash Out',
+        copy: 'You bank a clean smaller win and keep the pet in one piece.',
+        rewards: Object.freeze({
+          pet_xp: scalePetAdventureRange(petXp, 0.45, 0.75, 4),
+          moon_gold: scalePetAdventureRange(gold, 0.35, 0.6, 2),
+          moon_crystals: scalePetAdventureRange(crystals, 0, 1, 0),
+        }),
+        costs: Object.freeze({
+          energy: scalePetAdventureRange(energy, 0.15, 0.4, 0),
+          hunger: scalePetAdventureRange(hunger, 0.2, 0.5, 0),
+        }),
+        risk: Object.freeze({
+          chance: 0.15,
+          copy: 'The safe route runs longer than expected, but you still pocket something.',
+          rewards: Object.freeze({
+            pet_xp: scalePetAdventureRange(petXp, 0.2, 0.45, 2),
+            moon_gold: scalePetAdventureRange(gold, 0.1, 0.3, 0),
+          }),
+          costs: Object.freeze({
+            energy: scalePetAdventureRange(energy, 0.2, 0.6, 0),
+            hunger: scalePetAdventureRange(hunger, 0.25, 0.75, 0),
+          }),
+        }),
+      }),
+    ]),
+  });
+}
+
+const PET_ADVENTURE_ENCOUNTERS = Object.freeze(Object.fromEntries(
+  PET_ADVENTURES.map((adventure) => [adventure.key, buildPetAdventureEncounter(adventure)]),
+));
+
 function clampPetStat(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 }
@@ -2194,23 +2310,28 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
 }
 
 async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}) {
-  const requestedKey = normalizePetAdventureKey(adventureKeyRaw);
+  const requestedChoice = normalizePetAdventureChoice(adventureKeyRaw);
+  const encounterKey = String(options.encounter_key || options.encounterKey || '').trim();
   const now = new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
-  const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${requestedKey || adventureKeyRaw || 'msg'}:${Date.now()}`).slice(0, 120);
+  const encounter = resolvePetAdventureEncounter(encounterKey || options.event_key || options.eventKey) || options.encounter || null;
+  if (!encounter) return { accepted: false, reason: 'adventure_unavailable', xp_awarded: 0, pet_xp_awarded: 0 };
+  const choice = requestedChoice
+    ? encounter.choices.find((entry) => entry.key === requestedChoice) || null
+    : null;
+  if (!choice) return { accepted: false, reason: 'invalid_adventure_choice', encounter, xp_awarded: 0, pet_xp_awarded: 0 };
+  const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${encounter.key}:${choice.key}:${Date.now()}`).slice(0, 120);
   const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
-  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
   const pet = await getPetProfile(db, telegramId);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
   const available = petAdventuresForPet(pet);
-  const adventure = (requestedKey
-    ? available.find((item) => item.key === requestedKey)
-    : [...available].reverse().find((item) => item.unlocked)) || available[0];
-  if (!adventure) return { accepted: false, reason: 'adventure_unavailable', pet };
-  if (!adventure.unlocked) return { accepted: false, reason: 'level_locked', adventure, pet };
-  if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: 'pet_tired', adventure, pet };
+  const adventure = available.find((item) => item.key === encounter.key) || null;
+  if (!adventure) return { accepted: false, reason: 'adventure_unavailable', encounter, choice, pet };
+  if (!adventure.unlocked) return { accepted: false, reason: 'level_locked', encounter, choice, adventure, pet };
+  if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: 'pet_tired', encounter, choice, adventure, pet };
 
   const lastAdventure = await db.prepare(`
     SELECT created_at FROM telegram_pet_events
@@ -2226,6 +2347,8 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
         retry_after_seconds: Math.max(1, Math.ceil(PET_ADVENTURE_COOLDOWN_SECONDS - elapsedSeconds)),
         xp_awarded: 0,
         pet_xp_awarded: 0,
+        encounter,
+        choice,
         adventure,
         pet,
       };
@@ -2233,30 +2356,25 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   }
 
   const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
-  let petXp = adventure.pet_xp;
-  let capReason = null;
+  const outcome = pickPetRandomEventOutcome(choice);
+  const applied = applyPetRandomEventDeltas(
+    pet,
+    { ...outcome.rewards },
+    outcome.costs,
+  );
   if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) {
-    petXp = 0;
-    capReason = 'pet_daily_cap_reached';
-  } else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) {
-    petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
-    capReason = 'pet_daily_cap_clamped';
+    pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) - (applied.rewardsApplied.pet_xp || 0)));
+    applied.rewardsApplied.pet_xp = 0;
+    applied.deltas.pet_xp = 0;
+  } else if (totals.day.pet_xp + (applied.rewardsApplied.pet_xp || 0) > PETS_DAILY_PET_XP_CAP) {
+    const clampedPetXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+    pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) - ((applied.rewardsApplied.pet_xp || 0) - clampedPetXp)));
+    applied.rewardsApplied.pet_xp = clampedPetXp;
+    applied.deltas.pet_xp = clampedPetXp;
   }
-  const toy = getPetEquippedItem(pet, 'toy');
-  const outfit = getPetEquippedItem(pet, 'outfit');
-  const bonusGold = toy?.key === 'hoverboard' ? 10 : 0;
-  const bonusStyle = outfit?.key === 'crown_jacket' ? 2 : 0;
 
-  pet.energy = clampPetStat(Number(pet.energy || 0) - adventure.energy_cost);
-  pet.hunger = clampPetStat(Number(pet.hunger || 0) + adventure.hunger_cost);
-  pet.happiness = clampPetStat(Number(pet.happiness || 0) + 8);
-  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + adventure.gold + bonusGold);
-  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + adventure.crystals);
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + adventure.style_tokens + bonusStyle);
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
-
   await db.prepare(`
     INSERT INTO telegram_pet_events
       (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
@@ -2265,26 +2383,21 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
     crypto.randomUUID(),
     telegramId,
     eventKey,
-    petXp,
+    applied.deltas.pet_xp,
     season.key,
     dayKey,
     weekKey,
-    capReason || 'adventure_complete',
+    `${encounter.key}:${choice.key}:${outcome.kind}`,
     JSON.stringify({
       source: options.source || 'telegram_bot',
-      adventure_key: adventure.key,
-      requested_pet_xp: adventure.pet_xp,
-      awarded_pet_xp: petXp,
-      rewards: {
-        moon_gold: adventure.gold + bonusGold,
-        moon_crystals: adventure.crystals,
-        style_tokens: adventure.style_tokens + bonusStyle,
-      },
-      costs: {
-        energy: adventure.energy_cost,
-        hunger: adventure.hunger_cost,
-      },
-      cap_reason: capReason,
+      encounter_key: encounter.key,
+      encounter_title: encounter.title,
+      choice_key: choice.key,
+      choice_label: choice.label,
+      result_kind: outcome.kind,
+      rewards: applied.rewardsApplied,
+      costs: applied.costsApplied,
+      copy: outcome.copy,
     }),
   ).run();
 
@@ -2300,9 +2413,19 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
       daily_key = excluded.daily_key,
       weekly_key = excluded.weekly_key,
       updated_at = CURRENT_TIMESTAMP
-  `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
+  `).bind(telegramId, season.key, applied.deltas.pet_xp, applied.deltas.pet_xp, applied.deltas.pet_xp, dayKey, weekKey).run();
 
-  return { accepted: true, reason: capReason || 'adventure_complete', adventure, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+  return {
+    accepted: true,
+    reason: `${encounter.key}:${choice.key}`,
+    encounter,
+    choice,
+    result_copy: outcome.copy,
+    applied,
+    xp_awarded: 0,
+    pet_xp_awarded: applied.deltas.pet_xp,
+    pet,
+  };
 }
 
 function serializePet(pet) {
@@ -7845,6 +7968,15 @@ function normalizePetRandomEventChoice(value) {
   return null;
 }
 
+function normalizePetAdventureChoice(value) {
+  const key = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_:-]/g, '').replace(/-/g, '_');
+  if (!key) return null;
+  for (const encounter of Object.values(PET_ADVENTURE_ENCOUNTERS)) {
+    if (encounter.choices.some((choice) => choice.key === key)) return key;
+  }
+  return null;
+}
+
 function splitPetRandomEventKey(eventKey) {
   const key = String(eventKey || '').trim().toLowerCase();
   if (!key) return null;
@@ -7874,6 +8006,45 @@ function buildPetRandomEventReplyMarkup(encounter) {
       encounter.choices.map((choice) => ({
         text: choice.label,
         callback_data: `pet:event:${encounter.event_key}:${choice.key}`,
+      })),
+      [{ text: 'Back', callback_data: 'pet:bag' }],
+    ],
+  };
+}
+
+function splitPetAdventureKey(eventKey) {
+  const key = String(eventKey || '').trim().toLowerCase();
+  if (!key) return null;
+  const baseKey = key.split('-')[0];
+  return PET_ADVENTURE_ENCOUNTERS[baseKey] ? baseKey : null;
+}
+
+function resolvePetAdventureEncounter(eventKey) {
+  const baseKey = splitPetAdventureKey(eventKey);
+  return baseKey ? PET_ADVENTURE_ENCOUNTERS[baseKey] : null;
+}
+
+function selectPetAdventureEncounter(pet = null, seed = null) {
+  const unlocked = petAdventuresForPet(pet).filter((adventure) => adventure.unlocked);
+  const encounters = unlocked
+    .map((adventure) => PET_ADVENTURE_ENCOUNTERS[adventure.key])
+    .filter(Boolean);
+  if (!encounters.length) return null;
+  const index = seed == null || seed === ''
+    ? Math.floor(Math.random() * encounters.length)
+    : hashPetAdventureSeed(seed) % encounters.length;
+  return Object.freeze({
+    ...encounters[index],
+    event_key: String(seed || encounters[index].key),
+  });
+}
+
+function buildPetAdventureReplyMarkup(encounter) {
+  return {
+    inline_keyboard: [
+      encounter.choices.map((choice) => ({
+        text: choice.label,
+        callback_data: `pet:adventure:${encounter.key}:${choice.key}`,
       })),
       [{ text: 'Back', callback_data: 'pet:bag' }],
     ],
@@ -8009,6 +8180,10 @@ function formatPetRandomEventSummary(event, choice, outcome, applied = {}) {
   ].join('\n');
 }
 
+function formatPetAdventureSummary(event, choice, outcome, applied = {}) {
+  return formatPetRandomEventSummary(event, choice, outcome, applied);
+}
+
 async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
   if (!botToken || !chatId || !photo) {
     return { ok: false, status: 0, error: 'missing_chat_or_token_or_photo' };
@@ -8055,10 +8230,14 @@ export const __petMediaTestHooks = Object.freeze({
   PET_RANDOM_EVENTS,
   buildPetMediaUrl,
   buildPetRandomEventReplyMarkup,
+  buildPetAdventureReplyMarkup,
   formatPetRandomEventSummary,
+  formatPetAdventureSummary,
   resolvePetMediaKey,
+  resolvePetAdventureEncounter,
   resolvePetRandomEncounter,
   resolvePetOutcomeMediaKey,
+  selectPetAdventureEncounter,
   selectPetRandomEncounter,
   sendTelegramPhoto,
   sendTelegramPetReply,
@@ -8127,7 +8306,22 @@ async function handleTelegramUpdate(update, env) {
       }
       if (payload === 'adventure') {
         await answerTelegramCallback(tok, query.id, '/petadventure');
-        await cmdPetAdventure(db, tok, chatId, telegramId);
+        await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);
+        return;
+      }
+      if (payload.startsWith('adventure:')) {
+        const adventurePayload = payload.slice(10);
+        const adventureParts = adventurePayload.split(':');
+        if (adventureParts.length >= 2) {
+          const choice = adventureParts.pop();
+          const encounterKey = adventureParts.join(':');
+          await answerTelegramCallback(tok, query.id, `/petadventure ${choice}`);
+          await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);
+          return;
+        }
+        const choice = adventureParts[0];
+        await answerTelegramCallback(tok, query.id, `/petadventure ${choice}`);
+        await cmdPetAdventure(db, tok, chatId, telegramId, choice, eventKey);
         return;
       }
       const action = normalizePetAction(payload);
@@ -8253,7 +8447,7 @@ async function handleTelegramUpdate(update, env) {
     case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId, stableEventKey); break;
     case 'petevent':     await cmdPetEvent(db, tok, chatId, telegramId, argStr, stableEventKey); break;
-    case 'petadventure': await cmdPetAdventure(db, tok, chatId, telegramId, argStr); break;
+    case 'petadventure': await cmdPetAdventure(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petnotify':    await cmdPetNotify(db, tok, chatId, telegramId, argStr);    break;
     case 'petleaderboard':
     case 'petscore':     await cmdPetLeaderboard(db, tok, chatId);                   break;
@@ -8646,17 +8840,53 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr) {
   await sendTelegramPetReply(tok, chatId, `🛒 Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'purchase_complete');
 }
 
-async function cmdPetAdventure(db, tok, chatId, telegramId, argStr = '') {
-  const result = await processPetAdventure(db, telegramId, argStr, {
-    event_key: buildStablePetEventKey(['tg', telegramId, 'adventure', argStr || 'msg']),
-    source: 'telegram_command',
-  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_adventure_failed' }));
-  if (!result.accepted) {
-    await sendTelegramPetReply(tok, chatId, formatPetBlockedCopy('adventure', result.reason, result), {}, 'adventure_fail');
+async function cmdPetAdventure(db, tok, chatId, telegramId, argStr = '', eventKey = null) {
+  const adventureParts = String(argStr || '').split(':').map((part) => String(part || '').trim()).filter(Boolean);
+  const encounterKey = adventureParts.length >= 2 ? adventureParts.slice(0, -1).join(':') : null;
+  const choiceKey = normalizePetAdventureChoice(adventureParts.length ? adventureParts[adventureParts.length - 1] : argStr);
+  if (!choiceKey) {
+    const pet = await getPetProfile(db, telegramId).catch(() => null);
+    if (!pet) {
+      await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
+      return;
+    }
+    const encounter = selectPetAdventureEncounter(pet, eventKey || buildStablePetEventKey(['tg', telegramId, 'adventure', 'open']));
+    if (!encounter) {
+      await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('adventure', 'adventure_unavailable', { pet }));
+      return;
+    }
+    await sendTelegramPetReply(
+      tok,
+      chatId,
+      `<b>${escapeHtml(encounter.title)}</b>\n${escapeHtml(encounter.intro)}\n\nChoose one of the actions below.`,
+      { reply_markup: buildPetAdventureReplyMarkup(encounter) },
+      'adventure',
+    );
     return;
   }
-  const title = result.adventure?.title || '🚀 Adventure Complete';
-  await sendTelegramPetReply(tok, chatId, `${escapeHtml(title)}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'adventure_win');
+
+  const stableAdventureEventKey = eventKey || buildStablePetEventKey([
+    'tg',
+    telegramId,
+    'adventure',
+    encounterKey || 'encounter',
+    choiceKey,
+  ]);
+  const result = await processPetAdventure(db, telegramId, choiceKey, {
+    event_key: stableAdventureEventKey,
+    encounter_key: encounterKey || stableAdventureEventKey,
+    source: 'telegram_command',
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_adventure_failed' }));
+  if (result.duplicate) {
+    await sendTelegramMessage(tok, chatId, 'That adventure button was already handled. Tap Adventure again for a fresh run.');
+    return;
+  }
+  if (!result.accepted) {
+    await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('adventure', result.reason, result));
+    return;
+  }
+  const summary = formatPetAdventureSummary(result.encounter, result.choice, { copy: result.result_copy }, result.applied);
+  await sendTelegramPetReply(tok, chatId, `${summary}\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'adventure_win');
 }
 
 async function cmdPetNotify(db, tok, chatId, telegramId, argStr = '') {

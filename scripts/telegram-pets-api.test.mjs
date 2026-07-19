@@ -289,19 +289,21 @@ assertOrder(
 );
 
 const adventure = asyncBlock('processPetAdventure');
-assert.ok(adventure.includes("'adventure'"), 'adventures must use adventure event type');
+assert.ok(adventure.includes('normalizePetAdventureChoice'), 'adventures must parse choice keys');
+assert.ok(adventure.includes('resolvePetAdventureEncounter'), 'adventures must resolve encounter keys');
 assert.ok(adventure.includes('PET_ADVENTURE_COOLDOWN_SECONDS'), 'adventures must have a cooldown');
 assert.ok(adventure.includes('PETS_DAILY_PET_XP_CAP'), 'adventures must apply the daily pet XP cap');
 assert.ok(adventure.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'adventures must read daily totals before awarding pet XP');
+assert.ok(adventure.includes('pickPetRandomEventOutcome(choice)'), 'adventures must reuse the roguelite outcome roll');
+assert.ok(adventure.includes('applyPetRandomEventDeltas('), 'adventures must apply roguelite-style deltas');
 assert.ok(adventure.includes('getPetProfile(db, telegramId)'), 'adventures must look up the pet by telegramId');
-assert.ok(adventure.includes("getPetEquippedItem(pet, 'toy')"), 'adventures must read equipped toy bonuses');
-assert.ok(adventure.includes("bonusGold"), 'adventures must calculate bonus gold');
-assert.ok(adventure.includes("bonusStyle"), 'adventures must calculate bonus style tokens');
 assert.ok(adventure.includes('telegram_pet_season_state'), 'adventures must update season state');
-assert.ok(adventure.includes('pet_xp_awarded: petXp'), 'adventures must persist the capped pet XP amount');
-assert.ok(adventure.includes("capReason || 'adventure_complete'"), 'adventures must report completion');
+assert.ok(adventure.includes('pet_xp_awarded: applied.deltas.pet_xp'), 'adventures must persist the capped pet XP amount');
+assert.ok(adventure.includes("reason: `${encounter.key}:${choice.key}`"), 'adventures must report the encounter and choice');
 assert.ok(!adventure.includes('awardCommunityXp'), 'adventures must not award Community XP');
 assert.ok(adventure.includes("duplicate: true"), 'adventures must short-circuit duplicate event keys');
+assert.ok(adventure.includes("reason: 'invalid_adventure_choice'"), 'adventures must reject invalid choices');
+assert.ok(adventure.includes("reason: 'adventure_unavailable'"), 'adventures must reject missing encounters');
 assertOrder(
   adventure,
   "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
@@ -311,7 +313,7 @@ assertOrder(
 assertOrder(
   adventure,
   "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
-  'if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: \'pet_tired\', adventure, pet };',
+  'if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: \'pet_tired\', encounter, choice, adventure, pet };',
   'adventures must check duplicate event keys before energy spend'
 );
 assertOrder(
@@ -399,6 +401,16 @@ assert.ok(petEvent.includes('formatPetRandomEventSummary'), '/petevent command m
 assert.ok(petEvent.includes('processPetRandomEvent'), '/petevent command must still resolve encounter choices');
 assert.ok(!petEvent.includes('Event resolved:'), '/petevent command must not use the old single-step result copy');
 
+const petAdventure = asyncBlock('cmdPetAdventure');
+assert.ok(petAdventure.includes('eventKey = null'), '/petadventure command must accept an optional eventKey');
+assert.ok(petAdventure.includes('selectPetAdventureEncounter'), '/petadventure command must open an encounter');
+assert.ok(petAdventure.includes('buildPetAdventureReplyMarkup'), '/petadventure command must render encounter buttons');
+assert.ok(petAdventure.includes('processPetAdventure'), '/petadventure command must resolve adventure choices');
+assert.ok(petAdventure.includes('formatPetAdventureSummary'), '/petadventure command must render adventure results');
+assert.ok(petAdventure.includes('That adventure button was already handled'), '/petadventure command must guard duplicate taps');
+assert.ok(!petAdventure.includes('Adventure Complete'), '/petadventure command must not emit the old instant-complete copy');
+assert.ok(worker.includes('callback_data: `pet:adventure:${encounter.key}:${choice.key}`'), 'adventure buttons must carry encounter and choice keys');
+
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
 for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
   assert.ok(petReply.includes(label), `petReplyMarkup must include ${label}`);
@@ -424,8 +436,8 @@ assert.ok(
   'pet:adventure callback must not fall back to chat id when resolving telegram identity'
 );
 assert.ok(
-  callbackBranch.includes('await cmdPetAdventure(db, tok, chatId, telegramId);'),
-  'pet:adventure callback must pass callback_query.from.id through to cmdPetAdventure'
+  callbackBranch.includes("await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);"),
+  'pet:adventure callback must pass the stable callback event key through to cmdPetAdventure'
 );
 for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
@@ -435,6 +447,10 @@ for (const call of [
   "const eventParts = eventPayload.split(':');",
   "const encounterKey = eventParts.join(':');",
   "await cmdPetEvent(db, tok, chatId, telegramId, choice, encounterKey);",
+  "await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);",
+  "const adventureParts = adventurePayload.split(':');",
+  "const encounterKey = adventureParts.join(':');",
+  "await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);",
 ]) {
   assert.ok(callbackBranch.includes(call), `callback branch must include ${call}`);
 }
