@@ -10,7 +10,11 @@ const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/
 
 const {
   PET_MEDIA_MANIFEST,
+  PET_RANDOM_EVENTS,
   buildPetMediaUrl,
+  buildPetRandomEventReplyMarkup,
+  formatPetRandomEventSummary,
+  resolvePetRandomEncounter,
   resolvePetMediaKey,
   sendTelegramPetReply,
 } = __petMediaTestHooks;
@@ -65,6 +69,50 @@ assert.ok(worker.includes("body.action === 'work'"), 'telegram pets action route
 assert.ok(worker.includes("body.action === 'daily_chest'"), 'telegram pets action route must dispatch daily_chest actions');
 assert.ok(worker.includes("body.action === 'random_event'"), 'telegram pets action route must dispatch random_event actions');
 assert.ok(worker.includes('export const __petMediaTestHooks'), 'pet media test hooks must be exported');
+
+assert.ok(PET_RANDOM_EVENTS, 'PET_RANDOM_EVENTS must be exported');
+assert.ok(Object.keys(PET_RANDOM_EVENTS).length >= 5, 'PET_RANDOM_EVENTS must include at least 5 event types');
+for (const [eventKey, event] of Object.entries(PET_RANDOM_EVENTS)) {
+  assert.equal(event.key, eventKey, `PET_RANDOM_EVENTS entry must keep its key: ${eventKey}`);
+  assert.ok(event.title, `PET_RANDOM_EVENTS entry must include a title: ${eventKey}`);
+  assert.ok(event.intro, `PET_RANDOM_EVENTS entry must include intro copy: ${eventKey}`);
+  assert.equal(event.choices.length, 3, `PET_RANDOM_EVENTS entry must have exactly 3 choices: ${eventKey}`);
+  for (const choice of event.choices) {
+    assert.ok(choice.key, `PET_RANDOM_EVENTS choice must include a key: ${eventKey}`);
+    assert.ok(choice.label, `PET_RANDOM_EVENTS choice must include a label: ${choice.key}`);
+    assert.ok(choice.copy, `PET_RANDOM_EVENTS choice must include result copy: ${choice.key}`);
+    assert.ok(choice.rewards, `PET_RANDOM_EVENTS choice must include rewards: ${choice.key}`);
+    assert.ok(choice.costs, `PET_RANDOM_EVENTS choice must include costs: ${choice.key}`);
+  }
+}
+
+const resolvedEncounter = resolvePetRandomEncounter('moon_crate_found-test');
+assert.ok(resolvedEncounter, 'PET_RANDOM_EVENTS must resolve moon_crate_found');
+const fixedEncounter = {
+  ...resolvedEncounter,
+  event_key: 'moon_crate_found-test',
+};
+const fixedMarkup = buildPetRandomEventReplyMarkup(fixedEncounter);
+assert.equal(fixedMarkup.inline_keyboard[0].length, 3, 'event keyboard must expose exactly 3 choices');
+for (let index = 0; index < 3; index += 1) {
+  const button = fixedMarkup.inline_keyboard[0][index];
+  const choice = fixedEncounter.choices[index];
+  assert.ok(button.callback_data.startsWith(`pet:event:${fixedEncounter.event_key}:`), 'event callback must carry the encounter key');
+  assert.ok(button.callback_data.endsWith(choice.key), 'event callback must carry the choice key');
+}
+const sampleSummary = formatPetRandomEventSummary(
+  fixedEncounter,
+  fixedEncounter.choices[0],
+  { copy: 'You cracked the crate open.' },
+  {
+    rewardsApplied: { pet_xp: 14, moon_gold: 8, moon_crystals: 1 },
+    costsApplied: { energy: 2 },
+    deltas: { pet_xp: 14, moon_gold: 8, moon_crystals: 1, style_tokens: 0, energy: -2, happiness: 0, cleanliness: 0, hunger: 0 },
+  },
+);
+assert.ok(sampleSummary.includes('Rewards:'), 'event summary must include rewards copy');
+assert.ok(sampleSummary.includes('Costs:'), 'event summary must include costs copy');
+assert.ok(sampleSummary.includes('You cracked the crate open.'), 'event summary must include the event result copy');
 
 for (const [mediaKey, filename] of Object.entries(PET_MEDIA_MANIFEST)) {
   assert.ok(fs.existsSync(new URL(`../img/pets/${filename}`, import.meta.url)), `pet media file must exist: ${filename}`);
@@ -193,10 +241,20 @@ assert.ok(dailyChest.includes('duplicate'), 'daily chest must short-circuit dupl
 assert.ok(dailyChest.includes("daily_chest"), 'daily chest must write daily_chest events');
 
 const randomEvent = asyncBlock('processPetRandomEvent');
-assert.ok(randomEvent.includes('duplicate'), 'random event must short-circuit duplicate event keys');
-for (const choice of ['open', 'sell', 'ignore']) {
-  assert.ok(worker.includes(choice), `random event must support ${choice}`);
-}
+assert.ok(randomEvent.includes('duplicate: true'), 'random event must short-circuit duplicate event keys');
+assertOrder(
+  randomEvent,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const pet = await getPetProfile(db, telegramId);',
+  'random event must check duplicate event keys before loading the pet'
+);
+assertOrder(
+  randomEvent,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const outcome = pickPetRandomEventOutcome(choice);',
+  'random event must check duplicate event keys before the reward roll'
+);
+assert.ok(randomEvent.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'random event must keep daily caps');
 
 const goldTrade = asyncBlock('processPetGoldTrade');
 assert.ok(goldTrade.includes("'trade'"), 'gold trades must use trade event type');
@@ -334,10 +392,11 @@ assert.ok(petDaily.includes("event_key: eventKey || buildStablePetEventKey(['tg'
 assert.ok(petDaily.includes('formatPetBlockedCopy('), '/petdaily command must use friendly blocked copy');
 
 const petEvent = asyncBlock('cmdPetEvent');
-assert.ok(petEvent.includes('processPetRandomEvent'), '/petevent command must route to processPetRandomEvent');
-assert.ok(petEvent.includes('eventKey = null'), '/petevent command must accept optional eventKey');
-assert.ok(petEvent.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petevent', choice])"), '/petevent command must use stable text keys');
-assert.ok(petEvent.includes('formatPetBlockedCopy('), '/petevent command must use friendly blocked copy');
+assert.ok(petEvent.includes('selectPetRandomEncounter'), '/petevent command must show a random encounter');
+assert.ok(petEvent.includes('buildPetRandomEventReplyMarkup'), '/petevent command must render encounter buttons');
+assert.ok(petEvent.includes('formatPetRandomEventSummary'), '/petevent command must render encounter results');
+assert.ok(petEvent.includes('processPetRandomEvent'), '/petevent command must still resolve encounter choices');
+assert.ok(!petEvent.includes('Event resolved:'), '/petevent command must not use the old single-step result copy');
 
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
 for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
@@ -356,7 +415,9 @@ for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
   "await cmdPetDaily(db, tok, chatId, telegramId, eventKey);",
   "await cmdPetEvent(db, tok, chatId, telegramId, '', eventKey);",
-  "await cmdPetEvent(db, tok, chatId, telegramId, choice, eventKey);",
+  "const eventParts = eventPayload.split(':');",
+  "const encounterKey = eventParts.join(':');",
+  "await cmdPetEvent(db, tok, chatId, telegramId, choice, encounterKey);",
 ]) {
   assert.ok(callbackBranch.includes(call), `callback branch must include ${call}`);
 }
