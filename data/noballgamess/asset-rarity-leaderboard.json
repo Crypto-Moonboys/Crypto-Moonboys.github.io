@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-18T05:38:59.899Z",
+  "generated_at": "2026-07-19T06:11:11.044Z",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "asset_ranking_enabled": true,
@@ -29859,7 +29859,7 @@
     {
       "asset_id": "1099659367926",
       "template_id": 449935,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 6,
       "template_final_score": 70.7083,
       "template_score_component": 42.425,
@@ -37601,7 +37601,7 @@
     {
       "asset_id": "1099973207160",
       "template_id": 441677,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 8,
       "template_final_score": 63.7155,
       "template_score_component": 38.2293,
@@ -81652,7 +81652,7 @@
     {
       "asset_id": "1099973207534",
       "template_id": 435457,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 56.7227,
       "template_score_component": 34.0336,
@@ -81799,7 +81799,7 @@
     {
       "asset_id": "1099973207538",
       "template_id": 435457,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 56.7227,
       "template_score_component": 34.0336,
@@ -81946,7 +81946,7 @@
     {
       "asset_id": "1099973207542",
       "template_id": 435457,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 56.7227,
       "template_score_component": 34.0336,
@@ -232621,7 +232621,7 @@
     {
       "asset_id": "1099973207031",
       "template_id": 401910,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -232719,7 +232719,7 @@
     {
       "asset_id": "1099973207032",
       "template_id": 401910,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -237178,7 +237178,7 @@
     {
       "asset_id": "1099974669380",
       "template_id": 401911,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -237276,7 +237276,7 @@
     {
       "asset_id": "1099974669473",
       "template_id": 401911,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -237374,7 +237374,7 @@
     {
       "asset_id": "1099974669576",
       "template_id": 401911,
-      "owner": "i5d52.c.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
