@@ -8253,8 +8253,8 @@ async function handleTelegramUpdate(update, env) {
     const query = update.callback_query;
     const data = String(query.data || '');
     const fromUser = query.from || {};
-    const telegramId = String(fromUser.id || '');
-    const chatId = String(query.message?.chat?.id || telegramId || '');
+    const telegramId = String(query.from?.id || '');
+    const chatId = String(query.message?.chat?.id || '');
     if (data.startsWith('pet:') && telegramId && chatId) {
       const payload = data.slice(4);
       const eventKey = buildTelegramCallbackPetEventKey(query, telegramId, data);

@@ -296,6 +296,7 @@ assert.ok(adventure.includes('PETS_DAILY_PET_XP_CAP'), 'adventures must apply th
 assert.ok(adventure.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'adventures must read daily totals before awarding pet XP');
 assert.ok(adventure.includes('pickPetRandomEventOutcome(choice)'), 'adventures must reuse the roguelite outcome roll');
 assert.ok(adventure.includes('applyPetRandomEventDeltas('), 'adventures must apply roguelite-style deltas');
+assert.ok(adventure.includes('getPetProfile(db, telegramId)'), 'adventures must look up the pet by telegramId');
 assert.ok(adventure.includes('telegram_pet_season_state'), 'adventures must update season state');
 assert.ok(adventure.includes('pet_xp_awarded: applied.deltas.pet_xp'), 'adventures must persist the capped pet XP amount');
 assert.ok(adventure.includes("reason: `${encounter.key}:${choice.key}`"), 'adventures must report the encounter and choice');
@@ -422,6 +423,22 @@ assert.ok(!petReply.includes('??'), 'petReplyMarkup must not contain placeholder
 assert.ok(!worker.includes('??? Train'), 'telegram pet UI must not contain the old Train placeholder');
 
 const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// Group-level events'));
+assert.ok(
+  callbackBranch.includes("const telegramId = String(query.from?.id || '');"),
+  'pet:adventure callback must use callback_query.from.id as telegramId'
+);
+assert.ok(
+  callbackBranch.includes("const chatId = String(query.message?.chat?.id || '');"),
+  'callback chat id must only be used for reply targeting'
+);
+assert.ok(
+  !callbackBranch.includes('query.message?.chat?.id || telegramId'),
+  'pet:adventure callback must not fall back to chat id when resolving telegram identity'
+);
+assert.ok(
+  callbackBranch.includes("await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);"),
+  'pet:adventure callback must pass the stable callback event key through to cmdPetAdventure'
+);
 for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
   "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
