@@ -368,9 +368,6 @@ for (const warning of ['Low health: urgent care needed', 'High hunger: feed soon
 assert.ok(statusFormatter.includes('Daily Missions'), 'formatPetStatus must include the mission section');
 assert.ok(statusFormatter.includes('m.completed') || statusFormatter.includes('completed ?') || statusFormatter.includes('completed ✅'), 'formatPetStatus must distinguish mission completion state');
 
-const petBagCommand = asyncBlock('cmdPetBag');
-assert.ok(petBagCommand.includes('getPetInventory(db, telegramId)'), '/petbag command must show the inventory');
-
 assert.ok(worker.includes('formatPetBlockedCopy(kind, reason, extra = {})'), 'blocked copy helper must exist');
 for (const message of ['Moonpet is too tired for a', 'Moonpet needs a short break before another', 'You need a Moonpet first', 'not available right now']) {
   assert.ok(worker.includes(message), `blocked copy helper must include ${message}`);
@@ -381,6 +378,8 @@ assert.ok(petUse.includes('processPetUseItem'), '/petuse command must route to p
 assert.ok(petUse.includes('eventKey = null'), '/petuse command must accept optional eventKey');
 assert.ok(petUse.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petuse'"), '/petuse command must use stable text keys');
 assert.ok(petUse.includes('formatPetBlockedCopy('), '/petuse command must use friendly blocked copy');
+assert.ok(petUse.includes('if (result.duplicate)'), '/petuse command must guard duplicate button taps');
+assert.ok(petUse.includes('buildPetBagReplyMarkup(inventory)'), '/petuse command must keep bag item buttons after item use');
 
 const petWork = asyncBlock('cmdPetWork');
 assert.ok(petWork.includes('processPetJob'), '/petwork command must route to processPetJob');
@@ -422,6 +421,15 @@ const petBuy = asyncBlock('cmdPetBuy');
 assert.ok(petBuy.includes('eventKey = null'), '/petbuy command must accept an optional eventKey');
 assert.ok(petBuy.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'buy', itemKey, 'msg'])"), '/petbuy command must use callback/message event keys before fallback keys');
 assert.ok(petBuy.includes('if (result.duplicate)'), '/petbuy command must guard duplicate button taps');
+assert.ok(petBuy.includes('Next upgrade run'), '/petbuy command must present post-purchase roguelite options');
+assert.ok(petBuy.includes('buildPetPurchaseNextReplyMarkup(result.pet)'), '/petbuy command must keep chaining upgrade/grind choices after purchase');
+
+const petBagCommand = asyncBlock('cmdPetBag');
+assert.ok(petBagCommand.includes('getPetInventory(db, telegramId)'), '/petbag command must show the inventory');
+assert.ok(petBagCommand.includes('buildPetBagReplyMarkup(inventory)'), '/petbag command must render clickable bag buttons');
+assert.ok(worker.includes('function buildPetBagReplyMarkup'), 'bag must have a dedicated reply markup builder');
+assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item buttons must carry item use callbacks');
+assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
 
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
 for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
@@ -455,6 +463,7 @@ for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
   "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
   "await cmdPetBuy(db, tok, chatId, telegramId, itemKey, eventKey);",
+  "await cmdPetUse(db, tok, chatId, telegramId, itemKey, eventKey);",
   "await cmdPetDaily(db, tok, chatId, telegramId, eventKey);",
   "await cmdPetEvent(db, tok, chatId, telegramId, '', eventKey);",
   "const eventParts = eventPayload.split(':');",
@@ -473,9 +482,6 @@ assert.ok(
   commandSwitch.includes("case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr, stableEventKey); break;"),
   '/petbuy text command must pass the Telegram message stableEventKey'
 );
-
-const petBag = asyncBlock('cmdPetBag');
-assert.ok(petBag.includes('getPetInventory(db, telegramId)'), '/petbag command must show the inventory');
 
 const streakHelper = worker.slice(worker.indexOf('function updatePetStreakForAction'), worker.indexOf('async function savePetProfile'));
 assert.ok(streakHelper.includes('getPreviousPetDayKey(dayKey)'), 'pet streak helper must compare against yesterday');
