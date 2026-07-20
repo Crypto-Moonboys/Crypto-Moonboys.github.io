@@ -144,18 +144,6 @@ function collectPublicPages() {
     walkDir(battleDir, 'battle-chamber/');
   }
 
-  // analytics/**/*.html (recursive)
-  const analyticsDir = path.join(ROOT, 'analytics');
-  if (fs.existsSync(analyticsDir)) {
-    walkDir(analyticsDir, 'analytics/');
-  }
-
-  // waxonedge/**/*.html (recursive)
-  const waxonedgeDir = path.join(ROOT, 'waxonedge');
-  if (fs.existsSync(waxonedgeDir)) {
-    walkDir(waxonedgeDir, 'waxonedge/');
-  }
-
   return pages.sort();
 }
 
@@ -197,7 +185,6 @@ function hasShellClass(bodyAttrs) {
          bodyAttrs.includes('page-game-shell') ||
          bodyAttrs.includes('page-game') ||
          bodyAttrs.includes('page-community') ||
-         bodyAttrs.includes('page-waxcash') ||
          bodyAttrs.includes('page-admin') ||
          bodyAttrs.includes('page-dashboard');
 }
@@ -264,9 +251,7 @@ function validateRedirectTarget(html, pagePath) {
   if (target.startsWith('/games/')) return true;
   if (target.startsWith('/categories/')) return true;
   if (target.startsWith('/about/')) return true;
-  if (target.startsWith('/analytics/')) return true;
-  if (target.startsWith('/waxonedge/')) return true;
-  // Allow any existing root HTML file (e.g. /waxonedge.html, /community.html)
+  // Allow any existing root HTML file (e.g. /community.html)
   if (/^\/[^/]+\.html$/.test(target) && fs.existsSync(path.join(ROOT, target.slice(1)))) return true;
 
   return false;
@@ -316,7 +301,7 @@ for (const pagePath of publicPages) {
   
   // Must have a shell class (unless it's a special page)
   if (!hasShellClass(bodyAttrs)) {
-    fail(`${pagePath} - missing shell class (accepted: page-standard-shell, page-action-shell, page-game-shell, page-game, page-community, page-waxcash, page-admin, page-dashboard)`);
+    fail(`${pagePath} - missing shell class (accepted: page-standard-shell, page-action-shell, page-game-shell, page-game, page-community, page-admin, page-dashboard)`);
   } else {
     pass(`${pagePath} - has shell class`);
   }

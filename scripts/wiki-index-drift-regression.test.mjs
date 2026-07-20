@@ -8,7 +8,7 @@
  * 
  * Ensures:
  *   1. Index size >= approved audit count (minus intentional exclusions)
- *   2. Required root pages are indexed (waxcash, about, categories, etc.)
+ *   2. Required root pages are indexed (about, categories, etc.)
  *   3. Specific canonical pages are indexed (gkniftyheads, graffpunks, nbg token, charlie buster)
  *
  * Run: node scripts/wiki-index-drift-regression.test.mjs
@@ -33,7 +33,6 @@ const APPROVED_CATEGORIES = new Set(Object.keys(RANKING_CONFIG.CATEGORY_PRIORITY
 // A regression test below (verifyRootPagesMatch) ensures this list stays in sync with
 // scripts/root-pages-config.js by comparing the extracted paths.
 const REQUIRED_ROOT_PAGES = [
-  '/waxcash.html',
   '/about.html',
   '/categories/index.html',
   '/categories/tools.html',
@@ -58,7 +57,7 @@ function verifyRootPagesMatch() {
   const configPath = path.join(ROOT, 'scripts', 'root-pages-config.js');
   const configContent = fs.readFileSync(configPath, 'utf8');
 
-  // Extract paths from { path: '/waxcash.html', title: '...' }
+  // Extract paths from root-pages-config.js entries.
   const pathMatches = configContent.match(/path:\s*['"]([^'"]+)['"]/g);
   if (!pathMatches) {
     throw new Error('Could not extract root pages paths from root-pages-config.js');

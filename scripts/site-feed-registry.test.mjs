@@ -84,14 +84,11 @@ function assertNoMarketScoringSignals(label, payload) {
 const registry = readJson('data/feed-registry.json');
 const registryText = read('data/feed-registry.json');
 assert.ok(Array.isArray(registry.feeds), 'feed registry must contain a feeds array');
-assert.ok(registry.feeds.length >= 4, 'registry must include more than only GKniftyHEADS');
+assert.ok(registry.feeds.length >= 2, 'registry must include the remaining NFT snapshot feeds');
 
 const requiredFeeds = new Map([
   ['gkniftyheads_rarity', { page: '/wiki/gkniftyheads-nft-collection.html', mode: 'scheduled_snapshot_primary' }],
   ['noballgamess_rarity', { page: '/wiki/noballgamess-nft-collection.html', mode: 'scheduled_snapshot_primary' }],
-  ['waxonedge_bubbles', { page: '/waxonedge.html', mode: 'live_primary_static_fallback' }],
-  ['waxcash_analytics', { page: '/waxcash.html', mode: 'live_primary_static_fallback' }],
-  ['wuffi_token_analytics', { page: '/wiki/wuffi.html', mode: 'live_primary_static_fallback' }],
 ]);
 
 for (const [feedId, expected] of requiredFeeds) {
@@ -115,25 +112,6 @@ for (const [feedId, expected] of requiredFeeds) {
   assert.ok(feed.stale_after_hours > 0, `${feedId} must declare stale_after_hours`);
   assert.ok(feed.fallback_behavior, `${feedId} must declare fallback behavior`);
 }
-
-const waxonedgeFeed = registry.feeds.find((entry) => entry.feed_id === 'waxonedge_bubbles');
-assert.ok(!waxonedgeFeed.output_files.includes('data/waxonedge/waxcash-bubbles-bootstrap.json'), 'WaxOnEdge registry must not claim static bootstrap output unless updater writes it');
-assert.ok(optionalOutputSet(waxonedgeFeed).has('data/waxonedge_bubbles/waxcash-bubbles-lite.json'), 'WaxOnEdge live bubbles snapshot must be marked optional when not checked in');
-assert.ok(optionalOutputSet(waxonedgeFeed).has('data/waxonedge_bubbles/indexer-health.json'), 'WaxOnEdge live health snapshot must be marked optional when not checked in');
-
-function assertFeedSafetyMetadata(feedId, expectedMode) {
-  const feed = registry.feeds.find((entry) => entry.feed_id === feedId);
-  assert.equal(feed.endpoint_refresh_mode, expectedMode, `${feedId} must declare endpoint_refresh_mode`);
-  assert.equal(feed.max_concurrency, 1, `${feedId} must cap scheduled endpoint concurrency at 1`);
-  assert.ok(feed.timeout_ms >= 10000, `${feedId} must declare a sane timeout_ms`);
-  assert.ok(feed.retries >= 1, `${feedId} must retry transient endpoint failures`);
-  assert.ok(feed.retry_backoff_ms > 0, `${feedId} must declare retry_backoff_ms`);
-  assert.ok(feed.fallback_age_hours >= 24, `${feedId} must declare fallback_age_hours`);
-}
-
-assertFeedSafetyMetadata('waxonedge_bubbles', 'health_plus_bubbles_with_static_fallback');
-assertFeedSafetyMetadata('waxcash_analytics', 'single_safe_fetch');
-assertFeedSafetyMetadata('wuffi_token_analytics', 'sequential');
 
 const gkniftyheadsFeed = registry.feeds.find((entry) => entry.feed_id === 'gkniftyheads_rarity');
 assert.match(
@@ -242,23 +220,15 @@ assert.match(utils, /endpoint_status/, 'feed status must expose per-endpoint sta
 
 for (const script of [
   'scripts/update-gkniftyheads-rarity-feed.mjs',
-  'scripts/update-waxonedge-feed.mjs',
-  'scripts/update-waxcash-feed.mjs',
-  'scripts/update-wuffi-feed.mjs',
 ]) {
   const source = read(script);
   assert.match(source, /preserveOrWrite|safeFetchJson|runGenerateGkniftyheadsRarity/, `${script} must preserve previous feed data or regenerate fallback`);
   assert.match(source, /writeFeedStatus/, `${script} must write per-feed sync status`);
 }
 
-assert.doesNotMatch(read('scripts/update-wuffi-feed.mjs'), /Promise\.all/, 'WUFFI scheduled updater must not fetch heavy Worker endpoints concurrently');
-
 const pages = [
   ['wiki/gkniftyheads-nft-collection.html', 'gkniftyheads_rarity'],
   ['wiki/noballgamess-nft-collection.html', 'noballgamess_rarity'],
-  ['waxonedge.html', 'waxonedge_bubbles'],
-  ['waxcash.html', 'waxcash_analytics'],
-  ['wiki/wuffi.html', 'wuffi_token_analytics'],
 ];
 
 for (const [page, feedId] of pages) {
@@ -272,28 +242,6 @@ assert.match(statusClient, /\/data\/feed-status\.json/, 'status client must read
 assert.match(statusClient, /is-stale/, 'status client must expose stale state');
 assert.match(statusClient, /is-error/, 'status client must expose error state');
 assert.doesNotMatch(statusClient, /document\.write|location\.href|location\.replace|preventDefault/, 'status client must only update badge text/classes and never block rendering');
-
-const waxonedgeHtml = read('waxonedge.html');
-const waxonedgeJs = read('js/waxonedge-bubbles-v2.js');
-assert.match(waxonedgeHtml, /\/js\/waxonedge-bubbles-v2\.js/, 'waxonedge.html must still load live bubble runtime');
-assert.match(waxonedgeJs, /\/api\/waxonedge\/waxcash-bubbles-lite/, 'WaxOnEdge runtime must still use live bubbles API');
-assert.match(waxonedgeJs, /\/api\/waxonedge\/live\/stream|LIVE_POLL_MS|startLiveUpdates/, 'WaxOnEdge runtime must keep SSE or polling live updates');
-assert.match(waxonedgeJs, /\/api\/waxonedge\/indexer-health/, 'WaxOnEdge runtime must keep authoritative indexer health route');
-assert.doesNotMatch(waxonedgeJs, /BOOTSTRAP_API\s*=\s*['"]\/data\/waxonedge_bubbles/, 'WaxOnEdge runtime must not prefer daily snapshot data over live API paths');
-
-const waxcashHtml = read('waxcash.html');
-const waxcashJs = read('js/waxcash-analytics.js');
-assert.match(waxcashHtml, /\/js\/waxcash-analytics\.js/, 'waxcash.html must still load runtime analytics client');
-assert.match(waxcashJs, /\/api\/waxonedge\/waxcash-analytics/, 'WAXCASH runtime must still fetch live analytics API');
-assert.match(waxcashHtml, /alcor\.exchange\/charting_library/, 'WAXCASH must keep direct Alcor TradingView chart loading');
-assert.doesNotMatch(waxcashJs, /\/data\/waxcash_analytics/, 'WAXCASH runtime must not use daily snapshot JSON as live truth');
-
-const wuffiHtml = read('wiki/wuffi.html');
-const wuffiJs = read('js/token-analytics-page.js');
-assert.match(wuffiHtml, /\/js\/token-analytics-page\.js/, 'WUFFI page must still load runtime token analytics client');
-assert.match(wuffiJs, /\/api\/waxonedge\/token-page\/wuffi\/WUF/, 'WUFFI runtime must still fetch live token-page API');
-assert.match(wuffiJs, /wax\.alcor\.exchange\/api\/v2\/swap\/candles/, 'WUFFI must keep direct Alcor WUF/WAX candle feed');
-assert.doesNotMatch(wuffiJs, /\/data\/wuffi_token_analytics/, 'WUFFI runtime must not use daily snapshot JSON as live truth');
 
 const workflow = read('.github/workflows/update-site-feeds.yml');
 assert.match(workflow, /schedule:/, 'feed workflow must run on schedule');

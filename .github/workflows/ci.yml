@@ -79,7 +79,7 @@ jobs:
       - name: Run arcade tests
         run: npm run ci:arcade
 
-  ci-waxonedge:
+  ci-wax:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -98,8 +98,8 @@ jobs:
             npm install
           fi
 
-      - name: Run WaxOnEdge/WAX tests
-        run: npm run ci:waxonedge
+      - name: Run WAX tests
+        run: npm run ci:wax
 
   ci-visual:
     runs-on: ubuntu-latest

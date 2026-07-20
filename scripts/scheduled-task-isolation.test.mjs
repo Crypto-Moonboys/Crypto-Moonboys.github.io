@@ -14,7 +14,6 @@ assert.notEqual(scheduledEnd, -1, 'scheduled handler block must be detectable');
 const scheduled = worker.slice(scheduledStart, scheduledEnd);
 
 for (const task of [
-  'runWaxOnEdgeScheduledSync(env, cron).catch',
   'runTelegramDailyDigest(env, {',
   'runTelegramGroupAnnouncements(env, {',
 ]) {
@@ -30,11 +29,11 @@ assert.ok(
   'group announcements scheduled task must have its own catch boundary',
 );
 assert.ok(
-  scheduled.includes("task: 'waxonedge_sync'") &&
   scheduled.includes("task: 'telegram_daily_digest'") &&
   scheduled.includes("task: 'telegram_group_announcements'"),
   'scheduled handler must record per-task results',
 );
+assert.doesNotMatch(scheduled, /waxonedge|WaxOnEdge|WAXONEDGE/, 'scheduled handler must not run WaxOnEdge workloads');
 assert.ok(
   scheduled.includes("logApiFailure('scheduled_partial_failure'"),
   'scheduled handler must log partial failures without throwing',

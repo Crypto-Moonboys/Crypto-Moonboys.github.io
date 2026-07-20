@@ -7,11 +7,11 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "npm run ci:arcade && npm run ci:worker-api && npm run ci:wiki && npm run ci:waxonedge && npm run ci:visual",
+    "test": "npm run ci:arcade && npm run ci:worker-api && npm run ci:wiki && npm run ci:wax && npm run ci:visual",
     "ci:wiki": "node scripts/ci-domain-runner.mjs wiki",
     "ci:worker-api": "node scripts/ci-domain-runner.mjs worker-api",
     "ci:arcade": "node scripts/ci-domain-runner.mjs arcade",
-    "ci:waxonedge": "node scripts/ci-domain-runner.mjs waxonedge",
+    "ci:wax": "node scripts/ci-domain-runner.mjs wax",
     "ci:visual": "node scripts/ci-domain-runner.mjs visual",
     "test:full": "npm run test",
     "test:anti-drift": "node scripts/anti-drift-check.mjs",

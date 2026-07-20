@@ -98,7 +98,6 @@ addEntry(`${BASE_URL}/`, 'weekly', '1.0');
 /* 2. Approved root/tool pages */
 const SITEMAP_ROOT_PAGE_DEFAULTS = {
   '/about.html': { changefreq: 'weekly', priority: '0.9' },
-  '/waxcash.html': { changefreq: 'weekly', priority: '0.9' },
   '/hubs.html': { changefreq: 'weekly', priority: '0.8' },
   '/sam.html': { changefreq: 'weekly', priority: '0.8' },
 };
