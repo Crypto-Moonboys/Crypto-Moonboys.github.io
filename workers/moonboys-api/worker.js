@@ -2137,7 +2137,16 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const choice = getPetRunChoice(run, choiceKeyRaw);
   if (!choice) return { accepted: false, reason: 'invalid_run_choice', run, xp_awarded: 0, pet_xp_awarded: 0 };
   const stepIndex = Math.max(1, Math.floor(Number(run.depth || 0) + 1));
-  const eventKey = String(options.event_key || buildPetRunStepEventKey(telegramId, run.run_id, stepIndex, choice.key)).slice(0, 120);
+  const suppliedExpectedStepIndex = options.expected_step_index === undefined || options.expected_step_index === null || options.expected_step_index === ''
+    ? null
+    : Number(options.expected_step_index);
+  const expectedStepIndex = suppliedExpectedStepIndex === null
+    ? null
+    : Math.max(1, Math.floor(Number.isFinite(suppliedExpectedStepIndex) ? suppliedExpectedStepIndex : 0));
+  if (expectedStepIndex !== null && expectedStepIndex !== stepIndex) {
+    return { accepted: false, reason: 'stale_run_step', run, choice, expected_step_index: expectedStepIndex, current_step_index: stepIndex, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const eventKey = String(options.event_key || buildPetRunStepEventKey(telegramId, run.run_id, expectedStepIndex || stepIndex, choice.key)).slice(0, 120);
   const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
   const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`).bind(run.run_id, stepIndex).first().catch(() => null);
@@ -5455,6 +5464,7 @@ export default {
       } else if (body.action === 'run_step') {
         result = await processPetRunStep(env.DB, telegramId, body.run_id, body.choice_key, {
           event_key: body.event_key,
+          expected_step_index: body.expected_step_index,
           source: 'telegram_pets_api',
         });
       } else if (body.action === 'run_extract') {
@@ -9123,7 +9133,7 @@ async function handleTelegramUpdate(update, env) {
           const choiceKey = runParts.shift() || '';
           const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);
           await answerTelegramCallback(tok, query.id, `/petrun ${choiceKey}`);
-          await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey);
+          await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);
           return;
         }
       }
@@ -9494,6 +9504,7 @@ function formatPetBlockedCopy(kind, reason, extra = {}) {
   if (code === 'run_empty') return `Clear at least one run step before extracting. Use /petrun to pick a route.`;
   if (code === 'invalid_run_choice') return `That run choice is not available on this step. Use /petrun to refresh the run.`;
   if (code === 'run_closed') return `That run is already closed. Use /petrun to start or resume the next one.`;
+  if (code === 'stale_run_step') return `That run button is from an older step. Use /petrun to see the current choice.`;
   if (code === 'insufficient_run_cost') return `Moonpet cannot afford that run choice cost. Try another route or extract first.`;
   if (code === 'pet_not_adopted') return `You need a Moonpet first. Use /adopt to start.`;
   if (code === 'already_equipped') return `That ${kind} is already equipped.`;
@@ -9709,7 +9720,7 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr, eventKey = null) {
   );
 }
 
-async function cmdPetRun(db, tok, chatId, telegramId, argStr = '', eventKey = null) {
+async function cmdPetRun(db, tok, chatId, telegramId, argStr = '', eventKey = null, expectedStepIndex = null) {
   const parts = String(argStr || '').split(':').map((part) => String(part || '').trim()).filter(Boolean);
   const first = parts[0] || '';
   const choiceKey = normalizePetRunChoiceKey(parts.length >= 2 ? parts[1] : first);
@@ -9737,6 +9748,7 @@ async function cmdPetRun(db, tok, chatId, telegramId, argStr = '', eventKey = nu
   const stepIndex = Math.max(1, Number(activeRun?.depth || 0) + 1);
   const result = await processPetRunStep(db, telegramId, runId || activeRun?.run_id || '', choiceKey, {
     event_key: eventKey || buildPetRunStepEventKey(telegramId, runId || activeRun?.run_id || 'active', stepIndex, choiceKey),
+    expected_step_index: expectedStepIndex,
     source: 'telegram_command',
   }).catch((error) => ({ accepted: false, reason: error?.message || 'pet_run_step_failed' }));
   if (result.duplicate) {

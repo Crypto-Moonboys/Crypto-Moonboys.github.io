@@ -367,6 +367,8 @@ const runStep = asyncBlock('processPetRunStep');
 assert.ok(runStep.includes('buildPetRunStepEventKey'), 'run steps must use stable callback event keys');
 assert.ok(runStep.includes('telegram_pet_run_steps'), 'run steps must persist step records');
 assert.ok(runStep.includes('telegram_pet_runs'), 'run steps must update persistent run state');
+assert.ok(runStep.includes('const suppliedExpectedStepIndex = options.expected_step_index'), 'run steps must accept an expected callback step index');
+assert.ok(runStep.includes("reason: 'stale_run_step'"), 'stale callback steps must be rejected with a clear reason');
 assert.ok(runStep.includes('getUnaffordablePetRunCosts(pet, outcome.costs)'), 'run steps must validate rolled currency costs before applying rewards');
 assert.ok(runStep.includes("reason: 'insufficient_run_cost'"), 'unaffordable run steps must be rejected with a clear reason');
 assert.ok(runStep.includes("'run_item_use'"), 'accepted run steps must record consumed one-use run items');
@@ -384,6 +386,30 @@ assertOrder(
   "const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`)",
   'const pet = await getPetProfile(db, telegramId);',
   'run steps must check duplicate event keys before loading and mutating the pet'
+);
+assertOrder(
+  runStep,
+  "return { accepted: false, reason: 'stale_run_step'",
+  "const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`)",
+  'stale run-step callbacks must be rejected before duplicate or write-path work'
+);
+assertOrder(
+  runStep,
+  "return { accepted: false, reason: 'stale_run_step'",
+  'const pet = await getPetProfile(db, telegramId);',
+  'stale run-step callbacks must not load or mutate pet stats'
+);
+assertOrder(
+  runStep,
+  "return { accepted: false, reason: 'stale_run_step'",
+  'INSERT INTO telegram_pet_run_steps',
+  'stale run-step callbacks must not insert step rows'
+);
+assertOrder(
+  runStep,
+  "return { accepted: false, reason: 'stale_run_step'",
+  'UPDATE telegram_pet_runs',
+  'stale run-step callbacks must not update run rewards or state'
 );
 assertOrder(
   runStep,
@@ -460,6 +486,9 @@ const runExtract = asyncBlock('processPetRunExtract');
 assert.ok(runExtract.includes('recordPetRunBankedEvent'), 'extract must bank through the shared banking helper');
 assert.ok(runExtract.includes("reason: 'run_empty'"), 'extract must refuse empty runs');
 assert.ok(runExtract.includes('event_key: buildPetRunExtractEventKey(telegramId, run.run_id)'), 'extract must force the deterministic run extract event key');
+
+const actionRoute = routeBlock('/telegram-pets/action');
+assert.ok(actionRoute.includes('expected_step_index: body.expected_step_index'), '/telegram-pets/action run_step must carry expected callback step index');
 
 assert.deepEqual(
   getUnaffordablePetRunCosts({ moon_gold: 3, moon_crystals: 1, style_tokens: 0 }, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }),
@@ -573,6 +602,8 @@ assert.ok(petRun.includes('processPetRunStep'), '/petrun command must resolve ru
 assert.ok(petRun.includes('buildPetRunChoiceReplyMarkup'), '/petrun command must render 3-choice run buttons');
 assert.ok(petRun.includes('buildPetRunAfterStepReplyMarkup'), '/petrun command must render Extract and Push Deeper after a step');
 assert.ok(petRun.includes('buildPetRunStepEventKey'), '/petrun command must use stable run step keys');
+assert.ok(petRun.includes('expectedStepIndex = null'), 'text /petrun path must keep callback step enforcement optional');
+assert.ok(petRun.includes('expected_step_index: expectedStepIndex'), '/petrun callback path must pass expected step index into run step processing');
 assert.ok(petRun.includes('That run button was already handled'), '/petrun command must guard duplicate taps');
 
 const petExtract = asyncBlock('cmdPetExtract');
@@ -630,6 +661,7 @@ assert.ok(
 assert.ok(callbackBranch.includes("await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);"), 'pet:run callback must open the run loop');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunExtractEventKey(telegramId, runId);'), 'run extract callbacks must use stable run extract keys');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);'), 'run step callbacks must use stable run step keys');
+assert.ok(callbackBranch.includes('await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);'), 'run step callbacks must pass the callback step index through to cmdPetRun');
 for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
   "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
@@ -646,7 +678,7 @@ for (const call of [
   "await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);",
   "await cmdPetExtract(db, tok, chatId, telegramId, runId, stableRunEventKey);",
   "await cmdPetRun(db, tok, chatId, telegramId, runId, buildStablePetEventKey(['pet_run_push', telegramId, runId]));",
-  "await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey);",
+  "await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);",
 ]) {
   assert.ok(callbackBranch.includes(call), `callback branch must include ${call}`);
 }
