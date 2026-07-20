@@ -27,6 +27,7 @@ assert.ok(howTo.includes('/petevent open'), 'How To Play must explain /petevent'
 assert.ok(howTo.includes('/petnotify on'), 'How To Play must explain pet notifications');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
+assert.ok(howTo.includes('lucky_charm') && howTo.includes('consumed when it boosts a run'), 'How To Play must explain lucky_charm run consumption');
 assert.ok(howTo.includes('community/game progression only'), 'How To Play must keep rewards framed as game progression');
 assert.ok(!howTo.toLowerCase().includes('financial'), 'How To Play must avoid financial wording');
 assert.ok(!howTo.toLowerCase().includes('real-world value'), 'How To Play must avoid real-world value wording');

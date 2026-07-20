@@ -19,6 +19,7 @@ const {
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
   buildPetRunStepEventKey,
+  getUnaffordablePetRunCosts,
   buildPetRandomEventReplyMarkup,
   formatPetRandomEventSummary,
   resolvePetRandomEncounter,
@@ -268,6 +269,15 @@ for (const job of ['street_artist', 'courier', 'crystal_miner', 'vault_guard']) 
 const dailyChest = asyncBlock('processPetDailyChest');
 assert.ok(dailyChest.includes('duplicate'), 'daily chest must short-circuit duplicate event keys');
 assert.ok(dailyChest.includes("daily_chest"), 'daily chest must write daily_chest events');
+assert.ok(dailyChest.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'daily chest pet XP must check existing daily totals before awarding');
+assert.ok(dailyChest.includes('totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP'), 'daily chest must award 0 pet XP when the daily cap is already reached');
+assert.ok(dailyChest.includes('totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP'), 'daily chest must clamp pet XP against prior daily pet XP');
+assertOrder(
+  dailyChest,
+  'const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);',
+  'pet.pet_xp = Math.max(0',
+  'daily chest must cap pet XP before mutating the pet'
+);
 
 const randomEvent = asyncBlock('processPetRandomEvent');
 assert.ok(randomEvent.includes('duplicate: true'), 'random event must short-circuit duplicate event keys');
@@ -356,6 +366,10 @@ const runStep = asyncBlock('processPetRunStep');
 assert.ok(runStep.includes('buildPetRunStepEventKey'), 'run steps must use stable callback event keys');
 assert.ok(runStep.includes('telegram_pet_run_steps'), 'run steps must persist step records');
 assert.ok(runStep.includes('telegram_pet_runs'), 'run steps must update persistent run state');
+assert.ok(runStep.includes('getUnaffordablePetRunCosts(pet, outcome.costs)'), 'run steps must validate rolled currency costs before applying rewards');
+assert.ok(runStep.includes("reason: 'insufficient_run_cost'"), 'unaffordable run steps must be rejected with a clear reason');
+assert.ok(runStep.includes("'run_item_use'"), 'accepted run steps must record consumed one-use run items');
+assert.ok(runStep.includes('consumed_item_key: outcome.consumed_item_key'), 'run item consumption metadata must preserve the consumed item key');
 assert.ok(runStep.includes("SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?"), 'run steps must short-circuit duplicate callbacks by event key');
 assert.ok(runStep.includes("SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?"), 'run steps must block alternate duplicate choices for the same step');
 assert.ok(runStep.includes("SET status = 'failed'"), 'failed runs must be marked failed');
@@ -376,6 +390,18 @@ assertOrder(
   'const pet = await getPetProfile(db, telegramId);',
   'run steps must check step-level idempotency before mutating the pet'
 );
+assertOrder(
+  runStep,
+  'const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs);',
+  'applyPetRunCosts(pet, outcome.costs);',
+  'run step costs must be affordable before any costs are applied'
+);
+assertOrder(
+  runStep,
+  'const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs);',
+  'INSERT INTO telegram_pet_run_steps',
+  'unaffordable run steps must be rejected before writing step rewards'
+);
 
 const runBank = asyncBlock('recordPetRunBankedEvent');
 assert.ok(runBank.includes('PETS_DAILY_PET_XP_CAP'), 'banked run pet XP must respect the daily pet XP cap');
@@ -383,6 +409,9 @@ assert.ok(runBank.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'banked run Community
 assert.ok(runBank.includes('awardCommunityXp'), 'banked run Community XP must use the shared helper');
 assert.ok(runBank.includes("eventType = options.completed ? 'run_complete' : 'run_extract'"), 'run banking must distinguish extract and completion');
 assert.ok(runBank.includes('PET_RUN_COMPLETED_STATUSES.includes(run.status)'), 'run banking must not bank closed runs twice');
+assert.ok(runBank.includes("options.completed ? (options.event_key || buildStablePetEventKey(['pet_run_complete', telegramId, run.run_id])) : buildPetRunExtractEventKey(telegramId, run.run_id)"), 'extract banking must ignore caller-provided event keys and use the deterministic run extract key');
+assert.ok(runBank.includes('UPDATE telegram_pet_runs'), 'run banking must claim/close the run before applying rewards');
+assert.ok(runBank.includes('if (!claim?.meta?.changes)'), 'run banking must treat already-closed runs as duplicates');
 assert.ok(runBank.includes("'run_item'"), 'run banking must persist inventory items as pet events');
 assertOrder(
   runBank,
@@ -390,10 +419,28 @@ assertOrder(
   'pet.pet_xp = Math.max(0',
   'extract must check duplicate event keys before banking rewards'
 );
+assertOrder(
+  runBank,
+  'const claim = await db.prepare(`',
+  'pet.pet_xp = Math.max(0',
+  'extract must claim/close the run before applying banked rewards'
+);
 
 const runExtract = asyncBlock('processPetRunExtract');
 assert.ok(runExtract.includes('recordPetRunBankedEvent'), 'extract must bank through the shared banking helper');
 assert.ok(runExtract.includes("reason: 'run_empty'"), 'extract must refuse empty runs');
+assert.ok(runExtract.includes('event_key: buildPetRunExtractEventKey(telegramId, run.run_id)'), 'extract must force the deterministic run extract event key');
+
+assert.deepEqual(
+  getUnaffordablePetRunCosts({ moon_gold: 3, moon_crystals: 1, style_tokens: 0 }, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }),
+  { moon_gold: { required: 4, available: 3 }, style_tokens: { required: 2, available: 0 } },
+  'run cost validator must report missing currencies without clamping to zero'
+);
+assert.deepEqual(
+  getUnaffordablePetRunCosts({ moon_gold: 10, moon_crystals: 1, style_tokens: 2 }, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }),
+  {},
+  'run cost validator must allow affordable currency costs'
+);
 
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');
@@ -406,6 +453,8 @@ assert.ok(scheduled.includes('shouldRunPetNotifications'), 'scheduled pet notifi
 assert.ok(worker.includes("food?.key === 'crystal_bowl'"), 'crystal_bowl must affect feed bonuses');
 assert.ok(worker.includes("toy?.key === 'hoverboard'"), 'hoverboard must affect play bonuses');
 assert.ok(worker.includes("outfit?.key === 'crown_jacket'"), 'crown_jacket must affect care bonuses');
+assert.ok(worker.includes("bonus.consumed_item_key = 'lucky_charm'"), 'lucky_charm run bonus must mark one charm for consumption');
+assert.ok(worker.includes("'run_item_use'"), 'lucky_charm run bonus must be consumed through an inventory-counted event');
 assert.ok(worker.includes('buildTelegramMessagePetEventKey'), 'message event keys must be centralized');
 assert.ok(worker.includes('buildTelegramCallbackPetEventKey'), 'callback event keys must be centralized');
 

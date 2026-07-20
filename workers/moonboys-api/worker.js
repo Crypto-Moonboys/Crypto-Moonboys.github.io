@@ -1269,7 +1269,7 @@ const PET_INVENTORY_ITEMS = Object.freeze({
     key: 'lucky_charm',
     title: 'Lucky Charm',
     kind: 'usable_item',
-    description: 'Boosts random event outcomes for one use.',
+    description: 'One-use charm that can boost a run or random event outcome.',
   },
   style_patch: {
     key: 'style_patch',
@@ -1875,6 +1875,7 @@ function applyPetRunGearBonuses(pet, choice, inventory = []) {
     style_bonus: 0,
     pet_xp_bonus: 0,
     survival_bonus: 0,
+    consumed_item_key: null,
   };
   if (toy?.key === 'hoverboard') {
     if (choice?.type === 'sneak') bonus.risk_delta -= 0.08;
@@ -1892,6 +1893,7 @@ function applyPetRunGearBonuses(pet, choice, inventory = []) {
   if (bag.lucky_charm > 0) {
     bonus.risk_delta -= 0.05;
     bonus.reward_multiplier += 0.08;
+    bonus.consumed_item_key = 'lucky_charm';
   }
   if (bag.adventure_map > 0) {
     if (choice?.type === 'sneak') bonus.risk_delta -= 0.05;
@@ -1936,8 +1938,23 @@ function buildPetRunStepOutcome(run, choice, pet, inventory = []) {
     rewards,
     costs,
     item_key: itemKey,
+    consumed_item_key: gear.consumed_item_key,
     copy: failed ? choice.risk_copy : choice.copy,
   };
+}
+
+function getUnaffordablePetRunCosts(pet, costs = {}) {
+  const missing = {};
+  const currencyChecks = {
+    moon_gold: clampPetCurrency(pet?.moon_gold),
+    moon_crystals: clampPetCurrency(pet?.moon_crystals),
+    style_tokens: clampPetCurrency(pet?.style_tokens),
+  };
+  for (const [key, balance] of Object.entries(currencyChecks)) {
+    const cost = Math.max(0, Math.floor(Number(costs[key] || 0)));
+    if (cost > balance) missing[key] = { required: cost, available: balance };
+  }
+  return missing;
 }
 
 function applyPetRunCosts(pet, costs = {}) {
@@ -1993,10 +2010,21 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
   const eventType = options.completed ? 'run_complete' : 'run_extract';
-  const eventKey = String(options.event_key || buildPetRunExtractEventKey(telegramId, run.run_id)).slice(0, 120);
+  const eventKey = String(options.completed ? (options.event_key || buildStablePetEventKey(['pet_run_complete', telegramId, run.run_id])) : buildPetRunExtractEventKey(telegramId, run.run_id)).slice(0, 120);
   const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
   if (duplicate || PET_RUN_COMPLETED_STATUSES.includes(run.status)) {
     return { accepted: true, duplicate: true, reason: 'duplicate', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const claim = await db.prepare(`
+    UPDATE telegram_pet_runs
+    SET status = ?,
+        completed_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable')
+  `).bind(options.completed ? 'completed' : 'extracted', telegramId, run.run_id).run();
+  if (!claim?.meta?.changes) {
+    const completedRun = await getPetRunById(db, telegramId, run.run_id);
+    return { accepted: true, duplicate: true, reason: 'duplicate', run: completedRun || run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
   const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
   let petXp = clampPetCurrency(run.unbanked_pet_xp);
@@ -2073,11 +2101,6 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
       weekly_key = excluded.weekly_key,
       updated_at = CURRENT_TIMESTAMP
   `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
-  await db.prepare(`
-    UPDATE telegram_pet_runs
-    SET status = ?, completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-    WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable')
-  `).bind(options.completed ? 'completed' : 'extracted', telegramId, run.run_id).run();
   const completedRun = await getPetRunById(db, telegramId, run.run_id);
   return { accepted: true, reason: options.completed ? 'run_completed' : 'run_extracted', run: completedRun, pet, xp_awarded: communityXp, pet_xp_awarded: petXp, banked_items: bankedItems };
 }
@@ -2089,7 +2112,7 @@ async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {})
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', run, xp_awarded: 0, pet_xp_awarded: 0 };
   if (run.depth <= 0) return { accepted: false, reason: 'run_empty', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
-  return recordPetRunBankedEvent(db, telegramId, run, pet, { ...options, event_key: options.event_key || buildPetRunExtractEventKey(telegramId, run.run_id) });
+  return recordPetRunBankedEvent(db, telegramId, run, pet, { ...options, event_key: buildPetRunExtractEventKey(telegramId, run.run_id) });
 }
 
 async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options = {}) {
@@ -2110,6 +2133,10 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   if (clampPetStat(pet.energy) <= 0) return { accepted: false, reason: 'pet_tired', run, choice, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   const inventory = await getPetInventory(db, telegramId).catch(() => []);
   const outcome = buildPetRunStepOutcome(run, choice, pet, inventory);
+  const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs);
+  if (Object.keys(missingCosts).length) {
+    return { accepted: false, reason: 'insufficient_run_cost', run, choice, pet, outcome, missing_costs: missingCosts, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   applyPetRunCosts(pet, outcome.costs);
   const dayKey = getPetDayKey(new Date());
   const weekKey = getPetWeekKey(new Date());
@@ -2136,6 +2163,21 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     outcome.item_key,
     JSON.stringify({ source: options.source || 'telegram_command', risk_chance: outcome.risk_chance, costs: outcome.costs, copy: outcome.copy }),
   ).run();
+  if (outcome.consumed_item_key) {
+    await db.prepare(`
+      INSERT INTO telegram_pet_events
+        (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      VALUES (?, ?, 'run_item_use', ?, 0, 0, ?, ?, ?, 'accepted', 'run_item_consumed', ?)
+    `).bind(
+      crypto.randomUUID(),
+      telegramId,
+      buildStablePetEventKey(['pet_run_item_use', telegramId, run.run_id, stepIndex, outcome.consumed_item_key]),
+      season.key,
+      dayKey,
+      weekKey,
+      JSON.stringify({ source: options.source || 'telegram_command', run_id: run.run_id, consumed_item_key: outcome.consumed_item_key, choice_key: choice.key }),
+    ).run();
+  }
 
   if (!outcome.success) {
     const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
@@ -2338,7 +2380,10 @@ async function processPetDailyChest(db, telegramId, options = {}) {
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const claimed = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_type = 'daily_chest' AND day_key = ? AND status = 'accepted'`).bind(telegramId, dayKey).first().catch(() => null);
   if (claimed) return { accepted: false, reason: 'daily_claimed', pet };
-  const petXp = Math.min(PETS_DAILY_PET_XP_CAP, 40);
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  let petXp = 40;
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
+  else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
   pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + 40);
   pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + 2);
@@ -8942,6 +8987,7 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
   buildPetRunStepEventKey,
+  getUnaffordablePetRunCosts,
   buildPetMediaUrl,
   buildPetRandomEventReplyMarkup,
   buildPetAdventureReplyMarkup,
@@ -9432,6 +9478,7 @@ function formatPetBlockedCopy(kind, reason, extra = {}) {
   if (code === 'run_empty') return `Clear at least one run step before extracting. Use /petrun to pick a route.`;
   if (code === 'invalid_run_choice') return `That run choice is not available on this step. Use /petrun to refresh the run.`;
   if (code === 'run_closed') return `That run is already closed. Use /petrun to start or resume the next one.`;
+  if (code === 'insufficient_run_cost') return `Moonpet cannot afford that run choice cost. Try another route or extract first.`;
   if (code === 'pet_not_adopted') return `You need a Moonpet first. Use /adopt to start.`;
   if (code === 'already_equipped') return `That ${kind} is already equipped.`;
   if (code === 'level_locked') return `That ${kind} unlocks at level ${extra.item?.min_level || '?'}.`;
