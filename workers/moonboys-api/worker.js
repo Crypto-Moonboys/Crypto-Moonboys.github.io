@@ -8963,6 +8963,60 @@ function formatPetAdventureSummary(event, choice, outcome, applied = {}) {
   return formatPetRandomEventSummary(event, choice, outcome, applied);
 }
 
+const TELEGRAM_PHOTO_CAPTION_LIMIT = 1024;
+
+function stripTelegramHtml(value) {
+  return String(value || '').replace(/<[^>]*>/g, '').trim();
+}
+
+function titleCasePetAction(value) {
+  return String(value || '')
+    .replace(/[_/-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatTelegramPetMediaCaption(text, mediaKey = null) {
+  const lines = String(text || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (!lines.length) return '';
+
+  const firstLine = stripTelegramHtml(lines[0]).replace(/\.$/, '');
+  const actionMatch = firstLine.match(/^Action accepted:\s*\/([a-z0-9_]+)\s*\(([^)]+)\)/i);
+  const title = actionMatch
+    ? `${titleCasePetAction(actionMatch[1])} Complete`
+    : firstLine || titleCasePetAction(mediaKey || 'pet update') || 'Pet Update';
+  const rewardLine = actionMatch
+    ? actionMatch[2].replace(/\bpet XP\b/gi, 'Pet XP').replace(/\bcommunity XP\b/gi, 'Community XP')
+    : stripTelegramHtml(lines.find((line, index) => index > 0 && /\+\d+|Rewards:|Banked:|Consolation:/i.test(line)) || '');
+
+  const statusLine = stripTelegramHtml(lines.find((line) => /\|\s*Stage:\s*|\|\s*Level\s+\d+/i.test(line)) || '');
+  const healthLine = stripTelegramHtml(lines.find((line) => /^Health\s/i.test(line)) || '');
+  const energyLine = stripTelegramHtml(lines.find((line) => /^Energy\s/i.test(line)) || '');
+  const petName = (statusLine.split('|')[0] || '').trim();
+  const levelMatch = statusLine.match(/\bLevel\s+(\d+)/i);
+  const healthMatch = healthLine.match(/(\d+\/100)\b/);
+  const energyMatch = energyLine.match(/(\d+\/100)\b/);
+  const petParts = [];
+  if (levelMatch) petParts.push(`Level ${levelMatch[1]}`);
+  if (energyMatch) petParts.push(`Energy ${energyMatch[1]}`);
+  if (healthMatch) petParts.push(`Health ${healthMatch[1]}`);
+
+  return [
+    `<b>${escapeHtml(title)}</b>`,
+    rewardLine ? escapeHtml(rewardLine) : '',
+    petParts.length ? `${escapeHtml(petName || 'Moonpet')}: ${petParts.join(' | ')}` : '',
+  ].filter(Boolean).join('\n');
+}
+
+function formatTelegramPetHeroCaption(text, mediaKey = null) {
+  const compact = formatTelegramPetMediaCaption(text, mediaKey);
+  if (compact && compact.length <= TELEGRAM_PHOTO_CAPTION_LIMIT) return compact;
+  const firstLine = stripTelegramHtml(String(text || '').split(/\r?\n/).find((line) => line.trim()) || '');
+  const title = firstLine || titleCasePetAction(mediaKey || 'pet update') || 'Pet Update';
+  return `<b>${escapeHtml(title.slice(0, 120))}</b>\nFull details below.`;
+}
+
 async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
   if (!botToken || !chatId || !photo) {
     return { ok: false, status: 0, error: 'missing_chat_or_token_or_photo' };
@@ -8988,13 +9042,26 @@ async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
 async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey = null) {
   const resolvedMediaKey = resolvePetMediaKey(mediaKey);
   const photoUrl = resolvedMediaKey ? buildPetMediaUrl(resolvedMediaKey) : null;
-  if (photoUrl) {
-    const photoResult = await sendTelegramPhoto(botToken, chatId, photoUrl).catch((error) => ({ ok: false, error: error?.message || String(error) }));
-    if (!photoResult.ok) {
-      return sendTelegramMessage(botToken, chatId, text, extra);
-    }
+  if (!photoUrl) {
+    return sendTelegramMessage(botToken, chatId, text, extra);
   }
-  return sendTelegramMessage(botToken, chatId, text, extra);
+
+  const caption = formatTelegramPetMediaCaption(text, resolvedMediaKey);
+  const useDetailFallback = !caption || caption.length > TELEGRAM_PHOTO_CAPTION_LIMIT;
+  const photoExtra = {
+    ...extra,
+    caption: useDetailFallback ? formatTelegramPetHeroCaption(text, resolvedMediaKey) : caption,
+    parse_mode: 'HTML',
+  };
+  const photoResult = await sendTelegramPhoto(botToken, chatId, photoUrl, photoExtra)
+    .catch((error) => ({ ok: false, error: error?.message || String(error) }));
+  if (!photoResult.ok) {
+    return sendTelegramMessage(botToken, chatId, text, extra);
+  }
+  if (useDetailFallback) {
+    return sendTelegramMessage(botToken, chatId, text);
+  }
+  return photoResult;
 }
 
 function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
@@ -9026,6 +9093,8 @@ export const __petMediaTestHooks = Object.freeze({
   formatPetRunStepSummary,
   formatPetRandomEventSummary,
   formatPetAdventureSummary,
+  formatTelegramPetMediaCaption,
+  formatTelegramPetHeroCaption,
   resolvePetMediaKey,
   resolvePetAdventureEncounter,
   resolvePetRandomEncounter,
