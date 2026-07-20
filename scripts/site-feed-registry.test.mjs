@@ -269,6 +269,7 @@ for (const [page, feedId] of pages) {
 
 const statusClient = read('js/site-feed-status.js');
 assert.match(statusClient, /\/data\/feed-status\.json/, 'status client must read aggregate feed status');
+assert.match(statusClient, /\/api\/waxonedge\/live\/status/, 'WaxOnEdge status badge must use current live status instead of stale static advisory data');
 assert.match(statusClient, /is-stale/, 'status client must expose stale state');
 assert.match(statusClient, /is-error/, 'status client must expose error state');
 assert.doesNotMatch(statusClient, /document\.write|location\.href|location\.replace|preventDefault/, 'status client must only update badge text/classes and never block rendering');

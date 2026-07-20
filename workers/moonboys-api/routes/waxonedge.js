@@ -1,5 +1,6 @@
 const WAXONEDGE_API_PREFIX = '/api/waxonedge';
 const WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT = `${WAXONEDGE_API_PREFIX}/live`;
+const WAXONEDGE_LIVE_STATUS_ENDPOINT = `${WAXONEDGE_API_PREFIX}/live/status`;
 const WAXONEDGE_LIVE_STREAM_ENDPOINT = `${WAXONEDGE_API_PREFIX}/live/stream`;
 const WAXONEDGE_LIVE_SECRET_HEADER = 'x-waxonedge-live-secret';
 
@@ -6068,6 +6069,32 @@ async function handleLiveSnapshot(env, query, corsHeaders) {
       warnings: ['live snapshot unavailable'],
     }, 503, corsHeaders);
   }
+}
+
+async function handleLiveStatus(env, corsHeaders, fetchImpl = globalThis.fetch) {
+  const checkedAt = nowIso();
+  const probe = await cachedProbeWaxonedgeLiveIndexer(env, fetchImpl);
+  const live = probe?.reachable === true &&
+    probe.uses_fake_live_data === false &&
+    probe.browser_hyperion_fetch === false &&
+    probe.emits_fake_token_updates === false;
+  return waxonedgeJson({
+    ok: live,
+    source: 'moonboys-api/waxonedge-live-status',
+    mode: 'live_status',
+    status: live ? 'live' : 'degraded',
+    stale: !live,
+    checked_at: checkedAt,
+    generated_at: checkedAt,
+    snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+    stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
+    transport: live ? 'sse' : 'snapshot-polling-fallback',
+    live_indexer: waxonedgeLiveIndexerConfig(env),
+    live_indexer_probe: probe,
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    warnings: live ? [] : [probe?.last_error || 'live indexer unavailable'],
+  }, 200, corsHeaders);
 }
 
 function encodeSseEvent(event, data) {
@@ -14554,6 +14581,9 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     if (path === WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT) {
       return handleLiveSnapshot(env, url.searchParams, corsHeaders);
     }
+    if (path === WAXONEDGE_LIVE_STATUS_ENDPOINT) {
+      return handleLiveStatus(env, corsHeaders);
+    }
     if (path === WAXONEDGE_LIVE_STREAM_ENDPOINT) {
       return await handleLiveStream(corsHeaders, env);
     }
@@ -14805,6 +14835,7 @@ export const __waxonedgeTestHooks = {
   sortWaxcashGraphTokens,
   listLiveTokenUpdates,
   handleLiveSnapshot,
+  handleLiveStatus,
   handleLiveStream,
   sourceCoverageFromKeys,
 };

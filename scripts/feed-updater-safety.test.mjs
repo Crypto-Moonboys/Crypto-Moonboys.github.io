@@ -87,7 +87,22 @@ try {
   global.fetch = async (url) => {
     const text = String(url);
     if (text.includes('/api/waxonedge/indexer-health')) {
-      return jsonResponse({ generated_at: '2026-07-01T00:05:00.000Z', source: 'fixture_health' });
+      return jsonResponse({
+        ok: true,
+        source: 'moonboys-api/waxonedge',
+        data: {
+          generated_at: '2026-07-01T00:05:00.000Z',
+          live_updates: {
+            live_indexer_probe: {
+              reachable: true,
+              status: 'connected',
+              uses_fake_live_data: false,
+              browser_hyperion_fetch: false,
+              emits_fake_token_updates: false,
+            },
+          },
+        },
+      });
     }
     if (text.includes('/api/waxonedge/waxcash-bubbles-lite')) {
       throw new Error('Feed fetch timeout after 15000ms');
@@ -98,7 +113,8 @@ try {
     return jsonResponse({});
   };
   const waxonedgeStatus = await updateWaxonedgeFeed();
-  assert.equal(waxonedgeStatus.status, 'degraded', 'WaxOnEdge should degrade when bubbles_lite times out but fallback exists');
+  assert.equal(waxonedgeStatus.status, 'live', 'WaxOnEdge should stay live when health is connected even if optional bubbles_lite times out');
+  assert.equal(waxonedgeStatus.stale, false, 'WaxOnEdge live status should not inherit stale from an optional heavy snapshot timeout');
   assert.equal(waxonedgeStatus.endpoint_status.health.ok, true, 'WaxOnEdge health should have independent endpoint status');
   assert.equal(waxonedgeStatus.endpoint_status.bubbles_lite.used_previous, true, 'WaxOnEdge bubbles_lite should use previous JSON on timeout');
   assert.equal(waxonedgeStatus.endpoint_status.static_bootstrap.ok, true, 'WaxOnEdge static bootstrap should be checked independently');

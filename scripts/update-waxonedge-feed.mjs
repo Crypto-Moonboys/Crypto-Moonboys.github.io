@@ -20,18 +20,18 @@ export async function updateWaxonedgeFeed() {
     retryDelayMs: feed.retry_backoff_ms,
     allowStale: true,
   };
-  const liteResult = await safeFetchJson(feed.source_urls.bubbles_lite, {
-    ...fetchOptions,
-    source_key: 'bubbles_lite',
-    previousPath: 'data/waxonedge_bubbles/waxcash-bubbles-lite.json',
-  });
-  if (liteResult.ok) preserveOrWrite('data/waxonedge_bubbles/waxcash-bubbles-lite.json', liteResult.payload);
   const healthResult = await safeFetchJson(feed.source_urls.health, {
     ...fetchOptions,
     source_key: 'health',
     previousPath: 'data/waxonedge_bubbles/indexer-health.json',
   });
   if (healthResult.ok) preserveOrWrite('data/waxonedge_bubbles/indexer-health.json', healthResult.payload);
+  const liteResult = await safeFetchJson(feed.source_urls.bubbles_lite, {
+    ...fetchOptions,
+    source_key: 'bubbles_lite',
+    previousPath: 'data/waxonedge_bubbles/waxcash-bubbles-lite.json',
+  });
+  if (liteResult.ok) preserveOrWrite('data/waxonedge_bubbles/waxcash-bubbles-lite.json', liteResult.payload);
   const staticResult = await safeFetchJson(feed.source_urls.static_bootstrap, {
     ...fetchOptions,
     source_key: 'static_bootstrap',
@@ -47,9 +47,9 @@ export async function updateWaxonedgeFeed() {
     .filter((result) => result.error)
     .map((result) => `${result.source_key}: ${result.error}`);
   const hasUsableBubbles = Boolean(liteResult.payload || staticResult.payload);
-  const hasFreshLiveBubbles = liteResult.ok && !liteResult.used_previous;
-  const statusValue = hasFreshLiveBubbles && healthResult.ok
-    ? 'ok'
+  const hasLiveHealth = healthResult.ok && healthReportsLive(healthResult.payload);
+  const statusValue = hasLiveHealth
+    ? 'live'
     : hasUsableBubbles
       ? 'degraded'
       : 'error';
@@ -57,7 +57,7 @@ export async function updateWaxonedgeFeed() {
   const health = healthResult.payload;
   const status = createFeedStatus(feed, {
     status: statusValue,
-    stale: statusValue !== 'ok',
+    stale: statusValue !== 'live',
     analytics_status: statusValue,
     last_successful_check: statusValue !== 'error' ? new Date().toISOString() : null,
     source_updated_at: sourceUpdatedAt(lite) || sourceUpdatedAt(health),
@@ -72,6 +72,21 @@ export async function updateWaxonedgeFeed() {
   });
   writeFeedStatus(feed, status);
   return status;
+}
+
+function healthReportsLive(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  const data = payload.data && typeof payload.data === 'object' ? payload.data : payload;
+  const liveUpdates = data.live_updates && typeof data.live_updates === 'object' ? data.live_updates : {};
+  const probe = liveUpdates.live_indexer_probe && typeof liveUpdates.live_indexer_probe === 'object'
+    ? liveUpdates.live_indexer_probe
+    : {};
+  const probeStatus = String(probe.status || data.status || '').toLowerCase();
+  return (payload.source === 'moonboys-api/waxonedge-live-status' && payload.ok === true) ||
+    probe.reachable === true ||
+    probeStatus === 'live' ||
+    probeStatus === 'ok' ||
+    probeStatus === 'connected';
 }
 
 if (process.argv[1] && process.argv[1].endsWith('update-waxonedge-feed.mjs')) {

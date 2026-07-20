@@ -499,6 +499,7 @@ for (const endpoint of [
   '/sync-status',
   '/indexer-health',
   '/live',
+  '/live/status',
   '/live/stream',
 ]) {
   ok('route exposes ' + endpoint, route.includes(endpoint));
@@ -5580,6 +5581,34 @@ ok('indexer health exposes live update contract metadata',
     second.reachable === true &&
     afterTtl.reachable === true &&
     JSON.stringify(second).includes('do-not-leak') === false);
+}
+{
+  const goodHealth = {
+    service: 'waxonedge-live-indexer',
+    status: 'connected',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  };
+  __waxonedgeTestHooks.resetWaxonedgeLiveIndexerProbeCache();
+  const response = await __waxonedgeTestHooks.handleLiveStatus({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  }, {}, async () => new Response(JSON.stringify(goodHealth), { status: 200 }));
+  const payload = await response.json();
+  ok('/api/waxonedge/live/status is a lightweight live badge probe and does not build bubble snapshots',
+    response.status === 200 &&
+    payload.ok === true &&
+    payload.status === 'live' &&
+    payload.stale === false &&
+    payload.source === 'moonboys-api/waxonedge-live-status' &&
+    payload.mode === 'live_status' &&
+    payload.transport === 'sse' &&
+    payload.snapshot_endpoint === '/api/waxonedge/live' &&
+    payload.stream_endpoint === '/api/waxonedge/live/stream' &&
+    payload.live_indexer_probe?.reachable === true &&
+    Array.isArray(payload.tokens) === false &&
+    JSON.stringify(payload).includes('do-not-leak') === false);
 }
 {
   const goodHealth = {
