@@ -8188,7 +8188,7 @@ export default {
     const shouldRunDailySummary = !cron || cron === '0 9 * * *';
     const shouldRunPetNotifications = !cron || cron === '*/5 * * * *';
     const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
-    const shouldRunWaxOnEdge = !cron || cron === '* * * * *';
+    const shouldRunWaxOnEdge = !cron || cron === '* * * * *' || cron === '*/15 * * * *';
     const scheduledResults = [];
 
     if (shouldRunWaxOnEdge) {

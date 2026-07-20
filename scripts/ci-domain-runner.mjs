@@ -90,6 +90,7 @@ const GROUPS = {
     ['node', 'scripts/wax-image-normalizer.test.mjs'],
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
     ['node', 'scripts/waxonedge-api-routing.test.mjs'],
+    ['node', 'scripts/waxonedge-cost-guard.test.mjs'],
     ['node', 'scripts/waxonedge-smoke.test.mjs'],
     ['node', 'scripts/waxonedge-indexer-blueprint.test.mjs'],
     ['node', 'scripts/waxonedge-live-backend.test.mjs'],

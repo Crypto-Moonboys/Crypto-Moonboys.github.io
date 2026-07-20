@@ -66,6 +66,7 @@ const OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT = 200;
 const FREE_SAFE_SUPPLY_SYNC_LIMIT = 5;
 const FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN = 1;
 const FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2;
+const WAXONEDGE_CANDLE_BACKFILL_CRON_HOUR_INTERVAL = 6;
 const CANDLE_BACKFILL_LOOKBACK_DAYS = 120;
 const STUCK_CURSOR_RETRY_LIMIT = 3;
 const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
@@ -735,8 +736,13 @@ function referenceCandleUrlExample(source, pairId) {
   return `${WAXONEDGE_API_PREFIX}/candles?duration=1d&src=${encodeURIComponent(src)}&pair_id=${encodeURIComponent(id)}`;
 }
 
-function selectCoreDexAdapterForCron(minute) {
-  return CORE_DEX_ADAPTERS[Math.floor(Math.max(0, minute) / 4) % CORE_DEX_ADAPTERS.length];
+function selectCoreDexAdapterForCron(minute, hour = 0) {
+  const safeMinute = Math.max(0, Math.floor(asNumber(minute) || 0));
+  const safeHour = Math.max(0, Math.floor(asNumber(hour) || 0));
+  const slot = safeMinute >= 15
+    ? (safeHour * 4) + Math.floor(safeMinute / 15)
+    : Math.floor(safeMinute / 4);
+  return CORE_DEX_ADAPTERS[slot % CORE_DEX_ADAPTERS.length];
 }
 
 const CORE_DEX_ADAPTERS = Object.freeze([
@@ -1443,6 +1449,7 @@ async function rpcPost(path, body) {
 }
 
 async function recordSyncRun(db, source, status, startedAt, error = null) {
+  if (status === 'skipped') return;
   await db.prepare(
     `INSERT INTO waxonedge_sync_runs (source, status, started_at, finished_at, error)
      VALUES (?, ?, ?, ?, ?)`
@@ -1453,13 +1460,18 @@ async function writeSnapshot(db, source, payload, fetchedAt) {
   if (LARGE_SNAPSHOT_SOURCES.includes(source) && Array.isArray(payload?.rows)) {
     throw new Error(`Refusing oversized raw DEX snapshot for ${source}; write compact metadata instead`);
   }
+  const payloadJson = JSON.stringify(payload);
+  const existing = await db.prepare(
+    `SELECT payload_json FROM waxonedge_snapshots WHERE source = ? LIMIT 1`
+  ).bind(source).first().catch(() => null);
+  if (existing?.payload_json === payloadJson) return;
   await db.prepare(
     `INSERT INTO waxonedge_snapshots (source, fetched_at, payload_json)
      VALUES (?, ?, ?)
      ON CONFLICT(source) DO UPDATE SET
-       fetched_at = excluded.fetched_at,
-       payload_json = excluded.payload_json`
-  ).bind(source, fetchedAt, JSON.stringify(payload)).run();
+        fetched_at = excluded.fetched_at,
+        payload_json = excluded.payload_json`
+  ).bind(source, fetchedAt, payloadJson).run();
 }
 
 async function writeCompactDexSnapshot(db, adapter, metadata, fetchedAt) {
@@ -2441,12 +2453,33 @@ async function upsertPairs(db, pairs) {
        volume_30d = excluded.volume_30d,
        volume_30d_wax = excluded.volume_30d_wax,
        volume_30d_usd = excluded.volume_30d_usd,
-       liquidity_wax = excluded.liquidity_wax,
-       liquidity_usd = excluded.liquidity_usd,
-       reserve_a = excluded.reserve_a,
-       reserve_b = excluded.reserve_b,
-       fee_bps = excluded.fee_bps,
-       updated_at = excluded.updated_at`
+        liquidity_wax = excluded.liquidity_wax,
+        liquidity_usd = excluded.liquidity_usd,
+        reserve_a = excluded.reserve_a,
+        reserve_b = excluded.reserve_b,
+        fee_bps = excluded.fee_bps,
+        updated_at = excluded.updated_at
+      WHERE waxonedge_pairs.og_laststats_pair_id IS NOT excluded.og_laststats_pair_id
+         OR waxonedge_pairs.token_a_contract IS NOT excluded.token_a_contract
+         OR waxonedge_pairs.token_a_symbol IS NOT excluded.token_a_symbol
+         OR waxonedge_pairs.token_b_contract IS NOT excluded.token_b_contract
+         OR waxonedge_pairs.token_b_symbol IS NOT excluded.token_b_symbol
+         OR waxonedge_pairs.price IS NOT excluded.price
+         OR waxonedge_pairs.change_24h IS NOT excluded.change_24h
+         OR waxonedge_pairs.volume_24h IS NOT excluded.volume_24h
+         OR waxonedge_pairs.volume_24h_wax IS NOT excluded.volume_24h_wax
+         OR waxonedge_pairs.volume_24h_usd IS NOT excluded.volume_24h_usd
+         OR waxonedge_pairs.volume_7d IS NOT excluded.volume_7d
+         OR waxonedge_pairs.volume_7d_wax IS NOT excluded.volume_7d_wax
+         OR waxonedge_pairs.volume_7d_usd IS NOT excluded.volume_7d_usd
+         OR waxonedge_pairs.volume_30d IS NOT excluded.volume_30d
+         OR waxonedge_pairs.volume_30d_wax IS NOT excluded.volume_30d_wax
+         OR waxonedge_pairs.volume_30d_usd IS NOT excluded.volume_30d_usd
+         OR waxonedge_pairs.liquidity_wax IS NOT excluded.liquidity_wax
+         OR waxonedge_pairs.liquidity_usd IS NOT excluded.liquidity_usd
+         OR waxonedge_pairs.reserve_a IS NOT excluded.reserve_a
+         OR waxonedge_pairs.reserve_b IS NOT excluded.reserve_b
+         OR waxonedge_pairs.fee_bps IS NOT excluded.fee_bps`
   ).bind(
     pair.source, pair.pair_id, pair.og_laststats_pair_id || null, pair.token_a_contract, pair.token_a_symbol,
     pair.token_b_contract, pair.token_b_symbol, pair.price, pair.change_24h,
@@ -2605,10 +2638,17 @@ async function syncAlcorMarketData(env, reason, syncCycleId = '') {
          total_supply = excluded.total_supply,
          max_supply = excluded.max_supply,
          price_wax = excluded.price_wax,
-         price_usd = excluded.price_usd,
-         pair_count = excluded.pair_count,
-         icon_url = excluded.icon_url,
-         updated_at = excluded.updated_at`
+          price_usd = excluded.price_usd,
+          pair_count = excluded.pair_count,
+          icon_url = excluded.icon_url,
+          updated_at = excluded.updated_at
+        WHERE waxonedge_tokens.decimals IS NOT excluded.decimals
+           OR waxonedge_tokens.total_supply IS NOT excluded.total_supply
+           OR waxonedge_tokens.max_supply IS NOT excluded.max_supply
+           OR waxonedge_tokens.price_wax IS NOT excluded.price_wax
+           OR waxonedge_tokens.price_usd IS NOT excluded.price_usd
+           OR waxonedge_tokens.pair_count IS NOT excluded.pair_count
+           OR waxonedge_tokens.icon_url IS NOT excluded.icon_url`
     ).bind(
       token.contract, token.symbol, token.decimals, token.total_supply, token.max_supply,
       token.price_wax, token.price_usd, token.pair_count, token.icon_url, token.updated_at,
@@ -4756,6 +4796,18 @@ async function upsertSourceIndexState(db, source, patch) {
     started_at: patch.started_at ?? existing?.started_at ?? now,
     updated_at: patch.updated_at ?? now,
   };
+  if (existing &&
+    String(existing.sync_cycle_id || '') === String(next.sync_cycle_id || '') &&
+    String(existing.cursor || '') === String(next.cursor || '') &&
+    asNumber(existing.page_count) === asNumber(next.page_count) &&
+    asNumber(existing.row_count) === asNumber(next.row_count) &&
+    asNumber(existing.complete) === asNumber(next.complete) &&
+    asNumber(existing.truncated) === asNumber(next.truncated) &&
+    String(existing.status || '') === String(next.status || '') &&
+    String(existing.error || '') === String(next.error || '') &&
+    String(existing.started_at || '') === String(next.started_at || '')) {
+    return { source, ...existing, unchanged: true };
+  }
   await db.prepare(
     `INSERT INTO waxonedge_source_index_state
      (source, sync_cycle_id, cursor, page_count, row_count, complete, truncated, status, error, started_at, updated_at)
@@ -5301,12 +5353,39 @@ async function aggregateTokenAnalytics(env) {
          source_keys = excluded.source_keys,
          aggregate_complete = excluded.aggregate_complete,
          aggregate_sources_required = excluded.aggregate_sources_required,
-         aggregate_sources_present = excluded.aggregate_sources_present,
-         aggregate_sources_processed = excluded.aggregate_sources_processed,
-         aggregate_sources_failed = excluded.aggregate_sources_failed,
-         aggregate_truncated = excluded.aggregate_truncated,
-         aggregate_sources_truncated = excluded.aggregate_sources_truncated,
-         updated_at = excluded.updated_at`
+          aggregate_sources_present = excluded.aggregate_sources_present,
+          aggregate_sources_processed = excluded.aggregate_sources_processed,
+          aggregate_sources_failed = excluded.aggregate_sources_failed,
+          aggregate_truncated = excluded.aggregate_truncated,
+          aggregate_sources_truncated = excluded.aggregate_sources_truncated,
+          updated_at = excluded.updated_at
+        WHERE waxonedge_token_stats.volume_24h IS NOT excluded.volume_24h
+           OR waxonedge_token_stats.volume_24h_wax IS NOT excluded.volume_24h_wax
+           OR waxonedge_token_stats.volume_24h_usd IS NOT excluded.volume_24h_usd
+           OR waxonedge_token_stats.liquidity_wax IS NOT excluded.liquidity_wax
+           OR waxonedge_token_stats.liquidity_usd IS NOT excluded.liquidity_usd
+           OR waxonedge_token_stats.tvl_wax IS NOT excluded.tvl_wax
+           OR waxonedge_token_stats.tvl_usd IS NOT excluded.tvl_usd
+           OR waxonedge_token_stats.change_24h IS NOT excluded.change_24h
+           OR waxonedge_token_stats.selected_price_wax IS NOT excluded.selected_price_wax
+           OR waxonedge_token_stats.selected_price_usd IS NOT excluded.selected_price_usd
+           OR waxonedge_token_stats.selected_pair_source IS NOT excluded.selected_pair_source
+           OR waxonedge_token_stats.selected_pair_id IS NOT excluded.selected_pair_id
+           OR waxonedge_token_stats.circulating_supply IS NOT excluded.circulating_supply
+           OR waxonedge_token_stats.market_cap_wax IS NOT excluded.market_cap_wax
+           OR waxonedge_token_stats.market_cap_usd IS NOT excluded.market_cap_usd
+           OR waxonedge_token_stats.fdv_wax IS NOT excluded.fdv_wax
+           OR waxonedge_token_stats.fdv_usd IS NOT excluded.fdv_usd
+           OR waxonedge_token_stats.source_count IS NOT excluded.source_count
+           OR waxonedge_token_stats.indexed_pair_count IS NOT excluded.indexed_pair_count
+           OR waxonedge_token_stats.source_keys IS NOT excluded.source_keys
+           OR waxonedge_token_stats.aggregate_complete IS NOT excluded.aggregate_complete
+           OR waxonedge_token_stats.aggregate_sources_required IS NOT excluded.aggregate_sources_required
+           OR waxonedge_token_stats.aggregate_sources_present IS NOT excluded.aggregate_sources_present
+           OR waxonedge_token_stats.aggregate_sources_processed IS NOT excluded.aggregate_sources_processed
+           OR waxonedge_token_stats.aggregate_sources_failed IS NOT excluded.aggregate_sources_failed
+           OR waxonedge_token_stats.aggregate_truncated IS NOT excluded.aggregate_truncated
+           OR waxonedge_token_stats.aggregate_sources_truncated IS NOT excluded.aggregate_sources_truncated`
     ).bind(
       agg.contract,
       agg.symbol,
@@ -5342,22 +5421,21 @@ async function aggregateTokenAnalytics(env) {
     if (detailStats.selected_price_wax != null) {
       statements.push(env.DB.prepare(
         `UPDATE waxonedge_tokens
-         SET price_wax = ?, price_usd = COALESCE(?, price_usd), pair_count = (
-           SELECT COUNT(*) FROM waxonedge_pairs
-           WHERE (token_a_contract = ? AND token_a_symbol = ?)
-              OR (token_b_contract = ? AND token_b_symbol = ?)
-         ), updated_at = ?
-         WHERE contract = ? AND symbol = ?`
+         SET price_wax = ?, price_usd = COALESCE(?, price_usd), pair_count = ?, updated_at = ?
+         WHERE contract = ? AND symbol = ?
+           AND (price_wax IS NOT ?
+             OR price_usd IS NOT COALESCE(?, price_usd)
+             OR pair_count IS NOT ?)`
       ).bind(
         detailStats.selected_price_wax,
         detailStats.selected_price_usd,
-        agg.contract,
-        agg.symbol,
-        agg.contract,
-        agg.symbol,
+        agg.pairCount,
         nowIso(),
         agg.contract,
         agg.symbol,
+        detailStats.selected_price_wax,
+        detailStats.selected_price_usd,
+        agg.pairCount,
       ));
     }
   }
@@ -5490,11 +5568,14 @@ async function syncSupplyInputs(env) {
         `INSERT INTO waxonedge_tokens
          (contract, symbol, decimals, total_supply, max_supply, updated_at)
          VALUES (?, ?, ?, ?, ?, ?)
-         ON CONFLICT(contract, symbol) DO UPDATE SET
-           decimals = COALESCE(excluded.decimals, waxonedge_tokens.decimals),
-           total_supply = COALESCE(excluded.total_supply, waxonedge_tokens.total_supply),
-           max_supply = COALESCE(excluded.max_supply, waxonedge_tokens.max_supply),
-           updated_at = excluded.updated_at`
+          ON CONFLICT(contract, symbol) DO UPDATE SET
+            decimals = COALESCE(excluded.decimals, waxonedge_tokens.decimals),
+            total_supply = COALESCE(excluded.total_supply, waxonedge_tokens.total_supply),
+            max_supply = COALESCE(excluded.max_supply, waxonedge_tokens.max_supply),
+            updated_at = excluded.updated_at
+          WHERE waxonedge_tokens.decimals IS NOT COALESCE(excluded.decimals, waxonedge_tokens.decimals)
+             OR waxonedge_tokens.total_supply IS NOT COALESCE(excluded.total_supply, waxonedge_tokens.total_supply)
+             OR waxonedge_tokens.max_supply IS NOT COALESCE(excluded.max_supply, waxonedge_tokens.max_supply)`
       ).bind(
         row.contract,
         row.symbol,
@@ -5508,7 +5589,9 @@ async function syncSupplyInputs(env) {
          (contract, symbol, fdv_wax, fdv_usd, updated_at)
          VALUES (?, ?, NULL, NULL, ?)
          ON CONFLICT(contract, symbol) DO UPDATE SET
-           updated_at = excluded.updated_at`
+            updated_at = excluded.updated_at
+          WHERE waxonedge_token_stats.fdv_wax IS NOT NULL
+             OR waxonedge_token_stats.fdv_usd IS NOT NULL`
       ).bind(row.contract, row.symbol, syncedAt).run().catch(() => {});
       updated += 1;
     } catch (error) {
@@ -15080,15 +15163,24 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   const minute = tick.getUTCMinutes();
   const hour = tick.getUTCHours();
   const isMinuteCron = cron === '* * * * *';
+  const isQuarterHourCron = cron === '*/15 * * * *';
   const shouldRunFullIndex = !cron || cron === '*/5 * * * *' || (isMinuteCron && minute % 5 === 0);
-  if (isMinuteCron && freeSafeMode) {
-    const rotationSlot = minute % 5;
+  if (isMinuteCron && freeSafeMode && minute % 15 !== 0) {
+    return {
+      ok: true,
+      skipped: true,
+      free_safe_mode: true,
+      reason: 'WaxOnEdge free-safe cron is gated to quarter-hour work slices',
+    };
+  }
+  if ((isMinuteCron || isQuarterHourCron) && freeSafeMode) {
+    const rotationSlot = Math.floor(minute / 15) % 4;
     if (rotationSlot === 0) {
       tasks.push(syncAlcorMarketData(env, 'alcor_minute_market_data'));
     } else if (rotationSlot === 1) {
       tasks.push((async () => {
         const syncCycleId = await getActiveSourceCycleId(env.DB);
-        const adapter = selectCoreDexAdapterForCron(minute);
+        const adapter = selectCoreDexAdapterForCron(minute, hour);
         const [core, pinned] = await Promise.all([
           syncCoreDexAdapters(env, syncCycleId, {
           source: adapter.source,
@@ -15102,14 +15194,18 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
       })());
     } else if (rotationSlot === 2) {
       tasks.push(aggregateTokenAnalytics(env));
-    } else if (rotationSlot === 3) {
-      tasks.push(planWaxOnEdgeCandleBackfill(env));
     } else {
-      tasks.push(Promise.all([syncSupplyInputs(env), syncWaxcashHolderSnapshot(env), runWaxOnEdgeRetentionMaintenance(env)]).then(([supply, holders, retention]) => ({
-        ok: supply.ok && holders.ok,
+      tasks.push(Promise.all([
+        syncSupplyInputs(env),
+        runWaxOnEdgeRetentionMaintenance(env),
+        hour % WAXONEDGE_CANDLE_BACKFILL_CRON_HOUR_INTERVAL === 0
+          ? planWaxOnEdgeCandleBackfill(env)
+          : Promise.resolve({ ok: true, skipped: true, reason: 'candle_backfill_runs_every_6_hours_in_free_safe_mode' }),
+      ]).then(([supply, retention, candleBackfill]) => ({
+        ok: supply.ok && retention.ok && candleBackfill.ok,
         supply,
-        holders,
         retention,
+        candleBackfill,
       })));
     }
   } else if (shouldRunFullIndex) {
@@ -15152,7 +15248,7 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
       result?.core?.ok
     );
     const deferForBudget = freeSafeMode || (shouldRunFullIndex && results.some((result) => result?.tradeBackfill || result?.candleBackfill || result?.nefty));
-    if (sourceWorkRan) {
+    if (sourceWorkRan && !freeSafeMode) {
       postSyncAggregate = await maybeRefreshAggregateAfterSourceSync(env, {
         deferForBudget,
         reason: deferForBudget ? 'Aggregate refresh deferred after source sync to avoid Worker budget pressure' : AGGREGATE_REFRESH_REASON,

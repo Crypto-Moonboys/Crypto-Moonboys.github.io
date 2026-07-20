@@ -466,8 +466,8 @@ const tradeDelete = calls.find((call) => call.sql.includes('DELETE FROM waxonedg
     compactedSnapshot?.normalization_diagnostics?.raw_waxcash_examples?.length === 5 &&
     compactedSnapshot?.normalization_diagnostics?.raw_graffitiking_non_waxcash_examples?.length === 5);
 }
-ok('wrangler has WaxOnEdge minute cron and daily digest cron',
-  wrangler.includes('"* * * * *"') &&
+ok('wrangler has quarter-hour WaxOnEdge cron and daily digest cron',
+  wrangler.includes('"*/15 * * * *"') &&
   wrangler.includes('"0 9 * * *"'));
 ok('wrangler documents WaxOnEdge live indexer probe env without committing shared secret',
   wrangler.includes('# WAXONEDGE_LIVE_INDEXER_URL = "http://127.0.0.1:8789"') &&
@@ -6136,13 +6136,15 @@ ok('regression guard for live source-sync failures',
   route.includes('isSubrequestBudgetError'));
 ok('free-safe cron only runs one heavy WaxOnEdge workload per invocation',
   route.includes('const freeSafeMode = waxonedgeFreeSafeMode(env)') &&
-  route.includes('if (isMinuteCron && freeSafeMode)') &&
-  route.includes('const rotationSlot = minute % 5') &&
+  route.includes('if (isMinuteCron && freeSafeMode && minute % 15 !== 0)') &&
+  route.includes('minute % 15 !== 0') &&
+  route.includes("cron === '*/15 * * * *'") &&
+  route.includes('const rotationSlot = Math.floor(minute / 15) % 4') &&
   route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
   route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
-  route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
-  route.includes('tasks.push(syncSupplyInputs(env))') &&
-  route.includes('selectCoreDexAdapterForCron(minute)') &&
+  route.includes('tasks.push(Promise.all([') &&
+  route.includes('syncSupplyInputs(env)') &&
+  route.includes('selectCoreDexAdapterForCron(minute, hour)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
   route.includes('const deferForBudget = freeSafeMode ||') &&
   route.includes('const sourceWorkRan = results.some') &&
@@ -6155,18 +6157,21 @@ ok('free-safe source sync runs one DEX source chunk with conservative budgets',
   route.includes('maxPages: FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION') &&
   route.includes('requestBudget: FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE'));
 ok('free-safe mode does not permanently prevent supply sync',
-  route.includes('const rotationSlot = minute % 5') &&
+  route.includes('const rotationSlot = Math.floor(minute / 15) % 4') &&
   route.includes('} else {') &&
-  route.includes('tasks.push(syncSupplyInputs(env))') &&
+  route.includes('syncSupplyInputs(env)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
-  route.indexOf('tasks.push(syncSupplyInputs(env))') > route.indexOf('tasks.push(planWaxOnEdgeCandleBackfill(env))'));
-ok('free-safe supply sync runs as isolated cron workload',
-  route.includes('if (isMinuteCron && freeSafeMode)') &&
+  route.indexOf('syncSupplyInputs(env)', route.indexOf('const rotationSlot = Math.floor(minute / 15) % 4')) >
+    route.indexOf('tasks.push(aggregateTokenAnalytics(env))', route.indexOf('const rotationSlot = Math.floor(minute / 15) % 4')));
+ok('free-safe supply sync runs in bounded maintenance cron workload',
+  route.includes('if (isMinuteCron && freeSafeMode && minute % 15 !== 0)') &&
   route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
   route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
-  route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
-  route.includes('tasks.push(syncSupplyInputs(env))') &&
-  !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
+  route.includes('tasks.push(Promise.all([') &&
+  route.includes('syncSupplyInputs(env)') &&
+  route.includes('runWaxOnEdgeRetentionMaintenance(env)') &&
+  route.includes('hour % WAXONEDGE_CANDLE_BACKFILL_CRON_HOUR_INTERVAL === 0') &&
+  route.includes("reason: 'candle_backfill_runs_every_6_hours_in_free_safe_mode'"));
 ok('supply sync rotates across indexed pair tokens with a nonzero bounded limit',
   route.includes('function supplySyncLimit(env)') &&
   route.includes('return Math.max(1, Math.min(250, Math.floor(configured)))') &&
