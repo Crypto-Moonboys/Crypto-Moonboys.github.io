@@ -2044,24 +2044,21 @@
       return waxonedgeApi('/token/' + encodeURIComponent(chartContract) + '/' + encodeURIComponent(chartSymbol) + '/chart')
         .then(function (payload) {
           var chartData = payload && payload.ok && payload.data ? payload.data : {};
-          var candleRows = Array.isArray(chartData.candles) ? chartData.candles : [];
-          var candles = candleRows.map(function (row) {
+          var priceRows = Array.isArray(chartData.price_points) ? chartData.price_points : [];
+          var points = priceRows.map(function (row) {
             return {
-              time: new Date(row.bucket_time || row.time).getTime(),
-              open: asNum(row.open),
-              high: asNum(row.high),
-              low: asNum(row.low),
-              close: asNum(row.close),
-              volume: asNum(row.volume),
+              time: new Date(row.timestamp || row.time).getTime(),
+              value: asNum(row.price_wax != null ? row.price_wax : row.price_usd),
+              volume: asNum(row.volume_24h_wax),
             };
-          }).filter(function (candle) {
-            return candle.time && candle.close != null;
+          }).filter(function (point) {
+            return point.time && point.value != null;
           });
           state.chartCache[backendChartKey] = {
             marketId: backendChartKey,
             source: chartData.chart_source || null,
             unavailable: chartData.unavailable || null,
-            candles: candles,
+            pricePoints: points,
           };
           return state.chartCache[backendChartKey];
         }).catch(function () {
@@ -2069,7 +2066,7 @@
             marketId: backendChartKey,
             source: null,
             unavailable: SOURCE_NOT_INDEXED_TEXT,
-            candles: [],
+            pricePoints: [],
           };
           return state.chartCache[backendChartKey];
         }).finally(function () {
@@ -2155,10 +2152,11 @@
   }
 
   function computeHistoricalVolumes(chartBundle) {
-    if (!chartBundle || !Array.isArray(chartBundle.candles) || chartBundle.candles.length === 0) {
+    var rows = Array.isArray(chartBundle && chartBundle.pricePoints) ? chartBundle.pricePoints : chartBundle && chartBundle.candles;
+    if (!chartBundle || !Array.isArray(rows) || rows.length === 0) {
       return null;
     }
-    var candles = chartBundle.candles;
+    var candles = rows;
     var lastTime = candles[candles.length - 1].time;
     var sevenCutoff = lastTime - (7 * 24 * 60 * 60 * 1000);
     var thirtyCutoff = lastTime - (30 * 24 * 60 * 60 * 1000);
@@ -2188,20 +2186,17 @@
     return volumes;
   }
 
-  function renderLightweightCandles(containerId, candles) {
+  function renderLightweightPricePoints(containerId, points) {
     var host = document.getElementById(containerId);
     var tv = window.LightweightCharts;
     if (!host || !tv || typeof tv.createChart !== 'function') return false;
-    var candleSeriesFactory = tv.CandlestickSeries || null;
-    var data = candles.map(function (candle) {
+    var lineSeriesFactory = tv.LineSeries || null;
+    var data = points.map(function (point) {
       return {
-        time: Math.floor(candle.time / 1000),
-        open: candle.open != null ? candle.open : candle.close,
-        high: candle.high != null ? candle.high : candle.close,
-        low: candle.low != null ? candle.low : candle.close,
-        close: candle.close,
+        time: Math.floor(point.time / 1000),
+        value: point.value != null ? point.value : point.close,
       };
-    });
+    }).filter(function (point) { return point.value != null; });
     if (!data.length) return false;
     host.innerHTML = '';
     var chart = tv.createChart(host, {
@@ -2222,22 +2217,14 @@
         borderColor: 'rgba(148, 163, 184, 0.25)',
       },
     });
-    var series = candleSeriesFactory && typeof chart.addSeries === 'function'
-      ? chart.addSeries(candleSeriesFactory, {
-        upColor: '#00e6b0',
-        downColor: '#ff4d6d',
-        borderUpColor: '#00e6b0',
-        borderDownColor: '#ff4d6d',
-        wickUpColor: '#00e6b0',
-        wickDownColor: '#ff4d6d',
+    var series = lineSeriesFactory && typeof chart.addSeries === 'function'
+      ? chart.addSeries(lineSeriesFactory, {
+        color: '#00e6b0',
+        lineWidth: 2,
       })
-      : chart.addCandlestickSeries({
-        upColor: '#00e6b0',
-        downColor: '#ff4d6d',
-        borderUpColor: '#00e6b0',
-        borderDownColor: '#ff4d6d',
-        wickUpColor: '#00e6b0',
-        wickDownColor: '#ff4d6d',
+      : chart.addLineSeries({
+        color: '#00e6b0',
+        lineWidth: 2,
       });
     series.setData(data);
     chart.timeScale().fitContent();
@@ -2372,16 +2359,16 @@
     var nextSource = nextCandidate
       ? nextCandidate.source + (nextCandidate.marketId ? ' #' + nextCandidate.marketId : '')
       : 'No alternate indexed pair candidate available';
-    var statusText = metaLabel || reason || 'Indexed candles not available yet for this pair';
+    var statusText = metaLabel || reason || 'Price snapshots not available yet for this token';
     setHtml('woe-chart-panel',
       '<div class="woe-chart-placeholder-card">' +
         '<div class="woe-chart-placeholder-grid">' +
           '<div><span>Selected source</span><strong>' + escHtml(selectedSource) + '</strong></div>' +
           '<div><span>Status</span><strong>' + escHtml(statusText) + '</strong></div>' +
-          '<div><span>Reason</span><strong>' + escHtml(reason || 'No backend OHLCV candles are indexed for this pair yet') + '</strong></div>' +
+          '<div><span>Reason</span><strong>' + escHtml(reason || 'No backend price snapshots are stored for this token yet') + '</strong></div>' +
           '<div><span>Next candidate</span><strong>' + escHtml(nextSource) + '</strong></div>' +
         '</div>' +
-        '<p>Indexed candles not available yet for this pair. Pair proof is available below. No fake candles are shown.</p>' +
+        '<p>Price snapshots are not available yet for this token. Pair proof is available below.</p>' +
       '</div>');
     setText('woe-chart-meta', statusText);
   }
@@ -2392,12 +2379,12 @@
       var backendKey = 'backend:' + context.selection.key;
       var backendBundle = state.chartCache[backendKey];
       if (state.chartPending[backendKey] && !backendBundle) {
-        setHtml('woe-chart-panel', '<p class="woe-loading">Checking indexed chart candles for the best available source.</p>');
-        setText('woe-chart-meta', 'Selecting chart source by indexed candles, volume, and liquidity');
+        setHtml('woe-chart-panel', '<p class="woe-loading">Checking price snapshots for the selected token.</p>');
+        setText('woe-chart-meta', 'Loading price snapshot history');
         return;
       }
-      if (!backendBundle || !Array.isArray(backendBundle.candles) || backendBundle.candles.length === 0) {
-        renderChartUnavailable(context, backendBundle && backendBundle.unavailable ? backendBundle.unavailable : 'No indexed backend candles returned for the selected source', SOURCE_NOT_INDEXED_TEXT);
+      if (!backendBundle || !Array.isArray(backendBundle.pricePoints) || backendBundle.pricePoints.length === 0) {
+        renderChartUnavailable(context, backendBundle && backendBundle.unavailable ? backendBundle.unavailable : 'No price snapshots returned for the selected token', SOURCE_NOT_INDEXED_TEXT);
         return;
       }
       var backendSource = backendBundle.source || {};
@@ -2417,8 +2404,8 @@
         change24: null,
       };
       backendChartMeta = backendSource.source
-        ? 'Indexed candles from ' + backendSource.source + ' #' + backendMarket.marketId
-        : 'Indexed backend candles';
+        ? 'Price snapshots from ' + backendSource.source + ' #' + backendMarket.marketId
+        : 'Indexed price snapshots';
       return renderChartBundle(backendBundle, backendMarket, backendChartMeta);
     }
 
@@ -2429,14 +2416,14 @@
     }
 
     if (state.chartPending[market.marketId] && !hasOwn(state.chartCache, market.marketId)) {
-      setHtml('woe-chart-panel', '<p class="woe-loading">Loading Alcor chart candles for market #' + escHtml(market.marketId) + '…</p>');
+      setHtml('woe-chart-panel', '<p class="woe-loading">Loading direct Alcor diagnostic chart for market #' + escHtml(market.marketId) + '…</p>');
       setText('woe-chart-meta', 'Fetching /markets/' + market.marketId + '/charts');
       return;
     }
 
     var bundle = state.chartCache[market.marketId];
     if (!bundle || !Array.isArray(bundle.candles) || bundle.candles.length === 0) {
-      renderChartUnavailable(context, 'Alcor diagnostic candles are unavailable for market #' + market.marketId, 'Alcor chart unavailable');
+      renderChartUnavailable(context, 'Alcor diagnostic chart data is unavailable for market #' + market.marketId, 'Alcor chart unavailable');
       return;
     }
 
@@ -2444,19 +2431,19 @@
   }
 
   function renderChartBundle(bundle, market, chartMetaLabel) {
-    var candles = bundle.candles.slice(-30);
+    var pricePoints = (Array.isArray(bundle.pricePoints) ? bundle.pricePoints : bundle.candles).slice(-120);
     var historicalVolumes = computeHistoricalVolumes(bundle);
     var chartHostId = 'woe-lightweight-chart-' + String(bundle.marketId || market.marketId || 'chart').replace(/[^a-z0-9_-]/gi, '-');
     var summaryHtml = '<div class="woe-chart-summary">' +
       '<span><strong>Market:</strong> #' + escHtml(market.marketId) + ' (' + escHtml(describeToken(market.tokenA)) + ' / ' + escHtml(describeToken(market.tokenB)) + ')</span>' +
       '<span><strong>Last:</strong> ' + escHtml(market.currentPriceText) + '</span>' +
       '<span><strong>24h change:</strong> <span class="' + escHtml(pctClass(market.change24)) + '">' + escHtml(market.change24 != null ? fmtPct(market.change24) : UNAVAILABLE_TEXT) + '</span></span>' +
-      '<span><strong>30d candles:</strong> ' + escHtml(String(candles.length)) + '</span>' +
+      '<span><strong>Price points:</strong> ' + escHtml(String(pricePoints.length)) + '</span>' +
       '<span><strong>7d volume:</strong> ' + escHtml(historicalVolumes && historicalVolumes.sevenDay != null ? fmtNum(historicalVolumes.sevenDay) + ' ' + (market.tokenA.symbol || '') : UNAVAILABLE_TEXT) + '</span>' +
     '</div>';
-    setHtml('woe-chart-panel', summaryHtml + '<div id="' + escHtml(chartHostId) + '" class="woe-lightweight-chart" role="img" aria-label="Indexed OHLCV candlestick chart"></div>');
-    if (!renderLightweightCandles(chartHostId, candles)) {
-      setHtml('woe-chart-panel', summaryHtml + '<div class="woe-chart-empty">Source not indexed yet. Lightweight Charts renderer unavailable, and no fallback fake chart is shown.</div>');
+    setHtml('woe-chart-panel', summaryHtml + '<div id="' + escHtml(chartHostId) + '" class="woe-lightweight-chart" role="img" aria-label="Indexed price snapshot chart"></div>');
+    if (!renderLightweightPricePoints(chartHostId, pricePoints)) {
+      setHtml('woe-chart-panel', summaryHtml + '<div class="woe-chart-empty">Price snapshots are not available yet. Lightweight Charts renderer unavailable, and no fallback fake chart is shown.</div>');
     }
     setText('woe-chart-meta', chartMetaLabel);
   }
@@ -2478,7 +2465,7 @@
     var other = selectionKey ? getOtherToken(market, selectionKey) : null;
     var otherRecord = other ? findTokenRecord(state.tokenMap, other.contract, other.symbol) : null;
     var pairName = getMarketPairName(market);
-    var chartStatus = state.backend.mode === 'backend' ? SOURCE_NOT_INDEXED_TEXT : (market.marketId ? 'Indexed Alcor candles' : SOURCE_NOT_INDEXED_TEXT);
+    var chartStatus = state.backend.mode === 'backend' ? 'Price snapshots' : (market.marketId ? 'Direct Alcor chart' : SOURCE_NOT_INDEXED_TEXT);
     var pairKey = getPairKey(market);
     var reserves = [market.pooledTokenAText, market.pooledTokenBText].filter(function (value) {
       return value && value !== UNAVAILABLE_TEXT;
@@ -2522,7 +2509,7 @@
   function renderPairDetail(market) {
     state.selectedPair = market;
     setText('woe-pair-detail-status', getMarketPairName(market) + ' / ' + (market.adapter || market.source || 'source'));
-    var chartCopy = state.backend.mode === 'backend' ? 'Source not indexed yet' : (market.marketId ? 'Pair chart indexed through Alcor market candles when selected as token chart.' : 'Source not indexed yet');
+    var chartCopy = state.backend.mode === 'backend' ? 'Backend charts use token price snapshots.' : (market.marketId ? 'Pair chart can use direct Alcor diagnostic data when selected as token chart.' : 'Source not indexed yet');
     var html = '<div class="woe-pair-detail-grid">' +
       '<div class="woe-pair-detail-main">' +
         '<h3>' + escHtml(getMarketPairName(market)) + '</h3>' +
@@ -2651,7 +2638,7 @@
       setText('woe-detail-status', 'Click a bubble or token row');
       setHtml('woe-token-stats', '');
       setHtml('woe-chart-panel',
-        '<div class="woe-chart-empty">Select a token to check indexed candles.</div>');
+        '<div class="woe-chart-empty">Select a token to check indexed price snapshots.</div>');
       setHtml('woe-matrix-body',
         '<tr><td colspan="13" class="woe-loading">Select a token to inspect its indexed pairs.</td></tr>');
       return;

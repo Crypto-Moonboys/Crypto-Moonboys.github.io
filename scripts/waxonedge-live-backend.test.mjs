@@ -60,6 +60,7 @@ ok('moonboys-api WaxOnEdge aggregate migration exists', exists('workers/moonboys
 ok('moonboys-api WaxOnEdge aggregate source coverage migration exists', exists('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql'));
 ok('moonboys-api WaxOnEdge source index state migration exists', exists('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql'));
 ok('moonboys-api WaxOnEdge retention index migration exists', exists('workers/moonboys-api/migrations/028_waxonedge_retention_indexes.sql'));
+ok('moonboys-api WaxOnEdge price snapshot migration exists', exists('workers/moonboys-api/migrations/034_waxonedge_price_snapshots.sql'));
 ok('WaxOnEdge real reference audit exists', exists('docs/waxonedge-real-reference-audit.md'));
 ok('WaxOnEdge D1 retention runbook exists', exists('docs/waxonedge-d1-retention.md'));
 
@@ -77,6 +78,7 @@ const aggregateMigration = read('workers/moonboys-api/migrations/023_waxonedge_t
 const sourceCoverageMigration = read('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql');
 const sourceStateMigration = read('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql');
 const retentionMigration = read('workers/moonboys-api/migrations/028_waxonedge_retention_indexes.sql');
+const priceSnapshotMigration = read('workers/moonboys-api/migrations/034_waxonedge_price_snapshots.sql');
 const retentionDocs = read('docs/waxonedge-d1-retention.md');
 const frontend = read('js/waxonedge.js');
 const frontendBubbles = read('js/waxonedge-bubbles-v2.js');
@@ -466,8 +468,8 @@ const tradeDelete = calls.find((call) => call.sql.includes('DELETE FROM waxonedg
     compactedSnapshot?.normalization_diagnostics?.raw_waxcash_examples?.length === 5 &&
     compactedSnapshot?.normalization_diagnostics?.raw_graffitiking_non_waxcash_examples?.length === 5);
 }
-ok('wrangler has WaxOnEdge minute cron and daily digest cron',
-  wrangler.includes('"* * * * *"') &&
+ok('wrangler has quarter-hour WaxOnEdge cron and daily digest cron',
+  wrangler.includes('"*/15 * * * *"') &&
   wrangler.includes('"0 9 * * *"'));
 ok('wrangler documents WaxOnEdge live indexer probe env without committing shared secret',
   wrangler.includes('# WAXONEDGE_LIVE_INDEXER_URL = "http://127.0.0.1:8789"') &&
@@ -2477,6 +2479,34 @@ ok('VPS live indexer safely parses request path without trusting Host header',
             )),
           };
         }
+        if (sql.includes('FROM waxonedge_price_snapshots')) {
+          return {
+            results: [
+              {
+                timestamp: '2026-06-14T11:00:00.000Z',
+                contract: 'graffitiking',
+                symbol: 'WAXCASH',
+                source: 'swap.nefty',
+                pair_id: 'WAXCASHWAXLEGACY',
+                price_wax: '0.03',
+                price_usd: '0.18',
+                liquidity_wax: '300011830',
+                volume_24h_wax: '175',
+              },
+              {
+                timestamp: '2026-06-13T11:00:00.000Z',
+                contract: 'graffitiking',
+                symbol: 'WAXCASH',
+                source: 'swap.nefty',
+                pair_id: 'WAXCASHWAXLEGACY',
+                price_wax: '0.025',
+                price_usd: '0.15',
+                liquidity_wax: '300011000',
+                volume_24h_wax: '150',
+              },
+            ],
+          };
+        }
         if (sql.includes('FROM waxonedge_chart_candles')) {
           if (params[0] === 'swap.alcor' && params[1] === '8388') {
             return {
@@ -2683,43 +2713,39 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === 'WAXCASHWAXLEGACY' &&
       !(('selected_' + 'deep' + 'est_wax_pool') in waxcashAnalytics) &&
       !(('selected_' + 'deep' + 'est_wax_pool') in (waxcashAnalytics.proof || {})));
-    ok('WAXCASH analytics chart source is Alcor pool #8388 display feed, not the selected price proof pair',
-      waxcashAnalytics.chart?.chart_source?.source === 'swap.alcor' &&
-      waxcashAnalytics.chart?.chart_source?.pair_id === '8388' &&
-      waxcashAnalytics.chart?.chart_source?.pair_id !== waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
+    ok('WAXCASH analytics chart source is token price snapshots, not a fixed Alcor candle feed',
+      waxcashAnalytics.chart?.chart_source?.source === 'swap.nefty' &&
+      waxcashAnalytics.chart?.chart_source?.pair_id === 'WAXCASHWAXLEGACY' &&
+      waxcashAnalytics.chart?.chart_source?.storage_model === 'waxonedge_price_snapshots' &&
+      waxcashAnalytics.chart?.no_ohlc_candles === true &&
       waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
-    ok('WAXCASH analytics 24h change comes from selected proof history, not display chart candles',
-      waxcashAnalytics.stats.metric_status.change_24h.source === 'selected_price_proof_pool_history' &&
-      waxcashAnalytics.stats.metric_status.change_24h.basis.includes('selected proof pool') &&
-      waxcashAnalytics.sections?.chart?.pair_id === '8388' &&
+    ok('WAXCASH analytics 24h change comes from price snapshots, not display chart candles',
+      waxcashAnalytics.stats.metric_status.change_24h.source === 'waxonedge_price_snapshots' &&
+      waxcashAnalytics.stats.metric_status.change_24h.basis.includes('price snapshot') &&
+      waxcashAnalytics.sections?.chart?.storage_model === 'waxonedge_price_snapshots' &&
       waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY',
       JSON.stringify({
         change_24h: waxcashAnalytics.stats.change_24h,
         change_status: waxcashAnalytics.stats.metric_status.change_24h,
         chart: waxcashAnalytics.sections?.chart,
       }));
-    const waxcashChartOhlcValues = (waxcashAnalytics.chart?.candles || []).flatMap((candle) =>
-      ['open', 'high', 'low', 'close'].map((field) => Number(candle[field])));
-    const waxcashChartCloses = (waxcashAnalytics.chart?.candles || []).map((candle) => Number(candle.close));
-    ok('WAXCASH analytics chart normalizes selected WAX pair candles to WAX per WAXCASH without mixed inverse values',
-      waxcashChartCloses.length === 2 &&
-      waxcashChartCloses.every((value) => value > 0.02 && value < 0.04) &&
-      waxcashChartOhlcValues.every((value) => value > 0.02 && value < 0.04) &&
-      waxcashAnalytics.chart?.candle_normalization?.price_unit === 'WAX_per_WAXCASH' &&
-      waxcashAnalytics.chart?.candle_normalization?.inverted_count === 1 &&
-      waxcashAnalytics.chart?.candle_normalization?.rejected_count === 1 &&
-      waxcashAnalytics.chart?.candle_normalization?.rejection_reasons?.ohlc_outside_selected_price_range === 1 &&
-      !waxcashChartOhlcValues.some((value) => value > 1),
-      JSON.stringify({ waxcashChartCloses, waxcashChartOhlcValues, normalization: waxcashAnalytics.chart?.candle_normalization }));
+    const waxcashPricePointValues = (waxcashAnalytics.chart?.price_points || []).map((point) => Number(point.price_wax));
+    ok('WAXCASH analytics chart exposes price snapshot points without OHLC normalization',
+      waxcashPricePointValues.length === 2 &&
+      waxcashPricePointValues.every((value) => value > 0.02 && value < 0.04) &&
+      waxcashAnalytics.chart?.candle_normalization === null &&
+      Array.isArray(waxcashAnalytics.chart?.candles) &&
+      waxcashAnalytics.chart.candles.length === 0,
+      JSON.stringify({ waxcashPricePointValues, normalization: waxcashAnalytics.chart?.candle_normalization }));
     const waxcashChartFeed = await __waxonedgeTestHooks.buildWaxcashUdfChartFeed(waxcashAnalyticsDb, { resolution: '1D' });
-    ok('WAXCASH analytics exposes a UDF-shaped history feed backed by normalized Alcor #8388 candles',
+    ok('WAXCASH analytics exposes a UDF-shaped history feed backed by price snapshots',
       waxcashAnalytics.sections?.chart?.feed_url === '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D' &&
-      waxcashAnalytics.sections?.chart?.feed_format === 'tradingview_udf_history' &&
-      waxcashChartFeed.feed_format === 'tradingview_udf_history' &&
+      waxcashAnalytics.sections?.chart?.feed_format === 'tradingview_udf_price_history' &&
+      waxcashChartFeed.feed_format === 'tradingview_udf_price_history' &&
       waxcashChartFeed.s === 'ok' &&
-      waxcashChartFeed.source === 'swap.alcor' &&
-      waxcashChartFeed.pair_id === '8388' &&
+      waxcashChartFeed.source === 'swap.nefty' &&
+      waxcashChartFeed.pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashChartFeed.symbol === 'WAXCASH/WAX' &&
       waxcashChartFeed.ticker === 'WAXCASH/WAX' &&
       waxcashChartFeed.pair_label === 'WAXCASH/WAX' &&
@@ -2727,8 +2753,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashChartFeed.affects_waxonedge_metrics === false &&
       waxcashChartFeed.selected_price_policy_unchanged === true &&
       waxcashChartFeed.t.length === 2 &&
-      waxcashChartFeed.o.concat(waxcashChartFeed.h, waxcashChartFeed.l, waxcashChartFeed.c).every((value) => value > 0.02 && value < 0.04) &&
-      !waxcashChartFeed.o.concat(waxcashChartFeed.h, waxcashChartFeed.l, waxcashChartFeed.c).some((value) => value > 1),
+      waxcashChartFeed.c.every((value) => value > 0.02 && value < 0.04) &&
+      !('o' in waxcashChartFeed) &&
+      !('h' in waxcashChartFeed) &&
+      !('l' in waxcashChartFeed) &&
+      waxcashChartFeed.no_ohlc_candles === true,
       JSON.stringify(waxcashChartFeed));
     const onRequestChartRows = [];
     const onRequestTradeRows = [
@@ -2800,13 +2829,14 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       },
     };
     const onRequestChartAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(onRequestChartDb);
-    ok('WAXCASH analytics builds source-backed Alcor #8388 candles from indexed trade rows when stored candles are missing',
-      onRequestChartAnalytics.chart?.chart_source?.source === 'swap.alcor' &&
-      onRequestChartAnalytics.chart?.chart_source?.pair_id === '8388' &&
-      onRequestChartAnalytics.chart?.candles?.length === 2 &&
+    ok('WAXCASH analytics does not build candles from indexed trade rows on request',
+      onRequestChartAnalytics.chart?.chart_source?.source === 'swap.nefty' &&
+      onRequestChartAnalytics.chart?.chart_source?.pair_id === 'WAXCASHWAXLEGACY' &&
+      onRequestChartAnalytics.chart?.price_points?.length === 2 &&
+      onRequestChartAnalytics.chart?.candles?.length === 0 &&
       onRequestChartAnalytics.chart?.unavailable === null &&
-      onRequestChartAnalytics.chart?.build_from_indexed_trades?.reason === 'candles_built_from_trade_rows' &&
-      onRequestChartAnalytics.sections?.chart?.build_from_indexed_trades?.candles_written === 2 &&
+      onRequestChartAnalytics.chart?.build_from_indexed_trades === null &&
+      onRequestChartRows.length === 0 &&
       Number(onRequestChartAnalytics.stats.selected_price_wax) === 0.03 &&
       onRequestChartAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY',
       JSON.stringify({
@@ -2840,12 +2870,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       },
     };
     const noChartFallbackAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(noChartFallbackDb);
-    ok('WAXCASH chart feed does not fallback to selected proof pool when Alcor #8388 is absent',
+    ok('WAXCASH chart feed does not require Alcor #8388 when price snapshots exist',
       noChartFallbackAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
-      noChartFallbackAnalytics.chart?.chart_source === null &&
-      noChartFallbackAnalytics.sections?.chart?.source === null &&
-      noChartFallbackAnalytics.sections?.chart?.pair_id === null &&
-      noChartFallbackAnalytics.chart?.unavailable === 'waxcash_chart_feed_pair_unavailable',
+      noChartFallbackAnalytics.chart?.chart_source?.storage_model === 'waxonedge_price_snapshots' &&
+      noChartFallbackAnalytics.sections?.chart?.storage_model === 'waxonedge_price_snapshots' &&
+      noChartFallbackAnalytics.chart?.unavailable === null,
       JSON.stringify({
         selected_pair_id: noChartFallbackAnalytics.stats.selected_pair_id,
         chart: noChartFallbackAnalytics.sections?.chart,
@@ -2858,7 +2887,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
             const bound = base.bind(...params);
             return {
               async all() {
-                if (sql.includes('FROM waxonedge_chart_candles') && params[0] === 'swap.nefty' && params[1] === 'WAXCASHWAXLEGACY') {
+                if (sql.includes('FROM waxonedge_price_snapshots')) {
                   return { results: [] };
                 }
                 return bound.all();
@@ -2876,8 +2905,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       },
     };
     const noSelectedHistoryAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(noSelectedHistoryDb);
-    ok('WAXCASH 24h change stays unavailable when selected proof history is missing even if #8388 chart candles exist',
-      noSelectedHistoryAnalytics.sections?.chart?.pair_id === '8388' &&
+    ok('WAXCASH 24h change stays unavailable when price snapshots are missing even if legacy candles exist',
+      noSelectedHistoryAnalytics.sections?.chart?.no_ohlc_candles === true &&
       noSelectedHistoryAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       noSelectedHistoryAnalytics.stats.change_24h === null &&
       noSelectedHistoryAnalytics.stats.metric_status.change_24h.live === false,
@@ -6136,13 +6165,15 @@ ok('regression guard for live source-sync failures',
   route.includes('isSubrequestBudgetError'));
 ok('free-safe cron only runs one heavy WaxOnEdge workload per invocation',
   route.includes('const freeSafeMode = waxonedgeFreeSafeMode(env)') &&
-  route.includes('if (isMinuteCron && freeSafeMode)') &&
-  route.includes('const rotationSlot = minute % 5') &&
+  route.includes('if (isMinuteCron && freeSafeMode && minute % 15 !== 0)') &&
+  route.includes('minute % 15 !== 0') &&
+  route.includes("cron === '*/15 * * * *'") &&
+  route.includes('const rotationSlot = Math.floor(minute / 15) % 4') &&
   route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
   route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
-  route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
-  route.includes('tasks.push(syncSupplyInputs(env))') &&
-  route.includes('selectCoreDexAdapterForCron(minute)') &&
+  route.includes('tasks.push(Promise.all([') &&
+  route.includes('syncSupplyInputs(env)') &&
+  route.includes('selectCoreDexAdapterForCron(minute, hour)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
   route.includes('const deferForBudget = freeSafeMode ||') &&
   route.includes('const sourceWorkRan = results.some') &&
@@ -6155,18 +6186,21 @@ ok('free-safe source sync runs one DEX source chunk with conservative budgets',
   route.includes('maxPages: FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION') &&
   route.includes('requestBudget: FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE'));
 ok('free-safe mode does not permanently prevent supply sync',
-  route.includes('const rotationSlot = minute % 5') &&
+  route.includes('const rotationSlot = Math.floor(minute / 15) % 4') &&
   route.includes('} else {') &&
-  route.includes('tasks.push(syncSupplyInputs(env))') &&
+  route.includes('syncSupplyInputs(env)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
-  route.indexOf('tasks.push(syncSupplyInputs(env))') > route.indexOf('tasks.push(planWaxOnEdgeCandleBackfill(env))'));
-ok('free-safe supply sync runs as isolated cron workload',
-  route.includes('if (isMinuteCron && freeSafeMode)') &&
+  route.indexOf('syncSupplyInputs(env)', route.indexOf('const rotationSlot = Math.floor(minute / 15) % 4')) >
+    route.indexOf('tasks.push(aggregateTokenAnalytics(env))', route.indexOf('const rotationSlot = Math.floor(minute / 15) % 4')));
+ok('free-safe supply sync runs in bounded maintenance cron workload',
+  route.includes('if (isMinuteCron && freeSafeMode && minute % 15 !== 0)') &&
   route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
   route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
-  route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
-  route.includes('tasks.push(syncSupplyInputs(env))') &&
-  !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
+  route.includes('tasks.push(Promise.all([') &&
+  route.includes('syncSupplyInputs(env)') &&
+  route.includes('runWaxOnEdgeRetentionMaintenance(env)') &&
+  !route.includes('WAXONEDGE_CANDLE_BACKFILL_CRON_HOUR_INTERVAL') &&
+  !route.includes("reason: 'candle_backfill_runs_every_6_hours_in_free_safe_mode'"));
 ok('supply sync rotates across indexed pair tokens with a nonzero bounded limit',
   route.includes('function supplySyncLimit(env)') &&
   route.includes('return Math.max(1, Math.min(250, Math.floor(configured)))') &&
@@ -6199,73 +6233,25 @@ ok('aggregate backfill can run as a focused cron/admin pathway',
   route.includes("cron === 'waxonedge-backfill'") &&
   route.includes('const aggregates = await aggregateTokenAnalytics(env);') &&
   route.includes('backfill: true'));
-ok('candle backfill has honest planned status without fake candle inserts',
+ok('legacy candle backfill is disabled without D1 trade scans or candle inserts',
   route.includes('CANDLE_BACKFILL_SOURCE') &&
   route.includes('export async function runWaxOnEdgeCandleBackfillPlan') &&
   route.includes("cron === 'waxonedge-candle-backfill'") &&
-  route.includes('candidate_pair_count') &&
-  route.includes('no_fake_candles: true') &&
+  route.includes('legacy_ohlc_candle_generation_disabled') &&
+  route.includes('no_trade_scan: true') &&
+  route.includes('no_new_candle_rows: true') &&
   route.includes('CANDLE_BACKFILL_PLAN') &&
-  route.includes('buildInternalDailyCandlesForPair') &&
-  route.includes('buildDailyCandlesFromTradeRows') &&
-  route.includes('writeChartCandles') &&
-  route.includes('INSERT INTO waxonedge_chart_candles') &&
+  !route.includes('INSERT INTO waxonedge_chart_candles') &&
+  !route.includes('buildInternalDailyCandlesForPair(env.DB, pair)') &&
+  !route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);') &&
   !route.includes('synthesized candle') &&
   !route.includes('fallback candle'));
-ok('candle backfill writes only real internal 1D candles in bounded chunks',
-  route.includes('SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json') &&
-  route.includes('FROM waxonedge_trades') &&
-  route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24') &&
-  route.includes('FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2') &&
-  route.includes('candleBackfillPairLimit(env)') &&
-  route.includes('CANDLE_BACKFILL_LOOKBACK_DAYS') &&
-  route.includes('CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000') &&
-  route.includes('buildInternalDailyCandlesForPair(env.DB, pair)') &&
-  route.includes("writeChartCandles(db, source, pairId, '1D', candles)") &&
-  !route.includes('const to = Date.now()') &&
-  !route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D') &&
-  route.includes('cursor: complete ?') &&
-  route.includes('candles_written'));
-ok('candle_backfill cron actually attempts candidate pairs',
-  route.includes("cron === 'waxonedge-candle-backfill'") &&
-  route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);') &&
-  route.includes('const candidateRows = candidates.results || []') &&
-  route.includes('let attemptedPairCount = 0') &&
-  route.includes('for (const pair of candidateRows)') &&
-  route.includes('attempted_pair_count: totalAttemptedPairCount'));
-ok('candle_backfill does not remain planned forever after scheduled run',
-  route.includes("const status = budgetExhausted") &&
-  route.includes("'budget_limited'") &&
-  route.includes("attemptedPairCount > 0 ? 'partial'") &&
-  route.includes("status === 'planned' ? CANDLE_BACKFILL_PLAN : null") &&
-  route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);"));
-ok('candle backfill waits for indexed trade rows without fake attempted progress',
-  route.includes('const candleTradeSources = indexedCandleTradeSources()') &&
-  route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
-  route.includes('FROM waxonedge_trades') &&
-  route.includes('WHERE source IN') &&
-  route.includes('const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso()') &&
-  route.includes('AND traded_at >= ?') &&
-  !route.includes("SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'") &&
-  route.includes('if (!indexedAlcorTradeRow)') &&
-  route.includes("status: 'skipped'") &&
-  route.includes("const error = 'waiting for indexed trade rows'") &&
-  route.includes('attempted_pair_count: asNumber(previousData.attempted_pair_count) || 0') &&
-  route.includes('processed_pair_count: asNumber(previousData.processed_pair_count) || 0') &&
-  route.includes('cursor: state?.cursor ||') &&
-  route.includes('return { ok: true, ...snapshot, indexed_1d_candle_count: existingCandleCount }'));
-ok('candle backfill reports remaining candidate-pair trade gaps after candles are written',
-  route.includes("lastError = 'waiting for indexed trade rows for remaining candidate pairs'") &&
-  route.includes('const diagnosticLastError = candlesWritten > 0 && (tradeRowsNotIndexedCount > 0 || swapRowsNotIndexedCount > 0)') &&
-  route.includes("? 'waiting for indexed trade rows for remaining candidate pairs'") &&
-  route.includes('last_error: diagnosticLastError') &&
-  route.includes('const error = diagnosticLastError ||'));
-ok('internal candle builder replaces external Alcor chart URL dependency',
-  route.includes('function buildInternalDailyCandlesForPair') &&
-  route.includes("const mismatch = hasSourceRows && source !== 'alcor'") &&
-  route.includes("reason: 'candles_built_from_trade_rows'") &&
-  route.includes('external_chart_endpoint_unsupported') &&
-  !route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D'));
+ok('price snapshots replace candle-building history storage',
+  priceSnapshotMigration.includes('CREATE TABLE IF NOT EXISTS waxonedge_price_snapshots') &&
+  route.includes('INSERT OR IGNORE INTO waxonedge_price_snapshots') &&
+  route.includes('priceSnapshotChanged') &&
+  route.includes('listTokenPriceHistory') &&
+  route.includes('tradingViewHistoryFromPricePoints'));
 ok('candle candidate source aliases normalize correctly',
   __waxonedgeTestHooks.moonboysCandleSource('alcormarket') === 'alcor' &&
   __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor' &&
@@ -6277,26 +6263,14 @@ ok('candle alias matching is source-specific',
   !__waxonedgeTestHooks.candleTradeSourceNamesFor('alcor').includes('alcorv2') &&
   __waxonedgeTestHooks.candleTradeSourceNamesFor('swap.alcor').includes('alcorv2') &&
   !__waxonedgeTestHooks.candleTradeSourceNamesFor('swap.alcor').includes('alcormarket'));
-ok('candle backfill readiness uses same lookback cutoff as per-pair trade loading',
-  route.includes('function candleBackfillLookbackCutoffIso') &&
-  route.includes('const startIso = candleBackfillLookbackCutoffIso()') &&
-  route.includes('const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso()') &&
-  route.includes(').bind(...candlePairSourceNames, tradeLookbackCutoffIso)') &&
-  !route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN (${candleTradeSourcePlaceholders}) LIMIT 1'));
-ok('old source trade rows do not create pair mismatch diagnostics',
-  route.includes('async function indexedTradeRowsExistForSource') &&
-  route.match(/async function indexedTradeRowsExistForSource[\s\S]*AND traded_at >= \?[\s\S]*LIMIT 1/) &&
-  route.includes("const mismatch = hasSourceRows && source !== 'alcor'"));
-ok('AMM pair-id mismatch diagnostics include compact examples',
-  route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
-  route.includes("const mismatch = hasSourceRows && source !== 'alcor'") &&
-  route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
-  route.includes('pair_id_mismatch_count_by_source') &&
-  route.includes('pair_id_mismatch_examples_by_source') &&
-  route.includes('function indexedTradePairIdExampleForSource') &&
-  route.includes("reason: 'recent trade rows exist for source but not for candidate pair_id'") &&
-  !route.includes('swap_alcor_pair_id_mapping_unverified') &&
-  !route.includes('pair_id_mapping_unverified_by_source'));
+ok('candle backfill no longer performs readiness or pair-mismatch trade scans',
+  !route.includes('function candleBackfillLookbackCutoffIso') &&
+  !route.includes('CANDLE_BACKFILL_LOOKBACK_DAYS') &&
+  !route.includes('const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso()') &&
+  !route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
+  !route.includes("reason: 'recent trade rows exist for source but not for candidate pair_id'") &&
+  !route.includes('pair_id_mismatch_count_by_source') &&
+  !route.includes('pair_id_mismatch_examples_by_source'));
 {
   const oldA = { source: 'swap.alcor', candidate_pair_id: 'old-a', observed_trade_pair_id: 'trade-a', reason: 'pair_id_mismatch' };
   const oldB = { source: 'swap.alcor', candidate_pair_id: 'old-b', observed_trade_pair_id: 'trade-b', reason: 'pair_id_mismatch' };
@@ -6351,23 +6325,18 @@ ok('candle backfill excludes table-only sources from trade sources',
   !__waxonedgeTestHooks.indexedCandleTradeSources().includes('dapp.fusion') &&
   route.includes('const CANDLE_TRADE_SOURCES = Object.freeze') &&
   route.includes('const TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS = Object.freeze'));
-ok('table-only unavailable sources do not inflate broken candle trade rows',
-  route.includes('trade_stream_not_verified_from_og_refs: candleBackfillSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS') &&
-  route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
-  !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'swap.adex'") &&
-  !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'dapp.fusion'"));
-ok('candle backfill reports source-level pair matching diagnostics',
-  route.includes('candle_candidate_count_by_source') &&
-  route.includes('trade_rows_indexed_by_source') &&
-  route.includes('candles_written_by_source') &&
-  route.includes('trade_rows_not_indexed_by_source') &&
-  route.includes('pair_id_mismatch_count_by_source') &&
-  route.includes('source_alias_normalized_count'));
-ok('candle URL example prefers a real indexed candle when possible',
+ok('disabled candle backfill omits source-level pair matching diagnostics',
+  !route.includes('trade_stream_not_verified_from_og_refs: candleBackfillSnapshot.data?.trade_stream_not_verified_from_og_refs') &&
+  !route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
+  !route.includes('candle_candidate_count_by_source') &&
+  !route.includes('candles_written_by_source') &&
+  !route.includes('trade_rows_not_indexed_by_source') &&
+  !route.includes('pair_id_mismatch_count_by_source'));
+ok('legacy candle URL example remains read-only and does not imply active generation',
   route.includes('FROM waxonedge_chart_candles') &&
-  route.includes("WHERE interval = '1D'") &&
-  route.includes('has_real_indexed_candle_example: !!chartExamplePair') &&
-  route.includes("unavailable: chartExamplePair ? null : 'No real indexed 1D candle rows available yet.'") &&
+  route.includes("path === `${WAXONEDGE_API_PREFIX}/candles`") &&
+  !route.includes('has_real_indexed_candle_example: !!chartExamplePair') &&
+  !route.includes("unavailable: chartExamplePair ? null : 'No real indexed 1D candle rows available yet.'") &&
   !route.includes("dapp.fusion' candle examples"));
 ok('candle normalization preserves real zero OHLCV values',
   route.includes('item.open ?? item.o') &&
@@ -6389,41 +6358,14 @@ ok('candle normalization still falls back only for nullish alternate fields',
   route.includes('bar.time ?? bar.t') &&
   !route.includes('item.time || item.t || item.timestamp') &&
   !route.includes('bar.time || bar.t'));
-const alcorDailyCandles = __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
-  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T01:00:00.000Z', raw_json: JSON.stringify({ unit_price: 1000000 }), volume: '3' },
-  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T02:00:00.000Z', raw_json: JSON.stringify({ unit_price: 2500000 }), volume: '7' },
-  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T03:00:00.000Z', raw_json: JSON.stringify({ unit_price: 500000 }), volume: '11' },
-  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-13T01:00:00.000Z', raw_json: JSON.stringify({ unit_price: 1500000 }), volume: '13' },
-], { source: 'alcor' });
-ok('internal 1D candle is built from mocked Alcor market match rows',
-  alcorDailyCandles.length === 2 &&
-  alcorDailyCandles[0].bucket_time === '2026-06-12T00:00:00.000Z' &&
-  alcorDailyCandles[0].trade_count === 3);
 ok('unit_price / 10^8 price conversion is used for Alcor market trades',
   __waxonedgeTestHooks.priceFromIndexedTradeRow({
     raw_json: JSON.stringify({ unit_price: 123456789 }),
   }, 'alcor') === 1.23456789);
-ok('daily OHLC and volume are derived from ordered real trades',
-  alcorDailyCandles[0].open === '0.01' &&
-  alcorDailyCandles[0].high === '0.025' &&
-  alcorDailyCandles[0].low === '0.005' &&
-  alcorDailyCandles[0].close === '0.005' &&
-  alcorDailyCandles[0].volume === '21');
-const newestFirstDailyCandles = __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
-  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T03:00:00.000Z', raw_json: JSON.stringify({ unit_price: 3000000 }), volume: '1' },
-  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T01:00:00.000Z', raw_json: JSON.stringify({ unit_price: 1000000 }), volume: '1' },
-  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T02:00:00.000Z', raw_json: JSON.stringify({ unit_price: 5000000 }), volume: '1' },
-], { source: 'alcor' });
-ok('trade query selects newest rows while builder sorts ascending for OHLC',
-  route.includes('ORDER BY traded_at DESC${limitClause}') &&
-  route.includes('LIMIT 5000') &&
-  route.includes('.sort((a, b) => a.millis - b.millis)') &&
-  newestFirstDailyCandles[0].open === '0.01' &&
-  newestFirstDailyCandles[0].high === '0.05' &&
-  newestFirstDailyCandles[0].low === '0.01' &&
-  newestFirstDailyCandles[0].close === '0.03');
-ok('no internal candle is produced without trade or swap rows',
-  __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([], { source: 'alcor' }).length === 0);
+ok('active WaxOnEdge no longer exposes internal candle builders in test hooks',
+  !('buildDailyCandlesFromTradeRows' in __waxonedgeTestHooks) &&
+  !('candleBackfillPairLimit' in __waxonedgeTestHooks) &&
+  !('candleSubrequestBudget' in __waxonedgeTestHooks));
 ok('WaxOnEdge source names map alcormarket to Moonboys alcor rows',
   __waxonedgeTestHooks.moonboysCandleSource('alcormarket') === 'alcor' &&
   __waxonedgeTestHooks.referenceCandleSource('alcor') === 'alcormarket');
@@ -6998,32 +6940,25 @@ ok('AMM trade indexer exposes progress and duplicate-safe row accounting',
   route.includes('configured_streams: ammTradeIndexSnapshot.data?.configured_streams || AMM_SWAP_ACTION_STREAMS') &&
   route.includes('trade_rows_not_usable_count') &&
   route.includes('no_fake_trades: true'));
-ok('candle backfill can build from AMM waxonedge_trades rows',
-  route.includes('const candleTradeSources = indexedCandleTradeSources()') &&
-  route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
-  route.includes('FROM waxonedge_trades') &&
-  route.includes('AND traded_at >= ?') &&
-  route.includes('FROM waxonedge_pairs') &&
-  route.includes('WHERE source IN') &&
-  route.includes("const mismatch = hasSourceRows && source !== 'alcor'") &&
-  route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
-  __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
-    { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
-    { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },
-  ], { source: 'swap.taco' })[0].close === '0.25');
+ok('AMM waxonedge_trades rows remain indexed for volume diagnostics without candle generation',
+  route.includes('async function syncAmmSwapTradeRows') &&
+  route.includes('normalizeAmmSwapTradeRow(row, stream)') &&
+  route.includes('INSERT INTO waxonedge_trades') &&
+  route.includes('indexedTradeWindowVolumesByPair') &&
+  !route.includes('buildInternalDailyCandlesForPair(env.DB, pair)') &&
+  !route.includes('INSERT INTO waxonedge_chart_candles'));
 const internalCandleBuilderStart = route.indexOf('async function buildInternalDailyCandlesForPair');
 const internalCandleBuilderEnd = route.indexOf('async function writeChartCandles', internalCandleBuilderStart);
 const internalCandleBuilderBody = internalCandleBuilderStart >= 0 && internalCandleBuilderEnd > internalCandleBuilderStart
   ? route.slice(internalCandleBuilderStart, internalCandleBuilderEnd)
   : '';
-ok('candle backfill uses canonical AMM IDs and does not derive candles from reserves',
+ok('disabled candle builder cannot scan trades or derive candles from reserves',
   route.includes('function canonicalAmmPairId') &&
   route.includes('function canonicalAmmActionPairId') &&
   route.includes('const pairId = canonicalAmmPairId(adapter.source, row)') &&
   route.includes('pairId = canonicalAmmActionPairId(stream.source, record, row)') &&
-  route.includes('const rows = await loadIndexedTradeRowsForPair(db, source, pairId)') &&
-  route.includes('if (!rows.length)') &&
-  internalCandleBuilderBody.includes('loadIndexedTradeRowsForPair(db, source, pairId)') &&
+  internalCandleBuilderBody.includes('legacy_ohlc_candle_generation_disabled') &&
+  !internalCandleBuilderBody.includes('loadIndexedTradeRowsForPair') &&
   !internalCandleBuilderBody.includes('reserve_a') &&
   !internalCandleBuilderBody.includes('reserve_b') &&
   !route.includes('public chart fallback'));
@@ -7607,19 +7542,19 @@ ok('Wapaca reference path for alcormarket trades is documented honestly',
   route.includes('guessed_public_alcor_http_source_of_truth: false') &&
   referenceAudit.includes('Hyperion') &&
   referenceAudit.includes('marketMatches'));
-ok('scheduled sync can index trade rows before candle backfill',
+ok('scheduled sync can index trade rows without triggering candle backfill',
   route.includes("cron === 'waxonedge-trade-backfill'") &&
   route.includes('runWaxOnEdgeTradeBackfill') &&
   /const liveIndexerHistory = await syncLiveIndexerHistory\(env\);\s*const alcorTradeBackfill = await syncAlcorMarketTradeRows\(env\);\s*const ammTradeBackfill = await syncAmmSwapTradeRows\(env\);/.test(route) &&
   !route.includes('const [alcorTradeBackfill, ammTradeBackfill] = await Promise.all') &&
-  /const tradeBackfill = await runWaxOnEdgeTradeBackfill\(env\);\s*const holders = await syncWaxcashHolderSnapshot\(env\);\s*const aggregates = await aggregateTokenAnalytics\(env\);\s*const candleBackfill = await planWaxOnEdgeCandleBackfill\(env\)/.test(route));
-ok('candle endpoint examples expose selected chart source and pair id',
+  /const tradeBackfill = await runWaxOnEdgeTradeBackfill\(env\);\s*const holders = await syncWaxcashHolderSnapshot\(env\);\s*const aggregates = await aggregateTokenAnalytics\(env\);/.test(route) &&
+  !route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);'));
+ok('legacy candle endpoint helper remains read-only compatibility',
   __waxonedgeTestHooks.candleUrlExample('alcor', '29') === '/api/waxonedge/candles?duration=1d&src=alcor&pair_id=29' &&
-  route.includes('chart_src') &&
-  route.includes('chart_pair_id') &&
-  route.includes('candle_url_example') &&
-  route.includes('reference_candle_url_example') &&
-  route.includes('candle_url_examples'));
+  route.includes("path === `${WAXONEDGE_API_PREFIX}/candles`") &&
+  route.includes('listChartCandlesBySource') &&
+  route.includes('FROM waxonedge_chart_candles') &&
+  !route.includes('INSERT INTO waxonedge_chart_candles'));
 const cachedRawJsonRow = {
   source: 'alcormarket',
   traded_at: null,
@@ -7642,75 +7577,26 @@ ok('trade raw_json is cached per row across timestamp, price, and volume helpers
   rawJsonParseCount === 1 &&
   route.includes('TRADE_RAW_JSON_CACHE') &&
   route.includes('Object.defineProperty(row, TRADE_RAW_JSON_CACHE'));
-ok('candle backfill advances cursor by attempted pairs and records failures',
-  route.includes('let attemptedPairCount = 0') &&
-  route.includes('attemptedPairCount += 1') &&
-  route.includes('failedPairCount += 1') &&
-  route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)') &&
-  route.includes('attempted_pair_count: totalAttemptedPairCount') &&
-  route.includes('failed_pair_count: totalFailedPairCount') &&
-  route.includes('last_error: diagnosticLastError') &&
-  !route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount)'));
-ok('candle batch stops before budget exhaustion and reports budget separately',
-  route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24') &&
-  route.includes('FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2') &&
-  route.includes('const requestBudget = candleSubrequestBudget(env)') &&
-  route.includes('if (attemptedPairCount >= requestBudget)') &&
-  route.includes('budgetExhausted = true') &&
-  route.includes("status = budgetExhausted") &&
-  route.includes('budget_exhausted: budgetExhausted'));
-ok('candle backfill limit respects free-safe and paid mode',
-  route.includes('function candleBackfillPairLimit(env)') &&
-  route.includes('waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT') &&
-  route.includes('function candleSubrequestBudget(env)') &&
-  route.includes('waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_SUBREQUEST_BUDGET : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT') &&
-  !route.includes('const CANDLE_BACKFILL_PAIR_LIMIT = FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT'));
-ok('WAXONEDGE_FREE_SAFE_MODE=false uses paid candle limit',
-  __waxonedgeTestHooks.candleBackfillPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 24 &&
-  __waxonedgeTestHooks.candleBackfillPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 2);
+ok('candle backfill cursor and budget code paths are removed from active scheduling',
+  !route.includes('const requestBudget = candleSubrequestBudget(env)') &&
+  !route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT') &&
+  !route.includes('FREE_SAFE_CANDLE_SUBREQUEST_BUDGET') &&
+  !route.includes('function candleBackfillPairLimit(env)') &&
+  !route.includes('function candleSubrequestBudget(env)'));
 ok('WAXONEDGE_FREE_SAFE_MODE=true is configured for account-safe WaxOnEdge runtime',
   wrangler.includes('WAXONEDGE_FREE_SAFE_MODE = "true"') &&
   __waxonedgeTestHooks.tradeIndexPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 24 &&
   __waxonedgeTestHooks.tradeIndexPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 2 &&
   __waxonedgeTestHooks.tradeRowsPerMarketLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 250 &&
   __waxonedgeTestHooks.tradeRowsPerMarketLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 50);
-ok('candle_backfill budget_limited is benign progress for stale health',
-  route.includes("['planned', 'partial_success', 'skipped', 'budget_limited'].includes(row.status)") &&
-  route.includes('budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted'));
-ok('budget exhaustion does not inflate failed_pair_count for every candidate',
-  route.includes('if (isSubrequestBudgetError(error))') &&
-  route.includes('budgetExhausted = true') &&
-  route.includes('break') &&
-  route.indexOf('if (isSubrequestBudgetError(error))') < route.indexOf('failedPairCount += 1') &&
-  route.includes('const totalFailedPairCount = (asNumber(previousData.failed_pair_count) || 0) + failedPairCount'));
-ok('404 candle pair is skipped as unsupported without retrying forever',
-  route.includes('function isNotFoundError(error)') &&
-  route.includes('if (isNotFoundError(error))') &&
-  route.includes('unsupportedPairCount += 1') &&
-  route.includes('unsupportedReason = `no_chart_endpoint: alcor pair ${pair.pair_id} returned 404`') &&
-  route.includes('continue') &&
-  route.includes('unsupported_pair_count: totalUnsupportedPairCount'));
-ok('unsupported external endpoint handling does not block internal candle builder',
-  route.indexOf('buildInternalDailyCandlesForPair(env.DB, pair)') > -1 &&
-  route.indexOf('buildInternalDailyCandlesForPair(env.DB, pair)') < route.indexOf('if (isNotFoundError(error))') &&
-  route.includes('trade_rows_not_indexed_count') &&
-  route.includes('candles_built_from_trade_rows'));
-ok('external chart unsupported diagnostic is separate from internal unsupported totals',
-  route.includes('let externalUnsupportedPairCount = 0') &&
-  route.includes('externalUnsupportedPairCount += 1') &&
-  route.includes('const totalExternalUnsupportedPairCount =') &&
-  route.includes('trade_rows_not_usable_for_ohlcv_count') &&
-  route.includes('unsupported_pair_count_total') &&
-  route.includes('external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount') &&
-  !route.includes('external_chart_endpoint_unsupported: totalUnsupportedPairCount'));
-ok('candle backfill cumulative counters separate cursor from success/failure counts',
-  route.includes('const totalAttemptedPairCount = (asNumber(previousData.attempted_pair_count) || 0) + attemptedPairCount') &&
-  route.includes('const totalProcessedPairCount = (asNumber(previousData.processed_pair_count) || 0) + processedPairCount') &&
-  route.includes('const totalFailedPairCount = (asNumber(previousData.failed_pair_count) || 0) + failedPairCount') &&
-  route.includes('const totalUnsupportedPairCount = (asNumber(previousData.unsupported_pair_count) || 0) + unsupportedPairCount') &&
-  route.includes('processed_pair_count: totalProcessedPairCount') &&
-  route.includes('cursor: complete ?') &&
-  !route.includes('processed_pair_count: nextCursor'));
+ok('disabled candle backfill has no budget, 404, external-endpoint, or cumulative write counters',
+  route.includes('candle_backfill: {') &&
+  route.includes("status: 'disabled'") &&
+  route.includes('candles_written: 0') &&
+  route.includes('no_trade_scan: true') &&
+  !route.includes('external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount') &&
+  !route.includes('candles_built_from_trade_rows') &&
+  !route.includes('unsupportedReason = `no_chart_endpoint'));
 ok('aggregate selected price uses the shared WAX route graph instead of a direct-WAX-only selector',
   route.includes('function buildOgWaxRouteGraph') &&
   route.includes('const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex)') &&
@@ -8049,7 +7935,7 @@ ok('indexer health reports systemic dead-token and source health counts',
   route.includes('tokens_with_zero_indexed_pairs') &&
   route.includes('tokens_with_liquidity') &&
   route.includes('tokens_with_24h_volume') &&
-  route.includes('tokens_with_chart_candles') &&
+  route.includes('tokens_with_price_snapshots') &&
   route.includes('per_source_row_counts') &&
   route.includes('stale_sync_rows') &&
   route.includes('last_success_at') &&
@@ -8060,31 +7946,26 @@ ok('indexer health pair-token counts are scoped to indexed tokens',
   route.includes('JOIN pair_tokens pt') &&
   route.includes('FROM scoped_pairs p') &&
   !route.includes('SELECT token_a_contract AS contract, token_a_symbol AS symbol FROM waxonedge_pairs'));
-ok('indexer health and debug chart readiness only count 1D candles',
-  (route.match(/c\.interval = '1D'/g) || []).length >= 2 &&
-  route.includes('WITH candle_tokens AS') &&
-  route.includes('JOIN waxonedge_chart_candles c ON c.source = p.source AND c.pair_id = p.pair_id') &&
-  route.includes('tokens_with_chart_candles') &&
-  route.includes('tokens_with_chart_candidate_but_no_candles'));
-ok('indexer health reports partial source progress and candle backfill status',
+ok('indexer health and debug chart readiness use price snapshots, not 1D candles',
+  route.includes('FROM waxonedge_price_snapshots') &&
+  route.includes('tokens_with_price_snapshots') &&
+  route.includes('tokens_without_price_snapshots') &&
+  !route.includes('WITH candle_tokens AS') &&
+  !route.includes('tokens_with_chart_candidate_but_no_candles'));
+ok('indexer health reports partial source progress and disabled candle status',
   route.includes('source_progress') &&
   route.includes('stale_running') &&
   route.includes("status: lastAggregateSuccess?.status || 'failed'") &&
   route.includes('fresh_after_latest_pair_sync: aggregateFresh') &&
   route.includes('candle_backfill') &&
-  route.includes('latest_1d_candle_count') &&
-  route.includes('chart_candles_indexed_count: chartCandleCount1d') &&
-  route.includes('processed_pair_count') &&
-  route.includes('attempted_pair_count') &&
-  route.includes('failed_pair_count') &&
-  route.includes('unsupported_pair_count') &&
-  route.includes('budget_exhausted') &&
-  route.includes('candles_written') &&
-  route.includes('last_error'));
-ok('indexer health exposes active runtime mode and internal kline diagnostics',
+  route.includes("status: 'disabled'") &&
+  route.includes('no_trade_scan: true') &&
+  route.includes('no_new_candle_rows: true') &&
+  route.includes('candles_written: 0'));
+ok('indexer health exposes active runtime mode and trade diagnostics without internal klines',
   route.includes('runtime_config') &&
   route.includes('free_safe_mode: waxonedgeFreeSafeMode(env)') &&
-  route.includes('active_candle_backfill_pair_limit: candleBackfillPairLimit(env)') &&
+  route.includes("candle_generation: 'disabled'") &&
   route.includes('active_trade_index_pair_limit: tradeIndexPairLimit(env)') &&
   route.includes('active_trade_rows_per_market_limit: tradeRowsPerMarketLimit(env)') &&
   route.includes('active_source_page_limit: coreDexPagesPerInvocation(env)') &&
@@ -8092,10 +7973,8 @@ ok('indexer health exposes active runtime mode and internal kline diagnostics',
   route.includes('trade_indexing') &&
   route.includes('trade_rows_indexed') &&
   route.includes('no_fake_trades') &&
-  route.includes('external_chart_endpoint_unsupported') &&
-  route.includes('trade_rows_not_indexed') &&
-  route.includes('swap_rows_not_indexed') &&
-  route.includes('candles_built_from_trade_rows'));
+  !route.includes('external_chart_endpoint_unsupported') &&
+  !route.includes('candles_built_from_trade_rows'));
 ok('selected-pair health counts are scoped to indexed tokens',
   route.includes('FROM waxonedge_tokens t') &&
   route.includes('JOIN waxonedge_token_stats s ON s.contract = t.contract AND s.symbol = t.symbol') &&
@@ -8881,7 +8760,7 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
   );
   ok('dead token diagnostics return clear unavailable reasons',
     deadDiagnostics.reasons.includes('no indexed pairs found') &&
-    deadDiagnostics.reasons.includes('chart candles missing') &&
+    deadDiagnostics.reasons.includes('price snapshots missing') &&
     deadDiagnostics.reasons.includes('aggregate rebuild not run after pair sync') &&
     deadDiagnostics.facts.indexed_pair_count === 0);
   const derivedLiquidityDiagnostics = __waxonedgeTestHooks.diagnoseTokenAggregate(
@@ -8917,15 +8796,15 @@ ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));
 ok('route does not fake holder distribution', route.includes('Holder distribution requires indexed balance snapshots') && route.includes('REQUIRES_INDEXED_BACKEND'));
 ok('route marks chart/trades unavailable unless indexed', route.includes('SOURCE_NOT_INDEXED') && route.includes("child === 'chart'") && route.includes("child === 'trades'"));
-ok('token debug explains missing candles, stale aggregates, and partial source sync',
+ok('token debug explains missing price snapshots, stale aggregates, and partial source sync',
   route.includes('sync_diagnostics') &&
   route.includes('selected_price_exists') &&
   route.includes('selected_pair_exists') &&
   route.includes('pair_rows_exist') &&
   route.includes('source_sync_partial') &&
   route.includes('aggregate_stale') &&
-  route.includes('has_1d_candles') &&
-  route.includes("nextAction = 'waiting for candle backfill'") &&
+  route.includes('has_price_snapshots') &&
+  route.includes("nextAction = 'waiting for price snapshot'") &&
   route.includes("nextAction = 'source cursor still partial'"));
 ok('frontend calls /api/waxonedge/bootstrap first', frontend.includes("waxonedgeApi('/bootstrap')"));
 ok('frontend direct source fetch is diagnostic fallback', frontend.includes('loadDiagnosticFallback') && frontend.includes('Backend bootstrap unavailable'));
@@ -8933,21 +8812,23 @@ ok('frontend does not use Alcor chart fallback in backend mode',
   frontend.includes("loadSelectedTokenChart(context.selection)") &&
   frontend.includes("loadChartData('backend:' + selection.key)") &&
   frontend.includes('renderChartUnavailable(context') &&
-  frontend.includes('No fake candles are shown'));
+  frontend.includes('no fallback fake chart is shown'));
 ok('frontend backend chart request captures selection before async call and clears pending',
   frontend.includes('var backendChartKey = marketId') &&
   frontend.includes('var chartContract = state.selected.contract') &&
   frontend.includes('var chartSymbol = state.selected.symbol') &&
   frontend.includes("delete state.chartPending[backendChartKey]") &&
   frontend.includes('.finally(function ()'));
-ok('frontend renders backend candle bundles without context.chartMarket',
+ok('frontend renders backend price snapshot bundles without context.chartMarket',
   frontend.includes('return renderChartBundle(backendBundle, backendMarket, backendChartMeta)') &&
   frontend.includes('function renderChartBundle(bundle, market, chartMetaLabel)'));
-ok('frontend renders indexed candles with Lightweight Charts and no full TradingView widget',
+ok('frontend renders indexed price snapshots with Lightweight Charts and no full TradingView widget',
   tokenHtml.includes('lightweight-charts@5.2.0') &&
   frontend.includes('window.LightweightCharts') &&
   frontend.includes('tv.createChart') &&
-  frontend.includes('CandlestickSeries') &&
+  frontend.includes('LineSeries') &&
+  frontend.includes('renderLightweightPricePoints') &&
+  !frontend.includes('CandlestickSeries') &&
   !frontend.includes('TradingView.widget'));
 ok('frontend token stats use canonical selected-token detail stats',
   frontend.includes('function loadSelectedTokenDetail(selection)') &&

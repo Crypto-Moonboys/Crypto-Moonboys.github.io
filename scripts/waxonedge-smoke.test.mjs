@@ -588,17 +588,17 @@ ok('waxonedge-bubbles-v2.js selects featured tokens using multi-DEX aggregate fi
   v2Js.includes('selected_pair_source') &&
   v2Js.includes('source_keys') &&
   v2Js.includes('return base.map(function (record, index)'));
-ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
+ok('WaxOnEdge keeps missing 7d/30d/price-history data honest instead of fake',
   v2Js.includes('No indexed 7D volume') &&
   v2Js.includes('No indexed 30D volume') &&
-  js.includes('Indexed candles not available yet for this pair') &&
+  js.includes('Price snapshots are not available yet for this token') &&
   js.includes('Pair proof is available below') &&
   js.includes('function historicalVolumeAvailabilityHtml') &&
   js.includes("if (isFreshHistoryAccumulating(stats, key)) return availabilityHtml('Building from fresh live history')") &&
   js.includes('return tokenAvailabilityHtml(stats, key)') &&
   js.includes('function isFreshHistoryAccumulating') &&
   js.includes('var statusText = metaLabel || reason') &&
-  js.includes('No fake candles are shown') &&
+  js.includes('no fallback fake chart is shown') &&
   !v2Js.includes('synthesized candle') &&
   !js.includes('synthesized candle') &&
   !v2Js.includes('fallback candle') &&

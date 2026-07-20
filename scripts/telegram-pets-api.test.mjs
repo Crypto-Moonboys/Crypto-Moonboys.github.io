@@ -23,6 +23,8 @@ const {
   getUnaffordablePetRunCosts,
   buildPetRandomEventReplyMarkup,
   formatPetRandomEventSummary,
+  formatTelegramPetHeroCaption,
+  formatTelegramPetMediaCaption,
   resolvePetRandomEncounter,
   resolvePetMediaKey,
   sendTelegramPetReply,
@@ -171,26 +173,102 @@ assert.equal(resolvePetMediaKey('adopt'), 'level_up');
 assert.equal(resolvePetMediaKey('pettrade', { won: true }), 'trade_win');
 assert.equal(resolvePetMediaKey('petadventure', { accepted: false }), 'adventure_fail');
 
-const originalFetch = globalThis.fetch;
-const calls = [];
-globalThis.fetch = async (url, init = {}) => {
-  calls.push({ url: String(url), init });
-  if (String(url).includes('/sendPhoto')) {
-    return { ok: false, status: 500, text: async () => 'photo failed' };
+const mediaCaption = formatTelegramPetMediaCaption([
+  'Action accepted: /feed (+7 pet XP, +1 Community XP).',
+  '',
+  'Moonpet | Stage: teen | Level 15 | XP 640',
+  'Health [=========.] 92/100',
+  'Hunger [==========] 0/100',
+  'Energy [==========] 100/100',
+].join('\n'), 'feed');
+assert.ok(mediaCaption.includes('<b>Feed Complete</b>'), 'media caption must use a compact action title');
+assert.ok(mediaCaption.includes('+7 Pet XP, +1 Community XP'), 'media caption must keep the action rewards');
+assert.ok(mediaCaption.includes('Moonpet: Level 15 | Energy 100/100 | Health 92/100'), 'media caption must summarize key pet stats');
+assert.ok(formatTelegramPetHeroCaption('Action accepted: /feed (+7 pet XP).', 'feed').length <= 1024, 'hero captions must fit Telegram photo captions');
+
+{
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  const replyMarkup = { inline_keyboard: [[{ text: 'Feed', callback_data: 'pet:feed' }]] };
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    return { ok: true, status: 200, text: async () => 'photo sent' };
+  };
+  try {
+    const result = await sendTelegramPetReply('bot-token', '123', [
+      'Action accepted: /feed (+7 pet XP, +1 Community XP).',
+      '',
+      'Moonpet | Stage: teen | Level 15 | XP 640',
+      'Health [=========.] 92/100',
+      'Energy [==========] 100/100',
+    ].join('\n'), { reply_markup: replyMarkup }, 'feed');
+    assert.ok(result.ok, 'sendTelegramPetReply must succeed when photo sending succeeds');
+    assert.equal(calls.length, 1, 'normal media replies must not send a duplicate text message');
+    assert.ok(calls[0].url.includes('/sendPhoto'), 'normal media replies must use sendPhoto');
+    const body = JSON.parse(calls[0].init.body);
+    assert.ok(body.photo.includes('/CRYPTO%20MOONBOYS%20PET%20FEED.jpg'), 'sendPhoto must use the resolved media URL');
+    assert.equal(body.parse_mode, 'HTML', 'sendPhoto captions must use HTML parse mode');
+    assert.ok(body.caption.includes('<b>Feed Complete</b>'), 'sendPhoto must include the compact caption');
+    assert.deepEqual(body.reply_markup, replyMarkup, 'reply_markup must be attached to sendPhoto');
+  } finally {
+    globalThis.fetch = originalFetch;
   }
-  if (String(url).includes('/sendMessage')) {
-    return { ok: true, status: 200, text: async () => 'message sent' };
+}
+
+{
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  const replyMarkup = { inline_keyboard: [[{ text: 'Feed', callback_data: 'pet:feed' }]] };
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    if (String(url).includes('/sendPhoto')) {
+      return { ok: false, status: 500, text: async () => 'photo failed' };
+    }
+    if (String(url).includes('/sendMessage')) {
+      return { ok: true, status: 200, text: async () => 'message sent' };
+    }
+    return { ok: true, status: 200, text: async () => 'ok' };
+  };
+  try {
+    const fallback = await sendTelegramPetReply('bot-token', '123', 'Fallback text', { reply_markup: replyMarkup }, 'feed');
+    assert.ok(fallback.ok, 'sendTelegramPetReply must succeed when photo sending fails');
+    assert.equal(calls.length, 2, 'sendTelegramPetReply must attempt photo first and then fall back to text');
+    assert.ok(calls[0].url.includes('/sendPhoto'), 'sendTelegramPetReply must attempt Telegram photo first');
+    assert.ok(calls[1].url.includes('/sendMessage'), 'sendTelegramPetReply must fall back to Telegram text');
+    assert.deepEqual(JSON.parse(calls[1].init.body).reply_markup, replyMarkup, 'text fallback must keep the original reply_markup');
+  } finally {
+    globalThis.fetch = originalFetch;
   }
-  return { ok: true, status: 200, text: async () => 'ok' };
-};
-try {
-  const fallback = await sendTelegramPetReply('bot-token', '123', 'Fallback text', { reply_markup: { inline_keyboard: [] } }, 'feed');
-  assert.ok(fallback.ok, 'sendTelegramPetReply must succeed when photo sending fails');
-  assert.equal(calls.length, 2, 'sendTelegramPetReply must attempt photo first and then fall back to text');
-  assert.ok(calls[0].url.includes('/sendPhoto'), 'sendTelegramPetReply must attempt Telegram photo first');
-  assert.ok(calls[1].url.includes('/sendMessage'), 'sendTelegramPetReply must fall back to Telegram text');
-} finally {
-  globalThis.fetch = originalFetch;
+}
+
+{
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  const replyMarkup = { inline_keyboard: [[{ text: 'Run', callback_data: 'pet:run' }]] };
+  const longText = [
+    `<b>${'Power Nap Complete '.repeat(80)}</b>`,
+    '+7 Pet XP | +1 Community XP',
+    'Moonpet | Stage: elder | Level 15 | XP 640',
+    'Health [=========.] 92/100',
+    'Energy [==========] 100/100',
+  ].join('\n');
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    return { ok: true, status: 200, text: async () => 'sent' };
+  };
+  try {
+    const result = await sendTelegramPetReply('bot-token', '123', longText, { reply_markup: replyMarkup }, 'sleep');
+    assert.ok(result.ok, 'long media replies must still succeed');
+    assert.equal(calls.length, 2, 'long captions must send image hero plus one detail message');
+    assert.ok(calls[0].url.includes('/sendPhoto'), 'long caption fallback must send the image first');
+    assert.ok(calls[1].url.includes('/sendMessage'), 'long caption fallback must send full details as text');
+    const photoBody = JSON.parse(calls[0].init.body);
+    assert.ok(photoBody.caption.length <= 1024, 'long caption fallback photo caption must stay within Telegram limits');
+    assert.deepEqual(photoBody.reply_markup, replyMarkup, 'long caption fallback must keep buttons on the photo');
+    assert.equal(JSON.parse(calls[1].init.body).text, longText, 'long caption fallback must preserve full detail text');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 }
 
 const verifierStart = worker.indexOf('function verifyPetsBotSecret');
