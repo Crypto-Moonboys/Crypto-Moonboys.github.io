@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-19T06:14:02.808Z",
+  "generated_at": "2026-07-20T06:32:05.939Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -23,10 +23,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-19T06:11:05.885Z",
-      "last_successful_check": "2026-07-19T06:11:05.885Z",
-      "last_successful_update": "2026-07-19T06:11:05.534Z",
-      "source_updated_at": "2026-07-19T06:11:05.534Z",
+      "checked_at": "2026-07-20T06:29:10.083Z",
+      "last_successful_check": "2026-07-20T06:29:10.083Z",
+      "last_successful_update": "2026-07-20T06:29:09.659Z",
+      "source_updated_at": "2026-07-20T06:29:09.659Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -34,7 +34,7 @@
       "endpoint_status": {},
       "notes": [
         "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22991 asset-state records across 143 templates.",
+        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22996 asset-state records across 143 templates.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.",
@@ -71,10 +71,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-19T06:11:11.136Z",
-      "last_successful_check": "2026-07-19T06:11:11.136Z",
-      "last_successful_update": "2026-07-19T06:11:11.136Z",
-      "source_updated_at": "2026-07-19T06:11:11.136Z",
+      "checked_at": "2026-07-20T06:29:14.537Z",
+      "last_successful_check": "2026-07-20T06:29:14.537Z",
+      "last_successful_update": "2026-07-20T06:29:14.537Z",
+      "source_updated_at": "2026-07-20T06:29:14.537Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -82,7 +82,7 @@
       "endpoint_status": {},
       "notes": [
         "Generated NoBallGames rarity render: 12 ranked, 6 utility/open mint, 3 unissued.",
-        "Staged cache refresh: 21/21 metadata ok; 21/21 live supply counts ok; 12241 asset-state records across 21 templates.",
+        "Staged cache refresh: 21/21 metadata ok; 21/21 live supply counts ok; 13341 asset-state records across 21 templates.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "AtomicAssets is the source of truth; AtomicHub links are references only."
@@ -102,9 +102,9 @@
       "status": "degraded",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-19T06:12:11.796Z",
-      "last_successful_check": "2026-07-19T06:12:11.796Z",
-      "last_successful_update": "2026-07-19T06:12:11.796Z",
+      "checked_at": "2026-07-20T06:30:15.163Z",
+      "last_successful_check": "2026-07-20T06:30:15.163Z",
+      "last_successful_update": "2026-07-20T06:30:15.163Z",
       "source_updated_at": null,
       "source_age_minutes": null,
       "last_error": "health: Feed fetch timeout after 15000ms; bubbles_lite: Feed fetch timeout after 15000ms",
@@ -120,7 +120,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-19T06:11:41.390Z"
+          "checked_at": "2026-07-20T06:29:44.788Z"
         },
         "bubbles_lite": {
           "ok": false,
@@ -131,7 +131,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-19T06:11:11.138Z"
+          "checked_at": "2026-07-20T06:29:14.538Z"
         },
         "static_bootstrap": {
           "ok": true,
@@ -10944,7 +10944,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-07-19T06:12:11.642Z"
+          "checked_at": "2026-07-20T06:30:15.042Z"
         }
       },
       "notes": [
@@ -10967,7 +10967,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-19T06:12:31.299Z",
+      "checked_at": "2026-07-20T06:30:34.430Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -10985,7 +10985,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-19T06:12:11.800Z"
+          "checked_at": "2026-07-20T06:30:15.166Z"
         }
       },
       "notes": [
@@ -11009,7 +11009,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-19T06:14:02.808Z",
+      "checked_at": "2026-07-20T06:32:05.938Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
@@ -11027,7 +11027,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-19T06:12:31.300Z",
+          "checked_at": "2026-07-20T06:30:34.431Z",
           "key": "token_page"
         },
         "pairs_liquidity": {
@@ -11039,7 +11039,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-19T06:13:01.801Z",
+          "checked_at": "2026-07-20T06:31:04.935Z",
           "key": "pairs_liquidity"
         },
         "pairs_volume24": {
@@ -11051,7 +11051,7 @@
           "error": "Feed fetch timeout after 15000ms",
           "used_previous": false,
           "attempts": 2,
-          "checked_at": "2026-07-19T06:13:32.304Z",
+          "checked_at": "2026-07-20T06:31:35.437Z",
           "key": "pairs_volume24"
         }
       },
