@@ -13,7 +13,7 @@ Scope: `Crypto-Moonboys/Crypto-Moonboys.github.io`, Cloudflare account `3592ec63
   - `database_size`: 2.15 GB
 - Production table counts:
   - `waxonedge_trades`: 833,979 rows
-  - `waxonedge_chart_candles`: 66,959 rows
+  - `waxonedge_chart_candles`: 66,961 rows
   - `waxonedge_pairs`: 22,593 rows
   - `waxonedge_tokens`: 2,044 rows, all updated within minutes of audit time
   - `waxonedge_sync_runs`: 33,423 rows since 2026-07-06
@@ -27,7 +27,9 @@ Scope: `Crypto-Moonboys/Crypto-Moonboys.github.io`, Cloudflare account `3592ec63
   - `wiki_comments`: 6
   - `scores`, `activity_feed`: 0
 
-Conclusion: the cost spike is WaxOnEdge D1 activity in `workers/moonboys-api/routes/waxonedge.js`, primarily scheduled current-state rewrites and repeated readiness scans.
+Confirmed candle finding: `waxonedge_chart_candles` was actively receiving rows. Production had 66,961 rows, with latest updates on 2026-07-20. `waxonedge_sync_runs` showed 290 `candle_backfill` runs in the prior 24 hours, roughly every five minutes. The `candle_backfill` snapshot recorded 545,247 attempted pair checks, 137,130 candle builds from trade rows, and 487,165 cumulative candle write attempts.
+
+Conclusion: the cost spike is WaxOnEdge D1 activity in `workers/moonboys-api/routes/waxonedge.js`, primarily scheduled current-state rewrites and repeated readiness scans. The candle system was an unnecessary exchange-style OHLC subsystem for WaxOnEdge's actual goal of live token analytics and price tracking.
 
 ## Worker Routes And Cron Jobs
 
@@ -49,8 +51,10 @@ Main cron finding:
   - Alcor token/pair snapshot and upserts.
   - Core DEX pair upserts.
   - Token aggregate recomputation.
-  - Candle backfill planning.
+  - Candle backfill planning and trade-table readiness scans.
   - Supply/holder/retention maintenance.
+
+After this PR, legacy `waxonedge-candle-backfill` returns a disabled no-op marker. Normal scheduled rotation no longer calls candle planning, no user chart request builds candles, and active Worker code contains no `INSERT INTO waxonedge_chart_candles`.
 
 ## Top D1 Write Sources
 
@@ -109,7 +113,7 @@ Main cron finding:
 1. `planWaxOnEdgeCandleBackfill` trade-count query
    - Measured: 833,988 rows read for `SELECT source, COUNT(*) FROM waxonedge_trades ... GROUP BY source`.
    - Reason: scans the full 833,979-row trade table to decide candle readiness.
-   - Fix: throttle candle planning to every 6 hours in free-safe mode; later replace with cached source counts.
+   - Fix: disabled active candle planning. WaxOnEdge charts now read lightweight `waxonedge_price_snapshots`.
 
 2. Public/diagnostic trade counts in `waxcashTradeRowDiagnostics`
    - Measured equivalent: `COUNT(*) FROM waxonedge_trades` reads 833,979 rows.
@@ -118,12 +122,12 @@ Main cron finding:
 
 3. `planWaxOnEdgeCandleBackfill` recent-trade existence checks
    - Reason: repeated `waxonedge_trades` lookups run from the cron planner.
-   - Fix: run less often; maintain per-source latest-trade metadata.
+   - Fix: disabled active candle planning and removed automatic trade-readiness scans for candle generation.
 
 4. `planWaxOnEdgeCandleBackfill` candidate pair page
    - Measured: 23,768 rows read for `ORDER BY source, CAST(pair_id AS NUMERIC), pair_id LIMIT 2 OFFSET 7704`.
    - Reason: OFFSET pagination over pair table.
-   - Fix: throttle now; later use keyset pagination on `(source, pair_id)`.
+   - Fix: disabled active candle planning; no scheduled candidate-pair pages are read for candles.
 
 5. `aggregateTokenAnalytics` full pair load
    - Estimate: 22,593 pair rows per aggregate run.
@@ -141,7 +145,7 @@ Main cron finding:
    - Fix: cache route graph snapshots.
 
 8. `getIndexerHealth`
-   - Estimate: many count/existence queries over `waxonedge_pairs`, `waxonedge_chart_candles`, and `waxonedge_token_stats`.
+   - Estimate: many count/existence queries over `waxonedge_pairs`, `waxonedge_price_snapshots`, and `waxonedge_token_stats`.
    - Reason: health endpoint calculates deep diagnostics live.
    - Fix: make health use source-state/snapshot summaries by default; gate deep diagnostics behind admin/debug.
 
@@ -158,6 +162,8 @@ Main cron finding:
 
 No infinite loop was found. The runaway behavior is architectural: a legitimate every-minute cron fans into bulk D1 rewrites and repeated scans. The billing shape matches scheduled ingestion, not visitor-triggered writes.
 
+The candle subsystem was the clearest unnecessary loop. It repeatedly scanned `waxonedge_trades`, paged candidate pairs, generated 1D OHLC candles through `buildInternalDailyCandlesForPair` / `buildDailyCandlesFromTradeRows`, and wrote `waxonedge_chart_candles`. WaxOnEdge does not need that architecture.
+
 ## Fixes In This PR
 
 Critical:
@@ -165,7 +171,11 @@ Critical:
 - Change `moonboys-api` WaxOnEdge cron from `* * * * *` to `*/15 * * * *`.
 - Keep backward compatibility for the old minute cron but gate it to quarter-hour slices in free-safe mode.
 - Rotate free-safe WaxOnEdge work across quarter-hour slots.
-- Run candle backfill planning only every 6 hours in free-safe mode.
+- Disable scheduled candle generation/backfill entirely.
+- Disable request-triggered candle generation; token chart requests read `waxonedge_price_snapshots` and never scan `waxonedge_trades`.
+- Add `waxonedge_price_snapshots` for lightweight token history: timestamp, contract, symbol, source, pair_id, WAX/USD price, liquidity, and 24h volume.
+- Store snapshots only when meaningful values change.
+- Guard against future active `INSERT INTO waxonedge_chart_candles` through the cost test.
 - Stop writing skipped sync-run audit rows.
 - Avoid rewriting unchanged snapshots.
 - Avoid rewriting unchanged `waxonedge_pairs`, `waxonedge_tokens`, and `waxonedge_token_stats`.
@@ -176,11 +186,23 @@ High priority follow-ups:
 
 - Move public WaxOnEdge bootstrap/summary/top-pairs/top-tokens and WAXCASH analytics payloads to KV or generated JSON with 60-300 second TTL.
 - Store cached `waxonedge_source_counts` / `waxonedge_trade_counts` summary rows during ingestion so diagnostics do not scan `waxonedge_trades`.
-- Replace OFFSET candle pagination with keyset pagination.
 - Add numeric shadow columns for volume/liquidity sort keys so public feeds do not cast text values on every request.
 
 Nice optimisations:
 
 - Split diagnostics from public health: default public health should read source state only; admin/debug can run deep table scans.
 - Consider Durable Objects for per-token live current state if sub-minute live updates are needed.
-- Move historical trade/candle archival to R2 JSON or compressed objects if long retention is needed.
+- Move historical trade archival to R2 JSON or compressed objects if long retention is needed.
+
+## Candle Removal Result
+
+- Are candles generated now? No. Scheduled `waxonedge-candle-backfill` is a disabled no-op and normal cron rotation no longer calls `planWaxOnEdgeCandleBackfill`.
+- Is `waxonedge_chart_candles` receiving inserts now? Active Worker code now has no `INSERT INTO waxonedge_chart_candles`. Existing rows remain as legacy data.
+- What wrote it before? `planWaxOnEdgeCandleBackfill` called `buildInternalDailyCandlesForPair`, which loaded indexed trade rows and called `buildDailyCandlesFromTradeRows` before writing chart candles.
+- How often? Production `waxonedge_sync_runs` showed 290 `candle_backfill` runs in the prior 24 hours, about every five minutes.
+- How many rows? Production contained 66,961 `waxonedge_chart_candles` rows. Snapshot counters showed 487,165 cumulative candle write attempts.
+- Was candle data calculated from trades? Yes. The old path calculated 1D OHLC rows from `waxonedge_trades`.
+- Is `planWaxOnEdgeCandleBackfill` only planning now? Yes. It returns disabled metadata and performs no D1 scans or writes.
+- Current purpose of `waxonedge_chart_candles`: legacy read-only data. It can remain in place until a later cleanup/migration decision.
+- Estimated D1 read reduction: at least about 242 million rows/day removed from normal cron, based only on 290 daily candle runs times the measured 833,979-row `waxonedge_trades` count scan. This excludes additional pair OFFSET pages and per-pair trade lookups, so it is conservative.
+- Estimated D1 write reduction: candle-table writes from active code drop to zero. Production showed 2,291 candle rows updated on 2026-07-20 before the change and 487,165 cumulative candle write attempts in the candle snapshot; sync-state/snapshot writes for normal candle planning are also removed.

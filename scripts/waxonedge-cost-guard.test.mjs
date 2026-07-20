@@ -23,9 +23,29 @@ assert.ok(
 
 assert.ok(
   route.includes('const rotationSlot = Math.floor(minute / 15) % 4') &&
-    route.includes('WAXONEDGE_CANDLE_BACKFILL_CRON_HOUR_INTERVAL') &&
-    route.includes('candle_backfill_runs_every_6_hours_in_free_safe_mode'),
-  'free-safe scheduled work must rotate quarter-hour tasks and throttle candle planning',
+    route.includes('legacy_ohlc_candle_generation_disabled') &&
+    !route.includes('buildInternalDailyCandlesForPair(env.DB, pair)') &&
+    !route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);'),
+  'free-safe scheduled work must rotate quarter-hour tasks without scheduled candle planning',
+);
+
+assert.ok(
+  !route.includes('INSERT INTO waxonedge_chart_candles'),
+  'active Worker code must not write legacy OHLC candles',
+);
+
+assert.ok(
+  route.includes('INSERT OR IGNORE INTO waxonedge_price_snapshots') &&
+    route.includes('priceSnapshotChanged') &&
+    route.includes('waxonedge_price_snapshots'),
+  'WaxOnEdge history must use lightweight price snapshots with meaningful-change gating',
+);
+
+assert.ok(
+  route.includes("cron === 'waxonedge-candle-backfill'") &&
+    route.includes('no_trade_scan') &&
+    route.includes('no_new_candle_rows'),
+  'legacy candle cron entrypoint must be a disabled no-op guard',
 );
 
 for (const tableName of ['waxonedge_pairs', 'waxonedge_tokens', 'waxonedge_token_stats']) {
