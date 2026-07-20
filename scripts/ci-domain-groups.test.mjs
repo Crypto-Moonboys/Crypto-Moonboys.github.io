@@ -8,8 +8,8 @@ const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
 
-const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-waxonedge', 'ci-visual'];
-const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:waxonedge', 'ci:visual'];
+const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'];
+const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:visual'];
 
 for (const job of expectedJobs) {
   assert.ok(workflow.includes(`  ${job}:`), `workflow must define ${job}`);
@@ -36,7 +36,7 @@ assert.equal(
   'workflow must not inline individual test scripts in domain jobs',
 );
 
-for (const group of ['wiki', 'worker-api', 'arcade', 'waxonedge', 'visual']) {
+for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
   const keyPattern = new RegExp(`['"]?${group}['"]?:\\s*\\[`);
   assert.ok(keyPattern.test(runner), `ci-domain-runner must define ${group} group`);
 }
@@ -45,7 +45,7 @@ assert.ok(
   pkg.scripts.test.includes('npm run ci:arcade') &&
   pkg.scripts.test.includes('npm run ci:worker-api') &&
   pkg.scripts.test.includes('npm run ci:wiki') &&
-  pkg.scripts.test.includes('npm run ci:waxonedge') &&
+  pkg.scripts.test.includes('npm run ci:wax') &&
   pkg.scripts.test.includes('npm run ci:visual'),
   'npm test must compose the grouped CI domains',
 );

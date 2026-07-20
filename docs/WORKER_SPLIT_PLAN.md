@@ -11,12 +11,11 @@ This is a pressure report for PR #854. It does not split Workers. The current `m
 - Wiki engagement: wiki mission completions, comments/engagement, publishing and engagement APIs.
 - Factions/Battle Chamber/Daily WTF: faction membership/signal state, Battle Chamber activity/standings, Daily WTF schedules and player event state.
 - Daily-loop state: `GET /daily-loop/state` and `POST /daily-loop/state` aggregation over the UTC-day state contract.
-- WaxOnEdge API: WAX token analytics, indexer/bootstrap, WAXCASH analytics, token-page and valuation routes.
 
 ## Current Risk
 
 - This is not a Cloudflare capacity overload yet. The immediate risk is ownership and pressure drift, not a proven platform ceiling.
-- The Worker is becoming too broad: public API routes, linked player state, Telegram bot/webhook handling, scheduled digest jobs, faction/battle systems, wiki engagement, and WaxOnEdge analytics now share the same deployment unit.
+- The Worker is becoming too broad: public API routes, linked player state, Telegram bot/webhook handling, scheduled digest jobs, faction/battle systems, and wiki engagement now share the same deployment unit.
 - Scheduled/bot jobs should not permanently live beside public API routes. Digest and announcement work can grow in duration and failure modes that do not belong on the same critical path as page-facing endpoints.
 - The daily-loop aggregator must not be called repeatedly by every widget. It should be the canonical page/session fetch, then shared to consumers through one frontend state layer.
 - Heavy or slow cron/digest work should use non-blocking patterns such as `ctx.waitUntil()`, queues, or a dedicated Worker in a later phase. Public request handlers should stay short and predictable.
@@ -52,7 +51,6 @@ Pressure takeaways:
 - `moonboys-engagement-api`: wiki engagement, comments, wiki mission completions, non-battle page engagement APIs.
 - `moonboys-battle-api`: factions, Battle Chamber, Daily WTF, roguelite daily state, missed opportunities, daily-loop state or its successor aggregator.
 - `moonboys-telegram-worker`: Telegram webhook, personal digest, group announcements, bot scheduled jobs, Telegram-specific logs and retries.
-- `waxonedge-api`: WaxOnEdge analytics, indexer/bootstrap, token-page, WAXCASH analytics, valuation routes.
 
 ## Do Not Split In This PR
 

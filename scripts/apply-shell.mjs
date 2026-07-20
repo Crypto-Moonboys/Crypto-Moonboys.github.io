@@ -236,7 +236,7 @@ function transform(html, relPath) {
     console.warn(`  [WARN] ${relPath}: could not extract <main id="content">`);
   }
 
-  // Skip shell regeneration for standalone tool pages (e.g., WAXCASH analytics)
+  // Skip shell regeneration for standalone tool pages.
   // These pages manage their own scripts and do not use the global shell
   if (isStandaloneToolPage(bodyAttrs)) {
     return html;

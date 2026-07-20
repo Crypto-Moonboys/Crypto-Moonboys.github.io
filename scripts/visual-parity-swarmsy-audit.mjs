@@ -12,7 +12,6 @@ const CSS_FILES_TO_AUDIT = [
   'css/wiki-shell-v1.css',
   'css/battle-layer.css',
   'css/faction-chamber.css',
-  'css/waxonedge.css',
 ];
 
 const DEBUG_TEXTS = [
@@ -115,11 +114,9 @@ function walkHtml(dir = '') {
 function publicHtmlFiles() {
   const allowedRoots = [
     'about',
-    'analytics',
     'battle-chamber',
     'categories',
     'games',
-    'waxonedge',
     'wiki',
   ];
   const files = fs.readdirSync(ROOT, { withFileTypes: true })

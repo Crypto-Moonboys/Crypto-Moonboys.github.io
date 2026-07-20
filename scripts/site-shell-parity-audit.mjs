@@ -49,8 +49,16 @@ function read(rel) {
 function listHtmlFiles(dir = ROOT, prefix = '') {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const files = [];
+  const skippedDirs = new Set([
+    '.git',
+    'node_modules',
+    'dist',
+    'build',
+    'Crypto-Moonboys.github.io',
+    'JUNKY',
+  ]);
   for (const entry of entries) {
-    if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'build') continue;
+    if (skippedDirs.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
@@ -283,12 +291,6 @@ if (missingShellPages.length) {
 } else {
   pass(`all ${publicHtmlFiles.length - exemptShellPages.length} non-exempt public HTML pages load /js/site-shell.js`);
 }
-if (exemptShellPages.includes('waxcash.html')) {
-  pass('waxcash.html remains an explicit standalone tool exception');
-} else {
-  fail('waxcash.html must remain categorized as a standalone tool exception');
-}
-
 // 4. Shell pages: script load-order check
 // site-shell.js must appear before connection-status-panel.js, global-player-header.js,
 // and live-activity-summary.js on every named shell page.
