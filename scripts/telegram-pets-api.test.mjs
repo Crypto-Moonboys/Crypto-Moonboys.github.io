@@ -25,6 +25,7 @@ const {
   formatPetRandomEventSummary,
   formatTelegramPetHeroCaption,
   formatTelegramPetMediaCaption,
+  shouldUsePhotoCaptionOnly,
   resolvePetRandomEncounter,
   resolvePetMediaKey,
   sendTelegramPetReply,
@@ -185,6 +186,9 @@ assert.ok(mediaCaption.includes('<b>Feed Complete</b>'), 'media caption must use
 assert.ok(mediaCaption.includes('+7 Pet XP, +1 Community XP'), 'media caption must keep the action rewards');
 assert.ok(mediaCaption.includes('Moonpet: Level 15 | Energy 100/100 | Health 92/100'), 'media caption must summarize key pet stats');
 assert.ok(formatTelegramPetHeroCaption('Action accepted: /feed (+7 pet XP).', 'feed').length <= 1024, 'hero captions must fit Telegram photo captions');
+assert.equal(shouldUsePhotoCaptionOnly('Action accepted: /feed (+7 pet XP, +1 Community XP).', 'feed'), true, 'action results may use photo-caption-only mode');
+assert.equal(shouldUsePhotoCaptionOnly('<b>Pet</b>\nMoonpet | Stage: teen | Level 15 | XP 640', 'how_to_play'), false, 'status/detail screens must not use photo-caption-only mode');
+assert.equal(shouldUsePhotoCaptionOnly('<b>Pet Run Engine v1</b>\nRun: <code>run-abc</code>', 'petrun'), false, 'run prompts must not use photo-caption-only mode');
 
 {
   const originalFetch = globalThis.fetch;
@@ -210,6 +214,76 @@ assert.ok(formatTelegramPetHeroCaption('Action accepted: /feed (+7 pet XP).', 'f
     assert.equal(body.parse_mode, 'HTML', 'sendPhoto captions must use HTML parse mode');
     assert.ok(body.caption.includes('<b>Feed Complete</b>'), 'sendPhoto must include the compact caption');
     assert.deepEqual(body.reply_markup, replyMarkup, 'reply_markup must be attached to sendPhoto');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+{
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  const replyMarkup = { inline_keyboard: [[{ text: 'Feed', callback_data: 'pet:feed' }]] };
+  const statusText = [
+    '<b>Pet</b>',
+    'Moonpet | Stage: teen | Level 15 | XP 640',
+    'Health [=========.] 92/100',
+    'Hunger [==========] 0/100',
+    'Happiness [=========.] 90/100',
+    'Cleanliness [========..] 80/100',
+    'Energy [==========] 100/100',
+    '',
+    '<b>Daily Missions</b>',
+    'Feed once',
+    'Run one job',
+  ].join('\n');
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    return { ok: true, status: 200, text: async () => 'sent' };
+  };
+  try {
+    const result = await sendTelegramPetReply('bot-token', '123', statusText, { reply_markup: replyMarkup }, 'how_to_play');
+    assert.ok(result.ok, 'status media replies must still succeed');
+    assert.equal(calls.length, 2, 'status/detail screens must send photo hero plus full text details');
+    assert.ok(calls[0].url.includes('/sendPhoto'), 'status/detail screens must send the photo first');
+    assert.ok(calls[1].url.includes('/sendMessage'), 'status/detail screens must follow with full text');
+    const photoBody = JSON.parse(calls[0].init.body);
+    const messageBody = JSON.parse(calls[1].init.body);
+    assert.deepEqual(photoBody.reply_markup, replyMarkup, 'status/detail screens must keep buttons on the photo');
+    assert.equal(messageBody.text, statusText, 'status/detail screens must preserve the full original text');
+    assert.equal(messageBody.reply_markup, undefined, 'status/detail follow-up text should not duplicate the keyboard');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+{
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  const replyMarkup = { inline_keyboard: [[{ text: 'Fight', callback_data: 'pet:run:run-abc:step:1:fight' }]] };
+  const runPrompt = [
+    '<b>Pet Run Engine v1</b>',
+    'Run: <code>run-abc</code>',
+    'Depth: 0/5 | Risk: 1',
+    'Unbanked: 0 pet XP, 0 gold, 0 crystals, 0 style',
+    'Energy: 100/100 | Health: 92/100',
+    '',
+    'Pick a route, then extract or push deeper.',
+  ].join('\n');
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    return { ok: true, status: 200, text: async () => 'sent' };
+  };
+  try {
+    const result = await sendTelegramPetReply('bot-token', '123', runPrompt, { reply_markup: replyMarkup }, 'petrun');
+    assert.ok(result.ok, 'run prompt media replies must still succeed');
+    assert.equal(calls.length, 2, 'run prompts must send photo hero plus full text details');
+    assert.ok(calls[0].url.includes('/sendPhoto'), 'run prompts must send the photo first');
+    assert.ok(calls[1].url.includes('/sendMessage'), 'run prompts must follow with full text');
+    const photoBody = JSON.parse(calls[0].init.body);
+    const messageBody = JSON.parse(calls[1].init.body);
+    assert.deepEqual(photoBody.reply_markup, replyMarkup, 'run prompts must keep buttons on the photo');
+    assert.equal(messageBody.text, runPrompt, 'run prompts must preserve the full original text');
+    assert.equal(messageBody.reply_markup, undefined, 'run prompt follow-up text should not duplicate the keyboard');
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -246,7 +320,7 @@ assert.ok(formatTelegramPetHeroCaption('Action accepted: /feed (+7 pet XP).', 'f
   const calls = [];
   const replyMarkup = { inline_keyboard: [[{ text: 'Run', callback_data: 'pet:run' }]] };
   const longText = [
-    `<b>${'Power Nap Complete '.repeat(80)}</b>`,
+    `Job complete: ${'Courier '.repeat(180)}.`,
     '+7 Pet XP | +1 Community XP',
     'Moonpet | Stage: elder | Level 15 | XP 640',
     'Health [=========.] 92/100',
