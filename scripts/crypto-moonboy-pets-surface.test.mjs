@@ -16,6 +16,8 @@ assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community X
 assert.ok(howTo.includes('/adopt'), 'How To Play must explain /adopt');
 assert.ok(howTo.includes('/feed'), 'How To Play must explain /feed');
 assert.ok(howTo.includes('/train'), 'How To Play must explain /train');
+assert.ok(howTo.includes('/petrun'), 'How To Play must explain /petrun');
+assert.ok(howTo.includes('/petextract'), 'How To Play must explain /petextract');
 assert.ok(howTo.includes('/petadventure'), 'How To Play must explain /petadventure');
 assert.ok(howTo.includes('/petbag'), 'How To Play must explain /petbag');
 assert.ok(howTo.includes('/petuse moon_snack'), 'How To Play must explain /petuse');
@@ -25,7 +27,9 @@ assert.ok(howTo.includes('/petevent open'), 'How To Play must explain /petevent'
 assert.ok(howTo.includes('/petnotify on'), 'How To Play must explain pet notifications');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
-assert.ok(howTo.includes('no financial promises'), 'How To Play must include no-financial-promises note');
+assert.ok(howTo.includes('community/game progression only'), 'How To Play must keep rewards framed as game progression');
+assert.ok(!howTo.toLowerCase().includes('financial'), 'How To Play must avoid financial wording');
+assert.ok(!howTo.toLowerCase().includes('real-world value'), 'How To Play must avoid real-world value wording');
 assert.ok(howTo.includes('pet-card-gallery'), 'How To Play must include a pet card gallery');
 assert.ok(howTo.includes('Crypto Moonboys Pet Feed card'), 'How To Play must preview the feed card');
 assert.ok(howTo.includes('Crypto Moonboys Pet How To Play card'), 'How To Play must preview the how-to-play card');

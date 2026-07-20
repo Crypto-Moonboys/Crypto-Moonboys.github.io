@@ -7,11 +7,18 @@ const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', imp
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/030_telegram_pets.sql', import.meta.url), 'utf8');
 const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/031_telegram_pets_economy.sql', import.meta.url), 'utf8');
 const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/032_telegram_pets_notifications.sql', import.meta.url), 'utf8');
+const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/033_telegram_pet_run_engine.sql', import.meta.url), 'utf8');
 
 const {
   PET_MEDIA_MANIFEST,
+  PET_RUN_CHOICE_LIBRARY,
+  PET_RUN_MAX_DEPTH,
+  PET_RUN_STEP_CHOICES,
   PET_RANDOM_EVENTS,
   buildPetMediaUrl,
+  buildPetRunChoiceReplyMarkup,
+  buildPetRunExtractEventKey,
+  buildPetRunStepEventKey,
   buildPetRandomEventReplyMarkup,
   formatPetRandomEventSummary,
   resolvePetRandomEncounter,
@@ -68,7 +75,27 @@ assert.ok(worker.includes("body.action === 'use_item'"), 'telegram pets action r
 assert.ok(worker.includes("body.action === 'work'"), 'telegram pets action route must dispatch work actions');
 assert.ok(worker.includes("body.action === 'daily_chest'"), 'telegram pets action route must dispatch daily_chest actions');
 assert.ok(worker.includes("body.action === 'random_event'"), 'telegram pets action route must dispatch random_event actions');
+assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route must dispatch run start/resume actions');
+assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
+assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
 assert.ok(worker.includes('export const __petMediaTestHooks'), 'pet media test hooks must be exported');
+
+assert.equal(PET_RUN_MAX_DEPTH, 5, 'Pet Run Engine must use 5-step runs');
+assert.equal(PET_RUN_STEP_CHOICES.length, 5, 'Pet Run Engine must define five choice steps');
+for (const stepChoices of PET_RUN_STEP_CHOICES) {
+  assert.equal(stepChoices.length, 3, 'each Pet Run Engine step must expose exactly 3 choices');
+}
+for (const choiceType of ['fight', 'sneak', 'loot', 'rest', 'trade', 'gamble', 'boss']) {
+  assert.ok(PET_RUN_CHOICE_LIBRARY[choiceType], `Pet Run Engine must support ${choiceType}`);
+}
+const stableStepKeyA = buildPetRunStepEventKey('123', 'run-abc', 2, 'sneak');
+const stableStepKeyB = buildPetRunStepEventKey('123', 'run-abc', 2, 'sneak');
+assert.equal(stableStepKeyA, stableStepKeyB, 'run step event keys must be stable for retry-safe callbacks');
+assert.equal(buildPetRunExtractEventKey('123', 'run-abc'), 'pet_run_extract:123:run-abc', 'run extract event keys must not depend on callback query ids');
+const runMarkup = buildPetRunChoiceReplyMarkup({ run_id: 'run-abc', depth: 0, max_depth: 5, risk_level: 1, unbanked_items: '{}' });
+assert.equal(runMarkup.inline_keyboard[0].length, 3, 'run keyboard must expose exactly 3 choices');
+assert.ok(runMarkup.inline_keyboard[0][0].callback_data.startsWith('pet:run:run-abc:step:1:'), 'run choice callbacks must carry run id and step');
+assert.ok(runMarkup.inline_keyboard.flat().some((button) => button.callback_data === 'pet:run:run-abc:extract'), 'run keyboard must include Extract');
 
 assert.ok(PET_RANDOM_EVENTS, 'PET_RANDOM_EVENTS must be exported');
 assert.ok(Object.keys(PET_RANDOM_EVENTS).length >= 5, 'PET_RANDOM_EVENTS must include at least 5 event types');
@@ -325,6 +352,49 @@ assertOrder(
   'adventures must check duplicate event keys before the cooldown lookup'
 );
 
+const runStep = asyncBlock('processPetRunStep');
+assert.ok(runStep.includes('buildPetRunStepEventKey'), 'run steps must use stable callback event keys');
+assert.ok(runStep.includes('telegram_pet_run_steps'), 'run steps must persist step records');
+assert.ok(runStep.includes('telegram_pet_runs'), 'run steps must update persistent run state');
+assert.ok(runStep.includes("SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?"), 'run steps must short-circuit duplicate callbacks by event key');
+assert.ok(runStep.includes("SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?"), 'run steps must block alternate duplicate choices for the same step');
+assert.ok(runStep.includes("SET status = 'failed'"), 'failed runs must be marked failed');
+assert.ok(runStep.includes('unbanked_pet_xp = 0'), 'failed runs must lose unbanked pet XP');
+assert.ok(runStep.includes("unbanked_items = '{}'"), 'failed runs must lose unbanked items');
+assert.ok(runStep.includes('PETS_DAILY_PET_XP_CAP'), 'failure consolation XP must respect pet XP cap');
+assert.ok(runStep.includes("'run_fail'"), 'failed runs must audit consolation XP as run_fail');
+assert.ok(runStep.includes('recordPetRunBankedEvent'), 'boss step completion must bank through the extract/completion helper');
+assertOrder(
+  runStep,
+  "const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`)",
+  'const pet = await getPetProfile(db, telegramId);',
+  'run steps must check duplicate event keys before loading and mutating the pet'
+);
+assertOrder(
+  runStep,
+  "const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`)",
+  'const pet = await getPetProfile(db, telegramId);',
+  'run steps must check step-level idempotency before mutating the pet'
+);
+
+const runBank = asyncBlock('recordPetRunBankedEvent');
+assert.ok(runBank.includes('PETS_DAILY_PET_XP_CAP'), 'banked run pet XP must respect the daily pet XP cap');
+assert.ok(runBank.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'banked run Community XP must respect the daily Community XP cap');
+assert.ok(runBank.includes('awardCommunityXp'), 'banked run Community XP must use the shared helper');
+assert.ok(runBank.includes("eventType = options.completed ? 'run_complete' : 'run_extract'"), 'run banking must distinguish extract and completion');
+assert.ok(runBank.includes('PET_RUN_COMPLETED_STATUSES.includes(run.status)'), 'run banking must not bank closed runs twice');
+assert.ok(runBank.includes("'run_item'"), 'run banking must persist inventory items as pet events');
+assertOrder(
+  runBank,
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`)",
+  'pet.pet_xp = Math.max(0',
+  'extract must check duplicate event keys before banking rewards'
+);
+
+const runExtract = asyncBlock('processPetRunExtract');
+assert.ok(runExtract.includes('recordPetRunBankedEvent'), 'extract must bank through the shared banking helper');
+assert.ok(runExtract.includes("reason: 'run_empty'"), 'extract must refuse empty runs');
+
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');
 assert.ok(notifications.includes('PET_NOTIFICATION_COOLDOWN_MINUTES'), 'pet notifications must apply a cooldown');
@@ -404,13 +474,23 @@ assert.ok(!petEvent.includes('Event resolved:'), '/petevent command must not use
 
 const petAdventure = asyncBlock('cmdPetAdventure');
 assert.ok(petAdventure.includes('eventKey = null'), '/petadventure command must accept an optional eventKey');
-assert.ok(petAdventure.includes('selectPetAdventureEncounter'), '/petadventure command must open an encounter');
-assert.ok(petAdventure.includes('buildPetAdventureReplyMarkup'), '/petadventure command must render encounter buttons');
-assert.ok(petAdventure.includes('processPetAdventure'), '/petadventure command must resolve adventure choices');
-assert.ok(petAdventure.includes('formatPetAdventureSummary'), '/petadventure command must render adventure results');
-assert.ok(petAdventure.includes('That adventure button was already handled'), '/petadventure command must guard duplicate taps');
+assert.ok(petAdventure.includes('cmdPetRun'), '/petadventure command must alias into Pet Run Engine');
 assert.ok(!petAdventure.includes('Adventure Complete'), '/petadventure command must not emit the old instant-complete copy');
-assert.ok(worker.includes('callback_data: `pet:adventure:${encounter.key}:${choice.key}`'), 'adventure buttons must carry encounter and choice keys');
+assert.ok(worker.includes('callback_data: `pet:adventure:${encounter.key}:${choice.key}`'), 'legacy adventure buttons must carry encounter and choice keys');
+assert.ok(worker.includes('callback_data: `pet:run:${run.run_id}:step:${Math.max(0, Number(run.depth || 0)) + 1}:${choice.key}`'), 'run buttons must carry run id, step, and choice keys');
+
+const petRun = asyncBlock('cmdPetRun');
+assert.ok(petRun.includes('startOrResumePetRun'), '/petrun command must start or resume runs');
+assert.ok(petRun.includes('processPetRunStep'), '/petrun command must resolve run choices');
+assert.ok(petRun.includes('buildPetRunChoiceReplyMarkup'), '/petrun command must render 3-choice run buttons');
+assert.ok(petRun.includes('buildPetRunAfterStepReplyMarkup'), '/petrun command must render Extract and Push Deeper after a step');
+assert.ok(petRun.includes('buildPetRunStepEventKey'), '/petrun command must use stable run step keys');
+assert.ok(petRun.includes('That run button was already handled'), '/petrun command must guard duplicate taps');
+
+const petExtract = asyncBlock('cmdPetExtract');
+assert.ok(petExtract.includes('processPetRunExtract'), '/petextract command must route to run extract banking');
+assert.ok(petExtract.includes('formatPetRunBankSummary'), '/petextract command must render banked rewards');
+assert.ok(petExtract.includes('That extract was already banked'), '/petextract command must guard duplicate extracts');
 
 const petShop = asyncBlock('cmdPetShop');
 assert.ok(petShop.includes('buildPetShopReplyMarkup(items)'), '/petshop command must render clickable shop buttons');
@@ -432,10 +512,10 @@ assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item but
 assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
 
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
-for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Adventure', 'How To Play', 'Pet Leaderboard']) {
+for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Run', 'How To Play', 'Pet Leaderboard']) {
   assert.ok(petReply.includes(label), `petReplyMarkup must include ${label}`);
 }
-for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:shop', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:adventure']) {
+for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:shop', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:run']) {
   assert.ok(petReply.includes(callback), `petReplyMarkup must preserve ${callback}`);
 }
 assert.ok(!statusFormatter.includes('??'), 'formatPetStatus must not contain placeholder question marks');
@@ -459,6 +539,9 @@ assert.ok(
   callbackBranch.includes("await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);"),
   'pet:adventure callback must pass the stable callback event key through to cmdPetAdventure'
 );
+assert.ok(callbackBranch.includes("await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);"), 'pet:run callback must open the run loop');
+assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunExtractEventKey(telegramId, runId);'), 'run extract callbacks must use stable run extract keys');
+assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);'), 'run step callbacks must use stable run step keys');
 for (const call of [
   "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
   "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
@@ -473,6 +556,9 @@ for (const call of [
   "const adventureParts = adventurePayload.split(':');",
   "const encounterKey = adventureParts.join(':');",
   "await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);",
+  "await cmdPetExtract(db, tok, chatId, telegramId, runId, stableRunEventKey);",
+  "await cmdPetRun(db, tok, chatId, telegramId, runId, buildStablePetEventKey(['pet_run_push', telegramId, runId]));",
+  "await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey);",
 ]) {
   assert.ok(callbackBranch.includes(call), `callback branch must include ${call}`);
 }
@@ -493,6 +579,17 @@ for (const table of ['telegram_pet_profiles', 'telegram_pet_events', 'telegram_p
   assert.ok(migration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in migration`);
 }
 
+for (const table of ['telegram_pet_runs', 'telegram_pet_run_steps', 'telegram_pet_effects']) {
+  assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
+  assert.ok(runMigration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in Pet Run Engine migration`);
+}
+for (const column of ['telegram_id', 'run_id', 'season_key', 'status', 'depth', 'max_depth', 'risk_level', 'unbanked_pet_xp', 'unbanked_moon_gold', 'unbanked_moon_crystals', 'unbanked_style_tokens', 'started_at', 'completed_at', 'updated_at']) {
+  assert.ok(runMigration.includes(column), `Pet Run Engine migration must include ${column}`);
+}
+assert.ok(runMigration.includes('idx_telegram_pet_runs_one_open'), 'Pet Run Engine migration must enforce one open run per user');
+assert.ok(runMigration.includes('UNIQUE(telegram_id, event_key)'), 'Pet Run Engine steps must dedupe callback event keys');
+assert.ok(runMigration.includes('UNIQUE(run_id, step_index)'), 'Pet Run Engine steps must dedupe each run step');
+
 assert.ok(schema.includes('telegram_pet_notification_settings'), 'schema.sql must include telegram_pet_notification_settings');
 assert.ok(notificationsMigration.includes('telegram_pet_notification_settings'), 'notifications migration must create telegram_pet_notification_settings');
 assert.ok(notificationsMigration.includes('idx_telegram_pet_notification_settings_due'), 'notifications migration must add the notification index');
@@ -502,7 +599,7 @@ for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_fo
   assert.ok(economyMigration.includes(`ADD COLUMN ${column}`), `economy migration must add ${column}`);
 }
 
-for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
+for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petrun':", "case 'petextract':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
 
