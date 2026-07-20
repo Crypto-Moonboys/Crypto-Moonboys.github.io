@@ -65,7 +65,7 @@ window.__HUD_CONSOLIDATED__ = true;
     if (p === '/search.html' || p.startsWith('/wiki/') || p.startsWith('/categories/')) return 'wiki';
     if (p.startsWith('/games/')) return 'games';
     if (p.startsWith('/battle-chamber/') || p === '/community.html') return 'battle';
-    if (p === '/waxcash.html' || p === '/waxonedge.html' || p.startsWith('/tools/')) return 'tool';
+    if (p.startsWith('/tools/')) return 'tool';
     if (p === '/dashboard.html' || p === '/admin-tools.html') return 'system';
     return 'legacy';
   }
@@ -84,7 +84,6 @@ window.__HUD_CONSOLIDATED__ = true;
     if (p.startsWith('/battle-chamber/') || p === '/community.html') return '/search.html?q=Battle%20Chamber';
     if (p === '/swarmsy.html' || p === '/sparky.html') return '/search.html?q=SWARMSY';
     if (p === '/dashboard.html' || p === '/admin-tools.html') return '/search.html?q=System%20Hub';
-    if (p === '/waxcash.html' || p === '/waxonedge.html') return '/search.html?q=WAX';
     return '/search.html';
   }
 

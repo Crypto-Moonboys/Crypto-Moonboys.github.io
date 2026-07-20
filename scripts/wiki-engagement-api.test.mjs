@@ -462,11 +462,6 @@ async function run() {
   assert(battleLayer.includes('wuffi:') && battleLayer.includes(gif), 'WUF GIF remains WUFFI-only in page media map');
   assert(!alcor.includes(gif), 'other wiki pages do not receive WUF GIF');
 
-  const waxcash = read('waxcash.html');
-  const waxonedgeRoute = read('workers/moonboys-api/routes/waxonedge.js');
-  assert(waxcash.includes('WAXCASH'), 'WAXCASH page remains present');
-  assert(waxonedgeRoute.includes('cachedAnalyticsPayload'), 'WaxOnEdge cache route remains present');
-
   console.log('Wiki engagement API route regression PASSED.');
 }
 

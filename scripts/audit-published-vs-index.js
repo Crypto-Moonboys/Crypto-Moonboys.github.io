@@ -14,7 +14,7 @@
  *   1. Missing from index (approved but not searchable)
  *   2. Missing from sitemap (approved but not crawlable)
  *   3. Excluded intentionally (stubs, noindex)
- *   4. Should-be-included root pages (waxcash, about, etc.)
+ *   4. Should-be-included root pages (about, categories, etc.)
  *
  * Run: node scripts/audit-published-vs-index.js
  */

@@ -39,6 +39,7 @@ const GROUPS = {
     ['node', 'scripts/daily-loop-state-contract.test.mjs'],
     ['node', 'scripts/daily-loop-frontend-state.test.mjs'],
     ['node', 'scripts/scheduled-task-isolation.test.mjs'],
+    ['node', 'scripts/market-indexer-removal-guard.test.mjs'],
     ['node', 'scripts/cors-origins.test.mjs'],
     ['node', 'scripts/worker-rate-limit.test.mjs'],
     ['node', 'scripts/leaderboard-hmac-test.mjs'],
@@ -73,7 +74,7 @@ const GROUPS = {
     ['node', 'scripts/faction-season-lock.test.mjs'],
     ['npm', 'run', 'test:invaders-ship'],
   ],
-  waxonedge: [
+  wax: [
     ['node', 'scripts/audit-nft-pages-and-feed-sync.mjs'],
     ['node', 'scripts/audit-gkniftyheads-hub-links.mjs'],
     ['node', 'scripts/gkniftyheads-live-supply-scoring.test.mjs'],
@@ -89,12 +90,6 @@ const GROUPS = {
     ['node', 'scripts/wax-api-route-normalization.test.mjs'],
     ['node', 'scripts/wax-image-normalizer.test.mjs'],
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
-    ['node', 'scripts/waxonedge-api-routing.test.mjs'],
-    ['node', 'scripts/waxonedge-smoke.test.mjs'],
-    ['node', 'scripts/waxonedge-indexer-blueprint.test.mjs'],
-    ['node', 'scripts/waxonedge-live-backend.test.mjs'],
-    ['node', 'scripts/waxonedge-valuation-contract.test.mjs'],
-    ['node', 'scripts/waxcash-standalone.test.mjs'],
   ],
   visual: [
     ['node', 'scripts/portal-artwork.test.mjs'],

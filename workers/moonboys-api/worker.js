@@ -4,7 +4,6 @@ import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from '.
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
-import { handleWaxOnEdgeRoute, runWaxOnEdgeScheduledSync } from './routes/waxonedge.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
@@ -63,17 +62,6 @@ import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/da
  *   POST /roguelite/mark-missed
  *   POST /telegram/daily-digest/run
  *   POST /telegram/group-announcements/run
- *   GET  /api/waxonedge/bootstrap
- *   GET  /api/waxonedge/summary
- *   GET  /api/waxonedge/tokens/top
- *   GET  /api/waxonedge/pairs/top
- *   GET  /api/waxonedge/waxcash-graph
- *   GET  /api/waxonedge/token/:contract/:symbol
- *   GET  /api/waxonedge/token/:contract/:symbol/pairs
- *   GET  /api/waxonedge/token/:contract/:symbol/chart
- *   GET  /api/waxonedge/token/:contract/:symbol/holders
- *   GET  /api/waxonedge/token/:contract/:symbol/trades
- *   GET  /api/waxonedge/sync-status
  *   GET  /api/wax/health
  *   GET  /api/wax/collections/:collection/stats
  *   GET  /api/wax/collections/:collection/templates
@@ -4988,10 +4976,6 @@ export default {
       return json({ ok: true, message: 'SAM active and monitoring the wiki.' });
     }
 
-    if (path === '/api/waxonedge' || path.startsWith('/api/waxonedge/')) {
-      return handleWaxOnEdgeRoute(request, env, corsHeaders);
-    }
-
     if (path === '/api/wax' || path.startsWith('/api/wax/')) {
       return handleWaxBridgeRoute(request, env, corsHeaders);
     }
@@ -8188,29 +8172,7 @@ export default {
     const shouldRunDailySummary = !cron || cron === '0 9 * * *';
     const shouldRunPetNotifications = !cron || cron === '*/5 * * * *';
     const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
-    const shouldRunWaxOnEdge = !cron || cron === '* * * * *';
     const scheduledResults = [];
-
-    if (shouldRunWaxOnEdge) {
-      const waxOnEdgeSummary = await runWaxOnEdgeScheduledSync(env, cron).catch((error) => ({
-        ok: false,
-        error: error?.message || String(error),
-      }));
-      scheduledResults.push({
-        task: 'waxonedge_sync',
-        ok: !!waxOnEdgeSummary?.ok,
-        error: waxOnEdgeSummary?.ok ? null : (waxOnEdgeSummary?.error || 'unknown_error'),
-      });
-      if (!waxOnEdgeSummary?.ok) {
-        logApiFailure('waxonedge_scheduled_failed', waxOnEdgeSummary);
-      } else {
-        logApiEvent('waxonedge_scheduled_complete', {
-          cron,
-          results: waxOnEdgeSummary.results?.length || 0,
-          skipped: !!waxOnEdgeSummary.skipped,
-        });
-      }
-    }
 
     if (shouldRunDigest) {
       const summary = await runTelegramDailyDigest(env, {

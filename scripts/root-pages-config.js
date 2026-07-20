@@ -18,7 +18,6 @@
  */
 
 const APPROVED_ROOT_PAGES = [
-  { path: '/waxcash.html', title: 'WAXCASH Analytics' },
   { path: '/about.html', title: 'About Crypto Moonboys' },
   { path: '/categories/index.html', title: 'Categories' },
   { path: '/categories/tools.html', title: 'Tools' },
