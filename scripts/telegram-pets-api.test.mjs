@@ -446,6 +446,9 @@ const startRun = asyncBlock('startOrResumePetRun');
 assert.ok(startRun.includes('const requestedRunId = String(options.run_id || \'\').trim().slice(0, 80);'), 'run resume must normalize supplied run ids before inserts');
 assert.ok(startRun.includes('const requestedRun = await getPetRunById(db, telegramId, requestedRunId);'), 'run resume must look up supplied run ids before inserts');
 assert.ok(startRun.includes("reason: 'run_closed'"), 'old push callbacks for closed runs must be rejected clearly');
+assert.ok(startRun.includes("reason: 'run_not_found'"), 'unknown supplied run ids must be rejected cleanly');
+assert.ok(startRun.includes('const runId = `run-${crypto.randomUUID()}`.slice(0, 80);'), 'fresh /petrun must create only server-generated run ids');
+assert.ok(!startRun.includes('requestedRunId || `run-${crypto.randomUUID()}`'), 'new runs must never insert caller-supplied run ids');
 assertOrder(
   startRun,
   'const requestedRun = await getPetRunById(db, telegramId, requestedRunId);',
@@ -454,9 +457,21 @@ assertOrder(
 );
 assertOrder(
   startRun,
+  "return { accepted: false, reason: 'run_not_found'",
+  'const active = await getActivePetRun(db, telegramId);',
+  'unknown supplied run ids must not fall through to active-run fallback'
+);
+assertOrder(
+  startRun,
   "if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed'",
   'INSERT INTO telegram_pet_runs',
   'closed supplied run ids must be rejected before inserting a duplicate run'
+);
+assertOrder(
+  startRun,
+  "return { accepted: false, reason: 'run_not_found'",
+  'INSERT INTO telegram_pet_runs',
+  'unknown supplied run ids must be rejected before any run insert'
 );
 
 const runBank = asyncBlock('recordPetRunBankedEvent');
@@ -592,6 +607,8 @@ assert.ok(!petEvent.includes('Event resolved:'), '/petevent command must not use
 const petAdventure = asyncBlock('cmdPetAdventure');
 assert.ok(petAdventure.includes('eventKey = null'), '/petadventure command must accept an optional eventKey');
 assert.ok(petAdventure.includes('cmdPetRun'), '/petadventure command must alias into Pet Run Engine');
+assert.ok(petAdventure.includes('void argStr;'), '/petadventure must not treat legacy adventure args as run ids');
+assert.ok(petAdventure.includes("cmdPetRun(db, tok, chatId, telegramId, '', eventKey)"), '/petadventure must open or resume the Pet Run Engine');
 assert.ok(!petAdventure.includes('Adventure Complete'), '/petadventure command must not emit the old instant-complete copy');
 assert.ok(worker.includes('callback_data: `pet:adventure:${encounter.key}:${choice.key}`'), 'legacy adventure buttons must carry encounter and choice keys');
 assert.ok(worker.includes('callback_data: `pet:run:${run.run_id}:step:${Math.max(0, Number(run.depth || 0)) + 1}:${choice.key}`'), 'run buttons must carry run id, step, and choice keys');
@@ -655,9 +672,12 @@ assert.ok(
   'pet:adventure callback must not fall back to chat id when resolving telegram identity'
 );
 assert.ok(
-  callbackBranch.includes("await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);"),
-  'pet:adventure callback must pass the stable callback event key through to cmdPetAdventure'
+  callbackBranch.includes("await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);"),
+  'pet:adventure callback must open the Pet Run Engine'
 );
+assert.ok(callbackBranch.includes("if (payload.startsWith('adventure:'))"), 'legacy adventure choice callbacks must still be recognized');
+assert.ok(!callbackBranch.includes('const adventureParts = adventurePayload.split(\':\');'), 'legacy adventure callbacks must not parse encounter keys into run ids');
+assert.ok(!callbackBranch.includes('await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);'), 'legacy adventure callbacks must not pass encounter keys to cmdPetRun');
 assert.ok(callbackBranch.includes("await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);"), 'pet:run callback must open the run loop');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunExtractEventKey(telegramId, runId);'), 'run extract callbacks must use stable run extract keys');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);'), 'run step callbacks must use stable run step keys');
@@ -672,10 +692,8 @@ for (const call of [
   "const eventParts = eventPayload.split(':');",
   "const encounterKey = eventParts.join(':');",
   "await cmdPetEvent(db, tok, chatId, telegramId, choice, encounterKey);",
-  "await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);",
-  "const adventureParts = adventurePayload.split(':');",
-  "const encounterKey = adventureParts.join(':');",
-  "await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);",
+  "if (payload.startsWith('adventure:')) {",
+  "await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);",
   "await cmdPetExtract(db, tok, chatId, telegramId, runId, stableRunEventKey);",
   "await cmdPetRun(db, tok, chatId, telegramId, runId, buildStablePetEventKey(['pet_run_push', telegramId, runId]));",
   "await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);",

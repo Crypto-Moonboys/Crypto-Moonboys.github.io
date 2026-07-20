@@ -2002,13 +2002,14 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
     const requestedRun = await getPetRunById(db, telegramId, requestedRunId);
     if (requestedRun && ['active', 'extractable'].includes(requestedRun.status)) return { accepted: true, reason: 'run_resumed', run: requestedRun, pet };
     if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+    return { accepted: false, reason: 'run_not_found', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
   const active = await getActivePetRun(db, telegramId);
   if (active) return { accepted: true, reason: 'run_resumed', run: active, pet };
   if (clampPetStat(pet.energy) < 12) return { accepted: false, reason: 'pet_tired', pet };
   const now = new Date();
   const season = getPetSeasonInfo(now);
-  const runId = String(requestedRunId || `run-${crypto.randomUUID()}`).slice(0, 80);
+  const runId = `run-${crypto.randomUUID()}`.slice(0, 80);
   await db.prepare(`
     INSERT INTO telegram_pet_runs
       (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
@@ -9138,23 +9139,13 @@ async function handleTelegramUpdate(update, env) {
         }
       }
       if (payload === 'adventure') {
-        await answerTelegramCallback(tok, query.id, '/petadventure');
-        await cmdPetAdventure(db, tok, chatId, telegramId, '', eventKey);
+        await answerTelegramCallback(tok, query.id, '/petrun');
+        await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);
         return;
       }
       if (payload.startsWith('adventure:')) {
-        const adventurePayload = payload.slice(10);
-        const adventureParts = adventurePayload.split(':');
-        if (adventureParts.length >= 2) {
-          const choice = adventureParts.pop();
-          const encounterKey = adventureParts.join(':');
-          await answerTelegramCallback(tok, query.id, `/petadventure ${choice}`);
-          await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);
-          return;
-        }
-        const choice = adventureParts[0];
-        await answerTelegramCallback(tok, query.id, `/petadventure ${choice}`);
-        await cmdPetAdventure(db, tok, chatId, telegramId, choice, eventKey);
+        await answerTelegramCallback(tok, query.id, '/petrun');
+        await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);
         return;
       }
       const action = normalizePetAction(payload);
@@ -9789,7 +9780,8 @@ async function cmdPetExtract(db, tok, chatId, telegramId, argStr = '', eventKey 
 }
 
 async function cmdPetAdventure(db, tok, chatId, telegramId, argStr = '', eventKey = null) {
-  await cmdPetRun(db, tok, chatId, telegramId, argStr, eventKey);
+  void argStr;
+  await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);
 }
 
 async function cmdPetNotify(db, tok, chatId, telegramId, argStr = '') {
