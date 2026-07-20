@@ -19,6 +19,7 @@ const {
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
   buildPetRunStepEventKey,
+  applyPetRunStatRewards,
   getUnaffordablePetRunCosts,
   buildPetRandomEventReplyMarkup,
   formatPetRandomEventSummary,
@@ -402,6 +403,35 @@ assertOrder(
   'INSERT INTO telegram_pet_run_steps',
   'unaffordable run steps must be rejected before writing step rewards'
 );
+assert.ok(runStep.includes('applyPetRunStatRewards(pet, outcome.rewards)'), 'successful run steps must apply non-currency stat rewards before saving pets');
+assertOrder(
+  runStep,
+  'if (!outcome.success) {',
+  'applyPetRunStatRewards(pet, outcome.rewards);',
+  'run stat rewards must only apply after the failure path has been handled'
+);
+assert.ok(
+  runStep.includes('applyPetRunStatRewards(pet, outcome.rewards);\n  pet.last_decay_at = new Date().toISOString();\n  await savePetProfile(db, pet);')
+    || runStep.includes('applyPetRunStatRewards(pet, outcome.rewards);\r\n  pet.last_decay_at = new Date().toISOString();\r\n  await savePetProfile(db, pet);'),
+  'run stat rewards must be applied before saving the successful step pet'
+);
+
+const startRun = asyncBlock('startOrResumePetRun');
+assert.ok(startRun.includes('const requestedRunId = String(options.run_id || \'\').trim().slice(0, 80);'), 'run resume must normalize supplied run ids before inserts');
+assert.ok(startRun.includes('const requestedRun = await getPetRunById(db, telegramId, requestedRunId);'), 'run resume must look up supplied run ids before inserts');
+assert.ok(startRun.includes("reason: 'run_closed'"), 'old push callbacks for closed runs must be rejected clearly');
+assertOrder(
+  startRun,
+  'const requestedRun = await getPetRunById(db, telegramId, requestedRunId);',
+  'const active = await getActivePetRun(db, telegramId);',
+  'supplied run ids must be checked before active-run fallback'
+);
+assertOrder(
+  startRun,
+  "if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed'",
+  'INSERT INTO telegram_pet_runs',
+  'closed supplied run ids must be rejected before inserting a duplicate run'
+);
 
 const runBank = asyncBlock('recordPetRunBankedEvent');
 assert.ok(runBank.includes('PETS_DAILY_PET_XP_CAP'), 'banked run pet XP must respect the daily pet XP cap');
@@ -441,6 +471,15 @@ assert.deepEqual(
   {},
   'run cost validator must allow affordable currency costs'
 );
+{
+  const pet = { health: 98, hunger: 9, happiness: 94, cleanliness: 91, energy: 88 };
+  applyPetRunStatRewards(pet, { health: 10, hunger: 12, happiness: 8, cleanliness: 20, energy: 18, moon_gold: 999 });
+  assert.deepEqual(
+    pet,
+    { health: 100, hunger: 0, happiness: 100, cleanliness: 100, energy: 100 },
+    'run stat rewards such as rest must restore/clamp pet stats without applying currency rewards'
+  );
+}
 
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');

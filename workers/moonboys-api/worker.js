@@ -1967,6 +1967,14 @@ function applyPetRunCosts(pet, costs = {}) {
   pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) - Math.max(0, Number(costs.style_tokens || 0)));
 }
 
+function applyPetRunStatRewards(pet, rewards = {}) {
+  pet.health = clampPetStat(Number(pet.health || 0) + Math.max(0, Number(rewards.health || 0)));
+  pet.energy = clampPetStat(Number(pet.energy || 0) + Math.max(0, Number(rewards.energy || 0)));
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) + Math.max(0, Number(rewards.happiness || 0)));
+  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + Math.max(0, Number(rewards.cleanliness || 0)));
+  pet.hunger = clampPetStat(Number(pet.hunger || 0) - Math.max(0, Number(rewards.hunger || 0)));
+}
+
 async function getActivePetRun(db, telegramId) {
   const row = await db.prepare(`
     SELECT * FROM telegram_pet_runs
@@ -1989,12 +1997,18 @@ async function getPetRunById(db, telegramId, runId) {
 async function startOrResumePetRun(db, telegramId, options = {}) {
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const requestedRunId = String(options.run_id || '').trim().slice(0, 80);
+  if (requestedRunId) {
+    const requestedRun = await getPetRunById(db, telegramId, requestedRunId);
+    if (requestedRun && ['active', 'extractable'].includes(requestedRun.status)) return { accepted: true, reason: 'run_resumed', run: requestedRun, pet };
+    if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   const active = await getActivePetRun(db, telegramId);
   if (active) return { accepted: true, reason: 'run_resumed', run: active, pet };
   if (clampPetStat(pet.energy) < 12) return { accepted: false, reason: 'pet_tired', pet };
   const now = new Date();
   const season = getPetSeasonInfo(now);
-  const runId = String(options.run_id || `run-${crypto.randomUUID()}`).slice(0, 80);
+  const runId = String(requestedRunId || `run-${crypto.randomUUID()}`).slice(0, 80);
   await db.prepare(`
     INSERT INTO telegram_pet_runs
       (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
@@ -2232,6 +2246,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   }
 
   updatePetStreakForAction(pet, dayKey);
+  applyPetRunStatRewards(pet, outcome.rewards);
   pet.last_decay_at = new Date().toISOString();
   await savePetProfile(db, pet);
   await db.prepare(`
@@ -8987,6 +9002,7 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
   buildPetRunStepEventKey,
+  applyPetRunStatRewards,
   getUnaffordablePetRunCosts,
   buildPetMediaUrl,
   buildPetRandomEventReplyMarkup,
