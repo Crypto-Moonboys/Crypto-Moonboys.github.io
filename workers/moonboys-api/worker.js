@@ -9017,6 +9017,30 @@ function formatTelegramPetHeroCaption(text, mediaKey = null) {
   return `<b>${escapeHtml(title.slice(0, 120))}</b>\nFull details below.`;
 }
 
+function shouldUsePhotoCaptionOnly(text, mediaKey = null) {
+  void mediaKey;
+  const caption = formatTelegramPetMediaCaption(text, mediaKey);
+  if (!caption || caption.length > TELEGRAM_PHOTO_CAPTION_LIMIT) return false;
+
+  const firstLine = stripTelegramHtml(String(text || '').split(/\r?\n/).find((line) => line.trim()) || '');
+  const normalizedFirstLine = firstLine.replace(/^[^A-Za-z0-9/]+/, '');
+  if (!normalizedFirstLine) return false;
+  return [
+    /^Action accepted:\s*\/[a-z0-9_]+\s*\(/i,
+    /^Item used:/i,
+    /^Job complete:/i,
+    /^Daily chest opened:/i,
+    /^Trade won:/i,
+    /^Trade lost:/i,
+    /^Run Failed$/i,
+    /^Boss Cleared$/i,
+    /^Step\s+\d+\s+Cleared:/i,
+    /^Run Complete$/i,
+    /^Run Extracted$/i,
+    /^Upgrade equipped:/i,
+  ].some((pattern) => pattern.test(normalizedFirstLine));
+}
+
 async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
   if (!botToken || !chatId || !photo) {
     return { ok: false, status: 0, error: 'missing_chat_or_token_or_photo' };
@@ -9047,10 +9071,10 @@ async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey
   }
 
   const caption = formatTelegramPetMediaCaption(text, resolvedMediaKey);
-  const useDetailFallback = !caption || caption.length > TELEGRAM_PHOTO_CAPTION_LIMIT;
+  const captionOnly = shouldUsePhotoCaptionOnly(text, resolvedMediaKey);
   const photoExtra = {
     ...extra,
-    caption: useDetailFallback ? formatTelegramPetHeroCaption(text, resolvedMediaKey) : caption,
+    caption: captionOnly ? caption : formatTelegramPetHeroCaption(text, resolvedMediaKey),
     parse_mode: 'HTML',
   };
   const photoResult = await sendTelegramPhoto(botToken, chatId, photoUrl, photoExtra)
@@ -9058,7 +9082,7 @@ async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey
   if (!photoResult.ok) {
     return sendTelegramMessage(botToken, chatId, text, extra);
   }
-  if (useDetailFallback) {
+  if (!captionOnly) {
     return sendTelegramMessage(botToken, chatId, text);
   }
   return photoResult;
@@ -9095,6 +9119,7 @@ export const __petMediaTestHooks = Object.freeze({
   formatPetAdventureSummary,
   formatTelegramPetMediaCaption,
   formatTelegramPetHeroCaption,
+  shouldUsePhotoCaptionOnly,
   resolvePetMediaKey,
   resolvePetAdventureEncounter,
   resolvePetRandomEncounter,
