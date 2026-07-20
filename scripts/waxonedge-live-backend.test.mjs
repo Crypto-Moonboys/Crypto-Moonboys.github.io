@@ -6099,7 +6099,7 @@ ok('partial_success aggregate after latest pair sync can count as fresh',
   route.includes("status IN ('success', 'partial_success')") &&
   route.includes("status IN ('success', 'partial')") &&
   route.includes('fresh_after_latest_pair_sync: aggregateFresh') &&
-  route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
+  route.includes('aggregateTokenAnalytics(env),') &&
   route.includes('const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB)'));
 ok('aggregate rebuild runs after latest pair sync if freshness drifts',
   route.includes('async function aggregateNeedsRefreshAfterPairSync') &&
@@ -6170,7 +6170,8 @@ ok('free-safe cron only runs one heavy WaxOnEdge workload per invocation',
   route.includes("cron === '*/15 * * * *'") &&
   route.includes('const rotationSlot = Math.floor(minute / 15) % 4') &&
   route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
-  route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
+  route.includes('tasks.push(runWaxOnEdgeTradeBackfill(env))') &&
+  route.includes('aggregateTokenAnalytics(env),') &&
   route.includes('tasks.push(Promise.all([') &&
   route.includes('syncSupplyInputs(env)') &&
   route.includes('selectCoreDexAdapterForCron(minute, hour)') &&
@@ -6191,11 +6192,12 @@ ok('free-safe mode does not permanently prevent supply sync',
   route.includes('syncSupplyInputs(env)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
   route.indexOf('syncSupplyInputs(env)', route.indexOf('const rotationSlot = Math.floor(minute / 15) % 4')) >
-    route.indexOf('tasks.push(aggregateTokenAnalytics(env))', route.indexOf('const rotationSlot = Math.floor(minute / 15) % 4')));
+    route.indexOf('aggregateTokenAnalytics(env),', route.indexOf('const rotationSlot = Math.floor(minute / 15) % 4')));
 ok('free-safe supply sync runs in bounded maintenance cron workload',
   route.includes('if (isMinuteCron && freeSafeMode && minute % 15 !== 0)') &&
   route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
-  route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
+  route.includes('tasks.push(runWaxOnEdgeTradeBackfill(env))') &&
+  route.includes('aggregateTokenAnalytics(env),') &&
   route.includes('tasks.push(Promise.all([') &&
   route.includes('syncSupplyInputs(env)') &&
   route.includes('runWaxOnEdgeRetentionMaintenance(env)') &&

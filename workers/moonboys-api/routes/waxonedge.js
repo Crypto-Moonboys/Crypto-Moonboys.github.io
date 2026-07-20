@@ -5312,6 +5312,7 @@ async function aggregateTokenAnalytics(env) {
     env.DB.prepare(
       `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
               price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+              volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
               liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
        FROM waxonedge_pairs`
     ).all(),
@@ -5393,17 +5394,20 @@ async function aggregateTokenAnalytics(env) {
     statements.push(env.DB.prepare(
       `INSERT INTO waxonedge_token_stats
        (contract, symbol, volume_24h, volume_24h_wax, volume_24h_usd,
+        volume_7d, volume_30d,
         liquidity_wax, liquidity_usd, tvl_wax, tvl_usd, change_24h,
         selected_price_wax, selected_price_usd, selected_pair_source, selected_pair_id,
         circulating_supply, market_cap_wax, market_cap_usd, fdv_wax, fdv_usd,
         source_count, indexed_pair_count, source_keys, aggregate_complete,
         aggregate_sources_required, aggregate_sources_present, aggregate_sources_processed,
         aggregate_sources_failed, aggregate_truncated, aggregate_sources_truncated, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(contract, symbol) DO UPDATE SET
          volume_24h = excluded.volume_24h,
          volume_24h_wax = excluded.volume_24h_wax,
          volume_24h_usd = excluded.volume_24h_usd,
+         volume_7d = excluded.volume_7d,
+         volume_30d = excluded.volume_30d,
          liquidity_wax = excluded.liquidity_wax,
          liquidity_usd = excluded.liquidity_usd,
          tvl_wax = excluded.tvl_wax,
@@ -5432,6 +5436,8 @@ async function aggregateTokenAnalytics(env) {
         WHERE waxonedge_token_stats.volume_24h IS NOT excluded.volume_24h
            OR waxonedge_token_stats.volume_24h_wax IS NOT excluded.volume_24h_wax
            OR waxonedge_token_stats.volume_24h_usd IS NOT excluded.volume_24h_usd
+           OR waxonedge_token_stats.volume_7d IS NOT excluded.volume_7d
+           OR waxonedge_token_stats.volume_30d IS NOT excluded.volume_30d
            OR waxonedge_token_stats.liquidity_wax IS NOT excluded.liquidity_wax
            OR waxonedge_token_stats.liquidity_usd IS NOT excluded.liquidity_usd
            OR waxonedge_token_stats.tvl_wax IS NOT excluded.tvl_wax
@@ -5462,6 +5468,8 @@ async function aggregateTokenAnalytics(env) {
       detailStats.volume_24h_wax,
       detailStats.volume_24h_wax,
       detailStats.volume_24h_usd,
+      detailStats.volume_7d_wax ?? detailStats.volume_7d,
+      detailStats.volume_30d_wax ?? detailStats.volume_30d,
       detailStats.liquidity_wax,
       detailStats.liquidity_usd,
       detailStats.tvl_wax,
@@ -5877,6 +5885,12 @@ function normalizeLiveTokenUpdate(row) {
     change_24h: safeDecimal(asNumber(row.change_24h)),
     volume_24h_wax: safeDecimal(asNumber(row.volume_24h_wax ?? row.volume_24h)),
     volume_24h_usd: safeDecimal(asNumber(row.volume_24h_usd)),
+    volume_7d: safeDecimal(asNumber(row.volume_7d_wax ?? row.volume_7d)),
+    volume_7d_wax: safeDecimal(asNumber(row.volume_7d_wax ?? row.volume_7d)),
+    volume_7d_usd: safeDecimal(asNumber(row.volume_7d_usd)),
+    volume_30d: safeDecimal(asNumber(row.volume_30d_wax ?? row.volume_30d)),
+    volume_30d_wax: safeDecimal(asNumber(row.volume_30d_wax ?? row.volume_30d)),
+    volume_30d_usd: safeDecimal(asNumber(row.volume_30d_usd)),
     tvl_wax: tvlWax,
     tvl_usd: tvlUsd,
     liquidity_wax: liquidityWax,
@@ -6276,12 +6290,29 @@ async function listTokenPairs(db, contract, symbol, options = {}) {
   const priceRows = await loadTokenPriceRowsForPairs(db, graphRows);
   const priceIndex = buildDbTokenPriceIndex(priceRows);
   const routeIndex = buildOgWaxRouteGraph(graphRows, priceIndex);
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  const baseRows = visibleRows.map((pair) => ({
+    ...pair,
+    ...pairLiquiditySanityMetadata(pair),
+    selected_pair: false,
+    pair_contribution_proof: pairContributionProof(pair, contract, symbol, priceIndex, routeIndex),
+  }));
+  const waxcashSelectedPriceWax = await tokenPageWaxcashSelectedPriceWax(db);
+  const tradeWindowPairs = baseRows.map((row) => ({ ...row, direct_wax_pair: pairHasWaxSide(row) }));
+  const pairWindowVolumes = await indexedTradeWindowVolumesByPair(db, tradeWindowPairs, {
+    selectedPriceWax: waxcashSelectedPriceWax,
+  }).catch(() => new Map());
+  const indexedMetricRows = applyIndexedPairWindowVolumes(tradeWindowPairs, pairWindowVolumes, waxUsd);
+  const metricRows = await enrichTokenPagePairsWithWaxcashMetrics(db, indexedMetricRows, {
+    stats: {
+      selected_price_wax: '1',
+      selected_price_usd: waxUsd == null ? null : safeDecimal(waxUsd),
+    },
+  }).catch(() => indexedMetricRows);
   return {
-    rows: visibleRows.map((pair) => ({
+    rows: metricRows.map((pair) => ({
       ...pair,
-      ...pairLiquiditySanityMetadata(pair),
-      selected_pair: false,
-      pair_contribution_proof: pairContributionProof(pair, contract, symbol, priceIndex, routeIndex),
+      ...tokenPagePairDisplayMetrics(pair),
     })),
     next_cursor: hasMore ? String(offset + limit) : null,
     complete: !hasMore,
@@ -8341,8 +8372,12 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   let pairCount = 0;
   let liquidityWaxTotal = 0;
   let volumeWaxTotal = 0;
+  let volume7dWaxTotal = 0;
+  let volume30dWaxTotal = 0;
   let hasLiquidityWax = false;
   let hasVolumeWax = false;
+  let hasVolume7dWax = false;
+  let hasVolume30dWax = false;
   let directWaxcashLiquidityWax = 0;
   let directWaxLiquidityWax = 0;
   let hasDirectWaxcashLiquidityWax = false;
@@ -8394,6 +8429,16 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
       volumeWaxTotal += volumeWax;
       hasVolumeWax = true;
     }
+    const volume7dWax = asNumber(pair.volume_7d_wax);
+    if (volume7dWax != null) {
+      volume7dWaxTotal += volume7dWax;
+      hasVolume7dWax = true;
+    }
+    const volume30dWax = asNumber(pair.volume_30d_wax);
+    if (volume30dWax != null) {
+      volume30dWaxTotal += volume30dWax;
+      hasVolume30dWax = true;
+    }
   }
 
   const bubbleLiquidityTotals = liquidityContributions.reduce((totals, contribution) => {
@@ -8419,6 +8464,10 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
     : (bubbleLiquidityWax != null && waxUsd != null ? bubbleLiquidityWax * waxUsd : null);
   const volumeWax = hasVolumeWax ? volumeWaxTotal : asNumber(metrics.volume_24h_wax ?? metrics.volume_24h);
   const volumeUsd = volumeWax != null && waxUsd != null ? volumeWax * waxUsd : asNumber(metrics.volume_24h_usd);
+  const volume7dWax = hasVolume7dWax ? volume7dWaxTotal : asNumber(metrics.volume_7d_wax ?? metrics.volume_7d);
+  const volume7dUsd = volume7dWax != null && waxUsd != null ? volume7dWax * waxUsd : asNumber(metrics.volume_7d_usd);
+  const volume30dWax = hasVolume30dWax ? volume30dWaxTotal : asNumber(metrics.volume_30d_wax ?? metrics.volume_30d);
+  const volume30dUsd = volume30dWax != null && waxUsd != null ? volume30dWax * waxUsd : asNumber(metrics.volume_30d_usd);
 
   metrics.contract = contract;
   metrics.symbol = symbol;
@@ -8440,6 +8489,12 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.volume_24h = safeDecimal(volumeWax);
   metrics.volume_24h_wax = safeDecimal(volumeWax);
   metrics.volume_24h_usd = safeDecimal(volumeUsd);
+  metrics.volume_7d = safeDecimal(volume7dWax);
+  metrics.volume_7d_wax = safeDecimal(volume7dWax);
+  metrics.volume_7d_usd = safeDecimal(volume7dUsd);
+  metrics.volume_30d = safeDecimal(volume30dWax);
+  metrics.volume_30d_wax = safeDecimal(volume30dWax);
+  metrics.volume_30d_usd = safeDecimal(volume30dUsd);
   metrics.liquidity_wax = safeDecimal(liquidityWax);
   metrics.liquidity_usd = safeDecimal(liquidityUsd);
   metrics.graph_liquidity_wax = safeDecimal(liquidityWax);
@@ -14856,13 +14911,15 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
         return { ok: core.ok && pinned.ok, syncCycleId, source: adapter.source, core, pinned, membershipSnapshot };
       })());
     } else if (rotationSlot === 2) {
-      tasks.push(aggregateTokenAnalytics(env));
+      tasks.push(runWaxOnEdgeTradeBackfill(env));
     } else {
       tasks.push(Promise.all([
+        aggregateTokenAnalytics(env),
         syncSupplyInputs(env),
         runWaxOnEdgeRetentionMaintenance(env),
-      ]).then(([supply, retention]) => ({
-        ok: supply.ok && retention.ok,
+      ]).then(([aggregates, supply, retention]) => ({
+        ok: aggregates.ok && supply.ok && retention.ok,
+        aggregates,
         supply,
         retention,
       })));

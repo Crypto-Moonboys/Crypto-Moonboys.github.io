@@ -2466,9 +2466,9 @@
         liquidityUsd: firstPresent(root.graph_liquidity_usd, stats.cumulated_pair_liquidity_usd, record.graphLiquidityUsd),
         volume24Wax: firstPresent(root.volume_24h_wax, stats.volume_24h_wax, record.volume24Wax),
         volume24Usd: firstPresent(root.volume_24h_usd, stats.volume_24h_usd, record.volume24Usd),
-        volume7dWax: firstPresent(root.volume_7d_wax, stats.volume_7d_wax, record.volume7dWax),
+        volume7dWax: firstPresent(root.volume_7d_wax, root.volume_7d, stats.volume_7d_wax, stats.volume_7d, record.volume7dWax),
         volume7dUsd: firstPresent(root.volume_7d_usd, stats.volume_7d_usd, record.volume7dUsd),
-        volume30dWax: firstPresent(root.volume_30d_wax, stats.volume_30d_wax, record.volume30dWax),
+        volume30dWax: firstPresent(root.volume_30d_wax, root.volume_30d, stats.volume_30d_wax, stats.volume_30d, record.volume30dWax),
         volume30dUsd: firstPresent(root.volume_30d_usd, stats.volume_30d_usd, record.volume30dUsd),
         change24: firstPresent(root.change_24h, stats.change_24h, record.change24),
         marketCapWax: firstPresent(root.market_cap_wax, stats.market_cap_wax, record.marketCapWax),
@@ -2492,6 +2492,31 @@
     if (!sourceKeys.length && pairRows.length) {
       sourceKeys = Array.from(new Set(pairRows.map(function (pair) { return pairSourceKey(pair); }).filter(Boolean))).sort(compareSources);
     }
+    function sumPairMetric(prefix, suffix) {
+      var total = 0;
+      var hasValue = false;
+      pairRows.forEach(function (row) {
+        var value = asNum(firstPresent(
+          row['display_' + prefix + '_' + suffix],
+          row[prefix + '_' + suffix],
+          suffix === 'wax' ? row[prefix] : null
+        ));
+        if (value == null) return;
+        total += value;
+        hasValue = true;
+      });
+      return hasValue ? total : null;
+    }
+    function selectedPairChange24h() {
+      var selected = pairRows.find(function (row) { return row && row.selected_pair; }) || pairRows[0] || {};
+      return firstPresent(selected.display_change_24h, selected.change_24h);
+    }
+    var pairVolume24Wax = sumPairMetric('volume_24h', 'wax');
+    var pairVolume24Usd = sumPairMetric('volume_24h', 'usd');
+    var pairVolume7dWax = sumPairMetric('volume_7d', 'wax');
+    var pairVolume7dUsd = sumPairMetric('volume_7d', 'usd');
+    var pairVolume30dWax = sumPairMetric('volume_30d', 'wax');
+    var pairVolume30dUsd = sumPairMetric('volume_30d', 'usd');
     return {
       priceWax: firstPresent(stats.selected_price_wax, stats.price_wax, token.selected_price_wax, token.price_wax, record.selectedPriceWax),
       priceUsd: firstPresent(stats.selected_price_usd, stats.price_usd, token.selected_price_usd, token.price_usd, record.selectedPriceUsd),
@@ -2499,13 +2524,13 @@
       tvlUsd: firstPresent(stats.tvl_usd, token.tvl_usd, record.tvlUsd),
       liquidityWax: firstPresent(stats.graph_liquidity_wax, stats.liquidity_wax, token.graph_liquidity_wax, token.liquidity_wax, record.graphLiquidityWax),
       liquidityUsd: firstPresent(stats.graph_liquidity_usd, stats.liquidity_usd, token.graph_liquidity_usd, token.liquidity_usd, record.graphLiquidityUsd),
-      volume24Wax: firstPresent(stats.volume_24h_wax, stats.volume_24h, token.volume_24h_wax, record.volume24Wax),
-      volume24Usd: firstPresent(stats.volume_24h_usd, token.volume_24h_usd, record.volume24Usd),
-      volume7dWax: firstPresent(stats.volume_7d_wax, token.volume_7d_wax, record.volume7dWax),
-      volume7dUsd: firstPresent(stats.volume_7d_usd, token.volume_7d_usd, record.volume7dUsd),
-      volume30dWax: firstPresent(stats.volume_30d_wax, token.volume_30d_wax, record.volume30dWax),
-      volume30dUsd: firstPresent(stats.volume_30d_usd, token.volume_30d_usd, record.volume30dUsd),
-      change24: firstPresent(stats.change_24h, token.change_24h, record.change24),
+      volume24Wax: firstPresent(stats.volume_24h_wax, stats.volume_24h, token.volume_24h_wax, pairVolume24Wax, record.volume24Wax),
+      volume24Usd: firstPresent(stats.volume_24h_usd, token.volume_24h_usd, pairVolume24Usd, record.volume24Usd),
+      volume7dWax: firstPresent(stats.volume_7d_wax, stats.volume_7d, token.volume_7d_wax, token.volume_7d, pairVolume7dWax, record.volume7dWax),
+      volume7dUsd: firstPresent(stats.volume_7d_usd, token.volume_7d_usd, pairVolume7dUsd, record.volume7dUsd),
+      volume30dWax: firstPresent(stats.volume_30d_wax, stats.volume_30d, token.volume_30d_wax, token.volume_30d, pairVolume30dWax, record.volume30dWax),
+      volume30dUsd: firstPresent(stats.volume_30d_usd, token.volume_30d_usd, pairVolume30dUsd, record.volume30dUsd),
+      change24: firstPresent(stats.change_24h, token.change_24h, selectedPairChange24h(), record.change24),
       marketCapWax: firstPresent(stats.market_cap_wax, token.market_cap_wax, record.marketCapWax),
       marketCapUsd: firstPresent(stats.market_cap_usd, token.market_cap_usd, record.marketCapUsd),
       supply: firstPresent(stats.circulating_supply, token.circulating_supply, stats.total_supply, token.total_supply, record.circulatingSupply || record.totalSupply || record.supply),
