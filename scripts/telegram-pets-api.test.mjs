@@ -941,6 +941,12 @@ assert.ok(activityClaim.includes('PETS_DAILY_PET_XP_CAP'), 'claim must apply dai
 assert.ok(activityClaim.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'claim must apply Community XP cap');
 assert.ok(activityClaim.includes("event_type, event_key") && activityClaim.includes("'activity_claim'"), 'claim must audit rewards in telegram_pet_events');
 assert.ok(activityClaim.includes('duplicate'), 'duplicate claim must not double-award');
+assert.ok(activityClaim.includes('const claimResult = await db.prepare'), 'activity claim must capture the session completion update');
+assert.ok(activityClaim.includes("Number(claimResult?.meta?.changes || 0) <= 0"), 'activity claim must short-circuit no-op completion updates');
+assert.ok(activityClaim.includes("reason: 'already_claimed'"), 'simultaneous duplicate activity claims must return already_claimed');
+assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activityClaim.indexOf("INSERT INTO telegram_pet_events"), 'activity claim must complete the session before inserting the event');
+assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activityClaim.indexOf('pet.pet_xp ='), 'activity claim must complete the session before mutating pet rewards');
+assert.ok(activityClaim.indexOf("Number(claimResult?.meta?.changes || 0) <= 0") < activityClaim.indexOf("INSERT INTO telegram_pet_events"), 'duplicate/simultaneous claims must return before event unique-key insert');
 const activityCancel = worker.slice(worker.indexOf('async function cancelPetActivitySession'), worker.indexOf('async function processPetAction'));
 assert.ok(activityCancel.includes("SET status = 'cancelled'"), 'cancel must mark the session cancelled');
 assert.ok(!activityCancel.includes('telegram_pet_events'), 'cancel must not award rewards');

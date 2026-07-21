@@ -2998,10 +2998,20 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
   let petXp = computed.rewards.pet_xp, communityXp = computed.rewards.community_xp;
   if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0; else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = PETS_DAILY_PET_XP_CAP - totals.day.pet_xp;
   if (totals.day.community_xp >= PETS_DAILY_COMMUNITY_XP_CAP) communityXp = 0; else if (totals.day.community_xp + communityXp > PETS_DAILY_COMMUNITY_XP_CAP) communityXp = PETS_DAILY_COMMUNITY_XP_CAP - totals.day.community_xp;
+  const appliedRewards = { ...computed.rewards, pet_xp: petXp, community_xp: communityXp };
+  const claimResult = await db.prepare(`
+    UPDATE telegram_pet_activity_sessions
+    SET status = 'completed', claimed_at = ?, metadata = ?
+    WHERE id = ? AND telegram_id = ? AND status = 'active'
+  `).bind(now.toISOString(), JSON.stringify({ ...computed, rewards: appliedRewards }), session.id, telegramId).run();
+  if (Number(claimResult?.meta?.changes || 0) <= 0) {
+    const claimedSession = await db.prepare(`SELECT * FROM telegram_pet_activity_sessions WHERE id = ? AND telegram_id = ? LIMIT 1`).bind(session.id, telegramId).first().catch(() => session);
+    return { accepted: true, duplicate: true, reason: 'already_claimed', session: claimedSession || session, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp)); pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + computed.rewards.moon_gold); pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + computed.rewards.moon_crystals);
   pet.health = clampPetStat(Number(pet.health || 0) + computed.rewards.health); pet.hunger = clampPetStat(Number(pet.hunger || 0) + computed.rewards.hunger); pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + computed.rewards.cleanliness); pet.energy = clampPetStat(Number(pet.energy || 0) + computed.rewards.energy); pet.happiness = clampPetStat(Number(pet.happiness || 0) + computed.rewards.happiness);
   updatePetStreakForAction(pet, dayKey); pet.last_decay_at = now.toISOString();
-  await db.prepare(`UPDATE telegram_pet_activity_sessions SET status = 'completed', claimed_at = ?, metadata = ? WHERE id = ? AND telegram_id = ? AND status = 'active'`).bind(now.toISOString(), JSON.stringify({ ...computed, rewards: { ...computed.rewards, pet_xp: petXp, community_xp: communityXp } }), session.id, telegramId).run();
   await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'activity_claim', ?, ?, ?, ?, ?, ?, 'accepted', ?, ?)`).bind(crypto.randomUUID(), telegramId, eventKey, communityXp, petXp, season.key, dayKey, weekKey, session.activity_type, JSON.stringify({ session_id: session.id, item_key: computed.rewards.item_key || null, ...computed })).run();
   if (communityXp > 0) await awardCommunityXp(db, telegramId, communityXp, `pet_activity_${session.activity_type}`, eventKey);
   await savePetProfile(db, pet);
