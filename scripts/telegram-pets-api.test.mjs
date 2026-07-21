@@ -120,6 +120,8 @@ assert.ok(!worker.includes('const done = await completePetArenaBattle(db, battle
 assert.ok(worker.includes('selectPetArenaAppMove(battle)'), 'App battle advances after player move and app AI move.');
 assert.ok(worker.includes("Move locked. Waiting for opponent."), 'Group battle waits for both move locks.');
 assert.ok(worker.includes("Stale Pet Arena move. Choose from the latest round prompt."), 'Stale round move callbacks are rejected.');
+assert.ok(worker.includes("reason:'stale_arena_round'"), 'stale app callbacks reject by callback round mismatch.');
+assert.ok(worker.includes('Number(expectedRound || 0) !== roundNumber'), 'stale group callbacks reject by active battle round mismatch.');
 assert.ok(worker.includes("reason:'move_already_locked'"), 'Duplicate move callbacks do not double-apply damage.');
 assert.ok(worker.includes('forfeitPetArenaBattle'), 'Forfeit resolves safely.');
 assert.ok(worker.includes('telegram_pet_arena_queue'), 'group queue works');
@@ -140,6 +142,9 @@ assert.ok(worker.includes('updated?.player1_ready_at && updated?.player2_ready_a
 assert.ok(worker.includes('accept_any_rank=MAX'), 'Accept Any Rank must persist on the queue row');
 assert.ok(worker.includes('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES'), 'arena must widen far-rank matchmaking after a shorter timeout');
 assert.ok(worker.includes('PET_ARENA_QUEUE_TTL_MINUTES'), 'arena queue expiry must use a longer TTL than matchmaking widening');
+assert.ok(worker.includes('COALESCE(expires_at, created_at) < ?'), 'active turn battle expiry must use expires_at before created_at fallback.');
+assert.ok(worker.includes('refreshPetArenaExpiry(db, battle.battle_id)'), 'valid arena moves must refresh battle expiry.');
+assert.ok(worker.includes("status='active', expires_at=?"), 'readying an arena battle must refresh expires_at.');
 assert.ok(worker.includes('OR ?=1 OR updated_at < datetime'), 'far-rank matching must require Accept Any Rank or queue timeout');
 assert.ok(worker.indexOf('PET_ARENA_QUEUE_TTL_MINUTES') < worker.indexOf('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES', worker.indexOf('SELECT * FROM telegram_pet_arena_queue')), 'far-rank users can become eligible after waiting without being expired first');
 assert.equal(parsePetArenaCallbackPayload('arena:find'), 'find');
@@ -147,7 +152,7 @@ assert.equal(parsePetArenaCallbackPayload('arena:any'), 'any');
 assert.equal(parsePetArenaCallbackPayload('arena:cancel'), 'cancel');
 assert.equal(parsePetArenaCallbackPayload('arena:ready:a-abcdef1234'), 'ready:a-abcdef1234');
 assert.equal(parsePetArenaCallbackPayload('arena:stop:a-abcdef1234'), 'stop:a-abcdef1234');
-assert.equal(parsePetArenaCallbackPayload('arena:mv:a-abcdef1234:ah'), 'mv:a-abcdef1234:ah');
+assert.equal(parsePetArenaCallbackPayload('arena:mv:a-abcdef1234:1:ah'), 'mv:a-abcdef1234:1:ah');
 assert.equal(parsePetArenaCallbackPayload('arena:ff:a-abcdef1234'), 'ff:a-abcdef1234');
 assert.equal(getPetArenaRankBucket(10), 'rookie');
 assert.equal(getPetArenaRankBucket(15), 'scrapper');
@@ -166,7 +171,7 @@ assert.ok(underdogArenaRewards.rewards.pet_xp > normalArenaRewards.rewards.pet_x
 assert.ok(reducedArenaRewards.rewards.pet_xp < normalArenaRewards.rewards.pet_xp && reducedArenaRewards.modifier === 'high_level_reduced', 'high-level win reduced rewards must scale down');
 for (const button of buildPetArenaMenuReplyMarkup().inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena menu callback too long: ${button.callback_data}`);
 for (const button of buildPetArenaMatchReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena match callback too long: ${button.callback_data}`);
-for (const button of buildPetArenaMoveReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena move callback too long: ${button.callback_data}`);
+for (const button of buildPetArenaMoveReplyMarkup('a-abcdef1234', 12).inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena move callback too long: ${button.callback_data}`);
 const baseArenaPet = { telegram_id: '1', pet_name: 'Moonpet', pet_xp: 2500, health: 90, energy: 90, happiness: 90, cleanliness: 90 };
 assert.ok(calculatePetArenaPower({ ...baseArenaPet, equipped_weapon: 'laser_claws' }, 'gear') > calculatePetArenaPower(baseArenaPet, 'gear'), 'gear affects battle power');
 assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 2, dodge: 0, luck: 0 }) > 0, 'secondary crit stats affect power');
