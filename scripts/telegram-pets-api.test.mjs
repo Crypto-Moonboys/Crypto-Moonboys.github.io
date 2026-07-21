@@ -10,6 +10,7 @@ const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/
 const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/033_telegram_pet_run_engine.sql', import.meta.url), 'utf8');
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
 const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
+const arenaMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_arena.sql', import.meta.url), 'utf8');
 
 const {
   PET_MEDIA_MANIFEST,
@@ -23,6 +24,10 @@ const {
   buildPetKaijuLobbyReplyMarkup,
   buildPetKaijuMatchId,
   resolvePetKaijuBattle,
+  getPetArenaRankBucket,
+  calculatePetArenaPower,
+  buildPetArenaMenuReplyMarkup,
+  buildPetArenaMatchReplyMarkup,
   normalizePetActivityType,
   computePetActivityRewards,
   formatPetActivityLine,
@@ -95,6 +100,31 @@ assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route 
 assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
 assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
 assert.ok(worker.includes('export const __petMediaTestHooks'), 'pet media test hooks must be exported');
+
+assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
+assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include Arena button');
+assert.ok(worker.includes('Pet Arena unlocks at level 10. Keep growing your Moonpet.'), 'level <10 blocked copy must be exact');
+assert.ok(worker.includes('PET_ARENA_MIN_LEVEL = 10'), 'level 10+ can enter Pet Arena');
+assert.ok(worker.includes("createPetArenaBattle(db, chatId, pet, appPet, 'app')"), 'private app battle works');
+assert.ok(worker.includes('telegram_pet_arena_queue'), 'group queue works');
+assert.ok(worker.includes('ORDER BY CASE WHEN rank_bucket=? THEN 0'), 'same-rank match preferred');
+assert.ok(worker.includes('Accept Any Rank'), 'mismatch fallback works');
+assert.ok(worker.includes('You cannot battle yourself.'), 'user cannot battle themselves');
+assert.ok(worker.includes("reason:'already_completed'"), 'duplicate callbacks do not double-award');
+assert.ok(worker.includes("UPDATE telegram_pet_arena_battles SET status='completed'"), 'completion claim-before-award');
+assert.equal(getPetArenaRankBucket(10), 'rookie');
+assert.equal(getPetArenaRankBucket(15), 'scrapper');
+assert.equal(getPetArenaRankBucket(25), 'enforcer');
+assert.equal(getPetArenaRankBucket(40), 'cyber_beast');
+assert.equal(getPetArenaRankBucket(70), 'moon_warlord');
+for (const button of buildPetArenaMenuReplyMarkup().inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena menu callback too long: ${button.callback_data}`);
+for (const button of buildPetArenaMatchReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena match callback too long: ${button.callback_data}`);
+const baseArenaPet = { telegram_id: '1', pet_name: 'Moonpet', pet_xp: 2500, health: 90, energy: 90, happiness: 90, cleanliness: 90 };
+assert.ok(calculatePetArenaPower({ ...baseArenaPet, equipped_weapon: 'laser_claws' }, 'gear') > calculatePetArenaPower(baseArenaPet, 'gear'), 'gear affects battle power');
+assert.ok(calculatePetArenaPower({ ...baseArenaPet, health: 10, energy: 10 }, 'low') < calculatePetArenaPower(baseArenaPet, 'low'), 'low energy/health affects battle power');
+assert.ok(arenaMigration.includes('telegram_pet_arena_battles'), 'arena battle migration must create battle table');
+assert.ok(arenaMigration.includes('telegram_pet_arena_queue'), 'arena battle migration must create queue table');
+
 
 assert.equal(PET_RUN_MAX_DEPTH, 5, 'Pet Run Engine must use 5-step runs');
 assert.equal(PET_RUN_STEP_CHOICES.length, 5, 'Pet Run Engine must define five choice steps');

@@ -56,4 +56,8 @@ for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi',
   assert.ok(searchText.includes(term), `wiki index entry must include search term: ${term}`);
 }
 
+assert.ok(howTo.includes('/petarena'), 'docs mention Pet Arena command');
+assert.ok(howTo.includes('Pet Arena unlocks at level 10'), 'docs mention Pet Arena level unlock');
+assert.ok(wikiPage.includes('armor, weapon and charm'), 'wiki explains Pet Arena gear slots');
+
 console.log('crypto-moonboy-pets-surface.test.mjs passed');
