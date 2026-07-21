@@ -30,6 +30,8 @@ const {
   buildPetArenaMatchReplyMarkup,
   parsePetArenaCallbackPayload,
   sumPetArenaGearPower,
+  scalePetArenaRewardsForPlayer,
+  getPetArenaBucketDistance,
   normalizePetActivityType,
   computePetActivityRewards,
   formatPetActivityLine,
@@ -116,11 +118,17 @@ assert.ok(worker.includes('Finish your current Pet Arena battle first.'), 'activ
 assert.ok(worker.includes('player1_telegram_id = ? OR player2_telegram_id = ?'), 'active battle guard must check both player roles');
 assert.ok(worker.includes("reason:'already_completed'"), 'duplicate callbacks do not double-award');
 assert.ok(worker.includes("UPDATE telegram_pet_arena_battles SET status='completed'"), 'completion claim-before-award');
+assert.ok(worker.includes('const claimRows = await db.prepare'), 'queue claim must capture update result before battle creation');
+assert.ok(worker.includes('Number(claimRows?.meta?.changes || 0) !== 2'), 'queue claim race must require exactly two claimed rows');
+assert.ok(worker.includes('Pet Arena queue changed before the match was claimed'), 'queue claim race must avoid duplicate battle creation and ask user to retry');
 assert.ok(worker.includes('player1_ready_at') && worker.includes('player2_ready_at'), 'group ready flow must track both player ready states');
 assert.ok(worker.includes("reason:'waiting_for_opponent'"), 'one Ready must wait for opponent instead of completing');
 assert.ok(worker.includes('updated?.player1_ready_at && updated?.player2_ready_at'), 'second Ready must complete group battle');
 assert.ok(worker.includes('accept_any_rank=MAX'), 'Accept Any Rank must persist on the queue row');
+assert.ok(worker.includes('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES'), 'arena must widen far-rank matchmaking after a shorter timeout');
+assert.ok(worker.includes('PET_ARENA_QUEUE_TTL_MINUTES'), 'arena queue expiry must use a longer TTL than matchmaking widening');
 assert.ok(worker.includes('OR ?=1 OR updated_at < datetime'), 'far-rank matching must require Accept Any Rank or queue timeout');
+assert.ok(worker.indexOf('PET_ARENA_QUEUE_TTL_MINUTES') < worker.indexOf('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES', worker.indexOf('SELECT * FROM telegram_pet_arena_queue')), 'far-rank users can become eligible after waiting without being expired first');
 assert.equal(parsePetArenaCallbackPayload('arena:find'), 'find');
 assert.equal(parsePetArenaCallbackPayload('arena:any'), 'any');
 assert.equal(parsePetArenaCallbackPayload('arena:cancel'), 'cancel');
@@ -131,6 +139,16 @@ assert.equal(getPetArenaRankBucket(15), 'scrapper');
 assert.equal(getPetArenaRankBucket(25), 'enforcer');
 assert.equal(getPetArenaRankBucket(40), 'cyber_beast');
 assert.equal(getPetArenaRankBucket(70), 'moon_warlord');
+assert.equal(getPetArenaBucketDistance(10, 70), 4, 'bucket distance must measure rank mismatch');
+const sameRankBattle = { player1_telegram_id: '1', player2_telegram_id: '2', player1_pet_snapshot_json: JSON.stringify({ level: 15 }), player2_pet_snapshot_json: JSON.stringify({ level: 16 }) };
+const underdogBattle = { player1_telegram_id: '1', player2_telegram_id: '2', player1_pet_snapshot_json: JSON.stringify({ level: 15 }), player2_pet_snapshot_json: JSON.stringify({ level: 40 }) };
+const highLevelBattle = { player1_telegram_id: '1', player2_telegram_id: '2', player1_pet_snapshot_json: JSON.stringify({ level: 70 }), player2_pet_snapshot_json: JSON.stringify({ level: 15 }) };
+const normalArenaRewards = scalePetArenaRewardsForPlayer(sameRankBattle, 'player1_win', '1', { pet_xp: 34, community_xp: 7, moon_gold: 20 });
+const underdogArenaRewards = scalePetArenaRewardsForPlayer(underdogBattle, 'player1_win', '1', { pet_xp: 34, community_xp: 7, moon_gold: 20 });
+const reducedArenaRewards = scalePetArenaRewardsForPlayer(highLevelBattle, 'player1_win', '1', { pet_xp: 34, community_xp: 7, moon_gold: 20 });
+assert.equal(normalArenaRewards.modifier, 'normal', 'same-rank normal reward stays unscaled');
+assert.ok(underdogArenaRewards.rewards.pet_xp > normalArenaRewards.rewards.pet_xp && underdogArenaRewards.modifier === 'underdog_bonus', 'underdog win bonus rewards must scale up');
+assert.ok(reducedArenaRewards.rewards.pet_xp < normalArenaRewards.rewards.pet_xp && reducedArenaRewards.modifier === 'high_level_reduced', 'high-level win reduced rewards must scale down');
 for (const button of buildPetArenaMenuReplyMarkup().inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena menu callback too long: ${button.callback_data}`);
 for (const button of buildPetArenaMatchReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena match callback too long: ${button.callback_data}`);
 const baseArenaPet = { telegram_id: '1', pet_name: 'Moonpet', pet_xp: 2500, health: 90, energy: 90, happiness: 90, cleanliness: 90 };
