@@ -117,6 +117,20 @@
       </p>
     </section>
 
+
+    <section class="wiki-section">
+      <h2>Timed Activity Sessions</h2>
+      <p>
+        Timed activities layer on top of the existing instant Feed, Clean, Play, Train and Sleep buttons. A pet can have one active session at a time with <code>/petstart sleep</code>, <code>/petstart train</code>, <code>/petstart work</code> or <code>/petstart explore</code>. Players can inspect it with <code>/petactivity</code>, finish it with <code>/petclaim</code>, or stop it with <code>/petcancel</code>.
+      </p>
+      <p>
+        Activity rewards scale by time spent while staying capped: 5 minutes is tiny, 30 minutes is normal, 2 hours is strong, sleep/work/explore cap at 8 hours, and train caps at 2 hours. Pet XP and Community XP still use the existing daily caps, claims are idempotent, and cancelled or expired sessions do not create infinite farming loops.
+      </p>
+      <p>
+        Sleep restores energy and health, train gives Pet XP while spending energy and needs, work grants Moon Gold plus small Pet XP, and explore can roll loot such as Moon Gold, Moon Crystals, an adventure map, or small Pet XP.
+      </p>
+    </section>
+
     <section class="wiki-section">
       <h2>In-Game Economy</h2>
       <p>
