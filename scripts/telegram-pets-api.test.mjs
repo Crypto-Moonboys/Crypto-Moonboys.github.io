@@ -9,6 +9,7 @@ const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrat
 const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/032_telegram_pets_notifications.sql', import.meta.url), 'utf8');
 const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/033_telegram_pet_run_engine.sql', import.meta.url), 'utf8');
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
+const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
 
 const {
   PET_MEDIA_MANIFEST,
@@ -22,6 +23,9 @@ const {
   buildPetKaijuLobbyReplyMarkup,
   buildPetKaijuMatchId,
   resolvePetKaijuBattle,
+  normalizePetActivityType,
+  computePetActivityRewards,
+  formatPetActivityLine,
   buildPetMediaUrl,
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
@@ -740,8 +744,8 @@ assert.ok(shopRoute.includes('jobs'), 'GET /telegram-pets/shop must expose jobs'
 const petStatus = asyncBlock('cmdPetStatus');
 assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
 assert.ok(!petStatus.includes('getOrCreatePetProfile'), '/pet status command must not create pets');
-assert.ok(worker.includes('function formatPetStatus(pet, missions = null)'), 'formatPetStatus must exist');
-const statusFormatter = worker.slice(worker.indexOf('function formatPetStatus(pet, missions = null)'), worker.indexOf('function petReplyMarkup()'));
+assert.ok(worker.includes('function formatPetStatus(pet, missions = null'), 'formatPetStatus must exist');
+const statusFormatter = worker.slice(worker.indexOf('function formatPetStatus(pet, missions = null'), worker.indexOf('function petReplyMarkup()'));
 for (const label of ['Pet', 'Wallet', 'Gear', 'Needs', 'Daily Missions', 'Streak']) {
   assert.ok(statusFormatter.includes(label), `formatPetStatus must include ${label}`);
 }
@@ -918,6 +922,36 @@ const streakHelper = worker.slice(worker.indexOf('function updatePetStreakForAct
 assert.ok(streakHelper.includes('getPreviousPetDayKey(dayKey)'), 'pet streak helper must compare against yesterday');
 assert.ok(streakHelper.includes('pet.streak_days = currentStreak + 1'), 'pet streak helper must increment consecutive-day streaks');
 assert.ok(streakHelper.includes('pet.streak_days = 1'), 'pet streak helper must reset after missed days');
+
+
+assert.equal(normalizePetActivityType('sleep'), 'sleep', 'pet activities must normalize sleep');
+assert.equal(computePetActivityRewards('train', 8 * 3600).seconds, 2 * 3600, 'train activity rewards must cap at 2 hours');
+assert.ok(computePetActivityRewards('work', 30 * 60).rewards.moon_gold > computePetActivityRewards('work', 5 * 60).rewards.moon_gold, 'work rewards must scale by duration');
+assert.ok(formatPetActivityLine({ activity_type: 'sleep', started_at: new Date(Date.now() - 42 * 60 * 1000).toISOString() }).includes('sleep'), '/pet status must format active activity');
+for (const token of ['telegram_pet_activity_sessions', 'activity_type', 'started_at', 'ends_at', 'claimed_at', "status IN ('active', 'completed', 'cancelled', 'expired')", 'metadata', 'idx_telegram_pet_activity_one_active']) {
+  assert.ok(activityMigration.includes(token), `activity migration must include ${token}`);
+  assert.ok(schema.includes(token), `schema.sql must include ${token}`);
+}
+const activityStart = worker.slice(worker.indexOf('async function startPetActivitySession'), worker.indexOf('async function claimPetActivitySession'));
+assert.ok(activityStart.includes('getActivePetActivitySession'), 'start session must block a second active session');
+assert.ok(activityStart.includes('already_busy'), 'start session must return already_busy');
+const activityClaim = worker.slice(worker.indexOf('async function claimPetActivitySession'), worker.indexOf('async function cancelPetActivitySession'));
+assert.ok(activityClaim.includes("buildStablePetEventKey(['pet_activity_claim', telegramId, session.id])"), 'claim must use stable idempotency event key');
+assert.ok(activityClaim.includes('PETS_DAILY_PET_XP_CAP'), 'claim must apply daily pet XP cap');
+assert.ok(activityClaim.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'claim must apply Community XP cap');
+assert.ok(activityClaim.includes("event_type, event_key") && activityClaim.includes("'activity_claim'"), 'claim must audit rewards in telegram_pet_events');
+assert.ok(activityClaim.includes('duplicate'), 'duplicate claim must not double-award');
+const activityCancel = worker.slice(worker.indexOf('async function cancelPetActivitySession'), worker.indexOf('async function processPetAction'));
+assert.ok(activityCancel.includes("SET status = 'cancelled'"), 'cancel must mark the session cancelled');
+assert.ok(!activityCancel.includes('telegram_pet_events'), 'cancel must not award rewards');
+assert.ok(callbackBranch.includes("payload === 'activity'"), 'Activity callback button must route');
+assert.ok(callbackBranch.includes("payload === 'claim'"), 'Claim callback button must route');
+assert.ok(callbackBranch.includes("payload === 'cancel'"), 'Cancel callback button must route');
+assert.ok(callbackBranch.includes("payload.startsWith('start:')"), 'activity start callback buttons must route');
+assert.ok(commandSwitch.includes("case 'petstart':"), '/petstart command must exist');
+assert.ok(commandSwitch.includes("case 'petclaim':"), '/petclaim command must exist');
+assert.ok(commandSwitch.includes("case 'petcancel':"), '/petcancel command must exist');
+assert.ok(commandSwitch.includes("case 'petactivity':"), '/petactivity command must exist');
 
 for (const table of ['telegram_pet_profiles', 'telegram_pet_events', 'telegram_pet_season_state', 'telegram_pet_mission_completions']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
