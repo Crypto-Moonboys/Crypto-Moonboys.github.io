@@ -11,6 +11,7 @@ const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
 const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
 const arenaMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/036_telegram_pet_arena.sql', import.meta.url), 'utf8');
+const arenaTurnsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/037_telegram_pet_arena_turns.sql', import.meta.url), 'utf8');
 const workerSchema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
 const {
@@ -29,7 +30,9 @@ const {
   calculatePetArenaPower,
   buildPetArenaMenuReplyMarkup,
   buildPetArenaMatchReplyMarkup,
+  buildPetArenaMoveReplyMarkup,
   parsePetArenaCallbackPayload,
+  resolvePetArenaRoundState,
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
@@ -113,6 +116,18 @@ assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include 
 assert.ok(worker.includes('Pet Arena unlocks at level 10. Keep growing your Moonpet.'), 'level <10 blocked copy must be exact');
 assert.ok(worker.includes('PET_ARENA_MIN_LEVEL = 10'), 'level 10+ can enter Pet Arena');
 assert.ok(worker.includes("createPetArenaBattle(db, chatId, pet, appPet, 'app')"), 'private app battle works');
+assert.ok(!worker.includes('const done = await completePetArenaBattle(db, battle); await sendTelegramMessage(tok, chatId, formatPetArenaResult(done.battle || battle)); return;'), 'App battle does not instantly complete on create.');
+assert.ok(worker.includes('selectPetArenaAppMove(battle)'), 'App battle advances after player move and app AI move.');
+assert.ok(worker.includes("Move locked. Waiting for opponent."), 'Group battle waits for both move locks.');
+assert.ok(worker.includes("Stale Pet Arena move. Choose from the latest round prompt."), 'Stale round move callbacks are rejected.');
+assert.ok(worker.includes("reason:'stale_arena_round'"), 'stale app callbacks reject by callback round mismatch.');
+assert.ok(worker.includes('Number(expectedRound || 0) !== roundNumber'), 'stale group callbacks reject by active battle round mismatch.');
+assert.ok(worker.includes("reason:'move_already_locked'"), 'Duplicate move callbacks do not double-apply damage.');
+assert.ok(worker.includes('forfeitPetArenaBattle'), 'Forfeit resolves safely.');
+assert.ok(worker.includes("!['readying','active'].includes(String(battle.status))"), 'stale forfeit after completed battle is rejected before mutation.');
+assert.ok(worker.includes("WHERE battle_id=? AND status IN ('readying','active')"), 'forfeit update only claims live battles and cannot rewrite completed winner/result/HP.');
+assert.ok(worker.includes("Number(claim?.meta?.changes || 0) <= 0) return { accepted:true, duplicate:true, reason:'already_completed'"), 'stale forfeit with zero changed rows is treated as duplicate and does not award again.');
+assert.ok(worker.indexOf("Number(claim?.meta?.changes || 0) <= 0") < worker.indexOf('return completePetArenaBattle(db, await getPetArenaBattle(db, battle.battle_id));', worker.indexOf('async function forfeitPetArenaBattle')), 'forfeit calls completePetArenaBattle only after claiming a live battle.');
 assert.ok(worker.includes('telegram_pet_arena_queue'), 'group queue works');
 assert.ok(worker.includes('ORDER BY CASE WHEN rank_bucket=? THEN 0'), 'same-rank match preferred');
 assert.ok(worker.includes('Accept Any Rank'), 'mismatch fallback works');
@@ -131,6 +146,9 @@ assert.ok(worker.includes('updated?.player1_ready_at && updated?.player2_ready_a
 assert.ok(worker.includes('accept_any_rank=MAX'), 'Accept Any Rank must persist on the queue row');
 assert.ok(worker.includes('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES'), 'arena must widen far-rank matchmaking after a shorter timeout');
 assert.ok(worker.includes('PET_ARENA_QUEUE_TTL_MINUTES'), 'arena queue expiry must use a longer TTL than matchmaking widening');
+assert.ok(worker.includes('COALESCE(expires_at, created_at) < ?'), 'active turn battle expiry must use expires_at before created_at fallback.');
+assert.ok(worker.includes('refreshPetArenaExpiry(db, battle.battle_id)'), 'valid arena moves must refresh battle expiry.');
+assert.ok(worker.includes("status='active', expires_at=?"), 'readying an arena battle must refresh expires_at.');
 assert.ok(worker.includes('OR ?=1 OR updated_at < datetime'), 'far-rank matching must require Accept Any Rank or queue timeout');
 assert.ok(worker.indexOf('PET_ARENA_QUEUE_TTL_MINUTES') < worker.indexOf('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES', worker.indexOf('SELECT * FROM telegram_pet_arena_queue')), 'far-rank users can become eligible after waiting without being expired first');
 assert.equal(parsePetArenaCallbackPayload('arena:find'), 'find');
@@ -138,6 +156,8 @@ assert.equal(parsePetArenaCallbackPayload('arena:any'), 'any');
 assert.equal(parsePetArenaCallbackPayload('arena:cancel'), 'cancel');
 assert.equal(parsePetArenaCallbackPayload('arena:ready:a-abcdef1234'), 'ready:a-abcdef1234');
 assert.equal(parsePetArenaCallbackPayload('arena:stop:a-abcdef1234'), 'stop:a-abcdef1234');
+assert.equal(parsePetArenaCallbackPayload('arena:mv:a-abcdef1234:1:ah'), 'mv:a-abcdef1234:1:ah');
+assert.equal(parsePetArenaCallbackPayload('arena:ff:a-abcdef1234'), 'ff:a-abcdef1234');
 assert.equal(getPetArenaRankBucket(10), 'rookie');
 assert.equal(getPetArenaRankBucket(15), 'scrapper');
 assert.equal(getPetArenaRankBucket(25), 'enforcer');
@@ -155,6 +175,7 @@ assert.ok(underdogArenaRewards.rewards.pet_xp > normalArenaRewards.rewards.pet_x
 assert.ok(reducedArenaRewards.rewards.pet_xp < normalArenaRewards.rewards.pet_xp && reducedArenaRewards.modifier === 'high_level_reduced', 'high-level win reduced rewards must scale down');
 for (const button of buildPetArenaMenuReplyMarkup().inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena menu callback too long: ${button.callback_data}`);
 for (const button of buildPetArenaMatchReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena match callback too long: ${button.callback_data}`);
+for (const button of buildPetArenaMoveReplyMarkup('a-abcdef1234', 12).inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena move callback too long: ${button.callback_data}`);
 const baseArenaPet = { telegram_id: '1', pet_name: 'Moonpet', pet_xp: 2500, health: 90, energy: 90, happiness: 90, cleanliness: 90 };
 assert.ok(calculatePetArenaPower({ ...baseArenaPet, equipped_weapon: 'laser_claws' }, 'gear') > calculatePetArenaPower(baseArenaPet, 'gear'), 'gear affects battle power');
 assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 2, dodge: 0, luck: 0 }) > 0, 'secondary crit stats affect power');
@@ -170,8 +191,11 @@ assert.ok(arenaStatusCopy.includes('Armor: moon_helmet') && arenaStatusCopy.incl
 assert.ok(arenaMigration.includes('telegram_pet_arena_battles'), 'arena battle migration must create battle table');
 assert.ok(arenaMigration.includes('telegram_pet_arena_queue'), 'arena battle migration must create queue table');
 assert.ok(arenaMigration.includes('player1_ready_at') && arenaMigration.includes('player2_ready_at'), 'arena migration must store both ready timestamps');
+assert.ok(arenaTurnsMigration.includes('telegram_pet_arena_rounds'), 'turn migration must create arena rounds table');
+for (const column of ['current_round','max_rounds','player1_hp','player2_hp','player1_special','player2_special','last_round_log_json','expires_at']) assert.ok(arenaTurnsMigration.includes(column), `turn migration must include ${column}`);
 for (const column of ['equipped_armor', 'equipped_weapon', 'equipped_charm']) assert.ok(workerSchema.includes(column), `schema.sql must include arena profile column: ${column}`);
-for (const table of ['telegram_pet_arena_queue', 'telegram_pet_arena_battles']) assert.ok(workerSchema.includes(table), `schema.sql must include arena table: ${table}`);
+for (const table of ['telegram_pet_arena_queue', 'telegram_pet_arena_battles', 'telegram_pet_arena_rounds']) assert.ok(workerSchema.includes(table), `schema.sql must include arena table: ${table}`);
+for (const column of ['current_round','max_rounds','player1_hp','player2_hp','player1_special','player2_special']) assert.ok(workerSchema.includes(column), `schema.sql includes the new arena round/turn state: ${column}`);
 for (const indexName of ['idx_pet_arena_queue_match', 'idx_pet_arena_queue_one_waiting', 'idx_pet_arena_battles_p1_active', 'idx_pet_arena_battles_p2_active']) assert.ok(workerSchema.includes(indexName), `schema.sql must include arena index: ${indexName}`);
 
 

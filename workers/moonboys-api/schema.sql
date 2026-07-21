@@ -481,6 +481,14 @@ CREATE TABLE IF NOT EXISTS telegram_pet_arena_battles (
   winner_telegram_id         TEXT,
   result                     TEXT,
   status                     TEXT NOT NULL DEFAULT 'readying',
+  current_round              INTEGER NOT NULL DEFAULT 1,
+  max_rounds                 INTEGER NOT NULL DEFAULT 8,
+  player1_hp                 INTEGER NOT NULL DEFAULT 100,
+  player2_hp                 INTEGER NOT NULL DEFAULT 100,
+  player1_special            INTEGER NOT NULL DEFAULT 0,
+  player2_special            INTEGER NOT NULL DEFAULT 0,
+  last_round_log_json        TEXT NOT NULL DEFAULT '{}',
+  expires_at                 TEXT,
   player1_ready_at           DATETIME,
   player2_ready_at           DATETIME,
   created_at                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -498,6 +506,24 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_pet_arena_battles_p1_active
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pet_arena_battles_p2_active
   ON telegram_pet_arena_battles(chat_id, player2_telegram_id)
   WHERE status IN ('readying', 'active') AND player2_telegram_id IS NOT NULL AND player2_telegram_id <> 'app';
+
+CREATE TABLE IF NOT EXISTS telegram_pet_arena_rounds (
+  id TEXT PRIMARY KEY,
+  battle_id TEXT NOT NULL,
+  round_number INTEGER NOT NULL,
+  player1_move TEXT,
+  player2_move TEXT,
+  player1_damage INTEGER NOT NULL DEFAULT 0,
+  player2_damage INTEGER NOT NULL DEFAULT 0,
+  result_json TEXT NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'selecting',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolved_at TEXT,
+  UNIQUE(battle_id, round_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pet_arena_rounds_battle_status
+  ON telegram_pet_arena_rounds(battle_id, status, round_number);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_events (
   id              TEXT PRIMARY KEY,
