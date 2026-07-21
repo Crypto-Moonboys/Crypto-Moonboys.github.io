@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_arena_battles (
   winner_telegram_id TEXT,
   result TEXT,
   status TEXT NOT NULL DEFAULT 'readying',
+  player1_ready_at TEXT,
+  player2_ready_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   completed_at TEXT
 );
