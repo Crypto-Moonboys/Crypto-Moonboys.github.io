@@ -11,6 +11,7 @@ const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
 const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
 const arenaMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/036_telegram_pet_arena.sql', import.meta.url), 'utf8');
+const workerSchema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
 const {
   PET_MEDIA_MANIFEST,
@@ -32,6 +33,8 @@ const {
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
+  serializePet,
+  formatPetStatus,
   normalizePetActivityType,
   computePetActivityRewards,
   formatPetActivityLine,
@@ -121,6 +124,7 @@ assert.ok(worker.includes("UPDATE telegram_pet_arena_battles SET status='complet
 assert.ok(worker.includes('const claimRows = await db.prepare'), 'queue claim must capture update result before battle creation');
 assert.ok(worker.includes('Number(claimRows?.meta?.changes || 0) !== 2'), 'queue claim race must require exactly two claimed rows');
 assert.ok(worker.includes('Pet Arena queue changed before the match was claimed'), 'queue claim race must avoid duplicate battle creation and ask user to retry');
+assert.ok(worker.includes("UPDATE telegram_pet_arena_queue SET status='waiting'"), 'partial queue claim changes === 1 must restore current user queue row to waiting');
 assert.ok(worker.includes('player1_ready_at') && worker.includes('player2_ready_at'), 'group ready flow must track both player ready states');
 assert.ok(worker.includes("reason:'waiting_for_opponent'"), 'one Ready must wait for opponent instead of completing');
 assert.ok(worker.includes('updated?.player1_ready_at && updated?.player2_ready_at'), 'second Ready must complete group battle');
@@ -157,9 +161,18 @@ assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 2, dodge: 0, luck:
 assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 0, dodge: 2, luck: 0 }) > 0, 'secondary dodge stats affect power');
 assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 0, dodge: 0, luck: 2 }) > 0, 'secondary luck stats affect power');
 assert.ok(calculatePetArenaPower({ ...baseArenaPet, health: 10, energy: 10 }, 'low') < calculatePetArenaPower(baseArenaPet, 'low'), 'low energy/health affects battle power');
+const serializedArenaPet = serializePet({ ...baseArenaPet, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
+assert.equal(serializedArenaPet.equipped_armor, 'moon_helmet', 'serialized pet state must include equipped arena armor');
+assert.equal(serializedArenaPet.equipped_weapon, 'laser_claws', 'serialized pet state must include equipped arena weapon');
+assert.equal(serializedArenaPet.equipped_charm, 'shield_charm', 'serialized pet state must include equipped arena charm');
+const arenaStatusCopy = formatPetStatus({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'moonbeast', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
+assert.ok(arenaStatusCopy.includes('Armor: moon_helmet') && arenaStatusCopy.includes('Weapon: laser_claws') && arenaStatusCopy.includes('Charm: shield_charm'), '/pet status copy must show equipped battle gear');
 assert.ok(arenaMigration.includes('telegram_pet_arena_battles'), 'arena battle migration must create battle table');
 assert.ok(arenaMigration.includes('telegram_pet_arena_queue'), 'arena battle migration must create queue table');
 assert.ok(arenaMigration.includes('player1_ready_at') && arenaMigration.includes('player2_ready_at'), 'arena migration must store both ready timestamps');
+for (const column of ['equipped_armor', 'equipped_weapon', 'equipped_charm']) assert.ok(workerSchema.includes(column), `schema.sql must include arena profile column: ${column}`);
+for (const table of ['telegram_pet_arena_queue', 'telegram_pet_arena_battles']) assert.ok(workerSchema.includes(table), `schema.sql must include arena table: ${table}`);
+for (const indexName of ['idx_pet_arena_queue_match', 'idx_pet_arena_queue_one_waiting', 'idx_pet_arena_battles_p1_active', 'idx_pet_arena_battles_p2_active']) assert.ok(workerSchema.includes(indexName), `schema.sql must include arena index: ${indexName}`);
 
 
 assert.equal(PET_RUN_MAX_DEPTH, 5, 'Pet Run Engine must use 5-step runs');

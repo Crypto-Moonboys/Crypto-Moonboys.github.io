@@ -3073,7 +3073,7 @@ async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = 
   if (await hasActivePetArenaBattle(db, chatId, opponent.telegram_id)) { await sendTelegramMessage(tok, chatId, 'Queued for Pet Arena. A nearby trainer is finishing another battle first.'); return; }
   const oppPet = JSON.parse(opponent.pet_snapshot_json || '{}');
   const claimRows = await db.prepare(`UPDATE telegram_pet_arena_queue SET status='matched', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id IN (?,?) AND status='waiting'`).bind(String(chatId), telegramId, String(opponent.telegram_id)).run();
-  if (Number(claimRows?.meta?.changes || 0) !== 2) { await sendTelegramMessage(tok, chatId, 'Pet Arena queue changed before the match was claimed. You are still queued; tap Find Pet Battle again to retry.'); return; }
+  if (Number(claimRows?.meta?.changes || 0) !== 2) { await db.prepare(`UPDATE telegram_pet_arena_queue SET status='waiting', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id=? AND status='matched'`).bind(String(chatId), telegramId).run().catch(() => {}); await sendTelegramMessage(tok, chatId, 'Pet Arena queue changed before the match was claimed. You are still queued; tap Find Pet Battle again to retry.'); return; }
   const battle = await createPetArenaBattle(db, chatId, pet, oppPet, 'group'); await sendTelegramMessage(tok, chatId, `<b>Pet Arena Match Found</b>
 ${escapeHtml(pet.pet_name)} LVL ${getPetLevel(pet.pet_xp)} vs ${escapeHtml(oppPet.pet_name || 'RivalPet')} LVL ${getPetLevel(oppPet.pet_xp)}`, { reply_markup: buildPetArenaMatchReplyMarkup(battle.battle_id) });
 }
@@ -3601,6 +3601,9 @@ function serializePet(pet) {
     equipped_food: decayed.equipped_food || null,
     equipped_toy: decayed.equipped_toy || null,
     equipped_outfit: decayed.equipped_outfit || null,
+    equipped_armor: decayed.equipped_armor || null,
+    equipped_weapon: decayed.equipped_weapon || null,
+    equipped_charm: decayed.equipped_charm || null,
     streak_days: Number(decayed.streak_days || 0),
     last_active_day: decayed.last_active_day || null,
     updated_at: decayed.updated_at || null,
@@ -9657,6 +9660,8 @@ export const __petMediaTestHooks = Object.freeze({
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
+  serializePet,
+  formatPetStatus,
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
   buildPetRunStepEventKey,
