@@ -206,3 +206,30 @@ Nice optimisations:
 - Current purpose of `waxonedge_chart_candles`: legacy read-only data. It can remain in place until a later cleanup/migration decision.
 - Estimated D1 read reduction: at least about 242 million rows/day removed from normal cron, based only on 290 daily candle runs times the measured 833,979-row `waxonedge_trades` count scan. This excludes additional pair OFFSET pages and per-pair trade lookups, so it is conservative.
 - Estimated D1 write reduction: candle-table writes from active code drop to zero. Production showed 2,291 candle rows updated on 2026-07-20 before the change and 487,165 cumulative candle write attempts in the candle snapshot; sync-state/snapshot writes for normal candle planning are also removed.
+
+## WaxOnEdge Storage Cleanup - 2026-07-21
+
+PR #1068 removed WaxOnEdge from production by deleting the active Worker routes,
+scheduled jobs, generated feeds, and external DEX connections. Post-removal
+Cloudflare D1 metrics dropped from roughly 778M rows read per day and 4.6M rows
+written per day to roughly 14.5M rows read per day and 29K rows written per day,
+confirming WaxOnEdge is no longer active.
+
+The remaining `waxonedge_*` D1 tables are retired storage only. Migration
+`038_remove_waxonedge_tables.sql` drops the confirmed unused WaxOnEdge tables to
+recover storage:
+
+- `waxonedge_price_snapshots`
+- `waxonedge_source_index_state`
+- `waxonedge_trades`
+- `waxonedge_chart_candles`
+- `waxonedge_holders`
+- `waxonedge_token_stats`
+- `waxonedge_pairs`
+- `waxonedge_tokens`
+- `waxonedge_snapshots`
+- `waxonedge_sync_runs`
+
+This removes historical market indexing data only. Core Crypto Moonboys systems
+remain unaffected, including wiki pages, comments, Telegram identity, XP,
+leaderboards, pets, arcade progression, and community features.
