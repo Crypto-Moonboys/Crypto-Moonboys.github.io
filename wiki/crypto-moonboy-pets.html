@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboy Pets is the Telegram-first roguelite pet game where players grow a living Moonboys companion, manage inventory, run jobs and earn Community XP.">
-  <meta name="keywords" content="Crypto Moonboy Pets, Moonboys Pets, Telegram pet, pet game, Tamagotchi, roguelite, pet leaderboard, pet XP, pet bag, pet jobs, daily chest, random event">
+  <meta name="description" content="Crypto Moonboy Pets is the Telegram-first roguelite pet game where players grow a living Moonboys companion, manage inventory, run jobs, battle Kaiju sticker cards and earn Community XP.">
+  <meta name="keywords" content="Crypto Moonboy Pets, Moonboys Pets, Telegram pet, pet game, Tamagotchi, roguelite, Kaiju Sticker Battle, Telegram battle game, pet leaderboard, pet XP, pet bag, pet jobs, daily chest, random event">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Crypto Moonboy Pets — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Grow a Crypto Moonboys pet on Telegram through care, inventory, jobs, missions, streaks and seasons.">
+  <meta property="og:description" content="Grow a Crypto Moonboys pet on Telegram through care, inventory, jobs, missions, sticker battles, streaks and seasons.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/crypto-moonboy-pets.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -32,7 +32,7 @@
 
   <article class="wiki-content" data-entity-slug="crypto-moonboy-pets">
     <p class="lead-paragraph">
-      Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, manage a pet bag, work jobs, open daily chests, handle random crate events, and build pet progression over time.
+      Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, manage a pet bag, work jobs, open daily chests, handle random crate events, battle Kaiju sticker cards, and build pet progression over time.
     </p>
     <p>
       The game is played in Telegram through the Moonboys bot. The website records the public proof layer: combined Community XP, pet-specific leaderboards, how-to-play rules, and the searchable wiki home for the pet system.
@@ -52,10 +52,59 @@
         <li>Use <code>/petshop</code> and <code>/petbuy</code> to equip better food, toys and clothing.</li>
         <li>Use <code>/pettrade</code> to risk in-game Moon Gold for game-only rewards.</li>
         <li>Use <code>/petadventure</code> for energy-gated runs with cooldowns and pet-only rewards.</li>
+        <li>Use <code>/kaiju</code> in the Telegram group to enter Kaiju Sticker Battle.</li>
         <li>Use <code>/petnotify on</code> to opt into rate-limited Telegram needs alerts.</li>
         <li>Pet XP grows the companion and powers the pet-only leaderboard.</li>
         <li>Accepted pet actions also award Community XP into the existing main XP leaderboard and graph, but inventory, jobs, daily chests and random events stay pet-only.</li>
       </ul>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Kaiju Sticker Battle In Telegram</h2>
+      <p>
+        Kaiju Sticker Battle is the group battle mode for the same public Kaiju cards used by the Arcade page. The Telegram bot should use the new Kaiju sticker set as the visual layer and the existing card IDs and stats as the rules layer.
+      </p>
+      <ul>
+        <li><code>/kaiju</code> shows the current group table: active match, champion, challenger, waiting queue and quick buttons.</li>
+        <li><code>/kaiju solo</code> starts one player against CPU if no two-player match is active.</li>
+        <li><code>/kaiju join</code> joins the group queue if a match is already active, or becomes challenger if a champion is waiting.</li>
+        <li><code>/kaiju leave</code> removes the player from the waiting queue.</li>
+        <li><code>/kaiju deck</code> shows the player's available Kaiju cards and their sticker buttons.</li>
+        <li><code>/kaiju pick</code> or a sticker button locks the player's card for the next round.</li>
+      </ul>
+      <p>
+        Only one live Kaiju match should run per Telegram group at a time. The bot stores that group match in D1 using the chat ID, so the match survives Worker restarts and cannot split into duplicate games.
+      </p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Kaiju Queue Rules</h2>
+      <p>
+        The group uses a simple arcade cabinet rule: winner stays on, loser leaves the table, next queued player becomes challenger. This keeps the chat readable while still letting many users wait their turn.
+      </p>
+      <ul>
+        <li>If nobody is playing, the first player becomes champion and can start a CPU match or wait for a challenger.</li>
+        <li>If one player is waiting, the next player to tap Join becomes challenger and the two-player match starts.</li>
+        <li>If two players are active, everyone else is added to a first-in, first-out queue.</li>
+        <li>When a match ends, the winner remains champion.</li>
+        <li>The loser is removed from the table and may rejoin at the back of the queue.</li>
+        <li>The first queued user automatically becomes the next challenger.</li>
+        <li>If the queue is empty, the champion can keep playing CPU until another user joins.</li>
+        <li>Inactive turns should expire after a short timeout so one player cannot block the whole group.</li>
+      </ul>
+      <p>
+        A five-round match is recommended. Each round: both players lock a sticker card, the bot rolls 1-6, the rolled number chooses the category, and the higher stat wins the round. After five rounds, the round winner count decides the match winner. Ties can go to sudden death or stay as draw depending on the bot setting.
+      </p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Kaiju Bot State Model</h2>
+      <p>
+        The implementation should use D1 tables instead of in-memory queues. Minimum state: chat ID, champion Telegram ID, challenger Telegram ID, queue order, current round, locked cards, rolled category, match status, expiry time and final result. This prevents duplicate matches and lets the bot recover safely after a deploy.
+      </p>
+      <p>
+        The bot should also reject a second active match in the same chat. If a user tries to start another game while one is active, it replies with the current table and a Join Queue button instead of starting a new session.
+      </p>
     </section>
 
     <section class="wiki-section">
@@ -100,7 +149,7 @@
       <div class="swarmsy-action-grid" role="navigation" aria-label="Crypto Moonboy Pets links">
         <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">
           <strong>PLAY ON TELEGRAM</strong>
-          <span>Open the bot and use /adopt.</span>
+          <span>Open the bot and use /adopt or /kaiju.</span>
         </a>
         <a class="swarmsy-action-card" href="/how-to-play-crypto-moonboy-pets.html">
           <strong>HOW TO PLAY</strong>
