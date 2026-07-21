@@ -9865,7 +9865,9 @@ function formatPetKaijuResult(result) {
   const opponent = score?.opponent || {};
   const winnerLine = result?.match?.winner_telegram_id
     ? `Winner: <code>${escapeHtml(result.match.winner_telegram_id)}</code>`
-    : `Result: draw`;
+    : score?.result === 'player2_win' && opponent.telegram_id === 'app'
+      ? `Winner: App`
+      : `Result: draw`;
   const queueLine = result?.queue?.length
     ? `Next in queue: ${result.queue.map((id) => `<code>${escapeHtml(id)}</code>`).join(', ')}`
     : `Queue clear. Use /petkaiju to open the next table.`;
@@ -9910,11 +9912,21 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
       await sendTelegramMessage(tok, chatId, 'You are already hosting this Kaiju table. Pick Start vs App or wait for a challenger.');
       return;
     }
-    await db.prepare(`
+    const joinResult = await db.prepare(`
       UPDATE telegram_pet_kaiju_matches
       SET player2_telegram_id = ?, mode = 'group', status = 'selecting', updated_at = CURRENT_TIMESTAMP
-      WHERE match_id = ? AND status = 'open'
+      WHERE match_id = ? AND status = 'open' AND player2_telegram_id IS NULL
     `).bind(String(telegramId), match.match_id).run();
+    if (joinResult?.meta?.changes !== undefined && Number(joinResult.meta.changes || 0) <= 0) {
+      const fresh = await getPetKaijuMatch(db, match.match_id);
+      if (fresh?.status === 'selecting') {
+        const position = await enqueuePetKaijuPlayer(db, chatId, telegramId);
+        await sendTelegramMessage(tok, chatId, `That Kaiju table filled first. You are queued at position ${position}.`);
+        return;
+      }
+      await sendTelegramMessage(tok, chatId, 'That Kaiju table changed before you joined. Use /petkaiju to refresh.');
+      return;
+    }
     const updated = await getPetKaijuMatch(db, match.match_id);
     await sendTelegramPetReply(tok, chatId, `🦖 <b>Kaiju Battle locked in.</b>\nPlayers: <code>${escapeHtml(updated.player1_telegram_id)}</code> vs <code>${escapeHtml(updated.player2_telegram_id)}</code>\n\nChoose your card.`, { reply_markup: buildPetKaijuCardReplyMarkup(updated) }, 'play');
     return;
@@ -9961,24 +9973,32 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
     if (String(match.player1_telegram_id) === String(telegramId)) {
       const cpuCard = match.mode === 'solo' ? pickPetKaijuCpuCard(cardKey).id : match.cpu_card_key || null;
       const category = match.category_key ? PET_KAIJU_CATEGORIES.find((entry) => entry.key === match.category_key) : pickPetKaijuCategory();
-      await db.prepare(`
+      const lockResult = await db.prepare(`
         UPDATE telegram_pet_kaiju_matches
-        SET player1_card_key = ?, cpu_card_key = COALESCE(?, cpu_card_key), category_key = COALESCE(category_key, ?), roll = COALESCE(roll, ?), updated_at = CURRENT_TIMESTAMP
-        WHERE match_id = ? AND status = 'selecting'
+        SET player1_card_key = ?, cpu_card_key = COALESCE(?, cpu_card_key), category_key = COALESCE(category_key, ?), roll = CASE WHEN roll IS NULL OR roll = 0 THEN ? ELSE roll END, updated_at = CURRENT_TIMESTAMP
+        WHERE match_id = ? AND status = 'selecting' AND player1_card_key IS NULL
       `).bind(cardKey, cpuCard, category.key, category.roll, match.match_id).run();
+      if (lockResult?.meta?.changes !== undefined && Number(lockResult.meta.changes || 0) <= 0) {
+        await sendTelegramMessage(tok, chatId, `Card already locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.`);
+        return;
+      }
     } else {
-      await db.prepare(`
+      const lockResult = await db.prepare(`
         UPDATE telegram_pet_kaiju_matches
         SET player2_card_key = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE match_id = ? AND status = 'selecting'
+        WHERE match_id = ? AND status = 'selecting' AND player2_card_key IS NULL
       `).bind(cardKey, match.match_id).run();
+      if (lockResult?.meta?.changes !== undefined && Number(lockResult.meta.changes || 0) <= 0) {
+        await sendTelegramMessage(tok, chatId, `Card already locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.`);
+        return;
+      }
     }
     const updated = await getPetKaijuMatch(db, match.match_id);
     const ready = updated.mode === 'solo'
       ? updated.player1_card_key && updated.cpu_card_key
       : updated.player1_card_key && updated.player2_card_key;
     if (!ready) {
-      await sendTelegramMessage(tok, chatId, `Card locked: ${escapeHtml(getPetKaijuCard(cardKey)?.name || cardKey)}. Waiting for the other player.`);
+      await sendTelegramMessage(tok, chatId, `Card locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.`);
       return;
     }
     const completed = await finishPetKaijuMatch(db, updated);
