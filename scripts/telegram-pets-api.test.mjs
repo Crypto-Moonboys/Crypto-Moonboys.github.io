@@ -8,13 +8,19 @@ const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/03
 const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/031_telegram_pets_economy.sql', import.meta.url), 'utf8');
 const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/032_telegram_pets_notifications.sql', import.meta.url), 'utf8');
 const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/033_telegram_pet_run_engine.sql', import.meta.url), 'utf8');
+const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
 
 const {
   PET_MEDIA_MANIFEST,
   PET_RUN_CHOICE_LIBRARY,
   PET_RUN_MAX_DEPTH,
   PET_RUN_STEP_CHOICES,
+  PET_KAIJU_CARDS,
+  PET_KAIJU_CATEGORIES,
   PET_RANDOM_EVENTS,
+  buildPetKaijuCardReplyMarkup,
+  buildPetKaijuLobbyReplyMarkup,
+  resolvePetKaijuBattle,
   buildPetMediaUrl,
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
@@ -101,6 +107,22 @@ const runMarkup = buildPetRunChoiceReplyMarkup({ run_id: 'run-abc', depth: 0, ma
 assert.equal(runMarkup.inline_keyboard[0].length, 3, 'run keyboard must expose exactly 3 choices');
 assert.ok(runMarkup.inline_keyboard[0][0].callback_data.startsWith('pet:run:run-abc:step:1:'), 'run choice callbacks must carry run id and step');
 assert.ok(runMarkup.inline_keyboard.flat().some((button) => button.callback_data === 'pet:run:run-abc:extract'), 'run keyboard must include Extract');
+
+
+assert.equal(PET_KAIJU_CATEGORIES.length, 6, 'Kaiju Telegram battle must use the six web card stat categories');
+assert.ok(PET_KAIJU_CARDS.length >= 7, 'Kaiju Telegram battle must expose the web card deck');
+for (const card of PET_KAIJU_CARDS) {
+  assert.ok(card.id && card.name, 'each Kaiju card must include id and name');
+  for (const category of PET_KAIJU_CATEGORIES) {
+    assert.ok(Number(card.stats[category.key]) > 0, `Kaiju card ${card.id} must include ${category.key}`);
+  }
+}
+const kaijuLobby = buildPetKaijuLobbyReplyMarkup({ match_id: 'kaiju-abc' });
+assert.ok(kaijuLobby.inline_keyboard.flat().some((button) => button.callback_data === 'pet:kaiju:join:kaiju-abc'), 'Kaiju lobby must include a group join button');
+assert.ok(kaijuLobby.inline_keyboard.flat().some((button) => button.callback_data === 'pet:kaiju:cpu:kaiju-abc'), 'Kaiju lobby must support player vs app');
+const kaijuCards = buildPetKaijuCardReplyMarkup({ match_id: 'kaiju-abc' });
+assert.ok(kaijuCards.inline_keyboard.flat().some((button) => button.callback_data === 'pet:kaiju:card:kaiju-abc:god-dzilla'), 'Kaiju card picker must include stable card callbacks');
+assert.equal(resolvePetKaijuBattle('god-dzilla', 'big-daddy-kong', 'lgcy').result, 'player1_win', 'Kaiju resolver must compare the rolled stat category');
 
 assert.ok(PET_RANDOM_EVENTS, 'PET_RANDOM_EVENTS must be exported');
 assert.ok(Object.keys(PET_RANDOM_EVENTS).length >= 5, 'PET_RANDOM_EVENTS must include at least 5 event types');
@@ -800,10 +822,10 @@ assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item but
 assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
 
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
-for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Run', 'How To Play', 'Pet Leaderboard']) {
+for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Kaiju', 'Run', 'How To Play', 'Pet Leaderboard']) {
   assert.ok(petReply.includes(label), `petReplyMarkup must include ${label}`);
 }
-for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:shop', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:run']) {
+for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:shop', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:kaiju', 'pet:run']) {
   assert.ok(petReply.includes(callback), `petReplyMarkup must preserve ${callback}`);
 }
 assert.ok(!statusFormatter.includes('??'), 'formatPetStatus must not contain placeholder question marks');
@@ -831,6 +853,9 @@ assert.ok(callbackBranch.includes("if (payload.startsWith('adventure:'))"), 'leg
 assert.ok(!callbackBranch.includes('const adventureParts = adventurePayload.split(\':\');'), 'legacy adventure callbacks must not parse encounter keys into run ids');
 assert.ok(!callbackBranch.includes('await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);'), 'legacy adventure callbacks must not pass encounter keys to cmdPetRun');
 assert.ok(callbackBranch.includes("await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);"), 'pet:run callback must open the run loop');
+assert.ok(callbackBranch.includes("if (payload === 'kaiju')"), 'pet:kaiju callback must open Kaiju Sticker Battle');
+assert.ok(callbackBranch.includes("if (payload.startsWith('kaiju:'))"), 'pet:kaiju:* callbacks must route Kaiju actions');
+assert.ok(callbackBranch.includes("await cmdPetKaiju(db, tok, chatId, telegramId, kaijuPayload, chatType, fromUser, eventKey);"), 'Kaiju callbacks must forward stable callback event keys and chat type');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunExtractEventKey(telegramId, runId);'), 'run extract callbacks must use stable run extract keys');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);'), 'run step callbacks must use stable run step keys');
 assert.ok(callbackBranch.includes('await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);'), 'run step callbacks must pass the callback step index through to cmdPetRun');
@@ -858,6 +883,10 @@ assert.ok(
   commandSwitch.includes("case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr, stableEventKey); break;"),
   '/petbuy text command must pass the Telegram message stableEventKey'
 );
+assert.ok(
+  commandSwitch.includes("case 'kaiju':        await cmdPetKaiju(db, tok, chatId, telegramId, argStr, chatType, fromUser, stableEventKey); break;"),
+  '/kaiju text command must open Telegram Kaiju battle with chat type'
+);
 
 const streakHelper = worker.slice(worker.indexOf('function updatePetStreakForAction'), worker.indexOf('async function savePetProfile'));
 assert.ok(streakHelper.includes('getPreviousPetDayKey(dayKey)'), 'pet streak helper must compare against yesterday');
@@ -873,6 +902,12 @@ for (const table of ['telegram_pet_runs', 'telegram_pet_run_steps', 'telegram_pe
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
   assert.ok(runMigration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in Pet Run Engine migration`);
 }
+for (const table of ['telegram_pet_kaiju_matches', 'telegram_pet_kaiju_queue']) {
+  assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
+  assert.ok(kaijuMigration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in Kaiju pet migration`);
+}
+assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_one_open_chat'), 'Kaiju migration must enforce one active table per chat');
+assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_queue_chat'), 'Kaiju migration must index the group queue');
 for (const column of ['telegram_id', 'run_id', 'season_key', 'status', 'depth', 'max_depth', 'risk_level', 'unbanked_pet_xp', 'unbanked_moon_gold', 'unbanked_moon_crystals', 'unbanked_style_tokens', 'started_at', 'completed_at', 'updated_at']) {
   assert.ok(runMigration.includes(column), `Pet Run Engine migration must include ${column}`);
 }
@@ -889,7 +924,7 @@ for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_fo
   assert.ok(economyMigration.includes(`ADD COLUMN ${column}`), `economy migration must add ${column}`);
 }
 
-for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petrun':", "case 'petextract':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
+for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petkaiju':", "case 'kaiju':", "case 'petrun':", "case 'petextract':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
 
