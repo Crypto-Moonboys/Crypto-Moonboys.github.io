@@ -10,6 +10,8 @@ const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/
 const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/033_telegram_pet_run_engine.sql', import.meta.url), 'utf8');
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
 const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
+const arenaMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/036_telegram_pet_arena.sql', import.meta.url), 'utf8');
+const workerSchema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
 const {
   PET_MEDIA_MANIFEST,
@@ -23,6 +25,16 @@ const {
   buildPetKaijuLobbyReplyMarkup,
   buildPetKaijuMatchId,
   resolvePetKaijuBattle,
+  getPetArenaRankBucket,
+  calculatePetArenaPower,
+  buildPetArenaMenuReplyMarkup,
+  buildPetArenaMatchReplyMarkup,
+  parsePetArenaCallbackPayload,
+  sumPetArenaGearPower,
+  scalePetArenaRewardsForPlayer,
+  getPetArenaBucketDistance,
+  serializePet,
+  formatPetStatus,
   normalizePetActivityType,
   computePetActivityRewards,
   formatPetActivityLine,
@@ -95,6 +107,73 @@ assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route 
 assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
 assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
 assert.ok(worker.includes('export const __petMediaTestHooks'), 'pet media test hooks must be exported');
+
+assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
+assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include Arena button');
+assert.ok(worker.includes('Pet Arena unlocks at level 10. Keep growing your Moonpet.'), 'level <10 blocked copy must be exact');
+assert.ok(worker.includes('PET_ARENA_MIN_LEVEL = 10'), 'level 10+ can enter Pet Arena');
+assert.ok(worker.includes("createPetArenaBattle(db, chatId, pet, appPet, 'app')"), 'private app battle works');
+assert.ok(worker.includes('telegram_pet_arena_queue'), 'group queue works');
+assert.ok(worker.includes('ORDER BY CASE WHEN rank_bucket=? THEN 0'), 'same-rank match preferred');
+assert.ok(worker.includes('Accept Any Rank'), 'mismatch fallback works');
+assert.ok(worker.includes('telegram_id<>?'), 'user cannot battle themselves');
+assert.ok(worker.includes('Finish your current Pet Arena battle first.'), 'active arena battle guard must use exact blocked copy');
+assert.ok(worker.includes('player1_telegram_id = ? OR player2_telegram_id = ?'), 'active battle guard must check both player roles');
+assert.ok(worker.includes("reason:'already_completed'"), 'duplicate callbacks do not double-award');
+assert.ok(worker.includes("UPDATE telegram_pet_arena_battles SET status='completed'"), 'completion claim-before-award');
+assert.ok(worker.includes('const claimRows = await db.prepare'), 'queue claim must capture update result before battle creation');
+assert.ok(worker.includes('Number(claimRows?.meta?.changes || 0) !== 2'), 'queue claim race must require exactly two claimed rows');
+assert.ok(worker.includes('Pet Arena queue changed before the match was claimed'), 'queue claim race must avoid duplicate battle creation and ask user to retry');
+assert.ok(worker.includes("UPDATE telegram_pet_arena_queue SET status='waiting'"), 'partial queue claim changes === 1 must restore current user queue row to waiting');
+assert.ok(worker.includes('player1_ready_at') && worker.includes('player2_ready_at'), 'group ready flow must track both player ready states');
+assert.ok(worker.includes("reason:'waiting_for_opponent'"), 'one Ready must wait for opponent instead of completing');
+assert.ok(worker.includes('updated?.player1_ready_at && updated?.player2_ready_at'), 'second Ready must complete group battle');
+assert.ok(worker.includes('accept_any_rank=MAX'), 'Accept Any Rank must persist on the queue row');
+assert.ok(worker.includes('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES'), 'arena must widen far-rank matchmaking after a shorter timeout');
+assert.ok(worker.includes('PET_ARENA_QUEUE_TTL_MINUTES'), 'arena queue expiry must use a longer TTL than matchmaking widening');
+assert.ok(worker.includes('OR ?=1 OR updated_at < datetime'), 'far-rank matching must require Accept Any Rank or queue timeout');
+assert.ok(worker.indexOf('PET_ARENA_QUEUE_TTL_MINUTES') < worker.indexOf('PET_ARENA_ANY_RANK_TIMEOUT_MINUTES', worker.indexOf('SELECT * FROM telegram_pet_arena_queue')), 'far-rank users can become eligible after waiting without being expired first');
+assert.equal(parsePetArenaCallbackPayload('arena:find'), 'find');
+assert.equal(parsePetArenaCallbackPayload('arena:any'), 'any');
+assert.equal(parsePetArenaCallbackPayload('arena:cancel'), 'cancel');
+assert.equal(parsePetArenaCallbackPayload('arena:ready:a-abcdef1234'), 'ready:a-abcdef1234');
+assert.equal(parsePetArenaCallbackPayload('arena:stop:a-abcdef1234'), 'stop:a-abcdef1234');
+assert.equal(getPetArenaRankBucket(10), 'rookie');
+assert.equal(getPetArenaRankBucket(15), 'scrapper');
+assert.equal(getPetArenaRankBucket(25), 'enforcer');
+assert.equal(getPetArenaRankBucket(40), 'cyber_beast');
+assert.equal(getPetArenaRankBucket(70), 'moon_warlord');
+assert.equal(getPetArenaBucketDistance(10, 70), 4, 'bucket distance must measure rank mismatch');
+const sameRankBattle = { player1_telegram_id: '1', player2_telegram_id: '2', player1_pet_snapshot_json: JSON.stringify({ level: 15 }), player2_pet_snapshot_json: JSON.stringify({ level: 16 }) };
+const underdogBattle = { player1_telegram_id: '1', player2_telegram_id: '2', player1_pet_snapshot_json: JSON.stringify({ level: 15 }), player2_pet_snapshot_json: JSON.stringify({ level: 40 }) };
+const highLevelBattle = { player1_telegram_id: '1', player2_telegram_id: '2', player1_pet_snapshot_json: JSON.stringify({ level: 70 }), player2_pet_snapshot_json: JSON.stringify({ level: 15 }) };
+const normalArenaRewards = scalePetArenaRewardsForPlayer(sameRankBattle, 'player1_win', '1', { pet_xp: 34, community_xp: 7, moon_gold: 20 });
+const underdogArenaRewards = scalePetArenaRewardsForPlayer(underdogBattle, 'player1_win', '1', { pet_xp: 34, community_xp: 7, moon_gold: 20 });
+const reducedArenaRewards = scalePetArenaRewardsForPlayer(highLevelBattle, 'player1_win', '1', { pet_xp: 34, community_xp: 7, moon_gold: 20 });
+assert.equal(normalArenaRewards.modifier, 'normal', 'same-rank normal reward stays unscaled');
+assert.ok(underdogArenaRewards.rewards.pet_xp > normalArenaRewards.rewards.pet_xp && underdogArenaRewards.modifier === 'underdog_bonus', 'underdog win bonus rewards must scale up');
+assert.ok(reducedArenaRewards.rewards.pet_xp < normalArenaRewards.rewards.pet_xp && reducedArenaRewards.modifier === 'high_level_reduced', 'high-level win reduced rewards must scale down');
+for (const button of buildPetArenaMenuReplyMarkup().inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena menu callback too long: ${button.callback_data}`);
+for (const button of buildPetArenaMatchReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena match callback too long: ${button.callback_data}`);
+const baseArenaPet = { telegram_id: '1', pet_name: 'Moonpet', pet_xp: 2500, health: 90, energy: 90, happiness: 90, cleanliness: 90 };
+assert.ok(calculatePetArenaPower({ ...baseArenaPet, equipped_weapon: 'laser_claws' }, 'gear') > calculatePetArenaPower(baseArenaPet, 'gear'), 'gear affects battle power');
+assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 2, dodge: 0, luck: 0 }) > 0, 'secondary crit stats affect power');
+assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 0, dodge: 2, luck: 0 }) > 0, 'secondary dodge stats affect power');
+assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 0, dodge: 0, luck: 2 }) > 0, 'secondary luck stats affect power');
+assert.ok(calculatePetArenaPower({ ...baseArenaPet, health: 10, energy: 10 }, 'low') < calculatePetArenaPower(baseArenaPet, 'low'), 'low energy/health affects battle power');
+const serializedArenaPet = serializePet({ ...baseArenaPet, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
+assert.equal(serializedArenaPet.equipped_armor, 'moon_helmet', 'serialized pet state must include equipped arena armor');
+assert.equal(serializedArenaPet.equipped_weapon, 'laser_claws', 'serialized pet state must include equipped arena weapon');
+assert.equal(serializedArenaPet.equipped_charm, 'shield_charm', 'serialized pet state must include equipped arena charm');
+const arenaStatusCopy = formatPetStatus({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'moonbeast', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
+assert.ok(arenaStatusCopy.includes('Armor: moon_helmet') && arenaStatusCopy.includes('Weapon: laser_claws') && arenaStatusCopy.includes('Charm: shield_charm'), '/pet status copy must show equipped battle gear');
+assert.ok(arenaMigration.includes('telegram_pet_arena_battles'), 'arena battle migration must create battle table');
+assert.ok(arenaMigration.includes('telegram_pet_arena_queue'), 'arena battle migration must create queue table');
+assert.ok(arenaMigration.includes('player1_ready_at') && arenaMigration.includes('player2_ready_at'), 'arena migration must store both ready timestamps');
+for (const column of ['equipped_armor', 'equipped_weapon', 'equipped_charm']) assert.ok(workerSchema.includes(column), `schema.sql must include arena profile column: ${column}`);
+for (const table of ['telegram_pet_arena_queue', 'telegram_pet_arena_battles']) assert.ok(workerSchema.includes(table), `schema.sql must include arena table: ${table}`);
+for (const indexName of ['idx_pet_arena_queue_match', 'idx_pet_arena_queue_one_waiting', 'idx_pet_arena_battles_p1_active', 'idx_pet_arena_battles_p2_active']) assert.ok(workerSchema.includes(indexName), `schema.sql must include arena index: ${indexName}`);
+
 
 assert.equal(PET_RUN_MAX_DEPTH, 5, 'Pet Run Engine must use 5-step runs');
 assert.equal(PET_RUN_STEP_CHOICES.length, 5, 'Pet Run Engine must define five choice steps');

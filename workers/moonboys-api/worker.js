@@ -112,6 +112,10 @@ const PET_NOTIFICATION_COOLDOWN_MINUTES = 180;
 const PET_NOTIFICATION_BATCH_LIMIT = 35;
 const PET_KAIJU_MATCH_TTL_MINUTES = 20;
 const PET_KAIJU_QUEUE_LIMIT = 12;
+const PET_ARENA_MIN_LEVEL = 10;
+const PET_ARENA_ANY_RANK_TIMEOUT_MINUTES = 3;
+const PET_ARENA_QUEUE_TTL_MINUTES = 20;
+const PET_ARENA_BATTLE_TTL_MINUTES = 15;
 const PET_ACTIVITY_TYPES = Object.freeze(['sleep', 'train', 'work', 'explore']);
 const PET_ACTIVITY_MIN_SECONDS = 5 * 60;
 const PET_ACTIVITY_GRACE_SECONDS = 24 * 60 * 60;
@@ -1375,6 +1379,15 @@ const PET_SHOP_ITEMS = Object.freeze({
     cost: { moon_gold: 520, moon_crystals: 22, style_tokens: 30 },
     min_level: 15,
   },
+  cardboard_armor: { key: 'cardboard_armor', slot: 'armor', title: 'Cardboard Armor', description: 'Starter arena armor: +4 defense.', cost: { moon_gold: 60, moon_crystals: 0, style_tokens: 0 }, min_level: 10, arena: { defense: 4 } },
+  moon_helmet: { key: 'moon_helmet', slot: 'armor', title: 'Moon Helmet', description: 'Arena armor: +7 defense and +2 dodge.', cost: { moon_gold: 120, moon_crystals: 2, style_tokens: 0 }, min_level: 12, arena: { defense: 7, dodge: 2 } },
+  street_armor: { key: 'street_armor', slot: 'armor', title: 'Street Armor', description: 'Arena armor: +11 defense.', cost: { moon_gold: 220, moon_crystals: 6, style_tokens: 4 }, min_level: 18, arena: { defense: 11 } },
+  cyber_armor: { key: 'cyber_armor', slot: 'armor', title: 'Cyber Armor', description: 'Elite arena armor: +18 defense and +3 luck.', cost: { moon_gold: 520, moon_crystals: 18, style_tokens: 16 }, min_level: 35, arena: { defense: 18, luck: 3 } },
+  foam_claws: { key: 'foam_claws', slot: 'weapon', title: 'Foam Claws', description: 'Starter arena weapon: +5 attack.', cost: { moon_gold: 70, moon_crystals: 0, style_tokens: 0 }, min_level: 10, arena: { attack: 5 } },
+  laser_claws: { key: 'laser_claws', slot: 'weapon', title: 'Laser Claws', description: 'Arena weapon: +11 attack and +2 crit.', cost: { moon_gold: 240, moon_crystals: 7, style_tokens: 4 }, min_level: 18, arena: { attack: 11, crit: 2 } },
+  moon_blaster: { key: 'moon_blaster', slot: 'weapon', title: 'Moon Blaster', description: 'Elite arena weapon: +18 attack and +4 crit.', cost: { moon_gold: 560, moon_crystals: 20, style_tokens: 12 }, min_level: 35, arena: { attack: 18, crit: 4 } },
+  lucky_charm: { key: 'lucky_charm', slot: 'charm', title: 'Lucky Charm', description: 'Arena charm: +6 luck and +2 crit.', cost: { moon_gold: 140, moon_crystals: 4, style_tokens: 8 }, min_level: 10, arena: { luck: 6, crit: 2 } },
+  shield_charm: { key: 'shield_charm', slot: 'charm', title: 'Shield Charm', description: 'Arena charm: +5 defense and +3 dodge.', cost: { moon_gold: 180, moon_crystals: 5, style_tokens: 8 }, min_level: 14, arena: { defense: 5, dodge: 3 } },
 });
 
 const PET_ADVENTURES = Object.freeze([
@@ -2597,6 +2610,7 @@ async function savePetProfile(db, pet) {
         hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
         streak_days = ?, moon_gold = ?, moon_crystals = ?, style_tokens = ?,
         equipped_food = ?, equipped_toy = ?, equipped_outfit = ?,
+        equipped_armor = ?, equipped_weapon = ?, equipped_charm = ?,
         last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
     WHERE telegram_id = ?
   `).bind(
@@ -2617,6 +2631,9 @@ async function savePetProfile(db, pet) {
     pet.equipped_food || null,
     pet.equipped_toy || null,
     pet.equipped_outfit || null,
+    pet.equipped_armor || null,
+    pet.equipped_weapon || null,
+    pet.equipped_charm || null,
     pet.last_active_day || null,
     pet.last_decay_at || new Date().toISOString(),
     pet.telegram_id,
@@ -2930,6 +2947,142 @@ async function finishPetKaijuMatch(db, match) {
   return { accepted: true, reason: 'kaiju_completed', match: await getPetKaijuMatch(db, match.match_id), resolved, queue };
 }
 
+function getPetArenaRankBucket(level) {
+  const l = Math.max(0, Math.floor(Number(level) || 0));
+  if (l >= 70) return 'moon_warlord';
+  if (l >= 40) return 'cyber_beast';
+  if (l >= 25) return 'enforcer';
+  if (l >= 15) return 'scrapper';
+  return 'rookie';
+}
+const PET_ARENA_BUCKET_ORDER = Object.freeze(['rookie', 'scrapper', 'enforcer', 'cyber_beast', 'moon_warlord']);
+const PET_ARENA_STAT_WEIGHTS = Object.freeze({ attack: 2, defense: 1.7, crit: 1.3, dodge: 1.2, luck: 1 });
+function buildPetArenaBattleId() { return `a-${crypto.randomUUID().replace(/-/g, '').slice(0, 10)}`; }
+function petArenaGearEffect(pet, slot) { return PET_SHOP_ITEMS[String(pet?.[`equipped_${slot}`] || '')]?.arena || {}; }
+function sumPetArenaGearPower(...items) {
+  return items.reduce((total, item) => total + Object.entries(PET_ARENA_STAT_WEIGHTS).reduce((sum, [field, weight]) => sum + Math.max(0, Number(item?.[field] || 0)) * weight, 0), 0);
+}
+function buildPetArenaSnapshot(pet) {
+  const level = getPetLevel(pet?.pet_xp);
+  return { telegram_id: String(pet?.telegram_id || ''), pet_name: pet?.pet_name || 'Moonpet', level, pet_xp: Math.max(0, Number(pet?.pet_xp || 0)), health: clampPetStat(pet?.health), energy: clampPetStat(pet?.energy), happiness: clampPetStat(pet?.happiness), cleanliness: clampPetStat(pet?.cleanliness), equipped_food: pet?.equipped_food || null, equipped_toy: pet?.equipped_toy || null, equipped_outfit: pet?.equipped_outfit || null, equipped_armor: pet?.equipped_armor || null, equipped_weapon: pet?.equipped_weapon || null, equipped_charm: pet?.equipped_charm || null };
+}
+function calculatePetArenaPower(pet, seed = '') {
+  const s = buildPetArenaSnapshot(pet); const armor = petArenaGearEffect(s, 'armor'); const weapon = petArenaGearEffect(s, 'weapon'); const charm = petArenaGearEffect(s, 'charm');
+  const outfit = PET_SHOP_ITEMS[s.equipped_outfit]?.min_level ? PET_SHOP_ITEMS[s.equipped_outfit].min_level : 0; const toy = PET_SHOP_ITEMS[s.equipped_toy]?.min_level ? PET_SHOP_ITEMS[s.equipped_toy].min_level : 0;
+  let hash = 0; for (const ch of String(seed || `${s.telegram_id}:${s.pet_xp}`)) hash = ((hash * 31) + ch.charCodeAt(0)) >>> 0;
+  const rng = (hash % 11) - 5; // controlled deterministic RNG, -5..+5
+  const condition = (s.health < 35 ? 0.65 : 1) * (s.energy < 30 ? 0.75 : 1);
+  const morale = (s.happiness + s.cleanliness) / 20;
+  const gear = sumPetArenaGearPower(weapon, armor, charm) + outfit + toy;
+  return Math.max(1, Math.round((s.level * 10 + Math.sqrt(s.pet_xp) + morale + gear + rng) * condition));
+}
+function buildPetArenaMenuReplyMarkup() { return { inline_keyboard: [[{ text: 'Find Pet Battle', callback_data: 'pet:arena:find' }, { text: 'Battle App Pet', callback_data: 'pet:arena:app' }], [{ text: 'My Arena Status', callback_data: 'pet:arena:status' }, { text: 'Cancel Queue', callback_data: 'pet:arena:cancel' }], [{ text: 'Gear Shop', callback_data: 'pet:shop' }, { text: 'Pet Menu', callback_data: 'pet:bag' }]] }; }
+function buildPetArenaMatchReplyMarkup(battleId) { return { inline_keyboard: [[{ text: 'Ready', callback_data: `pet:arena:ready:${battleId}` }, { text: 'Cancel', callback_data: `pet:arena:stop:${battleId}` }]] }; }
+function parsePetArenaCallbackPayload(payload) {
+  const text = String(payload || '');
+  if (text === 'arena:find') return 'find';
+  if (text === 'arena:any') return 'any';
+  if (text === 'arena:cancel') return 'cancel';
+  const ready = text.match(/^arena:ready:(a-[a-f0-9]{10})$/);
+  if (ready) return `ready:${ready[1]}`;
+  const stop = text.match(/^arena:stop:(a-[a-f0-9]{10})$/);
+  if (stop) return `stop:${stop[1]}`;
+  if (text === 'arena:app') return 'app';
+  if (text === 'arena:status') return 'status';
+  return '';
+}
+async function ensurePetArenaEligible(db, telegramId) { const pet = await getPetProfile(db, telegramId); if (!pet) return { ok:false, reason:'pet_not_adopted' }; if (getPetLevel(pet.pet_xp) < PET_ARENA_MIN_LEVEL) return { ok:false, reason:'level_locked', pet }; if (clampPetStat(pet.health) < 15) return { ok:false, reason:'health_low', pet }; return { ok:true, pet }; }
+async function getPetArenaBattle(db, battleId) { return db.prepare(`SELECT * FROM telegram_pet_arena_battles WHERE battle_id = ? LIMIT 1`).bind(String(battleId || '')).first().catch(() => null); }
+async function hasActivePetArenaBattle(db, chatId, telegramId) {
+  const row = await db.prepare(`SELECT battle_id FROM telegram_pet_arena_battles WHERE chat_id = ? AND status IN ('readying', 'active') AND (player1_telegram_id = ? OR player2_telegram_id = ?) LIMIT 1`).bind(String(chatId), String(telegramId), String(telegramId)).first().catch(() => null);
+  return Boolean(row?.battle_id);
+}
+async function createPetArenaBattle(db, chatId, p1, p2, mode='group') { const battleId = buildPetArenaBattleId(); const p1p = calculatePetArenaPower(p1, `${battleId}:1`); const p2p = calculatePetArenaPower(p2, `${battleId}:2`); await db.prepare(`INSERT INTO telegram_pet_arena_battles (id,battle_id,chat_id,player1_telegram_id,player2_telegram_id,player1_pet_snapshot_json,player2_pet_snapshot_json,player1_power,player2_power,status,result) VALUES (?,?,?,?,?,?,?,?,?,'readying',?)`).bind(crypto.randomUUID(), battleId, String(chatId), String(p1.telegram_id), mode === 'app' ? 'app' : String(p2.telegram_id), JSON.stringify(buildPetArenaSnapshot(p1)), JSON.stringify(buildPetArenaSnapshot(p2)), p1p, p2p, mode).run(); return getPetArenaBattle(db, battleId); }
+function safeParsePetArenaSnapshot(jsonText) {
+  try { return JSON.parse(String(jsonText || '{}')) || {}; } catch (_) { return {}; }
+}
+function getPetArenaBucketDistance(levelA, levelB) {
+  const a = PET_ARENA_BUCKET_ORDER.indexOf(getPetArenaRankBucket(levelA));
+  const b = PET_ARENA_BUCKET_ORDER.indexOf(getPetArenaRankBucket(levelB));
+  return Math.abs((a < 0 ? 0 : a) - (b < 0 ? 0 : b));
+}
+function scalePetArenaRewardsForPlayer(battle, result, telegramId, baseRewards) {
+  const p1 = safeParsePetArenaSnapshot(battle.player1_pet_snapshot_json);
+  const p2 = safeParsePetArenaSnapshot(battle.player2_pet_snapshot_json);
+  const isPlayer1 = String(telegramId) === String(battle.player1_telegram_id);
+  const self = isPlayer1 ? p1 : p2;
+  const rival = isPlayer1 ? p2 : p1;
+  const selfLevel = Math.max(0, Math.floor(Number(self.level || getPetLevel(self.pet_xp)) || 0));
+  const rivalLevel = Math.max(0, Math.floor(Number(rival.level || getPetLevel(rival.pet_xp)) || 0));
+  const bucketDistance = getPetArenaBucketDistance(selfLevel, rivalLevel);
+  const levelGap = Math.abs(selfLevel - rivalLevel);
+  const won = (isPlayer1 && result === 'player1_win') || (!isPlayer1 && result === 'player2_win');
+  const scaled = { ...baseRewards };
+  if (!won || result === 'draw') return { rewards: scaled, modifier: 'normal' };
+  const underdogWin = selfLevel < rivalLevel && (bucketDistance >= 1 || levelGap >= 5);
+  const highLevelWin = selfLevel > rivalLevel && (bucketDistance >= 2 || levelGap >= 15);
+  const multiplier = underdogWin ? 1.35 : highLevelWin ? 0.65 : 1;
+  scaled.pet_xp = Math.max(0, Math.round(Number(scaled.pet_xp || 0) * multiplier));
+  scaled.community_xp = Math.max(0, Math.round(Number(scaled.community_xp || 0) * multiplier));
+  scaled.moon_gold = Math.max(0, Math.round(Number(scaled.moon_gold || 0) * multiplier));
+  return { rewards: scaled, modifier: underdogWin ? 'underdog_bonus' : highLevelWin ? 'high_level_reduced' : 'normal' };
+}
+async function completePetArenaBattle(db, battle) {
+  const claim = await db.prepare(`UPDATE telegram_pet_arena_battles SET status='completed', completed_at=CURRENT_TIMESTAMP WHERE battle_id=? AND status IN ('readying','active')`).bind(battle.battle_id).run();
+  if (claim?.meta?.changes !== undefined && Number(claim.meta.changes || 0) <= 0) return { accepted:true, duplicate:true, reason:'already_completed', battle: await getPetArenaBattle(db, battle.battle_id) };
+  const p1 = Number(battle.player1_power || 0), p2 = Number(battle.player2_power || 0); const result = p1 === p2 ? 'draw' : p1 > p2 ? 'player1_win' : 'player2_win'; const winner = result === 'draw' ? null : (result === 'player1_win' ? battle.player1_telegram_id : battle.player2_telegram_id);
+  await db.prepare(`UPDATE telegram_pet_arena_battles SET winner_telegram_id=?, result=? WHERE battle_id=?`).bind(winner, result, battle.battle_id).run();
+  const winRewards = result === 'draw' ? { pet_xp: 18, community_xp: 3, moon_gold: 8 } : { pet_xp: 34, community_xp: 7, moon_gold: 20 };
+  const lossRewards = { pet_xp: 10, community_xp: 0, moon_gold: 3 };
+  const player1Scaled = scalePetArenaRewardsForPlayer(battle, result, String(battle.player1_telegram_id), result === 'player1_win' || result === 'draw' ? winRewards : lossRewards);
+  const player2Scaled = scalePetArenaRewardsForPlayer(battle, result, String(battle.player2_telegram_id), result === 'player2_win' || result === 'draw' ? winRewards : lossRewards);
+  await awardPetKaijuPlayerResult(db, String(battle.player1_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player1Scaled.modifier }, result === 'player1_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player1Scaled.rewards);
+  if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await awardPetKaijuPlayerResult(db, String(battle.player2_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player2Scaled.modifier }, result === 'player2_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player2Scaled.rewards);
+  return { accepted:true, reason:'arena_completed', battle: await getPetArenaBattle(db, battle.battle_id), result, rewards: { player1: player1Scaled, player2: player2Scaled } };
+}
+async function readyPetArenaBattle(db, battle, telegramId) {
+  const isP1 = String(battle.player1_telegram_id) === String(telegramId);
+  const isP2 = String(battle.player2_telegram_id) === String(telegramId);
+  if (!isP1 && !isP2) return { accepted:false, reason:'not_participant', battle };
+  if (String(battle.player2_telegram_id) === 'app') return completePetArenaBattle(db, battle);
+  const column = isP1 ? 'player1_ready_at' : 'player2_ready_at';
+  await db.prepare(`UPDATE telegram_pet_arena_battles SET ${column}=COALESCE(${column}, CURRENT_TIMESTAMP), status='active' WHERE battle_id=? AND status IN ('readying','active')`).bind(battle.battle_id).run();
+  const updated = await getPetArenaBattle(db, battle.battle_id);
+  if (updated?.player1_ready_at && updated?.player2_ready_at) return completePetArenaBattle(db, updated);
+  return { accepted:true, reason:'waiting_for_opponent', battle: updated };
+}
+async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = '') {
+  await db.prepare(`UPDATE telegram_pet_arena_queue SET status='expired', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`).bind(String(chatId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run().catch(() => {});
+  await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status IN ('readying','active') AND created_at < datetime('now', ?)`).bind(String(chatId), `-${PET_ARENA_BATTLE_TTL_MINUTES} minutes`).run().catch(() => {});
+  const arg = String(argStr || '').trim();
+  if (arg.startsWith('stop:')) { const battleId = arg.slice(5); await db.prepare(`UPDATE telegram_pet_arena_battles SET status='cancelled', completed_at=CURRENT_TIMESTAMP WHERE battle_id=? AND chat_id=? AND status IN ('readying','active') AND (player1_telegram_id=? OR player2_telegram_id=?)`).bind(battleId, String(chatId), telegramId, telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena battle cancelled.'); return; }
+  if (arg === 'cancel') { await db.prepare(`UPDATE telegram_pet_arena_queue SET status='cancelled', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id=? AND status='waiting'`).bind(String(chatId), telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena queue cancelled.'); return; }
+  const eligible = await ensurePetArenaEligible(db, telegramId); if (!eligible.ok) { await sendTelegramMessage(tok, chatId, eligible.reason === 'level_locked' ? 'Pet Arena unlocks at level 10. Keep growing your Moonpet.' : 'Adopt or heal your Moonpet before entering Pet Arena.'); return; }
+  const pet = eligible.pet;
+  if (!arg) { await sendTelegramMessage(tok, chatId, `<b>⚔️ Pet Arena</b>\nBattle Moonpet vs Moonpet. Gear, morale, condition, level and controlled RNG all matter.`, { reply_markup: buildPetArenaMenuReplyMarkup() }); return; }
+  if (arg.startsWith('ready:')) { const battleId = arg.slice(6); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || !['readying','active'].includes(String(battle.status))) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const ready = await readyPetArenaBattle(db, battle, telegramId); if (ready.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Ready locked. Waiting for the other Moonpet trainer.'); return; } if (!ready.accepted) { await sendTelegramMessage(tok, chatId, 'Only the two matched players can ready this Pet Arena battle.'); return; } await sendTelegramMessage(tok, chatId, formatPetArenaResult(ready.battle || battle)); return; }
+  if (arg === 'status') { await sendTelegramMessage(tok, chatId, `Arena status: ${escapeHtml(pet.pet_name)} LVL ${getPetLevel(pet.pet_xp)} ${getPetArenaRankBucket(getPetLevel(pet.pet_xp))}. Power now: ${calculatePetArenaPower(pet, 'status')}.`); return; }
+  if (await hasActivePetArenaBattle(db, chatId, telegramId)) { await sendTelegramMessage(tok, chatId, 'Finish your current Pet Arena battle first.'); return; }
+  if (arg === 'app' || chatType === 'private') { const appPet = { ...pet, telegram_id: 'app', pet_name: 'App Moonpet', pet_xp: Math.max(0, Number(pet.pet_xp || 0) + 80), energy: 82, health: 88, happiness: 80, cleanliness: 80 }; const battle = await createPetArenaBattle(db, chatId, pet, appPet, 'app'); const done = await completePetArenaBattle(db, battle); await sendTelegramMessage(tok, chatId, formatPetArenaResult(done.battle || battle)); return; }
+  const acceptAnyRank = arg === 'any' ? 1 : 0;
+  const bucket = getPetArenaRankBucket(getPetLevel(pet.pet_xp)); await db.prepare(`INSERT INTO telegram_pet_arena_queue (id,chat_id,telegram_id,rank_bucket,pet_snapshot_json,status,accept_any_rank) VALUES (?,?,?,?,?,'waiting',?) ON CONFLICT(chat_id,telegram_id) WHERE status='waiting' DO UPDATE SET rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json, accept_any_rank=MAX(telegram_pet_arena_queue.accept_any_rank, excluded.accept_any_rank), updated_at=CURRENT_TIMESTAMP`).bind(crypto.randomUUID(), String(chatId), telegramId, bucket, JSON.stringify(buildPetArenaSnapshot(pet)), acceptAnyRank).run();
+  const idx = PET_ARENA_BUCKET_ORDER.indexOf(bucket); const lower = PET_ARENA_BUCKET_ORDER[idx - 1] || ''; const upper = PET_ARENA_BUCKET_ORDER[idx + 1] || '';
+  const rows = await db.prepare(`SELECT * FROM telegram_pet_arena_queue WHERE chat_id=? AND status='waiting' AND telegram_id<>? AND (rank_bucket=? OR rank_bucket IN (?,?) OR accept_any_rank=1 OR ?=1 OR updated_at < datetime('now', ?)) ORDER BY CASE WHEN rank_bucket=? THEN 0 WHEN rank_bucket IN (?,?) THEN 1 ELSE 2 END, created_at ASC LIMIT 6`).bind(String(chatId), telegramId, bucket, lower, upper, acceptAnyRank, `-${PET_ARENA_ANY_RANK_TIMEOUT_MINUTES} minutes`, bucket, lower, upper).all().catch(()=>({results:[]}));
+  const opponent = (rows.results || []).find((row) => String(row.telegram_id) !== telegramId);
+  if (!opponent) { await sendTelegramMessage(tok, chatId, 'Queued for Pet Arena. Prefer same rank; tap Accept Any Rank if matchmaking is slow.', { reply_markup: { inline_keyboard: [[{ text:'Accept Any Rank', callback_data:'pet:arena:any' }, { text:'Cancel Queue', callback_data:'pet:arena:cancel' }]] } }); return; }
+  if (await hasActivePetArenaBattle(db, chatId, opponent.telegram_id)) { await sendTelegramMessage(tok, chatId, 'Queued for Pet Arena. A nearby trainer is finishing another battle first.'); return; }
+  const oppPet = JSON.parse(opponent.pet_snapshot_json || '{}');
+  const claimRows = await db.prepare(`UPDATE telegram_pet_arena_queue SET status='matched', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id IN (?,?) AND status='waiting'`).bind(String(chatId), telegramId, String(opponent.telegram_id)).run();
+  if (Number(claimRows?.meta?.changes || 0) !== 2) { await db.prepare(`UPDATE telegram_pet_arena_queue SET status='waiting', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id=? AND status='matched'`).bind(String(chatId), telegramId).run().catch(() => {}); await sendTelegramMessage(tok, chatId, 'Pet Arena queue changed before the match was claimed. You are still queued; tap Find Pet Battle again to retry.'); return; }
+  const battle = await createPetArenaBattle(db, chatId, pet, oppPet, 'group'); await sendTelegramMessage(tok, chatId, `<b>Pet Arena Match Found</b>
+${escapeHtml(pet.pet_name)} LVL ${getPetLevel(pet.pet_xp)} vs ${escapeHtml(oppPet.pet_name || 'RivalPet')} LVL ${getPetLevel(oppPet.pet_xp)}`, { reply_markup: buildPetArenaMatchReplyMarkup(battle.battle_id) });
+}
+function formatPetArenaResult(battle) { const winner = battle.winner_telegram_id || 'Draw'; return `<b>⚔️ Pet Arena Result</b>
+Battle <code>${escapeHtml(battle.battle_id)}</code>
+Winner: ${escapeHtml(String(winner))}
+Power: ${battle.player1_power} vs ${battle.player2_power}
+Rounds: attack → defense → special
+Rewards: winner Moon Gold + pet XP + Community XP; loser consolation pet XP. Gear effects used from armor, weapon, charm, outfit and toy.`; }
 
 async function expireOldPetActivitySessions(db, telegramId, now = new Date()) {
   await db.prepare(`
@@ -3448,6 +3601,9 @@ function serializePet(pet) {
     equipped_food: decayed.equipped_food || null,
     equipped_toy: decayed.equipped_toy || null,
     equipped_outfit: decayed.equipped_outfit || null,
+    equipped_armor: decayed.equipped_armor || null,
+    equipped_weapon: decayed.equipped_weapon || null,
+    equipped_charm: decayed.equipped_charm || null,
     streak_days: Number(decayed.streak_days || 0),
     last_active_day: decayed.last_active_day || null,
     updated_at: decayed.updated_at || null,
@@ -9496,6 +9652,16 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetKaijuLobbyReplyMarkup,
   buildPetKaijuMatchId,
   resolvePetKaijuBattle,
+  getPetArenaRankBucket,
+  calculatePetArenaPower,
+  buildPetArenaMenuReplyMarkup,
+  buildPetArenaMatchReplyMarkup,
+  parsePetArenaCallbackPayload,
+  sumPetArenaGearPower,
+  scalePetArenaRewardsForPlayer,
+  getPetArenaBucketDistance,
+  serializePet,
+  formatPetStatus,
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
   buildPetRunStepEventKey,
@@ -9553,6 +9719,8 @@ async function handleTelegramUpdate(update, env) {
         await cmdPetShop(db, tok, chatId, telegramId);
         return;
       }
+      if (payload === 'arena') { await answerTelegramCallback(tok, query.id, '/petarena'); await cmdPetArena(db, tok, chatId, telegramId, '', chatType); return; }
+      if (payload.startsWith('arena:')) { const arenaPayload = parsePetArenaCallbackPayload(payload); await answerTelegramCallback(tok, query.id, '/petarena'); await cmdPetArena(db, tok, chatId, telegramId, arenaPayload, chatType); return; }
       if (payload === 'kaiju') {
         await answerTelegramCallback(tok, query.id, '/petkaiju');
         await cmdPetKaiju(db, tok, chatId, telegramId, '', chatType, fromUser, eventKey);
@@ -9784,6 +9952,7 @@ async function handleTelegramUpdate(update, env) {
     case 'petwork':      await cmdPetWork(db, tok, chatId, telegramId, argStr, stableEventKey); break;
     case 'petdaily':     await cmdPetDaily(db, tok, chatId, telegramId, stableEventKey); break;
     case 'petevent':     await cmdPetEvent(db, tok, chatId, telegramId, argStr, stableEventKey); break;
+    case 'petarena':    await cmdPetArena(db, tok, chatId, telegramId, argStr, chatType); break;
     case 'petkaiju':
     case 'kaiju':        await cmdPetKaiju(db, tok, chatId, telegramId, argStr, chatType, fromUser, stableEventKey); break;
     case 'petrun':       await cmdPetRun(db, tok, chatId, telegramId, argStr, stableEventKey); break;
@@ -9881,6 +10050,7 @@ async function cmdGkHelp(tok, chatId) {
     `/petshop — View food, toy and clothing upgrades\n` +
     `/petbuy moon_kibble — Buy/equip a pet upgrade\n` +
     `/pettrade 25 — Risk in-game Moon Gold for game rewards\n` +
+    `/petarena — Pet vs Pet Arena battles (level 10+)\n` +
     `/petkaiju — Kaiju Sticker Battle in your pet menu\n` +
     `/petrun - Start or resume a 5-step pet run\n` +
     `/petextract - Bank current unbanked run rewards\n` +
@@ -9941,7 +10111,8 @@ function formatPetStatus(pet, missions = null, activity = null) {
     `Gold: ${p.moon_gold} | Crystals: ${p.moon_crystals} | Style: ${p.style_tokens}`,
     '',
     `🎒 <b>Gear</b>`,
-    `Food: ${escapeHtml(p.equipped_food || 'basic')} | Toy: ${escapeHtml(p.equipped_toy || 'basic')} | Outfit: ${escapeHtml(p.equipped_outfit || 'none')}`,
+    `Food: ${escapeHtml(p.equipped_food || 'basic')} | Toy: ${escapeHtml(p.equipped_toy || 'basic')} | Outfit: ${escapeHtml(p.equipped_outfit || 'none')}
+Armor: ${escapeHtml(p.equipped_armor || 'none')} | Weapon: ${escapeHtml(p.equipped_weapon || 'none')} | Charm: ${escapeHtml(p.equipped_charm || 'none')}`,
     '',
     `📊 <b>Needs</b>`,
     ...(warnings.length ? warnings : ['All systems stable.']),
@@ -9975,6 +10146,7 @@ function petReplyMarkup() {
         { text: '🎲 Event', callback_data: 'pet:event' },
         { text: '🎁 Daily', callback_data: 'pet:daily' },
         { text: '🦖 Kaiju', callback_data: 'pet:kaiju' },
+        { text: '⚔️ Arena', callback_data: 'pet:arena' },
       ],
       [
         { text: '🏃 Run', callback_data: 'pet:run' },

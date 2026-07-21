@@ -32,7 +32,7 @@
 
   <article class="wiki-content" data-entity-slug="crypto-moonboy-pets">
     <p class="lead-paragraph">
-      Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, manage a pet bag, work jobs, open daily chests, handle random crate events, battle Kaiju sticker cards, and build pet progression over time.
+      Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, manage a pet bag, work jobs, open daily chests, handle random crate events, battle directly in Pet Arena, battle Kaiju sticker cards, and build pet progression over time.
     </p>
     <p>
       The game is played in Telegram through the Moonboys bot. The website records the public proof layer: combined Community XP, pet-specific leaderboards, how-to-play rules, and the searchable wiki home for the pet system.
@@ -52,6 +52,7 @@
         <li>Use <code>/petshop</code> and <code>/petbuy</code> to equip better food, toys and clothing.</li>
         <li>Use <code>/pettrade</code> to risk in-game Moon Gold for game-only rewards.</li>
         <li>Use <code>/petadventure</code> for energy-gated runs with cooldowns and pet-only rewards.</li>
+        <li>Use <code>/petarena</code> for level 10+ Pet Arena battles using Moonpet stats and gear.</li>
         <li>Use <code>/kaiju</code> in the Telegram group to enter Kaiju Sticker Battle.</li>
         <li>Use <code>/petnotify on</code> to opt into rate-limited Telegram needs alerts.</li>
         <li>Pet XP grows the companion and powers the pet-only leaderboard.</li>
@@ -60,6 +61,13 @@
     </section>
 
     <section class="wiki-section">
+      <h2>Pet Arena In Telegram</h2>
+      <p>Pet Arena is the Moonpet-vs-Moonpet battle mode and is not Kaiju Sticker Battle. It unlocks at level 10; the bot blocks lower-level pets with “Pet Arena unlocks at level 10. Keep growing your Moonpet.”</p>
+      <p>Battle power is calculated server-side from pet level, pet XP tier, health, energy, happiness/morale, cleanliness condition, equipped food, toy, outfit and battle gear. New battle gear uses armor, weapon and charm slots: armor improves defense/damage reduction, weapons improve attack, and charms improve crit, dodge or luck. Low energy lowers battle power and very low health can block entry or heavily reduce power.</p>
+      <p>Private chats can battle an app pet. Telegram groups use a queue for 1v1 battles, create a short battle ID for each match, allow exactly two players per battle and allow multiple different battles in the same group at once.</p>
+      <p>Matchmaking prefers rank buckets: rookie level 10-14, scrapper 15-24, enforcer 25-39, cyber beast 40-69 and moon warlord 70+. It tries same bucket first, then nearby buckets, then Accept Any Rank. Mismatch wins can grant underdog bonuses while high-level wins over low-level pets reduce rewards.</p>
+      <p>Rewards are capped and idempotent: winners receive Moon Gold, pet XP and small Community XP, losers receive consolation pet XP and draws share smaller rewards. Existing daily pet XP and Community XP caps apply and duplicate callbacks cannot double-award.</p>
+
       <h2>Kaiju Sticker Battle In Telegram</h2>
       <p>
         Kaiju Sticker Battle is the group battle mode for the same public Kaiju cards used by the Arcade page. The Telegram bot should use the new Kaiju sticker set as the visual layer and the existing card IDs and stats as the rules layer.
