@@ -875,6 +875,13 @@ assert.ok(worker.includes('Card already locked for <code>${escapeHtml(telegramId
 assert.ok(worker.includes("score?.result === 'player2_win' && opponent.telegram_id === 'app'"), 'Kaiju solo app wins must render as an app win instead of a draw');
 assert.ok(worker.includes('roll = CASE WHEN roll IS NULL OR roll = 0 THEN ? ELSE roll END'), 'Kaiju rolled category number must persist even when the default roll is 0');
 assert.ok(worker.includes("joinResult?.meta?.changes"), 'Kaiju join race handling must check update changes before announcing players');
+assert.ok(worker.includes('async function getFreshPetKaijuMatch'), 'Kaiju callbacks must expire stale matches before acting');
+assert.ok(worker.includes("WHERE match_id = ? AND status IN ('open', 'selecting') AND updated_at < datetime('now', ?)"), 'Kaiju stale callback handling must cancel expired open/selecting matches by match id');
+assert.ok(worker.includes('This Kaiju table expired. Tap Kaiju or run /petkaiju to start a fresh battle.'), 'Kaiju stale Join/Start/Card callbacks must return a clear expired-table message');
+assert.ok(worker.includes('const freshMatch = await getFreshPetKaijuMatch(db, args[0]);'), 'Kaiju join/cpu/card actions must read through the fresh match helper');
+assert.ok(worker.includes('const completionResult = await db.prepare'), 'Kaiju completion must capture the status update result before awarding');
+assert.ok(worker.includes("reason: 'already_completed'"), 'Kaiju duplicate finish attempts must return an already-completed result');
+assert.ok(worker.includes('Number(completionResult.meta.changes || 0) <= 0'), 'Kaiju duplicate finish attempts must skip rewards when the completion update no-ops');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunExtractEventKey(telegramId, runId);'), 'run extract callbacks must use stable run extract keys');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);'), 'run step callbacks must use stable run step keys');
 assert.ok(callbackBranch.includes('await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);'), 'run step callbacks must pass the callback step index through to cmdPetRun');

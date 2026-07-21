@@ -2734,6 +2734,25 @@ async function getPetKaijuMatch(db, matchId) {
   return serializePetKaijuMatch(row);
 }
 
+
+async function getFreshPetKaijuMatch(db, matchId) {
+  const id = String(matchId || '');
+  const expireResult = await db.prepare(`
+    UPDATE telegram_pet_kaiju_matches
+    SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+    WHERE match_id = ? AND status IN ('open', 'selecting') AND updated_at < datetime('now', ?)
+  `).bind(id, `-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run().catch(() => null);
+  const match = await getPetKaijuMatch(db, id);
+  return {
+    match,
+    expired: Number(expireResult?.meta?.changes || 0) > 0 || match?.status === 'cancelled',
+  };
+}
+
+function isPetKaijuExpiredResult(fresh) {
+  return Boolean(fresh?.expired);
+}
+
 async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo') {
   const matchId = buildPetKaijuMatchId();
   const status = mode === 'group' ? 'open' : 'selecting';
@@ -2853,7 +2872,7 @@ async function finishPetKaijuMatch(db, match) {
     opponent: { telegram_id: match.mode === 'group' ? String(match.player2_telegram_id) : 'app', card: player2Card.id, score: resolved.opponentScore },
     result: resolved.result,
   });
-  await db.prepare(`
+  const completionResult = await db.prepare(`
     UPDATE telegram_pet_kaiju_matches
     SET status = 'completed',
         category_key = ?,
@@ -2865,6 +2884,16 @@ async function finishPetKaijuMatch(db, match) {
         updated_at = CURRENT_TIMESTAMP
     WHERE match_id = ? AND status IN ('open', 'selecting')
   `).bind(category.key, category.roll, winnerTelegramId, resolved.result, scoreJson, match.match_id).run();
+  if (completionResult?.meta?.changes !== undefined && Number(completionResult.meta.changes || 0) <= 0) {
+    return {
+      accepted: true,
+      duplicate: true,
+      reason: 'already_completed',
+      match: await getPetKaijuMatch(db, match.match_id),
+      resolved,
+      queue: await getPetKaijuQueue(db, match.chat_id, [match.player1_telegram_id, match.player2_telegram_id || '']),
+    };
+  }
 
   const player1Outcome = resolved.result === 'player1_win' ? 'kaiju_win' : resolved.result === 'draw' ? 'kaiju_draw' : 'kaiju_loss';
   const player2Outcome = resolved.result === 'player2_win' ? 'kaiju_win' : resolved.result === 'draw' ? 'kaiju_draw' : 'kaiju_loss';
@@ -9903,7 +9932,12 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
   const groupChat = isTelegramGroupChat(chatId, chatType);
 
   if (action === 'join') {
-    const match = await getPetKaijuMatch(db, args[0]);
+    const freshMatch = await getFreshPetKaijuMatch(db, args[0]);
+    const match = freshMatch.match;
+    if (isPetKaijuExpiredResult(freshMatch)) {
+      await sendTelegramMessage(tok, chatId, 'This Kaiju table expired. Tap Kaiju or run /petkaiju to start a fresh battle.');
+      return;
+    }
     if (!match || String(match.chat_id) !== String(chatId)) {
       await sendTelegramMessage(tok, chatId, 'That Kaiju table is gone. Use /petkaiju to open a new one.');
       return;
@@ -9938,7 +9972,12 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
   }
 
   if (action === 'cpu') {
-    const match = await getPetKaijuMatch(db, args[0]);
+    const freshMatch = await getFreshPetKaijuMatch(db, args[0]);
+    const match = freshMatch.match;
+    if (isPetKaijuExpiredResult(freshMatch)) {
+      await sendTelegramMessage(tok, chatId, 'This Kaiju table expired. Tap Kaiju or run /petkaiju to start a fresh battle.');
+      return;
+    }
     if (!match || String(match.chat_id) !== String(chatId) || String(match.player1_telegram_id) !== String(telegramId) || match.status !== 'open') {
       await sendTelegramMessage(tok, chatId, 'That Kaiju table cannot start vs app. Use /petkaiju to refresh.');
       return;
@@ -9954,8 +9993,13 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
   }
 
   if (action === 'card') {
-    const match = await getPetKaijuMatch(db, args[0]);
+    const freshMatch = await getFreshPetKaijuMatch(db, args[0]);
+    const match = freshMatch.match;
     const cardKey = normalizePetKaijuCardKey(args[1]);
+    if (isPetKaijuExpiredResult(freshMatch)) {
+      await sendTelegramMessage(tok, chatId, 'This Kaiju table expired. Tap Kaiju or run /petkaiju to start a fresh battle.');
+      return;
+    }
     if (!match || String(match.chat_id) !== String(chatId)) {
       await sendTelegramMessage(tok, chatId, 'That Kaiju battle is gone. Use /petkaiju to start again.');
       return;
