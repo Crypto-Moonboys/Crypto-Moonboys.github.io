@@ -101,6 +101,7 @@
         <tr><td><code>/petevent open</code></td><td>Handles a random crate event choice.</td></tr>
         <tr><td><code>/petbuy moon_kibble</code></td><td>Buys or equips an upgrade using in-game pet currencies.</td></tr>
         <tr><td><code>/pettrade 25</code></td><td>Risks in-game Moon Gold for game-only rewards.</td></tr>
+        <tr><td><code>/petkaiju</code> / <code>/kaiju</code></td><td>Opens Kaiju Sticker Battle from the pet menu. Private chat plays vs the app; Telegram groups support one- or two-player tables.</td></tr>
         <tr><td><code>/petrun</code></td><td>Starts or resumes a persistent 5-step Pet Run Engine run.</td></tr>
         <tr><td><code>/petextract</code></td><td>Banks your current unbanked run rewards.</td></tr>
         <tr><td><code>/petadventure</code></td><td>Legacy alias that opens the Pet Run Engine.</td></tr>
@@ -170,6 +171,13 @@
   <section class="section">
     <h2>Moon Gold Trades</h2>
     <p><code>/pettrade</code> is a risk/reward action using Moon Gold only. A winning trade can return more Moon Gold, a Crystal and pet XP; a losing trade spends the wager but still grants a tiny pet XP consolation. It never awards Community XP.</p>
+  </section>
+
+  <section class="section">
+    <h2>Kaiju Sticker Battle</h2>
+    <p><code>/petkaiju</code> wires the <a href="/games/kaiju-sticker-battle/">Kaiju Sticker Battle</a> card game into the pet bot. In private chat, it starts a one-player battle against the app. In Telegram groups, it opens a table where another user can join, or the host can start against the app.</p>
+    <p>Each player chooses one kaiju card. The bot rolls one stat category: Power, Size, Attack, Defence, Speed or Legacy. Highest stat wins. Wins, draws and losses award capped pet rewards, and the small Community XP award goes through the same server cap and leaderboard path as other accepted pet XP events.</p>
+    <p>If a group table is busy, new players who tap Kaiju or run <code>/petkaiju</code> are added to the waiting queue. When the table clears, the queued players can start or join the next battle.</p>
   </section>
 
   <section class="section">
