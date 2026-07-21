@@ -11,6 +11,7 @@ const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
 const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
 const arenaMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/036_telegram_pet_arena.sql', import.meta.url), 'utf8');
+const arenaTurnsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/037_telegram_pet_arena_turns.sql', import.meta.url), 'utf8');
 const workerSchema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
 const {
@@ -29,7 +30,9 @@ const {
   calculatePetArenaPower,
   buildPetArenaMenuReplyMarkup,
   buildPetArenaMatchReplyMarkup,
+  buildPetArenaMoveReplyMarkup,
   parsePetArenaCallbackPayload,
+  resolvePetArenaRoundState,
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
@@ -113,6 +116,12 @@ assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include 
 assert.ok(worker.includes('Pet Arena unlocks at level 10. Keep growing your Moonpet.'), 'level <10 blocked copy must be exact');
 assert.ok(worker.includes('PET_ARENA_MIN_LEVEL = 10'), 'level 10+ can enter Pet Arena');
 assert.ok(worker.includes("createPetArenaBattle(db, chatId, pet, appPet, 'app')"), 'private app battle works');
+assert.ok(!worker.includes('const done = await completePetArenaBattle(db, battle); await sendTelegramMessage(tok, chatId, formatPetArenaResult(done.battle || battle)); return;'), 'App battle does not instantly complete on create.');
+assert.ok(worker.includes('selectPetArenaAppMove(battle)'), 'App battle advances after player move and app AI move.');
+assert.ok(worker.includes("Move locked. Waiting for opponent."), 'Group battle waits for both move locks.');
+assert.ok(worker.includes("Stale Pet Arena move. Choose from the latest round prompt."), 'Stale round move callbacks are rejected.');
+assert.ok(worker.includes("reason:'move_already_locked'"), 'Duplicate move callbacks do not double-apply damage.');
+assert.ok(worker.includes('forfeitPetArenaBattle'), 'Forfeit resolves safely.');
 assert.ok(worker.includes('telegram_pet_arena_queue'), 'group queue works');
 assert.ok(worker.includes('ORDER BY CASE WHEN rank_bucket=? THEN 0'), 'same-rank match preferred');
 assert.ok(worker.includes('Accept Any Rank'), 'mismatch fallback works');
@@ -138,6 +147,8 @@ assert.equal(parsePetArenaCallbackPayload('arena:any'), 'any');
 assert.equal(parsePetArenaCallbackPayload('arena:cancel'), 'cancel');
 assert.equal(parsePetArenaCallbackPayload('arena:ready:a-abcdef1234'), 'ready:a-abcdef1234');
 assert.equal(parsePetArenaCallbackPayload('arena:stop:a-abcdef1234'), 'stop:a-abcdef1234');
+assert.equal(parsePetArenaCallbackPayload('arena:mv:a-abcdef1234:ah'), 'mv:a-abcdef1234:ah');
+assert.equal(parsePetArenaCallbackPayload('arena:ff:a-abcdef1234'), 'ff:a-abcdef1234');
 assert.equal(getPetArenaRankBucket(10), 'rookie');
 assert.equal(getPetArenaRankBucket(15), 'scrapper');
 assert.equal(getPetArenaRankBucket(25), 'enforcer');
@@ -155,6 +166,7 @@ assert.ok(underdogArenaRewards.rewards.pet_xp > normalArenaRewards.rewards.pet_x
 assert.ok(reducedArenaRewards.rewards.pet_xp < normalArenaRewards.rewards.pet_xp && reducedArenaRewards.modifier === 'high_level_reduced', 'high-level win reduced rewards must scale down');
 for (const button of buildPetArenaMenuReplyMarkup().inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena menu callback too long: ${button.callback_data}`);
 for (const button of buildPetArenaMatchReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena match callback too long: ${button.callback_data}`);
+for (const button of buildPetArenaMoveReplyMarkup('a-abcdef1234').inline_keyboard.flat().filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Arena move callback too long: ${button.callback_data}`);
 const baseArenaPet = { telegram_id: '1', pet_name: 'Moonpet', pet_xp: 2500, health: 90, energy: 90, happiness: 90, cleanliness: 90 };
 assert.ok(calculatePetArenaPower({ ...baseArenaPet, equipped_weapon: 'laser_claws' }, 'gear') > calculatePetArenaPower(baseArenaPet, 'gear'), 'gear affects battle power');
 assert.ok(sumPetArenaGearPower({ attack: 0, defense: 0, crit: 2, dodge: 0, luck: 0 }) > 0, 'secondary crit stats affect power');
@@ -170,8 +182,11 @@ assert.ok(arenaStatusCopy.includes('Armor: moon_helmet') && arenaStatusCopy.incl
 assert.ok(arenaMigration.includes('telegram_pet_arena_battles'), 'arena battle migration must create battle table');
 assert.ok(arenaMigration.includes('telegram_pet_arena_queue'), 'arena battle migration must create queue table');
 assert.ok(arenaMigration.includes('player1_ready_at') && arenaMigration.includes('player2_ready_at'), 'arena migration must store both ready timestamps');
+assert.ok(arenaTurnsMigration.includes('telegram_pet_arena_rounds'), 'turn migration must create arena rounds table');
+for (const column of ['current_round','max_rounds','player1_hp','player2_hp','player1_special','player2_special','last_round_log_json','expires_at']) assert.ok(arenaTurnsMigration.includes(column), `turn migration must include ${column}`);
 for (const column of ['equipped_armor', 'equipped_weapon', 'equipped_charm']) assert.ok(workerSchema.includes(column), `schema.sql must include arena profile column: ${column}`);
-for (const table of ['telegram_pet_arena_queue', 'telegram_pet_arena_battles']) assert.ok(workerSchema.includes(table), `schema.sql must include arena table: ${table}`);
+for (const table of ['telegram_pet_arena_queue', 'telegram_pet_arena_battles', 'telegram_pet_arena_rounds']) assert.ok(workerSchema.includes(table), `schema.sql must include arena table: ${table}`);
+for (const column of ['current_round','max_rounds','player1_hp','player2_hp','player1_special','player2_special']) assert.ok(workerSchema.includes(column), `schema.sql includes the new arena round/turn state: ${column}`);
 for (const indexName of ['idx_pet_arena_queue_match', 'idx_pet_arena_queue_one_waiting', 'idx_pet_arena_battles_p1_active', 'idx_pet_arena_battles_p2_active']) assert.ok(workerSchema.includes(indexName), `schema.sql must include arena index: ${indexName}`);
 
 
