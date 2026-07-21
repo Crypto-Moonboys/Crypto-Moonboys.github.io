@@ -2651,7 +2651,7 @@ function pickPetKaijuCpuCard(avoidKey = '') {
 }
 
 function buildPetKaijuMatchId() {
-  return `kaiju-${crypto.randomUUID()}`.slice(0, 80);
+  return `k-${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
 }
 
 function serializePetKaijuMatch(row) {
@@ -2747,9 +2747,13 @@ async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo') {
 
 async function enqueuePetKaijuPlayer(db, chatId, telegramId) {
   await db.prepare(`
-    INSERT INTO telegram_pet_kaiju_queue (id, chat_id, telegram_id, status)
+    UPDATE telegram_pet_kaiju_queue
+    SET updated_at = CURRENT_TIMESTAMP
+    WHERE chat_id = ? AND telegram_id = ? AND status = 'waiting'
+  `).bind(String(chatId), String(telegramId)).run().catch(() => {});
+  await db.prepare(`
+    INSERT OR IGNORE INTO telegram_pet_kaiju_queue (id, chat_id, telegram_id, status)
     VALUES (?, ?, ?, 'waiting')
-    ON CONFLICT(chat_id, telegram_id, status) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
   `).bind(crypto.randomUUID(), String(chatId), String(telegramId)).run().catch(() => {});
   const row = await db.prepare(`
     SELECT COUNT(*) AS count
@@ -9343,6 +9347,7 @@ export const __petMediaTestHooks = Object.freeze({
   PET_RANDOM_EVENTS,
   buildPetKaijuCardReplyMarkup,
   buildPetKaijuLobbyReplyMarkup,
+  buildPetKaijuMatchId,
   resolvePetKaijuBattle,
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,

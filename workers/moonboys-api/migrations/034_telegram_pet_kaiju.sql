@@ -34,9 +34,12 @@ CREATE TABLE IF NOT EXISTS telegram_pet_kaiju_queue (
   status      TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'played', 'left', 'expired')),
   queued_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
-  UNIQUE(chat_id, telegram_id, status)
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_queue_one_waiting
+  ON telegram_pet_kaiju_queue(chat_id, telegram_id)
+  WHERE status = 'waiting';
 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_queue_chat
   ON telegram_pet_kaiju_queue(chat_id, status, queued_at ASC);

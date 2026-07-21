@@ -20,6 +20,7 @@ const {
   PET_RANDOM_EVENTS,
   buildPetKaijuCardReplyMarkup,
   buildPetKaijuLobbyReplyMarkup,
+  buildPetKaijuMatchId,
   resolvePetKaijuBattle,
   buildPetMediaUrl,
   buildPetRunChoiceReplyMarkup,
@@ -116,6 +117,16 @@ for (const card of PET_KAIJU_CARDS) {
   for (const category of PET_KAIJU_CATEGORIES) {
     assert.ok(Number(card.stats[category.key]) > 0, `Kaiju card ${card.id} must include ${category.key}`);
   }
+}
+const generatedKaijuMatchId = buildPetKaijuMatchId();
+assert.ok(/^k-[a-f0-9]{12}$/.test(generatedKaijuMatchId), 'Kaiju match ids must be short enough for Telegram callback_data');
+const generatedKaijuLobby = buildPetKaijuLobbyReplyMarkup({ match_id: generatedKaijuMatchId });
+for (const button of generatedKaijuLobby.inline_keyboard.flat().filter((entry) => entry.callback_data)) {
+  assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Kaiju lobby callback too long: ${button.callback_data}`);
+}
+const generatedKaijuCards = buildPetKaijuCardReplyMarkup({ match_id: generatedKaijuMatchId });
+for (const button of generatedKaijuCards.inline_keyboard.flat().filter((entry) => entry.callback_data)) {
+  assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `Kaiju card callback too long: ${button.callback_data}`);
 }
 const kaijuLobby = buildPetKaijuLobbyReplyMarkup({ match_id: 'kaiju-abc' });
 assert.ok(kaijuLobby.inline_keyboard.flat().some((button) => button.callback_data === 'pet:kaiju:join:kaiju-abc'), 'Kaiju lobby must include a group join button');
@@ -916,6 +927,9 @@ for (const table of ['telegram_pet_kaiju_matches', 'telegram_pet_kaiju_queue']) 
 }
 assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_one_open_chat'), 'Kaiju migration must enforce one active table per chat');
 assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_queue_chat'), 'Kaiju migration must index the group queue');
+assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_queue_one_waiting'), 'Kaiju migration must only enforce one waiting queue row per user/chat');
+assert.ok(!kaijuMigration.includes('UNIQUE(chat_id, telegram_id, status)'), 'Kaiju queue migration must not block repeat played history rows');
+assert.ok(worker.includes('INSERT OR IGNORE INTO telegram_pet_kaiju_queue'), 'Kaiju queue enqueue must remain compatible with a partial unique waiting index');
 for (const column of ['telegram_id', 'run_id', 'season_key', 'status', 'depth', 'max_depth', 'risk_level', 'unbanked_pet_xp', 'unbanked_moon_gold', 'unbanked_moon_crystals', 'unbanked_style_tokens', 'started_at', 'completed_at', 'updated_at']) {
   assert.ok(runMigration.includes(column), `Pet Run Engine migration must include ${column}`);
 }
