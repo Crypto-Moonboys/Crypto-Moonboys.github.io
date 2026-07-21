@@ -3093,8 +3093,10 @@ async function readyPetArenaBattle(db, battle, telegramId) {
 async function forfeitPetArenaBattle(db, battle, telegramId) {
   const isP1 = String(battle.player1_telegram_id) === String(telegramId), isP2 = String(battle.player2_telegram_id) === String(telegramId);
   if (!isP1 && !isP2) return { accepted:false, reason:'not_participant', battle };
+  if (!['readying','active'].includes(String(battle.status))) return { accepted:true, duplicate:true, reason:'already_completed', battle };
   const winner = isP1 ? battle.player2_telegram_id : battle.player1_telegram_id;
-  await db.prepare(`UPDATE telegram_pet_arena_battles SET winner_telegram_id=?, result=?, player1_hp=?, player2_hp=? WHERE battle_id=?`).bind(winner === 'app' ? null : winner, isP1 ? 'player2_win' : 'player1_win', isP1 ? 0 : Number(battle.player1_hp || PET_ARENA_MAX_HP), isP2 ? 0 : Number(battle.player2_hp || PET_ARENA_MAX_HP), battle.battle_id).run();
+  const claim = await db.prepare(`UPDATE telegram_pet_arena_battles SET winner_telegram_id=?, result=?, player1_hp=?, player2_hp=? WHERE battle_id=? AND status IN ('readying','active')`).bind(winner === 'app' ? null : winner, isP1 ? 'player2_win' : 'player1_win', isP1 ? 0 : Number(battle.player1_hp || PET_ARENA_MAX_HP), isP2 ? 0 : Number(battle.player2_hp || PET_ARENA_MAX_HP), battle.battle_id).run();
+  if (Number(claim?.meta?.changes || 0) <= 0) return { accepted:true, duplicate:true, reason:'already_completed', battle: await getPetArenaBattle(db, battle.battle_id) };
   return completePetArenaBattle(db, await getPetArenaBattle(db, battle.battle_id));
 }
 async function applyPetArenaMove(db, battle, telegramId, expectedRound, move) {
