@@ -90,6 +90,11 @@
 
   let activeBoss = null;
   let frameInvaderDrawCount = 0;
+  let lastAlienDropSoundAt = 0;
+  let alienDropSoundCursor = 0;
+  const ALIEN_DROP_SOUND_SRC = '/games/invaders-3008/shit%20drop.mp3';
+  const ALIEN_DROP_SOUND_POOL_SIZE = 6;
+  const alienDropSoundPool = [];
 
   function hashString(value) {
     let hash = 2166136261;
@@ -161,6 +166,50 @@
   function shouldAllowHeavyExplosionLayer() {
     return frameInvaderDrawCount > 0 && frameInvaderDrawCount <= 10;
   }
+
+  function playAlienDropSound() {
+    const now = performance.now();
+    if (now - lastAlienDropSoundAt < 80) return;
+    lastAlienDropSoundAt = now;
+    const arcadeAudio = window.ArcadeAudio;
+    if (arcadeAudio?.isMuted?.() || window._arcadeMuted) return;
+    if (typeof Audio === 'undefined') return;
+    if (alienDropSoundPool.length < ALIEN_DROP_SOUND_POOL_SIZE) {
+      const audio = new Audio(ALIEN_DROP_SOUND_SRC);
+      audio.preload = 'auto';
+      alienDropSoundPool.push(audio);
+    }
+    const audio = alienDropSoundPool[alienDropSoundCursor % alienDropSoundPool.length];
+    alienDropSoundCursor += 1;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0.75;
+      audio.play().catch(function () {});
+    } catch (_) {
+      // Audio can fail before first user gesture on some browsers; ignore safely.
+    }
+  }
+
+  function looksLikeEnemyDropBullet(item) {
+    if (!item || typeof item !== 'object') return false;
+    const vy = Number(item.vy);
+    const y = Number(item.y);
+    const w = Number(item.w);
+    const h = Number(item.h);
+    if (!Number.isFinite(vy) || !Number.isFinite(y) || !Number.isFinite(w) || !Number.isFinite(h)) return false;
+    if (vy <= 0 || w > 6 || h < 8 || h > 16) return false;
+    const canvas = document.getElementById('invCanvas');
+    const canvasH = Number(canvas && canvas.height) || 960;
+    return y < canvasH - 95;
+  }
+
+  const previousArrayPush = Array.prototype.push;
+  Array.prototype.push = function (...items) {
+    const result = previousArrayPush.apply(this, items);
+    if (items.some(looksLikeEnemyDropBullet)) playAlienDropSound();
+    return result;
+  };
 
   function isBossLabel(text) {
     const label = String(text || '').toUpperCase();
