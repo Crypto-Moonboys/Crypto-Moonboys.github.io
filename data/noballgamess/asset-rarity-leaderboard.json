@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-21T06:09:17.401Z",
+  "generated_at": "2026-07-22T06:07:31.342Z",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "asset_ranking_enabled": true,
@@ -85621,7 +85621,7 @@
     {
       "asset_id": "1099997874140",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -86062,7 +86062,7 @@
     {
       "asset_id": "1099997874143",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -87287,7 +87287,7 @@
     {
       "asset_id": "1099997874151",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -87973,7 +87973,7 @@
     {
       "asset_id": "1099997874156",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -165638,7 +165638,7 @@
     {
       "asset_id": "1099598057090",
       "template_id": 401911,
-      "owner": "trmbq.wam",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -238550,7 +238550,7 @@
     {
       "asset_id": "1099997873628",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
