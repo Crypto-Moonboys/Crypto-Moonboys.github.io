@@ -89,6 +89,8 @@
   ];
 
   let activeBoss = null;
+  let frameInvaderDrawCount = 0;
+
   function hashString(value) {
     let hash = 2166136261;
     for (let i = 0; i < value.length; i++) {
@@ -117,6 +119,47 @@
       !src.includes('god-bomb') &&
       !src.includes('explosion') &&
       !src.includes('level-');
+  }
+
+  function isGeneratedInvaderSprite(image) {
+    const src = String(image && (image.currentSrc || image.src) || '').toLowerCase();
+    return src.includes('/art/invaders/generated/') &&
+      !src.includes('boss') &&
+      !src.includes('bitcoin') &&
+      !src.includes('btc-') &&
+      !src.includes('god-bomb') &&
+      !src.includes('explosion') &&
+      !src.includes('level-');
+  }
+
+  function isFullInvadersBackgroundFill(ctx, x, y, w, h) {
+    return ctx &&
+      ctx.canvas &&
+      ctx.canvas.id === 'invCanvas' &&
+      x === 0 &&
+      y === 0 &&
+      w === ctx.canvas.width &&
+      h === ctx.canvas.height &&
+      typeof ctx.fillStyle !== 'string';
+  }
+
+  function isHeavyExplosionParticleFill(ctx, w, h) {
+    if (!ctx || !ctx.canvas || ctx.canvas.id !== 'invCanvas') return false;
+    if (Number(ctx.globalAlpha) >= 0.99 || Number(w) > 8 || Number(h) > 8) return false;
+    const color = String(ctx.fillStyle || '').toLowerCase();
+    return color === '#ff6b2b' ||
+      color === '#f7c948' ||
+      color === '#ffd43b' ||
+      color === '#ff4fd1' ||
+      color === '#ff4444' ||
+      color === '#ff3333' ||
+      color === '#ff8888' ||
+      color === '#80d8ff' ||
+      color === '#2ec5ff';
+  }
+
+  function shouldAllowHeavyExplosionLayer() {
+    return frameInvaderDrawCount > 0 && frameInvaderDrawCount <= 10;
   }
 
   function isBossLabel(text) {
@@ -206,7 +249,12 @@
   const previousDrawImage = proto.drawImage;
   const previousStrokeRect = proto.strokeRect;
   const previousStroke = proto.stroke;
+  const previousFillRect = proto.fillRect;
+
   proto.drawImage = function (image, ...args) {
+    if (this.canvas && this.canvas.id === 'invCanvas' && isGeneratedInvaderSprite(image)) {
+      frameInvaderDrawCount += 1;
+    }
     if (this.canvas && this.canvas.id === 'invCanvas' && isNativeMemeEnemyImage(image) && args.length >= 4) {
       const dx = Number(args[0]);
       const dy = Number(args[1]);
@@ -229,6 +277,24 @@
       }
     }
     return previousDrawImage.call(this, image, ...args);
+  };
+
+  proto.fillRect = function (x, y, w, h) {
+    if (isFullInvadersBackgroundFill(this, x, y, w, h)) {
+      frameInvaderDrawCount = 0;
+    }
+
+    if (isHeavyExplosionParticleFill(this, w, h) && !shouldAllowHeavyExplosionLayer()) {
+      const alpha = this.globalAlpha;
+      this.globalAlpha = 1;
+      try {
+        return previousFillRect.apply(this, arguments);
+      } finally {
+        this.globalAlpha = alpha;
+      }
+    }
+
+    return previousFillRect.apply(this, arguments);
   };
 
   proto.strokeRect = function (x, y, w, h) {
