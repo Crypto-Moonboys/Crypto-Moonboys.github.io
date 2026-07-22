@@ -103,6 +103,57 @@
   const RARE_SHIP_REPEAT_MS = 1350;
   const rareShipSoundPool = [];
   const trackedRareShips = new Set();
+  const INVADERS_AUDIO_MASTER_SCALE = 0.3;
+
+  function clampVolume(value) {
+    return Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
+  function patchAudioParam(param) {
+    if (!param || param.__INVADERS_AUDIO_SCALE_PATCHED__) return;
+    Object.defineProperty(param, '__INVADERS_AUDIO_SCALE_PATCHED__', { value: true });
+    for (const methodName of ['setValueAtTime', 'linearRampToValueAtTime', 'exponentialRampToValueAtTime']) {
+      if (typeof param[methodName] !== 'function') continue;
+      const original = param[methodName].bind(param);
+      param[methodName] = function (value, ...args) {
+        return original(clampVolume(value) * INVADERS_AUDIO_MASTER_SCALE, ...args);
+      };
+    }
+  }
+
+  function installInvadersAudioScale() {
+    if (window.__INVADERS_AUDIO_MASTER_SCALE_PATCHED__) return;
+    window.__INVADERS_AUDIO_MASTER_SCALE_PATCHED__ = true;
+
+    const mediaProto = window.HTMLMediaElement && window.HTMLMediaElement.prototype;
+    const volumeDescriptor = mediaProto && Object.getOwnPropertyDescriptor(mediaProto, 'volume');
+    if (volumeDescriptor && typeof volumeDescriptor.set === 'function' && typeof volumeDescriptor.get === 'function') {
+      Object.defineProperty(mediaProto, 'volume', {
+        configurable: true,
+        enumerable: volumeDescriptor.enumerable,
+        get() {
+          return volumeDescriptor.get.call(this);
+        },
+        set(value) {
+          volumeDescriptor.set.call(this, clampVolume(value) * INVADERS_AUDIO_MASTER_SCALE);
+        },
+      });
+    }
+
+    for (const ContextCtor of [window.AudioContext, window.webkitAudioContext]) {
+      if (!ContextCtor || !ContextCtor.prototype || ContextCtor.prototype.__INVADERS_GAIN_SCALE_PATCHED__) continue;
+      const originalCreateGain = ContextCtor.prototype.createGain;
+      if (typeof originalCreateGain !== 'function') continue;
+      Object.defineProperty(ContextCtor.prototype, '__INVADERS_GAIN_SCALE_PATCHED__', { value: true });
+      ContextCtor.prototype.createGain = function (...args) {
+        const gainNode = originalCreateGain.apply(this, args);
+        patchAudioParam(gainNode && gainNode.gain);
+        return gainNode;
+      };
+    }
+  }
+
+  installInvadersAudioScale();
 
   function hashString(value) {
     let hash = 2166136261;
