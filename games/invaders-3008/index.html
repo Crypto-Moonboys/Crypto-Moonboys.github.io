@@ -124,15 +124,39 @@
   let bombFireSoundCursor = 0;
   let introStartSoundCursor = 0;
   let bossSummarySoundCursor = 0;
+  let bossLoopSoundCursor = 0;
   let lastIntroStartSoundAt = 0;
+  let lastBossLoopSeenAt = 0;
   let bossSummarySoundPlayed = false;
+  let bossLoopSoundTimer = null;
   const BOMB_FIRE_SOUND_SRC = '/games/invaders-3008/player%20bomb%20fire.mp3';
   const INTRO_START_SOUND_SRC = '/games/invaders-3008/intro%20start.mp3';
   const BOSS_SUMMARY_SOUND_SRC = '/games/invaders-3008/boss%20start.mp3';
+  const BOSS_LOOP_SOUND_SRCS = [
+    '/games/invaders-3008/boss%20play%20till%20killed%20five.mp3',
+    '/games/invaders-3008/boss%20play%20till%20killed%20two.mp3',
+  ];
   const BOMB_FIRE_SOUND_POOL_SIZE = 4;
+  const BOSS_LOOP_WATCHDOG_MS = 500;
   const bombFireSoundPool = [];
   const introStartSoundPool = [];
   const bossSummarySoundPool = [];
+  const bossLoopSoundPools = BOSS_LOOP_SOUND_SRCS.map(() => []);
+  const liveBossLabels = new Set([
+    'CYBER TROLL',
+    'CORRUPT APE',
+    'LASER CAT',
+    'SHIBA WARLORD',
+    'GLITCH UNICORN',
+    'SHIBA DOOM RIDER',
+    'THE WALL',
+    'THE SPLITTER',
+    'THE SNIPER',
+    'THE SWARM KING',
+    'THE GLITCH CORE',
+    'THE BOMBER',
+    'BOSS',
+  ]);
 
   function cannonSrc(level) {
     const slug = level === 7 ? 'bitcoin-blaster-tank' : 'bitcoin-cannon';
@@ -337,6 +361,60 @@
     }
   }
 
+  function playBossLoopSoundLayer() {
+    const arcadeAudio = window.ArcadeAudio;
+    if (arcadeAudio?.isMuted?.() || window._arcadeMuted) return;
+    if (typeof Audio === 'undefined') return;
+    BOSS_LOOP_SOUND_SRCS.forEach((src, index) => {
+      const pool = bossLoopSoundPools[index];
+      if (pool.length < BOMB_FIRE_SOUND_POOL_SIZE) {
+        const audio = new Audio(src);
+        audio.preload = 'auto';
+        audio.loop = true;
+        pool.push(audio);
+      }
+      const audio = pool[bossLoopSoundCursor % pool.length];
+      try {
+        if (audio.paused) audio.currentTime = 0;
+        audio.volume = 0.175;
+        if (audio.paused) audio.play().catch(function () {});
+      } catch (_) {
+        // Audio can fail before first user gesture on some browsers; ignore safely.
+      }
+    });
+    bossLoopSoundCursor += 1;
+  }
+
+  function stopBossLoopSound() {
+    if (bossLoopSoundTimer) {
+      clearInterval(bossLoopSoundTimer);
+      bossLoopSoundTimer = null;
+    }
+    for (const pool of bossLoopSoundPools) {
+      for (const audio of pool) {
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch (_) {}
+      }
+    }
+  }
+
+  function noteLiveBossFrame() {
+    const now = performance.now();
+    const wasInactive = !bossLoopSoundTimer;
+    lastBossLoopSeenAt = now;
+    if (wasInactive) playBossLoopSoundLayer();
+    if (!bossLoopSoundTimer) {
+      bossLoopSoundTimer = setInterval(() => {
+        if (performance.now() - lastBossLoopSeenAt > 650) {
+          stopBossLoopSound();
+          return;
+        }
+      }, BOSS_LOOP_WATCHDOG_MS);
+    }
+  }
+
   function getActiveBombSkin() {
     const now = performance.now();
     if (now - lastBombSeenAt > 300) {
@@ -368,6 +446,7 @@
   function resetSummarySoundSoon() {
     setTimeout(() => {
       bossSummarySoundPlayed = false;
+      stopBossLoopSound();
     }, 0);
   }
 
@@ -492,6 +571,8 @@
         setCannonLevel(1);
       } else if (label === 'Press Start') {
         setCannonLevel(1);
+      } else if (liveBossLabels.has(label)) {
+        noteLiveBossFrame();
       }
     }
     return originalFillText.call(this, text, ...args);
@@ -557,10 +638,10 @@
   };
 })();
 </script>
-<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=invaders-boss-summary-sfx-20260722"></script>
+<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=invaders-boss-loop-sfx-20260722"></script>
 <script type="module">
 import { mountGame }         from '/js/arcade/core/game-shell.js';
-import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=invaders-boss-summary-sfx-20260722';
+import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=invaders-boss-loop-sfx-20260722';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 mountGame({
