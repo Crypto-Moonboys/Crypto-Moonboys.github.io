@@ -95,6 +95,14 @@
   const ALIEN_DROP_SOUND_SRC = '/games/invaders-3008/shit%20drop.mp3';
   const ALIEN_DROP_SOUND_POOL_SIZE = 6;
   const alienDropSoundPool = [];
+  let rareShipSoundCursor = 0;
+  let rareShipSoundTimer = null;
+  let lastRareShipSoundAt = 0;
+  const RARE_SHIP_SOUND_SRC = '/games/invaders-3008/rare%20ships.mp3';
+  const RARE_SHIP_SOUND_POOL_SIZE = 4;
+  const RARE_SHIP_REPEAT_MS = 1350;
+  const rareShipSoundPool = [];
+  const trackedRareShips = new Set();
 
   function hashString(value) {
     let hash = 2166136261;
@@ -191,6 +199,77 @@
     }
   }
 
+  function playRareShipSound() {
+    const now = performance.now();
+    if (now - lastRareShipSoundAt < 250) return;
+    lastRareShipSoundAt = now;
+    const arcadeAudio = window.ArcadeAudio;
+    if (arcadeAudio?.isMuted?.() || window._arcadeMuted) return;
+    if (typeof Audio === 'undefined') return;
+    if (rareShipSoundPool.length < RARE_SHIP_SOUND_POOL_SIZE) {
+      const audio = new Audio(RARE_SHIP_SOUND_SRC);
+      audio.preload = 'auto';
+      rareShipSoundPool.push(audio);
+    }
+    const audio = rareShipSoundPool[rareShipSoundCursor % rareShipSoundPool.length];
+    rareShipSoundCursor += 1;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0.78;
+      audio.play().catch(function () {});
+    } catch (_) {
+      // Audio can fail before first user gesture on some browsers; ignore safely.
+    }
+  }
+
+  function isRareShipAlive(ship) {
+    if (!ship || typeof ship !== 'object') return false;
+    const hp = Number(ship.hp ?? 1);
+    const y = Number(ship.y);
+    const canvas = document.getElementById('invCanvas');
+    const canvasH = Number(canvas && canvas.height) || 960;
+    if (!Number.isFinite(hp) || hp <= 0) return false;
+    if (ship.alive === false) return false;
+    if (Number.isFinite(y) && y > canvasH + 40) return false;
+    return true;
+  }
+
+  function pruneTrackedRareShips() {
+    for (const ship of Array.from(trackedRareShips)) {
+      if (!isRareShipAlive(ship)) trackedRareShips.delete(ship);
+    }
+    return trackedRareShips.size;
+  }
+
+  function stopRareShipSoundLoop(clearTracked) {
+    if (rareShipSoundTimer) {
+      clearInterval(rareShipSoundTimer);
+      rareShipSoundTimer = null;
+    }
+    if (clearTracked !== false) trackedRareShips.clear();
+    for (const audio of rareShipSoundPool) {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (_) {}
+    }
+  }
+
+  function ensureRareShipSoundLoop() {
+    pruneTrackedRareShips();
+    if (!trackedRareShips.size) return;
+    playRareShipSound();
+    if (rareShipSoundTimer) return;
+    rareShipSoundTimer = setInterval(function () {
+      if (!pruneTrackedRareShips()) {
+        stopRareShipSoundLoop();
+        return;
+      }
+      playRareShipSound();
+    }, RARE_SHIP_REPEAT_MS);
+  }
+
   function looksLikeEnemyDropBullet(item) {
     if (!item || typeof item !== 'object') return false;
     const vy = Number(item.vy);
@@ -204,12 +283,34 @@
     return y < canvasH - 95;
   }
 
+  function looksLikeRareShip(item) {
+    if (!item || typeof item !== 'object') return false;
+    if (item.type !== 'golden' && item.type !== 'mini_boss') return false;
+    const x = Number(item.x);
+    const y = Number(item.y);
+    const w = Number(item.w);
+    const h = Number(item.h);
+    return [x, y, w, h].every(Number.isFinite) && w >= 24 && h >= 20 && isRareShipAlive(item);
+  }
+
   const previousArrayPush = Array.prototype.push;
   Array.prototype.push = function (...items) {
     const result = previousArrayPush.apply(this, items);
     if (items.some(looksLikeEnemyDropBullet)) playAlienDropSound();
+    for (const item of items) {
+      if (looksLikeRareShip(item)) trackedRareShips.add(item);
+    }
+    if (trackedRareShips.size) ensureRareShipSoundLoop();
     return result;
   };
+
+  document.addEventListener('arcade-mute-change', function (event) {
+    if (event?.detail?.muted) stopRareShipSoundLoop(false);
+  });
+
+  document.addEventListener('arcade-pause-change', function (event) {
+    if (event?.detail?.paused) stopRareShipSoundLoop(false);
+  });
 
   function isBossLabel(text) {
     const label = String(text || '').toUpperCase();
