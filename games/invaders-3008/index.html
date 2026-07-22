@@ -122,9 +122,13 @@
   const backgroundHitPulses = [];
   let lastBackgroundPulseAt = 0;
   let bombFireSoundCursor = 0;
+  let introStartSoundCursor = 0;
+  let lastIntroStartSoundAt = 0;
   const BOMB_FIRE_SOUND_SRC = '/games/invaders-3008/player%20bomb%20fire.mp3';
+  const INTRO_START_SOUND_SRC = '/games/invaders-3008/intro%20start.mp3';
   const BOMB_FIRE_SOUND_POOL_SIZE = 4;
   const bombFireSoundPool = [];
+  const introStartSoundPool = [];
 
   function cannonSrc(level) {
     const slug = level === 7 ? 'bitcoin-blaster-tank' : 'bitcoin-cannon';
@@ -282,6 +286,30 @@
     }
   }
 
+  function playIntroStartSound() {
+    const now = performance.now();
+    if (now - lastIntroStartSoundAt < 650) return;
+    lastIntroStartSoundAt = now;
+    const arcadeAudio = window.ArcadeAudio;
+    if (arcadeAudio?.isMuted?.() || window._arcadeMuted) return;
+    if (typeof Audio === 'undefined') return;
+    if (introStartSoundPool.length < BOMB_FIRE_SOUND_POOL_SIZE) {
+      const audio = new Audio(INTRO_START_SOUND_SRC);
+      audio.preload = 'auto';
+      introStartSoundPool.push(audio);
+    }
+    const audio = introStartSoundPool[introStartSoundCursor % introStartSoundPool.length];
+    introStartSoundCursor += 1;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0.175;
+      audio.play().catch(function () {});
+    } catch (_) {
+      // Audio can fail before first user gesture on some browsers; ignore safely.
+    }
+  }
+
   function getActiveBombSkin() {
     const now = performance.now();
     if (now - lastBombSeenAt > 300) {
@@ -323,6 +351,7 @@
 
   window.addEventListener('click', (event) => {
     const id = event.target && event.target.id;
+    if (id === 'startBtn') playIntroStartSound();
     if (id === 'startBtn' || id === 'resetBtn') resetCannonSoon();
   }, true);
 
@@ -489,10 +518,10 @@
   };
 })();
 </script>
-<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=invaders-bomb-fire-sfx-20260722"></script>
+<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=invaders-intro-start-sfx-20260722"></script>
 <script type="module">
 import { mountGame }         from '/js/arcade/core/game-shell.js';
-import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=invaders-bomb-fire-sfx-20260722';
+import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=invaders-intro-start-sfx-20260722';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 mountGame({
