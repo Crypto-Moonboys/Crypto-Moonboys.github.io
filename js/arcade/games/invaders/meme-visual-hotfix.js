@@ -3,7 +3,7 @@
   window.__INVADERS_RANDOM_ASSET_LAYER__ = true;
 
   const ASSET_VERSION = 'invaders-no-outline-stable-20260716';
-  const BUNKER_VERSION = 'btc-bunkers-20260722';
+  const BUNKER_VERSION = 'btc-bunkers-20260722c';
   const ASSET_BASE = '/art/invaders/generated/';
   const invaderFiles = [
     'invader meme one.png',
@@ -215,30 +215,62 @@
     return image && image.complete && image.naturalWidth > 0;
   }
 
+  function parseBunkerGreenHealth(fillStyle) {
+    const fill = String(fillStyle || '').replace(/\s+/g, '').toLowerCase();
+    let match = fill.match(/^rgb\((\d+),(\d+),(\d+)\)$/);
+    if (match) {
+      const red = Number(match[1]);
+      const green = Number(match[2]);
+      const blue = Number(match[3]);
+      if (red === 0 && blue === 0 && green >= 80) {
+        return Math.max(0, Math.min(1, (green - 100) / 85));
+      }
+    }
+
+    match = fill.match(/^#([0-9a-f]{6})$/);
+    if (match) {
+      const red = parseInt(match[1].slice(0, 2), 16);
+      const green = parseInt(match[1].slice(2, 4), 16);
+      const blue = parseInt(match[1].slice(4, 6), 16);
+      if (red === 0 && blue === 0 && green >= 80) {
+        return Math.max(0, Math.min(1, (green - 100) / 85));
+      }
+    }
+
+    match = fill.match(/^#([0-9a-f]{3})$/);
+    if (match) {
+      const red = parseInt(match[1][0] + match[1][0], 16);
+      const green = parseInt(match[1][1] + match[1][1], 16);
+      const blue = parseInt(match[1][2] + match[1][2], 16);
+      if (red === 0 && blue === 0 && green >= 80) {
+        return Math.max(0, Math.min(1, (green - 100) / 85));
+      }
+    }
+
+    return null;
+  }
+
   function isBunkerBlockRect(ctx, x, y, w, h) {
     if (!ctx || !ctx.canvas || ctx.canvas.id !== 'invCanvas') return false;
     if (!bunkerStageLoaded()) return false;
-    const fill = String(ctx.fillStyle || '').replace(/\s+/g, '');
     const nx = Number(x);
     const ny = Number(y);
     const nw = Number(w);
     const nh = Number(h);
     if (![nx, ny, nw, nh].every(Number.isFinite)) return false;
-    if (!/^rgb\(0,\d+,0\)$/.test(fill)) return false;
-    if (nw < 4 || nw > 16 || nh < 4 || nh > 14) return false;
-    return ny > ctx.canvas.height * 0.58 && ny < ctx.canvas.height - 58;
+    if (nw < 8 || nw > 16 || nh < 6 || nh > 12) return false;
+    if (ny < ctx.canvas.height - 150 || ny > ctx.canvas.height - 85) return false;
+    return parseBunkerGreenHealth(ctx.fillStyle) !== null;
   }
 
   function queueBunkerBlock(ctx, x, y, w, h) {
-    const fill = String(ctx.fillStyle || '').replace(/\s+/g, '');
-    const green = Number((fill.match(/^rgb\(0,(\d+),0\)$/) || [])[1] || 185);
     bunkerBlocks.push({
       ctx,
       x: Number(x),
       y: Number(y),
       w: Number(w),
       h: Number(h),
-      health: Math.max(0, Math.min(1, (green - 100) / 85)),
+      health: parseBunkerGreenHealth(ctx.fillStyle) ?? 1,
     });
 
     if (!bunkerFlushQueued) {
