@@ -81,7 +81,7 @@ import {
   BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
 } from '/js/arcade/systems/boss-system.js';
 
-import { createRenderer } from './render-system.js?v=meme-swarm-png-20260712';
+import { createRenderer } from './render-system.js?v=native-btc-bunkers-20260722';
 
 const MEME_IMPACT_COLORS = [
   '#ff3158','#ffd43b','#ff6b2b','#ff2ed1','#ad5cff','#2ee8ff','#ff4fd1','#ff7849','#9cff31','#f7c948',

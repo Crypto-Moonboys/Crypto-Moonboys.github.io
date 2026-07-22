@@ -3,7 +3,6 @@
   window.__INVADERS_RANDOM_ASSET_LAYER__ = true;
 
   const ASSET_VERSION = 'invaders-no-outline-stable-20260716';
-  const BUNKER_VERSION = 'btc-bunkers-20260722c';
   const ASSET_BASE = '/art/invaders/generated/';
   const invaderFiles = [
     'invader meme one.png',
@@ -50,12 +49,6 @@
     image.src = `${ASSET_BASE}${encodeURIComponent(file)}?v=${ASSET_VERSION}`;
     return { file, image };
   });
-  const bunkerImages = Array.from({ length: 10 }, (_, index) => {
-    const image = new Image();
-    image.decoding = 'async';
-    image.src = `${ASSET_BASE}invaders-btc-${index + 1}.png?v=${BUNKER_VERSION}`;
-    return image;
-  });
   const sourceSkinMap = new Map();
   const bossFiles = [
     'invader meme boss.png',
@@ -96,10 +89,6 @@
   ];
 
   let activeBoss = null;
-  let bunkerBlocks = [];
-  let bunkerFlushQueued = false;
-  const bunkerSlotMaxBlocks = new Map();
-
   function hashString(value) {
     let hash = 2166136261;
     for (let i = 0; i < value.length; i++) {
@@ -210,156 +199,6 @@
     return Number(ctx.lineWidth) <= 2 && Number(ctx.shadowBlur) > 0;
   }
 
-  function bunkerStageLoaded() {
-    const image = bunkerImages[0];
-    return image && image.complete && image.naturalWidth > 0;
-  }
-
-  function parseBunkerGreenHealth(fillStyle) {
-    const fill = String(fillStyle || '').replace(/\s+/g, '').toLowerCase();
-    let match = fill.match(/^rgb\((\d+),(\d+),(\d+)\)$/);
-    if (match) {
-      const red = Number(match[1]);
-      const green = Number(match[2]);
-      const blue = Number(match[3]);
-      if (red === 0 && blue === 0 && green >= 80) {
-        return Math.max(0, Math.min(1, (green - 100) / 85));
-      }
-    }
-
-    match = fill.match(/^#([0-9a-f]{6})$/);
-    if (match) {
-      const red = parseInt(match[1].slice(0, 2), 16);
-      const green = parseInt(match[1].slice(2, 4), 16);
-      const blue = parseInt(match[1].slice(4, 6), 16);
-      if (red === 0 && blue === 0 && green >= 80) {
-        return Math.max(0, Math.min(1, (green - 100) / 85));
-      }
-    }
-
-    match = fill.match(/^#([0-9a-f]{3})$/);
-    if (match) {
-      const red = parseInt(match[1][0] + match[1][0], 16);
-      const green = parseInt(match[1][1] + match[1][1], 16);
-      const blue = parseInt(match[1][2] + match[1][2], 16);
-      if (red === 0 && blue === 0 && green >= 80) {
-        return Math.max(0, Math.min(1, (green - 100) / 85));
-      }
-    }
-
-    return null;
-  }
-
-  function isBunkerBlockRect(ctx, x, y, w, h) {
-    if (!ctx || !ctx.canvas || ctx.canvas.id !== 'invCanvas') return false;
-    if (!bunkerStageLoaded()) return false;
-    const nx = Number(x);
-    const ny = Number(y);
-    const nw = Number(w);
-    const nh = Number(h);
-    if (![nx, ny, nw, nh].every(Number.isFinite)) return false;
-    if (nw < 8 || nw > 16 || nh < 6 || nh > 12) return false;
-    if (ny < ctx.canvas.height - 150 || ny > ctx.canvas.height - 85) return false;
-    return parseBunkerGreenHealth(ctx.fillStyle) !== null;
-  }
-
-  function queueBunkerBlock(ctx, x, y, w, h) {
-    bunkerBlocks.push({
-      ctx,
-      x: Number(x),
-      y: Number(y),
-      w: Number(w),
-      h: Number(h),
-      health: parseBunkerGreenHealth(ctx.fillStyle) ?? 1,
-    });
-
-    if (!bunkerFlushQueued) {
-      bunkerFlushQueued = true;
-      queueMicrotask(flushBtcBunkers);
-    }
-  }
-
-  function groupBunkerBlocks(blocks) {
-    const sorted = blocks.slice().sort((a, b) => a.x - b.x || a.y - b.y);
-    const groups = [];
-    for (const block of sorted) {
-      let group = groups[groups.length - 1];
-      if (!group || block.x - group.maxX > 22) {
-        group = { blocks: [], minX: block.x, minY: block.y, maxX: block.x + block.w, maxY: block.y + block.h };
-        groups.push(group);
-      }
-      group.blocks.push(block);
-      group.minX = Math.min(group.minX, block.x);
-      group.minY = Math.min(group.minY, block.y);
-      group.maxX = Math.max(group.maxX, block.x + block.w);
-      group.maxY = Math.max(group.maxY, block.y + block.h);
-    }
-    return groups;
-  }
-
-  function drawBtcBunker(ctx, group, slotIndex) {
-    const maxSeen = Math.max(bunkerSlotMaxBlocks.get(slotIndex) || 0, group.blocks.length);
-    bunkerSlotMaxBlocks.set(slotIndex, maxSeen);
-
-    const avgColorHealth = group.blocks.reduce((sum, block) => sum + block.health, 0) / Math.max(1, group.blocks.length);
-    const countHealth = group.blocks.length / Math.max(1, maxSeen);
-    const healthRatio = Math.max(0, Math.min(1, Math.min(avgColorHealth, countHealth)));
-    if (healthRatio <= 0.025) return;
-
-    const damageRatio = 1 - healthRatio;
-    const stage = Math.max(0, Math.min(9, Math.floor(damageRatio * 10)));
-    const image = bunkerImages[stage] || bunkerImages[0];
-    if (!image || !image.complete || image.naturalWidth <= 0) return;
-
-    const sourceRatio = image.naturalWidth / image.naturalHeight;
-    const oldW = group.maxX - group.minX;
-    const oldH = group.maxY - group.minY;
-    const targetH = Math.max(oldH + 22, Math.min(70, oldW * 0.82));
-    const targetW = Math.min(oldW + 44, targetH * sourceRatio);
-    const cx = group.minX + oldW / 2;
-    const bottom = group.maxY + 13;
-    const time = performance.now() * 0.001;
-    const pulse = 0.96 + Math.sin(time * 5 + slotIndex * 1.7) * 0.025;
-
-    ctx.save();
-    ctx.imageSmoothingEnabled = false;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 0.45 + healthRatio * 0.55;
-    ctx.shadowBlur = 12 + damageRatio * 20;
-    ctx.shadowColor = damageRatio > 0.5 ? '#ffb000' : '#ffd84d';
-    previousDrawImage.call(
-      ctx,
-      image,
-      cx - (targetW * pulse) / 2,
-      bottom - targetH * pulse,
-      targetW * pulse,
-      targetH * pulse,
-    );
-    ctx.restore();
-  }
-
-  function flushBtcBunkers() {
-    bunkerFlushQueued = false;
-    const blocks = bunkerBlocks;
-    bunkerBlocks = [];
-    if (!blocks.length) return;
-
-    const byCanvas = new Map();
-    for (const block of blocks) {
-      const key = block.ctx && block.ctx.canvas;
-      if (!key) continue;
-      if (!byCanvas.has(key)) byCanvas.set(key, []);
-      byCanvas.get(key).push(block);
-    }
-
-    for (const canvasBlocks of byCanvas.values()) {
-      const ctx = canvasBlocks[0].ctx;
-      groupBunkerBlocks(canvasBlocks).slice(0, 4).forEach((group, index) => {
-        drawBtcBunker(ctx, group, index);
-      });
-    }
-  }
-
   const proto = window.CanvasRenderingContext2D && window.CanvasRenderingContext2D.prototype;
   if (!proto) return;
 
@@ -367,16 +206,6 @@
   const previousDrawImage = proto.drawImage;
   const previousStrokeRect = proto.strokeRect;
   const previousStroke = proto.stroke;
-  const previousFillRect = proto.fillRect;
-
-  proto.fillRect = function (x, y, w, h) {
-    if (isBunkerBlockRect(this, x, y, w, h)) {
-      queueBunkerBlock(this, x, y, w, h);
-      return;
-    }
-    return previousFillRect.apply(this, arguments);
-  };
-
   proto.drawImage = function (image, ...args) {
     if (this.canvas && this.canvas.id === 'invCanvas' && isNativeMemeEnemyImage(image) && args.length >= 4) {
       const dx = Number(args[0]);
