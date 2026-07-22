@@ -192,7 +192,7 @@
     try {
       audio.pause();
       audio.currentTime = 0;
-      audio.volume = 0.375;
+      audio.volume = 0.1875;
       audio.play().catch(function () {});
     } catch (_) {
       // Audio can fail before first user gesture on some browsers; ignore safely.
@@ -216,7 +216,7 @@
     try {
       audio.pause();
       audio.currentTime = 0;
-      audio.volume = 0.39;
+      audio.volume = 0.195;
       audio.play().catch(function () {});
     } catch (_) {
       // Audio can fail before first user gesture on some browsers; ignore safely.
