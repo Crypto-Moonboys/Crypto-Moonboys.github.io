@@ -101,6 +101,54 @@ const _memeEnemies = MEME_ENEMY_FILES.map((file) => {
   return entry;
 });
 
+
+// ── BTC bunker sprite loader ──────────────────────────────────────────────────
+const BTC_BUNKER_ASSET_VERSION = 'btc-bunkers-native-20260722';
+const BTC_BUNKER_ASSETS = Array.from({ length: 10 }, (_, index) => {
+  if (typeof Image === 'undefined') return { status: 'unsupported', image: null, stage: index + 1 };
+  const entry = { status: 'loading', image: new Image(), stage: index + 1 };
+  entry.image.decoding = 'async';
+  entry.image.onload = () => { entry.status = entry.image.naturalWidth > 0 ? 'ready' : 'error'; };
+  entry.image.onerror = () => { entry.status = 'error'; };
+  entry.image.src = `/art/invaders/generated/invaders-btc-${index + 1}.png?v=${BTC_BUNKER_ASSET_VERSION}`;
+  return entry;
+});
+const BTC_BUNKER_FALLBACK_RATIO = 1.85;
+const _bunkerVisualState = typeof WeakMap === 'undefined' ? null : new WeakMap();
+
+function getBtcBunkerImage(stage) {
+  const entry = BTC_BUNKER_ASSETS[stage - 1] || BTC_BUNKER_ASSETS[0];
+  return entry && entry.status === 'ready' ? entry.image : null;
+}
+
+function getBunkerVisualState(bunker) {
+  if (!_bunkerVisualState || !bunker) return null;
+
+  let state = _bunkerVisualState.get(bunker);
+  const remainingMaxHp = bunker.reduce((sum, blk) => sum + Math.max(0, Number(blk.maxHp) || 0), 0);
+  const remainingHp = bunker.reduce((sum, blk) => sum + Math.max(0, Number(blk.hp) || 0), 0);
+  if (!state) {
+    state = { maxHp: remainingMaxHp, minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+    _bunkerVisualState.set(bunker, state);
+  }
+
+  state.maxHp = Math.max(state.maxHp || 0, remainingMaxHp, remainingHp);
+  for (const blk of bunker) {
+    const x = Number(blk.x);
+    const y = Number(blk.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+    state.minX = Math.min(state.minX, x);
+    state.minY = Math.min(state.minY, y);
+    state.maxX = Math.max(state.maxX, x + BUNKER_BLOCK_W);
+    state.maxY = Math.max(state.maxY, y + BUNKER_BLOCK_H);
+  }
+
+  return state;
+}
+
+/** Exposed for integration tests only — do not use in gameplay code. */
+export const __btcBunkerLoader = BTC_BUNKER_ASSETS;
+
 function memeSpriteIndex(inv) {
   const seed = Number.isFinite(inv.seed) ? inv.seed : 0;
   const row = Number.isFinite(inv.row) ? inv.row : 0;
@@ -754,11 +802,33 @@ export function createRenderer(ctx, W, H) {
 
   function drawBunkers(bunkers) {
     for (const bunker of bunkers) {
-      for (const blk of bunker) {
-        const g = Math.floor(100 + (blk.hp / blk.maxHp) * 85);
-        ctx.fillStyle = 'rgb(0,' + g + ',0)';
-        ctx.fillRect(blk.x, blk.y, BUNKER_BLOCK_W - 1, BUNKER_BLOCK_H - 1);
-      }
+      if (!bunker || bunker.length === 0) continue;
+
+      const state = getBunkerVisualState(bunker);
+      const remainingHp = bunker.reduce((sum, blk) => sum + Math.max(0, Number(blk.hp) || 0), 0);
+      const maxHp = Math.max(0, Number(state && state.maxHp) || 0);
+      if (remainingHp <= 0 || maxHp <= 0) continue;
+
+      const damageRatio = clamp(1 - remainingHp / maxHp, 0, 1);
+      const stage = clamp(Math.floor(damageRatio * BTC_BUNKER_ASSETS.length) + 1, 1, BTC_BUNKER_ASSETS.length);
+      const image = getBtcBunkerImage(stage);
+      if (!image) continue;
+
+      const oldW = Math.max(BUNKER_BLOCK_W, state.maxX - state.minX);
+      const oldH = Math.max(BUNKER_BLOCK_H, state.maxY - state.minY);
+      const sourceRatio = image.naturalWidth > 0 && image.naturalHeight > 0
+        ? image.naturalWidth / image.naturalHeight
+        : BTC_BUNKER_FALLBACK_RATIO;
+      const targetH = Math.max(oldH + 18, Math.min(72, oldW * 0.72));
+      const targetW = Math.min(oldW + 48, targetH * sourceRatio);
+      const cx = state.minX + oldW / 2;
+      const bottom = state.maxY + 10;
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(image, cx - targetW / 2, bottom - targetH, targetW, targetH);
+      ctx.restore();
     }
   }
 
