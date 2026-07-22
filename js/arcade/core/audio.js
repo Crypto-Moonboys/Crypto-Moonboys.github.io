@@ -117,7 +117,7 @@ const SOUND_LIBRARY = {
 };
 
 // Keep a defensive default here so module-driven game pages remain safe even if
-'t// game-fullscreen.js has not been evaluated yet.
+// game-fullscreen.js has not been evaluated yet.
 if (typeof window !== 'undefined' && typeof window._arcadeMuted === 'undefined') {
   window._arcadeMuted = false;
 }
