@@ -64,7 +64,6 @@
   const killedSoundPools = KILLED_SOUND_SRCS.map(() => []);
   const alienDropSoundPool = [];
   const rareShipSoundPool = [];
-  const trackedRareShips = new Set();
   let currentWave = 1;
   let killedSoundSlots = shuffleSlots(currentWave);
   let killedSoundCursor = 0;
@@ -73,7 +72,6 @@
   let lastKilledSoundAt = 0;
   let lastAlienDropSoundAt = 0;
   let lastRareShipSoundAt = 0;
-  let rareShipSoundTimer = null;
   let lastHudSyncAt = 0;
   let frameInvaderDrawCount = 0;
   let activeBoss = null;
@@ -238,50 +236,15 @@
 
   function playRareShipSound() {
     const now = performance.now();
-    if (now - lastRareShipSoundAt < 250) return;
+    if (now - lastRareShipSoundAt < 900) return;
     lastRareShipSoundAt = now;
     rareShipSoundCursor = playPooledSound(RARE_SHIP_SOUND_SRC, rareShipSoundPool, rareShipSoundCursor, 0.195);
   }
 
-  function isRareShipAlive(ship) {
-    if (!ship || typeof ship !== 'object') return false;
-    const hp = Number(ship.hp ?? 1);
-    const y = Number(ship.y);
-    const canvasH = Number(document.getElementById('invCanvas')?.height) || 960;
-    if (!Number.isFinite(hp) || hp <= 0 || ship.alive === false) return false;
-    return !Number.isFinite(y) || y <= canvasH + 40;
-  }
-
-  function pruneTrackedRareShips() {
-    for (const ship of Array.from(trackedRareShips)) {
-      if (!isRareShipAlive(ship)) trackedRareShips.delete(ship);
-    }
-    return trackedRareShips.size;
-  }
-
   function stopRareShipSoundLoop(clearTracked) {
-    if (rareShipSoundTimer) {
-      clearInterval(rareShipSoundTimer);
-      rareShipSoundTimer = null;
-    }
-    if (clearTracked !== false) trackedRareShips.clear();
     for (const audio of rareShipSoundPool) {
       try { audio.pause(); audio.currentTime = 0; } catch (_) {}
     }
-  }
-
-  function ensureRareShipSoundLoop() {
-    pruneTrackedRareShips();
-    if (!trackedRareShips.size) return;
-    playRareShipSound();
-    if (rareShipSoundTimer) return;
-    rareShipSoundTimer = setInterval(function () {
-      if (!pruneTrackedRareShips()) {
-        stopRareShipSoundLoop();
-        return;
-      }
-      playRareShipSound();
-    }, 1350);
   }
 
   function looksLikeEnemyDropBullet(item) {
@@ -295,9 +258,11 @@
 
   function looksLikeRareShip(item) {
     if (!item || typeof item !== 'object') return false;
-    if (item.type !== 'golden' && item.type !== 'mini_boss') return false;
+    // Only the top rogue mini boss gets the custom rare-ships MP3. Normal wave
+    // golden invaders are also typed "golden" and made the old loop misfire.
+    if (item.type !== 'mini_boss') return false;
     const x = Number(item.x), y = Number(item.y), w = Number(item.w), h = Number(item.h);
-    return [x, y, w, h].every(Number.isFinite) && w >= 24 && h >= 20 && isRareShipAlive(item);
+    return [x, y, w, h].every(Number.isFinite) && y <= 48 && w >= 24 && h >= 20;
   }
 
   function isFullInvadersBackgroundFill(ctx, x, y, w, h) {
@@ -391,8 +356,7 @@
   Array.prototype.push = function (...items) {
     const result = previousArrayPush.apply(this, items);
     if (items.some(looksLikeEnemyDropBullet)) playAlienDropSound();
-    for (const item of items) if (looksLikeRareShip(item)) trackedRareShips.add(item);
-    if (trackedRareShips.size) ensureRareShipSoundLoop();
+    if (items.some(looksLikeRareShip)) playRareShipSound();
     return result;
   };
 
