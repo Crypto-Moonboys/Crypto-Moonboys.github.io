@@ -16,6 +16,34 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/action-page-cards.css">
   <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    .crypto-pets-section-art {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border: 1px solid rgba(47, 215, 255, 0.32);
+      border-radius: 14px;
+      box-shadow: 0 0 28px rgba(47, 215, 255, 0.18), 0 0 42px rgba(255, 38, 184, 0.08);
+      margin: 1rem 0 1.35rem;
+      background: #05080f;
+    }
+    .crypto-pets-card-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .crypto-pets-card-gallery img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid rgba(255, 206, 65, 0.28);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 38, 184, 0.12);
+      background: #05080f;
+    }
+  </style>
 </head>
 <body class="page-wiki page-standard-shell">
 <main id="content" role="main">
@@ -31,6 +59,8 @@
   <div class="page-title-line" aria-hidden="true"></div>
 
   <article class="wiki-content" data-entity-slug="crypto-moonboy-pets">
+    <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20how%20to%20play%20hero%20pets.jpg" alt="Crypto Moonboy Pets hero artwork showing the Telegram pet game loop, missions, upgrades, battles and leaderboards." loading="eager" decoding="async">
+
     <p class="lead-paragraph">
       Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, manage a pet bag, work jobs, open daily chests, handle random crate events, battle directly in Pet Arena, battle Kaiju sticker cards, and build pet progression over time.
     </p>
@@ -40,6 +70,7 @@
 
     <section class="wiki-section">
       <h2>How It Works</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/CRYPTO%20MOONBOYS%20PET%20HOW%20TO%20PLAY.jpg" alt="How to play Crypto Moonboy Pets action card with Telegram commands and pet progression details." loading="lazy" decoding="async">
       <ul>
         <li>Use <code>/adopt</code> in Telegram to create your Crypto Moonboy Pet.</li>
         <li>Use <code>/pet</code> to see health, hunger, happiness, cleanliness, energy, stage, level and missions.</li>
@@ -62,6 +93,7 @@
 
     <section class="wiki-section">
       <h2>Pet Arena In Telegram</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Pet%20Arena%20In%20Telegram.jpg" alt="Crypto Moonboy Pets arena artwork showing turn-based Telegram pet combat with armor, weapons, blocks and special moves." loading="lazy" decoding="async">
       <p>Pet Arena is the Moonpet-vs-Moonpet battle mode and is not Kaiju Sticker Battle. It unlocks at level 10; the bot blocks lower-level pets with “Pet Arena unlocks at level 10. Keep growing your Moonpet.”</p>
       <p>Turn-based combat stats are calculated server-side from pet level, pet XP tier, health, energy, happiness/morale, cleanliness condition, equipped food, toy, outfit and battle gear. New battle gear uses armor, weapon and charm slots: armor improves defense/damage reduction, weapons improve attack, and charms improve crit, dodge or luck. Low energy lowers battle power and very low health can block entry or heavily reduce power.</p>
       <p>Private chats can battle an app pet turn by turn instead of instantly rolling a result. Each round shows HP, special meter and buttons for Attack Head, Attack Body, Block Head, Block Body, Charge Special, Special Move and Forfeit; after you choose, the app AI chooses server-side and the bot posts the next round.</p>
@@ -71,6 +103,7 @@
       <p>Rewards are capped and idempotent: winners receive Moon Gold, pet XP and small Community XP, losers receive consolation pet XP and draws share smaller rewards. Existing daily pet XP and Community XP caps apply and duplicate callbacks cannot double-award.</p>
 
       <h2>Kaiju Sticker Battle In Telegram</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Kaiju%20Sticker%20Battle%20In%20Telegram.jpg" alt="Kaiju Sticker Battle artwork showing Telegram players choosing monster sticker cards for a Crypto Moonboy Pets battle." loading="lazy" decoding="async">
       <p>
         Kaiju Sticker Battle is the group battle mode for the same public Kaiju cards used by the Arcade page. The Telegram bot should use the new Kaiju sticker set as the visual layer and the existing card IDs and stats as the rules layer.
       </p>
@@ -89,6 +122,7 @@
 
     <section class="wiki-section">
       <h2>Kaiju Queue Rules</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/CRYPTO%20MOONBOYS%20MOON%20RUN.jpg" alt="Crypto Moonboy Pets moon run artwork representing queue turns, challengers and winner-stays-on battle flow." loading="lazy" decoding="async">
       <p>
         The group uses a simple arcade cabinet rule: winner stays on, loser leaves the table, next queued player becomes challenger. This keeps the chat readable while still letting many users wait their turn.
       </p>
@@ -109,6 +143,7 @@
 
     <section class="wiki-section">
       <h2>Kaiju Bot State Model</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/CRYPTO%20MOONBOYS%20PET%20LEADERBOARD.jpg" alt="Crypto Moonboy Pets system artwork representing persistent Telegram battle state, queues, match records and leaderboards." loading="lazy" decoding="async">
       <p>
         The implementation should use D1 tables instead of in-memory queues. Minimum state: chat ID, champion Telegram ID, challenger Telegram ID, queue order, current round, locked cards, rolled category, match status, expiry time and final result. This prevents duplicate matches and lets the bot recover safely after a deploy.
       </p>
@@ -119,6 +154,7 @@
 
     <section class="wiki-section">
       <h2>24/7 Pet Loop</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20247%20Pet%20Loop.jpg" alt="24/7 Crypto Moonboy Pets loop artwork showing opt-in Telegram needs alerts, missions, adventures, jobs and ready choices." loading="lazy" decoding="async">
       <p>
         Pet notifications are opt-in. When enabled, the bot can DM a player if their pet needs food, cleaning, sleep or play, if a daily mission is still open, if an upgrade is affordable, or if an adventure, job or crate choice is ready.
       </p>
@@ -130,6 +166,7 @@
 
     <section class="wiki-section">
       <h2>Timed Activity Sessions</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Timed%20Activity%20Sessions.jpg" alt="Timed Activity Sessions artwork showing sleep, train, work and explore sessions scaling rewards by time spent." loading="lazy" decoding="async">
       <p>
         Timed activities layer on top of the existing instant Feed, Clean, Play, Train and Sleep buttons. A pet can have one active session at a time with <code>/petstart sleep</code>, <code>/petstart train</code>, <code>/petstart work</code> or <code>/petstart explore</code>. Players can inspect it with <code>/petactivity</code>, finish it with <code>/petclaim</code>, or stop it with <code>/petcancel</code>.
       </p>
@@ -143,6 +180,7 @@
 
     <section class="wiki-section">
       <h2>In-Game Economy</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20In-Game%20Economy.jpg" alt="Crypto Moonboy Pets economy artwork showing Moon Gold, Moon Crystals, Style Tokens, pet bag items and shop upgrades." loading="lazy" decoding="async">
       <p>
         Crypto Moonboy Pets uses three non-transferable pet currencies: Moon Gold for common upgrades and trades, Moon Crystals for rarer upgrades, and Style Tokens for clothing. The pet bag also contains usable items such as moon_snack, energy_drink, clean_wipe, lucky_charm, style_patch and adventure_map. These currencies and items are gameplay counters only and cannot be cashed out.
       </p>
@@ -153,6 +191,7 @@
 
     <section class="wiki-section">
       <h2>XP Separation</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/CRYPTO%20MOONBOYS%20PET%20LEVEL%20UP.jpg" alt="Crypto Moonboy Pets level up artwork representing pet XP growth and separate capped Community XP progression." loading="lazy" decoding="async">
       <p>
         Crypto Moonboy Pets has its own pet progression, but it is not a separate identity universe. Accepted care actions and trades can write to the existing Telegram XP system, so pet-earned Community XP is included in the current main XP leaderboard and graph. Inventory uses, jobs, daily chests and random events do not award Community XP.
       </p>
@@ -163,6 +202,7 @@
 
     <section class="wiki-section">
       <h2>Seasons</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20pets%20Seasons.jpg" alt="Crypto Moonboy Pets seasons artwork showing automatic daily, weekly and 90-day seasonal windows rolling forever." loading="lazy" decoding="async">
       <p>
         The pet game runs forever through automatic UTC daily, weekly and 90-day seasonal windows. New seasons do not require manual reset. When a player returns after a rollover, the server creates the next season state automatically.
       </p>
@@ -170,6 +210,7 @@
 
     <section class="wiki-section">
       <h2>Play And Track</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20SHOP.jpg" alt="Crypto Moonboy Pets shop artwork showing upgrades, cosmetics and game actions that connect Telegram play with the website leaderboard." loading="lazy" decoding="async">
       <div class="swarmsy-action-grid" role="navigation" aria-label="Crypto Moonboy Pets links">
         <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">
           <strong>PLAY ON TELEGRAM</strong>
@@ -183,6 +224,24 @@
           <strong>PET LEADERBOARD</strong>
           <span>Daily, weekly, seasonal and all-time pet ranks.</span>
         </a>
+      </div>
+      <div class="crypto-pets-card-gallery" aria-label="Crypto Moonboy Pets gameplay card artwork">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20FEED.jpg" alt="Crypto Moonboy Pets Feed action card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20PLAY.jpg" alt="Crypto Moonboy Pets Play action card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20CLEAN.jpg" alt="Crypto Moonboy Pets Clean action card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20SLEEP.jpg" alt="Crypto Moonboy Pets Sleep action card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20TRAIN%20HARD.jpg" alt="Crypto Moonboy Pets Train Hard action card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20HUSTLE.jpg" alt="Crypto Moonboy Pets Moon Hustle work card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20DAILY%20DROP.jpg" alt="Crypto Moonboy Pets Daily Drop reward card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20EVENT.jpg" alt="Crypto Moonboy Pets Moon Event card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20BAG.jpg" alt="Crypto Moonboy Pets Moon Bag inventory card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20GOLD%20TRADE.jpg" alt="Crypto Moonboy Pets Gold Trade card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20TRADE%20WIN.jpg" alt="Crypto Moonboy Pets Trade Win card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20TRADE%20LOSS.jpg" alt="Crypto Moonboy Pets Trade Loss card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20ADVENTURE%20WIN.jpg" alt="Crypto Moonboy Pets Adventure Win card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20RUN%20FAILED.jpg" alt="Crypto Moonboy Pets Run Failed card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20PURCHASE%20COMPLETE.jpg" alt="Crypto Moonboy Pets Purchase Complete card." loading="lazy" decoding="async">
+        <img src="/img/pets/CRYPTO%20MOONBOYS%20PET%20MOON%20LEVEL%20UP.jpg" alt="Crypto Moonboy Pets Moon Level Up card." loading="lazy" decoding="async">
       </div>
     </section>
 
