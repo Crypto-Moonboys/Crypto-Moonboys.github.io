@@ -125,13 +125,18 @@
   let introStartSoundCursor = 0;
   let bossSummarySoundCursor = 0;
   let bossLoopSoundCursor = 0;
+  let waveScreenSoundCursor = 0;
   let lastIntroStartSoundAt = 0;
   let lastBossLoopSeenAt = 0;
   let bossSummarySoundPlayed = false;
   let bossLoopSoundTimer = null;
+  let waveCompleteSoundPlayed = false;
+  let lastWaveStartSoundKey = '';
   const BOMB_FIRE_SOUND_SRC = '/games/invaders-3008/player%20bomb%20fire.mp3';
   const INTRO_START_SOUND_SRC = '/games/invaders-3008/intro%20start.mp3';
   const BOSS_SUMMARY_SOUND_SRC = '/games/invaders-3008/boss%20start.mp3';
+  const WAVE_COMPLETE_SOUND_SRC = '/games/invaders-3008/boss%20play%20till%20killed%20three.mp3';
+  const WAVE_START_SOUND_SRC = '/games/invaders-3008/boss%20play%20till%20killed%20four.mp3';
   const BOSS_LOOP_SOUND_SRCS = [
     '/games/invaders-3008/boss%20play%20till%20killed%20five.mp3',
     '/games/invaders-3008/boss%20play%20till%20killed%20two.mp3',
@@ -141,6 +146,8 @@
   const bombFireSoundPool = [];
   const introStartSoundPool = [];
   const bossSummarySoundPool = [];
+  const waveCompleteSoundPool = [];
+  const waveStartSoundPool = [];
   const bossLoopSoundPools = BOSS_LOOP_SOUND_SRCS.map(() => []);
   const liveBossLabels = new Set([
     'CYBER TROLL',
@@ -385,6 +392,41 @@
     bossLoopSoundCursor += 1;
   }
 
+  function playPooledOneShot(src, pool) {
+    const arcadeAudio = window.ArcadeAudio;
+    if (arcadeAudio?.isMuted?.() || window._arcadeMuted) return;
+    if (typeof Audio === 'undefined') return;
+    if (pool.length < BOMB_FIRE_SOUND_POOL_SIZE) {
+      const audio = new Audio(src);
+      audio.preload = 'auto';
+      pool.push(audio);
+    }
+    const audio = pool[waveScreenSoundCursor % pool.length];
+    waveScreenSoundCursor += 1;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0.175;
+      audio.play().catch(function () {});
+    } catch (_) {
+      // Audio can fail before first user gesture on some browsers; ignore safely.
+    }
+  }
+
+  function maybePlayWaveCompleteSound() {
+    if (waveCompleteSoundPlayed) return;
+    waveCompleteSoundPlayed = true;
+    playPooledOneShot(WAVE_COMPLETE_SOUND_SRC, waveCompleteSoundPool);
+  }
+
+  function maybePlayWaveStartSound(label) {
+    const key = String(label || '');
+    if (!key || lastWaveStartSoundKey === key) return;
+    lastWaveStartSoundKey = key;
+    waveCompleteSoundPlayed = false;
+    playPooledOneShot(WAVE_START_SOUND_SRC, waveStartSoundPool);
+  }
+
   function stopBossLoopSound() {
     if (bossLoopSoundTimer) {
       clearInterval(bossLoopSoundTimer);
@@ -446,6 +488,8 @@
   function resetSummarySoundSoon() {
     setTimeout(() => {
       bossSummarySoundPlayed = false;
+      lastWaveStartSoundKey = '';
+      waveCompleteSoundPlayed = false;
       stopBossLoopSound();
     }, 0);
   }
@@ -566,6 +610,8 @@
       const label = String(text || '');
       if (label.includes('Choose an upgrade')) {
         upgradePromptSeenUntil = performance.now() + 8000;
+      } else if (label === 'WAVE COMPLETE') {
+        maybePlayWaveCompleteSound();
       } else if (label === 'GAME OVER') {
         playBossSummarySound();
         setCannonLevel(1);
@@ -573,6 +619,8 @@
         setCannonLevel(1);
       } else if (liveBossLabels.has(label)) {
         noteLiveBossFrame();
+      } else if (/^(?:BOSS )?WAVE \d+$/.test(label)) {
+        maybePlayWaveStartSound(label);
       }
     }
     return originalFillText.call(this, text, ...args);
@@ -638,10 +686,10 @@
   };
 })();
 </script>
-<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=invaders-boss-loop-sfx-20260722"></script>
+<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=invaders-wave-screen-sfx-20260722"></script>
 <script type="module">
 import { mountGame }         from '/js/arcade/core/game-shell.js';
-import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=invaders-boss-loop-sfx-20260722';
+import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=invaders-wave-screen-sfx-20260722';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 mountGame({
