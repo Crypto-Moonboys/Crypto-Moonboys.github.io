@@ -1,5 +1,11 @@
 const SOUND_LIBRARY = {
-  'invaders-shoot':     { kind: 'tone',  type: 'square',   freqStart: 620, freqEnd: 341, duration: 0.05, volume: 0.03 },
+  'invaders-shoot': {
+    kind: 'sample-layer',
+    samples: [
+      { src: '/games/invaders-3008/attack%20fire.mp3', volume: 0.7 },
+      { src: '/games/invaders-3008/attack%20fire%20two.mp3', volume: 0.7 },
+    ],
+  },
   'invaders-hit':       { kind: 'tone',  type: 'triangle', freqStart: 180, freqEnd: 99,  duration: 0.07, volume: 0.04 },
   'invaders-explosion': { kind: 'tone',  type: 'sawtooth', freqStart: 90,  freqEnd: 60,  duration: 0.18, volume: 0.05 },
   'invaders-powerup':   { kind: 'tone',  type: 'triangle', freqStart: 660, freqEnd: 1320, duration: 0.14, volume: 0.045 },
@@ -111,13 +117,15 @@ const SOUND_LIBRARY = {
 };
 
 // Keep a defensive default here so module-driven game pages remain safe even if
-// game-fullscreen.js has not been evaluated yet.
+'t// game-fullscreen.js has not been evaluated yet.
 if (typeof window !== 'undefined' && typeof window._arcadeMuted === 'undefined') {
   window._arcadeMuted = false;
 }
 
 let audioCtx = null;
 const activeSounds = new Set();
+const samplePools = new Map();
+const SAMPLE_POOL_SIZE = 8;
 
 function getAudioContext() {
   if (audioCtx) return audioCtx;
@@ -182,6 +190,63 @@ function createToneHandle(ctx, tone, baseTime) {
   return handle;
 }
 
+function getSampleFromPool(src) {
+  if (typeof Audio === 'undefined') return null;
+  let pool = samplePools.get(src);
+  if (!pool) {
+    pool = { cursor: 0, samples: [] };
+    for (let index = 0; index < SAMPLE_POOL_SIZE; index += 1) {
+      const audio = new Audio(src);
+      audio.preload = 'auto';
+      pool.samples.push(audio);
+    }
+    samplePools.set(src, pool);
+  }
+  const audio = pool.samples[pool.cursor % pool.samples.length];
+  pool.cursor += 1;
+  return audio;
+}
+
+function createSampleHandle(sample) {
+  if (!sample || !sample.src) return null;
+  const audio = getSampleFromPool(sample.src);
+  if (!audio) return null;
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+  } catch (_) {}
+  audio.volume = Math.max(0, Math.min(1, Number(sample.volume ?? 0.5)));
+  audio.playbackRate = Math.max(0.25, Math.min(4, Number(sample.playbackRate || 1)));
+  const handle = register({
+    stop() {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (_) {}
+      unregister(handle);
+    },
+  });
+  const cleanup = function () { unregister(handle); };
+  audio.addEventListener('ended', cleanup, { once: true });
+  const playPromise = audio.play();
+  if (playPromise && typeof playPromise.catch === 'function') {
+    playPromise.catch(function () { unregister(handle); });
+  }
+  return handle;
+}
+
+function createSampleLayerHandle(sound) {
+  const children = (sound.samples || []).map(createSampleHandle).filter(Boolean);
+  if (!children.length) return null;
+  const groupHandle = register({
+    stop() {
+      children.forEach(stopHandle);
+      unregister(groupHandle);
+    },
+  });
+  return groupHandle;
+}
+
 function resolveSound(id, options) {
   const base = SOUND_LIBRARY[id] || {};
   if (base.kind === 'chord') {
@@ -189,6 +254,16 @@ function resolveSound(id, options) {
       kind: 'chord',
       tones: (base.tones || []).map((tone) => ({ ...tone })),
     };
+  }
+  if (base.kind === 'sample-layer') {
+    return {
+      ...base,
+      ...options,
+      samples: (base.samples || []).map((sample) => ({ ...sample })),
+    };
+  }
+  if (base.kind === 'sample') {
+    return { ...base, ...options };
   }
   return { ...base, ...options };
 }
@@ -216,13 +291,19 @@ export function setMuted(muted, options) {
 
 export function playSound(id, options) {
   if (isMuted()) return null;
+  const sound = resolveSound(id, options || {});
+  if (!sound || !sound.kind) return null;
+  if (sound.kind === 'sample') {
+    return createSampleHandle(sound);
+  }
+  if (sound.kind === 'sample-layer') {
+    return createSampleLayerHandle(sound);
+  }
   const ctx = getAudioContext();
   if (!ctx) return null;
   if (ctx.state === 'suspended') {
     ctx.resume().catch(function () {});
   }
-  const sound = resolveSound(id, options || {});
-  if (!sound || !sound.kind) return null;
   const now = ctx.currentTime;
   if (sound.kind === 'tone') {
     return createToneHandle(ctx, sound, now);
