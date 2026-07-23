@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-22T06:07:31.342Z",
+  "generated_at": "2026-07-23T06:13:35.204Z",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "asset_ranking_enabled": true,
@@ -81064,7 +81064,7 @@
     {
       "asset_id": "1099997874111",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -83073,7 +83073,7 @@
     {
       "asset_id": "1099997874124",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -83661,7 +83661,7 @@
     {
       "asset_id": "1099636802763",
       "template_id": 438904,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 9,
       "template_final_score": 64.5215,
       "template_score_component": 38.7129,
@@ -98508,7 +98508,7 @@
     {
       "asset_id": "1099997877684",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -127712,7 +127712,7 @@
     {
       "asset_id": "1099998507476",
       "template_id": 435457,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 10,
       "template_final_score": 59.7699,
       "template_score_component": 35.8619,
@@ -236345,7 +236345,7 @@
     {
       "asset_id": "1099997873605",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -236933,7 +236933,7 @@
     {
       "asset_id": "1099997873611",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -237717,7 +237717,7 @@
     {
       "asset_id": "1099997873715",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -238991,7 +238991,7 @@
     {
       "asset_id": "1099997873728",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -239236,7 +239236,7 @@
     {
       "asset_id": "1099997873635",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -239285,7 +239285,7 @@
     {
       "asset_id": "1099997873731",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -240412,7 +240412,7 @@
     {
       "asset_id": "1099997873743",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -240461,7 +240461,7 @@
     {
       "asset_id": "1099997876553",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -250114,7 +250114,7 @@
     {
       "asset_id": "1099997877448",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -250163,7 +250163,7 @@
     {
       "asset_id": "1099997877742",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -260992,7 +260992,7 @@
     {
       "asset_id": "1099998386122",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -261041,7 +261041,7 @@
     {
       "asset_id": "1099998505980",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -261286,7 +261286,7 @@
     {
       "asset_id": "1099998386125",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -261335,7 +261335,7 @@
     {
       "asset_id": "1099998505983",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -271870,7 +271870,7 @@
     {
       "asset_id": "1099998386330",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -271919,7 +271919,7 @@
     {
       "asset_id": "1099998506124",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -282748,7 +282748,7 @@
     {
       "asset_id": "1099998506492",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -282797,7 +282797,7 @@
     {
       "asset_id": "1099998506556",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293626,7 +293626,7 @@
     {
       "asset_id": "1099998506810",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293675,7 +293675,7 @@
     {
       "asset_id": "1099998506862",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293724,7 +293724,7 @@
     {
       "asset_id": "1099998506811",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293773,7 +293773,7 @@
     {
       "asset_id": "1099998506863",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293822,7 +293822,7 @@
     {
       "asset_id": "1099998546328",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293871,7 +293871,7 @@
     {
       "asset_id": "1099998548873",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293920,7 +293920,7 @@
     {
       "asset_id": "1099998546329",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -293969,7 +293969,7 @@
     {
       "asset_id": "1099998548874",
       "template_id": 401911,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 12,
       "template_final_score": 0,
       "template_score_component": 0,

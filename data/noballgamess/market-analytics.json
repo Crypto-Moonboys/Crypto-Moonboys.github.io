@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-22T06:07:30.708Z",
+  "generated_at": "2026-07-23T06:13:34.786Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-22T06:07:25.912Z"
+      "checked_at": "2026-07-23T06:13:29.491Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-22T06:07:26.114Z"
+      "checked_at": "2026-07-23T06:13:29.653Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-22T06:07:28.157Z"
+      "checked_at": "2026-07-23T06:13:32.726Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-22T06:07:28.358Z"
+      "checked_at": "2026-07-23T06:13:32.887Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-22T06:07:29.075Z"
+      "checked_at": "2026-07-23T06:13:33.553Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-22T06:07:30.255Z"
+      "checked_at": "2026-07-23T06:13:34.472Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-22T06:07:30.455Z"
+      "checked_at": "2026-07-23T06:13:34.632Z"
     }
   },
   "data": {
     "collection_stats": {
-      "numUsers": 706,
+      "numUsers": 705,
       "usdMarketCap": 123231.87705107113,
-      "waxMarketCap": 447440.1759205267,
+      "waxMarketCap": 447440.1759205271,
       "numAssets": 9799
     },
     "num_assets": {
       "numberOfAssets": 9799,
-      "estimatedWaxValue": 447440.1759205265,
-      "estimatedUsdValue": 123231.87705107119
+      "estimatedWaxValue": 447440.1759205266,
+      "estimatedUsdValue": 123231.8770510712
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -187,13 +187,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 11647.646534181833,
-          "usdVolume": 1835.9654961679266,
+          "waxVolume": 11920.646534181833,
+          "usdVolume": 1837.2485961679267,
           "waxFloor": 21,
           "change": 0,
           "buyers": 116,
           "sellers": 329,
-          "sales": 762,
+          "sales": 775,
           "rank": 5
         }
       },
@@ -219,13 +219,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 9095.338268069998,
-          "usdVolume": 405.62152455245,
+          "waxVolume": 9671.338268069996,
+          "usdVolume": 408.32872455245,
           "waxFloor": 144,
           "change": 0,
           "buyers": 44,
           "sellers": 63,
-          "sales": 135,
+          "sales": 139,
           "rank": 10
         }
       },
@@ -283,13 +283,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 7680.600230176039,
-          "usdVolume": 1772.0858221397752,
+          "waxVolume": 7953.600230176039,
+          "usdVolume": 1773.3689221397753,
           "waxFloor": 21,
           "change": 0,
           "buyers": 93,
           "sellers": 251,
-          "sales": 583,
+          "sales": 596,
           "rank": 4
         }
       },
@@ -315,13 +315,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 7288.559333406995,
-          "usdVolume": 1162.4947874808245,
+          "waxVolume": 7798.559333406995,
+          "usdVolume": 1164.8917874808246,
           "waxFloor": 34,
           "change": 0,
           "buyers": 173,
           "sellers": 267,
-          "sales": 748,
+          "sales": 763,
           "rank": 7
         }
       },
@@ -347,46 +347,14 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 6516.664077879994,
-          "usdVolume": 423.006495445637,
+          "waxVolume": 7139.663077879994,
+          "usdVolume": 425.93459074563697,
           "waxFloor": 88.98,
           "change": 0,
           "buyers": 59,
           "sellers": 106,
-          "sales": 191,
+          "sales": 198,
           "rank": 9
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "Hodl Warriors P2E Battle Game NFT by Charlie Buster. - 1) it's a cool Art Collectable. 2) Is a Gaming NFT. 3) Rewards weekly $LFGK. - more info here https://discord.gg/graffiti-kings The Price Rise Structure for “Busters A Stoned Boy” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR). When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT. NFT’s Sold - Price Rise x1.61 1 to 34 - (420 WAX) 34 to 55 - (720 WAX) 55 to 89 - (1,170 WAX) 89 to 144 - (1,888 WAX) 144 to 233 - (3,050+ WAX) (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711. Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More",
-          "id": "420",
-          "img": "QmXfX6UFhzcV5MKokFyNz7DCcHGvEybfA2BWyqssGNF23k",
-          "name": "\"Buster's A Stoned Boy\"",
-          "rarity ": "Smokey Sessions ",
-          "variation ": "Original Artwork",
-          "template_id": 438904,
-          "schema": "airdropsbycb"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 5165.548546989998,
-          "usdVolume": 618.2898433164298,
-          "waxFloor": 233,
-          "change": 0,
-          "buyers": 53,
-          "sellers": 63,
-          "sales": 137,
-          "rank": 11
         }
       },
       {
@@ -411,14 +379,46 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 5103.836839344327,
-          "usdVolume": 803.917556624346,
+          "waxVolume": 5873.836839344326,
+          "usdVolume": 807.536556624346,
           "waxFloor": 55,
           "change": 0,
           "buyers": 110,
           "sellers": 143,
-          "sales": 313,
+          "sales": 327,
           "rank": 8
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "Hodl Warriors P2E Battle Game NFT by Charlie Buster. - 1) it's a cool Art Collectable. 2) Is a Gaming NFT. 3) Rewards weekly $LFGK. - more info here https://discord.gg/graffiti-kings The Price Rise Structure for “Busters A Stoned Boy” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR). When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT. NFT’s Sold - Price Rise x1.61 1 to 34 - (420 WAX) 34 to 55 - (720 WAX) 55 to 89 - (1,170 WAX) 89 to 144 - (1,888 WAX) 144 to 233 - (3,050+ WAX) (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711. Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More",
+          "id": "420",
+          "img": "QmXfX6UFhzcV5MKokFyNz7DCcHGvEybfA2BWyqssGNF23k",
+          "name": "\"Buster's A Stoned Boy\"",
+          "rarity ": "Smokey Sessions ",
+          "variation ": "Original Artwork",
+          "template_id": 438904,
+          "schema": "airdropsbycb"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 5398.548546989998,
+          "usdVolume": 619.3849433164298,
+          "waxFloor": 1888,
+          "change": 0,
+          "buyers": 53,
+          "sellers": 63,
+          "sales": 138,
+          "rank": 11
         }
       },
       {
@@ -679,16 +679,10 @@
       }
     ],
     "volume": {
-      "waxVolume": 3150,
-      "usdVolume": 14.805000000000003
+      "waxVolume": 6407.999,
+      "usdVolume": 30.1175953
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-23"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -758,7 +752,7 @@
       {
         "waxVolume": 1459,
         "sales": 24,
-        "usdVolume": 6.857299999999998,
+        "usdVolume": 6.857299999999999,
         "date": "2026-07-05"
       },
       {
@@ -854,14 +848,20 @@
       {
         "waxVolume": 1352,
         "sales": 27,
-        "usdVolume": 6.354399999999998,
+        "usdVolume": 6.3544,
         "date": "2026-07-21"
       },
       {
-        "waxVolume": 330,
-        "sales": 6,
-        "usdVolume": 1.551,
+        "waxVolume": 3257.999,
+        "sales": 67,
+        "usdVolume": 15.312595300000012,
         "date": "2026-07-22"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-07-23"
       }
     ]
   },

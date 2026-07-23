@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-22T06:07:31.342Z",
+  "generated_at": "2026-07-23T06:13:35.204Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -33,11 +33,11 @@
   "holders": [
     {
       "owner": "yoitscharlie",
-      "live_assets": 6601
+      "live_assets": 6541
     },
     {
       "owner": "pepperstake",
-      "live_assets": 889
+      "live_assets": 950
     },
     {
       "owner": "q4oia.wam",
@@ -1293,10 +1293,6 @@
     },
     {
       "owner": "3ctys.wam",
-      "live_assets": 2
-    },
-    {
-      "owner": "22hra.wam",
       "live_assets": 2
     },
     {
@@ -2577,6 +2573,10 @@
     },
     {
       "owner": "lto.i.c.wam",
+      "live_assets": 1
+    },
+    {
+      "owner": "22hra.wam",
       "live_assets": 1
     },
     {
