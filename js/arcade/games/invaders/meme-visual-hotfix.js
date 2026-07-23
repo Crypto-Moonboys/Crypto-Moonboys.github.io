@@ -432,7 +432,14 @@
 
   proto.fillText = function (text, ...args) {
     if (this.canvas && this.canvas.id === 'invCanvas') {
-      const waveMatch = /^(?:BOSS )?WAVE\s+(\d+)$/i.exec(String(text || ''));
+      const label = String(text || '');
+      if (label.includes('Choose your next moonboy mod')) {
+        this.save();
+        this.globalAlpha = 0;
+        previousFillText.call(this, 'Choose an upgrade', -9999, -9999);
+        this.restore();
+      }
+      const waveMatch = /^(?:BOSS )?WAVE\s+(\d+)$/i.exec(label);
       if (waveMatch) setWave(Number.parseInt(waveMatch[1], 10));
       if (isBossLabel(text) && args.length >= 2) {
         drawBossPng(this, chooseBossConfig(text, Number(args[0]), Number(args[1])), Number(args[0]), Number(args[1]), previousDrawImage);
