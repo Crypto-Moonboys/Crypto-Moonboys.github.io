@@ -2,7 +2,7 @@
   if (typeof window === 'undefined' || window.__INVADERS_RANDOM_ASSET_LAYER__) return;
   window.__INVADERS_RANDOM_ASSET_LAYER__ = true;
 
-  const ASSET_VERSION = 'meme-wave-seven-hero-perk-cards-20260723';
+  const ASSET_VERSION = 'meme-wave-seven-renderer-upgrade-screen-20260723';
   const ASSET_BASE = '/art/invaders/generated/';
   const MEME_WAVE_SIZE = 7;
   const INVADERS_AUDIO_MASTER_SCALE = 0.3;
@@ -75,8 +75,6 @@
   let lastHudSyncAt = 0;
   let frameInvaderDrawCount = 0;
   let activeBoss = null;
-  let upgradeHeroCapture = null;
-  let upgradeHeroTimer = 0;
 
   function clampVolume(value) {
     return Math.max(0, Math.min(1, Number(value) || 0));
@@ -352,238 +350,7 @@
     return Number(ctx.lineWidth) <= 2 && Number(ctx.shadowBlur) > 0;
   }
 
-  function scheduleUpgradeHeroOverlay(ctx) {
-    if (upgradeHeroTimer || !ctx || !ctx.canvas) return;
-    upgradeHeroTimer = setTimeout(() => {
-      upgradeHeroTimer = 0;
-      if (upgradeHeroCapture && upgradeHeroCapture.ctx === ctx) {
-        drawUpgradeHeroOverlay(ctx, upgradeHeroCapture);
-      }
-    }, 0);
-  }
 
-  function captureUpgradeHeroText(ctx, text, args) {
-    if (!ctx || !ctx.canvas || ctx.canvas.id !== 'invCanvas') return;
-    const label = String(text || '');
-    if (label === 'WAVE COMPLETE') {
-      upgradeHeroCapture = { ctx, startedAt: performance.now(), cards: [{ key: '1' }, { key: '2' }, { key: '3' }] };
-      scheduleUpgradeHeroOverlay(ctx);
-      return;
-    }
-    if (!upgradeHeroCapture || upgradeHeroCapture.ctx !== ctx || performance.now() - upgradeHeroCapture.startedAt > 350) return;
-    if (label.includes('Choose an upgrade')) {
-      scheduleUpgradeHeroOverlay(ctx);
-      return;
-    }
-    const x = Number(args && args[0]);
-    const y = Number(args && args[1]);
-    if (!Number.isFinite(x) || !Number.isFinite(y) || y < 120 || y > 275) return;
-    const canvasW = ctx.canvas.width || 540;
-    const cardW = 138;
-    const gap = 14;
-    const startX = (canvasW - (3 * cardW + 2 * gap)) / 2;
-    const cardIndex = Math.max(0, Math.min(2, Math.round((x - startX - cardW / 2) / (cardW + gap))));
-    const card = upgradeHeroCapture.cards[cardIndex] || (upgradeHeroCapture.cards[cardIndex] = { key: String(cardIndex + 1) });
-    if (/^[123]$/.test(label)) card.key = label;
-    else if (/^(COMMON|RARE|EPIC|LEGENDARY|MAXED)$/i.test(label)) card.rarity = label.toUpperCase();
-    else if (/^(?:Lv\s+\d+\s+→\s+\d+|MAX)$/i.test(label)) card.level = label;
-    else if (y >= 180 && y <= 198) {
-      const parts = label.split(/\s+/);
-      card.icon = parts.shift() || '⚡';
-      card.label = parts.join(' ') || label;
-    } else if (y >= 202 && y <= 218) {
-      card.desc = label;
-    }
-    scheduleUpgradeHeroOverlay(ctx);
-  }
-
-  function drawUpgradeHeroOverlay(ctx, capture) {
-    const W = ctx.canvas.width || 540;
-    const H = ctx.canvas.height || 660;
-    const cards = (capture && capture.cards || []).slice(0, 3).map((card, index) => ({
-      key: card.key || String(index + 1),
-      rarity: card.rarity || 'COMMON',
-      icon: card.icon || ['⚡', '💣', '🛡'][index],
-      label: card.label || ['FIRE RATE', 'BOMB SHOT', 'SHIELD'][index],
-      desc: card.desc || 'Upgrade your cannon run',
-      level: card.level || 'Lv 0 → 1',
-    }));
-    const time = performance.now() * 0.001;
-    ctx.save();
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'source-over';
-    const backdrop = ctx.createLinearGradient(0, 0, 0, H);
-    backdrop.addColorStop(0, 'rgba(3, 5, 15, 0.96)');
-    backdrop.addColorStop(0.5, 'rgba(6, 10, 28, 0.91)');
-    backdrop.addColorStop(1, 'rgba(3, 5, 15, 0.96)');
-    ctx.fillStyle = backdrop;
-    previousFillRect.call(ctx, 0, 0, W, H);
-
-    ctx.globalCompositeOperation = 'screen';
-    ['#3fb950', '#f7c948', '#2ee8ff', '#ff4fd1'].forEach((color, index) => {
-      const gx = W * (0.22 + index * 0.19 + Math.sin(time * 0.9 + index) * 0.03);
-      const gy = H * (0.22 + Math.cos(time * 0.7 + index * 1.7) * 0.08);
-      const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 150);
-      glow.addColorStop(0, color + '44');
-      glow.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = glow;
-      previousFillRect.call(ctx, 0, 0, W, H);
-    });
-    ctx.globalCompositeOperation = 'source-over';
-
-    const panelX = 46;
-    const panelY = 36;
-    const panelW = W - panelX * 2;
-    const panelH = 100;
-    const headerGrad = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY + panelH);
-    headerGrad.addColorStop(0, 'rgba(20,255,110,0.15)');
-    headerGrad.addColorStop(0.45, 'rgba(247,201,72,0.12)');
-    headerGrad.addColorStop(1, 'rgba(46,232,255,0.10)');
-    ctx.fillStyle = headerGrad;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(panelX, panelY, panelW, panelH, 18);
-    else ctx.rect(panelX, panelY, panelW, panelH);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(63,185,80,0.85)';
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 18 + Math.sin(time * 5) * 6;
-    ctx.shadowColor = '#3fb950';
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#9cff9f';
-    ctx.font = 'bold 11px system-ui';
-    previousFillText.call(ctx, 'PERK DROP UNLOCKED', W / 2, panelY + 22);
-    ctx.shadowBlur = 18;
-    ctx.shadowColor = '#3fb950';
-    ctx.fillStyle = '#4dff78';
-    ctx.font = '900 30px system-ui';
-    previousFillText.call(ctx, 'WAVE COMPLETE', W / 2, panelY + 56);
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#f7c948';
-    ctx.font = 'bold 14px system-ui';
-    previousFillText.call(ctx, 'Choose your next mini hero card  •  Press 1 / 2 / 3', W / 2, panelY + 82);
-
-    const cardW = 150;
-    const cardH = 238;
-    const gap = 12;
-    const startX = (W - (3 * cardW + 2 * gap)) / 2;
-    const cardY = 158;
-    const rarityColors = { COMMON: '#8b949e', RARE: '#2ec5ff', EPIC: '#bc8cff', LEGENDARY: '#f7c948', MAXED: '#6e7681' };
-    cards.forEach((card, index) => {
-      const x = startX + index * (cardW + gap);
-      const rarity = String(card.rarity || 'COMMON').toUpperCase();
-      const accent = rarityColors[rarity] || '#8b949e';
-      const cardGrad = ctx.createLinearGradient(x, cardY, x + cardW, cardY + cardH);
-      cardGrad.addColorStop(0, 'rgba(20,24,46,0.98)');
-      cardGrad.addColorStop(0.52, 'rgba(9,13,31,0.99)');
-      cardGrad.addColorStop(1, 'rgba(16,10,30,0.98)');
-      ctx.shadowBlur = 16 + Math.sin(time * 4 + index) * 6;
-      ctx.shadowColor = accent;
-      ctx.fillStyle = cardGrad;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x, cardY, cardW, cardH, 16);
-      else ctx.rect(x, cardY, cardW, cardH);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      ctx.globalCompositeOperation = 'screen';
-      ctx.fillStyle = accent + '30';
-      ctx.beginPath();
-      ctx.moveTo(x + 10, cardY + 38);
-      ctx.lineTo(x + cardW - 10, cardY + 10);
-      ctx.lineTo(x + cardW - 10, cardY + 56);
-      ctx.lineTo(x + 10, cardY + 84);
-      ctx.closePath();
-      ctx.fill();
-      ctx.globalCompositeOperation = 'source-over';
-
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 2.5;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = accent;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x, cardY, cardW, cardH, 16);
-      else ctx.rect(x, cardY, cardW, cardH);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x + 12, cardY + 10, 76, 18, 7);
-      else ctx.rect(x + 12, cardY + 10, 76, 18);
-      ctx.fill();
-      ctx.fillStyle = '#050812';
-      ctx.font = '900 9px system-ui';
-      previousFillText.call(ctx, rarity, x + 50, cardY + 23);
-
-      ctx.fillStyle = '#050812';
-      ctx.beginPath();
-      ctx.arc(x + cardW - 24, cardY + 22, 16, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.fillStyle = accent;
-      ctx.font = '900 20px system-ui';
-      previousFillText.call(ctx, card.key, x + cardW - 24, cardY + 29);
-
-      const heroY = cardY + 38;
-      const portrait = ctx.createRadialGradient(x + cardW / 2, heroY + 39, 4, x + cardW / 2, heroY + 39, 58);
-      portrait.addColorStop(0, accent + '55');
-      portrait.addColorStop(0.65, accent + '22');
-      portrait.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = portrait;
-      previousFillRect.call(ctx, x + 10, heroY - 6, cardW - 20, 90);
-      ctx.strokeStyle = accent + 'aa';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x + 18, heroY, cardW - 36, 78, 14);
-      else ctx.rect(x + 18, heroY, cardW - 36, 78);
-      ctx.stroke();
-
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = accent;
-      ctx.fillStyle = '#fff';
-      ctx.font = '900 38px system-ui';
-      previousFillText.call(ctx, card.icon, x + cardW / 2, heroY + 50);
-      ctx.shadowBlur = 0;
-
-      ctx.fillStyle = '#f4f7ff';
-      ctx.font = '900 13px system-ui';
-      previousFillText.call(ctx, card.label, x + cardW / 2, cardY + 138);
-      ctx.fillStyle = '#aeb7c7';
-      ctx.font = '10px system-ui';
-      const desc = String(card.desc || '').trim();
-      const first = desc.length > 23 ? desc.slice(0, 23).trim() : desc;
-      const second = desc.length > 23 ? desc.slice(23, 46).trim() : '';
-      previousFillText.call(ctx, first, x + cardW / 2, cardY + 157);
-      if (second) previousFillText.call(ctx, second, x + cardW / 2, cardY + 169);
-
-      const levelMatch = /Lv\s+(\d+)\s+→\s+(\d+)/i.exec(card.level);
-      const cur = levelMatch ? Number(levelMatch[1]) : 0;
-      const next = levelMatch ? Number(levelMatch[2]) : 1;
-      const max = Math.max(next, 1);
-      const pipTotal = cardW - 32;
-      const pipW = Math.max(10, pipTotal / max - 3);
-      for (let lv = 0; lv < max; lv++) {
-        ctx.fillStyle = lv < cur ? accent : 'rgba(255,255,255,0.09)';
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(x + 16 + lv * (pipTotal / max), cardY + 188, pipW, 8, 4);
-        else ctx.rect(x + 16 + lv * (pipTotal / max), cardY + 188, pipW, 8);
-        ctx.fill();
-      }
-      ctx.fillStyle = '#f7c948';
-      ctx.font = 'bold 11px system-ui';
-      previousFillText.call(ctx, card.level, x + cardW / 2, cardY + 216);
-    });
-
-    ctx.fillStyle = 'rgba(255,255,255,0.46)';
-    ctx.font = 'bold 11px system-ui';
-    previousFillText.call(ctx, 'Pick one. Next wave starts instantly.', W / 2, cardY + cardH + 34);
-    ctx.restore();
-  }
 
   installInvadersAudioScale();
 
@@ -667,7 +434,6 @@
 
   proto.fillText = function (text, ...args) {
     if (this.canvas && this.canvas.id === 'invCanvas') {
-      captureUpgradeHeroText(this, text, args);
       const waveMatch = /^(?:BOSS )?WAVE\s+(\d+)$/i.exec(String(text || ''));
       if (waveMatch) setWave(Number.parseInt(waveMatch[1], 10));
       if (isBossLabel(text) && args.length >= 2) {

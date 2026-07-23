@@ -496,6 +496,11 @@
 
   window.__INVADERS_SET_CANNON_LEVEL__ = setCannonLevel;
 
+  window.addEventListener('invaders-upgrade-screen', (event) => {
+    const visibleUntil = Number(event.detail && event.detail.visibleUntil);
+    upgradePromptSeenUntil = Number.isFinite(visibleUntil) ? visibleUntil : performance.now() + 8000;
+  });
+
   window.addEventListener('keydown', (event) => {
     if (event.key === 'b' || event.key === 'B') {
       queuedBombSkin = randomBombSkin();
@@ -686,7 +691,7 @@
   };
 })();
 </script>
-<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=meme-wave-seven-no-strobe-sfx-20260723"></script>
+<script src="/js/arcade/games/invaders/meme-visual-hotfix.js?v=meme-wave-seven-renderer-upgrade-screen-20260723"></script>
 <script type="module">
 import { mountGame }         from '/js/arcade/core/game-shell.js';
 import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js?v=invaders-wave-screen-sfx-20260722';

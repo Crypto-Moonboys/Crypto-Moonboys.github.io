@@ -976,100 +976,135 @@ export function createRenderer(ctx, W, H) {
   // ── Upgrade screen ────────────────────────────────────────────────────────────
 
   function drawUpgradeScreen(choices, upgrades) {
-    // Darkened overlay
-    ctx.fillStyle = 'rgba(5, 8, 20, 0.90)';
+    const time = performance.now() * 0.001;
+    const count = Math.max(1, choices.length || 3);
+    const margin = Math.max(14, Math.min(46, W * 0.085));
+    const panelX = margin;
+    const panelY = Math.max(24, Math.min(38, H * 0.06));
+    const panelW = Math.max(0, W - panelX * 2);
+    const cardGap = Math.max(8, Math.min(14, W * 0.022));
+    const availableCardsW = Math.max(0, W - margin * 2 - cardGap * (count - 1));
+    const cardW = Math.max(92, Math.min(150, availableCardsW / count));
+    const cardH = Math.max(172, Math.min(238, H - 222));
+    const totalW = count * cardW + (count - 1) * cardGap;
+    const startX = (W - totalW) / 2;
+    const cardY = Math.max(panelY + 120, Math.min(158, H - cardH - 74));
+    const footerY = Math.min(H - 22, cardY + cardH + 34);
+
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      window.dispatchEvent(new CustomEvent('invaders-upgrade-screen', {
+        detail: { visibleUntil: performance.now() + 8000 },
+      }));
+    }
+
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    const backdrop = ctx.createLinearGradient(0, 0, 0, H);
+    backdrop.addColorStop(0, 'rgba(3, 5, 15, 0.96)');
+    backdrop.addColorStop(0.5, 'rgba(6, 10, 28, 0.92)');
+    backdrop.addColorStop(1, 'rgba(3, 5, 15, 0.96)');
+    ctx.fillStyle = backdrop;
     ctx.fillRect(0, 0, W, H);
 
-    // Header
-    ctx.save();
-    ctx.shadowBlur  = 14;
-    ctx.shadowColor = '#3fb950';
-    ctx.fillStyle   = '#3fb950';
-    ctx.font        = 'bold 24px system-ui';
-    ctx.textAlign   = 'center';
-    ctx.fillText('WAVE COMPLETE', W / 2, 78);
-    ctx.shadowBlur  = 0;
-    ctx.fillStyle   = '#f7c948';
-    ctx.font        = '15px system-ui';
-    ctx.fillText('Choose an upgrade  ( 1 / 2 / 3 )', W / 2, 106);
-    ctx.restore();
+    ctx.globalCompositeOperation = 'screen';
+    ['#3fb950', '#f7c948', '#2ee8ff', '#ff4fd1'].forEach((color, index) => {
+      const gx = W * (0.22 + index * 0.19 + Math.sin(time * 0.9 + index) * 0.03);
+      const gy = H * (0.22 + Math.cos(time * 0.7 + index * 1.7) * 0.08);
+      const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, Math.max(90, W * 0.28));
+      glow.addColorStop(0, color + '44');
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = 'source-over';
 
-    // Cards
-    const cardW = 138;
-    const cardH = 162;
-    const gap   = 14;
-    const totalW = 3 * cardW + 2 * gap;
-    const startX = (W - totalW) / 2;
-    const cardY  = 130;
+    const panelH = 100;
+    const headerGrad = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY + panelH);
+    headerGrad.addColorStop(0, 'rgba(20,255,110,0.15)');
+    headerGrad.addColorStop(0.45, 'rgba(247,201,72,0.12)');
+    headerGrad.addColorStop(1, 'rgba(46,232,255,0.10)');
+    ctx.fillStyle = headerGrad;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(panelX, panelY, panelW, panelH, 18);
+    else ctx.rect(panelX, panelY, panelW, panelH);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(63,185,80,0.85)';
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 18 + Math.sin(time * 5) * 6;
+    ctx.shadowColor = '#3fb950';
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#9cff9f';
+    ctx.font = 'bold 11px system-ui';
+    ctx.fillText('PERK DROP UNLOCKED', W / 2, panelY + 22);
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = '#3fb950';
+    ctx.fillStyle = '#4dff78';
+    ctx.font = '900 30px system-ui';
+    ctx.fillText('WAVE COMPLETE', W / 2, panelY + 56);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#f7c948';
+    ctx.font = 'bold 14px system-ui';
+    ctx.fillText('Choose an upgrade — select your next moonboy mod · press 1 / 2 / 3', W / 2, panelY + 82);
 
     for (let i = 0; i < choices.length; i++) {
-      const def      = choices[i];
-      const cx       = startX + i * (cardW + gap);
-      const col      = UPGRADE_COLORS[def.id] || '#888';
+      const def = choices[i];
+      const x = startX + i * (cardW + cardGap);
+      const col = UPGRADE_COLORS[def.id] || '#888';
       const curLevel = upgrades[def.id] || 0;
       const maxLevel = def.maxLevel;
-      const atMax    = curLevel >= maxLevel;
-
-      // Card background
-      ctx.fillStyle = 'rgba(18, 22, 42, 0.96)';
+      const atMax = curLevel >= maxLevel;
+      const rarity = String(def.rarity || 'common').toUpperCase();
+      const accent = atMax ? '#6e7681' : (RARITY_COLORS[def.rarity || 'common'] || col);
+      const cardGrad = ctx.createLinearGradient(x, cardY, x + cardW, cardY + cardH);
+      cardGrad.addColorStop(0, 'rgba(20,24,46,0.98)');
+      cardGrad.addColorStop(0.52, 'rgba(9,13,31,0.99)');
+      cardGrad.addColorStop(1, 'rgba(16,10,30,0.98)');
+      ctx.shadowBlur = atMax ? 0 : 16 + Math.sin(time * 4 + i) * 6;
+      ctx.shadowColor = accent;
+      ctx.fillStyle = cardGrad;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(cx, cardY, cardW, cardH, 10);
-      else               ctx.rect(cx, cardY, cardW, cardH);
+      if (ctx.roundRect) ctx.roundRect(x, cardY, cardW, cardH, 16);
+      else ctx.rect(x, cardY, cardW, cardH);
       ctx.fill();
-
-      // Card border — use rarity color if available, else upgrade color
-      const rarity   = def.rarity || 'common';
-      const rarityCol = RARITY_COLORS[rarity] || col;
-      ctx.save();
-      ctx.strokeStyle = atMax ? '#555' : rarityCol;
-      ctx.lineWidth   = 2;
-      ctx.shadowBlur  = atMax ? 0 : 8;
-      ctx.shadowColor = rarityCol;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(cx, cardY, cardW, cardH, 10);
-      else               ctx.rect(cx, cardY, cardW, cardH);
-      ctx.stroke();
       ctx.shadowBlur = 0;
-      ctx.restore();
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
 
-      // Rarity label
-      if (!atMax) {
-        ctx.fillStyle = rarityCol;
-        ctx.font      = 'bold 8px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText(rarity.toUpperCase(), cx + cardW / 2, cardY + 12);
-      }
+      ctx.fillStyle = accent;
+      ctx.font = '900 9px system-ui';
+      ctx.fillText(atMax ? 'MAXED' : rarity, x + cardW / 2, cardY + 23);
+      ctx.font = '900 20px system-ui';
+      ctx.fillText(String(i + 1), x + cardW - 24, cardY + 31);
+      ctx.fillStyle = atMax ? '#777' : '#fff';
+      ctx.font = '900 36px system-ui';
+      ctx.fillText(def.icon, x + cardW / 2, cardY + 86);
+      ctx.fillStyle = atMax ? '#777' : '#f4f7ff';
+      ctx.font = '900 12px system-ui';
+      ctx.fillText(def.label, x + cardW / 2, cardY + 120);
+      ctx.fillStyle = atMax ? '#555' : '#aeb7c7';
+      ctx.font = '10px system-ui';
+      ctx.fillText(atMax ? 'MAXED OUT' : def.desc, x + cardW / 2, cardY + 139);
 
-      // Key number
-      ctx.fillStyle = atMax ? '#555' : col;
-      ctx.font      = 'bold 24px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText(String(i + 1), cx + cardW / 2, cardY + 32);
-
-      // Icon + label
-      ctx.fillStyle = atMax ? '#555' : '#eee';
-      ctx.font      = 'bold 13px system-ui';
-      ctx.fillText(def.icon + ' ' + def.label, cx + cardW / 2, cardY + 60);
-
-      // Description
-      ctx.fillStyle = atMax ? '#444' : '#8b949e';
-      ctx.font      = '11px system-ui';
-      ctx.fillText(atMax ? 'MAXED OUT' : def.desc, cx + cardW / 2, cardY + 80);
-
-      // Level pips
-      const pipTotal  = cardW - 24;
-      const pipW      = pipTotal / maxLevel - 2;
+      const pipTotal = cardW - 32;
+      const pipW = Math.max(6, pipTotal / maxLevel - 3);
       for (let lv = 0; lv < maxLevel; lv++) {
-        ctx.fillStyle = lv < curLevel ? col : 'rgba(255,255,255,0.08)';
-        ctx.fillRect(cx + 12 + lv * (pipTotal / maxLevel), cardY + 98, pipW, 7);
+        ctx.fillStyle = lv < curLevel ? col : 'rgba(255,255,255,0.09)';
+        ctx.fillRect(x + 16 + lv * (pipTotal / maxLevel), cardY + cardH - 50, pipW, 8);
       }
-
-      // Level text
-      ctx.fillStyle = atMax ? '#555' : '#8b949e';
-      ctx.font      = '10px system-ui';
-      const lvText  = atMax ? 'MAX' : 'Lv ' + curLevel + ' → ' + (curLevel + 1);
-      ctx.fillText(lvText, cx + cardW / 2, cardY + 122);
+      ctx.fillStyle = atMax ? '#777' : '#f7c948';
+      ctx.font = 'bold 11px system-ui';
+      ctx.fillText(atMax ? 'MAX' : 'Lv ' + curLevel + ' → ' + (curLevel + 1), x + cardW / 2, cardY + cardH - 22);
     }
+
+    ctx.fillStyle = 'rgba(255,255,255,0.46)';
+    ctx.font = 'bold 11px system-ui';
+    ctx.fillText('Pick one. Next wave starts instantly.', W / 2, footerY);
+    ctx.restore();
   }
 
   // ── Warning / event banners ────────────────────────────────────────────────────
