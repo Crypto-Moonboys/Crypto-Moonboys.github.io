@@ -25,7 +25,7 @@
   const BOSS_LABELS = [
     'CYBER TROLL','CORRUPT APE','LASER CAT','SHIBA WARLORD','GLITCH UNICORN',
     'SHIBA DOOM RIDER','THE WALL','THE SPLITTER','THE SNIPER','THE SWARM KING',
-    'THE GLITCH CORE','THE BOMBER','BOSS',
+    'THE GLITCH CORE','THE BOMBER',
   ];
   const KILLED_SOUND_SRCS = [
     '/games/invaders-3008/killed%20one.mp3',
@@ -282,9 +282,15 @@
     return frameInvaderDrawCount > 0 && frameInvaderDrawCount <= 10;
   }
 
-  function isBossLabel(text) {
+  function isBossHudLabel(ctx, text, args) {
+    if (!ctx || !ctx.canvas || ctx.canvas.id !== 'invCanvas') return false;
     const label = String(text || '').toUpperCase();
-    return BOSS_LABELS.some((bossLabel) => label === bossLabel || label.includes(bossLabel));
+    const x = Number(args && args[0]);
+    const y = Number(args && args[1]);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+    if (y < 0 || y > 120) return false;
+    if (!String(ctx.font || '').includes('9px')) return false;
+    return label === 'BOSS' || label === 'BOSS ⚡' || BOSS_LABELS.includes(label);
   }
 
   function chooseBossConfig(label, x, y) {
@@ -436,7 +442,7 @@
     if (this.canvas && this.canvas.id === 'invCanvas') {
       const waveMatch = /^(?:BOSS )?WAVE\s+(\d+)$/i.exec(String(text || ''));
       if (waveMatch) setWave(Number.parseInt(waveMatch[1], 10));
-      if (isBossLabel(text) && args.length >= 2) {
+      if (isBossHudLabel(this, text, args)) {
         drawBossPng(this, chooseBossConfig(text, Number(args[0]), Number(args[1])), Number(args[0]), Number(args[1]), previousDrawImage);
       }
     }
