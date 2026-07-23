@@ -162,6 +162,7 @@ function memeSpriteIndex(inv) {
  * @param {number} H  canvas logical height
  */
 export function createRenderer(ctx, W, H) {
+  let upgradeScreenEventOpen = false;
 
   // ── Internal helpers ────────────────────────────────────────────────────────
 
@@ -975,6 +976,16 @@ export function createRenderer(ctx, W, H) {
 
   // ── Upgrade screen ────────────────────────────────────────────────────────────
 
+  function noteUpgradeScreenOpen() {
+    if (upgradeScreenEventOpen) return;
+    upgradeScreenEventOpen = true;
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      window.dispatchEvent(new CustomEvent('invaders-upgrade-screen', {
+        detail: { visibleUntil: performance.now() + 8000 },
+      }));
+    }
+  }
+
   function drawUpgradeScreen(choices, upgrades) {
     const time = performance.now() * 0.001;
     const count = Math.max(1, choices.length || 3);
@@ -990,12 +1001,6 @@ export function createRenderer(ctx, W, H) {
     const startX = (W - totalW) / 2;
     const cardY = Math.max(panelY + 120, Math.min(158, H - cardH - 74));
     const footerY = Math.min(H - 22, cardY + cardH + 34);
-
-    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-      window.dispatchEvent(new CustomEvent('invaders-upgrade-screen', {
-        detail: { visibleUntil: performance.now() + 8000 },
-      }));
-    }
 
     ctx.save();
     ctx.globalAlpha = 1;
@@ -1709,7 +1714,10 @@ export function createRenderer(ctx, W, H) {
 
     // Upgrade screen overlay (drawn on top of the frozen game state)
     if (s.upgradePhase === 'picking') {
+      noteUpgradeScreenOpen();
       drawUpgradeScreen(s.upgradeChoices, s.upgrades);
+    } else {
+      upgradeScreenEventOpen = false;
     }
 
     // Risk/reward screen (shown before upgrade screen)
