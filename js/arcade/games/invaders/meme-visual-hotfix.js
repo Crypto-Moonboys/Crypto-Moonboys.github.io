@@ -2,7 +2,7 @@
   if (typeof window === 'undefined' || window.__INVADERS_RANDOM_ASSET_LAYER__) return;
   window.__INVADERS_RANDOM_ASSET_LAYER__ = true;
 
-  const ASSET_VERSION = 'meme-wave-seven-killed-sfx-20260722';
+  const ASSET_VERSION = 'meme-wave-seven-strobe-crash-sfx-20260723';
   const ASSET_BASE = '/art/invaders/generated/';
   const MEME_WAVE_SIZE = 7;
   const INVADERS_AUDIO_MASTER_SCALE = 0.3;
@@ -38,6 +38,7 @@
   ];
   const ALIEN_DROP_SOUND_SRC = '/games/invaders-3008/shit%20drop.mp3';
   const RARE_SHIP_SOUND_SRC = '/games/invaders-3008/rare%20ships.mp3';
+  const STROBE_CRASH_SOUND_SRC = '/games/invaders-3008/strobe%20crash.mp3';
 
   const memeImages = MEME_FILES.map((file) => {
     const image = new Image();
@@ -64,14 +65,17 @@
   const killedSoundPools = KILLED_SOUND_SRCS.map(() => []);
   const alienDropSoundPool = [];
   const rareShipSoundPool = [];
+  const strobeCrashSoundPool = [];
   let currentWave = 1;
   let killedSoundSlots = shuffleSlots(currentWave);
   let killedSoundCursor = 0;
   let alienDropSoundCursor = 0;
   let rareShipSoundCursor = 0;
+  let strobeCrashSoundCursor = 0;
   let lastKilledSoundAt = 0;
   let lastAlienDropSoundAt = 0;
   let lastRareShipSoundAt = 0;
+  let lastStrobeCrashSoundAt = 0;
   let lastHudSyncAt = 0;
   let frameInvaderDrawCount = 0;
   let activeBoss = null;
@@ -241,6 +245,13 @@
     rareShipSoundCursor = playPooledSound(RARE_SHIP_SOUND_SRC, rareShipSoundPool, rareShipSoundCursor, 0.195);
   }
 
+  function playStrobeCrashSound() {
+    const now = performance.now();
+    if (now - lastStrobeCrashSoundAt < 120) return;
+    lastStrobeCrashSoundAt = now;
+    strobeCrashSoundCursor = playPooledSound(STROBE_CRASH_SOUND_SRC, strobeCrashSoundPool, strobeCrashSoundCursor, 0.175);
+  }
+
   function stopRareShipSoundLoop(clearTracked) {
     for (const audio of rareShipSoundPool) {
       try { audio.pause(); audio.currentTime = 0; } catch (_) {}
@@ -388,7 +399,10 @@
         const slot = slotForSource(src);
         const replacement = memeImages[waveMemeIndex(slot)];
         if (replacement && replacement.complete && replacement.naturalWidth > 0) {
-          if (isHitFilter(this.filter)) playKilledSound(slot, `${slot}:${Math.round(dx / 4)}:${Math.round(dy / 4)}`);
+          if (isHitFilter(this.filter)) {
+            playKilledSound(slot, `${slot}:${Math.round(dx / 4)}:${Math.round(dy / 4)}`);
+            if (shouldAllowHeavyExplosionLayer()) playStrobeCrashSound();
+          }
           const ratio = replacement.naturalWidth / replacement.naturalHeight;
           const targetH = Math.max(18, Math.min(31, dh * 1.06));
           const targetW = Math.min(dw * 1.1, targetH * ratio);
