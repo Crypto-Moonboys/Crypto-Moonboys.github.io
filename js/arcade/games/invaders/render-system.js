@@ -976,100 +976,196 @@ export function createRenderer(ctx, W, H) {
   // ── Upgrade screen ────────────────────────────────────────────────────────────
 
   function drawUpgradeScreen(choices, upgrades) {
-    // Darkened overlay
-    ctx.fillStyle = 'rgba(5, 8, 20, 0.90)';
+    const safeChoices = Array.isArray(choices) ? choices.slice(0, 3) : [];
+    const upgradeLevels = upgrades || {};
+    const time = typeof performance !== 'undefined' ? performance.now() * 0.001 : Date.now() * 0.001;
+
+    function roundPath(x, y, w, h, r) {
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+      else ctx.rect(x, y, w, h);
+    }
+
+    function fillRound(x, y, w, h, r, fillStyle) {
+      ctx.fillStyle = fillStyle;
+      roundPath(x, y, w, h, r);
+      ctx.fill();
+    }
+
+    function strokeRound(x, y, w, h, r, strokeStyle, lineWidth = 1, glow = 0) {
+      ctx.save();
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.shadowBlur = glow;
+      ctx.shadowColor = strokeStyle;
+      roundPath(x, y, w, h, r);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawWrappedText(text, x, y, maxWidth, lineHeight, maxLines) {
+      const words = String(text || '').split(/\s+/).filter(Boolean);
+      let line = '';
+      let lines = 0;
+      for (const word of words) {
+        const testLine = line ? line + ' ' + word : word;
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          ctx.fillText(line, x, y + lines * lineHeight);
+          lines++;
+          line = word;
+          if (lines >= maxLines - 1) break;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line && lines < maxLines) ctx.fillText(line, x, y + lines * lineHeight);
+    }
+
+    // Neon command-room overlay replaces the previous flat canvas cards.
+    ctx.save();
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#030613');
+    bg.addColorStop(0.45, '#080d24');
+    bg.addColorStop(1, '#12051f');
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Header
-    ctx.save();
-    ctx.shadowBlur  = 14;
-    ctx.shadowColor = '#3fb950';
-    ctx.fillStyle   = '#3fb950';
-    ctx.font        = 'bold 24px system-ui';
-    ctx.textAlign   = 'center';
-    ctx.fillText('WAVE COMPLETE', W / 2, 78);
-    ctx.shadowBlur  = 0;
-    ctx.fillStyle   = '#f7c948';
-    ctx.font        = '15px system-ui';
-    ctx.fillText('Choose an upgrade  ( 1 / 2 / 3 )', W / 2, 106);
-    ctx.restore();
+    ctx.globalAlpha = 0.22;
+    for (let x = -40; x < W + 80; x += 32) {
+      ctx.strokeStyle = x % 64 === 0 ? '#2ee8ff' : '#7d5cff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + Math.sin(time + x) * 8, 0);
+      ctx.lineTo(x - 90, H);
+      ctx.stroke();
+    }
+    for (let y = 22; y < H; y += 28) {
+      ctx.strokeStyle = '#ff2ed1';
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(time * 1.4 + y) * 3);
+      ctx.lineTo(W, y - Math.sin(time * 1.1 + y) * 3);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
 
-    // Cards
-    const cardW = 138;
-    const cardH = 162;
-    const gap   = 14;
+    const panelX = 24;
+    const panelY = 26;
+    const panelW = W - 48;
+    const panelH = 102;
+    const panelGrad = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY + panelH);
+    panelGrad.addColorStop(0, 'rgba(46,232,255,0.18)');
+    panelGrad.addColorStop(0.55, 'rgba(255,46,209,0.16)');
+    panelGrad.addColorStop(1, 'rgba(247,201,72,0.15)');
+    fillRound(panelX, panelY, panelW, panelH, 22, panelGrad);
+    strokeRound(panelX, panelY, panelW, panelH, 22, '#2ee8ff', 2, 28);
+    strokeRound(panelX + 5, panelY + 5, panelW - 10, panelH - 10, 18, 'rgba(255,46,209,0.75)', 1, 16);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f7c948';
+    ctx.font = 'bold 11px system-ui';
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = '#f7c948';
+    ctx.fillText('PERK DROP UNLOCKED', W / 2, panelY + 26);
+    ctx.fillStyle = '#f8fbff';
+    ctx.font = '900 35px system-ui';
+    ctx.shadowBlur = 24;
+    ctx.shadowColor = '#2ee8ff';
+    ctx.fillText('WAVE COMPLETE', W / 2, panelY + 65);
+    ctx.shadowColor = '#ff2ed1';
+    ctx.font = 'bold 13px system-ui';
+    ctx.fillText('Choose your next moonboy mod  ·  press 1 / 2 / 3', W / 2, panelY + 88);
+    ctx.shadowBlur = 0;
+
+    const cardW = Math.min(150, (W - 64) / 3);
+    const cardH = 184;
+    const gap = Math.max(10, (W - 48 - cardW * 3) / 2);
     const totalW = 3 * cardW + 2 * gap;
     const startX = (W - totalW) / 2;
-    const cardY  = 130;
+    const cardY = 146;
 
-    for (let i = 0; i < choices.length; i++) {
-      const def      = choices[i];
-      const cx       = startX + i * (cardW + gap);
-      const col      = UPGRADE_COLORS[def.id] || '#888';
-      const curLevel = upgrades[def.id] || 0;
-      const maxLevel = def.maxLevel;
-      const atMax    = curLevel >= maxLevel;
+    for (let i = 0; i < safeChoices.length; i++) {
+      const def = safeChoices[i];
+      const cx = startX + i * (cardW + gap);
+      const col = UPGRADE_COLORS[def.id] || '#2ee8ff';
+      const curLevel = upgradeLevels[def.id] || 0;
+      const maxLevel = Math.max(1, def.maxLevel || 1);
+      const atMax = curLevel >= maxLevel;
+      const rarity = def.rarity || 'common';
+      const rarityCol = atMax ? '#6b7280' : (RARITY_COLORS[rarity] || col);
+      const pulse = 18 + Math.sin(time * 3 + i) * 5;
 
-      // Card background
-      ctx.fillStyle = 'rgba(18, 22, 42, 0.96)';
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(cx, cardY, cardW, cardH, 10);
-      else               ctx.rect(cx, cardY, cardW, cardH);
-      ctx.fill();
-
-      // Card border — use rarity color if available, else upgrade color
-      const rarity   = def.rarity || 'common';
-      const rarityCol = RARITY_COLORS[rarity] || col;
       ctx.save();
-      ctx.strokeStyle = atMax ? '#555' : rarityCol;
-      ctx.lineWidth   = 2;
-      ctx.shadowBlur  = atMax ? 0 : 8;
+      ctx.shadowBlur = pulse;
+      ctx.shadowColor = rarityCol;
+      const cardGrad = ctx.createLinearGradient(cx, cardY, cx + cardW, cardY + cardH);
+      cardGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
+      cardGrad.addColorStop(0.38, 'rgba(18,22,42,0.98)');
+      cardGrad.addColorStop(1, atMax ? 'rgba(30,32,40,0.98)' : rarityCol + '22');
+      fillRound(cx, cardY, cardW, cardH, 18, cardGrad);
+      ctx.restore();
+      strokeRound(cx, cardY, cardW, cardH, 18, rarityCol, 2.5, atMax ? 0 : 20);
+
+      // Rarity ribbon.
+      fillRound(cx + 12, cardY + 10, cardW - 24, 20, 10, atMax ? 'rgba(85,85,85,0.95)' : rarityCol);
+      ctx.fillStyle = '#06101a';
+      ctx.font = '900 9px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText((atMax ? 'MAXED' : rarity).toUpperCase(), cx + cardW / 2, cardY + 24);
+
+      // Big key badge.
+      ctx.fillStyle = '#030613';
+      ctx.shadowBlur = 14;
       ctx.shadowColor = rarityCol;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(cx, cardY, cardW, cardH, 10);
-      else               ctx.rect(cx, cardY, cardW, cardH);
-      ctx.stroke();
+      ctx.arc(cx + 27, cardY + 50, 19, 0, Math.PI * 2);
+      ctx.fill();
       ctx.shadowBlur = 0;
+      ctx.strokeStyle = rarityCol;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#f8fbff';
+      ctx.font = '900 23px system-ui';
+      ctx.fillText(String(i + 1), cx + 27, cardY + 58);
+
+      // Icon / mini hero portrait area.
+      const portraitX = cx + cardW / 2;
+      const portraitY = cardY + 61;
+      ctx.save();
+      ctx.globalAlpha = atMax ? 0.45 : 1;
+      ctx.fillStyle = rarityCol + '33';
+      ctx.beginPath();
+      ctx.arc(portraitX, portraitY, 31, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = rarityCol;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.font = 'bold 34px system-ui';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = rarityCol;
+      ctx.fillText(def.icon || '✦', portraitX, portraitY + 12);
       ctx.restore();
 
-      // Rarity label
-      if (!atMax) {
-        ctx.fillStyle = rarityCol;
-        ctx.font      = 'bold 8px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText(rarity.toUpperCase(), cx + cardW / 2, cardY + 12);
-      }
+      ctx.fillStyle = atMax ? '#777' : '#f8fbff';
+      ctx.font = '900 13px system-ui';
+      drawWrappedText(def.label, cx + cardW / 2, cardY + 105, cardW - 18, 14, 2);
 
-      // Key number
-      ctx.fillStyle = atMax ? '#555' : col;
-      ctx.font      = 'bold 24px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText(String(i + 1), cx + cardW / 2, cardY + 32);
+      ctx.fillStyle = atMax ? '#666' : '#b7c2d8';
+      ctx.font = '11px system-ui';
+      drawWrappedText(atMax ? 'MAXED OUT' : def.desc, cx + cardW / 2, cardY + 133, cardW - 20, 13, 2);
 
-      // Icon + label
-      ctx.fillStyle = atMax ? '#555' : '#eee';
-      ctx.font      = 'bold 13px system-ui';
-      ctx.fillText(def.icon + ' ' + def.label, cx + cardW / 2, cardY + 60);
-
-      // Description
-      ctx.fillStyle = atMax ? '#444' : '#8b949e';
-      ctx.font      = '11px system-ui';
-      ctx.fillText(atMax ? 'MAXED OUT' : def.desc, cx + cardW / 2, cardY + 80);
-
-      // Level pips
-      const pipTotal  = cardW - 24;
-      const pipW      = pipTotal / maxLevel - 2;
+      const pipTotal = cardW - 30;
+      const pipStep = pipTotal / maxLevel;
+      const pipW = Math.max(5, pipStep - 3);
       for (let lv = 0; lv < maxLevel; lv++) {
-        ctx.fillStyle = lv < curLevel ? col : 'rgba(255,255,255,0.08)';
-        ctx.fillRect(cx + 12 + lv * (pipTotal / maxLevel), cardY + 98, pipW, 7);
+        fillRound(cx + 15 + lv * pipStep, cardY + 162, pipW, 7, 3, lv < curLevel ? rarityCol : 'rgba(255,255,255,0.12)');
       }
-
-      // Level text
-      ctx.fillStyle = atMax ? '#555' : '#8b949e';
-      ctx.font      = '10px system-ui';
-      const lvText  = atMax ? 'MAX' : 'Lv ' + curLevel + ' → ' + (curLevel + 1);
-      ctx.fillText(lvText, cx + cardW / 2, cardY + 122);
+      ctx.fillStyle = atMax ? '#777' : rarityCol;
+      ctx.font = 'bold 10px system-ui';
+      ctx.fillText(atMax ? 'LEVEL MAX' : 'LEVEL ' + curLevel + '  →  ' + (curLevel + 1), cx + cardW / 2, cardY + 181);
     }
+
+    ctx.restore();
   }
 
   // ── Warning / event banners ────────────────────────────────────────────────────
