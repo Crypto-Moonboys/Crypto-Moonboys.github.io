@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-23T06:13:35.204Z",
+  "generated_at": "2026-07-24T06:08:38.580Z",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "asset_ranking_enabled": true,
@@ -237766,7 +237766,7 @@
     {
       "asset_id": "1099997873620",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
@@ -238060,7 +238060,7 @@
     {
       "asset_id": "1099997873623",
       "template_id": 401910,
-      "owner": "yoitscharlie",
+      "owner": "pepperstake",
       "template_rank": 11,
       "template_final_score": 0,
       "template_score_component": 0,
