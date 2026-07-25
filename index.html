@@ -17,11 +17,11 @@
   <link rel="icon" type="image/png" href="/favicon.png">
   <style>
     :root { --gold:#f3bd25; --cyan:#38d8e8; --ink:#050607; --panel:#0c1014; --muted:#aebbc4; }
-    .momentum-home { background:var(--ink); color:#fff; overflow:hidden; }
+    .momentum-home { background:var(--ink); color:#fff; overflow-x:hidden; }
     .momentum-home * { box-sizing:border-box; }
     .momentum-wrap { width:min(1180px, calc(100% - 40px)); margin:0 auto; }
     .momentum-home .home-hero.momentum-hero-shell { display:block; min-height:0; padding:0; overflow:hidden; }
-    .momentum-home .home-hero-inner.momentum-hero-art { display:grid; grid-template-columns:1fr 1fr; width:100%; min-height:0; padding:0; background:#000; }
+    .momentum-home .home-hero-inner.momentum-hero-art { position:static; inset:auto; display:grid; grid-template-columns:1fr 1fr; width:100%; min-height:0; padding:0; background:#000; }
     .momentum-home .home-hero-left,
     .momentum-home .home-hero-right { min-width:0; min-height:0; }
     .momentum-home .momentum-hero-art img { display:block; width:100%; height:100%; object-fit:cover; }
@@ -72,6 +72,7 @@
     <div class="momentum-wrap">
       <div class="momentum-kicker">GK legacy. Creator future.</div>
       <h1>You do not need to be an artist.<br><span>You need something worth saying.</span></h1>
+      <div class="momentum-strap">The writing is on the wall.<br>Leave your mark.</div>
       <p class="momentum-lead">Crypto Moonboys helps people turn ideas, messages and characters into identities people remember — then provides the tools, strategy and momentum needed to build something lasting around them.</p>
       <div class="momentum-strap">Turn your moment into momentum.</div>
     </div>
