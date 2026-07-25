@@ -20,8 +20,11 @@
     .momentum-home { background:var(--ink); color:#fff; overflow:hidden; }
     .momentum-home * { box-sizing:border-box; }
     .momentum-wrap { width:min(1180px, calc(100% - 40px)); margin:0 auto; }
-    .momentum-hero-art { display:grid; grid-template-columns:1fr 1fr; background:#000; }
-    .momentum-hero-art img { display:block; width:100%; height:100%; object-fit:cover; }
+    .momentum-home .home-hero.momentum-hero-shell { display:block; min-height:0; padding:0; overflow:hidden; }
+    .momentum-home .home-hero-inner.momentum-hero-art { display:grid; grid-template-columns:1fr 1fr; width:100%; min-height:0; padding:0; background:#000; }
+    .momentum-home .home-hero-left,
+    .momentum-home .home-hero-right { min-width:0; min-height:0; }
+    .momentum-home .momentum-hero-art img { display:block; width:100%; height:100%; object-fit:cover; }
     .momentum-intro { padding:72px 0 56px; text-align:center; background:radial-gradient(circle at top, #16120a 0, #050607 65%); }
     .momentum-kicker { color:var(--gold); text-transform:uppercase; letter-spacing:.22em; font-weight:800; }
     .momentum-intro h1 { max-width:1000px; margin:16px auto 20px; font-size:clamp(2.7rem,7vw,6.7rem); line-height:.9; text-transform:uppercase; }
@@ -45,7 +48,7 @@
     .momentum-community { display:block; width:min(1180px, calc(100% - 40px)); margin:0 auto; border:1px solid rgba(243,189,37,.35); }
     .momentum-community img { display:block; width:100%; height:auto; }
     @media (max-width:800px) {
-      .momentum-hero-art { grid-template-columns:1fr; }
+      .momentum-home .home-hero-inner.momentum-hero-art { grid-template-columns:1fr; }
       .momentum-grid, .momentum-paths { grid-template-columns:1fr; }
       .momentum-section { padding:54px 0; }
       .momentum-wrap { width:min(100% - 28px, 1180px); }
@@ -54,9 +57,15 @@
 </head>
 <body class="page-home page-standard-shell momentum-home">
 <main id="content" role="main">
-  <section class="momentum-hero-art" aria-label="Crypto Moonboys creator universe">
-    <img src="/img/homepage/OG%20Crypto%20Moonboys%20Swarmsy%20bg%20layer%202.jpg" alt="Crypto Moonboys and SWARMSY creator universe" width="1200" height="675" loading="eager" decoding="async">
-    <img src="/img/homepage/swarmsy%20and%20the%20Crypto%20moonbiys%20layer%20one.jpg" alt="SWARMSY and the Crypto Moonboys alliance" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
+  <section class="home-hero launch-hero momentum-hero-shell" aria-label="Crypto Moonboys creator universe">
+    <div class="home-hero-inner momentum-hero-art">
+      <div class="home-hero-left">
+        <img src="/img/homepage/OG%20Crypto%20Moonboys%20Swarmsy%20bg%20layer%202.jpg" alt="Crypto Moonboys and SWARMSY creator universe" width="1200" height="675" loading="eager" decoding="async">
+      </div>
+      <div class="home-hero-right">
+        <img src="/img/homepage/swarmsy%20and%20the%20Crypto%20moonbiys%20layer%20one.jpg" alt="SWARMSY and the Crypto Moonboys alliance" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
+      </div>
+    </div>
   </section>
 
   <section class="momentum-intro">
