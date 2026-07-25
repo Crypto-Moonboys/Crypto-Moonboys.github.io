@@ -21,18 +21,18 @@
     .simple-home * { box-sizing:border-box; }
     .simple-wrap { width:min(1180px,calc(100% - 40px)); margin:0 auto; }
     .simple-home .home-hero.simple-hero { display:block; min-height:0; padding:0; overflow:hidden; }
-    .simple-home .home-hero-inner.simple-hero-grid { position:static; inset:auto; display:grid; grid-template-columns:1fr 1fr; width:100%; min-height:0; padding:0; background:#000; }
+    .simple-home .home-hero-inner.simple-hero-grid { position:static; inset:auto; display:grid; grid-template-columns:1fr 1fr; width:100%; min-height:0; padding:0; background:#fff; }
     .simple-home .home-hero-left,
     .simple-home .home-hero-right { min-width:0; min-height:0; }
     .simple-home .home-hero-left { position:relative; }
     .simple-home .simple-hero-grid img { display:block; width:100%; height:100%; object-fit:cover; }
-    .simple-hero-copy { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:clamp(28px,5vw,72px); background:linear-gradient(90deg,rgba(0,0,0,.94) 0%,rgba(0,0,0,.72) 58%,rgba(0,0,0,.1) 100%); }
-    .simple-hero-copy h1 { max-width:720px; margin:0 0 22px; font-size:clamp(2.5rem,5vw,6rem); line-height:.92; text-transform:uppercase; }
+    .simple-hero-copy { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:clamp(28px,5vw,72px); background:linear-gradient(90deg,rgba(255,255,255,.96) 0%,rgba(255,255,255,.82) 58%,rgba(255,255,255,.08) 100%); }
+    .simple-hero-copy h1 { max-width:720px; margin:0 0 22px; color:#050607; font-size:clamp(2.5rem,5vw,6rem); line-height:.92; text-transform:uppercase; }
     .simple-hero-copy h1 span { color:var(--gold); }
-    .simple-hero-copy p { max-width:620px; margin:0; color:#e2e9ed; font-size:clamp(1rem,1.5vw,1.3rem); line-height:1.55; }
+    .simple-hero-copy p { max-width:620px; margin:0; color:#111; font-size:clamp(1rem,1.5vw,1.3rem); line-height:1.55; }
     .simple-actions { display:flex; flex-wrap:wrap; gap:14px; margin-top:28px; }
-    .simple-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:13px 22px; border:1px solid rgba(243,189,37,.65); color:#050607; background:var(--gold); font-weight:900; text-transform:uppercase; text-decoration:none; letter-spacing:.04em; }
-    .simple-button.secondary { color:#fff; background:rgba(0,0,0,.45); border-color:rgba(255,255,255,.4); }
+    .simple-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:13px 22px; border:1px solid rgba(145,105,0,.75); color:#050607; background:var(--gold); font-weight:900; text-transform:uppercase; text-decoration:none; letter-spacing:.04em; }
+    .simple-button.secondary { color:#050607; background:rgba(255,255,255,.7); border-color:rgba(5,6,7,.55); }
     .simple-section { padding:72px 0; border-top:1px solid rgba(255,255,255,.08); }
     .simple-section h2 { max-width:900px; margin:0 0 18px; font-size:clamp(2rem,4vw,4.4rem); line-height:1; text-transform:uppercase; }
     .simple-section h2 span { color:var(--cyan); }
@@ -51,7 +51,7 @@
     .simple-community img { display:block; width:100%; height:auto; }
     @media (max-width:800px) {
       .simple-home .home-hero-inner.simple-hero-grid { grid-template-columns:1fr; }
-      .simple-hero-copy { position:relative; min-height:560px; background:rgba(0,0,0,.82); }
+      .simple-hero-copy { position:relative; min-height:560px; background:rgba(255,255,255,.88); }
       .simple-home .home-hero-left > img { position:absolute; inset:0; }
       .simple-routes,.simple-steps { grid-template-columns:1fr; }
       .simple-section { padding:54px 0; }
@@ -61,10 +61,10 @@
 </head>
 <body class="page-home page-standard-shell simple-home">
 <main id="content" role="main">
-  <section class="home-hero launch-hero simple-hero" aria-label="Crypto Moonboys creator universe">
+  <section class="home-hero launch-hero simple-hero" aria-label="Crypto Moonboys and SWARMSY creator universe">
     <div class="home-hero-inner simple-hero-grid">
       <div class="home-hero-left">
-        <img src="/img/homepage/OG%20Crypto%20Moonboys%20Swarmsy%20bg%20layer%202.jpg" alt="Crypto Moonboys creator universe built from Graffiti Kings street culture" width="1200" height="675" loading="eager" decoding="async">
+        <img src="/img/homepage/CRYPTO%20MOONBOYS%20AND%20SWARMSY%20SIDE%20TWO.jpg" alt="Crypto Moonboys and SWARMSY stitched creator artwork, left panel" width="1200" height="675" loading="eager" decoding="async">
         <div class="simple-hero-copy">
           <h1>You have something worth saying.<br><span>We help people remember it.</span></h1>
           <p>Build your message, identity and momentum with SWARMSY.</p>
@@ -75,7 +75,7 @@
         </div>
       </div>
       <div class="home-hero-right">
-        <img src="/img/homepage/swarmsy%20and%20the%20Crypto%20moonbiys%20layer%20one.jpg" alt="SWARMSY and the Crypto Moonboys alliance: show up, leave your mark and keep moving" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
+        <img src="/img/homepage/CRYPTO%20MOONBOYS%20AND%20SWARMSY%20SIDE%20one.jpg" alt="Crypto Moonboys and SWARMSY stitched creator artwork, right panel" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
       </div>
     </div>
   </section>
