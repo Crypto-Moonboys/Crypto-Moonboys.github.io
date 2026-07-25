@@ -34,6 +34,14 @@
     .momentum-strap { margin:20px 0 0; max-width:650px; border:1px solid rgba(243,189,37,.45); padding:14px 18px; color:#fff; font-size:clamp(1rem,1.5vw,1.3rem); font-weight:800; text-transform:uppercase; }
     .momentum-feature-image { width:100%; background:#000; border-top:1px solid rgba(255,255,255,.08); border-bottom:1px solid rgba(255,255,255,.08); }
     .momentum-feature-image img { display:block; width:100%; height:auto; }
+    .momentum-image-feature { width:100%; padding:64px 0 0; background:#000; border-top:1px solid rgba(255,255,255,.08); }
+    .momentum-image-feature h2 { margin:0; padding:0 clamp(20px,5vw,72px) 34px; color:#fff; font-size:clamp(2rem,4vw,4.2rem); line-height:1; text-transform:uppercase; animation:momentum-heading-pulse 6s ease-in-out infinite; }
+    .momentum-image-feature h2 span { color:inherit; }
+    .momentum-image-feature img { display:block; width:100%; height:auto; }
+    @keyframes momentum-heading-pulse {
+      0%,100% { color:#8d8d8d; text-shadow:0 0 4px rgba(255,255,255,.15),0 0 12px rgba(255,255,255,.08); }
+      50% { color:#fff; text-shadow:0 0 10px rgba(255,255,255,.8),0 0 28px rgba(255,255,255,.45),0 0 48px rgba(255,255,255,.2); }
+    }
     .momentum-section { padding:72px 0; border-top:1px solid rgba(255,255,255,.08); }
     .momentum-section h2 { margin:0 0 18px; font-size:clamp(2rem,4vw,4.2rem); line-height:1; text-transform:uppercase; }
     .momentum-section h2 span { color:var(--cyan); }
@@ -50,12 +58,17 @@
     .momentum-final { padding:36px 0 80px; background:#000; }
     .momentum-community { display:block; width:min(1180px, calc(100% - 40px)); margin:0 auto; border:1px solid rgba(243,189,37,.35); }
     .momentum-community img { display:block; width:100%; height:auto; }
+    @media (prefers-reduced-motion:reduce) {
+      .momentum-image-feature h2 { animation:none; color:#fff; text-shadow:0 0 10px rgba(255,255,255,.45); }
+    }
     @media (max-width:800px) {
       .momentum-home .home-hero-inner.momentum-hero-art { grid-template-columns:1fr; }
       .momentum-hero-copy { position:relative; min-height:540px; background:rgba(0,0,0,.82); }
       .momentum-home .home-hero-left > img { position:absolute; inset:0; }
       .momentum-grid, .momentum-paths { grid-template-columns:1fr; }
       .momentum-section { padding:54px 0; }
+      .momentum-image-feature { padding-top:48px; }
+      .momentum-image-feature h2 { padding-bottom:26px; }
       .momentum-wrap { width:min(100% - 28px, 1180px); }
     }
   </style>
@@ -96,13 +109,9 @@
     <img src="/img/homepage/CRYPYO%20MOONBOYS%20LEAVE%20YOUR%20MARK.jpg" alt="Crypto Moonboys Leave Your Mark artwork showing how a strong message becomes a recognisable identity and sustained creative momentum" loading="lazy" decoding="async">
   </section>
 
-  <section class="momentum-section">
-    <div class="momentum-wrap">
-      <h2>From raw idea to <span>lasting creative presence.</span></h2>
-      <div class="momentum-feature-image" aria-label="From raw idea to lasting creative presence">
-        <img src="/img/homepage/crypto%20moonboys%20graffiti%20kings%20wall.jpg" alt="From raw idea to lasting creative presence: find the message by turning frustration, humour, experience, opinion or imagination into a clear creative signal; build the identity with a memorable name, voice, visual language, tagline, character or public alter ego; create posters, campaigns, stories, products, content and symbols people can recognise instantly; plan the intervention by choosing the right format, place, timing, audience and release sequence; keep momentum by preparing the next move before the first burst of attention fades; and build what lasts by converting recognition into community, reputation, ownership, opportunities and a creator world" loading="lazy" decoding="async">
-      </div>
-    </div>
+  <section class="momentum-image-feature" aria-labelledby="raw-idea-heading">
+    <h2 id="raw-idea-heading">From raw idea to <span>lasting creative presence.</span></h2>
+    <img src="/img/homepage/crypto%20moonboys%20graffiti%20kings%20wall.jpg" alt="From raw idea to lasting creative presence: find the message by turning frustration, humour, experience, opinion or imagination into a clear creative signal; build the identity with a memorable name, voice, visual language, tagline, character or public alter ego; create posters, campaigns, stories, products, content and symbols people can recognise instantly; plan the intervention by choosing the right format, place, timing, audience and release sequence; keep momentum by preparing the next move before the first burst of attention fades; and build what lasts by converting recognition into community, reputation, ownership, opportunities and a creator world" loading="lazy" decoding="async">
   </section>
 
   <section class="momentum-section">
