@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-24T06:08:38.455Z",
+  "generated_at": "2026-07-25T05:59:38.878Z",
   "note": "Trait exposure uses live_supply when live counts are available; issued_supply fallback remains explicit.",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
@@ -38,19 +38,19 @@
     {
       "trait": "airdropsbycb",
       "template_count": 9,
-      "exposure_supply": 7928
+      "exposure_supply": 9028
     }
   ],
   "schemas": [
     {
       "schema_name": "whysoserious",
       "templates": 8,
-      "live_supply": 1287
+      "live_supply": 1440
     },
     {
       "schema_name": "airdropsbycb",
       "templates": 13,
-      "live_supply": 11999
+      "live_supply": 13167
     }
   ]
 }

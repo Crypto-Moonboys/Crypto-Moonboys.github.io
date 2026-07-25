@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-24T06:08:38.580Z",
+  "generated_at": "2026-07-25T05:59:39.051Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -33,11 +33,11 @@
   "holders": [
     {
       "owner": "yoitscharlie",
-      "live_assets": 6539
+      "live_assets": 7792
     },
     {
       "owner": "pepperstake",
-      "live_assets": 953
+      "live_assets": 1061
     },
     {
       "owner": "q4oia.wam",
@@ -58,10 +58,6 @@
     {
       "owner": "wfor4.wam",
       "live_assets": 54
-    },
-    {
-      "owner": "i5d52.c.wam",
-      "live_assets": 45
     },
     {
       "owner": "fs1r2.wam",
@@ -172,10 +168,6 @@
       "live_assets": 10
     },
     {
-      "owner": "kvqr.wam",
-      "live_assets": 10
-    },
-    {
       "owner": "3kg.c.wam",
       "live_assets": 10
     },
@@ -189,6 +181,10 @@
     },
     {
       "owner": "mh1ww.wam",
+      "live_assets": 10
+    },
+    {
+      "owner": "i5d52.c.wam",
       "live_assets": 10
     },
     {
@@ -232,7 +228,7 @@
       "live_assets": 8
     },
     {
-      "owner": "xsph.wam",
+      "owner": "kvqr.wam",
       "live_assets": 7
     },
     {
@@ -270,6 +266,10 @@
     {
       "owner": "jycgm.wam",
       "live_assets": 7
+    },
+    {
+      "owner": "xsph.wam",
+      "live_assets": 6
     },
     {
       "owner": "neyau.wam",
@@ -2573,10 +2573,6 @@
     },
     {
       "owner": "lto.i.c.wam",
-      "live_assets": 1
-    },
-    {
-      "owner": "22hra.wam",
       "live_assets": 1
     },
     {

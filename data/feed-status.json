@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-24T06:08:38.750Z",
+  "generated_at": "2026-07-25T05:59:39.220Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -23,10 +23,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-24T06:08:22.013Z",
-      "last_successful_check": "2026-07-24T06:08:22.013Z",
-      "last_successful_update": "2026-07-24T06:08:21.547Z",
-      "source_updated_at": "2026-07-24T06:08:21.547Z",
+      "checked_at": "2026-07-25T05:59:34.554Z",
+      "last_successful_check": "2026-07-25T05:59:34.554Z",
+      "last_successful_update": "2026-07-25T05:59:34.094Z",
+      "source_updated_at": "2026-07-25T05:59:34.094Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -71,10 +71,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-24T06:08:38.750Z",
-      "last_successful_check": "2026-07-24T06:08:38.750Z",
-      "last_successful_update": "2026-07-24T06:08:38.750Z",
-      "source_updated_at": "2026-07-24T06:08:38.750Z",
+      "checked_at": "2026-07-25T05:59:39.219Z",
+      "last_successful_check": "2026-07-25T05:59:39.219Z",
+      "last_successful_update": "2026-07-25T05:59:39.219Z",
+      "source_updated_at": "2026-07-25T05:59:39.219Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -82,7 +82,7 @@
       "endpoint_status": {},
       "notes": [
         "Generated NoBallGames rarity render: 12 ranked, 6 utility/open mint, 3 unissued.",
-        "Staged cache refresh: 21/21 metadata ok; 21/21 live supply counts ok; 13341 asset-state records across 21 templates.",
+        "Staged cache refresh: 21/21 metadata ok; 21/21 live supply counts ok; 14662 asset-state records across 21 templates.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "AtomicAssets is the source of truth; AtomicHub links are references only."
