@@ -3,162 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboys helps people turn ideas, messages and characters into identities people remember, with the tools and momentum to build something lasting.">
+  <meta name="description" content="Crypto Moonboys helps turn your ideas into something people remember.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Crypto Moonboys | Turn Your Moment Into Momentum">
-  <meta property="og:description" content="You do not need to be an artist. You need something worth saying, an identity people remember and the momentum to keep it alive.">
+  <meta property="og:title" content="Crypto Moonboys | Build Something People Remember">
+  <meta property="og:description" content="Build your message, identity and momentum with SWARMSY.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <link rel="canonical" href="https://cryptomoonboys.com/">
-  <title>Crypto Moonboys | Turn Your Moment Into Momentum</title>
+  <title>Crypto Moonboys | Build Something People Remember</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="icon" type="image/png" href="/favicon.png">
   <style>
-    :root { --gold:#f3bd25; --cyan:#38d8e8; --ink:#050607; --panel:#0c1014; --muted:#aebbc4; }
-    .momentum-home { background:var(--ink); color:#fff; overflow-x:hidden; }
-    .momentum-home * { box-sizing:border-box; }
-    .momentum-wrap { width:min(1180px, calc(100% - 40px)); margin:0 auto; }
-    .momentum-home .home-hero.momentum-hero-shell { display:block; min-height:0; padding:0; overflow:hidden; }
-    .momentum-home .home-hero-inner.momentum-hero-art { position:static; inset:auto; display:grid; grid-template-columns:1fr 1fr; width:100%; min-height:0; padding:0; background:#000; }
-    .momentum-home .home-hero-left,
-    .momentum-home .home-hero-right { min-width:0; min-height:0; }
-    .momentum-home .home-hero-left { position:relative; }
-    .momentum-home .momentum-hero-art img { display:block; width:100%; height:100%; object-fit:cover; }
-    .momentum-hero-copy { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:clamp(28px,5vw,72px); background:linear-gradient(90deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.7) 55%,rgba(0,0,0,.15) 100%); }
-    .momentum-kicker { color:var(--gold); text-transform:uppercase; letter-spacing:.22em; font-weight:800; }
-    .momentum-hero-copy h1 { max-width:720px; margin:16px 0 20px; font-size:clamp(2.2rem,4.6vw,5.6rem); line-height:.9; text-transform:uppercase; }
-    .momentum-hero-copy h1 span { color:var(--gold); }
-    .momentum-lead { max-width:650px; margin:0; color:#d7e0e5; font-size:clamp(.95rem,1.35vw,1.16rem); line-height:1.65; }
-    .momentum-strap { margin:20px 0 0; max-width:650px; border:1px solid rgba(243,189,37,.45); padding:14px 18px; color:#fff; font-size:clamp(1rem,1.5vw,1.3rem); font-weight:800; text-transform:uppercase; }
-    .momentum-feature-image { width:100%; background:#000; border-top:1px solid rgba(255,255,255,.08); border-bottom:1px solid rgba(255,255,255,.08); }
-    .momentum-feature-image img { display:block; width:100%; height:auto; }
-    .momentum-image-feature { all:unset; display:block; width:100%; margin:0; overflow:visible; }
-    .momentum-image-feature img { display:block; width:100%; height:auto; }
-    @keyframes momentum-heading-pulse {
-      0%,100% { color:#8d8d8d; text-shadow:0 0 4px rgba(255,255,255,.15),0 0 12px rgba(255,255,255,.08); }
-      50% { color:#fff; text-shadow:0 0 10px rgba(255,255,255,.8),0 0 28px rgba(255,255,255,.45),0 0 48px rgba(255,255,255,.2); }
-    }
-    .momentum-section { padding:72px 0; border-top:1px solid rgba(255,255,255,.08); }
-    .momentum-section h2 { margin:0 0 18px; font-size:clamp(2rem,4vw,4.2rem); line-height:1; text-transform:uppercase; }
-    .momentum-section h2 span { color:var(--cyan); }
-    .momentum-publish-heading { all:unset; display:block; margin:0 0 22px; color:#fff; font-size:clamp(2rem,4vw,4.2rem); line-height:1; text-transform:uppercase; }
-    .momentum-publish-heading span { color:inherit; }
-    .momentum-raw-heading { all:unset; display:block; margin:0 0 34px; color:#fff; font-size:clamp(2rem,4vw,4.2rem); line-height:1; text-transform:uppercase; animation:momentum-heading-pulse 6s ease-in-out infinite; }
-    .momentum-raw-heading span { color:inherit; }
-    .momentum-publish-section .momentum-feature-image { margin:0 0 34px; }
-    .momentum-section p { max-width:850px; color:var(--muted); font-size:1.08rem; line-height:1.75; }
-    .momentum-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:34px; }
-    .momentum-card { background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.1); padding:26px; min-height:210px; }
-    .momentum-card strong { display:block; color:var(--gold); font-size:1.25rem; text-transform:uppercase; margin-bottom:10px; }
-    .momentum-card p { margin:0; font-size:1rem; }
-    .momentum-paths { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:34px; }
-    .momentum-path { border:1px solid rgba(56,216,232,.35); background:#081014; padding:30px; }
-    .momentum-path:nth-child(2) { border-color:rgba(243,189,37,.4); background:#120f07; }
-    .momentum-path h3 { margin:0 0 12px; font-size:1.7rem; text-transform:uppercase; }
-    .momentum-quote { margin:34px 0 0; padding:25px 28px; border-left:5px solid var(--gold); background:rgba(243,189,37,.07); font-size:clamp(1.2rem,2vw,1.6rem); font-weight:800; }
-    .momentum-final { padding:36px 0 80px; background:#000; }
-    .momentum-community { display:block; width:min(1180px, calc(100% - 40px)); margin:0 auto; border:1px solid rgba(243,189,37,.35); }
-    .momentum-community img { display:block; width:100%; height:auto; }
-    @media (prefers-reduced-motion:reduce) {
-      .momentum-raw-heading { animation:none; color:#fff; text-shadow:0 0 10px rgba(255,255,255,.45); }
-    }
+    :root { --gold:#f3bd25; --cyan:#38d8e8; --ink:#050607; --muted:#aebbc4; }
+    .simple-home { background:var(--ink); color:#fff; overflow-x:hidden; }
+    .simple-home * { box-sizing:border-box; }
+    .simple-wrap { width:min(1180px,calc(100% - 40px)); margin:0 auto; }
+    .simple-home .home-hero.simple-hero { display:block; min-height:0; padding:0; overflow:hidden; }
+    .simple-home .home-hero-inner.simple-hero-grid { position:static; inset:auto; display:grid; grid-template-columns:1fr 1fr; width:100%; min-height:0; padding:0; background:#000; }
+    .simple-home .home-hero-left,
+    .simple-home .home-hero-right { min-width:0; min-height:0; }
+    .simple-home .home-hero-left { position:relative; }
+    .simple-home .simple-hero-grid img { display:block; width:100%; height:100%; object-fit:cover; }
+    .simple-hero-copy { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:clamp(28px,5vw,72px); background:linear-gradient(90deg,rgba(0,0,0,.94) 0%,rgba(0,0,0,.72) 58%,rgba(0,0,0,.1) 100%); }
+    .simple-hero-copy h1 { max-width:720px; margin:0 0 22px; font-size:clamp(2.5rem,5vw,6rem); line-height:.92; text-transform:uppercase; }
+    .simple-hero-copy h1 span { color:var(--gold); }
+    .simple-hero-copy p { max-width:620px; margin:0; color:#e2e9ed; font-size:clamp(1rem,1.5vw,1.3rem); line-height:1.55; }
+    .simple-actions { display:flex; flex-wrap:wrap; gap:14px; margin-top:28px; }
+    .simple-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:13px 22px; border:1px solid rgba(243,189,37,.65); color:#050607; background:var(--gold); font-weight:900; text-transform:uppercase; text-decoration:none; letter-spacing:.04em; }
+    .simple-button.secondary { color:#fff; background:rgba(0,0,0,.45); border-color:rgba(255,255,255,.4); }
+    .simple-section { padding:72px 0; border-top:1px solid rgba(255,255,255,.08); }
+    .simple-section h2 { max-width:900px; margin:0 0 18px; font-size:clamp(2rem,4vw,4.4rem); line-height:1; text-transform:uppercase; }
+    .simple-section h2 span { color:var(--cyan); }
+    .simple-section p { max-width:780px; margin:0; color:var(--muted); font-size:1.08rem; line-height:1.7; }
+    .simple-image { display:block; width:100%; margin-top:34px; }
+    .simple-routes { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:34px; }
+    .simple-route { padding:30px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.035); }
+    .simple-route h3 { margin:0 0 12px; font-size:1.65rem; text-transform:uppercase; }
+    .simple-route p { margin-bottom:22px; }
+    .simple-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:30px 0; }
+    .simple-step { padding:22px; border-top:3px solid var(--gold); background:rgba(255,255,255,.025); font-weight:800; text-transform:uppercase; }
+    .simple-trust { font-size:clamp(1.25rem,2vw,1.65rem); font-weight:800; color:#fff; }
+    .simple-final { padding:64px 0 80px; border-top:1px solid rgba(255,255,255,.08); text-align:center; }
+    .simple-final h2 { margin:0 0 24px; font-size:clamp(2rem,4vw,4rem); text-transform:uppercase; }
+    .simple-community { display:block; width:min(1180px,calc(100% - 40px)); margin:36px auto 0; }
+    .simple-community img { display:block; width:100%; height:auto; }
     @media (max-width:800px) {
-      .momentum-home .home-hero-inner.momentum-hero-art { grid-template-columns:1fr; }
-      .momentum-hero-copy { position:relative; min-height:540px; background:rgba(0,0,0,.82); }
-      .momentum-home .home-hero-left > img { position:absolute; inset:0; }
-      .momentum-grid, .momentum-paths { grid-template-columns:1fr; }
-      .momentum-section { padding:54px 0; }
-      .momentum-wrap { width:min(100% - 28px, 1180px); }
+      .simple-home .home-hero-inner.simple-hero-grid { grid-template-columns:1fr; }
+      .simple-hero-copy { position:relative; min-height:560px; background:rgba(0,0,0,.82); }
+      .simple-home .home-hero-left > img { position:absolute; inset:0; }
+      .simple-routes,.simple-steps { grid-template-columns:1fr; }
+      .simple-section { padding:54px 0; }
+      .simple-wrap { width:min(100% - 28px,1180px); }
     }
   </style>
 </head>
-<body class="page-home page-standard-shell momentum-home">
+<body class="page-home page-standard-shell simple-home">
 <main id="content" role="main">
-  <section class="home-hero launch-hero momentum-hero-shell" aria-label="Crypto Moonboys creator universe">
-    <div class="home-hero-inner momentum-hero-art">
+  <section class="home-hero launch-hero simple-hero" aria-label="Crypto Moonboys creator universe">
+    <div class="home-hero-inner simple-hero-grid">
       <div class="home-hero-left">
-        <img src="/img/homepage/OG%20Crypto%20Moonboys%20Swarmsy%20bg%20layer%202.jpg" alt="Crypto Moonboys creator universe built from more than forty years of Graffiti Kings street culture, helping people build identity, visibility, community, ownership and lasting creative momentum" width="1200" height="675" loading="eager" decoding="async">
-        <div class="momentum-hero-copy">
-          <div class="momentum-kicker">GK legacy. Creator future.</div>
-          <h1>You do not need to be an artist.<br><span>You need something worth saying.</span></h1>
-          <div class="momentum-strap">The writing is on the wall.<br>Leave your mark.</div>
-          <p class="momentum-lead">Crypto Moonboys helps people turn ideas, messages and characters into identities people remember — then provides the tools, strategy and momentum needed to build something lasting around them.</p>
-          <div class="momentum-strap">Turn your moment into momentum.</div>
+        <img src="/img/homepage/OG%20Crypto%20Moonboys%20Swarmsy%20bg%20layer%202.jpg" alt="Crypto Moonboys creator universe built from Graffiti Kings street culture" width="1200" height="675" loading="eager" decoding="async">
+        <div class="simple-hero-copy">
+          <h1>You have something worth saying.<br><span>We help people remember it.</span></h1>
+          <p>Build your message, identity and momentum with SWARMSY.</p>
+          <div class="simple-actions">
+            <a class="simple-button" href="/swarmsy.html">Start building</a>
+            <a class="simple-button secondary" href="#how-it-works">See how it works</a>
+          </div>
         </div>
       </div>
       <div class="home-hero-right">
-        <img src="/img/homepage/swarmsy%20and%20the%20Crypto%20moonbiys%20layer%20one.jpg" alt="Alliance Protocol. Built different. You do not need to be famous, experienced or have permission. You just need to show up, leave your mark and keep the momentum moving" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
+        <img src="/img/homepage/swarmsy%20and%20the%20Crypto%20moonbiys%20layer%20one.jpg" alt="SWARMSY and the Crypto Moonboys alliance: show up, leave your mark and keep moving" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
       </div>
     </div>
   </section>
 
-  <section class="momentum-feature-image" aria-label="Crypto Moonboys characters on the wall">
-    <img src="/img/homepage/CRYPYO%20MOONBOYS%20THREE%20HEROS%20ON%20THE%20WALL.jpg" alt="Three Crypto Moonboys characters presented as memorable identities on a street wall, showing how a distinctive message, symbol and character can build recognition and momentum" loading="eager" decoding="async">
-  </section>
-
-  <section class="momentum-section momentum-publish-section">
-    <div class="momentum-wrap">
-      <h2 class="momentum-publish-heading">Everyone can publish. <span>Very few become memorable.</span></h2>
-      <h2 class="momentum-raw-heading" id="raw-idea-heading">From raw idea to <span>lasting creative presence.</span></h2>
+  <section class="simple-section" id="how-it-works">
+    <div class="simple-wrap">
+      <h2>From idea to <span>identity.</span></h2>
+      <p>SWARMSY helps you name it, shape it, create it and keep it moving.</p>
     </div>
-    <section class="momentum-feature-image" aria-label="GKniftyHEADS Graffiti Kings wall">
-      <img src="/img/homepage/GKniftyHEADS%20GRAFFITI%20KINGS%20WALL.jpg" alt="GKniftyHEADS and Graffiti Kings characters presented across a full street wall, showing how a public message can become a memorable identity and a recognisable cultural signal" loading="lazy" decoding="async">
-    </section>
-    <div class="momentum-wrap">
-      <p>A sharp sentence, a poster, a symbol, a character or a public message can travel further than polished artwork. The real challenge is turning one flash of attention into a recognisable identity, a consistent signal and a body of work people continue to follow.</p>
-      <div class="momentum-quote">The message starts the conversation. Identity makes it recognisable. Momentum keeps it alive.</div>
-    </div>
+    <img class="simple-image" src="/img/homepage/crypto%20moonboys%20graffiti%20kings%20wall.jpg" alt="Find the message, build the identity, create the assets, plan the intervention, keep momentum and build what lasts" loading="lazy" decoding="async">
   </section>
 
-  <section class="momentum-feature-image" aria-label="Leave your mark">
-    <img src="/img/homepage/CRYPYO%20MOONBOYS%20LEAVE%20YOUR%20MARK.jpg" alt="Crypto Moonboys Leave Your Mark artwork showing how a strong message becomes a recognisable identity and sustained creative momentum" loading="lazy" decoding="async">
-  </section>
-
-  <section class="momentum-image-feature" aria-labelledby="raw-idea-heading">
-    <img src="/img/homepage/crypto%20moonboys%20graffiti%20kings%20wall.jpg" alt="From raw idea to lasting creative presence: find the message by turning frustration, humour, experience, opinion or imagination into a clear creative signal; build the identity with a memorable name, voice, visual language, tagline, character or public alter ego; create posters, campaigns, stories, products, content and symbols people can recognise instantly; plan the intervention by choosing the right format, place, timing, audience and release sequence; keep momentum by preparing the next move before the first burst of attention fades; and build what lasts by converting recognition into community, reputation, ownership, opportunities and a creator world" loading="lazy" decoding="async">
-  </section>
-
-  <section class="momentum-section">
-    <div class="momentum-wrap">
-      <h2>Meet SWARMSY. <span>Your identity and momentum project manager.</span></h2>
-      <p>SWARMSY is not a chatbot that throws out ideas and forgets them. It is a dedicated creator operating system that learns your creative DNA, protects approved decisions, manages project context and helps carry an idea from first spark to public action.</p>
-      <div class="momentum-grid">
-        <article class="momentum-card"><strong>Identity Forge</strong><p>Clarify what you stand for, how you sound and what people should remember.</p></article>
-        <article class="momentum-card"><strong>Creative Direction</strong><p>Find the contradiction, sharpen the message and turn it into an original visual or campaign.</p></article>
-        <article class="momentum-card"><strong>Momentum Loop</strong><p>Connect every idea to practical next actions, follow-ups and sustained public movement.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="momentum-section">
-    <div class="momentum-wrap">
-      <h2>One umbrella. <span>Two ways to begin.</span></h2>
-      <div class="momentum-paths">
-        <article class="momentum-path">
-          <h3>Build a Moonboy identity</h3>
-          <p>A Moonboy is not the finished product. It is the beginning of a creator world: a recognisable character you can build stories, content, products, campaigns and community around.</p>
+  <section class="simple-section">
+    <div class="simple-wrap">
+      <h2>Choose how <span>you start.</span></h2>
+      <div class="simple-routes">
+        <article class="simple-route">
+          <h3>Create a new identity</h3>
+          <p>Build a name, character, message and creative world.</p>
+          <a class="simple-button" href="/swarmsy.html">Create my identity</a>
         </article>
-        <article class="momentum-path">
-          <h3>Build the identity you already have</h3>
-          <p>Keep your existing artist name, business, product, organisation, public personality or alter ego. Use SWARMSY to strengthen the message, positioning, creative direction and momentum behind it.</p>
+        <article class="simple-route">
+          <h3>Grow what you already have</h3>
+          <p>Strengthen your brand, project, business or artist name.</p>
+          <a class="simple-button" href="/swarmsy.html">Grow my project</a>
         </article>
       </div>
     </div>
   </section>
 
-  <section class="momentum-section">
-    <div class="momentum-wrap">
-      <h2>Culture first. <span>Technology serves the mission.</span></h2>
-      <p>Crypto Moonboys carries more than forty years of Graffiti Kings street culture into a modern creator movement. AI, community systems, games and optional blockchain ownership are tools inside the wider system. The mission is helping people create a signal, find their people and build something they can keep moving.</p>
-      <div class="momentum-quote">Bring the spark. Build the signal. Keep it moving.</div>
+  <section class="simple-section">
+    <div class="simple-wrap">
+      <h2>SWARMSY keeps your project <span>moving.</span></h2>
+      <p>It remembers your plans, develops ideas and tells you what to do next.</p>
+      <div class="simple-steps" aria-label="How SWARMSY helps">
+        <div class="simple-step">Find the strongest idea</div>
+        <div class="simple-step">Create the right content</div>
+        <div class="simple-step">Plan the next move</div>
+      </div>
+      <a class="simple-button" href="/swarmsy.html">Open SWARMSY</a>
     </div>
   </section>
 
-  <section class="momentum-final" aria-label="Join the Crypto Moonboys community">
-    <a href="/community.html" class="momentum-community" aria-label="Join the Crypto Moonboys community">
-      <img src="/img/homepage/CRYPTO%20MOONBOYS%20GKNIFTYHEADS%20DE.jpg" alt="Join the Crypto Moonboys community and access eligible NFT routes when verified live" loading="lazy" decoding="async">
+  <section class="simple-section">
+    <div class="simple-wrap">
+      <h2>Built from <span>40 years of street culture.</span></h2>
+      <p class="simple-trust">Graffiti Kings learned how names, symbols and repetition become culture.</p>
+    </div>
+  </section>
+
+  <section class="simple-final">
+    <div class="simple-wrap">
+      <h2>Bring the idea. We help build the rest.</h2>
+      <a class="simple-button" href="/community.html">Join the community</a>
+    </div>
+    <a href="/community.html" class="simple-community" aria-label="Join the Crypto Moonboys community">
+      <img src="/img/homepage/CRYPTO%20MOONBOYS%20GKNIFTYHEADS%20DE.jpg" alt="Join the Crypto Moonboys community" loading="lazy" decoding="async">
     </a>
   </section>
 
