@@ -34,19 +34,19 @@
     .simple-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:13px 22px; border:1px solid rgba(145,105,0,.75); color:#050607; background:var(--gold); font-weight:900; text-transform:uppercase; text-decoration:none; letter-spacing:.04em; }
     .simple-button.secondary { color:#050607; background:rgba(255,255,255,.7); border-color:rgba(5,6,7,.55); }
     .simple-section { padding:72px 0; border-top:1px solid rgba(255,255,255,.08); }
-    .simple-section h2 { max-width:900px; margin:0 0 18px; font-size:clamp(2rem,4vw,4.4rem); line-height:1; text-transform:uppercase; }
-    .simple-section h2 span { color:var(--cyan); }
+    .simple-section h2 { all:unset; display:block; max-width:900px; margin:0 0 18px; padding:0; color:#fff; background:transparent; border:0; border-radius:0; outline:0; box-shadow:none; font-size:clamp(2rem,4vw,4.4rem); line-height:1; text-transform:uppercase; }
+    .simple-section h2 span { color:inherit; }
     .simple-section p { max-width:780px; margin:0; color:var(--muted); font-size:1.08rem; line-height:1.7; }
     .simple-image { display:block; width:100%; margin-top:34px; }
     .simple-routes { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:34px; }
-    .simple-route { padding:30px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.035); }
-    .simple-route h3 { margin:0 0 12px; font-size:1.65rem; text-transform:uppercase; }
+    .simple-route { padding:30px; border:1px solid rgba(255,255,255,.15); background:transparent; }
+    .simple-route h3 { margin:0 0 12px; color:#fff; background:transparent; border:0; box-shadow:none; font-size:1.65rem; text-transform:uppercase; }
     .simple-route p { margin-bottom:22px; }
     .simple-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:30px 0; }
-    .simple-step { padding:22px; border-top:3px solid var(--gold); background:rgba(255,255,255,.025); font-weight:800; text-transform:uppercase; }
+    .simple-step { padding:22px; border-top:3px solid var(--gold); background:transparent; color:#fff; font-weight:800; text-transform:uppercase; }
     .simple-trust { font-size:clamp(1.25rem,2vw,1.65rem); font-weight:800; color:#fff; }
     .simple-final { padding:64px 0 80px; border-top:1px solid rgba(255,255,255,.08); text-align:center; }
-    .simple-final h2 { margin:0 0 24px; font-size:clamp(2rem,4vw,4rem); text-transform:uppercase; }
+    .simple-final h2 { all:unset; display:block; margin:0 0 24px; padding:0; color:#fff; background:transparent; border:0; border-radius:0; outline:0; box-shadow:none; font-size:clamp(2rem,4vw,4rem); line-height:1; text-transform:uppercase; }
     .simple-community { display:block; width:min(1180px,calc(100% - 40px)); margin:36px auto 0; }
     .simple-community img { display:block; width:100%; height:auto; }
     @media (max-width:800px) {
