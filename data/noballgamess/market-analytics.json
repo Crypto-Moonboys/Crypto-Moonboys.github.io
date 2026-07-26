@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-25T05:59:38.553Z",
+  "generated_at": "2026-07-26T06:18:27.697Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-25T05:59:34.586Z"
+      "checked_at": "2026-07-26T06:18:23.941Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-25T05:59:34.808Z"
+      "checked_at": "2026-07-26T06:18:24.132Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-25T05:59:36.774Z"
+      "checked_at": "2026-07-26T06:18:26.017Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-25T05:59:36.993Z"
+      "checked_at": "2026-07-26T06:18:26.204Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-25T05:59:37.715Z"
+      "checked_at": "2026-07-26T06:18:26.890Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-25T05:59:38.077Z"
+      "checked_at": "2026-07-26T06:18:27.253Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-25T05:59:38.298Z"
+      "checked_at": "2026-07-26T06:18:27.444Z"
     }
   },
   "data": {
     "collection_stats": {
-      "numUsers": 705,
-      "usdMarketCap": 123231.87705107234,
-      "waxMarketCap": 447440.1759205027,
-      "numAssets": 9799
+      "numUsers": 704,
+      "usdMarketCap": 126857.76084168813,
+      "waxMarketCap": 464698.59418567765,
+      "numAssets": 11120
     },
     "num_assets": {
-      "numberOfAssets": 9799,
-      "estimatedWaxValue": 447440.17592050263,
-      "estimatedUsdValue": 123231.8770510724
+      "numberOfAssets": 11120,
+      "estimatedWaxValue": 464698.5941856777,
+      "estimatedUsdValue": 126857.7608416882
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -219,14 +219,46 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 9671.338268069996,
-          "usdVolume": 408.32872455245,
-          "waxFloor": 144,
+          "waxVolume": 10247.338268069996,
+          "usdVolume": 411.03592455245,
+          "waxFloor": 143.2,
           "change": 0,
           "buyers": 44,
           "sellers": 63,
-          "sales": 139,
+          "sales": 143,
           "rank": 10
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "The Price Rise Structure for “CB x GK - OG” & “DLP V1” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).     When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT.    NFT’s Sold - Price Rise x1.61  1 to 377 - (150 WAX)  377 to 610 - (250 WAX)  610 to 987 - (420 WAX)  987 to 1,597 - (700 WAX)  1,597 to 2,584 - (1,150+ WAX)    (FS) Mint Numbers in All CB Collection’s are UltraRARES.  (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.)    Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More Info...     *THE ARK OF THE COVENANT MINT* - aka The Golden Ratio Mint #1618.  This Mind Meltingly Rare As F**K Mint and can be swapped for for 21 Random Collector’s Mints.    Price rise Only based on the First 1 to 100 Collector’s Mint NFT’s, Price’s will also rise for the remaining Burn Mints due to a controlled amount of Airdrop’s and Weekly Blend’s Available Every Friday At 4:20pm GMT, Once all 5 Stages are Completed the NFT will now go into Price Discovery and The Sky is the Limit...    https://wax.atomichub.io/market?collection_name=noballgamess&schema_name=airdropsbycb",
+          "id": "2500",
+          "img": "QmbHi46Xkpi6NWiGLUL544DXte4Z5PQtvCLJcGw7Aa32ew",
+          "name": "‘’Daddy’s Little Pink Princess’’",
+          "rarity ": "Rare Busters",
+          "variation ": "\tOriginal Artwork",
+          "template_id": 412229,
+          "schema": "airdropsbycb"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 8886.559333406994,
+          "usdVolume": 1170.0053874808245,
+          "waxFloor": 34,
+          "change": 0,
+          "buyers": 173,
+          "sellers": 267,
+          "sales": 795,
+          "rank": 7
         }
       },
       {
@@ -253,7 +285,7 @@
           "days": "30",
           "waxVolume": 8505.29248482,
           "usdVolume": 1063.99218727887,
-          "waxFloor": 377,
+          "waxFloor": 375.5,
           "change": 0,
           "buyers": 25,
           "sellers": 30,
@@ -298,38 +330,6 @@
           "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
           "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
           "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "The Price Rise Structure for “CB x GK - OG” & “DLP V1” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).     When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT.    NFT’s Sold - Price Rise x1.61  1 to 377 - (150 WAX)  377 to 610 - (250 WAX)  610 to 987 - (420 WAX)  987 to 1,597 - (700 WAX)  1,597 to 2,584 - (1,150+ WAX)    (FS) Mint Numbers in All CB Collection’s are UltraRARES.  (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.)    Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More Info...     *THE ARK OF THE COVENANT MINT* - aka The Golden Ratio Mint #1618.  This Mind Meltingly Rare As F**K Mint and can be swapped for for 21 Random Collector’s Mints.    Price rise Only based on the First 1 to 100 Collector’s Mint NFT’s, Price’s will also rise for the remaining Burn Mints due to a controlled amount of Airdrop’s and Weekly Blend’s Available Every Friday At 4:20pm GMT, Once all 5 Stages are Completed the NFT will now go into Price Discovery and The Sky is the Limit...    https://wax.atomichub.io/market?collection_name=noballgamess&schema_name=airdropsbycb",
-          "id": "2500",
-          "img": "QmbHi46Xkpi6NWiGLUL544DXte4Z5PQtvCLJcGw7Aa32ew",
-          "name": "‘’Daddy’s Little Pink Princess’’",
-          "rarity ": "Rare Busters",
-          "variation ": "\tOriginal Artwork",
-          "template_id": 412229,
-          "schema": "airdropsbycb"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 7798.559333406995,
-          "usdVolume": 1164.8917874808246,
-          "waxFloor": 34,
-          "change": 0,
-          "buyers": 173,
-          "sellers": 267,
-          "sales": 763,
-          "rank": 7
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
           "description ": "The Price Rise Structure for “NO BALL GAMES” NFT in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR). When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT. NFT’s Sold - Price Rise x1.61 1 to 55 - (450 WAX) 55 to 89 - (720 WAX) 89 to 144 - (1,200 WAX) 144 to 233 - (1950 WAX) 233 to 377 - (3,200 WAX) (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More Info... *THE ARK OF THE COVENANT MINT* - aka The Golden Ratio Mint #1618. This Mind Meltingly Rare As F**K Mint and can be swapped for for 21 Random Collector’s Mints. Price rise Only based on the First 1 to 55 Collector’s Mint NFT’s, Price’s will also rise for the remaining Burn Mints due to a controlled amount of Airdrop’s and Weekly Blend’s Available Every Friday At 4:20pm GMT, Once all 5 Stages are Completed the NFT will now go into Price Discovery and The Sky is the Limit... ",
           "id": "987",
           "img": "QmXyr2w5f7TxguNDgyboTw6QN8kc63EiqiutyXFRrrcjJM",
@@ -347,13 +347,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 7228.643077879993,
-          "usdVolume": 426.35279674563697,
+          "waxVolume": 7584.610077879993,
+          "usdVolume": 428.025841645637,
           "waxFloor": 88.999,
           "change": 0,
           "buyers": 59,
           "sellers": 107,
-          "sales": 199,
+          "sales": 203,
           "rank": 9
         }
       },
@@ -379,14 +379,46 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 5873.836839344326,
-          "usdVolume": 807.536556624346,
-          "waxFloor": 55,
+          "waxVolume": 7193.806839344325,
+          "usdVolume": 813.7404156243462,
+          "waxFloor": 54.97,
           "change": 0,
           "buyers": 110,
-          "sellers": 143,
-          "sales": 327,
+          "sellers": 144,
+          "sales": 351,
           "rank": 8
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "Charlie Buster has established himself as one of the foremost artists of this age and in multiple art forms. His unique style takes a lighthearted approach, rather than the typical grim slant of street art, differentiating him from his contemporaries and giving his art a relatable quality. Using varied materials (including acrylics, paint pens, stencils, spray paint, and vintage photos) Charlie subversively depicts various current icons of pop culture using he’s own unique approach to create he’s extremely colourful illustrations, in the process has generated his own recognisable style of street art.",
+          "id": "21",
+          "img": "QmeGAXwybWB5FoXqSSRAoZDd7QGRCgLcpoUzrpTMCMVGrB",
+          "name": "‘’The Radiant Child’’",
+          "rarity ": "‘’Satoshi Cap’’",
+          "variations ": "Original Artwork ",
+          "template_id": 401779,
+          "schema": "whysoserious"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 5987.804878049999,
+          "usdVolume": 1382.3426829268349,
+          "waxFloor": 3000,
+          "change": 0,
+          "buyers": 2,
+          "sellers": 2,
+          "sales": 2,
+          "rank": 2
         }
       },
       {
@@ -413,7 +445,7 @@
           "days": "30",
           "waxVolume": 5398.548546989998,
           "usdVolume": 619.3849433164298,
-          "waxFloor": 1888,
+          "waxFloor": 1853.5,
           "change": 0,
           "buyers": 53,
           "sellers": 63,
@@ -515,38 +547,6 @@
           "sellers": 20,
           "sales": 26,
           "rank": 14
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "Charlie Buster has established himself as one of the foremost artists of this age and in multiple art forms. His unique style takes a lighthearted approach, rather than the typical grim slant of street art, differentiating him from his contemporaries and giving his art a relatable quality. Using varied materials (including acrylics, paint pens, stencils, spray paint, and vintage photos) Charlie subversively depicts various current icons of pop culture using he’s own unique approach to create he’s extremely colourful illustrations, in the process has generated his own recognisable style of street art.",
-          "id": "21",
-          "img": "QmeGAXwybWB5FoXqSSRAoZDd7QGRCgLcpoUzrpTMCMVGrB",
-          "name": "‘’The Radiant Child’’",
-          "rarity ": "‘’Satoshi Cap’’",
-          "variations ": "Original Artwork ",
-          "template_id": 401779,
-          "schema": "whysoserious"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 3000,
-          "usdVolume": 1368.3,
-          "waxFloor": 3000,
-          "change": 0,
-          "buyers": 1,
-          "sellers": 1,
-          "sales": 1,
-          "rank": 2
         }
       },
       {
@@ -679,16 +679,10 @@
       }
     ],
     "volume": {
-      "waxVolume": 6559.958,
-      "usdVolume": 30.831802600000007
+      "waxVolume": 12887.69987805,
+      "usdVolume": 60.57218942683501
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-26"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -740,7 +734,7 @@
       {
         "waxVolume": 1459,
         "sales": 24,
-        "usdVolume": 6.857299999999999,
+        "usdVolume": 6.857299999999998,
         "date": "2026-07-05"
       },
       {
@@ -836,7 +830,7 @@
       {
         "waxVolume": 1352,
         "sales": 27,
-        "usdVolume": 6.354400000000001,
+        "usdVolume": 6.3543999999999965,
         "date": "2026-07-21"
       },
       {
@@ -858,10 +852,16 @@
         "date": "2026-07-24"
       },
       {
+        "waxVolume": 6327.74187805,
+        "sales": 65,
+        "usdVolume": 29.740386826835035,
+        "date": "2026-07-25"
+      },
+      {
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
-        "date": "2026-07-25"
+        "date": "2026-07-26"
       }
     ]
   },
