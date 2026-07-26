@@ -101,7 +101,7 @@ const GROUPS = {
     ['node', 'scripts/ci-domain-groups.test.mjs'],
     ['node', 'scripts/live-site-verify-static.test.mjs'],
     ['node', 'scripts/site-shell-parity-audit.mjs'],
-    ['node', 'scripts/visual-parity-swarmsy-audit.mjs'],
+    ['node', 'scripts/homepage-build-moonboy-hero.test.mjs'],
   ],
 };
 
