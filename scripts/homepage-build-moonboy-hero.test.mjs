@@ -24,6 +24,10 @@ const html = fs.readFileSync(homepagePath, 'utf8');
 const heroStart = html.indexOf('<section class="build-moonboy-hero"');
 const heroEnd = html.indexOf('</section>', heroStart);
 const introStart = html.indexOf('<section class="hero-intro"');
+const introEnd = html.indexOf('</section>', introStart);
+const introMarkup = introStart !== -1 && introEnd !== -1
+  ? html.slice(introStart, introEnd + '</section>'.length)
+  : '';
 
 check(heroStart !== -1, 'Homepage contains the Build a Crypto Moonboy hero section');
 check(fs.existsSync(heroImagePath), 'Build a Crypto Moonboy hero image exists in the repository');
@@ -38,9 +42,9 @@ check(
 );
 check(introStart > heroEnd && heroEnd !== -1, 'Mission copy section follows directly after the hero image section');
 check(
-  html.includes('You have something worth saying.') &&
-    html.includes('We make sure people remember it.'),
-  'Mission heading remains beneath the new hero image'
+  /<h1\b[^>]*>[\s\S]*?<\/h1>/i.test(introMarkup) &&
+    /<p\b[^>]*>[\s\S]*?<\/p>/i.test(introMarkup),
+  'Mission heading and supporting copy remain beneath the new hero image'
 );
 check(
   /\.build-moonboy-hero\s*\{[^}]*width\s*:\s*100%/is.test(html),
