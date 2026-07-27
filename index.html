@@ -31,7 +31,8 @@
     .hero-intro .hero-swarmsy-name { color:#fff; font-weight:900; }
     .hero-partners-image { display:block; width:100%; height:auto; margin:0; }
     .graffiti-kings-logo { display:block; width:min(420px,100%); height:auto; margin:34px auto 0; }
-    .leave-your-mark-image { display:block; width:min(760px,calc(100vw - 40px)); height:auto; margin:22px 0 24px; position:relative; left:50%; transform:translateX(-50%); }
+    .leave-your-mark-wrap { width:100vw; margin:22px 0 24px calc(50% - 50vw); display:flex; justify-content:center; }
+    .leave-your-mark-image { display:block; width:min(760px,calc(100vw - 40px)); max-width:none; height:auto; margin:0; }
     .simple-actions { display:flex; flex-wrap:wrap; gap:14px; margin-top:28px; }
     .simple-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:13px 22px; border:1px solid rgba(145,105,0,.75); color:#050607; background:var(--gold); font-weight:900; text-transform:uppercase; text-decoration:none; letter-spacing:.04em; }
     .simple-button.secondary { color:#050607; background:rgba(255,255,255,.7); border-color:rgba(5,6,7,.55); }
@@ -63,18 +64,18 @@
       .simple-wrap { width:min(100% - 28px,1180px); }
       .hero-intro { padding:42px 0 48px; }
       .graffiti-kings-logo { width:100%; }
-      .leave-your-mark-image { width:calc(100vw - 28px); }
+      .leave-your-mark-image { width:100vw; }
     }
   </style>
 </head>
 <body class="page-home page-standard-shell simple-home">
 <main id="content" role="main">
-  <section class="home-video" aria-label="Crypto Moonboys video">
-    <iframe src="https://www.youtube.com/embed/RzQOQrc0CqM?cc_load_policy=0&amp;rel=0&amp;modestbranding=1" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-  </section>
-
   <section class="build-moonboy-hero" aria-label="Build a Crypto Moonboy">
     <img src="/img/homepage/BUILD%20A%20CRYPTO%20MOONBOY%20HERO%20PIC.jpg" alt="Build a Crypto Moonboy and turn it into a character identity, brand, content host, story world and community symbol" loading="eager" decoding="async" fetchpriority="high">
+  </section>
+
+  <section class="home-video" aria-label="Crypto Moonboys video">
+    <iframe src="https://www.youtube.com/embed/RzQOQrc0CqM?cc_load_policy=0&amp;rel=0&amp;modestbranding=1" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
   </section>
 
   <section class="hero-intro" aria-label="Crypto Moonboys mission">
@@ -134,7 +135,9 @@
         <p class="history-lead">Crypto Moonboys did not begin with a token, a roadmap or a collection of digital pictures. It began with Graffiti Kings, the street, the wall and decades of real creative work.</p>
 
         <h3>Before the chain, there was the wall</h3>
-        <img class="leave-your-mark-image" src="/img/homepage/CRYPYO%20MOONBOYS%20LEAVE%20YOUR%20MARK.jpg" alt="Crypto Moonboys leave your mark" loading="lazy" decoding="async">
+        <div class="leave-your-mark-wrap">
+          <img class="leave-your-mark-image" src="/img/homepage/CRYPYO%20MOONBOYS%20LEAVE%20YOUR%20MARK.jpg" alt="Crypto Moonboys leave your mark" loading="lazy" decoding="async">
+        </div>
         <p>Graffiti Kings grew from the original language of street culture: tags, crews, murals, pirate-radio energy, public identity, reputation and the determination to be seen without waiting for permission. A tag was never just a name. It was proof that somebody existed, moved through the city, developed a style and kept showing up. A wall was a public feed before social media existed. A crew was a faction before Web3 used the word. A mural was proof of work long before blockchain turned that phrase into technology.</p>
         <p>Over four decades, that culture expanded through graffiti, street art, murals, music, workshops, outreach, public creativity, commercial campaigns and community activation. Graffiti Kings learned the hard way that names become powerful through consistency, symbols become memorable through repetition, and culture is built through action rather than claims.</p>
 
