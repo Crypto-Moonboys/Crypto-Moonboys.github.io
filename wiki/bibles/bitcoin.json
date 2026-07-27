@@ -1,0 +1,56 @@
+{
+  "timeline": [
+    {
+      "date": "1983 onward",
+      "text": "Graffiti Kings developed through real British graffiti culture long before blockchain existed. The later Crypto Moonboys use of Bitcoin imagery grew from the same street principle: create an identity, place it in public, build reputation through repeated action and refuse to wait for institutional permission."
+    },
+    {
+      "date": "2008–2009",
+      "text": "Bitcoin introduced a decentralised monetary network with no company, central issuer or controlling board. For Graffiti Kings, its cultural force was as important as its technical design: Bitcoin represented an independent public system whose rules could not be rewritten by one gatekeeper."
+    },
+    {
+      "date": "Early Web3 period",
+      "text": "Graffiti Kings began translating physical graffiti identity into blockchain-native characters, collectables and connected story worlds. Bitcoin became a recurring visual and philosophical anchor because its orange symbol was already recognised globally as a sign of decentralisation, digital scarcity and resistance to central control."
+    },
+    {
+      "date": "GKniftyHEADS era",
+      "text": "GKniftyHEADS turned the Graffiti Kings network into a large character and faction architecture. Bitcoin-themed heads, warriors and street characters became part of the collection language, linking crypto culture with the faces, crews, nicknames and public identities that had always driven graffiti culture."
+    },
+    {
+      "date": "Alfie Blaze",
+      "text": "Alfie ‘The Bitcoin KiD’ Blaze became the central Bitcoin character inside the wider universe. He is presented as the leader of the rebel Bitcoin Kids: the minority who reject Block Topia’s controlled security and choose the unstable freedom of the Street Kingdoms."
+    },
+    {
+      "date": "Crypto Moonboys",
+      "text": "Crypto Moonboys expanded the idea beyond one collection. Bitcoin became part of a complete creator and story universe containing Moonboys, Moongirls, factions, games, physical products, digital collectables, lore and community systems. The project uses Bitcoin as both real technology and cultural symbolism without claiming that every Moonboy asset exists on the Bitcoin blockchain."
+    },
+    {
+      "date": "Physical character development",
+      "text": "Bitcoin Kid designs moved beyond screen-based art into toy and phygital concepts. These figures preserve the recognisable orange-B identity, streetwear attitude and rebellious character design in a physical object that can sit beside digital editions, animation, games and lore."
+    },
+    {
+      "date": "Year 3008 lore",
+      "text": "Inside the fictional future, Bitcoin is remembered less as a market price and more as an original decentralised signal. The Bitcoin Kids carry that signal into HODL WARS as a belief that identity, memory and ownership should not depend on permission from Block Topia’s Authority."
+    }
+  ],
+  "relationships": [
+    "Graffiti Kings is the real cultural foundation. Its history of names, walls, crews, reputation and self-publishing supplied the creative logic later used to build Bitcoin-themed characters and Crypto Moonboys identities.",
+    "Crypto Moonboys is the wider umbrella. Bitcoin is one of its strongest foundations, but the project also includes graffiti history, WAX NFTs, games, music, creator tools, forty factions and the Year 3008 story world.",
+    "GKniftyHEADS is the principal character and NFT architecture. Bitcoin-themed GKniftyHEADS preserve individual mint, template and collection records while giving the wider universe recognisable faces and faction identities.",
+    "Alfie ‘The Bitcoin KiD’ Blaze is the main fictional bridge between Bitcoin culture and the HODL WARS narrative. He represents the 1% Rebel Bitcoin Kids and should not be confused with the engineered Bitcoin X Kids who remain connected to Block Topia.",
+    "The Bitcoin Kids are a fictional rebel bloodline, not a claim about Bitcoin users in the real world. Their story translates decentralisation into a human conflict about freedom, memory, surveillance and the right to choose one’s own identity.",
+    "Bitcoin Kid toys and physical figures extend the character beyond NFTs. A toy can function as sculpture, collectable, mascot, display object or phygital companion, while any blockchain-linked utility must still be verified from the specific product and live redemption rules.",
+    "Bitcoin imagery is used as cultural language rather than a promise of financial return. An orange B, laser eyes, mining references or HODL slogans can communicate crypto identity, but owning related art does not confer ownership of Bitcoin or guarantee market value.",
+    "The real Bitcoin network and the fictional Sacred Chain are separate. Bitcoin is an operational proof-of-work blockchain; the Sacred Chain is a narrative system used to explore control of identity, history and ownership inside Crypto Moonboys lore."
+  ],
+  "cross_links": [
+    { "entity": "Crypto Moonboys", "shared_count": 12 },
+    { "entity": "GKniftyHEADS", "shared_count": 10 },
+    { "entity": "Bitcoin Kids", "shared_count": 9 },
+    { "entity": "Alfie Blaze", "shared_count": 8 },
+    { "entity": "Bitcoin X Kids", "shared_count": 6 },
+    { "entity": "GraffPUNKS", "shared_count": 6 },
+    { "entity": "HODL WARS", "shared_count": 5 },
+    { "entity": "Sacred Chain", "shared_count": 4 }
+  ]
+}
