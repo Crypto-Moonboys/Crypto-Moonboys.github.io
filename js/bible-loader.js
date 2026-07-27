@@ -26,7 +26,6 @@
   function renderBible(bible, container) {
     let html = '';
 
-    // Timeline section
     if (bible.timeline && bible.timeline.length > 0) {
       html += '<div class="bible-section bible-timeline">';
       html += '<h3>📅 Timeline</h3><ul>';
@@ -38,7 +37,6 @@
       html += '</ul></div>';
     }
 
-    // Relationships section
     if (bible.relationships && bible.relationships.length > 0) {
       html += '<div class="bible-section bible-relationships">';
       html += '<h3>🔗 Relationships</h3><ul>';
@@ -49,7 +47,6 @@
       html += '</ul></div>';
     }
 
-    // Cross-links section
     if (bible.cross_links && bible.cross_links.length > 0) {
       html += '<div class="bible-section bible-crosslinks">';
       html += '<h3>🌐 Connected Entities</h3><ul>';
@@ -217,7 +214,81 @@
     }
   }
 
-  // Auto-init: check for data-entity-slug on body or article element
+  function appendWeb3CryptoMoonboysCaseStudy() {
+    const article = document.querySelector('article.wiki-content');
+    if (!article || document.getElementById('web3-crypto-moonboys')) return;
+    if (!document.querySelector('[data-page-id="web3"]')) return;
+
+    const section = document.createElement('section');
+    section.className = 'wiki-section';
+    section.id = 'web3-crypto-moonboys';
+    section.innerHTML = `
+      <h2>Web3 beyond tokens: ownership, participation and portable culture</h2>
+      <p>Web3 is most useful when it adds capabilities that a normal website cannot provide cleanly on its own. Those capabilities include publicly verifiable ownership, assets that can move between compatible applications, transparent transaction history, programmable rules, community participation and the ability to connect a wallet without asking a platform to create another closed account.</p>
+      <p>A Web3 application does not need to place every action on a blockchain. Good architecture separates responsibilities. The blockchain can record ownership, token balances, transfers and contract-controlled actions. A normal database can handle fast gameplay, private profiles, moderation, notifications and information that should not be public. The website can provide the interface, explanation and community experience. This hybrid model is often more practical than pretending that decentralisation requires every click to become a permanent transaction.</p>
+
+      <h3>The practical Web3 stack</h3>
+      <ul>
+        <li><strong>Wallet and identity:</strong> a wallet can prove control of an address and sign an authentication message without exposing the private key.</li>
+        <li><strong>Blockchain:</strong> a public network records assets, balances, transfers and smart-contract actions.</li>
+        <li><strong>NFT and token standards:</strong> common standards allow marketplaces, games and explorers to interpret the same asset records.</li>
+        <li><strong>Application layer:</strong> websites, games, bots and dashboards turn raw blockchain records into usable experiences.</li>
+        <li><strong>Off-chain services:</strong> databases, APIs, search indexes and media storage provide speed, privacy and richer features.</li>
+        <li><strong>Community layer:</strong> social spaces, governance, creative collaboration and reputation give the technology a reason to exist.</li>
+      </ul>
+      <p>The result is not a fully automatic replacement for every institution. It is a different trust model. Users can verify selected facts directly, while still relying on project operators for design, moderation, maintenance, legal responsibilities and delivery of off-chain promises.</p>
+
+      <h3>What genuine digital ownership means</h3>
+      <p>Owning a Web3 asset usually means controlling the blockchain record associated with a token. That record may identify a collection, asset ID, template, mint number, transfer history or contract-controlled utility. It does not automatically transfer copyright, guarantee commercial rights, promise future development or make the linked media permanently available. Those rights and dependencies must be stated separately.</p>
+      <p>This distinction is central to responsible Web3 design. On-chain provenance can be strong while the surrounding project remains partly centralised. A marketplace can disappear while the token record survives. A game can stop supporting an NFT even though the wallet still owns it. Web3 improves verifiability and portability, but it does not remove project risk.</p>
+
+      <h2>Crypto Moonboys as a detailed Web3 project example</h2>
+      <p><a href="/wiki/crypto-moonboys.html">Crypto Moonboys</a> is a useful example because it is not only an NFT collection or only a game. It is a connected creator, culture, character, lore and gaming ecosystem built from the real-world foundation of <a href="/wiki/darren-cullen.html">Graffiti Kings</a>. It combines public web pages, WAX blockchain assets, community identity, games, Telegram-linked progression, fictional worlds and creator tools. Different parts use different levels of decentralisation.</p>
+
+      <h3>1. Real culture before blockchain</h3>
+      <p>Graffiti Kings supplies the physical history: graffiti, walls, crews, public art, music, events and decades of cultural relationships. Web3 did not create that history. Its role is to give parts of the archive and its later character worlds verifiable digital provenance, transferable ownership records and new ways for collectors to participate.</p>
+      <p>This order matters. The strongest creator projects begin with an identity, body of work or community worth preserving. The blockchain is then used where ownership, scarcity, exchange or public verification adds something meaningful.</p>
+
+      <h3>2. WAX assets as the ownership layer</h3>
+      <p>Crypto Moonboys and its connected worlds use the <a href="/wiki/wax-blockchain.html">WAX blockchain</a>, with <a href="/wiki/waxp.html">WAXP</a> as the chain's native asset. WAX collections, schemas, templates, mint numbers and asset IDs allow character art and related collectibles to be distinguished from ordinary copied images. A wallet can hold assets from several connected collections, and compatible marketplaces can read the same public ownership records.</p>
+      <p>The wider project family includes collection identities associated with GKniftyHEADS, Crypto Moonboys, Graffiti Kings, GraffPUNKS, Bitcoin Kid and No Ball Games. Each collection must still be verified by its exact WAX account. Familiar artwork or branding alone is not proof that an asset is official.</p>
+
+      <h3>3. GKniftyHEADS and portable character identity</h3>
+      <p><a href="/wiki/gkniftyheads.html">GKniftyHEADS</a> turns artists, collectors, characters and factions into traceable WAX assets. In Web3 terms, this creates a portable identity object: the asset can remain in the holder's wallet while different project interfaces recognise its collection, template or ownership state.</p>
+      <p>Portability does not mean universal compatibility. A game or website must deliberately add support for a collection. Crypto Moonboys therefore treats blockchain ownership and application utility as separate layers: the chain proves the asset record, while each live product defines what that record currently does.</p>
+
+      <h3>4. Lore and community as the participation layer</h3>
+      <p>The project connects assets to factions, <a href="/wiki/hodl-wars.html">HODL WARS</a>, <a href="/wiki/block-topia.html">Block Topia</a>, GraffPUNKS, Bitcoin Kids and the Year 3008 universe. This shows how Web3 ownership can become part of a wider cultural system rather than ending at a marketplace listing. Characters can carry history, affiliation and creative meaning across articles, games and community discussions.</p>
+      <p>Not all lore is blockchain data, and it should not be. Stories need room to grow without turning every sentence into an immutable record. The wiki provides the readable public canon, while blockchain records provide evidence for specific assets and transactions.</p>
+
+      <h3>5. Games, Telegram identity and off-chain progression</h3>
+      <p>Crypto Moonboys also demonstrates why Web3 projects need off-chain systems. Arcade games, Telegram-linked identity, XP, quests, seasonal leaderboards, pet progression and daily activity require fast updates, abuse controls, moderation and private account links. These are better handled by application servers and databases than by forcing every score or care action onto a public chain.</p>
+      <p>The Web3 connection remains useful where a game checks wallet ownership, recognises a supported NFT, distributes a blockchain asset or uses a transparent token contract. The game state itself can remain off-chain. This hybrid approach reduces transaction friction while keeping selected ownership records independently verifiable.</p>
+
+      <h3>6. GraffPUNKS, radio and creator media</h3>
+      <p><a href="/wiki/graffpunks.html">GraffPUNKS</a> extends the ecosystem into digital street art, music, radio and resistance culture. <a href="/wiki/graffpunks-24-7-radio.html">GraffPUNKS 24/7 Radio</a> is a real media platform, while associated NFTs or token systems require separate verification. This is another Web3 lesson: a project can combine ordinary streaming, websites and social communities with blockchain collectibles without pretending the media itself must live entirely on-chain.</p>
+
+      <h3>7. No Ball Games and specialised token economics</h3>
+      <p><a href="/wiki/nbg.html">No Ball Games</a> adds an independent art, NFT, game and token world. Its $NBG token has project-specific utility, while WAXP remains the external chain asset. Non-transferable game currencies can support everyday progression without creating another freely traded financial instrument. This layered economy demonstrates that one token should not be forced to perform every job.</p>
+
+      <h3>8. Creator tools and SWARMSY-Ai</h3>
+      <p>Crypto Moonboys also includes <a href="/swarmsy.html">SWARMSY-Ai</a>, a creator operating environment built from a customised AnythingLLM foundation. SWARMSY helps users develop ideas, identities, plans and approved project truths. It is not a blockchain protocol, but it supports the human side of Web3: creating a coherent project before introducing NFTs, tokens or community systems.</p>
+      <p>This separation is healthy. Artificial intelligence can assist planning and continuity; blockchains can provide public ownership and transaction records; normal software can deliver the product. None of those technologies replaces the others.</p>
+
+      <h3>9. Transparent status labels</h3>
+      <p>A credible Web3 project must distinguish what is <strong>live</strong>, <strong>historical</strong>, <strong>in beta</strong>, <strong>planned</strong> or purely <strong>fictional lore</strong>. A token existing on-chain does not prove that every proposed utility is active. An NFT image does not prove access to a game. A repository proves source code exists, but not necessarily that a hosted release is operating.</p>
+      <p>Crypto Moonboys uses the wiki to separate those layers. That discipline is as important as the blockchain itself because Web3 trust depends on accurate claims, not only technical records.</p>
+
+      <h3>Why this is a useful Web3 model</h3>
+      <p>Crypto Moonboys illustrates a broad Web3 pattern: start with real culture, create recognisable digital identities, use a blockchain for selected ownership records, connect those records to useful applications, and keep high-frequency or private activity off-chain. The project can then expand through games, media, lore, community progression and creator tools without making every component dependent on one token.</p>
+      <div class="callout-note"><strong>Core lesson:</strong> Web3 is not simply adding a token to a website. It is designing a clear relationship between users, wallets, assets, applications, culture and governance—then stating honestly which parts are decentralised, which are operated by the project, and which are still being built.</div>
+    `;
+
+    const risks = article.querySelector('#risks');
+    if (risks) risks.before(section);
+    else article.appendChild(section);
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     const el = document.querySelector('[data-entity-slug]');
     if (el) {
@@ -226,8 +297,8 @@
     updateCryptoMoonboysSwarmsySection();
     appendBlockTopiaRelatedPaths();
     appendWaxpProjectWorlds();
+    appendWeb3CryptoMoonboysCaseStudy();
   });
 
-  // Expose globally for manual calls
   window.loadBible = loadBible;
 })();
