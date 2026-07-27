@@ -152,6 +152,71 @@
     article.appendChild(section);
   }
 
+  function appendWaxpProjectWorlds() {
+    const article = document.querySelector('article[data-entity-slug="waxp"]');
+    if (!article || document.getElementById('waxp-gk-worlds')) return;
+
+    const section = document.createElement('section');
+    section.className = 'wiki-section';
+    section.id = 'waxp-gk-worlds';
+    section.innerHTML = `
+      <h2>Graffiti Kings and Crypto Moonboys on WAX</h2>
+      <p>WAX became the main on-chain home for a large connected family of Graffiti Kings, GKniftyHEADS, GraffPUNKS, Crypto Moonboys and No Ball Games assets. These projects do not all perform the same job. Some collections preserve artist history, some establish character identities, some support factions and story worlds, some act as game or progression items, and others provide experimental token, staking, burn or community systems.</p>
+      <p>WAXP is the common settlement asset beneath those separate worlds. It is used when collectors buy and sell NFTs, when creators fund drops and contract activity, when accounts need resources, when marketplaces settle trades and when project treasuries manage WAX-native operations. Project tokens such as <a href="/wiki/nbg.html">$NBG</a> or <a href="/wiki/punk-token.html">$PUNK</a> can add specialised utility, but they operate inside an ecosystem whose accounts, NFT standards, resources and marketplace activity ultimately depend on WAX.</p>
+
+      <h3>Graffiti Kings: the physical-culture foundation</h3>
+      <p><a href="/wiki/darren-cullen.html">Graffiti Kings</a> supplies the real-world cultural root: decades of graffiti, crews, public walls, music, street reputation and collaborative production. On WAX, that history could be recorded as verifiable digital editions rather than disappearing into social-media posts or untraceable image files. The chain provides a permanent public record of collection names, asset IDs, templates, ownership transfers and marketplace history.</p>
+      <p>This does not make the blockchain the source of the culture. The culture existed first. WAX acts as the ownership and distribution rail that allows the physical Graffiti Kings world to continue through digital collectibles, character archives, creator collaborations and connected community economies.</p>
+
+      <h3>GKniftyHEADS: the main character and faction architecture</h3>
+      <p><a href="/wiki/gkniftyheads.html">GKniftyHEADS</a> is the primary WAX character system linking Graffiti Kings identities, Moonboys, Moongirls, artists, collectors and fictional factions. Its NFTs are organised through the WAX collection, schema and template model, allowing one-of-one characters, editions, faction pieces and related artefacts to remain individually traceable.</p>
+      <p>For GKniftyHEADS collectors, WAXP is the marketplace currency most directly associated with acquiring and trading these assets. For the project, WAX infrastructure supports minting, transfers, burns, blends, template indexing and ownership history. The value of a GKniftyHEAD is therefore not limited to its image: its WAX record identifies the issuing collection, template, mint and ownership chain.</p>
+
+      <h3>Crypto Moonboys: the umbrella world</h3>
+      <p><a href="/wiki/crypto-moonboys.html">Crypto Moonboys</a> connects the character collections to a broader public universe of games, factions, lore, creator identities, community progression and Web3 experiments. Within this structure, WAX assets can function as art, identity markers, game-recognised objects, burn ingredients, access items, historical records or proof that a collector participated in a specific stage of the project.</p>
+      <p>Not every Crypto Moonboys feature is automatically on-chain, and holding a WAX NFT does not automatically activate every website or game feature. Each integration must be verified from the current live interface and published rules. WAX provides the ownership layer; the website, games and community systems decide how that ownership is interpreted.</p>
+
+      <h3>GraffPUNKS: art, music and cultural resistance</h3>
+      <p><a href="/wiki/graffpunks.html">GraffPUNKS</a> carries the art, music, radio and rebellion side of the network. Its WAX presence connects graffiti imagery, digital editions, radio culture, Rave Relics, $PUNK concepts and the wider Year 3008 story. WAX works particularly well for this kind of mixed cultural output because separate collections and templates can document artworks, characters, event pieces, music-linked artefacts and community rewards without forcing them into one undifferentiated token.</p>
+      <p><a href="/wiki/graffpunks-24-7-radio.html">GraffPUNKS 24/7 Radio</a> remains a real broadcast platform, while any token rewards, NFT unlocks or Listen2Earn systems must be labelled according to their actual live status. The WAX record can prove that an asset exists and who owns it; it cannot prove that a promised external feature is operating unless the application and contract are also live.</p>
+
+      <h3>No Ball Games: art, games and independent token systems</h3>
+      <p><a href="/wiki/nbg.html">No Ball Games</a> is Charlie Buster's connected art, NFT, game and token world. Its WAX activity includes the <strong>noballgamess</strong> collection, $NBG-related assets and experiments around staking, burns, progression, liquidity and game utility. WAXP serves as the external reserve and marketplace asset around those systems, while $NBG is the project-specific utility token and non-transferable game currencies can handle everyday progression where required.</p>
+      <p>The distinction matters. WAXP belongs to the WAX chain and is not controlled by No Ball Games. $NBG belongs to the No Ball Games economy and should not be presented as a replacement for WAXP. WAXP funds chain activity, marketplace settlement and external liquidity; project tokens and game counters provide narrower utility inside the project.</p>
+
+      <h3>Connected WAX collections</h3>
+      <p>The wider Graffiti Kings and Crypto Moonboys family has used several WAX collection identities. The principal collection names recorded across the project include:</p>
+      <div class="internal-link-grid">
+        <a href="/wiki/gkniftyheads.html"><strong>gkniftyheads</strong>Main GKniftyHEADS character, faction and cultural collection.</a>
+        <a href="/wiki/crypto-moonboys.html"><strong>hodlmoonboys</strong>Crypto Moonboys and Moonboy-linked digital identity assets.</a>
+        <a href="/wiki/graffpunks.html"><strong>graffk1ngsuk</strong>Graffiti Kings and GraffPUNKS-linked WAX history.</a>
+        <a href="/wiki/graffpunks.html"><strong>graffiti.r2</strong>Graffiti-focused digital art and connected project assets.</a>
+        <a href="/wiki/bitcoin-kids.html"><strong>dabitcoinkid</strong>Bitcoin Kid and related character-world assets.</a>
+        <a href="/wiki/darren-cullen.html"><strong>gr4ffitiking</strong>Graffiti King identity and artist-linked works.</a>
+        <a href="/wiki/nbg.html"><strong>noballgamess</strong>No Ball Games art, games, token and progression assets.</a>
+      </div>
+      <p>Collection names are identifiers, not guarantees. Before buying, collectors should confirm that the collection account is the intended official issuer, inspect the schema and template, check supply and mint numbers, and verify any promised utility from the current project website or contract. Similar artwork or a familiar title does not make an NFT official.</p>
+
+      <h3>Why WAXP matters across all of these worlds</h3>
+      <p>The shared importance of WAXP is operational. It gives otherwise different projects one common chain-level economy: accounts can hold assets from multiple collections in one wallet, marketplaces can list them using the same settlement token, games can inspect ownership through the same NFT standard, and creators can build new drops without inventing a blockchain from scratch.</p>
+      <p>That common infrastructure also creates responsibility. Large NFT families need clear collection verification, sustainable resource planning, transparent royalty and treasury rules, careful token emissions and accurate labels for live, historical, beta and proposed utility. WAX makes complex creator worlds possible, but long-term credibility still depends on the people operating them.</p>
+      <div class="callout-note"><strong>Core distinction:</strong> Graffiti Kings provides the culture; GKniftyHEADS organises the character and faction identity; Crypto Moonboys connects the wider public universe; GraffPUNKS carries the art, music and rebel signal; No Ball Games develops its own NFT, game and token systems; WAX supplies the blockchain infrastructure, and WAXP is the common native asset beneath them.</div>
+    `;
+
+    const risks = article.querySelector('#risks');
+    if (risks) risks.before(section);
+    else article.appendChild(section);
+
+    const toc = article.querySelector('.article-toc ol');
+    if (toc && !toc.querySelector('a[href="#waxp-gk-worlds"]')) {
+      const item = document.createElement('li');
+      item.innerHTML = '<a href="#waxp-gk-worlds">Graffiti Kings and Crypto Moonboys on WAX</a>';
+      const risksItem = toc.querySelector('a[href="#risks"]')?.parentElement;
+      if (risksItem) toc.insertBefore(item, risksItem);
+      else toc.appendChild(item);
+    }
+  }
+
   // Auto-init: check for data-entity-slug on body or article element
   document.addEventListener('DOMContentLoaded', function() {
     const el = document.querySelector('[data-entity-slug]');
@@ -160,6 +225,7 @@
     }
     updateCryptoMoonboysSwarmsySection();
     appendBlockTopiaRelatedPaths();
+    appendWaxpProjectWorlds();
   });
 
   // Expose globally for manual calls
