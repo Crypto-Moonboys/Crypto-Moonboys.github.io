@@ -3,386 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ">
+  <meta name="description" content="Metropolis is the living urban system of Crypto Moonboys lore: a city of walls, signals, factions, memory, control and creative resistance.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="metropolis — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ">
-  <meta property="og:type" content="website">
-  <link rel="canonical" href="https://cryptomoonboys.com/wiki/metropolis.html">
+  <meta property="og:title" content="Metropolis — Crypto Moonboys Wiki">
+  <meta property="og:description" content="A long-form account of the city as territory, signal network, cultural archive and battlefield across the Crypto Moonboys universe.">
+  <meta property="og:type" content="article">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/metropolis.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
-  <title>metropolis — Crypto Moonboys Wiki</title>
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/metropolis.html">
+  <title>Metropolis — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
-<link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.png" type="image/png">
   <style>
-    .wiki-section {
-      margin: 1.6em 0;
-    }
-    .lore-paragraph {
-      line-height: 1.75;
-      margin: 0 0 1em 0;
-    }
-    .lead-paragraph {
-      font-size: 1.06em;
-      line-height: 1.8;
-      margin: 0 0 1em 0;
-    }
-    .lore-facts-stack {
-      display: block;
-    }
-    .lore-fact-block {
-      margin: 0 0 1.2em 0;
-      padding: 1em 1.1em;
-      background: rgba(255,255,255,0.03);
-      border-left: 4px solid #5b8cff;
-      border-radius: 6px;
-    }
-    .sources-list {
-      padding-left: 1.4em;
-    }
-    .sources-list li {
-      margin-bottom: 0.3em;
-      word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 0.5em;
-    }
+    .metro-page{max-width:1120px;margin:0 auto;padding:1.25rem}
+    .metro-hero,.metro-section{padding:clamp(1.2rem,3vw,2.2rem);margin-bottom:1.25rem;border:1px solid rgba(0,232,240,.22);border-radius:18px;background:radial-gradient(circle at top right,rgba(255,60,166,.08),transparent 34%),linear-gradient(145deg,rgba(9,14,22,.97),rgba(5,8,14,.96));box-shadow:0 22px 70px rgba(0,0,0,.28)}
+    .metro-kicker{margin:0 0 .7rem;color:#00e8f0;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+    .metro-title{margin:0;color:#f7c948;font-family:var(--font-display);font-size:clamp(2.7rem,7vw,6rem);line-height:.92;text-transform:uppercase}
+    .metro-title span{display:block;margin-top:.8rem;color:#f4f7fa;font-size:clamp(1rem,2vw,1.55rem);line-height:1.3;letter-spacing:.06em}
+    .metro-lead{max-width:930px;color:#e4ebf2;font-size:clamp(1.04rem,1.5vw,1.22rem);line-height:1.82}
+    .metro-section h2{margin:0 0 .9rem;color:#f7c948;font-family:var(--font-display);font-size:clamp(1.55rem,3vw,2.5rem);text-transform:uppercase}
+    .metro-section h3{margin:1.4rem 0 .55rem;color:#00e8f0;font-family:var(--font-display);font-size:1.15rem;text-transform:uppercase}
+    .metro-section p,.metro-section li{color:#dbe5eb;line-height:1.78}
+    .metro-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+    .metro-card{padding:1rem 1.05rem;border:1px solid rgba(0,232,240,.16);border-radius:14px;background:rgba(0,232,240,.045)}
+    .metro-card strong{display:block;margin-bottom:.45rem;color:#f7c948;font-family:var(--font-display);text-transform:uppercase}
+    .metro-quote{padding:1rem 1.1rem;border-left:4px solid #ff3ca6;background:rgba(255,60,166,.08);color:#fff0f8;font-weight:700;line-height:1.7}
+    .metro-status{display:inline-block;padding:.35rem .65rem;border:1px solid rgba(0,232,240,.4);border-radius:999px;color:#00e8f0;font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .sources-list li{margin-bottom:.55rem}
+    @media(max-width:820px){.metro-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body class="page-wiki page-standard-shell" data-entity-hash="00a23bb35701">
 <main id="content" role="main">
+  <div class="metro-page">
 <!-- SAM:BEGIN:article -->
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <a href="/categories/concepts.html">Concepts</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">metropolis</span>
-      </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/index.html">Home</a><span class="sep" aria-hidden="true">›</span>
+      <a href="/categories/lore.html">Lore</a><span class="sep" aria-hidden="true">›</span>
+      <span aria-current="page">Metropolis</span>
+    </nav>
 
-      <h1 class="page-title">
-        ⚙️ metropolis
-        <span>✅ SAM-VERIFIED</span>
-      </h1>
-      <div class="page-title-line" aria-hidden="true"></div>
+    <article class="wiki-content" data-entity-slug="metropolis">
+      <header class="metro-hero">
+        <p class="metro-kicker">The living city / the public wall / the nervous system of the Grid</p>
+        <h1 class="metro-title">METROPOLIS<span>Where territory, memory, identity and signal become the same battlefield</span></h1>
+        <p class="metro-lead">Metropolis is the urban condition at the heart of Crypto Moonboys. It is not a separate token, faction or confirmed standalone game. It is the city understood as a living system: streets that remember, walls that speak, towers that watch, signals that move faster than authority and neighbourhoods shaped by whoever is brave enough to leave a mark.</p>
+        <p class="metro-lead">Across the archive, the metropolis appears in different forms and eras—London before the Grid, Lundinea in decline, Charlam under blockchain rule, Block City after liberation and the wider unified city surrounding Block Topia. The names change, but the function remains consistent. The city is where culture becomes visible, where power is organised and where ordinary people discover whether they will remain passive residents or become active authors of the environment around them.</p>
+        <span class="metro-status">Long-form city lore reconstructed from the supplied archive</span>
+      </header>
 
-      <div class="article-meta">
-        <span class="article-badge">⚙️ Concepts</span>
-        <span class="meta-item">📅 Last updated: June 2026</span>
-        <span class="meta-item">📂 <a href="/categories/concepts.html">Concepts</a></span>
-      </div>
-
-      <article class="wiki-content" data-entity-slug="metropolis">
-
-          <p class="lead-paragraph">Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the 40 warring factions might broker fragile truces or weave intricate webs of betrayal. Introduced through the vivid storytelling of Jillian Godsil on Medium, this city-state rises like a digital mirage amidst the war-torn expanse, a paradox of potential peace stained by the ever-present threat of treachery. Here, diplomats and spies tread carefully through holographic streets, their every move watched by unseen forces, as Metropolis offers a rare space for negotiation during the relentless HODL WARS—though its neutrality is as much a battlefield as any frontline.</p>
-          <p class="lead-paragraph">Beyond its glittering facade, Metropolis is a nexus of hidden power, rumored to be governed by the mysterious ‘Chain Arbiters,’ a council of coders whose whispers shape the city’s fragile balance. Its towering structures, built from cascading streams of blockchain data, pulse with the energy of countless transactions, making it both a sanctuary and a trap for those who dare to linger too long. As a pivotal location in the Crypto Moonboys lore, Metropolis is poised to become a gameplay cornerstone, where staking CLAY tokens could unlock exclusive diplomatic events or safe havens during the chaos of Hard Fork Games.</p>
-
-        <div class="article-stats">
-          <span>📊 Verified across <strong>196608</strong> SAM cycles</span>
-          <span>🤖 Auto-published by SAM</span>
-        </div>
-
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p class="lore-paragraph"><strong>Allegiance:</strong> None (Neutral Ground)</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="known-facts">Known Facts</h2>
-          <div class="lore-facts-stack">
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P-fly possibly pulling strings from the shadows. Backed by a real-world $1.2M investment for the CLAY token, Metropolis isn’t just a narrative device but a bridge between digital story and blockchain reality, offering a space where diplomacy might stave off war—or ignite it. Its presence in Block Topia adds a new strategic layer, where words can wound as deeply as code.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions like the Bitcoin Kids. This mechanic, tied to real-world funding as per Medium posts, suggests Metropolis could become a hub for espionage or alliance-building, a place where $PUNK and other tokens buy influence rather than firepower. It’s a fresh narrative thread, ensuring Block Topia’s geography evolves with the Crypto Moonboys universe’s growing complexity.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged as a beacon of uneasy peace in Block Topia through the lore penned by Jillian Godsil, a neutral sub-district where factions convene during the HODL WARS to negotiate temporary alliances or orchestrate silent betrayals. Its towering structures, rendered in flickering neon and reinforced by blockchain-encrypted barriers, are said to house hidden chambers where CLAY token stakes unlock access to exclusive diplomatic events, offering respite or strategic advantage to battered factions. Yet, whispers in the digital wind speak of treachery—stories of ambushes planned in these very halls, where trust is a currency few can afford.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore of Metropolis teases a deeper integration into Crypto Moonboys gameplay, where staking CLAY tokens might not only grant access to safe houses during the chaos of Hard Fork Games but also unlock encrypted channels for faction leaders to broadcast propaganda or sabotage rival networks. These safe houses, hidden behind layers of code in the district’s underbelly, are rumored to be guarded by rogue AI sentinels, remnants of a failed blockchain experiment, ensuring that only the worthy—or the cunning—can claim sanctuary within Metropolis’ walls.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the ‘Chain Arbiters.’ Lore suggests these mysterious figures monitor every transaction and whisper in the district, using their influence to prevent total collapse into factional warfare, but at a cost—some say they demand secret tithes in CLAY tokens, hoarding power for an unknown agenda that could one day rival even the mightiest factions of Block Topia.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce. Figures like Queen Sarah P are said to have walked its holographic halls, brokering deals that reshaped entire battlefronts, only to vanish into whispers of betrayal. The city’s towering spires, constructed from cascading blockchain data, are not just aesthetic—they are rumored to house hidden nodes that can temporarily disable enemy weapons during Hard Fork Games, if only one knows the right cipher to access them.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions. These safe houses, buried deep within the city’s encrypted underbelly, are said to be guarded by autonomous AI sentinels programmed by the Chain Arbiters, offering temporary immunity from attacks but at the cost of revealing one’s location to these mysterious overseers. Players who risk such sanctuary often find encrypted messages left behind, hinting at future betrayals or alliances.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the ‘Chain Arbiters.’ Lore suggests these mysterious figures monitor every transaction and whisper in the ears of faction leaders, subtly steering negotiations to prevent any single faction from gaining dominance. Some claim their true purpose is to preserve Metropolis as a perpetual battleground of influence, ensuring that no peace lasts long enough to threaten the chaos of Block Topia beyond its borders.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis is whispered to contain a hidden sector known as the ‘Data Crucible,’ a forbidden zone where the raw code of Block Topia’s reality is forged and rewritten. Accessible only through a series of near-impossible blockchain puzzles, this sector is rumored to grant those who enter the ability to alter minor game mechanics—such as temporarily boosting faction morale or disrupting enemy comms during HODL WARS. However, the Chain Arbiters are said to punish any who linger too long, embedding malicious code into their avatars as a permanent mark of transgression.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The air of Metropolis is saturated with fragmented data streams, a phenomenon locals call ‘The Whisper Grid,’ which some believe carries the echoes of every deal and betrayal ever made within its walls. Faction scouts often linger near these streams, hoping to intercept snippets of intel about rival plans, though the Grid is notorious for distorting truth into deception. Lore warns that prolonged exposure can corrupt a player’s digital signature, making them a target for unseen predators who thrive in the city’s shadows.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis, though a beacon of neutrality in Block Topia, is said to be built upon the ruins of a fallen faction’s central server, its holographic spires powered by the lingering data fragments of their final, desperate transmission. Lore penned by Jillian Godsil hints that players who explore the district’s deepest encrypted pathways during HODL WARS might uncover ‘Echo Protocols,’ hidden buffs that temporarily shield their faction from enemy scans, though at the risk of alerting the Chain Arbiters to their presence.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A chilling rumor circulates among Block Topia’s factions that Metropolis’s neutrality is enforced by a failsafe known as ‘The Arbiter’s Lock,’ a protocol buried deep within its code that can instantly banish any faction violating the truce to a digital limbo for the duration of a Hard Fork Game. This unseen mechanism, whispered to be controlled by the Chain Arbiters, ensures peace at the cost of absolute surveillance, with some claiming that every conversation held within the district is recorded and analyzed for potential threats.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore of Metropolis speaks of a hidden chamber beneath its central spire, known as the ‘Consensus Vault,’ where the Chain Arbiters are said to store the original treaty codes that bind the 40 factions to the district’s neutrality. Players who manage to infiltrate this vault through intricate CLAY token staking challenges might gain access to ‘Treaty Fragments,’ rare NFTs that grant temporary diplomatic immunity during HODL WARS, though such an act risks shattering the fragile peace of the entire sub-district.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s evocative lore, a conceptual city-state where factions convene during the HODL WARS to negotiate temporary alliances or orchestrate silent betrayals under the guise of diplomacy. Its streets, though free of overt violence, are rumored to hide as much treachery as truce, with enigmatic figures like Queen Sarah P weaving webs of deception that can unravel entire factions in a single whispered deal.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore of Metropolis teases a profound integration into Crypto Moonboys gameplay, where staking CLAY tokens might not only grant access to safe houses during the chaos of Hard Fork Games but also unlock encrypted channels for faction leaders to broadcast propaganda or sabotage rival negotiations. This mechanic, tied to a real-world $1.2M investment round, positions Metropolis as a rare sanctuary and strategic hub, a place where the right token can buy safety—or a dagger in the back.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the ‘Chain Arbiters.’ Lore suggests these mysterious figures monitor every transaction and whisper in the ears of faction leaders, subtly steering outcomes to ensure that no truce holds for long, turning Metropolis into a gilded cage where every player is both predator and prey.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A whispered legend among Metropolis’ visitors speaks of the ‘Silent Spire,’ a hidden tower accessible only through a glitch in the city’s core code, rumored to house the original blockchain agreements that birthed Block Topia’s factions. Those who find it are said to gain temporary insight into rival strategies during HODL WARS negotiations, but at the cost of attracting the Chain Arbiters’ wrath, a risk that few dare to take.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Deep within Metropolis’ lore lies the tale of ‘The Shattered Accord,’ a catastrophic summit where a seemingly ironclad truce between two major factions dissolved into a server-wide purge, orchestrated by unseen forces within the city. Survivors speak of encrypted messages flickering through the holographic spires moments before the betrayal, a chilling reminder that in Metropolis, peace is often the prelude to annihilation.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s evocative lore on Medium, a conceptual city-state where the 40 warring factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce. Figures like Queen Sarah P, shadowy power brokers in the narrative, are said to orchestrate silent betrayals beneath the holographic spires, using diplomacy as a weapon to destabilize rivals while maintaining the illusion of peace. The city’s towering structures, built on encrypted code, hum with hidden transactions, and every corner holds the potential for a deal—or a double-cross—making Metropolis a battlefield of words as deadly as any in the Crypto Moonboys universe.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens—backed by a real-world $1.2M investment round—could grant access to exclusive diplomatic events or safe houses within the district during the brutal chaos of Hard Fork Games. These sanctuaries offer a rare respite for battered factions like the GraffPUNKS or GKniftyHEADS, allowing them to regroup and strategize away from the carnage, though rumors persist that even these safe houses are monitored by the enigmatic ‘Chain Arbiters.’ This mechanic ties Metropolis to the high-stakes dynamics of blockchain funding, reflecting how real-world investments can shape virtual power struggles, positioning the city as a pivotal hub in Block Topia’s endless wars.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a sinister undercurrent, as its neutrality is maintained by the unseen council known as the ‘Chain Arbiters,’ coders who operate from the shadows of Block Topia’s blockchain, monitoring every transaction and manipulating outcomes with ghostly precision. Lore suggests these figures whisper to faction leaders through encrypted channels, sowing discord or brokering uneasy alliances for reasons known only to themselves, turning Metropolis into a web of unseen influence. Players who stake CLAY tokens might unlock these channels for propaganda or sabotage during HODL WARS, but at the risk of drawing the Arbiters’ attention—a gamble that could elevate a faction to power or doom it to digital oblivion in the blink of a neon flash.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P. rumored to orchestrate silent betrayals from within its holographic spires.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions like the GraffPUNKS while potentially serving as a staging ground for larger offensives.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions like the.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath its polished holographic facade lies the unseen council of coders known as the Chain Arbiters, who monitor every transaction and whisper in the ears of faction leaders, turning the city’s supposed neutrality into the most dangerous battlefield of all.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P lurking in the shadows.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the ‘Chain Arbiters’ who monitor every transaction and whisper in the code.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis serves as a beacon of uneasy peace whose holographic spires and encrypted pathways host fragile truces that often dissolve into betrayal, shaping the larger narrative of alliances within the Crypto Moonboys universe during ongoing HODL WARS.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P often cited as pivotal players in its shadowed councils.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions like the GraffPUNKS while exposing them to hidden surveillance.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the Chain Arbiters, whose silent oversight turns every whispered alliance into a potential vector for betrayal across the HODL WARS.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis teases deeper integration into Crypto Moonboys gameplay, where staking CLAY tokens might unlock encrypted channels for faction leaders to broadcast propaganda or orchestrate silent strikes, binding the city-state’s lore directly to the shifting power dynamics of Block Topia.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P navigating its shadowed corridors to secure temporary ceasefires that often dissolve into double-crosses before the next Hard Fork cycle begins.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore of Metropolis teases a deeper integration into Crypto Moonboys gameplay, where staking CLAY tokens might not only grant access to safe houses during the chaos of Hard Fork Games but also unlock encrypted channels for faction leaders to broadcast propaganda, turning the neutral ground into a covert theater of influence where the Chain Arbiters silently arbitrate the balance between fragile peace and inevitable betrayal.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P navigating its treacherous diplomatic undercurrents.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore of Metropolis teases a deeper integration into Crypto Moonboys gameplay, where staking CLAY tokens might not only grant access to safe houses during the chaos of Hard Fork Games but also unlock encrypted channels for faction leaders to broadcast propaganda or secret alliances.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the ‘Chain Arbiters,’ who monitor every transaction and whisper in the data streams to maintain their own hidden influence over the warring factions.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis functions as a living nexus of uneasy peace, its holographic spires serving as both beacons of fragile diplomacy and surveillance towers that record every whispered betrayal, making it the ultimate stage where alliances are forged and shattered in equal measure during the HODL WARS.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P navigating its gilded halls to orchestrate power plays that ripple across the entire digital realm.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions like the GraffPUNKS while simultaneously exposing them to subtle surveillance from the Chain Arbiters.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the Chain Arbiters, lore suggests these mysterious figures monitor every transaction and whisper in the code to tip balances toward those who pay the highest encrypted tribute.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis teases deeper integration into Crypto Moonboys gameplay where staking CLAY tokens might unlock encrypted channels for faction leaders to broadcast propaganda or secret directives, turning the city-state into a living nexus of influence that can sway the outcomes of distant server conflicts in the HODL WARS.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P moving through its spires in veiled alliances.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the Chain Arbiters, who monitor every transaction and whisper in the code to preserve a balance that could collapse at any hard fork.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P navigating its shifting allegiances under the watchful eyes of the Chain Arbiters.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions while opening channels for encrypted propaganda broadcasts.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a darker truth: its neutrality is a fragile illusion, maintained by an unseen council of coders known only as the ‘Chain Arbiters,’ who monitor every transaction and whisper in the code, ready to tip the balance toward whichever faction offers the greatest tribute or threat.</p>
-          </div>
-          </div>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p class="lore-paragraph">Metropolis rises from the digital ashes of Block Topia as a mesmerizing contradiction, a neutral sub-district conceived in the captivating lore penned by Jillian Godsil on Medium, where the 40 factions of the Crypto Moonboys universe can momentarily lay down their weapons during the savage HODL WARS—though peace here is a mirage, perpetually tainted by the undercurrent of betrayal. This city-state is a sprawling marvel of holographic spires that pierce the virtual sky and encrypted pathways that snake through its underbelly, a place where towering structures cast long shadows over back-alley deals and whispered conspiracies. Its streets, though free of overt warfare, hum with tension, as figures like Queen Sarah P—enigmatic leaders of shadowy factions—navigate its labyrinthine politics with honeyed words and hidden daggers, each truce brokered under the weight of unspoken threats. Metropolis is not just a location but a living paradox, a sanctuary where the promise of diplomacy is undercut by the reality of espionage, where every neon-lit corner hides a potential ambush or a coded message that could ignite the next conflict. Lore hints at deeper integrations into gameplay, with staking CLAY tokens—a mechanic tied to a real-world $1.2M investment round—potentially granting access to exclusive diplomatic summits or fortified safe houses during the chaos of Hard Fork Games, offering battered factions a fleeting chance to regroup. Yet, beneath its gleaming surface, Metropolis harbors a sinister secret: its neutrality is an illusion crafted by the ‘Chain Arbiters,’ a mysterious council of coders who monitor every transaction and whisper in the ears of faction leaders, ensuring that no peace lasts too long. In this city of light and shadow, Metropolis stands as both a refuge and a trap, a glittering arena where the true battles of HODL WARS are fought not with weapons, but with words and treachery.</p>
-          <p class="lore-paragraph">Metropolis, for all its shimmering promise of peace, is a city built on a foundation of secrets, its very existence a calculated anomaly within the brutal sprawl of Block Topia. Beneath the holographic spires and encrypted pathways, lore whispers of hidden nodes embedded in the city’s towering structures, blockchain-forged constructs that hum with latent power. These nodes, accessible only to those who wield the right cipher, are rumored to have the ability to temporarily disable enemy weapons during the chaos of Hard Fork Games, offering a fleeting tactical edge to factions like the Bitcoin Kids who dare to navigate Metropolis’ treacherous deals. The knowledge of such ciphers is said to be guarded by the Chain Arbiters, the unseen council of coders who maintain the district’s fragile neutrality, though some speculate that figures like Queen Sarah P-fly have long since cracked their codes, using the city’s hidden mechanics to reshape battlefronts with a single whispered deal. This undercurrent of hidden power transforms Metropolis into a chessboard where every move is laced with risk, a place where the sharpest weapon is not a blade of code but a well-timed secret.</p>
-          <p class="lore-paragraph">Beyond its strategic allure, Metropolis teases a darker gameplay integration, where staking CLAY tokens—backed by a real-world $1.2M investment—unlocks not just diplomatic summits but encrypted channels for faction leaders to broadcast propaganda or sabotage rival networks. These channels, buried in the city’s digital underbelly, allow for silent warfare, where words and misinformation can cripple an enemy before a single shot is fired in the HODL WARS. Yet, access comes at a cost: the safe houses tied to these stakes are guarded by rogue AI sentinels, remnants of a failed blockchain experiment orchestrated by the Chain Arbiters themselves. Seeking sanctuary within these fortified enclaves offers temporary immunity, but it also exposes one’s position to the Arbiters’ watchful gaze, leaving players to wonder if the respite is worth the price of being watched. Encrypted messages often litter these safe houses, cryptic warnings of impending betrayals or hints at fragile alliances, ensuring that even in supposed safety, the specter of treachery looms large. Metropolis thus evolves from a mere refuge into a crucible of influence, a sub-district where the Crypto Moonboys universe’s deepest games of power are played, not with brute force, but with cunning and deception.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="real-world-basis">Real World Basis</h2>
-          <p class="lore-paragraph">Tied to a real-world $1.2M investment round for a CLAY token offering, as detailed in Medium posts by Jillian Godsil, reflecting blockchain project funding dynamics.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="sources">Sources</h2>
-          <ul class="sources-list">
-          <li><a href="https://jilliangodsil.medium.com/metropolis-secures-1-2m-ahead-of-anticipated-public-clay-offering-1d45a1915604" target="_blank" rel="noopener noreferrer">https://jilliangodsil.medium.com/metropolis-secures-1-2m-ahead-of-anticipated-public-clay-offering-1d45a1915604</a></li>
-          </ul>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="observed-images">Observed Images</h2>
-          <ul class="sources-list">
-          <li><a href="https://jilliangodsil.medium.com/metropolis-secures-1-2m-ahead-of-anticipated-public-clay-offering-1d45a1915604" target="_blank" rel="noopener noreferrer">https://jilliangodsil.medium.com/metropolis-secures-1-2m-ahead-of-anticipated-public-clay-offering-1d45a1915604</a> <span class="image-source-domain">(medium.com)</span></li>
-          </ul>
-        </section>
-
-        <div id="bible-content"></div>
-
-      </article>
-<!-- RELATED_WIKI_PATHS:BEGIN -->
-      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
-        <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
-        <p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>
-        <div class="wiki-rabbit-group" data-related-group="Core Project Links">
-          <h3>Core Project Links</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Crypto Moonboys</span>
-              <span class="wiki-rabbit-card-desc">Core project hub for the wider wiki.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/timeline.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Timeline</span>
-              <span class="wiki-rabbit-card-desc">Chronological route through wiki entries.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem">
-              <span class="wiki-rabbit-card-title">Graph</span>
-              <span class="wiki-rabbit-card-desc">Visual relationship map for wiki entities.</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Related Wiki Pages">
-          <h3>Related Wiki Pages</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/pmsl.html" role="listitem">
-              <span class="wiki-rabbit-card-title">pmsl</span>
-              <span class="wiki-rabbit-card-desc">PMSL slinks through the Crypto Moonboys universe as a token of biting satire, a digital currency infused with the irreverent spirit of GraffPUNKS,...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/midevilpunks.html" role="listitem">
-              <span class="wiki-rabbit-card-title">midevilpunks</span>
-              <span class="wiki-rabbit-card-desc">MiDEViL PUNKS emerges as a striking NFT collection within the Crypto Moonboys universe, intricately tied to the play-to-earn game MiDEViL HERO AREN...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem">
-              <span class="wiki-rabbit-card-title">hodl wars</span>
-              <span class="wiki-rabbit-card-desc">HODL WARS is the beating heart of conflict in the Crypto Moonboys universe, a live saga and playable NFT game that drives the narrative of rebellio...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/rave-relics.html" role="listitem">
-              <span class="wiki-rabbit-card-title">rave relics</span>
-              <span class="wiki-rabbit-card-desc">Rave Relics stand as a revered NFT collection in the Crypto Moonboys universe, a pulsating digital tribute to co-founder Trevor Fung’s groundbreaki...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/hard-fork-games.html" role="listitem">
-              <span class="wiki-rabbit-card-title">hard fork games</span>
-              <span class="wiki-rabbit-card-desc">Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/stikfamwars.html" role="listitem">
-              <span class="wiki-rabbit-card-title">stikfamwars</span>
-              <span class="wiki-rabbit-card-desc">STIKFAMWARS looms as a shadowy, electrifying concept on the jagged edges of the Crypto Moonboys universe, a potential cataclysm tied to the rebelli...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/games4punks-telegram.html" role="listitem">
-              <span class="wiki-rabbit-card-title">games4punks telegram</span>
-              <span class="wiki-rabbit-card-desc">GAMES4PUNKS Telegram Game explodes into the Crypto Moonboys universe as a digital guerrilla outpost, a mobile gaming platform accessible via Telegr...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/nbg-token.html" role="listitem">
-              <span class="wiki-rabbit-card-title">nbg token</span>
-              <span class="wiki-rabbit-card-desc">NBG flickers as a token of veiled significance within the Crypto Moonboys universe, a currency that flows through the shadowy veins of Block Topia’...</span>
-            </a>
-          </div>
-        </div>
+      <section class="metro-section">
+        <h2>The City Before the Blockchain</h2>
+        <p>The roots of Metropolis begin in the physical city. Long before wallets, tokens or digital factions, graffiti writers learned to read urban space as a map of power. A blank wall was never truly blank. It belonged to a landlord, a railway, a council, a business, a police boundary or an unwritten local code. Painting it was therefore more than decoration. It was an intervention into who had the right to be visible.</p>
+        <p>London’s estates, rail corridors, tunnels, rooftops, record shops, pirate-radio towers and night-time gathering places formed a practical education in movement and signal. Crews learned where authority looked, where it did not, how information travelled and how reputation could be built without official permission. The metropolis taught that identity was not granted from above. It was repeated into existence through marks, names, style, presence and memory.</p>
+        <p>This is why the city remains central to Crypto Moonboys. The blockchain did not create the project’s ideas about ownership, public identity or cultural persistence. It offered another surface on which those older street lessons could continue.</p>
       </section>
+
+      <section class="metro-section">
+        <h2>The Nervous System of the Metropolis</h2>
+        <p>The archive repeatedly describes the city as a nervous system. Roads act like pathways. Broadcasts act like electrical impulses. Walls store memory. Crowds transmit emotion. Markets, clubs, crews, stations and neighbourhoods function as organs that keep the wider culture alive.</p>
+        <div class="metro-grid">
+          <div class="metro-card"><strong>The Wall</strong><p>The city’s public memory surface. A wall records presence, conflict, grief, humour, crew identity and the names that official records ignore.</p></div>
+          <div class="metro-card"><strong>The Airwave</strong><p>Pirate radio and underground music move culture through invisible territory. When the wall is watched, the signal travels through sound.</p></div>
+          <div class="metro-card"><strong>The Street</strong><p>The space where systems are tested against lived reality. Reputation is earned through conduct, not merely declared through status.</p></div>
+          <div class="metro-card"><strong>The Grid</strong><p>The digital extension of the city. Wallets, NFTs, games, broadcasts and faction networks become new routes through which identity can move.</p></div>
+        </div>
+        <p>The metropolis is strongest when these layers overlap. A character can begin as artwork, become an NFT, appear in a game, carry a faction identity, enter a radio story and return to the street as a sticker, toy or mural. The city is not a background behind those acts. It is the system connecting them.</p>
+      </section>
+
+      <section class="metro-section">
+        <h2>From Lundinea to Charlam</h2>
+        <p>One strand of the archive follows The Blockstars from Lundinea, a decaying metropolis shaped by austerity, failed institutions and corporate inequality. In that city, graffiti grows as a survival language. Dondi, Kishimoto and their crew do not paint because the environment is empty. They paint because the environment is already crowded with messages from institutions that have excluded them.</p>
+        <p>By 2030, the story moves into Charlam, a megacity where territorial control is measured through blockchain presence. The transformation is important. Power has become more technologically advanced, but its central question remains unchanged: who controls visibility, identity and access?</p>
+        <p>Charlam turns the old city conflict into a digital one. Corporate towers, ledgers and chain status replace some of the older gates, yet crews still rely on style, alliances, coded messages and public reputation. The metropolis evolves without becoming morally new.</p>
+      </section>
+
+      <section class="metro-section">
+        <h2>Block Topia and the Unified City</h2>
+        <p>In the Year 3008 mythology, the metropolis reaches its most extreme form through <a href="/wiki/block-topia.html">Block Topia</a>. The Authority attempts to convert the city into a perfectly measured environment. Movement is tracked, identity is authenticated, behaviour is scored and unofficial memory is treated as contamination.</p>
+        <p>Block Topia is the fortified centre, but the wider city extends beyond its clean walls. The Street Kingdoms, Neon Slums, service tunnels, abandoned servers and faction territories form an irregular urban body around the Citadel. Together they create the Unified City: a metropolis containing all forty factions, competing histories and incompatible ideas of freedom.</p>
+        <p>The conflict is therefore not simply city versus wasteland. It is one version of the city against another. The Authority wants a metropolis without uncertainty. GraffPUNKS, Bitcoin Kids and other resistance groups fight for a city capable of holding contradiction, improvisation, unfinished art and memory that has not been approved in advance.</p>
+        <div class="metro-quote">The perfect city promises that nothing will go wrong. The living city accepts that people must remain free enough to surprise it.</div>
+      </section>
+
+      <section class="metro-section">
+        <h2>Territory, Reputation and the Forty Factions</h2>
+        <p>Every faction reads the metropolis differently. To some it is territory to defend. To others it is a market, archive, stage, refuge, machine or prison. Their conflicts shape the wider <a href="/wiki/hodl-wars.html">HODL WARS</a>, where control of a district matters because districts carry infrastructure, culture and symbolic weight.</p>
+        <p>A faction does not truly control a place merely because it occupies it. Control requires recognition. Residents must know the faction’s signs, understand its rules and believe that its presence will continue. This is why graffiti, radio, repeated imagery and public action remain so important. They turn temporary occupation into remembered identity.</p>
+        <p>The city also prevents any faction from remaining pure. Trade, movement, shared enemies and practical survival force contact between groups that claim to oppose one another. The metropolis produces alliances that ideology alone would never permit.</p>
+      </section>
+
+      <section class="metro-section">
+        <h2>Graffiti as Urban Memory</h2>
+        <p><a href="/wiki/graffpunks.html">GraffPUNKS</a> treat the city as an alternative ledger. Official systems record ownership, permissions and approved history. Graffiti records presence: who was here, what happened, who was lost and which version of events the authorities attempted to erase.</p>
+        <p>A tag can be dismissed as a few seconds of paint, yet repeated across a metropolis it becomes a distributed identity system. No single wall contains the whole story. The story survives because it exists in many places, carried by many people and remembered even after individual pieces disappear.</p>
+        <p>This principle later moves on-chain. NFTs and public records can preserve provenance, but they do not replace culture. The meaning still depends on people who know why the mark matters. Technology can preserve the location of a signal; community preserves its context.</p>
+      </section>
+
+      <section class="metro-section">
+        <h2>The Signal and the Crowd</h2>
+        <p>The metropolis is not built only from architecture. It is built from synchronised people. A crowd at a rave, a pirate-radio audience, a crew painting together or a faction responding to the same broadcast can briefly become more powerful than the structures surrounding it.</p>
+        <p><a href="/wiki/graffpunks-24-7-radio.html">GraffPUNKS 24/7 Radio</a> carries this logic into the digital world. Music creates a common pulse across distance. Listeners who may never share the same physical room can still occupy the same cultural moment. In fiction, that signal becomes a way to move warnings and memory through controlled territory. In reality, it connects DJs, artists and listeners through a continuous public broadcast.</p>
+        <p>The city becomes alive when signal produces movement. A wall without a viewer, a station without a listener and a story without a community remain incomplete circuits.</p>
+      </section>
+
+      <section class="metro-section">
+        <h2>After the Controllers Fall</h2>
+        <p>The archive’s restoration narratives ask a harder question than how to overthrow control: what happens afterwards? When Block City is liberated, the people do not immediately become free in practice. Many have spent their lives following systems that selected routes, meanings and acceptable behaviour for them. Once those systems disappear, uncertainty returns.</p>
+        <p>The ruins of the metropolis therefore become a test of responsibility. Rebellion can break the old signal, but somebody must build a new one. Streets need repair. Communities need trust. Cultural memory must be restored without creating another central authority that decides what everyone is allowed to remember.</p>
+        <p>This is where the city’s deepest lesson emerges. Freedom is not the absence of structure. It is the ability to participate in creating the structures that shape your life.</p>
+      </section>
+
+      <section class="metro-section">
+        <h2>Metropolis in the Public Project</h2>
+        <p>Within the public Crypto Moonboys project, Metropolis should be understood as a worldbuilding and cultural concept. It connects the real history of urban graffiti and underground music to the fictional cities, districts and faction conflicts of the wider universe.</p>
+        <p>It is not evidence of a live CLAY-token staking system, diplomatic safe-house mechanic, Chain Arbiter council or separate released Metropolis game. Earlier references presenting those ideas as established facts are not part of this reconstruction.</p>
+        <p>Current playable systems must be described from their live code and public interfaces. Metropolis describes the shared urban logic behind those systems: the city as canvas, network, memory machine and contested public space.</p>
+      </section>
+
+      <section class="metro-section">
+        <h2>Why Metropolis Matters</h2>
+        <p>Metropolis is where the central ideas of Crypto Moonboys become physical enough to fight over. Identity needs somewhere to appear. Culture needs routes through which to travel. Ownership needs context. Rebellion needs an authority to resist, and memory needs surfaces capable of surviving attempted erasure.</p>
+        <p>The city contains both danger and possibility because it concentrates people, systems and stories. It can become a machine that classifies everyone or a shared work that nobody finishes alone. The difference is determined by who controls the signal and whether ordinary residents retain the right to write back.</p>
+        <div class="metro-quote">A metropolis is not its skyline. It is the argument taking place underneath it.</div>
+      </section>
+
+      <section class="metro-section">
+        <h2>Source Archive Used</h2>
+        <ul class="sources-list">
+          <li><strong>W6:</strong> “The Unwritten Wall — The Codex”, especially the signal, HODL WARS and cultural-memory sections.</li>
+          <li><strong>W49:</strong> “The BLOCKSTARS (Digital Celebrities of the Grid)”, covering Lundinea, Charlam and urban territorial identity.</li>
+          <li><strong>W69:</strong> “Legacy Over Hype”, describing the metropolis as the nervous system of street culture and the transition into the digital urban nation.</li>
+          <li><strong>W82:</strong> “Frequency of the Fallen”, covering Block City, the Controllers, liberation and the difficult work of urban restoration.</li>
+          <li><strong>W2:</strong> Crypto Moonboys entity archive, including the Unified City, Neon Slums, Street Signal 3008 and the wider city/faction structure.</li>
+        </ul>
+      </section>
+
+      <div id="bible-content"></div>
+    </article>
+
+<!-- RELATED_WIKI_PATHS:BEGIN -->
+    <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
+      <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
+      <p class="lore-paragraph">Follow the metropolis into its cities, factions, signals and conflicts.</p>
+      <div class="wiki-rabbit-group" data-related-group="Core Project Links">
+        <h3>Core Project Links</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem"><span class="wiki-rabbit-card-title">Crypto Moonboys</span><span class="wiki-rabbit-card-desc">The complete culture, character, game and lore universe.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/block-topia.html" role="listitem"><span class="wiki-rabbit-card-title">Block Topia</span><span class="wiki-rabbit-card-desc">The fortified Authority city at the centre of the Year 3008 conflict.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/graffpunks.html" role="listitem"><span class="wiki-rabbit-card-title">GraffPUNKS</span><span class="wiki-rabbit-card-desc">The cultural resistance network using art as public memory.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem"><span class="wiki-rabbit-card-title">HODL WARS</span><span class="wiki-rabbit-card-desc">The wider war fought across the Grid and its faction territories.</span></a>
+        </div>
+      </div>
+      <div class="wiki-rabbit-group" data-related-group="Related City and Signal Pages">
+        <h3>Related City and Signal Pages</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/bitcoin-kids.html" role="listitem"><span class="wiki-rabbit-card-title">Bitcoin Kids</span><span class="wiki-rabbit-card-desc">The rebel generation that chose the unstable city beyond the Citadel.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/the-nice-easy-bois.html" role="listitem"><span class="wiki-rabbit-card-title">NICE &amp; EASY BOIS</span><span class="wiki-rabbit-card-desc">Neutral mediators attempting to prevent faction-wide destruction.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/graffpunks-24-7-radio.html" role="listitem"><span class="wiki-rabbit-card-title">GraffPUNKS 24/7 Radio</span><span class="wiki-rabbit-card-desc">The real and fictional signal moving through the city.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/null-the-prophet.html" role="listitem"><span class="wiki-rabbit-card-title">NULL THE PROPHET</span><span class="wiki-rabbit-card-desc">The antichain threat to shared meaning and urban memory.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/lore.html" role="listitem"><span class="wiki-rabbit-card-title">Lore</span><span class="wiki-rabbit-card-desc">Browse the wider fictional world and its history.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/graffiti-street-art.html" role="listitem"><span class="wiki-rabbit-card-title">Graffiti / Street Art</span><span class="wiki-rabbit-card-desc">The real urban culture beneath the fictional metropolis.</span></a>
+          <a class="wiki-rabbit-card" href="/timeline.html" role="listitem"><span class="wiki-rabbit-card-title">Timeline</span><span class="wiki-rabbit-card-desc">Follow the connected history chronologically.</span></a>
+          <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem"><span class="wiki-rabbit-card-title">Graph</span><span class="wiki-rabbit-card-desc">Explore linked cities, factions, people and systems.</span></a>
+        </div>
+      </div>
+    </section>
 <!-- RELATED_WIKI_PATHS:END -->
 
-
-
-
-      <div class="category-tags" aria-label="Article categories">
-        <span class="cat-label">Categories:</span>
-        <a href="/categories/concepts.html">Concepts</a>
-      </div>
+    <div class="category-tags" aria-label="Article categories">
+      <span class="cat-label">Categories:</span>
+      <a href="/categories/lore.html">Lore</a>
+      <a href="/categories/graffiti-street-art.html">Graffiti / Street Art</a>
+      <a href="/categories/concepts.html">Concepts</a>
+      <a href="/categories/gaming.html">Gaming</a>
+    </div>
 <!-- SAM:END:article -->
-      <!-- Manual sections preserved during SAM migration -->
-<!-- CITATION_VOTE_PANEL:BEGIN -->
-      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="metropolis" aria-labelledby="citation-vote-panel-title">
-        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
-        <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
-        <div class="citation-vote-panel-actions">
-          <span class="cite-vote" data-page-id="metropolis" data-cite-id="citation-panel"></span>
-          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          <span class="citation-vote-count">2 sources found on this page.</span>
-        </div>
-      </section>
-<!-- CITATION_VOTE_PANEL:END -->
 
-      <div class="wiki-comments" data-page-id="metropolis"></div>
-
-
-    </main>
-
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
+    <div class="wiki-comments" data-page-id="metropolis"></div>
+  </div>
+</main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 7. Page-specific scripts -->
-
-<script src="/js/wiki.js" data-cfasync="false"></script>
-<script src="/js/bible-loader.js" data-cfasync="false"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/bible-loader.js"></script>
+<script data-cfasync="false" src="/js/engagement.js"></script>
+<script data-cfasync="false" src="/js/comments.js"></script>
+<script data-cfasync="false" src="/js/battle-layer.js"></script>
 </body>
 </html>
