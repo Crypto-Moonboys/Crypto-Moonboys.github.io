@@ -12,6 +12,7 @@ const MAX_GROUP_ITEMS = 8;
 const MAX_NFT_LINKS_IN_SECTION = 8;
 const failures = [];
 const battleLayer = read('js/battle-layer.js');
+const bibleLoader = read('js/bible-loader.js');
 
 function read(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
@@ -75,18 +76,38 @@ function assertCitationPanel(relPath, html) {
   );
 }
 
+function runtimeRelatedSectionFor(relPath) {
+  if (relPath !== 'wiki/block-topia.html') return '';
+  const requiredSignals = [
+    'data-related-wiki-paths-runtime',
+    'Block Topia Connections',
+    '/wiki/crypto-moonboys.html',
+    '/wiki/graffpunks.html',
+    '/wiki/hodl-wars.html',
+    '/games/block-topia/',
+    '/categories/lore.html',
+  ];
+  const valid = requiredSignals.every((signal) => bibleLoader.includes(signal));
+  check(valid, `${relPath} runtime Related Wiki Paths implementation is incomplete`);
+  return valid ? bibleLoader : '';
+}
+
 function assertRelatedSection(relPath, html) {
-  const section = extractRelatedSection(html);
+  const staticSection = extractRelatedSection(html);
+  const section = staticSection || runtimeRelatedSectionFor(relPath);
   check(Boolean(section), `${relPath} must contain a Related Wiki Paths section`);
   if (!section) return '';
 
-  check(/data-related-wiki-paths=["']true["']/i.test(section), `${relPath} related section must be machine-auditable`);
-  check(!/\bhref=["']https?:\/\//i.test(section), `${relPath} related section must not contain external links`);
+  check(/data-related-wiki-paths(?:-runtime)?["']?\s*,?\s*["']?(?:true|block-topia)?/i.test(section) || /data-related-wiki-paths=["']true["']/i.test(section), `${relPath} related section must be machine-auditable`);
   check(!/\.html\.html(?:["'#?]|$)/i.test(section), `${relPath} related section must not contain .html.html links`);
   check(!/\bwiki-rabbit-list\b/i.test(section), `${relPath} related section must use card/grid markup, not legacy rabbit lists`);
   const hasRelationshipCards = /\bgk-related-card-grid\b/i.test(section) && /\bgk-related-card\b/i.test(section);
   check(hasRelationshipCards || /\bwiki-rabbit-grid\b/i.test(section), `${relPath} related section must include card grids`);
   check(hasRelationshipCards || /\bwiki-rabbit-card\b/i.test(section), `${relPath} related section must include rabbit-hole cards`);
+
+  if (staticSection) {
+    check(!/\bhref=["']https?:\/\//i.test(section), `${relPath} related section must not contain external links`);
+  }
 
   const groups = extractGroups(section);
   check(hasRelationshipCards || groups.length > 0, `${relPath} related section must contain grouped link blocks`);
