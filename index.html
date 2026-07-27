@@ -31,8 +31,11 @@
     .hero-intro .hero-swarmsy-name { color:#fff; font-weight:900; }
     .hero-partners-image { display:block; width:100%; height:auto; margin:0; }
     .graffiti-kings-logo { display:block; width:min(420px,100%); height:auto; margin:34px auto 0; }
-    .leave-your-mark-wrap { width:100%; margin:22px 0 24px; display:flex; justify-content:center; }
-    .leave-your-mark-image { display:block; width:min(760px,calc(100% - 40px)); max-width:none; height:auto; margin:0; }
+    .leave-your-mark-wrap,
+    .history-video-wrap { width:100%; margin:22px 0 24px; display:flex; justify-content:center; }
+    .leave-your-mark-image,
+    .history-video { display:block; width:min(760px,calc(100% - 40px)); max-width:none; height:auto; margin:0; }
+    .history-video { background:#000; }
     .simple-actions { display:flex; flex-wrap:wrap; gap:14px; margin-top:28px; }
     .simple-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:13px 22px; border:1px solid rgba(145,105,0,.75); color:#050607; background:var(--gold); font-weight:900; text-transform:uppercase; text-decoration:none; letter-spacing:.04em; }
     .simple-button.secondary { color:#050607; background:rgba(255,255,255,.7); border-color:rgba(5,6,7,.55); }
@@ -65,7 +68,8 @@
       .simple-wrap { width:min(100% - 28px,1180px); }
       .hero-intro { padding:42px 0 48px; }
       .graffiti-kings-logo { width:100%; }
-      .leave-your-mark-image { width:100%; }
+      .leave-your-mark-image,
+      .history-video { width:100%; }
     }
   </style>
 </head>
@@ -156,7 +160,18 @@
     <div class="simple-wrap">
       <div class="history-blurb history-blurb--continued">
         <p>Over four decades, that culture expanded through graffiti, street art, murals, music, workshops, outreach, public creativity, commercial campaigns and community activation. Graffiti Kings learned the hard way that names become powerful through consistency, symbols become memorable through repetition, and culture is built through action rather than claims.</p>
+      </div>
+    </div>
 
+    <div class="history-video-wrap">
+      <video class="history-video" controls playsinline preload="metadata" aria-label="Marilyn Monroe Graffiti video">
+        <source src="/img/homepage/Marilyn%20Monroe%20Graffiti-HD%20(1).mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <div class="simple-wrap">
+      <div class="history-blurb history-blurb--continued">
         <h3>Graffiti Kings became GKniftyHEADS</h3>
         <p>When the internet, digital ownership and blockchain changed the way culture could travel, Graffiti Kings did not abandon the street. It extended the street into a new surface. <strong>GKniftyHEADS became the Web3 evolution of the same cultural engine</strong>: a mutation of physical walls into digital artefacts, public chain records, games, characters, factions, lore and a permanent online archive.</p>
         <p>The point was never to pretend Web3 invented community, identity or proof. Graffiti culture already understood all three. Web3 simply offered new tools: permanent records, direct digital ownership, global distribution, playable worlds and new ways for artists and communities to carry their history forward without relying entirely on galleries, platforms or gatekeepers.</p>
