@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Blockchain Technology — the distributed ledger powering Bitcoin, Ethereum and all cryptocurrencies. Crypto Moonboys Wiki.">
+  <meta name="description" content="A detailed guide to blockchain technology: history, blocks, consensus, wallets, smart contracts, tokens, scaling, risks and Crypto Moonboys use on WAX.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Blockchain Technology — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Blockchain Technology — the distributed ledger powering Bitcoin, Ethereum and all cryptocurrencies. Crypto Moonboys Wiki.">
+  <meta property="og:description" content="A detailed guide to how blockchains work, from transactions and consensus to wallets, smart contracts, tokens, NFTs, scaling and practical safety.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/blockchain.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -14,393 +14,294 @@
   <title>Blockchain Technology — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
-<script type="application/ld+json">
+  <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": "Blockchain Technology",
-    "description": "Blockchain Technology — the distributed ledger powering Bitcoin, Ethereum and all cryptocurrencies. Crypto Moonboys Wiki.",
+    "description": "A detailed guide to blockchain technology, including transactions, consensus, wallets, smart contracts, tokens, NFTs, scaling and security.",
     "url": "https://cryptomoonboys.com/wiki/blockchain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
+    "author": {"@type": "Organization", "name": "Crypto Moonboys"},
     "publisher": {
       "@type": "Organization",
       "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
+      "logo": {"@type": "ImageObject", "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"}
     }
   }
   </script>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    .blockchain-callout{padding:1rem 1.1rem;margin:1.2rem 0;border-left:4px solid #5b8cff;border-radius:8px;background:rgba(91,140,255,.08)}
+    .blockchain-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:1rem 0}
+    .blockchain-card{padding:1rem;border:1px solid rgba(91,140,255,.2);border-radius:12px;background:rgba(255,255,255,.025)}
+    .blockchain-card strong{display:block;margin-bottom:.4rem;color:var(--color-accent,#5b8cff)}
+    .blockchain-table{width:100%;border-collapse:collapse}
+    .blockchain-table th,.blockchain-table td{padding:.75rem;border:1px solid rgba(255,255,255,.12);text-align:left;vertical-align:top}
+    @media(max-width:780px){.blockchain-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body class="page-wiki page-standard-shell">
 <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/categories/technology.html">Technology</a><span class="sep">›</span><span aria-current="page">Blockchain Technology</span></nav>
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/categories/technology.html">Technology</a><span class="sep">›</span><span aria-current="page">Blockchain Technology</span></nav>
 
-      <aside class="infobox" aria-label="Blockchain quick facts">
-        <div class="infobox-title">Blockchain</div>
-        <div class="infobox-image"><span style="font-size:5rem">⛓️</span></div>
-        <table>
-          <tr><td>Type</td>        <td>Distributed Ledger</td></tr>
-          <tr><td>Invented</td>    <td>2008 (Bitcoin)</td></tr>
-          <tr><td>Structure</td>   <td>Linked blocks of data</td></tr>
-          <tr><td>Key Property</td><td>Immutability</td></tr>
-          <tr><td>Category</td>    <td><a href="/categories/technology.html">Technology</a></td></tr>
-        </table>
-      </aside>
+  <aside class="infobox" aria-label="Blockchain quick facts">
+    <div class="infobox-title">Blockchain</div>
+    <div class="infobox-image"><span style="font-size:5rem">⛓️</span></div>
+    <table>
+      <tr><td>Type</td><td>Distributed ledger system</td></tr>
+      <tr><td>First practical use</td><td>Bitcoin, 2009</td></tr>
+      <tr><td>Structure</td><td>Cryptographically linked records</td></tr>
+      <tr><td>Core properties</td><td>Shared verification, tamper resistance, programmable ownership</td></tr>
+      <tr><td>Category</td><td><a href="/categories/technology.html">Technology</a></td></tr>
+    </table>
+  </aside>
 
-      <h1 class="page-title">Blockchain Technology</h1>
-      <div class="page-title-line" aria-hidden="true"></div>
-      <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Last updated: 2024-01</span><span class="meta-item">📂 <a href="/categories/technology.html">Technology</a></span></div>
-      <nav id="toc" aria-label="Table of contents"><div class="toc-title">📋 Contents</div></nav>
+  <h1 class="page-title">Blockchain Technology</h1>
+  <div class="page-title-line" aria-hidden="true"></div>
+  <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Expanded: July 2026</span><span class="meta-item">📂 <a href="/categories/technology.html">Technology</a></span></div>
+  <nav id="toc" aria-label="Table of contents"><div class="toc-title">📋 Contents</div></nav>
 
-      <article class="wiki-content" data-entity-slug="blockchain">
-  <p>
-    The <strong>blockchain</strong> is the foundation everything in crypto is built on. It is not just a database —
-    it is an <em>immutable, decentralised, cryptographically secured ledger</em> that nobody controls and everybody can
-    verify. Understanding the blockchain means understanding <strong>why crypto matters</strong> — and why it is not just
-    internet money, but a fundamental reinvention of how trust works in the digital world. No banks. No intermediaries.
-    No permission required.
-  </p>
+  <article class="wiki-content" data-entity-slug="blockchain">
+    <p>The <strong>blockchain</strong> is a shared digital record maintained by a network rather than one central database owner. Participants use cryptography, network rules and a consensus mechanism to agree which transactions are valid and in what order they occurred.</p>
+    <p>Blockchain is best understood as a system for coordinating ownership and state between parties who may not trust one another. It can record money, tokens, digital objects, votes, identities, agreements or application data. A blockchain does not automatically make information true, fair or valuable; it makes the accepted record auditable according to the rules of that network.</p>
 
-  <h2 id="history">History &amp; Origins</h2>
+    <div class="blockchain-callout"><strong>Plain-English definition:</strong> a blockchain is a public or permissioned record that many computers independently check, copy and update under shared rules.</div>
 
-  <h3 id="history-precursors">Cryptographic Precursors (1979–2008)</h3>
-  <p>
-    The blockchain did not appear from nowhere. In <strong>1979</strong>, <strong>Ralph Merkle</strong> invented
-    <em>Merkle trees</em> — the binary hash tree data structure that blockchains use to efficiently verify
-    transactions. In <strong>1991</strong>, <strong>Stuart Haber</strong> and <strong>W. Scott Stornetta</strong>
-    published a foundational paper on cryptographically securing timestamps on digital documents — the first
-    description of a chain of blocks. These ideas sat dormant in academic circles until someone with vision
-    brought them together.
-  </p>
+    <h2 id="history">History and Origins</h2>
+    <h3 id="history-precursors">Cryptographic Precursors</h3>
+    <p>Modern blockchains combine earlier inventions rather than relying on one isolated breakthrough. Public-key cryptography made digital signatures possible. Ralph Merkle's hash trees made large sets of records efficiently verifiable. Stuart Haber and W. Scott Stornetta described cryptographically linked timestamp records in the early 1990s. Peer-to-peer networks demonstrated that computers could coordinate without a permanent central server.</p>
 
-  <h3 id="history-satoshi">Satoshi Nakamoto &amp; the Bitcoin Genesis (2008–2009)</h3>
-  <p>
-    On <strong>October 31, 2008</strong>, the pseudonymous <a href="/wiki/satoshi-scroll.html">Satoshi Nakamoto</a>
-    published the <em>Bitcoin: A Peer-to-Peer Electronic Cash System</em> whitepaper, combining Merkle trees,
-    cryptographic hashing, Proof of Work, and peer-to-peer networking into the first practical blockchain.
-    On <strong>January 3, 2009</strong>, the Bitcoin genesis block was mined — Block #0, containing the now-famous
-    message: <em>"The Times 03/Jan/2009 Chancellor on brink of second bailout for banks."</em>
-    The first <a href="/wiki/bitcoin.html">Bitcoin</a> transaction occurred on January 12, 2009, when Satoshi sent
-    10 BTC to Hal Finney.
-  </p>
+    <h3 id="history-bitcoin">Bitcoin and the First Working Blockchain</h3>
+    <p>In October 2008, the pseudonymous Satoshi Nakamoto published <em>Bitcoin: A Peer-to-Peer Electronic Cash System</em>. Bitcoin combined digital signatures, proof of work, peer-to-peer networking and economic incentives into a system that solved the double-spending problem without a bank. Its genesis block was mined on 3 January 2009, and the first recorded person-to-person Bitcoin transaction followed on 12 January when Satoshi sent 10 BTC to Hal Finney.</p>
 
-  <h3 id="history-ethereum">Programmable Blockchains (2015–2017)</h3>
-  <p>
-    <a href="/wiki/ethereum.html">Ethereum</a> launched in July 2015, introducing <strong>smart contracts</strong> —
-    self-executing code stored on the blockchain. This transformed blockchain from a payment ledger into a
-    programmable platform. The Linux Foundation launched the <strong>Hyperledger</strong> project in 2015 for
-    enterprise blockchains. The 2017 ICO boom demonstrated that anyone could issue <a href="/wiki/tokens.html">tokens</a> on a blockchain,
-    for better and for worse.
-  </p>
+    <h3 id="history-programmable">Programmable Blockchains</h3>
+    <p><a href="/wiki/ethereum.html">Ethereum</a>, launched in 2015, extended the idea from a specialised payment ledger into a programmable state machine. Developers could deploy <strong>smart contracts</strong>: code that holds assets, checks conditions and changes blockchain state. This made decentralised exchanges, lending markets, stablecoins, DAOs, games and NFTs possible on one shared network.</p>
 
-  <h3 id="history-expansion">Expansion: DeFi, NFTs, Web3 (2020–Present)</h3>
-  <p>
-    <a href="/wiki/defi.html">DeFi</a> in 2020 proved blockchain could replace financial intermediaries — lending, borrowing,
-    and trading without banks. <a href="/wiki/nfts.html">NFTs</a> in 2021 proved blockchain could establish digital ownership
-    for art, gaming, and identity. <a href="/wiki/web3.html">Web3</a> emerged as the vision of a blockchain-powered internet
-    where users own their data. Layer 2 scaling solutions (Arbitrum, Optimism, zkEVM) from 2021 onward have attempted
-    to solve the throughput limitations of base-layer blockchains. The community mythology built around all of this
-    is documented in <a href="/wiki/hodl-wars.html">HODL Wars</a>.
-  </p>
+    <h3 id="history-expansion">DeFi, NFTs, Scaling and Application Chains</h3>
+    <p>The 2020–2021 cycle brought mainstream attention to <a href="/wiki/defi.html">DeFi</a>, <a href="/wiki/nfts.html">NFTs</a>, token communities and blockchain games. Later development focused heavily on lower transaction costs, application-specific chains, proof-of-stake networks, rollups, zero-knowledge proofs, interoperability and improved wallet design.</p>
 
-  <h2 id="how-it-works">How It Works</h2>
+    <h2 id="how-it-works">How a Blockchain Works</h2>
+    <h3 id="transaction-life-cycle">The Life of a Transaction</h3>
+    <ol>
+      <li><strong>Creation:</strong> a wallet prepares an instruction, such as sending a token or calling a smart contract.</li>
+      <li><strong>Signature:</strong> the user signs the transaction with a private key. The signature proves authorisation without revealing the key.</li>
+      <li><strong>Broadcast:</strong> the signed transaction is sent to network nodes.</li>
+      <li><strong>Validation:</strong> nodes check signatures, balances, nonces, permissions and protocol rules.</li>
+      <li><strong>Ordering:</strong> a miner, validator or block producer selects valid transactions and proposes their order.</li>
+      <li><strong>Consensus:</strong> the network accepts or rejects the proposed block according to its consensus rules.</li>
+      <li><strong>Finality:</strong> after enough confirmations or a finality vote, reversing the transaction becomes difficult or impossible under normal network operation.</li>
+    </ol>
 
-  <h3 id="block-structure">Block Structure</h3>
-  <p>Every block on a blockchain contains two main parts:</p>
-  <ul>
-    <li>
-      <strong>Header:</strong> Previous block's hash (the "chain" link), timestamp, nonce (PoW answer),
-      Merkle root (summary of all transactions in the block), difficulty target
-    </li>
-    <li>
-      <strong>Body:</strong> The list of transactions included in this block
-    </li>
-  </ul>
-  <p>
-    Changing <em>any</em> historical transaction would change that block's hash, which would invalidate the next block's
-    "previous hash" reference, cascading through every subsequent block. This is what makes blockchains immutable in practice.
-  </p>
+    <h3 id="blocks">Blocks and State</h3>
+    <p>On a classic blockchain, transactions are grouped into blocks. Each block normally contains a reference to the previous block, a timestamp or slot reference, a cryptographic summary of its transactions and consensus-specific data. Linking each block to the previous one creates an ordered history.</p>
+    <p>Not every modern chain works identically. Some systems store account balances directly, while Bitcoin tracks unspent transaction outputs. Some networks use block-like batches, directed acyclic graphs or parallel execution. The shared principle is that participants agree on one valid state transition history.</p>
 
-  <h3 id="hashing">Cryptographic Hashing</h3>
-  <p>
-    Blockchains rely on <strong>one-way cryptographic hash functions</strong>. Bitcoin uses <strong>SHA-256</strong>;
-    Ethereum uses <strong>Keccak-256</strong>. These functions take any input and produce a fixed-length output
-    (the hash) that is deterministic, collision-resistant, and computationally irreversible. You cannot work backwards
-    from a hash to the input without brute force.
-  </p>
+    <h3 id="hashing">Cryptographic Hashing</h3>
+    <p>A cryptographic hash function converts any input into a fixed-length fingerprint. Small changes to the input create a completely different output. Hashes help identify blocks, commit to transaction sets, verify downloaded data and expose tampering. Bitcoin uses SHA-256; Ethereum uses Keccak-256 in several core functions.</p>
 
-  <h3 id="merkle-trees">Merkle Trees</h3>
-  <p>
-    Invented by Ralph Merkle, a <strong>Merkle tree</strong> hashes pairs of transactions repeatedly until a single
-    root hash remains (the "Merkle root" stored in the block header). This lets you verify that any specific transaction
-    is included in a block using only a small <em>Merkle proof</em> — without downloading the entire blockchain.
-    This is how lightweight SPV wallets work.
-  </p>
+    <h3 id="merkle-trees">Merkle Trees and Proofs</h3>
+    <p>A Merkle tree repeatedly hashes pairs of records until one root remains. A compact Merkle proof can show that one transaction belongs to a much larger block without sending every transaction. Similar commitment structures are used in light clients, rollups, airdrop claims and cross-chain verification.</p>
 
-  <h3 id="consensus">Consensus Mechanisms</h3>
-  <p>With no central authority, blockchain nodes must agree on which version of history is valid:</p>
-  <ul>
-    <li><strong>Proof of Work (PoW):</strong> Miners compete to solve SHA-256 puzzles; winner adds the block and earns the reward. Used by Bitcoin. Extremely energy-intensive but battle-tested for 15+ years.</li>
-    <li><strong>Proof of Stake (PoS):</strong> Validators are chosen proportional to staked tokens. Used by Ethereum (post-Merge, Sept 2022), Cardano, Solana. ~99.95% more energy efficient than PoW.</li>
-    <li><strong>Delegated Proof of Stake (DPoS):</strong> Token holders vote for a small set of validators. Used by EOS, Tron. Faster but more centralised.</li>
-    <li><strong>Proof of History (PoH):</strong> Solana's cryptographic clock that sequences events before consensus, enabling ~65,000 TPS throughput.</li>
-  </ul>
+    <h2 id="consensus">Consensus Mechanisms</h2>
+    <p>Consensus determines who may propose updates, how others verify them and what happens when participants disagree.</p>
+    <div class="blockchain-grid">
+      <div class="blockchain-card"><strong>Proof of Work</strong><p>Miners spend computing power to compete for the right to add blocks. Security depends on the cost of acquiring and operating enough hash power to overpower honest miners.</p></div>
+      <div class="blockchain-card"><strong>Proof of Stake</strong><p>Validators lock capital and can lose rewards or stake for dishonest behaviour. Security depends on economic penalties, validator diversity and finality rules.</p></div>
+      <div class="blockchain-card"><strong>Delegated Proof of Stake</strong><p>Token holders elect a smaller group of block producers. It can provide fast, inexpensive transactions but depends heavily on governance quality and producer independence.</p></div>
+      <div class="blockchain-card"><strong>Federated or Permissioned Consensus</strong><p>Known organisations or approved validators coordinate updates. These systems trade open participation for speed, privacy or institutional control.</p></div>
+    </div>
 
-  <h3 id="network">P2P Network &amp; Immutability</h3>
-  <p>
-    The Bitcoin network has over <strong>10,000 full nodes</strong> worldwide, each storing a complete copy of the
-    blockchain. To rewrite history (a "51% attack"), an attacker would need to control more than half the network's
-    total hash power — which for Bitcoin would cost billions of dollars in hardware and electricity, and would still
-    be detectable and resisted by the community. This makes rewriting history <em>economically irrational</em>
-    on large, established chains. Smaller chains (like Ethereum Classic) have been 51% attacked multiple times.
-  </p>
+    <h3 id="finality">Probabilistic and Deterministic Finality</h3>
+    <p>Bitcoin provides <strong>probabilistic finality</strong>: each additional block makes reversal less likely. Many proof-of-stake networks add explicit finality votes, after which a block is considered final unless the protocol suffers an exceptional failure. Fast block time is not the same as finality; a chain may produce blocks quickly while still requiring additional confirmation time.</p>
 
-  <h3 id="chain-types">Public vs Private vs Consortium</h3>
-  <ul>
-    <li><strong>Public blockchains:</strong> Open to anyone — Bitcoin, Ethereum. Maximum decentralisation and security.</li>
-    <li><strong>Private blockchains:</strong> Permissioned access — Hyperledger Fabric. Used by enterprises for internal data.</li>
-    <li><strong>Consortium blockchains:</strong> Semi-permissioned, controlled by a group of organisations — R3 Corda, used in banking.</li>
-  </ul>
+    <h3 id="forks">Forks and Competing Histories</h3>
+    <p>A temporary fork can occur when different nodes briefly see different valid block proposals. Consensus rules eventually select one history. A <strong>soft fork</strong> tightens existing rules while remaining compatible with older software under certain conditions. A <strong>hard fork</strong> changes rules in a way that may split a network if participants do not upgrade together.</p>
 
-  <h2 id="key-stats">Key Stats &amp; Milestones</h2>
-  <table>
-    <thead>
-      <tr><th>Metric</th><th>Value</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Bitcoin blockchain size</td><td>620GB+ as of early 2025 (growing ~80GB/year)</td></tr>
-      <tr><td>Ethereum blockchain size</td><td>1.2TB+ archive node as of early 2025</td></tr>
-      <tr><td>Bitcoin block time</td><td>~10 minutes average</td></tr>
-      <tr><td>Ethereum block time</td><td>~12 seconds</td></tr>
-      <tr><td>Solana block time</td><td>~400 milliseconds</td></tr>
-      <tr><td>Bitcoin active full nodes</td><td>10,000+ worldwide</td></tr>
-      <tr><td>Bitcoin genesis block date</td><td>January 3, 2009</td></tr>
-      <tr><td>Ethereum genesis block date</td><td>July 30, 2015</td></tr>
-      <tr><td>Total blockchain market size</td><td>$30B+ (infrastructure + protocols)</td></tr>
-      <tr><td>Ethereum post-Merge energy reduction</td><td>~99.95%</td></tr>
-    </tbody>
-  </table>
+    <h2 id="wallets-and-keys">Wallets, Keys and Ownership</h2>
+    <p>A blockchain wallet does not normally store coins inside the application. It stores or controls the keys that authorise changes to records on the network.</p>
+    <ul>
+      <li><strong>Public address:</strong> the identifier others use to send assets or inspect activity.</li>
+      <li><strong>Private key:</strong> the secret used to produce valid signatures.</li>
+      <li><strong>Seed phrase:</strong> a human-readable backup from which multiple private keys can be derived.</li>
+      <li><strong>Custodial wallet:</strong> a service holds the keys for the user.</li>
+      <li><strong>Self-custody wallet:</strong> the user controls the keys and therefore carries full recovery responsibility.</li>
+      <li><strong>Multisignature wallet:</strong> more than one approved key is required before assets can move.</li>
+    </ul>
+    <p>Blockchain ownership is therefore operational rather than physical: whoever can produce the required signature can instruct the network. Lost keys, malicious approvals and compromised seed phrases can result in permanent loss.</p>
 
-  <h2 id="why-it-matters">Why It Matters</h2>
-  <p>
-    The blockchain solves a problem that has existed since the dawn of digital communication: <strong>how do you
-    create trust between parties who don't know each other, without a central authority?</strong> Before blockchain,
-    the answer was always "use a bank, a notary, a government registry." Blockchain replaces that trusted intermediary
-    with <em>mathematics and distributed consensus</em>.
-  </p>
-  <ul>
-    <li><strong>Financial inclusion:</strong> 1.4 billion adults worldwide remain unbanked — blockchain gives them access to financial services with just a smartphone</li>
-    <li><strong>Programmable money:</strong> <a href="/wiki/defi.html">DeFi</a> built on blockchain enables lending, borrowing, and trading without banks</li>
-    <li><strong>Digital ownership:</strong> <a href="/wiki/nfts.html">NFTs</a> prove ownership of digital assets on-chain</li>
-    <li><strong>Decentralised identity:</strong> <a href="/wiki/web3.html">Web3</a> envisions blockchain-based identity that users control</li>
-    <li><strong>Trustless transactions:</strong> Send value to anyone, anywhere, with <a href="/wiki/wallets.html">just a wallet</a> — no permission required</li>
-  </ul>
+    <h2 id="smart-contracts">Smart Contracts</h2>
+    <p>A smart contract is program code deployed to a blockchain address. It can define token balances, marketplaces, games, governance, escrow, lending rules or automated distributions. Once deployed, a contract may be immutable, upgradeable through an administrator, or controlled by multisignature and governance systems.</p>
+    <p>Smart contracts remove some human intermediaries but replace them with software risk. Users must consider who controls upgrade keys, whether the code was audited, what external data it depends on and whether emergency controls exist.</p>
 
-  <h2 id="risks">Risks &amp; Controversies</h2>
-  <ul>
-    <li><strong>51% attacks:</strong> Ethereum Classic was 51% attacked <em>three times</em> in 2020, costing millions. Smaller chains remain vulnerable.</li>
-    <li><strong>Blockchain trilemma:</strong> Vitalik Buterin's framework states you can only have two of three: security, scalability, decentralisation. Every chain makes trade-offs.</li>
-    <li><strong>Quantum computing:</strong> Future quantum computers could theoretically break current elliptic curve cryptography (ECDSA) used to secure wallets. Post-quantum cryptography research is ongoing.</li>
-    <li><strong>Energy consumption:</strong> Bitcoin PoW uses roughly as much electricity as Argentina annually — a genuine environmental debate, though renewable energy adoption is growing.</li>
-    <li><strong>Regulatory classification:</strong> Governments worldwide are still figuring out how to classify and regulate blockchain-based assets and protocols.</li>
-    <li><strong>Smart contract bugs:</strong> Code is law — and code has bugs. The 2016 DAO hack drained $60M from Ethereum smart contracts.</li>
-  </ul>
+    <h2 id="tokens-and-nfts">Tokens, NFTs and On-Chain Assets</h2>
+    <p>A blockchain's native coin usually pays transaction fees and helps secure the network. Tokens are additional assets created by smart contracts or protocol-level token standards.</p>
+    <div class="blockchain-grid">
+      <div class="blockchain-card"><strong>Fungible tokens</strong><p>Each unit is interchangeable with another unit of the same token. Uses include governance, payments, in-game currencies and protocol incentives.</p></div>
+      <div class="blockchain-card"><strong>Non-fungible tokens</strong><p>Each token carries a distinct identifier. NFTs can represent artwork, game items, memberships, tickets, certificates or character identities.</p></div>
+      <div class="blockchain-card"><strong>Stablecoins</strong><p>Tokens designed to track another asset, commonly a fiat currency. Their safety depends on reserves, collateral, redemption design and issuer or protocol risk.</p></div>
+      <div class="blockchain-card"><strong>Wrapped assets</strong><p>Tokens representing assets held or locked elsewhere. They introduce bridge, custodian or smart-contract dependencies.</p></div>
+    </div>
 
-  <h2 id="moonboys-take">The Crypto Moonboys Take</h2>
-  <blockquote>
-    "The blockchain is the greatest invention since the internet. Maybe greater. The internet moved information.
-    The blockchain moves <em>value</em> — and does it without asking anyone's permission."
-  </blockquote>
-  <p>
-    Every asset you hold, every DeFi yield you earn, every NFT you own, every governance vote you cast — it all
-    runs on blockchain infrastructure. The details are technical but the implication is revolutionary: for the first
-    time in human history, we have a system for transferring value and enforcing agreements without requiring trust
-    in a third party. The origin mythology of all of this is told in the
-    <a href="/wiki/satoshi-scroll.html">Satoshi Scroll</a>. The community wars, the forks, the drama —
-    all captured in <a href="/wiki/hodl-wars.html">HODL Wars</a>. This is why we're here.
-  </p>
+    <h2 id="scaling">Scaling and Network Layers</h2>
+    <p>Base-layer blockchains must balance throughput, decentralisation, security and hardware requirements. Several approaches increase capacity:</p>
+    <ul>
+      <li><strong>Layer 2 rollups:</strong> execute or compress many transactions away from the base chain, then publish proofs or transaction data back to it.</li>
+      <li><strong>Sidechains:</strong> separate networks connected through bridges, with their own validators and security assumptions.</li>
+      <li><strong>Sharding and parallel execution:</strong> divide workloads or process independent transactions simultaneously.</li>
+      <li><strong>Application chains:</strong> dedicated chains optimised for one game, exchange, community or business.</li>
+      <li><strong>State channels:</strong> allow participants to transact privately or rapidly off-chain before settling a final result on-chain.</li>
+    </ul>
 
-  <h2 id="see-also">See Also</h2>
-  <ul>
-    <li><a href="/wiki/bitcoin.html">Bitcoin (BTC)</a> — The first and largest blockchain</li>
-    <li><a href="/wiki/ethereum.html">Ethereum (ETH)</a> — The programmable blockchain and smart contract platform</li>
-    <li><a href="/wiki/defi.html">DeFi</a> — Decentralised finance built on blockchain</li>
-    <li><a href="/wiki/nfts.html">NFTs</a> — Blockchain-based digital ownership</li>
-    <li><a href="/wiki/web3.html">Web3</a> — The vision of a blockchain-powered internet</li>
-    <li><a href="/wiki/wallets.html">Wallets</a> — Your gateway to interacting with blockchains</li>
-    <li><a href="/wiki/satoshi-scroll.html">The Satoshi Scroll</a> — The origin mythology of blockchain</li>
-    <li><a href="/wiki/hodl-wars.html">HODL Wars</a> — The community lore built on <a href="/wiki/blockchain-technology.html">blockchain technology</a></li>
-  </ul>
-<div id="bible-content"></div>
-</article>
-<!-- RELATED_WIKI_PATHS:BEGIN -->
-      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
-        <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
-        <p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>
-        <div class="wiki-rabbit-group" data-related-group="Core Project Links">
-          <h3>Core Project Links</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Crypto Moonboys</span>
-              <span class="wiki-rabbit-card-desc">Core project hub for the wider wiki.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/timeline.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Timeline</span>
-              <span class="wiki-rabbit-card-desc">Chronological route through wiki entries.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem">
-              <span class="wiki-rabbit-card-title">Graph</span>
-              <span class="wiki-rabbit-card-desc">Visual relationship map for wiki entities.</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Related Wiki Pages">
-          <h3>Related Wiki Pages</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/wax-blockchain.html" role="listitem">
-              <span class="wiki-rabbit-card-title">WAX Blockchain</span>
-              <span class="wiki-rabbit-card-desc">Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/the-blockchain-furies.html" role="listitem">
-              <span class="wiki-rabbit-card-title">The BLOCKCHAIN FURIES</span>
-              <span class="wiki-rabbit-card-desc">The BLOCKCHAIN FURIES are the relentless avengers of Block Topia, a faction forged in the searing crucible of betrayal and loss within the volatile...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-blockchain-furie-infinite-776055.html" role="listitem">
-              <span class="wiki-rabbit-card-title">✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️</span>
-              <span class="wiki-rabbit-card-desc">✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️ is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-blockchain-furie-infinite-776057.html" role="listitem">
-              <span class="wiki-rabbit-card-title">✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️</span>
-              <span class="wiki-rabbit-card-desc">✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️ is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-blockchain-furie-infinite-776007.html" role="listitem">
-              <span class="wiki-rabbit-card-title">✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️</span>
-              <span class="wiki-rabbit-card-desc">✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️ is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html" role="listitem">
-              <span class="wiki-rabbit-card-title">🤘 Andrea &amp;quot;Blockchain Buccaneer&amp;quot; Moretti 👑</span>
-              <span class="wiki-rabbit-card-desc">🤘 Andrea &amp;quot;Blockchain Buccaneer&amp;quot; Moretti 👑 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-blockchain-belle-783392.html" role="listitem">
-              <span class="wiki-rabbit-card-title">🍒 Blockchain Belle 💋</span>
-              <span class="wiki-rabbit-card-desc">🍒 Blockchain Belle 💋 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-blockchain-bombshell-783407.html" role="listitem">
-              <span class="wiki-rabbit-card-title">🍒 Blockchain Bombshell 💋</span>
-              <span class="wiki-rabbit-card-desc">🍒 Blockchain Bombshell 💋 is an NFT template in the gkniftyheads WAX AtomicAssets collection.</span>
-            </a>
-          </div>
-        </div>
-      </section>
-<!-- RELATED_WIKI_PATHS:END -->
+    <h2 id="bridges-oracles">Bridges, Oracles and External Data</h2>
+    <p>A blockchain cannot independently know the weather, a football score, a share price or what happened on another chain. <strong>Oracles</strong> deliver external information to smart contracts. <strong>Bridges</strong> transfer messages or representations of assets between networks.</p>
+    <p>Both are major trust boundaries. A secure base chain does not protect users from a compromised bridge signer, manipulated price feed or faulty oracle contract. Many of the largest crypto exploits have targeted these connecting systems rather than the underlying chain.</p>
 
+    <h2 id="economics">Fees, Incentives and Network Economics</h2>
+    <p>Public blockchains must pay for security, storage and computation. Fees discourage spam and compensate miners, validators or block producers. Networks may also issue new coins as rewards. The resulting economics affect users through transaction costs, inflation, token demand and validator incentives.</p>
+    <p>Different fee models include competitive auctions, fixed resource allocations, dynamic base fees, priority tips and rented network resources. Cheap transactions are useful, but extremely low fees can also make spam attacks easier unless the network has another resource-control mechanism.</p>
 
+    <h2 id="explorers">Blockchain Explorers and Verification</h2>
+    <p>A block explorer lets users inspect addresses, transaction IDs, token contracts, block producers, fees and smart-contract actions. It is one of the most important verification tools in crypto.</p>
+    <p>Before trusting a claim, users should compare the displayed ticker with the exact contract address, inspect the issuing account, check token precision and supply, confirm marketplace collection names and review the actual transaction rather than relying on a screenshot.</p>
 
-      <section class="citations-section" aria-label="Citations and references">
-  <h2>References &amp; Citations</h2>
-  <ol class="citations-list">
-    <li id="cite-1">
-      <span class="cite-num">[1]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" rel="noopener noreferrer">Bitcoin: A Peer-to-Peer Electronic Cash System — Satoshi Nakamoto (2008)</a> — The original whitepaper introducing blockchain technology to the world.
+    <h2 id="public-private">Public, Private and Consortium Chains</h2>
+    <table class="blockchain-table">
+      <thead><tr><th>Model</th><th>Who can participate?</th><th>Main advantage</th><th>Main trade-off</th></tr></thead>
+      <tbody>
+        <tr><td>Public</td><td>Generally open to anyone</td><td>Censorship resistance and public auditability</td><td>Scaling, privacy and governance complexity</td></tr>
+        <tr><td>Private</td><td>One organisation approves access</td><td>Control, privacy and predictable performance</td><td>Depends on the operator</td></tr>
+        <tr><td>Consortium</td><td>A defined group shares control</td><td>Shared institutional governance</td><td>Limited openness and validator diversity</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="what-blockchain-can-prove">What Blockchain Can and Cannot Prove</h2>
+    <ul>
+      <li><strong>It can prove:</strong> that a transaction was accepted, which address authorised it, which contract processed it and what the recorded state became.</li>
+      <li><strong>It cannot automatically prove:</strong> that an off-chain statement is true, that a token is legally compliant, that an artwork is original, that an issuer is honest or that an asset will retain value.</li>
+      <li><strong>It can preserve provenance:</strong> but provenance is only useful when the original contract, collection and issuing identity have been correctly verified.</li>
+      <li><strong>It can enforce code:</strong> but badly written or malicious code can still enforce the wrong outcome perfectly.</li>
+    </ul>
+
+    <h2 id="risks">Risks and Controversies</h2>
+    <ul>
+      <li><strong>Private-key loss:</strong> self-custody can remove intermediaries but also removes conventional account recovery.</li>
+      <li><strong>Smart-contract failure:</strong> bugs, unsafe upgrades and poor access controls can expose assets.</li>
+      <li><strong>Centralisation:</strong> validator concentration, hosted infrastructure, governance whales and admin keys can reduce practical decentralisation.</li>
+      <li><strong>51% and consensus attacks:</strong> smaller networks may be economically affordable to overpower.</li>
+      <li><strong>Bridge and oracle risk:</strong> external components can fail even while the base chain remains secure.</li>
+      <li><strong>Scams and counterfeit tokens:</strong> anyone may be able to issue an asset with a familiar name or logo.</li>
+      <li><strong>Environmental cost:</strong> proof-of-work networks consume substantial energy; impact depends on energy source, hardware turnover and network design.</li>
+      <li><strong>Privacy:</strong> public ledgers can expose permanent transaction histories and behavioural patterns.</li>
+      <li><strong>Regulation:</strong> legal treatment varies by asset, activity and jurisdiction.</li>
+      <li><strong>Irreversibility:</strong> mistaken transfers and malicious approvals are often difficult to undo.</li>
+    </ul>
+
+    <h2 id="safety">Practical Safety Checklist</h2>
+    <ol>
+      <li>Verify the exact contract, collection or token identifier.</li>
+      <li>Use official project links rather than search adverts or unsolicited messages.</li>
+      <li>Never share a seed phrase or private key.</li>
+      <li>Read wallet approval prompts before signing.</li>
+      <li>Test unfamiliar transfers with a small amount first.</li>
+      <li>Separate everyday wallets from higher-value storage.</li>
+      <li>Check whether a contract is upgradeable and who controls it.</li>
+      <li>Assume bridges, pools and reward systems add extra layers of risk.</li>
+    </ol>
+
+    <h2 id="crypto-moonboys">Blockchain Inside Crypto Moonboys</h2>
+    <p>Crypto Moonboys uses blockchain primarily as an ownership, provenance and participation layer. WAX supports many of the project's NFTs, collections, token experiments and connected community systems. Blockchain records can verify who holds a particular asset, which collection issued it and whether it was transferred, blended or burned.</p>
+    <p>The chain does not replace the creative work. Graffiti Kings culture, artwork, characters, lore, games, music and community remain the substance. Blockchain supplies a public record around selected digital objects and actions.</p>
+    <p>Within the fictional Year 3008 universe, these ideas are transformed into the <a href="/wiki/sacred-chain.html">Sacred Chain</a>: a shared system of identity and memory contested by Block Topia, the GraffPUNKS, the Bitcoin Kids and NULL. The Sacred Chain is lore; WAX, Bitcoin, Ethereum and other networks are real technologies.</p>
+
+    <h2 id="common-misconceptions">Common Misconceptions</h2>
+    <ul>
+      <li><strong>“Blockchain means anonymous.”</strong> Most public chains are pseudonymous and highly traceable.</li>
+      <li><strong>“Immutable means impossible to change.”</strong> Records are highly resistant to change, but networks can fork, contracts can be upgradeable and governance can alter future rules.</li>
+      <li><strong>“Decentralised means nobody controls anything.”</strong> Control may still exist through validator concentration, governance, interfaces, custodians or administrator keys.</li>
+      <li><strong>“On-chain means trustworthy.”</strong> A scam token can be perfectly and permanently recorded.</li>
+      <li><strong>“NFT ownership includes copyright.”</strong> Copyright and commercial rights depend on the licence, not merely token possession.</li>
+      <li><strong>“Every blockchain needs a token.”</strong> Some permissioned ledgers and database-like systems operate without a publicly traded asset.</li>
+    </ul>
+
+    <h2 id="see-also">See Also</h2>
+    <ul>
+      <li><a href="/wiki/bitcoin.html">Bitcoin</a> — the first widely adopted public blockchain</li>
+      <li><a href="/wiki/ethereum.html">Ethereum</a> — programmable smart-contract infrastructure</li>
+      <li><a href="/wiki/wax-blockchain.html">WAX Blockchain</a> — the primary NFT network used across Crypto Moonboys</li>
+      <li><a href="/wiki/staking.html">Staking</a> — validator economics and token reward systems</li>
+      <li><a href="/wiki/defi.html">DeFi</a> — financial applications built with smart contracts</li>
+      <li><a href="/wiki/nfts.html">NFTs</a> — distinct blockchain assets and digital provenance</li>
+      <li><a href="/wiki/web3.html">Web3</a> — blockchain-connected applications and ownership</li>
+      <li><a href="/wiki/wallets.html">Wallets</a> — keys, signatures and user access</li>
+      <li><a href="/wiki/sacred-chain.html">Sacred Chain</a> — the fictional blockchain-memory system in Year 3008 lore</li>
+    </ul>
+
+    <div id="bible-content"></div>
+  </article>
+
+  <!-- RELATED_WIKI_PATHS:BEGIN -->
+  <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
+    <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
+    <p class="lore-paragraph">Continue through the technology, ownership and Crypto Moonboys pages connected to blockchain.</p>
+    <div class="wiki-rabbit-group" data-related-group="Core Project Links">
+      <h3>Core Project Links</h3>
+      <div class="wiki-rabbit-grid" role="list">
+        <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem"><span class="wiki-rabbit-card-title">Crypto Moonboys</span><span class="wiki-rabbit-card-desc">The complete creative, NFT, game and lore universe.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/wax-blockchain.html" role="listitem"><span class="wiki-rabbit-card-title">WAX Blockchain</span><span class="wiki-rabbit-card-desc">The primary NFT and token network used by the project.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/sacred-chain.html" role="listitem"><span class="wiki-rabbit-card-title">Sacred Chain</span><span class="wiki-rabbit-card-desc">The fictional identity and memory ledger of Year 3008.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/gkniftyheads.html" role="listitem"><span class="wiki-rabbit-card-title">GKniftyHEADS</span><span class="wiki-rabbit-card-desc">The Graffiti Kings character, collection and faction architecture.</span></a>
       </div>
-    </li>
-    <li id="cite-2">
-      <span class="cite-num">[2]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://nakamotoinstitute.org/library/bitcoin/" target="_blank" rel="noopener noreferrer">Nakamoto Institute — Bitcoin Library</a> — Primary sources on Bitcoin's creation, Satoshi's writings, and blockchain history.
+    </div>
+    <div class="wiki-rabbit-group" data-related-group="Related Technology Pages">
+      <h3>Related Technology Pages</h3>
+      <div class="wiki-rabbit-grid" role="list">
+        <a class="wiki-rabbit-card" href="/wiki/bitcoin.html" role="listitem"><span class="wiki-rabbit-card-title">Bitcoin</span><span class="wiki-rabbit-card-desc">The first practical public blockchain and digital currency network.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/ethereum.html" role="listitem"><span class="wiki-rabbit-card-title">Ethereum</span><span class="wiki-rabbit-card-desc">Smart contracts, tokens and programmable blockchain state.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/staking.html" role="listitem"><span class="wiki-rabbit-card-title">Staking</span><span class="wiki-rabbit-card-desc">Proof-of-stake validation, delegation and reward risks.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/wallets.html" role="listitem"><span class="wiki-rabbit-card-title">Wallets</span><span class="wiki-rabbit-card-desc">Private keys, signatures, custody and transaction safety.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/nfts.html" role="listitem"><span class="wiki-rabbit-card-title">NFTs</span><span class="wiki-rabbit-card-desc">Distinct tokens, provenance, licences and digital ownership.</span></a>
+        <a class="wiki-rabbit-card" href="/wiki/defi.html" role="listitem"><span class="wiki-rabbit-card-title">DeFi</span><span class="wiki-rabbit-card-desc">Financial smart contracts, liquidity and protocol risk.</span></a>
+        <a class="wiki-rabbit-card" href="/timeline.html" role="listitem"><span class="wiki-rabbit-card-title">Timeline</span><span class="wiki-rabbit-card-desc">Chronological route through project and technology history.</span></a>
+        <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem"><span class="wiki-rabbit-card-title">Graph</span><span class="wiki-rabbit-card-desc">Explore connected chains, assets, people and projects.</span></a>
       </div>
-    </li>
-    <li id="cite-3">
-      <span class="cite-num">[3]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://ethereum.org/en/developers/docs/intro-to-ethereum/" target="_blank" rel="noopener noreferrer">Ethereum.org — Introduction to Ethereum</a> — Technical documentation on blockchain, the EVM, smart contracts, and consensus.
-      </div>
-    </li>
-    <li id="cite-4">
-      <span class="cite-num">[4]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://defillama.com" target="_blank" rel="noopener noreferrer">DeFiLlama — Blockchain TVL &amp; Protocol Data</a> — Total Value Locked and on-chain data across all major blockchains.
-      </div>
-    </li>
-    <li id="cite-5">
-      <span class="cite-num">[5]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://coinmarketcap.com/charts/" target="_blank" rel="noopener noreferrer">CoinMarketCap — Global Crypto Charts</a> — Market cap and dominance data across all blockchain networks.
-      </div>
-    </li>
-    <li id="cite-6">
-      <span class="cite-num">[6]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://messari.io/report/blockchain-technology-overview" target="_blank" rel="noopener noreferrer">Messari — Blockchain Technology Overview</a> — Professional research on blockchain infrastructure, consensus mechanisms, and market data.
-      </div>
-    </li>
-    <li id="cite-7">
-      <span class="cite-num">[7]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://dune.com/browse/dashboards" target="_blank" rel="noopener noreferrer">Dune Analytics — Blockchain On-Chain Analytics</a> — Community dashboards tracking node counts, transaction volumes, and blockchain usage metrics.
-      </div>
-    </li>
-    <li id="cite-8">
-      <span class="cite-num">[8]</span>
-      <div>
-        <span class="cite-source-type cite-website">Website</span>
-        <a href="https://coingecko.com/en/global-charts" target="_blank" rel="noopener noreferrer">CoinGecko — Global Blockchain Market Data</a> — Price, volume, and market cap data for all blockchain ecosystems.
-      </div>
-    </li>
-  </ol>
-</section>
+    </div>
+  </section>
+  <!-- RELATED_WIKI_PATHS:END -->
 
+  <section class="citations-section" aria-label="Citations and references">
+    <h2>References and Citations</h2>
+    <ol class="citations-list">
+      <li><span class="cite-num">[1]</span><div><span class="cite-source-type cite-website">Primary source</span> <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" rel="noopener noreferrer">Bitcoin: A Peer-to-Peer Electronic Cash System</a> — Satoshi Nakamoto's original 2008 paper.</div></li>
+      <li><span class="cite-num">[2]</span><div><span class="cite-source-type cite-website">Technical documentation</span> <a href="https://developer.bitcoin.org/devguide/" target="_blank" rel="noopener noreferrer">Bitcoin Developer Guide</a> — transactions, blocks, wallets, mining and network operation.</div></li>
+      <li><span class="cite-num">[3]</span><div><span class="cite-source-type cite-website">Technical documentation</span> <a href="https://ethereum.org/en/developers/docs/" target="_blank" rel="noopener noreferrer">Ethereum Developer Documentation</a> — EVM, accounts, transactions, consensus and smart contracts.</div></li>
+      <li><span class="cite-num">[4]</span><div><span class="cite-source-type cite-website">Technical documentation</span> <a href="https://docs.wax.io/" target="_blank" rel="noopener noreferrer">WAX Developer Documentation</a> — WAX accounts, resources, contracts and blockchain architecture.</div></li>
+      <li><span class="cite-num">[5]</span><div><span class="cite-source-type cite-website">Standards</span> <a href="https://eips.ethereum.org/" target="_blank" rel="noopener noreferrer">Ethereum Improvement Proposals</a> — token, protocol and application standards.</div></li>
+      <li><span class="cite-num">[6]</span><div><span class="cite-source-type cite-website">Research archive</span> <a href="https://nakamotoinstitute.org/library/bitcoin/" target="_blank" rel="noopener noreferrer">Nakamoto Institute Bitcoin Library</a> — historical source material on Bitcoin's creation.</div></li>
+    </ol>
+  </section>
 
-      <div class="category-tags" aria-label="Article categories"><span class="cat-label">Categories:</span><a href="/categories/technology.html">Technology</a><a href="/categories/concepts.html">Concepts</a></div>
-<!-- CITATION_VOTE_PANEL:BEGIN -->
-      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="blockchain" aria-labelledby="citation-vote-panel-title">
-        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
-        <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
-        <div class="citation-vote-panel-actions">
-          <span class="cite-vote" data-page-id="blockchain" data-cite-id="citation-panel"></span>
-          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          
-        </div>
-      </section>
-<!-- CITATION_VOTE_PANEL:END -->
+  <div class="category-tags" aria-label="Article categories"><span class="cat-label">Categories:</span><a href="/categories/technology.html">Technology</a><a href="/categories/concepts.html">Concepts</a><a href="/categories/cryptocurrencies.html">Cryptocurrencies</a></div>
 
-      <div class="wiki-comments" data-page-id="blockchain"></div>
-    </main>
+  <!-- CITATION_VOTE_PANEL:BEGIN -->
+  <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="blockchain" aria-labelledby="citation-vote-panel-title">
+    <h2 id="citation-vote-panel-title">Citation Credibility</h2>
+    <p>Vote on citations to strengthen the credibility of this guide.</p>
+    <div class="citation-vote-panel-actions"><span class="cite-vote" data-page-id="blockchain" data-cite-id="citation-panel"></span><span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span></div>
+  </section>
+  <!-- CITATION_VOTE_PANEL:END -->
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
+  <div class="wiki-comments" data-page-id="blockchain"></div>
+</main>
+
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 7. Page-specific scripts -->
-
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/bible-loader.js"></script>
