@@ -40,8 +40,9 @@ await test('/swarmsy.html contains visible /sparky.html CTA', () => {
 });
 
 await test('/swarmsy.html states Sparky requires Telegram login', () => {
-  assert.ok(
-    swarmsyHtml.includes('Sparky AI Chat requires Telegram login before messages can be sent.'),
+  assert.match(
+    swarmsyHtml,
+    /(?:Sparky AI Chat requires Telegram login before messages can be sent\.|Telegram login is required before messages can be sent\.)/,
     'SWARMSY page must tell users Sparky chat requires Telegram login',
   );
 });
