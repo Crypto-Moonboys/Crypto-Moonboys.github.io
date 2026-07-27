@@ -127,6 +127,31 @@
     });
   }
 
+  function appendBlockTopiaRelatedPaths() {
+    const article = document.querySelector('article[data-entity-slug="block-topia"]');
+    if (!article || document.querySelector('[data-related-wiki-paths="true"]')) return;
+
+    const section = document.createElement('section');
+    section.className = 'wiki-section related-wiki-paths';
+    section.setAttribute('data-related-wiki-paths', 'true');
+    section.setAttribute('data-related-wiki-paths-runtime', 'block-topia');
+    section.innerHTML = `
+      <h2>Related Wiki Paths</h2>
+      <p class="lore-paragraph">Continue through the connected factions, lore, live game and wider Crypto Moonboys architecture.</p>
+      <div class="wiki-rabbit-group" data-related-group="Block Topia Connections">
+        <h3>Block Topia Connections</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem"><span class="wiki-rabbit-card-title">Crypto Moonboys</span><span class="wiki-rabbit-card-desc">The creator umbrella and full system architecture.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/graffpunks.html" role="listitem"><span class="wiki-rabbit-card-title">GraffPUNKS</span><span class="wiki-rabbit-card-desc">The resistance culture fighting the Authority through memory and public marks.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem"><span class="wiki-rabbit-card-title">HODL WARS</span><span class="wiki-rabbit-card-desc">The wider faction conflict surrounding the city and the Grid.</span></a>
+          <a class="wiki-rabbit-card" href="/games/block-topia/" role="listitem"><span class="wiki-rabbit-card-title">Play Block Topia</span><span class="wiki-rabbit-card-desc">The current playable runtime, kept separate from lore claims.</span></a>
+          <a class="wiki-rabbit-card" href="/battle-chamber/factions/" role="listitem"><span class="wiki-rabbit-card-title">Faction Directory</span><span class="wiki-rabbit-card-desc">Current faction routes and Battle Chamber activity.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/lore.html" role="listitem"><span class="wiki-rabbit-card-title">Lore</span><span class="wiki-rabbit-card-desc">Explore the wider Year 3008 mythology and connected worlds.</span></a>
+        </div>
+      </div>`;
+    article.appendChild(section);
+  }
+
   // Auto-init: check for data-entity-slug on body or article element
   document.addEventListener('DOMContentLoaded', function() {
     const el = document.querySelector('[data-entity-slug]');
@@ -134,6 +159,7 @@
       loadBible(el.getAttribute('data-entity-slug'));
     }
     updateCryptoMoonboysSwarmsySection();
+    appendBlockTopiaRelatedPaths();
   });
 
   // Expose globally for manual calls
