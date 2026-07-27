@@ -35,19 +35,20 @@ jobs:
         run: npm ci
 
       - name: Hydrate Invaders player-ship PNG asset
-        # Must run before npm test so invaders-player-ship-asset.test.mjs can
-        # find the runtime PNG at games/invaders-3008/assets/ships/player-ship.png.
+        # Must run before visual/static checks and before packaging the site.
         run: node scripts/hydrate-invaders-player-ship.mjs
 
-      - name: Run repository tests
-        run: npm test
+      - name: Run static site checks
+        # GitHub Pages serves the static site only. Worker/API tests run in the
+        # separate CI workflow and must not block publishing unrelated HTML copy.
+        run: npm run ci:wiki && npm run ci:visual
 
       - name: Hydrate generated BTQM PNG assets
         run: node scripts/hydrate-btqm-generated-assets.mjs --clean-base64
 
       - name: Prune non-static backend directories
         # server/ and workers/ contain backend source code that is not served
-        # by GitHub Pages.  Remove them before packaging the artifact so the
+        # by GitHub Pages. Remove them before packaging the artifact so the
         # upload is smaller and deployment is faster.
         run: |
           rm -rf server/ workers/ scripts/ patches/
