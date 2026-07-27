@@ -27,6 +27,9 @@
     .hero-intro { padding:clamp(42px,6vw,88px) 0; border-top:1px solid rgba(255,255,255,.08); }
     .hero-intro h1 { max-width:980px; margin:0 0 22px; color:#fff; font-size:clamp(2.6rem,5.5vw,6.4rem); line-height:.92; text-transform:uppercase; }
     .hero-intro h1 span { color:var(--gold); }
+    .hero-pulse-line { max-width:980px; margin:0 0 28px; color:#fff; font-size:clamp(1.05rem,2vw,1.7rem); font-weight:900; letter-spacing:.04em; line-height:1.35; text-transform:uppercase; animation:heroPulse 4.5s ease-in-out infinite; }
+    @keyframes heroPulse { 0%,100% { opacity:.62; text-shadow:0 0 0 rgba(255,255,255,0); } 50% { opacity:1; text-shadow:0 0 18px rgba(255,255,255,.72); } }
+    @media (prefers-reduced-motion:reduce) { .hero-pulse-line { animation:none; opacity:1; } }
     .hero-intro p { max-width:900px; margin:0; color:var(--muted); font-size:clamp(1rem,1.5vw,1.3rem); line-height:1.65; }
     .hero-intro .hero-swarmsy-name { color:#fff; font-weight:900; }
     .hero-profile-image { display:block; width:100%; height:auto; margin:0 0 clamp(32px,5vw,64px); }
@@ -79,38 +82,23 @@
 </head>
 <body class="page-home page-standard-shell simple-home">
 <main id="content" role="main">
-  <section class="build-moonboy-hero" aria-label="Crypto Moonboys homepage">
-    <img src="/img/homepage/CRYPTO%20MOONBOYS%20HOME%20PAGE%20N01.jpg" alt="Crypto Moonboys homepage artwork" loading="eager" decoding="async" fetchpriority="high">
-  </section>
-
-  <section class="build-moonboy-hero" aria-label="Build a Crypto Moonboy">
-    <img src="/img/homepage/BUILD%20A%20CRYPTO%20MOONBOY%20HERO%20PIC.jpg" alt="Build a Crypto Moonboy and turn it into a character identity, brand, content host, story world and community symbol" loading="eager" decoding="async">
-  </section>
-
-  <section class="build-moonboy-hero" aria-label="Crypto Moonboys Bitcoin Kid profile">
-    <img src="/img/homepage/CRYPTO%20MOONBOYS%20HOME%20PROFILE%20BITCOIN%20KID.jpg" alt="Crypto Moonboys Bitcoin Kid profile" loading="lazy" decoding="async">
-  </section>
+  <section class="build-moonboy-hero" aria-label="Crypto Moonboys homepage"><img src="/img/homepage/CRYPTO%20MOONBOYS%20HOME%20PAGE%20N01.jpg" alt="Crypto Moonboys homepage artwork" loading="eager" decoding="async" fetchpriority="high"></section>
+  <section class="build-moonboy-hero" aria-label="Build a Crypto Moonboy"><img src="/img/homepage/BUILD%20A%20CRYPTO%20MOONBOY%20HERO%20PIC.jpg" alt="Build a Crypto Moonboy and turn it into a character identity, brand, content host, story world and community symbol" loading="eager" decoding="async"></section>
+  <section class="build-moonboy-hero" aria-label="Crypto Moonboys Bitcoin Kid profile"><img src="/img/homepage/CRYPTO%20MOONBOYS%20HOME%20PROFILE%20BITCOIN%20KID.jpg" alt="Crypto Moonboys Bitcoin Kid profile" loading="lazy" decoding="async"></section>
 
   <section class="hero-intro" aria-label="Crypto Moonboys mission">
     <div class="simple-wrap">
       <h1>Now you have something worth shouting about.<br><span>We make sure people remember it.</span></h1>
+      <p class="hero-pulse-line">Some of us live for the future and some of us wonder.</p>
     </div>
     <img class="hero-profile-image" src="/img/homepage/CRYPTO%20MOONBOYS%20HOME%20PROFILE.jpg" alt="Crypto Moonboys home profile" loading="lazy" decoding="async">
-    <div class="simple-wrap">
-      <p>Crypto Moonboys helps you build a memorable Crypto Moonboy identity, brand and creative world by combining 40 years of Graffiti Kings culture with <span class="hero-swarmsy-name">SWARMSY Ai</span> tools that develop your ideas and keep them moving—<strong>24/7, 365 days a year... We plant the seed, YOU MAKE IT GROW.</strong></p>
-    </div>
+    <div class="simple-wrap"><p>Crypto Moonboys helps you build a memorable Crypto Moonboy identity, brand and creative world by combining 40 years of Graffiti Kings culture with <span class="hero-swarmsy-name">SWARMSY Ai</span> tools that develop your ideas and keep them moving—<strong>24/7, 365 days a year... We plant the seed, YOU MAKE IT GROW.</strong></p></div>
   </section>
 
   <img class="hero-partners-image" src="/img/homepage/crypto%20moonboys%20logos%20and%20partners.jpg" alt="Crypto Moonboys logos and partners" loading="lazy" decoding="async">
-
-  <section class="simple-section" id="how-it-works">
-    <div class="simple-wrap"><h2>From idea to identity.<br><span>SWARMSY Ai WILL BLOW YOU UP.</span></h2><p>SWARMSY helps you name it, shape it, create it and keep it moving 24/7.</p></div>
-    <img class="simple-image" src="/img/homepage/crypto%20moonboys%20graffiti%20kings%20wall.jpg" alt="Find the message, build the identity, create the assets, plan the intervention, keep momentum and build what lasts" loading="lazy" decoding="async">
-  </section>
-
+  <section class="simple-section" id="how-it-works"><div class="simple-wrap"><h2>From idea to identity.<br><span>SWARMSY Ai WILL BLOW YOU UP.</span></h2><p>SWARMSY helps you name it, shape it, create it and keep it moving 24/7.</p></div><img class="simple-image" src="/img/homepage/crypto%20moonboys%20graffiti%20kings%20wall.jpg" alt="Find the message, build the identity, create the assets, plan the intervention, keep momentum and build what lasts" loading="lazy" decoding="async"></section>
   <section class="simple-section"><div class="simple-wrap"><h2>Choose how <span>you start.</span></h2><div class="simple-routes"><article class="simple-route"><h3>Create a new Crypto Moonboy identity</h3><p>Build an original Crypto Moonboy GK character and creative world for FREE.</p></article><article class="simple-route"><h3>Grow what you already have or start fresh</h3><p>Strengthen your current or new brand, project or artist name using SWARMSY Ai for FREE.</p></article></div></div></section>
   <img class="simple-route-image" src="/img/homepage/CRYPYO%20MOONBOYS%20and%20SWARMSY%20MASHUP.jpg" alt="Crypto Moonboys and SWARMSY mashup artwork" loading="lazy" decoding="async">
-
   <section class="simple-section"><div class="simple-wrap"><h2>Our SWARMSY Ai workflows keep your projects <span>moving.</span></h2><p>SWARMSY Ai remembers your plans, develops your ideas and helps you decide what to do next.</p><div class="simple-steps" aria-label="How SWARMSY helps"><div class="simple-step">Find the strongest idea</div><div class="simple-step">Create the right content</div><div class="simple-step">Plan the next move</div></div><a class="simple-button" href="/swarmsy.html">Open SWARMSY Ai</a></div></section>
 
   <section class="home-video" aria-label="GraffPUNKS Log Out video"><div id="rumble_v7b4vr0"></div></section>
