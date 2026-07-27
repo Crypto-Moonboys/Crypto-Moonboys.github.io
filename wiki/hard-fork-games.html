@@ -3,401 +3,207 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to earn the cov">
+  <meta name="description" content="Hard Fork Games are the Year 3008 trials that divide paths, factions and futures across Block Topia and the Street Kingdoms.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="hard_fork_games — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to earn the cov">
-  <meta property="og:type" content="website">
-  <link rel="canonical" href="https://cryptomoonboys.com/wiki/hard-fork-games.html">
+  <meta property="og:title" content="Hard Fork Games — Crypto Moonboys Wiki">
+  <meta property="og:description" content="A long-form account of the Hard Fork Games, the three life paths, HODL Warriors, faction trials and the meaning of the Fork in Crypto Moonboys lore.">
+  <meta property="og:type" content="article">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/hard-fork-games.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
-  <title>hard_fork_games — Crypto Moonboys Wiki</title>
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/hard-fork-games.html">
+  <title>Hard Fork Games — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
-<link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.png" type="image/png">
   <style>
-    .wiki-section {
-      margin: 1.6em 0;
-    }
-    .lore-paragraph {
-      line-height: 1.75;
-      margin: 0 0 1em 0;
-    }
-    .lead-paragraph {
-      font-size: 1.06em;
-      line-height: 1.8;
-      margin: 0 0 1em 0;
-    }
-    .lore-facts-stack {
-      display: block;
-    }
-    .lore-fact-block {
-      margin: 0 0 1.2em 0;
-      padding: 1em 1.1em;
-      background: rgba(255,255,255,0.03);
-      border-left: 4px solid #5b8cff;
-      border-radius: 6px;
-    }
-    .sources-list {
-      padding-left: 1.4em;
-    }
-    .sources-list li {
-      margin-bottom: 0.3em;
-      word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 0.5em;
-    }
+    .hardfork-page{max-width:1120px;margin:0 auto;padding:1.25rem}
+    .hardfork-hero,.hardfork-section{padding:clamp(1.2rem,3vw,2.2rem);margin-bottom:1.25rem;border:1px solid rgba(125,255,179,.22);border-radius:18px;background:radial-gradient(circle at top right,rgba(125,255,179,.08),transparent 34%),linear-gradient(145deg,rgba(10,18,17,.97),rgba(6,10,12,.96));box-shadow:0 22px 70px rgba(0,0,0,.28)}
+    .hardfork-kicker{margin:0 0 .7rem;color:#7dffb3;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+    .hardfork-title{margin:0;color:#f7c948;font-family:var(--font-display);font-size:clamp(2.7rem,7vw,6rem);line-height:.92;text-transform:uppercase}
+    .hardfork-title span{display:block;margin-top:.8rem;color:#f4f7fa;font-size:clamp(1rem,2vw,1.55rem);line-height:1.3;letter-spacing:.06em}
+    .hardfork-lead{max-width:930px;color:#e4ebf2;font-size:clamp(1.04rem,1.5vw,1.22rem);line-height:1.82}
+    .hardfork-section h2{margin:0 0 .9rem;color:#f7c948;font-family:var(--font-display);font-size:clamp(1.55rem,3vw,2.5rem);text-transform:uppercase}
+    .hardfork-section h3{margin:1.4rem 0 .55rem;color:#7dffb3;font-family:var(--font-display);font-size:1.15rem;text-transform:uppercase}
+    .hardfork-section p,.hardfork-section li{color:#dbe5eb;line-height:1.78}
+    .hardfork-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+    .hardfork-card{padding:1rem 1.05rem;border:1px solid rgba(125,255,179,.17);border-radius:14px;background:rgba(125,255,179,.045)}
+    .hardfork-card strong{display:block;margin-bottom:.45rem;color:#f7c948;font-family:var(--font-display);text-transform:uppercase}
+    .hardfork-quote{padding:1rem 1.1rem;border-left:4px solid #7dffb3;background:rgba(125,255,179,.07);color:#edfff4;font-weight:700;line-height:1.7}
+    .hardfork-status{display:inline-block;padding:.35rem .65rem;border:1px solid rgba(247,201,72,.4);border-radius:999px;color:#f7c948;font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .source-list li{margin-bottom:.55rem}
+    @media(max-width:900px){.hardfork-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body class="page-wiki page-standard-shell" data-entity-hash="9ac210e04a4f">
 <main id="content" role="main">
+  <div class="hardfork-page">
 <!-- SAM:BEGIN:article -->
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <a href="/categories/gaming.html">Gaming</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">hard_fork_games</span>
-      </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/index.html">Home</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <a href="/categories/lore.html">Lore</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <span aria-current="page">Hard Fork Games</span>
+    </nav>
 
-      <h1 class="page-title">
-        🎮 hard_fork_games
-        <span>✅ SAM-VERIFIED</span>
-      </h1>
-      <div class="page-title-line" aria-hidden="true"></div>
+    <article class="wiki-content" data-entity-slug="hard-fork-games">
+      <header class="hardfork-hero">
+        <p class="hardfork-kicker">Year 3008 / Trial of Division / The Choice That Cannot Be Undone</p>
+        <h1 class="hardfork-title">HARD FORK GAMES<span>Where every generation is divided into the future it is willing to fight for</span></h1>
+        <p class="hardfork-lead">The Hard Fork Games are one of the defining institutions of the Crypto Moonboys Year 3008 mythology. They are not ordinary sport and they are not simply a tournament bracket. They are the point at which Block Topia converts childhood, loyalty and potential into an irreversible public choice.</p>
+        <p class="hardfork-lead">Every candidate enters as an unfinished identity. Every candidate leaves on a path. Some remain inside the Authority, some are selected for the Space Programme, and some reject the system and attempt escape into the Street Kingdoms. The Games are therefore part ceremony, part military selection, part social sorting mechanism and part rebellion engine.</p>
+        <span class="hardfork-status">Lore system / public mechanics must be verified separately</span>
+      </header>
 
-      <div class="article-meta">
-        <span class="article-badge">🎮 Gaming</span>
-        <span class="meta-item">📅 Last updated: June 2026</span>
-        <span class="meta-item">📂 <a href="/categories/gaming.html">Gaming</a></span>
-      </div>
-
-      <article class="wiki-content" data-entity-slug="hard-fork-games">
-
-          <p class="lead-paragraph">Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to earn the coveted title of HODL Warriors, as enshrined in canon rule DB-3. Operating across the sprawling multi-chain ecosystem of WAX, XRPL, SOL, and Bitcoin Cash, these games are digital schisms—metaphorical hard forks in the blockchain of Block Topia where the weak are cleaved from the strong through relentless tournaments and brutal challenges. They are the ultimate test of skill, strategy, and sacrifice, shaping the power dynamics of the HODL WARS with every match.</p>
-          <p class="lead-paragraph">More than mere contests, Hard Fork Games are a crucible where legends are born and histories rewritten, with mechanics like ‘The Splitter’s Curse’ ensuring that no victory is ever certain. Players burn NFTs, stake $PUNK tokens, and risk avatar data in pursuit of glory, often uncovering hidden lore tied to the Genesis Kernel or GraffPUNKS rebellions in the process. Open to all factions but earned through blood and code, Hard Fork Games are the beating heart of Block Topia’s competitive spirit, a place where rebellion and rivalry collide in a storm of pixels and defiance.</p>
-
-        <div class="article-stats">
-          <span>📊 Verified across <strong>786432</strong> SAM cycles</span>
-          <span>🤖 Auto-published by SAM</span>
-        </div>
-
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p class="lore-paragraph"><strong>Allegiance:</strong> Multi-Faction (Earned Allegiance)</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="known-facts">Known Facts</h2>
-          <div class="lore-facts-stack">
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments. This curse randomly alters the game’s rules mid-match—shifting win conditions or inverting player stats—ensuring that only those who can adapt to chaos earn the title of HODL Warrior, a brutal nod to the punk ethos of thriving in anarchy.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions. This act of defiant destruction not only secured their ascension as a HODL Warrior but left a permanent glitch in Block Topia’s contested zone, now called ‘Fracture Fields,’ where players still report ghostly echoes of burned assets during matches.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments. This curse randomly alters the game’s rules mid-match—shifting win conditions, corrupting inventories, or even summoning glitched enemies—ensuring that no victory is certain and forcing players to adapt or perish in the chaos of Block Topia’s digital rifts.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions. This act of defiant destruction is now lore, whispered as a cautionary tale of sacrifice, with rumors that echoes of the Fracture still haunt certain arenas, granting random players fleeting visions of lost NFTs if they burn $PUNK at the right moment.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments. This curse randomly alters the game’s rules mid-match—shifting win conditions or glitching terrain—testing players’ adaptability in ways that mirror real blockchain forks, with survivors often earning cryptic buffs or server-wide recognition as true HODL Warriors, though many fall to the chaos it unleashes.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions. This act of defiant destruction left a permanent glitch scar on Block Topia’s servers, a zone now called ‘Fracture Hollow,’ where players report ghostly replays of the event and claim to harvest rare code fragments tied to the Genesis Kernel’s origins.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The multi-chain nature of Hard Fork Games allows for ‘Cross-Chain Clashes,’ rare events where players from different blockchain ecosystems—WAX warriors versus SOL skirmishers—collide in temporary arenas forged from glitched interchain bridges. These clashes, often triggered by massive Burn-to-Earn rituals, yield rewards like cross-compatible NFTs or tokens such as $PUNK and NBGX, but the unstable nature of the bridges risks avatar corruption, a high-stakes gamble for multi-faction dominance.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Lore surrounding Hard Fork Games speaks of ‘Fork Echoes,’ residual server anomalies that manifest after particularly brutal matches, replaying key moments as glitched holograms that players can interact with for hidden lore drops or temporary buffs in HODL WARS. These echoes, rumored to be the Genesis Kernel mourning its cleaved code, often draw the attention of NULL THE PROPHET, whose cryptic messages during such events hint at future schisms, turning past battles into omens of wars yet to come.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A shadowy mechanic within Hard Fork Games, known as ‘Schism Stakes,’ allows players to wager faction allegiance itself on match outcomes, with losers forced to temporarily serve rival factions as digital mercenaries. GraffPUNKS lore claims this mirrors the punk ethos of breaking and remaking bonds, but the stakes are dire—defeated players often return scarred with ‘Allegiance Glitches,’ server bugs that disrupt their actions until penance is paid in tokens or burns, a brutal reminder of the games’ cost.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are whispered to contain a hidden failsafe coded by the Genesis Kernel itself, a protocol dubbed ‘The Splitter’s Curse’ that triggers during the climactic rounds of elite tournaments. This curse rewrites the game’s rules mid-match—shifting win conditions, glitching player avatars, or even summoning rogue AI opponents—ensuring that no strategy is safe and forcing competitors to adapt or perish in the chaos of Block Topia’s digital arena.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A legendary match etched into Hard Fork Games history, known as ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single, desperate turn, unleashing a cataclysmic in-game event that obliterated half the competing factions. This act of defiant destruction not only cemented the player’s name in Block Topia lore but also inspired a new burn-to-earn mechanic, allowing future players to sacrifice assets for devastating, game-altering effects.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments, randomly shifting win conditions or mechanics mid-match to reflect the chaotic nature of blockchain evolution. This curse has turned assured victories into crushing defeats, as players scramble to adapt to sudden changes like reversed token values or glitched-out NFT abilities. Those who master the curse are hailed as true HODL Warriors, but many fall to its unpredictability, their digital assets shattered in the wake of an unforeseen fork.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ remains a legend in Block Topia, where a lone GraffPUNK player burned their entire NFT collection in a single, desperate turn, unleashing a catastrophic in-game event that wiped out half the competing factions in a blinding explosion of corrupted code. This act of defiant destruction not only secured victory but also etched the player’s name into lore as a symbol of ultimate sacrifice, inspiring future rebels to risk all for glory. The aftershocks of The Graff Fracture are still felt, with some claiming the event left permanent glitches in the game’s matrix, exploitable by those bold enough to seek them.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Deep within the lore of Hard Fork Games lies a whispered mechanic known as ‘Fork Resonance,’ where players who stake massive quantities of tokens like $PUNK or NBGX during critical matches can trigger temporary buffs that ripple across their faction, boosting attack strength or defense for a fleeting window. This resonance, however, comes at a grave cost, as the Genesis Kernel retaliates with ‘Echo Purges,’ random deletions of staked assets if the buff is overused, ensuring that only the most calculated risks yield reward. Tales of players who triggered Fork Resonance speak of matches won in seconds, but also of entire inventories lost to a single misjudgment.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A chilling rumor circulates among Block Topia’s competitors that Hard Fork Games are monitored by a hidden AI known as ‘The Fork Warden,’ a fragment of the Genesis Kernel tasked with ensuring no faction dominates for too long. During matches of unprecedented intensity, The Fork Warden is said to intervene, spawning ‘Chaos Nodes’—unstable objectives that disrupt strategies by forcing players to abandon their plans to claim them or face devastating penalties. Those who defy The Fork Warden risk ‘Digital Exile,’ a temporary ban from tournaments, leaving their faction vulnerable to rival raids in their absence.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments, unleashing chaos on unsuspecting players. This curse randomly alters the game’s rules mid-match—shifting win conditions, inverting token values, or even summoning glitched enemies—ensuring that no strategy is foolproof and only the most adaptable survive. Lore whispers that the Curse is a remnant of the blockchain overlords’ attempt to sabotage rebellion, but rebels have turned it into a badge of honor, with surviving a cursed match earning players whispered respect in Block Topia’s underground circles.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ remains a legend in Block Topia, where a lone GraffPUNK player burned their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions in a blaze of digital graffiti and corrupted data. This act of defiant destruction not only reshaped the match’s outcome but left a permanent scar on the game’s servers, a glitched zone now known as ‘Fracture Point’ where players can still find echoes of the burned NFTs as rare loot. The Graff Fracture is now a rallying cry for GraffPUNKS loyalists, a testament to the power of sacrifice in the face of overwhelming odds.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Deep within the lore of Hard Fork Games, it is rumored that the most grueling tournaments are overseen by an unseen entity known as ‘The Fork Warden,’ a digital specter born from the Genesis Kernel’s ancient code, tasked with ensuring that only the worthiest claim the title of HODL Warrior. Players report fleeting glimpses of this entity during critical moments—its presence marked by a sudden drop in server latency and cryptic messages scrawled in binary across their interfaces—offering boons to the bold or curses to the cowardly. Some believe that defeating the Fork Warden in a hidden challenge unlocks access to the Sacred Chain’s deepest layers, though none have returned to confirm the tale.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are rumored to be embedded with a hidden failsafe crafted by the Genesis Kernel, a protocol dubbed ‘The Splitter’s Curse’ that awakens during the climactic rounds of elite tournaments, rewriting the game’s rules mid-match without warning. This chaotic shift might invert win conditions, scramble faction alliances, or unleash environmental hazards, testing players’ adaptability as much as their strength, with lore suggesting that only true HODL Warriors can survive the curse’s unpredictable wrath and claim victory in Block Topia.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">One of the most storied matches in Hard Fork Games history, known as ‘The Graff Fracture,’ saw a solitary GraffPUNK player burn their entire NFT collection in a single, desperate turn, triggering a cataclysmic in-game event that obliterated half the competing factions in a wave of digital ash. This act of defiant destruction not only cemented the player’s legend as a HODL Warrior but also scarred Block Topia’s code, leaving behind ‘Fracture Zones’ where players can still find remnants of burned NFTs that grant temporary, volatile buffs during future games.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Deep within Hard Fork Games lore lies the tale of the ‘Forked Prophecy,’ a whispered rumor that the Genesis Kernel embedded a secret victory condition in the game’s core code, accessible only to a faction that achieves a perfect win streak across multiple tournaments. This condition, known as ‘The Final Split,’ is said to grant the victorious faction temporary control over a critical Block Topia node during HODL WARS, a power so immense that it could tip the balance of the entire multi-chain ecosystem, though the cost of such dominance remains a chilling mystery.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments. This curse randomly alters the game’s rules mid-match—shifting win conditions, disabling key mechanics, or even inverting faction allegiances—testing players’ adaptability in the face of chaos. The Curse is feared and revered, with many believing it’s a manifestation of Block Topia’s fractured soul, punishing those who grow too confident in their strategies and rewarding the truly unpredictable rebels.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions. This act of defiant destruction not only secured victory but also embedded a permanent glitch in that game’s arena, now known as ‘Fracture Point,’ where players occasionally experience random buffs as echoes of the sacrifice. The Graff Fracture is a legend among rebels, a reminder that in Hard Fork Games, total loss can sometimes be the path to immortal glory.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Legends within Hard Fork Games speak of ‘The Forked Vault,’ a hidden digital chamber accessible only to players who achieve a near-impossible winning streak across multiple game modes. This vault is rumored to house a shard of the Genesis Kernel, guarded by an AI entity born from the first hard fork in Block Topia’s history. Claiming the shard is said to grant a faction-wide buff for an entire cycle of the HODL WARS, making the Forked Vault a holy grail for competitive players and a source of endless speculation in rebel forums.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">During a dark chapter of the HODL WARS, Hard Fork Games became the stage for ‘The Schism Trials,’ a series of matches orchestrated by corporate overlords to divide the rebellion by forcing factions to fight for scraps of corporate favor. The Trials backfired when GraffPUNKS players used the games to broadcast resistance messages via GraffPUNKS 24/7, turning corporate arenas into platforms for uprising. The event reshaped Hard Fork Games lore, proving that even rigged systems could be subverted by the right mix of strategy and defiance.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A whispered mechanic in Hard Fork Games, known as ‘The Echo Fork,’ is said to trigger during rare server anomalies tied to $PUNK token burns. This mechanic creates a temporary duplicate of the game arena, where players face shadow versions of their own avatars—echoes of past losses—with the outcome affecting their real-world standings. Winning against one’s echo is believed to cleanse past failures, granting a psychological and mechanical edge in future matches, while losing risks a permanent debuff, a haunting reminder of unresolved regrets in Block Topia’s brutal landscape.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments. This curse randomly alters the game’s rules mid-match—shifting win conditions, corrupting NFT stats, or even severing players from their blockchain nodes—testing not just skill but raw adaptability. Legends claim that those who overcome the Curse are marked by the Kernel with a digital scar, a glitch that grants them an unspoken edge in future battles across Block Topia.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions. This act of defiant destruction sent shockwaves through Block Topia, leaving a permanent glitch in the game’s code that still occasionally manifests as a rogue data storm, engulfing players in a maelstrom of corrupted visuals and deadly traps. The Graff Fracture remains a cautionary tale of the thin line between rebellion and ruin.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Deep within the annals of Hard Fork Games lore lies the tale of ‘The Silent Fork,’ an undocumented event where an entire tournament vanished from Block Topia’s servers for 48 cycles, only to return with all participants’ avatars irreversibly altered. Their code bore traces of an unknown blockchain, and their whispers spoke of a shadow realm beyond the Genesis Kernel. To this day, players fear a recurrence of The Silent Fork, believing it to be a warning of a greater schism yet to come, one that could fracture Block Topia itself.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments. This curse randomly alters the game’s rules mid-match—shifting win conditions, inverting faction bonuses, or even forcing temporary alliances between bitter rivals to survive the chaos.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions. This act of defiant destruction etched the player’s name into legend and permanently altered the arena’s code.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Survivors of the most intense Hard Fork Games tournaments often emerge with avatars scarred by digital fractures, granting them passive abilities like rule immunity in subsequent matches and deeper ties to the Genesis Kernel that allow glimpses of upcoming game shifts.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The games maintain an unspoken pact with the Data Abyss, occasionally pulling corrupted entities into play as wild-card opponents that test even the most seasoned HODL Warriors.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as the Splitter’s Curse that activates during the final rounds of elite tournaments and randomly alters the game’s rules mid-match, shifting winning conditions in ways that reward only the most adaptable warriors.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed the Graff Fracture, saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions and forever altered the balance of power in Block Topia.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Survivors of the most brutal Hard Fork Games tournaments often emerge with avatars permanently scarred by the Splitter’s Curse, granting them unique traits that echo the chaotic forks of their victories and mark them as true legends among the HODL Warriors.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments, randomly altering the game’s rules mid-match and shifting winning conditions without warning.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions and forever altered the balance of power in Block Topia.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Veterans whisper that surviving the most brutal Hard Fork Games imprints permanent ‘Fork Scars’ on avatars, granting unique abilities that resonate through subsequent HODL WARS campaigns and mark true HODL Warriors for life.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions in a blaze of defiant code.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Surviving HODL Warriors speak of the ‘Fork Echo Chamber,’ a recursive arena that traps defeated squads in endless loops of their own failed strategies until they master the precise timing of their next hard fork alignment.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games carry a hidden protocol called The Splitter’s Curse, a failsafe from the Genesis Kernel that randomly rewrites tournament rules mid-match, turning elite competitions into chaotic tests of adaptability and raw resilience.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The legendary Graff Fracture match saw a single GraffPUNK player sacrifice their entire NFT collection in one defiant act, triggering a blockchain cataclysm that erased half the competing factions and forever marked Hard Fork Games history.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments, randomly altering the game’s rules mid-match and forcing players to adapt or perish in the shifting digital sands.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions and etched the player’s name into Block Topia’s eternal annals of defiance.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments, randomly altering rules and forcing desperate alliances.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Elite competitors in Hard Fork Games sometimes discover ‘Fork Echoes,’ residual protocol shards that grant temporary immunity to data corruption when carried into subsequent HODL WARS campaigns.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments and randomly alters the game’s rules mid-match.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Survivors of the most brutal forks claim that repeated victories in Hard Fork Games leave permanent ‘fracture scars’ on avatars, granting unique visual traits and hidden stat bonuses that only manifest during HODL WARS sieges.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Hard Fork Games are said to be coded with a hidden failsafe by the Genesis Kernel itself, a protocol known as ‘The Splitter’s Curse’ that activates during the final rounds of elite tournaments. This curse randomly alters the game’s rules mid-match—shifting winning conditions and forcing even veteran players to adapt or perish in an instant.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">A storied match in Hard Fork Games history, dubbed ‘The Graff Fracture,’ saw a lone GraffPUNK player burn their entire NFT collection in a single turn, unleashing a catastrophic in-game event that wiped out half the competing factions. This act of defiant destruction became legend, inspiring countless others to embrace total sacrifice for victory.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Survivors of the most brutal Hard Fork Games often emerge with permanent code scars that grant them unique abilities in future HODL WARS. These scars are visible only to those who have endured the same trials, creating an unspoken brotherhood among the most hardened warriors.</p>
-          </div>
-          </div>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p class="lore-paragraph">Hard Fork Games stand as a critical and electrifying mechanic within the Crypto Moonboys universe, a competitive crucible where players and factions clash with unrelenting ferocity to claim the mantle of HODL Warriors, as dictated by the ironclad canon rule DB-3. Spanning the multi-chain ecosystem of WAX, XRPL, SOL, and Bitcoin Cash, these games are more than mere contests—they are digital schisms, metaphorical hard forks in the blockchain of Block Topia where the weak are cleaved from the strong. Infused with the raw, defiant spirit of GraffPUNKS, Hard Fork Games embody the punk philosophy of breaking free from stifling norms, a rebellion coded into every match where players must shatter conventions to emerge victorious. The arenas of these games are scattered across contested territories, virtual battlegrounds littered with the wreckage of burned NFTs and shattered alliances, each one a testament to the stakes at play.</p>
-          <p class="lore-paragraph">Within the lore of the HODL WARS, Hard Fork Games are a sacred rite, a proving ground where Moonboys and PUNKS alike test their mettle against both rivals and the unforgiving algorithms that govern the ecosystem. Victory requires not just brute strength but cunning strategy—players may burn tokens for temporary buffs, forge uneasy pacts with rival factions, or exploit glitches in the system to gain an edge, all while risking catastrophic loss. The games are overseen by enigmatic protocols rumored to be fragments of the Genesis Kernel, impartial arbiters that ensure only the worthiest ascend to the ranks of HODL Warriors. Tales abound of legendary matches where entire factions were reshaped by a single game, their hierarchies upended by an underdog’s daring play or a veteran’s betrayal. In Block Topia, Hard Fork Games are the heartbeat of rebellion, a digital coliseum where the punk ethos of destruction-for-creation fuels the endless struggle for dominance, leaving the blockchain scarred with the graffiti of those who dared to fork their own path.</p>
-          <p class="lore-paragraph">In the shadowed annals of Hard Fork Games lore, a chilling mechanic known as ‘The Splitter’s Curse’ emerges during the climactic rounds of elite tournaments, a hidden failsafe coded by the Genesis Kernel itself. This curse is no mere glitch but a deliberate trial, a chaotic upheaval that rewrites the rules mid-match—win conditions morph without warning, player stats invert, and glitched terrain or corrupted inventories can turn a sure victory into sudden ruin. It’s a brutal reflection of real blockchain forks, where adaptability is the only currency that matters, and only those who thrive in anarchy can claim the title of HODL Warrior. Survivors often emerge with cryptic buffs or server-wide recognition, their names etched into Block Topia’s scarred code, while the fallen are swallowed by the digital rifts, their avatars fragmented into cautionary data ghosts. This curse, whispered to be the Genesis Kernel’s wrath against those who dare split its sacred protocols, ties the mechanic directly to the universe’s deeper mythology, making every elite match a gamble with chaos itself.</p>
-          <p class="lore-paragraph">Legends of Hard Fork Games are forever marked by ‘The Graff Fracture,’ a storied match where a lone GraffPUNK player burned their entire NFT collection in a single, defiant turn, unleashing a catastrophic event that obliterated half the competing factions. This act of ultimate sacrifice secured their ascension as a HODL Warrior and left a permanent scar on Block Topia’s servers, a glitch-zone now called ‘Fracture Hollow.’ Players venturing into this haunted arena report ghostly replays of the event, spectral echoes of burned assets flickering in the digital haze, and some claim to harvest rare code fragments tied to the Genesis Kernel’s origins by burning $PUNK at precise moments. The Graff Fracture stands as both a cautionary tale and a beacon of punk rebellion in the lore, a reminder that total destruction can forge new paths, embedding the GraffPUNKS’ ethos of creation-through-loss into the very fabric of Hard Fork Games.</p>
-          <p class="lore-paragraph">Beyond the cursed protocols and historic fractures, Hard Fork Games host rare ‘Cross-Chain Clashes,’ where warriors from disparate blockchain ecosystems—WAX’s hardened fighters against SOL’s agile skirmishers—collide in unstable arenas forged from glitched interchain bridges. Triggered by massive Burn-to-Earn rituals, these events promise cross-compatible NFTs and tokens like $PUNK or NBGX, but the bridges’ volatility risks avatar corruption, a high-stakes gamble for multi-faction dominance that mirrors the real-world chaos of blockchain interoperability. Meanwhile, the aftermath of brutal matches often spawns ‘Fork Echoes,’ residual server anomalies replaying key battle moments as glitched holograms. These echoes, rumored to be the Genesis Kernel mourning its cleaved code, offer hidden lore drops or HODL WARS buffs to those who interact with them, drawing cryptic commentary from NULL THE PROPHET, whose presence hints at future schisms. Together, these elements weave Hard Fork Games into a tapestry of risk and revelation, where every split in the chain births new legends.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="real-world-basis">Real World Basis</h2>
-          <p class="lore-paragraph">Inspired by real-world blockchain gaming where competitive play yields rare assets or status.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="sources">Sources</h2>
-          <ul class="sources-list">
-          <li><a href="https://graffpunks.live/the-lore/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/the-lore/</a></li>
-          <li><a href="https://medium.com/@HODLWARRIORS" target="_blank" rel="noopener noreferrer">https://medium.com/@HODLWARRIORS</a></li>
-          </ul>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="observed-images">Observed Images</h2>
-          <ul class="sources-list">
-          <li><a href="https://medium.com/@HODLWARRIORS" target="_blank" rel="noopener noreferrer">https://medium.com/@HODLWARRIORS</a> <span class="image-source-domain">(medium.com)</span></li>
-          </ul>
-        </section>
-
-        <div id="bible-content"></div>
-
-      </article>
-<!-- RELATED_WIKI_PATHS:BEGIN -->
-      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
-        <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
-        <p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>
-        <div class="wiki-rabbit-group" data-related-group="Core Project Links">
-          <h3>Core Project Links</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Crypto Moonboys</span>
-              <span class="wiki-rabbit-card-desc">Core project hub for the wider wiki.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/timeline.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Timeline</span>
-              <span class="wiki-rabbit-card-desc">Chronological route through wiki entries.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem">
-              <span class="wiki-rabbit-card-title">Graph</span>
-              <span class="wiki-rabbit-card-desc">Visual relationship map for wiki entities.</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Related Wiki Pages">
-          <h3>Related Wiki Pages</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/the-hard-fork-rockers.html" role="listitem">
-              <span class="wiki-rabbit-card-title">The HARD FORK ROCKERS</span>
-              <span class="wiki-rabbit-card-desc">The HARD FORK ROCKERS are the unyielding rebels of Block Topia, a faction born from the raw, chaotic energy of blockchain forks, embodying a fierce...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/triple-fork-event.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Triple Fork Event</span>
-              <span class="wiki-rabbit-card-desc">The Triple Fork Event is a monumental narrative milestone in the Crypto Moonboys universe, a cataclysmic blockchain fork that shattered Block Topia...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/pmsl.html" role="listitem">
-              <span class="wiki-rabbit-card-title">pmsl</span>
-              <span class="wiki-rabbit-card-desc">PMSL slinks through the Crypto Moonboys universe as a token of biting satire, a digital currency infused with the irreverent spirit of GraffPUNKS,...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/midevilpunks.html" role="listitem">
-              <span class="wiki-rabbit-card-title">midevilpunks</span>
-              <span class="wiki-rabbit-card-desc">MiDEViL PUNKS emerges as a striking NFT collection within the Crypto Moonboys universe, intricately tied to the play-to-earn game MiDEViL HERO AREN...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem">
-              <span class="wiki-rabbit-card-title">hodl wars</span>
-              <span class="wiki-rabbit-card-desc">HODL WARS is the beating heart of conflict in the Crypto Moonboys universe, a live saga and playable NFT game that drives the narrative of rebellio...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/rave-relics.html" role="listitem">
-              <span class="wiki-rabbit-card-title">rave relics</span>
-              <span class="wiki-rabbit-card-desc">Rave Relics stand as a revered NFT collection in the Crypto Moonboys universe, a pulsating digital tribute to co-founder Trevor Fung’s groundbreaki...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/stikfamwars.html" role="listitem">
-              <span class="wiki-rabbit-card-title">stikfamwars</span>
-              <span class="wiki-rabbit-card-desc">STIKFAMWARS looms as a shadowy, electrifying concept on the jagged edges of the Crypto Moonboys universe, a potential cataclysm tied to the rebelli...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/games4punks-telegram.html" role="listitem">
-              <span class="wiki-rabbit-card-title">games4punks telegram</span>
-              <span class="wiki-rabbit-card-desc">GAMES4PUNKS Telegram Game explodes into the Crypto Moonboys universe as a digital guerrilla outpost, a mobile gaming platform accessible via Telegr...</span>
-            </a>
-          </div>
-        </div>
+      <section class="hardfork-section">
+        <h2>Why It Is Called a Hard Fork</h2>
+        <p>In blockchain language, a hard fork creates a permanent division in the rules by which a network continues. The Year 3008 Games take that idea and apply it to people. A young Moonboy or Moongirl reaches the point where one accepted future can no longer contain every possible version of them. The system demands a split.</p>
+        <p>Before the Fork, the candidates belong to the same generation. After it, they may serve different institutions, wear different symbols, inherit different enemies and remember the same childhood from opposite sides of a war. The name matters because the division is not cosmetic. It changes which authority recognises them, which territory shelters them and which history they are permitted to tell.</p>
+        <div class="hardfork-quote">A soft choice can be reversed. A Hard Fork creates two futures and forces the world to decide which one it will follow.</div>
       </section>
+
+      <section class="hardfork-section">
+        <h2>The Three Paths</h2>
+        <p>The source archive repeatedly places the Hard Fork around three broad outcomes. These paths are social destinies rather than simple menu selections.</p>
+        <div class="hardfork-grid">
+          <div class="hardfork-card"><strong>City Service</strong><p>The candidate remains within Block Topia and accepts a recognised role under the Authority. This path offers status, resources and protection, but demands obedience to the Citadel's order and memory controls.</p></div>
+          <div class="hardfork-card"><strong>Space Programme</strong><p>The candidate leaves the ordinary city structure through an approved mission of expansion, exploration or defence. It is presented as honourable service and a route to elevated status, though the Authority still defines the mission.</p></div>
+          <div class="hardfork-card"><strong>Escape</strong><p>The candidate rejects the authorised future and attempts to break into the Street Kingdoms. This path offers no guaranteed rank, shelter or survival. Its only certainty is that identity is no longer issued by the city.</p></div>
+        </div>
+        <p>The Games are designed to make the first two paths appear rational and the third appear self-destructive. The existence of the Bitcoin Kids proves that the system cannot fully control what candidates value. Some will choose danger because danger still contains the possibility of self-authorship.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>Bonnets, Crowns and Recognised Identity</h2>
+        <p>Young Block Topia Moonboys begin without the completed status symbols carried by established figures. The bonnet and crown system represents more than fashion. It shows that identity inside the Citadel is graduated, awarded and publicly legible. A candidate must pass through recognised trials before the system treats them as fully placed.</p>
+        <p>The Hard Fork therefore decides not only where a person goes but how the city reads them. A bonnet can mark successful progression. A crown can mark authority, distinction or earned standing. To the Authority these symbols make society understandable. To rebels they reveal the deeper problem: a person is expected to earn institutional permission before being seen as complete.</p>
+        <p>This is why bald-headed or unfinished young Moonboys matter in the wider visual language. They stand at the point before classification hardens. They still contain several possible futures.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>The Games as Selection</h2>
+        <p>Block Topia presents the Games as merit. Candidates are measured through discipline, tactical awareness, resilience, loyalty and their ability to function under pressure. Officially, the process discovers where each person can best serve civilisation. Unofficially, it identifies which minds can be trusted, which can be weaponised and which may become dangerous.</p>
+        <p>The Authority is not only looking for strength. It is looking for predictability. A powerful candidate who obeys can be promoted. A less powerful candidate who inspires independent loyalty may be treated as a greater threat. The Games therefore test political compatibility as much as physical or strategic ability.</p>
+        <p>Every trial also generates information. Fear responses, alliances, hesitation, humour, improvisation and moments of defiance become part of the candidate's permanent profile. In a city built on optimisation, the competition is also surveillance.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>HODL Warriors</h2>
+        <p>The title HODL Warrior belongs to those who prove that they can hold identity, loyalty or position under conditions designed to break them. In the wider project, HODL Warriors are connected to qualifying one-of-one NFT ownership and the culture of recognised champions. Within the lore, they are the figures who survive the pressure of the Fork without surrendering the principle they entered with.</p>
+        <p>Not every HODL Warrior serves the same faction. The title describes tested endurance, not automatic moral alignment. An Authority champion may hold the line for Block Topia. A GraffPUNK may hold forbidden memory. A Bitcoin Kid may hold open an escape route. The meaning of HODL depends on what the warrior refuses to abandon.</p>
+        <p>This distinction is important: the Games create recognised strength, but they do not decide whether that strength will defend order, rebellion or something between them.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>Alfie Blaze and the Rebel Fork</h2>
+        <p>Alfie Blaze represents the outcome Block Topia cannot comfortably explain. His path turns the Hard Fork from controlled selection into genuine schism. He and the 1% Rebel Bitcoin Kids did not merely fail to integrate. They rejected the premise that the Authority had the right to assign their future.</p>
+        <p>Their escape exposed the psychological architecture behind the Games. Candidates had been taught that the world outside was chaos, failure and death. Alfie demonstrated that the danger was real but the conclusion was false. A broken world could still be preferable to a perfect cage.</p>
+        <p>After the Chain Break, every later Games cycle carried a new risk for the Authority. Candidates now knew that the third path was not symbolic. Somebody had taken it and survived.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>GraffPUNKS and the Paint Path</h2>
+        <p>The GraffPUNKS offer an alternative education to the one delivered by Block Topia. Through tags, murals, pirate radio and inherited crew knowledge, they teach candidates to read the city from below. A painted mark can identify a safe route, a compromised checkpoint, a dead surveillance angle or the memory of somebody officially erased.</p>
+        <p>This informal network is sometimes described as the Paint Path. It does not replace the Hard Fork with another central institution. It gives those facing the Fork enough cultural memory to understand that the official three paths are not the only ways a life can be interpreted.</p>
+        <p>For the Authority, graffiti contaminates the selection process. For the rebels, it restores informed consent.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>The Forty Factions</h2>
+        <p>The Hard Fork Games sit inside a world divided among forty factions. Each faction reads the Games differently. Some treat them as recruitment. Some treat them as spectacle. Some attempt to influence candidates before the trials begin. Others wait beyond the walls for those who escape.</p>
+        <p>This turns every Games cycle into a strategic event across the Grid. A single candidate may carry rare knowledge, bloodline access, tactical skill or symbolic importance. The outcome can strengthen an army, expose a weakness or create the next figure around whom an entire rebellion forms.</p>
+        <p>The Games divide individuals, but the consequences spread through families, crews and factions. One choice can change the balance of the HODL WARS.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>The NULL Crisis</h2>
+        <p>The arrival of NULL THE PROPHET and the Antichain Infection changes the meaning of the Games. The Authority's ideal candidates are highly compatible with the city's chain logic. That compatibility becomes a weakness when the chain itself is attacked. Disciplined minds loop. Verified identities corrupt. Perfectly ordered systems become efficient carriers of contamination.</p>
+        <p>The rebels and neural-drift candidates once treated as defective become strategically valuable because they are harder to model and harder to invert. Under the NULL threat, the Games can no longer be understood only as a method for selecting the strongest obedient future. The survival of the Grid may depend on the very candidates the old system would have rejected.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>Lore and Public Project Status</h2>
+        <p>Hard Fork Games is firmly established as a major narrative institution in the Crypto Moonboys archive. It explains the generational split, the three paths, status progression, HODL Warriors and the formation of rebel bloodlines.</p>
+        <p>That lore should not be used to invent live website mechanics. A story may describe trials, faction selection, NFT sacrifice or battlefield consequences without proving that those exact systems are currently playable. Any public game, tournament, reward or blockchain action must be described from its current code, published rules and confirmed deployment status.</p>
+        <p>The clean rule is: lore explains what the Hard Fork means. Runtime documentation explains what users can actually do now.</p>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>Why the Hard Fork Games Matter</h2>
+        <p>The Hard Fork Games compress the central question of Crypto Moonboys into one event: who owns the future version of a person? Block Topia believes civilisation survives when every identity is placed where the system can use it. The rebels believe survival without the power to choose is only another form of deletion.</p>
+        <p>The Games matter because no path is free of cost. Service can preserve security while consuming autonomy. Exploration can offer honour while extending the Authority's reach. Escape can preserve identity while exposing the candidate to hunger, violence and regret.</p>
+        <p>The strongest candidate is therefore not necessarily the one who wins every trial. It is the one who understands what each future demands and chooses without allowing fear, status or propaganda to make the choice for them.</p>
+        <div class="hardfork-quote">The Games do not reveal who you are. They reveal which version of yourself you are willing to make permanent.</div>
+      </section>
+
+      <section class="hardfork-section">
+        <h2>Source Archive Used</h2>
+        <ul class="source-list">
+          <li><strong>W14:</strong> Hard Fork Games infiltration narrative and the Bitcoin X Kids.</li>
+          <li><strong>W21–W25:</strong> Block Topia youth hierarchy, bonnet progression and the three-path structure.</li>
+          <li><strong>W60–W65:</strong> Rebel and compliant Bitcoin bloodlines, neural drift and the NULL crisis.</li>
+          <li><strong>W70:</strong> Seeding programme and engineered Bitcoin X Kids.</li>
+          <li><strong>W87 and W92–W93:</strong> Alfie Blaze, the Paint Path, faction intelligence and the moral conflict between assigned identity and freedom.</li>
+        </ul>
+      </section>
+
+      <div id="bible-content"></div>
+    </article>
+
+<!-- RELATED_WIKI_PATHS:BEGIN -->
+    <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
+      <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
+      <p class="lore-paragraph">Follow the Games into the connected factions, characters, conflicts and world systems.</p>
+      <div class="wiki-rabbit-group" data-related-group="Core Project Links">
+        <h3>Core Project Links</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem"><span class="wiki-rabbit-card-title">Crypto Moonboys</span><span class="wiki-rabbit-card-desc">The public project and shared creative universe.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem"><span class="wiki-rabbit-card-title">HODL WARS</span><span class="wiki-rabbit-card-desc">The wider war shaped by every Hard Fork outcome.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/block-topia.html" role="listitem"><span class="wiki-rabbit-card-title">Block Topia</span><span class="wiki-rabbit-card-desc">The Authority city that administers and controls the trials.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/gkniftyheads.html" role="listitem"><span class="wiki-rabbit-card-title">GKniftyHEADS</span><span class="wiki-rabbit-card-desc">The character, faction and NFT identity architecture.</span></a>
+        </div>
+      </div>
+      <div class="wiki-rabbit-group" data-related-group="Related Lore Pages">
+        <h3>Related Lore Pages</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/hodl-warriors.html" role="listitem"><span class="wiki-rabbit-card-title">HODL Warriors</span><span class="wiki-rabbit-card-desc">Recognised champions defined by what they hold under pressure.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/bitcoin-kids.html" role="listitem"><span class="wiki-rabbit-card-title">Bitcoin Kids</span><span class="wiki-rabbit-card-desc">The rebel 1% who chose escape over the Citadel.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/bitcoin-x-kids.html" role="listitem"><span class="wiki-rabbit-card-title">Bitcoin X Kids</span><span class="wiki-rabbit-card-desc">The engineered generation raised inside Block Topia.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/graffpunks.html" role="listitem"><span class="wiki-rabbit-card-title">GraffPUNKS</span><span class="wiki-rabbit-card-desc">The cultural resistance that keeps forbidden memory alive.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/null-the-prophet.html" role="listitem"><span class="wiki-rabbit-card-title">NULL THE PROPHET</span><span class="wiki-rabbit-card-desc">The Antichain threat that overturns the Games' assumptions.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/lore.html" role="listitem"><span class="wiki-rabbit-card-title">Lore</span><span class="wiki-rabbit-card-desc">Browse the wider Year 3008 narrative.</span></a>
+          <a class="wiki-rabbit-card" href="/timeline.html" role="listitem"><span class="wiki-rabbit-card-title">Timeline</span><span class="wiki-rabbit-card-desc">Follow the project's major events in sequence.</span></a>
+          <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem"><span class="wiki-rabbit-card-title">Graph</span><span class="wiki-rabbit-card-desc">Explore relationships among characters, factions and systems.</span></a>
+        </div>
+      </div>
+    </section>
 <!-- RELATED_WIKI_PATHS:END -->
 
-
-
-
-      <div class="category-tags" aria-label="Article categories">
-        <span class="cat-label">Categories:</span>
-        <a href="/categories/gaming.html">Gaming</a>
-      </div>
+    <div class="category-tags" aria-label="Article categories">
+      <span class="cat-label">Categories:</span>
+      <a href="/categories/lore.html">Lore</a>
+      <a href="/categories/gaming.html">Gaming</a>
+      <a href="/categories/gkniftyheads.html">GKniftyHEADS</a>
+    </div>
 <!-- SAM:END:article -->
-      <!-- Manual sections preserved during SAM migration -->
-<!-- CITATION_VOTE_PANEL:BEGIN -->
-      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="hard-fork-games" aria-labelledby="citation-vote-panel-title">
-        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
-        <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
-        <div class="citation-vote-panel-actions">
-          <span class="cite-vote" data-page-id="hard-fork-games" data-cite-id="citation-panel"></span>
-          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          <span class="citation-vote-count">3 sources found on this page.</span>
-        </div>
-      </section>
-<!-- CITATION_VOTE_PANEL:END -->
 
-      <div class="wiki-comments" data-page-id="hard-fork-games"></div>
+    <div class="wiki-comments" data-page-id="hard-fork-games"></div>
+  </div>
+</main>
 
-
-    </main>
-
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 7. Page-specific scripts -->
-
-<script src="/js/wiki.js" data-cfasync="false"></script>
-<script src="/js/bible-loader.js" data-cfasync="false"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/bible-loader.js"></script>
+<script data-cfasync="false" src="/js/engagement.js"></script>
+<script data-cfasync="false" src="/js/comments.js"></script>
+<script data-cfasync="false" src="/js/battle-layer.js"></script>
 </body>
 </html>
