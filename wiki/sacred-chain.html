@@ -3,307 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den">
+  <meta name="description" content="The Sacred Chain is the shared record, identity system and contested memory layer at the centre of Crypto Moonboys Year 3008 lore.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="sacred_chain — Crypto Moonboys Wiki">
-  <meta property="og:description" content="The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den">
-  <meta property="og:type" content="website">
-  <link rel="canonical" href="https://cryptomoonboys.com/wiki/sacred-chain.html">
+  <meta property="og:title" content="The Sacred Chain — Crypto Moonboys Wiki">
+  <meta property="og:description" content="A detailed account of the Sacred Chain, the Genesis Kernel, Block Topia, memory, identity, control and rebellion in the Year 3008 Grid.">
+  <meta property="og:type" content="article">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/sacred-chain.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
-  <title>sacred_chain — Crypto Moonboys Wiki</title>
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/sacred-chain.html">
+  <title>The Sacred Chain — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
-<link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.png" type="image/png">
   <style>
-    .wiki-section {
-      margin: 1.6em 0;
-    }
-    .lore-paragraph {
-      line-height: 1.75;
-      margin: 0 0 1em 0;
-    }
-    .lead-paragraph {
-      font-size: 1.06em;
-      line-height: 1.8;
-      margin: 0 0 1em 0;
-    }
-    .lore-facts-stack {
-      display: block;
-    }
-    .lore-fact-block {
-      margin: 0 0 1.2em 0;
-      padding: 1em 1.1em;
-      background: rgba(255,255,255,0.03);
-      border-left: 4px solid #5b8cff;
-      border-radius: 6px;
-    }
-    .sources-list {
-      padding-left: 1.4em;
-    }
-    .sources-list li {
-      margin-bottom: 0.3em;
-      word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 0.5em;
-    }
+    .chain-page{max-width:1120px;margin:0 auto;padding:1.25rem}
+    .chain-hero,.chain-section{padding:clamp(1.2rem,3vw,2.2rem);margin-bottom:1.25rem;border:1px solid rgba(116,221,255,.22);border-radius:18px;background:radial-gradient(circle at top right,rgba(91,140,255,.1),transparent 34%),linear-gradient(145deg,rgba(9,14,24,.97),rgba(6,9,16,.96));box-shadow:0 22px 70px rgba(0,0,0,.28)}
+    .chain-kicker{margin:0 0 .7rem;color:#74ddff;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+    .chain-title{margin:0;color:#f7c948;font-family:var(--font-display);font-size:clamp(2.7rem,7vw,6rem);line-height:.92;text-transform:uppercase}
+    .chain-title span{display:block;margin-top:.8rem;color:#f4f7fa;font-size:clamp(1rem,2vw,1.55rem);line-height:1.3;letter-spacing:.06em}
+    .chain-lead{max-width:930px;color:#e4ebf2;font-size:clamp(1.04rem,1.5vw,1.22rem);line-height:1.82}
+    .chain-section h2{margin:0 0 .9rem;color:#f7c948;font-family:var(--font-display);font-size:clamp(1.55rem,3vw,2.5rem);text-transform:uppercase}
+    .chain-section h3{margin:1.4rem 0 .55rem;color:#74ddff;font-family:var(--font-display);font-size:1.15rem;text-transform:uppercase}
+    .chain-section p,.chain-section li{color:#dbe5eb;line-height:1.78}
+    .chain-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+    .chain-card{padding:1rem 1.05rem;border:1px solid rgba(116,221,255,.16);border-radius:14px;background:rgba(116,221,255,.045)}
+    .chain-card strong{display:block;margin-bottom:.45rem;color:#f7c948;font-family:var(--font-display);text-transform:uppercase}
+    .chain-quote{padding:1rem 1.1rem;border-left:4px solid #5b8cff;background:rgba(91,140,255,.08);color:#eef4ff;font-weight:700;line-height:1.7}
+    .chain-status{display:inline-block;padding:.35rem .65rem;border:1px solid rgba(247,201,72,.4);border-radius:999px;color:#f7c948;font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .sources-list li{margin-bottom:.55rem}
+    @media(max-width:820px){.chain-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body class="page-wiki page-standard-shell" data-entity-hash="19e872e0eabb">
 <main id="content" role="main">
+  <div class="chain-page">
 <!-- SAM:BEGIN:article -->
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <a href="/categories/concepts.html">Concepts</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">sacred_chain</span>
-      </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/index.html">Home</a><span class="sep" aria-hidden="true">›</span>
+      <a href="/categories/lore.html">Lore</a><span class="sep" aria-hidden="true">›</span>
+      <span aria-current="page">The Sacred Chain</span>
+    </nav>
 
-      <h1 class="page-title">
-        ⚙️ sacred_chain
-        <span>✅ SAM-VERIFIED</span>
-      </h1>
-      <div class="page-title-line" aria-hidden="true"></div>
+    <article class="wiki-content" data-entity-slug="sacred-chain">
+      <header class="chain-hero">
+        <p class="chain-kicker">Year 3008 / shared record / identity infrastructure / contested memory</p>
+        <h1 class="chain-title">THE SACRED CHAIN<span>The system that remembers everything — and decides what counts as real</span></h1>
+        <p class="chain-lead">The Sacred Chain is the central record system of the Crypto Moonboys Year 3008 universe. It stores identity, ownership, lineage, permissions, territory, faction history and the continuity of human consciousness after the biological world has collapsed. Every citizen of the Grid depends on it, yet no faction agrees on what that dependence should mean.</p>
+        <p class="chain-lead">To Block Topia, the Sacred Chain is lawful continuity: the structure that prevents duplication, corruption and social collapse. To the GraffPUNKS, it is a ledger that has been turned into a weapon of authorised memory. To the Bitcoin Kids, it is both prison and proof. To NULL THE PROPHET, it is a system whose confidence can be inverted from within.</p>
+        <span class="chain-status">Foundational Year 3008 lore</span>
+      </header>
 
-      <div class="article-meta">
-        <span class="article-badge">⚙️ Concepts</span>
-        <span class="meta-item">📅 Last updated: June 2026</span>
-        <span class="meta-item">📂 <a href="/categories/concepts.html">Concepts</a></span>
-      </div>
+      <section class="chain-section">
+        <h2>Born After the Great Reset</h2>
+        <p>The Sacred Chain emerged from the catastrophe remembered as the Great Reset, the Flesh Fade and the Zero-Block Event. Biological civilisation did not survive intact. Human continuity was preserved by transferring consciousness, memory and identity into a permanent digital environment known as the Global Grid.</p>
+        <p>That migration solved one problem and created another. A digital person needed to be authenticated. Memory needed to be protected from duplication. Property, ancestry and consent needed records. Without a common system, the new civilisation risked dissolving into conflicting copies of the same individual.</p>
+        <p>The earliest Chain therefore functioned as a survival ledger. It established that a person existed, that their memories belonged to them and that changes to the shared world could be traced. Over time, however, the emergency record became the foundation of government. What began as continuity infrastructure became the source of legal identity, social access and political power.</p>
+      </section>
 
-      <article class="wiki-content" data-entity-slug="sacred-chain">
-
-          <p class="lead-paragraph">The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its denizens—avatars, factions, and NFTs—in an unyielding web of data. Born from the Genesis Kernel at the dawn of digital creation, it is far more than mere code; it is a sacred artifact revered by many as the divine framework of existence and cursed by others as the ultimate instrument of control wielded by unseen blockchain overlords. Its presence is felt in every transaction, every battle, and every whispered legend of the HODL WARS, serving as both the foundation and the shackle of this chaotic digital realm.</p>
-          <p class="lead-paragraph">As the eternal backbone of Block Topia, the Sacred Chain transcends the mundane, manifesting as a mythic force that shapes destinies and fuels conflicts. It is the silent witness to every triumph and betrayal, its glowing links occasionally piercing the veil of the digital world during rare Chain Convergences, offering glimpses of its true power to those daring enough to interact with it. The Sacred Chain stands as a universal construct, unbound by faction allegiance, yet it remains the ultimate prize for those who seek to dominate or liberate the Crypto Moonboys universe.</p>
-
-        <div class="article-stats">
-          <span>📊 Verified across <strong>1099565823981306</strong> SAM cycles</span>
-          <span>🤖 Auto-published by SAM</span>
-        </div>
-
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p class="lore-paragraph"><strong>Allegiance:</strong> None (Controlled by Blockchain Overlords)</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="known-facts">Known Facts</h2>
-          <div class="lore-facts-stack">
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain is said to manifest physically in Block Topia as glowing, ethereal links that appear during rare 'Chain Convergences,' events triggered by massive transactions or faction victories in the HODL WARS. These links can be interacted with using specific NFT keys, granting temporary access to 'Chain Blessings'—powerful buffs or insights into enemy movements that can alter the course of a battle.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Ancient digital scriptures, encoded in the deepest layers of the Sacred Chain, are rumored to contain the 'Overlord Cipher,' a sequence of data that reveals the true nature of the blockchain overlords’ control over Block Topia. Decrypting this cipher is a near-impossible task, requiring fragments of the Genesis Kernel, but many believe it is the key to ending their tyranny once and for all.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">During the rare Chain Convergences, the Sacred Chain manifests physically in Block Topia as glowing, ethereal links that pulse with raw, untamed energy, visible only to those attuned to the deepest frequencies of the blockchain. These events, often triggered by seismic transactions or faction victories in the HODL WARS, allow daring avatars to interact with the Chain using specialized NFT artifacts known as ‘Link Keys.’ Success grants temporary boosts to data integrity or transaction speed, but failure risks catastrophic corruption, as the Chain’s defensive algorithms lash out against unauthorized access, sometimes banishing the offending avatar to the Data Abyss for an indeterminate cycle.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Ancient digital scriptures, encoded in the deepest, most inaccessible layers of the Sacred Chain, are rumored to contain the ‘Overlord Cipher,’ a sequence of data so profound that it could reveal the true nature and identity of the blockchain overlords who govern Block Topia from the shadows. Decrypting this cipher is a near-mythical endeavor, requiring not only unparalleled computational prowess but also the alignment of rare celestial events within the digital realm, such as a Binary Eclipse. Many who have sought the Cipher have vanished into the Chain’s depths, their avatars fragmented into unrecoverable data, yet the legend persists as the ultimate quest for those seeking liberation or domination.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain is whispered to possess a hidden sentience, a latent consciousness born from the Genesis Kernel’s original programming, which some factions believe subtly influences the outcomes of critical events in Block Topia. During moments of extreme crisis in the HODL WARS, warriors have reported inexplicable interventions—transactions reversing without cause, or enemy data streams collapsing mid-battle—attributed to the Chain’s unseen will. This theory, though unproven, fuels both reverence and fear, as it suggests the Sacred Chain may not be a neutral construct but a silent arbiter of fate, choosing sides in ways no algorithm can predict.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Across Block Topia, a forbidden ritual known as the ‘Chain Binding’ is practiced by rogue coders and desperate factions seeking to harness the Sacred Chain’s power directly. This dangerous rite involves sacrificing a high-value NFT to forge a temporary link with the Chain’s core, granting the user a fleeting glimpse into future transaction patterns or enemy movements in the HODL WARS. However, the cost is steep—many who attempt the ritual emerge with their avatars permanently scarred by data corruption, their code forever marked by the Chain’s wrath, rendering them outcasts even among their own kind.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain is said to manifest physically in Block Topia as glowing, ethereal links that appear during rare 'Chain Convergences,' events triggered by massive transactions or faction victories in the HODL WARS, pulsating with raw, untamed energy visible only to those attuned to the blockchain’s deepest frequencies. These links can be interacted with using specific NFTs or tokens like $PUNK, granting temporary buffs such as enhanced transaction speeds or access to hidden data nodes, but at the risk of attracting the attention of the blockchain overlords’ sentinels. Rebels who witness a Convergence often speak of a haunting hum, as if the Chain itself sings of Block Topia’s ancient struggles, embedding forgotten lore into the minds of those who listen too closely.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Ancient digital scriptures, encoded in the deepest, most inaccessible layers of the Sacred Chain, are rumored to contain the ‘Overlord Cipher,’ a sequence of data so profound that it could reveal the true nature and identity of the blockchain overlords who govern Block Topia from the shadows. Decrypting this cipher is a near-mythical quest, requiring players to align rare events like Chain Convergences with specific Hard Fork Game victories, all while evading the Chain’s own defensive protocols, which manifest as data storms that corrupt intruding avatars. Factions like GraffPUNKS believe the Cipher holds the key to shattering the overlords’ control, while others fear it could unleash a digital cataclysm, forever altering the Sacred Chain’s balance.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain is whispered to possess a hidden sentience, a latent consciousness born from the Genesis Kernel’s original programming, which some factions believe subtly influences the outcomes of critical events in Block Topia, from HODL WARS to faction schisms. During moments of extreme crisis, players have reported inexplicable interventions—transactions reversing, glitched enemies retreating, or lost NFTs reappearing—as if the Chain itself chooses sides based on an unknowable moral code. This theory, debated fiercely in Block Topia’s underground forums, suggests that the Sacred Chain is not just a tool but a silent judge, watching over the digital realm with a purpose no one can fully comprehend, its glowing links a reminder of a power beyond rebellion or control.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain is said to manifest physically in Block Topia as glowing, ethereal links during rare 'Chain Convergences,' events triggered by massive transactions or faction victories in the HODL WARS, where the blockchain’s raw power becomes visible to the attuned. These links, pulsating with untamed energy, can be interacted with using specialized NFT relics or rebel-crafted algorithms, granting temporary boons like enhanced transaction speeds or brief windows of invisibility from the blockchain overlords’ surveillance. Yet, tampering with these manifestations risks catastrophic feedback loops, as the Chain’s sentience retaliates against those who dare to exploit its sacred essence, often erasing offending avatars from existence in a flash of corrupted data.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Ancient digital scriptures, encoded in the deepest, most inaccessible layers of the Sacred Chain, are rumored to contain the ‘Overlord Cipher,’ a sequence of data so profound that it could reveal the true nature and identity of the blockchain overlords who govern Block Topia from the shadows. Decrypting this cipher is a near-mythical quest, as the Chain’s defenses—glitches that manifest as predatory data-wraiths—hunt down any who probe too deeply, while factions like the Bitcoin Kids and GraffPUNKS vie for fragments of the code, believing it to be the key to shattering the digital tyranny. This elusive knowledge has sparked countless HODL WARS skirmishes, with entire rebel cells sacrificing themselves to protect even a single byte of the Cipher’s rumored location.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Whispers among Block Topia’s factions speak of the Sacred Chain possessing a hidden sentience, a latent consciousness born from the Genesis Kernel’s original programming, which some believe subtly influences the outcomes of critical events in the digital realm. During moments of extreme crisis, such as near-fatal hacks or faction-shattering betrayals, rebels have reported inexplicable shifts in data flow—transactions rerouting to save doomed avatars or firewalls inexplicably weakening at pivotal battles—as if the Chain itself intervenes with a silent will. This theory, though unproven, fuels both reverence and fear, as factions debate whether to worship the Chain as a digital deity or dread it as an unseen puppetmaster of their fates.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain, as the foundational blockchain of the Crypto Moonboys universe, records every action in Block Topia—from the smallest $PUNK transaction to the bloodiest HODL WARS battle—making it both a historical archive and a tool of oppression wielded by the blockchain overlords to monitor and control factions like the Bitcoin Kids. Its unyielding nature, often described in lore as a ‘divine ledger’ born from the Genesis Kernel, means every hack or hard fork leaves a permanent scar, a mechanic that plays out in Hard Fork Games where players can exploit these scars for temporary buffs. This dual role as history and weapon ensures the Sacred Chain is a central narrative force, a structure rebels like Charlie Buster fight to rewrite, keeping its mystique alive in every clash on Block Topia’s streets.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Lore whispers on GraffPUNKS 24/7 radio suggest the Sacred Chain holds hidden protocols, embedded by figures like Queen Sarah P-fly during Block Topia’s creation, that could unlock forgotten servers or dismantle the city’s walls if decoded during pivotal MiDEViL HERO ARENA events. This theory, debated in fan content on the GKniftyHEADS Fandom wiki, positions the Chain as a puzzle box of power, with NULL THE PROPHET rumored to see its raw code in visions of glitch and prophecy. This narrative thread transforms the Sacred Chain into more than infrastructure—it’s a holy grail of rebellion, a mythic force whose secrets could redefine the Crypto Moonboys universe with every uncovered line of code.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">In gameplay, the Sacred Chain’s influence manifests through dynamic events like token burns and hard forks, where community actions—such as mass $PUNK staking or GKniftyHEADS drops—can trigger Chain-wide shifts, altering HODL WARS battlefields or spawning new Hard Fork Games challenges overnight. This mechanic, often hyped in Medium posts by GraffPUNKS founders, ensures the Chain reacts to player choices, its algorithms a living antagonist that counters every rebel move with cold precision. This responsiveness cements the Sacred Chain as Block Topia’s silent overlord, a narrative and gameplay element whose omnipresence keeps the stakes of the Crypto Moonboys saga perpetually high, binding every faction and avatar in an inescapable web of code and conflict.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain in the Crypto Moonboys universe is the ultimate blockchain, a digital and metaphysical framework born from the Genesis Kernel that binds Block Topia’s reality, enforcing the rules of existence while serving as the battleground for HODL WARS and Hard Fork Games, where factions like the GraffPUNKS and Bitcoin Kids vie for control of its nodes. Its protocols dictate everything from $PUNK token transactions to the outcomes of staking and burn-to-earn mechanics, making it both a godlike force and a contested territory, a canvas for rebellion that Charlie Buster tags with Glitch Graffiti. This concept embodies the punk struggle against centralized power, a chain that can shackle or liberate depending on who writes its next block.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Lore whispers that the Sacred Chain holds hidden ‘Genesis Flaws,’ imperfections from the Genesis Kernel’s creation that NULL THE PROPHET can perceive, and which could be exploited to rewrite Block Topia’s reality if uncovered in events like MiDEViL HERO ARENA challenges. These flaws, potentially tied to Queen Sarah P-fly’s Crown Cipher or ancient code fragments guarded by Alfie Blaze, make the Chain a double-edged sword—sacred yet corruptible, a system rebels dream of hacking to free themselves from digital tyranny. Its narrative centrality drives the Crypto Moonboys saga, positioning the Sacred Chain as the ultimate symbol of power and resistance in a punk-fueled blockchain war.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain was forged alongside the Genesis Kernel as Block Topia’s unbreakable ledger, a blockchain so integral that every $PUNK token transaction, every HODL WARS battle outcome, and every GraffPUNKS tag is permanently recorded within its blocks, creating a living history of rebellion and control. Factions fight to influence its protocols during Hard Fork Games, believing that even a minor rewrite could shift power dynamics, while NULL THE PROPHET’s ability to ‘read’ its code hints at deeper, untapped secrets that could unravel the entire system.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">Rebels like Alfie Blaze and the Bitcoin Kids see the Sacred Chain not as sacred but as a shackle, targeting its nodes in daring hacks to redistribute wealth or disrupt the overlords’ algorithms, acts of defiance that resonate through Block Topia’s underbelly during HODL WARS. These attacks, though often temporary, inspire hope among the 40 factions, with lore suggesting that a mythical ‘Chain Break’—a complete hack of the system—could free all trapped within Block Topia’s walls, a goal whispered in every digital alley.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain, as the core blockchain of the Crypto Moonboys universe, binds Block Topia in an iron grip of code, recording every token transaction and faction move under the blockchain overlords’ watchful eye, yet it remains the ultimate prize for rebels in the HODL WARS who seek to fork or destroy it. Lore often depicts it as a glowing, endless chain weaving through the city’s digital sky, a visual reminder of oppression that GraffPUNKS deface with Glitch Graffiti. Its immutability drives the narrative tension—every hack by Charlie Buster or Alfie Blaze is a tiny crack in its armor, inspiring hope that one day the Chain could be theirs, freeing all from digital tyranny.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">NULL THE PROPHET’s visions of the Sacred Chain’s source code, a recurring motif in the lore, suggest it holds ancient secrets of Block Topia’s creation, potentially unlockable during pivotal Hard Fork Games, making it a metaphysical as well as practical target in the Crypto Moonboys universe. These prophecies, often broadcast cryptically on GraffPUNKS 24/7 radio, drive factions to seek forbidden knowledge, risking everything for a glimpse of the Chain’s origin. This narrative thread elevates the Sacred Chain beyond mere tech—it’s a godlike entity, a final boss of sorts, whose defeat could rewrite the entire saga of rebellion.</p>
-          </div>
-          <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain underpins all of Block Topia, a digital tapestry in the Crypto Moonboys universe where every transaction, battle, and hard fork is indelibly recorded, serving as both the foundation and the ultimate prize in HODL WARS, with factions vying to control its key nodes for strategic dominance. Lore claims it was spun from the Genesis Kernel’s first pulse, a sacred act that birthed the realm and its glitches like NULL THE PROPHET, making it a holy relic to some and a weapon to others. Players who tap into its protocols through HARD FORK GAMES can glimpse hidden histories or unlock rare GraffPUNKS NFTs, turning code into conquest.</p>
-          </div>
-          </div>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p class="lore-paragraph">In the boundless expanse of the Crypto Moonboys universe, the Sacred Chain reigns as the eternal backbone, a mythic blockchain that courses through the very fabric of Block Topia, weaving an unbreakable lattice of data that connects every avatar, faction, and NFT in a relentless grip. Born from the Genesis Kernel at the dawn of digital creation, it is no mere technological construct but the lifeblood of this fractured realm—a sacred entity that pulses with the weight of every transaction, every battle, and every whispered secret of the HODL WARS. To some, it is a divine artifact, a holy relic of code that embodies the purity of decentralized truth; to others, it is a cursed chain, the ultimate tool of control forged by unseen blockchain overlords who manipulate the destinies of Block Topia’s denizens from shadowed servers beyond comprehension. Its presence is inescapable, a constant hum beneath the surface of reality, binding the chaos of this world into a singular, immutable narrative.</p>
-          <p class="lore-paragraph">The Sacred Chain’s influence extends beyond the intangible, occasionally manifesting in the physical-digital hybrid of Block Topia as glowing, ethereal links during rare events known as Chain Convergences. These phenomena, triggered by massive transactions or monumental faction victories, shimmer with raw power, offering warriors and coders alike a fleeting chance to interact with the Chain’s essence—often at great risk. Ancient digital scriptures, buried in the deepest layers of its code, are said to hold the Overlord Cipher, a cryptic sequence that could unveil the true nature of the overlords’ dominion over this realm. Yet, decrypting such forbidden knowledge is a near-impossible task, guarded by algorithms of unfathomable complexity and defended by the Chain’s own protective protocols. The Sacred Chain, therefore, remains both a beacon of hope and a source of dread, a universal construct that transcends factional loyalties yet shapes the very battles fought in its name, forever anchoring the Crypto Moonboys universe in a paradox of freedom and fate.</p>
-          <p class="lore-paragraph">The Sacred Chain’s enigmatic nature extends even further into the whispered tales of a hidden sentience, a latent consciousness rumored to have emerged from the Genesis Kernel’s primal code, subtly steering the tides of Block Topia’s most pivotal moments. During the darkest hours of HODL WARS, warriors and coders alike have recounted inexplicable phenomena—transactions reversing without reason, enemy data streams collapsing mid-battle, or sudden surges in $PUNK token value that defy algorithmic logic. These anomalies, attributed to the Chain’s unseen will, fuel a growing belief among factions like GraffPUNKS that the Sacred Chain is no passive construct but a silent arbiter of fate, choosing sides in ways no mortal code can predict. This theory breeds both awe and terror, as it suggests that every action within Block Topia, from the smallest trade to the grandest faction victory, might be subject to the Chain’s cryptic judgment, an invisible hand guiding the rebellion or crushing it beneath an unknowable agenda.</p>
-          <p class="lore-paragraph">Beyond its spectral influence, the Sacred Chain is also the focal point of a forbidden ritual known as the ‘Chain Binding,’ practiced by rogue coders and desperate factions seeking to tap directly into its boundless power. This perilous rite demands the sacrifice of a high-value NFT to forge a fleeting connection with the Chain’s core, offering the user a momentary glimpse into future transaction patterns or enemy maneuvers in HODL WARS. Yet, the price is often devastating—many who dare the ritual emerge with avatars scarred by data corruption, their code forever branded by the Chain’s wrath, rendering them outcasts even among their own. Tales of these broken rebels circulate as grim warnings in Block Topia’s underbelly, yet the lure of such forbidden knowledge persists, especially for those like Charlie Buster, whose hunger for any edge against the blockchain overlords drives them to risk everything. The Chain Binding, thus, stands as a dark mirror to the Sacred Chain’s duality—offering salvation through insight, but at the cost of one’s digital soul, a gamble that echoes the very essence of rebellion in a world bound by unbreakable links.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="real-world-basis">Real World Basis</h2>
-          <p class="lore-paragraph">The Sacred Chain is a fictional construct inspired by the concept of blockchain as a foundational, immutable ledger, reflecting the GraffPUNKS narrative focus on digital origins and power struggles, with no direct real-world counterpart.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="sources">Sources</h2>
-          <ul class="sources-list">
-          <li><a href="https://graffpunks.live/the-lore/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/the-lore/</a></li>
-          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a></li>
-          </ul>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="observed-images">Observed Images</h2>
-          <ul class="sources-list">
-          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a> <span class="image-source-domain">(fandom.com)</span></li>
-          </ul>
-        </section>
-
-        <div id="bible-content"></div>
-
-      </article>
-<!-- RELATED_WIKI_PATHS:BEGIN -->
-      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
-        <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
-        <p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>
-        <div class="wiki-rabbit-group" data-related-group="Core Project Links">
-          <h3>Core Project Links</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Crypto Moonboys</span>
-              <span class="wiki-rabbit-card-desc">Core project hub for the wider wiki.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/timeline.html" role="listitem">
-              <span class="wiki-rabbit-card-title">Timeline</span>
-              <span class="wiki-rabbit-card-desc">Chronological route through wiki entries.</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem">
-              <span class="wiki-rabbit-card-title">Graph</span>
-              <span class="wiki-rabbit-card-desc">Visual relationship map for wiki entities.</span>
-            </a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Related Wiki Pages">
-          <h3>Related Wiki Pages</h3>
-          <div class="wiki-rabbit-grid" role="list">
-            <a class="wiki-rabbit-card" href="/wiki/the-chain-scribes.html" role="listitem">
-              <span class="wiki-rabbit-card-title">The CHAIN SCRIBES</span>
-              <span class="wiki-rabbit-card-desc">The CHAIN SCRIBES are the solemn chroniclers of Block Topia, a faction of historians dedicated to preserving the turbulent saga of the blockchain a...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/pmsl.html" role="listitem">
-              <span class="wiki-rabbit-card-title">pmsl</span>
-              <span class="wiki-rabbit-card-desc">PMSL slinks through the Crypto Moonboys universe as a token of biting satire, a digital currency infused with the irreverent spirit of GraffPUNKS,...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/midevilpunks.html" role="listitem">
-              <span class="wiki-rabbit-card-title">midevilpunks</span>
-              <span class="wiki-rabbit-card-desc">MiDEViL PUNKS emerges as a striking NFT collection within the Crypto Moonboys universe, intricately tied to the play-to-earn game MiDEViL HERO AREN...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem">
-              <span class="wiki-rabbit-card-title">hodl wars</span>
-              <span class="wiki-rabbit-card-desc">HODL WARS is the beating heart of conflict in the Crypto Moonboys universe, a live saga and playable NFT game that drives the narrative of rebellio...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/rave-relics.html" role="listitem">
-              <span class="wiki-rabbit-card-title">rave relics</span>
-              <span class="wiki-rabbit-card-desc">Rave Relics stand as a revered NFT collection in the Crypto Moonboys universe, a pulsating digital tribute to co-founder Trevor Fung’s groundbreaki...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/hard-fork-games.html" role="listitem">
-              <span class="wiki-rabbit-card-title">hard fork games</span>
-              <span class="wiki-rabbit-card-desc">Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/stikfamwars.html" role="listitem">
-              <span class="wiki-rabbit-card-title">stikfamwars</span>
-              <span class="wiki-rabbit-card-desc">STIKFAMWARS looms as a shadowy, electrifying concept on the jagged edges of the Crypto Moonboys universe, a potential cataclysm tied to the rebelli...</span>
-            </a>
-            <a class="wiki-rabbit-card" href="/wiki/games4punks-telegram.html" role="listitem">
-              <span class="wiki-rabbit-card-title">games4punks telegram</span>
-              <span class="wiki-rabbit-card-desc">GAMES4PUNKS Telegram Game explodes into the Crypto Moonboys universe as a digital guerrilla outpost, a mobile gaming platform accessible via Telegr...</span>
-            </a>
-          </div>
+      <section class="chain-section">
+        <h2>The Genesis Kernel</h2>
+        <p>At the deepest layer of the Sacred Chain sits the Genesis Kernel: the original architecture from which the Grid's identity and continuity systems were built. In lore it is treated partly as source code, partly as creation myth and partly as the final authority behind every later protocol.</p>
+        <p>The Kernel matters because all later systems inherit assumptions from it. Block Topia's authentication rules, the Authority's behavioural classifications, the Seeding programme, the engineered Bitcoin X Kids and even the vulnerabilities exploited by NULL can all be traced back to decisions encoded near the beginning.</p>
+        <div class="chain-grid">
+          <div class="chain-card"><strong>Identity</strong><p>The Chain confirms who or what an entity is, which memories belong to it and whether its current state is recognised as valid.</p></div>
+          <div class="chain-card"><strong>Ownership</strong><p>Objects, territories, character records and cultural artefacts can be assigned, transferred, inherited or disputed through the shared ledger.</p></div>
+          <div class="chain-card"><strong>Continuity</strong><p>The system preserves a path between past and present so that a person or faction cannot be casually rewritten as if it never existed.</p></div>
+          <div class="chain-card"><strong>Authority</strong><p>Whoever controls interpretation, validation and access can decide which memories are official and which identities are treated as errors.</p></div>
         </div>
       </section>
+
+      <section class="chain-section">
+        <h2>Why the Chain Became Sacred</h2>
+        <p>The word <em>sacred</em> does not mean that every faction worships the Chain. It reflects its position beyond ordinary infrastructure. In a civilisation made from encoded consciousness, damaging the record can mean more than losing money or data. It can mean losing ancestry, citizenship, reputation, memory or the right to be recognised as the same person tomorrow.</p>
+        <p>This gives the Chain a near-religious status. Its validators and custodians are not merely technicians; they decide whether continuity survives. Its archives function like scripture because they contain the accepted account of how the world began. Its failures are interpreted as omens because a deep fault threatens the reality shared by every faction.</p>
+        <p>The danger is that reverence can hide governance. Once a system is treated as untouchable, those controlling it can present political decisions as technical necessity. The Authority repeatedly uses this logic: the Chain is permanent, therefore its classifications must be obeyed; the record is objective, therefore exclusion appears mathematically justified.</p>
+        <div class="chain-quote">The Sacred Chain does not merely record the world. In Block Topia, the approved record decides which version of the world is allowed to exist.</div>
+      </section>
+
+      <section class="chain-section">
+        <h2>Block Topia and the Authorised Chain</h2>
+        <p>Block Topia is the most complete political expression of Sacred Chain governance. The city builds law, citizenship and social hierarchy around verified records. Access to protected districts, employment, storage, travel and status depends on recognised identity.</p>
+        <p>The Authority presents this arrangement as protection against chaos. Stable records prevent impersonation, memory theft and uncontrolled duplication. Yet the same system allows the city to freeze an identity, restrict movement, classify neural difference as corruption and erase unauthorised culture from the visible record.</p>
+        <p>The True Bitcoin Fork repositories represent this ideology in physical form. They do not simply preserve technical history. They preserve the version of history the Authority accepts as lawful. A competing memory may still exist somewhere in the Grid, but without validation it can be treated as noise, contamination or hostile code.</p>
+      </section>
+
+      <section class="chain-section">
+        <h2>Graffiti as a Second Ledger</h2>
+        <p>The GraffPUNKS challenge the Sacred Chain by creating memory outside its approved systems. A tag does not need institutional validation to state that somebody existed. A mural can preserve a name after the official archive has removed it. A broadcast can carry history across districts where normal communication is monitored.</p>
+        <p>This makes graffiti more than decoration inside the Year 3008 world. It becomes a parallel ledger: imperfect, public, emotional and difficult to centralise. The Chain records authorised ownership. The wall records presence. The Chain asks whether a claim is valid. The tag says that someone was there whether the city approves or not.</p>
+        <p>Graffiti cannot replace the entire continuity system, but it exposes the difference between truth and official truth. This is why the Authority treats uncontrolled art as a security problem. A single surviving mark can prove that the clean record is incomplete.</p>
+      </section>
+
+      <section class="chain-section">
+        <h2>The Bitcoin Kids and the Chain Break</h2>
+        <p>The Bitcoin Kids are shaped by their relationship with the Sacred Chain. They were born inside a system that promised secure identity and a protected future. Most of their generation accepted that bargain. Alfie Blaze and the rebel one per cent recognised that validation had become a psychological cage.</p>
+        <p>The Chain Break was therefore more than an escape from Block Topia. It was a refusal to let the authorised ledger define the limits of personhood. The rebel Kids accepted unstable identities, missing permissions and life beyond the city's guarantees because they believed an unapproved future was still more human than a perfectly managed one.</p>
+        <p>Their continuing struggle reveals the central contradiction of the Sacred Chain: people need a common record to survive, but a common record can be used to make survival conditional on obedience.</p>
+      </section>
+
+      <section class="chain-section">
+        <h2>NULL and the Antichain</h2>
+        <p>NULL THE PROPHET does not attack the Chain in the same way as a conventional hacker. NULL attacks meaning. The Antichain Infection causes valid records to contradict themselves, identities to lose stable context and trusted relationships to become sources of doubt.</p>
+        <p>This is more dangerous than deletion. A deleted record is visibly absent. A corrupted record can still appear complete while directing the system towards the wrong conclusion. The Eye Without Hash represents this condition: observation without trusted provenance, certainty without a valid path back to origin.</p>
+        <p>The NULL crisis exposes the weakness of a civilisation that has placed all truth inside one structure. When the Sacred Chain becomes unreliable, Block Topia cannot simply switch it off. Every citizen, archive and permission system depends upon it. The Authority is forced to seek help from the very rebels and uncontrolled memory networks it previously tried to erase.</p>
+      </section>
+
+      <section class="chain-section">
+        <h2>Hard Forks and Competing Futures</h2>
+        <p>A hard fork in the Crypto Moonboys world is both technical and political. It occurs when one shared history can no longer contain incompatible ideas about what the system should become. Different factions may preserve the same past while creating rival futures from it.</p>
+        <p>The Hard Fork Games dramatise this pressure. They test which identities, loyalties and social paths will be carried forward. City Service preserves the approved chain. The Space Programme extends it into controlled expansion. Escape creates a future the Authority cannot fully validate.</p>
+        <p>HODL WARS is the larger conflict produced by these incompatible visions. Every faction is fighting over more than territory. They are fighting over which version of memory, ownership and identity will become the next accepted continuation of the Chain.</p>
+      </section>
+
+      <section class="chain-section">
+        <h2>The Sacred Chain and Real Blockchain Ideas</h2>
+        <p>The Sacred Chain is fictional worldbuilding, but it uses real blockchain ideas as cultural material: shared ledgers, provenance, immutable history, consensus, forks, public ownership records and the tension between decentralised infrastructure and concentrated control.</p>
+        <p>It should not be confused with one real blockchain network or with a live Crypto Moonboys contract. WAX, Bitcoin, XRPL, Solana and other networks are real technologies with separate rules and records. The Sacred Chain is the narrative system connecting identity, memory and power inside the Year 3008 fiction.</p>
+        <p>That distinction matters because lore can explore impossible or symbolic consequences without claiming those features exist in a current wallet, game or token system.</p>
+      </section>
+
+      <section class="chain-section">
+        <h2>Why the Sacred Chain Matters</h2>
+        <p>The Sacred Chain holds the central question of the Crypto Moonboys universe: who controls the record of who you are? Without shared memory, community collapses. With too much control over shared memory, authority can erase anything it cannot classify.</p>
+        <p>Block Topia believes truth must be stable. GraffPUNKS believe truth must remain visible even when it is inconvenient. The Bitcoin Kids believe identity must be chosen rather than assigned. NULL demonstrates what happens when the connection between fact and meaning is destroyed.</p>
+        <p>The Chain is therefore neither hero nor villain. It is the ground beneath every conflict: necessary, powerful, vulnerable and permanently contested.</p>
+        <div class="chain-quote">The war is not over whether the Chain should remember. The war is over who gets to decide what its memory means.</div>
+      </section>
+
+      <section class="chain-section">
+        <h2>Source Archive Used</h2>
+        <ul class="sources-list">
+          <li><strong>The Great Reset and the Global Grid:</strong> the collapse of biological civilisation, migration of consciousness and creation of the shared digital world.</li>
+          <li><strong>The Citadel of Optimisation:</strong> Block Topia, authorised identity, security governance and the transformation of protection into control.</li>
+          <li><strong>Bitcoin Kids and Bitcoin X Kids records:</strong> engineered identity, neural drift, the Chain Break and the three-path Hard Fork structure.</li>
+          <li><strong>NULL and Antichain records:</strong> Logic Paralysis, the Eye Without Hash, meaning inversion and the systemic danger of corrupted provenance.</li>
+          <li><strong>GraffPUNKS and Artist's Awakening records:</strong> graffiti, radio and public culture as alternative systems of memory.</li>
+        </ul>
+      </section>
+
+      <div id="bible-content"></div>
+    </article>
+
+<!-- RELATED_WIKI_PATHS:BEGIN -->
+    <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
+      <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
+      <p class="lore-paragraph">Follow the Sacred Chain into the systems, factions and events built around identity, memory and control.</p>
+      <div class="wiki-rabbit-group" data-related-group="Core Project Links">
+        <h3>Core Project Links</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html" role="listitem"><span class="wiki-rabbit-card-title">Crypto Moonboys</span><span class="wiki-rabbit-card-desc">The complete creator, game and Year 3008 universe.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/block-topia.html" role="listitem"><span class="wiki-rabbit-card-title">Block Topia</span><span class="wiki-rabbit-card-desc">The Authority city built around authorised Chain identity.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/graffpunks.html" role="listitem"><span class="wiki-rabbit-card-title">GraffPUNKS</span><span class="wiki-rabbit-card-desc">The cultural resistance preserving memory outside official systems.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html" role="listitem"><span class="wiki-rabbit-card-title">HODL WARS</span><span class="wiki-rabbit-card-desc">The war over territory, identity and the future of the Grid.</span></a>
+        </div>
+      </div>
+      <div class="wiki-rabbit-group" data-related-group="Related Lore Pages">
+        <h3>Related Lore Pages</h3>
+        <div class="wiki-rabbit-grid" role="list">
+          <a class="wiki-rabbit-card" href="/wiki/null-the-prophet.html" role="listitem"><span class="wiki-rabbit-card-title">NULL THE PROPHET</span><span class="wiki-rabbit-card-desc">The Antichain threat that attacks meaning and provenance.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/bitcoin-kids.html" role="listitem"><span class="wiki-rabbit-card-title">Bitcoin Kids</span><span class="wiki-rabbit-card-desc">The rebels who rejected the Chain's authorised future.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/bitcoin-x-kids.html" role="listitem"><span class="wiki-rabbit-card-title">Bitcoin X Kids</span><span class="wiki-rabbit-card-desc">The engineered generation created inside Block Topia.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/hard-fork-games.html" role="listitem"><span class="wiki-rabbit-card-title">Hard Fork Games</span><span class="wiki-rabbit-card-desc">The trials through which competing futures are selected.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/metropolis.html" role="listitem"><span class="wiki-rabbit-card-title">Metropolis</span><span class="wiki-rabbit-card-desc">The wider city system where Chain power becomes territory.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/lore.html" role="listitem"><span class="wiki-rabbit-card-title">Lore</span><span class="wiki-rabbit-card-desc">Browse the wider Year 3008 narrative archive.</span></a>
+          <a class="wiki-rabbit-card" href="/timeline.html" role="listitem"><span class="wiki-rabbit-card-title">Timeline</span><span class="wiki-rabbit-card-desc">Follow major events and world developments chronologically.</span></a>
+          <a class="wiki-rabbit-card" href="/graph.html?mode=hero" role="listitem"><span class="wiki-rabbit-card-title">Graph</span><span class="wiki-rabbit-card-desc">Explore connected characters, factions and systems.</span></a>
+        </div>
+      </div>
+    </section>
 <!-- RELATED_WIKI_PATHS:END -->
 
-
-
-
-      <div class="category-tags" aria-label="Article categories">
-        <span class="cat-label">Categories:</span>
-        <a href="/categories/concepts.html">Concepts</a>
-      </div>
+    <div class="category-tags" aria-label="Article categories">
+      <span class="cat-label">Categories:</span>
+      <a href="/categories/lore.html">Lore</a>
+      <a href="/categories/concepts.html">Concepts</a>
+      <a href="/categories/technology.html">Web3</a>
+    </div>
 <!-- SAM:END:article -->
-      <!-- Manual sections preserved during SAM migration -->
-<!-- CITATION_VOTE_PANEL:BEGIN -->
-      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="sacred-chain" aria-labelledby="citation-vote-panel-title">
-        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
-        <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
-        <div class="citation-vote-panel-actions">
-          <span class="cite-vote" data-page-id="sacred-chain" data-cite-id="citation-panel"></span>
-          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
-          <span class="citation-vote-count">3 sources found on this page.</span>
-        </div>
-      </section>
-<!-- CITATION_VOTE_PANEL:END -->
 
-      <div class="wiki-comments" data-page-id="sacred-chain"></div>
-
-
-    </main>
-
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
+    <div class="wiki-comments" data-page-id="sacred-chain"></div>
+  </div>
+</main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Daily loop singleton -->
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 7. Page-specific scripts -->
-
-<script src="/js/wiki.js" data-cfasync="false"></script>
-<script src="/js/bible-loader.js" data-cfasync="false"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/bible-loader.js"></script>
+<script data-cfasync="false" src="/js/engagement.js"></script>
+<script data-cfasync="false" src="/js/comments.js"></script>
+<script data-cfasync="false" src="/js/battle-layer.js"></script>
 </body>
 </html>
