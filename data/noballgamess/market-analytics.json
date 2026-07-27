@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-26T06:18:27.697Z",
+  "generated_at": "2026-07-27T06:46:07.111Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-26T06:18:23.941Z"
+      "checked_at": "2026-07-27T06:46:02.982Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-26T06:18:24.132Z"
+      "checked_at": "2026-07-27T06:46:03.137Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-26T06:18:26.017Z"
+      "checked_at": "2026-07-27T06:46:04.924Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-26T06:18:26.204Z"
+      "checked_at": "2026-07-27T06:46:05.079Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-26T06:18:26.890Z"
+      "checked_at": "2026-07-27T06:46:05.733Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-26T06:18:27.253Z"
+      "checked_at": "2026-07-27T06:46:06.702Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-26T06:18:27.444Z"
+      "checked_at": "2026-07-27T06:46:06.858Z"
     }
   },
   "data": {
     "collection_stats": {
       "numUsers": 704,
-      "usdMarketCap": 126857.76084168813,
-      "waxMarketCap": 464698.59418567765,
+      "usdMarketCap": 126857.76084168891,
+      "waxMarketCap": 464698.5941856771,
       "numAssets": 11120
     },
     "num_assets": {
       "numberOfAssets": 11120,
-      "estimatedWaxValue": 464698.5941856777,
-      "estimatedUsdValue": 126857.7608416882
+      "estimatedWaxValue": 464698.5941856768,
+      "estimatedUsdValue": 126857.76084168893
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -680,15 +680,9 @@
     ],
     "volume": {
       "waxVolume": 12887.69987805,
-      "usdVolume": 60.57218942683501
+      "usdVolume": 60.572189426835024
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-27"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -734,7 +728,7 @@
       {
         "waxVolume": 1459,
         "sales": 24,
-        "usdVolume": 6.857299999999998,
+        "usdVolume": 6.8573,
         "date": "2026-07-05"
       },
       {
@@ -830,13 +824,13 @@
       {
         "waxVolume": 1352,
         "sales": 27,
-        "usdVolume": 6.3543999999999965,
+        "usdVolume": 6.354400000000001,
         "date": "2026-07-21"
       },
       {
         "waxVolume": 3257.999,
         "sales": 67,
-        "usdVolume": 15.312595300000007,
+        "usdVolume": 15.31259530000001,
         "date": "2026-07-22"
       },
       {
@@ -852,9 +846,9 @@
         "date": "2026-07-24"
       },
       {
-        "waxVolume": 6327.74187805,
+        "waxVolume": 6327.741878049999,
         "sales": 65,
-        "usdVolume": 29.740386826835035,
+        "usdVolume": 29.74038682683504,
         "date": "2026-07-25"
       },
       {
@@ -862,6 +856,12 @@
         "sales": 0,
         "usdVolume": 0,
         "date": "2026-07-26"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-07-27"
       }
     ]
   },

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-26T06:18:28.220Z",
+  "generated_at": "2026-07-27T06:46:07.679Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -23,10 +23,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-26T06:18:23.900Z",
-      "last_successful_check": "2026-07-26T06:18:23.899Z",
-      "last_successful_update": "2026-07-26T06:18:23.468Z",
-      "source_updated_at": "2026-07-26T06:18:23.468Z",
+      "checked_at": "2026-07-27T06:46:02.933Z",
+      "last_successful_check": "2026-07-27T06:46:02.933Z",
+      "last_successful_update": "2026-07-27T06:46:02.518Z",
+      "source_updated_at": "2026-07-27T06:46:02.518Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -34,7 +34,7 @@
       "endpoint_status": {},
       "notes": [
         "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22998 asset-state records across 143 templates.",
+        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 22999 asset-state records across 143 templates.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.",
@@ -71,10 +71,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-07-26T06:18:28.219Z",
-      "last_successful_check": "2026-07-26T06:18:28.219Z",
-      "last_successful_update": "2026-07-26T06:18:28.219Z",
-      "source_updated_at": "2026-07-26T06:18:28.219Z",
+      "checked_at": "2026-07-27T06:46:07.678Z",
+      "last_successful_check": "2026-07-27T06:46:07.678Z",
+      "last_successful_update": "2026-07-27T06:46:07.678Z",
+      "source_updated_at": "2026-07-27T06:46:07.678Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -82,7 +82,7 @@
       "endpoint_status": {},
       "notes": [
         "Generated NoBallGames rarity render: 12 ranked, 6 utility/open mint, 3 unissued.",
-        "Staged cache refresh: 21/21 metadata ok; 21/21 live supply counts ok; 14662 asset-state records across 21 templates.",
+        "Staged cache refresh: 21/21 metadata ok; 21/21 live supply counts ok; 15562 asset-state records across 21 templates.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "AtomicAssets is the source of truth; AtomicHub links are references only."

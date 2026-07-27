@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-26T06:18:27.990Z",
+  "generated_at": "2026-07-27T06:46:07.452Z",
   "note": "Trait exposure uses live_supply when live counts are available; issued_supply fallback remains explicit.",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
@@ -38,7 +38,7 @@
     {
       "trait": "airdropsbycb",
       "template_count": 9,
-      "exposure_supply": 9028
+      "exposure_supply": 9928
     }
   ],
   "schemas": [
@@ -50,7 +50,7 @@
     {
       "schema_name": "airdropsbycb",
       "templates": 13,
-      "live_supply": 13167
+      "live_supply": 14067
     }
   ]
 }
