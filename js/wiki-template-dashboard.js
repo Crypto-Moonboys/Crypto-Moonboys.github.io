@@ -30,8 +30,22 @@
       'wiki-page';
   }
 
+  function expandDashboard(deck) {
+    if (!deck) return;
+    var module = deck.closest('.wiki-engagement-module');
+    if (!module) return;
+    module.classList.add('wiki-engagement-module--template-dashboard');
+    module.style.width = '100%';
+    module.style.maxWidth = 'none';
+    module.style.boxSizing = 'border-box';
+    deck.style.width = '100%';
+    deck.style.boxSizing = 'border-box';
+  }
+
   function customiseDashboard(deck) {
-    if (!deck || deck.dataset.wikiDashboardReady === '1') return;
+    if (!deck) return;
+    expandDashboard(deck);
+    if (deck.dataset.wikiDashboardReady === '1') return;
     deck.dataset.wikiDashboardReady = '1';
 
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
@@ -117,10 +131,13 @@
     var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .lede', 'Explore this Crypto Moonboys wiki page.');
 
     var module = document.createElement('section');
-    module.className = 'wiki-engagement-module';
+    module.className = 'wiki-engagement-module wiki-engagement-module--template-dashboard';
     module.setAttribute('aria-label', 'Wiki engagement');
+    module.style.width = '100%';
+    module.style.maxWidth = 'none';
+    module.style.boxSizing = 'border-box';
     module.innerHTML =
-      '<div class="battle-deck battle-engagement-deck battle-engagement-deck--collection" data-wiki-dashboard-ready="1">' +
+      '<div class="battle-deck battle-engagement-deck battle-engagement-deck--collection" data-wiki-dashboard-ready="1" style="width:100%;box-sizing:border-box">' +
         '<div class="battle-shell battle-shell--media"><div class="battle-shell-inner">' +
           '<h3>Page Art</h3>' + mediaHTML() +
         '</div></div>' +
