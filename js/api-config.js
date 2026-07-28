@@ -21,6 +21,14 @@
 
   if (typeof window === 'undefined') return;
 
+  if (window.location && window.location.pathname.indexOf('/wiki/') === 0 && !document.querySelector('link[data-wiki-engagement-layout-fix]')) {
+    var engagementLayoutFix = document.createElement('link');
+    engagementLayoutFix.rel = 'stylesheet';
+    engagementLayoutFix.href = '/css/wiki-engagement-layout-fix.css';
+    engagementLayoutFix.setAttribute('data-wiki-engagement-layout-fix', 'true');
+    document.head.appendChild(engagementLayoutFix);
+  }
+
   var api = window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object'
     ? window.MOONBOYS_API
     : {};
@@ -237,38 +245,31 @@
   // Article engagement backend is live: migration 029 and Worker routes
   // have been verified for comments, likes, and citation votes.
   FEATURES: {
-    PRICE_TICKER:       true,   // Live crypto price data (CoinGecko — no worker needed)
-    COMMENTS:           true,   // Article comments — moonboys-api /comments route live
-    LIKES:              true,   // Page likes — moonboys-api /likes route live
-    CITATION_VOTES:     true,   // Citation votes — moonboys-api /citation-votes route live
-    LEADERBOARD:        false,  // Engagement leaderboard — moonboys-api /leaderboard endpoint not yet live
-    ARCADE_LEADERBOARD: true,   // Arcade score-submission worker (moonboys-leaderboard.sercullen.workers.dev) — live
-    LIVE_FEED:          false,  // Activity feed — /feed endpoint not yet live
-    SAM_STATUS:         true,   // SAM agent status widget (/sam/status — live)
-    ACTIVITY_PANEL:     false,  // Trending pages — /activity/hot endpoint not yet live
-    TELEGRAM_LOGIN:     true,   // Telegram Login Widget prefill (requires TELEGRAM_BOT_USERNAME)
-    TELEGRAM_COMMUNITY: true,   // Telegram XP / quest / community leaderboard panels (live)
+    PRICE_TICKER:       true,
+    COMMENTS:           true,
+    LIKES:              true,
+    CITATION_VOTES:     true,
+    LEADERBOARD:        false,
+    ARCADE_LEADERBOARD: true,
+    LIVE_FEED:          false,
+    SAM_STATUS:         true,
+    ACTIVITY_PANEL:     false,
+    TELEGRAM_LOGIN:     true,
+    TELEGRAM_COMMUNITY: true,
   },
 
   /* ── Telegram Login Widget ───────────────────────────────── */
-  // Set to your bot's @username (without the @) to enable the Telegram Login
-  // Widget in the comment identity form.  The widget prefills telegram_username
-  // and avatar_url; email and display name remain required.
-  // Leave as null to hide the widget.
   TELEGRAM_BOT_USERNAME: 'WIKICOMSBOT',
 
   /* ── Gravatar Configuration ──────────────────────────────── */
-  // Avatars are generated using a SHA-256 hash of the user's email.
-  // If no Gravatar exists, an identicon is displayed.
   GRAVATAR: {
     BASE: 'https://www.gravatar.com/avatar/',
     DEFAULT: 'identicon',
     SIZE: 64,
-    RATING: 'g' // Ensures family-friendly avatars
+    RATING: 'g'
   },
 
   /* ── Tracked Price Assets ───────────────────────────────── */
-  // CoinGecko coin IDs mapped to display metadata.
   TRACKED_ASSETS: [
     { id: 'wax',          symbol: 'WAXP', label: 'WAX',          icon: '💰' },
     { id: 'bitcoin',      symbol: 'BTC',  label: 'Bitcoin',      icon: '₿'  },
@@ -277,10 +278,7 @@
     { id: 'ripple',       symbol: 'XRP',  label: 'XRP',          icon: '✕'  },
   ],
 
-
   /* ── Environment Metadata ───────────────────────────────── */
-  // BUILD_DATE is reserved for an explicitly injected/static build timestamp.
-  // RUNTIME_LOADED_AT is the per-page-load runtime timestamp.
   ENV: {
     NAME: context.name,
     VERSION: '1.0.0',
@@ -292,7 +290,6 @@
   },
 
   /* ── UI & Engagement Defaults ───────────────────────────── */
-  // Centralized settings for frontend behaviour.
   UI: {
     DEFAULT_AVATAR: 'identicon',
     LEADERBOARD_LIMIT: 10,
