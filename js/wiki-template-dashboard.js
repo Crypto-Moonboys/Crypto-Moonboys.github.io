@@ -30,9 +30,23 @@
       'wiki-page';
   }
 
+  function fitDashboardToPage(deck) {
+    if (!deck) return;
+    var module = deck.closest('.wiki-engagement-module');
+    if (!module) return;
+
+    module.style.width = '100%';
+    module.style.maxWidth = 'none';
+    module.style.boxSizing = 'border-box';
+    deck.style.width = '100%';
+    deck.style.maxWidth = 'none';
+    deck.style.boxSizing = 'border-box';
+  }
+
   function customiseDashboard(deck) {
     if (!deck || deck.dataset.wikiDashboardReady === '1') return;
     deck.dataset.wikiDashboardReady = '1';
+    fitDashboardToPage(deck);
 
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
     var kicker = article.dataset.battleKicker || 'About This Page';
@@ -150,6 +164,7 @@
 
     var hero = article.querySelector('.wiki-hero');
     (hero || article).insertAdjacentElement('afterend', module);
+    fitDashboardToPage(module.querySelector('.battle-engagement-deck--collection'));
 
     var like = document.querySelector('.page-like-widget');
     if (!like) {
