@@ -21,7 +21,14 @@
 
   if (typeof window === 'undefined') return;
 
-  if (window.location && window.location.pathname.indexOf('/wiki/') === 0 && !document.querySelector('link[data-wiki-engagement-layout-fix]')) {
+  var wikiPathname = window.location && typeof window.location.pathname === 'string'
+    ? window.location.pathname
+    : '';
+  if (
+    typeof document !== 'undefined' &&
+    wikiPathname.indexOf('/wiki/') === 0 &&
+    !document.querySelector('link[data-wiki-engagement-layout-fix]')
+  ) {
     var engagementLayoutFix = document.createElement('link');
     engagementLayoutFix.rel = 'stylesheet';
     engagementLayoutFix.href = '/css/wiki-engagement-layout-fix.css';
@@ -234,16 +241,12 @@
 
   /* ── Backend API ─────────────────────────────────────────── */
   /* ── Identity Sync Gate ──────────────────────────────────── */
-  // URL shown to users who attempt a competitive action without Telegram sync.
   SYNC_GATE_URL: 'https://cryptomoonboys.com/gkniftyheads-incubator.html',
 
   /* ── CoinGecko Public API ────────────────────────────────── */
-  // Used for live cryptocurrency price data (no API key required).
   COINGECKO_BASE: 'https://api.coingecko.com/api/v3',
 
   /* ── Feature Flags ───────────────────────────────────────── */
-  // Article engagement backend is live: migration 029 and Worker routes
-  // have been verified for comments, likes, and citation votes.
   FEATURES: {
     PRICE_TICKER:       true,
     COMMENTS:           true,
