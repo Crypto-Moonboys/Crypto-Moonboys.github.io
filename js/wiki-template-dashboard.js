@@ -8,6 +8,30 @@
   var isWikiRoute = window.location.pathname.startsWith('/wiki/');
   article.dataset.pageType = 'nft_collection';
 
+  function installTemplateDashboardStyles() {
+    if (document.getElementById('wiki-template-dashboard-overrides')) return;
+
+    document.body.classList.add('wiki-template-dashboard-page');
+
+    var style = document.createElement('style');
+    style.id = 'wiki-template-dashboard-overrides';
+    style.textContent =
+      'body.wiki-template-dashboard-page .battle-engagement-deck--collection .page-like-widget,' +
+      'body.wiki-template-dashboard-page .battle-engagement-deck--collection .page-like-inner,' +
+      'body.wiki-template-dashboard-page .battle-engagement-deck--collection .like-btn {' +
+        'background:transparent !important;' +
+        'border:0 !important;' +
+        'box-shadow:none !important;' +
+      '}' +
+      'body.wiki-template-dashboard-page .battle-engagement-deck--collection .page-like-widget,' +
+      'body.wiki-template-dashboard-page .battle-engagement-deck--collection .page-like-inner {' +
+        'padding:0 !important;' +
+      '}';
+    document.head.appendChild(style);
+  }
+
+  installTemplateDashboardStyles();
+
   function esc(value) {
     return String(value == null ? '' : value)
       .replace(/&/g, '&amp;')
