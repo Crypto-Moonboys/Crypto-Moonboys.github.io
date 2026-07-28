@@ -23,8 +23,9 @@
   }
 
   function pageId() {
+    var comments = document.querySelector('.wiki-comments');
     return article.dataset.pageId ||
-      (document.querySelector('.wiki-comments') || {}).dataset?.pageId ||
+      (comments && comments.dataset ? comments.dataset.pageId : '') ||
       window.location.pathname.split('/').pop().replace(/\.html$/, '') ||
       'wiki-page';
   }
@@ -183,5 +184,5 @@
     }
 
     engagementValue().then(buildFallbackDashboard);
-  }, 250);
+  }, isWikiRoute ? 5000 : 250);
 }());
