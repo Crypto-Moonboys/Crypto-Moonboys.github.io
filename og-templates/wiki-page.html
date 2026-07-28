@@ -18,7 +18,7 @@
 </head>
 <body class="page-wiki page-standard-shell" data-entity-hash="og-template-wiki-page">
   <main id="content" role="main">
-    <article class="wiki-content og-public-template-page" data-page-type="template_guide" data-template-source="/templates/og/wiki-page.html">
+    <article class="wiki-content og-public-template-page" data-page-type="template_guide" data-template-source="/templates/og/wiki-page.html" data-battle-layout="dashboard" data-battle-kicker="About The Template" data-battle-subtitle="THE STANDARD. THE SHARED SYSTEM. THE FINAL WIKI FRAMEWORK.">
       <header class="wiki-hero">
         <p class="wiki-hero-breadcrumb">OG Page Templates</p>
         <h1>Wiki Page Template</h1>
@@ -30,6 +30,12 @@
         <span class="tag">Source: /templates/og/wiki-page.html</span>
       </div>
 
+      <template class="nft-battle-media-template" data-battle-media="nft" data-page-id="og-template-wiki-page">
+        <figure class="battle-page-media wiki-template-media-card">
+          <img class="wiki-hero-image" src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="Crypto Moonboys Wiki template artwork" loading="lazy" decoding="async">
+        </figure>
+      </template>
+
       <section class="wiki-section" aria-labelledby="source-title">
         <h2 id="source-title">Source Template</h2>
         <p>The raw agent template remains available at <a href="/templates/og/wiki-page.html">/templates/og/wiki-page.html</a>. Populate its placeholders with real page data before publishing a new wiki article.</p>
@@ -39,8 +45,8 @@
         <h2 id="rules-title">Required Shape</h2>
         <div class="wiki-stat-grid">
           <div class="wiki-card"><strong>Page type</strong><span>wiki_article</span></div>
-          <div class="wiki-card"><strong>Hero</strong><span>Shared top wiki hero card first inside the article</span></div>
-          <div class="wiki-card"><strong>Engagement</strong><span>Live battle layer, citation voting, and comments stay at the bottom</span></div>
+          <div class="wiki-card"><strong>Top dashboard</strong><span>Page Art, About This Page, Battle Heat and Daily Missions</span></div>
+          <div class="wiki-card"><strong>Comments</strong><span>Live comments stay below the article content</span></div>
           <div class="wiki-card"><strong>SEO</strong><span>Description, robots, canonical URL, Open Graph, title, and favicon must be populated</span></div>
         </div>
       </section>
@@ -56,38 +62,6 @@
     </article>
 
     <!-- LIVE_COMMENTS_BATTLE_LAYER:BEGIN -->
-    <section class="wiki-engagement-module" aria-label="Wiki engagement">
-      <div class="battle-deck battle-engagement-deck">
-        <div class="battle-shell battle-shell--heat">
-          <div class="battle-shell-inner">
-            <h3>Battle Heat</h3>
-            <div class="battle-meter-shell"><div class="battle-bar-fill" style="width:25%"></div></div>
-            <div class="battle-meter-meta"><span>Calm engagement</span><span>25%</span></div>
-            <p class="battle-copy">Derived from accepted comments, likes, and citation activity when the engagement backend is available.</p>
-          </div>
-        </div>
-        <div class="battle-shell battle-shell--missions">
-          <div class="battle-shell-inner">
-            <h3>Daily Missions</h3>
-            <div class="mission-stack">
-              <div class="mission-row" data-mission-id="engage">
-                <div><span class="mission-tag">Engage</span><div class="mission-text">Leave a strategic comment on this page to influence the narrative.</div></div>
-                <span class="mission-status mission-status--locked">Telegram sync required</span>
-              </div>
-              <div class="mission-row" data-mission-id="signal">
-                <div><span class="mission-tag">Signal</span><div class="mission-text">Like this article to boost its standing in the Moonboys ecosystem.</div></div>
-                <span class="mission-status mission-status--locked">Telegram sync required</span>
-              </div>
-              <div class="mission-row" data-mission-id="cite">
-                <div><span class="mission-tag">Cite</span><div class="mission-text">Vote on citations to strengthen the credibility of this intelligence file.</div></div>
-                <span class="mission-status mission-status--locked">Telegram sync required</span>
-              </div>
-            </div>
-            <p class="battle-copy">Rewards sync only for Telegram-linked users after supported actions are accepted by the live backend.</p>
-          </div>
-        </div>
-      </div>
-    </section>
     <div class="wiki-comments" data-page-id="og-template-wiki-page"></div>
     <!-- LIVE_COMMENTS_BATTLE_LAYER:END -->
   </main>
@@ -103,7 +77,10 @@
   <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
   <script data-cfasync="false" src="/js/faction-alignment.js"></script>
   <script data-cfasync="false" src="/js/wiki.js"></script>
+  <script data-cfasync="false" src="/js/bible-loader.js"></script>
   <script data-cfasync="false" src="/js/engagement.js"></script>
   <script data-cfasync="false" src="/js/comments.js"></script>
+  <script data-cfasync="false" src="/js/wiki-template-dashboard.js"></script>
+  <script data-cfasync="false" src="/js/battle-layer.js"></script>
 </body>
 </html>
