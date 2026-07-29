@@ -2,6 +2,8 @@
 body:has(.og-public-template-page) main#content {
   width: 100%;
   max-width: none;
+  margin-top: 0 !important;
+  padding-top: 8px !important;
   padding-inline: clamp(8px, 1.35vw, 24px);
 }
 
@@ -17,7 +19,13 @@ body:has(.og-public-template-page) .battle-engagement-deck--collection {
 }
 
 body:has(.og-public-template-page) .wiki-flagship-page {
-  margin-inline: 0;
+  margin: 0 !important;
+  padding-top: 0 !important;
+}
+
+body:has(.og-public-template-page) .og-public-template-page,
+body:has(.og-public-template-page) .og-public-template-page > .wiki-hero {
+  margin-top: 0 !important;
 }
 
 body:has(.og-public-template-page) .wiki-content,
@@ -40,6 +48,7 @@ body:has(.og-public-template-page) .wiki-live-source-card p {
 
 @media (max-width: 620px) {
   body:has(.og-public-template-page) main#content {
+    padding-top: 4px !important;
     padding-inline: 6px;
   }
 }
