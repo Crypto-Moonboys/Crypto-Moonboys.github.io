@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict';
-import { renderMarketAnalyticsSection } from './nft-market-analytics.mjs';
+import {
+  previousEndpointPayload,
+  renderMarketAnalyticsSection,
+} from './nft-market-analytics.mjs';
 
 const html = renderMarketAnalyticsSection({
   analytics_status: 'degraded',
@@ -33,5 +36,28 @@ assert.match(html, /Temporarily unavailable<\/strong><span>Top users/, 'only fai
 assert.match(html, /Temporarily unavailable: top users/, 'degraded copy should identify the failed optional endpoint');
 assert.doesNotMatch(html, /https:\/\/wax-api\.hivebp\.io/, 'raw endpoint URLs should not be exposed in the page card');
 assert.doesNotMatch(html, /failed: HTTP 500/, 'raw upstream errors should not be exposed in the page card');
+
+const previousSnapshot = {
+  data: {
+    num_assets: { numberOfAssets: 123352 },
+    marketcap: { usdMarketCap: 34528.36 },
+    top_users: [{ account: 'collector.wam' }],
+  },
+};
+assert.deepEqual(
+  previousEndpointPayload(previousSnapshot, 'marketcap'),
+  { usdMarketCap: 34528.36 },
+  'failed marketcap refreshes must reuse only previous.data.marketcap',
+);
+assert.deepEqual(
+  previousEndpointPayload(previousSnapshot, 'top_users'),
+  [{ account: 'collector.wam' }],
+  'failed top-users refreshes must reuse only previous.data.top_users',
+);
+assert.equal(
+  previousEndpointPayload(previousSnapshot, 'volume'),
+  null,
+  'missing endpoint history must not fall back to the entire prior snapshot',
+);
 
 console.log('nft-market-analytics-render.test.mjs passed');
