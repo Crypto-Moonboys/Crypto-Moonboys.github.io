@@ -37,29 +37,53 @@ async function tryUpdateCheckpoint(feed) {
   }
 }
 
-function reconciliationSummary() {
+function nullableNumber(value) {
+  if (value == null || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function generatedTemplateRows(rarity) {
+  return [
+    ...(Array.isArray(rarity.ranked_templates) ? rarity.ranked_templates : []),
+    ...(Array.isArray(rarity.utility_open_mint_templates) ? rarity.utility_open_mint_templates : []),
+    ...(Array.isArray(rarity.unissued_templates) ? rarity.unissued_templates : []),
+  ];
+}
+
+function reconciliationSummary(supplyResult) {
   const rarity = readPrevious('data/gkniftyheads/template-rarity.json', {});
-  const assetState = readPrevious('data/gkniftyheads/asset-state-cache.json', {});
   const stats = rarity.stats || {};
-  const templateState = Array.isArray(assetState.template_state) ? assetState.template_state : [];
-  const mismatchRows = templateState.filter((row) => (
-    row?.asset_state_status === 'mismatch'
-    || row?.status === 'mismatch'
-    || row?.asset_state_mismatch
-    || row?.mismatch
+  const mismatchRows = generatedTemplateRows(rarity).filter((row) => (
+    row?.asset_state_status === 'asset_state_mismatch'
+    || row?.asset_state_status === 'mismatch'
+    || Boolean(row?.asset_state_mismatch)
   ));
-  const issued = Number(stats.total_issued_supply);
-  const live = Number(stats.live_assets_counted);
-  const totalsComparable = Number.isFinite(issued) && Number.isFinite(live);
+  const mismatchTemplateIds = [...new Set(
+    mismatchRows.map((row) => nullableNumber(row.template_id)).filter((value) => value != null),
+  )];
+  const mismatchCount = Math.max(
+    nullableNumber(stats.asset_state_mismatch_templates) || 0,
+    mismatchTemplateIds.length,
+  );
+  const issued = nullableNumber(stats.total_issued_supply);
+  const live = nullableNumber(stats.live_assets_counted);
+  const freshLiveCounts = Number(supplyResult?.templates) > 0
+    && Number(supplyResult?.ok) === Number(supplyResult?.templates);
+  const totalsComparable = freshLiveCounts && issued != null && live != null;
   const totalDifference = totalsComparable ? live - issued : null;
   return {
-    mismatchTemplateIds: mismatchRows.map((row) => row.template_id).filter((value) => value != null),
-    mismatchCount: Number(stats.asset_state_mismatch_templates || mismatchRows.length || 0),
-    issued: Number.isFinite(issued) ? issued : null,
-    live: Number.isFinite(live) ? live : null,
+    mismatchTemplateIds,
+    mismatchCount,
+    issued,
+    live,
+    freshLiveCounts,
+    totalsComparable,
     totalDifference,
-    reconciled: Number(stats.asset_state_mismatch_templates || mismatchRows.length || 0) === 0
-      && (!totalsComparable || totalDifference <= 0),
+    reconciled: freshLiveCounts
+      && totalsComparable
+      && mismatchCount === 0
+      && totalDifference <= 0,
   };
 }
 
@@ -88,7 +112,7 @@ export async function updateGkniftyheadsRarityFeed() {
   const marketAnalytics = await updateNftMarketAnalytics({ collection: 'gkniftyheads', root: resolveRoot('.') });
   const collectionStats = await fetchAtomicCollectionStatsSanity({ collection: 'gkniftyheads' });
   const result = await runGenerateGkniftyheadsRarity();
-  const reconciliation = reconciliationSummary();
+  const reconciliation = reconciliationSummary(supplyResult);
   const { checkpoint, error } = await tryUpdateCheckpoint(feed);
   const syncPath = 'data/gkniftyheads/sync-status.json';
   const existingSync = readPrevious(syncPath, {});
@@ -105,6 +129,8 @@ export async function updateGkniftyheadsRarityFeed() {
   }
   existingSync.reconciliation = {
     status: reconciliation.reconciled ? 'reconciled' : 'degraded',
+    fresh_live_counts: reconciliation.freshLiveCounts,
+    totals_comparable: reconciliation.totalsComparable,
     issued_supply: reconciliation.issued,
     live_assets_counted: reconciliation.live,
     live_minus_issued: reconciliation.totalDifference,
@@ -117,13 +143,20 @@ export async function updateGkniftyheadsRarityFeed() {
   preserveOrWrite('data/gkniftyheads/live-asset-rarity.json', readPrevious('data/gkniftyheads/live-asset-rarity.json'));
 
   const analyticsDegraded = marketAnalytics.analytics_status !== 'ok';
-  const feedDegraded = analyticsDegraded || !reconciliation.reconciled || Boolean(error) || assetStateResult.errors > 0;
+  const feedDegraded = analyticsDegraded
+    || !reconciliation.reconciled
+    || !reconciliation.freshLiveCounts
+    || Boolean(error)
+    || assetStateResult.errors > 0;
   const endpointStatus = marketAnalytics.endpoint_status || {};
   const failedAnalytics = Object.entries(endpointStatus)
     .filter(([, row]) => !row?.ok)
     .map(([key]) => key);
   const errors = [];
   if (error) errors.push(`WAX get_info checkpoint unavailable: ${error}`);
+  if (!reconciliation.freshLiveCounts) {
+    errors.push(`Current live supply unavailable: ${supplyResult.ok}/${supplyResult.templates} template counts succeeded`);
+  }
   if (!reconciliation.reconciled) {
     errors.push(`Rarity reconciliation incomplete: ${reconciliation.mismatchCount} mismatched template(s); live minus issued = ${reconciliation.totalDifference ?? 'unknown'}`);
   }
@@ -140,8 +173,8 @@ export async function updateGkniftyheadsRarityFeed() {
       `Generated local rarity render: ${result.ranked} ranked, ${result.utility} utility/open mint, ${result.unissued} unissued.`,
       `Staged cache refresh: ${metadataResult.ok}/${metadataResult.templates} metadata ok; ${supplyResult.ok}/${supplyResult.templates} live supply counts ok; ${assetStateResult.assets} asset-state records across ${assetStateResult.templates} templates.`,
       reconciliation.reconciled
-        ? `Rarity reconciliation passed: ${reconciliation.live ?? 'unknown'} live assets against ${reconciliation.issued ?? 'unknown'} issued supply; no mismatched templates.`
-        : `Rarity reconciliation degraded: ${reconciliation.mismatchCount} mismatched template(s)${reconciliation.mismatchTemplateIds.length ? ` (${reconciliation.mismatchTemplateIds.join(', ')})` : ''}; live minus issued = ${reconciliation.totalDifference ?? 'unknown'}.`,
+        ? `Rarity reconciliation passed: ${reconciliation.live} live assets against ${reconciliation.issued} issued supply; no mismatched templates.`
+        : `Rarity reconciliation degraded: ${reconciliation.mismatchCount} mismatched template(s)${reconciliation.mismatchTemplateIds.length ? ` (${reconciliation.mismatchTemplateIds.join(', ')})` : ''}; live minus issued = ${reconciliation.totalDifference ?? 'unknown'}; fresh live counts = ${reconciliation.freshLiveCounts ? 'yes' : 'no'}.`,
       `HiveBP display analytics: ${marketAnalytics.analytics_status}; not used for rarity scoring.`,
       collectionStats.ok
         ? 'AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.'
