@@ -37,7 +37,8 @@
         "data/gkniftyheads/sync-status.json",
         "data/gkniftyheads/template-rarity.csv",
         "data/gkniftyheads/live-asset-rarity.csv",
-        "data/gkniftyheads/trait-exposure.csv"
+        "data/gkniftyheads/trait-exposure.csv",
+        "wiki/gkniftyheads-nft-collection.html"
       ],
       "updater": "scripts/update-gkniftyheads-rarity-feed.mjs",
       "update_frequency": "24h",
