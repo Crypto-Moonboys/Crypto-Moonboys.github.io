@@ -41,7 +41,7 @@
     wikiPathname.indexOf('/wiki/') === 0 &&
     !document.querySelector('script[data-wiki-flagship-migrator]')
   ) {
-    var migratorSrc = '/js/wiki-flagship-migrator.js?v=20260729-full-width-4';
+    var migratorSrc = '/js/wiki-flagship-migrator.js?v=20260729-full-width-5';
 
     if (document.readyState === 'loading') {
       document.write(

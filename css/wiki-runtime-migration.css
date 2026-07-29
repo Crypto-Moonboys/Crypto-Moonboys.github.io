@@ -6,6 +6,7 @@ body.wiki-runtime-flagship-shell main#content {
   padding: 0 clamp(8px, 1.35vw, 24px) clamp(54px, 6vw, 90px) !important;
 }
 
+body.wiki-runtime-flagship-shell .wiki-runtime-outer-shell,
 body.wiki-runtime-flagship-shell .wiki-runtime-flagship-page,
 body.wiki-runtime-flagship-shell .wiki-engagement-module,
 body.wiki-runtime-flagship-shell .battle-engagement-deck,

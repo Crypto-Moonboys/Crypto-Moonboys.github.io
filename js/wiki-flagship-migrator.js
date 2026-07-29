@@ -148,6 +148,14 @@
     });
   }
 
+  function markOuterShell(article) {
+    var node = article.parentElement;
+    while (node && node !== document.body && node.tagName !== 'MAIN') {
+      node.classList.add('wiki-runtime-outer-shell');
+      node = node.parentElement;
+    }
+  }
+
   function ensureWrapper(article) {
     if (article.closest('.wiki-flagship-page')) return;
     var wrapper = document.createElement('div');
@@ -214,9 +222,10 @@
     busy = true;
     try {
       addStyle('/css/wiki-flagship-layout.css', 'data-wiki-flagship-layout');
-      addStyle('/css/wiki-runtime-migration.css', 'data-wiki-runtime-migration');
+      addStyle('/css/wiki-runtime-migration.css?v=20260729-full-width-5', 'data-wiki-runtime-migration');
       addStyle('/css/wiki-comments-compact.css', 'data-wiki-comments-compact');
       document.body.classList.add('wiki-runtime-flagship-shell', 'page-wiki-template-comments');
+      markOuterShell(article);
 
       if (article.dataset.flagshipRuntimeReady !== '1') {
         article.dataset.flagshipRuntimeReady = '1';
