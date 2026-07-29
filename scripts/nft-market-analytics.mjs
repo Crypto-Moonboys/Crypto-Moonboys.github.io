@@ -48,6 +48,13 @@ export function readMarketAnalytics(root, collection) {
   });
 }
 
+export function previousEndpointPayload(previous, key) {
+  if (!previous || typeof previous !== 'object') return null;
+  const previousData = previous.data;
+  if (!previousData || typeof previousData !== 'object') return null;
+  return previousData[key] ?? null;
+}
+
 export async function updateNftMarketAnalytics({
   collection,
   root = process.cwd(),
@@ -95,8 +102,11 @@ export async function updateNftMarketAnalytics({
       attempts: result.attempts,
       checked_at: result.checked_at,
     };
-    if ((result.ok || result.used_previous) && result.payload != null) {
+    if (result.ok && result.payload != null) {
       data[key] = result.payload;
+    } else if (result.used_previous) {
+      const previousValue = previousEndpointPayload(previous, key);
+      if (previousValue != null) data[key] = previousValue;
     }
   }
 
