@@ -54,7 +54,8 @@
   function buildHero(article) {
     var hero = article.querySelector(':scope > header');
     var title = article.querySelector(':scope > h1, h1') || document.querySelector('.page-title, main > h1');
-    var summary = article.querySelector(':scope > p, section p');
+    var summary = hero && hero.querySelector('p:not(.wiki-flagship-kicker), .lede, [class$="-lead"]') ||
+      article.querySelector(':scope > p, section p');
     var category = document.querySelector('.breadcrumb a:last-of-type, .article-meta a, .category-tags a');
 
     if (!hero) {
@@ -158,6 +159,10 @@
   function ensureSourceStatus(article) {
     var comments = document.querySelector('.wiki-comments');
     if (!comments) return;
+
+    var authoredCard = document.querySelector('.wiki-live-source-card:not(.wiki-runtime-live-source)');
+    if (authoredCard) return;
+
     var sourceEntries = article.querySelectorAll('.sources-list li, .citations-list li, .source-ref-list li');
     var hasSources = Array.from(sourceEntries).some(function (item) {
       return item.querySelector('a[href]') || cleanText(item);
