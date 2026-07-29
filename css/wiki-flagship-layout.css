@@ -149,17 +149,109 @@
   border-color: rgba(0, 232, 240, .3);
 }
 
+.wiki-live-source-card {
+  width: min(100% - 24px, 1180px);
+  margin: 1.25rem auto;
+  padding: clamp(1.1rem, 2.5vw, 1.7rem);
+  border: 1px solid rgba(0, 232, 240, .3);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top right, rgba(0, 232, 240, .1), transparent 38%),
+    rgba(8, 12, 17, .96);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .3);
+}
+
+.wiki-live-source-card__eyebrow {
+  margin: 0 0 .5rem;
+  color: var(--wiki-flagship-cyan, #00e8f0);
+  font-size: .76rem;
+  font-weight: 900;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.wiki-live-source-card h2 {
+  margin: 0;
+  color: var(--wiki-flagship-gold, #f7c948);
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3vw, 2.35rem);
+  text-transform: uppercase;
+}
+
+.wiki-live-source-card p {
+  max-width: 900px;
+  margin: .75rem 0 0;
+  color: #dbe5eb;
+  line-height: 1.7;
+}
+
+.wiki-live-source-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-top: .85rem;
+  padding: .38rem .7rem;
+  border: 1px solid rgba(247, 201, 72, .38);
+  border-radius: 999px;
+  color: #f7c948;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.wiki-live-source-card__status::before {
+  width: .55rem;
+  height: .55rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.wiki-live-source-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  margin-top: 1rem;
+}
+
+.wiki-live-source-card__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: .68rem 1rem;
+  border: 1px solid rgba(0, 232, 240, .35);
+  border-radius: 999px;
+  color: #f4f7fa;
+  background: rgba(0, 232, 240, .08);
+  font-family: var(--font-display);
+  font-size: .82rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.wiki-live-source-card__link:hover,
+.wiki-live-source-card__link:focus-visible {
+  border-color: rgba(247, 201, 72, .75);
+  color: #f7c948;
+}
+
 @media (max-width: 860px) {
   .wiki-flagship-grid,
   .wiki-flagship-grid--two {
     grid-template-columns: 1fr;
   }
 
-  .wiki-flagship-actions {
+  .wiki-flagship-actions,
+  .wiki-live-source-card__actions {
     flex-direction: column;
   }
 
-  .wiki-flagship-button {
+  .wiki-flagship-button,
+  .wiki-live-source-card__link {
     width: 100%;
   }
 }
