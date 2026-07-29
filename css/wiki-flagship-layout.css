@@ -1,0 +1,165 @@
+/* Flagship standard wiki layout, adapted from /wiki/crypto-moonboys.html. */
+.wiki-flagship-page {
+  --wiki-flagship-gold: #f7c948;
+  --wiki-flagship-cyan: #00e8f0;
+  --wiki-flagship-pink: #ff3ca6;
+  --wiki-flagship-panel: rgba(8, 12, 17, .94);
+  width: min(100% - 24px, 1180px);
+  margin: 0 auto;
+  padding: 1.25rem 0;
+}
+
+.wiki-flagship-page .wiki-hero,
+.wiki-flagship-section {
+  margin-bottom: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 2.35rem);
+  border: 1px solid rgba(247, 201, 72, .2);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(0, 232, 240, .08), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(247, 201, 72, .08), transparent 36%),
+    var(--wiki-flagship-panel);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+}
+
+.wiki-flagship-kicker {
+  margin: 0 0 .75rem;
+  color: var(--wiki-flagship-cyan);
+  font-size: .82rem;
+  font-weight: 900;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.wiki-flagship-title {
+  margin: 0;
+  color: var(--wiki-flagship-gold);
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 6rem);
+  line-height: .92;
+  text-transform: uppercase;
+  text-shadow: 0 0 28px rgba(247, 201, 72, .25);
+}
+
+.wiki-flagship-title span {
+  display: block;
+  margin-top: .9rem;
+  color: #f4f7fa;
+  font-size: clamp(1rem, 2.2vw, 1.7rem);
+  line-height: 1.25;
+  letter-spacing: .08em;
+}
+
+.wiki-flagship-lead {
+  max-width: 960px;
+  margin: 1.2rem 0 0;
+  color: #e7edf2;
+  font-size: clamp(1.02rem, 1.6vw, 1.24rem);
+  line-height: 1.8;
+}
+
+.wiki-flagship-section h2 {
+  margin: 0 0 .9rem;
+  color: var(--wiki-flagship-gold);
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 3vw, 2.8rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.wiki-flagship-section p,
+.wiki-flagship-section li {
+  color: #dbe5eb;
+  line-height: 1.78;
+}
+
+.wiki-flagship-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.wiki-flagship-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wiki-flagship-card {
+  min-width: 0;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(0, 232, 240, .16);
+  border-radius: 14px;
+  background: rgba(0, 232, 240, .045);
+}
+
+.wiki-flagship-card strong {
+  display: block;
+  margin-bottom: .45rem;
+  color: var(--wiki-flagship-gold);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+.wiki-flagship-card p,
+.wiki-flagship-card span {
+  margin: 0;
+  color: #dbe5eb;
+  line-height: 1.65;
+}
+
+.wiki-flagship-highlight {
+  margin-top: 1rem;
+  padding: .95rem 1rem;
+  border-left: 4px solid var(--wiki-flagship-gold);
+  border-radius: 8px;
+  background: rgba(247, 201, 72, .08);
+  color: #f7f2dc;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.wiki-flagship-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.25rem;
+}
+
+.wiki-flagship-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: .82rem 1.15rem;
+  border: 1px solid rgba(247, 201, 72, .5);
+  border-radius: 999px;
+  color: #050607;
+  background: linear-gradient(135deg, var(--wiki-flagship-gold), var(--wiki-flagship-cyan));
+  font-family: var(--font-display);
+  font-size: .9rem;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.wiki-flagship-button--secondary {
+  color: #f4f7fa;
+  background: rgba(0, 232, 240, .08);
+  border-color: rgba(0, 232, 240, .3);
+}
+
+@media (max-width: 860px) {
+  .wiki-flagship-grid,
+  .wiki-flagship-grid--two {
+    grid-template-columns: 1fr;
+  }
+
+  .wiki-flagship-actions {
+    flex-direction: column;
+  }
+
+  .wiki-flagship-button {
+    width: 100%;
+  }
+}

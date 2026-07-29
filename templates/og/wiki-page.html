@@ -16,42 +16,68 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/wiki-comments-compact.css">
+  <link rel="stylesheet" href="/css/wiki-flagship-layout.css">
 </head>
 <body class="page-wiki page-standard-shell">
   <main id="content" role="main">
-    <article class="wiki-content og-page-template og-page-template--wiki" data-page-type="wiki_article" data-page-id="{{SLUG}}" data-battle-layout="dashboard" data-battle-kicker="About This Page" data-battle-subtitle="{{PRIMARY_CATEGORY}}">
-      <header class="wiki-hero">
-        <p class="wiki-hero-breadcrumb">Crypto Moonboys Wiki</p>
-        <h1>{{TITLE}}</h1>
-        <p>{{SUMMARY}}</p>
-      </header>
+    <div class="wiki-flagship-page">
+      <article class="wiki-content og-page-template og-page-template--wiki" data-page-type="wiki_article" data-page-id="{{SLUG}}" data-battle-layout="dashboard" data-battle-kicker="About This Page" data-battle-subtitle="{{PRIMARY_CATEGORY}}">
+        <header class="wiki-hero">
+          <p class="wiki-flagship-kicker">{{PRIMARY_CATEGORY}}</p>
+          <h1 class="wiki-flagship-title">{{TITLE}}<span>{{HERO_STATEMENT}}</span></h1>
+          <p class="wiki-flagship-lead">{{SUMMARY}}</p>
+        </header>
 
-      <div class="article-meta">
-        <span class="tag">{{PRIMARY_CATEGORY}}</span>
-        <span class="tag">Updated {{UPDATED_DATE}}</span>
-      </div>
+        <div class="article-meta">
+          <span class="tag">{{PRIMARY_CATEGORY}}</span>
+          <span class="tag">Updated {{UPDATED_DATE}}</span>
+        </div>
 
-      <template class="nft-battle-media-template" data-battle-media="nft" data-page-id="{{SLUG}}">
-        <figure class="battle-page-media wiki-page-media-card">
-          <img class="wiki-hero-image" src="{{OG_IMAGE}}" alt="{{TITLE}} page artwork" loading="lazy" decoding="async">
-        </figure>
-      </template>
+        <template class="nft-battle-media-template" data-battle-media="nft" data-page-id="{{SLUG}}">
+          <figure class="battle-page-media wiki-page-media-card">
+            <img class="wiki-hero-image" src="{{OG_IMAGE}}" alt="{{TITLE}} page artwork" loading="lazy" decoding="async">
+          </figure>
+        </template>
 
-      <section class="wiki-section">
-        <h2 id="overview">Overview</h2>
-        {{BODY}}
-      </section>
+        <section class="wiki-flagship-section" id="overview">
+          <p class="wiki-flagship-kicker">Overview</p>
+          <h2>{{OVERVIEW_TITLE}}</h2>
+          {{BODY}}
+        </section>
 
-      <section class="wiki-section related-wiki-paths" aria-labelledby="related-paths-title">
-        <h2 id="related-paths-title">Related Wiki Paths</h2>
-        {{RELATED_PATHS}}
-      </section>
+        <section class="wiki-flagship-section" id="key-points">
+          <p class="wiki-flagship-kicker">Key points</p>
+          <h2>{{KEY_POINTS_TITLE}}</h2>
+          <div class="wiki-flagship-grid">
+            {{KEY_POINT_CARDS}}
+          </div>
+          {{HIGHLIGHT}}
+        </section>
 
-      <section class="wiki-section">
-        <h2 id="sources">Sources</h2>
-        <ul class="sources-list">{{SOURCES}}</ul>
-      </section>
-    </article>
+        <section class="wiki-flagship-section" id="connections">
+          <p class="wiki-flagship-kicker">Connections</p>
+          <h2>{{CONNECTIONS_TITLE}}</h2>
+          <div class="wiki-flagship-grid wiki-flagship-grid--two">
+            {{CONNECTION_CARDS}}
+          </div>
+          {{ACTIONS}}
+        </section>
+
+        <section class="wiki-flagship-section related-wiki-paths" aria-labelledby="related-paths-title">
+          <p class="wiki-flagship-kicker">Related paths</p>
+          <h2 id="related-paths-title">Related Wiki Paths</h2>
+          <div class="wiki-flagship-grid">
+            {{RELATED_PATHS}}
+          </div>
+        </section>
+
+        <section class="wiki-flagship-section">
+          <p class="wiki-flagship-kicker">Verification</p>
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">{{SOURCES}}</ul>
+        </section>
+      </article>
+    </div>
 
     <div class="wiki-comments" data-page-id="{{SLUG}}"></div>
   </main>
