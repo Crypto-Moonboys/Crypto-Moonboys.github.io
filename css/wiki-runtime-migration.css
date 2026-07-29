@@ -21,6 +21,15 @@ body.wiki-runtime-flagship-shell .wiki-runtime-live-source {
   clear: both;
 }
 
+/* Match the shared engagement layout selector's specificity so its 1600px cap
+   cannot override the full-width non-NFT wiki migration. */
+body.wiki-runtime-flagship-shell .wiki-engagement-module:has(.battle-engagement-deck--collection) {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 body.wiki-runtime-flagship-shell .wiki-runtime-flagship-page {
   margin: 0 !important;
   padding: 0 !important;
