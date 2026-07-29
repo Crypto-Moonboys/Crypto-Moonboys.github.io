@@ -42,7 +42,9 @@
     if (unissuedSection) unissuedSection.hidden = !(normalized === 'all-ranked' || focusingUnissued);
     for (const row of mainRows) row.hidden = !matchesFilter(row, normalized);
     for (const card of rankedCards) card.hidden = !matchesFilter(card, normalized);
-    for (const card of auditCards) card.hidden = !matchesFilter(card, normalized);
+    for (const card of auditCards) {
+      card.hidden = !matchesFilter(card, normalized);
+    }
     for (const group of auditGroups) {
       const visibleCards = Array.from(group.querySelectorAll('.gk-audit-card[data-rarity-filter]')).filter((card) => !card.hidden);
       group.hidden = visibleCards.length === 0;
