@@ -41,12 +41,22 @@
     wikiPathname.indexOf('/wiki/') === 0 &&
     !document.querySelector('script[data-wiki-flagship-migrator]')
   ) {
-    var flagshipMigrator = document.createElement('script');
-    flagshipMigrator.src = '/js/wiki-flagship-migrator.js';
-    flagshipMigrator.async = false;
-    flagshipMigrator.setAttribute('data-cfasync', 'false');
-    flagshipMigrator.setAttribute('data-wiki-flagship-migrator', 'true');
-    document.head.appendChild(flagshipMigrator);
+    var migratorSrc = '/js/wiki-flagship-migrator.js?v=20260729-full-width-2';
+
+    if (document.readyState === 'loading') {
+      document.write(
+        '<script data-cfasync="false" data-wiki-flagship-migrator="true" src="' +
+        migratorSrc +
+        '"><\/script>'
+      );
+    } else {
+      var flagshipMigrator = document.createElement('script');
+      flagshipMigrator.src = migratorSrc;
+      flagshipMigrator.async = false;
+      flagshipMigrator.setAttribute('data-cfasync', 'false');
+      flagshipMigrator.setAttribute('data-wiki-flagship-migrator', 'true');
+      document.head.appendChild(flagshipMigrator);
+    }
   }
 
   var api = window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object'
