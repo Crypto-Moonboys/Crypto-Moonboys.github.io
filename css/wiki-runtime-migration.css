@@ -1,24 +1,44 @@
 /* Runtime flagship shell for legacy non-NFT wiki pages. */
 body.wiki-runtime-flagship-shell main#content {
   width: 100%;
+  max-width: none;
+  margin: 0 !important;
+  padding: 0 clamp(8px, 1.35vw, 24px) clamp(54px, 6vw, 90px) !important;
+}
+
+body.wiki-runtime-flagship-shell .wiki-runtime-flagship-page,
+body.wiki-runtime-flagship-shell .wiki-engagement-module,
+body.wiki-runtime-flagship-shell .battle-engagement-deck,
+body.wiki-runtime-flagship-shell .battle-engagement-deck--collection,
+body.wiki-runtime-flagship-shell .wiki-comments,
+body.wiki-runtime-flagship-shell .wiki-runtime-live-source {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+  float: none;
+  clear: both;
 }
 
 body.wiki-runtime-flagship-shell .wiki-runtime-flagship-page {
-  width: min(100% - 24px, 1180px);
-  margin: 0 auto;
-  padding: 1.25rem 0;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 body.wiki-runtime-flagship-shell .wiki-runtime-article {
   width: 100%;
   max-width: none;
   margin: 0;
-  padding: 0;
+  padding: 0 !important;
   float: none;
 }
 
+body.wiki-runtime-flagship-shell .wiki-runtime-article > .wiki-runtime-hero,
 body.wiki-runtime-flagship-shell .wiki-runtime-hero {
   width: 100%;
+  max-width: none;
+  margin-top: 0 !important;
   float: none;
   clear: both;
 }
@@ -28,6 +48,21 @@ body.wiki-runtime-flagship-shell .wiki-runtime-meta {
   flex-wrap: wrap;
   gap: .65rem;
   margin: 0 0 1.25rem;
+}
+
+body.wiki-runtime-flagship-shell .wiki-flagship-section,
+body.wiki-runtime-flagship-shell .wiki-live-source-card,
+body.wiki-runtime-flagship-shell .wiki-comments,
+body.wiki-runtime-flagship-shell .comments-battle-dashboard,
+body.wiki-runtime-flagship-shell .comments-dashboard-grid {
+  width: 100%;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+body.wiki-runtime-flagship-shell .wiki-flagship-lead,
+body.wiki-runtime-flagship-shell .wiki-live-source-card p {
+  max-width: none;
 }
 
 body.wiki-runtime-flagship-shell .wiki-runtime-key-facts .wiki-flagship-grid {
@@ -47,15 +82,7 @@ body.wiki-runtime-flagship-shell .wiki-flagship-section > h2:first-child {
 body.wiki-runtime-flagship-shell .wiki-runtime-article > .category-tags,
 body.wiki-runtime-flagship-shell .wiki-runtime-article > [data-related-wiki-paths="true"] {
   width: 100%;
-}
-
-body.wiki-runtime-flagship-shell .wiki-comments,
-body.wiki-runtime-flagship-shell .wiki-runtime-live-source {
-  width: min(100% - 24px, 1180px);
-  margin-left: auto;
-  margin-right: auto;
-  float: none;
-  clear: both;
+  max-width: none;
 }
 
 body.wiki-runtime-flagship-shell .infobox,
@@ -73,10 +100,8 @@ body.wiki-runtime-flagship-shell .wiki-runtime-article iframe {
   max-width: 100%;
 }
 
-@media (max-width: 860px) {
-  body.wiki-runtime-flagship-shell .wiki-runtime-flagship-page,
-  body.wiki-runtime-flagship-shell .wiki-comments,
-  body.wiki-runtime-flagship-shell .wiki-runtime-live-source {
-    width: min(100% - 12px, 1180px);
+@media (max-width: 620px) {
+  body.wiki-runtime-flagship-shell main#content {
+    padding: 0 6px 54px !important;
   }
 }
