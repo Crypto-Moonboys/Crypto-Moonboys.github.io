@@ -65,11 +65,107 @@
     }
   }
 
+  function firstNumber(value, keys) {
+    const payload = value && typeof value === 'object' && value.data ? value.data : value;
+    for (const key of keys) {
+      const raw = payload && payload[key];
+      const number = typeof raw === 'number' ? raw : Number(raw);
+      if (Number.isFinite(number)) return number;
+    }
+    return null;
+  }
+
+  function formatNumber(value, options) {
+    if (!Number.isFinite(value)) return 'Temporarily unavailable';
+    const config = options || {};
+    const formatted = new Intl.NumberFormat('en-GB', {
+      maximumFractionDigits: config.maximumFractionDigits == null ? 0 : config.maximumFractionDigits,
+    }).format(value);
+    return `${config.prefix || ''}${formatted}${config.suffix || ''}`;
+  }
+
+  function topTemplateNames(value) {
+    const rows = Array.isArray(value) ? value : [];
+    return rows.slice(0, 5).map((row) => {
+      const template = row && row.template;
+      if (!template || typeof template !== 'object') return '';
+      return String(template.name || template.template_name || template.template_id || '').trim();
+    }).filter(Boolean);
+  }
+
+  function topUserNames(value) {
+    const payload = value && typeof value === 'object' && !Array.isArray(value) && value.data ? value.data : value;
+    const rows = Array.isArray(payload)
+      ? payload
+      : [payload && payload.users, payload && payload.rows, payload && payload.results].find(Array.isArray) || [];
+    return rows.slice(0, 5).map((row) => {
+      if (typeof row === 'string' || typeof row === 'number') return String(row).trim();
+      if (!row || typeof row !== 'object') return '';
+      return String(row.account || row.owner || row.user || row.name || '').trim();
+    }).filter(Boolean);
+  }
+
+  function replaceStat(section, label, value) {
+    const cards = Array.from(section.querySelectorAll('.wiki-stat'));
+    const card = cards.find((item) => {
+      const span = item.querySelector('span');
+      return span && span.textContent.trim() === label;
+    });
+    const strong = card && card.querySelector('strong');
+    if (strong) strong.textContent = value;
+  }
+
+  function hydrateMarketAnalytics(payload) {
+    const section = ranking.querySelector('.nft-market-analytics');
+    if (!section || !payload || typeof payload !== 'object') return;
+    const data = payload.data || {};
+    const endpointStatus = payload.endpoint_status || {};
+    const totalAssets = firstNumber(data.num_assets, ['numberOfAssets', 'numAssets'])
+      ?? firstNumber(data.collection_stats, ['numAssets']);
+    const marketCapUsd = firstNumber(data.marketcap, ['usdMarketCap', 'marketCap'])
+      ?? firstNumber(data.collection_stats, ['usdMarketCap']);
+    const volumeWax = firstNumber(data.volume, ['waxVolume']);
+    const templateNames = topTemplateNames(data.top_templates);
+    const userNames = topUserNames(data.top_users);
+    const topUsersAvailable = endpointStatus.top_users && endpointStatus.top_users.ok && userNames.length > 0;
+
+    replaceStat(section, 'Total assets', formatNumber(totalAssets));
+    replaceStat(section, 'Market cap', formatNumber(marketCapUsd, { prefix: 'US$', maximumFractionDigits: 2 }));
+    replaceStat(section, `Volume (${payload.days || 30}d)`, formatNumber(volumeWax, { suffix: ' WAXP', maximumFractionDigits: 2 }));
+    replaceStat(section, 'Top users', topUsersAvailable ? userNames.join(', ') : 'Temporarily unavailable');
+    replaceStat(section, 'Top templates', templateNames.length ? templateNames.join(', ') : 'Temporarily unavailable');
+
+    const status = section.querySelector('.lore-paragraph small');
+    if (status) {
+      const failed = Object.entries(endpointStatus)
+        .filter(([, row]) => !row || !row.ok)
+        .map(([key]) => key === 'top_users' ? 'top users' : key.replaceAll('_', ' '));
+      status.textContent = failed.length
+        ? `Analytics status: ${payload.analytics_status || payload.status || 'degraded'}. Temporarily unavailable: ${failed.join(', ')}. Other values shown came from successful HiveBP responses.`
+        : `Analytics status: ${payload.analytics_status || payload.status || 'ok'}.`;
+    }
+  }
+
+  function loadMarketAnalytics() {
+    fetch('/data/gkniftyheads/market-analytics.json', { cache: 'no-store' })
+      .then((response) => {
+        if (!response.ok) throw new Error(`market analytics ${response.status}`);
+        return response.json();
+      })
+      .then(hydrateMarketAnalytics)
+      .catch(() => {
+        const section = ranking.querySelector('.nft-market-analytics');
+        const status = section && section.querySelector('.lore-paragraph small');
+        if (status) status.textContent = 'Market analytics are temporarily unavailable. AtomicAssets rarity data is unaffected.';
+      });
+  }
+
   for (const button of filterButtons) {
     button.addEventListener('click', () => applyFilter(button.getAttribute('data-gk-rarity-filter')));
   }
 
   applyFilter('all-ranked');
+  loadMarketAnalytics();
 
   fetch('/data/gkniftyheads/template-rarity.json', { cache: 'no-store' })
     .then((response) => {
