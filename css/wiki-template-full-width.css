@@ -22,12 +22,13 @@ body.page-og-wiki-template .wiki-flagship-page {
   padding: 0 !important;
 }
 
-body.page-og-wiki-template .og-public-template-page,
-body.page-og-wiki-template .og-public-template-page > .wiki-hero {
+body.page-og-wiki-template .og-public-template-page {
   margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 body.page-og-wiki-template .og-public-template-page > .wiki-hero {
+  margin-top: 0 !important;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
