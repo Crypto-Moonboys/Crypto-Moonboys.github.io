@@ -36,6 +36,19 @@
     document.head.appendChild(engagementLayoutFix);
   }
 
+  if (
+    typeof document !== 'undefined' &&
+    wikiPathname.indexOf('/wiki/') === 0 &&
+    !document.querySelector('script[data-wiki-flagship-migrator]')
+  ) {
+    var flagshipMigrator = document.createElement('script');
+    flagshipMigrator.src = '/js/wiki-flagship-migrator.js';
+    flagshipMigrator.async = false;
+    flagshipMigrator.setAttribute('data-cfasync', 'false');
+    flagshipMigrator.setAttribute('data-wiki-flagship-migrator', 'true');
+    document.head.appendChild(flagshipMigrator);
+  }
+
   var api = window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object'
     ? window.MOONBOYS_API
     : {};
