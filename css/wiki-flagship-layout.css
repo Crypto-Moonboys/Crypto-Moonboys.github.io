@@ -9,7 +9,7 @@
   padding: 1.25rem 0;
 }
 
-.wiki-flagship-hero,
+.wiki-flagship-page .wiki-hero,
 .wiki-flagship-section {
   margin-bottom: 1.25rem;
   padding: clamp(1.25rem, 3vw, 2.35rem);
