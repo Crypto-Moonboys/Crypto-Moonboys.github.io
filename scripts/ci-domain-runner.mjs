@@ -87,6 +87,7 @@ const GROUPS = {
     ['node', 'scripts/nft-rarity-methodology-doc.test.mjs'],
     ['node', 'scripts/feed-updater-safety.test.mjs'],
     ['node', 'scripts/site-feed-registry.test.mjs'],
+    ['node', 'scripts/nft-market-analytics-render.test.mjs'],
     ['node', 'scripts/wax-api-route-normalization.test.mjs'],
     ['node', 'scripts/wax-image-normalizer.test.mjs'],
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
