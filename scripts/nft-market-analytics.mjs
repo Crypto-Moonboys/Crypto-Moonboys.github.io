@@ -95,7 +95,9 @@ export async function updateNftMarketAnalytics({
       attempts: result.attempts,
       checked_at: result.checked_at,
     };
-    if (result.ok) data[key] = result.payload;
+    if ((result.ok || result.used_previous) && result.payload != null) {
+      data[key] = result.payload;
+    }
   }
 
   const okCount = Object.values(endpointStatus).filter((row) => row.ok).length;
@@ -137,7 +139,11 @@ function pickNumber(value) {
     return Number.isFinite(parsed) ? parsed : null;
   }
   if (typeof value === 'object') {
-    for (const key of ['value', 'count', 'total', 'assets', 'num_assets', 'marketcap', 'market_cap', 'volume']) {
+    for (const key of [
+      'value', 'count', 'total', 'assets', 'num_assets', 'numberOfAssets', 'numAssets',
+      'marketcap', 'market_cap', 'marketCap', 'usdMarketCap', 'waxMarketCap',
+      'volume', 'usdVolume', 'waxVolume', 'estimatedUsdValue', 'estimatedWaxValue',
+    ]) {
       const parsed = pickNumber(value[key]);
       if (parsed != null) return parsed;
     }
@@ -145,10 +151,22 @@ function pickNumber(value) {
   return null;
 }
 
-function compactNumber(value) {
+function pickMetric(value, keys = []) {
+  const payload = value?.data ?? value;
+  for (const key of keys) {
+    const parsed = pickNumber(payload?.[key]);
+    if (parsed != null) return parsed;
+  }
+  return pickNumber(payload);
+}
+
+function compactNumber(value, options = {}) {
   const number = pickNumber(value);
   if (number == null) return 'Unavailable';
-  return new Intl.NumberFormat('en-US', { maximumFractionDigits: number >= 100 ? 0 : 4 }).format(number);
+  const formatted = new Intl.NumberFormat('en-GB', {
+    maximumFractionDigits: options.maximumFractionDigits ?? (number >= 100 ? 0 : 4),
+  }).format(number);
+  return `${options.prefix || ''}${formatted}${options.suffix || ''}`;
 }
 
 function cleanMarketLabel(value) {
@@ -156,7 +174,7 @@ function cleanMarketLabel(value) {
   if (typeof value === 'string' || typeof value === 'number') return String(value);
   if (Array.isArray(value)) return value.map(cleanMarketLabel).filter(Boolean).join(' / ');
   if (typeof value === 'object') {
-    for (const key of ['name', 'display_name', 'template_name', 'template_id', 'account', 'owner', 'user', 'collection']) {
+    for (const key of ['name', 'displayName', 'display_name', 'template_name', 'template_id', 'account', 'owner', 'user']) {
       const label = cleanMarketLabel(value[key]);
       if (label) return label;
     }
@@ -185,25 +203,46 @@ function topItems(payload, labelKeys = []) {
   }).filter((label) => label && label !== '[object Object]');
 }
 
+function failedEndpointLabels(analytics) {
+  const labels = {
+    collection_stats: 'collection statistics',
+    num_assets: 'total assets',
+    marketcap: 'market cap',
+    top_users: 'top users',
+    top_templates: 'top templates',
+    volume: '30-day volume',
+    sales_volume_graph: 'sales-volume graph',
+  };
+  return Object.entries(analytics.endpoint_status || {})
+    .filter(([, endpoint]) => !endpoint?.ok)
+    .map(([key]) => labels[key] || key.replaceAll('_', ' '));
+}
+
 export function renderMarketAnalyticsSection(market, escapeHtml = (value) => String(value ?? '')) {
   const analytics = market || {};
   const data = analytics.data || {};
   const status = analytics.analytics_status || analytics.status || 'pending';
+  const totalAssets = pickMetric(data.num_assets, ['numberOfAssets', 'numAssets'])
+    ?? pickMetric(data.collection_stats, ['numAssets']);
+  const marketCapUsd = pickMetric(data.marketcap, ['usdMarketCap', 'marketCap'])
+    ?? pickMetric(data.collection_stats, ['usdMarketCap']);
+  const volumeWax = pickMetric(data.volume, ['waxVolume']);
   const topUsers = topItems(data.top_users, ['account', 'owner', 'user', 'name']);
-  const topTemplates = topItems(data.top_templates, ['template_id', 'name', 'template_name']);
-  const errorCopy = asArray(analytics.error_summary).length
-    ? `<p class="lore-paragraph"><small>Analytics status: ${escapeHtml(status)}. ${escapeHtml(asArray(analytics.error_summary).slice(0, 2).join('; '))}</small></p>`
+  const topTemplates = topItems(data.top_templates, ['template']);
+  const failed = failedEndpointLabels(analytics);
+  const errorCopy = failed.length
+    ? `<p class="lore-paragraph"><small>Analytics status: ${escapeHtml(status)}. Temporarily unavailable: ${escapeHtml(failed.join(', '))}. Other values shown below came from successful HiveBP responses.</small></p>`
     : `<p class="lore-paragraph"><small>Analytics status: ${escapeHtml(status)}.</small></p>`;
 
   return `<section class="wiki-section nft-market-analytics" data-market-analytics-provider="hivebp">
           <h2>Market Analytics</h2>
           <p class="lore-paragraph"><strong>Market analytics — display only, not rarity input.</strong> NFTHive / HiveBP WAX API data is shown as optional collection context. AtomicAssets remains the source of truth for rarity, template verification, live supply, burns, mints, asset state, original_mint_number, and surviving_mint_rank.</p>
           <div class="wiki-stat-grid nft-market-analytics-grid">
-            <div class="wiki-stat"><strong>${escapeHtml(compactNumber(data.num_assets))}</strong><span>Total assets</span></div>
-            <div class="wiki-stat"><strong>${escapeHtml(compactNumber(data.marketcap))}</strong><span>Market cap</span></div>
-            <div class="wiki-stat"><strong>${escapeHtml(compactNumber(data.volume))}</strong><span>Volume (${escapeHtml(analytics.days || DEFAULT_DAYS)}d)</span></div>
-            <div class="wiki-stat"><strong>${escapeHtml(topUsers.length ? topUsers.join(', ') : 'Unavailable')}</strong><span>Top users</span></div>
-            <div class="wiki-stat"><strong>${escapeHtml(topTemplates.length ? topTemplates.join(', ') : 'Unavailable')}</strong><span>Top templates</span></div>
+            <div class="wiki-stat"><strong>${escapeHtml(compactNumber(totalAssets))}</strong><span>Total assets</span></div>
+            <div class="wiki-stat"><strong>${escapeHtml(compactNumber(marketCapUsd, { prefix: 'US$', maximumFractionDigits: 2 }))}</strong><span>Market cap</span></div>
+            <div class="wiki-stat"><strong>${escapeHtml(compactNumber(volumeWax, { suffix: ' WAXP', maximumFractionDigits: 2 }))}</strong><span>Volume (${escapeHtml(analytics.days || DEFAULT_DAYS)}d)</span></div>
+            <div class="wiki-stat"><strong>${escapeHtml(topUsers.length ? topUsers.join(', ') : 'Temporarily unavailable')}</strong><span>Top users</span></div>
+            <div class="wiki-stat"><strong>${escapeHtml(topTemplates.length ? topTemplates.join(', ') : 'Temporarily unavailable')}</strong><span>Top templates</span></div>
           </div>
           ${errorCopy}
         </section>`;
