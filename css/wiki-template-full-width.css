@@ -1,0 +1,45 @@
+/* Full-width treatment for the canonical public wiki template only. */
+body:has(.og-public-template-page) main#content {
+  width: 100%;
+  max-width: none;
+  padding-inline: clamp(8px, 1.35vw, 24px);
+}
+
+body:has(.og-public-template-page) .wiki-flagship-page,
+body:has(.og-public-template-page) .wiki-live-source-card,
+body:has(.og-public-template-page) .wiki-comments,
+body:has(.og-public-template-page) .wiki-engagement-module,
+body:has(.og-public-template-page) .battle-engagement-deck,
+body:has(.og-public-template-page) .battle-engagement-deck--collection {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+body:has(.og-public-template-page) .wiki-flagship-page {
+  margin-inline: 0;
+}
+
+body:has(.og-public-template-page) .wiki-content,
+body:has(.og-public-template-page) .wiki-hero,
+body:has(.og-public-template-page) .wiki-flagship-section,
+body:has(.og-public-template-page) .wiki-live-source-card,
+body:has(.og-public-template-page) .wiki-comments:has(.comments-battle-dashboard) {
+  max-width: none !important;
+}
+
+body:has(.og-public-template-page) .wiki-live-source-card,
+body:has(.og-public-template-page) .wiki-comments:has(.comments-battle-dashboard) {
+  margin-inline: 0;
+}
+
+body:has(.og-public-template-page) .wiki-flagship-lead,
+body:has(.og-public-template-page) .wiki-live-source-card p {
+  max-width: none;
+}
+
+@media (max-width: 620px) {
+  body:has(.og-public-template-page) main#content {
+    padding-inline: 6px;
+  }
+}
