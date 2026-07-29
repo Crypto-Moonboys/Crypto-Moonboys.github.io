@@ -47,8 +47,7 @@ body.page-wiki .comments-dashboard-grid {
 }
 
 body.page-wiki .comments-link-grid {
-  grid-template-columns: 1fr;
-  gap: 10px;
+  display: none;
 }
 
 body.page-wiki .comments-link-card--benefits,
