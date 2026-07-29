@@ -222,7 +222,7 @@
     busy = true;
     try {
       addStyle('/css/wiki-flagship-layout.css', 'data-wiki-flagship-layout');
-      addStyle('/css/wiki-runtime-migration.css', 'data-wiki-runtime-migration');
+      addStyle('/css/wiki-runtime-migration.css?v=20260729-full-width-5', 'data-wiki-runtime-migration');
       addStyle('/css/wiki-comments-compact.css', 'data-wiki-comments-compact');
       document.body.classList.add('wiki-runtime-flagship-shell', 'page-wiki-template-comments');
       markOuterShell(article);
