@@ -8,14 +8,14 @@
 
   function isActualNftPage(article) {
     if (!article) return false;
-    var currentType = String(article.dataset.pageType || '').toLowerCase();
-    var originalType = String(article.dataset.runtimeOriginalPageType || currentType).toLowerCase();
+    var originalType = String(article.dataset.runtimeOriginalPageType || '').toLowerCase();
     var file = (window.location.pathname.split('/').pop() || '').toLowerCase();
 
     return originalType === 'nft_collection' ||
       originalType === 'nft_template' ||
       article.classList.contains('nft-collection-article') ||
       article.classList.contains('nft-template-article') ||
+      document.body.classList.contains('page-gkniftyheads-collection') ||
       file === 'gkniftyheads-nft-collection.html' ||
       /(?:^|-)nft-collection\.html$/.test(file) ||
       /^gkniftyheads-.+-\d+\.html$/.test(file);
