@@ -83,14 +83,8 @@ assert.match(templateShowcase, /gk-showcase-key-trait[\s\S]*Key trait/, 'templat
 assert.match(globalShowcase, /gk-showcase-key-trait[\s\S]*Key trait/, 'global showcase cards should keep one key trait line');
 assert.match(html, /<h3>Top Ranked NFTs<\/h3>/, 'top ranked NFTs should be the main table section');
 assert.match(html, /<h3>Best Exact NFT Versions<\/h3>/, 'asset version ranking should use the collector-facing title');
-assert.ok(
-  html.indexOf('gk-template-rarity-showcase') < html.indexOf('Full Rarity Audit'),
-  'template audit table should sit below the showcase cards',
-);
-assert.ok(
-  html.indexOf('gk-global-rarity-showcase') < html.indexOf('Full Global Rarity Audit'),
-  'global audit table should sit below the exact NFT showcase cards',
-);
+assert.ok(html.indexOf('gk-template-rarity-showcase') < html.indexOf('Full Rarity Audit'), 'template audit table should sit below the showcase cards');
+assert.ok(html.indexOf('gk-global-rarity-showcase') < html.indexOf('Full Global Rarity Audit'), 'global audit table should sit below the exact NFT showcase cards');
 assert.match(templateAuditSection, /<summary>Full Rarity Audit<\/summary>/, 'template audit summary should be visitor-facing');
 for (const band of ['Legendary', 'Ultra Rare', 'Rare', 'Uncommon', 'Common']) {
   assert.ok(templateAuditSection.includes(`<h4>${band}</h4>`), `template audit should include ${band} card group`);
@@ -126,8 +120,11 @@ assert.match(html, /<td><code>gkniftyheads<\/code><\/td>\s*<td>GKniftyHEADS<\/td
 assert.doesNotMatch(stripDetails(html), /\[\{&#x27;name&#x27;:|'\s*name\s*'/, 'raw schema JSON/format must not be visible outside collapsed developer details');
 assert.match(html, /<details class="developer-details gk-schema-developer-details">[\s\S]*Developer schema field details/, 'raw schema details should remain collapsed for developers');
 
-assert.match(statusClient, /Rarity snapshot active - live supply counted - burn baseline active/, 'public GKniftyHEADS badge should show live-counted mode when feed status reports counted supply');
-assert.match(statusClient, /Rarity snapshot active - issued-supply fallback - live burn scan pending/, 'public GKniftyHEADS badge should retain a fallback label when live counts are unavailable');
+assert.match(statusClient, /24-hour rarity snapshot/, 'public GKniftyHEADS badge should identify the scheduled snapshot contract');
+assert.match(statusClient, /AtomicAssets live supply counted/, 'public badge should identify successful current live counts');
+assert.match(statusClient, /issued-supply fallback/, 'public badge should identify fallback mode when current live counts are unavailable');
+assert.match(statusClient, /historic burn baseline pending/, 'public badge should preserve the truthful pending burn-baseline wording');
+assert.doesNotMatch(statusClient, /burn baseline active/i, 'public badge must not restore the false active burn-baseline claim');
 assert.match(statusClient, /node\.textContent = label\(status\)/, 'badge visible text should use visitor-safe label');
 assert.match(statusClient, /node\.setAttribute\('title', detailLabel\(status\)\)/, 'detailed feed errors should stay in title text');
 assert.doesNotMatch(statusClient, /node\.textContent = detailLabel/, 'detailed feed errors must not become visible badge text');

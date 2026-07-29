@@ -8,12 +8,18 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-site-data-feeds
+  cancel-in-progress: false
+
 jobs:
   update-site-feeds:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,7 +45,7 @@ jobs:
           node scripts/update-noballgamess-asset-state-cache.mjs
           node scripts/generate-noballgamess-rarity.mjs
 
-      - name: Update feeds
+      - name: Update feeds and regenerate collection pages
         env:
           GK_USE_EXISTING_STAGED_CACHES: '1'
           NBG_USE_EXISTING_STAGED_CACHES: '1'
@@ -48,8 +54,12 @@ jobs:
       - name: Validate feed registry
         run: node scripts/site-feed-registry.test.mjs
 
-      - name: Validate GKniftyHEADS rarity
-        run: node scripts/gkniftyheads-rarity-ranking.test.mjs
+      - name: Validate GKniftyHEADS rarity and market display
+        run: |
+          node scripts/gkniftyheads-rarity-ranking.test.mjs
+          node scripts/gkniftyheads-staged-rarity-pipeline.test.mjs
+          node scripts/nft-market-analytics-render.test.mjs
+          node scripts/gkniftyheads-24h-truth-contract.test.mjs
 
       - name: Run relevant audits
         run: |
@@ -77,5 +87,5 @@ jobs:
             git commit -m "chore: update site data feeds"
             git push
           else
-            echo "No generated feed changes to commit."
+            echo "No feed values changed; no commit required."
           fi

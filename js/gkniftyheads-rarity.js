@@ -40,26 +40,17 @@
     }
     if (utilitySection) utilitySection.hidden = !(normalized === 'all-ranked' || focusingUtility);
     if (unissuedSection) unissuedSection.hidden = !(normalized === 'all-ranked' || focusingUnissued);
-    for (const row of mainRows) {
-      row.hidden = !matchesFilter(row, normalized);
-    }
-    for (const card of rankedCards) {
-      card.hidden = !matchesFilter(card, normalized);
-    }
+    for (const row of mainRows) row.hidden = !matchesFilter(row, normalized);
+    for (const card of rankedCards) card.hidden = !matchesFilter(card, normalized);
     for (const card of auditCards) {
       card.hidden = !matchesFilter(card, normalized);
     }
     for (const group of auditGroups) {
-      const visibleCards = Array.from(group.querySelectorAll('.gk-audit-card[data-rarity-filter]'))
-        .filter((card) => !card.hidden);
+      const visibleCards = Array.from(group.querySelectorAll('.gk-audit-card[data-rarity-filter]')).filter((card) => !card.hidden);
       group.hidden = visibleCards.length === 0;
     }
-    for (const row of utilityRows) {
-      row.hidden = !(normalized === 'utility-open-mint' || normalized === 'all-ranked');
-    }
-    for (const row of unissuedRows) {
-      row.hidden = !(normalized === 'unissued' || normalized === 'all-ranked');
-    }
+    for (const row of utilityRows) row.hidden = !(normalized === 'utility-open-mint' || normalized === 'all-ranked');
+    for (const row of unissuedRows) row.hidden = !(normalized === 'unissued' || normalized === 'all-ranked');
     for (const button of filterButtons) {
       button.classList.toggle('is-active', button.getAttribute('data-gk-rarity-filter') === normalized);
     }
@@ -105,6 +96,10 @@
     }).filter(Boolean);
   }
 
+  function endpointSucceeded(status, key) {
+    return Boolean(status && status[key] && status[key].ok === true);
+  }
+
   function replaceStat(section, label, value) {
     const cards = Array.from(section.querySelectorAll('.wiki-stat'));
     const card = cards.find((item) => {
@@ -115,24 +110,39 @@
     if (strong) strong.textContent = value;
   }
 
+  function snapshotLabel(value) {
+    const date = new Date(value);
+    return Number.isFinite(date.getTime())
+      ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(date) + ' UTC'
+      : 'time unavailable';
+  }
+
   function hydrateMarketAnalytics(payload) {
     const section = ranking.querySelector('.nft-market-analytics');
     if (!section || !payload || typeof payload !== 'object') return;
     const data = payload.data || {};
     const endpointStatus = payload.endpoint_status || {};
-    const totalAssets = firstNumber(data.num_assets, ['numberOfAssets', 'numAssets'])
-      ?? firstNumber(data.collection_stats, ['numAssets']);
-    const marketCapUsd = firstNumber(data.marketcap, ['usdMarketCap', 'marketCap'])
-      ?? firstNumber(data.collection_stats, ['usdMarketCap']);
-    const volumeWax = firstNumber(data.volume, ['waxVolume']);
-    const templateNames = topTemplateNames(data.top_templates);
-    const userNames = topUserNames(data.top_users);
-    const topUsersAvailable = endpointStatus.top_users && endpointStatus.top_users.ok && userNames.length > 0;
+
+    const totalAssets = endpointSucceeded(endpointStatus, 'num_assets')
+      ? firstNumber(data.num_assets, ['numberOfAssets', 'numAssets'])
+      : endpointSucceeded(endpointStatus, 'collection_stats')
+        ? firstNumber(data.collection_stats, ['numAssets'])
+        : null;
+    const marketCapUsd = endpointSucceeded(endpointStatus, 'marketcap')
+      ? firstNumber(data.marketcap, ['usdMarketCap', 'marketCap'])
+      : endpointSucceeded(endpointStatus, 'collection_stats')
+        ? firstNumber(data.collection_stats, ['usdMarketCap'])
+        : null;
+    const volumeWax = endpointSucceeded(endpointStatus, 'volume')
+      ? firstNumber(data.volume, ['waxVolume'])
+      : null;
+    const templateNames = endpointSucceeded(endpointStatus, 'top_templates') ? topTemplateNames(data.top_templates) : [];
+    const userNames = endpointSucceeded(endpointStatus, 'top_users') ? topUserNames(data.top_users) : [];
 
     replaceStat(section, 'Total assets', formatNumber(totalAssets));
     replaceStat(section, 'Market cap', formatNumber(marketCapUsd, { prefix: 'US$', maximumFractionDigits: 2 }));
     replaceStat(section, `Volume (${payload.days || 30}d)`, formatNumber(volumeWax, { suffix: ' WAXP', maximumFractionDigits: 2 }));
-    replaceStat(section, 'Top users', topUsersAvailable ? userNames.join(', ') : 'Temporarily unavailable');
+    replaceStat(section, 'Top users', userNames.length ? userNames.join(', ') : 'Temporarily unavailable');
     replaceStat(section, 'Top templates', templateNames.length ? templateNames.join(', ') : 'Temporarily unavailable');
 
     const status = section.querySelector('.lore-paragraph small');
@@ -140,9 +150,10 @@
       const failed = Object.entries(endpointStatus)
         .filter(([, row]) => !row || !row.ok)
         .map(([key]) => key === 'top_users' ? 'top users' : key.replaceAll('_', ' '));
+      const generated = snapshotLabel(payload.generated_at);
       status.textContent = failed.length
-        ? `Analytics status: ${payload.analytics_status || payload.status || 'degraded'}. Temporarily unavailable: ${failed.join(', ')}. Other values shown came from successful HiveBP responses.`
-        : `Analytics status: ${payload.analytics_status || payload.status || 'ok'}.`;
+        ? `24-hour snapshot generated ${generated}. Analytics status: ${payload.analytics_status || payload.status || 'degraded'}. Temporarily unavailable: ${failed.join(', ')}. Every displayed value came from a successful endpoint in this snapshot.`
+        : `24-hour snapshot generated ${generated}. Analytics status: ${payload.analytics_status || payload.status || 'ok'}. Every displayed value came from this completed snapshot.`;
     }
   }
 
@@ -174,6 +185,7 @@
     })
     .then((payload) => {
       ranking.dataset.rarityJsonStatus = payload?.live_data_status || 'loaded';
+      ranking.dataset.raritySnapshotGeneratedAt = payload?.generated_at || '';
     })
     .catch(() => {
       ranking.dataset.rarityJsonStatus = 'unavailable';

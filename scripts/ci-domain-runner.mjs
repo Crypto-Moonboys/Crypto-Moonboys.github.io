@@ -79,6 +79,7 @@ const GROUPS = {
     ['node', 'scripts/audit-gkniftyheads-hub-links.mjs'],
     ['node', 'scripts/gkniftyheads-live-supply-scoring.test.mjs'],
     ['node', 'scripts/gkniftyheads-staged-rarity-pipeline.test.mjs'],
+    ['node', 'scripts/gkniftyheads-24h-truth-contract.test.mjs'],
     ['node', 'scripts/nft-asset-version-ranking.test.mjs'],
     ['node', 'scripts/gkniftyheads-rarity-ranking.test.mjs'],
     ['node', 'scripts/gkniftyheads-collection-page-cleanup.test.mjs'],
