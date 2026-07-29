@@ -1,57 +1,54 @@
 /* Full-width treatment for the canonical public wiki template only. */
-body.page-og-wiki-template main#content {
+body:has(.og-public-template-page) main#content {
   width: 100%;
   max-width: none;
-  margin: 0 !important;
-  padding: 0 clamp(8px, 1.35vw, 24px) clamp(54px, 6vw, 90px) !important;
+  margin-top: 0 !important;
+  padding-top: 8px !important;
+  padding-inline: clamp(8px, 1.35vw, 24px);
 }
 
-body.page-og-wiki-template .wiki-flagship-page,
-body.page-og-wiki-template .wiki-live-source-card,
-body.page-og-wiki-template .wiki-comments,
-body.page-og-wiki-template .wiki-engagement-module,
-body.page-og-wiki-template .battle-engagement-deck,
-body.page-og-wiki-template .battle-engagement-deck--collection {
+body:has(.og-public-template-page) .wiki-flagship-page,
+body:has(.og-public-template-page) .wiki-live-source-card,
+body:has(.og-public-template-page) .wiki-comments,
+body:has(.og-public-template-page) .wiki-engagement-module,
+body:has(.og-public-template-page) .battle-engagement-deck,
+body:has(.og-public-template-page) .battle-engagement-deck--collection {
   width: 100% !important;
   max-width: none !important;
   box-sizing: border-box;
 }
 
-body.page-og-wiki-template .wiki-flagship-page {
+body:has(.og-public-template-page) .wiki-flagship-page {
   margin: 0 !important;
-  padding: 0 !important;
+  padding-top: 0 !important;
 }
 
-body.page-og-wiki-template .og-public-template-page,
-body.page-og-wiki-template .og-public-template-page > .wiki-hero {
+body:has(.og-public-template-page) .og-public-template-page,
+body:has(.og-public-template-page) .og-public-template-page > .wiki-hero {
   margin-top: 0 !important;
 }
 
-body.page-og-wiki-template .og-public-template-page > .wiki-hero {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
-body.page-og-wiki-template .wiki-content,
-body.page-og-wiki-template .wiki-hero,
-body.page-og-wiki-template .wiki-flagship-section,
-body.page-og-wiki-template .wiki-live-source-card,
-body.page-og-wiki-template .wiki-comments:has(.comments-battle-dashboard) {
+body:has(.og-public-template-page) .wiki-content,
+body:has(.og-public-template-page) .wiki-hero,
+body:has(.og-public-template-page) .wiki-flagship-section,
+body:has(.og-public-template-page) .wiki-live-source-card,
+body:has(.og-public-template-page) .wiki-comments:has(.comments-battle-dashboard) {
   max-width: none !important;
 }
 
-body.page-og-wiki-template .wiki-live-source-card,
-body.page-og-wiki-template .wiki-comments:has(.comments-battle-dashboard) {
+body:has(.og-public-template-page) .wiki-live-source-card,
+body:has(.og-public-template-page) .wiki-comments:has(.comments-battle-dashboard) {
   margin-inline: 0;
 }
 
-body.page-og-wiki-template .wiki-flagship-lead,
-body.page-og-wiki-template .wiki-live-source-card p {
+body:has(.og-public-template-page) .wiki-flagship-lead,
+body:has(.og-public-template-page) .wiki-live-source-card p {
   max-width: none;
 }
 
 @media (max-width: 620px) {
-  body.page-og-wiki-template main#content {
-    padding: 0 6px 54px !important;
+  body:has(.og-public-template-page) main#content {
+    padding-top: 4px !important;
+    padding-inline: 6px;
   }
 }
