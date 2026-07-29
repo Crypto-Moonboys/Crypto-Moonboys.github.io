@@ -4,8 +4,9 @@
   var article = document.querySelector('article.wiki-content[data-battle-layout="dashboard"]');
   if (!article) return;
 
-  var originalPageType = article.dataset.pageType || 'wiki_article';
+  var originalPageType = article.dataset.runtimeOriginalPageType || article.dataset.pageType || 'wiki_article';
   var isWikiRoute = window.location.pathname.startsWith('/wiki/');
+  var isRuntimeMigrated = article.dataset.flagshipRuntimeReady === '1';
   article.dataset.pageType = 'nft_collection';
 
   function installTemplateDashboardStyles() {
@@ -74,8 +75,8 @@
 
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
     var kicker = article.dataset.battleKicker || 'About This Page';
-    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow', 'Crypto Moonboys Wiki');
-    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .lede', 'Explore this Crypto Moonboys wiki page.');
+    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow, .wiki-flagship-kicker', 'Crypto Moonboys Wiki');
+    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .wiki-flagship-lead, .lede', 'Explore this Crypto Moonboys wiki page.');
 
     var mediaHeading = deck.querySelector('.battle-shell--media h3');
     if (mediaHeading) mediaHeading.textContent = 'Page Art';
@@ -151,8 +152,8 @@
     var level = engagement > 60 ? 'Hot' : engagement > 30 ? 'Warming Up' : 'Calm';
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
     var kicker = article.dataset.battleKicker || 'About This Page';
-    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow', 'Crypto Moonboys Wiki');
-    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .lede', 'Explore this Crypto Moonboys wiki page.');
+    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow, .wiki-flagship-kicker', 'Crypto Moonboys Wiki');
+    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .wiki-flagship-lead, .lede', 'Explore this Crypto Moonboys wiki page.');
 
     var module = document.createElement('section');
     module.className = 'wiki-engagement-module';
@@ -217,11 +218,11 @@
     if (findDashboard()) return;
     observer.disconnect();
 
-    if (isWikiRoute) {
+    if (isWikiRoute && !isRuntimeMigrated) {
       article.dataset.pageType = originalPageType;
       return;
     }
 
     engagementValue().then(buildFallbackDashboard);
-  }, isWikiRoute ? 5000 : 250);
+  }, isRuntimeMigrated ? 350 : (isWikiRoute ? 5000 : 250));
 }());
