@@ -93,6 +93,18 @@
     }).filter(Boolean);
   }
 
+  function topUserNames(value) {
+    const payload = value && typeof value === 'object' && !Array.isArray(value) && value.data ? value.data : value;
+    const rows = Array.isArray(payload)
+      ? payload
+      : [payload && payload.users, payload && payload.rows, payload && payload.results].find(Array.isArray) || [];
+    return rows.slice(0, 5).map((row) => {
+      if (typeof row === 'string' || typeof row === 'number') return String(row).trim();
+      if (!row || typeof row !== 'object') return '';
+      return String(row.account || row.owner || row.user || row.name || '').trim();
+    }).filter(Boolean);
+  }
+
   function replaceStat(section, label, value) {
     const cards = Array.from(section.querySelectorAll('.wiki-stat'));
     const card = cards.find((item) => {
@@ -114,12 +126,13 @@
       ?? firstNumber(data.collection_stats, ['usdMarketCap']);
     const volumeWax = firstNumber(data.volume, ['waxVolume']);
     const templateNames = topTemplateNames(data.top_templates);
-    const topUsersAvailable = endpointStatus.top_users && endpointStatus.top_users.ok && Array.isArray(data.top_users);
+    const userNames = topUserNames(data.top_users);
+    const topUsersAvailable = endpointStatus.top_users && endpointStatus.top_users.ok && userNames.length > 0;
 
     replaceStat(section, 'Total assets', formatNumber(totalAssets));
     replaceStat(section, 'Market cap', formatNumber(marketCapUsd, { prefix: 'US$', maximumFractionDigits: 2 }));
     replaceStat(section, `Volume (${payload.days || 30}d)`, formatNumber(volumeWax, { suffix: ' WAXP', maximumFractionDigits: 2 }));
-    replaceStat(section, 'Top users', topUsersAvailable ? 'Available in source snapshot' : 'Temporarily unavailable');
+    replaceStat(section, 'Top users', topUsersAvailable ? userNames.join(', ') : 'Temporarily unavailable');
     replaceStat(section, 'Top templates', templateNames.length ? templateNames.join(', ') : 'Temporarily unavailable');
 
     const status = section.querySelector('.lore-paragraph small');
