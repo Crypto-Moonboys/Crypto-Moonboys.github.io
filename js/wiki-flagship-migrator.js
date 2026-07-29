@@ -4,6 +4,9 @@
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
   if (!window.location.pathname.startsWith('/wiki/')) return;
 
+  var reconcileTimer = null;
+  var reconciling = false;
+
   function isNftPage(article) {
     if (!article) return false;
     var pageType = String(article.dataset.pageType || '').toLowerCase();
@@ -186,44 +189,98 @@
     });
   }
 
+  function hasRealSourceEntries(article) {
+    var entries = article.querySelectorAll('.sources-list li, .citations-list li, .source-ref-list li');
+    return Array.from(entries).some(function (entry) {
+      return !!entry.querySelector('a[href]') || text(entry).length > 0;
+    });
+  }
+
   function ensureBottomTruth(article) {
     var comments = document.querySelector('.wiki-comments');
-    if (!comments || document.querySelector('.wiki-live-source-card')) return;
+    if (!comments) return;
 
-    var sources = article.querySelector('.sources-list, .citations-list, .source-ref-list');
-    var card = document.createElement('section');
-    card.className = 'wiki-live-source-card wiki-runtime-live-source';
-    card.setAttribute('aria-label', 'Live source status');
+    var hasSources = hasRealSourceEntries(article);
+    var existing = document.querySelector('.wiki-live-source-card');
+    if (existing && !existing.classList.contains('wiki-runtime-live-source')) return;
+
+    var card = existing;
+    if (!card) {
+      card = document.createElement('section');
+      card.className = 'wiki-live-source-card wiki-runtime-live-source';
+      card.setAttribute('aria-label', 'Live source status');
+      comments.parentNode.insertBefore(card, comments);
+    }
+
     card.innerHTML = '<p class="wiki-live-source-card__eyebrow">Current truth</p>' +
       '<h2>Live Source</h2>' +
-      '<p>' + (sources ? 'Use the cited primary sources below to verify claims that may change. Historical material is not proof that a feature remains live.' : 'No dedicated source archive is currently listed on this legacy page. Claims that can change must be verified before the page is treated as current.') + '</p>' +
-      '<span class="wiki-live-source-card__status">' + (sources ? 'Source archive available' : 'Source review required') + '</span>';
-    comments.parentNode.insertBefore(card, comments);
+      '<p>' + (hasSources ? 'Use the cited primary sources below to verify claims that may change. Historical material is not proof that a feature remains live.' : 'No dedicated source archive is currently listed on this legacy page. Claims that can change must be verified before the page is treated as current.') + '</p>' +
+      '<span class="wiki-live-source-card__status">' + (hasSources ? 'Source archive available' : 'Source review required') + '</span>';
+  }
+
+  function reconcile(article) {
+    if (!article || isNftPage(article) || reconciling) return;
+    reconciling = true;
+    try {
+      wrapLooseHeadings(article);
+      styleExistingSections(article);
+      removeLegacyPanels();
+      ensureBottomTruth(article);
+    } finally {
+      reconciling = false;
+    }
   }
 
   function migrate() {
     var article = document.querySelector('article.wiki-content, main article');
-    if (!article || article.dataset.flagshipRuntimeReady === '1' || isNftPage(article)) return;
+    if (!article || isNftPage(article)) return;
 
     ensureStyles();
-    article.dataset.flagshipRuntimeReady = '1';
-    article.classList.add('wiki-runtime-article');
-    document.body.classList.add('wiki-runtime-flagship-shell');
 
-    var hero = buildHero(article);
-    moveMeta(article, hero);
-    extractInfobox(article, hero);
-    removeLegacyPanels();
-    wrapLooseHeadings(article);
-    styleExistingSections(article);
-    ensureWrapper(article);
-    ensureBottomTruth(article);
+    if (article.dataset.flagshipRuntimeReady !== '1') {
+      article.dataset.flagshipRuntimeReady = '1';
+      article.classList.add('wiki-runtime-article');
+      document.body.classList.add('wiki-runtime-flagship-shell');
+
+      var hero = buildHero(article);
+      moveMeta(article, hero);
+      extractInfobox(article, hero);
+      removeLegacyPanels();
+      ensureWrapper(article);
+    }
+
+    reconcile(article);
+  }
+
+  function scheduleReconcile() {
+    if (reconcileTimer) window.clearTimeout(reconcileTimer);
+    reconcileTimer = window.setTimeout(function () {
+      reconcileTimer = null;
+      migrate();
+    }, 40);
+  }
+
+  function startObserver() {
+    if (!document.body || window.__WIKI_FLAGSHIP_MIGRATION_OBSERVER) return;
+    var observer = new MutationObserver(function (mutations) {
+      var hasAddedContent = mutations.some(function (mutation) {
+        return mutation.type === 'childList' && mutation.addedNodes && mutation.addedNodes.length > 0;
+      });
+      if (hasAddedContent) scheduleReconcile();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.__WIKI_FLAGSHIP_MIGRATION_OBSERVER = observer;
+  }
+
+  function boot() {
+    migrate();
+    startObserver();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', migrate, { once: true });
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
   } else {
-    migrate();
+    boot();
   }
   window.setTimeout(migrate, 500);
   window.setTimeout(migrate, 1800);
