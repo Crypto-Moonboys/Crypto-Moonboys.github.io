@@ -1,0 +1,171 @@
+/* Compact comments layout for the public wiki template and future standard wiki pages. */
+body.page-wiki .wiki-comments:has(.comments-battle-dashboard) {
+  width: min(100% - 24px, 1180px);
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 24px rgba(52, 199, 255, .05), 0 12px 34px rgba(0, 0, 0, .3);
+}
+
+body.page-wiki .comments-battle-header {
+  padding: 16px 18px 10px;
+}
+
+body.page-wiki .comments-battle-dashboard .comments-heading {
+  font-size: clamp(1.65rem, 3vw, 2.75rem);
+  line-height: 1;
+}
+
+body.page-wiki .comments-battle-subtitle {
+  margin-top: 6px;
+  font-size: .96rem;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form,
+body.page-wiki .comments-main-stack {
+  gap: 10px;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-identity {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-identity .comment-form-field {
+  grid-template-rows: auto 48px auto;
+  gap: 5px;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-identity input {
+  height: 48px;
+  padding: 10px 12px;
+}
+
+body.page-wiki .comments-dashboard-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(250px, .32fr);
+  gap: 10px;
+}
+
+body.page-wiki .comments-link-grid {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+body.page-wiki .comments-link-card--benefits,
+body.page-wiki .comments-info-grid {
+  display: none;
+}
+
+body.page-wiki .comments-link-card,
+body.page-wiki .comments-top-contributors,
+body.page-wiki .comment-form-field--take,
+body.page-wiki .comments-list-panel {
+  padding: 14px;
+  animation: none;
+  box-shadow: inset 0 0 18px rgba(87, 220, 255, .04), 0 8px 22px rgba(0, 0, 0, .26);
+}
+
+body.page-wiki .comments-card-heading {
+  margin-bottom: 8px;
+}
+
+body.page-wiki .comments-card-heading h3,
+body.page-wiki .comments-list-panel h3 {
+  font-size: .94rem;
+}
+
+body.page-wiki .comments-card-icon {
+  width: 16px;
+  height: 16px;
+}
+
+body.page-wiki .cm-tg-status,
+body.page-wiki .comments-link-card p {
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+body.page-wiki .comment-form-field--take textarea {
+  min-height: 118px;
+  padding: 12px;
+}
+
+body.page-wiki .comment-character-counter {
+  right: 20px;
+  bottom: 18px;
+  font-size: .76rem;
+}
+
+body.page-wiki .comments-battle-dashboard .comment-form-footer {
+  gap: 12px;
+}
+
+body.page-wiki .comments-battle-dashboard .swarmsy-form-button {
+  min-width: 170px;
+  padding: 10px 16px;
+}
+
+body.page-wiki .top-contributor-tabs {
+  margin-bottom: 8px;
+  padding: 3px;
+}
+
+body.page-wiki .top-contributor-tab {
+  padding: 8px 9px;
+  font-size: .68rem;
+}
+
+body.page-wiki .top-contributor-list {
+  gap: 5px;
+}
+
+body.page-wiki .top-contributor-row {
+  grid-template-columns: 22px 32px minmax(0, 1fr) auto;
+  gap: 7px;
+  padding: 5px 0;
+}
+
+body.page-wiki .comment-robot-avatar,
+body.page-wiki .comment-robot-avatar svg {
+  width: 32px;
+  height: 32px;
+}
+
+body.page-wiki .top-contributor-name,
+body.page-wiki .top-contributor-xp {
+  font-size: .8rem;
+}
+
+@media (max-width: 980px) {
+  body.page-wiki .comments-battle-dashboard .comment-form-identity {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.page-wiki .comments-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  body.page-wiki .wiki-comments:has(.comments-battle-dashboard) {
+    width: min(100% - 12px, 1180px);
+    padding: 10px;
+  }
+
+  body.page-wiki .comments-battle-header {
+    padding: 12px 10px 8px;
+  }
+
+  body.page-wiki .comments-battle-dashboard .comment-form-identity {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-wiki .comments-battle-dashboard .comment-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body.page-wiki .comments-battle-dashboard .swarmsy-form-button {
+    width: 100%;
+  }
+}
