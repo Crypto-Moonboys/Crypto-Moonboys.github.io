@@ -4,8 +4,9 @@
   var article = document.querySelector('article.wiki-content[data-battle-layout="dashboard"]');
   if (!article) return;
 
-  var originalPageType = article.dataset.pageType || 'wiki_article';
+  var originalPageType = article.dataset.runtimeOriginalPageType || article.dataset.pageType || 'wiki_article';
   var isWikiRoute = window.location.pathname.startsWith('/wiki/');
+  var isRuntimeMigrated = article.dataset.flagshipRuntimeReady === '1';
   article.dataset.pageType = 'nft_collection';
 
   function installTemplateDashboardStyles() {
@@ -74,8 +75,8 @@
 
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
     var kicker = article.dataset.battleKicker || 'About This Page';
-    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow', 'Crypto Moonboys Wiki');
-    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .lede', 'Explore this Crypto Moonboys wiki page.');
+    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow, .wiki-flagship-kicker', 'Crypto Moonboys Wiki');
+    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .wiki-flagship-lead, .lede', 'Explore this Crypto Moonboys wiki page.');
 
     var mediaHeading = deck.querySelector('.battle-shell--media h3');
     if (mediaHeading) mediaHeading.textContent = 'Page Art';
@@ -129,12 +130,18 @@
     var cfg = window.MOONBOYS_API || {};
     if (!cfg.BASE_URL || !(cfg.FEATURES || {}).COMMENTS) return Promise.resolve(25);
 
-    return fetch(cfg.BASE_URL + '/comments?page_id=' + encodeURIComponent(pageId()) + '&limit=50')
+    var request = fetch(cfg.BASE_URL + '/comments?page_id=' + encodeURIComponent(pageId()) + '&limit=50')
       .then(function (response) { return response.ok ? response.json() : null; })
       .then(function (data) {
         return Math.min(100, ((data && data.comments) || []).length * 5);
       })
       .catch(function () { return 25; });
+
+    var timeout = new Promise(function (resolve) {
+      window.setTimeout(function () { resolve(25); }, 1500);
+    });
+
+    return Promise.race([request, timeout]);
   }
 
   function mediaHTML() {
@@ -151,10 +158,12 @@
     var level = engagement > 60 ? 'Hot' : engagement > 30 ? 'Warming Up' : 'Calm';
     var title = article.dataset.battleTitle || textFrom('h1', 'Wiki Page');
     var kicker = article.dataset.battleKicker || 'About This Page';
-    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow', 'Crypto Moonboys Wiki');
-    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .lede', 'Explore this Crypto Moonboys wiki page.');
+    var subtitle = article.dataset.battleSubtitle || textFrom('.wiki-hero-breadcrumb, .eyebrow, .wiki-flagship-kicker', 'Crypto Moonboys Wiki');
+    var summary = article.dataset.battleSummary || textFrom('.wiki-hero > p:last-child, .wiki-flagship-lead, .lede', 'Explore this Crypto Moonboys wiki page.');
+    var existingModule = document.querySelector('.wiki-engagement-module');
+    var like = document.querySelector('.page-like-widget');
+    var module = existingModule || document.createElement('section');
 
-    var module = document.createElement('section');
     module.className = 'wiki-engagement-module';
     module.setAttribute('aria-label', 'Wiki engagement');
     module.innerHTML =
@@ -186,20 +195,21 @@
         '</div></div>' +
       '</div>';
 
-    var hero = article.querySelector('.wiki-hero');
-    (hero || article).insertAdjacentElement('afterend', module);
+    if (!existingModule) {
+      var hero = article.querySelector('.wiki-hero');
+      (hero || article).insertAdjacentElement('afterend', module);
+    }
     fitDashboardToPage(module.querySelector('.battle-engagement-deck--collection'));
 
-    var like = document.querySelector('.page-like-widget');
     if (!like) {
       like = document.createElement('div');
       like.className = 'page-like-widget';
       like.dataset.pageId = pageId();
-      var heat = module.querySelector('.battle-heat-summary');
-      heat.insertAdjacentElement('afterend', like);
-      if (window.MOONBOYS_ENGAGEMENT && window.MOONBOYS_ENGAGEMENT.initPageLike) {
-        window.MOONBOYS_ENGAGEMENT.initPageLike(like);
-      }
+    }
+    var heat = module.querySelector('.battle-heat-summary');
+    if (heat && like) heat.insertAdjacentElement('afterend', like);
+    if (like && window.MOONBOYS_ENGAGEMENT && window.MOONBOYS_ENGAGEMENT.initPageLike) {
+      window.MOONBOYS_ENGAGEMENT.initPageLike(like);
     }
 
     article.dataset.pageType = originalPageType;
@@ -217,11 +227,15 @@
     if (findDashboard()) return;
     observer.disconnect();
 
-    if (isWikiRoute) {
+    if (isWikiRoute && !isRuntimeMigrated) {
       article.dataset.pageType = originalPageType;
       return;
     }
 
+    // Never leave a migrated page classified as an NFT collection while an
+    // engagement request is pending. Later migration/reconciliation passes must
+    // continue even if the comments endpoint is slow or unavailable.
+    article.dataset.pageType = originalPageType;
     engagementValue().then(buildFallbackDashboard);
-  }, isWikiRoute ? 5000 : 250);
+  }, isRuntimeMigrated ? 350 : (isWikiRoute ? 5000 : 250));
 }());

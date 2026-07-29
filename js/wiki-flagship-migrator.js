@@ -31,10 +31,35 @@
       runtime.dataset.wikiRuntimeMigration = 'true';
       document.head.appendChild(runtime);
     }
+    if (!document.querySelector('link[data-wiki-comments-compact]')) {
+      var comments = document.createElement('link');
+      comments.rel = 'stylesheet';
+      comments.href = '/css/wiki-comments-compact.css';
+      comments.dataset.wikiCommentsCompact = 'true';
+      document.head.appendChild(comments);
+    }
+  }
+
+  function ensureScript(src, marker) {
+    if (document.querySelector('script[' + marker + ']') || document.querySelector('script[src="' + src + '"]')) return;
+    var script = document.createElement('script');
+    script.src = src;
+    script.async = false;
+    script.setAttribute('data-cfasync', 'false');
+    script.setAttribute(marker, 'true');
+    document.head.appendChild(script);
   }
 
   function text(el) {
     return el ? String(el.textContent || '').trim() : '';
+  }
+
+  function pageId(article) {
+    var comments = document.querySelector('.wiki-comments');
+    return article.dataset.pageId ||
+      (comments && comments.dataset ? comments.dataset.pageId : '') ||
+      window.location.pathname.split('/').pop().replace(/\.html$/, '') ||
+      'wiki-page';
   }
 
   function findTitle(article) {
@@ -97,6 +122,55 @@
     if (!meta) return;
     meta.classList.add('wiki-runtime-meta');
     if (meta.parentElement !== article) article.insertBefore(meta, hero.nextSibling);
+  }
+
+  function ensureDashboardMedia(article) {
+    if (article.querySelector('template[data-battle-media="nft"]')) return;
+    var template = document.createElement('template');
+    template.className = 'nft-battle-media-template';
+    template.dataset.battleMedia = 'nft';
+    template.dataset.pageId = pageId(article);
+
+    var pageImage = document.querySelector('meta[property="og:image"]');
+    var heroImage = article.querySelector('img.wiki-hero-image, header img, article img');
+    var src = heroImage && heroImage.getAttribute('src') ||
+      pageImage && pageImage.getAttribute('content') ||
+      '/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png';
+    var title = text(findTitle(article)) || 'Crypto Moonboys wiki page';
+
+    template.innerHTML = '<figure class="battle-page-media wiki-template-media-card">' +
+      '<img class="wiki-hero-image" src="' + String(src).replace(/"/g, '&quot;') + '" alt="' +
+      title.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;') +
+      ' page artwork" loading="lazy" decoding="async">' +
+      '</figure>';
+
+    var meta = article.querySelector(':scope > .article-meta');
+    if (meta) meta.insertAdjacentElement('afterend', template);
+    else article.appendChild(template);
+  }
+
+  function prepareDashboard(article) {
+    if (!article.dataset.runtimeOriginalPageType) {
+      article.dataset.runtimeOriginalPageType = article.dataset.pageType || 'wiki_article';
+    }
+    article.dataset.pageId = pageId(article);
+    article.dataset.battleLayout = 'dashboard';
+    if (!article.dataset.battleKicker) article.dataset.battleKicker = 'About This Page';
+    if (!article.dataset.battleSubtitle) {
+      article.dataset.battleSubtitle = text(document.querySelector('.breadcrumb a:last-of-type, .article-meta a, .category-tags a')) || 'Crypto Moonboys Wiki';
+    }
+    if (!article.dataset.battleSummary) {
+      article.dataset.battleSummary = text(article.querySelector('.wiki-flagship-lead')) || 'Explore this Crypto Moonboys wiki page.';
+    }
+
+    ensureDashboardMedia(article);
+
+    // The shared battle layer uses the collection deck to produce the required
+    // Page Art / About / Daily Missions three-card layout. The dashboard adapter
+    // restores the original page type after the deck is created.
+    article.dataset.pageType = 'nft_collection';
+    ensureScript('/js/wiki-template-dashboard.js', 'data-wiki-template-dashboard-runtime');
+    ensureScript('/js/wiki-live-contributors.js', 'data-wiki-live-contributors-runtime');
   }
 
   function extractInfobox(article, hero) {
@@ -208,14 +282,16 @@
     if (!card) {
       card = document.createElement('section');
       card.className = 'wiki-live-source-card wiki-runtime-live-source';
-      card.setAttribute('aria-label', 'Live source status');
+      card.setAttribute('aria-label', 'Published source status');
       comments.parentNode.insertBefore(card, comments);
     }
 
-    card.innerHTML = '<p class="wiki-live-source-card__eyebrow">Current truth</p>' +
-      '<h2>Live Source</h2>' +
-      '<p>' + (hasSources ? 'Use the cited primary sources below to verify claims that may change. Historical material is not proof that a feature remains live.' : 'No dedicated source archive is currently listed on this legacy page. Claims that can change must be verified before the page is treated as current.') + '</p>' +
-      '<span class="wiki-live-source-card__status">' + (hasSources ? 'Source archive available' : 'Source review required') + '</span>';
+    card.innerHTML = '<p class="wiki-live-source-card__eyebrow">Published record</p>' +
+      '<h2>Source Status</h2>' +
+      '<p>' + (hasSources
+        ? 'This is a Crypto Moonboys editorial record with a listed source archive. The page is published by Crypto Moonboys; citations are provided so readers can inspect supporting material and check facts that may change over time.'
+        : 'This is a first-party Crypto Moonboys editorial record published on the official Crypto Moonboys website. It is not marked as unverified. External or time-sensitive facts should be updated when newer primary evidence becomes available.') + '</p>' +
+      '<span class="wiki-live-source-card__status">' + (hasSources ? 'Crypto Moonboys record with sources' : 'Official Crypto Moonboys editorial record') + '</span>';
   }
 
   function reconcile(article) {
@@ -240,13 +316,14 @@
     if (article.dataset.flagshipRuntimeReady !== '1') {
       article.dataset.flagshipRuntimeReady = '1';
       article.classList.add('wiki-runtime-article');
-      document.body.classList.add('wiki-runtime-flagship-shell');
+      document.body.classList.add('wiki-runtime-flagship-shell', 'page-wiki-template-comments');
 
       var hero = buildHero(article);
       moveMeta(article, hero);
       extractInfobox(article, hero);
       removeLegacyPanels();
       ensureWrapper(article);
+      prepareDashboard(article);
     }
 
     reconcile(article);
