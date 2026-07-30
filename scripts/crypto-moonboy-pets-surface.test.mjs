@@ -6,6 +6,7 @@ const howTo = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const leaderboard = fs.readFileSync(new URL('../crypto-moonboy-pets-leaderboard.html', import.meta.url), 'utf8');
 const community = fs.readFileSync(new URL('../community.html', import.meta.url), 'utf8');
 const games = fs.readFileSync(new URL('../games/index.html', import.meta.url), 'utf8');
+const petSurfaceScript = fs.readFileSync(new URL('../js/crypto-moonboy-pets.js', import.meta.url), 'utf8');
 const index = JSON.parse(fs.readFileSync(new URL('../js/wiki-index.json', import.meta.url), 'utf8'));
 
 assert.ok(wikiPage.includes('Crypto Moonboy Pets'), 'wiki page must name Crypto Moonboy Pets');
@@ -48,6 +49,12 @@ assert.ok(leaderboard.includes('data-period="all_time"'), 'pet leaderboard must 
 assert.ok(community.includes('data-crypto-pets-summary'), 'community page must have compact pet summary only');
 assert.ok(!community.includes('data-crypto-pets-leaderboard'), 'community page must not dump full pet leaderboard');
 assert.ok(games.includes('Crypto Moonboy Pets — Telegram Game'), 'games index must list Pets as a Telegram Game');
+
+assert.ok(petSurfaceScript.includes('<strong>Care Loadout</strong>'), 'pet summary must distinguish care equipment');
+assert.ok(petSurfaceScript.includes('<strong>Battle Loadout</strong>'), 'pet summary must distinguish arena equipment');
+for (const field of ['equipped_food', 'equipped_toy', 'equipped_outfit', 'equipped_armor', 'equipped_weapon', 'equipped_charm']) {
+  assert.ok(petSurfaceScript.includes(`pet.${field}`), `pet summary must render ${field}`);
+}
 
 const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
 assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');
