@@ -24,6 +24,64 @@
   var wikiPathname = window.location && typeof window.location.pathname === 'string'
     ? window.location.pathname
     : '';
+
+  function loadScriptOnce(src, marker) {
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[' + marker + ']');
+      if (existing) {
+        if (existing.dataset.loaded === 'true') resolve();
+        else existing.addEventListener('load', resolve, { once: true });
+        return;
+      }
+      var script = document.createElement('script');
+      script.src = src;
+      script.async = false;
+      script.setAttribute('data-cfasync', 'false');
+      script.setAttribute(marker, 'true');
+      script.addEventListener('load', function () {
+        script.dataset.loaded = 'true';
+        resolve();
+      }, { once: true });
+      script.addEventListener('error', reject, { once: true });
+      document.body.appendChild(script);
+    });
+  }
+
+  function restoreCryptoPetsEngagementDeck() {
+    if (wikiPathname !== '/wiki/crypto-moonboy-pets.html') return;
+
+    if (!document.querySelector('link[data-crypto-pets-battle-layer]')) {
+      var battleCss = document.createElement('link');
+      battleCss.rel = 'stylesheet';
+      battleCss.href = '/css/battle-layer.css';
+      battleCss.setAttribute('data-crypto-pets-battle-layer', 'true');
+      document.head.appendChild(battleCss);
+    }
+
+    var article = document.querySelector('article[data-entity-slug="crypto-moonboy-pets"]');
+    if (article && !document.querySelector('.wiki-comments[data-page-id="crypto-moonboy-pets"]')) {
+      var commentsMount = document.createElement('div');
+      commentsMount.className = 'wiki-comments';
+      commentsMount.setAttribute('data-page-id', 'crypto-moonboy-pets');
+      article.insertAdjacentElement('afterend', commentsMount);
+    }
+
+    loadScriptOnce('/js/engagement.js', 'data-crypto-pets-engagement')
+      .then(function () { return loadScriptOnce('/js/comments.js', 'data-crypto-pets-comments'); })
+      .then(function () { return loadScriptOnce('/js/battle-layer.js', 'data-crypto-pets-battle-script'); })
+      .catch(function (error) {
+        console.error('[crypto-moonboy-pets] engagement deck load failed', error);
+      });
+  }
+
+  if (typeof document !== 'undefined' && wikiPathname === '/wiki/crypto-moonboy-pets.html') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', restoreCryptoPetsEngagementDeck, { once: true });
+    } else {
+      restoreCryptoPetsEngagementDeck();
+    }
+  }
+
   if (
     typeof document !== 'undefined' &&
     wikiPathname.indexOf('/wiki/') === 0 &&
