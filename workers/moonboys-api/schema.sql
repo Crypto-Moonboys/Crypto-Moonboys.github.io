@@ -443,7 +443,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_equipment_progression (
   last_used_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (telegram_id, item_key)
+  PRIMARY KEY (telegram_id, item_key),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_pet_equipment_progression_owner_slot
@@ -459,7 +460,10 @@ CREATE TABLE IF NOT EXISTS telegram_pet_equipment_events (
   mastery_xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (mastery_xp_awarded >= 0),
   metadata_json TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (telegram_id, item_key, event_key)
+  UNIQUE (telegram_id, item_key, event_key),
+  FOREIGN KEY (telegram_id, item_key)
+    REFERENCES telegram_pet_equipment_progression(telegram_id, item_key)
+    ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_pet_equipment_events_owner_item_created
