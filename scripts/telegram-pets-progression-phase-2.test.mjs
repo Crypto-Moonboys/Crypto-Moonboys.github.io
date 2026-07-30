@@ -24,6 +24,10 @@ for (const [key, track] of Object.entries(PET_PROGRESSION_TRACKS)) {
 
 assert.equal(normalizePetProgressionTrack('ARENA'), 'arena');
 assert.equal(normalizePetProgressionTrack('unknown'), null);
+for (const inheritedKey of ['constructor', '__proto__', 'toString']) {
+  assert.equal(normalizePetProgressionTrack(inheritedKey), null, `${inheritedKey} must not resolve as a progression track`);
+  assert.equal(clampPetTrackAward(inheritedKey, 40, 0), 0, `${inheritedKey} must not award progression XP`);
+}
 assert.equal(clampPetTrackAward('arena', 40, 280), 20, 'track awards must respect the daily cap');
 assert.equal(clampPetTrackAward('arena', 40, 300), 0, 'full daily cap blocks more track XP');
 assert.equal(clampPetTrackAward('unknown', 40, 0), 0, 'unknown tracks cannot award XP');
@@ -48,6 +52,9 @@ assert.equal(canEnterPetRunRegion('neon_rooftops', 9, 999), false, 'level gate m
 assert.equal(canEnterPetRunRegion('neon_rooftops', 10, 99), false, 'mastery gate must apply');
 assert.equal(canEnterPetRunRegion('neon_rooftops', 10, 100), true);
 assert.equal(canEnterPetRunRegion('missing_region', 100, 99999), false);
+for (const inheritedKey of ['constructor', '__proto__', 'toString']) {
+  assert.equal(canEnterPetRunRegion(inheritedKey, 100, 99999), false, `${inheritedKey} must not resolve as a run region`);
+}
 
 assert.ok(Object.keys(PET_TRAITS).length >= 6);
 assert.deepEqual(getPetTraitProgress('arena_attack', 7), { brave: 7 });
