@@ -3,374 +3,207 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboy Pets is the Telegram roguelite pet game for care, inventory, jobs, timed activities, Pet Arena, Kaiju battles, pet XP and Community XP.">
-  <meta name="keywords" content="Crypto Moonboy Pets, Moonboys Pets, Telegram pet, pet game, Tamagotchi, roguelite, Pet Arena, Moonpet battles, arena gear, timed activities, Kaiju Sticker Battle, Telegram battle game, pet leaderboard, pet XP, pet bag, pet jobs, daily chest, random event">
+  <meta name="description" content="Crypto Moonboy Pets is the live Telegram pet RPG and roguelite for care, six specialist progression tracks, equipment, timed activities, jobs, Pet Arena, Kaiju battles, five-step runs, Pet XP and Community XP.">
+  <meta name="keywords" content="Crypto Moonboy Pets, Telegram pet RPG, Moonpet, pet game, roguelite, Pet Arena, Kaiju Sticker Battle, pet progression, Pet XP, Community XP, pet gear, timed activities, pet jobs, crafting materials">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Crypto Moonboy Pets — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Grow a Crypto Moonboys pet on Telegram through care, inventory, jobs, timed activities, Pet Arena, sticker battles, streaks and seasons.">
+  <meta property="og:description" content="Adopt a Moonpet and develop it through care, six specialist tracks, traits, equipment, jobs, runs, Arena combat, Kaiju battles, missions and seasons.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/crypto-moonboy-pets.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/pets/crypto%20moonboys%20how%20to%20play%20hero%20pets.jpg">
   <link rel="canonical" href="https://cryptomoonboys.com/wiki/crypto-moonboy-pets.html">
   <title>Crypto Moonboy Pets — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/action-page-cards.css">
   <link rel="icon" type="image/png" href="/favicon.png">
   <style>
-    .crypto-pets-section-art {
-      display: block;
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      border: 1px solid rgba(47, 215, 255, 0.32);
-      border-radius: 14px;
-      box-shadow: 0 0 28px rgba(47, 215, 255, 0.18), 0 0 42px rgba(255, 38, 184, 0.08);
-      margin: 1rem 0 1.35rem;
-      background: #05080f;
-    }
-
-    .related-wiki-paths {
-      overflow: hidden;
-    }
-
-    .related-wiki-paths > .wiki-rabbit-grid {
-      display: grid !important;
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-      gap: 1rem !important;
-      align-items: start !important;
-      width: 100% !important;
-      min-width: 0 !important;
-    }
-
-    .related-wiki-paths .wiki-rabbit-group {
-      position: static !important;
-      display: flex !important;
-      flex-direction: column !important;
-      gap: .65rem !important;
-      width: auto !important;
-      min-width: 0 !important;
-      max-width: 100% !important;
-      height: auto !important;
-      margin: 0 !important;
-      overflow: hidden !important;
-      box-sizing: border-box !important;
-    }
-
-    .related-wiki-paths .wiki-rabbit-group > h3 {
-      width: 100% !important;
-      min-width: 0 !important;
-      margin: 0 0 .25rem !important;
-      box-sizing: border-box !important;
-    }
-
-    .related-wiki-paths .wiki-rabbit-card {
-      position: static !important;
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) !important;
-      gap: .35rem !important;
-      width: 100% !important;
-      min-width: 0 !important;
-      max-width: 100% !important;
-      margin: 0 !important;
-      box-sizing: border-box !important;
-      overflow: hidden !important;
-      overflow-wrap: anywhere !important;
-      text-decoration: none !important;
-    }
-
-    .related-wiki-paths .wiki-rabbit-card::before,
-    .related-wiki-paths .wiki-rabbit-card::after {
-      max-width: 100% !important;
-      pointer-events: none !important;
-    }
-
-    .related-wiki-paths .wiki-rabbit-card > strong,
-    .related-wiki-paths .wiki-rabbit-card > span,
-    .related-wiki-paths .wiki-rabbit-card-title,
-    .related-wiki-paths .wiki-rabbit-card-desc {
-      display: block !important;
-      min-width: 0 !important;
-      max-width: 100% !important;
-      margin: 0 !important;
-      overflow-wrap: anywhere !important;
-    }
-
-    .related-wiki-paths .wiki-rabbit-chip-grid {
-      display: flex !important;
-      flex-wrap: wrap !important;
-      gap: .55rem !important;
-      min-width: 0 !important;
-    }
-
-    .related-wiki-paths .wiki-rabbit-chip {
-      position: static !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      width: auto !important;
-      max-width: 100% !important;
-      margin: 0 !important;
-      box-sizing: border-box !important;
-    }
-
-    .related-wiki-paths > .wiki-rabbit-group--runtime-related {
-      width: 100% !important;
-      min-width: 0 !important;
-      margin-top: 1rem !important;
-      box-sizing: border-box !important;
-    }
-
-    .related-wiki-paths > .wiki-rabbit-group--runtime-related .wiki-rabbit-grid {
-      display: grid !important;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)) !important;
-      gap: .75rem !important;
-      width: 100% !important;
-      min-width: 0 !important;
-    }
-
-    @media (max-width: 980px) {
-      .related-wiki-paths > .wiki-rabbit-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-
-      .related-wiki-paths > .wiki-rabbit-grid > .wiki-rabbit-group:last-child {
-        grid-column: 1 / -1;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .related-wiki-paths > .wiki-rabbit-grid {
-        grid-template-columns: minmax(0, 1fr) !important;
-      }
-
-      .related-wiki-paths > .wiki-rabbit-grid > .wiki-rabbit-group:last-child {
-        grid-column: auto;
-      }
-    }
+    .crypto-pets-section-art{display:block;width:100%;max-width:100%;height:auto;border:1px solid rgba(47,215,255,.32);border-radius:14px;box-shadow:0 0 28px rgba(47,215,255,.18),0 0 42px rgba(255,38,184,.08);margin:1rem 0 1.35rem;background:#05080f}
+    .pets-live-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin:1rem 0}
+    .pets-live-card{padding:1rem 1.05rem;border:1px solid rgba(47,215,255,.2);border-radius:14px;background:rgba(8,18,28,.72);min-width:0}
+    .pets-live-card h3{margin:0 0 .55rem;color:#f7c948;font-family:var(--font-display);text-transform:uppercase}
+    .pets-live-card p{margin:0;color:var(--color-text-muted);line-height:1.65}
+    .pets-command-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.75rem;margin:1rem 0;padding:0;list-style:none}
+    .pets-command-list li{padding:.85rem 1rem;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.035);min-width:0}
+    .pets-status-note{padding:1rem 1.1rem;border-left:4px solid #f7c948;border-radius:8px;background:rgba(247,201,72,.08)}
+    .related-wiki-paths{overflow:hidden}
+    .related-wiki-paths>.wiki-rabbit-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:1rem!important;align-items:start!important;width:100%!important;min-width:0!important}
+    .related-wiki-paths .wiki-rabbit-group{position:static!important;display:flex!important;flex-direction:column!important;gap:.65rem!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;overflow:hidden!important;box-sizing:border-box!important}
+    .related-wiki-paths .wiki-rabbit-group>h3{width:100%!important;min-width:0!important;margin:0 0 .25rem!important;box-sizing:border-box!important}
+    .related-wiki-paths .wiki-rabbit-card{position:static!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:.35rem!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important;overflow:hidden!important;overflow-wrap:anywhere!important;text-decoration:none!important}
+    .related-wiki-paths .wiki-rabbit-card>strong,.related-wiki-paths .wiki-rabbit-card>span,.related-wiki-paths .wiki-rabbit-card-title,.related-wiki-paths .wiki-rabbit-card-desc{display:block!important;min-width:0!important;max-width:100%!important;margin:0!important;overflow-wrap:anywhere!important}
+    .related-wiki-paths .wiki-rabbit-chip-grid{display:flex!important;flex-wrap:wrap!important;gap:.55rem!important;min-width:0!important}
+    .related-wiki-paths .wiki-rabbit-chip{position:static!important;display:inline-flex!important;align-items:center!important;width:auto!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important}
+    .related-wiki-paths>.wiki-rabbit-group--runtime-related{width:100%!important;min-width:0!important;margin-top:1rem!important;box-sizing:border-box!important}
+    .related-wiki-paths>.wiki-rabbit-group--runtime-related .wiki-rabbit-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))!important;gap:.75rem!important;width:100%!important;min-width:0!important}
+    @media(max-width:980px){.related-wiki-paths>.wiki-rabbit-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.related-wiki-paths>.wiki-rabbit-grid>.wiki-rabbit-group:last-child{grid-column:1/-1}}
+    @media(max-width:640px){.related-wiki-paths>.wiki-rabbit-grid{grid-template-columns:minmax(0,1fr)!important}.related-wiki-paths>.wiki-rabbit-grid>.wiki-rabbit-group:last-child{grid-column:auto}}
   </style>
 </head>
 <body class="page-wiki page-standard-shell">
 <main id="content" role="main">
   <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/index.html">Home</a>
-    <span class="sep" aria-hidden="true">›</span>
-    <a href="/categories/gaming.html">Gaming</a>
-    <span class="sep" aria-hidden="true">›</span>
-    <span aria-current="page">Crypto Moonboy Pets</span>
+    <a href="/index.html">Home</a><span class="sep" aria-hidden="true">›</span><a href="/categories/gaming.html">Gaming</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">Crypto Moonboy Pets</span>
   </nav>
 
-  <h1 class="page-title">Crypto Moonboy Pets <span>Telegram Roguelite</span></h1>
+  <h1 class="page-title">Crypto Moonboy Pets <span>Telegram Pet RPG / 24-7 Roguelite</span></h1>
   <div class="page-title-line" aria-hidden="true"></div>
 
   <article class="wiki-content" data-entity-slug="crypto-moonboy-pets">
-    <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20how%20to%20play%20hero%20pets.jpg" alt="Crypto Moonboy Pets hero artwork showing the Telegram pet game loop, missions, upgrades, battles and leaderboards." loading="eager" decoding="async">
+    <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20how%20to%20play%20hero%20pets.jpg" alt="Crypto Moonboy Pets hero artwork showing care, progression, equipment, battles, runs, currencies and leaderboards." loading="eager" decoding="async">
 
-    <p class="lead-paragraph">
-      Crypto Moonboy Pets is the Telegram-first roguelite pet game inside the Crypto Moonboys ecosystem. Players adopt a living Moonboys companion, keep it healthy, train it, manage a pet bag, work jobs, open daily chests, handle random crate events, battle directly in Pet Arena, battle Kaiju sticker cards, and build pet progression over time.
-    </p>
-    <p>
-      The game is played in Telegram through the Moonboys bot. The website records the public proof layer: combined Community XP, pet-specific leaderboards, how-to-play rules, and the searchable wiki home for the pet system.
-    </p>
+    <p class="lead-paragraph">Crypto Moonboy Pets is the live Telegram-first pet RPG and roguelite inside the Crypto Moonboys ecosystem. Players adopt a Moonpet, maintain its needs, build Pet XP, develop six specialist progression tracks, unlock traits, register equipment, complete timed activities and jobs, enter Pet Arena, play Kaiju Sticker Battle, and attempt five-step runs with bank-or-risk decisions.</p>
+    <p>The Telegram bot is the main game surface. The website provides the public information layer: the full rules, pet leaderboard, compact linked-player summaries, Community XP context and the searchable wiki record for the game.</p>
 
     <section class="wiki-section">
-      <h2>How It Works</h2>
+      <h2>Start Playing</h2>
+      <ol>
+        <li>Open <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a>.</li>
+        <li>Run <code>/gkstart</code>, then <code>/gklink</code> to connect your Telegram identity.</li>
+        <li>Run <code>/adopt</code> to create your Moonpet.</li>
+        <li>Run <code>/pet</code> to see its needs, health, currencies, missions, active activity and equipped loadouts.</li>
+        <li>Run <code>/petprogress</code> and <code>/petgear</code> to inspect specialist progression and equipment records.</li>
+      </ol>
+    </section>
+
+    <section class="wiki-section">
+      <h2>The Live Game Loop</h2>
+      <div class="pets-live-grid">
+        <article class="pets-live-card"><h3>Care</h3><p>Feed, play, clean, sleep and train your Moonpet. Accepted care actions can affect needs, Pet XP, currencies, specialist XP and traits.</p></article>
+        <article class="pets-live-card"><h3>Prepare</h3><p>Buy care upgrades, equip battle gear, manage consumables and check daily missions before committing to jobs, Arena battles or runs.</p></article>
+        <article class="pets-live-card"><h3>Risk</h3><p>Take jobs, random encounters, timed activities and five-step roguelite routes. Decide when to continue and when to extract.</p></article>
+        <article class="pets-live-card"><h3>Compete</h3><p>Enter level 10+ Pet Arena, play Kaiju Sticker Battle, improve seasonal Pet XP and compare results on the pet leaderboard.</p></article>
+      </div>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Three Separate Progression Layers</h2>
+      <div class="pets-live-grid">
+        <article class="pets-live-card"><h3>Pet XP</h3><p>Controls the Moonpet’s level, growth stage, unlocks and pet leaderboard position.</p></article>
+        <article class="pets-live-card"><h3>Specialist XP</h3><p>Records how the pet is played through Care, Training, Adventure, Arena, Job and Bond progression.</p></article>
+        <article class="pets-live-card"><h3>Community XP</h3><p>Accepted linked actions can contribute to the player’s existing Crypto Moonboys profile. It remains separate from Pet XP and specialist XP.</p></article>
+      </div>
+      <p class="pets-status-note"><strong>Server authority:</strong> one accepted action may affect several progression systems, but each layer has its own caps, validation and duplicate protection.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Six Specialist Tracks</h2>
       <ul>
-        <li>Use <code>/adopt</code> in Telegram to create your Crypto Moonboy Pet.</li>
-        <li>Use <code>/pet</code> to see health, hunger, happiness, cleanliness, energy, stage, level and missions.</li>
-        <li>Use <code>/feed</code>, <code>/play</code>, <code>/clean</code>, <code>/sleep</code> and <code>/train</code> to grow the pet.</li>
-        <li>Care actions can earn Moon Gold, Moon Crystals and Style Tokens.</li>
-        <li>Use <code>/petbag</code> and <code>/petuse</code> to manage inventory from Telegram pet events.</li>
-        <li>Use <code>/petwork</code> to run pet jobs like courier or crystal miner.</li>
-        <li>Use <code>/petdaily</code> once per UTC day to claim the chest.</li>
-        <li>Use <code>/petevent</code> to open, sell or ignore random crate events.</li>
-        <li>Use <code>/petshop</code> and <code>/petbuy</code> to equip better food, toys and clothing.</li>
-        <li>Use <code>/pettrade</code> to risk in-game Moon Gold for game-only rewards.</li>
-        <li>Use <code>/petadventure</code> for energy-gated runs with cooldowns and pet-only rewards.</li>
-        <li>Use <code>/petarena</code> for level 10+ Pet Arena battles using Moonpet stats and gear.</li>
-        <li>Use <code>/kaiju</code> in the Telegram group to enter Kaiju Sticker Battle.</li>
-        <li>Use <code>/petnotify on</code> to opt into rate-limited Telegram needs alerts.</li>
-        <li>Pet XP grows the companion and powers the pet-only leaderboard.</li>
-        <li>Accepted pet actions also award Community XP into the existing main XP leaderboard and graph, but inventory, jobs, daily chests and random events stay pet-only.</li>
+        <li><strong>Care:</strong> feed, play, clean, sleep and selected training actions.</li>
+        <li><strong>Training:</strong> instant training and completed timed training.</li>
+        <li><strong>Adventure:</strong> exploration, successful run steps and extracted runs.</li>
+        <li><strong>Arena:</strong> competitive combat actions and completed Arena outcomes when the server-owned hooks apply.</li>
+        <li><strong>Job:</strong> short jobs and completed timed work; Job XP also determines job rank.</li>
+        <li><strong>Bond:</strong> positive care behaviour and daily chest claims.</li>
       </ul>
+      <p>Daily specialist counters reset by UTC day. Permanent track totals remain. Repeated behaviour also contributes to hidden trait thresholds that become visible through <code>/petprogress</code> once unlocked.</p>
     </section>
 
     <section class="wiki-section">
-      <h2>Pet Arena In Telegram</h2>
-      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Pet%20Arena%20In%20Telegram.jpg" alt="Crypto Moonboy Pets arena artwork showing turn-based Telegram pet combat with armor, weapons, blocks and special moves." loading="lazy" decoding="async">
-      <p>Pet Arena is the Moonpet-vs-Moonpet battle mode and is not Kaiju Sticker Battle. It unlocks at level 10; the bot blocks lower-level pets with “Pet Arena unlocks at level 10. Keep growing your Moonpet.”</p>
-      <p>Turn-based combat stats are calculated server-side from pet level, pet XP tier, health, energy, happiness/morale, cleanliness condition, equipped food, toy, outfit and battle gear. New battle gear uses armor, weapon and charm slots: armor improves defense/damage reduction, weapons improve attack, and charms improve crit, dodge or luck. Low energy lowers battle power and very low health can block entry or heavily reduce power.</p>
-      <p>Private chats can battle an app pet turn by turn instead of instantly rolling a result. Each round shows HP, special meter and buttons for Attack Head, Attack Body, Block Head, Block Body, Charge Special, Special Move and Forfeit; after you choose, the app AI chooses server-side and the bot posts the next round.</p>
-      <p>Telegram groups can run many separate Pet Arena pairs at the same time. Matchmaking still creates one battle per two trainers, but different pairs can fight in parallel in the same chat. Both matched players ready up, then each round waits until both players lock a move before the bot reveals damage, HP changes and the next round prompt.</p>
-      <p>Move buttons are round-scoped. Old attack/block/special buttons, duplicate taps and stale Forfeit buttons are rejected server-side so retries cannot rewrite completed battles or double-award rewards.</p>
-      <p>Matchmaking prefers rank buckets: rookie level 10-14, scrapper 15-24, enforcer 25-39, cyber beast 40-69 and moon warlord 70+. It tries same bucket first, then nearby buckets, then Accept Any Rank. Mismatch wins can grant underdog bonuses while high-level wins over low-level pets reduce rewards.</p>
-      <p>Rewards are capped and idempotent: winners receive Moon Gold, pet XP and small Community XP, losers receive consolation pet XP and draws share smaller rewards. Existing daily pet XP and Community XP caps apply and duplicate callbacks cannot double-award.</p>
+      <h2>Care And Battle Loadouts</h2>
+      <p><strong>Care Loadout:</strong> Food, Toy and Outfit. These affect care actions, selected currencies, Pet XP and some run modifiers.</p>
+      <p><strong>Battle Loadout:</strong> armor, weapon and charm. Armor supports defense, weapons support attack, and charms support crit, dodge or luck.</p>
+      <p>The two loadouts are independent. Changing one does not reset the other. Empty battle slots display <strong>none</strong>; the game does not invent starter armor or starter weapons.</p>
+      <p><code>/petshop</code> opens care upgrades and Pet Arena equipment. <code>/petbuy item_key</code> buys and equips eligible items. <code>/petgear</code> displays registered equipment levels, item XP, mastery XP and mastery tiers, and repairs missing records for equipment already fitted to the pet.</p>
+      <p class="pets-status-note"><strong>Current boundary:</strong> the equipment progression schema and display system are live. Automatic mastery growth is still a foundation path and should not be described as a fully completed reward loop until its persistence wiring is finished.</p>
+    </section>
 
-      <h2>Kaiju Sticker Battle In Telegram</h2>
-      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Kaiju%20Sticker%20Battle%20In%20Telegram.jpg" alt="Kaiju Sticker Battle artwork showing Telegram players choosing monster sticker cards for a Crypto Moonboy Pets battle." loading="lazy" decoding="async">
-      <p>
-        Kaiju Sticker Battle is the group battle mode for the same public Kaiju cards used by the Arcade page. The Telegram bot should use the new Kaiju sticker set as the visual layer and the existing card IDs and stats as the rules layer.
-      </p>
-      <ul>
-        <li><code>/kaiju</code> shows the current group table: active match, champion, challenger, waiting queue and quick buttons.</li>
-        <li><code>/kaiju solo</code> starts one player against CPU if no two-player match is active.</li>
-        <li><code>/kaiju join</code> joins the group queue if a match is already active, or becomes challenger if a champion is waiting.</li>
-        <li><code>/kaiju leave</code> removes the player from the waiting queue.</li>
-        <li><code>/kaiju deck</code> shows the player's available Kaiju cards and their sticker buttons.</li>
-        <li><code>/kaiju pick</code> or a sticker button locks the player's card for the next round.</li>
+    <section class="wiki-section">
+      <h2>Timed Activities, Jobs And Events</h2>
+      <ul class="pets-command-list">
+        <li><code>/petstart sleep</code><br>Start a timed rest session.</li>
+        <li><code>/petstart train</code><br>Build timed Training progression.</li>
+        <li><code>/petstart work</code><br>Complete longer Job progression.</li>
+        <li><code>/petstart explore</code><br>Build Adventure progression and possible loot.</li>
+        <li><code>/petactivity</code><br>Inspect the active session.</li>
+        <li><code>/petclaim</code><br>Claim a valid completed session.</li>
+        <li><code>/petcancel</code><br>Cancel without rewards.</li>
+        <li><code>/petwork courier</code><br>Run a short job.</li>
+        <li><code>/petdaily</code><br>Claim the UTC daily chest.</li>
+        <li><code>/petevent</code><br>Generate a random encounter with three choices.</li>
       </ul>
-      <p>
-        Only one live Kaiju match should run per Telegram group at a time. The bot stores that group match in D1 using the chat ID, so the match survives Worker restarts and cannot split into duplicate games.
-      </p>
+      <p>The minimum timed claim is five minutes. Training caps at two hours. Sleep, work and exploration cap at eight hours. Valid longer sessions scale rewards up to their cap; cancellation awards nothing.</p>
     </section>
 
     <section class="wiki-section">
-      <h2>Kaiju Queue Rules</h2>
-      <p>
-        The group uses a simple arcade cabinet rule: winner stays on, loser leaves the table, next queued player becomes challenger. This keeps the chat readable while still letting many users wait their turn.
-      </p>
-      <ul>
-        <li>If nobody is playing, the first player becomes champion and can start a CPU match or wait for a challenger.</li>
-        <li>If one player is waiting, the next player to tap Join becomes challenger and the two-player match starts.</li>
-        <li>If two players are active, everyone else is added to a first-in, first-out queue.</li>
-        <li>When a match ends, the winner remains champion.</li>
-        <li>The loser is removed from the table and may rejoin at the back of the queue.</li>
-        <li>The first queued user automatically becomes the next challenger.</li>
-        <li>If the queue is empty, the champion can keep playing CPU until another user joins.</li>
-        <li>Inactive turns should expire after a short timeout so one player cannot block the whole group.</li>
+      <h2>Pet Run Engine</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20247%20Pet%20Loop.jpg" alt="Crypto Moonboy Pets roguelite loop showing alerts, activities, jobs, missions and run decisions." loading="lazy" decoding="async">
+      <p><code>/petrun</code> starts or resumes a five-step roguelite run. Every step offers route choices with different costs, risk and possible rewards. Run rewards remain unbanked until extraction or boss completion.</p>
+      <p><code>/petextract</code> banks current unbanked rewards. Successful steps and extraction contribute to Adventure progression. Failed runs lose unbanked loot but may retain a small Pet XP lesson.</p>
+      <p>Care gear and bag items can influence run survival, route choices and rewards. A <code>lucky_charm</code> can be consumed when it boosts a run. <code>/petadventure</code> remains an alias for the Pet Run Engine.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Pet Arena</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Pet%20Arena%20In%20Telegram.jpg" alt="Crypto Moonboy Pets turn-based Pet Arena with attack, defense, armor, weapons and special moves." loading="lazy" decoding="async">
+      <p><code>/petarena</code> opens the level 10+ turn-based Moonpet combat system. Pet Arena is separate from Kaiju Sticker Battle.</p>
+      <p>Battle power is calculated server-side using pet level, Pet XP, health, energy, morale, cleanliness, care modifiers and Battle Loadout equipment. Private chats support app-controlled battles. Telegram groups support matchmaking, ready-up, locked turns, battle IDs and parallel pairs.</p>
+      <p>Round-scoped controls reject stale moves, duplicate taps and replayed callbacks. Winners, losers and draws receive different capped game rewards, with server-side idempotency preventing double awards.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Kaiju Sticker Battle</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Kaiju%20Sticker%20Battle%20In%20Telegram.jpg" alt="Crypto Moonboy Pets Kaiju Sticker Battle with players selecting monster cards and comparing stats." loading="lazy" decoding="async">
+      <p><code>/petkaiju</code> or <code>/kaiju</code> opens the separate Kaiju card-battle system. Private chats can play the app mode; Telegram groups can host, join or queue.</p>
+      <p>The game selects one category from Power, Size, Attack, Defence, Speed or Legacy. The selected cards are compared using that category, and the higher stat wins. Group match state is stored in D1 so matches can survive Worker restarts and avoid duplicate sessions.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Economy, Inventory And Materials</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20In-Game%20Economy.jpg" alt="Crypto Moonboy Pets economy showing Moon Gold, Moon Crystals, Style Tokens, inventory and upgrades." loading="lazy" decoding="async">
+      <p>Moon Gold, Moon Crystals and Style Tokens are non-transferable game currencies. They support care upgrades, battle equipment, trades and other game-only rewards.</p>
+      <p>The pet bag is separate from equipped loadouts. Consumables include <code>moon_snack</code>, <code>energy_drink</code>, <code>clean_wipe</code>, <code>lucky_charm</code>, <code>style_patch</code> and <code>adventure_map</code>.</p>
+      <p>Persistent crafting-material balances and server-owned rare-drop tables exist for eligible jobs, runs and competitive outcomes. Material stacks are capped and credited from the saved D1 balance. A complete player-facing crafting command and recipe loop remain future gameplay layers.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Missions, Seasons And Leaderboards</h2>
+      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20pets%20Seasons.jpg" alt="Crypto Moonboy Pets automatic daily, weekly and 90-day seasonal progression." loading="lazy" decoding="async">
+      <p>Daily missions reset by UTC day. Weekly windows and automatic 90-day pet seasons roll over independently without a manual reset.</p>
+      <p><code>/petleaderboard</code> and the website leaderboard rank Pet XP across daily, weekly, seasonal and all-time views. Specialist track levels, traits, job rank and equipment records remain personal development systems rather than the current public leaderboard score.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Security And Duplicate Protection</h2>
+      <p>The Moonboys API owns cooldowns, caps, equipment state, currencies and accepted progression. Progression-bearing API actions require stable event keys. Telegram commands derive stable keys from messages, callbacks, sessions and run IDs.</p>
+      <p>Runtime event claims, specialist XP, traits and eligible material changes are applied transactionally. Repeated Telegram delivery, button retries and API retries can therefore repair interrupted work without multiplying progression.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Core Commands</h2>
+      <ul class="pets-command-list">
+        <li><code>/pet</code><br>Main Moonpet status.</li>
+        <li><code>/petprogress</code><br>Tracks, traits, job rank and prestige record.</li>
+        <li><code>/petgear</code><br>Equipment progression records.</li>
+        <li><code>/petmissions</code><br>Current daily missions.</li>
+        <li><code>/petshop</code><br>Care and Arena equipment.</li>
+        <li><code>/petbag</code><br>Consumable inventory.</li>
+        <li><code>/petuse item_key</code><br>Use a bag item.</li>
+        <li><code>/pettrade 25</code><br>Risk Moon Gold for game-only rewards.</li>
+        <li><code>/petnotify on</code><br>Enable rate-limited needs alerts.</li>
+        <li><code>/petname Name</code><br>Rename the Moonpet.</li>
       </ul>
-      <p>
-        A five-round match is recommended. Each round: both players lock a sticker card, the bot rolls 1-6, the rolled number chooses the category, and the higher stat wins the round. After five rounds, the round winner count decides the match winner. Ties can go to sudden death or stay as draw depending on the bot setting.
-      </p>
-    </section>
-
-    <section class="wiki-section">
-      <h2>Kaiju Bot State Model</h2>
-      <p>
-        The implementation should use D1 tables instead of in-memory queues. Minimum state: chat ID, champion Telegram ID, challenger Telegram ID, queue order, current round, locked cards, rolled category, match status, expiry time and final result. This prevents duplicate matches and lets the bot recover safely after a deploy.
-      </p>
-      <p>
-        The bot should also reject a second active match in the same chat. If a user tries to start another game while one is active, it replies with the current table and a Join Queue button instead of starting a new session.
-      </p>
-    </section>
-
-    <section class="wiki-section">
-      <h2>24/7 Pet Loop</h2>
-      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20247%20Pet%20Loop.jpg" alt="24/7 Crypto Moonboy Pets loop artwork showing opt-in Telegram needs alerts, missions, adventures, jobs and ready choices." loading="lazy" decoding="async">
-      <p>
-        Pet notifications are opt-in. When enabled, the bot can DM a player if their pet needs food, cleaning, sleep or play, if a daily mission is still open, if an upgrade is affordable, or if an adventure, job or crate choice is ready.
-      </p>
-      <p>
-        Adventures add roguelite runs on top of care actions. They cost energy, use cooldowns, award pet XP and in-game currencies, and stay separate from Community XP.
-      </p>
-    </section>
-
-
-    <section class="wiki-section">
-      <h2>Timed Activity Sessions</h2>
-      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Timed%20Activity%20Sessions.jpg" alt="Timed Activity Sessions artwork showing sleep, train, work and explore sessions scaling rewards by time spent." loading="lazy" decoding="async">
-      <p>
-        Timed activities layer on top of the existing instant Feed, Clean, Play, Train and Sleep buttons. A pet can have one active session at a time with <code>/petstart sleep</code>, <code>/petstart train</code>, <code>/petstart work</code> or <code>/petstart explore</code>. Players can inspect it with <code>/petactivity</code>, finish it with <code>/petclaim</code>, or stop it with <code>/petcancel</code>.
-      </p>
-      <p>
-        Activity rewards scale by time spent while staying capped: 5 minutes is tiny, 30 minutes is normal, 2 hours is strong, sleep/work/explore cap at 8 hours, and train caps at 2 hours. Pet XP and Community XP still use the existing daily caps, claims are idempotent, and cancelled or expired sessions do not create infinite farming loops.
-      </p>
-      <p>
-        Sleep restores energy and health, train gives Pet XP while spending energy and needs, work grants Moon Gold plus small Pet XP, and explore can roll loot such as Moon Gold, Moon Crystals, an adventure map, or small Pet XP.
-      </p>
-    </section>
-
-    <section class="wiki-section">
-      <h2>In-Game Economy</h2>
-      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20In-Game%20Economy.jpg" alt="Crypto Moonboy Pets economy artwork showing Moon Gold, Moon Crystals, Style Tokens, pet bag items and shop upgrades." loading="lazy" decoding="async">
-      <p>
-        Crypto Moonboy Pets uses three non-transferable pet currencies: Moon Gold for common upgrades and trades, Moon Crystals for rarer upgrades, and Style Tokens for clothing. The pet bag also contains usable items such as moon_snack, energy_drink, clean_wipe, lucky_charm, style_patch and adventure_map. These currencies and items are gameplay counters only and cannot be cashed out.
-      </p>
-      <p>
-        Pet XP unlocks higher shop tiers. Shop upgrades make the daily care loop stronger, but Community XP remains separately capped and server-accepted.
-      </p>
-    </section>
-
-    <section class="wiki-section">
-      <h2>XP Separation</h2>
-      <p>
-        Crypto Moonboy Pets has its own pet progression, but it is not a separate identity universe. Accepted care actions and trades can write to the existing Telegram XP system, so pet-earned Community XP is included in the current main XP leaderboard and graph. Inventory uses, jobs, daily chests and random events do not award Community XP.
-      </p>
-      <p>
-        Detailed pet stats stay on Crypto Moonboy Pets pages. Current community pages only show a compact pet summary or call to action.
-      </p>
-    </section>
-
-    <section class="wiki-section">
-      <h2>Seasons</h2>
-      <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20pets%20Seasons.jpg" alt="Crypto Moonboy Pets seasons artwork showing automatic daily, weekly and 90-day seasonal windows rolling forever." loading="lazy" decoding="async">
-      <p>
-        The pet game runs forever through automatic UTC daily, weekly and 90-day seasonal windows. New seasons do not require manual reset. When a player returns after a rollover, the server creates the next season state automatically.
-      </p>
     </section>
 
     <section class="wiki-section">
       <h2>Play And Track</h2>
       <div class="swarmsy-action-grid" role="navigation" aria-label="Crypto Moonboy Pets links">
-        <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">
-          <strong>PLAY ON TELEGRAM</strong>
-          <span>Open the bot and use /adopt, /petarena or /kaiju.</span>
-        </a>
-        <a class="swarmsy-action-card" href="/how-to-play-crypto-moonboy-pets.html">
-          <strong>HOW TO PLAY</strong>
-          <span>Learn commands, XP, seasons and missions.</span>
-        </a>
-        <a class="swarmsy-action-card swarmsy-action-card--magenta" href="/crypto-moonboy-pets-leaderboard.html">
-          <strong>PET LEADERBOARD</strong>
-          <span>Daily, weekly, seasonal and all-time pet ranks.</span>
-        </a>
+        <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer"><strong>PLAY ON TELEGRAM</strong><span>Open the bot and use /adopt.</span></a>
+        <a class="swarmsy-action-card" href="/how-to-play-crypto-moonboy-pets.html"><strong>HOW TO PLAY</strong><span>Read the complete commands and progression guide.</span></a>
+        <a class="swarmsy-action-card swarmsy-action-card--magenta" href="/crypto-moonboy-pets-leaderboard.html"><strong>PET LEADERBOARD</strong><span>View daily, weekly, seasonal and all-time ranks.</span></a>
       </div>
     </section>
 
-    <!-- RELATED_WIKI_PATHS:BEGIN -->
     <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
       <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
       <div class="wiki-rabbit-grid">
-        <div class="wiki-rabbit-group" data-related-group="Game Systems">
-          <h3>Game Systems</h3>
-          <a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html">
-            <strong>Crypto Moonboys</strong>
-            <span>Parent universe and community XP context.</span>
-          </a>
-          <a class="wiki-rabbit-card" href="/wiki/hodl-wars.html">
-            <strong>HODL WARS</strong>
-            <span>Adjacent Moonboys game and mission path.</span>
-          </a>
-          <a class="wiki-rabbit-card" href="/wiki/block-topia.html">
-            <strong>Block Topia</strong>
-            <span>Another game surface tied to ecosystem progression.</span>
-          </a>
-        </div>
-        <div class="wiki-rabbit-group wiki-rabbit-group--categories" data-related-group="Related Categories">
-          <h3>Related Categories</h3>
-          <div class="wiki-rabbit-chip-grid">
-            <a class="wiki-rabbit-chip" href="/categories/gaming.html">Gaming</a>
-            <a class="wiki-rabbit-chip" href="/categories/tools.html">Tools</a>
-            <a class="wiki-rabbit-chip" href="/categories/index.html">Categories</a>
-          </div>
-        </div>
-        <div class="wiki-rabbit-group" data-related-group="Play Surfaces">
-          <h3>Play Surfaces</h3>
-          <a class="wiki-rabbit-card" href="/games/index.html">
-            <strong>Games Hub</strong>
-            <span>Arcade and Telegram game entry points.</span>
-          </a>
-          <a class="wiki-rabbit-card" href="/community.html">
-            <strong>Community XP</strong>
-            <span>Main XP leaderboard and community graph surface.</span>
-          </a>
-          <a class="wiki-rabbit-card" href="/how-to-play-crypto-moonboy-pets.html">
-            <strong>How To Play</strong>
-            <span>Commands, loops, seasons and missions.</span>
-          </a>
-        </div>
+        <div class="wiki-rabbit-group" data-related-group="Game Systems"><h3>Game Systems</h3><a class="wiki-rabbit-card" href="/wiki/crypto-moonboys.html"><strong>Crypto Moonboys</strong><span>Parent universe and Community XP context.</span></a><a class="wiki-rabbit-card" href="/wiki/hodl-wars.html"><strong>HODL WARS</strong><span>Adjacent Moonboys game and mission path.</span></a><a class="wiki-rabbit-card" href="/wiki/block-topia.html"><strong>Block Topia</strong><span>Another game surface tied to ecosystem progression.</span></a></div>
+        <div class="wiki-rabbit-group wiki-rabbit-group--categories" data-related-group="Related Categories"><h3>Related Categories</h3><div class="wiki-rabbit-chip-grid"><a class="wiki-rabbit-chip" href="/categories/gaming.html">Gaming</a><a class="wiki-rabbit-chip" href="/categories/tools.html">Tools</a><a class="wiki-rabbit-chip" href="/categories/index.html">Categories</a></div></div>
+        <div class="wiki-rabbit-group" data-related-group="Play Surfaces"><h3>Play Surfaces</h3><a class="wiki-rabbit-card" href="/games/index.html"><strong>Games Hub</strong><span>Arcade and Telegram game entry points.</span></a><a class="wiki-rabbit-card" href="/community.html"><strong>Community XP</strong><span>Main XP leaderboard and community graph surface.</span></a><a class="wiki-rabbit-card" href="/how-to-play-crypto-moonboy-pets.html"><strong>How To Play</strong><span>Commands, progression, seasons and missions.</span></a></div>
       </div>
     </section>
-    <!-- RELATED_WIKI_PATHS:END -->
   </article>
+
+  <div class="wiki-comments" data-page-id="crypto-moonboy-pets"></div>
 </main>
 
 <script data-cfasync="false" src="/js/api-config.js"></script>
