@@ -50,6 +50,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-pets-api.test.mjs'],
     ['node', 'scripts/telegram-pets-equipment-progression.test.mjs'],
     ['node', 'scripts/telegram-pets-progression-phase-2.test.mjs'],
+    ['node', 'scripts/telegram-pets-economy-phase-3.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.mjs'],
   ],
