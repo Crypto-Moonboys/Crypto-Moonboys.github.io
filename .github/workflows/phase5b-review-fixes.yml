@@ -1,4 +1,4 @@
-name: Phase 5B Review Fixes
+name: Final Phase 5 Runtime Hotfix
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: agent/pets-runtime-phase-5b
+          ref: agent/pets-phase-5-final-hotfix
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -49,15 +49,17 @@ jobs:
 
           fs.writeFileSync(path, source);
           NODE
-      - name: Validate fixes
+      - name: Remove temporary patch workflow
+        run: rm .github/workflows/phase5b-review-fixes.yml
+      - name: Validate final Worker
         run: |
           node --check workers/moonboys-api/worker.js
-          node scripts/telegram-pets-runtime-phase-5b.test.mjs
-      - name: Commit fixes
+          npm install
+          npm run ci:worker-api
+      - name: Commit final hotfix
         run: |
-          rm .github/workflows/phase5b-review-fixes.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add workers/moonboys-api/worker.js .github/workflows/phase5b-review-fixes.yml
-          git commit -m "Fix Phase 5B API awards and gear progression"
-          git push origin HEAD:agent/pets-runtime-phase-5b
+          git commit -m "Complete Phase 5 pet runtime integration"
+          git push origin HEAD:agent/pets-phase-5-final-hotfix
