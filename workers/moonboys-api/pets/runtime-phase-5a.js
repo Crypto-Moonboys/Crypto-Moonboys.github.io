@@ -103,9 +103,9 @@ function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey) {
     bindings.push(...jsonBindings);
   }
 
-  bindings.push(telegramId);
+  bindings.push(telegramId, claimId);
   return {
-    sql: `UPDATE telegram_pet_progression_state SET ${assignments.join(', ')} WHERE telegram_id = ? RETURNING *`,
+    sql: `UPDATE telegram_pet_progression_state SET ${assignments.join(', ')} WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?) RETURNING *`,
     bindings,
   };
 }
