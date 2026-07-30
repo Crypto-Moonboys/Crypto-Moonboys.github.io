@@ -25,11 +25,11 @@ assert.ok(howTo.includes('Armor, Weapon and Charm'), 'How To Play must define ba
 assert.ok(howTo.includes('Changing one does not reset the other'), 'How To Play must state loadouts are independent');
 assert.ok(howTo.includes('Empty battle slots display') && howTo.includes('<strong>none</strong>'), 'How To Play must explain empty battle slots');
 assert.ok(howTo.includes('Pet Arena unlocks at level 10'), 'docs mention Pet Arena level unlock');
-assert.ok(howTo.includes('Pet Arena equipment') || howTo.includes('Gear Shop'), 'docs explain the Pet Arena equipment shop');
+assert.ok(howTo.includes('Pet Arena equipment') || howTo.includes('Gear Shop'), 'docs explain the Arena equipment shop');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
 assert.ok(howTo.includes('lucky_charm') && howTo.includes('consumed when it boosts a run'), 'How To Play must explain lucky_charm run consumption');
-assert.ok(howTo.includes('community/game progression only'), 'How To Play must keep rewards framed as game progression');
+assert.ok(howTo.includes('game-only rewards') && howTo.includes('game currencies'), 'How To Play must keep rewards framed as game progression');
 assert.ok(!howTo.toLowerCase().includes('financial'), 'How To Play must avoid financial wording');
 assert.ok(!howTo.toLowerCase().includes('real-world value'), 'How To Play must avoid real-world value wording');
 assert.ok(howTo.includes('pet-card-gallery'), 'How To Play must include a pet card gallery');
