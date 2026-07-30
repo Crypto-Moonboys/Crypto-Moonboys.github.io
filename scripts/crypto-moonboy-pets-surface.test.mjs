@@ -14,9 +14,10 @@ assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page
 assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
 assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
 
-for (const command of ['/adopt', '/feed', '/train', '/petrun', '/petextract', '/petadventure', '/petbag', '/petuse moon_snack', '/petwork courier', '/petdaily', '/petevent open', '/petnotify on', '/petarena', '/petstart train', '/petactivity', '/petclaim', '/petcancel']) {
+for (const command of ['/adopt', '/feed', '/train', '/petrun', '/petextract', '/petadventure', '/petbag', '/petuse moon_snack', '/petwork courier', '/petdaily', '/petevent', '/petnotify on', '/petarena', '/petstart train', '/petactivity', '/petclaim', '/petcancel']) {
   assert.ok(howTo.includes(command), `How To Play must explain ${command}`);
 }
+assert.ok(howTo.includes('Generates a random encounter with three choices.'), 'How To Play must explain what /petevent does');
 assert.ok(howTo.includes('Care Loadout'), 'How To Play must explain the Care Loadout');
 assert.ok(howTo.includes('Battle Loadout'), 'How To Play must explain the Battle Loadout');
 assert.ok(howTo.includes('Food, Toy and Outfit'), 'How To Play must define care slots');
