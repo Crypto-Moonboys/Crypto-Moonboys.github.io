@@ -30,6 +30,10 @@
     }).catch(function () { return null; });
   }
 
+  function formatLoadoutValue(value, fallback) {
+    return escapeHtml(value || fallback);
+  }
+
   function petSummaryHtml(pet) {
     if (!pet) {
       return '<div class="community-empty">No Crypto Moonboy Pet yet. Open Telegram and use <code>/adopt</code>.</div>';
@@ -44,7 +48,8 @@
         '</div>' +
         '<div class="tg-profile-xp">Pet XP: ' + escapeHtml(pet.pet_xp || 0) + ' · Health: ' + escapeHtml(pet.health || 0) + '/100 · Streak: ' + escapeHtml(pet.streak_days || 0) + '</div>' +
         '<div class="tg-profile-xp">Gold: ' + escapeHtml(pet.moon_gold || 0) + ' · Crystals: ' + escapeHtml(pet.moon_crystals || 0) + ' · Style: ' + escapeHtml(pet.style_tokens || 0) + '</div>' +
-        '<div class="tg-profile-xp">Food: ' + escapeHtml(pet.equipped_food || 'basic') + ' · Toy: ' + escapeHtml(pet.equipped_toy || 'basic') + ' · Outfit: ' + escapeHtml(pet.equipped_outfit || 'none') + '</div>' +
+        '<div class="tg-profile-xp"><strong>Care Loadout</strong> · Food: ' + formatLoadoutValue(pet.equipped_food, 'basic') + ' · Toy: ' + formatLoadoutValue(pet.equipped_toy, 'basic') + ' · Outfit: ' + formatLoadoutValue(pet.equipped_outfit, 'none') + '</div>' +
+        '<div class="tg-profile-xp"><strong>Battle Loadout</strong> · Armor: ' + formatLoadoutValue(pet.equipped_armor, 'none') + ' · Weapon: ' + formatLoadoutValue(pet.equipped_weapon, 'none') + ' · Charm: ' + formatLoadoutValue(pet.equipped_charm, 'none') + '</div>' +
       '</div>' +
     '</div>';
   }
