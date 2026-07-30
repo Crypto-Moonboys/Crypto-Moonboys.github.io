@@ -48,6 +48,7 @@ const GROUPS = {
     ['node', 'scripts/npc-chat-bridge.test.mjs'],
     ['node', 'scripts/sparky-telegram-gate.test.mjs'],
     ['node', 'scripts/telegram-pets-api.test.mjs'],
+    ['node', 'scripts/telegram-pets-equipment-progression.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.mjs'],
   ],
@@ -123,7 +124,5 @@ for (const command of GROUPS[group]) {
     console.error(`[ci:${group}] failed to start ${rawBin}: ${result.error.message}`);
     process.exit(1);
   }
-  if (result.status !== 0) {
-    process.exit(result.status || 1);
-  }
+  if (result.status !== 0) process.exit(result.status || 1);
 }
