@@ -48,6 +48,7 @@ const GROUPS = {
     ['node', 'scripts/npc-chat-bridge.test.mjs'],
     ['node', 'scripts/sparky-telegram-gate.test.mjs'],
     ['node', 'scripts/telegram-pets-api.test.mjs'],
+    ['node', 'scripts/telegram-pets-equipment-progression.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.mjs'],
   ],
