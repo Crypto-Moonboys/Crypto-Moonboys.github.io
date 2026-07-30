@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-07-29T06:10:37.754Z",
+  "generated_at": "2026-07-30T06:05:00.891Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-29T06:10:33.497Z"
+      "checked_at": "2026-07-30T06:04:56.839Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-29T06:10:33.629Z"
+      "checked_at": "2026-07-30T06:04:56.977Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-29T06:10:35.572Z"
+      "checked_at": "2026-07-30T06:04:58.901Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-07-29T06:10:35.706Z"
+      "checked_at": "2026-07-30T06:04:59.041Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-29T06:10:36.340Z"
+      "checked_at": "2026-07-30T06:04:59.677Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-29T06:10:37.369Z"
+      "checked_at": "2026-07-30T06:05:00.492Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-07-29T06:10:37.501Z"
+      "checked_at": "2026-07-30T06:05:00.631Z"
     }
   },
   "data": {
     "collection_stats": {
       "numUsers": 703,
-      "usdMarketCap": 129460.97545813101,
-      "waxMarketCap": 475195.89460417914,
+      "usdMarketCap": 129460.975458131,
+      "waxMarketCap": 475195.89460417925,
       "numAssets": 12020
     },
     "num_assets": {
       "numberOfAssets": 12020,
       "estimatedWaxValue": 475195.8946041784,
-      "estimatedUsdValue": 129460.97545813107
+      "estimatedUsdValue": 129460.97545813106
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -187,13 +187,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 11920.646534181833,
-          "usdVolume": 1837.2485961679267,
+          "waxVolume": 11941.646534181833,
+          "usdVolume": 1837.3472961679267,
           "waxFloor": 21,
           "change": 0,
           "buyers": 116,
           "sellers": 329,
-          "sales": 775,
+          "sales": 776,
           "rank": 5
         }
       },
@@ -219,13 +219,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 10247.338268069996,
-          "usdVolume": 411.03592455245,
-          "waxFloor": 143.2,
+          "waxVolume": 10390.538268069997,
+          "usdVolume": 411.70896455245,
+          "waxFloor": 144,
           "change": 0,
           "buyers": 44,
-          "sellers": 63,
-          "sales": 143,
+          "sellers": 64,
+          "sales": 144,
           "rank": 10
         }
       },
@@ -251,13 +251,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 8886.559333406994,
-          "usdVolume": 1170.0053874808245,
+          "waxVolume": 8920.559333406994,
+          "usdVolume": 1170.1651874808247,
           "waxFloor": 34,
           "change": 0,
           "buyers": 173,
           "sellers": 267,
-          "sales": 795,
+          "sales": 796,
           "rank": 7
         }
       },
@@ -315,13 +315,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 8016.579230176039,
-          "usdVolume": 1773.6649234397753,
+          "waxVolume": 8037.559230176039,
+          "usdVolume": 1773.7635294397753,
           "waxFloor": 20.98,
           "change": 0,
           "buyers": 93,
           "sellers": 251,
-          "sales": 599,
+          "sales": 600,
           "rank": 4
         }
       },
@@ -347,13 +347,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 7584.610077879993,
-          "usdVolume": 428.025841645637,
+          "waxVolume": 7673.609077879993,
+          "usdVolume": 428.444136945637,
           "waxFloor": 88.999,
           "change": 0,
           "buyers": 59,
           "sellers": 107,
-          "sales": 203,
+          "sales": 204,
           "rank": 9
         }
       },
@@ -379,14 +379,46 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 7193.806839344325,
-          "usdVolume": 813.7404156243462,
-          "waxFloor": 54.97,
+          "waxVolume": 7248.776839344325,
+          "usdVolume": 813.9987746243461,
+          "waxFloor": 55,
           "change": 0,
           "buyers": 110,
           "sellers": 144,
-          "sales": 351,
+          "sales": 352,
           "rank": 8
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "The Price Rise Structure for ‘’Have FAITH in 377” in the “whysoserious” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 34 - (650 WAX)  34 to 55 - (1,170 WAX) 55 to 89 - (1,888 WAX) 89 to 144 - (3,050 WAX) 144 to 233 - (4,420+ WAX)   (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We ",
+          "id": "377",
+          "img": "QmcbjQ5ZpMccNV1fn9iVN6APxJGMGuFV5UqGJGkMb8c5JY",
+          "name": "\"Have FAITH in 377\"",
+          "rarity ": "HEAVENLY NUMBERS",
+          "variation ": "Original Artwork",
+          "template_id": 441677,
+          "schema": "airdropsbycb"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 6092.925107499999,
+          "usdVolume": 569.35999931775,
+          "waxFloor": 377,
+          "change": 0,
+          "buyers": 16,
+          "sellers": 21,
+          "sales": 33,
+          "rank": 12
         }
       },
       {
@@ -458,38 +490,6 @@
           "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
           "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
           "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "The Price Rise Structure for ‘’Have FAITH in 377” in the “whysoserious” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 34 - (650 WAX)  34 to 55 - (1,170 WAX) 55 to 89 - (1,888 WAX) 89 to 144 - (3,050 WAX) 144 to 233 - (4,420+ WAX)   (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We ",
-          "id": "377",
-          "img": "QmcbjQ5ZpMccNV1fn9iVN6APxJGMGuFV5UqGJGkMb8c5JY",
-          "name": "\"Have FAITH in 377\"",
-          "rarity ": "HEAVENLY NUMBERS",
-          "variation ": "Original Artwork",
-          "template_id": 441677,
-          "schema": "airdropsbycb"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 4715.925107499999,
-          "usdVolume": 562.88809931775,
-          "waxFloor": 377,
-          "change": 0,
-          "buyers": 16,
-          "sellers": 20,
-          "sales": 31,
-          "rank": 12
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
           "description ": "The Price Rise Structure for ‘’OPEN YOUR EYES” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).  When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 8 - (850 WAX) 8 to 13 - (1,420 WAX) 13 to 21 - (2,300 WAX) 21 to 34 - (3,720 WAX) 34 to 55 - (6,000+ WAX)  (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We have Withheld the Bulk of the Available Maximum Mint to Keep Supply Extremely Low, Example the Max Mint Available is #89 and with the first (55) held as the Master Mint’s on This NFT.  More information about the project Here: https://graffitikings.co.uk/charlie-buster-nfts/",
           "id": "89",
           "img": "QmcYtZbSwxbQBr7wSiuLt4ENCgBbyzUeHsNqzM1Cz1JoYZ",
@@ -522,6 +522,70 @@
           "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
           "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
           "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "Charlie Buster has established himself as one of the foremost artists of this age and in multiple art forms. His unique style takes a lighthearted approach, rather than the typical grim slant of street art, differentiating him from his contemporaries and giving his art a relatable quality. Using varied materials (including acrylics, paint pens, stencils, spray paint, and vintage photos) Charlie subversively depicts various current icons of pop culture using he’s own unique approach to create he’s extremely colourful illustrations, in the process has generated his own recognisable style of street art.",
+          "id": "34",
+          "img": "QmTcwXvX3LSmu5Wicjvd74bcBQZiLmz5isSa7CRhAkUmef",
+          "name": "‘’Pluto To Las Vegas’’",
+          "rarity ": "Semi Prime ",
+          "variations ": "Original Artwork ",
+          "template_id": 401786,
+          "schema": "whysoserious"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 4000,
+          "usdVolume": 921.6,
+          "waxFloor": 4181,
+          "change": 0,
+          "buyers": 2,
+          "sellers": 2,
+          "sales": 2,
+          "rank": 3
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "The Price Rise Structure for \"Beauty and the Beast\" in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 21 - (750 WAX)  21 to 34 - (1,234 WAX) 34 to 55 - (2,023 WAX) 55 to 89 - (3,333 WAX) 89 to 144+ - (5,666+ WAX)   (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We have Withheld the Bulk of the Available Maximum Mint to Keep Supply Extremely Low, Example the Max Mint Available is #377 and with the first (55) held as the Master Mint’s on This NFT.  More information about the project Here: https://graffitikings.co.uk/charlie-buster-nfts/",
+          "id": "233",
+          "img": "QmW1ZDcz645QzZEhNQ6TeEnibsTeXEKz3B4sE6hZEUG8Y2",
+          "name": "\"Beauty and the Beast\"",
+          "rarity ": "Beauty and Destruction ",
+          "variation ": "Original Artwork",
+          "template_id": 445272,
+          "schema": "airdropsbycb"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 3191.3725,
+          "usdVolume": 319.60785805,
+          "waxFloor": 610,
+          "change": 0,
+          "buyers": 11,
+          "sellers": 16,
+          "sales": 23,
+          "rank": 13
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
           "description ": "The Price Rise Structure for ‘’THE LOST SOUL’s” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 13- (650 WAX)  13 to 21 - (1,170 WAX) 21 to 34 - (2,030 WAX) 34 to 55 - (3,250 WAX) 55 to 89 - (5,250+ WAX)   (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We have Withheld the Bulk of the Available Maximum Mint to Keep Supply Extremely Low, Example the Max Mint Available is #144 and with the first (55) held as the Master Mint’s on This NFT.  More information about the project Here: https://graffitikings.co.uk/charlie-buster-nfts/",
           "id": "144",
           "img": "QmYYvHB7Yz8tk32vdsEpKMgNLRM3AqUyeAjKSAvnihtuvZ",
@@ -547,70 +611,6 @@
           "sellers": 20,
           "sales": 26,
           "rank": 14
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "The Price Rise Structure for \"Beauty and the Beast\" in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 21 - (750 WAX)  21 to 34 - (1,234 WAX) 34 to 55 - (2,023 WAX) 55 to 89 - (3,333 WAX) 89 to 144+ - (5,666+ WAX)   (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We have Withheld the Bulk of the Available Maximum Mint to Keep Supply Extremely Low, Example the Max Mint Available is #377 and with the first (55) held as the Master Mint’s on This NFT.  More information about the project Here: https://graffitikings.co.uk/charlie-buster-nfts/",
-          "id": "233",
-          "img": "QmW1ZDcz645QzZEhNQ6TeEnibsTeXEKz3B4sE6hZEUG8Y2",
-          "name": "\"Beauty and the Beast\"",
-          "rarity ": "Beauty and Destruction ",
-          "variation ": "Original Artwork",
-          "template_id": 445272,
-          "schema": "airdropsbycb"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 2581.3725,
-          "usdVolume": 316.74085805000004,
-          "waxFloor": 610,
-          "change": 0,
-          "buyers": 11,
-          "sellers": 16,
-          "sales": 22,
-          "rank": 13
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "Charlie Buster has established himself as one of the foremost artists of this age and in multiple art forms. His unique style takes a lighthearted approach, rather than the typical grim slant of street art, differentiating him from his contemporaries and giving his art a relatable quality. Using varied materials (including acrylics, paint pens, stencils, spray paint, and vintage photos) Charlie subversively depicts various current icons of pop culture using he’s own unique approach to create he’s extremely colourful illustrations, in the process has generated his own recognisable style of street art.",
-          "id": "34",
-          "img": "QmTcwXvX3LSmu5Wicjvd74bcBQZiLmz5isSa7CRhAkUmef",
-          "name": "‘’Pluto To Las Vegas’’",
-          "rarity ": "Semi Prime ",
-          "variations ": "Original Artwork ",
-          "template_id": 401786,
-          "schema": "whysoserious"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 2000,
-          "usdVolume": 912.2,
-          "waxFloor": 2000,
-          "change": 0,
-          "buyers": 1,
-          "sellers": 1,
-          "sales": 1,
-          "rank": 3
         }
       },
       {
@@ -679,16 +679,10 @@
       }
     ],
     "volume": {
-      "waxVolume": 12887.69987805,
-      "usdVolume": 60.572189426835024
+      "waxVolume": 17237.84887805,
+      "usdVolume": 81.01788972683501
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-06-30"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -716,7 +710,7 @@
       {
         "waxVolume": 1459,
         "sales": 24,
-        "usdVolume": 6.857299999999998,
+        "usdVolume": 6.8573,
         "date": "2026-07-05"
       },
       {
@@ -812,13 +806,13 @@
       {
         "waxVolume": 1352,
         "sales": 27,
-        "usdVolume": 6.3544,
+        "usdVolume": 6.354399999999999,
         "date": "2026-07-21"
       },
       {
         "waxVolume": 3257.999,
         "sales": 67,
-        "usdVolume": 15.312595300000007,
+        "usdVolume": 15.31259530000002,
         "date": "2026-07-22"
       },
       {
@@ -834,9 +828,9 @@
         "date": "2026-07-24"
       },
       {
-        "waxVolume": 6327.74187805,
+        "waxVolume": 6327.741878049999,
         "sales": 65,
-        "usdVolume": 29.74038682683504,
+        "usdVolume": 29.740386826835007,
         "date": "2026-07-25"
       },
       {
@@ -858,10 +852,16 @@
         "date": "2026-07-28"
       },
       {
+        "waxVolume": 4350.148999999999,
+        "sales": 10,
+        "usdVolume": 20.445700300000002,
+        "date": "2026-07-29"
+      },
+      {
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
-        "date": "2026-07-29"
+        "date": "2026-07-30"
       }
     ]
   },
