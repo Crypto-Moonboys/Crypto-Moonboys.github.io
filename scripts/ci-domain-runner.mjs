@@ -124,5 +124,7 @@ for (const command of GROUPS[group]) {
     console.error(`[ci:${group}] failed to start ${rawBin}: ${result.error.message}`);
     process.exit(1);
   }
-  if (result.status !== 0) process.exit(result.status || 1);
+  if (result.status !== 0) {
+    process.exit(result.status || 1);
+  }
 }
