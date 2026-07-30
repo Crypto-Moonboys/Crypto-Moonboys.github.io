@@ -7,7 +7,7 @@ import {
   getUnlockedPetTraits,
 } from './progression-phase-2.js';
 import {
-  clampPetMaterialStack,
+  PET_CRAFTING_MATERIALS,
   normalizePetMaterial,
   resolvePetRareDrop,
 } from './economy-phase-3.js';
@@ -70,6 +70,46 @@ function parseJsonObject(value) {
   }
 }
 
+function firstBatchRow(result) {
+  return Array.isArray(result?.results) ? (result.results[0] || null) : null;
+}
+
+function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey) {
+  const assignments = ['daily_key = ?', 'updated_at = CURRENT_TIMESTAMP'];
+  const bindings = [dayKey];
+  const claimSql = 'EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?)';
+
+  for (const [track, columns] of Object.entries(TRACK_COLUMNS)) {
+    const requested = Math.max(0, Math.floor(Number(plan.tracks?.[track]) || 0));
+    const cap = PET_PROGRESSION_TRACKS[track].max_daily_award;
+    const priorDaily = `CASE WHEN daily_key = ? THEN ${columns.daily} ELSE 0 END`;
+    const credited = `CASE WHEN ${claimSql} THEN MIN(?, MAX(0, ? - ${priorDaily})) ELSE 0 END`;
+    assignments.push(`${columns.total} = ${columns.total} + ${credited}`);
+    bindings.push(claimId, requested, cap, dayKey);
+    assignments.push(`${columns.daily} = ${priorDaily} + ${credited}`);
+    bindings.push(dayKey, claimId, requested, cap, dayKey);
+  }
+
+  const traitEntries = Object.entries(plan.traits || {});
+  if (traitEntries.length) {
+    const jsonArgs = [];
+    const jsonBindings = [];
+    for (const [trait, rawAward] of traitEntries) {
+      const award = Math.max(0, Math.floor(Number(rawAward) || 0));
+      jsonArgs.push(`'$.${trait}', COALESCE(json_extract(CASE WHEN json_valid(traits_json) THEN traits_json ELSE '{}' END, '$.${trait}'), 0) + CASE WHEN ${claimSql} THEN ? ELSE 0 END`);
+      jsonBindings.push(claimId, award);
+    }
+    assignments.push(`traits_json = json_set(CASE WHEN json_valid(traits_json) THEN traits_json ELSE '{}' END, ${jsonArgs.join(', ')})`);
+    bindings.push(...jsonBindings);
+  }
+
+  bindings.push(telegramId);
+  return {
+    sql: `UPDATE telegram_pet_progression_state SET ${assignments.join(', ')} WHERE telegram_id = ? RETURNING *`,
+    bindings,
+  };
+}
+
 export function normalizePetRuntimeAction(value) {
   const key = String(value || '').trim().toLowerCase();
   return hasOwn(ACTION_TRACK_AWARDS, key) || hasOwn(ACTION_DROP_TABLE, key) ? key : null;
@@ -112,6 +152,12 @@ export function mergePetTraitProgress(currentJson, traitAwards = {}) {
   return next;
 }
 
+export function calculateCreditedMaterialAmount(beforeQuantity, afterQuantity) {
+  const before = Math.max(0, Math.floor(Number(beforeQuantity) || 0));
+  const after = Math.max(0, Math.floor(Number(afterQuantity) || 0));
+  return Math.max(0, after - before);
+}
+
 export function buildPetProgressSummary(state = {}) {
   const lines = ['📈 PET PROGRESSION'];
   for (const [track, columns] of Object.entries(TRACK_COLUMNS)) {
@@ -151,33 +197,51 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
   const id = String(telegramId || '').trim();
   const stableEventKey = String(eventKey || '').trim();
   const plan = buildPetRuntimeAwardPlan(action, options);
-  if (!id || !stableEventKey || !plan) return { ok: false, code: 'invalid_runtime_award' };
+  if (!id || !stableEventKey || !plan || typeof db?.batch !== 'function') return { ok: false, code: 'invalid_runtime_award' };
 
-  const inserted = await db.prepare(`INSERT INTO telegram_pet_runtime_events (id, telegram_id, event_key, action, payload_json) VALUES (?, ?, ?, ?, ?) ON CONFLICT (telegram_id, event_key) DO NOTHING RETURNING id`)
-    .bind(crypto.randomUUID(), id, stableEventKey, plan.action, JSON.stringify(plan)).first();
-  if (!inserted) return { ok: true, duplicate: true, tracks: {}, traits: {}, material: null };
+  const dayKey = String(options.day_key || new Date().toISOString().slice(0, 10));
+  const claimId = crypto.randomUUID();
+  const stateUpdate = buildAtomicStateUpdate(plan, claimId, id, dayKey);
+  const statements = [
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, dayKey),
+    db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id),
+    db.prepare(`INSERT INTO telegram_pet_runtime_events (id, telegram_id, event_key, action, payload_json) VALUES (?, ?, ?, ?, ?) ON CONFLICT (telegram_id, event_key) DO NOTHING RETURNING id`).bind(claimId, id, stableEventKey, plan.action, JSON.stringify(plan)),
+    db.prepare(stateUpdate.sql).bind(...stateUpdate.bindings),
+  ];
 
-  const state = await getOrCreatePetRuntimeState(db, id, options.day_key || new Date().toISOString().slice(0, 10));
-  const trackAwards = calculatePetRuntimeTrackAwards(plan, state || {});
-  const nextTraits = mergePetTraitProgress(state?.traits_json, plan.traits);
-
-  const assignments = ['traits_json = ?', 'updated_at = CURRENT_TIMESTAMP'];
-  const values = [JSON.stringify(nextTraits)];
-  for (const [track, award] of Object.entries(trackAwards)) {
-    const columns = TRACK_COLUMNS[track];
-    assignments.push(`${columns.total} = ${columns.total} + ?`, `${columns.daily} = ${columns.daily} + ?`);
-    values.push(award, award);
+  let materialBeforeIndex = -1;
+  let materialAfterIndex = -1;
+  let requestedMaterialQuantity = 0;
+  if (plan.material && normalizePetMaterial(plan.material)) {
+    requestedMaterialQuantity = Math.max(1, Math.min(25, Math.floor(Number(options.material_amount) || 1)));
+    const maxStack = PET_CRAFTING_MATERIALS[plan.material].max_stack;
+    materialBeforeIndex = statements.length;
+    statements.push(db.prepare(`SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND material_key = ?`).bind(id, plan.material));
+    materialAfterIndex = statements.length;
+    statements.push(db.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity)
+      SELECT ?, ?, MIN(?, ?) WHERE EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?)
+      ON CONFLICT (telegram_id, material_key) DO UPDATE SET quantity = MIN(?, telegram_pet_material_balances.quantity + excluded.quantity), updated_at = CURRENT_TIMESTAMP
+      RETURNING quantity`).bind(id, plan.material, requestedMaterialQuantity, maxStack, claimId, maxStack));
   }
-  values.push(id);
-  await db.prepare(`UPDATE telegram_pet_progression_state SET ${assignments.join(', ')} WHERE telegram_id = ?`).bind(...values).run();
+
+  // Cloudflare D1 executes db.batch() as one transaction. A failed statement rolls back
+  // the event claim, progression update and material mutation together.
+  const results = await db.batch(statements);
+  const priorState = firstBatchRow(results[1]) || {};
+  const claim = firstBatchRow(results[2]);
+  if (!claim || claim.id !== claimId) return { ok: true, duplicate: true, tracks: {}, traits: {}, material: null, equipment_awards: [] };
+
+  const capState = priorState.daily_key === dayKey
+    ? priorState
+    : { ...priorState, care_daily: 0, training_daily: 0, adventure_daily: 0, arena_daily: 0, job_daily: 0, bond_daily: 0 };
+  const trackAwards = calculatePetRuntimeTrackAwards(plan, capState);
 
   let material = null;
-  if (plan.material && normalizePetMaterial(plan.material)) {
-    const quantity = Math.max(1, Math.min(25, Math.floor(Number(options.material_amount) || 1)));
-    const existing = await db.prepare(`SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND material_key = ?`).bind(id, plan.material).first();
-    const nextQuantity = clampPetMaterialStack(plan.material, existing?.quantity, quantity);
-    await db.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES (?, ?, ?) ON CONFLICT (telegram_id, material_key) DO UPDATE SET quantity = excluded.quantity, updated_at = CURRENT_TIMESTAMP`).bind(id, plan.material, nextQuantity).run();
-    material = { key: plan.material, quantity_awarded: quantity, balance: nextQuantity };
+  if (materialAfterIndex >= 0) {
+    const before = firstBatchRow(results[materialBeforeIndex])?.quantity || 0;
+    const after = firstBatchRow(results[materialAfterIndex])?.quantity || before;
+    const credited = calculateCreditedMaterialAmount(before, after);
+    material = { key: plan.material, quantity_awarded: credited, balance: Math.max(0, Math.floor(Number(after) || 0)), requested: requestedMaterialQuantity };
   }
 
   const equipmentAwards = [];
