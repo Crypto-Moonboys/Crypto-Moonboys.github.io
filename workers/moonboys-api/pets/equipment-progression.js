@@ -9,15 +9,15 @@ export const PET_EQUIPMENT_UTILITY = Object.freeze({
   street_hoodie: Object.freeze({ slot: 'outfit', systems: ['care', 'jobs', 'events'], mastery_actions: ['care', 'job', 'event'], base_effects: { care_pet_xp: 2, job_reward_pct: 3 } }),
   moon_armor: Object.freeze({ slot: 'outfit', systems: ['care', 'jobs', 'runs', 'arena'], mastery_actions: ['care', 'job', 'run', 'arena_complete'], base_effects: { care_pet_xp: 5, care_gold: 1, run_survival_pct: 4, arena_defense: 1 } }),
   crown_jacket: Object.freeze({ slot: 'outfit', systems: ['care', 'jobs', 'events', 'runs', 'arena'], mastery_actions: ['care', 'job', 'event', 'run_boss', 'arena_complete'], base_effects: { care_pet_xp: 8, care_gold: 2, care_style: 1, boss_reward_pct: 8, arena_luck: 2 } }),
-  cardboard_armor: Object.freeze({ slot: 'armor', systems: ['arena', 'timed_train'], mastery_actions: ['arena_block', 'arena_complete', 'train'], base_effects: { arena_defense: 4, strength_training_pct: 3 } }),
-  moon_helmet: Object.freeze({ slot: 'armor', systems: ['arena', 'runs'], mastery_actions: ['arena_block', 'arena_dodge', 'arena_complete'], base_effects: { arena_defense: 7, arena_dodge: 2, run_survival_pct: 2 } }),
-  street_armor: Object.freeze({ slot: 'armor', systems: ['arena', 'jobs'], mastery_actions: ['arena_block', 'arena_complete', 'job'], base_effects: { arena_defense: 11, guard_job_pct: 5 } }),
+  cardboard_armor: Object.freeze({ slot: 'armor', systems: ['arena', 'timed_train', 'jobs'], mastery_actions: ['arena_block', 'arena_complete', 'train', 'job'], base_effects: { arena_defense: 4, strength_training_pct: 3, guard_job_pct: 2 } }),
+  moon_helmet: Object.freeze({ slot: 'armor', systems: ['arena', 'runs', 'timed_train'], mastery_actions: ['arena_block', 'arena_dodge', 'arena_complete', 'run_survival', 'train'], base_effects: { arena_defense: 7, arena_dodge: 2, run_survival_pct: 2, strength_training_pct: 2 } }),
+  street_armor: Object.freeze({ slot: 'armor', systems: ['arena', 'jobs', 'runs'], mastery_actions: ['arena_block', 'arena_complete', 'job', 'run_survival'], base_effects: { arena_defense: 11, guard_job_pct: 5, run_survival_pct: 2 } }),
   cyber_armor: Object.freeze({ slot: 'armor', systems: ['arena', 'runs', 'timed_train'], mastery_actions: ['arena_block', 'arena_complete', 'run_boss', 'train'], base_effects: { arena_defense: 18, arena_luck: 3, run_survival_pct: 6 } }),
-  foam_claws: Object.freeze({ slot: 'weapon', systems: ['arena', 'timed_train'], mastery_actions: ['arena_attack', 'arena_complete', 'train'], base_effects: { arena_attack: 5, strength_training_pct: 2 } }),
-  laser_claws: Object.freeze({ slot: 'weapon', systems: ['arena', 'runs'], mastery_actions: ['arena_attack', 'arena_crit', 'arena_complete', 'run_fight'], base_effects: { arena_attack: 11, arena_crit: 2, run_fight_pct: 4 } }),
+  foam_claws: Object.freeze({ slot: 'weapon', systems: ['arena', 'timed_train', 'runs'], mastery_actions: ['arena_attack', 'arena_complete', 'train', 'run_fight'], base_effects: { arena_attack: 5, strength_training_pct: 2, run_fight_pct: 2 } }),
+  laser_claws: Object.freeze({ slot: 'weapon', systems: ['arena', 'runs', 'timed_train'], mastery_actions: ['arena_attack', 'arena_crit', 'arena_complete', 'run_fight', 'train'], base_effects: { arena_attack: 11, arena_crit: 2, run_fight_pct: 4, strength_training_pct: 3 } }),
   moon_blaster: Object.freeze({ slot: 'weapon', systems: ['arena', 'runs', 'events'], mastery_actions: ['arena_attack', 'arena_crit', 'arena_complete', 'run_fight', 'event'], base_effects: { arena_attack: 18, arena_crit: 4, run_fight_pct: 7 } }),
   lucky_charm: Object.freeze({ slot: 'charm', systems: ['arena', 'runs', 'events'], mastery_actions: ['arena_crit', 'arena_complete', 'run_luck', 'event'], base_effects: { arena_luck: 6, arena_crit: 2, run_luck_pct: 5 } }),
-  shield_charm: Object.freeze({ slot: 'charm', systems: ['arena', 'runs'], mastery_actions: ['arena_block', 'arena_dodge', 'arena_complete', 'run_survival'], base_effects: { arena_defense: 5, arena_dodge: 3, run_survival_pct: 4 } }),
+  shield_charm: Object.freeze({ slot: 'charm', systems: ['arena', 'runs', 'timed_train'], mastery_actions: ['arena_block', 'arena_dodge', 'arena_complete', 'run_survival', 'train'], base_effects: { arena_defense: 5, arena_dodge: 3, run_survival_pct: 4, strength_training_pct: 2 } }),
 });
 
 export function getPetEquipmentDefinition(itemKey) {
@@ -47,7 +47,8 @@ export function getPetEquipmentMasteryTier(masteryXp) {
 export function scalePetEquipmentEffects(itemKey, progression = {}) {
   const definition = getPetEquipmentDefinition(itemKey);
   if (!definition) return null;
-  const level = Math.max(1, Math.min(PET_EQUIPMENT_MAX_LEVEL, Math.floor(Number(progression.level) || getPetEquipmentLevelFromXp(progression.item_xp))));
+  const persistedLevel = progression.item_level ?? progression.level;
+  const level = Math.max(1, Math.min(PET_EQUIPMENT_MAX_LEVEL, Math.floor(Number(persistedLevel) || getPetEquipmentLevelFromXp(progression.item_xp))));
   const masteryTier = getPetEquipmentMasteryTier(progression.mastery_xp);
   const levelMultiplier = 1 + ((level - 1) * 0.08);
   const masteryMultiplier = 1 + (masteryTier * 0.03);
