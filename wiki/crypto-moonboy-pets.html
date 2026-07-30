@@ -28,6 +28,124 @@
       margin: 1rem 0 1.35rem;
       background: #05080f;
     }
+
+    .related-wiki-paths {
+      overflow: hidden;
+    }
+
+    .related-wiki-paths > .wiki-rabbit-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 1rem !important;
+      align-items: start !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .related-wiki-paths .wiki-rabbit-group {
+      position: static !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: .65rem !important;
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      height: auto !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    .related-wiki-paths .wiki-rabbit-group > h3 {
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 0 .25rem !important;
+      box-sizing: border-box !important;
+    }
+
+    .related-wiki-paths .wiki-rabbit-card {
+      position: static !important;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: .35rem !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      overflow-wrap: anywhere !important;
+      text-decoration: none !important;
+    }
+
+    .related-wiki-paths .wiki-rabbit-card::before,
+    .related-wiki-paths .wiki-rabbit-card::after {
+      max-width: 100% !important;
+      pointer-events: none !important;
+    }
+
+    .related-wiki-paths .wiki-rabbit-card > strong,
+    .related-wiki-paths .wiki-rabbit-card > span,
+    .related-wiki-paths .wiki-rabbit-card-title,
+    .related-wiki-paths .wiki-rabbit-card-desc {
+      display: block !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      overflow-wrap: anywhere !important;
+    }
+
+    .related-wiki-paths .wiki-rabbit-chip-grid {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: .55rem !important;
+      min-width: 0 !important;
+    }
+
+    .related-wiki-paths .wiki-rabbit-chip {
+      position: static !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      width: auto !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+    }
+
+    .related-wiki-paths > .wiki-rabbit-group--runtime-related {
+      width: 100% !important;
+      min-width: 0 !important;
+      margin-top: 1rem !important;
+      box-sizing: border-box !important;
+    }
+
+    .related-wiki-paths > .wiki-rabbit-group--runtime-related .wiki-rabbit-grid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)) !important;
+      gap: .75rem !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    @media (max-width: 980px) {
+      .related-wiki-paths > .wiki-rabbit-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+
+      .related-wiki-paths > .wiki-rabbit-grid > .wiki-rabbit-group:last-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .related-wiki-paths > .wiki-rabbit-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+
+      .related-wiki-paths > .wiki-rabbit-grid > .wiki-rabbit-group:last-child {
+        grid-column: auto;
+      }
+    }
   </style>
 </head>
 <body class="page-wiki page-standard-shell">
