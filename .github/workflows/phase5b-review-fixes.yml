@@ -1,4 +1,4 @@
-name: Phase 5B Review Fixes
+name: Final Phase 5 Runtime Hotfix
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: agent/pets-runtime-phase-5b
+          ref: agent/pets-phase-5-final-hotfix
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -30,8 +30,14 @@ jobs:
           }
 
           replaceOnce(
+            "      let result;\n      if (body.action === 'buy') {\n",
+            "      const runtimeAction = ({\n        feed: 'feed',\n        play: 'play',\n        clean: 'clean',\n        sleep: 'sleep',\n        train: 'train',\n        work: 'job',\n        daily_chest: 'daily_chest',\n        run_step: 'run_step',\n        run_extract: 'run_extract',\n      })[String(body.action || '').trim()];\n      const runtimeEventKey = String(body.event_key || '').trim();\n      if (runtimeAction && !runtimeEventKey) {\n        return err('event_key required for progression-bearing pet actions', 400);\n      }\n\n      let result;\n      if (body.action === 'buy') {\n",
+            'API runtime key validation',
+          );
+
+          replaceOnce(
             "      }\n      return json({ ...result, pet: serializePet(result.pet) }, result.accepted ? 200 : 409);\n",
-            "      }\n      if (result?.accepted && !result?.duplicate) {\n        const runtimeAction = ({\n          feed: 'feed',\n          play: 'play',\n          clean: 'clean',\n          sleep: 'sleep',\n          train: 'train',\n          work: 'job',\n          daily_chest: 'daily_chest',\n          run_step: 'run_step',\n          run_extract: 'run_extract',\n        })[String(body.action || '').trim()];\n        const runtimeEventKey = String(body.event_key || '').trim();\n        if (runtimeAction && runtimeEventKey) {\n          await applyPetRuntimeCommandAward(env.DB, telegramId, `runtime:api:${runtimeEventKey}`, runtimeAction, {\n            drop_roll: body.drop_roll,\n            material_amount: body.material_amount,\n          });\n        }\n      }\n      return json({ ...result, pet: serializePet(result.pet) }, result.accepted ? 200 : 409);\n",
+            "      }\n      if (result?.accepted && runtimeAction && runtimeEventKey) {\n        await applyPetRuntimeCommandAward(env.DB, telegramId, `runtime:api:${runtimeEventKey}`, runtimeAction, {\n          drop_roll: body.drop_roll,\n          material_amount: body.material_amount,\n        });\n      }\n      return json({ ...result, pet: serializePet(result.pet) }, result.accepted ? 200 : 409);\n",
             'API runtime award hook',
           );
 
@@ -49,15 +55,17 @@ jobs:
 
           fs.writeFileSync(path, source);
           NODE
-      - name: Validate fixes
+      - name: Remove temporary patch workflow
+        run: rm .github/workflows/phase5b-review-fixes.yml
+      - name: Validate final Worker
         run: |
           node --check workers/moonboys-api/worker.js
-          node scripts/telegram-pets-runtime-phase-5b.test.mjs
-      - name: Commit fixes
+          npm install
+          npm run ci:worker-api
+      - name: Commit final hotfix
         run: |
-          rm .github/workflows/phase5b-review-fixes.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add workers/moonboys-api/worker.js .github/workflows/phase5b-review-fixes.yml
-          git commit -m "Fix Phase 5B API awards and gear progression"
-          git push origin HEAD:agent/pets-runtime-phase-5b
+          git commit -m "Complete Phase 5 pet runtime integration"
+          git push origin HEAD:agent/pets-phase-5-final-hotfix
