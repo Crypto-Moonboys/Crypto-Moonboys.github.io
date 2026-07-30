@@ -30,9 +30,16 @@ assert.match(finalWorker, /run_extract: 'run_extract'/, 'API extraction must map
 assert.match(finalWorker, /event_key required for progression-bearing pet actions/, 'progression API actions must require an idempotency key');
 assert.match(finalWorker, /if \(!payload\?\.accepted\) return;/, 'accepted primary duplicates must still retry the runtime award');
 assert.doesNotMatch(finalWorker, /accepted && !.*duplicate/, 'runtime repair must not be blocked by a duplicate primary action');
+assert.match(finalWorker, /body\?\.telegram_id \|\| body\?\.user\?\.id/, 'API post-processing must support both documented Telegram identity fields');
+assert.match(finalWorker, /Access-Control-Allow-Origin/, 'wrapper validation failures must preserve allowed CORS responses');
+assert.match(finalWorker, /corsHeadersFor\(request\)/, 'wrapper errors must use request-aware CORS headers');
 assert.match(finalWorker, /ON CONFLICT \(telegram_id, item_key\) DO UPDATE SET/, 'shop purchases must create or repair equipment progression rows');
 assert.match(finalWorker, /INSERT OR IGNORE INTO telegram_pet_equipment_progression/, '/petgear must insert missing progression rows');
 assert.match(finalWorker, /equipped_\$\{slot\}/, '/petgear must derive missing progression rows from equipped profile slots');
+assert.match(finalWorker, /telegramRunCallbackContext/, 'Telegram run callback retries must have a repair path');
+assert.match(finalWorker, /telegram_pet_run_steps/, 'run-step repair must verify the accepted primary step');
+assert.match(finalWorker, /runtime:run-step:/, 'run-step retry repair must use the canonical runtime key');
+assert.match(finalWorker, /runtime:run-extract:/, 'run-extract retry repair must use the canonical runtime key');
 assert.match(finalWorker, /baseWorker\.scheduled/, 'the final entrypoint must preserve scheduled jobs');
 
 assert.match(worker, /getPetDayKey\(new Date\(\)\)/, 'direct command awards must use the existing UTC pet day authority');
@@ -40,4 +47,4 @@ assert.match(worker, /runtime_award_failed/, 'direct runtime failures must be lo
 assert.match(worker, /\/petprogress — View secondary XP, traits and prestige/, 'help must advertise the live progress command');
 assert.match(worker, /\/petgear — View equipment levels and mastery/, 'help must advertise the live gear command');
 
-console.log('telegram-pets-runtime-phase-5b.test.mjs passed (final production entrypoint)');
+console.log('telegram-pets-runtime-phase-5b.test.mjs passed (audited production entrypoint)');
