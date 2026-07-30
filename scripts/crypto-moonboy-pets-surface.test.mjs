@@ -14,18 +14,17 @@ assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page
 assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
 assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
 
-assert.ok(howTo.includes('/adopt'), 'How To Play must explain /adopt');
-assert.ok(howTo.includes('/feed'), 'How To Play must explain /feed');
-assert.ok(howTo.includes('/train'), 'How To Play must explain /train');
-assert.ok(howTo.includes('/petrun'), 'How To Play must explain /petrun');
-assert.ok(howTo.includes('/petextract'), 'How To Play must explain /petextract');
-assert.ok(howTo.includes('/petadventure'), 'How To Play must explain /petadventure');
-assert.ok(howTo.includes('/petbag'), 'How To Play must explain /petbag');
-assert.ok(howTo.includes('/petuse moon_snack'), 'How To Play must explain /petuse');
-assert.ok(howTo.includes('/petwork courier'), 'How To Play must explain /petwork');
-assert.ok(howTo.includes('/petdaily'), 'How To Play must explain /petdaily');
-assert.ok(howTo.includes('/petevent open'), 'How To Play must explain /petevent');
-assert.ok(howTo.includes('/petnotify on'), 'How To Play must explain pet notifications');
+for (const command of ['/adopt', '/feed', '/train', '/petrun', '/petextract', '/petadventure', '/petbag', '/petuse moon_snack', '/petwork courier', '/petdaily', '/petevent open', '/petnotify on', '/petarena', '/petstart train', '/petactivity', '/petclaim', '/petcancel']) {
+  assert.ok(howTo.includes(command), `How To Play must explain ${command}`);
+}
+assert.ok(howTo.includes('Care Loadout'), 'How To Play must explain the Care Loadout');
+assert.ok(howTo.includes('Battle Loadout'), 'How To Play must explain the Battle Loadout');
+assert.ok(howTo.includes('Food, Toy and Outfit'), 'How To Play must define care slots');
+assert.ok(howTo.includes('Armor, Weapon and Charm'), 'How To Play must define battle slots');
+assert.ok(howTo.includes('Changing one does not reset the other'), 'How To Play must state loadouts are independent');
+assert.ok(howTo.includes('Empty battle slots display') && howTo.includes('<strong>none</strong>'), 'How To Play must explain empty battle slots');
+assert.ok(howTo.includes('Pet Arena unlocks at level 10'), 'docs mention Pet Arena level unlock');
+assert.ok(howTo.includes('Gear Shop'), 'docs explain the Arena Gear Shop');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
 assert.ok(howTo.includes('lucky_charm') && howTo.includes('consumed when it boosts a run'), 'How To Play must explain lucky_charm run consumption');
@@ -40,21 +39,33 @@ assert.doesNotMatch(howTo, /\.pet-card-gallery img\s*\{[\s\S]*object-fit:\s*cove
 assert.ok(!leaderboard.includes('pet-card-gallery'), 'Leaderboard page must not dump the pet card gallery');
 assert.ok(!community.includes('pet-card-gallery'), 'Community page must not dump the pet card gallery');
 
-assert.ok(leaderboard.includes('data-crypto-pets-leaderboard'), 'pet leaderboard page must use pet leaderboard data hook');
-assert.ok(leaderboard.includes('data-period="seasonal"'), 'pet leaderboard must show seasonal period');
-assert.ok(leaderboard.includes('data-period="daily"'), 'pet leaderboard must show daily period');
-assert.ok(leaderboard.includes('data-period="weekly"'), 'pet leaderboard must show weekly period');
-assert.ok(leaderboard.includes('data-period="all_time"'), 'pet leaderboard must show all-time period');
+for (const script of [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
+  '/js/site-shell.js',
+  '/js/components/connection-status-panel.js',
+  '/js/components/global-player-header.js',
+  '/js/components/live-activity-summary.js',
+  '/js/wiki.js',
+  '/js/crypto-moonboy-pets.js',
+]) {
+  assert.ok(howTo.includes(`src="${script}"`), `How To Play must load canonical boot script ${script}`);
+}
+assert.ok(howTo.indexOf('/js/core/moonboys-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'state must load before the connection status panel');
+assert.ok(howTo.indexOf('/js/core/daily-loop-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'daily loop state must load before the connection status panel');
 
+assert.ok(leaderboard.includes('data-crypto-pets-leaderboard'), 'pet leaderboard page must use pet leaderboard data hook');
+for (const period of ['seasonal', 'daily', 'weekly', 'all_time']) assert.ok(leaderboard.includes(`data-period="${period}"`), `pet leaderboard must show ${period} period`);
 assert.ok(community.includes('data-crypto-pets-summary'), 'community page must have compact pet summary only');
 assert.ok(!community.includes('data-crypto-pets-leaderboard'), 'community page must not dump full pet leaderboard');
 assert.ok(games.includes('Crypto Moonboy Pets — Telegram Game'), 'games index must list Pets as a Telegram Game');
 
 assert.ok(petSurfaceScript.includes('<strong>Care Loadout</strong>'), 'pet summary must distinguish care equipment');
 assert.ok(petSurfaceScript.includes('<strong>Battle Loadout</strong>'), 'pet summary must distinguish arena equipment');
-for (const field of ['equipped_food', 'equipped_toy', 'equipped_outfit', 'equipped_armor', 'equipped_weapon', 'equipped_charm']) {
-  assert.ok(petSurfaceScript.includes(`pet.${field}`), `pet summary must render ${field}`);
-}
+for (const field of ['equipped_food', 'equipped_toy', 'equipped_outfit', 'equipped_armor', 'equipped_weapon', 'equipped_charm']) assert.ok(petSurfaceScript.includes(`pet.${field}`), `pet summary must render ${field}`);
 assert.ok(petSurfaceScript.includes("formatLoadoutValue(pet.equipped_armor, 'none')"), 'empty armor slot must render as none');
 assert.ok(petSurfaceScript.includes("formatLoadoutValue(pet.equipped_weapon, 'none')"), 'empty weapon slot must render as none');
 assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_armor, 'starter')"), 'empty armor slot must not invent starter gear');
@@ -63,12 +74,7 @@ assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_weapon, 's
 const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
 assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');
 const searchText = JSON.stringify(entry).toLowerCase();
-for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi', 'roguelite', 'pet leaderboard', 'pet adventure', 'pet notifications', 'moon gold', 'pet bag', 'pet jobs', 'daily chest', 'random event']) {
-  assert.ok(searchText.includes(term), `wiki index entry must include search term: ${term}`);
-}
-
-assert.ok(howTo.includes('/petarena'), 'docs mention Pet Arena command');
-assert.ok(howTo.includes('Pet Arena unlocks at level 10'), 'docs mention Pet Arena level unlock');
+for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi', 'roguelite', 'pet leaderboard', 'pet adventure', 'pet notifications', 'moon gold', 'pet bag', 'pet jobs', 'daily chest', 'random event']) assert.ok(searchText.includes(term), `wiki index entry must include search term: ${term}`);
 assert.ok(wikiPage.includes('armor, weapon and charm'), 'wiki explains Pet Arena gear slots');
 
 console.log('crypto-moonboy-pets-surface.test.mjs passed');
