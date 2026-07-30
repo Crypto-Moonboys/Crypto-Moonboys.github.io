@@ -164,7 +164,6 @@ CREATE INDEX IF NOT EXISTS idx_telegram_leaderboard_season_xp
 CREATE INDEX IF NOT EXISTS idx_telegram_leaderboard_season_rank
   ON telegram_leaderboard(season_id, rank ASC);
 
--- Archives
 CREATE TABLE IF NOT EXISTS telegram_season_archives (
   season_number    INTEGER PRIMARY KEY,
   season_start     DATETIME NOT NULL,
@@ -179,7 +178,6 @@ CREATE TABLE IF NOT EXISTS telegram_year_archives (
   top_entries_json TEXT NOT NULL DEFAULT '[]'
 );
 
--- Optional compatibility metadata table used by some branches
 CREATE TABLE IF NOT EXISTS telegram_community_meta (
   meta_key      TEXT PRIMARY KEY DEFAULT 'current',
   season_start  DATETIME NOT NULL,
@@ -189,7 +187,6 @@ CREATE TABLE IF NOT EXISTS telegram_community_meta (
 );
 
 -- ── Quests ───────────────────────────────────────────────────────────────────
--- Real live model: no answer_hash, no slug, no quest_type.
 
 CREATE TABLE IF NOT EXISTS telegram_quests (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -223,15 +220,14 @@ CREATE INDEX IF NOT EXISTS idx_telegram_quest_completions_quest
   ON telegram_quest_completions(quest_id, completed_at DESC);
 
 -- ── Link tokens ──────────────────────────────────────────────────────────────
--- Real live model uses is_used, not used.
 
 CREATE TABLE IF NOT EXISTS telegram_link_tokens (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  token      TEXT UNIQUE NOT NULL,
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  token       TEXT UNIQUE NOT NULL,
   telegram_id TEXT NOT NULL,
-  expires_at DATETIME NOT NULL,
-  is_used    INTEGER NOT NULL DEFAULT 0 CHECK (is_used IN (0,1)),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  expires_at  DATETIME NOT NULL,
+  is_used     INTEGER NOT NULL DEFAULT 0 CHECK (is_used IN (0,1)),
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
@@ -244,7 +240,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_link_tokens_telegram_expires
 CREATE INDEX IF NOT EXISTS idx_telegram_link_tokens_expires_used
   ON telegram_link_tokens(expires_at, is_used);
 
--- ── Optional event system already present in live DB ─────────────────────────
+-- ── Optional event/settings system ───────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS telegram_events (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -271,15 +267,13 @@ CREATE INDEX IF NOT EXISTS idx_telegram_event_participants_event
 CREATE INDEX IF NOT EXISTS idx_telegram_event_participants_telegram
   ON telegram_event_participants(telegram_id, joined_at DESC);
 
--- ── Optional settings table already present in live DB ───────────────────────
-
 CREATE TABLE IF NOT EXISTS telegram_settings (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  telegram_id TEXT NOT NULL,
-  setting_key TEXT NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  telegram_id   TEXT NOT NULL,
+  setting_key   TEXT NOT NULL,
   setting_value TEXT,
-  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(telegram_id, setting_key),
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
@@ -287,16 +281,12 @@ CREATE TABLE IF NOT EXISTS telegram_settings (
 CREATE INDEX IF NOT EXISTS idx_telegram_settings_telegram
   ON telegram_settings(telegram_id);
 
--- ── Seed factions safely ─────────────────────────────────────────────────────
-
 INSERT OR IGNORE INTO telegram_factions (name, description, icon) VALUES
   ('diamond-hands', 'Long-term holders with conviction.', '💎'),
   ('hodl-warriors', 'Battle-hardened holders in the trenches.', '⚔️'),
   ('graffpunks', 'Street-coded rebels of the culture.', '🎨');
 
--- ── Block Topia RPG progression extensions ───────────────────────────────────
--- The worker stores Block Topia progression in blocktopia_progression.
--- These columns back persistent RPG rewards/upgrades.
+-- ── Block Topia RPG progression ──────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS blocktopia_progression (
   telegram_id TEXT PRIMARY KEY,
@@ -328,10 +318,8 @@ CREATE TABLE IF NOT EXISTS blocktopia_progression (
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_progression_xp
   ON blocktopia_progression(xp DESC);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_progression_tier
   ON blocktopia_progression(tier DESC);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_progression_updated
   ON blocktopia_progression(updated_at DESC);
 
@@ -351,15 +339,12 @@ CREATE TABLE IF NOT EXISTS blocktopia_progression_events (
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_events_user_created
   ON blocktopia_progression_events(telegram_id, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_events_user_action_created
   ON blocktopia_progression_events(telegram_id, action, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_events_user_action_type_created
   ON blocktopia_progression_events(telegram_id, action, action_type, created_at DESC);
 
--- Shared arcade progression sync tables
--- Authoritative server-side bridge from local arcade runs -> community XP.
+-- ── Shared arcade progression ────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS arcade_progression_state (
   telegram_id TEXT PRIMARY KEY,
@@ -390,7 +375,6 @@ CREATE TABLE IF NOT EXISTS arcade_progression_events (
 
 CREATE INDEX IF NOT EXISTS idx_arcade_progression_events_user_time
   ON arcade_progression_events(telegram_id, processed_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_arcade_progression_events_user_game_time
   ON arcade_progression_events(telegram_id, game, processed_at DESC);
 
@@ -410,7 +394,7 @@ CREATE TABLE IF NOT EXISTS arcade_game_enforcement_state (
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
--- Crypto Moonboys Pets: Telegram-first pet roguelite progression.
+-- ── Crypto Moonboy Pets ──────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS telegram_pet_profiles (
   telegram_id     TEXT PRIMARY KEY,
@@ -443,66 +427,94 @@ CREATE TABLE IF NOT EXISTS telegram_pet_profiles (
 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_profiles_pet_xp
   ON telegram_pet_profiles(pet_xp DESC);
-
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_profiles_updated
   ON telegram_pet_profiles(updated_at DESC);
 
+CREATE TABLE IF NOT EXISTS telegram_pet_equipment_progression (
+  telegram_id TEXT NOT NULL,
+  item_key TEXT NOT NULL,
+  slot TEXT NOT NULL,
+  item_level INTEGER NOT NULL DEFAULT 1 CHECK (item_level BETWEEN 1 AND 10),
+  item_xp INTEGER NOT NULL DEFAULT 0 CHECK (item_xp >= 0),
+  mastery_xp INTEGER NOT NULL DEFAULT 0 CHECK (mastery_xp >= 0),
+  mastery_tier INTEGER NOT NULL DEFAULT 0 CHECK (mastery_tier BETWEEN 0 AND 5),
+  unlocked_effects_json TEXT NOT NULL DEFAULT '{}',
+  last_used_action TEXT,
+  last_used_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (telegram_id, item_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pet_equipment_progression_owner_slot
+  ON telegram_pet_equipment_progression (telegram_id, slot, item_level DESC, mastery_tier DESC);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_equipment_events (
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  item_key TEXT NOT NULL,
+  action TEXT NOT NULL,
+  event_key TEXT NOT NULL,
+  item_xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (item_xp_awarded >= 0),
+  mastery_xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (mastery_xp_awarded >= 0),
+  metadata_json TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (telegram_id, item_key, event_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pet_equipment_events_owner_item_created
+  ON telegram_pet_equipment_events (telegram_id, item_key, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_arena_queue (
-  id                TEXT PRIMARY KEY,
-  chat_id           TEXT NOT NULL,
-  telegram_id       TEXT NOT NULL,
-  rank_bucket       TEXT NOT NULL,
+  id TEXT PRIMARY KEY,
+  chat_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  rank_bucket TEXT NOT NULL,
   pet_snapshot_json TEXT NOT NULL DEFAULT '{}',
-  status            TEXT NOT NULL DEFAULT 'waiting',
-  accept_any_rank   INTEGER NOT NULL DEFAULT 0,
-  created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status TEXT NOT NULL DEFAULT 'waiting',
+  accept_any_rank INTEGER NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pet_arena_queue_one_waiting
-  ON telegram_pet_arena_queue(chat_id, telegram_id)
-  WHERE status = 'waiting';
-
+  ON telegram_pet_arena_queue(chat_id, telegram_id) WHERE status = 'waiting';
 CREATE INDEX IF NOT EXISTS idx_pet_arena_queue_match
   ON telegram_pet_arena_queue(chat_id, status, rank_bucket, created_at);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_arena_battles (
-  id                         TEXT PRIMARY KEY,
-  battle_id                  TEXT NOT NULL UNIQUE,
-  chat_id                    TEXT NOT NULL,
-  player1_telegram_id        TEXT NOT NULL,
-  player2_telegram_id        TEXT,
-  player1_pet_snapshot_json  TEXT NOT NULL,
-  player2_pet_snapshot_json  TEXT NOT NULL,
-  player1_power              INTEGER NOT NULL DEFAULT 0,
-  player2_power              INTEGER NOT NULL DEFAULT 0,
-  winner_telegram_id         TEXT,
-  result                     TEXT,
-  status                     TEXT NOT NULL DEFAULT 'readying',
-  current_round              INTEGER NOT NULL DEFAULT 1,
-  max_rounds                 INTEGER NOT NULL DEFAULT 8,
-  player1_hp                 INTEGER NOT NULL DEFAULT 100,
-  player2_hp                 INTEGER NOT NULL DEFAULT 100,
-  player1_special            INTEGER NOT NULL DEFAULT 0,
-  player2_special            INTEGER NOT NULL DEFAULT 0,
-  last_round_log_json        TEXT NOT NULL DEFAULT '{}',
-  expires_at                 TEXT,
-  player1_ready_at           DATETIME,
-  player2_ready_at           DATETIME,
-  created_at                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  completed_at               DATETIME,
+  id TEXT PRIMARY KEY,
+  battle_id TEXT NOT NULL UNIQUE,
+  chat_id TEXT NOT NULL,
+  player1_telegram_id TEXT NOT NULL,
+  player2_telegram_id TEXT,
+  player1_pet_snapshot_json TEXT NOT NULL,
+  player2_pet_snapshot_json TEXT NOT NULL,
+  player1_power INTEGER NOT NULL DEFAULT 0,
+  player2_power INTEGER NOT NULL DEFAULT 0,
+  winner_telegram_id TEXT,
+  result TEXT,
+  status TEXT NOT NULL DEFAULT 'readying',
+  current_round INTEGER NOT NULL DEFAULT 1,
+  max_rounds INTEGER NOT NULL DEFAULT 8,
+  player1_hp INTEGER NOT NULL DEFAULT 100,
+  player2_hp INTEGER NOT NULL DEFAULT 100,
+  player1_special INTEGER NOT NULL DEFAULT 0,
+  player2_special INTEGER NOT NULL DEFAULT 0,
+  last_round_log_json TEXT NOT NULL DEFAULT '{}',
+  expires_at TEXT,
+  player1_ready_at DATETIME,
+  player2_ready_at DATETIME,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME,
   FOREIGN KEY (player1_telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_pet_arena_battles_chat_status_rank_created
   ON telegram_pet_arena_battles(chat_id, status, created_at);
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pet_arena_battles_p1_active
-  ON telegram_pet_arena_battles(chat_id, player1_telegram_id)
-  WHERE status IN ('readying', 'active');
-
+  ON telegram_pet_arena_battles(chat_id, player1_telegram_id) WHERE status IN ('readying', 'active');
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pet_arena_battles_p2_active
   ON telegram_pet_arena_battles(chat_id, player2_telegram_id)
   WHERE status IN ('readying', 'active') AND player2_telegram_id IS NOT NULL AND player2_telegram_id <> 'app';
@@ -526,81 +538,76 @@ CREATE INDEX IF NOT EXISTS idx_pet_arena_rounds_battle_status
   ON telegram_pet_arena_rounds(battle_id, status, round_number);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_events (
-  id              TEXT PRIMARY KEY,
-  telegram_id     TEXT NOT NULL,
-  event_type      TEXT NOT NULL,
-  event_key       TEXT NOT NULL,
-  xp_awarded      INTEGER NOT NULL DEFAULT 0 CHECK (xp_awarded >= 0),
-  pet_xp_awarded  INTEGER NOT NULL DEFAULT 0 CHECK (pet_xp_awarded >= 0),
-  season_key      TEXT NOT NULL,
-  day_key         TEXT NOT NULL,
-  week_key        TEXT NOT NULL DEFAULT '',
-  status          TEXT NOT NULL DEFAULT 'accepted',
-  reason          TEXT,
-  metadata        TEXT,
-  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  event_key TEXT NOT NULL,
+  xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (xp_awarded >= 0),
+  pet_xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (pet_xp_awarded >= 0),
+  season_key TEXT NOT NULL,
+  day_key TEXT NOT NULL,
+  week_key TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'accepted',
+  reason TEXT,
+  metadata TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(telegram_id, event_key),
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_created
   ON telegram_pet_events(telegram_id, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_day
   ON telegram_pet_events(telegram_id, day_key, status);
-
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_week
   ON telegram_pet_events(telegram_id, week_key, status);
-
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_season_xp
   ON telegram_pet_events(season_key, pet_xp_awarded DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_runs (
-  id                       TEXT PRIMARY KEY,
-  telegram_id              TEXT NOT NULL,
-  run_id                   TEXT NOT NULL,
-  season_key               TEXT NOT NULL,
-  status                   TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'extractable', 'completed', 'failed', 'extracted')),
-  depth                    INTEGER NOT NULL DEFAULT 0 CHECK (depth >= 0),
-  max_depth                INTEGER NOT NULL DEFAULT 5 CHECK (max_depth >= 1),
-  risk_level               INTEGER NOT NULL DEFAULT 1 CHECK (risk_level >= 1),
-  unbanked_pet_xp          INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_pet_xp >= 0),
-  unbanked_moon_gold       INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_moon_gold >= 0),
-  unbanked_moon_crystals   INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_moon_crystals >= 0),
-  unbanked_style_tokens    INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_style_tokens >= 0),
-  unbanked_items           TEXT NOT NULL DEFAULT '{}',
-  started_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  completed_at             DATETIME,
-  updated_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  run_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'extractable', 'completed', 'failed', 'extracted')),
+  depth INTEGER NOT NULL DEFAULT 0 CHECK (depth >= 0),
+  max_depth INTEGER NOT NULL DEFAULT 5 CHECK (max_depth >= 1),
+  risk_level INTEGER NOT NULL DEFAULT 1 CHECK (risk_level >= 1),
+  unbanked_pet_xp INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_pet_xp >= 0),
+  unbanked_moon_gold INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_moon_gold >= 0),
+  unbanked_moon_crystals INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_moon_crystals >= 0),
+  unbanked_style_tokens INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_style_tokens >= 0),
+  unbanked_items TEXT NOT NULL DEFAULT '{}',
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(run_id),
   UNIQUE(telegram_id, run_id),
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_runs_one_open
-  ON telegram_pet_runs(telegram_id)
-  WHERE status IN ('active', 'extractable');
-
+  ON telegram_pet_runs(telegram_id) WHERE status IN ('active', 'extractable');
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_runs_user_status
   ON telegram_pet_runs(telegram_id, status, updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_run_steps (
-  id                       TEXT PRIMARY KEY,
-  telegram_id              TEXT NOT NULL,
-  run_id                   TEXT NOT NULL,
-  step_index               INTEGER NOT NULL CHECK (step_index >= 1),
-  choice_key               TEXT NOT NULL,
-  choice_type              TEXT NOT NULL,
-  event_key                TEXT NOT NULL,
-  success                  INTEGER NOT NULL DEFAULT 1 CHECK (success IN (0, 1)),
-  risk_roll                REAL NOT NULL DEFAULT 0,
-  pet_xp_delta             INTEGER NOT NULL DEFAULT 0,
-  moon_gold_delta          INTEGER NOT NULL DEFAULT 0,
-  moon_crystals_delta      INTEGER NOT NULL DEFAULT 0,
-  style_tokens_delta       INTEGER NOT NULL DEFAULT 0,
-  item_key                 TEXT,
-  metadata                 TEXT,
-  created_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  run_id TEXT NOT NULL,
+  step_index INTEGER NOT NULL CHECK (step_index >= 1),
+  choice_key TEXT NOT NULL,
+  choice_type TEXT NOT NULL,
+  event_key TEXT NOT NULL,
+  success INTEGER NOT NULL DEFAULT 1 CHECK (success IN (0, 1)),
+  risk_roll REAL NOT NULL DEFAULT 0,
+  pet_xp_delta INTEGER NOT NULL DEFAULT 0,
+  moon_gold_delta INTEGER NOT NULL DEFAULT 0,
+  moon_crystals_delta INTEGER NOT NULL DEFAULT 0,
+  style_tokens_delta INTEGER NOT NULL DEFAULT 0,
+  item_key TEXT,
+  metadata TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(telegram_id, event_key),
   UNIQUE(run_id, step_index),
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,
@@ -611,83 +618,76 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_steps_run
   ON telegram_pet_run_steps(run_id, step_index);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_kaiju_matches (
-  id                  TEXT PRIMARY KEY,
-  match_id            TEXT NOT NULL UNIQUE,
-  chat_id             TEXT NOT NULL,
-  mode                TEXT NOT NULL DEFAULT 'solo' CHECK (mode IN ('solo', 'group')),
-  status              TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'selecting', 'completed', 'cancelled')),
+  id TEXT PRIMARY KEY,
+  match_id TEXT NOT NULL UNIQUE,
+  chat_id TEXT NOT NULL,
+  mode TEXT NOT NULL DEFAULT 'solo' CHECK (mode IN ('solo', 'group')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'selecting', 'completed', 'cancelled')),
   player1_telegram_id TEXT NOT NULL,
   player2_telegram_id TEXT,
-  player1_card_key    TEXT,
-  player2_card_key    TEXT,
-  cpu_card_key        TEXT,
-  roll                INTEGER NOT NULL DEFAULT 0,
-  category_key        TEXT,
-  winner_telegram_id  TEXT,
-  result              TEXT,
-  score_json          TEXT,
-  created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  completed_at        DATETIME,
+  player1_card_key TEXT,
+  player2_card_key TEXT,
+  cpu_card_key TEXT,
+  roll INTEGER NOT NULL DEFAULT 0,
+  category_key TEXT,
+  winner_telegram_id TEXT,
+  result TEXT,
+  score_json TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME,
   FOREIGN KEY (player1_telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_one_open_chat
-  ON telegram_pet_kaiju_matches(chat_id)
-  WHERE status IN ('open', 'selecting');
-
+  ON telegram_pet_kaiju_matches(chat_id) WHERE status IN ('open', 'selecting');
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_chat_status
   ON telegram_pet_kaiju_matches(chat_id, status, updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_kaiju_queue (
-  id          TEXT PRIMARY KEY,
-  chat_id     TEXT NOT NULL,
+  id TEXT PRIMARY KEY,
+  chat_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
-  status      TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'played', 'left', 'expired')),
-  queued_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'played', 'left', 'expired')),
+  queued_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_queue_one_waiting
-  ON telegram_pet_kaiju_queue(chat_id, telegram_id)
-  WHERE status = 'waiting';
-
+  ON telegram_pet_kaiju_queue(chat_id, telegram_id) WHERE status = 'waiting';
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_queue_chat
   ON telegram_pet_kaiju_queue(chat_id, status, queued_at ASC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_activity_sessions (
-  id            TEXT PRIMARY KEY,
-  telegram_id   TEXT NOT NULL,
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
   activity_type TEXT NOT NULL CHECK (activity_type IN ('sleep', 'train', 'work', 'explore')),
-  started_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ends_at       DATETIME NOT NULL,
-  claimed_at    DATETIME,
-  status        TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled', 'expired')),
-  metadata      TEXT,
-  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ends_at DATETIME NOT NULL,
+  claimed_at DATETIME,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled', 'expired')),
+  metadata TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_activity_one_active
-  ON telegram_pet_activity_sessions(telegram_id)
-  WHERE status = 'active';
-
+  ON telegram_pet_activity_sessions(telegram_id) WHERE status = 'active';
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_activity_user_status
   ON telegram_pet_activity_sessions(telegram_id, status, started_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_activity_expiry
   ON telegram_pet_activity_sessions(status, ends_at);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_effects (
-  id          TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   telegram_id TEXT NOT NULL,
-  effect_key  TEXT NOT NULL,
-  source      TEXT NOT NULL DEFAULT 'pet_run',
-  metadata    TEXT,
-  expires_at  DATETIME,
-  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  effect_key TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'pet_run',
+  metadata TEXT,
+  expires_at DATETIME,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
@@ -696,13 +696,13 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_effects_user_effect
 
 CREATE TABLE IF NOT EXISTS telegram_pet_season_state (
   telegram_id TEXT NOT NULL,
-  season_key  TEXT NOT NULL,
-  season_xp   INTEGER NOT NULL DEFAULT 0 CHECK (season_xp >= 0),
-  weekly_xp   INTEGER NOT NULL DEFAULT 0 CHECK (weekly_xp >= 0),
-  daily_xp    INTEGER NOT NULL DEFAULT 0 CHECK (daily_xp >= 0),
-  daily_key   TEXT NOT NULL DEFAULT '',
-  weekly_key  TEXT NOT NULL DEFAULT '',
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  season_key TEXT NOT NULL,
+  season_xp INTEGER NOT NULL DEFAULT 0 CHECK (season_xp >= 0),
+  weekly_xp INTEGER NOT NULL DEFAULT 0 CHECK (weekly_xp >= 0),
+  daily_xp INTEGER NOT NULL DEFAULT 0 CHECK (daily_xp >= 0),
+  daily_key TEXT NOT NULL DEFAULT '',
+  weekly_key TEXT NOT NULL DEFAULT '',
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (telegram_id, season_key),
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
@@ -711,12 +711,12 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_season_state_rank
   ON telegram_pet_season_state(season_key, season_xp DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_notification_settings (
-  telegram_id       TEXT PRIMARY KEY,
-  enabled           INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),
-  last_notified_at  DATETIME,
-  last_reason       TEXT,
-  created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  telegram_id TEXT PRIMARY KEY,
+  enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),
+  last_notified_at DATETIME,
+  last_reason TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_notification_settings_due
@@ -725,89 +725,81 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_notification_settings_due
 CREATE TABLE IF NOT EXISTS telegram_pet_mission_completions (
   telegram_id TEXT NOT NULL,
   mission_key TEXT NOT NULL,
-  window_key  TEXT NOT NULL,
-  xp_awarded  INTEGER NOT NULL DEFAULT 0 CHECK (xp_awarded >= 0),
+  window_key TEXT NOT NULL,
+  xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (xp_awarded >= 0),
   completed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (telegram_id, mission_key, window_key),
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
--- Block Topia covert network: player-owned covert agents.
+-- ── Block Topia covert network ───────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS blocktopia_covert_agents (
-  id                  TEXT PRIMARY KEY,
-  telegram_id         TEXT NOT NULL,
-  agent_type          TEXT NOT NULL DEFAULT 'infiltrator',
-  level               INTEGER NOT NULL DEFAULT 1,
-  stealth             INTEGER NOT NULL DEFAULT 58,
-  resilience          INTEGER NOT NULL DEFAULT 46,
-  loyalty             INTEGER NOT NULL DEFAULT 62,
-  heat                INTEGER NOT NULL DEFAULT 0,
-  status              TEXT NOT NULL DEFAULT 'idle' CHECK (status IN ('idle', 'active', 'exposed', 'captured')),
-  current_node_id     TEXT,
-  home_district_id    TEXT,
-  assigned_operation  TEXT,
-  assigned_until      DATETIME,
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  agent_type TEXT NOT NULL DEFAULT 'infiltrator',
+  level INTEGER NOT NULL DEFAULT 1,
+  stealth INTEGER NOT NULL DEFAULT 58,
+  resilience INTEGER NOT NULL DEFAULT 46,
+  loyalty INTEGER NOT NULL DEFAULT 62,
+  heat INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'idle' CHECK (status IN ('idle', 'active', 'exposed', 'captured')),
+  current_node_id TEXT,
+  home_district_id TEXT,
+  assigned_operation TEXT,
+  assigned_until DATETIME,
   stealth_boost_until DATETIME,
-  captured_until      DATETIME,
-  capture_count       INTEGER NOT NULL DEFAULT 0,
-  recovery_count      INTEGER NOT NULL DEFAULT 0,
-  created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  captured_until DATETIME,
+  capture_count INTEGER NOT NULL DEFAULT 0,
+  recovery_count INTEGER NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES blocktopia_progression(telegram_id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_user_status
   ON blocktopia_covert_agents(telegram_id, status);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_assigned_operation
   ON blocktopia_covert_agents(assigned_operation);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_type_status
   ON blocktopia_covert_agents(agent_type, status);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_capture_window
   ON blocktopia_covert_agents(telegram_id, status, captured_until);
 
 CREATE TABLE IF NOT EXISTS blocktopia_covert_operations (
-  id                TEXT PRIMARY KEY,
-  telegram_id       TEXT NOT NULL,
-  agent_id          TEXT NOT NULL,
-  operation_type    TEXT NOT NULL DEFAULT 'infiltrate',
-  target_node_id    TEXT NOT NULL,
-  status            TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'success', 'failed', 'critical_failure')),
-  success_roll      INTEGER,
-  detection_roll    INTEGER,
-  reward_xp         INTEGER NOT NULL DEFAULT 0,
-  reward_gems       INTEGER NOT NULL DEFAULT 0,
-  heat_before       INTEGER NOT NULL DEFAULT 0,
-  heat_after        INTEGER NOT NULL DEFAULT 0,
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  operation_type TEXT NOT NULL DEFAULT 'infiltrate',
+  target_node_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'success', 'failed', 'critical_failure')),
+  success_roll INTEGER,
+  detection_roll INTEGER,
+  reward_xp INTEGER NOT NULL DEFAULT 0,
+  reward_gems INTEGER NOT NULL DEFAULT 0,
+  heat_before INTEGER NOT NULL DEFAULT 0,
+  heat_after INTEGER NOT NULL DEFAULT 0,
   node_interference_delta INTEGER NOT NULL DEFAULT 0,
-  district_support_delta  INTEGER NOT NULL DEFAULT 0,
+  district_support_delta INTEGER NOT NULL DEFAULT 0,
   district_pressure_delta INTEGER NOT NULL DEFAULT 0,
-  faction_pressure_delta  INTEGER NOT NULL DEFAULT 0,
-  sam_pressure_delta      INTEGER NOT NULL DEFAULT 0,
-  local_risk_delta        INTEGER NOT NULL DEFAULT 0,
-  started_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  resolves_at       DATETIME NOT NULL,
-  created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  faction_pressure_delta INTEGER NOT NULL DEFAULT 0,
+  sam_pressure_delta INTEGER NOT NULL DEFAULT 0,
+  local_risk_delta INTEGER NOT NULL DEFAULT 0,
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolves_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES blocktopia_progression(telegram_id) ON DELETE CASCADE,
   FOREIGN KEY (agent_id) REFERENCES blocktopia_covert_agents(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_operations_user_status
   ON blocktopia_covert_operations(telegram_id, status, resolves_at);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_operations_agent_status
   ON blocktopia_covert_operations(agent_id, status);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_operations_target_created
   ON blocktopia_covert_operations(target_node_id, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_operations_pressure
   ON blocktopia_covert_operations(target_node_id, status, updated_at DESC);
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_blocktopia_covert_one_active_operation_per_agent
-  ON blocktopia_covert_operations(agent_id)
-  WHERE status = 'active';
+  ON blocktopia_covert_operations(agent_id) WHERE status = 'active';
