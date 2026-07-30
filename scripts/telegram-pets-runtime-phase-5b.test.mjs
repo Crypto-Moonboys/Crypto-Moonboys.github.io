@@ -23,6 +23,9 @@ assert.match(worker, /runtime:run-extract:/, 'run extraction must use isolated r
 if (reviewFixesPending) {
   const workflow = fs.readFileSync(reviewFixWorkflowUrl, 'utf8');
   assert.match(workflow, /runtime:api:/, 'pending review-fix workflow must add isolated API runtime event keys');
+  assert.match(workflow, /event_key required for progression-bearing pet actions/, 'pending workflow must reject progression-bearing API actions without an event key');
+  assert.doesNotMatch(workflow, /result\?\.accepted && !result\?\.duplicate/, 'pending workflow must retry idempotent runtime awards for duplicate primary actions');
+  assert.match(workflow, /result\?\.accepted && runtimeAction && runtimeEventKey/, 'pending workflow must invoke runtime awards for all accepted primary results');
   assert.match(workflow, /work: 'job'/, 'pending review-fix workflow must map API work actions to Job XP');
   assert.match(workflow, /daily_chest: 'daily_chest'/, 'pending review-fix workflow must map API daily chests to Bond XP');
   assert.match(workflow, /run_step: 'run_step'/, 'pending review-fix workflow must map API run steps to Adventure XP');
@@ -32,6 +35,9 @@ if (reviewFixesPending) {
   assert.match(workflow, /equipped_\$\{slot\}/, 'pending review-fix workflow must derive missing gear rows from equipped profile slots');
 } else {
   assert.match(worker, /runtime:api:/, 'API-dispatched actions must use isolated runtime event keys');
+  assert.match(worker, /event_key required for progression-bearing pet actions/, 'progression-bearing API actions must require an event key before primary rewards commit');
+  assert.doesNotMatch(worker, /result\?\.accepted && !result\?\.duplicate/, 'duplicate primary actions must still retry the idempotent runtime award');
+  assert.match(worker, /result\?\.accepted && runtimeAction && runtimeEventKey/, 'accepted duplicate and non-duplicate API actions must invoke the runtime award service');
   assert.match(worker, /work:\s*'job'/, 'API work actions must map to Job XP');
   assert.match(worker, /daily_chest:\s*'daily_chest'/, 'API daily chests must map to Bond XP');
   assert.match(worker, /run_step:\s*'run_step'/, 'API run steps must map to Adventure XP');
