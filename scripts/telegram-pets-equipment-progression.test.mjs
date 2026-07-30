@@ -44,6 +44,8 @@ for (const sql of [migration, schema]) {
   assert.ok(sql.includes('telegram_pet_equipment_events'));
   assert.ok(sql.includes('UNIQUE (telegram_id, item_key, event_key)'), 'mastery events must be idempotent per equipment item');
   assert.ok(sql.includes('CHECK (item_level BETWEEN 1 AND 10)'));
+  assert.ok(sql.includes('REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE'), 'equipment progression must cascade with the pet profile');
+  assert.match(sql, /FOREIGN KEY \(telegram_id, item_key\)[\s\S]*REFERENCES telegram_pet_equipment_progression\(telegram_id, item_key\)[\s\S]*ON DELETE CASCADE/, 'equipment events must cascade with their progression row');
 }
 assert.ok(migration.includes('INSERT OR IGNORE INTO telegram_pet_equipment_progression'), 'migration must seed equipped items safely');
 
