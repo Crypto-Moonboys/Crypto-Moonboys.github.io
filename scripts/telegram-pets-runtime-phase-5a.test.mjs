@@ -68,7 +68,8 @@ for (const sql of [migration, schema]) {
 assert.ok(migration.includes('INSERT OR IGNORE INTO telegram_pet_progression_state'), 'existing pet profiles must be seeded safely');
 
 assert.match(runtimeSource, /await db\.batch\(statements\)/, 'event claim and reward writes must use one D1 transaction');
-assert.match(runtimeSource, /WHERE id = \?\)/, 'reward mutations must be conditional on the unique event claim id');
+assert.match(runtimeSource, /WHERE telegram_id = \? AND EXISTS \(SELECT 1 FROM telegram_pet_runtime_events WHERE id = \?\) RETURNING \*/, 'the complete state mutation must require the newly inserted claim');
+assert.match(runtimeSource, /bindings\.push\(telegramId, claimId\)/, 'state update bindings must include the owner and claim gate');
 assert.match(runtimeSource, /quantity_awarded: credited/, 'material messaging must report the persisted balance delta');
 assert.doesNotMatch(runtimeSource, /SELECT quantity[\s\S]*?nextQuantity[\s\S]*?DO UPDATE SET quantity = excluded\.quantity/, 'material writes must not use a stale read-modify-write balance');
 assert.match(runtimeSource, /MIN\(\?, telegram_pet_material_balances\.quantity \+ excluded\.quantity\)/, 'material increments must be atomic and capped');
