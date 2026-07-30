@@ -1,6 +1,7 @@
 name: Phase 5B Worker Wiring
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - agent/pets-runtime-phase-5b
