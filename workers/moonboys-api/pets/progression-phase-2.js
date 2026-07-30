@@ -48,9 +48,13 @@ export const PET_TRAITS = Object.freeze({
   lucky: Object.freeze({ source_actions: ['gamble', 'run_luck', 'daily_chest'], threshold: 100 }),
 });
 
+function hasOwnKey(object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
 export function normalizePetProgressionTrack(value) {
   const key = String(value || '').trim().toLowerCase();
-  return PET_PROGRESSION_TRACKS[key] ? key : null;
+  return hasOwnKey(PET_PROGRESSION_TRACKS, key) ? key : null;
 }
 
 export function clampPetTrackAward(track, amount, awardedToday = 0) {
@@ -78,8 +82,9 @@ export function getPetJobRank(jobXp) {
 }
 
 export function canEnterPetRunRegion(regionKey, petLevel, regionMasteryXp = 0) {
-  const region = PET_RUN_REGIONS[String(regionKey || '').trim()];
-  if (!region) return false;
+  const key = String(regionKey || '').trim();
+  if (!hasOwnKey(PET_RUN_REGIONS, key)) return false;
+  const region = PET_RUN_REGIONS[key];
   return Math.max(1, Math.floor(Number(petLevel) || 1)) >= region.min_level
     && Math.max(0, Math.floor(Number(regionMasteryXp) || 0)) >= region.mastery_required;
 }
