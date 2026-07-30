@@ -1,5 +1,5 @@
 name = "moonboys-api"
-main = "worker.js"
+main = "worker-phase5-final.js"
 compatibility_date = "2026-04-12"
 workers_dev = true
 preview_urls = true
