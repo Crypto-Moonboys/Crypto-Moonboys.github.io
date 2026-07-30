@@ -1,0 +1,108 @@
+name: Phase 5B Worker Wiring
+
+on:
+  push:
+    branches:
+      - agent/pets-runtime-phase-5b
+
+permissions:
+  contents: write
+
+jobs:
+  patch-worker:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/pets-runtime-phase-5b
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Patch live Worker
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'workers/moonboys-api/worker.js';
+          let source = fs.readFileSync(path, 'utf8');
+
+          function replaceOnce(anchor, replacement, label) {
+            if (!source.includes(anchor)) throw new Error(`Missing anchor: ${label}`);
+            source = source.replace(anchor, replacement);
+          }
+
+          replaceOnce(
+            "import { handleWaxBridgeRoute } from './routes/wax/index.js';\n",
+            "import { handleWaxBridgeRoute } from './routes/wax/index.js';\nimport { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';\n",
+            'runtime import',
+          );
+
+          replaceOnce(
+            "    case 'pet':          await cmdPetStatus(db, tok, chatId, telegramId);            break;\n",
+            "    case 'pet':          await cmdPetStatus(db, tok, chatId, telegramId);            break;\n    case 'petprogress':  await cmdPetProgress(db, tok, chatId, telegramId);          break;\n    case 'petgear':      await cmdPetGear(db, tok, chatId, telegramId);              break;\n",
+            'command routes',
+          );
+
+          replaceOnce(
+            "    `/petshop — View food, toy and clothing upgrades\\n` +\n",
+            "    `/petshop — View food, toy and clothing upgrades\\n` +\n    `/petprogress — View secondary XP, traits and prestige\\n` +\n    `/petgear — View equipment levels and mastery\\n` +\n",
+            'help commands',
+          );
+
+          replaceOnce(
+            "async function cmdPetStatus(db, tok, chatId, telegramId) {\n  const pet = await getPetProfile(db, telegramId).catch(() => null);\n  const missions = await buildPetMissions(db, telegramId).catch(() => null);\n  const activity = await getActivePetActivitySession(db, telegramId).catch(() => null);\n  await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, missions, activity), { reply_markup: petReplyMarkup() }, 'how_to_play');\n}\n",
+            "async function cmdPetStatus(db, tok, chatId, telegramId) {\n  const pet = await getPetProfile(db, telegramId).catch(() => null);\n  const missions = await buildPetMissions(db, telegramId).catch(() => null);\n  const activity = await getActivePetActivitySession(db, telegramId).catch(() => null);\n  await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, missions, activity), { reply_markup: petReplyMarkup() }, 'how_to_play');\n}\n\nasync function cmdPetProgress(db, tok, chatId, telegramId) {\n  const pet = await getPetProfile(db, telegramId).catch(() => null);\n  if (!pet) {\n    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');\n    return;\n  }\n  const state = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null);\n  await sendTelegramMessage(tok, chatId, buildPetProgressSummary(state || {}));\n}\n\nasync function cmdPetGear(db, tok, chatId, telegramId) {\n  const pet = await getPetProfile(db, telegramId).catch(() => null);\n  if (!pet) {\n    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');\n    return;\n  }\n  const rows = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ? ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] }));\n  await sendTelegramMessage(tok, chatId, buildPetGearSummary(rows.results || []));\n}\n\nasync function applyPetRuntimeCommandAward(db, telegramId, eventKey, action, options = {}) {\n  const stableKey = String(eventKey || '').trim();\n  if (!stableKey) return null;\n  const equipment = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(telegramId).all().catch(() => ({ results: [] }));\n  return applyPetRuntimeAward(db, telegramId, stableKey, action, {\n    day_key: getPetDayKey(new Date()),\n    equipment_rows: equipment.results || [],\n    ...options,\n  }).catch((error) => {\n    logApiFailure('runtime_award_failed', { telegramId, action, eventKey: stableKey, message: error?.message || String(error) });\n    return null;\n  });\n}\n",
+            'runtime commands and helper',
+          );
+
+          replaceOnce(
+            "  const prefix = action === 'adopt'\n",
+            "  if (action !== 'adopt') {\n    await applyPetRuntimeCommandAward(db, telegramId, `runtime:care:${stableEventKey || action}`, action);\n  }\n  const prefix = action === 'adopt'\n",
+            'care award',
+          );
+
+          replaceOnce(
+            "  await sendTelegramPetReply(tok, chatId, `Claimed ${escapeHtml(result.session.activity_type)} rewards:",
+            "  const runtimeAction = result.session.activity_type === 'train' ? 'timed_train' : result.session.activity_type === 'work' ? 'timed_work' : result.session.activity_type;\n  await applyPetRuntimeCommandAward(db, telegramId, `runtime:activity:${result.session.id}`, runtimeAction);\n  await sendTelegramPetReply(tok, chatId, `Claimed ${escapeHtml(result.session.activity_type)} rewards:",
+            'activity award',
+          );
+
+          replaceOnce(
+            "  await sendTelegramPetReply(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.",
+            "  await applyPetRuntimeCommandAward(db, telegramId, `runtime:job:${eventKey || jobKey}`, 'job');\n  await sendTelegramPetReply(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.",
+            'job award',
+          );
+
+          replaceOnce(
+            "  await sendTelegramPetReply(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.",
+            "  await applyPetRuntimeCommandAward(db, telegramId, `runtime:daily:${eventKey || dayKey}`, 'daily_chest');\n  await sendTelegramPetReply(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.",
+            'daily award',
+          );
+
+          replaceOnce(
+            "  const summary = result.reason === 'run_completed' ? formatPetRunStepSummary(result) : formatPetRunStepSummary(result);\n",
+            "  await applyPetRuntimeCommandAward(db, telegramId, `runtime:run-step:${eventKey || `${result.run?.run_id || 'run'}:${result.run?.depth || stepIndex}`}`, 'run_step');\n  const summary = result.reason === 'run_completed' ? formatPetRunStepSummary(result) : formatPetRunStepSummary(result);\n",
+            'run step award',
+          );
+
+          replaceOnce(
+            "  await sendTelegramPetReply(\n    tok,\n    chatId,\n    `${formatPetRunBankSummary(result)}",
+            "  await applyPetRuntimeCommandAward(db, telegramId, `runtime:run-extract:${eventKey || result.run?.run_id || argStr || 'active'}`, 'run_extract');\n  await sendTelegramPetReply(\n    tok,\n    chatId,\n    `${formatPetRunBankSummary(result)}",
+            'run extract award',
+          );
+
+          fs.writeFileSync(path, source);
+          NODE
+      - name: Validate Worker wiring
+        run: |
+          node --check workers/moonboys-api/worker.js
+          node scripts/telegram-pets-runtime-phase-5b.test.mjs
+      - name: Commit generated Worker patch
+        run: |
+          rm .github/workflows/phase5b-worker-wiring.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workers/moonboys-api/worker.js .github/workflows/phase5b-worker-wiring.yml
+          git commit -m "Wire Phase 5B pet runtime commands and awards"
+          git push origin HEAD:agent/pets-runtime-phase-5b
