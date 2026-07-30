@@ -5,6 +5,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
+import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 /**
@@ -10004,6 +10005,8 @@ async function handleTelegramUpdate(update, env) {
     case 'solve':        await cmdSolve(tok, chatId);                                break;
     case 'profile':      await cmdProfile(db, tok, chatId, telegramId);              break;
     case 'pet':          await cmdPetStatus(db, tok, chatId, telegramId);            break;
+    case 'petprogress':  await cmdPetProgress(db, tok, chatId, telegramId);          break;
+    case 'petgear':      await cmdPetGear(db, tok, chatId, telegramId);              break;
     case 'adopt':        await cmdPetAction(db, tok, chatId, telegramId, fromUser, 'adopt', stableEventKey); break;
     case 'feed':
     case 'play':
@@ -10120,6 +10123,8 @@ async function cmdGkHelp(tok, chatId) {
     `/adopt — Adopt a Crypto Moonboy Pet\n` +
     `/feed /play /clean /sleep /train — Grow your pet\n` +
     `/petshop — View food, toy and clothing upgrades\n` +
+    `/petprogress — View secondary XP, traits and prestige\n` +
+    `/petgear — View equipment levels and mastery\n` +
     `/petbuy moon_kibble — Buy/equip a pet upgrade\n` +
     `/pettrade 25 — Risk in-game Moon Gold for game rewards\n` +
     `/petarena — Pet vs Pet Arena battles (level 10+)\n` +
@@ -10240,6 +10245,40 @@ async function cmdPetStatus(db, tok, chatId, telegramId) {
   const missions = await buildPetMissions(db, telegramId).catch(() => null);
   const activity = await getActivePetActivitySession(db, telegramId).catch(() => null);
   await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, missions, activity), { reply_markup: petReplyMarkup() }, 'how_to_play');
+}
+
+async function cmdPetProgress(db, tok, chatId, telegramId) {
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  if (!pet) {
+    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
+    return;
+  }
+  const state = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null);
+  await sendTelegramMessage(tok, chatId, buildPetProgressSummary(state || {}));
+}
+
+async function cmdPetGear(db, tok, chatId, telegramId) {
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  if (!pet) {
+    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
+    return;
+  }
+  const rows = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ? ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] }));
+  await sendTelegramMessage(tok, chatId, buildPetGearSummary(rows.results || []));
+}
+
+async function applyPetRuntimeCommandAward(db, telegramId, eventKey, action, options = {}) {
+  const stableKey = String(eventKey || '').trim();
+  if (!stableKey) return null;
+  const equipment = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(telegramId).all().catch(() => ({ results: [] }));
+  return applyPetRuntimeAward(db, telegramId, stableKey, action, {
+    day_key: getPetDayKey(new Date()),
+    equipment_rows: equipment.results || [],
+    ...options,
+  }).catch((error) => {
+    logApiFailure('runtime_award_failed', { telegramId, action, eventKey: stableKey, message: error?.message || String(error) });
+    return null;
+  });
 }
 
 async function cmdPetBag(db, tok, chatId, telegramId) {
@@ -10539,6 +10578,7 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) 
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('job', result.reason, result));
     return;
   }
+  await applyPetRuntimeCommandAward(db, telegramId, `runtime:job:${eventKey || jobKey}`, 'job');
   await sendTelegramPetReply(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'work');
 }
 
@@ -10552,6 +10592,7 @@ async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('daily chest', result.reason, result));
     return;
   }
+  await applyPetRuntimeCommandAward(db, telegramId, `runtime:daily:${eventKey || dayKey}`, 'daily_chest');
   await sendTelegramPetReply(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, 'daily');
 }
 
@@ -10596,6 +10637,9 @@ async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action, stabl
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy(action, result.reason, result));
     return;
   }
+  if (action !== 'adopt') {
+    await applyPetRuntimeCommandAward(db, telegramId, `runtime:care:${stableEventKey || action}`, action);
+  }
   const prefix = action === 'adopt'
     ? 'Crypto Moonboy Pet adopted.'
     : `Action accepted: /${escapeHtml(action)} (+${result.pet_xp_awarded || 0} pet XP, +${result.xp_awarded || 0} Community XP).`;
@@ -10619,6 +10663,8 @@ async function cmdPetStart(db, tok, chatId, telegramId, argStr) {
 async function cmdPetClaim(db, tok, chatId, telegramId) {
   const result = await claimPetActivitySession(db, telegramId, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'activity_claim_failed' }));
   if (!result.accepted) { await sendTelegramMessage(tok, chatId, result.reason === 'activity_too_short' ? `Claim ready in ${formatPetDuration(result.retry_after_seconds)}.` : formatPetBlockedCopy('activity claim', result.reason, result)); return; }
+  const runtimeAction = result.session.activity_type === 'train' ? 'timed_train' : result.session.activity_type === 'work' ? 'timed_work' : result.session.activity_type;
+  await applyPetRuntimeCommandAward(db, telegramId, `runtime:activity:${result.session.id}`, runtimeAction);
   await sendTelegramPetReply(tok, chatId, `Claimed ${escapeHtml(result.session.activity_type)} rewards: +${result.pet_xp_awarded} pet XP, +${result.xp_awarded} Community XP, +${result.computed?.rewards?.moon_gold || 0} gold, +${result.computed?.rewards?.moon_crystals || 0} crystals.\n\n${formatPetStatus(result.pet, await buildPetMissions(db, telegramId))}`, { reply_markup: petReplyMarkup() }, result.session.activity_type);
 }
 async function cmdPetCancel(db, tok, chatId, telegramId) {
@@ -10761,6 +10807,7 @@ async function cmdPetRun(db, tok, chatId, telegramId, argStr = '', eventKey = nu
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('run', result.reason, result));
     return;
   }
+  await applyPetRuntimeCommandAward(db, telegramId, `runtime:run-step:${eventKey || `${result.run?.run_id || 'run'}:${result.run?.depth || stepIndex}`}`, 'run_step');
   const summary = result.reason === 'run_completed' ? formatPetRunStepSummary(result) : formatPetRunStepSummary(result);
   const markup = result.reason === 'run_step_complete'
     ? buildPetRunAfterStepReplyMarkup(result.run)
@@ -10781,6 +10828,7 @@ async function cmdPetExtract(db, tok, chatId, telegramId, argStr = '', eventKey 
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('extract', result.reason, result));
     return;
   }
+  await applyPetRuntimeCommandAward(db, telegramId, `runtime:run-extract:${eventKey || result.run?.run_id || argStr || 'active'}`, 'run_extract');
   await sendTelegramPetReply(
     tok,
     chatId,
