@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_equipment_events (
   mastery_xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (mastery_xp_awarded >= 0),
   metadata_json TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (telegram_id, event_key)
+  UNIQUE (telegram_id, item_key, event_key)
 );
 
 CREATE INDEX IF NOT EXISTS idx_pet_equipment_events_owner_item_created
