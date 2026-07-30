@@ -39,6 +39,24 @@ assert.doesNotMatch(howTo, /\.pet-card-gallery img\s*\{[\s\S]*object-fit:\s*cove
 assert.ok(!leaderboard.includes('pet-card-gallery'), 'Leaderboard page must not dump the pet card gallery');
 assert.ok(!community.includes('pet-card-gallery'), 'Community page must not dump the pet card gallery');
 
+for (const script of [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
+  '/js/site-shell.js',
+  '/js/components/connection-status-panel.js',
+  '/js/components/global-player-header.js',
+  '/js/components/live-activity-summary.js',
+  '/js/wiki.js',
+  '/js/crypto-moonboy-pets.js',
+]) {
+  assert.ok(howTo.includes(`src="${script}"`), `How To Play must load canonical boot script ${script}`);
+}
+assert.ok(howTo.indexOf('/js/core/moonboys-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'state must load before the connection status panel');
+assert.ok(howTo.indexOf('/js/core/daily-loop-state.js') < howTo.indexOf('/js/components/connection-status-panel.js'), 'daily loop state must load before the connection status panel');
+
 assert.ok(leaderboard.includes('data-crypto-pets-leaderboard'), 'pet leaderboard page must use pet leaderboard data hook');
 for (const period of ['seasonal', 'daily', 'weekly', 'all_time']) assert.ok(leaderboard.includes(`data-period="${period}"`), `pet leaderboard must show ${period} period`);
 assert.ok(community.includes('data-crypto-pets-summary'), 'community page must have compact pet summary only');
