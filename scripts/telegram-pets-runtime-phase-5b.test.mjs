@@ -28,7 +28,8 @@ if (reviewFixesPending) {
   assert.match(workflow, /run_step: 'run_step'/, 'pending review-fix workflow must map API run steps to Adventure XP');
   assert.match(workflow, /run_extract: 'run_extract'/, 'pending review-fix workflow must map API extraction to Adventure XP');
   assert.match(workflow, /INSERT INTO telegram_pet_equipment_progression[\s\S]*ON CONFLICT \(telegram_id, item_key\) DO UPDATE/, 'pending review-fix workflow must add shop progression upserts');
-  assert.match(workflow, /INSERT OR IGNORE INTO telegram_pet_equipment_progression[\s\S]*equipped_/, 'pending review-fix workflow must repair missing equipped gear rows');
+  assert.match(workflow, /INSERT OR IGNORE INTO telegram_pet_equipment_progression/, 'pending review-fix workflow must insert missing gear progression rows');
+  assert.match(workflow, /equipped_\$\{slot\}/, 'pending review-fix workflow must derive missing gear rows from equipped profile slots');
 } else {
   assert.match(worker, /runtime:api:/, 'API-dispatched actions must use isolated runtime event keys');
   assert.match(worker, /work:\s*'job'/, 'API work actions must map to Job XP');
@@ -36,7 +37,8 @@ if (reviewFixesPending) {
   assert.match(worker, /run_step:\s*'run_step'/, 'API run steps must map to Adventure XP');
   assert.match(worker, /run_extract:\s*'run_extract'/, 'API extraction must map to Adventure XP');
   assert.match(worker, /INSERT INTO telegram_pet_equipment_progression[\s\S]*ON CONFLICT \(telegram_id, item_key\) DO UPDATE/, 'shop purchases must create or repair equipment progression rows');
-  assert.match(worker, /INSERT OR IGNORE INTO telegram_pet_equipment_progression[\s\S]*equipped_/, '/petgear must repair missing progression rows from the equipped profile');
+  assert.match(worker, /INSERT OR IGNORE INTO telegram_pet_equipment_progression/, '/petgear must insert missing progression rows');
+  assert.match(worker, /equipped_\$\{slot\}/, '/petgear must derive missing progression rows from equipped profile slots');
 }
 
 assert.match(worker, /getPetDayKey\(new Date\(\)\)/, 'runtime awards must use the existing UTC pet day authority');
