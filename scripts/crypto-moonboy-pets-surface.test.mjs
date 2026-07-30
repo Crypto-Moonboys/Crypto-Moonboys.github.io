@@ -55,6 +55,10 @@ assert.ok(petSurfaceScript.includes('<strong>Battle Loadout</strong>'), 'pet sum
 for (const field of ['equipped_food', 'equipped_toy', 'equipped_outfit', 'equipped_armor', 'equipped_weapon', 'equipped_charm']) {
   assert.ok(petSurfaceScript.includes(`pet.${field}`), `pet summary must render ${field}`);
 }
+assert.ok(petSurfaceScript.includes("formatLoadoutValue(pet.equipped_armor, 'none')"), 'empty armor slot must render as none');
+assert.ok(petSurfaceScript.includes("formatLoadoutValue(pet.equipped_weapon, 'none')"), 'empty weapon slot must render as none');
+assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_armor, 'starter')"), 'empty armor slot must not invent starter gear');
+assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_weapon, 'starter')"), 'empty weapon slot must not invent starter gear');
 
 const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
 assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');
