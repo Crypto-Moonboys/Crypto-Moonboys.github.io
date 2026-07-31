@@ -4,7 +4,7 @@
  * Each entry describes:
  *   id            — game key (matches config.id and leaderboard key)
  *   label         — display name
- *   page          — URL path to the game page (must end with /)
+ *   page          — canonical public URL path to the game page
  *   bootstrapPath — absolute path to the bootstrap module
  *   adapterExport — named export from the bootstrap module that is the adapter
  *   crossGameTags — compatibility tags for cross-game modifier system
@@ -18,7 +18,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   {
     id: 'meme-swarm-3008',
     label: '👾 Meme Swarm 3008',
-    page: '/games/invaders-3008/',
+    page: '/games/meme-swarm-3008/',
     bootstrapPath: '/js/arcade/games/invaders/bootstrap.js',
     adapterExport: 'INVADERS_ADAPTER',
     crossGameTags: Object.freeze(['shooter']),
@@ -26,7 +26,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   {
     id: 'chain-maze',
     label: '🟡 Chain Maze',
-    page: '/games/pac-chain/',
+    page: '/games/chain-maze/',
     bootstrapPath: '/js/arcade/games/pac-chain/bootstrap.js',
     adapterExport: 'PAC_CHAIN_ADAPTER',
     crossGameTags: Object.freeze(['maze']),
@@ -34,7 +34,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   {
     id: 'forkfield',
     label: '🌑 Forkfield',
-    page: '/games/asteroid-fork/',
+    page: '/games/forkfield/',
     bootstrapPath: '/js/arcade/games/asteroid-fork/bootstrap.js',
     adapterExport: 'ASTEROID_FORK_ADAPTER',
     crossGameTags: Object.freeze(['shooter', 'physics']),
@@ -42,7 +42,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   {
     id: 'bullrun-brick-smash',
     label: '🧱 Bullrun Brick Smash',
-    page: '/games/breakout-bullrun/',
+    page: '/games/bullrun-brick-smash/',
     bootstrapPath: '/js/arcade/games/breakout-bullrun/bootstrap.js',
     adapterExport: 'BREAKOUT_BULLRUN_ADAPTER',
     crossGameTags: Object.freeze(['breakout']),
@@ -58,7 +58,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   {
     id: 'block-topia-dropzone',
     label: '🟦 Block Topia Dropzone',
-    page: '/games/tetris-block-topia/',
+    page: '/games/block-topia-dropzone/',
     bootstrapPath: '/js/arcade/games/tetris/bootstrap.js',
     adapterExport: 'TETRIS_ADAPTER',
     crossGameTags: Object.freeze(['physics']),
