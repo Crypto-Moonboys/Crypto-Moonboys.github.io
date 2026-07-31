@@ -4,7 +4,11 @@ on:
   pull_request:
     paths:
       - deployments/worker-evidence-request.json
+      - deployments/evidence/worker-provenance-*.json
+      - deployments/production.json
       - scripts/live-worker-provenance-verify.mjs
+      - scripts/compare-worker-provenance-evidence.mjs
+      - scripts/worker-live-evidence-compare.test.mjs
       - .github/workflows/worker-live-evidence-capture.yml
   workflow_dispatch:
 
@@ -29,12 +33,25 @@ jobs:
       - name: Refresh main history
         run: git fetch --no-tags origin main:refs/remotes/origin/main
 
+      - name: Test evidence comparison contract
+        run: node scripts/worker-live-evidence-compare.test.mjs
+
       - name: Capture live Worker provenance
         shell: bash
         run: |
           expected_commit="$(node -p "require('./deployments/worker-evidence-request.json').expected_commit")"
           EXPECTED_COMMIT="$expected_commit" node scripts/live-worker-provenance-verify.mjs \
             | tee worker-provenance-evidence.json
+
+      - name: Validate capture against committed evidence
+        shell: bash
+        run: |
+          expected_commit="$(node -p "require('./deployments/worker-evidence-request.json').expected_commit")"
+          committed_evidence="deployments/evidence/worker-provenance-${expected_commit}.json"
+          node scripts/compare-worker-provenance-evidence.mjs \
+            worker-provenance-evidence.json \
+            "$committed_evidence" \
+            deployments/worker-evidence-request.json
 
       - name: Upload retained evidence
         uses: actions/upload-artifact@v4
