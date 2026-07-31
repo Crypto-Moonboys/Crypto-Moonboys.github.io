@@ -46,8 +46,20 @@ jobs:
       - name: Require Cloudflare credentials
         shell: bash
         run: |
-          test -n "${CLOUDFLARE_API_TOKEN:-}" || exit 1
-          test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || exit 1
+          set -euo pipefail
+          missing=0
+
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "Missing CLOUDFLARE_API_TOKEN"
+            missing=1
+          fi
+
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "Missing CLOUDFLARE_ACCOUNT_ID"
+            missing=1
+          fi
+
+          [ "$missing" -eq 0 ]
       - name: Query production migration records
         shell: bash
         run: |
