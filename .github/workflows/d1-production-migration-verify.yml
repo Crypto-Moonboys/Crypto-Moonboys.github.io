@@ -20,4 +20,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --check scripts/verify-d1-production-migrations.mjs
+      - name: Verify parser syntax
+        run: node --check scripts/verify-d1-production-migrations.mjs
+      - name: Verify known migration evidence
+        shell: bash
+        run: |
+          printf '%s\n' '[{"success":true,"results":[{"name":"038_telegram_pet_equipment_progression.sql"},{"name":"039_telegram_pet_runtime_progression.sql"}]}]' > /tmp/d1-query.json
+          node scripts/verify-d1-production-migrations.mjs --input /tmp/d1-query.json --request deployments/d1-evidence-request.json --output /tmp/d1-evidence.json
+          node -e "const e=require('/tmp/d1-evidence.json'); if(e.status!=='verified-applied') process.exit(1)"
