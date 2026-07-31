@@ -1,10 +1,14 @@
 name               = "moonboys-leaderboard"
-main               = "../leaderboard-worker.js"
+main               = "deployment-entry.js"
 compatibility_date = "2024-11-01"
 
 [observability]
 enabled = true
 head_sampling_rate = 0.1
+
+# Public deployment provenance: version tag must be the full repository commit.
+[version_metadata]
+binding = "CF_VERSION_METADATA"
 
 [[kv_namespaces]]
 binding    = "LEADERBOARD"
