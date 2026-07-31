@@ -1,0 +1,22 @@
+name: D1 Production Migration Verify
+
+on:
+  pull_request:
+    paths:
+      - deployments/d1-evidence-request.json
+      - scripts/verify-d1-production-migrations.mjs
+      - .github/workflows/d1-production-migration-verify.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check scripts/verify-d1-production-migrations.mjs
