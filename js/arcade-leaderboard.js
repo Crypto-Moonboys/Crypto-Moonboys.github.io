@@ -21,11 +21,11 @@ const RAW_TABS = [
   { key: 'global',     label: '🌐 Global',     icon: '🌐' },
   { key: 'snake',      label: '🐍 Snake',       icon: '🐍' },
   { key: 'blocktopia', label: '🧱 BlockTopia',  icon: '🧱' },
-  { key: 'invaders',   label: '👾 Invaders',    icon: '👾' },
-  { key: 'pacchain',   label: '🟡 Pac-Chain',   icon: '🟡' },
-  { key: 'asteroids',  label: '🌑 Asteroids',   icon: '🌑' },
-  { key: 'breakout',   label: '🧱 Bullrun',     icon: '🧱' },
-  { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
+  { key: 'meme-swarm-3008', label: '👾 Meme Swarm 3008', icon: '👾' },
+  { key: 'chain-maze', label: '🟡 Chain Maze', icon: '🟡' },
+  { key: 'forkfield', label: '🌑 Forkfield', icon: '🌑' },
+  { key: 'bullrun-brick-smash', label: '🧱 Bullrun Brick Smash', icon: '🧱' },
+  { key: 'block-topia-dropzone', label: '🟦 Block Topia Dropzone', icon: '🟦' },
   { key: 'kaiju',      label: 'K Kaiju',       icon: 'K' },
 ];
 
@@ -41,16 +41,16 @@ const AGGREGATE_TABS = new Set(['global']);
 const GAME_LABELS = {
   snake:      '🐍 Snake',
   blocktopia: '🧱 BlockTopia',
-  invaders:   '👾 Invaders',
-  pacchain:   '🟡 Pac-Chain',
-  asteroids:  '🌑 Asteroids',
-  breakout:   '🧱 Bullrun',
-  tetris:     '🟦 Tetris',
+  'meme-swarm-3008': '👾 Meme Swarm 3008',
+  'chain-maze': '🟡 Chain Maze',
+  forkfield: '🌑 Forkfield',
+  'bullrun-brick-smash': '🧱 Bullrun Brick Smash',
+  'block-topia-dropzone': '🟦 Block Topia Dropzone',
   kaiju:      'K Kaiju',
   bonus:      '⭐ Bonus',
 };
 
-const BREAKDOWN_GAMES = ['snake', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'kaiju'];
+const BREAKDOWN_GAMES = ['snake', 'blocktopia', 'meme-swarm-3008', 'chain-maze', 'forkfield', 'bullrun-brick-smash', 'block-topia-dropzone', 'kaiju'];
 
 // ── State ─────────────────────────────────────────────────────────────────
 let currentMode = DEFAULT_MODE;
