@@ -1,13 +1,13 @@
 /**
- * config.js — Pac-Chain game metadata and configuration.
+ * config.js — Chain Maze game metadata and configuration.
  */
 
 export var PAC_CHAIN_CONFIG = Object.freeze({
-  /** Leaderboard / ArcadeSync key. */
+  /** Stable leaderboard / ArcadeSync compatibility key. */
   id: 'pacchain',
 
   /** Display label used by GameRegistry. */
-  label: '🟡 Pac-Chain',
+  label: '🟡 Chain Maze',
 
   /** Cross-game modifier compatibility tags. */
   crossGameTags: Object.freeze(['maze']),
