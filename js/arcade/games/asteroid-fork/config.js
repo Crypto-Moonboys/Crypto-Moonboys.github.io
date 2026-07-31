@@ -3,8 +3,8 @@
  */
 
 export var ASTEROID_FORK_CONFIG = Object.freeze({
-  /** Stable leaderboard / ArcadeSync compatibility key. */
-  id: 'asteroids',
+  /** Leaderboard / ArcadeSync key. */
+  id: 'forkfield',
 
   /** Display label used by GameRegistry. */
   label: '🌑 Forkfield',
