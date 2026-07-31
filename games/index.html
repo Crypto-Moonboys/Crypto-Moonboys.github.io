@@ -78,9 +78,89 @@
 <script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js"></script>
 <script type="module">
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
-const board=document.getElementById('roguelite-loop-board');
-function render(){if(!board)return;let state=null;try{state=ArcadeMeta.getState();}catch(_){state=null;}const xp=Math.max(0,Math.floor(Number(state?.daily?.points)||0));board.innerHTML=`<div class="roguelite-loop-stats"><span class="roguelite-stat-pill">Server-accepted Arcade XP: <strong>${xp.toLocaleString()}</strong></span></div>`;}
-render();window.addEventListener('arcade:xp-updated',render);setInterval(render,30000);
+
+const board = document.getElementById('roguelite-loop-board');
+const digestSummaryEl = document.getElementById('roguelite-daily-digest-summary');
+const DAILY_DIGEST_SUMMARY_POLL_MS = 5 * 60 * 1000;
+const DAILY_DIGEST_SUMMARY_DEBOUNCE_MS = 300;
+let digestSummaryInterval = null;
+let digestSummaryRefreshTimeout = null;
+let digestSummaryRequestInFlight = false;
+let digestSummaryRefreshQueued = false;
+
+function formatReset(ms) {
+  const timestamp = Number(ms);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return 'pending';
+  const diff = Math.max(0, timestamp - Date.now());
+  const hours = Math.floor(diff / (60 * 60 * 1000));
+  const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+  return `${hours}h ${minutes}m`;
+}
+
+function renderLoopBoard() {
+  if (!board) return;
+  let state = null;
+  try { state = ArcadeMeta.getState(); } catch (_) { state = null; }
+  const xp = Math.max(0, Math.floor(Number(state?.daily?.points) || 0));
+  const reset = formatReset(state?.daily?.resets_at);
+  board.innerHTML = `<div class="roguelite-loop-stats"><span class="roguelite-stat-pill">Server-accepted Arcade XP: <strong>${xp.toLocaleString()}</strong></span><span class="roguelite-stat-pill">Daily reset: <strong>${reset}</strong></span></div>`;
+}
+
+async function renderDailyDigestSummary() {
+  if (!digestSummaryEl || digestSummaryRequestInFlight) {
+    if (digestSummaryRequestInFlight) digestSummaryRefreshQueued = true;
+    return;
+  }
+  digestSummaryRequestInFlight = true;
+  try {
+    const daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || null;
+    const missed = Math.max(0, Number(daily?.missed_events_today) || 0);
+    const active = Array.isArray(daily?.today_active?.mission_opportunities)
+      ? daily.today_active.mission_opportunities.filter((item) => !item?.completed).length
+      : 0;
+    digestSummaryEl.textContent = `Active daily options: ${active} · Missed today: ${missed}`;
+  } finally {
+    digestSummaryRequestInFlight = false;
+    if (digestSummaryRefreshQueued) {
+      digestSummaryRefreshQueued = false;
+      scheduleDailyDigestSummaryRefresh();
+    }
+  }
+}
+
+function scheduleDailyDigestSummaryRefresh() {
+  if (digestSummaryRefreshTimeout) clearTimeout(digestSummaryRefreshTimeout);
+  digestSummaryRefreshTimeout = setTimeout(() => {
+    digestSummaryRefreshTimeout = null;
+    renderDailyDigestSummary();
+  }, DAILY_DIGEST_SUMMARY_DEBOUNCE_MS);
+}
+
+function startDailyDigestPolling() {
+  if (digestSummaryInterval || document.hidden) return;
+  digestSummaryInterval = setInterval(renderDailyDigestSummary, DAILY_DIGEST_SUMMARY_POLL_MS);
+}
+
+function stopDailyDigestPolling() {
+  if (!digestSummaryInterval) return;
+  clearInterval(digestSummaryInterval);
+  digestSummaryInterval = null;
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopDailyDigestPolling();
+  else {
+    scheduleDailyDigestSummaryRefresh();
+    startDailyDigestPolling();
+  }
+});
+
+renderLoopBoard();
+renderDailyDigestSummary();
+startDailyDigestPolling();
+window.addEventListener('arcade:xp-updated', renderLoopBoard);
+window.addEventListener('moonboys:roguelite-daily-ready', scheduleDailyDigestSummaryRefresh);
+window.addEventListener('moonboys:wtf-events-ready', scheduleDailyDigestSummaryRefresh);
 </script>
 </body>
 </html>
