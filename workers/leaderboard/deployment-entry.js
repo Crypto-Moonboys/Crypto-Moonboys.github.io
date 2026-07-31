@@ -1,4 +1,15 @@
 import baseWorker from '../leaderboard-worker.js';
 import { withDeploymentProvenance } from '../shared/deployment-provenance.js';
+import { withRegisteredTelegramLinkFallback } from './registered-telegram-link-fallback.js';
 
-export default withDeploymentProvenance(baseWorker, 'moonboys-leaderboard');
+const leaderboardWorker = {
+  async fetch(request, env, context) {
+    const runtimeEnv = {
+      ...env,
+      DB: withRegisteredTelegramLinkFallback(env.DB),
+    };
+    return baseWorker.fetch(request, runtimeEnv, context);
+  },
+};
+
+export default withDeploymentProvenance(leaderboardWorker, 'moonboys-leaderboard');
