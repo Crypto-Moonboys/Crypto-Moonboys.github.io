@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_reviewed_at": "2026-07-31T02:27:00Z",
-  "repository_main_commit_at_review": "4efb3f17a9a25921ac6efb1c4a465be55d36f589",
+  "last_reviewed_at": "2026-07-31T07:27:19.124Z",
+  "repository_main_commit_at_review": "d554b56713f2d0fb6d881dd0b6200f9850575194",
   "surfaces": {
     "github-pages": {
       "readiness": "deployable",
@@ -13,42 +13,75 @@
         "https://cryptomoonboys.com/graph.html?mode=full"
       ],
       "evidence": [],
-      "notes": "PR #1125 merged to main. Pages deployment and Live Site Verify evidence have not yet been recorded in this manifest."
+      "notes": "GitHub Pages deployment and Live Site Verify evidence have not yet been recorded in this manifest."
     }
   },
   "workers": {
     "workers/moonboys-api": {
       "readiness": "live-deployable",
-      "deployment_status": "unverified",
-      "deployed_commit": null,
-      "deployed_at": null,
+      "deployment_status": "verified-live",
+      "deployed_commit": "d554b56713f2d0fb6d881dd0b6200f9850575194",
+      "deployed_at": "2026-07-31T07:13:53.589Z",
       "verification_urls": [
         "https://moonboys-api.sercullen.workers.dev/deployment-info"
       ],
-      "evidence": [],
-      "notes": "The repository now defines a provenance endpoint, but the Worker must be redeployed through the tagged deploy wrapper before this endpoint can prove a live commit."
+      "evidence": [
+        {
+          "type": "retained-worker-provenance",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-d554b56713f2d0fb6d881dd0b6200f9850575194.json",
+          "recorded_at": "2026-07-31T07:27:19.124Z"
+        },
+        {
+          "type": "github-actions-live-verification",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/30612857045",
+          "recorded_at": "2026-07-31T07:27:19.124Z"
+        }
+      ],
+      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit d554b56713f2d0fb6d881dd0b6200f9850575194."
     },
     "workers/anti-cheat": {
       "readiness": "live-deployable",
-      "deployment_status": "unverified",
-      "deployed_commit": null,
-      "deployed_at": null,
+      "deployment_status": "verified-live",
+      "deployed_commit": "d554b56713f2d0fb6d881dd0b6200f9850575194",
+      "deployed_at": "2026-07-31T07:16:08.601Z",
       "verification_urls": [
         "https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info"
       ],
-      "evidence": [],
-      "notes": "The repository now defines a provenance endpoint, but the Worker must be redeployed through the tagged deploy wrapper before this endpoint can prove a live commit."
+      "evidence": [
+        {
+          "type": "retained-worker-provenance",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-d554b56713f2d0fb6d881dd0b6200f9850575194.json",
+          "recorded_at": "2026-07-31T07:27:19.124Z"
+        },
+        {
+          "type": "github-actions-live-verification",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/30612857045",
+          "recorded_at": "2026-07-31T07:27:19.124Z"
+        }
+      ],
+      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit d554b56713f2d0fb6d881dd0b6200f9850575194."
     },
     "workers/leaderboard": {
       "readiness": "live-deployable",
-      "deployment_status": "unverified",
-      "deployed_commit": null,
-      "deployed_at": null,
+      "deployment_status": "verified-live",
+      "deployed_commit": "d554b56713f2d0fb6d881dd0b6200f9850575194",
+      "deployed_at": "2026-07-31T07:15:18.620Z",
       "verification_urls": [
         "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
       ],
-      "evidence": [],
-      "notes": "The repository now defines a provenance endpoint, but the Worker must be redeployed through the tagged deploy wrapper before this endpoint can prove a live commit."
+      "evidence": [
+        {
+          "type": "retained-worker-provenance",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-d554b56713f2d0fb6d881dd0b6200f9850575194.json",
+          "recorded_at": "2026-07-31T07:27:19.124Z"
+        },
+        {
+          "type": "github-actions-live-verification",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/30612857045",
+          "recorded_at": "2026-07-31T07:27:19.124Z"
+        }
+      ],
+      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit d554b56713f2d0fb6d881dd0b6200f9850575194."
     },
     "workers/block-topia": {
       "readiness": "needs-binding-setup",
