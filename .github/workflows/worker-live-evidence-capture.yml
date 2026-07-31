@@ -1,0 +1,45 @@
+name: Worker Live Evidence Capture
+
+on:
+  pull_request:
+    paths:
+      - deployments/worker-evidence-request.json
+      - scripts/live-worker-provenance-verify.mjs
+      - .github/workflows/worker-live-evidence-capture.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Refresh main history
+        run: git fetch --no-tags origin main:refs/remotes/origin/main
+
+      - name: Capture live Worker provenance
+        shell: bash
+        run: |
+          expected_commit="$(node -p "require('./deployments/worker-evidence-request.json').expected_commit")"
+          EXPECTED_COMMIT="$expected_commit" node scripts/live-worker-provenance-verify.mjs \
+            | tee worker-provenance-evidence.json
+
+      - name: Upload retained evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-provenance-evidence
+          path: worker-provenance-evidence.json
+          if-no-files-found: error
+          retention-days: 90
