@@ -52,6 +52,9 @@ for (const [service, url] of targets) {
   }
 
   if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`${service}: /deployment-info is not live. Deploy this Worker through scripts/deploy-worker-with-provenance.mjs before running verification.`);
+    }
     throw new Error(`${service}: deployment-info returned HTTP ${response.status}: ${JSON.stringify(payload)}`);
   }
   if (payload.service !== service) throw new Error(`${service}: service field mismatch`);
