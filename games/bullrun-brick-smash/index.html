@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bullrun Brick Smash | Crypto Moonboys Arcade</title>
+  <meta name="description" content="Play Bullrun Brick Smash in the Crypto Moonboys Arcade.">
+  <link rel="canonical" href="https://cryptomoonboys.com/games/bullrun-brick-smash/">
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body class="page-standalone-tool">
+  <p id="route-status">Loading Bullrun Brick Smash…</p>
+  <script>
+  (async function () {
+    const source = '/games/breakout-bullrun/index.html';
+    const response = await fetch(source, { cache: 'no-cache' });
+    if (!response.ok) throw new Error('Game source unavailable');
+    let html = await response.text();
+    html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/games/breakout-bullrun/"><link rel="canonical" href="https://cryptomoonboys.com/games/bullrun-brick-smash/">');
+    document.open();
+    document.write(html);
+    document.close();
+  }()).catch(function (error) {
+    document.getElementById('route-status').textContent = 'Bullrun Brick Smash could not load. Return to the Arcade and try again.';
+    console.error('[canonical-game-route]', error);
+  });
+  </script>
+</body>
+</html>

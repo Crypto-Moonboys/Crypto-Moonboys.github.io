@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const worker = (await import(pathToFileURL(path.join(ROOT, 'workers/leaderboard-worker.js')).href)).default;
+const worker = (await import(pathToFileURL(path.join(ROOT, 'workers/leaderboard/deployment-entry.js')).href)).default;
 
 const BASE_URL = 'https://leaderboard.cryptomoonboys.test';
 const TELEGRAM_BOT_TOKEN = 'test-bot-token-1234567890abcdef';
@@ -131,25 +131,28 @@ async function readStoredBoard(env, key) {
   const db = new MockD1();
   db.telegramUsers.set('111', {
     telegram_id: '111',
-    username: 'unlinked_user',
-    first_name: 'Unlinked',
-    last_name: 'Player',
+    username: 'first_score_user',
+    first_name: 'First',
+    last_name: 'Score',
   });
   const env = makeEnv(db);
   const response = await request('/score', {
     method: 'POST',
     env,
     body: {
-      game: 'snake',
-      player: 'Unlinked Player',
+      game: 'meme-swarm-3008',
+      player: 'First Score',
       score: 120,
       telegram_auth: buildTelegramAuth('111'),
     },
   });
   const json = await readJson(response);
-  assert.equal(response.status, 403, 'valid Telegram HMAC without /gklink must be rejected');
-  assert.equal(json.error, 'telegram_link_required');
-  assert.deepEqual(await readStoredBoard(env, 'snake'), [], 'unlinked write must not create a board row');
+  assert.equal(response.status, 200, 'registered signed Telegram user must be able to save their first Arcade score');
+  assert.equal(json.status, 'ok');
+  const stored = await readStoredBoard(env, 'meme-swarm-3008');
+  assert.equal(stored.length, 1, 'first accepted score must create a leaderboard row');
+  assert.equal(stored[0].telegram_id, '111');
+  assert.equal(stored[0].score, 120);
 }
 
 {
