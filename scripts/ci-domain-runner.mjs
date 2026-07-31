@@ -59,6 +59,7 @@ const GROUPS = {
   ],
   arcade: [
     ['npm', 'run', 'test:btqm-runtime-assets'],
+    ['node', 'scripts/public-arcade-branding-regression.test.mjs'],
     ['node', 'scripts/btqm-bonus-battle-mode.test.mjs'],
     ['node', 'scripts/arcade-roguelite-protection.test.mjs'],
     ['node', 'scripts/arcade-leaderboard-layout.test.mjs'],

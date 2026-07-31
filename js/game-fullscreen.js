@@ -49,27 +49,27 @@
       tips: ['Wall = death', 'Longer = harder', 'Chase streaks']
     },
     brkCanvas: {
-      label: '🧱 Breakout', color: '#f7ab1a', touchScheme: 'lr-launch',
+      label: '🧱 Bullrun Brick Smash', color: '#f7ab1a', touchScheme: 'lr-launch',
       controls: ['← → Move paddle', 'Space Launch'],
       tips: ['Edge hits angle ball', 'Combo multiplies score', 'Pink bricks = 3 hits']
     },
     invCanvas: {
-      label: '👾 Invaders', color: '#3fb950', touchScheme: 'lr-fire',
+      label: '👾 Meme Swarm 3008', color: '#3fb950', touchScheme: 'lr-fire',
       controls: ['← → Move ship', 'Space Shoot'],
       tips: ['Boss every 5th wave', 'Shoot fast', 'Speed up as waves rise']
     },
     astCanvas: {
-      label: '🌑 Asteroids', color: '#bc8cff', touchScheme: 'asteroid',
+      label: '🌑 Forkfield', color: '#bc8cff', touchScheme: 'asteroid',
       controls: ['← → Rotate', '↑ Thrust', 'Space Shoot'],
       tips: ['Rocks split on hit', 'Wrap around edges', 'Tier-3 splits most']
     },
     pacCanvas: {
-      label: '🟡 Pac-Chain', color: '#f7c948', touchScheme: 'dpad',
+      label: '🟡 Chain Maze', color: '#f7c948', touchScheme: 'dpad',
       controls: ['↑↓←→ / WASD move', 'Power pellets let you eat enemies'],
       tips: ['Chain ghost eats', 'Power mode fades fast', 'Clear all pellets']
     },
     tetCanvas: {
-      label: '🟦 Tetris', color: '#bc8cff', touchScheme: 'tetris',
+      label: '🟦 Block Topia Dropzone', color: '#bc8cff', touchScheme: 'tetris',
       controls: ['← → Move', '↑ Rotate', '↓ Soft drop', 'Space Hard drop'],
       tips: ['Plan 2 pieces ahead', 'I-piece for Tetris', 'Hard drop = bonus score']
     },

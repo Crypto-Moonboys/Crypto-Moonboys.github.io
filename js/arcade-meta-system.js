@@ -700,13 +700,13 @@ const DAILY_ROGUELITE_QUESTS = [
   { id: 'daily-play-any', type: 'multi_game_burst', path: 'easy', title: 'Play 3 arcade runs', description: 'Safe XP path: complete 3 accepted runs today.', required_runs: 3, required_unique_games: 1, window_ms: MS_PER_DAY },
   { id: 'daily-three-games', type: 'multi_game_burst', path: 'easy', title: 'Play 3 different games', description: 'Auto-submits and opens multiple paths.', required_runs: 3, required_unique_games: 3, window_ms: MS_PER_DAY },
   { id: 'daily-snake-60', type: 'snake_survivor', path: 'easy', title: 'Survive 60s in Snake Run', description: 'Hold the line for a clean streak bump.', game: 'snake', min_duration_ms: 60 * 1000 },
-  { id: 'daily-invaders-push', type: 'score_target', path: 'competitive', title: 'Push Invaders 3008 to 900+', description: 'Leaderboard pressure path.', game: 'invaders', target: 900 },
+  { id: 'daily-invaders-push', type: 'score_target', path: 'competitive', title: 'Push Meme Swarm 3008 to 900+', description: 'Leaderboard pressure path.', game: 'invaders', target: 900 },
   { id: 'daily-btqm-zone', type: 'btqm_zone_clear', path: 'exploration', title: 'Clear a BTQM zone', description: 'Dungeon path into Block Topia lore.', game: 'btqm', target: 1 },
   { id: 'daily-switch', type: 'switch_chain', path: 'risk', title: 'Switch games twice fast', description: 'Risk path: rapid game swaps for bigger XP tempo.', switches: 2, window_ms: 12 * MINUTE_MS },
-  { id: 'daily-pacchain', type: 'score_target', path: 'competitive', title: 'Chain Pac-Chain to 800+', description: 'Combo path toward leaderboard pressure.', game: 'pacchain', target: 800 },
-  { id: 'daily-breakout', type: 'score_target', path: 'risk', title: 'Bullrun Breakout 750+', description: 'Risk path with brick-break combo momentum.', game: 'breakout', target: 750 },
-  { id: 'daily-tetris', type: 'score_target', path: 'easy', title: 'Stack Tetris to 700+', description: 'Safe score-chase path.', game: 'tetris', target: 700 },
-  { id: 'daily-asteroids', type: 'score_target', path: 'risk', title: 'Survive Asteroid Fork 800+', description: 'High-risk survival branch.', game: 'asteroids', target: 800 },
+  { id: 'daily-pacchain', type: 'score_target', path: 'competitive', title: 'Push Chain Maze to 800+', description: 'Combo path toward leaderboard pressure.', game: 'pacchain', target: 800 },
+  { id: 'daily-breakout', type: 'score_target', path: 'risk', title: 'Bullrun Brick Smash 750+', description: 'Risk path with brick-break combo momentum.', game: 'breakout', target: 750 },
+  { id: 'daily-tetris', type: 'score_target', path: 'easy', title: 'Stack Block Topia Dropzone to 700+', description: 'Safe score-chase path.', game: 'tetris', target: 700 },
+  { id: 'daily-asteroids', type: 'score_target', path: 'risk', title: 'Survive Forkfield 800+', description: 'High-risk survival branch.', game: 'asteroids', target: 800 },
   { id: 'daily-faction-signal', type: 'multi_game_burst', path: 'faction', title: 'Feed your faction signal', description: 'Complete 2 runs in different games to help faction momentum.', required_runs: 2, required_unique_games: 2, window_ms: MS_PER_DAY },
 ];
 

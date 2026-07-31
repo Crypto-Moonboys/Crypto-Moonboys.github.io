@@ -22,11 +22,11 @@ function makeOverviewNodes(cx, cy, r) {
   const games = [
     { id: 'snake',      label: '🐍 Snake',      color: C.cyan   },
     { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple },
-    { id: 'invaders',   label: '👾 Invaders',   color: C.green  },
-    { id: 'pacchain',   label: '🟡 Pac-Chain',  color: C.gold   },
-    { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted  },
-    { id: 'breakout',   label: '🧱 Bullrun',    color: '#ff6b35' },
-    { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa' },
+    { id: 'invaders',   label: '👾 Meme Swarm 3008',   color: C.green  },
+    { id: 'pacchain',   label: '🟡 Chain Maze',  color: C.gold   },
+    { id: 'asteroids',  label: '🌑 Forkfield',  color: C.muted  },
+    { id: 'breakout',   label: '🧱 Bullrun Brick Smash',    color: '#ff6b35' },
+    { id: 'tetris',     label: '🟦 Block Topia Dropzone',     color: '#a78bfa' },
   ];
   const out = [
     { id: 'global', label: '🏆 Arcade', color: C.gold, radius: 26, x: cx, y: cy, fixed: true },
@@ -232,11 +232,11 @@ export function setPlayerState(entry) {
   const games = [
     { id: 'snake',      label: '🐍 Snake',      color: C.cyan,   score: bd.snake      ?? null },
     { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple, score: bd.blocktopia ?? null },
-    { id: 'invaders',   label: '👾 Invaders',   color: C.green,  score: bd.invaders   ?? null },
-    { id: 'pacchain',   label: '🟡 Pac-Chain',  color: C.gold,   score: bd.pacchain   ?? null },
-    { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted,  score: bd.asteroids  ?? null },
-    { id: 'breakout',   label: '🧱 Bullrun',   color: '#ff6b35',  score: bd.breakout   ?? null },
-    { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa',  score: bd.tetris     ?? null },
+    { id: 'invaders',   label: '👾 Meme Swarm 3008',   color: C.green,  score: bd.invaders   ?? null },
+    { id: 'pacchain',   label: '🟡 Chain Maze',  color: C.gold,   score: bd.pacchain   ?? null },
+    { id: 'asteroids',  label: '🌑 Forkfield',  color: C.muted,  score: bd.asteroids  ?? null },
+    { id: 'breakout',   label: '🧱 Bullrun Brick Smash',   color: '#ff6b35',  score: bd.breakout   ?? null },
+    { id: 'tetris',     label: '🟦 Block Topia Dropzone',     color: '#a78bfa',  score: bd.tetris     ?? null },
     { id: 'bonus',      label: '⭐ Bonus',       color: C.green,  score: bd.variety_bonus ?? null },
   ];
 
