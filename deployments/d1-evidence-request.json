@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "database": "wikicoms",
+  "config": "workers/moonboys-api/wrangler.toml",
+  "migrations_table": "d1_migrations",
+  "required_migrations": [
+    "038_telegram_pet_equipment_progression.sql",
+    "039_telegram_pet_runtime_progression.sql"
+  ]
+}
