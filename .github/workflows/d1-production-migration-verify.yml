@@ -48,3 +48,11 @@ jobs:
         run: |
           test -n "${CLOUDFLARE_API_TOKEN:-}" || exit 1
           test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || exit 1
+      - name: Query production migration records
+        shell: bash
+        run: |
+          npx wrangler d1 execute wikicoms \
+            --remote \
+            --config workers/moonboys-api/wrangler.toml \
+            --command "SELECT name FROM d1_migrations WHERE name IN ('038_telegram_pet_equipment_progression.sql', '039_telegram_pet_runtime_progression.sql') ORDER BY name" \
+            --json > d1-migration-query.json
