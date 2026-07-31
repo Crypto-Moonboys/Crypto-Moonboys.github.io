@@ -23,19 +23,21 @@
       "deployed_commit": null,
       "deployed_at": null,
       "verification_urls": [
-        "https://moonboys-api.sercullen.workers.dev"
+        "https://moonboys-api.sercullen.workers.dev/deployment-info"
       ],
       "evidence": [],
-      "notes": "Repository configuration is deployable, but the currently deployed Worker commit has not been evidenced."
+      "notes": "The repository now defines a provenance endpoint, but the Worker must be redeployed through the tagged deploy wrapper before this endpoint can prove a live commit."
     },
     "workers/anti-cheat": {
       "readiness": "live-deployable",
       "deployment_status": "unverified",
       "deployed_commit": null,
       "deployed_at": null,
-      "verification_urls": [],
+      "verification_urls": [
+        "https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info"
+      ],
       "evidence": [],
-      "notes": "Repository configuration is deployable, but the currently deployed Worker commit has not been evidenced."
+      "notes": "The repository now defines a provenance endpoint, but the Worker must be redeployed through the tagged deploy wrapper before this endpoint can prove a live commit."
     },
     "workers/leaderboard": {
       "readiness": "live-deployable",
@@ -43,10 +45,10 @@
       "deployed_commit": null,
       "deployed_at": null,
       "verification_urls": [
-        "https://moonboys-leaderboard.sercullen.workers.dev"
+        "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
       ],
       "evidence": [],
-      "notes": "Repository configuration is deployable, but the currently deployed Worker commit has not been evidenced."
+      "notes": "The repository now defines a provenance endpoint, but the Worker must be redeployed through the tagged deploy wrapper before this endpoint can prove a live commit."
     },
     "workers/block-topia": {
       "readiness": "needs-binding-setup",
