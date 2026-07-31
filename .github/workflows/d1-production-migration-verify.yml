@@ -5,6 +5,7 @@ on:
     paths:
       - deployments/d1-evidence-request.json
       - scripts/verify-d1-production-migrations.mjs
+      - scripts/report-d1-query-failure.mjs
       - .github/workflows/d1-production-migration-verify.yml
   workflow_dispatch:
 
@@ -21,13 +22,28 @@ jobs:
         with:
           node-version: 22
       - name: Verify parser syntax
-        run: node --check scripts/verify-d1-production-migrations.mjs
+        run: |
+          node --check scripts/verify-d1-production-migrations.mjs
+          node --check scripts/report-d1-query-failure.mjs
       - name: Verify known migration evidence
         shell: bash
         run: |
           printf '%s\n' '[{"success":true,"results":[{"name":"038_telegram_pet_equipment_progression.sql"},{"name":"039_telegram_pet_runtime_progression.sql"}]}]' > /tmp/d1-query.json
           node scripts/verify-d1-production-migrations.mjs --input /tmp/d1-query.json --request deployments/d1-evidence-request.json --output /tmp/d1-evidence.json
           node -e "const e=require('/tmp/d1-evidence.json'); if(e.status!=='verified-applied') process.exit(1)"
+      - name: Verify sanitised failure reporting
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: contract-test-token
+          CLOUDFLARE_ACCOUNT_ID: contract-test-account
+        run: |
+          printf '%s\n' '{"error":{"code":9109,"message":"Authentication failed for contract-test-account"}}' > /tmp/d1-failure.json
+          printf '%s\n' 'token contract-test-token rejected' > /tmp/d1-failure.stderr
+          node scripts/report-d1-query-failure.mjs /tmp/d1-failure.json /tmp/d1-failure.stderr /tmp/d1-failure.txt 2>/tmp/d1-failure-console.txt
+          grep -F 'Authentication failed for [REDACTED]' /tmp/d1-failure.txt
+          grep -F 'token [REDACTED] rejected' /tmp/d1-failure.txt
+          if grep -F 'contract-test-token' /tmp/d1-failure.txt; then exit 1; fi
+          if grep -F 'contract-test-account' /tmp/d1-failure.txt; then exit 1; fi
 
   verify-remote:
     if: github.event_name == 'workflow_dispatch'
@@ -61,16 +77,40 @@ jobs:
 
           [ "$missing" -eq 0 ]
       - name: Query production migration records
+        id: d1-query
         shell: bash
         run: |
+          set +e
           npx wrangler d1 execute wikicoms \
             --remote \
             --config workers/moonboys-api/wrangler.toml \
             --command "SELECT name FROM d1_migrations WHERE name IN ('038_telegram_pet_equipment_progression.sql', '039_telegram_pet_runtime_progression.sql') ORDER BY name" \
-            --json > d1-migration-query.json
+            --json > d1-migration-query.json 2> d1-migration-query.stderr
+          status=$?
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Report sanitised query failure
+        if: steps.d1-query.outputs.status != '0'
+        shell: bash
+        run: |
+          node scripts/report-d1-query-failure.mjs \
+            d1-migration-query.json \
+            d1-migration-query.stderr \
+            d1-query-failure.txt
+          exit "${{ steps.d1-query.outputs.status }}"
+      - name: Upload sanitised failure diagnostics
+        if: always() && steps.d1-query.outputs.status != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-query-failure-diagnostics
+          path: d1-query-failure.txt
+          if-no-files-found: error
+          retention-days: 30
       - name: Validate and sanitise evidence
+        if: steps.d1-query.outputs.status == '0'
         run: node scripts/verify-d1-production-migrations.mjs --input d1-migration-query.json --request deployments/d1-evidence-request.json --output d1-production-migration-evidence.json
       - name: Upload sanitised evidence
+        if: steps.d1-query.outputs.status == '0'
         uses: actions/upload-artifact@v4
         with:
           name: d1-production-migration-evidence
