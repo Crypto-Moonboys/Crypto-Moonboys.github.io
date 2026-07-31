@@ -1,29 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Chain Maze | Crypto Moonboys Arcade</title>
-  <meta name="description" content="Play Chain Maze in the Crypto Moonboys Arcade.">
-  <link rel="canonical" href="https://cryptomoonboys.com/games/chain-maze/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🟡 Chain Maze — Crypto Moonboys Arcade</title>
+  <meta name="description" content="Fast maze runner with pickups, surge mode and enemy patrols. Build the longest score chain.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css">
+<style>
+    .game-card{position:relative;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
+    .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
+    .hud .label{font-size:.7rem;color:var(--color-text-muted)}
+    .hud .value{font-weight:700;font-size:1.15rem}
+    .hud .stat.chain-pulse{animation:chainPulse .22s ease}
+    @keyframes chainPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+    #pacCanvas{width:100%;aspect-ratio:1/1;display:block;margin:0 auto;background:#090c16;border:2px solid #f7c948;border-radius:14px;box-shadow:0 0 30px rgba(247,201,72,.18) inset}
+    .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+    .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
+    .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
+    .note{margin-top:14px;color:var(--color-text-muted);font-size:.85rem}
+    .pc-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:7;background:rgba(6,8,16,.78);padding:18px}
+    .pc-overlay.hidden{display:none}
+    .pc-modal{position:relative;width:min(680px,94%);background:rgba(14,18,30,.96);border:1px solid rgba(247,201,72,.35);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 22px 60px rgba(0,0,0,.45)}
+    .pc-modal h2{margin:0 0 6px;font-size:1.15rem;padding-right:28px}
+    .pc-modal p{margin:0 0 12px;color:#cbd5e1;font-size:.9rem}
+    .pc-modal-close{position:absolute;top:10px;right:12px;background:none;border:none;color:rgba(255,255,255,.55);font-size:1.4rem;line-height:1;cursor:pointer;padding:2px 6px;border-radius:4px}
+    .pc-modal-close:hover,.pc-modal-close:focus-visible{color:#fff;background:rgba(255,255,255,.12);outline:none}
+    .pc-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .pc-choice{border:none;border-radius:12px;padding:12px;text-align:left;cursor:pointer;background:rgba(255,255,255,.06);color:#fff}
+    .pc-choice strong{display:block;font-size:.95rem;margin-bottom:5px}
+    .pc-choice span{display:block;color:#dbe4f1;font-size:.82rem;line-height:1.3}
+    .pc-choice.common{outline:1px solid rgba(148,163,184,.45)}
+    .pc-choice.uncommon{outline:1px solid rgba(45,212,191,.45)}
+    .pc-choice.rare{outline:1px solid rgba(244,114,182,.5)}
+    .pc-choice.legendary{outline:1px solid rgba(250,204,21,.65);background:rgba(250,204,21,.14)}
+    .pc-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;z-index:8;padding:10px 14px;border-radius:999px;font-size:.85rem;font-weight:700;transition:.18s ease;background:rgba(18,25,40,.92);color:#fff;border:1px solid rgba(255,255,255,.2);pointer-events:none;white-space:nowrap}
+    .pc-banner.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .pc-banner.warning{background:rgba(91,33,33,.92);border-color:rgba(248,113,113,.45)}
+    .pc-banner.event{background:rgba(21,42,70,.95);border-color:rgba(125,211,252,.45)}
+    .pc-banner.risk{background:rgba(69,26,3,.95);border-color:rgba(251,191,36,.55)}
+    @media(max-width:720px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media(max-width:720px){.pc-choice-grid{grid-template-columns:1fr}}
+  </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-standalone-tool">
-  <p id="route-status">Loading Chain Maze…</p>
-  <script>
-  (async function () {
-    const source = '/games/pac-chain/index.html';
-    const response = await fetch(source, { cache: 'no-cache' });
-    if (!response.ok) throw new Error('Game source unavailable');
-    let html = await response.text();
-    html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/games/pac-chain/"><link rel="canonical" href="https://cryptomoonboys.com/games/chain-maze/">');
-    document.open();
-    document.write(html);
-    document.close();
-  }()).catch(function (error) {
-    document.getElementById('route-status').textContent = 'Chain Maze could not load. Return to the Arcade and try again.';
-    console.error('[canonical-game-route]', error);
-  });
-  </script>
+<header id="site-header" role="banner">
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Play. Score. Progress.</span></span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav>
+</header>
+<div id="layout"><div id="main-wrapper">
+<main id="content" role="main">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Chain Maze</span></nav>
+  <div class="category-header"><span class="cat-big-icon" aria-hidden="true">🟡</span><div><h1 class="page-title">🟡 Chain Maze</h1><p style="color:var(--color-text-muted)">Navigate the maze, collect signals, trigger surge mode and build your score chain.</p></div></div>
+  <div class="page-title-line" aria-hidden="true"></div>
+  <div class="game-card">
+    <div class="hud"><div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div><div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div><div class="stat"><div class="label">Chain</div><div class="value" id="chain">x1</div></div><div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div></div>
+    <canvas id="pacCanvas" width="560" height="560" aria-label="Chain Maze game"></canvas>
+    <div class="row"><button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button><button class="game-btn alt" id="pauseBtn">Pause</button><button class="game-btn alt" id="resetBtn">Reset</button><button class="game-btn alt" id="musicMuteBtn" aria-pressed="false">Mute Music</button></div>
+  </div>
+  <div data-tg-sync-cta></div>
+</main>
+<footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
+</div></div>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script><script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
+<script type="module">
+import { mountGame } from '/js/arcade/core/game-shell.js';
+import { bootstrapPacChain } from '/js/arcade/games/pac-chain/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapPacChain, requireCompetitiveGate: true, gameId: 'chain-maze' }).then(function (game) { if (game && !game.gateBlocked) mountModifierPanel(); });
+</script>
 </body>
 </html>
