@@ -1,11 +1,34 @@
 #!/usr/bin/env node
 
+import { spawnSync } from 'node:child_process';
+
 const SHA_RE = /^[0-9a-f]{40}$/i;
 const EXPECTED_COMMIT = String(process.env.EXPECTED_COMMIT || '').trim().toLowerCase();
 
-if (EXPECTED_COMMIT && !SHA_RE.test(EXPECTED_COMMIT)) {
+if (!SHA_RE.test(EXPECTED_COMMIT)) {
   console.error('EXPECTED_COMMIT must be a 40-character repository commit SHA');
   process.exit(1);
+}
+
+function git(args) {
+  const result = spawnSync('git', args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  return {
+    ok: result.status === 0,
+    output: `${result.stdout || ''}${result.stderr || ''}`.trim(),
+  };
+}
+
+const commitObject = git(['cat-file', '-e', `${EXPECTED_COMMIT}^{commit}`]);
+if (!commitObject.ok) {
+  throw new Error(`EXPECTED_COMMIT ${EXPECTED_COMMIT} is not a commit in this repository`);
+}
+
+const reachableFromMain = git(['merge-base', '--is-ancestor', EXPECTED_COMMIT, 'origin/main']);
+if (!reachableFromMain.ok) {
+  throw new Error(`EXPECTED_COMMIT ${EXPECTED_COMMIT} is not reachable from origin/main`);
 }
 
 const targets = [
@@ -33,7 +56,7 @@ for (const [service, url] of targets) {
   }
   if (payload.service !== service) throw new Error(`${service}: service field mismatch`);
   if (!SHA_RE.test(String(payload.commit || ''))) throw new Error(`${service}: commit is not a full Git SHA`);
-  if (EXPECTED_COMMIT && String(payload.commit).toLowerCase() !== EXPECTED_COMMIT) {
+  if (String(payload.commit).toLowerCase() !== EXPECTED_COMMIT) {
     throw new Error(`${service}: deployed commit ${payload.commit} does not match ${EXPECTED_COMMIT}`);
   }
   const deployedAt = new Date(String(payload.deployed_at || ''));
@@ -52,12 +75,12 @@ for (const [service, url] of targets) {
 }
 
 const commits = new Set(results.map((result) => result.commit));
-if (EXPECTED_COMMIT && commits.size !== 1) {
+if (commits.size !== 1) {
   throw new Error('Tracked Workers did not report one consistent expected commit');
 }
 
 console.log(JSON.stringify({
   verified_at: new Date().toISOString(),
-  expected_commit: EXPECTED_COMMIT || null,
+  expected_commit: EXPECTED_COMMIT,
   workers: results,
 }, null, 2));
