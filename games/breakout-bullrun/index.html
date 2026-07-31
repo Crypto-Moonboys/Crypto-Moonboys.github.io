@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🧱 Breakout Bullrun — Crypto Moonboys Arcade</title>
-  <meta name="description" content="Crypto-brick breaker with combo scoring and bonus drops. Keep the ball alive and go for the bullrun.">
+  <title>🧱 Bullrun Brick Smash — Crypto Moonboys Arcade</title>
+  <meta name="description" content="Crypto brick-smashing action with combo scoring and bonus drops. Keep the ball alive and push the bullrun.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
@@ -17,11 +17,7 @@
     .hud .stat.pulse .value{animation:statPulse .22s ease-out}
     #combo{transition:transform .12s ease,color .12s ease}
     #level{transition:transform .16s ease,color .16s ease}
-    @keyframes statPulse{
-      0%{transform:scale(1)}
-      40%{transform:scale(1.16)}
-      100%{transform:scale(1)}
-    }
+    @keyframes statPulse{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
     #brkCanvas{width:100%;max-width:560px;aspect-ratio:7/9;display:block;margin:0 auto;background:#090c16;border:2px solid #f7ab1a;border-radius:14px;box-shadow:0 0 30px rgba(247,171,26,.18) inset}
     .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
@@ -42,89 +38,29 @@
     <button id="search-btn" aria-label="Search">🔍</button>
     <div id="search-results" role="listbox"></div>
   </div>
-  <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-  </nav>
+  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav>
 </header>
-<div id="layout">
-<div id="main-wrapper">
-    <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Breakout Bullrun</span>
-      </nav>
-      <div class="category-header">
-        <span class="cat-big-icon" aria-hidden="true">🧱</span>
-        <div><h1 class="page-title">🧱 Breakout Bullrun</h1><p style="color:var(--color-text-muted)">Smash crypto bricks, chain combos, score the bullrun.</p></div>
-      </div>
-      <div class="page-title-line" aria-hidden="true"></div>
-
-      <div class="game-card" data-game-id="breakout">
-        <div class="hud">
-          <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-          <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-          <div class="stat"><div class="label">Wave</div><div class="value" id="level">—</div></div>
-          <div class="stat"><div class="label">Combo</div><div class="value" id="combo">×1</div></div>
-        </div>
-        <canvas id="brkCanvas" width="560" height="720" aria-label="Breakout Bullrun game"></canvas>
-        <div class="row">
-          <button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button>
-          <button class="game-btn alt" id="pauseBtn">Pause</button>
-          <button class="game-btn alt" id="resetBtn">Reset</button>
-        </div>
-        <p class="note">Move: mouse / arrow keys &nbsp;|&nbsp; Launch ball: Space &nbsp;|&nbsp; Laser [B] &nbsp;|&nbsp; Slow ball: hold Z &nbsp;|&nbsp; Select upgrade: 1/2/3 or click</p>
-      </div>
-    </main>
-    <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
+<div id="layout"><div id="main-wrapper">
+<main id="content" role="main">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Bullrun Brick Smash</span></nav>
+  <div class="category-header"><span class="cat-big-icon" aria-hidden="true">🧱</span><div><h1 class="page-title">🧱 Bullrun Brick Smash</h1><p style="color:var(--color-text-muted)">Smash crypto bricks, chain combos and push the bullrun.</p></div></div>
+  <div class="page-title-line" aria-hidden="true"></div>
+  <div class="game-card" data-game-id="bullrun-brick-smash">
+    <div class="hud"><div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div><div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div><div class="stat"><div class="label">Wave</div><div class="value" id="level">—</div></div><div class="stat"><div class="label">Combo</div><div class="value" id="combo">×1</div></div></div>
+    <canvas id="brkCanvas" width="560" height="720" aria-label="Bullrun Brick Smash game"></canvas>
+    <div class="row"><button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button><button class="game-btn alt" id="pauseBtn">Pause</button><button class="game-btn alt" id="resetBtn">Reset</button></div>
+    <p class="note">Move: mouse / arrow keys &nbsp;|&nbsp; Launch ball: Space &nbsp;|&nbsp; Laser [B] &nbsp;|&nbsp; Slow ball: hold Z &nbsp;|&nbsp; Select upgrade: 1/2/3 or click</p>
   </div>
-</div>
+</main>
+<footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
+</div></div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script src="/js/identity-gate.js"></script>
-<script src="/js/scroll-shell.js"></script>
-<script src="/js/game-fullscreen.js"></script>
-<script src="/js/api-config.js"></script>
-<script src="/js/components/ui-status-copy.js"></script>
-<script src="/js/arcade/core/global-event-bus.js"></script>
-    <script src="/js/core/moonboys-state.js"></script>
-
-<script src="/js/faction-alignment.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
 <script type="module">
-// Auto-mount via manifest (pilot: data-game-id="breakout" on .game-card).
-// Falls back to the manual bootstrap if auto-mount fails or rejects.
 import { autoMountGame } from '/js/arcade/core/auto-mount-game.js';
 import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
-
-function mountManualFallback() {
-  import('/js/arcade/games/breakout-bullrun/bootstrap.js').then(function (mod) {
-    import('/js/arcade/core/game-shell.js').then(function (shell) {
-      import('/js/arcade/systems/cross-game-modifier-ui.js').then(function (ui) {
-        shell.mountGame({
-          root: document.querySelector('.game-card'),
-          bootstrap: mod.bootstrapBreakoutBullrun,
-          requireCompetitiveGate: true,
-          gameId: 'breakout-bullrun'
-        }).then(function (game) {
-          if (!game || game.gateBlocked) return;
-          ui.mountModifierPanel();
-          mountFactionHud();
-        });
-      });
-    });
-  });
-}
-
-autoMountGame()
-  .then(function (game) {
-    if (game && game.gateBlocked) return;
-    if (!game) mountManualFallback();
-    else mountFactionHud();
-  })
-  .catch(function () {
-    mountManualFallback();
-  });
+function mountManualFallback(){import('/js/arcade/games/breakout-bullrun/bootstrap.js').then(function(mod){import('/js/arcade/core/game-shell.js').then(function(shell){import('/js/arcade/systems/cross-game-modifier-ui.js').then(function(ui){shell.mountGame({root:document.querySelector('.game-card'),bootstrap:mod.bootstrapBreakoutBullrun,requireCompetitiveGate:true,gameId:'bullrun-brick-smash'}).then(function(game){if(!game||game.gateBlocked)return;ui.mountModifierPanel();mountFactionHud();});});});});}
+autoMountGame().then(function(game){if(game&&game.gateBlocked)return;if(!game)mountManualFallback();else mountFactionHud();}).catch(function(){mountManualFallback();});
 </script>
 </body>
 </html>

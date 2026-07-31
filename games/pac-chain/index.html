@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🟡 Pac-Chain — Crypto Moonboys Arcade</title>
-  <meta name="description" content="Maze runner with pellets, power mode, and enemy patrols. Chain your score!">
+  <title>🟡 Chain Maze — Crypto Moonboys Arcade</title>
+  <meta name="description" content="Fast maze runner with pickups, surge mode and enemy patrols. Build the longest score chain.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
@@ -57,69 +57,29 @@
     <button id="search-btn" aria-label="Search">🔍</button>
     <div id="search-results" role="listbox"></div>
   </div>
-  <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-  </nav>
+  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav>
 </header>
-<div id="layout">
-<div id="main-wrapper">
-    <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Pac-Chain</span>
-      </nav>
-      <div class="category-header">
-        <span class="cat-big-icon" aria-hidden="true">🟡</span>
-        <div><h1 class="page-title">🟡 Pac-Chain</h1><p style="color:var(--color-text-muted)">Navigate the maze, eat pellets, power up, and chain your score.</p></div>
-      </div>
-      <div class="page-title-line" aria-hidden="true"></div>
-
-      <div class="game-card">
-        <div class="hud">
-          <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-          <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-          <div class="stat"><div class="label">Chain</div><div class="value" id="chain">x1</div></div>
-          <div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div>
-        </div>
-        <canvas id="pacCanvas" width="560" height="560" aria-label="Pac-Chain game"></canvas>
-        <div class="row">
-          <button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button>
-          <button class="game-btn alt" id="pauseBtn">Pause</button>
-          <button class="game-btn alt" id="resetBtn">Reset</button>
-          <button class="game-btn alt" id="musicMuteBtn" aria-pressed="false">Mute Music</button>
-        </div>
-      </div>
-      <div data-tg-sync-cta></div>
-    </main>
-    <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
+<div id="layout"><div id="main-wrapper">
+<main id="content" role="main">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Chain Maze</span></nav>
+  <div class="category-header"><span class="cat-big-icon" aria-hidden="true">🟡</span><div><h1 class="page-title">🟡 Chain Maze</h1><p style="color:var(--color-text-muted)">Navigate the maze, collect signals, trigger surge mode and build your score chain.</p></div></div>
+  <div class="page-title-line" aria-hidden="true"></div>
+  <div class="game-card">
+    <div class="hud"><div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div><div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div><div class="stat"><div class="label">Chain</div><div class="value" id="chain">x1</div></div><div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div></div>
+    <canvas id="pacCanvas" width="560" height="560" aria-label="Chain Maze game"></canvas>
+    <div class="row"><button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button><button class="game-btn alt" id="pauseBtn">Pause</button><button class="game-btn alt" id="resetBtn">Reset</button><button class="game-btn alt" id="musicMuteBtn" aria-pressed="false">Mute Music</button></div>
   </div>
-</div>
+  <div data-tg-sync-cta></div>
+</main>
+<footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
+</div></div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script src="/js/identity-gate.js"></script>
-<script src="/js/scroll-shell.js"></script>
-<script src="/js/game-fullscreen.js"></script>
-<script src="/js/api-config.js"></script>
-<script src="/js/components/ui-status-copy.js"></script>
-<script src="/js/arcade/core/global-event-bus.js"></script>
-    <script src="/js/core/moonboys-state.js"></script>
-
-<script src="/js/faction-alignment.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
-<script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script><script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script type="module">
-import { mountGame }          from '/js/arcade/core/game-shell.js';
-import { bootstrapPacChain }  from '/js/arcade/games/pac-chain/bootstrap.js';
+import { mountGame } from '/js/arcade/core/game-shell.js';
+import { bootstrapPacChain } from '/js/arcade/games/pac-chain/bootstrap.js';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
-mountGame({
-  root: document.querySelector('.game-card'),
-  bootstrap: bootstrapPacChain,
-  requireCompetitiveGate: true,
-  gameId: 'pac-chain'
-}).then(function (game) {
-  if (game && !game.gateBlocked) mountModifierPanel();
-});
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapPacChain, requireCompetitiveGate: true, gameId: 'chain-maze' }).then(function (game) { if (game && !game.gateBlocked) mountModifierPanel(); });
 </script>
 </body>
 </html>

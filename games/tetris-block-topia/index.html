@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🟦 Tetris Block Topia — Crypto Moonboys Arcade</title>
-  <meta name="description" content="Classic falling-block puzzle. Clean controls, next-piece preview, score chains.">
+  <title>🟦 Block Topia Dropzone — Crypto Moonboys Arcade</title>
+  <meta name="description" content="Original falling-block puzzle with clean controls, next-piece preview and score chains.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
@@ -30,93 +30,19 @@
     .stat.hud-flash{animation:hudFlash .32s ease}
     @keyframes hudPulse{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
     @keyframes hudFlash{0%{box-shadow:0 0 0 rgba(255,255,255,0)}30%{box-shadow:0 0 20px rgba(255,255,255,.45)}100%{box-shadow:0 0 0 rgba(255,255,255,0)}}
-    .note{margin-top:14px;color:var(--color-text-muted);font-size:.85rem}
     @media(max-width:600px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}.tet-side{min-width:70px}}
     @media(max-width:420px){.tet-side{display:none}#tetCanvas{max-width:100%}}
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-standalone-tool">
-<header id="site-header" role="banner">
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
-    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
-    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Play. Score. Progress.</span></span>
-  </a>
-  <div id="header-search" role="search">
-    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
-    <button id="search-btn" aria-label="Search">🔍</button>
-    <div id="search-results" role="listbox"></div>
-  </div>
-  <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-  </nav>
-</header>
-<div id="layout">
-<div id="main-wrapper">
-    <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Tetris Block Topia</span>
-      </nav>
-      <div class="category-header">
-        <span class="cat-big-icon" aria-hidden="true">🟦</span>
-        <div><h1 class="page-title">🟦 Tetris Block Topia</h1><p style="color:var(--color-text-muted)">Falling-block puzzle. Stack smart. Clear lines. Chase the high score.</p></div>
-      </div>
-      <div class="page-title-line" aria-hidden="true"></div>
-
-      <div class="game-card">
-        <div class="hud">
-          <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-          <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-          <div class="stat"><div class="label">Level</div><div class="value" id="level">1</div></div>
-          <div class="stat"><div class="label">Lines</div><div class="value" id="lines">0</div></div>
-        </div>
-        <div class="tet-wrap">
-          <canvas id="tetCanvas" aria-label="Tetris Block Topia game"></canvas>
-          <div class="tet-side">
-            <div class="tet-panel">
-              <div class="tet-panel-label">NEXT</div>
-              <canvas id="nextCanvas" width="80" height="80" aria-label="Next piece preview"></canvas>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button>
-          <button class="game-btn alt" id="pauseBtn">Pause</button>
-          <button class="game-btn alt" id="resetBtn">Reset</button>
-          <button class="game-btn alt" id="submitBtn">Submit</button>
-        </div>
-        <div class="combo-meter" id="comboMeter">COMBO x1</div>
-      </div>
-    </main>
-    <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
-  </div>
-</div>
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script src="/js/identity-gate.js"></script>
-<script src="/js/scroll-shell.js"></script>
-<script src="/js/game-fullscreen.js"></script>
-<script src="/js/api-config.js"></script>
-<script src="/js/components/ui-status-copy.js"></script>
-<script src="/js/arcade/core/global-event-bus.js"></script>
-    <script src="/js/core/moonboys-state.js"></script>
-
-<script src="/js/faction-alignment.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
-<script type="module">
-import { mountGame }       from '/js/arcade/core/game-shell.js';
-import { bootstrapTetris } from '/js/arcade/games/tetris/bootstrap.js';
-import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
-mountGame({
-  root: document.querySelector('.game-card'),
-  bootstrap: bootstrapTetris,
-  requireCompetitiveGate: true,
-  gameId: 'tetris-block-topia'
-}).then(function (game) {
-  if (game && !game.gateBlocked) mountModifierPanel();
-});
-</script>
+<header id="site-header" role="banner"><a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home"><img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true"><span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Play. Score. Progress.</span></span></a><div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div><nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav></header>
+<div id="layout"><div id="main-wrapper"><main id="content" role="main">
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Block Topia Dropzone</span></nav>
+<div class="category-header"><span class="cat-big-icon" aria-hidden="true">🟦</span><div><h1 class="page-title">🟦 Block Topia Dropzone</h1><p style="color:var(--color-text-muted)">Original falling-block puzzle. Stack smart. Clear lines. Chase the high score.</p></div></div><div class="page-title-line" aria-hidden="true"></div>
+<div class="game-card"><div class="hud"><div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div><div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div><div class="stat"><div class="label">Level</div><div class="value" id="level">1</div></div><div class="stat"><div class="label">Lines</div><div class="value" id="lines">0</div></div></div><div class="tet-wrap"><canvas id="tetCanvas" aria-label="Block Topia Dropzone game"></canvas><div class="tet-side"><div class="tet-panel"><div class="tet-panel-label">NEXT</div><canvas id="nextCanvas" width="80" height="80" aria-label="Next piece preview"></canvas></div></div></div><div class="row"><button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button><button class="game-btn alt" id="pauseBtn">Pause</button><button class="game-btn alt" id="resetBtn">Reset</button><button class="game-btn alt" id="submitBtn">Submit</button></div><div class="combo-meter" id="comboMeter">COMBO x1</div></div>
+</main><footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer></div></div><button id="back-to-top" aria-label="Back to top">↑</button>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
+<script type="module">import { mountGame } from '/js/arcade/core/game-shell.js';import { bootstrapTetris } from '/js/arcade/games/tetris/bootstrap.js';import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';mountGame({root:document.querySelector('.game-card'),bootstrap:bootstrapTetris,requireCompetitiveGate:true,gameId:'block-topia-dropzone'}).then(function(game){if(game&&!game.gateBlocked)mountModifierPanel();});</script>
 </body>
 </html>

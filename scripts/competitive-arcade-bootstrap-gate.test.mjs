@@ -7,14 +7,14 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const ACTIVE_PAGES = [
-  ['asteroid-fork', 'games/asteroid-fork/index.html'],
+  ['forkfield', 'games/asteroid-fork/index.html'],
   ['block-topia-quest-maze', 'games/block-topia-quest-maze/index.html'],
-  ['breakout-bullrun', 'games/breakout-bullrun/index.html'],
-  ['invaders-3008', 'games/invaders-3008/index.html'],
+  ['bullrun-brick-smash', 'games/breakout-bullrun/index.html'],
+  ['meme-swarm-3008', 'games/invaders-3008/index.html'],
   ['kaiju-sticker-battle', 'games/kaiju-sticker-battle/index.html'],
-  ['pac-chain', 'games/pac-chain/index.html'],
+  ['chain-maze', 'games/pac-chain/index.html'],
   ['snake-run', 'games/snake-run/index.html'],
-  ['tetris-block-topia', 'games/tetris-block-topia/index.html'],
+  ['block-topia-dropzone', 'games/tetris-block-topia/index.html'],
 ];
 
 function createElementClass() {
@@ -151,19 +151,48 @@ async function loadMountGame({ gateResult }) {
 for (const [gameId, relPath] of ACTIVE_PAGES) {
   const html = await fs.readFile(path.join(ROOT, relPath), 'utf8');
   assert(
-    html.includes('requireCompetitiveGate: true'),
+    /requireCompetitiveGate\s*:\s*true/.test(html),
     `${relPath} must require the shared competitive gate before gameplay bootstrap`,
   );
+  const escapedGameId = gameId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   assert(
-    html.includes(`gameId: '${gameId}'`) || html.includes(`competitiveGameId: '${gameId}'`) || html.includes(`gameId: "${gameId}"`) || html.includes(`competitiveGameId: "${gameId}"`),
+    new RegExp(`(?:competitiveGameId|gameId)\\s*:\\s*['\"]${escapedGameId}['\"]`).test(html),
     `${relPath} must pass the canonical competitive game id into the shared page gate`,
   );
 }
 
 const breakoutHtml = await fs.readFile(path.join(ROOT, 'games/breakout-bullrun/index.html'), 'utf8');
 assert(
-  breakoutHtml.includes('if (game && game.gateBlocked) return;'),
+  /if\s*\(game\s*&&\s*game\.gateBlocked\)\s*return;/.test(breakoutHtml),
   'breakout fallback path must not bypass a denied competitive page gate',
+);
+
+const renamedScoreIds = [
+  'meme-swarm-3008',
+  'chain-maze',
+  'forkfield',
+  'bullrun-brick-smash',
+  'block-topia-dropzone',
+];
+
+const leaderboardWorker = await fs.readFile(path.join(ROOT, 'workers/leaderboard-worker.js'), 'utf8');
+const leaderboardUi = await fs.readFile(path.join(ROOT, 'js/arcade-leaderboard.js'), 'utf8');
+const forkfieldBootstrap = await fs.readFile(path.join(ROOT, 'js/arcade/games/asteroid-fork/bootstrap.js'), 'utf8');
+
+for (const gameId of renamedScoreIds) {
+  assert(
+    leaderboardWorker.includes(`\"${gameId}\"`),
+    `leaderboard Worker must register canonical score id ${gameId}`,
+  );
+  assert(
+    leaderboardUi.includes(`'${gameId}'`),
+    `leaderboard UI must expose canonical score id ${gameId}`,
+  );
+}
+
+assert(
+  forkfieldBootstrap.includes('const GAME_ID = ASTEROID_FORK_CONFIG.id;'),
+  'Forkfield runtime must use ASTEROID_FORK_CONFIG.id instead of the retired asteroids namespace',
 );
 
 console.log('Competitive arcade bootstrap gate checks passed.');

@@ -51,7 +51,7 @@ import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-s
 import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
 import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
-const GAME_ID = 'asteroids';
+const GAME_ID = ASTEROID_FORK_CONFIG.id;
 const WORLD_W = 1280;
 const WORLD_H = 720;
 const BASE_FIRE_RATE = 0.21;

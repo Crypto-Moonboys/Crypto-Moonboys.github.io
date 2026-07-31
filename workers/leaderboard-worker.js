@@ -1,5 +1,5 @@
-const GAMES = ["snake", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris", "kaiju"];
-const VARIETY_BONUS_GAMES = ["snake", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris"];
+const GAMES = ["snake", "blocktopia", "meme-swarm-3008", "chain-maze", "forkfield", "bullrun-brick-smash", "block-topia-dropzone", "kaiju"];
+const VARIETY_BONUS_GAMES = ["snake", "blocktopia", "meme-swarm-3008", "chain-maze", "forkfield", "bullrun-brick-smash", "block-topia-dropzone"];
 const VARIETY_BONUS = 500;           // bonus points when a player has scored in all legacy variety games
 const SEASONAL_BONUS = 0;            // flat seasonal bonus (extend per-season via config if needed)
 const MAX_SCORE = 1_000_000_000;     // upper bound for submitted scores
@@ -35,10 +35,11 @@ const TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400;
  */
 const GAME_KEY_ALIASES = {
   'snake-run':           'snake',
-  'breakout-bullrun':    'breakout',
-  'asteroid-fork':       'asteroids',
-  'pac-chain':           'pacchain',
-  'tetris-block-topia':  'tetris',
+  'invaders-3008':       'meme-swarm-3008',
+  'breakout-bullrun':    'bullrun-brick-smash',
+  'asteroid-fork':       'forkfield',
+  'pac-chain':           'chain-maze',
+  'tetris-block-topia':  'block-topia-dropzone',
   'block-topia-quest-maze': 'blocktopia',
   'kaiju-sticker-battle': 'kaiju',
   'telegram-kaiju':      'kaiju',
