@@ -34,6 +34,19 @@
 <div class="game-card"><div class="hud"><div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div><div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div><div class="stat"><div class="label">Wave</div><div class="value" id="wave">—</div></div><div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div></div><canvas id="astCanvas" width="720" height="720" aria-label="Forkfield game"></canvas><div class="row"><button class="game-btn" id="startBtn" data-overlay-fullscreen-only="true">Start</button><button class="game-btn alt" id="pauseBtn">Pause</button><button class="game-btn alt" id="resetBtn">Reset</button></div></div>
 </main><footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer></div></div><button id="back-to-top" aria-label="Back to top">↑</button>
 <script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
-<script type="module">import { mountGame } from '/js/arcade/core/game-shell.js';import { bootstrapAsteroidFork } from '/js/arcade/games/asteroid-fork/bootstrap.js';import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';mountGame({root:document.querySelector('.game-card'),bootstrap:bootstrapAsteroidFork,requireCompetitiveGate:true,gameId:'forkfield'}).then(function(game){if(game&&!game.gateBlocked)mountModifierPanel();});</script>
+<script type="module">
+import { mountGame } from '/js/arcade/core/game-shell.js';
+import { bootstrapAsteroidFork } from '/js/arcade/games/asteroid-fork/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
+mountGame({
+  root: document.querySelector('.game-card'),
+  bootstrap: bootstrapAsteroidFork,
+  requireCompetitiveGate: true,
+  competitiveGameId: 'asteroid-fork',
+  gameId: 'forkfield'
+}).then(function (game) {
+  if (game && !game.gateBlocked) mountModifierPanel();
+});
+</script>
 </body>
 </html>
