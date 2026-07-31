@@ -54,6 +54,9 @@ jobs:
       - name: Verify cryptomoonboys.com runtime shell
         run: npm run test:live-site
 
+      - name: Verify live graph freshness and Pets health
+        run: node scripts/live-graph-pets-verify.mjs
+
       - name: Verify cryptomoonboys.com public content truth
         if: github.event_name == 'workflow_dispatch'
         run: npm run test:live-content
