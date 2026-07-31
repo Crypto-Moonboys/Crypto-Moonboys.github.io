@@ -10,6 +10,7 @@ import { readDeploymentProvenance, withDeploymentProvenance } from '../workers/s
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SHA = '3c9ce0484bcb34867345ff103d2309d25afd20ec';
 const TIMESTAMP = '2026-07-31T02:46:24.000Z';
+const FULL_SHA_RE = /^[0-9a-f]{40}$/i;
 
 const validEnv = {
   CF_VERSION_METADATA: {
@@ -146,11 +147,50 @@ for (const [service, source] of [
   assert.ok(source.includes(`deploy-worker-with-provenance.mjs ${service}`), `authoritative docs must use the ${service} provenance command`);
 }
 
+function readRetainedEvidenceFromManifest(entry, folder) {
+  const retained = (entry.evidence || []).find((item) => item?.type === 'retained-worker-provenance');
+  assert.ok(retained?.url, `${folder} verified-live state requires retained Worker provenance evidence`);
+
+  const marker = '/blob/main/';
+  const markerIndex = retained.url.indexOf(marker);
+  assert.ok(markerIndex >= 0, `${folder} retained evidence URL must target a file on main`);
+
+  const relativePath = decodeURIComponent(retained.url.slice(markerIndex + marker.length));
+  const absolutePath = path.resolve(ROOT, relativePath);
+  assert.ok(absolutePath.startsWith(ROOT), `${folder} retained evidence path must remain inside the repository`);
+  assert.ok(fs.existsSync(absolutePath), `${folder} retained evidence file must exist in the repository`);
+  return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
+}
+
 const truth = JSON.parse(fs.readFileSync(path.join(ROOT, 'deployments/production.json'), 'utf8'));
-for (const folder of ['workers/moonboys-api', 'workers/leaderboard', 'workers/anti-cheat']) {
-  const urls = truth.workers[folder]?.verification_urls || [];
+const serviceByFolder = {
+  'workers/moonboys-api': 'moonboys-api',
+  'workers/leaderboard': 'moonboys-leaderboard',
+  'workers/anti-cheat': 'moonboys-anti-cheat',
+};
+
+for (const [folder, service] of Object.entries(serviceByFolder)) {
+  const entry = truth.workers[folder];
+  const urls = entry?.verification_urls || [];
   assert.ok(urls.some((url) => String(url).endsWith('/deployment-info')), `${folder} must track its provenance endpoint`);
-  assert.notEqual(truth.workers[folder].deployment_status, 'verified-live', 'this PR must not claim an undeployed Worker is live');
+
+  if (entry.deployment_status === 'verified-live') {
+    assert.match(String(entry.deployed_commit || ''), FULL_SHA_RE, `${folder} verified-live commit must be a full SHA`);
+    assert.ok(Number.isFinite(Date.parse(entry.deployed_at)), `${folder} verified-live deployed_at must be a valid timestamp`);
+
+    const retainedEvidence = readRetainedEvidenceFromManifest(entry, folder);
+    assert.equal(retainedEvidence.expected_commit, entry.deployed_commit, `${folder} retained evidence commit must match the manifest`);
+    const capturedWorker = (retainedEvidence.workers || []).find((worker) => worker?.service === service);
+    assert.ok(capturedWorker, `${folder} must be present in retained evidence`);
+    assert.equal(capturedWorker.commit, entry.deployed_commit, `${folder} captured commit must match the manifest`);
+    assert.equal(capturedWorker.deployed_at, entry.deployed_at, `${folder} captured deployment time must match the manifest`);
+    assert.ok(urls.includes(capturedWorker.url), `${folder} captured endpoint must remain a verification URL`);
+  } else {
+    assert.ok(
+      ['unverified', 'verification-pending'].includes(entry.deployment_status),
+      `${folder} must remain explicitly unverified until retained evidence exists`,
+    );
+  }
 }
 
 console.log('worker-deployment-provenance.test.mjs passed');
