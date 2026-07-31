@@ -30,6 +30,9 @@ jobs:
       - name: Test Worker provenance contract
         run: node scripts/worker-deployment-provenance.test.mjs
 
+      - name: Test Windows Worker deploy invocation
+        run: node scripts/worker-deployment-windows.test.mjs
+
       - name: Audit Worker deploy readiness
         run: node scripts/worker-deploy-readiness-audit.mjs
 
