@@ -2,38 +2,8 @@ name: Graph Publishing Integrity
 
 on:
   pull_request:
-    paths:
-      - 'wiki/**'
-      - 'js/wiki-index.json'
-      - 'js/entity-map.json'
-      - 'js/entity-graph.json'
-      - 'js/graph-data.json'
-      - 'js/entity-graph-lite.json'
-      - 'scripts/generate-*.js'
-      - 'scripts/generate-*.mjs'
-      - 'scripts/graph-publishing-integrity.test.mjs'
-      - 'scripts/wiki-publish-gate.js'
-      - 'scripts/root-pages-config.js'
-      - 'sitemap.xml'
-      - '.github/workflows/deploy-pages.yml'
-      - '.github/workflows/graph-publishing-integrity.yml'
   push:
     branches: [main]
-    paths:
-      - 'wiki/**'
-      - 'js/wiki-index.json'
-      - 'js/entity-map.json'
-      - 'js/entity-graph.json'
-      - 'js/graph-data.json'
-      - 'js/entity-graph-lite.json'
-      - 'scripts/generate-*.js'
-      - 'scripts/generate-*.mjs'
-      - 'scripts/graph-publishing-integrity.test.mjs'
-      - 'scripts/wiki-publish-gate.js'
-      - 'scripts/root-pages-config.js'
-      - 'sitemap.xml'
-      - '.github/workflows/deploy-pages.yml'
-      - '.github/workflows/graph-publishing-integrity.yml'
 
 permissions:
   contents: read
