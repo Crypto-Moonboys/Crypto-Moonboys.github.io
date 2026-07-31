@@ -28,3 +28,23 @@ jobs:
           printf '%s\n' '[{"success":true,"results":[{"name":"038_telegram_pet_equipment_progression.sql"},{"name":"039_telegram_pet_runtime_progression.sql"}]}]' > /tmp/d1-query.json
           node scripts/verify-d1-production-migrations.mjs --input /tmp/d1-query.json --request deployments/d1-evidence-request.json --output /tmp/d1-evidence.json
           node -e "const e=require('/tmp/d1-evidence.json'); if(e.status!=='verified-applied') process.exit(1)"
+
+  verify-remote:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Require Cloudflare credentials
+        shell: bash
+        run: |
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || exit 1
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || exit 1
