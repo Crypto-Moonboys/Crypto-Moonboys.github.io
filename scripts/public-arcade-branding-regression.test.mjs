@@ -42,7 +42,22 @@ const sharedArcadePages = [
   'community.html',
 ];
 
+const sharedArcadeUiSources = [
+  'js/arcade-graph.js',
+  'js/arcade-meta-system.js',
+];
+
+const RETIRED_SHORT_LABELS = [
+  'Invaders',
+  'Pac-Chain',
+  'Asteroids',
+  'Breakout',
+  'Tetris',
+];
+
 const fullscreenSource = read('js/game-fullscreen.js');
+const arcadeGraphSource = read('js/arcade-graph.js');
+const arcadeMetaSource = read('js/arcade-meta-system.js');
 
 for (const retired of RETIRED_VISIBLE_NAMES) {
   const escaped = retired.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -71,6 +86,26 @@ for (const page of sharedArcadePages) {
     const escaped = retired.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     assert.ok(!new RegExp(escaped, 'u').test(html), `${page} must not contain retired name: ${retired}`);
   }
+}
+
+for (const sourcePath of sharedArcadeUiSources) {
+  const source = read(sourcePath);
+  for (const retired of RETIRED_VISIBLE_NAMES) {
+    const escaped = retired.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.ok(!new RegExp(escaped, 'u').test(source), `${sourcePath} must not contain retired name: ${retired}`);
+  }
+}
+
+for (const retired of RETIRED_SHORT_LABELS) {
+  const escaped = retired.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const graphLabelRe = new RegExp(`label:\\s*'[^']*\\b${escaped}\\b[^']*'`, 'u');
+  assert.ok(!graphLabelRe.test(arcadeGraphSource), `js/arcade-graph.js must not expose retired short label: ${retired}`);
+}
+
+for (const retired of RETIRED_SHORT_LABELS) {
+  const escaped = retired.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const metaTitleRe = new RegExp(`title:\\s*'[^']*\\b${escaped}\\b[^']*'`, 'u');
+  assert.ok(!metaTitleRe.test(arcadeMetaSource), `js/arcade-meta-system.js must not expose retired short label: ${retired}`);
 }
 
 const memeSwarmPage = read('games/meme-swarm-3008/index.html');
