@@ -54,10 +54,14 @@ function assertDeployableCheckout() {
   const dirty = git(['status', '--porcelain']);
   if (dirty) throw new Error('Production Worker deploys require a clean working tree');
 
+  // Refresh the remote-tracking ref immediately before approval. Comparing
+  // against a cached origin/main can otherwise certify and deploy stale code.
+  git(['fetch', '--no-tags', 'origin', 'main:refs/remotes/origin/main']);
+
   const head = git(['rev-parse', 'HEAD']).toLowerCase();
   const originMain = git(['rev-parse', 'origin/main']).toLowerCase();
   if (head !== originMain) {
-    throw new Error('HEAD must exactly match origin/main. Run git fetch origin main and update the checkout before deploying.');
+    throw new Error('HEAD must exactly match the freshly fetched origin/main. Update the local main checkout before deploying.');
   }
   if (!SHA_RE.test(head)) throw new Error('Could not resolve a full deployment commit SHA');
   return head;
