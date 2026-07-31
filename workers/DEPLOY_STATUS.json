@@ -2,26 +2,26 @@
   "workers/moonboys-api": {
     "status": "live-deployable",
     "deploy": true,
-    "required_bindings": ["DB (D1: wikicoms)"],
+    "required_bindings": ["DB (D1: wikicoms)", "CF_VERSION_METADATA (Worker version metadata)"],
     "required_secrets": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_USERNAME", "ADMIN_TELEGRAM_IDS", "ADMIN_SECRET", "TELEGRAM_GROUP_CHAT_ID", "SWARMSY_BRIDGE_TOKEN"],
-    "deploy_command": "cd workers/moonboys-api && npx wrangler deploy",
-    "notes": "Production moonboys-api. Requires D1 wikicoms, all Telegram secrets, and SWARMSY_BRIDGE_TOKEN for POST /public/npc-chat. Deploy independently of Block Topia server."
+    "deploy_command": "node scripts/deploy-worker-with-provenance.mjs moonboys-api",
+    "notes": "Production moonboys-api. Deploy from clean main at origin/main so the Cloudflare version tag records the exact repository commit. Requires D1 wikicoms, all Telegram secrets, and SWARMSY_BRIDGE_TOKEN for POST /public/npc-chat."
   },
   "workers/anti-cheat": {
     "status": "live-deployable",
     "deploy": true,
-    "required_bindings": ["LEADERBOARD (KV: a621c334d9ac439ebaf5f35dd31dddd5)", "DB (D1: wikicoms)"],
+    "required_bindings": ["LEADERBOARD (KV: a621c334d9ac439ebaf5f35dd31dddd5)", "DB (D1: wikicoms)", "CF_VERSION_METADATA (Worker version metadata)"],
     "required_secrets": ["ADMIN_SECRET"],
-    "deploy_command": "cd workers/anti-cheat && npx wrangler deploy",
-    "notes": "Shares LEADERBOARD KV ID with workers/leaderboard. ADMIN_SECRET must match moonboys-api."
+    "deploy_command": "node scripts/deploy-worker-with-provenance.mjs anti-cheat",
+    "notes": "Shares LEADERBOARD KV ID with workers/leaderboard. ADMIN_SECRET must match moonboys-api. Deploy through the provenance wrapper only."
   },
   "workers/leaderboard": {
     "status": "live-deployable",
     "deploy": true,
-    "required_bindings": ["LEADERBOARD (KV: a621c334d9ac439ebaf5f35dd31dddd5)", "DB (D1: wikicoms)"],
+    "required_bindings": ["LEADERBOARD (KV: a621c334d9ac439ebaf5f35dd31dddd5)", "DB (D1: wikicoms)", "CF_VERSION_METADATA (Worker version metadata)"],
     "required_secrets": ["TELEGRAM_BOT_TOKEN"],
-    "deploy_command": "cd workers/leaderboard && npx wrangler deploy",
-    "notes": "Uses shared leaderboard-worker.js. KV ID must stay in sync with anti-cheat worker."
+    "deploy_command": "node scripts/deploy-worker-with-provenance.mjs leaderboard",
+    "notes": "Uses shared leaderboard-worker.js. KV ID must stay in sync with anti-cheat worker. Deploy through the provenance wrapper only."
   },
   "workers/block-topia": {
     "status": "needs-binding-setup",
