@@ -3,8 +3,8 @@
  */
 
 export const BREAKOUT_BULLRUN_CONFIG = Object.freeze({
-  /** Stable leaderboard key — must match the GAMES array in leaderboard-worker.js. */
-  id: 'breakout',
+  /** Canonical leaderboard key — must match the GAMES array in leaderboard-worker.js. */
+  id: 'bullrun-brick-smash',
 
   /** Display label used by GameRegistry. */
   label: '🧱 Bullrun Brick Smash',
