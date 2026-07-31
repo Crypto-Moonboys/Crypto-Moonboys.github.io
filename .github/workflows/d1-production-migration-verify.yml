@@ -32,3 +32,24 @@ jobs:
           node -e "const e=require('/tmp/d1-evidence.json'); if(e.status!=='verified-applied'||e.verified_migrations.length!==2) process.exit(1)"
       - name: Confirm production claim remains unverified
         run: node -e "const p=require('./deployments/production.json'); if(p.d1_databases.wikicoms.deployment_status!=='unverified'||p.d1_databases.wikicoms.verified_migrations.length!==0) process.exit(1)"
+
+  verify-remote:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Require Cloudflare credentials
+        shell: bash
+        run: |
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "CLOUDFLARE_API_TOKEN is not configured"; exit 1; }
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || { echo "CLOUDFLARE_ACCOUNT_ID is not configured"; exit 1; }
