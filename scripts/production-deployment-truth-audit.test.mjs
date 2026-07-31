@@ -9,7 +9,15 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const AUDIT = path.join(ROOT, 'scripts', 'production-deployment-truth-audit.mjs');
-const SHA = 'a'.repeat(40);
+const REPOSITORY_SHA = execFileSync('git', ['rev-parse', 'HEAD'], {
+  cwd: ROOT,
+  encoding: 'utf8',
+}).trim();
+const NONEXISTENT_SHA = 'e'.repeat(40);
+const REQUIRED_PETS_MIGRATIONS = [
+  '038_telegram_pet_equipment_progression.sql',
+  '039_telegram_pet_runtime_progression.sql',
+];
 
 async function withFixture(readiness, truth, run) {
   const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'deployment-truth-'));
@@ -28,7 +36,11 @@ function runAudit(fixtureRoot) {
   try {
     const output = execFileSync(process.execPath, [AUDIT], {
       cwd: ROOT,
-      env: { ...process.env, DEPLOYMENT_TRUTH_ROOT: fixtureRoot },
+      env: {
+        ...process.env,
+        DEPLOYMENT_TRUTH_ROOT: fixtureRoot,
+        DEPLOYMENT_TRUTH_GIT_ROOT: ROOT,
+      },
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -42,7 +54,7 @@ function baseTruth(workerEntry, d1Overrides = {}) {
   return {
     schema_version: 1,
     last_reviewed_at: '2026-07-31T02:27:00Z',
-    repository_main_commit_at_review: SHA,
+    repository_main_commit_at_review: REPOSITORY_SHA,
     surfaces: {
       'github-pages': {
         readiness: 'deployable',
@@ -57,15 +69,31 @@ function baseTruth(workerEntry, d1Overrides = {}) {
       'workers/example': workerEntry,
     },
     d1_databases: {
-      example: {
+      wikicoms: {
         deployment_status: 'unverified',
         verified_at: null,
-        required_migrations: ['001_example.sql'],
+        required_migrations: [...REQUIRED_PETS_MIGRATIONS],
         verified_migrations: [],
         evidence: [],
         ...d1Overrides,
       },
     },
+  };
+}
+
+function verifiedWorker(overrides = {}) {
+  return {
+    readiness: 'live-deployable',
+    deployment_status: 'verified-live',
+    deployed_commit: REPOSITORY_SHA,
+    deployed_at: '2026-07-31T02:27:00Z',
+    verification_urls: ['https://example.com/health'],
+    evidence: [{
+      type: 'workflow-run',
+      url: 'https://github.com/example/run/1',
+      recorded_at: '2026-07-31T02:27:00Z',
+    }],
+    ...overrides,
   };
 }
 
@@ -99,7 +127,7 @@ await withFixture(
   async fixtureRoot => {
     const result = runAudit(fixtureRoot);
     assert.equal(result.ok, false, 'verified-live without evidence must fail');
-    assert.match(result.output, /verified-live requires a 40-character deployed_commit/);
+    assert.match(result.output, /deployed_commit must be a 40-character commit SHA/);
     assert.match(result.output, /verified-live requires deployment evidence/);
   },
 );
@@ -107,12 +135,8 @@ await withFixture(
 await withFixture(
   { 'workers/example': { status: 'stub-blocked' } },
   baseTruth({
+    ...verifiedWorker(),
     readiness: 'stub-blocked',
-    deployment_status: 'verified-live',
-    deployed_commit: SHA,
-    deployed_at: '2026-07-31T02:27:00Z',
-    verification_urls: ['https://example.com/'],
-    evidence: [{ type: 'workflow-run', url: 'https://github.com/example/run/1', recorded_at: '2026-07-31T02:27:00Z' }],
     block_reason: 'Placeholder binding remains.',
   }),
   async fixtureRoot => {
@@ -136,15 +160,113 @@ await withFixture(
     {
       deployment_status: 'verified-live',
       verified_at: '2026-07-31T02:27:00Z',
-      required_migrations: ['001_example.sql', '002_example.sql'],
-      verified_migrations: ['001_example.sql'],
-      evidence: [{ type: 'wrangler-output', url: 'https://github.com/example/evidence/1', recorded_at: '2026-07-31T02:27:00Z' }],
+      required_migrations: [...REQUIRED_PETS_MIGRATIONS],
+      verified_migrations: [REQUIRED_PETS_MIGRATIONS[0]],
+      evidence: [{
+        type: 'wrangler-output',
+        url: 'https://github.com/example/evidence/1',
+        recorded_at: '2026-07-31T02:27:00Z',
+      }],
     },
   ),
   async fixtureRoot => {
     const result = runAudit(fixtureRoot);
     assert.equal(result.ok, false, 'verified D1 state must include every required migration');
-    assert.match(result.output, /verified-live is missing migrations: 002_example.sql/);
+    assert.match(result.output, /verified-live is missing migrations: 039_telegram_pet_runtime_progression\.sql/);
+  },
+);
+
+await withFixture(
+  { 'workers/example': { status: 'live-deployable' } },
+  (() => {
+    const truth = baseTruth({
+      readiness: 'live-deployable',
+      deployment_status: 'unverified',
+      deployed_commit: null,
+      deployed_at: null,
+      verification_urls: [],
+      evidence: [],
+    });
+    delete truth.d1_databases.wikicoms;
+    return truth;
+  })(),
+  async fixtureRoot => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'wikicoms must remain explicitly tracked');
+    assert.match(result.output, /D1 wikicoms: required database is missing/);
+  },
+);
+
+await withFixture(
+  { 'workers/example': { status: 'live-deployable' } },
+  baseTruth(
+    {
+      readiness: 'live-deployable',
+      deployment_status: 'unverified',
+      deployed_commit: null,
+      deployed_at: null,
+      verification_urls: [],
+      evidence: [],
+    },
+    {
+      required_migrations: [REQUIRED_PETS_MIGRATIONS[0]],
+    },
+  ),
+  async fixtureRoot => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'required Pets migration set cannot shrink');
+    assert.match(result.output, /required migration is missing from tracking: 039_telegram_pet_runtime_progression\.sql/);
+  },
+);
+
+await withFixture(
+  { 'workers/example': { status: 'live-deployable' } },
+  baseTruth(verifiedWorker({ deployed_commit: NONEXISTENT_SHA })),
+  async fixtureRoot => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'verified-live deployed SHA must exist in this repository');
+    assert.match(result.output, /does not resolve to a commit in this repository/);
+  },
+);
+
+await withFixture(
+  { 'workers/example': { status: 'live-deployable' } },
+  baseTruth(verifiedWorker({
+    deployed_at: '2026-99-99T99:99:99Z',
+    evidence: [{
+      type: 'workflow-run',
+      url: 'https://github.com/example/run/1',
+      recorded_at: '2026-02-30T02:27:00Z',
+    }],
+  })),
+  async fixtureRoot => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'impossible calendar timestamps must fail');
+    assert.match(result.output, /deployed_at must be a real UTC ISO-8601 timestamp/);
+    assert.match(result.output, /evidence\.recorded_at must be a real UTC ISO-8601 timestamp/);
+  },
+);
+
+await withFixture(
+  { 'workers/example': { status: 'live-deployable' } },
+  (() => {
+    const truth = baseTruth({
+      readiness: 'live-deployable',
+      deployment_status: 'unverified',
+      deployed_commit: null,
+      deployed_at: null,
+      verification_urls: [],
+      evidence: [],
+    });
+    truth.surfaces['github-page'] = {
+      deployment_status: 'verified-live',
+    };
+    return truth;
+  })(),
+  async fixtureRoot => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'unknown or typoed production surfaces must fail');
+    assert.match(result.output, /surfaces\.github-page: unsupported production surface/);
   },
 );
 
