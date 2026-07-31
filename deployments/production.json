@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "last_reviewed_at": "2026-07-31T02:27:00Z",
+  "repository_main_commit_at_review": "4efb3f17a9a25921ac6efb1c4a465be55d36f589",
+  "surfaces": {
+    "github-pages": {
+      "readiness": "deployable",
+      "deployment_status": "verification-pending",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [
+        "https://cryptomoonboys.com/",
+        "https://cryptomoonboys.com/graph.html?mode=full"
+      ],
+      "evidence": [],
+      "notes": "PR #1125 merged to main. Pages deployment and Live Site Verify evidence have not yet been recorded in this manifest."
+    }
+  },
+  "workers": {
+    "workers/moonboys-api": {
+      "readiness": "live-deployable",
+      "deployment_status": "unverified",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [
+        "https://moonboys-api.sercullen.workers.dev"
+      ],
+      "evidence": [],
+      "notes": "Repository configuration is deployable, but the currently deployed Worker commit has not been evidenced."
+    },
+    "workers/anti-cheat": {
+      "readiness": "live-deployable",
+      "deployment_status": "unverified",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [],
+      "evidence": [],
+      "notes": "Repository configuration is deployable, but the currently deployed Worker commit has not been evidenced."
+    },
+    "workers/leaderboard": {
+      "readiness": "live-deployable",
+      "deployment_status": "unverified",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [
+        "https://moonboys-leaderboard.sercullen.workers.dev"
+      ],
+      "evidence": [],
+      "notes": "Repository configuration is deployable, but the currently deployed Worker commit has not been evidenced."
+    },
+    "workers/block-topia": {
+      "readiness": "needs-binding-setup",
+      "deployment_status": "blocked",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [],
+      "evidence": [],
+      "block_reason": "R2 bucket_name must be confirmed against the live Cloudflare account before deployment."
+    },
+    "workers/blocktopia-leaderboard": {
+      "readiness": "stub-blocked",
+      "deployment_status": "blocked",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [],
+      "evidence": [],
+      "block_reason": "Placeholder DISTRICTS, SEASONS and CACHE KV bindings remain."
+    },
+    "workers/blocktopia-engagement": {
+      "readiness": "stub-blocked",
+      "deployment_status": "blocked",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [],
+      "evidence": [],
+      "block_reason": "Placeholder COMMUNITY_FEED and CACHE KV bindings remain."
+    },
+    "workers/blocktopia-district": {
+      "readiness": "stub-blocked",
+      "deployment_status": "blocked",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [],
+      "evidence": [],
+      "block_reason": "Placeholder DISTRICTS, NPC_MEMORY, SEASONS and CACHE KV bindings remain."
+    },
+    "workers/blocktopia-realtime": {
+      "readiness": "stub-blocked",
+      "deployment_status": "blocked",
+      "deployed_commit": null,
+      "deployed_at": null,
+      "verification_urls": [],
+      "evidence": [],
+      "block_reason": "Placeholder COMMUNITY_FEED and CACHE KV bindings remain."
+    }
+  },
+  "d1_databases": {
+    "wikicoms": {
+      "deployment_status": "unverified",
+      "verified_at": null,
+      "required_migrations": [
+        "038_telegram_pet_equipment_progression.sql",
+        "039_telegram_pet_runtime_progression.sql"
+      ],
+      "verified_migrations": [],
+      "evidence": [],
+      "notes": "The migrations are committed, but production D1 application has not been evidenced in this manifest."
+    }
+  }
+}
