@@ -3,10 +3,13 @@ import fs from 'node:fs';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const finalWorker = fs.readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js', import.meta.url), 'utf8');
+const deploymentEntry = fs.readFileSync(new URL('../workers/moonboys-api/deployment-entry.js', import.meta.url), 'utf8');
 const wrangler = fs.readFileSync(new URL('../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
-const runtime = `${worker}\n${finalWorker}`;
+const runtime = `${worker}\n${finalWorker}\n${deploymentEntry}`;
 
-assert.match(wrangler, /main = "worker-phase5-final\.js"/, 'Wrangler must deploy the final Phase 5 entrypoint');
+assert.match(wrangler, /main = "deployment-entry\.js"/, 'Wrangler must deploy the provenance entrypoint');
+assert.match(deploymentEntry, /from '\.\/worker-phase5-final\.js'/, 'provenance entrypoint must delegate to the final Phase 5 entrypoint');
+assert.match(deploymentEntry, /withDeploymentProvenance\(baseWorker, 'moonboys-api'\)/, 'provenance entrypoint must wrap the Phase 5 Worker without replacing it');
 assert.match(worker, /from '\.\/pets\/runtime-phase-5a\.js'/, 'base Worker must import the Phase 5A runtime service');
 assert.match(worker, /case 'petprogress':\s+await cmdPetProgress/, '/petprogress must be routed');
 assert.match(worker, /case 'petgear':\s+await cmdPetGear/, '/petgear must be routed');
@@ -47,4 +50,4 @@ assert.match(worker, /runtime_award_failed/, 'direct runtime failures must be lo
 assert.match(worker, /\/petprogress — View secondary XP, traits and prestige/, 'help must advertise the live progress command');
 assert.match(worker, /\/petgear — View equipment levels and mastery/, 'help must advertise the live gear command');
 
-console.log('telegram-pets-runtime-phase-5b.test.mjs passed (audited production entrypoint)');
+console.log('telegram-pets-runtime-phase-5b.test.mjs passed (audited provenance + Phase 5 entrypoints)');
