@@ -469,6 +469,7 @@ const missedXpBlock = functionBlock(csp, 'missedXpAllTime');
 check(missedXpBlock.includes('return null;'), 'missedXpAllTime returns null when no confirmed data is available');
 check(csp.includes('syncing…'), 'connection-status-panel shows "syncing…" for unconfirmed Missed XP');
 check(!/return\s+0\s*;/.test(missedXpBlock), 'missedXpAllTime must not default to hard 0 when globals are absent');
+check(missedXpBlock.indexOf('daily && daily.missed_xp_all_time != null') < missedXpBlock.indexOf('state && state.missed_xp_all_time != null'), 'missedXpAllTime checks authenticated daily-state missed XP before WTF fallback state');
 
 // Issue 4: Daily WTF fallback is labelled syncing/fallback
 check(las.includes('Syncing schedule'), 'Daily WTF fallback card is labelled "Syncing schedule" not presented as confirmed live');
@@ -572,6 +573,7 @@ check(fetchDailyStateBlock.includes('} finally {') && fetchDailyStateBlock.inclu
 check(buildSharedRailStateBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildSharedRailStateBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'shared right-rail state guards Missed XP background patch by generation match');
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
+check(functionBlock(csp, 'applyDailyLoopStateToRail').includes(': (shared.missedXp != null ? shared.missedXp : null);'), 'daily-loop missed-opportunity aggregate fallback keeps missedXp null when xp_total_all_time is absent');
 const dailyCountsBlock = functionBlock(csp, 'getDailyCounts');
 check(dailyCountsBlock.includes('today_active') && dailyCountsBlock.includes('mission_opportunities') && dailyCountsBlock.includes('row.completed'), 'connection-status completed count derives from today_active.mission_opportunities[].completed');
 check(buildPanelHTMLBlock.includes("var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = shared.dailyCounts && shared.dailyCounts.missed != null ? String(shared.dailyCounts.missed) : 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
