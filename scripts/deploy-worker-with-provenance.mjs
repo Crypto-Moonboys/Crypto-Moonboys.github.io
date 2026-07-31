@@ -34,24 +34,39 @@ function quoteWindowsCommandArg(value) {
   return /\s/.test(text) ? `"${text}"` : text;
 }
 
+/**
+ * Build the cmd.exe invocation used for Windows batch shims such as npx.cmd.
+ *
+ * cmd.exe /s /c requires the complete command to be enclosed in one outer
+ * quote pair. windowsVerbatimArguments prevents Node from rewriting the inner
+ * quotes around arguments containing spaces into backslash-escaped quotes,
+ * which cmd.exe does not understand.
+ */
+export function buildWindowsCmdInvocation(executable, args, options = {}) {
+  const command = options.comspec || process.env.ComSpec || 'cmd.exe';
+  const commandLine = [executable, ...args]
+    .map(quoteWindowsCommandArg)
+    .join(' ');
+
+  return {
+    command,
+    args: ['/d', '/s', '/c', `"${commandLine}"`],
+    windowsVerbatimArguments: true,
+  };
+}
+
 export function buildWranglerProcessInvocation(service, commitSha, options = {}) {
   const platform = options.platform || process.platform;
   const deployArgs = buildWranglerDeployArgs(service, commitSha);
 
   if (platform === 'win32') {
-    const command = options.comspec || process.env.ComSpec || 'cmd.exe';
-    const commandLine = ['npx', ...deployArgs]
-      .map(quoteWindowsCommandArg)
-      .join(' ');
-    return {
-      command,
-      args: ['/d', '/s', '/c', commandLine],
-    };
+    return buildWindowsCmdInvocation('npx', deployArgs, options);
   }
 
   return {
     command: 'npx',
     args: deployArgs,
+    windowsVerbatimArguments: false,
   };
 }
 
@@ -60,6 +75,7 @@ function run(command, args, options = {}) {
     cwd: options.cwd || ROOT,
     encoding: options.encoding || 'utf8',
     stdio: options.stdio || ['ignore', 'pipe', 'pipe'],
+    windowsVerbatimArguments: options.windowsVerbatimArguments === true,
   });
   if (result.error) throw result.error;
   if (result.status !== 0) {
@@ -111,6 +127,7 @@ export function deployWorker(service) {
   run(invocation.command, invocation.args, {
     cwd: path.join(ROOT, workerPath),
     stdio: 'inherit',
+    windowsVerbatimArguments: invocation.windowsVerbatimArguments,
   });
 }
 
