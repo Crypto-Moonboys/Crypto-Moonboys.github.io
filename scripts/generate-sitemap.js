@@ -9,6 +9,10 @@
  * so alias/redirect pages are automatically excluded from the sitemap.
  * Falls back to scanning wiki/*.html when the index is unavailable.
  *
+ * lastmod is intentionally omitted. A repository checkout does not provide a
+ * reliable per-page publication date, and stamping every URL with the build
+ * date would publish false freshness signals to search engines.
+ *
  * Canonical article hub:
  *   /search.html
  *
@@ -26,14 +30,13 @@ const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'sitemap.xml');
 const INDEX_FILE = path.join(ROOT, 'js', 'wiki-index.json');
 const BASE_URL = 'https://cryptomoonboys.com';
-const TODAY = new Date().toISOString().slice(0, 10);
 
 const EXCLUDED_URLS = new Set([
   '/wiki/index.html'
 ]);
 
-function url(loc, lastmod, changefreq, priority) {
-  return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
+function url(loc, changefreq, priority) {
+  return `  <url><loc>${loc}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
 }
 
 function htmlFiles(dir) {
@@ -86,10 +89,10 @@ function wikiPageFiles() {
 const entries = [];
 const seenLocs = new Set();
 
-function addEntry(loc, changefreq, priority, lastmod = TODAY) {
+function addEntry(loc, changefreq, priority) {
   if (seenLocs.has(loc)) return;
   seenLocs.add(loc);
-  entries.push(url(loc, lastmod, changefreq, priority));
+  entries.push(url(loc, changefreq, priority));
 }
 
 /* 1. Homepage */
@@ -152,4 +155,4 @@ const xml = [
 ].join('\n') + '\n';
 
 fs.writeFileSync(OUTPUT, xml, 'utf8');
-console.log(`sitemap.xml written - ${entries.length} URLs (${TODAY})`);
+console.log(`sitemap.xml written - ${entries.length} URLs (lastmod omitted: no reliable per-page dates)`);
