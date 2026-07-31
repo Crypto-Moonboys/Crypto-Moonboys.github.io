@@ -16,7 +16,12 @@
     const response = await fetch(source, { cache: 'no-cache' });
     if (!response.ok) throw new Error('Game source unavailable');
     let html = await response.text();
-    html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/games/invaders-3008/"><link rel="canonical" href="https://cryptomoonboys.com/games/meme-swarm-3008/">');
+    html = html
+      .replace(/<head([^>]*)>/i, '<head$1><base href="/games/invaders-3008/"><link rel="canonical" href="https://cryptomoonboys.com/games/meme-swarm-3008/">')
+      .replace(/<title>[^<]*Invaders 3008[^<]*<\/title>/i, '<title>👾 Meme Swarm 3008 — Crypto Moonboys Arcade</title>')
+      .replace(/<span aria-current="page">Invaders 3008<\/span>/i, '<span aria-current="page">Meme Swarm 3008</span>')
+      .replace(/₿ Invaders 3008: Meme Wars/g, '👾 Meme Swarm 3008')
+      .replace(/aria-label="Invaders 3008 game"/g, 'aria-label="Meme Swarm 3008 game"');
     document.open();
     document.write(html);
     document.close();
