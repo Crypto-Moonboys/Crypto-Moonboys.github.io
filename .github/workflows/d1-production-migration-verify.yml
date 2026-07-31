@@ -6,7 +6,6 @@ on:
       - deployments/d1-evidence-request.json
       - scripts/verify-d1-production-migrations.mjs
       - .github/workflows/d1-production-migration-verify.yml
-      - docs/d1-production-migration-evidence.md
   workflow_dispatch:
 
 permissions:
@@ -31,6 +30,19 @@ jobs:
           printf '%s\n' '[{"success":true,"results":[{"name":"038_telegram_pet_equipment_progression.sql"},{"name":"039_telegram_pet_runtime_progression.sql"}]}]' > /tmp/d1-query.json
           node scripts/verify-d1-production-migrations.mjs --input /tmp/d1-query.json --request deployments/d1-evidence-request.json --output /tmp/d1-evidence.json
           node -e "const e=require('/tmp/d1-evidence.json'); if(e.status!=='verified-applied'||e.verified_migrations.length!==2) process.exit(1)"
+          printf '%s\n' '[{"success":true,"results":[{"name":"038_telegram_pet_equipment_progression.sql"}]}]' > /tmp/d1-missing.json
+          if node scripts/verify-d1-production-migrations.mjs --input /tmp/d1-missing.json --request deployments/d1-evidence-request.json --output /tmp/invalid.json; then
+            echo "Missing migration fixture must fail"
+            exit 1
+          fi
+      - name: Confirm read-only workflow contract
+        shell: bash
+        run: |
+          grep -F "SELECT name FROM d1_migrations WHERE name IN" .github/workflows/d1-production-migration-verify.yml
+          if grep -Fi "d1 migrations apply" .github/workflows/d1-production-migration-verify.yml; then
+            echo "Verification workflow must not apply migrations"
+            exit 1
+          fi
       - name: Confirm production claim remains unverified
         run: node -e "const p=require('./deployments/production.json'); if(p.d1_databases.wikicoms.deployment_status!=='unverified'||p.d1_databases.wikicoms.verified_migrations.length!==0) process.exit(1)"
 
