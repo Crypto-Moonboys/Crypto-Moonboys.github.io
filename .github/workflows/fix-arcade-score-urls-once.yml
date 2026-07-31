@@ -204,3 +204,5 @@ assert(redirects.includes('/games/block-topia-dropzone/* /games/tetris-block-top
           git add workers/leaderboard-worker.js games/index.html js/arcade/arcade-manifest.js scripts/competitive-arcade-bootstrap-gate.test.mjs _redirects .github/workflows/fix-arcade-score-urls-once.yml
           git commit -m "Fix Arcade score acceptance and canonical URLs"
           git push origin HEAD:fix/arcade-score-and-canonical-urls
+
+# Triggered after workflow registration.
