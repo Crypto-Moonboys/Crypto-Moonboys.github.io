@@ -2,7 +2,7 @@
  * arcade-manifest.js — Central registry of all live arcade games.
  *
  * Each entry describes:
- *   id            — stable game key (matches config.id and leaderboard key)
+ *   id            — game key (matches config.id and leaderboard key)
  *   label         — display name
  *   page          — URL path to the game page (must end with /)
  *   bootstrapPath — absolute path to the bootstrap module
@@ -16,7 +16,7 @@
 
 export const ARCADE_MANIFEST = Object.freeze([
   {
-    id: 'invaders',
+    id: 'meme-swarm-3008',
     label: '👾 Meme Swarm 3008',
     page: '/games/invaders-3008/',
     bootstrapPath: '/js/arcade/games/invaders/bootstrap.js',
@@ -24,7 +24,7 @@ export const ARCADE_MANIFEST = Object.freeze([
     crossGameTags: Object.freeze(['shooter']),
   },
   {
-    id: 'pacchain',
+    id: 'chain-maze',
     label: '🟡 Chain Maze',
     page: '/games/pac-chain/',
     bootstrapPath: '/js/arcade/games/pac-chain/bootstrap.js',
@@ -32,7 +32,7 @@ export const ARCADE_MANIFEST = Object.freeze([
     crossGameTags: Object.freeze(['maze']),
   },
   {
-    id: 'asteroids',
+    id: 'forkfield',
     label: '🌑 Forkfield',
     page: '/games/asteroid-fork/',
     bootstrapPath: '/js/arcade/games/asteroid-fork/bootstrap.js',
@@ -40,7 +40,7 @@ export const ARCADE_MANIFEST = Object.freeze([
     crossGameTags: Object.freeze(['shooter', 'physics']),
   },
   {
-    id: 'breakout',
+    id: 'bullrun-brick-smash',
     label: '🧱 Bullrun Brick Smash',
     page: '/games/breakout-bullrun/',
     bootstrapPath: '/js/arcade/games/breakout-bullrun/bootstrap.js',
@@ -56,7 +56,7 @@ export const ARCADE_MANIFEST = Object.freeze([
     crossGameTags: Object.freeze(['snake']),
   },
   {
-    id: 'tetris',
+    id: 'block-topia-dropzone',
     label: '🟦 Block Topia Dropzone',
     page: '/games/tetris-block-topia/',
     bootstrapPath: '/js/arcade/games/tetris/bootstrap.js',
