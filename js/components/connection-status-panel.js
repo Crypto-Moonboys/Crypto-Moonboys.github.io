@@ -431,10 +431,10 @@
   }
 
   function missedXpAllTime(confirmedDailyState) {
-    var state = window.MOONBOYS_WTF_EVENTS || null;
     var daily = confirmedDailyState || window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
-    if (state && state.missed_xp_all_time != null) return Number(state.missed_xp_all_time) || 0;
     if (daily && daily.missed_xp_all_time != null) return Number(daily.missed_xp_all_time) || 0;
+    var state = window.MOONBOYS_WTF_EVENTS || null;
+    if (state && state.missed_xp_all_time != null) return Number(state.missed_xp_all_time) || 0;
     // Neither source has confirmed data yet — return null so the panel can show "syncing…"
     // instead of a misleading 0.
     return null;
@@ -727,7 +727,7 @@
       shared.dailyLoopOwnsMissed = true;
       shared.missedXp = loopState.missed_opportunities.xp_total_all_time != null
         ? Math.max(0, Math.floor(Number(loopState.missed_opportunities.xp_total_all_time) || 0))
-        : (shared.missedXp != null ? shared.missedXp : 0);
+        : (shared.missedXp != null ? shared.missedXp : null);
       shared.dailyLoopMissed = loopState.missed_opportunities;
       shared.dailyCounts = shared.dailyCounts || {};
       if (loopState.missed_opportunities.total_today != null) {
