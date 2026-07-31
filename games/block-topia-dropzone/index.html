@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Block Topia Dropzone | Crypto Moonboys Arcade</title>
+  <meta name="description" content="Play Block Topia Dropzone in the Crypto Moonboys Arcade.">
+  <link rel="canonical" href="https://cryptomoonboys.com/games/block-topia-dropzone/">
+</head>
+<body>
+  <p id="route-status">Loading Block Topia Dropzone…</p>
+  <script>
+  (async function () {
+    const source = '/games/tetris-block-topia/index.html';
+    const response = await fetch(source, { cache: 'no-cache' });
+    if (!response.ok) throw new Error('Game source unavailable');
+    let html = await response.text();
+    html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/games/tetris-block-topia/"><link rel="canonical" href="https://cryptomoonboys.com/games/block-topia-dropzone/">');
+    document.open();
+    document.write(html);
+    document.close();
+  }()).catch(function (error) {
+    document.getElementById('route-status').textContent = 'Block Topia Dropzone could not load. Return to the Arcade and try again.';
+    console.error('[canonical-game-route]', error);
+  });
+  </script>
+</body>
+</html>
