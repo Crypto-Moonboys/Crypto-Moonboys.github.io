@@ -28,6 +28,28 @@ Acceptable evidence URLs include:
 
 Do not store tokens, secret values, private keys, cookies or raw authentication output in the manifest or evidence record.
 
+## Worker deployment provenance
+
+The tracked production Workers expose `/deployment-info` only after their provenance wrapper has been deployed:
+
+- `moonboys-api`
+- `moonboys-leaderboard`
+- `moonboys-anti-cheat`
+
+The endpoint derives its commit and deployment timestamp from Cloudflare Worker version metadata. Production deploys must use:
+
+```bash
+node scripts/deploy-worker-with-provenance.mjs moonboys-api
+node scripts/deploy-worker-with-provenance.mjs leaderboard
+node scripts/deploy-worker-with-provenance.mjs anti-cheat
+```
+
+A plain `wrangler deploy` is not an approved production command because it can create an untagged version that cannot prove its repository commit.
+
+After deploying all three Workers, run the **Live Worker Provenance Verify** workflow with the intended full commit SHA. Its successful workflow-run URL is durable evidence for the production manifest.
+
+See `docs/worker-deployment-provenance.md` for the endpoint contract and deployment procedure.
+
 ## Required evidence for D1 migrations
 
 A D1 database may use `verified-live` only when:
@@ -58,10 +80,11 @@ node scripts/production-deployment-truth-audit.mjs
 
 ## Current truth at creation
 
-The initial manifest intentionally does not guess:
+The manifest intentionally does not guess:
 
-- GitHub Pages is `verification-pending` after the latest merged publishing fix.
+- GitHub Pages remains `verification-pending` until deployment evidence is recorded.
 - `moonboys-api`, `anti-cheat` and `leaderboard` are deployable but their currently deployed commits are unverified.
+- Adding provenance endpoints does not make them live; each Worker must be redeployed through the tagged wrapper.
 - Block Topia auxiliary Workers remain blocked or require binding confirmation.
 - D1 migrations 038 and 039 are committed but their production application is unverified.
 
