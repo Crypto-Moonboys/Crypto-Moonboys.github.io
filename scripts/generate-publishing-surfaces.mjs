@@ -4,9 +4,11 @@ import { spawnSync } from 'node:child_process';
 
 const steps = [
   ['Generate wiki index', 'scripts/generate-wiki-index.js'],
+  ['Apply canonical wiki search synonyms', 'scripts/apply-wiki-search-synonyms.mjs'],
   ['Generate link map', 'scripts/generate-link-map.js'],
   ['Generate link graph', 'scripts/generate-link-graph.js'],
   ['Refresh wiki index authority signals', 'scripts/generate-wiki-index.js'],
+  ['Reapply canonical wiki search synonyms', 'scripts/apply-wiki-search-synonyms.mjs'],
   ['Generate entity map', 'scripts/generate-entity-map.js'],
   ['Generate entity relationship graph', 'scripts/generate-entity-graph.js'],
   ['Generate graph visualisation data', 'scripts/generate-graph-data.js'],
