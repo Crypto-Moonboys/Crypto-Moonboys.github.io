@@ -59,7 +59,7 @@
     </div>
   </section>
 
-  <section class="notice info roguelite-loop-panel" role="region" aria-labelledby="arcade-live-status-title"><div class="roguelite-loop-content"><span class="notice-icon" aria-hidden="true">⚡</span><div class="roguelite-loop-copy"><strong id="arcade-live-status-title">Live progression status</strong><p>Arcade XP is accepted only after identity, dedupe, cap and anti-farm checks. Detailed progression rules remain in the <a href="/how-to-play.html">Arcade &amp; XP guide</a>.</p><div id="roguelite-loop-board" aria-live="polite" style="margin-top:12px"></div><div id="roguelite-daily-digest-summary" aria-live="polite" style="margin-top:12px"></div></div></div></section>
+  <section class="notice info roguelite-loop-panel" role="region" aria-labelledby="arcade-live-status-title"><div class="roguelite-loop-content"><span class="notice-icon" aria-hidden="true">⚡</span><div class="roguelite-loop-copy"><strong id="arcade-live-status-title">Live progression status</strong><p>The Arcade uses one protected browser-driven roguelite post-run loop. Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Missed history does not reset. Arcade XP is accepted only after identity, dedupe, cap and anti-farm checks. Detailed progression rules remain in the <a href="/how-to-play.html">Arcade &amp; XP guide</a>.</p><div id="roguelite-loop-board" aria-live="polite" style="margin-top:12px"></div><div id="roguelite-daily-digest-summary" aria-live="polite" style="margin-top:12px"></div></div></div></section>
 </main>
 
 <script data-cfasync="false" src="/js/api-config.js"></script>
@@ -100,10 +100,15 @@ function formatReset(ms) {
 function renderLoopBoard() {
   if (!board) return;
   let state = null;
+  let context = null;
   try { state = ArcadeMeta.getState(); } catch (_) { state = null; }
+  try { context = ArcadeMeta.getLiveContext(); } catch (_) { context = null; }
   const xp = Math.max(0, Math.floor(Number(state?.daily?.points) || 0));
   const reset = formatReset(state?.daily?.resets_at);
-  board.innerHTML = `<div class="roguelite-loop-stats"><span class="roguelite-stat-pill">Server-accepted Arcade XP: <strong>${xp.toLocaleString()}</strong></span><span class="roguelite-stat-pill">Daily reset: <strong>${reset}</strong></span></div>`;
+  const cycle = context?.roguelite?.loop_cycle || context?.loop_cycle || {};
+  const cycleValue = (item) => `${Math.max(0, Math.floor(Number(item?.points) || 0)).toLocaleString()} / ${Math.max(0, Math.floor(Number(item?.target) || 0)).toLocaleString()}`;
+  const nextAction = context?.roguelite?.next_action?.label || 'Run any active arcade game';
+  board.innerHTML = `<div class="roguelite-loop-stats"><span class="roguelite-stat-pill">Server-accepted Arcade XP: <strong>${xp.toLocaleString()}</strong></span><span class="roguelite-stat-pill">Daily reset: <strong>${reset}</strong></span></div><div class="roguelite-cycle-grid"><div class="roguelite-cycle-card"><span>Active daily cycle</span><strong>${cycleValue(cycle.daily_objectives)}</strong></div><div class="roguelite-cycle-card"><span>Weekly faction target</span><strong>${cycleValue(cycle.weekly_faction_pressure)}</strong></div><div class="roguelite-cycle-card"><span>Monthly clout target</span><strong>${cycleValue(cycle.monthly_clout_chase)}</strong></div><div class="roguelite-cycle-card"><span>Seasonal preview target</span><strong>${cycleValue(cycle.seasonal_campaign_pressure)}</strong></div><div class="roguelite-cycle-card"><span>Next best action</span><strong>${String(nextAction)}</strong></div></div>`;
 }
 
 async function renderDailyDigestSummary() {
