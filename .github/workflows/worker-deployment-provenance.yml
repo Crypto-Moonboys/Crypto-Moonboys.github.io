@@ -30,8 +30,26 @@ jobs:
       - name: Test Worker provenance contract
         run: node scripts/worker-deployment-provenance.test.mjs
 
+      - name: Test Worker deploy invocation contract
+        run: node scripts/worker-deployment-windows.test.mjs
+
       - name: Audit Worker deploy readiness
         run: node scripts/worker-deploy-readiness-audit.mjs
 
       - name: Audit production truth claims
         run: node scripts/production-deployment-truth-audit.mjs
+
+  verify-windows-command-line:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Execute Windows cmd.exe quoting regression
+        run: node scripts/worker-deployment-windows.test.mjs
