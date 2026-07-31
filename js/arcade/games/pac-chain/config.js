@@ -3,8 +3,8 @@
  */
 
 export var PAC_CHAIN_CONFIG = Object.freeze({
-  /** Stable leaderboard / ArcadeSync compatibility key. */
-  id: 'pacchain',
+  /** Leaderboard / ArcadeSync key. */
+  id: 'chain-maze',
 
   /** Display label used by GameRegistry. */
   label: '🟡 Chain Maze',
