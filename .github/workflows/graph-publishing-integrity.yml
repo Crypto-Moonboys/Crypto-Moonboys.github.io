@@ -18,7 +18,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,6 +35,9 @@ jobs:
 
       - name: Verify graph and index parity
         run: node scripts/graph-publishing-integrity.test.mjs
+
+      - name: Validate regenerated wiki surfaces
+        run: npm run ci:wiki
 
       - name: Show generated surface changes
         if: always()
