@@ -34,6 +34,7 @@ const wikiCss = read('css/wiki.css');
 const apiConfig = read('js/api-config.js');
 const worker = read('workers/moonboys-api/worker.js');
 const finalWorker = read('workers/moonboys-api/worker-phase5-final.js');
+const deploymentEntry = read('workers/moonboys-api/deployment-entry.js');
 const wrangler = read('workers/moonboys-api/wrangler.toml');
 const wuffi = read('wiki/wuffi.html');
 const alcor = read('wiki/alcor-exchange.html');
@@ -100,7 +101,8 @@ check(!worker.includes('COMMENT_MODERATION_URL') && !worker.includes('COMMENT_MO
 check(worker.includes("let finalModerationStatus = auth.verified?.telegramId ? 'approved' : 'pending'") && worker.includes('UPDATE wiki_comments') && worker.includes("target_status: 'approved'"), 'Verified Telegram comments auto-approve after pending insert');
 check(worker.includes('wiki_comment_auto_approval_status_update_failed') && worker.includes("error_type: 'd1_update_failed'"), 'Wiki comment auto-approval status update fails closed with safe metadata');
 check(worker.includes("path === '/public/npc-chat'") && worker.includes('/api/swarmsy/public/npc-chat'), 'Existing /public/npc-chat bridge remains unchanged');
-check(/^main\s*=\s*"worker-phase5-final\.js"/m.test(wrangler), 'wrangler.toml deploys the audited Phase 5 entrypoint');
+check(/^main\s*=\s*"deployment-entry\.js"/m.test(wrangler), 'wrangler.toml deploys the audited provenance entrypoint');
+check(deploymentEntry.includes("import baseWorker from './worker-phase5-final.js'") && deploymentEntry.includes("withDeploymentProvenance(baseWorker, 'moonboys-api')"), 'Provenance entrypoint delegates to the audited Phase 5 entrypoint');
 check(finalWorker.includes("import baseWorker from './worker.js'") && finalWorker.includes('baseWorker.fetch(request, env, ctx)'), 'Phase 5 entrypoint delegates existing wiki and engagement routes to worker.js');
 check(worker.includes('async scheduled(event, env, _ctx)'), 'Worker scheduled handler remains present');
 check(finalWorker.includes('baseWorker.scheduled(event, env, ctx)'), 'Phase 5 entrypoint preserves the base Worker scheduled handler');

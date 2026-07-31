@@ -1,0 +1,36 @@
+name: Live Worker Provenance Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_commit:
+        description: "Full repository commit deployed to all three tracked Workers"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full main history
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Refresh origin main
+        run: git fetch --no-tags origin main:refs/remotes/origin/main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify live Worker provenance
+        env:
+          EXPECTED_COMMIT: ${{ inputs.expected_commit }}
+        run: node scripts/live-worker-provenance-verify.mjs
