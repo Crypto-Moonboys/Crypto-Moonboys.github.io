@@ -3,8 +3,8 @@
  */
 
 export var TETRIS_CONFIG = Object.freeze({
-  /** Stable leaderboard / ArcadeSync compatibility key. */
-  id: 'tetris',
+  /** Leaderboard / ArcadeSync key. */
+  id: 'block-topia-dropzone',
 
   /** Display label used by GameRegistry. */
   label: '🟦 Block Topia Dropzone',
