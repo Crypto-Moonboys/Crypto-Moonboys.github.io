@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Meme Swarm 3008 | Crypto Moonboys Arcade</title>
+  <meta name="description" content="Play Meme Swarm 3008 in the Crypto Moonboys Arcade.">
+  <link rel="canonical" href="https://cryptomoonboys.com/games/meme-swarm-3008/">
+</head>
+<body>
+  <p id="route-status">Loading Meme Swarm 3008…</p>
+  <script>
+  (async function () {
+    const source = '/games/invaders-3008/index.html';
+    const response = await fetch(source, { cache: 'no-cache' });
+    if (!response.ok) throw new Error('Game source unavailable');
+    let html = await response.text();
+    html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/games/invaders-3008/"><link rel="canonical" href="https://cryptomoonboys.com/games/meme-swarm-3008/">');
+    document.open();
+    document.write(html);
+    document.close();
+  }()).catch(function (error) {
+    document.getElementById('route-status').textContent = 'Meme Swarm 3008 could not load. Return to the Arcade and try again.';
+    console.error('[canonical-game-route]', error);
+  });
+  </script>
+</body>
+</html>
