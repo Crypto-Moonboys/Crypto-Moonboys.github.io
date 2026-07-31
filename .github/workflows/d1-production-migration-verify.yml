@@ -56,3 +56,12 @@ jobs:
             --config workers/moonboys-api/wrangler.toml \
             --command "SELECT name FROM d1_migrations WHERE name IN ('038_telegram_pet_equipment_progression.sql', '039_telegram_pet_runtime_progression.sql') ORDER BY name" \
             --json > d1-migration-query.json
+      - name: Validate and sanitise evidence
+        run: node scripts/verify-d1-production-migrations.mjs --input d1-migration-query.json --request deployments/d1-evidence-request.json --output d1-production-migration-evidence.json
+      - name: Upload sanitised evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-production-migration-evidence
+          path: d1-production-migration-evidence.json
+          if-no-files-found: error
+          retention-days: 90
