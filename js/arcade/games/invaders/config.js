@@ -3,8 +3,8 @@
  */
 
 export var INVADERS_CONFIG = Object.freeze({
-  /** Stable leaderboard / ArcadeSync compatibility key. */
-  id: 'invaders',
+  /** Leaderboard / ArcadeSync key. */
+  id: 'meme-swarm-3008',
 
   /** Display label used by GameRegistry. */
   label: '👾 Meme Swarm 3008',
