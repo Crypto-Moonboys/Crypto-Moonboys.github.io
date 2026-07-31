@@ -79,6 +79,23 @@ for (const [service, expectedPath] of Object.entries({
 assert.throws(() => buildWranglerDeployArgs('unknown', SHA), /Unsupported Worker/);
 assert.throws(() => buildWranglerDeployArgs('moonboys-api', 'e'.repeat(39)), /40-character Git SHA/);
 
+const deployWrapperSource = fs.readFileSync(path.join(ROOT, 'scripts/deploy-worker-with-provenance.mjs'), 'utf8');
+assert.match(
+  deployWrapperSource,
+  /git\(\['fetch', '--no-tags', 'origin', 'main:refs\/remotes\/origin\/main'\]\)/,
+  'production deploy wrapper must refresh origin/main immediately before comparison',
+);
+assert.match(deployWrapperSource, /rev-parse', 'origin\/main'/, 'deploy wrapper must compare against refreshed origin/main');
+
+const liveVerifierSource = fs.readFileSync(path.join(ROOT, 'scripts/live-worker-provenance-verify.mjs'), 'utf8');
+assert.match(liveVerifierSource, /cat-file', '-e'/, 'live verification must require a real repository commit object');
+assert.match(liveVerifierSource, /merge-base', '--is-ancestor'/, 'live verification must require the commit to be reachable from main');
+assert.match(liveVerifierSource, /origin\/main/, 'live verification must use the remote main history');
+
+const liveWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/live-worker-provenance-verify.yml'), 'utf8');
+assert.match(liveWorkflow, /fetch-depth:\s*0/, 'live verification workflow must fetch full repository history');
+assert.match(liveWorkflow, /git fetch --no-tags origin main:refs\/remotes\/origin\/main/, 'live verification workflow must refresh origin/main');
+
 const configContracts = [
   ['workers/moonboys-api/wrangler.toml', 'main = "deployment-entry.js"'],
   ['workers/leaderboard/wrangler.toml', 'main               = "deployment-entry.js"'],
@@ -106,6 +123,27 @@ for (const service of ['moonboys-api', 'leaderboard', 'anti-cheat']) {
     String(deployStatus[folder]?.deploy_command || '').includes(`deploy-worker-with-provenance.mjs ${service}`),
     `${folder} must deploy through the provenance wrapper`,
   );
+}
+
+const authoritativeDocs = [
+  'docs/WORKER_DEPLOY_RUNBOOK.md',
+  'docs/WORKER_DEPLOY_TRUTH_MAP.md',
+  'workers/moonboys-api/README.md',
+];
+const directTrackedDeploy = /(?:cd\s+workers\/(?:moonboys-api|leaderboard|anti-cheat)\s+&&\s+)?npx\s+wrangler\s+deploy(?:\s+--config\s+workers\/(?:moonboys-api|leaderboard|anti-cheat)\/wrangler\.toml)?/i;
+for (const relativePath of authoritativeDocs) {
+  const text = fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
+  assert.doesNotMatch(text, directTrackedDeploy, `${relativePath} must not prescribe a direct tracked-Worker deploy`);
+}
+const runbook = fs.readFileSync(path.join(ROOT, 'docs/WORKER_DEPLOY_RUNBOOK.md'), 'utf8');
+const truthMap = fs.readFileSync(path.join(ROOT, 'docs/WORKER_DEPLOY_TRUTH_MAP.md'), 'utf8');
+const moonboysReadme = fs.readFileSync(path.join(ROOT, 'workers/moonboys-api/README.md'), 'utf8');
+for (const [service, source] of [
+  ['moonboys-api', `${runbook}\n${truthMap}\n${moonboysReadme}`],
+  ['leaderboard', `${runbook}\n${truthMap}`],
+  ['anti-cheat', `${runbook}\n${truthMap}`],
+]) {
+  assert.ok(source.includes(`deploy-worker-with-provenance.mjs ${service}`), `authoritative docs must use the ${service} provenance command`);
 }
 
 const truth = JSON.parse(fs.readFileSync(path.join(ROOT, 'deployments/production.json'), 'utf8'));
