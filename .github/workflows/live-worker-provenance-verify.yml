@@ -16,8 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout
+      - name: Checkout full main history
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Refresh origin main
+        run: git fetch --no-tags origin main:refs/remotes/origin/main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
