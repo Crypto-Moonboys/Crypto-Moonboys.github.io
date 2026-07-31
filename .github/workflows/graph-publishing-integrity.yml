@@ -1,0 +1,41 @@
+name: Graph Publishing Integrity
+
+# Run on every repository change. The publishing chain depends on wiki content,
+# brand canon, payload registries, ranking configuration and generator helpers;
+# path filters are intentionally avoided so future inputs cannot bypass parity checks.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: graph-publishing-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Regenerate public publishing surfaces
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: node scripts/generate-publishing-surfaces.mjs
+
+      - name: Verify graph and index parity
+        run: node scripts/graph-publishing-integrity.test.mjs
+
+      - name: Show generated surface changes
+        if: always()
+        run: git diff --stat
