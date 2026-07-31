@@ -167,4 +167,32 @@ assert(
   'breakout fallback path must not bypass a denied competitive page gate',
 );
 
+const renamedScoreIds = [
+  'meme-swarm-3008',
+  'chain-maze',
+  'forkfield',
+  'bullrun-brick-smash',
+  'block-topia-dropzone',
+];
+
+const leaderboardWorker = await fs.readFile(path.join(ROOT, 'workers/leaderboard-worker.js'), 'utf8');
+const leaderboardUi = await fs.readFile(path.join(ROOT, 'js/arcade-leaderboard.js'), 'utf8');
+const forkfieldBootstrap = await fs.readFile(path.join(ROOT, 'js/arcade/games/asteroid-fork/bootstrap.js'), 'utf8');
+
+for (const gameId of renamedScoreIds) {
+  assert(
+    leaderboardWorker.includes(`\"${gameId}\"`),
+    `leaderboard Worker must register canonical score id ${gameId}`,
+  );
+  assert(
+    leaderboardUi.includes(`'${gameId}'`),
+    `leaderboard UI must expose canonical score id ${gameId}`,
+  );
+}
+
+assert(
+  forkfieldBootstrap.includes('const GAME_ID = ASTEROID_FORK_CONFIG.id;'),
+  'Forkfield runtime must use ASTEROID_FORK_CONFIG.id instead of the retired asteroids namespace',
+);
+
 console.log('Competitive arcade bootstrap gate checks passed.');
