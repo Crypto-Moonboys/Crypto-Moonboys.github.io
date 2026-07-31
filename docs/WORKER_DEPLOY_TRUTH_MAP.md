@@ -5,56 +5,56 @@
 > **Guard script:** `node scripts/worker-deploy-readiness-audit.mjs`
 >
 > This document is the human-readable companion to `DEPLOY_STATUS.json`.
-> Keep both in sync when KV bindings are provisioned and a Worker moves from `stub-blocked` to `live-deployable`.
+> Keep both in sync when bindings are provisioned and a Worker changes readiness state.
 
 ## Status legend
 
 | Status | Meaning |
 |---|---|
-| `live-deployable` | All bindings and secrets are configured. Safe to run `npx wrangler deploy`. |
-| `needs-binding-setup` | No placeholder IDs, but one or more bindings need to be verified or confirmed against the live Cloudflare account before a first deploy. |
-| `stub-blocked` | Contains `YOUR_*` placeholder KV namespace IDs. **Do not deploy.** Wrangler will accept the deploy command but the Worker will fail at runtime. |
+| `live-deployable` | Bindings and required secret names are configured. Use only the approved deployment command recorded below. |
+| `needs-binding-setup` | No placeholder IDs, but one or more bindings or deployment requirements still need confirmation. |
+| `stub-blocked` | Contains placeholder namespace IDs. **Do not deploy.** |
 
 ## Worker status table
 
-| Worker | Folder | Status | Required bindings | Required secrets | Safe deploy command | Deploy now? | Notes |
+| Worker | Folder | Status | Required bindings | Required secrets | Approved production command | Deploy now? | Notes |
 |---|---|---|---|---|---|---|---|
-| moonboys-api | `workers/moonboys-api` | ✅ `live-deployable` | D1: wikicoms | TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, ADMIN_TELEGRAM_IDS, ADMIN_SECRET, TELEGRAM_GROUP_CHAT_ID, SWARMSY_BRIDGE_TOKEN | `cd workers/moonboys-api && npx wrangler deploy` | Yes | Production API. Telegram bot webhooks, admin grant routes, D1-backed user state, Sparky NPC chat bridge. |
-| moonboys-anti-cheat | `workers/anti-cheat` | ✅ `live-deployable` | KV: LEADERBOARD (shared with leaderboard worker), D1: wikicoms | ADMIN_SECRET | `cd workers/anti-cheat && npx wrangler deploy` | Yes | ADMIN_SECRET must match moonboys-api. KV ID must stay in sync with workers/leaderboard. |
-| moonboys-leaderboard | `workers/leaderboard` | ✅ `live-deployable` | KV: LEADERBOARD (shared with anti-cheat worker), D1: wikicoms | TELEGRAM_BOT_TOKEN | `cd workers/leaderboard && npx wrangler deploy` | Yes | Shares LEADERBOARD KV namespace with anti-cheat. Both must reference the same KV ID. |
-| block-topia-score | `workers/block-topia` | ⚠️ `needs-binding-setup` | R2: R2_BUCKET (bucket_name must be confirmed) | — | `cd workers/block-topia && npx wrangler deploy` | No | No placeholder IDs present. Confirm R2 bucket_name against live Cloudflare account before first deploy. |
-| blocktopia-leaderboard | `workers/blocktopia-leaderboard` | 🚫 `stub-blocked` | KV: DISTRICTS, SEASONS, CACHE | ADMIN_SECRET, TELEGRAM_BOT_TOKEN | `cd workers/blocktopia-leaderboard && npx wrangler deploy` | **No** | Placeholder KV IDs: YOUR_DISTRICTS_KV_ID, YOUR_SEASONS_KV_ID, YOUR_CACHE_KV_ID. |
-| blocktopia-engagement | `workers/blocktopia-engagement` | 🚫 `stub-blocked` | KV: COMMUNITY_FEED, CACHE | ADMIN_SECRET | `cd workers/blocktopia-engagement && npx wrangler deploy` | **No** | Placeholder KV IDs: YOUR_COMMUNITY_FEED_KV_ID, YOUR_CACHE_KV_ID. |
-| blocktopia-district | `workers/blocktopia-district` | 🚫 `stub-blocked` | KV: DISTRICTS, NPC_MEMORY, SEASONS, CACHE | ADMIN_SECRET | `cd workers/blocktopia-district && npx wrangler deploy` | **No** | Placeholder KV IDs: YOUR_DISTRICTS_KV_ID, YOUR_NPC_MEMORY_KV_ID, YOUR_SEASONS_KV_ID, YOUR_CACHE_KV_ID. |
-| blocktopia-realtime | `workers/blocktopia-realtime` | 🚫 `stub-blocked` | KV: COMMUNITY_FEED, CACHE | ADMIN_SECRET | `cd workers/blocktopia-realtime && npx wrangler deploy` | **No** | Placeholder KV IDs: YOUR_COMMUNITY_FEED_KV_ID, YOUR_CACHE_KV_ID. |
+| moonboys-api | `workers/moonboys-api` | ✅ `live-deployable` | D1: wikicoms | TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, ADMIN_TELEGRAM_IDS, ADMIN_SECRET, TELEGRAM_GROUP_CHAT_ID, SWARMSY_BRIDGE_TOKEN | `node scripts/deploy-worker-with-provenance.mjs moonboys-api` | Yes | Production API. The wrapper refreshes `origin/main` and tags the Worker Version with the repository commit. |
+| moonboys-anti-cheat | `workers/anti-cheat` | ✅ `live-deployable` | KV: LEADERBOARD, D1: wikicoms | ADMIN_SECRET | `node scripts/deploy-worker-with-provenance.mjs anti-cheat` | Yes | ADMIN_SECRET must match moonboys-api. KV ID must stay aligned with leaderboard. |
+| moonboys-leaderboard | `workers/leaderboard` | ✅ `live-deployable` | KV: LEADERBOARD, D1: wikicoms | TELEGRAM_BOT_TOKEN | `node scripts/deploy-worker-with-provenance.mjs leaderboard` | Yes | Shares the LEADERBOARD namespace with anti-cheat. |
+| block-topia-score | `workers/block-topia` | ⚠️ `needs-binding-setup` | R2: R2_BUCKET | — | Not approved | No | Confirm the live R2 bucket and approve a provenance-capable deployment process first. |
+| blocktopia-leaderboard | `workers/blocktopia-leaderboard` | 🚫 `stub-blocked` | KV: DISTRICTS, SEASONS, CACHE | ADMIN_SECRET, TELEGRAM_BOT_TOKEN | Blocked — no command | **No** | Placeholder KV IDs remain. |
+| blocktopia-engagement | `workers/blocktopia-engagement` | 🚫 `stub-blocked` | KV: COMMUNITY_FEED, CACHE | ADMIN_SECRET | Blocked — no command | **No** | Placeholder KV IDs remain. |
+| blocktopia-district | `workers/blocktopia-district` | 🚫 `stub-blocked` | KV: DISTRICTS, NPC_MEMORY, SEASONS, CACHE | ADMIN_SECRET | Blocked — no command | **No** | Placeholder KV IDs remain. |
+| blocktopia-realtime | `workers/blocktopia-realtime` | 🚫 `stub-blocked` | KV: COMMUNITY_FEED, CACHE | ADMIN_SECRET | Blocked — no command | **No** | Placeholder KV IDs remain. |
 
-## How to unblock a stub Worker
+## Production deployment rule
 
-1. Create the required KV namespaces:
-   ```
-   wrangler kv:namespace create <BINDING_NAME>
-   ```
-   Note the returned namespace ID.
+The three tracked live-deployable Workers must not be deployed through a direct Wrangler command. Their approved wrapper:
 
-2. Replace each `YOUR_*_KV_ID` in the Worker's `wrangler.toml` with the real namespace ID (both `id` and `preview_id` fields).
+1. requires a clean local `main` checkout;
+2. fetches the current remote `main` immediately before deployment;
+3. requires local `HEAD` to equal that freshly fetched commit;
+4. tags the Worker Version with the full repository commit;
+5. enables `/deployment-info` to provide verifiable evidence.
 
-3. Set required secrets:
-   ```
-   wrangler secret put ADMIN_SECRET
-   ```
+## How to unblock a Worker
 
-4. Update `workers/DEPLOY_STATUS.json`: change `"status"` to `"live-deployable"`, `"deploy"` to `true`, and remove the `"reason"` field.
+1. Provision and verify all required bindings.
+2. Replace placeholder IDs in `wrangler.toml`.
+3. Set required secrets without committing values.
+4. Add a provenance-capable deployment entrypoint and approved wrapper command.
+5. Update `workers/DEPLOY_STATUS.json`.
+6. Update this table.
+7. Run `node scripts/worker-deploy-readiness-audit.mjs`.
+8. Run `npm test`.
 
-5. Update the table in this file accordingly.
+## CI guards
 
-6. Run `node scripts/worker-deploy-readiness-audit.mjs` to confirm the Worker passes the readiness check.
+The readiness and provenance checks fail when:
 
-7. Run `npm test` to confirm no drift.
-
-## CI guard
-
-`scripts/worker-deploy-readiness-audit.mjs` is wired into `npm test`. It will:
-
-- Fail if any Worker listed as `live-deployable` in `DEPLOY_STATUS.json` still contains `YOUR_*` placeholder KV IDs.
-- Pass (with a clear BLOCKED notice) for Workers marked `stub-blocked`.
-- Print a full summary of deployable, blocked, and missing-binding Workers.
+- a live-deployable Worker contains placeholder bindings;
+- a tracked Worker does not use the provenance entrypoint;
+- an approved deploy command bypasses the provenance wrapper;
+- authoritative production documentation reintroduces a direct deploy command;
+- the production manifest makes an unsupported `verified-live` claim.
