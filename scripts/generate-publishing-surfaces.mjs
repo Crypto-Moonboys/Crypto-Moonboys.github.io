@@ -11,8 +11,8 @@ const steps = [
   ['Generate entity relationship graph', 'scripts/generate-entity-graph.js'],
   ['Generate graph visualisation data', 'scripts/generate-graph-data.js'],
   ['Generate mobile graph data', 'scripts/generate-entity-graph-lite.js'],
-  ['Generate site statistics', 'scripts/generate-site-stats.js'],
   ['Generate sitemap', 'scripts/generate-sitemap.js'],
+  ['Generate site statistics', 'scripts/generate-site-stats.js'],
 ];
 
 for (const [label, script] of steps) {
