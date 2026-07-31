@@ -34,6 +34,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate current publishing surfaces
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: node scripts/generate-publishing-surfaces.mjs
+
+      - name: Verify graph and index parity
+        run: node scripts/graph-publishing-integrity.test.mjs
+
       - name: Hydrate Invaders player-ship PNG asset
         # Must run before visual/static checks and before packaging the site.
         run: node scripts/hydrate-invaders-player-ship.mjs
