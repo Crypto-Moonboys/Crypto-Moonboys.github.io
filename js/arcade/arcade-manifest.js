@@ -2,25 +2,22 @@
  * arcade-manifest.js — Central registry of all live arcade games.
  *
  * Each entry describes:
- *   id            — unique game key (matches config.id and leaderboard key)
+ *   id            — stable game key (matches config.id and leaderboard key)
  *   label         — display name
  *   page          — URL path to the game page (must end with /)
  *   bootstrapPath — absolute path to the bootstrap module
  *   adapterExport — named export from the bootstrap module that is the adapter
  *   crossGameTags — compatibility tags for cross-game modifier system
  *
- * Live arcade games: invaders-3008, pac-chain, asteroid-fork, breakout-bullrun,
- *   tetris-block-topia, block-topia-quest-maze, snake-run, kaiju-sticker-battle
- *
  * Consumed by:
- *   js/arcade/core/auto-mount-game.js   (browser auto-mount)
- *   scripts/arcade-architecture-audit.mjs (CI validation)
+ *   js/arcade/core/auto-mount-game.js
+ *   scripts/arcade-architecture-audit.mjs
  */
 
 export const ARCADE_MANIFEST = Object.freeze([
   {
     id: 'invaders',
-    label: '👾 Invaders 3008',
+    label: '👾 Meme Swarm 3008',
     page: '/games/invaders-3008/',
     bootstrapPath: '/js/arcade/games/invaders/bootstrap.js',
     adapterExport: 'INVADERS_ADAPTER',
@@ -28,7 +25,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   },
   {
     id: 'pacchain',
-    label: '🟡 Pac-Chain',
+    label: '🟡 Chain Maze',
     page: '/games/pac-chain/',
     bootstrapPath: '/js/arcade/games/pac-chain/bootstrap.js',
     adapterExport: 'PAC_CHAIN_ADAPTER',
@@ -36,7 +33,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   },
   {
     id: 'asteroids',
-    label: '🌑 Asteroid Fork',
+    label: '🌑 Forkfield',
     page: '/games/asteroid-fork/',
     bootstrapPath: '/js/arcade/games/asteroid-fork/bootstrap.js',
     adapterExport: 'ASTEROID_FORK_ADAPTER',
@@ -44,7 +41,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   },
   {
     id: 'breakout',
-    label: '🧱 Breakout Bullrun',
+    label: '🧱 Bullrun Brick Smash',
     page: '/games/breakout-bullrun/',
     bootstrapPath: '/js/arcade/games/breakout-bullrun/bootstrap.js',
     adapterExport: 'BREAKOUT_BULLRUN_ADAPTER',
@@ -60,7 +57,7 @@ export const ARCADE_MANIFEST = Object.freeze([
   },
   {
     id: 'tetris',
-    label: '🟦 Tetris Block Topia',
+    label: '🟦 Block Topia Dropzone',
     page: '/games/tetris-block-topia/',
     bootstrapPath: '/js/arcade/games/tetris/bootstrap.js',
     adapterExport: 'TETRIS_ADAPTER',
@@ -84,12 +81,6 @@ export const ARCADE_MANIFEST = Object.freeze([
   },
 ]);
 
-/**
- * Look up a manifest entry by game id.
- *
- * @param {string} id
- * @returns {object|null}
- */
 export function getManifestEntry(id) {
   return ARCADE_MANIFEST.find(function (e) { return e.id === id; }) || null;
 }
