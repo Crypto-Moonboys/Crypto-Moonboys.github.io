@@ -1,0 +1,88 @@
+{
+  "pack": "crypto-moonboy-pets-mini-app",
+  "version": "1.0.0-production-foundation",
+  "status": "artwork_in_production",
+  "issue": 1138,
+  "visual_identity": {
+    "style": "adult cyberpunk graffiti mobile RPG",
+    "base": ["midnight black", "deep indigo"],
+    "accents": ["electric cyan", "ultraviolet", "hot magenta", "controlled gold"],
+    "rendering": ["bold silhouettes", "clean dark outlines", "polished cel shading", "neon rim light", "restrained spray texture"]
+  },
+  "canonical_pet": {
+    "species": "moon-cat",
+    "fur": "charcoal grey",
+    "eyes": "gold star-shaped",
+    "expression": "mischievous and confident",
+    "clothing": "black streetwear jacket with cyan and magenta details",
+    "headwear": "black cap with cyan crescent mark"
+  },
+  "screens": [
+    {"key":"home_hideout","path":"screens/pets-home-hideout.png","ratio":"16:9"},
+    {"key":"care_bay","path":"screens/pets-care-bay.png","ratio":"16:9"},
+    {"key":"moon_alley_map","path":"screens/moon-alley-route-map.png","ratio":"16:9"},
+    {"key":"battle_hub","path":"screens/pets-battle-hub.png","ratio":"16:9"},
+    {"key":"gear_workshop","path":"screens/pets-gear-workshop.png","ratio":"16:9"},
+    {"key":"missions_collection","path":"screens/pets-missions-collection.png","ratio":"16:9"},
+    {"key":"upgrade_hoverboard","path":"screens/pets-upgrade-hoverboard.png","ratio":"16:9"}
+  ],
+  "encounters": [
+    "lost-delivery-drone",
+    "graffiti-wall-request",
+    "moon-crate-found",
+    "alley-scrapper-boss",
+    "moon-alley-extraction"
+  ],
+  "pet_states": [
+    "idle",
+    "happy",
+    "hungry",
+    "dirty",
+    "tired",
+    "injured",
+    "training",
+    "exploring",
+    "arena-ready",
+    "victory"
+  ],
+  "equipment": [
+    "crystal-bowl",
+    "hoverboard",
+    "crown-jacket",
+    "cyber-armor",
+    "moon-blaster",
+    "lucky-charm"
+  ],
+  "currencies_and_materials": [
+    "moon-gold",
+    "moon-crystals",
+    "style-tokens",
+    "scrap-metal",
+    "moon-fabric",
+    "crystal-shard",
+    "battery-cell",
+    "spray-core",
+    "kaiju-fragment",
+    "arena-token"
+  ],
+  "ui_icons": [
+    "care",
+    "adventure",
+    "battle",
+    "gear",
+    "missions",
+    "collection",
+    "risk",
+    "extract",
+    "boss",
+    "reward",
+    "locked",
+    "completed"
+  ],
+  "rules": {
+    "transparent_assets": true,
+    "no_baked_live_text": true,
+    "mobile_safe_area_percent": 6,
+    "server_authoritative_ui": true
+  }
+}
