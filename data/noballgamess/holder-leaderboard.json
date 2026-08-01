@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-07-31T06:26:41.770Z",
+  "generated_at": "2026-08-01T06:11:48.942Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -33,11 +33,11 @@
   "holders": [
     {
       "owner": "yoitscharlie",
-      "live_assets": 8661
+      "live_assets": 8647
     },
     {
       "owner": "pepperstake",
-      "live_assets": 1077
+      "live_assets": 1122
     },
     {
       "owner": "q4oia.wam",
@@ -73,10 +73,6 @@
     },
     {
       "owner": "neftyblocksd",
-      "live_assets": 30
-    },
-    {
-      "owner": "i5d52.c.wam",
       "live_assets": 30
     },
     {
@@ -416,10 +412,6 @@
       "live_assets": 4
     },
     {
-      "owner": "kvqr.wam",
-      "live_assets": 4
-    },
-    {
       "owner": "cat.gm",
       "live_assets": 4
     },
@@ -533,6 +525,10 @@
     },
     {
       "owner": "dyobo.wam",
+      "live_assets": 3
+    },
+    {
+      "owner": "kvqr.wam",
       "live_assets": 3
     },
     {

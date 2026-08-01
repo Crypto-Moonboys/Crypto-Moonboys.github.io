@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-07-31T06:26:37.078Z",
+  "generated_at": "2026-08-01T06:11:43.135Z",
   "total_local_templates": 143,
   "total_atomicassets_confirmed_templates": 143,
   "missing_from_atomicassets": [],
@@ -353,7 +353,7 @@
       "templates": [
         {
           "template_id": 783370,
-          "issued_supply": 0,
+          "issued_supply": 1,
           "live_supply": 1,
           "exists_on_atomicassets": true,
           "local_wiki_page": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
