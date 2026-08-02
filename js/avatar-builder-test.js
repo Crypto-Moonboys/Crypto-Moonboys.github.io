@@ -34,7 +34,7 @@ function announce(message) {
 function renderCategories() {
   elements.categoryTabs.innerHTML = state.manifest.categories.map((category) => `
     <button class="category-button" type="button" data-category="${category.id}" aria-pressed="${category.id === state.activeCategory}" aria-label="Open ${category.name} traits">
-      ${icon(category.id)}<span>${category.name}</span>
+      ${icon(category.id)}
     </button>`).join('');
 }
 
@@ -102,12 +102,12 @@ function renderTray() {
   elements.traitGrid.innerHTML = visible.map((trait) => `
     <button class="trait-button" type="button" data-trait="${trait.id}" aria-pressed="${state.selected[category.id] === trait.id}" aria-label="Select ${trait.name}">
       <img src="${trait.thumbnail}" alt="" width="240" height="240" loading="lazy" decoding="async">
-      <span>${trait.name}</span>
+      <span class="trait-name">${trait.name}</span>
     </button>`).join('');
   elements.pagination.innerHTML = `
-    <button class="page-button" type="button" data-page="previous" ${state.page === 0 ? 'disabled' : ''}>Previous</button>
+    <button class="page-button" type="button" data-page="previous" aria-label="Previous trait page" ${state.page === 0 ? 'disabled' : ''}>←</button>
     <span class="page-label">${state.page + 1} / ${pageCount}</span>
-    <button class="page-button" type="button" data-page="next" ${state.page + 1 === pageCount ? 'disabled' : ''}>Next</button>`;
+    <button class="page-button" type="button" data-page="next" aria-label="Next trait page" ${state.page + 1 === pageCount ? 'disabled' : ''}>→</button>`;
 
   elements.traitGrid.querySelectorAll('img').forEach((image) => {
     image.addEventListener('error', () => {
