@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-01T06:11:49.089Z",
+  "generated_at": "2026-08-02T06:18:35.452Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -24,10 +24,10 @@
       "status": "degraded",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-08-01T06:11:43.504Z",
-      "last_successful_check": "2026-08-01T06:11:43.503Z",
-      "last_successful_update": "2026-08-01T06:11:43.185Z",
-      "source_updated_at": "2026-08-01T06:11:43.185Z",
+      "checked_at": "2026-08-02T06:18:29.577Z",
+      "last_successful_check": "2026-08-02T06:18:29.577Z",
+      "last_successful_update": "2026-08-02T06:18:29.224Z",
+      "source_updated_at": "2026-08-02T06:18:29.224Z",
       "source_age_minutes": 0,
       "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -40,7 +40,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-01T06:11:38.042Z"
+          "checked_at": "2026-08-02T06:18:22.678Z"
         },
         "num_assets": {
           "ok": true,
@@ -49,7 +49,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-01T06:11:39.006Z"
+          "checked_at": "2026-08-02T06:18:23.602Z"
         },
         "marketcap": {
           "ok": true,
@@ -58,7 +58,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-01T06:11:40.466Z"
+          "checked_at": "2026-08-02T06:18:27.247Z"
         },
         "top_users": {
           "ok": false,
@@ -67,7 +67,7 @@
           "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-08-01T06:11:40.632Z"
+          "checked_at": "2026-08-02T06:18:27.391Z"
         },
         "top_templates": {
           "ok": true,
@@ -76,7 +76,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-01T06:11:41.296Z"
+          "checked_at": "2026-08-02T06:18:28.033Z"
         },
         "volume": {
           "ok": true,
@@ -85,7 +85,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-01T06:11:42.377Z"
+          "checked_at": "2026-08-02T06:18:28.389Z"
         },
         "sales_volume_graph": {
           "ok": true,
@@ -94,12 +94,12 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-01T06:11:42.538Z"
+          "checked_at": "2026-08-02T06:18:28.535Z"
         }
       },
       "notes": [
         "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 23002 asset-state records across 143 templates.",
+        "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 23003 asset-state records across 143 templates.",
         "Rarity reconciliation degraded: 1 mismatched template(s) (782888); live minus issued = 3; fresh live counts = yes.",
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
@@ -138,10 +138,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-08-01T06:11:49.089Z",
-      "last_successful_check": "2026-08-01T06:11:49.089Z",
-      "last_successful_update": "2026-08-01T06:11:49.089Z",
-      "source_updated_at": "2026-08-01T06:11:49.089Z",
+      "checked_at": "2026-08-02T06:18:35.452Z",
+      "last_successful_check": "2026-08-02T06:18:35.452Z",
+      "last_successful_update": "2026-08-02T06:18:35.452Z",
+      "source_updated_at": "2026-08-02T06:18:35.452Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",

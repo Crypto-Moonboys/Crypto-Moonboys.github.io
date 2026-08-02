@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-08-01T06:10:28.918Z",
+  "generated_at": "2026-08-02T06:17:03.819Z",
   "templates": [
     {
       "template_id": 773225,
@@ -29,7 +29,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 775997,
@@ -57,7 +57,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 775999,
@@ -85,7 +85,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776000,
@@ -113,7 +113,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776001,
@@ -141,7 +141,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776002,
@@ -169,7 +169,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776003,
@@ -197,7 +197,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776004,
@@ -225,7 +225,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776005,
@@ -253,7 +253,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776007,
@@ -281,7 +281,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776049,
@@ -309,7 +309,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776055,
@@ -337,7 +337,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776056,
@@ -365,7 +365,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776057,
@@ -393,7 +393,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776058,
@@ -421,7 +421,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776059,
@@ -449,7 +449,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776063,
@@ -477,7 +477,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776065,
@@ -505,7 +505,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776066,
@@ -533,7 +533,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776074,
@@ -561,7 +561,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776099,
@@ -589,7 +589,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776100,
@@ -617,7 +617,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776101,
@@ -645,7 +645,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776102,
@@ -673,7 +673,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776103,
@@ -701,7 +701,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776109,
@@ -729,7 +729,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776110,
@@ -757,7 +757,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776114,
@@ -785,7 +785,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776117,
@@ -813,7 +813,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776118,
@@ -841,7 +841,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776119,
@@ -869,7 +869,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776120,
@@ -897,7 +897,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776121,
@@ -925,7 +925,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776123,
@@ -953,7 +953,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776124,
@@ -981,7 +981,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776145,
@@ -1009,7 +1009,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776146,
@@ -1037,7 +1037,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 776147,
@@ -1065,7 +1065,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 782888,
@@ -1093,7 +1093,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783235,
@@ -1121,7 +1121,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783237,
@@ -1149,7 +1149,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783245,
@@ -1177,7 +1177,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783247,
@@ -1205,7 +1205,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783250,
@@ -1233,7 +1233,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783252,
@@ -1261,7 +1261,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783253,
@@ -1289,7 +1289,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783255,
@@ -1317,7 +1317,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783258,
@@ -1345,7 +1345,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783260,
@@ -1373,7 +1373,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783263,
@@ -1401,7 +1401,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783269,
@@ -1429,7 +1429,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783282,
@@ -1457,7 +1457,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783291,
@@ -1485,7 +1485,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783295,
@@ -1513,7 +1513,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783296,
@@ -1541,7 +1541,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783298,
@@ -1569,7 +1569,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783300,
@@ -1597,7 +1597,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783301,
@@ -1625,7 +1625,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783306,
@@ -1653,7 +1653,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783307,
@@ -1681,7 +1681,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783369,
@@ -1709,7 +1709,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783370,
@@ -1737,7 +1737,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783371,
@@ -1765,7 +1765,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783372,
@@ -1793,7 +1793,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783373,
@@ -1821,7 +1821,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783374,
@@ -1849,7 +1849,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783375,
@@ -1877,7 +1877,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783376,
@@ -1905,7 +1905,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783377,
@@ -1933,7 +1933,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783378,
@@ -1961,7 +1961,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783379,
@@ -1989,7 +1989,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783380,
@@ -2017,7 +2017,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783383,
@@ -2045,7 +2045,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783384,
@@ -2073,7 +2073,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783385,
@@ -2101,7 +2101,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783389,
@@ -2129,7 +2129,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783392,
@@ -2157,7 +2157,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783394,
@@ -2185,7 +2185,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783395,
@@ -2213,7 +2213,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783398,
@@ -2241,7 +2241,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783399,
@@ -2269,7 +2269,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783400,
@@ -2297,7 +2297,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783401,
@@ -2325,7 +2325,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783403,
@@ -2353,7 +2353,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783404,
@@ -2381,7 +2381,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783405,
@@ -2409,7 +2409,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783406,
@@ -2437,7 +2437,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783407,
@@ -2465,7 +2465,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783408,
@@ -2493,7 +2493,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783409,
@@ -2521,7 +2521,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783410,
@@ -2549,7 +2549,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783411,
@@ -2577,7 +2577,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783412,
@@ -2605,7 +2605,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783413,
@@ -2633,7 +2633,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783414,
@@ -2661,7 +2661,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783415,
@@ -2689,7 +2689,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783431,
@@ -2717,7 +2717,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783432,
@@ -2745,7 +2745,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783433,
@@ -2773,7 +2773,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783442,
@@ -2801,7 +2801,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:27.936Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783444,
@@ -2829,7 +2829,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783445,
@@ -2857,7 +2857,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783447,
@@ -2885,7 +2885,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783448,
@@ -2913,7 +2913,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783451,
@@ -2941,7 +2941,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783453,
@@ -2969,7 +2969,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783454,
@@ -2997,7 +2997,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783455,
@@ -3025,7 +3025,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783457,
@@ -3053,7 +3053,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783459,
@@ -3081,7 +3081,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783461,
@@ -3109,7 +3109,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783462,
@@ -3137,7 +3137,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783463,
@@ -3165,7 +3165,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783464,
@@ -3193,7 +3193,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783466,
@@ -3221,7 +3221,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783468,
@@ -3249,7 +3249,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783470,
@@ -3277,7 +3277,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783747,
@@ -3305,7 +3305,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783755,
@@ -3333,7 +3333,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783757,
@@ -3361,7 +3361,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783759,
@@ -3389,7 +3389,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783760,
@@ -3417,7 +3417,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 783764,
@@ -3445,7 +3445,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784220,
@@ -3473,7 +3473,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784229,
@@ -3501,7 +3501,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784264,
@@ -3529,7 +3529,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784266,
@@ -3557,7 +3557,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784269,
@@ -3585,7 +3585,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784272,
@@ -3613,7 +3613,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784274,
@@ -3641,7 +3641,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784276,
@@ -3669,7 +3669,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784277,
@@ -3697,7 +3697,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784280,
@@ -3725,7 +3725,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784284,
@@ -3753,7 +3753,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784332,
@@ -3781,7 +3781,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784340,
@@ -3809,7 +3809,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784344,
@@ -3837,7 +3837,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784349,
@@ -3865,7 +3865,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784350,
@@ -3893,7 +3893,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784413,
@@ -3921,7 +3921,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 784419,
@@ -3949,7 +3949,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 788015,
@@ -3977,7 +3977,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     },
     {
       "template_id": 904071,
@@ -4000,7 +4000,7 @@
       "exists_on_atomicassets": true,
       "last_checked_at": "2026-08-01T06:10:28.423Z",
       "metadata_status": "ok",
-      "metadata_fetch_mode": "batch_ids"
+      "metadata_fetch_mode": "cached_confirmed"
     }
   ]
 }

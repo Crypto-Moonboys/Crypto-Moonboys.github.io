@@ -2,7 +2,7 @@
   "collection": "gkniftyheads",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-08-01T06:11:42.787Z",
+  "generated_at": "2026-08-02T06:18:28.786Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-01T06:11:38.042Z"
+      "checked_at": "2026-08-02T06:18:22.678Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-01T06:11:39.006Z"
+      "checked_at": "2026-08-02T06:18:23.602Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-01T06:11:40.466Z"
+      "checked_at": "2026-08-02T06:18:27.247Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-08-01T06:11:40.632Z"
+      "checked_at": "2026-08-02T06:18:27.391Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-01T06:11:41.296Z"
+      "checked_at": "2026-08-02T06:18:28.033Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-01T06:11:42.377Z"
+      "checked_at": "2026-08-02T06:18:28.389Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-01T06:11:42.538Z"
+      "checked_at": "2026-08-02T06:18:28.535Z"
     }
   },
   "data": {
     "collection_stats": {
       "numUsers": 116182,
-      "usdMarketCap": 32511.398180656975,
-      "waxMarketCap": 524822.7292572552,
+      "usdMarketCap": 32511.39818065725,
+      "waxMarketCap": 524822.7292572586,
       "numAssets": 123352
     },
     "num_assets": {
       "numberOfAssets": 123352,
-      "estimatedWaxValue": 524822.7292572292,
-      "estimatedUsdValue": 32511.398180655568
+      "estimatedWaxValue": 524822.7292572306,
+      "estimatedUsdValue": 32511.398180655626
     },
     "marketcap": {
       "waxMarketCap": 458438.5664333417,
@@ -120,13 +120,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 20282.82291797721,
-          "usdVolume": 1073.327351803271,
-          "waxFloor": 4,
+          "waxVolume": 20286.822917977206,
+          "usdVolume": 1073.3461518032711,
+          "waxFloor": 13.72139998,
           "change": 0,
           "buyers": 120,
-          "sellers": 2248,
-          "sales": 4267,
+          "sellers": 2249,
+          "sales": 4268,
           "rank": 9
         }
       },
@@ -705,16 +705,10 @@
       }
     ],
     "volume": {
-      "waxVolume": 6619.126840059999,
-      "usdVolume": 31.65069614946499
+      "waxVolume": 6619.126840049999,
+      "usdVolume": 31.583096149248995
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 0,
-        "sales": 0,
-        "usdVolume": 0,
-        "date": "2026-07-03"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -742,7 +736,7 @@
       {
         "waxVolume": 6587.12683999,
         "sales": 31,
-        "usdVolume": 30.959496147953004,
+        "usdVolume": 30.959496147952994,
         "date": "2026-07-08"
       },
       {
@@ -884,10 +878,16 @@
         "date": "2026-07-31"
       },
       {
+        "waxVolume": 4,
+        "sales": 1,
+        "usdVolume": 0.0188,
+        "date": "2026-08-01"
+      },
+      {
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
-        "date": "2026-08-01"
+        "date": "2026-08-02"
       }
     ]
   },
