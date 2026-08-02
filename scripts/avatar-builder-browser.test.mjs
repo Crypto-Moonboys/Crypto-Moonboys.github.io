@@ -58,6 +58,8 @@ try {
   assert(left.x + left.width <= preview.x, 'Desktop category controls must be left of the avatar');
   assert(right.x >= preview.x + preview.width, 'Desktop selected controls must be right of the avatar');
   assert(preview.height >= 850, `Desktop avatar should fill the available viewport height: ${JSON.stringify(preview)}`);
+  const desktopTrait = await desktop.locator('.trait-button').first().boundingBox();
+  assert(desktopTrait.width >= 90, `Desktop trait cards must remain readable at 1440x900: ${JSON.stringify(desktopTrait)}`);
 
   const initialSources = await desktop.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
   await desktop.locator('#randomize').click();

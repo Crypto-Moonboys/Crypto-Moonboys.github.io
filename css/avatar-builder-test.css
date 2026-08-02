@@ -89,17 +89,23 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   overflow: auto;
   padding: .35rem 1.1rem 1rem;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 140px));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(110px, 100%), 1fr)
+  );
   gap: .85rem;
   justify-content: center;
 }
 .trait-button {
   position: relative;
+  width: 100%;
+  max-width: 140px;
   min-width: 0;
   padding: 0;
   display: grid;
   grid-template-rows: auto auto;
   gap: .3rem;
+  justify-self: center;
   overflow: visible;
   border: 0;
   background: transparent;
@@ -200,7 +206,16 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
   .tray-heading { display: none; }
   .pagination { min-height: 38px; padding: .3rem; }
   .page-button { min-width: 68px; min-height: 28px; }
-  .trait-grid { width: 100%; padding: .65rem; grid-template-columns: repeat(4, minmax(0, 120px)); gap: .7rem; }
+  .trait-grid {
+    width: 100%;
+    padding: .65rem;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(90px, 100%), 1fr)
+    );
+    gap: .7rem;
+  }
+  .trait-button { max-width: 120px; }
   .selection-panel { padding: .65rem; }
   .selection-heading, .back-link { display: none; }
   .selected-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 .55rem; }
@@ -228,12 +243,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
   .category-tabs { display: flex; padding: .25rem 1rem .85rem; overflow-x: auto; scroll-snap-type: x proximity; }
   .category-button { min-width: 76px; scroll-snap-align: start; }
   .trait-tray { max-height: 58vh; }
-  .trait-grid { grid-template-columns: repeat(3, minmax(0, 110px)); padding: .35rem 1rem 1.15rem; gap: .8rem; }
+  .trait-grid { padding: .35rem 1rem 1.15rem; gap: .8rem; }
   .selection-panel { padding: 1rem; }
 }
 
-@media (orientation: portrait) and (min-width: 600px) and (max-width: 1100px) {
-  .trait-grid { grid-template-columns: repeat(4, minmax(0, 120px)); }
+@media (orientation: portrait) and (max-width: 599px) {
+  .trait-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
