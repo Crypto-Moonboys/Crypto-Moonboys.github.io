@@ -102,6 +102,8 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   min-width: 0;
   padding: 0;
   display: grid;
+  grid-template-rows: auto auto;
+  gap: .25rem;
   justify-self: center;
   overflow: visible;
   border: 0;
@@ -117,6 +119,15 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   border-radius: 12px;
   background: #071017;
   box-shadow: inset 0 0 18px rgba(0, 0, 0, .72);
+}
+.trait-name {
+  overflow: hidden;
+  color: var(--white);
+  font-size: .62rem;
+  line-height: 1.15;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .trait-button[aria-pressed="true"] {
   border-color: transparent;

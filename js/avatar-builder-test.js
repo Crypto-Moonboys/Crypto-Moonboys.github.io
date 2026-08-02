@@ -102,6 +102,7 @@ function renderTray() {
   elements.traitGrid.innerHTML = visible.map((trait) => `
     <button class="trait-button" type="button" data-trait="${trait.id}" aria-pressed="${state.selected[category.id] === trait.id}" aria-label="Select ${trait.name}">
       <img src="${trait.thumbnail}" alt="" width="240" height="240" loading="lazy" decoding="async">
+      <span class="trait-name">${trait.name}</span>
     </button>`).join('');
   elements.pagination.innerHTML = `
     <button class="page-button" type="button" data-page="previous" aria-label="Previous trait page" ${state.page === 0 ? 'disabled' : ''}>←</button>
