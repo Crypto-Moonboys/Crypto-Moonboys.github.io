@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05080b">
+  <title>Avatar Builder Test | Crypto Moonboys</title>
+  <meta name="description" content="Temporary preview-only test page for the Crypto Moonboys avatar builder.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/css/avatar-builder-test.css">
+</head>
+<body class="page-standalone-tool">
+  <main class="builder-shell" aria-labelledby="page-title">
+    <section class="control-panel category-panel" aria-labelledby="page-title">
+      <header class="panel-heading">
+        <p class="eyebrow">Temporary test lab</p>
+        <h1 id="page-title">Build a Moonboy</h1>
+        <p>Layer up an identity. Preview only—nothing here mints, buys, or connects a wallet.</p>
+      </header>
+      <nav class="category-tabs" aria-label="Trait categories" id="category-tabs"></nav>
+      <section class="trait-tray" aria-labelledby="tray-title">
+        <div class="tray-heading">
+          <h2 id="tray-title">Traits</h2>
+          <span id="tray-count"></span>
+        </div>
+        <div class="tray-status" id="tray-status" role="status">Loading traits…</div>
+        <div class="trait-grid" id="trait-grid"></div>
+        <div class="pagination" id="pagination" aria-label="Trait pages"></div>
+      </section>
+    </section>
+
+    <section class="preview-panel" aria-label="Avatar preview">
+      <div class="avatar-frame" id="avatar-frame" aria-busy="true">
+        <div class="avatar-stack" id="avatar-stack"></div>
+        <div class="preview-fallback" id="preview-fallback" hidden>One or more layers could not load.</div>
+      </div>
+    </section>
+
+    <aside class="control-panel selection-panel" aria-labelledby="selected-title">
+      <div class="selection-heading">
+        <p class="eyebrow">Current stack</p>
+        <h2 id="selected-title">Selected traits</h2>
+      </div>
+      <ul class="selected-list" id="selected-list"></ul>
+      <div class="main-actions">
+        <button class="action action-primary" type="button" id="randomize">Randomize</button>
+        <button class="action" type="button" id="reset">Reset</button>
+        <button class="action action-danger" type="button" id="clear-all">Clear All</button>
+      </div>
+      <a class="back-link" href="/">Back to Crypto Moonboys</a>
+    </aside>
+  </main>
+  <p class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></p>
+  <noscript><p class="noscript">JavaScript is required to use this preview builder.</p></noscript>
+  <script type="module" src="/js/avatar-builder-test.js"></script>
+</body>
+</html>
