@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { createReadStream, existsSync } from 'node:fs';
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const manifest = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'));
+const hatTraits = manifest.traits.filter((trait) => trait.category === 'hat');
 const contentTypes = new Map([
   ['.css', 'text/css'], ['.html', 'text/html'], ['.js', 'text/javascript'], ['.json', 'application/json'],
   ['.mjs', 'text/javascript'], ['.svg', 'image/svg+xml'], ['.webp', 'image/webp'],
@@ -69,6 +71,24 @@ try {
   assert.equal(await desktop.locator('.avatar-layer').count(), 2, 'Clear All must preserve only required layers');
   await desktop.close();
 
+  const largeDesktop = await openAt({ width: 2560, height: 1440 });
+  const largeBoxes = await Promise.all(['.category-panel', '.preview-panel', '.selection-panel'].map((selector) => largeDesktop.locator(selector).boundingBox()));
+  const [largeLeft, largePreview, largeRight] = largeBoxes;
+  assert(Math.abs(largePreview.width - largePreview.height) < 1, 'Large desktop avatar must be square');
+  assert(largePreview.height >= 1407, 'Large desktop avatar must fill the available viewport height without a 1000px cap');
+  assert(largeLeft.x + largeLeft.width <= largePreview.x, 'Large desktop category controls must stay left of the avatar');
+  assert(largeRight.x >= largePreview.x + largePreview.width, 'Large desktop selected controls must stay right of the avatar');
+  await largeDesktop.close();
+
+  const nearSquare = await openAt({ width: 1440, height: 1024 });
+  const nearSquarePreview = await nearSquare.locator('.preview-panel').boundingBox();
+  const nearSquareControls = await nearSquare.locator('.category-panel').boundingBox();
+  assert(Math.abs(nearSquarePreview.width - nearSquarePreview.height) < 1, 'Near-square desktop avatar must remain square');
+  assert(nearSquarePreview.height >= 1007, 'Near-square desktop avatar must fill the available viewport height');
+  assert(nearSquareControls.x >= nearSquarePreview.x + nearSquarePreview.width, 'Near-square controls must stay beside the avatar without overflow');
+  assert(nearSquareControls.x + nearSquareControls.width <= 1440, 'Near-square controls must remain inside the viewport');
+  await nearSquare.close();
+
   const portrait = await openAt({ width: 390, height: 844 });
   const portraitPreview = await portrait.locator('.preview-panel').boundingBox();
   const portraitControls = await portrait.locator('.category-panel').boundingBox();
@@ -83,6 +103,16 @@ try {
   assert(Math.abs(landscapePreview.width - landscapePreview.height) < 1, 'Landscape avatar must be square');
   assert(landscapePreview.height >= 373, 'Landscape avatar must fill available viewport height');
   assert(landscapeControls.x >= landscapePreview.x + landscapePreview.width, 'Landscape controls must sit beside avatar');
+  await landscape.locator('[data-category="hat"]').click();
+  await landscape.locator('.pagination').waitFor({ state: 'visible' });
+  assert.equal((await landscape.locator('.page-label').textContent()).trim(), '1 / 10', 'Landscape Hat tray must expose pagination');
+  await landscape.locator('[data-page="next"]').click();
+  const pageTwoTrait = landscape.locator('.trait-button').first();
+  const pageTwoTraitId = await pageTwoTrait.getAttribute('data-trait');
+  assert(hatTraits.findIndex((trait) => trait.id === pageTwoTraitId) >= 24, 'Landscape page two must expose a Hat beyond index 24');
+  await pageTwoTrait.click();
+  await landscape.locator('#avatar-frame[aria-busy="false"]').waitFor();
+  assert.equal(await landscape.locator(`[data-trait="${pageTwoTraitId}"]`).getAttribute('aria-pressed'), 'true', 'Landscape must allow selecting a Hat beyond page one');
   await landscape.close();
 
   const tabletLandscape = await openAt({ width: 1024, height: 768 });
@@ -93,6 +123,25 @@ try {
   assert(tabletControls.x >= tabletPreview.x + tabletPreview.width, 'Tablet landscape controls must sit beside avatar');
   await tabletLandscape.close();
 
+  const rapid = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const [rapidFirst, rapidSecond] = hatTraits.slice(1, 3);
+  await rapid.route('**/img/avatar-builder/layers/hat/**', async (route) => {
+    const requestPath = new URL(route.request().url()).pathname;
+    if (requestPath === rapidFirst.layer) await new Promise((resolve) => setTimeout(resolve, 75));
+    if (requestPath === rapidSecond.layer) await new Promise((resolve) => setTimeout(resolve, 350));
+    await route.continue();
+  });
+  await rapid.goto(url, { waitUntil: 'networkidle' });
+  await rapid.locator('#avatar-frame[aria-busy="false"]').waitFor();
+  await rapid.locator('[data-category="hat"]').click();
+  await rapid.locator(`[data-trait="${rapidFirst.id}"]`).dispatchEvent('click');
+  await rapid.locator(`[data-trait="${rapidSecond.id}"]`).dispatchEvent('click');
+  await rapid.waitForTimeout(150);
+  assert.equal(await rapid.locator('#avatar-frame').getAttribute('aria-busy'), 'true', 'A stale layer callback must not mark the newer render complete');
+  await rapid.locator('#avatar-frame[aria-busy="false"]').waitFor();
+  assert.equal(await rapid.locator(`.avatar-layer[src="${rapidSecond.layer}"]`).count(), 1, 'Rapid selection must keep the newest layer');
+  await rapid.close();
+
   const missing = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await missing.route('**/img/avatar-builder/layers/body/**', (route) => route.abort());
   await missing.goto(url, { waitUntil: 'networkidle' });
@@ -101,7 +150,7 @@ try {
   assert.match(await missing.locator('#preview-fallback').textContent(), /could not load/);
   await missing.close();
 
-  console.log('Avatar browser checks passed for desktop, portrait, landscape, interactions, and missing images.');
+  console.log('Avatar browser checks passed for responsive layouts, landscape pagination, rapid selection, interactions, and missing images.');
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

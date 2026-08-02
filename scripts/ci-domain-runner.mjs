@@ -101,6 +101,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['npm', 'run', 'test:avatar-builder'],
     ['node', 'scripts/portal-artwork.test.mjs'],
     ['node', 'scripts/right-rail-live-panels.test.mjs'],
     ['node', 'scripts/favicon-consistency.test.mjs'],

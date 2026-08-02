@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+const deployWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/deploy-pages.yml'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
 
@@ -53,6 +54,21 @@ assert.ok(
 assert.ok(
   runner.includes("['node', 'scripts/no-dead-placeholder-copy.mjs']"),
   'visual CI must run no-dead-placeholder-copy.mjs to guard public placeholder copy drift',
+);
+
+assert.ok(
+  runner.includes("['npm', 'run', 'test:avatar-builder']"),
+  'visual CI must run the avatar builder asset and browser regression suite',
+);
+
+assert.ok(
+  workflow.includes('npx playwright install --with-deps chromium'),
+  'visual CI must install Chromium before running avatar builder browser tests',
+);
+
+assert.ok(
+  deployWorkflow.includes('npx playwright install --with-deps chromium'),
+  'Pages deploy must install Chromium before running the visual CI domain',
 );
 
 console.log('CI domain grouping tests PASSED.');

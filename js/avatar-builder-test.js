@@ -3,6 +3,7 @@ import { clearOptionalStack, defaultStack, indexManifest, randomStack } from './
 const PAGE_SIZE = 24;
 const ICONS_URL = '/img/avatar-builder/category-icons.svg';
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
+let layerRenderGeneration = 0;
 
 const elements = {
   avatarFrame: document.querySelector('#avatar-frame'),
@@ -38,8 +39,10 @@ function renderCategories() {
 }
 
 function renderLayers() {
+  const generation = ++layerRenderGeneration;
   let pending = 0;
   let failures = 0;
+  elements.avatarFrame.dataset.renderGeneration = String(generation);
   elements.previewFallback.hidden = true;
   elements.avatarStack.replaceChildren();
   state.manifest.categories.forEach((category) => {
@@ -54,11 +57,13 @@ function renderLayers() {
     image.height = 1000;
     image.decoding = 'async';
     const finish = () => {
+      if (generation !== layerRenderGeneration) return;
       pending -= 1;
       if (pending === 0) elements.avatarFrame.setAttribute('aria-busy', 'false');
     };
     image.addEventListener('load', finish, { once: true });
     image.addEventListener('error', () => {
+      if (generation !== layerRenderGeneration) return;
       failures += 1;
       image.hidden = true;
       elements.previewFallback.hidden = false;
@@ -68,7 +73,9 @@ function renderLayers() {
     }, { once: true });
     elements.avatarStack.append(image);
   });
-  elements.avatarFrame.setAttribute('aria-busy', pending ? 'true' : 'false');
+  if (generation === layerRenderGeneration) {
+    elements.avatarFrame.setAttribute('aria-busy', pending ? 'true' : 'false');
+  }
 }
 
 function renderSelected() {
