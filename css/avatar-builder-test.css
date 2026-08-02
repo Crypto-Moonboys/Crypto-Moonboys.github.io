@@ -53,9 +53,11 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
 
 .category-tabs {
   display: grid;
-  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-template-columns: repeat(9, minmax(40px, 1fr));
   gap: .35rem;
   padding: .75rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
 }
 .category-button, .trait-button, .icon-button, .action, .page-button {
   border: 1px solid var(--line);
@@ -70,6 +72,7 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   place-items: center;
   border-radius: 7px;
   color: var(--muted);
+  scroll-snap-align: start;
 }
 .category-button svg { width: min(20px, 75%); height: min(20px, 75%); color: var(--cyan); }
 .selected-icon { width: 27px; height: 27px; color: var(--cyan); }
