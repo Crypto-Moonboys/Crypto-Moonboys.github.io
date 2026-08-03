@@ -1,4 +1,5 @@
 import { clearOptionalStack, defaultStack, indexManifest, randomStack } from './avatar-builder-core.mjs';
+import { isAnimatedBackground, loadAnimatedBackground } from './avatar-backgrounds/registry.js';
 
 const PAGE_SIZE = 24;
 const ICONS_URL = '/img/avatar-builder/category-icons.svg';
@@ -24,7 +25,9 @@ host.innerHTML = `
 
     <section class="preview-panel" aria-label="Avatar preview">
       <div class="avatar-frame" id="avatar-frame" aria-busy="true">
-        <div class="avatar-stack" id="avatar-stack"></div>
+        <div class="avatar-stack" id="avatar-stack">
+          <canvas class="animated-background-canvas" id="animated-background-canvas" width="1000" height="1000" hidden aria-hidden="true"></canvas>
+        </div>
         <div class="preview-fallback" id="preview-fallback" hidden>One or more layers could not load.</div>
       </div>
     </section>
@@ -49,10 +52,16 @@ host.innerHTML = `
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
 let layerRenderGeneration = 0;
 let exportInProgress = false;
+let backgroundLoadGeneration = 0;
+let activeBackgroundRenderer = null;
+let activeBackgroundKey = null;
+let lastWorkingBackgroundId = null;
+let builderIntersecting = true;
 
 const elements = {
   avatarFrame: host.querySelector('#avatar-frame'),
   avatarStack: host.querySelector('#avatar-stack'),
+  animatedCanvas: host.querySelector('#animated-background-canvas'),
   categoryTabs: host.querySelector('#category-tabs'),
   clearAll: host.querySelector('#clear-all'),
   downloadPng: host.querySelector('#download-png'),
@@ -99,18 +108,28 @@ async function downloadAvatarPng() {
 
   const snapshot = state.manifest.categories
     .map((category) => state.traitsById.get(state.selected[category.id]))
-    .filter(Boolean)
-    .map((trait) => ({ layer: trait.layer, name: trait.name }));
+    .filter(Boolean);
 
   try {
     if (!snapshot.length) throw new Error('Select at least one avatar layer before downloading.');
-    const images = await Promise.all(snapshot.map(loadExportImage));
+    const images = new Map(await Promise.all(snapshot
+      .filter((trait) => !isAnimatedBackground(trait))
+      .map(async (trait) => [trait.id, await loadExportImage(trait)])));
     const canvas = document.createElement('canvas');
     canvas.width = 1000;
     canvas.height = 1000;
     const context = canvas.getContext('2d');
     if (!context) throw new Error('PNG export is not supported by this browser.');
-    images.forEach((image) => context.drawImage(image, 0, 0, 1000, 1000));
+    snapshot.forEach((trait) => {
+      if (isAnimatedBackground(trait)) {
+        if (elements.animatedCanvas.hidden || !activeBackgroundRenderer) {
+          throw new Error(`${trait.name} is not ready for export.`);
+        }
+        context.drawImage(elements.animatedCanvas, 0, 0, 1000, 1000);
+      } else {
+        context.drawImage(images.get(trait.id), 0, 0, 1000, 1000);
+      }
+    });
     const blob = await new Promise((resolve, reject) => {
       canvas.toBlob((result) => {
         if (result) resolve(result);
@@ -143,16 +162,92 @@ function renderCategories() {
     </button>`).join('');
 }
 
+function clearAnimatedCanvas() {
+  const context = elements.animatedCanvas.getContext('2d');
+  context?.clearRect(0, 0, elements.animatedCanvas.width, elements.animatedCanvas.height);
+}
+
+function destroyAnimatedBackground() {
+  backgroundLoadGeneration += 1;
+  activeBackgroundRenderer?.destroy();
+  activeBackgroundRenderer = null;
+  activeBackgroundKey = null;
+  elements.animatedCanvas.hidden = true;
+  clearAnimatedCanvas();
+}
+
+function syncBackgroundPlayback() {
+  if (!activeBackgroundRenderer) return;
+  if (builderIntersecting && document.visibilityState === 'visible') activeBackgroundRenderer.resume();
+  else activeBackgroundRenderer.pause();
+}
+
+async function activateAnimatedBackground(trait) {
+  if (!isAnimatedBackground(trait)) {
+    destroyAnimatedBackground();
+    lastWorkingBackgroundId = trait?.id || lastWorkingBackgroundId;
+    return;
+  }
+  if (activeBackgroundRenderer && activeBackgroundKey === trait.renderer) {
+    elements.animatedCanvas.hidden = false;
+    activeBackgroundRenderer.resize();
+    syncBackgroundPlayback();
+    lastWorkingBackgroundId = trait.id;
+    return;
+  }
+
+  const generation = ++backgroundLoadGeneration;
+  activeBackgroundRenderer?.destroy();
+  activeBackgroundRenderer = null;
+  activeBackgroundKey = null;
+  clearAnimatedCanvas();
+  elements.animatedCanvas.hidden = false;
+
+  const createRenderer = await loadAnimatedBackground(trait.renderer);
+  if (generation !== backgroundLoadGeneration) return;
+  const renderer = createRenderer(elements.animatedCanvas);
+  if (generation !== backgroundLoadGeneration) {
+    renderer.destroy();
+    return;
+  }
+  activeBackgroundRenderer = renderer;
+  activeBackgroundKey = trait.renderer;
+  renderer.start();
+  syncBackgroundPlayback();
+  lastWorkingBackgroundId = trait.id;
+}
+
 function renderLayers() {
   const generation = ++layerRenderGeneration;
   let pending = 0;
   let failures = 0;
   elements.avatarFrame.dataset.renderGeneration = String(generation);
   elements.previewFallback.hidden = true;
-  elements.avatarStack.replaceChildren();
+  elements.avatarStack.querySelectorAll('.avatar-layer').forEach((layer) => layer.remove());
+  const backgroundTrait = state.traitsById.get(state.selected.background);
+  pending += 1;
+  activateAnimatedBackground(backgroundTrait).catch((error) => {
+    if (generation !== layerRenderGeneration) return;
+    console.error(error);
+    announce(`${backgroundTrait?.name || 'Animated background'} could not be loaded. The previous background was restored.`);
+    const fallbackId = lastWorkingBackgroundId || state.manifest.categories.find((category) => category.id === 'background').defaultTraitId;
+    if (fallbackId && fallbackId !== state.selected.background) {
+      state.selected.background = fallbackId;
+      renderTray();
+      renderSelected();
+      renderLayers();
+    } else {
+      destroyAnimatedBackground();
+    }
+  }).finally(() => {
+    if (generation !== layerRenderGeneration) return;
+    pending -= 1;
+    if (pending === 0) elements.avatarFrame.setAttribute('aria-busy', 'false');
+  });
   state.manifest.categories.forEach((category) => {
     const trait = state.traitsById.get(state.selected[category.id]);
     if (!trait) return;
+    if (isAnimatedBackground(trait)) return;
     pending += 1;
     const image = document.createElement('img');
     image.className = 'avatar-layer';
@@ -286,6 +381,7 @@ async function initialize() {
     ({ traitsById: state.traitsById, traitsByCategory: state.traitsByCategory } = indexManifest(state.manifest));
     state.activeCategory = state.manifest.categoryOrder[0];
     state.selected = defaultStack(state.manifest);
+    lastWorkingBackgroundId = state.selected.background;
     renderAll();
     elements.downloadPng.disabled = false;
   } catch (error) {
@@ -298,5 +394,14 @@ async function initialize() {
     console.error(error);
   }
 }
+
+const intersectionObserver = new IntersectionObserver(([entry]) => {
+  builderIntersecting = entry?.isIntersecting ?? true;
+  syncBackgroundPlayback();
+}, { threshold: .01 });
+intersectionObserver.observe(host);
+document.addEventListener('visibilitychange', syncBackgroundPlayback);
+new ResizeObserver(() => activeBackgroundRenderer?.resize()).observe(elements.avatarFrame);
+window.addEventListener('pagehide', destroyAnimatedBackground, { once: true });
 
 initialize();

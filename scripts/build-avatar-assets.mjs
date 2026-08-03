@@ -1,4 +1,4 @@
-import { mkdir, readdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -8,6 +8,8 @@ const SOURCE_ROOT = path.join(ROOT, 'img', 'CRYPTO-MOONBOYS-OG-TRAITS');
 const LAYER_ROOT = path.join(ROOT, 'img', 'avatar-builder', 'layers');
 const THUMB_ROOT = path.join(ROOT, 'img', 'avatar-builder', 'thumbnails');
 const MANIFEST_PATH = path.join(ROOT, 'data', 'avatar-builder-manifest.json');
+const ANIMATED_CONFIG_PATH = path.join(ROOT, 'data', 'avatar-builder-animated-backgrounds.json');
+const ANIMATED_THUMB_ROOT = path.join(ROOT, 'img', 'avatar-builder', 'animated-thumbnails');
 
 export const CATEGORY_DEFINITIONS = [
   { id: 'background', name: 'Background', folder: 'LAYER 1 BACKGROUNDS', required: true },
@@ -96,10 +98,41 @@ async function pruneGeneratedDirectory(directory, expectedNames) {
     .map((entry) => unlink(path.join(directory, entry.name))));
 }
 
+function animatedThumbnailSvg(renderer) {
+  const artwork = {
+    'matrix-rain': `<rect width="240" height="240" fill="#010704"/><g fill="#2fee68" font-family="monospace" font-weight="700" font-size="17" opacity=".8"><text x="18" y="28">0</text><text x="65" y="52">NBG</text><text x="126" y="28">1</text><text x="168" y="68">BTC</text><text x="24" y="98">WAX</text><text x="96" y="124">MOONBOY</text><text x="50" y="162">10110</text><text x="142" y="194">NBG</text><text x="22" y="224">BTC</text></g>`,
+    'neon-pulse': `<defs><radialGradient id="a"><stop stop-color="#00efff" stop-opacity=".9"/><stop offset="1" stop-color="#00efff" stop-opacity="0"/></radialGradient><radialGradient id="b"><stop stop-color="#e42cff" stop-opacity=".8"/><stop offset="1" stop-color="#e42cff" stop-opacity="0"/></radialGradient></defs><rect width="240" height="240" fill="#030515"/><circle cx="72" cy="82" r="118" fill="url(#a)"/><circle cx="180" cy="164" r="126" fill="url(#b)"/>`,
+    'pixel-starfield': `<rect width="240" height="240" fill="#01040f"/><g fill="#fff"><rect x="118" y="115" width="5" height="5"/><rect x="35" y="42" width="3" height="3"/><rect x="186" y="50" width="4" height="4"/><rect x="70" y="182" width="5" height="5"/></g><g fill="#6cf7ff"><rect x="22" y="126" width="6" height="6"/><rect x="202" y="176" width="7" height="7"/><rect x="155" y="23" width="3" height="3"/></g><g fill="#ffd166"><rect x="213" y="87" width="4" height="4"/><rect x="92" y="66" width="3" height="3"/></g>`,
+  }[renderer];
+  if (!artwork) throw new Error(`No thumbnail artwork for ${renderer}`);
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">${artwork}</svg>`);
+}
+
+async function prepareAnimatedBackgrounds() {
+  const configured = JSON.parse(await readFile(ANIMATED_CONFIG_PATH, 'utf8'));
+  if (!Array.isArray(configured) || configured.length !== 3) {
+    throw new Error('Animated background config must contain exactly three records.');
+  }
+  const ids = new Set();
+  await mkdir(ANIMATED_THUMB_ROOT, { recursive: true });
+  await Promise.all(configured.map(async (trait) => {
+    if (trait.kind !== 'animated' || trait.category !== 'background' || !trait.renderer) {
+      throw new Error(`Invalid animated background record: ${trait.id || 'unknown'}`);
+    }
+    if (ids.has(trait.id)) throw new Error(`Duplicate animated background ID: ${trait.id}`);
+    ids.add(trait.id);
+    const thumbnailPath = path.join(ROOT, trait.thumbnail.replace(/^\//, ''));
+    await sharp(animatedThumbnailSvg(trait.renderer)).webp({ quality: 88, effort: 4 }).toFile(thumbnailPath);
+    trait.thumbnailBytes = await byteSize(thumbnailPath);
+  }));
+  return configured;
+}
+
 async function build() {
   const jobs = [];
   const categories = [];
   const traits = [];
+  const animatedBackgrounds = await prepareAnimatedBackgrounds();
 
   for (const category of CATEGORY_DEFINITIONS) {
     const files = await listSourceTraits(category);
@@ -156,15 +189,19 @@ async function build() {
     job.trait.thumbnailBytes = await byteSize(job.thumbnailPath);
   });
 
+  traits.push(...animatedBackgrounds);
+  const backgroundCategory = categories.find((category) => category.id === 'background');
+  backgroundCategory.count += animatedBackgrounds.length;
+
   const totals = traits.reduce((summary, trait) => ({
-    layerBytes: summary.layerBytes + trait.layerBytes,
-    thumbnailBytes: summary.thumbnailBytes + trait.thumbnailBytes,
+    layerBytes: summary.layerBytes + (trait.layerBytes || 0),
+    thumbnailBytes: summary.thumbnailBytes + (trait.thumbnailBytes || 0),
   }), { layerBytes: 0, thumbnailBytes: 0 });
 
   const defaults = new Map(categories.map((category) => [category.id, category.defaultTraitId]));
   const approximateInitialTransferBytes = traits
     .filter((trait) => defaults.get(trait.category) === trait.id)
-    .reduce((sum, trait) => sum + trait.layerBytes, 0);
+    .reduce((sum, trait) => sum + (trait.layerBytes || 0), 0);
 
   const manifest = {
     version: 1,
@@ -173,8 +210,8 @@ async function build() {
     categoryOrder: categories.map((category) => category.id),
     categories,
     counts: {
-      source: traits.length,
-      layers: traits.length,
+      source: jobs.length,
+      layers: jobs.length,
       thumbnails: traits.length,
     },
     totals: { ...totals, approximateInitialTransferBytes },

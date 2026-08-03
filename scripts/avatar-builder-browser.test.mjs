@@ -13,6 +13,7 @@ const DOWNLOAD_DISCLAIMER = 'A download is not ownership of a Moonboy. For fun o
 const OLD_DOWNLOAD_HELPER = 'Downloads the avatar exactly as shown.';
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'));
 const hatTraits = manifest.traits.filter((trait) => trait.category === 'hat');
+const animatedTraits = manifest.traits.filter((trait) => trait.kind === 'animated');
 const contentTypes = new Map([
   ['.css', 'text/css'], ['.html', 'text/html'], ['.js', 'text/javascript'], ['.json', 'application/json'],
   ['.mjs', 'text/javascript'], ['.svg', 'image/svg+xml'], ['.webp', 'image/webp'],
@@ -103,6 +104,22 @@ async function openExportPage(url = standaloneUrl) {
   await page.goto(url, { waitUntil: url === homepageUrl ? 'domcontentloaded' : 'networkidle' });
   await page.locator('#avatar-frame[aria-busy="false"]').waitFor();
   return page;
+}
+
+async function selectTrait(page, traitId) {
+  await page.locator('[data-category="background"]').click();
+  for (let pageIndex = 0; pageIndex < 5; pageIndex += 1) {
+    const trait = page.locator(`[data-trait="${traitId}"]`);
+    if (await trait.count()) {
+      await trait.click();
+      await page.locator('#avatar-frame[aria-busy="false"]').waitFor();
+      return;
+    }
+    const next = page.locator('[data-page="next"]');
+    if (await next.isDisabled()) break;
+    await next.click();
+  }
+  throw new Error(`Trait was not found in the picker: ${traitId}`);
 }
 
 async function downloadAndInspect(page) {
@@ -283,6 +300,13 @@ try {
   await homepageDesktop.locator('#clear-all').click();
   await homepageDesktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await homepageDesktop.locator('.avatar-layer').count(), 2, 'Homepage Clear All must preserve required layers');
+  await selectTrait(homepageDesktop, 'background-matrix-rain');
+  await homepageDesktop.locator('.animated-background-canvas:not([hidden])').waitFor();
+  assert.equal(await homepageDesktop.locator('.animated-background-canvas').getAttribute('data-renderer'), 'matrix-rain', 'Homepage must run animated backgrounds through the shared builder');
+  await homepageDesktop.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await homepageDesktop.waitForFunction(() => document.querySelector('.animated-background-canvas')?.dataset.rendererState === 'paused');
+  await homepageDesktop.locator('.homepage-avatar-builder').evaluate((element) => element.scrollIntoView({ block: 'center' }));
+  await homepageDesktop.waitForFunction(() => ['resumed', 'started'].includes(document.querySelector('.animated-background-canvas')?.dataset.rendererState));
   await homepageDesktop.close();
 
   for (const [width, height] of [[2560, 1440], [1920, 1080]]) {
@@ -354,6 +378,77 @@ try {
   await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await desktop.locator('.avatar-layer').count(), 2, 'Clear All must preserve only required layers');
   await desktop.close();
+
+  const animated = await openAt({ width: 1440, height: 900 });
+  await animated.evaluate(() => {
+    window.__avatarBackgroundEvents = [];
+    document.querySelector('.animated-background-canvas').addEventListener('avatar-background-lifecycle', (event) => {
+      window.__avatarBackgroundEvents.push({ ...event.detail });
+    });
+  });
+  await selectTrait(animated, 'background-matrix-rain');
+  assert.equal(await animated.locator('.animated-background-canvas').getAttribute('data-renderer'), 'matrix-rain');
+  assert.equal(await animated.locator('.animated-background-canvas').getAttribute('data-active-renderer-count'), '1', 'Selecting Matrix Rain must start exactly one renderer');
+  assert.equal(await animated.locator('.avatar-layer').count(), 8, 'Animated background canvas must replace only the static background image layer');
+  assert.match(await animated.locator('.selected-list').textContent(), /Matrix Rain/, 'Animated selection must appear in the selected trait stack');
+  assert(animated.requestedUrls.some((url) => url.endsWith('/js/avatar-backgrounds/matrix-rain.js')), 'Matrix renderer module must load on selection');
+  assert(!animated.requestedUrls.some((url) => url.endsWith('/js/avatar-backgrounds/neon-pulse.js')), 'Unselected Neon renderer must remain lazy');
+  assert(!animated.requestedUrls.some((url) => url.endsWith('/js/avatar-backgrounds/pixel-starfield.js')), 'Unselected Starfield renderer must remain lazy');
+
+  await selectTrait(animated, 'background-neon-pulse');
+  await selectTrait(animated, 'background-pixel-starfield');
+  const lifecycle = await animated.evaluate(() => window.__avatarBackgroundEvents);
+  const matrixDestroyed = lifecycle.findIndex((event) => event.renderer === 'matrix-rain' && event.action === 'destroyed');
+  const neonStarted = lifecycle.findIndex((event) => event.renderer === 'neon-pulse' && event.action === 'started');
+  const neonDestroyed = lifecycle.findIndex((event) => event.renderer === 'neon-pulse' && event.action === 'destroyed');
+  const starfieldStarted = lifecycle.findIndex((event) => event.renderer === 'pixel-starfield' && event.action === 'started');
+  assert(matrixDestroyed >= 0 && neonStarted > matrixDestroyed, 'Neon Pulse must destroy Matrix Rain before starting');
+  assert(neonDestroyed >= 0 && starfieldStarted > neonDestroyed, 'Starfield must destroy Neon Pulse before starting');
+  assert.equal(await animated.locator('.animated-background-canvas').getAttribute('data-active-renderer-count'), '1', 'Only one renderer loop may remain active after switching');
+
+  await animated.evaluate(() => {
+    window.__testVisibilityState = 'hidden';
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => window.__testVisibilityState });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await animated.waitForFunction(() => document.querySelector('.animated-background-canvas')?.dataset.rendererState === 'paused');
+  await animated.evaluate(() => {
+    window.__testVisibilityState = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await animated.waitForFunction(() => document.querySelector('.animated-background-canvas')?.dataset.rendererState === 'resumed');
+
+  await selectTrait(animated, manifest.categories.find((category) => category.id === 'background').defaultTraitId);
+  assert.equal(await animated.locator('.animated-background-canvas').isHidden(), true, 'Switching to a static background must hide the animated canvas');
+  assert.equal(await animated.locator('.avatar-layer').count(), 9, 'Switching to static must restore the background image layer');
+  assert((await animated.evaluate(() => window.__avatarBackgroundEvents)).some((event) => event.renderer === 'pixel-starfield' && event.action === 'destroyed'), 'Switching to static must destroy Starfield');
+  await animated.close();
+
+  const failedAnimated = await openAt({ width: 1440, height: 900 });
+  await selectTrait(failedAnimated, 'background-matrix-rain');
+  await failedAnimated.route('**/js/avatar-backgrounds/neon-pulse.js', (route) => route.abort());
+  await selectTrait(failedAnimated, 'background-neon-pulse');
+  assert.equal(await failedAnimated.locator('.animated-background-canvas').getAttribute('data-renderer'), 'matrix-rain', 'Renderer load failure must restore the previous working background');
+  assert.match(await failedAnimated.locator('#live-region').textContent(), /previous background was restored/i, 'Renderer load failure must be announced accessibly');
+  await failedAnimated.close();
+
+  const reduced = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await reduced.emulateMedia({ reducedMotion: 'reduce' });
+  await reduced.goto(standaloneUrl, { waitUntil: 'networkidle' });
+  await reduced.locator('#avatar-frame[aria-busy="false"]').waitFor();
+  await selectTrait(reduced, 'background-matrix-rain');
+  assert.equal(await reduced.locator('.animated-background-canvas').getAttribute('data-renderer-state'), 'static', 'Reduced motion must render a static frame without a continuous loop');
+  await assertNoHorizontalPageOverflow(reduced, 'Reduced-motion animated background');
+  await reduced.close();
+
+  const animatedExport = await openExportPage();
+  await selectTrait(animatedExport, 'background-neon-pulse');
+  await downloadAndInspect(animatedExport);
+  const animatedDraws = await animatedExport.evaluate(() => window.__exportDraws);
+  assert.equal(animatedDraws.length, 9, 'Animated export must draw one background frame and eight character layers');
+  assert.equal(animatedDraws[0], undefined, 'Animated export must draw the current canvas frame first');
+  assert(animatedDraws.slice(1).every((source) => source.includes('/img/avatar-builder/layers/')), 'Character image layers must be drawn above the animated frame');
+  await animatedExport.close();
 
   const fullExport = await openExportPage();
   assert.equal(await fullExport.locator('#download-png').count(), 1, 'Standalone builder must include one Download PNG button');
@@ -533,7 +628,7 @@ try {
   assert.match(await missing.locator('#preview-fallback').textContent(), /could not load/);
   await missing.close();
 
-  console.log('Avatar browser checks passed for homepage integration, responsive layouts, request limits, interaction parity, landscape pagination, rapid selection, and missing images.');
+  console.log('Avatar browser checks passed for homepage integration, responsive layouts, animated background lifecycle, reduced motion, PNG export, request limits, interaction parity, and failure recovery.');
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

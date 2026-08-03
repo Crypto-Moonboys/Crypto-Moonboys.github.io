@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -11,8 +11,11 @@ const expectedCategories = ['background', 'body', 'tattoos', 'clothes', 'chains'
 
 assert.deepEqual(manifest.categoryOrder, expectedCategories, 'Manifest category order must include all nine layers');
 assert.equal(manifest.categories.length, 9, 'Manifest must contain nine categories');
-assert.equal(manifest.traits.length, manifest.counts.source, 'Source count must match manifest traits');
-assert.equal(manifest.counts.layers, manifest.traits.length, 'Layer count must match manifest traits');
+const animatedTraits = manifest.traits.filter((trait) => trait.kind === 'animated');
+const imageTraits = manifest.traits.filter((trait) => trait.kind !== 'animated');
+assert.equal(imageTraits.length, 912, 'All 912 existing image traits must remain available');
+assert.equal(manifest.counts.source, imageTraits.length, 'Source count must match image traits');
+assert.equal(manifest.counts.layers, imageTraits.length, 'Layer count must match image traits');
 assert.equal(manifest.counts.thumbnails, manifest.traits.length, 'Thumbnail count must match manifest traits');
 assert.deepEqual(manifest.categories.filter((category) => category.required).map((category) => category.id), ['background', 'body']);
 
@@ -21,9 +24,17 @@ for (const trait of manifest.traits) {
   assert.match(trait.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Trait ID is not web-safe: ${trait.id}`);
   assert(!ids.has(trait.id), `Duplicate trait ID: ${trait.id}`);
   ids.add(trait.id);
-  assert(!trait.layer.includes('CRYPTO-MOONBOYS-OG-TRAITS'));
+  if (trait.layer) assert(!trait.layer.includes('CRYPTO-MOONBOYS-OG-TRAITS'));
   assert(!trait.thumbnail.includes('CRYPTO-MOONBOYS-OG-TRAITS'));
 }
+
+assert.deepEqual(animatedTraits.map((trait) => trait.id), [
+  'background-matrix-rain',
+  'background-neon-pulse',
+  'background-pixel-starfield',
+], 'Manifest must include exactly the three Phase 1 animated backgrounds');
+assert.deepEqual(animatedTraits.map((trait) => trait.renderer), ['matrix-rain', 'neon-pulse', 'pixel-starfield']);
+assert(animatedTraits.every((trait) => trait.category === 'background' && trait.thumbnail.endsWith('.webp')));
 
 async function collectFiles(directory) {
   const output = [];
@@ -36,8 +47,11 @@ async function collectFiles(directory) {
 }
 
 const layerFiles = await collectFiles(path.join(ROOT, 'img', 'avatar-builder', 'layers'));
-const thumbnailFiles = await collectFiles(path.join(ROOT, 'img', 'avatar-builder', 'thumbnails'));
-assert.equal(layerFiles.length, manifest.traits.length, 'Generated layer file count must match manifest');
+const thumbnailFiles = [
+  ...await collectFiles(path.join(ROOT, 'img', 'avatar-builder', 'thumbnails')),
+  ...await collectFiles(path.join(ROOT, 'img', 'avatar-builder', 'animated-thumbnails')),
+];
+assert.equal(layerFiles.length, imageTraits.length, 'Generated layer file count must match image traits');
 assert.equal(thumbnailFiles.length, manifest.traits.length, 'Generated thumbnail file count must match manifest');
 
 async function verifyDimensions(files, expectedSize, label) {
@@ -84,5 +98,18 @@ const cleared = clearOptionalStack(manifest, defaults);
 assert.equal(cleared.background, defaults.background);
 assert.equal(cleared.body, defaults.body);
 assert(manifest.categories.filter((category) => !category.required).every((category) => cleared[category.id] === null));
+const animatedCleared = clearOptionalStack(manifest, { ...defaults, background: 'background-matrix-rain' });
+assert.equal(animatedCleared.background, 'background-matrix-rain', 'Clear All must preserve the selected animated required background');
+assert.equal(randomStack(manifest, () => .999).background, 'background-pixel-starfield', 'Randomize must be able to choose an animated background');
+
+for (const relativePath of [
+  'js/avatar-backgrounds/registry.js',
+  'js/avatar-backgrounds/renderer-utils.js',
+  'js/avatar-backgrounds/matrix-rain.js',
+  'js/avatar-backgrounds/neon-pulse.js',
+  'js/avatar-backgrounds/pixel-starfield.js',
+]) {
+  await stat(path.join(ROOT, relativePath));
+}
 
 console.log(`Avatar asset checks passed: ${manifest.traits.length} traits, ${layerFiles.length} layers, ${thumbnailFiles.length} thumbnails.`);

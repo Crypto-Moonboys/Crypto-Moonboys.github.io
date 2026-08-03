@@ -1,0 +1,26 @@
+[
+  {
+    "id": "background-matrix-rain",
+    "name": "Matrix Rain",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "matrix-rain",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/matrix-rain.webp"
+  },
+  {
+    "id": "background-neon-pulse",
+    "name": "Neon Pulse",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "neon-pulse",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/neon-pulse.webp"
+  },
+  {
+    "id": "background-pixel-starfield",
+    "name": "8-Bit Starfield",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "pixel-starfield",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-starfield.webp"
+  }
+]
