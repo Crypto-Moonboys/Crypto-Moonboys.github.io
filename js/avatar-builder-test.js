@@ -36,9 +36,8 @@ host.innerHTML = `
       </div>
       <ul class="selected-list" id="selected-list"></ul>
       <div class="main-actions">
-        <button class="action action-primary action-export" type="button" id="download-png" aria-label="Download avatar as PNG" disabled>Download PNG</button>
         <button class="action" type="button" id="randomize">Randomize</button>
-        <button class="action" type="button" id="reset">Reset</button>
+        <button class="action action-primary action-export" type="button" id="download-png" aria-label="Download avatar as PNG" disabled>Download PNG</button>
         <button class="action action-danger" type="button" id="clear-all">Clear All</button>
       </div>
       <p class="download-helper">A download is not ownership of a Moonboy. For fun only.</p>
@@ -61,7 +60,6 @@ const elements = {
   pagination: host.querySelector('#pagination'),
   previewFallback: host.querySelector('#preview-fallback'),
   randomize: host.querySelector('#randomize'),
-  reset: host.querySelector('#reset'),
   selectedList: host.querySelector('#selected-list'),
   traitGrid: host.querySelector('#trait-grid'),
   trayCount: host.querySelector('#tray-count'),
@@ -272,12 +270,6 @@ elements.randomize.addEventListener('click', () => {
   announce('A complete random avatar stack is ready.');
 });
 
-elements.reset.addEventListener('click', () => {
-  state.selected = defaultStack(state.manifest);
-  renderAll();
-  announce('Default avatar restored.');
-});
-
 elements.clearAll.addEventListener('click', () => {
   state.selected = clearOptionalStack(state.manifest, state.selected);
   renderAll();
@@ -301,7 +293,6 @@ async function initialize() {
     elements.trayStatus.textContent = 'The avatar builder could not load. Please refresh and try again.';
     elements.avatarFrame.setAttribute('aria-busy', 'false');
     elements.randomize.disabled = true;
-    elements.reset.disabled = true;
     elements.clearAll.disabled = true;
     elements.downloadPng.disabled = true;
     console.error(error);
