@@ -1,4 +1,4 @@
-import { createAnimatedRenderer } from './renderer-utils.js';
+import { createAnimatedRenderer, positiveModulo } from './renderer-utils.js';
 
 function makeCoins(count) {
   let seed = 0x434f494e;
@@ -10,7 +10,7 @@ export function createBackgroundRenderer(canvas) {
   return createAnimatedRenderer(canvas, 'floating-crypto-coins', ({ context, width, height, time }) => {
     context.fillStyle = '#050711'; context.fillRect(0, 0, width, height);
     for (let index = 0; index < coins.length; index += 1) {
-      const coin = coins[index], y = ((coin.y - time * coin.speed + 1) % 1) * height;
+      const coin = coins[index], y = positiveModulo(coin.y - time * coin.speed, 1) * height;
       const radius = width * .018 * coin.depth;
       const squash = .28 + Math.abs(Math.cos(time * .0007 + index)) * .72;
       context.fillStyle = squash > .75 ? '#f6c84a' : squash > .48 ? '#d99a25' : '#8d5511';

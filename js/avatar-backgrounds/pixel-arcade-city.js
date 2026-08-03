@@ -1,9 +1,10 @@
-import { createAnimatedRenderer } from './renderer-utils.js';
+import { createAnimatedRenderer, positiveModulo } from './renderer-utils.js';
 
 function skyline(context, width, height, offset, scale, color, windowColor) {
   const unit = Math.max(8, Math.round(width / 44));
+  const wrapWidth = width + unit * 4;
   for (let index = -2; index < 48; index += 1) {
-    const x = Math.round(((index * unit * 1.7 - offset) % (width + unit * 4)) - unit * 2);
+    const x = Math.round(positiveModulo(index * unit * 1.7 - offset, wrapWidth) - unit * 2);
     const buildingHeight = unit * (4 + ((index * 7) % 9));
     const y = Math.round(height - buildingHeight * scale);
     context.fillStyle = color; context.fillRect(x, y, unit * 1.4, height - y);

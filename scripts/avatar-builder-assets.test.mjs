@@ -4,10 +4,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { clearOptionalStack, defaultStack, isCompleteValidStack, randomStack } from '../js/avatar-builder-core.mjs';
+import { positiveModulo } from '../js/avatar-backgrounds/renderer-utils.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'));
 const expectedCategories = ['background', 'body', 'tattoos', 'clothes', 'chains', 'face', 'hat', 'left-arm', 'right-arm'];
+
+assert.equal(positiveModulo(-.25, 1), .75, 'Animated positions must wrap negative unit values back into view');
+assert.equal(positiveModulo(-490, 422), 354, 'Animated positions must wrap repeated negative cycles into a positive range');
 
 assert.deepEqual(manifest.categoryOrder, expectedCategories, 'Manifest category order must include all nine layers');
 assert.equal(manifest.categories.length, 9, 'Manifest must contain nine categories');
