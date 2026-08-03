@@ -236,6 +236,8 @@ try {
   await assertHomepageLayout(homepageDesktop, '1440x900', 'desktop');
   assert.equal(await homepageDesktop.locator('#download-png').count(), 1, 'Homepage builder must include one Download PNG button');
   assert.equal(await homepageDesktop.locator('#download-png').getAttribute('aria-label'), 'Download avatar as PNG', 'Homepage download button must have a clear accessible label');
+  assert.equal(await homepageDesktop.locator('#reset').count(), 0, 'Homepage builder must not include a Reset button');
+  assert.deepEqual(await homepageDesktop.locator('.main-actions .action').evaluateAll((buttons) => buttons.map((button) => button.id)), ['randomize', 'download-png', 'clear-all'], 'Homepage actions must use the simplified order');
 
   const homepageLayerRequests = homepageDesktop.requestedUrls.filter((requestUrl) => requestUrl.includes('/img/avatar-builder/layers/'));
   const homepageThumbnailRequests = homepageDesktop.requestedUrls.filter((requestUrl) => requestUrl.includes('/img/avatar-builder/thumbnails/'));
@@ -243,13 +245,9 @@ try {
   assert(homepageThumbnailRequests.length <= PAGE_SIZE, `Homepage initial load must request at most one visible page of lazy thumbnails: ${homepageThumbnailRequests.length}`);
   assert(!homepageDesktop.requestedUrls.some((requestUrl) => requestUrl.includes('/img/CRYPTO-MOONBOYS-OG-TRAITS/')), 'Homepage must not request original 4000x4000 trait sources');
 
-  const homepageInitialSources = await homepageDesktop.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
   await homepageDesktop.locator('#randomize').click();
   await homepageDesktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await homepageDesktop.locator('.avatar-layer').count(), 9, 'Homepage Randomize must render a complete stack');
-  await homepageDesktop.locator('#reset').click();
-  await homepageDesktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
-  assert.deepEqual(await homepageDesktop.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src'))), homepageInitialSources, 'Homepage Reset must restore defaults');
   await homepageDesktop.locator('#clear-all').click();
   await homepageDesktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await homepageDesktop.locator('.avatar-layer').count(), 2, 'Homepage Clear All must preserve required layers');
@@ -300,13 +298,22 @@ try {
   await assertHiddenVerticalScroller(desktop, '.trait-grid', 'Trait grid');
   await assertHiddenVerticalScroller(desktop, '.selected-list', 'Selected traits');
 
-  const initialSources = await desktop.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
   await desktop.locator('#randomize').click();
   await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await desktop.locator('.avatar-layer').count(), 9, 'Randomize must render a complete stack');
-  await desktop.locator('#reset').click();
-  await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
-  assert.deepEqual(await desktop.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src'))), initialSources, 'Reset must restore defaults');
+  assert.equal(await desktop.locator('#reset').count(), 0, 'Standalone builder must not include a Reset button');
+  assert.deepEqual(await desktop.locator('.main-actions .action').evaluateAll((buttons) => buttons.map((button) => button.id)), ['randomize', 'download-png', 'clear-all'], 'Standalone actions must use the simplified order');
+  const actionMetrics = await desktop.locator('.main-actions').evaluate((container) => ({
+    containerWidth: container.getBoundingClientRect().width,
+    buttons: [...container.querySelectorAll('.action')].map((button) => {
+      const style = getComputedStyle(button);
+      const box = button.getBoundingClientRect();
+      return { height: box.height, width: box.width, fontSize: style.fontSize, paddingLeft: style.paddingLeft };
+    }),
+  }));
+  assert(actionMetrics.buttons.every((button) => button.height < 44), `Avatar actions must be shorter than the former large buttons: ${JSON.stringify(actionMetrics)}`);
+  assert(actionMetrics.buttons.every((button) => button.width < actionMetrics.containerWidth), `No avatar action may span the full action area: ${JSON.stringify(actionMetrics)}`);
+  assert(actionMetrics.buttons.every((button) => parseFloat(button.fontSize) <= 12 && parseFloat(button.paddingLeft) <= 9), `Avatar actions must use compact text and padding: ${JSON.stringify(actionMetrics)}`);
   await desktop.locator('#clear-all').click();
   await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await desktop.locator('.avatar-layer').count(), 2, 'Clear All must preserve only required layers');
