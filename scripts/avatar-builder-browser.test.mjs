@@ -385,7 +385,11 @@ try {
   assert(actionMetrics.buttons.every((button) => parseFloat(button.fontSize) <= 12 && parseFloat(button.paddingLeft) <= 9), `Avatar actions must use compact text and padding: ${JSON.stringify(actionMetrics)}`);
   await desktop.locator('#clear-all').click();
   await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
-  assert.equal(await desktop.locator('.avatar-layer').count(), 2, 'Clear All must preserve only required layers');
+  assert.equal(
+    await renderedStackSize(desktop),
+    2,
+    'Clear All must preserve only the required background and body layers',
+  );
   await desktop.close();
 
   const animated = await openAt({ width: 1440, height: 900 });
