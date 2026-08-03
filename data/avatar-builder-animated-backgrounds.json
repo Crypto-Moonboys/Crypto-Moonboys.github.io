@@ -22,5 +22,77 @@
     "kind": "animated",
     "renderer": "pixel-starfield",
     "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-starfield.webp"
+  },
+  {
+    "id": "background-bitcoin-code-rain",
+    "name": "Bitcoin Code Rain",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "bitcoin-code-rain",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/bitcoin-code-rain.webp"
+  },
+  {
+    "id": "background-neon-outrun-grid",
+    "name": "Neon Outrun Grid",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "neon-outrun-grid",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/neon-outrun-grid.webp"
+  },
+  {
+    "id": "background-pixel-arcade-city",
+    "name": "Pixel Arcade City",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "pixel-arcade-city",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-arcade-city.webp"
+  },
+  {
+    "id": "background-retro-sunset",
+    "name": "Retro Sunset",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "retro-sunset",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/retro-sunset.webp"
+  },
+  {
+    "id": "background-graffiti-spray",
+    "name": "Graffiti Spray Particles",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "graffiti-spray",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/graffiti-spray.webp"
+  },
+  {
+    "id": "background-glitch-terminal",
+    "name": "Glitch Terminal",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "glitch-terminal",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/glitch-terminal.webp"
+  },
+  {
+    "id": "background-floating-crypto-coins",
+    "name": "Floating Crypto Coins",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "floating-crypto-coins",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/floating-crypto-coins.webp"
+  },
+  {
+    "id": "background-pixel-fire",
+    "name": "Pixel Fire",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "pixel-fire",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-fire.webp"
+  },
+  {
+    "id": "background-blockchain-node-network",
+    "name": "Blockchain Node Network",
+    "category": "background",
+    "kind": "animated",
+    "renderer": "blockchain-node-network",
+    "thumbnail": "/img/avatar-builder/animated-thumbnails/blockchain-node-network.webp"
   }
 ]
