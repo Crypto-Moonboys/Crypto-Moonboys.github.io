@@ -1,5 +1,9 @@
 let activeRendererCount = 0;
 
+export function positiveModulo(value, divisor) {
+  return ((value % divisor) + divisor) % divisor;
+}
+
 function emit(canvas, renderer, action) {
   canvas.dataset.renderer = renderer;
   canvas.dataset.rendererState = action;

@@ -18,7 +18,7 @@
       "id": "background",
       "name": "Background",
       "order": 0,
-      "count": 54,
+      "count": 63,
       "required": true,
       "defaultTraitId": "background-mb-background"
     },
@@ -90,11 +90,11 @@
   "counts": {
     "source": 912,
     "layers": 912,
-    "thumbnails": 915
+    "thumbnails": 924
   },
   "totals": {
     "layerBytes": 46004078,
-    "thumbnailBytes": 7322520,
+    "thumbnailBytes": 7349242,
     "approximateInitialTransferBytes": 514010
   },
   "traits": [
@@ -8332,6 +8332,87 @@
       "renderer": "pixel-starfield",
       "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-starfield.webp",
       "thumbnailBytes": 764
+    },
+    {
+      "id": "background-bitcoin-code-rain",
+      "name": "Bitcoin Code Rain",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "bitcoin-code-rain",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/bitcoin-code-rain.webp",
+      "thumbnailBytes": 2894
+    },
+    {
+      "id": "background-neon-outrun-grid",
+      "name": "Neon Outrun Grid",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "neon-outrun-grid",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/neon-outrun-grid.webp",
+      "thumbnailBytes": 4466
+    },
+    {
+      "id": "background-pixel-arcade-city",
+      "name": "Pixel Arcade City",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "pixel-arcade-city",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-arcade-city.webp",
+      "thumbnailBytes": 956
+    },
+    {
+      "id": "background-retro-sunset",
+      "name": "Retro Sunset",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "retro-sunset",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/retro-sunset.webp",
+      "thumbnailBytes": 2730
+    },
+    {
+      "id": "background-graffiti-spray",
+      "name": "Graffiti Spray Particles",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "graffiti-spray",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/graffiti-spray.webp",
+      "thumbnailBytes": 912
+    },
+    {
+      "id": "background-glitch-terminal",
+      "name": "Glitch Terminal",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "glitch-terminal",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/glitch-terminal.webp",
+      "thumbnailBytes": 4784
+    },
+    {
+      "id": "background-floating-crypto-coins",
+      "name": "Floating Crypto Coins",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "floating-crypto-coins",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/floating-crypto-coins.webp",
+      "thumbnailBytes": 4600
+    },
+    {
+      "id": "background-pixel-fire",
+      "name": "Pixel Fire",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "pixel-fire",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-fire.webp",
+      "thumbnailBytes": 1468
+    },
+    {
+      "id": "background-blockchain-node-network",
+      "name": "Blockchain Node Network",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "blockchain-node-network",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/blockchain-node-network.webp",
+      "thumbnailBytes": 3912
     }
   ]
 }

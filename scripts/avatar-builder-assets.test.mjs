@@ -4,15 +4,34 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { clearOptionalStack, defaultStack, isCompleteValidStack, randomStack } from '../js/avatar-builder-core.mjs';
+import { positiveModulo } from '../js/avatar-backgrounds/renderer-utils.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'));
 const expectedCategories = ['background', 'body', 'tattoos', 'clothes', 'chains', 'face', 'hat', 'left-arm', 'right-arm'];
 
+assert.equal(positiveModulo(-.25, 1), .75, 'Animated positions must wrap negative unit values back into view');
+assert.equal(positiveModulo(-490, 422), 354, 'Animated positions must wrap repeated negative cycles into a positive range');
+
 assert.deepEqual(manifest.categoryOrder, expectedCategories, 'Manifest category order must include all nine layers');
 assert.equal(manifest.categories.length, 9, 'Manifest must contain nine categories');
 const animatedTraits = manifest.traits.filter((trait) => trait.kind === 'animated');
 const imageTraits = manifest.traits.filter((trait) => trait.kind !== 'animated');
+const expectedAnimatedIds = [
+  'background-matrix-rain',
+  'background-neon-pulse',
+  'background-pixel-starfield',
+  'background-bitcoin-code-rain',
+  'background-neon-outrun-grid',
+  'background-pixel-arcade-city',
+  'background-retro-sunset',
+  'background-graffiti-spray',
+  'background-glitch-terminal',
+  'background-floating-crypto-coins',
+  'background-pixel-fire',
+  'background-blockchain-node-network',
+];
+const expectedRenderers = expectedAnimatedIds.map((id) => id.replace(/^background-/, ''));
 assert.equal(imageTraits.length, 912, 'All 912 existing image traits must remain available');
 assert.equal(manifest.counts.source, imageTraits.length, 'Source count must match image traits');
 assert.equal(manifest.counts.layers, imageTraits.length, 'Layer count must match image traits');
@@ -28,12 +47,10 @@ for (const trait of manifest.traits) {
   assert(!trait.thumbnail.includes('CRYPTO-MOONBOYS-OG-TRAITS'));
 }
 
-assert.deepEqual(animatedTraits.map((trait) => trait.id), [
-  'background-matrix-rain',
-  'background-neon-pulse',
-  'background-pixel-starfield',
-], 'Manifest must include exactly the three Phase 1 animated backgrounds');
-assert.deepEqual(animatedTraits.map((trait) => trait.renderer), ['matrix-rain', 'neon-pulse', 'pixel-starfield']);
+assert.deepEqual(animatedTraits.map((trait) => trait.id), expectedAnimatedIds, 'Manifest must include exactly 12 Phase 1 and Phase 2 animated backgrounds');
+assert.deepEqual(animatedTraits.map((trait) => trait.renderer), expectedRenderers);
+assert.equal(new Set(animatedTraits.map((trait) => trait.id)).size, 12, 'Animated background IDs must be unique');
+assert.equal(new Set(animatedTraits.map((trait) => trait.renderer)).size, 12, 'Animated renderer keys must be unique');
 assert(animatedTraits.every((trait) => trait.category === 'background' && trait.thumbnail.endsWith('.webp')));
 
 async function collectFiles(directory) {
@@ -100,7 +117,7 @@ assert.equal(cleared.body, defaults.body);
 assert(manifest.categories.filter((category) => !category.required).every((category) => cleared[category.id] === null));
 const animatedCleared = clearOptionalStack(manifest, { ...defaults, background: 'background-matrix-rain' });
 assert.equal(animatedCleared.background, 'background-matrix-rain', 'Clear All must preserve the selected animated required background');
-assert.equal(randomStack(manifest, () => .999).background, 'background-pixel-starfield', 'Randomize must be able to choose an animated background');
+assert.equal(randomStack(manifest, () => .999).background, 'background-blockchain-node-network', 'Randomize must be able to choose a Phase 2 animated background');
 
 for (const relativePath of [
   'js/avatar-backgrounds/registry.js',
@@ -108,6 +125,7 @@ for (const relativePath of [
   'js/avatar-backgrounds/matrix-rain.js',
   'js/avatar-backgrounds/neon-pulse.js',
   'js/avatar-backgrounds/pixel-starfield.js',
+  ...expectedRenderers.slice(3).map((renderer) => `js/avatar-backgrounds/${renderer}.js`),
 ]) {
   await stat(path.join(ROOT, relativePath));
 }
