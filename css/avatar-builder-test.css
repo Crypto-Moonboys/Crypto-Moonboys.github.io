@@ -186,6 +186,8 @@ body.page-standalone-tool { overflow: hidden; }
 .avatar-builder-host .action { min-height: 44px; border-radius: 10px; font-weight: 800; }
 .avatar-builder-host .action-primary { grid-column: 1 / -1; border-color: var(--cyan); background: var(--cyan); color: #021013; }
 .avatar-builder-host .action-danger { color: var(--danger); }
+.avatar-builder-host .action:disabled { opacity: .62; cursor: progress; }
+.avatar-builder-host .download-helper { margin: .45rem 0 0; color: var(--muted); font-size: .68rem; text-align: center; }
 .avatar-builder-host .back-link { margin-top: .8rem; color: var(--muted); font-size: .75rem; text-align: center; }
 
 .avatar-builder-host button:hover { border-color: var(--cyan); }
@@ -224,8 +226,9 @@ body.page-standalone-tool { overflow: hidden; }
   .avatar-builder-host .selected-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 .55rem; }
   .avatar-builder-host .selected-item { grid-template-columns: 26px minmax(0, 1fr) 30px; padding: .35rem 0; }
   .avatar-builder-host .selected-icon { width: 23px; height: 23px; }
-  .avatar-builder-host .main-actions { grid-template-columns: repeat(3, 1fr); padding-top: .4rem; }
+  .avatar-builder-host .main-actions { grid-template-columns: repeat(4, 1fr); padding-top: .4rem; }
   .avatar-builder-host .action-primary { grid-column: auto; }
+  .avatar-builder-host .download-helper { display: none; }
 }
 
 @media (orientation: portrait) and (max-width: 1100px) {
