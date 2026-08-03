@@ -36,10 +36,12 @@ host.innerHTML = `
       </div>
       <ul class="selected-list" id="selected-list"></ul>
       <div class="main-actions">
-        <button class="action action-primary" type="button" id="randomize">Randomize</button>
+        <button class="action action-primary action-export" type="button" id="download-png" aria-label="Download avatar as PNG" disabled>Download PNG</button>
+        <button class="action" type="button" id="randomize">Randomize</button>
         <button class="action" type="button" id="reset">Reset</button>
         <button class="action action-danger" type="button" id="clear-all">Clear All</button>
       </div>
+      <p class="download-helper">Downloads the avatar exactly as shown.</p>
       <a class="back-link" href="${isHomepage ? '/avatar-builder-test.html' : '/'}">${isHomepage ? 'Open standalone builder' : 'Back to Crypto Moonboys'}</a>
     </aside>
   </div>
@@ -47,12 +49,14 @@ host.innerHTML = `
 
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
 let layerRenderGeneration = 0;
+let exportInProgress = false;
 
 const elements = {
   avatarFrame: host.querySelector('#avatar-frame'),
   avatarStack: host.querySelector('#avatar-stack'),
   categoryTabs: host.querySelector('#category-tabs'),
   clearAll: host.querySelector('#clear-all'),
+  downloadPng: host.querySelector('#download-png'),
   liveRegion: host.querySelector('#live-region'),
   pagination: host.querySelector('#pagination'),
   previewFallback: host.querySelector('#preview-fallback'),
@@ -72,6 +76,66 @@ function icon(categoryId, className = '') {
 function announce(message) {
   elements.liveRegion.textContent = '';
   window.requestAnimationFrame(() => { elements.liveRegion.textContent = message; });
+}
+
+function loadExportImage(trait) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error(`${trait.name} could not be loaded for export.`));
+    image.src = trait.layer;
+  });
+}
+
+function exportFilename(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, '0');
+  return `crypto-moonboy-${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}.png`;
+}
+
+async function downloadAvatarPng() {
+  if (exportInProgress || !state.manifest) return;
+
+  exportInProgress = true;
+  elements.downloadPng.disabled = true;
+  elements.downloadPng.textContent = 'Preparing PNG\u2026';
+
+  const snapshot = state.manifest.categories
+    .map((category) => state.traitsById.get(state.selected[category.id]))
+    .filter(Boolean)
+    .map((trait) => ({ layer: trait.layer, name: trait.name }));
+
+  try {
+    if (!snapshot.length) throw new Error('Select at least one avatar layer before downloading.');
+    const images = await Promise.all(snapshot.map(loadExportImage));
+    const canvas = document.createElement('canvas');
+    canvas.width = 1000;
+    canvas.height = 1000;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('PNG export is not supported by this browser.');
+    images.forEach((image) => context.drawImage(image, 0, 0, 1000, 1000));
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob((result) => {
+        if (result) resolve(result);
+        else reject(new Error('The browser could not create the PNG.'));
+      }, 'image/png');
+    });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = exportFilename();
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    announce('Avatar PNG download ready.');
+  } catch (error) {
+    announce(error instanceof Error ? error.message : 'Avatar PNG could not be downloaded.');
+    console.error(error);
+  } finally {
+    exportInProgress = false;
+    elements.downloadPng.disabled = false;
+    elements.downloadPng.textContent = 'Download PNG';
+  }
 }
 
 function renderCategories() {
@@ -220,6 +284,8 @@ elements.clearAll.addEventListener('click', () => {
   announce('Optional layers cleared. Required background and body remain.');
 });
 
+elements.downloadPng.addEventListener('click', downloadAvatarPng);
+
 async function initialize() {
   try {
     const response = await fetch('/data/avatar-builder-manifest.json', { cache: 'force-cache' });
@@ -229,6 +295,7 @@ async function initialize() {
     state.activeCategory = state.manifest.categoryOrder[0];
     state.selected = defaultStack(state.manifest);
     renderAll();
+    elements.downloadPng.disabled = false;
   } catch (error) {
     elements.trayStatus.hidden = false;
     elements.trayStatus.textContent = 'The avatar builder could not load. Please refresh and try again.';
@@ -236,6 +303,7 @@ async function initialize() {
     elements.randomize.disabled = true;
     elements.reset.disabled = true;
     elements.clearAll.disabled = true;
+    elements.downloadPng.disabled = true;
     console.error(error);
   }
 }

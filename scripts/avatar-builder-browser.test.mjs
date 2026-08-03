@@ -5,6 +5,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE_SIZE = 24;
@@ -60,6 +61,62 @@ async function openAt(viewport, url = standaloneUrl) {
   return page;
 }
 
+async function openExportPage(url = standaloneUrl) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.addInitScript(() => {
+    window.__exportCanvasCount = 0;
+    window.__exportDraws = [];
+    window.__exportMimeType = null;
+    const createElement = Document.prototype.createElement;
+    Document.prototype.createElement = function patchedCreateElement(tagName, ...args) {
+      const element = createElement.call(this, tagName, ...args);
+      if (String(tagName).toLowerCase() !== 'canvas') return element;
+      window.__exportCanvasCount += 1;
+      const getContext = element.getContext.bind(element);
+      element.getContext = (...contextArgs) => {
+        const context = getContext(...contextArgs);
+        if (context && !context.__exportObserved) {
+          context.__exportObserved = true;
+          const drawImage = context.drawImage.bind(context);
+          context.drawImage = (image, ...drawArgs) => {
+            window.__exportDraws.push(image.getAttribute('src') || image.src);
+            return drawImage(image, ...drawArgs);
+          };
+        }
+        return context;
+      };
+      const toBlob = element.toBlob.bind(element);
+      element.toBlob = (callback, type, ...blobArgs) => {
+        window.__exportMimeType = type;
+        return toBlob(callback, type, ...blobArgs);
+      };
+      return element;
+    };
+  });
+  await page.route('**/*', (route) => {
+    const requestUrl = new URL(route.request().url());
+    if (requestUrl.origin !== origin) return route.abort();
+    return route.continue();
+  });
+  await page.goto(url, { waitUntil: url === homepageUrl ? 'domcontentloaded' : 'networkidle' });
+  await page.locator('#avatar-frame[aria-busy="false"]').waitFor();
+  return page;
+}
+
+async function downloadAndInspect(page) {
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('#download-png').click(),
+  ]);
+  const bytes = await readFile(await download.path());
+  const metadata = await sharp(bytes).metadata();
+  assert.match(download.suggestedFilename(), /^crypto-moonboy-\d{8}-\d{6}\.png$/, 'Download must use the timestamped PNG filename');
+  assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], 'Download must have a PNG signature');
+  assert.equal(metadata.format, 'png', 'Downloaded image MIME format must be PNG');
+  assert.equal(metadata.width, 1000, 'Downloaded image width must be 1000 pixels');
+  assert.equal(metadata.height, 1000, 'Downloaded image height must be 1000 pixels');
+  return metadata;
+}
 async function assertNoHorizontalPageOverflow(page, label) {
   const dimensions = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
@@ -177,6 +234,8 @@ try {
   assert(homepageScroll.scrollHeight > homepageScroll.viewportHeight, `Homepage must continue below the builder: ${JSON.stringify(homepageScroll)}`);
   assert.equal(homepageScroll.background, 'rgb(0, 0, 0)', 'Builder CSS must not replace the homepage background');
   await assertHomepageLayout(homepageDesktop, '1440x900', 'desktop');
+  assert.equal(await homepageDesktop.locator('#download-png').count(), 1, 'Homepage builder must include one Download PNG button');
+  assert.equal(await homepageDesktop.locator('#download-png').getAttribute('aria-label'), 'Download avatar as PNG', 'Homepage download button must have a clear accessible label');
 
   const homepageLayerRequests = homepageDesktop.requestedUrls.filter((requestUrl) => requestUrl.includes('/img/avatar-builder/layers/'));
   const homepageThumbnailRequests = homepageDesktop.requestedUrls.filter((requestUrl) => requestUrl.includes('/img/avatar-builder/thumbnails/'));
@@ -252,6 +311,90 @@ try {
   await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await desktop.locator('.avatar-layer').count(), 2, 'Clear All must preserve only required layers');
   await desktop.close();
+
+  const fullExport = await openExportPage();
+  assert.equal(await fullExport.locator('#download-png').count(), 1, 'Standalone builder must include one Download PNG button');
+  const fullSources = await fullExport.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
+  assert.equal(fullSources.length, 9, 'Full export fixture must contain all nine selected layers');
+  await downloadAndInspect(fullExport);
+  const fullExportState = await fullExport.evaluate(() => ({
+    canvasCount: window.__exportCanvasCount,
+    draws: window.__exportDraws,
+    mimeType: window.__exportMimeType,
+  }));
+  assert.equal(fullExportState.canvasCount, 1, 'Full export must use one temporary canvas');
+  assert.deepEqual(fullExportState.draws, fullSources, 'Full export draw order must match the visible manifest-ordered stack');
+  assert.equal(fullExportState.mimeType, 'image/png', 'Canvas export must request image/png');
+  assert(fullExportState.draws.every((source) => source.includes('/img/avatar-builder/layers/')), 'Export must use full-size layer paths');
+  assert(!fullExportState.draws.some((source) => source.includes('/thumbnails/') || source.includes('/img/CRYPTO-MOONBOYS-OG-TRAITS/')), 'Export must never use thumbnails or original 4000x4000 sources');
+  assert.equal(await fullExport.locator('#download-png').isEnabled(), true, 'Download button must re-enable after success');
+  assert.match(await fullExport.locator('#live-region').textContent(), /download ready/i, 'Successful export must be announced in the ARIA live region');
+  await fullExport.close();
+
+  const partialExport = await openExportPage();
+  await partialExport.locator('#clear-all').click();
+  const requiredSources = await partialExport.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
+  assert.equal(requiredSources.length, 2, 'Clear All export fixture must preserve only required selected layers');
+  await downloadAndInspect(partialExport);
+  assert.deepEqual(await partialExport.evaluate(() => window.__exportDraws), requiredSources, 'Clear All export must contain only required visible layers');
+  await partialExport.close();
+
+  const manualPartialExport = await openExportPage();
+  const removableCategories = await manualPartialExport.locator('.selected-item .icon-button:not([disabled])').evaluateAll((buttons) => buttons.slice(0, 3).map((button) => button.dataset.remove));
+  for (const category of removableCategories) await manualPartialExport.locator(`[data-remove="${category}"]`).click();
+  const manualSources = await manualPartialExport.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
+  assert.equal(manualSources.length, 6, 'Manual partial export fixture must retain six visible layers');
+  await downloadAndInspect(manualPartialExport);
+  assert.deepEqual(await manualPartialExport.evaluate(() => window.__exportDraws), manualSources, 'Manual partial export must omit only the cleared optional layers');
+  await manualPartialExport.close();
+
+  const snapshotExport = await openExportPage();
+  const snapshotSources = await snapshotExport.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
+  const delayedOptionalSource = snapshotSources[2];
+  await snapshotExport.route(`**${delayedOptionalSource}`, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    await route.continue();
+  });
+  const snapshotDownload = snapshotExport.waitForEvent('download');
+  await snapshotExport.evaluate(() => {
+    const button = document.querySelector('#download-png');
+    button.click();
+    button.click();
+  });
+  assert.equal(await snapshotExport.locator('#download-png').isDisabled(), true, 'Download button must disable while export is preparing');
+  await snapshotExport.locator('.selected-item .icon-button:not([disabled])').first().click();
+  await snapshotDownload;
+  await snapshotExport.locator('#download-png:not([disabled])').waitFor();
+  const snapshotState = await snapshotExport.evaluate(() => ({ canvasCount: window.__exportCanvasCount, draws: window.__exportDraws }));
+  assert.equal(snapshotState.canvasCount, 1, 'Duplicate clicks must not start duplicate export jobs');
+  assert.deepEqual(snapshotState.draws, snapshotSources, 'Trait changes after export starts must not alter the exported snapshot');
+  await snapshotExport.close();
+
+  const failedExport = await openExportPage();
+  const failedSource = await failedExport.locator('.avatar-layer').nth(1).getAttribute('src');
+  await failedExport.evaluate((source) => {
+    const srcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+    Object.defineProperty(HTMLImageElement.prototype, 'src', {
+      configurable: true,
+      get() { return srcDescriptor.get.call(this); },
+      set(value) {
+        if (value === source && !this.isConnected) {
+          queueMicrotask(() => this.onerror?.(new Event('error')));
+          return;
+        }
+        srcDescriptor.set.call(this, value);
+      },
+    });
+  }, failedSource);
+  let failedDownloadCount = 0;
+  failedExport.on('download', () => { failedDownloadCount += 1; });
+  await failedExport.locator('#download-png').click();
+  await failedExport.locator('#download-png:not([disabled])').waitFor();
+  await failedExport.waitForTimeout(100);
+  assert.equal(failedDownloadCount, 0, 'Failed image loading must not produce a partial download');
+  assert.match(await failedExport.locator('#live-region').textContent(), /could not be loaded for export/i, 'Export failure must be announced accessibly');
+  assert.equal(await failedExport.locator('#download-png').isEnabled(), true, 'Download button must re-enable after export failure');
+  await failedExport.close();
 
   const largeDesktop = await openAt({ width: 2560, height: 1440 });
   const largeBoxes = await Promise.all(['.category-panel', '.preview-panel', '.selection-panel'].map((selector) => largeDesktop.locator(selector).boundingBox()));
