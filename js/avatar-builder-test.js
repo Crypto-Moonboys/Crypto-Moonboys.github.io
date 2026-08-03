@@ -2,24 +2,67 @@ import { clearOptionalStack, defaultStack, indexManifest, randomStack } from './
 
 const PAGE_SIZE = 24;
 const ICONS_URL = '/img/avatar-builder/category-icons.svg';
+const host = document.querySelector('.avatar-builder-host');
+const isHomepage = host?.dataset.builderContext === 'homepage';
+
+if (!host) throw new Error('Avatar builder host was not found.');
+
+host.innerHTML = `
+  <div class="builder-shell">
+    <section class="control-panel category-panel" aria-label="Avatar traits">
+      <nav class="category-tabs" aria-label="Trait categories" id="category-tabs"></nav>
+      <section class="trait-tray" aria-labelledby="tray-title">
+        <div class="tray-heading">
+          <h2 id="tray-title">Traits</h2>
+          <span id="tray-count"></span>
+        </div>
+        <div class="tray-status" id="tray-status" role="status">Loading traits&hellip;</div>
+        <div class="trait-grid" id="trait-grid"></div>
+        <div class="pagination" id="pagination" aria-label="Trait pages"></div>
+      </section>
+    </section>
+
+    <section class="preview-panel" aria-label="Avatar preview">
+      <div class="avatar-frame" id="avatar-frame" aria-busy="true">
+        <div class="avatar-stack" id="avatar-stack"></div>
+        <div class="preview-fallback" id="preview-fallback" hidden>One or more layers could not load.</div>
+      </div>
+    </section>
+
+    <aside class="control-panel selection-panel" aria-labelledby="selected-title">
+      <div class="selection-heading">
+        <p class="eyebrow">Current stack</p>
+        <h2 id="selected-title">Selected traits</h2>
+      </div>
+      <ul class="selected-list" id="selected-list"></ul>
+      <div class="main-actions">
+        <button class="action action-primary" type="button" id="randomize">Randomize</button>
+        <button class="action" type="button" id="reset">Reset</button>
+        <button class="action action-danger" type="button" id="clear-all">Clear All</button>
+      </div>
+      <a class="back-link" href="${isHomepage ? '/avatar-builder-test.html' : '/'}">${isHomepage ? 'Open standalone builder' : 'Back to Crypto Moonboys'}</a>
+    </aside>
+  </div>
+  <p class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></p>`;
+
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
 let layerRenderGeneration = 0;
 
 const elements = {
-  avatarFrame: document.querySelector('#avatar-frame'),
-  avatarStack: document.querySelector('#avatar-stack'),
-  categoryTabs: document.querySelector('#category-tabs'),
-  clearAll: document.querySelector('#clear-all'),
-  liveRegion: document.querySelector('#live-region'),
-  pagination: document.querySelector('#pagination'),
-  previewFallback: document.querySelector('#preview-fallback'),
-  randomize: document.querySelector('#randomize'),
-  reset: document.querySelector('#reset'),
-  selectedList: document.querySelector('#selected-list'),
-  traitGrid: document.querySelector('#trait-grid'),
-  trayCount: document.querySelector('#tray-count'),
-  trayStatus: document.querySelector('#tray-status'),
-  trayTitle: document.querySelector('#tray-title'),
+  avatarFrame: host.querySelector('#avatar-frame'),
+  avatarStack: host.querySelector('#avatar-stack'),
+  categoryTabs: host.querySelector('#category-tabs'),
+  clearAll: host.querySelector('#clear-all'),
+  liveRegion: host.querySelector('#live-region'),
+  pagination: host.querySelector('#pagination'),
+  previewFallback: host.querySelector('#preview-fallback'),
+  randomize: host.querySelector('#randomize'),
+  reset: host.querySelector('#reset'),
+  selectedList: host.querySelector('#selected-list'),
+  traitGrid: host.querySelector('#trait-grid'),
+  trayCount: host.querySelector('#tray-count'),
+  trayStatus: host.querySelector('#tray-status'),
+  trayTitle: host.querySelector('#tray-title'),
 };
 
 function icon(categoryId, className = '') {

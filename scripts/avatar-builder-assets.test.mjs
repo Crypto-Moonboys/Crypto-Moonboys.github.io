@@ -62,6 +62,19 @@ for (const relativePath of ['avatar-builder-test.html', 'css/avatar-builder-test
   assert(!content.includes('CRYPTO-MOONBOYS-OG-TRAITS'), `Live file references source assets: ${relativePath}`);
 }
 
+const builderCss = await readFile(path.join(ROOT, 'css', 'avatar-builder-test.css'), 'utf8');
+assert(!builderCss.includes('@scope'), 'Builder CSS must not depend on unsupported @scope blocks');
+for (const selector of [
+  '.avatar-builder-host .builder-shell',
+  '.avatar-builder-host .control-panel',
+  '.avatar-builder-host .trait-grid',
+  '.avatar-builder-host .avatar-layer',
+  '.avatar-builder-host button',
+  '.avatar-builder-host h2',
+]) {
+  assert(builderCss.includes(selector), `Builder CSS must explicitly scope ${selector}`);
+}
+
 const defaults = defaultStack(manifest);
 assert(isCompleteValidStack(manifest, defaults), 'Reset/default stack must be complete and valid');
 for (let index = 0; index < 100; index += 1) {

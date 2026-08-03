@@ -21,8 +21,12 @@ function check(condition, message) {
 
 const html = fs.readFileSync(homepagePath, 'utf8');
 
-const heroStart = html.indexOf('<section class="build-moonboy-hero"');
+const heroStart = html.indexOf('<section class="build-moonboy-hero" aria-label="Build a Crypto Moonboy"');
 const heroEnd = html.indexOf('</section>', heroStart);
+const bitcoinKidStart = html.indexOf('<section class="build-moonboy-hero" aria-label="Crypto Moonboys Bitcoin Kid profile"');
+const bitcoinKidEnd = html.indexOf('</section>', bitcoinKidStart);
+const builderStart = html.indexOf('<section class="homepage-avatar-builder avatar-builder-host"');
+const builderEnd = html.indexOf('</section>', builderStart);
 const introStart = html.indexOf('<section class="hero-intro"');
 const introEnd = html.indexOf('</section>', introStart);
 const introMarkup = introStart !== -1 && introEnd !== -1
@@ -40,7 +44,14 @@ check(
     !html.includes('CRYPTO%20MOONBOYS%20AND%20SWARMSY%20SIDE%20one.jpg'),
   'Old stitched homepage hero images are absent'
 );
-check(introStart > heroEnd && heroEnd !== -1, 'Mission copy section follows directly after the hero image section');
+check(
+  bitcoinKidEnd !== -1 && builderStart > bitcoinKidEnd && introStart > builderEnd,
+  'Avatar builder sits after the Bitcoin Kid profile and before the mission section'
+);
+check(
+  introMarkup.includes('Now you have something worth shouting about.<br><span>We make sure people remember it.</span>'),
+  'Mission heading remains unchanged'
+);
 check(
   /<h1\b[^>]*>[\s\S]*?<\/h1>/i.test(introMarkup) &&
     /<p\b[^>]*>[\s\S]*?<\/p>/i.test(introMarkup),
