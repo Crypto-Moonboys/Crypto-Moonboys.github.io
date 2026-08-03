@@ -117,7 +117,6 @@ async function downloadAndInspect(page) {
   assert.equal(metadata.height, 1000, 'Downloaded image height must be 1000 pixels');
   return metadata;
 }
-
 async function assertNoHorizontalPageOverflow(page, label) {
   const dimensions = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
