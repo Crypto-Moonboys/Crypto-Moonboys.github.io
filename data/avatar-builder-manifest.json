@@ -93,8 +93,8 @@
     "thumbnails": 862
   },
   "totals": {
-    "layerBytes": 43080740,
-    "thumbnailBytes": 7029826,
+    "layerBytes": 43080448,
+    "thumbnailBytes": 7029904,
     "approximateInitialTransferBytes": 514010
   },
   "traits": [
@@ -6800,8 +6800,8 @@
       "category": "right-arm",
       "layer": "/img/avatar-builder/layers/right-arm/right-arm-mb-right-10.webp",
       "thumbnail": "/img/avatar-builder/thumbnails/right-arm/right-arm-mb-right-10.webp",
-      "layerBytes": 31500,
-      "thumbnailBytes": 4342
+      "layerBytes": 31208,
+      "thumbnailBytes": 4420
     },
     {
       "id": "right-arm-mb-right-11",
