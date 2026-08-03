@@ -187,7 +187,7 @@ body.page-standalone-tool { overflow: hidden; }
 .avatar-builder-host .action-primary { border-color: var(--cyan); background: var(--cyan); color: #021013; }
 .avatar-builder-host .action-danger { color: var(--danger); }
 .avatar-builder-host .action:disabled { opacity: .62; cursor: progress; }
-.avatar-builder-host .download-helper { margin: .45rem 0 0; color: var(--muted); font-size: .68rem; text-align: center; }
+.avatar-builder-host .download-helper { width: 100%; max-width: 32ch; margin: .45rem auto 0; color: var(--muted); font-size: .68rem; text-align: center; }
 .avatar-builder-host .back-link { margin-top: .8rem; color: var(--muted); font-size: .75rem; text-align: center; }
 
 .avatar-builder-host button:hover { border-color: var(--cyan); }
