@@ -18,7 +18,7 @@
       "id": "background",
       "name": "Background",
       "order": 0,
-      "count": 1,
+      "count": 51,
       "required": true,
       "defaultTraitId": "background-mb-background"
     },
@@ -88,13 +88,13 @@
     }
   ],
   "counts": {
-    "source": 862,
-    "layers": 862,
-    "thumbnails": 862
+    "source": 912,
+    "layers": 912,
+    "thumbnails": 912
   },
   "totals": {
-    "layerBytes": 43080448,
-    "thumbnailBytes": 7029904,
+    "layerBytes": 46004078,
+    "thumbnailBytes": 7316208,
     "approximateInitialTransferBytes": 514010
   },
   "traits": [
@@ -106,6 +106,456 @@
       "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-background.webp",
       "layerBytes": 200974,
       "thumbnailBytes": 14526
+    },
+    {
+      "id": "background-mb-bg-1",
+      "name": "Bg 1",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-1.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-1.webp",
+      "layerBytes": 128348,
+      "thumbnailBytes": 18524
+    },
+    {
+      "id": "background-mb-bg-1a",
+      "name": "Bg 1A",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-1a.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-1a.webp",
+      "layerBytes": 103566,
+      "thumbnailBytes": 8078
+    },
+    {
+      "id": "background-mb-bg-2",
+      "name": "Bg 2",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-2.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-2.webp",
+      "layerBytes": 1892,
+      "thumbnailBytes": 190
+    },
+    {
+      "id": "background-mb-bg-3",
+      "name": "Bg 3",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-3.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-3.webp",
+      "layerBytes": 254582,
+      "thumbnailBytes": 28008
+    },
+    {
+      "id": "background-mb-bg-4",
+      "name": "Bg 4",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-4.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-4.webp",
+      "layerBytes": 1894,
+      "thumbnailBytes": 188
+    },
+    {
+      "id": "background-mb-bg-5",
+      "name": "Bg 5",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-5.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-5.webp",
+      "layerBytes": 140916,
+      "thumbnailBytes": 12008
+    },
+    {
+      "id": "background-mb-bg-6",
+      "name": "Bg 6",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-6.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-6.webp",
+      "layerBytes": 50198,
+      "thumbnailBytes": 7552
+    },
+    {
+      "id": "background-mb-bg-7",
+      "name": "Bg 7",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-7.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-7.webp",
+      "layerBytes": 431252,
+      "thumbnailBytes": 25574
+    },
+    {
+      "id": "background-mb-bg-8",
+      "name": "Bg 8",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-8.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-8.webp",
+      "layerBytes": 402620,
+      "thumbnailBytes": 24690
+    },
+    {
+      "id": "background-mb-bg-9",
+      "name": "Bg 9",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-9.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-9.webp",
+      "layerBytes": 298052,
+      "thumbnailBytes": 12806
+    },
+    {
+      "id": "background-mb-bg-10",
+      "name": "Bg 10",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-10.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-10.webp",
+      "layerBytes": 83580,
+      "thumbnailBytes": 12714
+    },
+    {
+      "id": "background-mb-bg-11",
+      "name": "Bg 11",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-11.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-11.webp",
+      "layerBytes": 172702,
+      "thumbnailBytes": 22544
+    },
+    {
+      "id": "background-mb-bg-12",
+      "name": "Bg 12",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-12.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-12.webp",
+      "layerBytes": 22296,
+      "thumbnailBytes": 1240
+    },
+    {
+      "id": "background-mb-bg-13",
+      "name": "Bg 13",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-13.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-13.webp",
+      "layerBytes": 169216,
+      "thumbnailBytes": 18300
+    },
+    {
+      "id": "background-mb-bg-14",
+      "name": "Bg 14",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-14.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-14.webp",
+      "layerBytes": 48390,
+      "thumbnailBytes": 8264
+    },
+    {
+      "id": "background-mb-bg-15",
+      "name": "Bg 15",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-15.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-15.webp",
+      "layerBytes": 162462,
+      "thumbnailBytes": 18864
+    },
+    {
+      "id": "background-mb-bg-16",
+      "name": "Bg 16",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-16.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-16.webp",
+      "layerBytes": 54654,
+      "thumbnailBytes": 10150
+    },
+    {
+      "id": "background-mb-bg-17",
+      "name": "Bg 17",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-17.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-17.webp",
+      "layerBytes": 56272,
+      "thumbnailBytes": 10840
+    },
+    {
+      "id": "background-mb-bg-18",
+      "name": "Bg 18",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-18.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-18.webp",
+      "layerBytes": 56560,
+      "thumbnailBytes": 10244
+    },
+    {
+      "id": "background-mb-bg-19",
+      "name": "Bg 19",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-19.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-19.webp",
+      "layerBytes": 31094,
+      "thumbnailBytes": 4970
+    },
+    {
+      "id": "background-mb-bg-20",
+      "name": "Bg 20",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-20.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-20.webp",
+      "layerBytes": 51456,
+      "thumbnailBytes": 9724
+    },
+    {
+      "id": "background-mb-bg-21",
+      "name": "Bg 21",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-21.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-21.webp",
+      "layerBytes": 50766,
+      "thumbnailBytes": 9000
+    },
+    {
+      "id": "background-mb-bg-22",
+      "name": "Bg 22",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-22.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-22.webp",
+      "layerBytes": 99952,
+      "thumbnailBytes": 6870
+    },
+    {
+      "id": "background-mb-bg-23",
+      "name": "Bg 23",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-23.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-23.webp",
+      "layerBytes": 1894,
+      "thumbnailBytes": 190
+    },
+    {
+      "id": "background-mb-bg-24",
+      "name": "Bg 24",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-24.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-24.webp",
+      "layerBytes": 1888,
+      "thumbnailBytes": 180
+    },
+    {
+      "id": "background-mb-bg-25",
+      "name": "Bg 25",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-25.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-25.webp",
+      "layerBytes": 1870,
+      "thumbnailBytes": 166
+    },
+    {
+      "id": "background-mb-bg-26",
+      "name": "Bg 26",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-26.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-26.webp",
+      "layerBytes": 1868,
+      "thumbnailBytes": 164
+    },
+    {
+      "id": "background-mb-bg-27",
+      "name": "Bg 27",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-27.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-27.webp",
+      "layerBytes": 1868,
+      "thumbnailBytes": 166
+    },
+    {
+      "id": "background-mb-bg-28",
+      "name": "Bg 28",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-28.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-28.webp",
+      "layerBytes": 1894,
+      "thumbnailBytes": 194
+    },
+    {
+      "id": "background-mb-bg-29",
+      "name": "Bg 29",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-29.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-29.webp",
+      "layerBytes": 1898,
+      "thumbnailBytes": 188
+    },
+    {
+      "id": "background-mb-bg-30",
+      "name": "Bg 30",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-30.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-30.webp",
+      "layerBytes": 1886,
+      "thumbnailBytes": 184
+    },
+    {
+      "id": "background-mb-bg-31",
+      "name": "Bg 31",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-31.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-31.webp",
+      "layerBytes": 1888,
+      "thumbnailBytes": 184
+    },
+    {
+      "id": "background-mb-bg-32",
+      "name": "Bg 32",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-32.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-32.webp",
+      "layerBytes": 1876,
+      "thumbnailBytes": 176
+    },
+    {
+      "id": "background-mb-bg-33",
+      "name": "Bg 33",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-33.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-33.webp",
+      "layerBytes": 1892,
+      "thumbnailBytes": 184
+    },
+    {
+      "id": "background-mb-bg-34",
+      "name": "Bg 34",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-34.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-34.webp",
+      "layerBytes": 1888,
+      "thumbnailBytes": 198
+    },
+    {
+      "id": "background-mb-bg-35",
+      "name": "Bg 35",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-35.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-35.webp",
+      "layerBytes": 1890,
+      "thumbnailBytes": 194
+    },
+    {
+      "id": "background-mb-bg-36",
+      "name": "Bg 36",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-36.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-36.webp",
+      "layerBytes": 1892,
+      "thumbnailBytes": 204
+    },
+    {
+      "id": "background-mb-bg-37",
+      "name": "Bg 37",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-37.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-37.webp",
+      "layerBytes": 1888,
+      "thumbnailBytes": 186
+    },
+    {
+      "id": "background-mb-bg-38",
+      "name": "Bg 38",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-38.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-38.webp",
+      "layerBytes": 1892,
+      "thumbnailBytes": 186
+    },
+    {
+      "id": "background-mb-bg-39",
+      "name": "Bg 39",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-39.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-39.webp",
+      "layerBytes": 1890,
+      "thumbnailBytes": 184
+    },
+    {
+      "id": "background-mb-bg-40",
+      "name": "Bg 40",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-40.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-40.webp",
+      "layerBytes": 1890,
+      "thumbnailBytes": 184
+    },
+    {
+      "id": "background-mb-bg-41",
+      "name": "Bg 41",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-41.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-41.webp",
+      "layerBytes": 1892,
+      "thumbnailBytes": 188
+    },
+    {
+      "id": "background-mb-bg-42",
+      "name": "Bg 42",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-42.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-42.webp",
+      "layerBytes": 1890,
+      "thumbnailBytes": 184
+    },
+    {
+      "id": "background-mb-bg-43",
+      "name": "Bg 43",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-43.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-43.webp",
+      "layerBytes": 1892,
+      "thumbnailBytes": 210
+    },
+    {
+      "id": "background-mb-bg-44",
+      "name": "Bg 44",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-44.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-44.webp",
+      "layerBytes": 1882,
+      "thumbnailBytes": 180
+    },
+    {
+      "id": "background-mb-bg-45",
+      "name": "Bg 45",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-45.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-45.webp",
+      "layerBytes": 1892,
+      "thumbnailBytes": 192
+    },
+    {
+      "id": "background-mb-bg-46",
+      "name": "Bg 46",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-46.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-46.webp",
+      "layerBytes": 1884,
+      "thumbnailBytes": 178
+    },
+    {
+      "id": "background-mb-bg-47",
+      "name": "Bg 47",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-47.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-47.webp",
+      "layerBytes": 1886,
+      "thumbnailBytes": 182
+    },
+    {
+      "id": "background-mb-bg-48",
+      "name": "Bg 48",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-48.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-48.webp",
+      "layerBytes": 1872,
+      "thumbnailBytes": 172
+    },
+    {
+      "id": "background-mb-bg-49",
+      "name": "Bg 49",
+      "category": "background",
+      "layer": "/img/avatar-builder/layers/background/background-mb-bg-49.webp",
+      "thumbnail": "/img/avatar-builder/thumbnails/background/background-mb-bg-49.webp",
+      "layerBytes": 1868,
+      "thumbnailBytes": 164
     },
     {
       "id": "body-mb-body",
