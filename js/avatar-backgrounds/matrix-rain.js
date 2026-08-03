@@ -4,12 +4,14 @@ const TOKENS = ['0', '1', 'NBG', 'WAX', 'BTC', 'MOONBOY'];
 
 export function createBackgroundRenderer(canvas) {
   const columns = [];
+  let firstFrame = true;
   return createAnimatedRenderer(canvas, 'matrix-rain', ({ context, width, height, time }) => {
     const fontSize = Math.max(12, Math.round(width / 52));
     const count = Math.ceil(width / fontSize);
     while (columns.length < count) columns.push((columns.length * 37) % Math.ceil(height / fontSize));
-    context.fillStyle = 'rgba(1, 7, 4, .18)';
+    context.fillStyle = firstFrame ? '#010704' : 'rgba(1, 7, 4, .18)';
     context.fillRect(0, 0, width, height);
+    firstFrame = false;
     context.font = `700 ${fontSize}px ui-monospace, SFMono-Regular, Consolas, monospace`;
     context.textBaseline = 'top';
     for (let index = 0; index < count; index += 1) {

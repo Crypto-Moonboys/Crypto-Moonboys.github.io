@@ -112,6 +112,20 @@ async function downloadAvatarPng() {
 
   try {
     if (!snapshot.length) throw new Error('Select at least one avatar layer before downloading.');
+    const animatedTrait = snapshot.find(isAnimatedBackground);
+    let animatedFrame = null;
+    if (animatedTrait) {
+      if (elements.animatedCanvas.hidden || !activeBackgroundRenderer) {
+        throw new Error(`${animatedTrait.name} is not ready for export.`);
+      }
+      animatedFrame = document.createElement('canvas');
+      animatedFrame.width = 1000;
+      animatedFrame.height = 1000;
+      animatedFrame.dataset.renderer = animatedTrait.renderer;
+      const animatedFrameContext = animatedFrame.getContext('2d');
+      if (!animatedFrameContext) throw new Error('PNG export is not supported by this browser.');
+      animatedFrameContext.drawImage(elements.animatedCanvas, 0, 0, 1000, 1000);
+    }
     const images = new Map(await Promise.all(snapshot
       .filter((trait) => !isAnimatedBackground(trait))
       .map(async (trait) => [trait.id, await loadExportImage(trait)])));
@@ -122,10 +136,7 @@ async function downloadAvatarPng() {
     if (!context) throw new Error('PNG export is not supported by this browser.');
     snapshot.forEach((trait) => {
       if (isAnimatedBackground(trait)) {
-        if (elements.animatedCanvas.hidden || !activeBackgroundRenderer) {
-          throw new Error(`${trait.name} is not ready for export.`);
-        }
-        context.drawImage(elements.animatedCanvas, 0, 0, 1000, 1000);
+        context.drawImage(animatedFrame, 0, 0, 1000, 1000);
       } else {
         context.drawImage(images.get(trait.id), 0, 0, 1000, 1000);
       }
@@ -402,6 +413,15 @@ const intersectionObserver = new IntersectionObserver(([entry]) => {
 intersectionObserver.observe(host);
 document.addEventListener('visibilitychange', syncBackgroundPlayback);
 new ResizeObserver(() => activeBackgroundRenderer?.resize()).observe(elements.avatarFrame);
-window.addEventListener('pagehide', destroyAnimatedBackground, { once: true });
+window.addEventListener('pagehide', destroyAnimatedBackground);
+window.addEventListener('pageshow', (event) => {
+  if (!event.persisted) return;
+  const backgroundTrait = state.traitsById?.get(state.selected.background);
+  if (!isAnimatedBackground(backgroundTrait)) return;
+  activateAnimatedBackground(backgroundTrait).catch((error) => {
+    console.error(error);
+    announce(`${backgroundTrait.name} could not be restored.`);
+  });
+});
 
 initialize();
