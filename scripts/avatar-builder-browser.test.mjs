@@ -9,6 +9,8 @@ import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE_SIZE = 24;
+const DOWNLOAD_DISCLAIMER = 'A download is not ownership of a Moonboy. For fun only.';
+const OLD_DOWNLOAD_HELPER = 'Downloads the avatar exactly as shown.';
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'));
 const hatTraits = manifest.traits.filter((trait) => trait.category === 'hat');
 const contentTypes = new Map([
@@ -125,6 +127,35 @@ async function assertNoHorizontalPageOverflow(page, label) {
   assert(dimensions.scrollWidth <= dimensions.clientWidth + 1, `${label}: page must not overflow horizontally: ${JSON.stringify(dimensions)}`);
 }
 
+async function assertDownloadDisclaimer(page, label, shouldWrap = false) {
+  const helper = page.locator('.download-helper');
+  assert.equal(await helper.count(), 1, `${label}: builder must include one download disclaimer`);
+  assert.equal((await helper.textContent()).trim(), DOWNLOAD_DISCLAIMER, `${label}: download disclaimer must use the approved copy`);
+  assert.equal(await page.getByText(OLD_DOWNLOAD_HELPER, { exact: true }).count(), 0, `${label}: old download helper copy must not appear`);
+
+  const layout = await helper.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const actionStyle = getComputedStyle(document.querySelector('.main-actions .action'));
+    const box = element.getBoundingClientRect();
+    return {
+      clientWidth: element.clientWidth,
+      fontSize: Number.parseFloat(style.fontSize),
+      actionFontSize: Number.parseFloat(actionStyle.fontSize),
+      height: box.height,
+      lineHeight: Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize) * 1.2,
+      scrollWidth: element.scrollWidth,
+      textAlign: style.textAlign,
+      visibility: style.visibility,
+    };
+  });
+
+  assert.equal(layout.visibility, 'visible', `${label}: download disclaimer must remain visible`);
+  assert.equal(layout.textAlign, 'center', `${label}: download disclaimer must remain centered`);
+  assert(layout.fontSize < layout.actionFontSize, `${label}: download disclaimer must remain smaller than action buttons`);
+  assert(layout.scrollWidth <= layout.clientWidth + 1, `${label}: download disclaimer must not overflow horizontally: ${JSON.stringify(layout)}`);
+  if (shouldWrap) assert(layout.height > layout.lineHeight + 1, `${label}: download disclaimer must wrap cleanly: ${JSON.stringify(layout)}`);
+}
+
 async function assertHomepageLayout(page, label, mode) {
   const [builder, intro, categories, preview, selected] = await Promise.all([
     page.locator('.homepage-avatar-builder').boundingBox(),
@@ -236,6 +267,7 @@ try {
   await assertHomepageLayout(homepageDesktop, '1440x900', 'desktop');
   assert.equal(await homepageDesktop.locator('#download-png').count(), 1, 'Homepage builder must include one Download PNG button');
   assert.equal(await homepageDesktop.locator('#download-png').getAttribute('aria-label'), 'Download avatar as PNG', 'Homepage download button must have a clear accessible label');
+  await assertDownloadDisclaimer(homepageDesktop, 'Homepage builder');
 
   const homepageLayerRequests = homepageDesktop.requestedUrls.filter((requestUrl) => requestUrl.includes('/img/avatar-builder/layers/'));
   const homepageThumbnailRequests = homepageDesktop.requestedUrls.filter((requestUrl) => requestUrl.includes('/img/avatar-builder/thumbnails/'));
@@ -273,6 +305,7 @@ try {
     const page = await openAt({ width, height }, homepageUrl);
     await assertHomepageLayout(page, `${width}x${height}`, 'portrait');
     assert.equal(Math.round((await page.locator('.preview-panel').boundingBox()).width), width, `${width}x${height}: portrait preview must fill the viewport width`);
+    if (width === 320) await assertDownloadDisclaimer(page, '320x568 homepage builder', true);
     await page.close();
   }
 
@@ -284,6 +317,9 @@ try {
     readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'),
   ]);
   assert(!liveBuilderSources.some((source) => source.includes('img/CRYPTO-MOONBOYS-OG-TRAITS/')), 'Live builder files must not reference original 4000x4000 trait sources');
+  const sharedBuilderSource = liveBuilderSources[3];
+  assert(!sharedBuilderSource.includes(OLD_DOWNLOAD_HELPER), 'Shared builder source must not contain the old download helper copy');
+  assert(sharedBuilderSource.includes(DOWNLOAD_DISCLAIMER), 'Shared builder source must contain the approved download disclaimer');
 
   const desktop = await openAt({ width: 1440, height: 900 });
   const desktopBoxes = await Promise.all(['.category-panel', '.preview-panel', '.selection-panel'].map((selector) => desktop.locator(selector).boundingBox()));
@@ -314,6 +350,7 @@ try {
 
   const fullExport = await openExportPage();
   assert.equal(await fullExport.locator('#download-png').count(), 1, 'Standalone builder must include one Download PNG button');
+  await assertDownloadDisclaimer(fullExport, 'Standalone builder');
   const fullSources = await fullExport.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
   assert.equal(fullSources.length, 9, 'Full export fixture must contain all nine selected layers');
   await downloadAndInspect(fullExport);
@@ -430,6 +467,8 @@ try {
 
   const smallPhone = await openAt({ width: 320, height: 568 });
   await assertCategoryRow(smallPhone, '320x568');
+  await assertDownloadDisclaimer(smallPhone, '320x568 standalone builder', true);
+  await assertNoHorizontalPageOverflow(smallPhone, '320x568 standalone builder');
   await smallPhone.close();
 
   const landscape = await openAt({ width: 844, height: 390 });

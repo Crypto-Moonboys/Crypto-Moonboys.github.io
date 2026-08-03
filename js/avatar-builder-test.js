@@ -41,7 +41,7 @@ host.innerHTML = `
         <button class="action" type="button" id="reset">Reset</button>
         <button class="action action-danger" type="button" id="clear-all">Clear All</button>
       </div>
-      <p class="download-helper">Downloads the avatar exactly as shown.</p>
+      <p class="download-helper">A download is not ownership of a Moonboy. For fun only.</p>
       <a class="back-link" href="${isHomepage ? '/avatar-builder-test.html' : '/'}">${isHomepage ? 'Open standalone builder' : 'Back to Crypto Moonboys'}</a>
     </aside>
   </div>
