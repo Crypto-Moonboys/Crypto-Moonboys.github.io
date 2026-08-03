@@ -50,6 +50,71 @@ async function openAt(viewport) {
   return page;
 }
 
+async function assertCategoryRow(page, label) {
+  const categoryLayout = await page.locator('.category-tabs').evaluate((tabs) => {
+    const buttons = [...tabs.querySelectorAll('.category-button')];
+    const visibleButtons = buttons.filter((button) => {
+      const style = getComputedStyle(button);
+      const box = button.getBoundingClientRect();
+      return style.visibility !== 'hidden' && style.display !== 'none' && box.width > 0 && box.height > 0;
+    });
+    const buttonBoxes = visibleButtons.map((button) => button.getBoundingClientRect());
+    const iconBoxes = visibleButtons.map((button) => button.querySelector('svg').getBoundingClientRect());
+    return {
+      buttonCount: buttons.length,
+      visibleButtonCount: visibleButtons.length,
+      rowTops: buttonBoxes.map((box) => box.top),
+      buttonWidths: buttonBoxes.map((box) => box.width),
+      iconWidths: iconBoxes.map((box) => box.width),
+      scrollWidth: tabs.scrollWidth,
+      clientWidth: tabs.clientWidth,
+      overflowX: getComputedStyle(tabs).overflowX,
+      bodyScrollbarWidth: getComputedStyle(document.body).scrollbarWidth,
+      htmlScrollbarWidth: getComputedStyle(document.documentElement).scrollbarWidth,
+    };
+  });
+
+  assert.equal(categoryLayout.buttonCount, 9, `${label}: category row must contain exactly nine buttons`);
+  assert.equal(categoryLayout.visibleButtonCount, 9, `${label}: all nine category buttons must be visible`);
+  assert(categoryLayout.scrollWidth <= categoryLayout.clientWidth + 1, `${label}: category row must not overflow horizontally: ${JSON.stringify(categoryLayout)}`);
+  assert(Math.max(...categoryLayout.rowTops) - Math.min(...categoryLayout.rowTops) <= 1, `${label}: category buttons must remain on one row: ${JSON.stringify(categoryLayout)}`);
+  assert.equal(categoryLayout.overflowX, 'visible', `${label}: category row must not be a horizontal scroll container`);
+  assert.equal(categoryLayout.bodyScrollbarWidth, 'none', `${label}: page scrollbar chrome must remain hidden`);
+  assert.equal(categoryLayout.htmlScrollbarWidth, 'none', `${label}: root scrollbar chrome must remain hidden`);
+  assert(Math.max(...categoryLayout.buttonWidths) <= 42.5, `${label}: category buttons must not exceed 42px: ${JSON.stringify(categoryLayout)}`);
+  assert(Math.min(...categoryLayout.buttonWidths) > 0, `${label}: category buttons must retain a visible hit area: ${JSON.stringify(categoryLayout)}`);
+  assert(Math.min(...categoryLayout.iconWidths) >= 12.5 && Math.max(...categoryLayout.iconWidths) <= 20.5, `${label}: category icons must scale between 13px and 20px: ${JSON.stringify(categoryLayout)}`);
+}
+
+async function assertHiddenVerticalScroller(page, selector, label) {
+  const locator = page.locator(selector);
+  const originalStyle = await locator.getAttribute('style');
+  await locator.evaluate((element) => {
+    element.style.height = '80px';
+    element.style.maxHeight = '80px';
+    element.scrollTop = 0;
+  });
+  await locator.hover();
+  await page.mouse.wheel(0, 160);
+  await page.waitForTimeout(50);
+  const result = await locator.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    overflowY: getComputedStyle(element).overflowY,
+    scrollbarWidth: getComputedStyle(element).scrollbarWidth,
+    scrollHeight: element.scrollHeight,
+    scrollTop: element.scrollTop,
+  }));
+  await locator.evaluate((element, savedStyle) => {
+    if (savedStyle === null) element.removeAttribute('style');
+    else element.setAttribute('style', savedStyle);
+  }, originalStyle);
+
+  assert.equal(result.overflowY, 'auto', `${label}: vertical overflow must remain automatic`);
+  assert.equal(result.scrollbarWidth, 'none', `${label}: scrollbar chrome must remain hidden`);
+  assert(result.scrollHeight > result.clientHeight, `${label}: test fixture must overflow vertically: ${JSON.stringify(result)}`);
+  assert(result.scrollTop > 0, `${label}: mouse-wheel scrolling must still move the container: ${JSON.stringify(result)}`);
+}
+
 try {
   const desktop = await openAt({ width: 1440, height: 900 });
   const desktopBoxes = await Promise.all(['.category-panel', '.preview-panel', '.selection-panel'].map((selector) => desktop.locator(selector).boundingBox()));
@@ -58,11 +123,13 @@ try {
   assert(left.x + left.width <= preview.x, 'Desktop category controls must be left of the avatar');
   assert(right.x >= preview.x + preview.width, 'Desktop selected controls must be right of the avatar');
   assert(preview.height >= 850, `Desktop avatar should fill the available viewport height: ${JSON.stringify(preview)}`);
+  await assertCategoryRow(desktop, '1440x900');
   const desktopCategory = await desktop.locator('.category-button').first().boundingBox();
-  assert(desktopCategory.width >= 40 && desktopCategory.height >= 40, `Desktop category controls must retain usable hit targets: ${JSON.stringify(desktopCategory)}`);
-  assert(await desktop.locator('.category-tabs').evaluate((tabs) => tabs.scrollWidth > tabs.clientWidth), 'Narrow desktop category controls should scroll horizontally');
+  assert(desktopCategory.width > 0 && desktopCategory.height > 0, `Desktop category controls must retain visible hit targets: ${JSON.stringify(desktopCategory)}`);
   const desktopTrait = await desktop.locator('.trait-button').first().boundingBox();
   assert(desktopTrait.width >= 90, `Desktop trait cards must remain readable at 1440x900: ${JSON.stringify(desktopTrait)}`);
+  await assertHiddenVerticalScroller(desktop, '.trait-grid', 'Trait grid');
+  await assertHiddenVerticalScroller(desktop, '.selected-list', 'Selected traits');
 
   const initialSources = await desktop.locator('.avatar-layer').evaluateAll((images) => images.map((image) => image.getAttribute('src')));
   await desktop.locator('#randomize').click();
@@ -83,7 +150,12 @@ try {
   assert(largePreview.height >= 1407, 'Large desktop avatar must fill the available viewport height without a 1000px cap');
   assert(largeLeft.x + largeLeft.width <= largePreview.x, 'Large desktop category controls must stay left of the avatar');
   assert(largeRight.x >= largePreview.x + largePreview.width, 'Large desktop selected controls must stay right of the avatar');
+  await assertCategoryRow(largeDesktop, '2560x1440');
   await largeDesktop.close();
+
+  const fullHd = await openAt({ width: 1920, height: 1080 });
+  await assertCategoryRow(fullHd, '1920x1080');
+  await fullHd.close();
 
   const nearSquare = await openAt({ width: 1440, height: 1024 });
   const nearSquarePreview = await nearSquare.locator('.preview-panel').boundingBox();
@@ -100,7 +172,12 @@ try {
   assert(Math.abs(portraitPreview.width - portraitPreview.height) < 1, 'Portrait avatar must be square');
   assert.equal(Math.round(portraitPreview.width), 390, 'Portrait avatar must fill viewport width');
   assert(portraitControls.y >= portraitPreview.y + portraitPreview.height - 1, 'Portrait controls must sit below avatar');
+  await assertCategoryRow(portrait, '390x844');
   await portrait.close();
+
+  const smallPhone = await openAt({ width: 320, height: 568 });
+  await assertCategoryRow(smallPhone, '320x568');
+  await smallPhone.close();
 
   const landscape = await openAt({ width: 844, height: 390 });
   const landscapePreview = await landscape.locator('.preview-panel').boundingBox();
@@ -108,6 +185,7 @@ try {
   assert(Math.abs(landscapePreview.width - landscapePreview.height) < 1, 'Landscape avatar must be square');
   assert(landscapePreview.height >= 373, 'Landscape avatar must fill available viewport height');
   assert(landscapeControls.x >= landscapePreview.x + landscapePreview.width, 'Landscape controls must sit beside avatar');
+  await assertCategoryRow(landscape, '844x390');
   await landscape.locator('[data-category="hat"]').click();
   await landscape.locator('.pagination').waitFor({ state: 'visible' });
   assert.equal((await landscape.locator('.page-label').textContent()).trim(), '1 / 10', 'Landscape Hat tray must expose pagination');
@@ -126,6 +204,7 @@ try {
   assert(Math.abs(tabletPreview.width - tabletPreview.height) < 1, 'Tablet landscape avatar must be square');
   assert(tabletPreview.height >= 750, 'Tablet landscape avatar must fill available viewport height');
   assert(tabletControls.x >= tabletPreview.x + tabletPreview.width, 'Tablet landscape controls must sit beside avatar');
+  await assertCategoryRow(tabletLandscape, '1024x768');
   await tabletLandscape.close();
 
   const rapid = await browser.newPage({ viewport: { width: 1440, height: 900 } });
