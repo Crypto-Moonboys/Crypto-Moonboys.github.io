@@ -1,4 +1,4 @@
-:root {
+.avatar-builder-host {
   color-scheme: dark;
   --black: #05080b;
   --panel: #0d151b;
@@ -10,12 +10,15 @@
   --line: rgba(39, 233, 239, .25);
   --canvas-size: min(calc(100dvh - 2rem), calc(100vw - 544px));
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  border-bottom: 1px solid rgba(39, 233, 239, .25);
 }
 
-* { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: var(--black); color: var(--white); scrollbar-width: none; -ms-overflow-style: none; }
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
-body { overflow: hidden; }
+html:has(body.page-standalone-tool), body.page-standalone-tool { margin: 0; min-height: 100%; background: #05080b; color: #f8fbfc; scrollbar-width: none; -ms-overflow-style: none; }
+html:has(body.page-standalone-tool)::-webkit-scrollbar, body.page-standalone-tool::-webkit-scrollbar { display: none; }
+body.page-standalone-tool { overflow: hidden; }
+
+@scope (.avatar-builder-host) {
+:scope, :scope * { box-sizing: border-box; }
 button, a { font: inherit; }
 button { color: inherit; }
 
@@ -194,7 +197,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
 
 @media (orientation: landscape) and (max-width: 1100px),
        (orientation: landscape) and (max-aspect-ratio: 3 / 2) {
-  :root { --canvas-size: min(calc(100dvh - 1rem), calc(100vw - 236px)); }
+  :scope { --canvas-size: min(calc(100dvh - 1rem), calc(100vw - 236px)); }
   .builder-shell {
     padding: .5rem;
     grid-template-columns: var(--canvas-size) minmax(220px, 1fr);
@@ -228,7 +231,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
 }
 
 @media (orientation: portrait) and (max-width: 1100px) {
-  body { overflow: auto; }
   .builder-shell {
     min-height: 100dvh;
     padding: 0;
@@ -238,7 +240,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
     gap: 0;
     align-items: start;
   }
-  .preview-panel { width: 100vw; height: 100vw; }
+  .preview-panel { width: 100%; height: auto; aspect-ratio: 1; }
   .avatar-frame { border-width: 0 0 2px; border-radius: 0; }
   .control-panel { max-height: none; border-width: 0 0 1px; border-radius: 0; }
   .category-panel { height: auto; }
@@ -257,4 +259,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
     .trait-button:hover { z-index: 1; transform: scale(1.05); }
   }
   button:active { transform: scale(.97); }
+}
+}
+
+@media (orientation: portrait) and (max-width: 1100px) {
+  body.page-standalone-tool { overflow: auto; }
 }
