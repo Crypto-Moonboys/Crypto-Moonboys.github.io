@@ -57,8 +57,11 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   gap: .35rem;
   padding: .75rem;
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   scroll-snap-type: x proximity;
 }
+.category-tabs::-webkit-scrollbar { display: none; }
 .category-button, .trait-button, .icon-button, .action, .page-button {
   border: 1px solid var(--line);
   background: #101d25;
@@ -85,7 +88,9 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
 .tray-status { padding: 1rem; color: var(--muted); text-align: center; }
 .trait-grid {
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding: .35rem .75rem .75rem;
   display: grid;
   grid-template-columns: repeat(
@@ -95,6 +100,7 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   gap: .65rem;
   justify-content: center;
 }
+.trait-grid::-webkit-scrollbar { display: none; }
 .trait-button {
   position: relative;
   width: 100%;
