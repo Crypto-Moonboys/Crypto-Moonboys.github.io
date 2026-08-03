@@ -18,7 +18,7 @@
       "id": "background",
       "name": "Background",
       "order": 0,
-      "count": 51,
+      "count": 54,
       "required": true,
       "defaultTraitId": "background-mb-background"
     },
@@ -90,11 +90,11 @@
   "counts": {
     "source": 912,
     "layers": 912,
-    "thumbnails": 912
+    "thumbnails": 915
   },
   "totals": {
     "layerBytes": 46004078,
-    "thumbnailBytes": 7316208,
+    "thumbnailBytes": 7322520,
     "approximateInitialTransferBytes": 514010
   },
   "traits": [
@@ -8305,6 +8305,33 @@
       "thumbnail": "/img/avatar-builder/thumbnails/right-arm/right-arm-mb-right-127.webp",
       "layerBytes": 31952,
       "thumbnailBytes": 4662
+    },
+    {
+      "id": "background-matrix-rain",
+      "name": "Matrix Rain",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "matrix-rain",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/matrix-rain.webp",
+      "thumbnailBytes": 3864
+    },
+    {
+      "id": "background-neon-pulse",
+      "name": "Neon Pulse",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "neon-pulse",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/neon-pulse.webp",
+      "thumbnailBytes": 1684
+    },
+    {
+      "id": "background-pixel-starfield",
+      "name": "8-Bit Starfield",
+      "category": "background",
+      "kind": "animated",
+      "renderer": "pixel-starfield",
+      "thumbnail": "/img/avatar-builder/animated-thumbnails/pixel-starfield.webp",
+      "thumbnailBytes": 764
     }
   ]
 }
