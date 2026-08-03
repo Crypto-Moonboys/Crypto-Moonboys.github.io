@@ -13,7 +13,8 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: var(--black); color: var(--white); }
+html, body { margin: 0; min-height: 100%; background: var(--black); color: var(--white); scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 body { overflow: hidden; }
 button, a { font: inherit; }
 button { color: inherit; }
@@ -53,11 +54,10 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
 
 .category-tabs {
   display: grid;
-  grid-template-columns: repeat(9, minmax(40px, 1fr));
-  gap: .35rem;
-  padding: .75rem;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: clamp(.18rem, .45vw, .35rem);
+  padding: clamp(.35rem, .8vw, .7rem);
+  overflow: visible;
 }
 .category-button, .trait-button, .icon-button, .action, .page-button {
   border: 1px solid var(--line);
@@ -65,16 +65,18 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   cursor: pointer;
 }
 .category-button {
+  width: min(100%, clamp(26px, 7.5vw, 42px));
+  max-width: 42px;
   min-width: 0;
   aspect-ratio: 1;
   padding: .2rem;
   display: grid;
   place-items: center;
+  justify-self: center;
   border-radius: 7px;
   color: var(--muted);
-  scroll-snap-align: start;
 }
-.category-button svg { width: min(20px, 75%); height: min(20px, 75%); color: var(--cyan); }
+.category-button svg { width: clamp(13px, 55%, 20px); height: clamp(13px, 55%, 20px); color: var(--cyan); }
 .selected-icon { width: 27px; height: 27px; color: var(--cyan); }
 .category-button[aria-pressed="true"] { color: var(--white); border-color: var(--gold); background: rgba(246, 191, 47, .1); }
 .category-button[aria-pressed="true"] svg { color: var(--gold); }
@@ -85,7 +87,9 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
 .tray-status { padding: 1rem; color: var(--muted); text-align: center; }
 .trait-grid {
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding: .35rem .75rem .75rem;
   display: grid;
   grid-template-columns: repeat(
@@ -95,6 +99,7 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
   gap: .65rem;
   justify-content: center;
 }
+.trait-grid::-webkit-scrollbar { display: none; }
 .trait-button {
   position: relative;
   width: 100%;
@@ -167,7 +172,8 @@ h2 { margin-bottom: 0; font-size: 1rem; text-transform: uppercase; letter-spacin
 .avatar-layer { display: block; object-fit: contain; }
 .preview-fallback { position: absolute; left: 50%; bottom: 1rem; translate: -50% 0; width: max-content; max-width: 80%; padding: .6rem .8rem; border: 1px solid var(--danger); border-radius: 8px; background: rgba(5, 8, 11, .9); color: var(--danger); font-size: .8rem; }
 
-.selected-list { min-height: 0; flex: 1; margin: 0; padding: 0; overflow: auto; list-style: none; }
+.selected-list { min-height: 0; flex: 1; margin: 0; padding: 0; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; list-style: none; }
+.selected-list::-webkit-scrollbar { display: none; }
 .selected-item { display: grid; grid-template-columns: 34px minmax(0, 1fr) 34px; gap: .6rem; align-items: center; padding: .55rem 0; border-bottom: 1px solid rgba(158, 176, 185, .12); }
 .selected-copy { min-width: 0; }
 .selected-copy strong, .selected-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -198,7 +204,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
   }
   .control-panel { max-height: 100%; border-radius: 12px; }
   .category-panel { height: 100%; }
-  .category-tabs { padding: .5rem; gap: .3rem; }
   .category-button { min-width: 0; min-height: 0; }
   .tray-heading { display: none; }
   .pagination { min-height: 38px; padding: .3rem; }
@@ -237,7 +242,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
   .avatar-frame { border-width: 0 0 2px; border-radius: 0; }
   .control-panel { max-height: none; border-width: 0 0 1px; border-radius: 0; }
   .category-panel { height: auto; }
-  .category-tabs { padding: .65rem; gap: .35rem; }
   .trait-tray { max-height: 58vh; }
   .trait-grid { padding: .35rem 1rem 1.15rem; gap: .8rem; }
   .selection-panel { padding: 1rem; }
