@@ -105,6 +105,10 @@ const XP_GROUP_JOIN  = 10;
 const PETS_DAILY_COMMUNITY_XP_CAP = 250;
 const PETS_DAILY_PET_XP_CAP = 1200;
 const PETS_ACTION_COOLDOWN_SECONDS = 45;
+const PET_REPEAT_REWARD_RULES = Object.freeze({
+  event: Object.freeze({ full_rewarded: 6, reduced_rewarded: 10, reduced_multiplier: 0.5 }),
+  kaiju: Object.freeze({ full_rewarded: 5, reduced_rewarded: 10, reduced_multiplier: 0.5 }),
+});
 const PET_TRADE_MIN_GOLD = 10;
 const PET_TRADE_MAX_GOLD = 250;
 const PET_TRADE_COOLDOWN_SECONDS = 300;
@@ -1736,6 +1740,45 @@ function clampPetCurrency(value) {
   return Math.max(0, Math.min(999999, Math.floor(Number(value) || 0)));
 }
 
+function getPetRepeatRewardMultiplier(mode, completedToday) {
+  const rule = PET_REPEAT_REWARD_RULES[String(mode || '').trim().toLowerCase()];
+  if (!rule) return 1;
+  const completed = Math.max(0, Math.floor(Number(completedToday) || 0));
+  if (completed < rule.full_rewarded) return 1;
+  if (completed < rule.reduced_rewarded) return rule.reduced_multiplier;
+  return 0;
+}
+
+async function getPetDailyRepeatCompletionCount(db, telegramId, dayKey, mode) {
+  const id = String(telegramId || '').trim();
+  const day = String(dayKey || '').trim();
+  if (!id || !day) return 0;
+  let row = null;
+  if (mode === 'event') {
+    row = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND event_type = 'random_event' AND status = 'accepted'`).bind(id, day).first().catch(() => null);
+  } else if (mode === 'kaiju') {
+    row = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND event_type LIKE 'kaiju_%' AND status = 'accepted'`).bind(id, day).first().catch(() => null);
+  }
+  return Math.max(0, Math.floor(Number(row?.count) || 0));
+}
+
+function scalePetRewardRange(value, multiplier) {
+  const scale = Math.max(0, Math.min(1, Number(multiplier) || 0));
+  if (Array.isArray(value)) return value.map((entry) => Math.max(0, Math.floor((Number(entry) || 0) * scale)));
+  return Math.max(0, Math.floor((Number(value) || 0) * scale));
+}
+
+function scalePetRandomEventRewards(rewards = {}, multiplier = 1) {
+  return Object.fromEntries(Object.entries(rewards || {}).map(([key, value]) => [key, scalePetRewardRange(value, multiplier)]));
+}
+
+function getPetHighLevelGearXpMultiplier(pet) {
+  const level = getPetLevel(pet?.pet_xp);
+  if (level <= 35) return 1;
+  if (level <= 50) return 0.6;
+  return 0.35;
+}
+
 function getPetLevel(petXp) {
   return Math.max(1, Math.floor((Number(petXp) || 0) / 100) + 1);
 }
@@ -1750,6 +1793,7 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
   const food = getPetEquippedItem(pet, 'food');
   const toy = getPetEquippedItem(pet, 'toy');
   const outfit = getPetEquippedItem(pet, 'outfit');
+  const basePetXp = Math.max(0, Math.floor(Number(rewards.pet_xp) || 0));
 
   if (action === 'feed' && food?.key === 'moon_kibble') {
     rule.hunger -= 12;
@@ -1785,6 +1829,12 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
     rewards.pet_xp += 8;
     rewards.moon_gold += 2;
     rewards.style_tokens += 1;
+  }
+
+  const gearBonusXp = Math.max(0, Math.floor(Number(rewards.pet_xp) || 0) - basePetXp);
+  if (gearBonusXp > 0) {
+    const multiplier = getPetHighLevelGearXpMultiplier(pet);
+    rewards.pet_xp = basePetXp + Math.floor(gearBonusXp * multiplier);
   }
 }
 
@@ -2480,10 +2530,13 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const outcome = pickPetRandomEventOutcome(choice);
   const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
-  const petXpAwarded = Math.min(PETS_DAILY_PET_XP_CAP, Math.max(0, rollPetRange(outcome.rewards.pet_xp, 0)));
+  const eventCompletionCount = await getPetDailyRepeatCompletionCount(db, telegramId, dayKey, 'event');
+  const eventRewardMultiplier = getPetRepeatRewardMultiplier('event', eventCompletionCount);
+  const eventRewards = scalePetRandomEventRewards(outcome.rewards, eventRewardMultiplier);
+  const petXpAwarded = Math.min(PETS_DAILY_PET_XP_CAP, Math.max(0, rollPetRange(eventRewards.pet_xp, 0)));
   const applied = applyPetRandomEventDeltas(
     pet,
-    { ...outcome.rewards, pet_xp: petXpAwarded },
+    { ...eventRewards, pet_xp: petXpAwarded },
     outcome.costs,
   );
   if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) {
@@ -2841,18 +2894,23 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', pet, xp_awarded: 0, pet_xp_awarded: 0 };
 
   const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
-  let petXp = Math.max(0, Math.floor(Number(rewards.pet_xp || 0)));
-  let communityXp = Math.max(0, Math.floor(Number(rewards.community_xp || 0)));
+  const kaijuCompletionCount = await getPetDailyRepeatCompletionCount(db, telegramId, dayKey, 'kaiju');
+  let kaijuRewardMultiplier = getPetRepeatRewardMultiplier('kaiju', kaijuCompletionCount);
+  const energyCost = Math.max(0, Math.floor(Number(rewards.energy_cost || 0)));
+  const hasRewardEnergy = Math.max(0, Math.floor(Number(pet.energy) || 0)) >= energyCost;
+  if (!hasRewardEnergy) kaijuRewardMultiplier = 0;
+  let petXp = Math.floor(Math.max(0, Number(rewards.pet_xp || 0)) * kaijuRewardMultiplier);
+  let communityXp = Math.floor(Math.max(0, Number(rewards.community_xp || 0)) * kaijuRewardMultiplier);
   if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
   else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
   if (totals.day.community_xp >= PETS_DAILY_COMMUNITY_XP_CAP) communityXp = 0;
   else if (totals.day.community_xp + communityXp > PETS_DAILY_COMMUNITY_XP_CAP) communityXp = Math.max(0, PETS_DAILY_COMMUNITY_XP_CAP - totals.day.community_xp);
 
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + Math.max(0, Number(rewards.moon_gold || 0)));
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + Math.max(0, Number(rewards.style_tokens || 0)));
-  pet.happiness = clampPetStat(Number(pet.happiness || 0) + Math.max(0, Number(rewards.happiness || 0)));
-  pet.energy = clampPetStat(Number(pet.energy || 0) - Math.max(0, Number(rewards.energy_cost || 0)));
+  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + Math.floor(Math.max(0, Number(rewards.moon_gold || 0)) * kaijuRewardMultiplier));
+  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + Math.floor(Math.max(0, Number(rewards.style_tokens || 0)) * kaijuRewardMultiplier));
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) + Math.floor(Math.max(0, Number(rewards.happiness || 0)) * kaijuRewardMultiplier));
+  if (hasRewardEnergy) pet.energy = clampPetStat(Number(pet.energy || 0) - energyCost);
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 

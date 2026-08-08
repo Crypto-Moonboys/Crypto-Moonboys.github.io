@@ -1100,4 +1100,15 @@ for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'pl
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
 
+
+// XP-farm hardening regression guards.
+assert.ok(worker.includes('PET_REPEAT_REWARD_RULES'), 'repeatable pet modes must define daily rewarded-completion budgets');
+assert.ok(worker.includes("full_rewarded: 6, reduced_rewarded: 10"), 'random events must diminish after six rewarded completions');
+assert.ok(worker.includes("full_rewarded: 5, reduced_rewarded: 10"), 'Kaiju must diminish after five rewarded completions');
+assert.ok(worker.includes("getPetDailyRepeatCompletionCount(db, telegramId, dayKey, 'event')"), 'random events must count same-day completions before rewards');
+assert.ok(worker.includes("getPetDailyRepeatCompletionCount(db, telegramId, dayKey, 'kaiju')"), 'Kaiju must count same-day completions before rewards');
+assert.ok(worker.includes('if (!hasRewardEnergy) kaijuRewardMultiplier = 0'), 'Kaiju must not award progression when the pet cannot pay the energy cost');
+assert.ok(worker.includes('getPetHighLevelGearXpMultiplier'), 'high-level gear XP must use a progression multiplier');
+assert.ok(worker.includes('if (level <= 35) return 1') && worker.includes('if (level <= 50) return 0.6') && worker.includes('return 0.35'), 'gear XP scaling must preserve early progression and taper after level 35');
+
 console.log('telegram-pets-api.test.mjs passed');
