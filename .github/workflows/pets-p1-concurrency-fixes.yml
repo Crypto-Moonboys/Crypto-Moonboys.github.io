@@ -1,0 +1,55 @@
+name: Pets P1 Concurrency Fixes
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/apply-pets-p1-concurrency-fixes.mjs'
+      - '.github/workflows/pets-p1-concurrency-fixes.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  apply-and-verify:
+    if: github.head_ref == 'agent/pets-xp-farm-hardening'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/pets-xp-farm-hardening
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Apply P1 fixes
+        run: node scripts/apply-pets-p1-concurrency-fixes.mjs
+
+      - name: Validate Worker syntax
+        run: node --check workers/moonboys-api/worker.js
+
+      - name: Run Pets API regression suite
+        run: node scripts/telegram-pets-api.test.mjs
+
+      - name: Run Worker/API CI
+        run: npm run ci:worker-api
+
+      - name: Remove one-shot tooling
+        run: |
+          rm scripts/apply-pets-p1-concurrency-fixes.mjs
+          rm .github/workflows/pets-p1-concurrency-fixes.yml
+
+      - name: Commit generated fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin agent/pets-xp-farm-hardening
+          git add -A
+          git commit -m "Fix Pets reward concurrency races"
+          git push origin HEAD:agent/pets-xp-farm-hardening
