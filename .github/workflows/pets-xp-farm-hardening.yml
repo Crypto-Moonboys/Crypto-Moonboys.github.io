@@ -4,17 +4,22 @@ on:
   push:
     branches:
       - agent/pets-xp-farm-hardening
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
 
 jobs:
   apply-and-verify:
-    if: github.actor != 'github-actions[bot]'
+    if: github.head_ref == 'agent/pets-xp-farm-hardening' || github.ref_name == 'agent/pets-xp-farm-hardening'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: agent/pets-xp-farm-hardening
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
