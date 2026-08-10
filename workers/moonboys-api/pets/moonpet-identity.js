@@ -4,6 +4,7 @@ const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 const FORBIDDEN_EVOLUTION_KEYS = /(?:^|_)(?:xp|reward)_multiplier$|cap_(?:increase|bonus)$|(?:pet|community)_xp_cap/i;
 const MOONPET_MEMORY_MILESTONES = new Set([
   'first_adoption', 'first_run', 'first_run_completed', 'first_extraction', 'first_boss_victory',
+  'first_daily_moon_run', 'highest_daily_score', 'longest_daily_streak', 'fastest_moon_alley_clear', 'daily_boss_victory',
   ...evolutions.map(({ evolution_id: evolutionId }) => `evolution_${evolutionId}`),
 ]);
 
