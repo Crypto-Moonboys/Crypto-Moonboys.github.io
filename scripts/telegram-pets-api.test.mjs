@@ -586,13 +586,13 @@ const randomEvent = asyncBlock('processPetRandomEvent');
 assert.ok(randomEvent.includes('duplicate: true'), 'random event must short-circuit duplicate event keys');
 assertOrder(
   randomEvent,
-  "const duplicate = await db.prepare(`SELECT id, status, reason FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const duplicate = await db.prepare(`',
   'const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);',
   'random event must check duplicate event keys before loading the pet'
 );
 assertOrder(
   randomEvent,
-  "const duplicate = await db.prepare(`SELECT id, status, reason FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  'const duplicate = await db.prepare(`',
   'const outcome = pickPetRandomEventOutcome(choice);',
   'random event must check duplicate event keys before the reward roll'
 );
@@ -1150,7 +1150,14 @@ class RepeatReservationDb {
         args,
         first: async () => {
           const row = this.events.get(`${args[0]}:${args[1]}`);
-          return row ? { id: row.id, status: row.status, reason: row.reason } : null;
+          return row ? {
+            id: row.id,
+            status: row.status,
+            reason: row.reason,
+            day_key: row.day_key,
+            week_key: row.week_key,
+            season_key: row.season_key,
+          } : null;
         },
       }),
     };
@@ -1162,12 +1169,20 @@ class RepeatReservationDb {
       for (const statement of statements) {
         const { sql, args } = statement;
         if (sql.includes('INSERT OR IGNORE INTO telegram_pet_events')) {
-          const [id, telegramId, , eventKey] = args;
+          const [id, telegramId, , eventKey, seasonKey, dayKey, weekKey] = args;
           const eventMapKey = `${telegramId}:${eventKey}`;
           const kaiju = sql.includes('WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles');
           const energyCost = kaiju ? Number(args[9]) : 0;
           if (!this.events.has(eventMapKey) && (!kaiju || Number(this.energy.get(String(telegramId)) || 0) >= energyCost)) {
-            this.events.set(eventMapKey, { id, telegram_id: String(telegramId), status: 'pending', reason: 'repeat_reward_pending' });
+            this.events.set(eventMapKey, {
+              id,
+              telegram_id: String(telegramId),
+              status: 'pending',
+              reason: 'repeat_reward_pending',
+              day_key: dayKey,
+              week_key: weekKey,
+              season_key: seasonKey,
+            });
             results.push({ meta: { changes: 1 }, results: [] });
           } else {
             results.push({ meta: { changes: 0 }, results: [] });
@@ -1197,7 +1212,17 @@ class RepeatReservationDb {
             results.push({ meta: { changes: 0 }, results: [] });
           } else {
             event.reason = `repeat_reward_slot:${this.counters.get(`${telegramId}:${dayKey}:${mode}`)}${suffix}`;
-            results.push({ meta: { changes: 1 }, results: [{ id: event.id, status: event.status, reason: event.reason }] });
+            results.push({
+              meta: { changes: 1 },
+              results: [{
+                id: event.id,
+                status: event.status,
+                reason: event.reason,
+                day_key: event.day_key,
+                week_key: event.week_key,
+                season_key: event.season_key,
+              }],
+            });
           }
         } else {
           throw new Error(`Unexpected reservation SQL in test: ${sql}`);
@@ -1312,15 +1337,14 @@ class SqliteD1 {
   }
 }
 
-function seedRepeatRewardPlayer(telegramId, energy = 70) {
+function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date().toISOString()) {
   const db = new SqliteD1();
-  const now = new Date().toISOString();
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare(`
     INSERT INTO telegram_pet_profiles
       (telegram_id, pet_xp, level, happiness, energy, last_decay_at)
     VALUES (?, 0, 1, 70, ?, ?)
-  `).run(telegramId, energy, now);
+  `).run(telegramId, energy, lastDecayAt);
   db.database.prepare(`
     INSERT INTO telegram_seasons (name, start_date, end_date, is_active)
     VALUES ('Repeat recovery test', '2026-01-01T00:00:00.000Z', '2027-01-01T00:00:00.000Z', 1)
@@ -1336,7 +1360,9 @@ function repeatRewardSnapshot(db, telegramId, mode) {
   const userRow = db.database.prepare('SELECT xp, level FROM telegram_users WHERE telegram_id = ?').get(telegramId);
   const eventRow = db.database.prepare(`
     SELECT status, reason, pet_xp_awarded, xp_awarded
-    FROM telegram_pet_events WHERE telegram_id = ? ORDER BY created_at DESC LIMIT 1
+    FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type <> 'cap_fixture'
+    ORDER BY created_at DESC LIMIT 1
   `).get(telegramId) || null;
   const slotRow = db.database.prepare(`
     SELECT claimed_count FROM telegram_pet_repeat_reward_slots
@@ -1364,8 +1390,7 @@ function repeatRewardSnapshot(db, telegramId, mode) {
   return { profile, user, event, slot, xpLog, season, leaderboard };
 }
 
-function seedAcceptedDailyPetEvent(db, telegramId, eventKey, petXp, communityXp = 0) {
-  const dayKey = new Date().toISOString().slice(0, 10);
+function seedAcceptedDailyPetEvent(db, telegramId, eventKey, petXp, communityXp = 0, dayKey = new Date().toISOString().slice(0, 10)) {
   db.database.prepare(`
     INSERT INTO telegram_pet_events
       (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status)
@@ -1373,12 +1398,21 @@ function seedAcceptedDailyPetEvent(db, telegramId, eventKey, petXp, communityXp 
   `).run(`fixture-${eventKey}`, telegramId, eventKey, communityXp, petXp, dayKey);
 }
 
-const eventRecoveryDb = seedRepeatRewardPlayer('event-recovery');
+const recoveryDayA = new Date('2026-09-27T23:50:00.000Z');
+const recoveryDayB = new Date('2026-09-28T00:10:00.000Z');
+const recoveryDayAKey = '2026-09-27';
+const recoveryDayBKey = '2026-09-28';
+const recoveryWeekAKey = '2026-W39';
+const recoverySeasonAKey = 'pet-s2026-003';
+
+const eventRecoveryDb = seedRepeatRewardPlayer('event-recovery', 70, recoveryDayA.toISOString());
+seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey);
 eventRecoveryDb.failOnBatch(2);
 await assert.rejects(
   processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
     event_key: 'event-recovery-callback',
     encounter: PET_RANDOM_EVENTS.moon_crate_found,
+    now: recoveryDayA,
   }),
   /simulated_d1_batch_failure/,
   'Event finalization failure must surface so the same callback can be retried',
@@ -1388,29 +1422,61 @@ assert.equal(eventAfterFailure.event.status, 'pending', 'failed Event finalizati
 assert.equal(eventAfterFailure.event.reason, 'repeat_reward_slot:1', 'failed Event finalization must persist its original reward slot');
 assert.equal(eventAfterFailure.slot.claimed_count, 1, 'failed Event finalization must consume exactly one slot');
 assert.deepEqual(eventAfterFailure.profile, { pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0, energy: 70, happiness: 70 }, 'failed Event finalization must not partially apply rewards or costs');
+eventRecoveryDb.database.prepare(`
+  UPDATE telegram_pet_profiles SET last_active_day = ?, streak_days = 9 WHERE telegram_id = ?
+`).run(recoveryDayBKey, 'event-recovery');
 const recoveredEvent = await processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
   event_key: 'event-recovery-callback',
   encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
 });
 assert.equal(recoveredEvent.accepted, true, 'retrying a failed Event callback must complete its pending reservation');
 assert.equal(recoveredEvent.reward_slot, 1, 'Event recovery must reuse the original slot');
+assert.deepEqual(recoveredEvent.accounting_window, {
+  day_key: recoveryDayAKey,
+  week_key: recoveryWeekAKey,
+  season_key: recoverySeasonAKey,
+}, 'Event recovery must report the original reservation accounting window');
 const eventAfterRecovery = repeatRewardSnapshot(eventRecoveryDb, 'event-recovery', 'event');
 assert.equal(eventAfterRecovery.event.status, 'accepted', 'Event recovery must finalize the pending reservation');
 assert.equal(eventAfterRecovery.slot.claimed_count, 1, 'Event recovery must not consume a second slot');
-assert.ok(eventAfterRecovery.profile.pet_xp > 0, 'Event recovery must apply its Pet XP once');
+assert.equal(eventAfterRecovery.profile.pet_xp, 1, 'Event recovery must clamp against the original Day A Pet XP allowance');
+assert.deepEqual(
+  { ...eventRecoveryDb.database.prepare(`
+    SELECT day_key, week_key, season_key FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_key = ?
+  `).get('event-recovery', 'event-recovery-callback') },
+  { day_key: recoveryDayAKey, week_key: recoveryWeekAKey, season_key: recoverySeasonAKey },
+  'Event recovery must retain the original day, week, and season accounting keys',
+);
+assert.equal(eventRecoveryDb.database.prepare(`
+  SELECT COALESCE(SUM(pet_xp_awarded), 0) AS total FROM telegram_pet_events
+  WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+`).get('event-recovery', recoveryDayAKey).total, 1200, 'Event recovery must credit Day A without exceeding its Pet XP cap');
+assert.equal(eventRecoveryDb.database.prepare(`
+  SELECT COALESCE(SUM(pet_xp_awarded), 0) AS total FROM telegram_pet_events
+  WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+`).get('event-recovery', recoveryDayBKey).total, 0, 'Event recovery must leave the Day B Pet XP cap untouched');
+assert.deepEqual(
+  { ...eventRecoveryDb.database.prepare('SELECT last_active_day, streak_days FROM telegram_pet_profiles WHERE telegram_id = ?').get('event-recovery') },
+  { last_active_day: recoveryDayBKey, streak_days: 9 },
+  'Event recovery must not move a newer Day B activity streak back to Day A',
+);
 const duplicateEvent = await processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
   event_key: 'event-recovery-callback',
   encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
 });
 assert.equal(duplicateEvent.duplicate, true, 'a completed Event callback retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(eventRecoveryDb, 'event-recovery', 'event'), eventAfterRecovery, 'duplicate Event callback must not change XP, currencies, Energy, or its slot');
 
-const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50);
+const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
+seedAcceptedDailyPetEvent(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju-recovery-day-a-cap', 1190, 245, recoveryDayAKey);
 const kaijuMatch = { match_id: 'kaiju-recovery-match', mode: 'solo' };
 const kaijuRewards = { pet_xp: 38, community_xp: 8, moon_gold: 18, style_tokens: 1, happiness: 5, energy_cost: 6 };
 kaijuRecoveryDb.failOnBatch(2);
 await assert.rejects(
-  awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards),
+  awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayA }),
   /simulated_d1_batch_failure/,
   'Kaiju finalization failure must surface so the same result can be retried',
 );
@@ -1420,18 +1486,62 @@ assert.equal(kaijuAfterFailure.event.reason, 'repeat_reward_slot:1:energy_paid:6
 assert.equal(kaijuAfterFailure.slot.claimed_count, 1, 'failed Kaiju finalization must consume exactly one slot');
 assert.deepEqual(kaijuAfterFailure.profile, { pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0, energy: 44, happiness: 70 }, 'failed Kaiju finalization must charge Energy once without partially applying rewards');
 assert.deepEqual(kaijuAfterFailure.user, { xp: 0, level: 1 }, 'failed Kaiju finalization must not partially apply Community XP');
-const recoveredKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards);
+kaijuRecoveryDb.database.prepare(`
+  UPDATE telegram_pet_profiles SET last_active_day = ?, streak_days = 9 WHERE telegram_id = ?
+`).run(recoveryDayBKey, 'kaiju-recovery');
+const recoveredKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(recoveredKaiju.accepted, true, 'retrying a failed Kaiju result must complete its pending reservation');
 assert.equal(recoveredKaiju.reward_slot, 1, 'Kaiju recovery must reuse the original slot');
+assert.deepEqual(recoveredKaiju.accounting_window, {
+  day_key: recoveryDayAKey,
+  week_key: recoveryWeekAKey,
+  season_key: recoverySeasonAKey,
+}, 'Kaiju recovery must report the original reservation accounting window');
 const kaijuAfterRecovery = repeatRewardSnapshot(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju');
 assert.equal(kaijuAfterRecovery.event.status, 'accepted', 'Kaiju recovery must finalize the pending reservation');
 assert.equal(kaijuAfterRecovery.slot.claimed_count, 1, 'Kaiju recovery must not consume a second slot');
-assert.deepEqual(kaijuAfterRecovery.profile, { pet_xp: 38, moon_gold: 18, moon_crystals: 0, style_tokens: 1, energy: 44, happiness: 75 }, 'Kaiju recovery must apply progression and currency once without a second Energy charge');
-assert.deepEqual(kaijuAfterRecovery.user, { xp: 8, level: 1 }, 'Kaiju recovery must apply Community XP once');
-assert.deepEqual(kaijuAfterRecovery.xpLog, { count: 1, total: 8 }, 'Kaiju recovery must write one Community XP audit record');
-assert.deepEqual(kaijuAfterRecovery.season, { rows: 1, total: 38 }, 'Kaiju recovery must write season Pet XP once');
-assert.deepEqual(kaijuAfterRecovery.leaderboard, { rows: 1, total: 8 }, 'Kaiju recovery must write leaderboard Community XP once');
-const duplicateKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards);
+assert.deepEqual(kaijuAfterRecovery.profile, { pet_xp: 10, moon_gold: 18, moon_crystals: 0, style_tokens: 1, energy: 43, happiness: 74 }, 'Kaiju recovery must clamp Day A progression and apply currency once without a second Energy charge');
+assert.deepEqual(kaijuAfterRecovery.user, { xp: 5, level: 1 }, 'Kaiju recovery must clamp Community XP against the original Day A allowance');
+assert.deepEqual(kaijuAfterRecovery.xpLog, { count: 1, total: 5 }, 'Kaiju recovery must write one clamped Community XP audit record');
+assert.deepEqual(kaijuAfterRecovery.season, { rows: 1, total: 10 }, 'Kaiju recovery must write the clamped Pet XP once');
+assert.deepEqual(kaijuAfterRecovery.leaderboard, { rows: 1, total: 5 }, 'Kaiju recovery must write the clamped Community XP once');
+assert.deepEqual(
+  { ...kaijuRecoveryDb.database.prepare(`
+    SELECT season_key, daily_key, weekly_key, season_xp, daily_xp, weekly_xp
+    FROM telegram_pet_season_state WHERE telegram_id = ?
+  `).get('kaiju-recovery') },
+  {
+    season_key: recoverySeasonAKey,
+    daily_key: recoveryDayAKey,
+    weekly_key: recoveryWeekAKey,
+    season_xp: 10,
+    daily_xp: 10,
+    weekly_xp: 10,
+  },
+  'Kaiju recovery must credit the original Day A season and week totals',
+);
+assert.deepEqual(
+  { ...kaijuRecoveryDb.database.prepare(`
+    SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp, COALESCE(SUM(xp_awarded), 0) AS community_xp
+    FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+  `).get('kaiju-recovery', recoveryDayAKey) },
+  { pet_xp: 1200, community_xp: 250 },
+  'Kaiju recovery must credit Day A without exceeding either global XP cap',
+);
+assert.deepEqual(
+  { ...kaijuRecoveryDb.database.prepare(`
+    SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp, COALESCE(SUM(xp_awarded), 0) AS community_xp
+    FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+  `).get('kaiju-recovery', recoveryDayBKey) },
+  { pet_xp: 0, community_xp: 0 },
+  'Kaiju recovery must leave both Day B XP caps untouched',
+);
+assert.deepEqual(
+  { ...kaijuRecoveryDb.database.prepare('SELECT last_active_day, streak_days FROM telegram_pet_profiles WHERE telegram_id = ?').get('kaiju-recovery') },
+  { last_active_day: recoveryDayBKey, streak_days: 9 },
+  'Kaiju recovery must not move a newer Day B activity streak back to Day A',
+);
+const duplicateKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(duplicateKaiju.duplicate, true, 'a completed Kaiju result retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju'), kaijuAfterRecovery, 'duplicate Kaiju result must not change XP, currencies, Energy, or its slot');
 
@@ -1494,6 +1604,7 @@ assert.ok(repeatReservation.includes('ON CONFLICT(telegram_id, day_key, mode) DO
 assert.match(repeatReservation, /SET energy = energy - \?, updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND energy >= \?/, 'Kaiju Energy must be claimed with one conditional update');
 assert.ok(repeatReservation.match(/EXISTS \(SELECT 1 FROM telegram_pet_events WHERE id = \? AND status = 'pending'\)/g)?.length >= 2, 'Energy and slot claims must be gated by the newly inserted idempotency reservation');
 assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, status, reason'), 'the exact reward slot and paid Energy must be persisted for retry recovery');
+assert.ok(repeatReservation.includes('day_key, week_key, season_key'), 'pending reservations must load and return their stored accounting window');
 assert.ok(repeatReservation.includes("Number(results[1]?.meta?.changes || 0) !== 1"), 'Kaiju reward authorization must require exactly one changed Energy row');
 assert.ok(worker.includes("match(/^repeat_reward_slot:") && worker.includes('resumed: true'), 'pending repeat rewards must resume their original slot without another counter increment or Energy charge');
 
@@ -1501,6 +1612,7 @@ const randomEventHardening = asyncBlock('processPetRandomEvent');
 assert.ok(randomEventHardening.indexOf('getPetProfileWithAtomicDecay') < randomEventHardening.indexOf('reservePetRepeatRewardEvent'), 'Event processing must persist stat decay before reserving or awarding rewards');
 assert.ok(randomEventHardening.indexOf('reservePetRepeatRewardEvent') < randomEventHardening.indexOf('pickPetRandomEventOutcome'), 'Event slot must be transactionally claimed before reward outcome calculation');
 assert.ok(randomEventHardening.includes('existing_event: duplicate') && randomEventHardening.includes("duplicate.status !== 'pending'"), 'Event retries must resume pending reservations while accepted duplicates remain idempotent');
+assert.ok(randomEventHardening.includes('const accountingDayKey = rewardSlot.day_key') && randomEventHardening.includes('accounting_window: { day_key: accountingDayKey'), 'Event recovery must finalize against the stored reservation accounting window');
 assert.ok(randomEventHardening.includes("status = 'pending'") && randomEventHardening.includes("status = 'accepted'"), 'Event rewards must finalize only their pending idempotency reservation');
 assert.ok(randomEventHardening.includes('PETS_DAILY_PET_XP_CAP'), 'Event finalization must preserve the 1,200 daily Pet XP cap');
 assert.ok(randomEventHardening.includes('finalization_id: finalizationId') && randomEventHardening.match(/status = 'accepted' AND metadata = \?/g)?.length >= 3, 'Event finalization must gate every progression and currency write on the winning pending-to-accepted attempt');
@@ -1510,6 +1622,7 @@ const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
 assert.ok(kaijuHardening.indexOf('getPetProfileWithAtomicDecay') < kaijuHardening.indexOf('reservePetRepeatRewardEvent'), 'Kaiju must persist current stat decay before atomically claiming Energy and a reward slot');
 assert.ok(kaijuHardening.indexOf('reservePetRepeatRewardEvent') < kaijuHardening.indexOf('scalePetRewards'), 'Kaiju Energy and slot must be claimed before rewards are calculated');
 assert.ok(kaijuHardening.includes('energy_cost: energyCost') && kaijuHardening.includes('existing_event: duplicate'), 'Kaiju retries must resume the original paid reservation without paying Energy twice');
+assert.ok(kaijuHardening.includes('const accountingDayKey = rewardSlot.day_key') && kaijuHardening.includes('accountingSeasonKey, accountingDayKey, accountingWeekKey'), 'Kaiju recovery must finalize caps and season totals against the stored reservation accounting window');
 assert.ok(kaijuHardening.includes("reason: 'insufficient_energy'") && kaijuHardening.includes('pet_xp_awarded: 0') && kaijuHardening.includes('xp_awarded: 0'), 'failed Energy claims must return no Pet or Community XP');
 assert.ok(kaijuHardening.includes('PETS_DAILY_PET_XP_CAP') && kaijuHardening.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'Kaiju finalization must preserve both global daily XP caps');
 assert.ok(kaijuHardening.includes('finalization_id: finalizationId') && kaijuHardening.match(/status = 'accepted' AND metadata = \?/g)?.length >= 5, 'Kaiju finalization must gate every progression write on the winning pending-to-accepted attempt');

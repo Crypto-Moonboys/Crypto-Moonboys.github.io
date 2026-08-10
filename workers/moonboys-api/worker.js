@@ -1771,6 +1771,10 @@ function parsePetRepeatRewardReservation(row, mode) {
   if (String(row.status) !== 'pending') return { claimed: false, duplicate: true, reservation_id: row.id || null };
   const match = String(row.reason || '').match(/^repeat_reward_slot:(\d+)(?::energy_paid:(\d+))?$/);
   if (!match) throw new Error('invalid_pending_pet_repeat_reward_reservation');
+  const dayKey = String(row.day_key || '').trim();
+  const weekKey = String(row.week_key || '').trim();
+  const seasonKey = String(row.season_key || '').trim();
+  if (!dayKey || !weekKey || !seasonKey) throw new Error('invalid_pending_pet_repeat_reward_window');
   const claimedSlot = Math.max(1, Math.floor(Number(match[1]) || 1));
   return {
     claimed: true,
@@ -1779,6 +1783,9 @@ function parsePetRepeatRewardReservation(row, mode) {
     claimed_slot: claimedSlot,
     multiplier: getPetRepeatRewardMultiplier(mode, claimedSlot),
     energy_paid: Math.max(0, Math.floor(Number(match[2]) || 0)),
+    day_key: dayKey,
+    week_key: weekKey,
+    season_key: seasonKey,
   };
 }
 
@@ -1788,7 +1795,8 @@ async function reservePetRepeatRewardEvent(db, details) {
   const telegramId = String(details.telegram_id);
   const eventKey = String(details.event_key);
   const existing = details.existing_event || await db.prepare(`
-    SELECT id, status, reason FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
+    SELECT id, status, reason, day_key, week_key, season_key
+    FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
   `).bind(telegramId, eventKey).first().catch(() => null);
   if (existing) return parsePetRepeatRewardReservation(existing, normalizedMode);
 
@@ -1839,7 +1847,7 @@ async function reservePetRepeatRewardEvent(db, details) {
         WHERE telegram_id = ? AND day_key = ? AND mode = ?
       ) AS TEXT) || ?
       WHERE id = ? AND status = 'pending'
-      RETURNING id, status, reason
+      RETURNING id, status, reason, day_key, week_key, season_key
     `).bind(
       telegramId,
       String(details.day_key),
@@ -1858,7 +1866,8 @@ async function reservePetRepeatRewardEvent(db, details) {
     return { ...parsed, resumed: false };
   }
   const concurrent = await db.prepare(`
-    SELECT id, status, reason FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
+    SELECT id, status, reason, day_key, week_key, season_key
+    FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
   `).bind(telegramId, eventKey).first().catch(() => null);
   if (concurrent) return parsePetRepeatRewardReservation(concurrent, normalizedMode);
   if (normalizedMode === 'kaiju') return { claimed: false, reason: 'insufficient_energy', reservation_id: null };
@@ -2595,7 +2604,7 @@ async function processPetDailyChest(db, telegramId, options = {}) {
 
 async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
   const requestedChoice = normalizePetRandomEventChoice(choiceRaw);
-  const now = new Date();
+  const now = options.now instanceof Date ? new Date(options.now.getTime()) : new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
@@ -2607,7 +2616,10 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     : encounter.choices.find((entry) => entry.key === requestedChoice) || null;
   if (!choice) return { accepted: false, reason: 'invalid_event_choice', encounter, xp_awarded: 0, pet_xp_awarded: 0 };
   const eventKey = String(options.event_key || encounter.event_key || `${encounter.key}-${Date.now().toString(36)}`).slice(0, 120);
-  const duplicate = await db.prepare(`SELECT id, status, reason FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  const duplicate = await db.prepare(`
+    SELECT id, status, reason, day_key, week_key, season_key
+    FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
+  `).bind(telegramId, eventKey).first().catch(() => null);
   if (duplicate && duplicate.status !== 'pending') return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2626,6 +2638,9 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
 
   // The recoverable numbered slot is transactionally reserved before any reward amount is rolled.
   const rewardSlot = reservation;
+  const accountingDayKey = rewardSlot.day_key;
+  const accountingWeekKey = rewardSlot.week_key;
+  const accountingSeasonKey = rewardSlot.season_key;
   const outcome = pickPetRandomEventOutcome(choice);
   const scaledRewards = scalePetRewards(outcome.rewards, rewardSlot.multiplier);
   const rewardsApplied = Object.fromEntries(Object.entries(scaledRewards).map(([key, value]) => [key, Math.max(0, rollPetRange(value, 0))]));
@@ -2648,7 +2663,7 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     costs: costsApplied,
     copy: outcome.copy,
   });
-  const previousDayKey = getPreviousPetDayKey(dayKey);
+  const previousDayKey = getPreviousPetDayKey(accountingDayKey);
   const [eventWrite] = await db.batch([
     db.prepare(`
       UPDATE telegram_pet_events
@@ -2660,7 +2675,7 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
           status = 'accepted', reason = ?, metadata = ?
       WHERE id = ? AND telegram_id = ? AND status = 'pending'
       RETURNING pet_xp_awarded
-    `).bind(requestedPetXp, PETS_DAILY_PET_XP_CAP, telegramId, dayKey, `${encounter.key}:${choice.key}:${outcome.kind}`, metadata, reservation.reservation_id, telegramId),
+    `).bind(requestedPetXp, PETS_DAILY_PET_XP_CAP, telegramId, accountingDayKey, `${encounter.key}:${choice.key}:${outcome.kind}`, metadata, reservation.reservation_id, telegramId),
     db.prepare(`
       UPDATE telegram_pet_profiles
       SET pet_xp = pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?), 0),
@@ -2671,15 +2686,22 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
           happiness = MIN(100, MAX(0, happiness + ? - ?)),
           cleanliness = MIN(100, MAX(0, cleanliness + ? - ?)),
           hunger = MIN(100, MAX(0, hunger + ? + ?)),
-          streak_days = CASE WHEN last_active_day = ? THEN MAX(1, streak_days) WHEN last_active_day = ? THEN streak_days + 1 ELSE 1 END,
-          last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+          streak_days = CASE
+            WHEN last_active_day > ? THEN streak_days
+            WHEN last_active_day = ? THEN MAX(1, streak_days)
+            WHEN last_active_day = ? THEN streak_days + 1
+            ELSE 1
+          END,
+          last_active_day = CASE WHEN last_active_day > ? THEN last_active_day ELSE ? END,
+          last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?)
     `).bind(
       reservation.reservation_id, metadata,
       rewardValue('moon_gold'), costValue('moon_gold'), rewardValue('moon_crystals'), costValue('moon_crystals'),
       rewardValue('style_tokens'), costValue('style_tokens'), rewardValue('energy'), costValue('energy'),
       rewardValue('happiness'), costValue('happiness'), rewardValue('cleanliness'), costValue('cleanliness'),
-      rewardValue('hunger'), costValue('hunger'), dayKey, previousDayKey, dayKey, now.toISOString(), telegramId,
+      rewardValue('hunger'), costValue('hunger'), accountingDayKey, accountingDayKey, previousDayKey,
+      accountingDayKey, accountingDayKey, now.toISOString(), telegramId,
       reservation.reservation_id, metadata,
     ),
     db.prepare(`
@@ -2713,6 +2735,7 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     pet_xp_awarded: petXpAwarded,
     reward_slot: rewardSlot.claimed_slot,
     reward_multiplier: rewardSlot.multiplier,
+    accounting_window: { day_key: accountingDayKey, week_key: accountingWeekKey, season_key: accountingSeasonKey },
     pet: updatedPet,
   };
 }
@@ -3039,15 +3062,18 @@ async function getPetKaijuQueue(db, chatId, excluded = []) {
   return (rows?.results || []).map((row) => String(row.telegram_id || '')).filter((id) => id && !excludedSet.has(id));
 }
 
-async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards = {}) {
-  const now = new Date();
+async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards = {}, options = {}) {
+  const now = options.now instanceof Date ? new Date(options.now.getTime()) : new Date();
   const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
   const eventKey = buildStablePetEventKey(['pet_kaiju', match.match_id, telegramId]);
-  const duplicate = await db.prepare(`SELECT id, status, reason FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  const duplicate = await db.prepare(`
+    SELECT id, status, reason, day_key, week_key, season_key
+    FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
+  `).bind(telegramId, eventKey).first().catch(() => null);
   if (duplicate && duplicate.status !== 'pending') return { accepted: true, duplicate: true, reason: 'duplicate', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   const energyCost = Math.max(0, Math.floor(Number(rewards.energy_cost || 0)));
   const reservation = await reservePetRepeatRewardEvent(db, {
@@ -3076,13 +3102,16 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
 
   // Energy payment and the recoverable numbered slot commit together before rewards are calculated.
   const rewardSlot = reservation;
+  const accountingDayKey = rewardSlot.day_key;
+  const accountingWeekKey = rewardSlot.week_key;
+  const accountingSeasonKey = rewardSlot.season_key;
   const scaledRewards = scalePetRewards(rewards, rewardSlot.multiplier);
   const requestedPetXp = Math.max(0, Math.floor(Number(scaledRewards.pet_xp || 0)));
   const requestedCommunityXp = Math.max(0, Math.floor(Number(scaledRewards.community_xp || 0)));
   const moonGold = Math.max(0, Math.floor(Number(scaledRewards.moon_gold || 0)));
   const styleTokens = Math.max(0, Math.floor(Number(scaledRewards.style_tokens || 0)));
   const happiness = Math.max(0, Math.floor(Number(scaledRewards.happiness || 0)));
-  const previousDayKey = getPreviousPetDayKey(dayKey);
+  const previousDayKey = getPreviousPetDayKey(accountingDayKey);
   const finalizationId = crypto.randomUUID();
   const metadata = JSON.stringify({
     finalization_id: finalizationId,
@@ -3109,8 +3138,8 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
       WHERE id = ? AND telegram_id = ? AND status = 'pending'
       RETURNING pet_xp_awarded, xp_awarded
     `).bind(
-      requestedPetXp, PETS_DAILY_PET_XP_CAP, telegramId, dayKey,
-      requestedCommunityXp, PETS_DAILY_COMMUNITY_XP_CAP, telegramId, dayKey,
+      requestedPetXp, PETS_DAILY_PET_XP_CAP, telegramId, accountingDayKey,
+      requestedCommunityXp, PETS_DAILY_COMMUNITY_XP_CAP, telegramId, accountingDayKey,
       outcome, metadata, reservation.reservation_id, telegramId,
     ),
     db.prepare(`
@@ -3119,10 +3148,20 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
           moon_gold = MIN(999999, moon_gold + ?),
           style_tokens = MIN(999999, style_tokens + ?),
           happiness = MIN(100, happiness + ?),
-          streak_days = CASE WHEN last_active_day = ? THEN MAX(1, streak_days) WHEN last_active_day = ? THEN streak_days + 1 ELSE 1 END,
-          last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+          streak_days = CASE
+            WHEN last_active_day > ? THEN streak_days
+            WHEN last_active_day = ? THEN MAX(1, streak_days)
+            WHEN last_active_day = ? THEN streak_days + 1
+            ELSE 1
+          END,
+          last_active_day = CASE WHEN last_active_day > ? THEN last_active_day ELSE ? END,
+          last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?)
-    `).bind(reservation.reservation_id, metadata, moonGold, styleTokens, happiness, dayKey, previousDayKey, dayKey, now.toISOString(), telegramId, reservation.reservation_id, metadata),
+    `).bind(
+      reservation.reservation_id, metadata, moonGold, styleTokens, happiness,
+      accountingDayKey, accountingDayKey, previousDayKey, accountingDayKey, accountingDayKey,
+      now.toISOString(), telegramId, reservation.reservation_id, metadata,
+    ),
     db.prepare(`
       UPDATE telegram_pet_profiles
       SET stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian' WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
@@ -3140,7 +3179,7 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
         weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
         daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
         daily_key = excluded.daily_key, weekly_key = excluded.weekly_key, updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, season.key, dayKey, weekKey, reservation.reservation_id, metadata),
+    `).bind(telegramId, accountingSeasonKey, accountingDayKey, accountingWeekKey, reservation.reservation_id, metadata),
     db.prepare(`
       INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
       SELECT ?, 'pet_kaiju_battle', xp_awarded, ?
@@ -3192,6 +3231,7 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
     pet_xp_awarded: petXp,
     reward_slot: rewardSlot.claimed_slot,
     reward_multiplier: rewardSlot.multiplier,
+    accounting_window: { day_key: accountingDayKey, week_key: accountingWeekKey, season_key: accountingSeasonKey },
     pet: await getPetProfile(db, telegramId),
   };
 }
