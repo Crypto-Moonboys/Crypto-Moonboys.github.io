@@ -3210,13 +3210,16 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
       SELECT ?, season.id, event.xp_awarded
       FROM telegram_pet_events AS event
       JOIN telegram_seasons AS season ON season.id = (
-        SELECT id FROM telegram_seasons WHERE is_active = 1 ORDER BY start_date DESC LIMIT 1
+        SELECT id FROM telegram_seasons
+        WHERE date(?) >= date(start_date)
+          AND (end_date IS NULL OR date(?) <= date(end_date))
+        ORDER BY start_date DESC LIMIT 1
       )
       WHERE event.id = ? AND event.status = 'accepted' AND event.metadata = ? AND event.xp_awarded > 0
       ON CONFLICT(telegram_id, season_id) DO UPDATE SET
         xp = xp + excluded.xp,
         updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, reservation.reservation_id, metadata),
+    `).bind(telegramId, accountingDayKey, accountingDayKey, reservation.reservation_id, metadata),
   ]);
   if (!eventWrite?.results?.[0]) {
     return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, pet: await getPetProfile(db, telegramId) };
@@ -3245,10 +3248,19 @@ const PET_KAIJU_RESULT_REWARDS = Object.freeze({
 async function awardPetKaijuMatchResults(db, match, resolved) {
   const player1Outcome = resolved.result === 'player1_win' ? 'kaiju_win' : resolved.result === 'draw' ? 'kaiju_draw' : 'kaiju_loss';
   const player2Outcome = resolved.result === 'player2_win' ? 'kaiju_win' : resolved.result === 'draw' ? 'kaiju_draw' : 'kaiju_loss';
-  await awardPetKaijuPlayerResult(db, String(match.player1_telegram_id), match, player1Outcome, PET_KAIJU_RESULT_REWARDS[player1Outcome]);
+  const results = [{
+    telegram_id: String(match.player1_telegram_id),
+    outcome: player1Outcome,
+    result: await awardPetKaijuPlayerResult(db, String(match.player1_telegram_id), match, player1Outcome, PET_KAIJU_RESULT_REWARDS[player1Outcome]),
+  }];
   if (match.mode === 'group' && match.player2_telegram_id) {
-    await awardPetKaijuPlayerResult(db, String(match.player2_telegram_id), match, player2Outcome, PET_KAIJU_RESULT_REWARDS[player2Outcome]);
+    results.push({
+      telegram_id: String(match.player2_telegram_id),
+      outcome: player2Outcome,
+      result: await awardPetKaijuPlayerResult(db, String(match.player2_telegram_id), match, player2Outcome, PET_KAIJU_RESULT_REWARDS[player2Outcome]),
+    });
   }
+  return results;
 }
 
 async function finishPetKaijuMatch(db, match) {
@@ -3283,25 +3295,26 @@ async function finishPetKaijuMatch(db, match) {
   `).bind(category.key, category.roll, winnerTelegramId, resolved.result, scoreJson, match.match_id).run();
   if (completionResult?.meta?.changes !== undefined && Number(completionResult.meta.changes || 0) <= 0) {
     // A completed match may still have a recoverable pending player award from an earlier D1 failure.
-    await awardPetKaijuMatchResults(db, match, resolved);
+    const rewardResults = await awardPetKaijuMatchResults(db, match, resolved);
     return {
       accepted: true,
       duplicate: true,
       reason: 'already_completed',
       match: await getPetKaijuMatch(db, match.match_id),
       resolved,
+      reward_results: rewardResults,
       queue: await getPetKaijuQueue(db, match.chat_id, [match.player1_telegram_id, match.player2_telegram_id || '']),
     };
   }
 
-  await awardPetKaijuMatchResults(db, match, resolved);
+  const rewardResults = await awardPetKaijuMatchResults(db, match, resolved);
   await db.prepare(`
     UPDATE telegram_pet_kaiju_queue
     SET status = 'played', updated_at = CURRENT_TIMESTAMP
     WHERE chat_id = ? AND telegram_id IN (?, ?) AND status = 'waiting'
   `).bind(String(match.chat_id), String(match.player1_telegram_id), String(match.player2_telegram_id || '')).run().catch(() => {});
   const queue = await getPetKaijuQueue(db, match.chat_id, [match.player1_telegram_id, match.player2_telegram_id || '']);
-  return { accepted: true, reason: 'kaiju_completed', match: await getPetKaijuMatch(db, match.match_id), resolved, queue };
+  return { accepted: true, reason: 'kaiju_completed', match: await getPetKaijuMatch(db, match.match_id), resolved, reward_results: rewardResults, queue };
 }
 
 function getPetArenaRankBucket(level) {
@@ -10078,6 +10091,7 @@ export const __petMediaTestHooks = Object.freeze({
   PET_REPEAT_REWARD_RULES,
   applyPetItemActionBonuses,
   awardPetKaijuPlayerResult,
+  finishPetKaijuMatch,
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   parsePetRepeatRewardReservation,
@@ -10696,6 +10710,19 @@ function formatPetKaijuResult(result) {
   const queueLine = result?.queue?.length
     ? `Next in queue: ${result.queue.map((id) => `<code>${escapeHtml(id)}</code>`).join(', ')}`
     : `Queue clear. Use /petkaiju to open the next table.`;
+  const rewardResults = Array.isArray(result?.reward_results) ? result.reward_results : [];
+  const rewardLines = rewardResults.length
+    ? rewardResults.map((entry) => {
+        const award = entry?.result || {};
+        const player = `<code>${escapeHtml(entry?.telegram_id || '')}</code>`;
+        if (!award.accepted && award.reason === 'insufficient_energy') {
+          return `${player}: no Pet XP, Community XP, currency or progression reward — insufficient Energy. Restore Energy and retry this result callback.`;
+        }
+        if (award.duplicate) return `${player}: rewards already settled; no duplicate reward applied.`;
+        if (!award.accepted) return `${player}: reward not settled (${escapeHtml(award.reason || 'unavailable')}).`;
+        return `${player}: +${Number(award.pet_xp_awarded || 0)} Pet XP / +${Number(award.xp_awarded || 0)} Community XP (daily caps applied).`;
+      })
+    : [`Rewards: winner +38 pet XP/+8 Community XP; draw +22/+4; loss +12/+2, all daily capped.`];
   return [
     `🦖 <b>Kaiju Sticker Battle Result</b>`,
     `${escapeHtml(category.name || 'Stat')} (${escapeHtml(category.label || category.key || '?')}) was rolled.`,
@@ -10704,7 +10731,7 @@ function formatPetKaijuResult(result) {
     `${opponent.telegram_id === 'app' ? 'App' : 'P2'} <code>${escapeHtml(opponent.telegram_id || 'app')}</code>: ${escapeHtml(opponent.card || '')} = ${Number(opponent.score || 0)}`,
     '',
     winnerLine,
-    `Rewards: winner +38 pet XP/+8 Community XP; draw +22/+4; loss +12/+2, all daily capped.`,
+    ...rewardLines,
     '',
     queueLine,
   ].join('\n');
@@ -10796,7 +10823,13 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
       return;
     }
     if (match.status === 'completed') {
-      await sendTelegramMessage(tok, chatId, 'That Kaiju battle is already complete. Use /petkaiju for a new table.');
+      const participant = String(match.player1_telegram_id) === String(telegramId) || String(match.player2_telegram_id || '') === String(telegramId);
+      if (!participant) {
+        await sendTelegramMessage(tok, chatId, 'That Kaiju battle is already complete. Use /petkaiju for a new table.');
+        return;
+      }
+      const recovered = await finishPetKaijuMatch(db, match);
+      await sendTelegramPetReply(tok, chatId, formatPetKaijuResult(recovered), { reply_markup: petReplyMarkup() }, 'play');
       return;
     }
     if (!cardKey) {

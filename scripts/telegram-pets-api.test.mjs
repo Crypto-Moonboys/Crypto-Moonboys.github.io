@@ -27,6 +27,7 @@ const {
   PET_REPEAT_REWARD_RULES,
   applyPetItemActionBonuses,
   awardPetKaijuPlayerResult,
+  finishPetKaijuMatch,
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
@@ -1471,6 +1472,18 @@ assert.equal(duplicateEvent.duplicate, true, 'a completed Event callback retry m
 assert.deepEqual(repeatRewardSnapshot(eventRecoveryDb, 'event-recovery', 'event'), eventAfterRecovery, 'duplicate Event callback must not change XP, currencies, Energy, or its slot');
 
 const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
+kaijuRecoveryDb.database.exec('DELETE FROM telegram_seasons');
+kaijuRecoveryDb.database.prepare(`
+  INSERT INTO telegram_seasons (name, start_date, end_date, is_active)
+  VALUES ('Day A leaderboard season', '2026-01-01T00:00:00.000Z', '2026-09-27T23:59:59.999Z', 0)
+`).run();
+const dayALeaderboardSeasonId = kaijuRecoveryDb.database.prepare(`
+  SELECT id FROM telegram_seasons WHERE name = 'Day A leaderboard season'
+`).get().id;
+kaijuRecoveryDb.database.prepare(`
+  INSERT INTO telegram_seasons (name, start_date, end_date, is_active)
+  VALUES ('Day B active leaderboard season', '2026-09-28T00:00:00.000Z', '2027-12-31T23:59:59.999Z', 1)
+`).run();
 seedAcceptedDailyPetEvent(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju-recovery-day-a-cap', 1190, 245, recoveryDayAKey);
 const kaijuMatch = { match_id: 'kaiju-recovery-match', mode: 'solo' };
 const kaijuRewards = { pet_xp: 38, community_xp: 8, moon_gold: 18, style_tokens: 1, happiness: 5, energy_cost: 6 };
@@ -1505,6 +1518,11 @@ assert.deepEqual(kaijuAfterRecovery.user, { xp: 5, level: 1 }, 'Kaiju recovery m
 assert.deepEqual(kaijuAfterRecovery.xpLog, { count: 1, total: 5 }, 'Kaiju recovery must write one clamped Community XP audit record');
 assert.deepEqual(kaijuAfterRecovery.season, { rows: 1, total: 10 }, 'Kaiju recovery must write the clamped Pet XP once');
 assert.deepEqual(kaijuAfterRecovery.leaderboard, { rows: 1, total: 5 }, 'Kaiju recovery must write the clamped Community XP once');
+assert.equal(
+  kaijuRecoveryDb.database.prepare('SELECT season_id FROM telegram_leaderboard WHERE telegram_id = ?').get('kaiju-recovery').season_id,
+  dayALeaderboardSeasonId,
+  'Kaiju recovery must credit Community leaderboard XP to the season containing the stored Day A reservation',
+);
 assert.deepEqual(
   { ...kaijuRecoveryDb.database.prepare(`
     SELECT season_key, daily_key, weekly_key, season_xp, daily_xp, weekly_xp
@@ -1544,6 +1562,68 @@ assert.deepEqual(
 const duplicateKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(duplicateKaiju.duplicate, true, 'a completed Kaiju result retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju'), kaijuAfterRecovery, 'duplicate Kaiju result must not change XP, currencies, Energy, or its slot');
+
+function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
+  db.database.prepare(`
+    INSERT INTO telegram_pet_kaiju_matches
+      (id, match_id, chat_id, mode, status, player1_telegram_id, player1_card_key, cpu_card_key, category_key, roll)
+    VALUES (?, ?, ?, 'solo', 'selecting', ?, ?, ?, ?, 1)
+  `).run(
+    `row-${matchId}`,
+    matchId,
+    `chat-${matchId}`,
+    telegramId,
+    PET_KAIJU_CARDS[0].id,
+    PET_KAIJU_CARDS[1].id,
+    PET_KAIJU_CATEGORIES[0].key,
+  );
+  return { ...db.database.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id = ?').get(matchId) };
+}
+
+const completedCallbackRecoveryDb = seedRepeatRewardPlayer('completed-callback-recovery', 50);
+const completedCallbackMatch = seedSelectableSoloKaijuMatch(completedCallbackRecoveryDb, 'completed-callback-recovery', 'completed-callback-match');
+completedCallbackRecoveryDb.failOnBatch(2);
+await assert.rejects(
+  finishPetKaijuMatch(completedCallbackRecoveryDb, completedCallbackMatch),
+  /simulated_d1_batch_failure/,
+  'a Kaiju finalization failure after match completion must surface for callback recovery',
+);
+assert.equal(
+  completedCallbackRecoveryDb.database.prepare('SELECT status FROM telegram_pet_kaiju_matches WHERE match_id = ?').get('completed-callback-match').status,
+  'completed',
+  'the failure fixture must reproduce a completed match with a pending reward reservation',
+);
+const completedCallbackPending = repeatRewardSnapshot(completedCallbackRecoveryDb, 'completed-callback-recovery', 'kaiju');
+assert.equal(completedCallbackPending.event.status, 'pending', 'completed-match failure must leave a pending Kaiju reward');
+assert.equal(completedCallbackPending.slot.claimed_count, 1, 'completed-match failure must retain exactly one reward slot');
+const recoveredCompletedCallback = await finishPetKaijuMatch(
+  completedCallbackRecoveryDb,
+  { ...completedCallbackRecoveryDb.database.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id = ?').get('completed-callback-match') },
+);
+assert.equal(recoveredCompletedCallback.duplicate, true, 'a completed-match retry must use the recovery path');
+assert.equal(recoveredCompletedCallback.reward_results[0].result.accepted, true, 'completed-match retry must settle the pending player reward');
+const completedCallbackSettled = repeatRewardSnapshot(completedCallbackRecoveryDb, 'completed-callback-recovery', 'kaiju');
+assert.equal(completedCallbackSettled.event.status, 'accepted', 'completed-match callback recovery must finalize the pending reward');
+assert.equal(completedCallbackSettled.slot.claimed_count, 1, 'completed-match callback recovery must not consume a second slot');
+await finishPetKaijuMatch(
+  completedCallbackRecoveryDb,
+  { ...completedCallbackRecoveryDb.database.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id = ?').get('completed-callback-match') },
+);
+assert.deepEqual(repeatRewardSnapshot(completedCallbackRecoveryDb, 'completed-callback-recovery', 'kaiju'), completedCallbackSettled, 'replaying a recovered completed callback must not duplicate rewards or Energy');
+
+const insufficientCompletedDb = seedRepeatRewardPlayer('completed-insufficient', 3);
+const insufficientCompletedMatch = seedSelectableSoloKaijuMatch(insufficientCompletedDb, 'completed-insufficient', 'completed-insufficient-match');
+const rejectedCompletion = await finishPetKaijuMatch(insufficientCompletedDb, insufficientCompletedMatch);
+assert.equal(rejectedCompletion.reward_results[0].result.accepted, false, 'completed Kaiju result must expose a rejected Energy claim');
+assert.equal(rejectedCompletion.reward_results[0].result.reason, 'insufficient_energy', 'completed Kaiju result must report insufficient Energy instead of promising rewards');
+assert.equal(repeatRewardSnapshot(insufficientCompletedDb, 'completed-insufficient', 'kaiju').event, null, 'insufficient completion must not create a reward reservation');
+insufficientCompletedDb.database.prepare('UPDATE telegram_pet_profiles SET energy = 50 WHERE telegram_id = ?').run('completed-insufficient');
+const restoredEnergyRecovery = await finishPetKaijuMatch(
+  insufficientCompletedDb,
+  { ...insufficientCompletedDb.database.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id = ?').get('completed-insufficient-match') },
+);
+assert.equal(restoredEnergyRecovery.reward_results[0].result.accepted, true, 'completed callback must retry reward settlement after Energy is restored');
+assert.equal(repeatRewardSnapshot(insufficientCompletedDb, 'completed-insufficient', 'kaiju').event.status, 'accepted', 'restored-Energy retry must finalize the Kaiju reward once');
 
 const insufficientKaijuResultDb = seedRepeatRewardPlayer('kaiju-insufficient', 5);
 const insufficientKaijuResult = await awardPetKaijuPlayerResult(
@@ -1631,5 +1711,10 @@ assert.ok(!kaijuHardening.includes('savePetProfile(db, pet)'), 'Kaiju rewards mu
 assert.ok(worker.includes("INSERT OR IGNORE INTO telegram_pet_events") && worker.includes("'pending', 'repeat_reward_pending'"), 'repeat reward reservations must reuse the unique event key for concurrent idempotency');
 const finishKaijuHardening = asyncBlock('finishPetKaijuMatch');
 assert.ok(finishKaijuHardening.includes('awardPetKaijuMatchResults(db, match, resolved)') && finishKaijuHardening.indexOf('awardPetKaijuMatchResults(db, match, resolved)') < finishKaijuHardening.indexOf("reason: 'already_completed'"), 'duplicate Kaiju completion callbacks must recover unfinished player reward reservations');
+const kaijuCommandHardening = asyncBlock('cmdPetKaiju');
+const completedMatchBranch = kaijuCommandHardening.slice(kaijuCommandHardening.indexOf("if (match.status === 'completed')"), kaijuCommandHardening.indexOf('if (!cardKey)'));
+assert.ok(completedMatchBranch.includes('finishPetKaijuMatch(db, match)') && completedMatchBranch.includes('formatPetKaijuResult(recovered)'), 'normal completed card callbacks must invoke pending reward recovery and report its settlement result');
+const kaijuResultFormatter = worker.slice(worker.indexOf('function formatPetKaijuResult'), worker.indexOf('async function cmdPetKaiju'));
+assert.ok(kaijuResultFormatter.includes("award.reason === 'insufficient_energy'") && kaijuResultFormatter.includes('no Pet XP, Community XP, currency or progression reward'), 'Kaiju completion output must not advertise rewards when Energy authorization was rejected');
 
 console.log('telegram-pets-api.test.mjs passed');
