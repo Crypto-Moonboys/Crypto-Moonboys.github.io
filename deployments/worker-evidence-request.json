@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "expected_commit": "527c6e296528195befeaa4120c37158eb7a976a2",
-  "requested_at": "2026-08-10T10:20:19Z",
+  "expected_commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+  "requested_at": "2026-08-10T12:57:08.926Z",
   "services": [
     "moonboys-api",
     "moonboys-leaderboard",

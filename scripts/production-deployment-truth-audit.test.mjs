@@ -18,6 +18,7 @@ const REQUIRED_PETS_MIGRATIONS = [
   '038_telegram_pet_equipment_progression.sql',
   '039_telegram_pet_runtime_progression.sql',
   '041_telegram_pet_repeat_reward_slots.sql',
+  '042_telegram_pet_roguelite_foundation.sql',
 ];
 
 async function withFixture(readiness, truth, run) {
@@ -175,6 +176,7 @@ await withFixture(
     assert.equal(result.ok, false, 'verified D1 state must include every required migration');
     assert.match(result.output, /verified-live is missing migrations: 039_telegram_pet_runtime_progression\.sql/);
     assert.match(result.output, /041_telegram_pet_repeat_reward_slots\.sql/);
+    assert.match(result.output, /042_telegram_pet_roguelite_foundation\.sql/);
   },
 );
 
@@ -219,6 +221,7 @@ await withFixture(
     assert.equal(result.ok, false, 'required Pets migration set cannot shrink');
     assert.match(result.output, /required migration is missing from tracking: 039_telegram_pet_runtime_progression\.sql/);
     assert.match(result.output, /required migration is missing from tracking: 041_telegram_pet_repeat_reward_slots\.sql/);
+    assert.match(result.output, /required migration is missing from tracking: 042_telegram_pet_roguelite_foundation\.sql/);
   },
 );
 

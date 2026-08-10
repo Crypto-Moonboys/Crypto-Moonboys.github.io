@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-08-10T12:57:08.926Z",
+  "expected_commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+  "capture_method": "public-deployment-info-after-provenance-wrapper-deploy",
+  "workers": [
+    {
+      "service": "moonboys-api",
+      "commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+      "deployed_at": "2026-08-10T12:10:18.983Z",
+      "url": "https://moonboys-api.sercullen.workers.dev/deployment-info"
+    },
+    {
+      "service": "moonboys-leaderboard",
+      "commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+      "deployed_at": "2026-08-10T12:55:41.171Z",
+      "url": "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
+    },
+    {
+      "service": "moonboys-anti-cheat",
+      "commit": "2323ef3a07794411ff4d5788a02ff63995226cba",
+      "deployed_at": "2026-08-10T12:56:13.630Z",
+      "url": "https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info"
+    }
+  ]
+}
