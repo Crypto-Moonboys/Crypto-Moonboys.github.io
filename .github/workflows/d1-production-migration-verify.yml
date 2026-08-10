@@ -5,6 +5,7 @@ on:
     paths:
       - deployments/d1-evidence-request.json
       - scripts/verify-d1-production-migrations.mjs
+      - scripts/verify-d1-production-migrations.test.mjs
       - scripts/report-d1-query-failure.mjs
       - .github/workflows/d1-production-migration-verify.yml
   workflow_dispatch:
@@ -24,7 +25,10 @@ jobs:
       - name: Verify parser syntax
         run: |
           node --check scripts/verify-d1-production-migrations.mjs
+          node --check scripts/verify-d1-production-migrations.test.mjs
           node --check scripts/report-d1-query-failure.mjs
+      - name: Verify required migration contract
+        run: node scripts/verify-d1-production-migrations.test.mjs
       - name: Verify known migration evidence
         shell: bash
         run: |
