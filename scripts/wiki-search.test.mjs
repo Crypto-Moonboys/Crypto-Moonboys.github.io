@@ -17,6 +17,7 @@ function makeSandbox() {
     console,
     URL,
     URLSearchParams,
+    setTimeout: (callback) => callback(),
     fetch: async () => ({ ok: true, status: 200, json: async () => [] }),
     history: { replaceState() {} },
     document: {
@@ -114,6 +115,7 @@ async function renderSearchAfterFailedIndexLoad(query) {
     console,
     URL,
     URLSearchParams,
+    setTimeout: (callback) => callback(),
     fetch: async () => ({ ok: false, status: 503, json: async () => [] }),
     history: { replaceState() {} },
     document: {
@@ -338,7 +340,7 @@ const graffpunksStopwordOnly = {
     URLSearchParams,
     fetch: async () => {
       callCount++;
-      if (callCount === 1) return { ok: false, status: 503, json: async () => [] };
+      if (callCount === 1) return { ok: false, status: 404, json: async () => [] };
       return { ok: true, status: 200, json: async () => [graffpunksMain] };
     },
     history: { replaceState() {} },
@@ -490,6 +492,62 @@ const graffpunksStopwordOnly = {
     limit: 5
   });
   assert.equal(scored.length, 0, 'Nonsense query should return no header autocomplete suggestions');
+}
+
+// Wiki-index loading retries transient 503 responses without masking bad assets.
+{
+  let callCount = 0;
+  const delays = [];
+  const sandbox = makeSandbox();
+  sandbox.setTimeout = (callback, delay) => {
+    delays.push(delay);
+    callback();
+  };
+  sandbox.fetch = async () => {
+    callCount++;
+    if (callCount === 1) return { ok: false, status: 503, json: async () => [] };
+    return { ok: true, status: 200, json: async () => [graffpunksMain] };
+  };
+
+  await sandbox.loadWikiIndex();
+  assert.equal(callCount, 2, 'A transient 503 must be retried');
+  assert.deepEqual(delays, [150], 'The first retry must wait before fetching again');
+  assert.equal(sandbox.window.MOONBOYS_WIKI_SEARCH.getIndexLoadState(), 'loaded',
+    'Wiki-index load must succeed when a retry returns valid JSON');
+}
+
+{
+  let callCount = 0;
+  const delays = [];
+  const sandbox = makeSandbox();
+  sandbox.setTimeout = (callback, delay) => {
+    delays.push(delay);
+    callback();
+  };
+  sandbox.fetch = async () => {
+    callCount++;
+    return { ok: false, status: 503, json: async () => [] };
+  };
+
+  await sandbox.loadWikiIndex();
+  assert.equal(callCount, 3, 'Persistent 503 responses must stop after three attempts');
+  assert.deepEqual(delays, [150, 300], 'Retry delays must increase between attempts');
+  assert.equal(sandbox.window.MOONBOYS_WIKI_SEARCH.getIndexLoadState(), 'failed',
+    'Persistent 503 responses must leave the loader in a clean failed state');
+}
+
+{
+  let callCount = 0;
+  const sandbox = makeSandbox();
+  sandbox.fetch = async () => {
+    callCount++;
+    return { ok: true, status: 200, json: async () => { throw new SyntaxError('Invalid JSON'); } };
+  };
+
+  await sandbox.loadWikiIndex();
+  assert.equal(callCount, 1, 'Invalid JSON must not be retried');
+  assert.equal(sandbox.window.MOONBOYS_WIKI_SEARCH.getIndexLoadState(), 'failed',
+    'Invalid JSON must leave the loader in a clean failed state');
 }
 
 console.log('wiki-search.test: PASS');

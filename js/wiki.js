@@ -87,6 +87,9 @@ const CATEGORY_LIST = [
 ];
 
 /* ── LOADERS ─────────────────────────────────────────────────────────────── */
+const WIKI_INDEX_MAX_ATTEMPTS = 3;
+const WIKI_INDEX_RETRY_DELAY_MS = 150;
+
 function getDerivedJsonUrl(fileName) {
   const scripts = document.querySelectorAll('script[src]');
   for (const script of scripts) {
@@ -102,13 +105,24 @@ async function loadWikiIndex() {
   console.debug('[wiki.js] loading wiki-index from:', url);
   WIKI_INDEX_LOAD_STATE = 'loading';
   try {
-    const res = await fetch(url);
-    console.debug('[wiki.js] wiki-index fetch status:', res.status);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    WIKI_INDEX = data.filter(x => x.url !== '/wiki/index.html');
-    WIKI_INDEX_LOAD_STATE = 'loaded';
-    console.debug('[wiki.js] WIKI_INDEX loaded, entries:', WIKI_INDEX.length);
+    for (let attempt = 1; attempt <= WIKI_INDEX_MAX_ATTEMPTS; attempt++) {
+      const res = await fetch(url);
+      console.debug('[wiki.js] wiki-index fetch status:', res.status);
+
+      if (res.status === 503 && attempt < WIKI_INDEX_MAX_ATTEMPTS) {
+        const delay = WIKI_INDEX_RETRY_DELAY_MS * attempt;
+        console.warn(`[wiki.js] wiki-index temporarily unavailable; retrying in ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      WIKI_INDEX = data.filter(x => x.url !== '/wiki/index.html');
+      WIKI_INDEX_LOAD_STATE = 'loaded';
+      console.debug('[wiki.js] WIKI_INDEX loaded, entries:', WIKI_INDEX.length);
+      return;
+    }
   } catch (err) {
     console.error('[wiki.js] wiki-index load failed:', err);
     WIKI_INDEX = [];
