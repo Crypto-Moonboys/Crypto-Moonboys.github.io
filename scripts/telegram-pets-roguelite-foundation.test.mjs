@@ -46,6 +46,9 @@ class Statement {
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
   async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
   async run() {
+    if (/INSERT OR IGNORE INTO telegram_pet_run_analytics/i.test(this.sql) && String(this.args[0] || '').endsWith(':win')) {
+      this.adapter.bossWinAnalyticsInsertAttempts += 1;
+    }
     const result = this.adapter.database.prepare(this.sql).run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
@@ -58,6 +61,7 @@ class D1 {
     this.queue = Promise.resolve();
     this.batchCount = 0;
     this.failBatchNumber = 0;
+    this.bossWinAnalyticsInsertAttempts = 0;
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
@@ -296,29 +300,92 @@ assert.deepEqual({ ...extractionDb.database.prepare(`SELECT json_extract(event_d
   FROM telegram_pet_run_analytics WHERE analytics_id = 'extraction-run:end'`).get() }, { status: 'extracted', depth: 7, neon_scrap: 4 },
   'run-end analytics must expose successful extraction for extraction-rate aggregation');
 
+let bossRunId = null;
+let bossRoomId = null;
+let expectedBossRewards = null;
+for (let index = 0; index < 1000; index += 1) {
+  const candidateRunId = `boss-relic-run-${index}`;
+  const candidateRoomId = `${candidateRunId}:10`;
+  const candidateRewards = __rogueliteFoundationTestHooks.buildPetBossRewards(
+    PET_ROGUELITE_BOSSES.alley_king,
+    { run_id: candidateRunId },
+    { room_id: candidateRoomId },
+  );
+  if (Object.keys(candidateRewards.relics).length > 0) {
+    bossRunId = candidateRunId;
+    bossRoomId = candidateRoomId;
+    expectedBossRewards = candidateRewards;
+    break;
+  }
+}
+assert.ok(bossRunId && bossRoomId && expectedBossRewards, 'test fixture must find a deterministic Alley King relic discovery');
+const expectedRelics = Object.keys(expectedBossRewards.relics);
+const bossWinAnalyticsId = `${bossRunId}:boss:${bossRoomId}:alley_king:win`;
+
 const bossDb = seedPlayer('boss-player');
-bossDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status) VALUES ('boss-row', 'boss-player', 'boss-run', 'season', 'active')`).run();
+bossDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status)
+  VALUES ('boss-row', 'boss-player', ?, 'season', 'active')`).run(bossRunId);
 bossDb.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id, run_id, telegram_id, room_number, room_type, status)
-  VALUES ('boss-room', 'boss-run', 'boss-player', 5, 'boss', 'resolved')`).run();
-const bossCallbacks = await Promise.all(Array.from({ length: 8 }, () => rewardPetRogueliteBoss(bossDb, { run_id: 'boss-run', telegram_id: 'boss-player' }, 'alley_king')));
+  VALUES (?, ?, 'boss-player', 10, 'boss', 'resolved')`).run(bossRoomId, bossRunId);
+const bossCallbacks = await Promise.all(Array.from({ length: 8 }, () => rewardPetRogueliteBoss(
+  bossDb, { run_id: bossRunId, telegram_id: 'boss-player' }, 'alley_king',
+)));
 const bossReward = bossCallbacks.find(({ duplicate }) => !duplicate);
+assert.equal(bossCallbacks.filter(({ duplicate }) => !duplicate).length, 1, 'concurrent boss callbacks must produce one authoritative settlement');
+assert.equal(bossCallbacks.filter(({ duplicate }) => duplicate).length, 7, 'losing concurrent boss callbacks must be reported as duplicates');
 assert.equal(bossReward.pet_xp_awarded, 0, 'repeatable bosses must not be a Pet XP farming source');
 assert.equal(bossReward.xp_awarded, 0, 'repeatable bosses must not be a Community XP farming source');
 assert.equal(bossDb.database.prepare("SELECT source FROM telegram_pet_reward_claims WHERE telegram_id = 'boss-player'").get().source, 'roguelite_boss', 'boss rewards must be routed through the unified reward service');
 assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id = 'boss-player' AND source = 'roguelite_boss'").get().count, 1, 'duplicate boss callbacks cannot duplicate rewards');
-assert.ok(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'boss-player'").get().count <= 1);
+assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'boss-player'").get().count, 1,
+  'the authoritative callback must persist the deterministic relic discovery');
 assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_analytics WHERE event_type = 'boss_fought'").get().count, 2,
   'backend analytics must record one boss attempt and one boss win despite duplicate callbacks');
-assert.equal(bossDb.database.prepare(`SELECT json_extract(event_data, '$.rewards.materials.neon_scrap') AS neon_scrap
-  FROM telegram_pet_run_analytics WHERE analytics_id = 'boss-run:boss:boss-room:alley_king:win'`).get().neon_scrap, 3,
-  'boss-win analytics must retain the authoritative non-duplicate reward bundle');
+assert.equal(bossDb.bossWinAnalyticsInsertAttempts, 1, 'only the authoritative boss settlement may attempt the boss-win analytics insert');
+const bossWinAnalytics = JSON.parse(bossDb.database.prepare('SELECT event_data FROM telegram_pet_run_analytics WHERE analytics_id = ?').get(bossWinAnalyticsId).event_data);
+assert.deepEqual(bossWinAnalytics.rewards.materials, expectedBossRewards.materials, 'boss-win analytics must retain authoritative materials');
+assert.deepEqual(bossWinAnalytics.rewards.items, expectedBossRewards.items, 'boss-win analytics must retain the evolution fragment');
+assert.deepEqual(bossWinAnalytics.relics_discovered, expectedRelics, 'boss-win analytics must retain the authoritative relic discovery');
+assert.ok(Object.keys(bossWinAnalytics.rewards.materials).length > 0 && bossWinAnalytics.relics_discovered.length > 0,
+  'boss-win analytics payload cannot be empty duplicate reward data');
 assert.match(foundationFunction('rewardPetRogueliteBoss'), /if \(awarded\.accepted && !awarded\.duplicate\) \{[\s\S]*?:win/,
   'duplicate boss callbacks must not compete to write zeroed boss-win analytics');
+
+const bossWinBeforeDuplicateRetry = JSON.stringify(bossWinAnalytics);
+const duplicateBossRetry = await rewardPetRogueliteBoss(bossDb, { run_id: bossRunId, telegram_id: 'boss-player' }, 'alley_king');
+assert.equal(duplicateBossRetry.duplicate, true, 'an explicit boss retry after settlement must remain duplicate');
+assert.equal(bossDb.bossWinAnalyticsInsertAttempts, 1, 'a duplicate boss retry cannot attempt another boss-win analytics insert');
+assert.equal(bossDb.database.prepare('SELECT event_data FROM telegram_pet_run_analytics WHERE analytics_id = ?').get(bossWinAnalyticsId).event_data,
+  bossWinBeforeDuplicateRetry, 'a duplicate boss retry cannot replace authoritative analytics with an empty payload');
+
+const bossRetryDb = seedPlayer('boss-retry-player');
+bossRetryDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status)
+  VALUES ('boss-retry-row', 'boss-retry-player', ?, 'season', 'active')`).run(bossRunId);
+bossRetryDb.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id, run_id, telegram_id, room_number, room_type, status)
+  VALUES (?, ?, 'boss-retry-player', 10, 'boss', 'resolved')`).run(bossRoomId, bossRunId);
+bossRetryDb.failBatchNumber = 1;
+await assert.rejects(() => rewardPetRogueliteBoss(bossRetryDb,
+  { run_id: bossRunId, telegram_id: 'boss-retry-player' }, 'alley_king'), /injected_batch_failure/,
+  'a failed boss reward settlement must surface without writing win analytics');
+assert.equal(bossRetryDb.bossWinAnalyticsInsertAttempts, 0, 'failed reward settlement cannot attempt boss-win analytics');
+assert.equal(bossRetryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_analytics WHERE json_extract(event_data, '$.outcome') = 'win'").get().count, 0,
+  'failed reward settlement cannot create a boss-win event');
+assert.equal(bossRetryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source = 'roguelite_boss'").get().count, 0,
+  'failed reward settlement must remain retryable without a partial claim');
+bossRetryDb.failBatchNumber = 0;
+const recoveredBossReward = await rewardPetRogueliteBoss(bossRetryDb,
+  { run_id: bossRunId, telegram_id: 'boss-retry-player' }, 'alley_king');
+assert.equal(recoveredBossReward.accepted, true);
+assert.equal(recoveredBossReward.duplicate, false, 'retry after a failed boss reward must become the authoritative settlement');
+assert.equal(bossRetryDb.bossWinAnalyticsInsertAttempts, 1, 'successful reward retry must write boss-win analytics exactly once');
+const recoveredBossAnalytics = JSON.parse(bossRetryDb.database.prepare('SELECT event_data FROM telegram_pet_run_analytics WHERE analytics_id = ?').get(bossWinAnalyticsId).event_data);
+assert.deepEqual(recoveredBossAnalytics.rewards.materials, expectedBossRewards.materials, 'recovered boss analytics must retain correct rewards');
+assert.deepEqual(recoveredBossAnalytics.relics_discovered, expectedRelics, 'recovered boss analytics must retain correct relic discovery');
 assert.deepEqual({ ...bossDb.database.prepare("SELECT health, hunger FROM telegram_pet_profiles WHERE telegram_id = 'boss-player'").get() },
   { health: 71, hunger: 25 }, 'Alley King rewards must preserve the unified authority health derivation and cannot inject need bonuses');
 const boundedRoomCurrency = await awardPetReward(bossDb, {
   telegram_id: 'boss-player', source: 'roguelite_room', idempotency_key: 'bounded-room-currency',
-  context: { run_id: 'boss-run', room_id: 'boss-room' }, rewards: { moon_gold: 999999, moon_crystals: 999999, style_tokens: 999999 },
+  context: { run_id: bossRunId, room_id: bossRoomId }, rewards: { moon_gold: 999999, moon_crystals: 999999, style_tokens: 999999 },
 });
 assert.deepEqual({ moon_gold: boundedRoomCurrency.rewards.moon_gold, moon_crystals: boundedRoomCurrency.rewards.moon_crystals, style_tokens: boundedRoomCurrency.rewards.style_tokens },
   { moon_gold: 100, moon_crystals: 5, style_tokens: 5 }, 'roguelite room currency payouts must have service-level per-claim bounds');
