@@ -8,6 +8,7 @@ import {
   generateDailyMoonRunSeed,
   getDailyMoonRunAnalytics,
   getDailyMoonRunLeaderboard,
+  processDailyMoonRunStep,
   recordDailyCareChallenge,
   syncDailyMoonRun,
   validateDailyChallengeContent,
@@ -22,6 +23,7 @@ import {
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql', import.meta.url), 'utf8');
 const dailySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/daily-moon-run.js', import.meta.url), 'utf8');
+const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const challenges = JSON.parse(fs.readFileSync(new URL('../workers/moonboys-api/pets/content/daily-challenges.json', import.meta.url), 'utf8'));
 
 class Statement {
@@ -82,7 +84,7 @@ function resolveDailyRun(db, telegramId, runId, { status = 'completed', score = 
   const types = ['choice_event', 'choice_event', 'battle', 'loot', 'choice_event', 'choice_event', 'battle', 'choice_event', 'elite', 'boss'];
   for (let index = 0; index < types.length; index += 1) {
     const roomNumber = index + 1;
-    db.database.prepare(`INSERT INTO telegram_pet_run_rooms
+    db.database.prepare(`INSERT OR REPLACE INTO telegram_pet_run_rooms
       (room_id, run_id, telegram_id, room_number, room_type, status, generated_data, outcome_data)
       VALUES (?, ?, ?, ?, ?, 'resolved', ?, '{"success":true}')`)
       .run(`${runId}:${roomNumber}`, runId, telegramId, roomNumber, types[index], JSON.stringify({ content_id: `room_${roomNumber}` }));
@@ -110,6 +112,13 @@ assert.doesNotMatch(migration, /(?:pet_xp|community_xp|moon_gold|moon_crystals|s
 assert.doesNotMatch(dailySource, /UPDATE\s+telegram_pet_(?:profiles|inventory|evolutions|personality_traits|memories)/i,
   'daily retention code cannot write protected progression authorities directly');
 assert.doesNotMatch(dailySource, /awardPetReward\s*\(/, 'daily tracking cannot create a direct reward path');
+const dailyStepRoute = workerSource.slice(workerSource.indexOf("body.action === 'run_step'"), workerSource.indexOf("body.action === 'run_extract'"));
+assert.match(dailyStepRoute, /getDailyMoonRunReservation/, 'run_step must identify daily reservations before choosing an engine');
+assert.match(dailyStepRoute, /processDailyMoonRunStep/, 'daily run_step must route through the roguelite room adapter');
+assert.match(dailyStepRoute, /processPetRunStep/, 'non-daily runs must preserve the existing legacy compatibility path');
+const dailySyncRoute = workerSource.slice(workerSource.indexOf("body.action === 'daily_run_sync'"), workerSource.indexOf("body.action === 'evolve'"));
+assert.match(dailySyncRoute, /utc_day:\s*body\.utc_day/);
+assert.match(dailySyncRoute, /run_id:\s*body\.run_id/, 'daily sync must forward the reservation date authority or run ID');
 assert.equal(validateDailyChallengeContent(challenges), true);
 assert.equal(Object.keys(PET_DAILY_CHALLENGES).length, 5);
 
@@ -146,6 +155,8 @@ assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run
   'daily creation must reuse the existing run engine exactly once');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_modifiers WHERE telegram_id='daily-player'").get().count, 1,
   'the deterministic daily modifier must use the existing run modifier table');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_rooms WHERE telegram_id='daily-player'").get().count, 1,
+  'daily creation must materialize its first room through the roguelite room engine');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE telegram_id='daily-player' AND event_key='daily:memory:first-run:daily-player'").get().count, 1,
   'First Daily Moon Run memory must be bounded and duplicate safe');
 
@@ -170,8 +181,8 @@ assert.equal(db.database.prepare("SELECT completed_daily_challenges FROM telegra
 const runId = db.database.prepare("SELECT run_id FROM telegram_pet_daily_runs WHERE telegram_id='daily-player'").get().run_id;
 resolveDailyRun(db, 'daily-player', runId);
 const [syncA, syncB] = await Promise.all([
-  syncDailyMoonRun(db, { telegram_id: 'daily-player', utc_day: '2026-08-11' }),
-  syncDailyMoonRun(db, { telegram_id: 'daily-player', utc_day: '2026-08-11' }),
+  syncDailyMoonRun(db, { telegram_id: 'daily-player', utc_day: '2026-08-11', now }),
+  syncDailyMoonRun(db, { telegram_id: 'daily-player', utc_day: '2026-08-11', now }),
 ]);
 assert.equal(syncA.accepted && syncB.accepted, true, 'concurrent terminal synchronization must recover successfully');
 const daily = db.database.prepare("SELECT * FROM telegram_pet_daily_runs WHERE telegram_id='daily-player'").get();
@@ -188,11 +199,74 @@ for (const challengeId of ['daily_combat', 'daily_explorer', 'daily_boss']) {
   const progress = db.database.prepare('SELECT progress, completed_at FROM telegram_pet_daily_challenge_progress WHERE telegram_id=? AND challenge_id=?').get('daily-player', challengeId);
   assert.ok(progress?.completed_at, `${challengeId} must reconcile from authoritative run evidence`);
 }
-await syncDailyMoonRun(db, { telegram_id: 'daily-player', utc_day: '2026-08-11' });
+await syncDailyMoonRun(db, { telegram_id: 'daily-player', utc_day: '2026-08-11', now });
 assert.equal(db.database.prepare("SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id='daily-player'").get().runs_recorded, 1,
   'repeated terminal callbacks cannot corrupt leaderboard aggregates');
 assert.ok(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE telegram_id='daily-player' AND event_kind='memory'").get().count <= 6,
   'daily record memories must remain bounded under retries');
+
+const engineDb = new D1();
+for (const telegramId of ['engine-player-a', 'engine-player-b']) seedPlayer(engineDb, telegramId);
+const engineDay = new Date('2026-08-14T08:00:00.000Z');
+const engineRuns = [];
+for (const telegramId of ['engine-player-a', 'engine-player-b']) {
+  const created = await createDailyMoonRun(engineDb, { telegram_id: telegramId, now: engineDay });
+  const fingerprints = [];
+  for (let roomIndex = 0; roomIndex < 10; roomIndex += 1) {
+    const pending = engineDb.database.prepare(`SELECT generated_data FROM telegram_pet_run_rooms
+      WHERE telegram_id=? AND run_id=? AND room_number=?`).get(telegramId, created.daily_run.run_id, roomIndex + 1);
+    assert.ok(pending, `daily room ${roomIndex + 1} must be persisted by createPetRunRoom`);
+    const room = JSON.parse(pending.generated_data);
+    fingerprints.push(`${room.content_id}:${room.enemy_id || room.boss_id || ''}`);
+    const result = await processDailyMoonRunStep(engineDb, {
+      telegram_id: telegramId,
+      run_id: created.daily_run.run_id,
+      choice_key: room.choices[0].choice_id,
+      expected_step_index: roomIndex,
+      success: true,
+      now: engineDay,
+    });
+    assert.equal(result.accepted, true, `daily room ${roomIndex + 1} must resolve through the roguelite engine`);
+  }
+  engineRuns.push({ telegramId, runId: created.daily_run.run_id, fingerprints });
+}
+assert.deepEqual(engineRuns[0].fingerprints, engineRuns[1].fingerprints,
+  'players on the same UTC day must receive identical deterministic rooms, enemies, and boss');
+for (const { telegramId, runId } of engineRuns) {
+  assert.equal(engineDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_run_rooms WHERE run_id=?').get(runId).count, 10,
+    'daily completion must use the ten canonical Moon Alley room records');
+  assert.equal(engineDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_analytics
+    WHERE run_id=? AND event_type='boss_fought' AND json_extract(event_data,'$.outcome')='win'`).get(runId).count, 1,
+    'daily boss resolution must record canonical boss win analytics');
+  assert.equal(engineDb.database.prepare('SELECT status FROM telegram_pet_runs WHERE telegram_id=? AND run_id=?').get(telegramId, runId).status, 'completed');
+  assert.equal(engineDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE telegram_id=? AND run_id=?').get(telegramId, runId).count, 0,
+    'daily rooms must never enter the legacy step table');
+}
+
+assert.deepEqual(__dailyMoonRunTestHooks.calculateStreaks([
+  { utc_day: '2026-08-11', status: 'completed' },
+  { utc_day: '2026-08-12', status: 'extracted' },
+  { utc_day: '2026-08-13', status: 'failed' },
+], '2026-08-13'), { current: 0, longest: 2 }, 'a failed current day must reset current streak and preserve longest streak');
+assert.deepEqual(__dailyMoonRunTestHooks.calculateStreaks([
+  { utc_day: '2026-08-11', status: 'completed' },
+  { utc_day: '2026-08-12', status: 'completed' },
+  { utc_day: '2026-08-14', status: 'completed' },
+], '2026-08-14'), { current: 1, longest: 2 }, 'a skipped UTC day must reset the streak');
+
+const midnightDb = new D1();
+seedPlayer(midnightDb, 'midnight-player');
+const midnightCreated = await createDailyMoonRun(midnightDb, { telegram_id: 'midnight-player', now: new Date('2026-08-11T23:59:59.000Z') });
+midnightDb.database.prepare(`UPDATE telegram_pet_runs SET status='failed', current_room=1, depth=1,
+  completed_at='2026-08-12 00:00:01', ended_at='2026-08-12 00:00:01' WHERE run_id=?`).run(midnightCreated.daily_run.run_id);
+const midnightSync = await syncDailyMoonRun(midnightDb, {
+  telegram_id: 'midnight-player',
+  run_id: midnightCreated.daily_run.run_id,
+  now: new Date('2026-08-12T00:00:02.000Z'),
+});
+assert.equal(midnightSync.accepted, true);
+assert.equal(midnightSync.daily_run.utc_day, '2026-08-11', 'sync must derive the reserved UTC day from the run ID after midnight');
+assert.equal(midnightDb.database.prepare("SELECT status FROM telegram_pet_daily_runs WHERE telegram_id='midnight-player' AND utc_day='2026-08-11'").get().status, 'failed');
 
 seedPlayer(db, 'failed-player');
 const failedSeed = await generateDailyMoonRunSeed('2026-08-12');
@@ -202,8 +276,8 @@ const recovered = await createDailyMoonRun(db, { telegram_id: 'failed-player', n
 assert.equal(recovered.accepted, true, 'creation must recover a deterministic run inserted before its daily reservation');
 db.database.prepare("UPDATE telegram_pet_runs SET status='failed', current_room=4, depth=4, score=120, completed_at='2026-08-12 05:04:00' WHERE run_id=?").run(failedRunId);
 await Promise.all([
-  syncDailyMoonRun(db, { telegram_id: 'failed-player', utc_day: '2026-08-12' }),
-  syncDailyMoonRun(db, { telegram_id: 'failed-player', utc_day: '2026-08-12' }),
+  syncDailyMoonRun(db, { telegram_id: 'failed-player', utc_day: '2026-08-12', now: new Date('2026-08-12T05:05:00.000Z') }),
+  syncDailyMoonRun(db, { telegram_id: 'failed-player', utc_day: '2026-08-12', now: new Date('2026-08-12T05:05:00.000Z') }),
 ]);
 assert.equal(db.database.prepare("SELECT status FROM telegram_pet_daily_runs WHERE telegram_id='failed-player'").get().status, 'failed');
 assert.equal(db.database.prepare("SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id='failed-player'").get().runs_recorded, 1,

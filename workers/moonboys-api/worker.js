@@ -7,7 +7,8 @@ import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
-  createDailyMoonRun, recordDailyCareChallenge, syncDailyMoonRun,
+  createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, processDailyMoonRunStep,
+  recordDailyCareChallenge, syncDailyMoonRun,
 } from './pets/daily-moon-run.js';
 import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
@@ -6543,16 +6544,28 @@ export default {
           source: 'telegram_pets_api',
         });
       } else if (body.action === 'run_step') {
-        result = await processPetRunStep(env.DB, telegramId, body.run_id, body.choice_key, {
-          event_key: body.event_key,
-          expected_step_index: body.expected_step_index,
-          source: 'telegram_pets_api',
-        });
+        const dailyReservation = await getDailyMoonRunReservation(env.DB, { telegram_id: telegramId, run_id: body.run_id });
+        result = dailyReservation
+          ? await processDailyMoonRunStep(env.DB, {
+            telegram_id: telegramId,
+            run_id: body.run_id,
+            choice_key: body.choice_key,
+            expected_step_index: body.expected_step_index,
+            success: body.success,
+          })
+          : await processPetRunStep(env.DB, telegramId, body.run_id, body.choice_key, {
+            event_key: body.event_key,
+            expected_step_index: body.expected_step_index,
+            source: 'telegram_pets_api',
+          });
       } else if (body.action === 'run_extract') {
-        result = await processPetRunExtract(env.DB, telegramId, body.run_id, {
-          event_key: body.event_key,
-          source: 'telegram_pets_api',
-        });
+        const dailyReservation = await getDailyMoonRunReservation(env.DB, { telegram_id: telegramId, run_id: body.run_id });
+        result = dailyReservation
+          ? await extractDailyMoonRun(env.DB, { telegram_id: telegramId, run_id: body.run_id })
+          : await processPetRunExtract(env.DB, telegramId, body.run_id, {
+            event_key: body.event_key,
+            source: 'telegram_pets_api',
+          });
       } else if (body.action === 'use_item') {
         result = await processPetUseItem(env.DB, telegramId, body.item_key, {
           event_key: body.event_key,
@@ -6576,7 +6589,7 @@ export default {
       } else if (body.action === 'daily_run') {
         result = await createDailyMoonRun(env.DB, { telegram_id: telegramId });
       } else if (body.action === 'daily_run_sync') {
-        result = await syncDailyMoonRun(env.DB, { telegram_id: telegramId });
+        result = await syncDailyMoonRun(env.DB, { telegram_id: telegramId, utc_day: body.utc_day, run_id: body.run_id });
       } else if (body.action === 'evolve') {
         result = await evolveMoonpet(env.DB, { telegram_id: telegramId, evolution_id: body.evolution_id, event_key: body.event_key });
       } else {

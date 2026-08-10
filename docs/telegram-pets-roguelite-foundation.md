@@ -73,7 +73,9 @@ The Daily Moon Run is an official Moon Alley run created through the existing ro
 
 Every player receives the same Moon Alley difficulty, ten-room limit, boss pool, daily modifier, and numeric run seed for a given UTC date. The official daily row mirrors only authoritative run status, score, depth, boss victory, and completion time. A failed, abandoned, completed, or extracted run remains that day's sole official attempt. Retrying synchronization repairs a stale daily mirror and cannot create another attempt or increment records twice.
 
-The authenticated Pet action backend supports `daily_run` to create/resume the official run and `daily_run_sync` to reconcile its authoritative state. Leaderboard and analytics query functions are backend-only in this foundation. No new public leaderboard route, Daily Moon Run screen, Telegram command, or redesigned UI is implemented or claimed.
+The authenticated Pet action backend supports `daily_run` to create/resume the official run and immediately materialize its first `telegram_pet_run_rooms` record. Subsequent `run_step` actions detect the daily reservation and use `generatePetRunRoom()`, `createPetRunRoom()`, `resolvePetRunRoom()`, `persistPetRunRoomOutcome()`, and `completePetRun()` from the existing roguelite engine. Boss rooms use the existing boss reward and analytics authority; daily runs never write the legacy run-step ledger.
+
+`daily_run_sync` accepts the reservation's `utc_day`, or derives it from the persisted daily `run_id`. This keeps a run started before UTC midnight attached to its original official day when it completes afterward. Leaderboard and analytics query functions are backend-only in this foundation. No new public leaderboard route, Daily Moon Run screen, Telegram command, or redesigned UI is implemented or claimed.
 
 ## Deterministic daily seed
 
