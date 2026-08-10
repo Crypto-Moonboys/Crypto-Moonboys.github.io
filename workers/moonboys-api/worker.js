@@ -3518,6 +3518,24 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
   const eventKey = buildStablePetEventKey(['pet_activity_claim', telegramId, session.id]);
   const computed = computePetActivityRewards(session.activity_type, elapsedSeconds);
   const { item_key: itemKey, health, hunger, cleanliness, energy, happiness, ...permanentRewards } = computed.rewards;
+  const claimResult = await db.prepare(`
+    UPDATE telegram_pet_activity_sessions
+    SET status = 'completed', claimed_at = ?, metadata = ?
+    WHERE id = ? AND telegram_id = ? AND status = 'active'
+      AND ends_at >= datetime(?, ?)
+  `).bind(
+    now.toISOString(),
+    JSON.stringify({ ...computed, claim_state: 'claimed' }),
+    session.id,
+    telegramId,
+    now.toISOString(),
+    `-${PET_ACTIVITY_GRACE_SECONDS} seconds`,
+  ).run();
+  if (Number(claimResult?.meta?.changes || 0) !== 1) {
+    const closedSession = await db.prepare(`SELECT * FROM telegram_pet_activity_sessions WHERE id = ? AND telegram_id = ? LIMIT 1`)
+      .bind(session.id, telegramId).first().catch(() => session);
+    return { accepted: false, reason: 'activity_already_closed', session: closedSession || session, computed };
+  }
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_activity', idempotency_key: eventKey, event_key: eventKey,
     event_type: 'activity_claim', reason: session.activity_type,
@@ -3526,21 +3544,16 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     context: { source: options.source || 'telegram_bot', session_id: session.id, activity_type: session.activity_type },
   });
   if (!awarded.accepted) return { ...awarded, session, computed };
-  const claimResult = await db.prepare(`
-    UPDATE telegram_pet_activity_sessions
-    SET status = 'completed', claimed_at = ?, metadata = ?
-    WHERE id = ? AND telegram_id = ? AND status = 'active'
-  `).bind(now.toISOString(), JSON.stringify({ ...computed, rewards: awarded.rewards }), session.id, telegramId).run();
-  const claimedSession = Number(claimResult?.meta?.changes || 0) > 0
-    ? session
-    : await db.prepare(`SELECT * FROM telegram_pet_activity_sessions WHERE id = ? AND telegram_id = ? LIMIT 1`).bind(session.id, telegramId).first().catch(() => session);
-  return { ...awarded, reason: awarded.duplicate ? 'duplicate' : 'claimed', session: claimedSession || session, computed };
+  return { ...awarded, reason: awarded.duplicate ? 'duplicate' : 'claimed', session: { ...session, status: 'completed', claimed_at: now.toISOString() }, computed };
 }
 
 async function cancelPetActivitySession(db, telegramId) {
   const session = await getActivePetActivitySession(db, telegramId);
   if (!session) return { accepted: false, reason: 'no_active_activity' };
-  await db.prepare(`UPDATE telegram_pet_activity_sessions SET status = 'cancelled' WHERE id = ? AND telegram_id = ? AND status = 'active'`).bind(session.id, telegramId).run();
+  const cancelResult = await db.prepare(`UPDATE telegram_pet_activity_sessions SET status = 'cancelled' WHERE id = ? AND telegram_id = ? AND status = 'active'`).bind(session.id, telegramId).run();
+  if (Number(cancelResult?.meta?.changes || 0) !== 1) {
+    return { accepted: false, reason: 'activity_already_closed', session };
+  }
   return { accepted: true, reason: 'cancelled', session };
 }
 
@@ -9994,6 +10007,9 @@ export const __petMediaTestHooks = Object.freeze({
   parsePetRepeatRewardReservation,
   processPetRandomEvent,
   processPetAdventure,
+  claimPetActivitySession,
+  cancelPetActivitySession,
+  expireOldPetActivitySessions,
   getPetInventory,
   processPetUseItem,
   processPetRunExtract,
