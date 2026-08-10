@@ -43,7 +43,6 @@ export const PET_ROGUELITE_BOSSES = Object.freeze({
     boss_id: 'alley_scrapper', name: 'Alley Scrapper', difficulty: 1, health: 180,
     phases: Object.freeze([{ threshold: 1, pattern: 'scrap_swing' }, { threshold: 0.4, pattern: 'overclock' }]),
     rewards: Object.freeze({
-      pet_xp: 5,
       materials: { scrap_metal: 2 },
       items: { evolution_catalyst: 1 },
       relics: { golden_bitcoin: { rarity: 'rare', effects: { reward_bonus_pct: 5 } } },

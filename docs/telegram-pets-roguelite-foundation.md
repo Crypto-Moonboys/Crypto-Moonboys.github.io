@@ -14,7 +14,7 @@ All new roguelite modes must call `awardPetReward()` from `workers/moonboys-api/
 
 Existing Events, Kaiju, Jobs, Activities, Adventure, Arena, and legacy run banking now finalize through this authority. Event and Kaiju flows retain the PR #1155 pending reservation, repeat-slot, Energy-payment, original accounting-window, and callback recovery protections; the reservation ID is handed to `awardPetReward()` for atomic finalization. New modes cannot self-register an arbitrary source: the authority rejects sources outside its reviewed allowlist.
 
-Repeatable roguelite materials and items have daily service-level ceilings of 40 and 10 respectively. The starter boss deliberately awards only 5 Pet XP and prefers materials, an evolution item, and idempotent relic ownership. Boss, room, and completion requests must prove a matching persisted run/room state before a claim can be created.
+Repeatable roguelite materials and items have daily service-level ceilings of 40 and 10 respectively. The starter boss awards no Pet XP or Community XP and instead uses materials, an evolution item, and idempotent relic ownership. Boss, room, and completion requests must prove a matching persisted run/room state before a claim can be created.
 
 ## Migration requirement
 

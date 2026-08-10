@@ -7,6 +7,8 @@ on:
       - scripts/verify-d1-production-migrations.mjs
       - scripts/verify-d1-production-migrations.test.mjs
       - scripts/report-d1-query-failure.mjs
+      - workers/moonboys-api/migrations/041_telegram_pet_repeat_reward_slots.sql
+      - workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql
       - .github/workflows/d1-production-migration-verify.yml
   workflow_dispatch:
 
