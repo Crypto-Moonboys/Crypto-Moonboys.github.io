@@ -29,10 +29,16 @@ import {
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql', import.meta.url), 'utf8');
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const rogueliteFoundation = fs.readFileSync(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
 const workerFunction = (name) => {
   const start = worker.indexOf(`async function ${name}`);
   const next = worker.indexOf('\nasync function ', start + 1);
   return worker.slice(start, next < 0 ? worker.length : next);
+};
+const foundationFunction = (name) => {
+  const start = rogueliteFoundation.indexOf(`export async function ${name}`);
+  const next = rogueliteFoundation.indexOf('\nexport ', start + 1);
+  return rogueliteFoundation.slice(start, next < 0 ? rogueliteFoundation.length : next);
 };
 
 class Statement {
@@ -303,6 +309,11 @@ assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet
 assert.ok(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'boss-player'").get().count <= 1);
 assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_analytics WHERE event_type = 'boss_fought'").get().count, 2,
   'backend analytics must record one boss attempt and one boss win despite duplicate callbacks');
+assert.equal(bossDb.database.prepare(`SELECT json_extract(event_data, '$.rewards.materials.neon_scrap') AS neon_scrap
+  FROM telegram_pet_run_analytics WHERE analytics_id = 'boss-run:boss:boss-room:alley_king:win'`).get().neon_scrap, 3,
+  'boss-win analytics must retain the authoritative non-duplicate reward bundle');
+assert.match(foundationFunction('rewardPetRogueliteBoss'), /if \(awarded\.accepted && !awarded\.duplicate\) \{[\s\S]*?:win/,
+  'duplicate boss callbacks must not compete to write zeroed boss-win analytics');
 assert.deepEqual({ ...bossDb.database.prepare("SELECT health, hunger FROM telegram_pet_profiles WHERE telegram_id = 'boss-player'").get() },
   { health: 71, hunger: 25 }, 'Alley King rewards must preserve the unified authority health derivation and cannot inject need bonuses');
 const boundedRoomCurrency = await awardPetReward(bossDb, {

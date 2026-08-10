@@ -456,7 +456,7 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
     profile_deltas: buildPetProfileDeltas(rewards, boss.costs),
     context: { run_id: run.run_id, room_id: persistedRoom.room_id, boss_id: bossId },
   });
-  if (awarded.accepted) {
+  if (awarded.accepted && !awarded.duplicate) {
     await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
       VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`, run.run_id, run.telegram_id,
         safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: awarded.rewards,
