@@ -87,6 +87,7 @@ CREATE TABLE telegram_pet_reward_claims (
   telegram_id TEXT NOT NULL,
   source TEXT NOT NULL,
   idempotency_key TEXT NOT NULL,
+  day_key TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'awarded', 'rejected')),
   requested_rewards TEXT NOT NULL DEFAULT '{}',
   applied_rewards TEXT NOT NULL DEFAULT '{}',
@@ -97,6 +98,17 @@ CREATE TABLE telegram_pet_reward_claims (
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 CREATE INDEX idx_telegram_pet_reward_claims_source ON telegram_pet_reward_claims(source, created_at DESC);
+CREATE INDEX idx_telegram_pet_reward_claims_user_day ON telegram_pet_reward_claims(telegram_id, day_key, source);
+
+CREATE TABLE telegram_pet_reward_assets (
+  claim_id TEXT NOT NULL,
+  asset_type TEXT NOT NULL CHECK (asset_type IN ('material', 'item', 'relic')),
+  asset_key TEXT NOT NULL,
+  amount INTEGER NOT NULL DEFAULT 0 CHECK (amount >= 0),
+  PRIMARY KEY (claim_id, asset_type, asset_key),
+  FOREIGN KEY (claim_id) REFERENCES telegram_pet_reward_claims(claim_id) ON DELETE CASCADE
+);
+CREATE INDEX idx_telegram_pet_reward_assets_type ON telegram_pet_reward_assets(asset_type, asset_key);
 
 CREATE TABLE telegram_pet_inventory (
   telegram_id TEXT NOT NULL,

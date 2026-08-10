@@ -8,11 +8,13 @@ All new roguelite modes must call `awardPetReward()` from `workers/moonboys-api/
 
 - reserves one unique reward claim per Telegram user, source, and idempotency key;
 - atomically clamps Pet XP to 1,200/day and Community XP to 250/day using accepted `telegram_pet_events` as the canonical accounting ledger;
-- updates the Pet profile, Community XP log/user/active leaderboard, Pet season state, currencies, materials, and items in the same D1 batch;
+- updates the Pet profile, Community XP log/user/date-matched leaderboard, Pet season state, currencies, materials, items, and relics in the same D1 batch;
 - records requested and applied rewards with their source and context;
 - returns zero rewards for duplicate or concurrent callbacks.
 
-Existing Events, Kaiju, Jobs, Activities, Adventure, and Arena flows remain compatible and retain their PR #1155 protections. They are not rewritten in this foundation PR. New modes must not write permanent reward balances directly.
+Existing Events, Kaiju, Jobs, Activities, Adventure, Arena, and legacy run banking now finalize through this authority. Event and Kaiju flows retain the PR #1155 pending reservation, repeat-slot, Energy-payment, original accounting-window, and callback recovery protections; the reservation ID is handed to `awardPetReward()` for atomic finalization. New modes cannot self-register an arbitrary source: the authority rejects sources outside its reviewed allowlist.
+
+Repeatable roguelite materials and items have daily service-level ceilings of 40 and 10 respectively. The starter boss deliberately awards only 5 Pet XP and prefers materials, an evolution item, and idempotent relic ownership. Boss, room, and completion requests must prove a matching persisted run/room state before a claim can be created.
 
 ## Migration requirement
 
@@ -21,6 +23,16 @@ Apply `workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql
 Migration 042 rebuilds the two v1 run tables so SQLite can extend the status constraint with `abandoned`. It copies every existing v1 run/step column and row before removing the temporary v1 tables, then recreates the one-open-run and callback-deduplication indexes. The v1 `extractable` and `extracted` states, unbanked rewards, depth/risk fields, unique event keys, and foreign keys remain supported.
 
 Production evidence must include migration 042 in `d1_migrations`. The deployment manifest intentionally remains `unverified` until that evidence is captured; do not mark it applied based only on repository state.
+
+Before production apply:
+
+1. Confirm migration 033 is present and there is no already-created 042 table set from a manual partial apply.
+2. Capture a D1 backup and record counts/status totals for `telegram_pet_runs` and `telegram_pet_run_steps`.
+3. Run `node scripts/telegram-pets-roguelite-migration-rehearsal.test.mjs`; it seeds v1 active, extractable, and extracted data with unbanked rewards and callback keys, applies 042 with foreign keys enabled, and verifies constraints and referential integrity.
+4. Apply 042 separately from the Worker deployment using the repository D1 migration runbook. Do not expose code paths requiring the new tables first.
+5. Recheck row counts, open-run uniqueness, callback keys, `PRAGMA foreign_key_check`, and the expected new tables/indexes before deploying the Worker.
+
+Because 042 is a table rebuild, a failed or partially manual application must be treated as a stopped deployment. Do not rerun fragments or mark the migration applied until every copied field, index, and foreign key has been verified.
 
 ## Foundation tables
 

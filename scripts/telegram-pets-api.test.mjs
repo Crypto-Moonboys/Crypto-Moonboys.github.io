@@ -565,7 +565,7 @@ assert.ok(worker.includes('consumed_item_key'), 'inventory counting must subtrac
 
 const work = asyncBlock('processPetJob');
 assert.ok(work.includes('duplicate'), 'work must short-circuit duplicate event keys');
-assert.ok(work.includes('PETS_DAILY_PET_XP_CAP'), 'work must respect the daily pet XP cap');
+assert.ok(work.includes("source: 'pet_job'") && work.includes('awardPetReward(db'), 'work must use the capped unified reward authority');
 for (const job of ['street_artist', 'courier', 'crystal_miner', 'vault_guard']) {
   assert.ok(worker.includes(job), `work must support ${job}`);
 }
@@ -597,7 +597,7 @@ assertOrder(
   'const outcome = pickPetRandomEventOutcome(choice);',
   'random event must check duplicate event keys before the reward roll'
 );
-assert.ok(randomEvent.includes('PETS_DAILY_PET_XP_CAP') && randomEvent.includes('COALESCE(SUM(pet_xp_awarded), 0)'), 'random event must enforce its daily cap atomically while finalizing the event');
+assert.ok(randomEvent.includes("source: 'pet_event'") && randomEvent.includes('reservation_id: reservation.reservation_id'), 'random events must finalize their protected reservation through the unified reward authority');
 
 const goldTrade = asyncBlock('processPetGoldTrade');
 assert.ok(goldTrade.includes("'trade'"), 'gold trades must use trade event type');
@@ -635,14 +635,12 @@ const adventure = asyncBlock('processPetAdventure');
 assert.ok(adventure.includes('normalizePetAdventureChoice'), 'adventures must parse choice keys');
 assert.ok(adventure.includes('resolvePetAdventureEncounter'), 'adventures must resolve encounter keys');
 assert.ok(adventure.includes('PET_ADVENTURE_COOLDOWN_SECONDS'), 'adventures must have a cooldown');
-assert.ok(adventure.includes('PETS_DAILY_PET_XP_CAP'), 'adventures must apply the daily pet XP cap');
-assert.ok(adventure.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'adventures must read daily totals before awarding pet XP');
+assert.ok(adventure.includes("source: 'pet_adventure'") && adventure.includes('awardPetReward(db'), 'adventures must use the capped unified reward authority');
 assert.ok(adventure.includes('pickPetRandomEventOutcome(choice)'), 'adventures must reuse the roguelite outcome roll');
 assert.ok(adventure.includes('applyPetRandomEventDeltas('), 'adventures must apply roguelite-style deltas');
 assert.ok(adventure.includes('getPetProfile(db, telegramId)'), 'adventures must look up the pet by telegramId');
-assert.ok(adventure.includes('telegram_pet_season_state'), 'adventures must update season state');
-assert.ok(adventure.includes('pet_xp_awarded: applied.deltas.pet_xp'), 'adventures must persist the capped pet XP amount');
-assert.ok(adventure.includes("reason: `${encounter.key}:${choice.key}`"), 'adventures must report the encounter and choice');
+assert.ok(adventure.includes('applied.deltas.pet_xp = awarded.pet_xp_awarded'), 'adventures must report the authority-capped Pet XP amount');
+assert.ok(adventure.includes("`${encounter.key}:${choice.key}`"), 'adventures must report the encounter and choice');
 assert.ok(!adventure.includes('awardCommunityXp'), 'adventures must not award Community XP');
 assert.ok(adventure.includes("duplicate: true"), 'adventures must short-circuit duplicate event keys');
 assert.ok(adventure.includes("reason: 'invalid_adventure_choice'"), 'adventures must reject invalid choices');
@@ -1051,16 +1049,12 @@ assert.ok(activityStart.includes('getActivePetActivitySession'), 'start session 
 assert.ok(activityStart.includes('already_busy'), 'start session must return already_busy');
 const activityClaim = worker.slice(worker.indexOf('async function claimPetActivitySession'), worker.indexOf('async function cancelPetActivitySession'));
 assert.ok(activityClaim.includes("buildStablePetEventKey(['pet_activity_claim', telegramId, session.id])"), 'claim must use stable idempotency event key');
-assert.ok(activityClaim.includes('PETS_DAILY_PET_XP_CAP'), 'claim must apply daily pet XP cap');
-assert.ok(activityClaim.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'claim must apply Community XP cap');
-assert.ok(activityClaim.includes("event_type, event_key") && activityClaim.includes("'activity_claim'"), 'claim must audit rewards in telegram_pet_events');
+assert.ok(activityClaim.includes("source: 'pet_activity'") && activityClaim.includes('awardPetReward(db'), 'activity claims must apply both XP caps through the unified authority');
+assert.ok(activityClaim.includes("event_type: 'activity_claim'"), 'claim must audit rewards in telegram_pet_events');
 assert.ok(activityClaim.includes('duplicate'), 'duplicate claim must not double-award');
 assert.ok(activityClaim.includes('const claimResult = await db.prepare'), 'activity claim must capture the session completion update');
-assert.ok(activityClaim.includes("Number(claimResult?.meta?.changes || 0) <= 0"), 'activity claim must short-circuit no-op completion updates');
-assert.ok(activityClaim.includes("reason: 'already_claimed'"), 'simultaneous duplicate activity claims must return already_claimed');
-assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activityClaim.indexOf("INSERT INTO telegram_pet_events"), 'activity claim must complete the session before inserting the event');
-assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activityClaim.indexOf('pet.pet_xp ='), 'activity claim must complete the session before mutating pet rewards');
-assert.ok(activityClaim.indexOf("Number(claimResult?.meta?.changes || 0) <= 0") < activityClaim.indexOf("INSERT INTO telegram_pet_events"), 'duplicate/simultaneous claims must return before event unique-key insert');
+assert.ok(activityClaim.includes('if (!awarded.accepted)'), 'activity completion must not advance when reward authorization fails');
+assert.ok(activityClaim.indexOf('awardPetReward(db') < activityClaim.indexOf('const claimResult = await db.prepare'), 'activity rewards must become retry-safe before the session is finalized');
 const activityCancel = worker.slice(worker.indexOf('async function cancelPetActivitySession'), worker.indexOf('async function processPetAction'));
 assert.ok(activityCancel.includes("SET status = 'cancelled'"), 'cancel must mark the session cancelled');
 assert.ok(!activityCancel.includes('telegram_pet_events'), 'cancel must not award rewards');
@@ -1693,9 +1687,8 @@ assert.ok(randomEventHardening.indexOf('getPetProfileWithAtomicDecay') < randomE
 assert.ok(randomEventHardening.indexOf('reservePetRepeatRewardEvent') < randomEventHardening.indexOf('pickPetRandomEventOutcome'), 'Event slot must be transactionally claimed before reward outcome calculation');
 assert.ok(randomEventHardening.includes('existing_event: duplicate') && randomEventHardening.includes("duplicate.status !== 'pending'"), 'Event retries must resume pending reservations while accepted duplicates remain idempotent');
 assert.ok(randomEventHardening.includes('const accountingDayKey = rewardSlot.day_key') && randomEventHardening.includes('accounting_window: { day_key: accountingDayKey'), 'Event recovery must finalize against the stored reservation accounting window');
-assert.ok(randomEventHardening.includes("status = 'pending'") && randomEventHardening.includes("status = 'accepted'"), 'Event rewards must finalize only their pending idempotency reservation');
-assert.ok(randomEventHardening.includes('PETS_DAILY_PET_XP_CAP'), 'Event finalization must preserve the 1,200 daily Pet XP cap');
-assert.ok(randomEventHardening.includes('finalization_id: finalizationId') && randomEventHardening.match(/status = 'accepted' AND metadata = \?/g)?.length >= 3, 'Event finalization must gate every progression and currency write on the winning pending-to-accepted attempt');
+assert.ok(randomEventHardening.includes('reservation_id: reservation.reservation_id'), 'Event rewards must finalize only their pending idempotency reservation');
+assert.ok(randomEventHardening.includes("source: 'pet_event'") && randomEventHardening.includes('day_key: accountingDayKey'), 'Event finalization must preserve caps and its original reservation window through the unified authority');
 assert.ok(!randomEventHardening.includes('savePetProfile(db, pet)'), 'Event rewards must not overwrite concurrent profile changes with a stale full-profile save');
 
 const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
@@ -1704,8 +1697,7 @@ assert.ok(kaijuHardening.indexOf('reservePetRepeatRewardEvent') < kaijuHardening
 assert.ok(kaijuHardening.includes('energy_cost: energyCost') && kaijuHardening.includes('existing_event: duplicate'), 'Kaiju retries must resume the original paid reservation without paying Energy twice');
 assert.ok(kaijuHardening.includes('const accountingDayKey = rewardSlot.day_key') && kaijuHardening.includes('accountingSeasonKey, accountingDayKey, accountingWeekKey'), 'Kaiju recovery must finalize caps and season totals against the stored reservation accounting window');
 assert.ok(kaijuHardening.includes("reason: 'insufficient_energy'") && kaijuHardening.includes('pet_xp_awarded: 0') && kaijuHardening.includes('xp_awarded: 0'), 'failed Energy claims must return no Pet or Community XP');
-assert.ok(kaijuHardening.includes('PETS_DAILY_PET_XP_CAP') && kaijuHardening.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'Kaiju finalization must preserve both global daily XP caps');
-assert.ok(kaijuHardening.includes('finalization_id: finalizationId') && kaijuHardening.match(/status = 'accepted' AND metadata = \?/g)?.length >= 5, 'Kaiju finalization must gate every progression write on the winning pending-to-accepted attempt');
+assert.ok(kaijuHardening.includes("source: 'pet_kaiju'") && kaijuHardening.includes('reservation_id: reservation.reservation_id'), 'Kaiju finalization must preserve both global XP caps through the unified authority');
 assert.ok(!kaijuHardening.includes('awardCommunityXp(db, telegramId, communityXp'), 'Kaiju Community XP must commit in the same recoverable finalization batch');
 assert.ok(!kaijuHardening.includes('savePetProfile(db, pet)'), 'Kaiju rewards must not restore spent Energy or overwrite concurrent rewards through a stale save');
 assert.ok(worker.includes("INSERT OR IGNORE INTO telegram_pet_events") && worker.includes("'pending', 'repeat_reward_pending'"), 'repeat reward reservations must reuse the unique event key for concurrent idempotency');
