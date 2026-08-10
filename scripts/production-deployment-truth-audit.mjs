@@ -23,6 +23,7 @@ const REQUIRED_D1_DATABASES = Object.freeze({
   wikicoms: Object.freeze([
     '038_telegram_pet_equipment_progression.sql',
     '039_telegram_pet_runtime_progression.sql',
+    '041_telegram_pet_repeat_reward_slots.sql',
   ]),
 });
 

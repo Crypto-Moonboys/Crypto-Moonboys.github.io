@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_reviewed_at": "2026-07-31T07:27:19.124Z",
-  "repository_main_commit_at_review": "d554b56713f2d0fb6d881dd0b6200f9850575194",
+  "last_reviewed_at": "2026-08-10T10:20:51.564Z",
+  "repository_main_commit_at_review": "527c6e296528195befeaa4120c37158eb7a976a2",
   "surfaces": {
     "github-pages": {
       "readiness": "deployable",
@@ -20,68 +20,68 @@
     "workers/moonboys-api": {
       "readiness": "live-deployable",
       "deployment_status": "verified-live",
-      "deployed_commit": "d554b56713f2d0fb6d881dd0b6200f9850575194",
-      "deployed_at": "2026-07-31T07:13:53.589Z",
+      "deployed_commit": "527c6e296528195befeaa4120c37158eb7a976a2",
+      "deployed_at": "2026-08-10T10:19:36.829Z",
       "verification_urls": [
         "https://moonboys-api.sercullen.workers.dev/deployment-info"
       ],
       "evidence": [
         {
           "type": "retained-worker-provenance",
-          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-d554b56713f2d0fb6d881dd0b6200f9850575194.json",
-          "recorded_at": "2026-07-31T07:27:19.124Z"
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-527c6e296528195befeaa4120c37158eb7a976a2.json",
+          "recorded_at": "2026-08-10T10:20:51.564Z"
         },
         {
           "type": "github-actions-live-verification",
-          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/30612857045",
-          "recorded_at": "2026-07-31T07:27:19.124Z"
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/31378691752",
+          "recorded_at": "2026-08-10T10:20:51.564Z"
         }
       ],
-      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit d554b56713f2d0fb6d881dd0b6200f9850575194."
+      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit 527c6e296528195befeaa4120c37158eb7a976a2."
     },
     "workers/anti-cheat": {
       "readiness": "live-deployable",
       "deployment_status": "verified-live",
-      "deployed_commit": "d554b56713f2d0fb6d881dd0b6200f9850575194",
-      "deployed_at": "2026-07-31T07:16:08.601Z",
+      "deployed_commit": "527c6e296528195befeaa4120c37158eb7a976a2",
+      "deployed_at": "2026-08-10T10:18:34.176Z",
       "verification_urls": [
         "https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info"
       ],
       "evidence": [
         {
           "type": "retained-worker-provenance",
-          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-d554b56713f2d0fb6d881dd0b6200f9850575194.json",
-          "recorded_at": "2026-07-31T07:27:19.124Z"
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-527c6e296528195befeaa4120c37158eb7a976a2.json",
+          "recorded_at": "2026-08-10T10:20:51.564Z"
         },
         {
           "type": "github-actions-live-verification",
-          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/30612857045",
-          "recorded_at": "2026-07-31T07:27:19.124Z"
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/31378691752",
+          "recorded_at": "2026-08-10T10:20:51.564Z"
         }
       ],
-      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit d554b56713f2d0fb6d881dd0b6200f9850575194."
+      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit 527c6e296528195befeaa4120c37158eb7a976a2."
     },
     "workers/leaderboard": {
       "readiness": "live-deployable",
       "deployment_status": "verified-live",
-      "deployed_commit": "d554b56713f2d0fb6d881dd0b6200f9850575194",
-      "deployed_at": "2026-07-31T07:15:18.620Z",
+      "deployed_commit": "527c6e296528195befeaa4120c37158eb7a976a2",
+      "deployed_at": "2026-08-10T10:19:02.820Z",
       "verification_urls": [
         "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
       ],
       "evidence": [
         {
           "type": "retained-worker-provenance",
-          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-d554b56713f2d0fb6d881dd0b6200f9850575194.json",
-          "recorded_at": "2026-07-31T07:27:19.124Z"
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-527c6e296528195befeaa4120c37158eb7a976a2.json",
+          "recorded_at": "2026-08-10T10:20:51.564Z"
         },
         {
           "type": "github-actions-live-verification",
-          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/30612857045",
-          "recorded_at": "2026-07-31T07:27:19.124Z"
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/31378691752",
+          "recorded_at": "2026-08-10T10:20:51.564Z"
         }
       ],
-      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit d554b56713f2d0fb6d881dd0b6200f9850575194."
+      "notes": "The public deployment-info endpoint and retained GitHub Actions evidence confirm the production Worker is running commit 527c6e296528195befeaa4120c37158eb7a976a2."
     },
     "workers/block-topia": {
       "readiness": "needs-binding-setup",
@@ -135,7 +135,8 @@
       "verified_at": null,
       "required_migrations": [
         "038_telegram_pet_equipment_progression.sql",
-        "039_telegram_pet_runtime_progression.sql"
+        "039_telegram_pet_runtime_progression.sql",
+        "041_telegram_pet_repeat_reward_slots.sql"
       ],
       "verified_migrations": [],
       "evidence": [],

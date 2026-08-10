@@ -4,6 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+export const REQUIRED_D1_MIGRATIONS = Object.freeze([
+  '038_telegram_pet_equipment_progression.sql',
+  '039_telegram_pet_runtime_progression.sql',
+  '041_telegram_pet_repeat_reward_slots.sql',
+]);
+
 function readJson(filePath, label) {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -30,10 +36,20 @@ export function validateRequest(request) {
   if (request.config !== 'workers/moonboys-api/wrangler.toml') throw new Error('D1 evidence request must use the production moonboys-api config');
   if (request.migrations_table !== 'd1_migrations') throw new Error('D1 evidence request must use the default migrations table');
   const migrations = request.required_migrations;
-  if (!Array.isArray(migrations) || migrations.length !== 2) throw new Error('D1 evidence request must contain exactly two migrations');
+  if (!Array.isArray(migrations)) throw new Error('D1 evidence request required_migrations must be an array');
   if (new Set(migrations).size !== migrations.length) throw new Error('D1 evidence request contains duplicate migrations');
   for (const migration of migrations) {
     if (!/^\d{3}_[a-z0-9_]+\.sql$/.test(String(migration))) throw new Error(`Invalid migration filename: ${migration}`);
+  }
+  const expected = [...REQUIRED_D1_MIGRATIONS].sort();
+  const actual = migrations.map(String).sort();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    const missing = expected.filter((migration) => !actual.includes(migration));
+    const unexpected = actual.filter((migration) => !expected.includes(migration));
+    throw new Error([
+      missing.length ? `D1 evidence request missing required migrations: ${missing.join(', ')}` : '',
+      unexpected.length ? `D1 evidence request contains unexpected migrations: ${unexpected.join(', ')}` : '',
+    ].filter(Boolean).join('; '));
   }
   return request;
 }
