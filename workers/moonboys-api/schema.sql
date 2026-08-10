@@ -573,7 +573,13 @@ CREATE TABLE IF NOT EXISTS telegram_pet_runs (
   telegram_id TEXT NOT NULL,
   run_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'extractable', 'completed', 'failed', 'extracted')),
+  region TEXT NOT NULL DEFAULT 'moon_alley',
+  difficulty INTEGER NOT NULL DEFAULT 1 CHECK (difficulty >= 1),
+  seed INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'failed', 'abandoned', 'extractable', 'extracted')),
+  current_room INTEGER NOT NULL DEFAULT 0 CHECK (current_room >= 0),
+  max_room INTEGER NOT NULL DEFAULT 5 CHECK (max_room >= 1),
+  score INTEGER NOT NULL DEFAULT 0 CHECK (score >= 0),
   depth INTEGER NOT NULL DEFAULT 0 CHECK (depth >= 0),
   max_depth INTEGER NOT NULL DEFAULT 5 CHECK (max_depth >= 1),
   risk_level INTEGER NOT NULL DEFAULT 1 CHECK (risk_level >= 1),
@@ -582,7 +588,13 @@ CREATE TABLE IF NOT EXISTS telegram_pet_runs (
   unbanked_moon_crystals INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_moon_crystals >= 0),
   unbanked_style_tokens INTEGER NOT NULL DEFAULT 0 CHECK (unbanked_style_tokens >= 0),
   unbanked_items TEXT NOT NULL DEFAULT '{}',
+  death_reason TEXT,
+  rewards_earned TEXT NOT NULL DEFAULT '{}',
+  rooms_completed INTEGER NOT NULL DEFAULT 0 CHECK (rooms_completed >= 0),
+  modifiers_chosen TEXT NOT NULL DEFAULT '[]',
+  boss_fought TEXT,
   started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ended_at DATETIME,
   completed_at DATETIME,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(run_id),
@@ -620,6 +632,96 @@ CREATE TABLE IF NOT EXISTS telegram_pet_run_steps (
 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_steps_run
   ON telegram_pet_run_steps(run_id, step_index);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_reward_claims (
+  claim_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  source TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'awarded', 'rejected')),
+  requested_rewards TEXT NOT NULL DEFAULT '{}',
+  applied_rewards TEXT NOT NULL DEFAULT '{}',
+  metadata TEXT NOT NULL DEFAULT '{}',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  awarded_at DATETIME,
+  UNIQUE(telegram_id, source, idempotency_key),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_reward_claims_source
+  ON telegram_pet_reward_claims(source, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_inventory (
+  telegram_id TEXT NOT NULL,
+  asset_type TEXT NOT NULL CHECK (asset_type IN ('material', 'item')),
+  asset_key TEXT NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (telegram_id, asset_type, asset_key),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_run_rooms (
+  room_id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  room_number INTEGER NOT NULL CHECK (room_number >= 1),
+  room_type TEXT NOT NULL CHECK (room_type IN ('battle', 'choice_event', 'loot', 'elite', 'boss')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'resolved', 'failed')),
+  generated_data TEXT NOT NULL DEFAULT '{}',
+  outcome_data TEXT NOT NULL DEFAULT '{}',
+  reward_claim_id TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolved_at DATETIME,
+  UNIQUE(run_id, room_number),
+  FOREIGN KEY (run_id) REFERENCES telegram_pet_runs(run_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_run_modifiers (
+  run_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  modifier_id TEXT NOT NULL,
+  effects_json TEXT NOT NULL DEFAULT '{}',
+  chosen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (run_id, modifier_id),
+  FOREIGN KEY (run_id) REFERENCES telegram_pet_runs(run_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_relics (
+  telegram_id TEXT NOT NULL,
+  relic_id TEXT NOT NULL,
+  rarity TEXT NOT NULL CHECK (rarity IN ('common', 'rare', 'epic', 'legendary')),
+  effects_json TEXT NOT NULL DEFAULT '{}',
+  unlocked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (telegram_id, relic_id),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_run_history (
+  telegram_id TEXT PRIMARY KEY,
+  runs_completed INTEGER NOT NULL DEFAULT 0 CHECK (runs_completed >= 0),
+  bosses_defeated INTEGER NOT NULL DEFAULT 0 CHECK (bosses_defeated >= 0),
+  highest_room_reached INTEGER NOT NULL DEFAULT 0 CHECK (highest_room_reached >= 0),
+  best_score INTEGER NOT NULL DEFAULT 0 CHECK (best_score >= 0),
+  fastest_completion_seconds INTEGER,
+  rare_discoveries TEXT NOT NULL DEFAULT '[]',
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_run_analytics (
+  analytics_id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  event_type TEXT NOT NULL CHECK (event_type IN ('run_start', 'room_generated', 'room_resolved', 'modifier_chosen', 'boss_fought', 'run_end')),
+  event_data TEXT NOT NULL DEFAULT '{}',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (run_id) REFERENCES telegram_pet_runs(run_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_analytics_run
+  ON telegram_pet_run_analytics(run_id, created_at);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_kaiju_matches (
   id TEXT PRIMARY KEY,

@@ -18,6 +18,7 @@ const REQUIRED_PETS_MIGRATIONS = [
   '038_telegram_pet_equipment_progression.sql',
   '039_telegram_pet_runtime_progression.sql',
   '041_telegram_pet_repeat_reward_slots.sql',
+  '042_telegram_pet_roguelite_foundation.sql',
 ];
 
 async function withFixture(readiness, truth, run) {

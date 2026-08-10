@@ -6,6 +6,13 @@ import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-l
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
+import {
+  PET_ROGUELITE_BOSSES, PET_ROGUELITE_REGIONS, PET_RUN_MODIFIERS,
+  advancePetRun, awardPetReward, choosePetRunModifier, completePetRun, createPetRunRoom,
+  failPetRun, finishPetRogueliteRun, generatePetRunRoom, persistPetRunRoomOutcome,
+  resolvePetRunRoom, rewardPetRogueliteBoss, rewardPetRunRoom, startPetRogueliteRun,
+  validatePetRunModifier,
+} from './pets/roguelite-foundation.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 /**
@@ -10081,6 +10088,23 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  PET_ROGUELITE_BOSSES,
+  PET_ROGUELITE_REGIONS,
+  PET_RUN_MODIFIERS,
+  advancePetRun,
+  awardPetReward,
+  choosePetRunModifier,
+  completePetRun,
+  createPetRunRoom,
+  failPetRun,
+  finishPetRogueliteRun,
+  generatePetRunRoom,
+  persistPetRunRoomOutcome,
+  resolvePetRunRoom,
+  rewardPetRogueliteBoss,
+  rewardPetRunRoom,
+  startPetRogueliteRun,
+  validatePetRunModifier,
   PET_MEDIA_MANIFEST,
   PET_RUN_CHOICE_LIBRARY,
   PET_RUN_MAX_DEPTH,
