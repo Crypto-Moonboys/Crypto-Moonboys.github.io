@@ -31,6 +31,8 @@ const {
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
+  processPetRunExtract,
+  processPetRunStep,
   reservePetRepeatRewardEvent,
   scalePetRewards,
   buildPetKaijuCardReplyMarkup,
@@ -703,7 +705,7 @@ assertOrder(
 assertOrder(
   runStep,
   "return { accepted: false, reason: 'stale_run_step'",
-  'INSERT INTO telegram_pet_run_steps',
+  'INSERT OR IGNORE INTO telegram_pet_run_steps',
   'stale run-step callbacks must not insert step rows'
 );
 assertOrder(
@@ -727,7 +729,7 @@ assertOrder(
 assertOrder(
   runStep,
   'const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs);',
-  'INSERT INTO telegram_pet_run_steps',
+  'INSERT OR IGNORE INTO telegram_pet_run_steps',
   'unaffordable run steps must be rejected before writing step rewards'
 );
 assert.ok(runStep.includes('applyPetRunStatRewards(pet, outcome.rewards)'), 'successful run steps must apply non-currency stat rewards before saving pets');
@@ -737,11 +739,11 @@ assertOrder(
   'applyPetRunStatRewards(pet, outcome.rewards);',
   'run stat rewards must only apply after the failure path has been handled'
 );
-assert.ok(
-  runStep.includes('applyPetRunStatRewards(pet, outcome.rewards);\n  pet.last_decay_at = new Date().toISOString();\n  await savePetProfile(db, pet);')
-    || runStep.includes('applyPetRunStatRewards(pet, outcome.rewards);\r\n  pet.last_decay_at = new Date().toISOString();\r\n  await savePetProfile(db, pet);'),
-  'run stat rewards must be applied before saving the successful step pet'
-);
+assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await savePetProfile(db, pet);'),
+  'run stat rewards must be applied before saving the successful step pet');
+assert.ok(runStep.includes("AND depth = ?\n    RETURNING run_id"), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
+assert.ok(runStep.includes("if (!stepResults?.[1]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
+  'a run step that loses a terminal-state race must be rejected without applying pet changes');
 
 const startRun = asyncBlock('startOrResumePetRun');
 assert.ok(startRun.includes('const requestedRunId = String(options.run_id || \'\').trim().slice(0, 80);'), 'run resume must normalize supplied run ids before inserts');
@@ -776,26 +778,17 @@ assertOrder(
 );
 
 const runBank = asyncBlock('recordPetRunBankedEvent');
-assert.ok(runBank.includes('PETS_DAILY_PET_XP_CAP'), 'banked run pet XP must respect the daily pet XP cap');
-assert.ok(runBank.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'banked run Community XP must respect the daily Community XP cap');
-assert.ok(runBank.includes('awardCommunityXp'), 'banked run Community XP must use the shared helper');
+assert.ok(runBank.includes("source: 'pet_run_legacy'") && runBank.includes('awardPetReward(db'), 'banked run rewards must use the capped unified authority');
 assert.ok(runBank.includes("eventType = options.completed ? 'run_complete' : 'run_extract'"), 'run banking must distinguish extract and completion');
-assert.ok(runBank.includes('PET_RUN_COMPLETED_STATUSES.includes(run.status)'), 'run banking must not bank closed runs twice');
 assert.ok(runBank.includes("options.completed ? (options.event_key || buildStablePetEventKey(['pet_run_complete', telegramId, run.run_id])) : buildPetRunExtractEventKey(telegramId, run.run_id)"), 'extract banking must ignore caller-provided event keys and use the deterministic run extract key');
-assert.ok(runBank.includes('UPDATE telegram_pet_runs'), 'run banking must claim/close the run before applying rewards');
-assert.ok(runBank.includes('if (!claim?.meta?.changes)'), 'run banking must treat already-closed runs as duplicates');
-assert.ok(runBank.includes("'run_item'"), 'run banking must persist inventory items as pet events');
+assert.ok(runBank.includes('RETURNING *') && runBank.includes('const rewardRun = claimedRow ? serializePetRun(claimedRow)'),
+  'terminal claiming must atomically return the exact reward snapshot');
+assert.ok(runBank.includes("rewardRun.status !== terminalStatus"), 'a competing terminal transition must not authorize another reward path');
 assertOrder(
   runBank,
-  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`)",
-  'pet.pet_xp = Math.max(0',
-  'extract must check duplicate event keys before banking rewards'
-);
-assertOrder(
-  runBank,
-  'const claim = await db.prepare(`',
-  'pet.pet_xp = Math.max(0',
-  'extract must claim/close the run before applying banked rewards'
+  'const claimedRow = await db.prepare(`UPDATE telegram_pet_runs',
+  'const awardedAuthority = await awardPetReward(db',
+  'extract must atomically claim/close the run and snapshot rewards before awarding them'
 );
 
 const runExtract = asyncBlock('processPetRunExtract');
@@ -1347,6 +1340,72 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   return db;
 }
 
+const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
+terminalRaceDb.database.prepare(`
+  INSERT INTO telegram_pet_runs
+    (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
+      unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('terminal-race-row', 'terminal-race', 'terminal-race-run', 'pet-s2026-003', 'active', 4, 5, 1,
+    30, 12, 1, 2, '{}')
+`).run();
+const originalRandom = Math.random;
+Math.random = () => 0.99;
+let extractResult;
+let racingStepResult;
+try {
+  [extractResult, racingStepResult] = await Promise.all([
+    processPetRunExtract(terminalRaceDb, 'terminal-race', 'terminal-race-run', { source: 'concurrency_regression' }),
+    processPetRunStep(terminalRaceDb, 'terminal-race', 'terminal-race-run', 'boss', {
+      source: 'concurrency_regression', expected_step_index: 5, event_key: 'terminal-race-step',
+    }),
+  ]);
+} finally {
+  Math.random = originalRandom;
+}
+assert.equal(extractResult.accepted, true, 'the terminal extraction claim must settle successfully');
+assert.equal(racingStepResult.accepted, false, 'a concurrent room completion must not be accepted after terminal extraction claims the run');
+assert.equal(racingStepResult.reason, 'run_closed', 'the losing room callback must report the terminal run state');
+assert.deepEqual(
+  { ...terminalRaceDb.database.prepare(`SELECT status, depth, unbanked_pet_xp, unbanked_moon_gold
+    FROM telegram_pet_runs WHERE run_id = 'terminal-race-run'`).get() },
+  { status: 'extracted', depth: 4, unbanked_pet_xp: 30, unbanked_moon_gold: 12 },
+  'terminal claim and reward snapshot must exclude the losing room callback',
+);
+assert.equal(terminalRaceDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE run_id = 'terminal-race-run'").get().count, 0,
+  'a room callback that loses the terminal race must not persist a run step');
+assert.equal(terminalRaceDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source = 'pet_run_legacy'").get().count, 1,
+  'concurrent extract and room callbacks must produce exactly one terminal reward claim');
+assert.deepEqual(
+  { ...terminalRaceDb.database.prepare("SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'terminal-race'").get() },
+  { pet_xp: 30, moon_gold: 12, moon_crystals: 1, style_tokens: 2 },
+  'concurrent extract and room callbacks must award only the atomically claimed snapshot',
+);
+
+const terminalRecoveryDb = seedRepeatRewardPlayer('terminal-recovery', 90);
+terminalRecoveryDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_pet_xp, unbanked_moon_gold, unbanked_items)
+  VALUES ('terminal-recovery-row', 'terminal-recovery', 'terminal-recovery-run', 'pet-s2026-003', 'active', 2, 5, 1, 24, 9, '{}')`).run();
+terminalRecoveryDb.failOnBatch(1);
+await assert.rejects(
+  processPetRunExtract(terminalRecoveryDb, 'terminal-recovery', 'terminal-recovery-run'),
+  /simulated_d1_batch_failure/,
+  'reward failure after the terminal claim must surface for retry',
+);
+assert.equal(terminalRecoveryDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id = 'terminal-recovery-run'").get().status, 'extracted',
+  'the atomic terminal claim must remain closed while reward settlement is retried');
+assert.equal(terminalRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id = 'terminal-recovery'").get().count, 0,
+  'a failed reward batch must not leave a partial claim');
+const recoveredTerminal = await processPetRunExtract(terminalRecoveryDb, 'terminal-recovery', 'terminal-recovery-run');
+assert.equal(recoveredTerminal.accepted, true, 'retrying the same terminal callback must settle its persisted snapshot');
+assert.equal(recoveredTerminal.duplicate, false, 'the first successful terminal settlement must not be reported as a duplicate');
+const duplicateTerminal = await processPetRunExtract(terminalRecoveryDb, 'terminal-recovery', 'terminal-recovery-run');
+assert.equal(duplicateTerminal.duplicate, true, 'a settled terminal callback must remain idempotent');
+assert.deepEqual(
+  { ...terminalRecoveryDb.database.prepare("SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'terminal-recovery'").get() },
+  { pet_xp: 24, moon_gold: 9 },
+  'terminal reward recovery and duplicate callbacks must award the snapshot exactly once',
+);
+
 function repeatRewardSnapshot(db, telegramId, mode) {
   const profileRow = db.database.prepare(`
     SELECT pet_xp, moon_gold, moon_crystals, style_tokens, energy, happiness
@@ -1689,7 +1748,10 @@ assert.ok(randomEventHardening.includes('existing_event: duplicate') && randomEv
 assert.ok(randomEventHardening.includes('const accountingDayKey = rewardSlot.day_key') && randomEventHardening.includes('accounting_window: { day_key: accountingDayKey'), 'Event recovery must finalize against the stored reservation accounting window');
 assert.ok(randomEventHardening.includes('reservation_id: reservation.reservation_id'), 'Event rewards must finalize only their pending idempotency reservation');
 assert.ok(randomEventHardening.includes("source: 'pet_event'") && randomEventHardening.includes('day_key: accountingDayKey'), 'Event finalization must preserve caps and its original reservation window through the unified authority');
+assert.ok(randomEventHardening.includes('buildPetProfileDeltas(rewardsApplied, costsApplied)'), 'Event hunger costs and recovery must use the centralized negative-stat direction');
 assert.ok(!randomEventHardening.includes('savePetProfile(db, pet)'), 'Event rewards must not overwrite concurrent profile changes with a stale full-profile save');
+
+assert.ok(adventure.includes('buildPetProfileDeltas(applied.rewardsApplied, {'), 'Adventure hunger costs and recovery must use the centralized negative-stat direction');
 
 const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
 assert.ok(kaijuHardening.indexOf('getPetProfileWithAtomicDecay') < kaijuHardening.indexOf('reservePetRepeatRewardEvent'), 'Kaiju must persist current stat decay before atomically claiming Energy and a reward slot');

@@ -6,11 +6,13 @@ import {
   PET_RUN_MODIFIERS,
   abandonPetRun,
   awardPetReward,
+  buildPetProfileDeltas,
   completePetRun,
   failPetRun,
   generatePetRunRoom,
   resolvePetRunRoom,
   rewardPetRogueliteBoss,
+  rewardPetRunRoom,
   validatePetRunModifier,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 
@@ -121,6 +123,41 @@ assert.equal(capped.xp_awarded, 5, 'unified reward service must clamp Community 
 assert.deepEqual({ ...capDb.database.prepare('SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?').get('cap-player') }, { pet_xp: 10, moon_gold: 7, moon_crystals: 2, style_tokens: 3 });
 assert.equal(capDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'cap-player' AND asset_type = 'material' AND asset_key = 'scrap_metal'").get().quantity, 2);
 
+assert.equal(buildPetProfileDeltas({}, { hunger: 9 }).hunger, 9, 'a positive hunger cost must increase the hunger value');
+assert.equal(buildPetProfileDeltas({ hunger: 12 }, {}).hunger, -12, 'a positive hunger reward must decrease the hunger value');
+
+const healthDb = seedPlayer('health-player');
+healthDb.database.prepare("UPDATE telegram_pet_profiles SET health = 40, hunger = 50, happiness = 70, cleanliness = 70, energy = 70 WHERE telegram_id = 'health-player'").run();
+await awardPetReward(healthDb, {
+  telegram_id: 'health-player', source: 'pet_activity', idempotency_key: 'sleep-health',
+  rewards: {}, profile_deltas: { health: 15 },
+});
+assert.deepEqual(
+  { ...healthDb.database.prepare("SELECT health, hunger FROM telegram_pet_profiles WHERE telegram_id = 'health-player'").get() },
+  { health: 55, hunger: 50 },
+  'an explicit sleep/activity health reward must persist instead of being overwritten by derived health',
+);
+
+const roomNeedsDb = seedPlayer('room-needs-player');
+roomNeedsDb.database.prepare("UPDATE telegram_pet_profiles SET health = 45, hunger = 50 WHERE telegram_id = 'room-needs-player'").run();
+roomNeedsDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status)
+  VALUES ('room-needs-row', 'room-needs-player', 'room-needs-run', 'season', 'active')`).run();
+roomNeedsDb.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id, run_id, telegram_id, room_number, room_type, status)
+  VALUES ('room-recovery', 'room-needs-run', 'room-needs-player', 1, 'loot', 'resolved')`).run();
+await rewardPetRunRoom(roomNeedsDb, { run_id: 'room-needs-run', telegram_id: 'room-needs-player' },
+  { room_id: 'room-recovery', room: 1, room_type: 'loot', status: 'resolved' }, { health: 7, hunger: 12 });
+assert.deepEqual(
+  { ...roomNeedsDb.database.prepare("SELECT health, hunger FROM telegram_pet_profiles WHERE telegram_id = 'room-needs-player'").get() },
+  { health: 52, hunger: 38 },
+  'roguelite room health and hunger recovery must remain explicit positive rewards',
+);
+roomNeedsDb.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id, run_id, telegram_id, room_number, room_type, status)
+  VALUES ('room-cost', 'room-needs-run', 'room-needs-player', 2, 'battle', 'resolved')`).run();
+await rewardPetRunRoom(roomNeedsDb, { run_id: 'room-needs-run', telegram_id: 'room-needs-player' },
+  { room_id: 'room-cost', room: 2, room_type: 'battle', status: 'resolved' }, {}, { hunger: 9 });
+assert.equal(roomNeedsDb.database.prepare("SELECT hunger FROM telegram_pet_profiles WHERE telegram_id = 'room-needs-player'").get().hunger, 47,
+  'a roguelite room hunger cost must increase hunger');
+
 const duplicateDb = seedPlayer('duplicate-player');
 const duplicateClaims = await Promise.all(Array.from({ length: 12 }, () => awardPetReward(duplicateDb, {
   telegram_id: 'duplicate-player', source: 'pet_job', idempotency_key: 'same-callback', now: '2026-08-10T12:00:00Z',
@@ -178,6 +215,8 @@ assert.equal(bossReward.pet_xp_awarded, 0, 'repeatable bosses must not be a Pet 
 assert.equal(bossReward.xp_awarded, 0, 'repeatable bosses must not be a Community XP farming source');
 assert.equal(bossDb.database.prepare("SELECT source FROM telegram_pet_reward_claims WHERE telegram_id = 'boss-player'").get().source, 'roguelite_boss', 'boss rewards must be routed through the unified reward service');
 assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'boss-player'").get().count, 1);
+assert.deepEqual({ ...bossDb.database.prepare("SELECT health, hunger FROM telegram_pet_profiles WHERE telegram_id = 'boss-player'").get() },
+  { health: 79, hunger: 17 }, 'boss health and hunger recovery must use the same profile reward direction');
 const boundedRoomCurrency = await awardPetReward(bossDb, {
   telegram_id: 'boss-player', source: 'roguelite_room', idempotency_key: 'bounded-room-currency',
   context: { run_id: 'boss-run', room_id: 'boss-room' }, rewards: { moon_gold: 999999, moon_crystals: 999999, style_tokens: 999999 },

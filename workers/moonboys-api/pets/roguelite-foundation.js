@@ -43,6 +43,8 @@ export const PET_ROGUELITE_BOSSES = Object.freeze({
     boss_id: 'alley_scrapper', name: 'Alley Scrapper', difficulty: 1, health: 180,
     phases: Object.freeze([{ threshold: 1, pattern: 'scrap_swing' }, { threshold: 0.4, pattern: 'overclock' }]),
     rewards: Object.freeze({
+      health: 4,
+      hunger: 8,
       materials: { scrap_metal: 2 },
       items: { evolution_catalyst: 1 },
       relics: { golden_bitcoin: { rarity: 'rare', effects: { reward_bonus_pct: 5 } } },
@@ -107,6 +109,15 @@ export function normalizePetReward(reward = {}) {
 
 function normalizeProfileDeltas(value = {}) {
   return Object.fromEntries(['health', 'hunger', 'cleanliness', 'energy', 'happiness'].map((key) => [key, signedStat(value?.[key])]));
+}
+
+export function buildPetProfileDeltas(rewards = {}, costs = {}) {
+  return Object.fromEntries(['health', 'hunger', 'cleanliness', 'energy', 'happiness'].map((key) => {
+    const reward = Math.max(0, Number(rewards?.[key]) || 0);
+    const cost = Math.max(0, Number(costs?.[key]) || 0);
+    // Hunger is a negative need: costs make the pet hungrier, rewards recover it.
+    return [key, signedStat(key === 'hunger' ? cost - reward : reward - cost)];
+  }));
 }
 
 function normalizeCurrencyCosts(value = {}) {
@@ -231,9 +242,10 @@ export async function awardPetReward(db, request = {}) {
     db.prepare(`UPDATE telegram_pet_profiles SET
         stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian'
           WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
-        health = MIN(100, MAX(0, ROUND(((100 - hunger) + happiness + cleanliness + energy) / 4.0)))
+        health = CASE WHEN ? <> 0 THEN health
+          ELSE MIN(100, MAX(0, ROUND(((100 - hunger) + happiness + cleanliness + energy) / 4.0))) END
       WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
-      .bind(telegramId, eventId, metadata),
+      .bind(profileDeltas.health, telegramId, eventId, metadata),
     db.prepare(`INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
       SELECT ?, ?, xp_awarded, ? FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted' AND xp_awarded > 0`)
       .bind(telegramId, xpAction, eventKey, eventId, metadata),
@@ -394,9 +406,16 @@ export async function choosePetRunModifier(db, run, modifierId) {
   return { accepted: Boolean(results?.[0]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes, modifier };
 }
 
-export async function rewardPetRunRoom(db, run, room, rewards) {
+export async function rewardPetRunRoom(db, run, room, rewards = {}, costs = {}) {
   if (room?.status !== 'resolved') return { accepted: false, reason: 'room_not_resolved' };
-  return awardPetReward(db, { telegram_id: run.telegram_id, source: 'roguelite_room', idempotency_key: room.room_id, rewards, context: { run_id: run.run_id, room_id: room.room_id, room: room.room, room_type: room.room_type } });
+  return awardPetReward(db, {
+    telegram_id: run.telegram_id,
+    source: 'roguelite_room',
+    idempotency_key: room.room_id,
+    rewards,
+    profile_deltas: buildPetProfileDeltas(rewards, costs),
+    context: { run_id: run.run_id, room_id: room.room_id, room: room.room, room_type: room.room_type },
+  });
 }
 
 export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
@@ -410,7 +429,14 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
   if (!persistedRoom?.room_id) return { accepted: false, reason: 'boss_room_not_resolved', pet_xp_awarded: 0, xp_awarded: 0 };
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
     VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}`, run.run_id, run.telegram_id, safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, name: boss.name, difficulty: boss.difficulty })).run();
-  return awardPetReward(db, { telegram_id: run.telegram_id, source: 'roguelite_boss', idempotency_key: `${persistedRoom.room_id}:${bossId}`, rewards: boss.rewards, context: { run_id: run.run_id, room_id: persistedRoom.room_id, boss_id: bossId } });
+  return awardPetReward(db, {
+    telegram_id: run.telegram_id,
+    source: 'roguelite_boss',
+    idempotency_key: `${persistedRoom.room_id}:${bossId}`,
+    rewards: boss.rewards,
+    profile_deltas: buildPetProfileDeltas(boss.rewards, boss.costs),
+    context: { run_id: run.run_id, room_id: persistedRoom.room_id, boss_id: bossId },
+  });
 }
 
 export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
