@@ -1056,6 +1056,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_identity_events (
   event_key TEXT NOT NULL,
   event_kind TEXT NOT NULL CHECK (event_kind IN ('personality', 'memory')),
   payload TEXT NOT NULL DEFAULT '{}',
+  day_key TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d', 'now')),
+  progress_delta INTEGER NOT NULL DEFAULT 0 CHECK (progress_delta >= 0),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   applied_at DATETIME,
   UNIQUE (telegram_id, event_key, event_kind),

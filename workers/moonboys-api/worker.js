@@ -8,7 +8,7 @@ import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
-  getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetMemory,
+  getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
   validateMoonpetEvolutionContent,
 } from './pets/moonpet-identity.js';
 import {
@@ -2195,7 +2195,7 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
   if (requestedRunId) {
     const requestedRun = await getPetRunById(db, telegramId, requestedRunId);
     if (requestedRun && ['active', 'extractable'].includes(requestedRun.status)) {
-      await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${requestedRun.run_id}:memory:start`, memory_type: 'first_run', activity: 'adventure', milestone: 'first_run' });
+      await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${requestedRun.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
       return { accepted: true, reason: 'run_resumed', run: requestedRun, pet };
     }
     if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, pet, xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2203,7 +2203,7 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
   }
   const active = await getActivePetRun(db, telegramId);
   if (active) {
-    await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${active.run_id}:memory:start`, memory_type: 'first_run', activity: 'adventure', milestone: 'first_run' });
+    await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${active.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
     return { accepted: true, reason: 'run_resumed', run: active, pet };
   }
   if (clampPetStat(pet.energy) < 12) return { accepted: false, reason: 'pet_tired', pet };
@@ -2215,7 +2215,7 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
       (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
     VALUES (?, ?, ?, ?, 'active', 0, ?, 1, '{}')
   `).bind(crypto.randomUUID(), telegramId, runId, season.key, PET_RUN_MAX_DEPTH).run();
-  await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', activity: 'adventure', milestone: 'first_run' });
+  await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
   const run = await getPetRunById(db, telegramId, runId);
   return { accepted: true, reason: 'run_started', run, pet };
 }
@@ -2246,14 +2246,14 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     context: { source: options.source || 'telegram_command', run_id: rewardRun.run_id, depth: rewardRun.depth, max_depth: rewardRun.max_depth },
   });
   if (!awardedAuthority.accepted) return { ...awardedAuthority, run: rewardRun, pet };
-  await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:personality`, behaviour: 'exploration', amount: 2 });
+  await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:personality`, behaviour: 'exploration', activity: 'adventure', amount: 2 });
   await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:memory`,
-    memory_type: options.completed ? 'run_completed' : 'extraction', activity: 'adventure',
+    memory_type: options.completed ? 'run_completed' : 'extraction',
     milestone: options.completed ? 'first_run_completed' : 'first_extraction', reward_amount: awardedAuthority.rewards?.moon_gold, reward_currency: 'moon_gold' });
   if (options.completed) {
-    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:boss:personality`, behaviour: 'combat', amount: 2 });
+    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:boss:personality`, behaviour: 'combat', activity: 'combat', amount: 2 });
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:boss:memory`, memory_type: 'boss_victory',
-      boss_id: 'alley_king', activity: 'combat', milestone: 'first_boss_victory' });
+      boss_id: 'alley_king', milestone: 'first_boss_victory' });
   }
   return { ...awardedAuthority, reason: awardedAuthority.duplicate ? 'duplicate' : (options.completed ? 'run_completed' : 'run_extracted'),
     run: rewardRun, banked_items: bankedItemsAuthority };
@@ -2648,9 +2648,8 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     context: { source: options.source || 'telegram_bot', encounter_key: encounter.key, choice_key: choice.key, result_kind: outcome.kind, reward_slot: rewardSlot.claimed_slot, reward_multiplier: rewardSlot.multiplier, copy: outcome.copy },
   });
   if (awarded.accepted) {
-    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'event' });
-    await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'activity', activity: 'event',
-      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
+    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'event', activity: 'event' });
+    await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
   }
   if (awarded.duplicate) return { ...awarded, reason: 'duplicate', encounter, choice };
   const petXpAwarded = awarded.pet_xp_awarded;
@@ -3009,9 +3008,8 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
       context: { source: 'telegram_arena', match_id: match.match_id, mode: match.mode },
     });
     if (awarded.accepted) {
-      await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'combat' });
-      await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'activity', activity: 'combat',
-        reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
+      await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'combat', activity: 'combat' });
+      await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
     }
     return { ...awarded, reward_slot: null, reward_multiplier: 1 };
   }
@@ -3878,8 +3876,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
   `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
 
   const careBehaviour = ['feed', 'play', 'clean', 'sleep'].includes(normalizedAction) ? 'care' : 'combat';
-  await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: careBehaviour });
-  await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'activity', activity: careBehaviour });
+  await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: careBehaviour, activity: careBehaviour });
 
   return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp, pet, season };
 }
@@ -4078,9 +4075,8 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   applied.rewardsApplied = awarded.rewards;
   applied.deltas.pet_xp = awarded.pet_xp_awarded;
   if (awarded.accepted) {
-    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'exploration' });
-    await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'activity', activity: 'adventure',
-      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
+    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'exploration', activity: 'adventure' });
+    await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
   }
 
   return {
@@ -10187,6 +10183,7 @@ export const __petMediaTestHooks = Object.freeze({
   getMoonpetIdentityAnalytics,
   getMoonpetIdentitySummary,
   recordMoonpetBehaviour,
+  recordMoonpetBiggestReward,
   recordMoonpetMemory,
   validateMoonpetEvolutionContent,
   PET_MEDIA_MANIFEST,

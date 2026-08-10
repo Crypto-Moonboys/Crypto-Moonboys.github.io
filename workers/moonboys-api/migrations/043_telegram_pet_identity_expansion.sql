@@ -65,6 +65,8 @@ CREATE TABLE telegram_pet_identity_events (
   event_key TEXT NOT NULL,
   event_kind TEXT NOT NULL CHECK (event_kind IN ('personality', 'memory')),
   payload TEXT NOT NULL DEFAULT '{}',
+  day_key TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d', 'now')),
+  progress_delta INTEGER NOT NULL DEFAULT 0 CHECK (progress_delta >= 0),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   applied_at DATETIME,
   UNIQUE (telegram_id, event_key, event_kind),
@@ -100,9 +102,9 @@ SELECT p.telegram_id,
   (SELECT MIN(r.started_at) FROM telegram_pet_runs r WHERE r.telegram_id = p.telegram_id),
   (SELECT MIN(r.ended_at) FROM telegram_pet_runs r WHERE r.telegram_id = p.telegram_id AND r.status = 'extracted'),
   (SELECT MIN(a.created_at) FROM telegram_pet_run_analytics a WHERE a.telegram_id = p.telegram_id
-    AND a.event_type = 'boss_fought' AND json_extract(a.event_data, '$.outcome') = 'win'),
+    AND a.event_type = 'boss_fought' AND json_valid(a.event_data) AND json_extract(a.event_data, '$.outcome') = 'win'),
   (SELECT json_extract(a.event_data, '$.boss_id') FROM telegram_pet_run_analytics a WHERE a.telegram_id = p.telegram_id
-    AND a.event_type = 'boss_fought' AND json_extract(a.event_data, '$.outcome') = 'win' ORDER BY a.created_at LIMIT 1),
+    AND a.event_type = 'boss_fought' AND json_valid(a.event_data) AND json_extract(a.event_data, '$.outcome') = 'win' ORDER BY a.created_at LIMIT 1),
   COALESCE(h.runs_completed, 0), COALESCE(h.bosses_defeated, 0), '["first_adoption"]'
 FROM telegram_pet_profiles p
 LEFT JOIN telegram_pet_run_history h ON h.telegram_id = p.telegram_id;
@@ -110,7 +112,7 @@ LEFT JOIN telegram_pet_run_history h ON h.telegram_id = p.telegram_id;
 INSERT INTO telegram_pet_boss_victories (telegram_id, boss_id, victories)
 SELECT telegram_id, json_extract(event_data, '$.boss_id'), COUNT(*)
 FROM telegram_pet_run_analytics
-WHERE event_type = 'boss_fought' AND json_extract(event_data, '$.outcome') = 'win'
+WHERE event_type = 'boss_fought' AND json_valid(event_data) AND json_extract(event_data, '$.outcome') = 'win'
   AND json_extract(event_data, '$.boss_id') IS NOT NULL
 GROUP BY telegram_id, json_extract(event_data, '$.boss_id')
 ON CONFLICT(telegram_id, boss_id) DO UPDATE SET victories = MAX(telegram_pet_boss_victories.victories, excluded.victories);

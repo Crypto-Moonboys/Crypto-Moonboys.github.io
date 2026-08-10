@@ -55,13 +55,13 @@ These identity stages and unlock records are live in the backend. No additional 
 
 ## Personality system
 
-Personality progress is earned from accepted behaviour: Arena and boss combat advances Street Fighter, Adventure and successful run milestones advance Explorer, care actions advance Loyal, and random events advance Curious. `telegram_pet_personality_traits` stores one permanent progress row per Moonpet and trait. A unique identity-event ledger makes repeated or concurrent callbacks advance progress once, and a stable analytics key records each trait unlock once.
+Personality progress is earned from accepted behaviour: Arena and boss combat advances Street Fighter, Adventure and successful run milestones advance Explorer, care actions advance Loyal, and random events advance Curious. `telegram_pet_personality_traits` stores one permanent progress row per Moonpet and trait. A unique identity-event ledger makes repeated or concurrent callbacks advance progress once, and a stable analytics key records each trait unlock once. Independent daily caps limit combat and exploration to four points, care and events to three points, and every callback to at most two points. Trait thresholds therefore require four to six active days; rotating cheap care actions cannot produce an instant unlock.
 
 Traits are presentation and future-content hooks. Their allowed uses are dialogue, cosmetics, event preferences, and future content routing. They are not raw XP multipliers, reward multipliers, cap changes, or combat-stat boosts.
 
 ## Memory system
 
-`telegram_pet_memories` preserves first adoption, first run, first extraction, first boss victory, biggest Moon Gold reward, favourite activity, completed runs, bosses defeated, and milestone IDs. Per-boss victory totals support evolution checks without turning memories into rewards. Pet Run and roguelite terminal callbacks, boss rewards, Arena, care, Adventure, and random events write through the same identity-event ledger so duplicate callbacks cannot duplicate history.
+`telegram_pet_memories` preserves first adoption, first run, first extraction, first boss victory, biggest Moon Gold reward, favourite activity, completed runs, bosses defeated, and milestone IDs. Per-boss victory totals support evolution checks without turning memories into rewards. Only important firsts, run terminals, boss victories, and evolution unlocks create memory-ledger events; ordinary accepted behaviour updates bounded aggregate counters through the personality transaction instead of appending memory records. Milestone JSON values remain unique, and duplicate callbacks cannot duplicate history.
 
 The existing `/petprogress` output now appends the current evolution stage, unlocked personality names, and concise memory highlights. This is an extension of the current text output, not a UI redesign.
 
@@ -86,7 +86,7 @@ Before production apply:
 
 Because 042 is a table rebuild, a failed or partially manual application must be treated as a stopped deployment. Do not rerun fragments or mark the migration applied until every copied field, index, and foreign key has been verified.
 
-After migration 042 is fully applied and verified, apply `workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql` before deploying the identity-enabled Worker. Migration 043 only adds identity tables and indexes; it does not rebuild, replace, or remove migration 042 tables, inventory authority, reward claims, caps, triggers, run validation, or duplicate protections. Production evidence must include both migrations.
+After migration 042 is fully applied and verified, apply `workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql` before deploying the identity-enabled Worker. Migration 043 only adds identity tables and indexes, then copies existing profile/run history into those new tables. It does not update, rebuild, replace, or remove Pet profiles, XP, equipment, inventory, runs, migration 042 tables, inventory authority, reward claims, caps, triggers, run validation, or duplicate protections. Production evidence must include both migrations.
 
 ## Foundation tables
 

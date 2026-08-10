@@ -5,6 +5,7 @@ import {
   MOONPET_EVOLUTIONS,
   MOONPET_PERSONALITY_TRAITS,
   evolveMoonpet,
+  formatMoonpetIdentitySummary,
   getMoonpetIdentityAnalytics,
   getMoonpetIdentitySummary,
   recordMoonpetBehaviour,
@@ -12,6 +13,7 @@ import {
   validateMoonpetEvolutionContent,
 } from '../workers/moonboys-api/pets/moonpet-identity.js';
 import { __rogueliteFoundationTestHooks } from '../workers/moonboys-api/pets/roguelite-foundation.js';
+import { buildPetProgressSummary } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql', import.meta.url), 'utf8');
@@ -70,10 +72,31 @@ for (const table of ['telegram_pet_evolutions', 'telegram_pet_personality_traits
 }
 const migrationDb = new DatabaseSync(':memory:');
 migrationDb.exec(schema.split('-- Crypto Moonboy Pets identity expansion.')[0]);
-migrationDb.prepare("INSERT INTO telegram_users (telegram_id, xp, level) VALUES ('backfill-player', 0, 1)").run();
-migrationDb.prepare("INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level, created_at) VALUES ('backfill-player', 400, 5, '2026-01-02 03:04:05')").run();
+migrationDb.prepare("INSERT INTO telegram_users (telegram_id, xp, level) VALUES ('backfill-player', 777, 8)").run();
+migrationDb.prepare("INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level, created_at, equipped_armor) VALUES ('backfill-player', 1900, 20, '2026-01-02 03:04:05', 'street_armor')").run();
+migrationDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot, item_level, item_xp, mastery_xp) VALUES ('backfill-player', 'street_armor', 'armor', 4, 77, 23)").run();
+migrationDb.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('backfill-player', 'material', 'neon_scrap', 17)").run();
+migrationDb.prepare("INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status, depth, unbanked_pet_xp) VALUES ('backfill-run-row', 'backfill-player', 'backfill-run', 'season', 'active', 4, 31)").run();
+const protectedBeforeMigration = {
+  community: { ...migrationDb.prepare("SELECT xp, level FROM telegram_users WHERE telegram_id='backfill-player'").get() },
+  profile: { ...migrationDb.prepare("SELECT pet_xp, level, equipped_armor FROM telegram_pet_profiles WHERE telegram_id='backfill-player'").get() },
+  gear: { ...migrationDb.prepare("SELECT item_key, item_level, item_xp, mastery_xp FROM telegram_pet_equipment_progression WHERE telegram_id='backfill-player'").get() },
+  inventory: { ...migrationDb.prepare("SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory WHERE telegram_id='backfill-player'").get() },
+  run: { ...migrationDb.prepare("SELECT run_id, status, depth, unbanked_pet_xp FROM telegram_pet_runs WHERE telegram_id='backfill-player'").get() },
+};
 migrationDb.exec(migration);
 assert.equal(migrationDb.prepare('PRAGMA foreign_key_check').all().length, 0, 'migration 043 must preserve referential integrity');
+assert.deepEqual({
+  community: { ...migrationDb.prepare("SELECT xp, level FROM telegram_users WHERE telegram_id='backfill-player'").get() },
+  profile: { ...migrationDb.prepare("SELECT pet_xp, level, equipped_armor FROM telegram_pet_profiles WHERE telegram_id='backfill-player'").get() },
+  gear: { ...migrationDb.prepare("SELECT item_key, item_level, item_xp, mastery_xp FROM telegram_pet_equipment_progression WHERE telegram_id='backfill-player'").get() },
+  inventory: { ...migrationDb.prepare("SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory WHERE telegram_id='backfill-player'").get() },
+  run: { ...migrationDb.prepare("SELECT run_id, status, depth, unbanked_pet_xp FROM telegram_pet_runs WHERE telegram_id='backfill-player'").get() },
+}, protectedBeforeMigration, 'migration 043 cannot reset or mutate existing XP, gear, inventory, or runs');
+assert.doesNotMatch(migration, /(?:ALTER|DROP|DELETE)\s+(?:TABLE\s+)?telegram_pet_(?:profiles|equipment|inventory|runs)/i,
+  'migration 043 must not destructively alter protected pet tables');
+assert.doesNotMatch(migration, /UPDATE\s+telegram_pet_(?:profiles|equipment|inventory|runs)/i,
+  'migration 043 backfill must write identity tables only');
 assert.deepEqual({ ...migrationDb.prepare("SELECT evolution_id, stage, materials_consumed FROM telegram_pet_evolutions WHERE telegram_id='backfill-player'").get() },
   { evolution_id: 'moon_egg', stage: 0, materials_consumed: 1 }, 'migration 043 must give existing Moonpets their permanent starting identity');
 assert.equal(migrationDb.prepare("SELECT first_adoption_at FROM telegram_pet_memories WHERE telegram_id='backfill-player'").get().first_adoption_at,
@@ -121,20 +144,46 @@ const concurrentEvolutionCallbacks = await Promise.all(Array.from({ length: 8 },
   telegram_id: 'concurrent-evolution', evolution_id: 'street_moonpet', event_key: `concurrent-street:${index}`,
 })));
 assert.equal(concurrentEvolutionCallbacks.filter(({ duplicate }) => !duplicate).length, 1, 'concurrent evolution callbacks must unlock once');
+assert.equal(concurrentEvolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions WHERE telegram_id='concurrent-evolution' AND evolution_id='street_moonpet'").get().count, 1,
+  'concurrent evolution callbacks must create one evolution row');
 assert.equal(concurrentEvolutionDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='concurrent-evolution' AND asset_key='neon_scrap'").get().quantity, 0,
   'concurrent evolution callbacks must consume authoritative materials once');
+const concurrentEvolutionMemory = JSON.parse(concurrentEvolutionDb.database.prepare("SELECT milestones FROM telegram_pet_memories WHERE telegram_id='concurrent-evolution'").get().milestones);
+assert.equal(concurrentEvolutionMemory.filter((milestone) => milestone === 'evolution_street_moonpet').length, 1,
+  'concurrent evolution callbacks must create one memory milestone');
+assert.equal(concurrentEvolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE milestone_id='evolution_street_moonpet'").get().count, 1,
+  'concurrent evolution callbacks must create one memory analytics entry');
 
 const personalityDb = seedPlayer('personality-player');
 await recordMoonpetMemory(personalityDb, { telegram_id: 'personality-player', event_key: 'personality-adoption', memory_type: 'first_adoption', milestone: 'first_adoption' });
 for (let index = 0; index < 10; index += 1) await recordMoonpetBehaviour(personalityDb, {
-  telegram_id: 'personality-player', event_key: `arena:${index}`, behaviour: 'combat',
+  telegram_id: 'personality-player', event_key: `arena:day1:${index}`, behaviour: 'combat', day_key: '2026-08-01',
 });
-const duplicateBehaviour = await recordMoonpetBehaviour(personalityDb, { telegram_id: 'personality-player', event_key: 'arena:9', behaviour: 'combat' });
-assert.equal(duplicateBehaviour.duplicate, true, 'duplicate callbacks must not double personality progress');
 assert.deepEqual({ ...personalityDb.database.prepare("SELECT progress, unlocked_at IS NOT NULL AS unlocked FROM telegram_pet_personality_traits WHERE trait_id='street_fighter'").get() },
-  { progress: 10, unlocked: 1 });
+  { progress: 4, unlocked: 0 }, 'cheap repeated actions must stop at the independent daily personality cap');
+const duplicateBehaviour = await recordMoonpetBehaviour(personalityDb, {
+  telegram_id: 'personality-player', event_key: 'arena:day1:9', behaviour: 'combat', day_key: '2026-08-01',
+});
+assert.equal(duplicateBehaviour.duplicate, true, 'duplicate callbacks must not double personality progress');
+for (let day = 2; day <= 5; day += 1) for (let index = 0; index < 4; index += 1) await recordMoonpetBehaviour(personalityDb, {
+  telegram_id: 'personality-player', event_key: `arena:day${day}:${index}`, behaviour: 'combat', day_key: `2026-08-0${day}`,
+});
+assert.deepEqual({ ...personalityDb.database.prepare("SELECT progress, unlocked_at IS NOT NULL AS unlocked FROM telegram_pet_personality_traits WHERE trait_id='street_fighter'").get() },
+  { progress: 20, unlocked: 1 });
 assert.equal(personalityDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE event_type='personality_unlock'").get().count, 1,
   'repeated behaviour unlocks a trait exactly once');
+await recordMoonpetBehaviour(personalityDb, {
+  telegram_id: 'personality-player', event_key: 'arena:day6:post-unlock', behaviour: 'combat', day_key: '2026-08-06', amount: 2,
+});
+assert.deepEqual({ ...personalityDb.database.prepare("SELECT progress, unlocked_at IS NOT NULL AS unlocked FROM telegram_pet_personality_traits WHERE trait_id='street_fighter'").get() },
+  { progress: 20, unlocked: 1 }, 'unlocked trait progress must remain capped at its permanent threshold');
+assert.equal(personalityDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE event_type='personality_unlock'").get().count, 1,
+  'post-unlock behaviour cannot duplicate personality unlock analytics');
+for (const definition of Object.values(MOONPET_PERSONALITY_TRAITS)) {
+  const minimumDays = Math.ceil(definition.threshold / definition.daily_cap);
+  assert.ok(minimumDays >= 4 && minimumDays <= 6, `${definition.trait_id} weighting must remain balanced across several days`);
+  assert.ok(definition.max_event_progress <= 2, `${definition.trait_id} cannot be unlocked by a single weighted callback`);
+}
 
 const memoryDb = seedPlayer('memory-player');
 const bossCallbacks = await Promise.all(Array.from({ length: 8 }, () => recordMoonpetMemory(memoryDb, {
@@ -147,6 +196,14 @@ assert.deepEqual({ ...memoryDb.database.prepare("SELECT first_boss_id, total_bos
 assert.equal(memoryDb.database.prepare("SELECT victories FROM telegram_pet_boss_victories WHERE telegram_id='memory-player' AND boss_id='alley_king'").get().victories, 1);
 assert.equal(memoryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE event_type='memory_milestone'").get().count, 1,
   'duplicate callbacks cannot duplicate memory milestones');
+assert.equal(memoryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_kind='memory'").get().count, 1,
+  'duplicate milestone callbacks cannot create unbounded memory event rows');
+await assert.rejects(() => recordMoonpetMemory(memoryDb, {
+  telegram_id: 'memory-player', event_key: 'ordinary-activity', memory_type: 'activity', activity: 'care',
+}), /invalid_moonpet_memory/, 'ordinary activity cannot create memory spam; only important milestones use the memory ledger');
+await assert.rejects(() => recordMoonpetMemory(memoryDb, {
+  telegram_id: 'memory-player', event_key: 'invented-milestone', memory_type: 'milestone', milestone: 'clicked_button_9000',
+}), /invalid_moonpet_memory/, 'memory milestones must come from the bounded important-milestone allowlist');
 
 const summary = await getMoonpetIdentitySummary(evolutionDb, 'identity-player');
 assert.equal(summary.current_stage.name, 'Cyber Moonpet');
@@ -157,6 +214,15 @@ assert.ok(analytics.events.some(({ event_type, average_time_to_evolution_seconds
 const personalityAnalytics = await getMoonpetIdentityAnalytics(personalityDb);
 assert.equal(personalityAnalytics.events.find(({ event_type }) => event_type === 'personality_unlock').personality_unlock_rate, 1,
   'personality unlock rate must be available for balancing');
+const telegramSafeProgress = formatMoonpetIdentitySummary({
+  current_stage: { name: '<b>'.repeat(1000) },
+  personalities: Array.from({ length: 20 }, () => ({ name: '<Explorer & Loyal>' })),
+  memories: { first_boss_id: 'alley_king', favourite_activity: '<Adventure>', biggest_reward_amount: 42, biggest_reward_currency: '<gold>' },
+});
+assert.ok(telegramSafeProgress.length < 1200, '/petprogress identity output must remain well below Telegram message limits');
+assert.equal(/<(?!\/?(?:b|i|code)>)/.test(telegramSafeProgress), false, '/petprogress identity values must be escaped for Telegram HTML mode');
+assert.ok(`${buildPetProgressSummary({ traits_json: JSON.stringify(Object.fromEntries(Array.from({ length: 1000 }, (_, index) => [`spam_${index}`, 999999]))) })}\n\n${telegramSafeProgress}`.length < 4096,
+  'complete /petprogress output is bounded and does not require pagination');
 
 for (const definition of Object.values(MOONPET_EVOLUTIONS)) {
   assert.equal(definition.xp_multiplier, undefined);
