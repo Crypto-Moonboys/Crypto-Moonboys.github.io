@@ -44,6 +44,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 043',
 );
 
+const withoutDailyRuns = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '044_telegram_pet_daily_runs.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutDailyRuns),
+  /missing required migrations: 044_telegram_pet_daily_runs\.sql/,
+  'deployment verification must reject an evidence request that omits migration 044',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -73,6 +83,14 @@ assert.throws(
   }], request),
   /missing migrations: 043_telegram_pet_identity_expansion\.sql/,
   'deployment verification must fail when production D1 has not applied migration 043',
+);
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '044_telegram_pet_daily_runs.sql'),
+  }], request),
+  /missing migrations: 044_telegram_pet_daily_runs\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 044',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');

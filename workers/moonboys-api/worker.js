@@ -7,6 +7,9 @@ import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
+  createDailyMoonRun, recordDailyCareChallenge, syncDailyMoonRun,
+} from './pets/daily-moon-run.js';
+import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
   getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
   validateMoonpetEvolutionContent,
@@ -3877,6 +3880,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
 
   const careBehaviour = ['feed', 'play', 'clean', 'sleep'].includes(normalizedAction) ? 'care' : 'combat';
   await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: careBehaviour, activity: careBehaviour });
+  if (careBehaviour === 'care') await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, now });
 
   return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp, pet, season };
 }
@@ -6569,6 +6573,10 @@ export default {
           event_key: body.event_key,
           source: 'telegram_pets_api',
         });
+      } else if (body.action === 'daily_run') {
+        result = await createDailyMoonRun(env.DB, { telegram_id: telegramId });
+      } else if (body.action === 'daily_run_sync') {
+        result = await syncDailyMoonRun(env.DB, { telegram_id: telegramId });
       } else if (body.action === 'evolve') {
         result = await evolveMoonpet(env.DB, { telegram_id: telegramId, evolution_id: body.evolution_id, event_key: body.event_key });
       } else {
