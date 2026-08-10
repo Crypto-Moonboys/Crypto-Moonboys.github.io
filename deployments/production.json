@@ -135,7 +135,8 @@
       "verified_at": null,
       "required_migrations": [
         "038_telegram_pet_equipment_progression.sql",
-        "039_telegram_pet_runtime_progression.sql"
+        "039_telegram_pet_runtime_progression.sql",
+        "041_telegram_pet_repeat_reward_slots.sql"
       ],
       "verified_migrations": [],
       "evidence": [],

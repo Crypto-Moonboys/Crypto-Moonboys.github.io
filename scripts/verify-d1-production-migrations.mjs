@@ -30,7 +30,7 @@ export function validateRequest(request) {
   if (request.config !== 'workers/moonboys-api/wrangler.toml') throw new Error('D1 evidence request must use the production moonboys-api config');
   if (request.migrations_table !== 'd1_migrations') throw new Error('D1 evidence request must use the default migrations table');
   const migrations = request.required_migrations;
-  if (!Array.isArray(migrations) || migrations.length !== 2) throw new Error('D1 evidence request must contain exactly two migrations');
+  if (!Array.isArray(migrations) || migrations.length !== 3) throw new Error('D1 evidence request must contain exactly three migrations');
   if (new Set(migrations).size !== migrations.length) throw new Error('D1 evidence request contains duplicate migrations');
   for (const migration of migrations) {
     if (!/^\d{3}_[a-z0-9_]+\.sql$/.test(String(migration))) throw new Error(`Invalid migration filename: ${migration}`);
