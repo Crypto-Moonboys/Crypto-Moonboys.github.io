@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-08-10T10:20:51.564Z",
+  "expected_commit": "527c6e296528195befeaa4120c37158eb7a976a2",
+  "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/31378691752",
+  "workers": [
+    {
+      "service": "moonboys-api",
+      "commit": "527c6e296528195befeaa4120c37158eb7a976a2",
+      "deployed_at": "2026-08-10T10:19:36.829Z",
+      "url": "https://moonboys-api.sercullen.workers.dev/deployment-info"
+    },
+    {
+      "service": "moonboys-leaderboard",
+      "commit": "527c6e296528195befeaa4120c37158eb7a976a2",
+      "deployed_at": "2026-08-10T10:19:02.820Z",
+      "url": "https://moonboys-leaderboard.sercullen.workers.dev/deployment-info"
+    },
+    {
+      "service": "moonboys-anti-cheat",
+      "commit": "527c6e296528195befeaa4120c37158eb7a976a2",
+      "deployed_at": "2026-08-10T10:18:34.176Z",
+      "url": "https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info"
+    }
+  ]
+}
