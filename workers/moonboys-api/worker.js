@@ -2330,7 +2330,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
       season.key,
       dayKey,
       weekKey,
-      JSON.stringify({ source: options.source || 'telegram_command', run_id: run.run_id, consumed_item_key: outcome.consumed_item_key, choice_key: choice.key }),
+      JSON.stringify({ source: options.source || 'telegram_command', inventory_authority: true, run_id: run.run_id, consumed_item_key: outcome.consumed_item_key, choice_key: choice.key }),
       stepId,
       telegramId,
       run.run_id,
@@ -2480,7 +2480,7 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     adventure_map: { energy: 6, pet_xp: 5 },
   }[key];
   const consumeEventId = crypto.randomUUID();
-  const consumeMetadata = JSON.stringify({ source: options.source || 'telegram_bot', consumed_item_key: key });
+  const consumeMetadata = JSON.stringify({ source: options.source || 'telegram_bot', inventory_authority: true, consumed_item_key: key });
   const consumeResults = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
       (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)

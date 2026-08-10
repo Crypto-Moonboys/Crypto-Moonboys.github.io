@@ -20,7 +20,7 @@ Repeatable roguelite materials and items have daily service-level ceilings of 40
 
 Apply `workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql` to the `wikicoms` D1 database before deploying Worker code that invokes this foundation.
 
-Migration 042 rebuilds the two v1 run tables so SQLite can extend the status constraint with `abandoned`. It copies every existing v1 run/step column and row before removing the temporary v1 tables, then recreates the one-open-run and callback-deduplication indexes. The v1 `extractable` and `extracted` states, unbanked rewards, depth/risk fields, unique event keys, and foreign keys remain supported. It also materializes the net balance of legacy event-ledger items into `telegram_pet_inventory`; after 042, item events are audit records and that inventory table is the sole balance authority.
+Migration 042 rebuilds the two v1 run tables so SQLite can extend the status constraint with `abandoned`. It copies every existing v1 run/step column and row before removing the temporary v1 tables, then recreates the one-open-run and callback-deduplication indexes. The v1 `extractable` and `extracted` states, unbanked rewards, depth/risk fields, unique event keys, and foreign keys remain supported. It materializes the net balance of legacy event-ledger items into `telegram_pet_inventory` and installs temporary cutover triggers that mirror accepted legacy item-event inserts until every Worker isolate runs the new authority. New-authority audit events carry `inventory_authority: true`, so mixed old/new deployment traffic cannot double-apply consumption.
 
 Production evidence must include migration 042 in `d1_migrations`. The deployment manifest intentionally remains `unverified` until that evidence is captured; do not mark it applied based only on repository state.
 
@@ -29,8 +29,9 @@ Before production apply:
 1. Confirm migration 033 is present and there is no already-created 042 table set from a manual partial apply.
 2. Capture a D1 backup and record counts/status totals for `telegram_pet_runs` and `telegram_pet_run_steps`.
 3. Run `node scripts/telegram-pets-roguelite-migration-rehearsal.test.mjs`; it seeds v1 active, extractable, and extracted data with unbanked rewards, callback keys, and legacy awarded/consumed items, applies 042 with foreign keys enabled, and verifies item balances, constraints, and referential integrity.
-4. Apply 042 separately from the Worker deployment using the repository D1 migration runbook. Do not expose code paths requiring the new tables first.
-5. Recheck row counts, open-run uniqueness, callback keys, migrated item balances, `PRAGMA foreign_key_check`, and the expected new tables/indexes before deploying the Worker.
+4. Apply 042 separately from the Worker deployment using the repository D1 migration runbook. Confirm both `telegram_pet_legacy_item_*_042` triggers exist, then deploy the Worker; the bridge keeps old-isolate event writes synchronized during propagation.
+5. Recheck row counts, open-run uniqueness, callback keys, migrated item balances, the legacy-sync checkpoints, `PRAGMA foreign_key_check`, and the expected new tables/indexes before deploying the Worker.
+6. Keep the compatibility triggers through the cutover observation window. Remove them only in a later migration after production evidence confirms all deployed Workers mark authority-owned audit events; never drop them between applying 042 and completing the Worker rollout.
 
 Because 042 is a table rebuild, a failed or partially manual application must be treated as a stopped deployment. Do not rerun fragments or mark the migration applied until every copied field, index, and foreign key has been verified.
 

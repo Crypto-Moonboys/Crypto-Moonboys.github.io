@@ -120,25 +120,109 @@ CREATE TABLE telegram_pet_inventory (
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
--- Materialize legacy event-ledger items once. From this migration onward,
--- telegram_pet_inventory is the only balance authority; events remain audit-only.
-INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
-SELECT telegram_id, 'item', asset_key, SUM(quantity_delta)
+-- Track the legacy event-ledger contribution separately during the migration ->
+-- Worker cutover. This lets the old Worker keep writing events while the new
+-- authority writes the inventory table directly, without either side replacing
+-- or double-counting the other's quantities.
+CREATE VIEW telegram_pet_legacy_item_balances_042 AS
+SELECT telegram_id, asset_key, MAX(0, SUM(quantity_delta)) AS quantity
 FROM (
   SELECT telegram_id,
     COALESCE(json_extract(metadata, '$.item_key'), json_extract(metadata, '$.inventory_key')) AS asset_key,
     MAX(1, CAST(COALESCE(json_extract(metadata, '$.count'), 1) AS INTEGER)) AS quantity_delta
   FROM telegram_pet_events
   WHERE status = 'accepted' AND json_valid(metadata)
+    AND COALESCE(json_extract(metadata, '$.inventory_authority'), 0) <> 1
     AND COALESCE(json_extract(metadata, '$.item_key'), json_extract(metadata, '$.inventory_key')) IS NOT NULL
   UNION ALL
   SELECT telegram_id, json_extract(metadata, '$.consumed_item_key') AS asset_key, -1 AS quantity_delta
   FROM telegram_pet_events
-  WHERE status = 'accepted' AND json_valid(metadata) AND json_extract(metadata, '$.consumed_item_key') IS NOT NULL
+  WHERE status = 'accepted' AND json_valid(metadata)
+    AND COALESCE(json_extract(metadata, '$.inventory_authority'), 0) <> 1
+    AND json_extract(metadata, '$.consumed_item_key') IS NOT NULL
 )
 WHERE asset_key IN ('moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map')
 GROUP BY telegram_id, asset_key
 HAVING SUM(quantity_delta) > 0;
+
+CREATE TABLE telegram_pet_inventory_legacy_sync_042 (
+  telegram_id TEXT NOT NULL,
+  asset_key TEXT NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (telegram_id, asset_key),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+
+-- Materialize the pre-042 legacy balance and remember exactly how much of the
+-- authoritative row came from that ledger. Later trigger reconciliations apply
+-- only the ledger delta, preserving concurrent new-authority writes.
+INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+SELECT telegram_id, 'item', asset_key, quantity
+FROM telegram_pet_legacy_item_balances_042;
+
+INSERT INTO telegram_pet_inventory_legacy_sync_042 (telegram_id, asset_key, quantity)
+SELECT telegram_id, asset_key, quantity
+FROM telegram_pet_legacy_item_balances_042;
+
+-- These temporary compatibility triggers cover old-Worker INSERT-only item
+-- writes during propagation. New-authority audit events set
+-- metadata.inventory_authority=true and are deliberately ignored.
+CREATE TRIGGER telegram_pet_legacy_item_grant_042
+AFTER INSERT ON telegram_pet_events
+WHEN NEW.status = 'accepted' AND json_valid(NEW.metadata)
+  AND COALESCE(json_extract(NEW.metadata, '$.inventory_authority'), 0) <> 1
+  AND COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key'))
+    IN ('moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map')
+BEGIN
+  INSERT OR IGNORE INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES (NEW.telegram_id, 'item', COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key')), 0);
+  INSERT OR IGNORE INTO telegram_pet_inventory_legacy_sync_042 (telegram_id, asset_key, quantity)
+  VALUES (NEW.telegram_id, COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key')), 0);
+  UPDATE telegram_pet_inventory
+  SET quantity = MAX(0, quantity
+      + COALESCE((SELECT quantity FROM telegram_pet_legacy_item_balances_042
+          WHERE telegram_id = NEW.telegram_id AND asset_key = COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key'))), 0)
+      - COALESCE((SELECT quantity FROM telegram_pet_inventory_legacy_sync_042
+          WHERE telegram_id = NEW.telegram_id AND asset_key = COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key'))), 0)),
+      updated_at = CURRENT_TIMESTAMP
+  WHERE telegram_id = NEW.telegram_id AND asset_type = 'item'
+    AND asset_key = COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key'));
+  UPDATE telegram_pet_inventory_legacy_sync_042
+  SET quantity = COALESCE((SELECT quantity FROM telegram_pet_legacy_item_balances_042
+        WHERE telegram_id = NEW.telegram_id AND asset_key = COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key'))), 0),
+      updated_at = CURRENT_TIMESTAMP
+  WHERE telegram_id = NEW.telegram_id
+    AND asset_key = COALESCE(json_extract(NEW.metadata, '$.item_key'), json_extract(NEW.metadata, '$.inventory_key'));
+END;
+
+CREATE TRIGGER telegram_pet_legacy_item_consume_042
+AFTER INSERT ON telegram_pet_events
+WHEN NEW.status = 'accepted' AND json_valid(NEW.metadata)
+  AND COALESCE(json_extract(NEW.metadata, '$.inventory_authority'), 0) <> 1
+  AND json_extract(NEW.metadata, '$.consumed_item_key')
+    IN ('moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map')
+BEGIN
+  INSERT OR IGNORE INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES (NEW.telegram_id, 'item', json_extract(NEW.metadata, '$.consumed_item_key'), 0);
+  INSERT OR IGNORE INTO telegram_pet_inventory_legacy_sync_042 (telegram_id, asset_key, quantity)
+  VALUES (NEW.telegram_id, json_extract(NEW.metadata, '$.consumed_item_key'), 0);
+  UPDATE telegram_pet_inventory
+  SET quantity = MAX(0, quantity
+      + COALESCE((SELECT quantity FROM telegram_pet_legacy_item_balances_042
+          WHERE telegram_id = NEW.telegram_id AND asset_key = json_extract(NEW.metadata, '$.consumed_item_key')), 0)
+      - COALESCE((SELECT quantity FROM telegram_pet_inventory_legacy_sync_042
+          WHERE telegram_id = NEW.telegram_id AND asset_key = json_extract(NEW.metadata, '$.consumed_item_key')), 0)),
+      updated_at = CURRENT_TIMESTAMP
+  WHERE telegram_id = NEW.telegram_id AND asset_type = 'item'
+    AND asset_key = json_extract(NEW.metadata, '$.consumed_item_key');
+  UPDATE telegram_pet_inventory_legacy_sync_042
+  SET quantity = COALESCE((SELECT quantity FROM telegram_pet_legacy_item_balances_042
+        WHERE telegram_id = NEW.telegram_id AND asset_key = json_extract(NEW.metadata, '$.consumed_item_key')), 0),
+      updated_at = CURRENT_TIMESTAMP
+  WHERE telegram_id = NEW.telegram_id
+    AND asset_key = json_extract(NEW.metadata, '$.consumed_item_key');
+END;
 
 CREATE TABLE telegram_pet_run_rooms (
   room_id TEXT PRIMARY KEY,

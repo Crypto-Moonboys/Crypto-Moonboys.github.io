@@ -54,6 +54,46 @@ assert.deepEqual(db.prepare("SELECT asset_key, quantity FROM telegram_pet_invent
   { asset_key: 'energy_drink', quantity: 1 },
   { asset_key: 'moon_snack', quantity: 1 },
 ], 'migration must materialize net legacy item balances in the authoritative inventory table');
+
+// Cutover timeline: migration first, then the still-deployed legacy Worker
+// grants and consumes through accepted event INSERTs before the new Worker starts.
+db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_key, metadata)
+  VALUES ('cutover-legacy-reward', 'migration-player', 'cutover:legacy:reward', '{"item_key":"moon_snack","count":2}')`).run();
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack'").get().quantity, 3,
+  'a legacy reward written after migration 042 must be mirrored without losing items');
+db.prepare(`INSERT OR IGNORE INTO telegram_pet_events (id, telegram_id, event_key, metadata)
+  VALUES ('cutover-legacy-reward-duplicate', 'migration-player', 'cutover:legacy:reward', '{"item_key":"moon_snack","count":2}')`).run();
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack'").get().quantity, 3,
+  'a duplicate legacy reward callback must not duplicate authoritative quantity');
+db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_key, metadata)
+  VALUES ('cutover-legacy-consume', 'migration-player', 'cutover:legacy:consume', '{"consumed_item_key":"moon_snack"}')`).run();
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack'").get().quantity, 2,
+  'a legacy consumption written after migration 042 must be mirrored exactly once');
+db.prepare(`INSERT OR IGNORE INTO telegram_pet_events (id, telegram_id, event_key, metadata)
+  VALUES ('cutover-legacy-consume-duplicate', 'migration-player', 'cutover:legacy:consume', '{"consumed_item_key":"moon_snack"}')`).run();
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack'").get().quantity, 2,
+  'a duplicate legacy consumption callback must not decrement authoritative quantity twice');
+
+// Simulate mixed-version propagation: new authority changes the table directly
+// and marks its audit event so the bridge cannot apply the same consumption twice.
+db.prepare(`UPDATE telegram_pet_inventory SET quantity = quantity + 1
+  WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack'`).run();
+db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_key, metadata)
+  VALUES ('cutover-late-legacy-consume', 'migration-player', 'cutover:late-legacy:consume',
+    '{"consumed_item_key":"moon_snack"}')`).run();
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack'").get().quantity, 2,
+  'a late old-Worker consumption must reconcile only the legacy contribution and preserve a concurrent authority grant');
+db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_key, metadata)
+  VALUES ('cutover-authority-consume', 'migration-player', 'cutover:authority:consume',
+    '{"inventory_authority":true,"consumed_item_key":"moon_snack"}')`).run();
+db.prepare(`UPDATE telegram_pet_inventory SET quantity = quantity - 1
+  WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack' AND quantity > 0`).run();
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'migration-player' AND asset_type = 'item' AND asset_key = 'moon_snack'").get().quantity, 1,
+  'new authority writes must coexist with the bridge without duplicate grants or consumption');
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_inventory_legacy_sync_042 WHERE telegram_id = 'migration-player' AND asset_key = 'moon_snack'").get().quantity, 1,
+  'the bridge checkpoint must retain the exact legacy ledger contribution after cutover');
+assert.equal(db.prepare("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'trigger' AND name IN ('telegram_pet_legacy_item_grant_042', 'telegram_pet_legacy_item_consume_042')").get().count, 2,
+  'migration 042 must install both temporary cutover triggers');
 assert.equal(db.prepare('PRAGMA foreign_key_check').all().length, 0, 'migration cannot leave orphan run steps');
 assert.throws(() => db.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status) VALUES ('second-open', 'migration-player', 'second-open', 'v1-season', 'active')`).run(), /UNIQUE/, 'migration must preserve one-open-run protection');
 assert.throws(() => db.prepare(`INSERT INTO telegram_pet_run_steps (id, telegram_id, run_id, step_index, choice_key, choice_type, event_key) VALUES ('orphan', 'migration-player', 'missing', 1, 'x', 'x', 'orphan-key')`).run(), /FOREIGN KEY/, 'new run steps cannot be orphaned');
