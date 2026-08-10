@@ -1,0 +1,297 @@
+import evolutions from './content/evolutions.json' with { type: 'json' };
+
+const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
+const FORBIDDEN_EVOLUTION_KEYS = /(?:^|_)(?:xp|reward)_multiplier$|cap_(?:increase|bonus)$|(?:pet|community)_xp_cap/i;
+
+function deepFreeze(value) {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value)) deepFreeze(child);
+  return Object.freeze(value);
+}
+
+function positiveInteger(value, maximum = 999999) {
+  return Math.min(maximum, Math.max(0, Math.floor(Number(value) || 0)));
+}
+
+function safeJson(value) {
+  return JSON.stringify(value == null ? {} : value);
+}
+
+function validateInventoryRequirements(inventory) {
+  if (inventory == null) return true;
+  if (typeof inventory !== 'object' || Array.isArray(inventory)) throw new Error('invalid_evolution_inventory_requirements');
+  for (const [assetType, assets] of Object.entries(inventory)) {
+    if (!['material', 'item'].includes(assetType) || !assets || typeof assets !== 'object' || Array.isArray(assets)) throw new Error('invalid_evolution_inventory_requirements');
+    for (const [assetKey, quantity] of Object.entries(assets)) {
+      if (!ID_PATTERN.test(assetKey) || positiveInteger(quantity) !== Number(quantity) || Number(quantity) < 1) throw new Error('invalid_evolution_inventory_requirements');
+    }
+  }
+  return true;
+}
+
+function rejectForbiddenEvolutionEffects(value) {
+  if (!value || typeof value !== 'object') return;
+  for (const [key, child] of Object.entries(value)) {
+    if (FORBIDDEN_EVOLUTION_KEYS.test(key)) throw new Error('evolution_cannot_change_reward_authority');
+    rejectForbiddenEvolutionEffects(child);
+  }
+}
+
+export function validateMoonpetEvolutionContent(content = evolutions) {
+  if (!Array.isArray(content) || content.length !== 5) throw new Error('invalid_evolution_content');
+  const ids = new Set();
+  for (const [index, evolution] of content.entries()) {
+    if (!ID_PATTERN.test(String(evolution?.evolution_id || '')) || ids.has(evolution.evolution_id)) throw new Error('invalid_evolution_id');
+    if (typeof evolution.name !== 'string' || evolution.name.length < 2 || Number(evolution.stage) !== index) throw new Error('invalid_evolution_stage');
+    if (!evolution.requirements || typeof evolution.requirements !== 'object' || Array.isArray(evolution.requirements)) throw new Error('invalid_evolution_requirements');
+    if (positiveInteger(evolution.requirements.pet_level, 1000) !== Number(evolution.requirements.pet_level) || Number(evolution.requirements.pet_level) < 1) throw new Error('invalid_evolution_requirements');
+    if (!Array.isArray(evolution.cosmetic_unlocks) || !Array.isArray(evolution.achievement_unlocks)) throw new Error('invalid_evolution_unlocks');
+    for (const unlock of [...evolution.cosmetic_unlocks, ...evolution.achievement_unlocks]) if (!ID_PATTERN.test(String(unlock || ''))) throw new Error('invalid_evolution_unlocks');
+    const victories = evolution.requirements.boss_victories || {};
+    if (typeof victories !== 'object' || Array.isArray(victories)) throw new Error('invalid_evolution_requirements');
+    for (const [bossId, count] of Object.entries(victories)) if (!ID_PATTERN.test(bossId) || positiveInteger(count) !== Number(count) || Number(count) < 1) throw new Error('invalid_evolution_requirements');
+    validateInventoryRequirements(evolution.requirements.inventory);
+    rejectForbiddenEvolutionEffects(evolution);
+    ids.add(evolution.evolution_id);
+  }
+  return true;
+}
+
+validateMoonpetEvolutionContent();
+
+export const MOONPET_EVOLUTIONS = deepFreeze(Object.fromEntries(evolutions.map((entry) => [entry.evolution_id, entry])));
+
+export const MOONPET_PERSONALITY_TRAITS = deepFreeze({
+  combat: { trait_id: 'street_fighter', name: 'Street Fighter', threshold: 10, allowed_effects: ['dialogue', 'cosmetic', 'event_preference', 'future_content'] },
+  exploration: { trait_id: 'explorer', name: 'Explorer', threshold: 8, allowed_effects: ['dialogue', 'cosmetic', 'event_preference', 'future_content'] },
+  care: { trait_id: 'loyal', name: 'Loyal', threshold: 12, allowed_effects: ['dialogue', 'cosmetic', 'event_preference', 'future_content'] },
+  event: { trait_id: 'curious', name: 'Curious', threshold: 6, allowed_effects: ['dialogue', 'cosmetic', 'event_preference', 'future_content'] },
+});
+
+export async function recordMoonpetBehaviour(db, request = {}) {
+  const telegramId = String(request.telegram_id || '').trim();
+  const eventKey = String(request.event_key || '').trim().slice(0, 180);
+  const behaviour = String(request.behaviour || '').trim().toLowerCase();
+  const definition = MOONPET_PERSONALITY_TRAITS[behaviour];
+  const amount = positiveInteger(request.amount == null ? 1 : request.amount, 100);
+  if (!telegramId || !eventKey || !definition || amount < 1) throw new Error('invalid_moonpet_behaviour');
+  const eventId = crypto.randomUUID();
+  const analyticsId = `personality_unlock:${telegramId}:${definition.trait_id}`;
+  const results = await db.batch([
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
+      (event_id, telegram_id, event_key, event_kind, payload)
+      SELECT ?, ?, ?, 'personality', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
+      .bind(eventId, telegramId, eventKey, safeJson({ behaviour, amount, trait_id: definition.trait_id }), telegramId),
+    db.prepare(`INSERT INTO telegram_pet_personality_traits (telegram_id, trait_id, progress, unlocked_at)
+      SELECT ?, ?, ?, CASE WHEN ? >= ? THEN CURRENT_TIMESTAMP ELSE NULL END
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)
+      ON CONFLICT(telegram_id, trait_id) DO UPDATE SET
+        progress = telegram_pet_personality_traits.progress + excluded.progress,
+        unlocked_at = COALESCE(telegram_pet_personality_traits.unlocked_at,
+          CASE WHEN telegram_pet_personality_traits.progress + excluded.progress >= ? THEN CURRENT_TIMESTAMP ELSE NULL END),
+        updated_at = CURRENT_TIMESTAMP`)
+      .bind(telegramId, definition.trait_id, amount, amount, definition.threshold, eventId, definition.threshold),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
+      (analytics_id, telegram_id, event_type, trait_id, event_data)
+      SELECT ?, ?, 'personality_unlock', ?, ? FROM telegram_pet_personality_traits
+      WHERE telegram_id = ? AND trait_id = ? AND unlocked_at IS NOT NULL`)
+      .bind(analyticsId, telegramId, definition.trait_id, safeJson({ behaviour, threshold: definition.threshold }), telegramId, definition.trait_id),
+    db.prepare(`UPDATE telegram_pet_identity_events SET applied_at = CURRENT_TIMESTAMP
+      WHERE event_id = ? AND applied_at IS NULL`).bind(eventId),
+  ]);
+  const trait = await db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits
+    WHERE telegram_id = ? AND trait_id = ?`).bind(telegramId, definition.trait_id).first().catch(() => null);
+  return { accepted: Boolean(results?.[0]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes, unlocked: Boolean(results?.[2]?.meta?.changes), trait };
+}
+
+function memoryValues(request) {
+  const type = String(request.memory_type || '').trim().toLowerCase();
+  const completedRun = ['run_completed', 'extraction'].includes(type) ? 1 : 0;
+  const activity = String(request.activity || '').trim().toLowerCase();
+  const counters = { combat: 0, exploration: 0, care: 0, event: 0, adventure: 0 };
+  if (Object.hasOwn(counters, activity)) counters[activity] = 1;
+  return {
+    type,
+    first_adoption: type === 'first_adoption' ? 1 : 0,
+    first_run: type === 'first_run' ? 1 : 0,
+    first_extraction: type === 'extraction' ? 1 : 0,
+    first_boss: type === 'boss_victory' ? 1 : 0,
+    total_runs: completedRun,
+    total_bosses: type === 'boss_victory' ? 1 : 0,
+    boss_id: type === 'boss_victory' ? String(request.boss_id || '').trim().toLowerCase().slice(0, 80) : '',
+    reward_amount: positiveInteger(request.reward_amount),
+    reward_currency: String(request.reward_currency || 'moon_gold').trim().toLowerCase().slice(0, 40),
+    milestone: String(request.milestone || '').trim().toLowerCase().slice(0, 80),
+    counters,
+  };
+}
+
+export async function recordMoonpetMemory(db, request = {}) {
+  const telegramId = String(request.telegram_id || '').trim();
+  const eventKey = String(request.event_key || '').trim().slice(0, 180);
+  const values = memoryValues(request);
+  if (!telegramId || !eventKey || !['first_adoption', 'first_run', 'run_completed', 'extraction', 'boss_victory', 'activity', 'milestone'].includes(values.type)) throw new Error('invalid_moonpet_memory');
+  if (values.boss_id && !ID_PATTERN.test(values.boss_id)) throw new Error('invalid_moonpet_memory');
+  if (values.milestone && !ID_PATTERN.test(values.milestone)) throw new Error('invalid_moonpet_memory');
+  const eventId = crypto.randomUUID();
+  const milestoneJson = safeJson(values.milestone ? [values.milestone] : []);
+  const statements = [
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
+      (event_id, telegram_id, event_key, event_kind, payload)
+      SELECT ?, ?, ?, 'memory', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
+      .bind(eventId, telegramId, eventKey, safeJson(values), telegramId),
+    db.prepare(`INSERT INTO telegram_pet_memories
+      (telegram_id, first_adoption_at, first_run_at, first_extraction_at, first_boss_victory_at, first_boss_id,
+       biggest_reward_amount, biggest_reward_currency, total_runs, total_bosses_defeated, milestones,
+       combat_actions, exploration_actions, care_actions, event_actions, adventure_actions)
+      SELECT ?, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END,
+        CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, NULLIF(?, ''), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        first_adoption_at = COALESCE(telegram_pet_memories.first_adoption_at, excluded.first_adoption_at),
+        first_run_at = COALESCE(telegram_pet_memories.first_run_at, excluded.first_run_at),
+        first_extraction_at = COALESCE(telegram_pet_memories.first_extraction_at, excluded.first_extraction_at),
+        first_boss_victory_at = COALESCE(telegram_pet_memories.first_boss_victory_at, excluded.first_boss_victory_at),
+        first_boss_id = COALESCE(telegram_pet_memories.first_boss_id, excluded.first_boss_id),
+        biggest_reward_currency = CASE WHEN excluded.biggest_reward_amount > telegram_pet_memories.biggest_reward_amount THEN excluded.biggest_reward_currency ELSE telegram_pet_memories.biggest_reward_currency END,
+        biggest_reward_amount = MAX(telegram_pet_memories.biggest_reward_amount, excluded.biggest_reward_amount),
+        total_runs = telegram_pet_memories.total_runs + excluded.total_runs,
+        total_bosses_defeated = telegram_pet_memories.total_bosses_defeated + excluded.total_bosses_defeated,
+        milestones = CASE WHEN json_array_length(excluded.milestones)=0 OR EXISTS (SELECT 1 FROM json_each(telegram_pet_memories.milestones) WHERE value=json_extract(excluded.milestones, '$[0]'))
+          THEN telegram_pet_memories.milestones ELSE json_insert(telegram_pet_memories.milestones, '$[#]', json_extract(excluded.milestones, '$[0]')) END,
+        combat_actions = telegram_pet_memories.combat_actions + excluded.combat_actions,
+        exploration_actions = telegram_pet_memories.exploration_actions + excluded.exploration_actions,
+        care_actions = telegram_pet_memories.care_actions + excluded.care_actions,
+        event_actions = telegram_pet_memories.event_actions + excluded.event_actions,
+        adventure_actions = telegram_pet_memories.adventure_actions + excluded.adventure_actions,
+        updated_at = CURRENT_TIMESTAMP`)
+      .bind(telegramId, values.first_adoption, values.first_run, values.first_extraction, values.first_boss, values.boss_id,
+        values.reward_amount, values.reward_currency, values.total_runs, values.total_bosses, milestoneJson,
+        values.counters.combat, values.counters.exploration, values.counters.care, values.counters.event, values.counters.adventure, eventId),
+    db.prepare(`UPDATE telegram_pet_memories SET favourite_activity = CASE
+      WHEN adventure_actions >= combat_actions AND adventure_actions >= exploration_actions AND adventure_actions >= care_actions AND adventure_actions >= event_actions AND adventure_actions > 0 THEN 'Adventure'
+      WHEN exploration_actions >= combat_actions AND exploration_actions >= care_actions AND exploration_actions >= event_actions AND exploration_actions > 0 THEN 'Exploration'
+      WHEN combat_actions >= care_actions AND combat_actions >= event_actions AND combat_actions > 0 THEN 'Combat'
+      WHEN care_actions >= event_actions AND care_actions > 0 THEN 'Care'
+      WHEN event_actions > 0 THEN 'Events' ELSE favourite_activity END
+      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)`)
+      .bind(telegramId, eventId),
+  ];
+  if (values.boss_id) statements.push(db.prepare(`INSERT INTO telegram_pet_boss_victories (telegram_id, boss_id, victories)
+    SELECT ?, ?, 1 WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)
+    ON CONFLICT(telegram_id, boss_id) DO UPDATE SET victories = telegram_pet_boss_victories.victories + 1, updated_at = CURRENT_TIMESTAMP`)
+    .bind(telegramId, values.boss_id, eventId));
+  if (values.milestone) statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
+    (analytics_id, telegram_id, event_type, milestone_id, event_data)
+    SELECT ?, ?, 'memory_milestone', ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)`)
+    .bind(`memory_milestone:${telegramId}:${values.milestone}`, telegramId, values.milestone, safeJson({ memory_type: values.type }), eventId));
+  statements.push(db.prepare(`UPDATE telegram_pet_identity_events SET applied_at = CURRENT_TIMESTAMP WHERE event_id = ? AND applied_at IS NULL`).bind(eventId));
+  const results = await db.batch(statements);
+  return { accepted: Boolean(results?.[0]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes };
+}
+
+function evolutionRequirementSql(definition, telegramId) {
+  const requirements = definition.requirements;
+  const clauses = [`EXISTS (SELECT 1 FROM telegram_pet_profiles p WHERE p.telegram_id = ? AND (CAST(p.pet_xp / 100 AS INTEGER) + 1) >= ?)`];
+  const args = [telegramId, requirements.pet_level];
+  if (definition.stage > 0) {
+    const previous = evolutions[definition.stage - 1];
+    clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ?)`);
+    args.push(telegramId, previous.evolution_id);
+  }
+  for (const [bossId, count] of Object.entries(requirements.boss_victories || {})) {
+    clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_boss_victories WHERE telegram_id = ? AND boss_id = ? AND victories >= ?)`);
+    args.push(telegramId, bossId, count);
+  }
+  if (positiveInteger(requirements.relics_owned) > 0) {
+    clauses.push(`(SELECT COUNT(*) FROM telegram_pet_relics WHERE telegram_id = ?) >= ?`);
+    args.push(telegramId, positiveInteger(requirements.relics_owned));
+  }
+  for (const [assetType, assets] of Object.entries(requirements.inventory || {})) for (const [assetKey, quantity] of Object.entries(assets)) {
+    clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_inventory WHERE telegram_id = ? AND asset_type = ? AND asset_key = ? AND quantity >= ?)`);
+    args.push(telegramId, assetType, assetKey, quantity);
+  }
+  return { sql: clauses.join(' AND '), args };
+}
+
+export async function evolveMoonpet(db, request = {}) {
+  const telegramId = String(request.telegram_id || '').trim();
+  const evolutionId = String(request.evolution_id || '').trim().toLowerCase();
+  const eventKey = String(request.event_key || `pet:evolve:${telegramId}:${evolutionId}`).trim().slice(0, 180);
+  const definition = MOONPET_EVOLUTIONS[evolutionId];
+  if (!telegramId || !eventKey || !definition) return { accepted: false, duplicate: false, reason: 'invalid_evolution' };
+  const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ?`)
+    .bind(telegramId, evolutionId).first().catch(() => null);
+  if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };
+  const requirements = evolutionRequirementSql(definition, telegramId);
+  const statements = [db.prepare(`INSERT OR IGNORE INTO telegram_pet_evolutions
+    (telegram_id, evolution_id, stage, unlock_event_key, cosmetic_unlocks, achievement_unlocks, materials_consumed)
+    SELECT ?, ?, ?, ?, ?, ?, 0 WHERE ${requirements.sql}`)
+    .bind(telegramId, evolutionId, definition.stage, eventKey, safeJson(definition.cosmetic_unlocks), safeJson(definition.achievement_unlocks), ...requirements.args)];
+  for (const [assetType, assets] of Object.entries(definition.requirements.inventory || {})) for (const [assetKey, quantity] of Object.entries(assets)) {
+    statements.push(db.prepare(`UPDATE telegram_pet_inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND asset_type = ? AND asset_key = ? AND quantity >= ?
+        AND EXISTS (SELECT 1 FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
+      .bind(quantity, telegramId, assetType, assetKey, quantity, telegramId, evolutionId));
+  }
+  statements.push(db.prepare(`UPDATE telegram_pet_evolutions SET materials_consumed = 1
+    WHERE telegram_id = ? AND evolution_id = ? AND materials_consumed = 0`).bind(telegramId, evolutionId));
+  statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
+    (analytics_id, telegram_id, event_type, evolution_id, duration_seconds, event_data)
+    SELECT ?, ?, 'evolution_unlock', ?, MAX(0, CAST((julianday(CURRENT_TIMESTAMP) - julianday(COALESCE(m.first_adoption_at, e.unlocked_at))) * 86400 AS INTEGER)), ?
+    FROM telegram_pet_evolutions e LEFT JOIN telegram_pet_memories m ON m.telegram_id = e.telegram_id
+    WHERE e.telegram_id = ? AND e.evolution_id = ?`)
+    .bind(`evolution_unlock:${telegramId}:${evolutionId}`, telegramId, evolutionId, safeJson({ stage: definition.stage, name: definition.name }), telegramId, evolutionId));
+  const results = await db.batch(statements);
+  if (!results?.[0]?.meta?.changes) {
+    const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ?`)
+      .bind(telegramId, evolutionId).first().catch(() => null);
+    if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: concurrent };
+    return { accepted: false, duplicate: false, reason: 'evolution_requirements_not_met' };
+  }
+  return { accepted: true, duplicate: false, reason: 'evolved', evolution: definition };
+}
+
+export async function getMoonpetIdentitySummary(db, telegramIdRaw) {
+  const telegramId = String(telegramIdRaw || '').trim();
+  const [evolution, traits, memory] = await Promise.all([
+    db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? ORDER BY stage DESC LIMIT 1`).bind(telegramId).first().catch(() => null),
+    db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits WHERE telegram_id = ? AND unlocked_at IS NOT NULL ORDER BY unlocked_at, trait_id`).bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT * FROM telegram_pet_memories WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
+  ]);
+  const current = evolution ? MOONPET_EVOLUTIONS[evolution.evolution_id] : MOONPET_EVOLUTIONS.moon_egg;
+  let milestones = [];
+  try { milestones = JSON.parse(memory?.milestones || '[]'); } catch {}
+  return {
+    current_stage: { evolution_id: current.evolution_id, name: current.name, stage: current.stage, unlocked_at: evolution?.unlocked_at || null },
+    personalities: (traits.results || []).map((trait) => ({ ...trait, name: Object.values(MOONPET_PERSONALITY_TRAITS).find((entry) => entry.trait_id === trait.trait_id)?.name || trait.trait_id })),
+    memories: memory ? { ...memory, milestones } : null,
+  };
+}
+
+export function formatMoonpetIdentitySummary(summary = {}) {
+  const personalities = summary.personalities?.length ? summary.personalities.map((trait) => `- ${trait.name}`).join('\n') : '- Still forming';
+  const memory = summary.memories || {};
+  const memoryLines = [
+    memory.first_boss_id ? `- First Boss Defeated: ${String(memory.first_boss_id).split('_').map((part) => part[0]?.toUpperCase() + part.slice(1)).join(' ')}` : null,
+    Number(memory.total_runs || 0) > 0 ? `- Runs Completed: ${Number(memory.total_runs)}` : null,
+    memory.favourite_activity ? `- Favourite: ${memory.favourite_activity}` : null,
+    Number(memory.biggest_reward_amount || 0) > 0 ? `- Biggest Reward: ${Number(memory.biggest_reward_amount)} ${memory.biggest_reward_currency === 'moon_gold' ? 'Moon Gold' : memory.biggest_reward_currency}` : null,
+  ].filter(Boolean);
+  return `Current Stage:\n${summary.current_stage?.name || 'Moon Egg'}\n\nPersonality:\n${personalities}\n\nMemories:\n${memoryLines.length ? memoryLines.join('\n') : '- Your story is just beginning'}`;
+}
+
+export async function getMoonpetIdentityAnalytics(db) {
+  const rows = await db.prepare(`SELECT event_type, evolution_id, trait_id, COUNT(*) AS unlocks,
+    AVG(duration_seconds) AS average_time_to_evolution_seconds
+    FROM telegram_pet_identity_analytics GROUP BY event_type, evolution_id, trait_id ORDER BY event_type, evolution_id, trait_id`).all();
+  const adopted = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE first_adoption_at IS NOT NULL`).first();
+  const adoptedPets = positiveInteger(adopted?.count);
+  return {
+    adopted_pets: adoptedPets,
+    events: (rows.results || []).map((row) => ({
+      ...row,
+      personality_unlock_rate: row.event_type === 'personality_unlock' && adoptedPets > 0 ? Number(row.unlocks || 0) / adoptedPets : null,
+    })),
+  };
+}

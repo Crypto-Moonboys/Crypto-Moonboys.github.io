@@ -9,6 +9,7 @@ import {
   validatePetRogueliteContent,
   validatePetRunModifierContent,
 } from './content/index.js';
+import { recordMoonpetBehaviour, recordMoonpetMemory } from './moonpet-identity.js';
 
 export {
   PET_ROGUELITE_BOSSES,
@@ -375,7 +376,12 @@ export async function startPetRogueliteRun(db, request = {}) {
       SELECT ?, ?, ?, 'run_start', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?)`)
       .bind(analyticsId, runId, telegramId, safeJson({ region: region.region_id, difficulty: region.difficulty, seed }), runId, telegramId),
   ]);
-  return { accepted: Boolean(results?.[0]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes, run_id: runId, region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
+  const accepted = Boolean(results?.[0]?.meta?.changes);
+  const persistedRun = accepted || await db.prepare(`SELECT run_id FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`).bind(runId, telegramId).first().catch(() => null);
+  if (persistedRun) await recordMoonpetMemory(db, {
+    telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', activity: 'adventure', milestone: 'first_run',
+  });
+  return { accepted, duplicate: !accepted, run_id: runId, region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
 }
 
 export async function createPetRunRoom(db, run) {
@@ -432,6 +438,12 @@ export async function rewardPetRunRoom(db, run, room, rewards = {}, costs = {}) 
       '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
       .bind(safeJson(awarded.rewards), safeJson(Object.keys(awarded.rewards?.relics || {})), `${room.room_id}:resolved`).run();
   }
+  if (awarded.accepted) {
+    const behaviour = ['battle', 'elite', 'boss'].includes(String(room.room_type)) ? 'combat' : 'exploration';
+    await recordMoonpetBehaviour(db, { telegram_id: run.telegram_id, event_key: `${room.room_id}:personality`, behaviour });
+    await recordMoonpetMemory(db, { telegram_id: run.telegram_id, event_key: `${room.room_id}:memory`, memory_type: 'activity', activity: 'adventure',
+      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
+  }
   return awarded;
 }
 
@@ -461,6 +473,11 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
       VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`, run.run_id, run.telegram_id,
         safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: awarded.rewards,
           relics_discovered: Object.keys(awarded.rewards?.relics || {}), achievement_id: boss.achievement_id || null })).run();
+  }
+  if (awarded.accepted) {
+    await recordMoonpetBehaviour(db, { telegram_id: run.telegram_id, event_key: `${persistedRoom.room_id}:${bossId}:personality`, behaviour: 'combat', amount: 2 });
+    await recordMoonpetMemory(db, { telegram_id: run.telegram_id, event_key: `${persistedRoom.room_id}:${bossId}:memory`, memory_type: 'boss_victory',
+      boss_id: bossId, activity: 'combat', milestone: 'first_boss_victory', reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
   }
   return awarded;
 }
@@ -509,7 +526,19 @@ export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
   const terminal = results?.[0]?.results?.[0];
   if (!terminal) {
     const existing = await db.prepare('SELECT status FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?').bind(run.run_id, run.telegram_id).first();
+    if (['completed', 'extracted'].includes(existing?.status)) {
+      await recordMoonpetBehaviour(db, { telegram_id: run.telegram_id, event_key: `${run.run_id}:terminal:personality`, behaviour: 'exploration', amount: 2 });
+      await recordMoonpetMemory(db, { telegram_id: run.telegram_id, event_key: `${run.run_id}:terminal:memory`,
+        memory_type: existing.status === 'extracted' ? 'extraction' : 'run_completed', activity: 'adventure',
+        milestone: existing.status === 'extracted' ? 'first_extraction' : 'first_run_completed' });
+    }
     return { accepted: true, duplicate: true, status: existing?.status || null };
+  }
+  if (['completed', 'extracted'].includes(status)) {
+    await recordMoonpetBehaviour(db, { telegram_id: run.telegram_id, event_key: `${run.run_id}:terminal:personality`, behaviour: 'exploration', amount: 2 });
+    await recordMoonpetMemory(db, { telegram_id: run.telegram_id, event_key: `${run.run_id}:terminal:memory`,
+      memory_type: status === 'extracted' ? 'extraction' : 'run_completed', activity: 'adventure',
+      milestone: status === 'extracted' ? 'first_extraction' : 'first_run_completed' });
   }
   return { accepted: true, duplicate: false, status };
 }
@@ -535,6 +564,8 @@ export async function completePetRun(db, run, completionRewards = {}, analytics 
       '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
       .bind(safeJson(reward.rewards), safeJson(Object.keys(reward.rewards?.relics || {})), `${run.run_id}:end`).run();
   }
+  if (reward.accepted) await recordMoonpetMemory(db, { telegram_id: run.telegram_id, event_key: `${run.run_id}:completion:reward-memory`,
+    memory_type: 'activity', activity: 'adventure', reward_amount: reward.rewards?.moon_gold, reward_currency: 'moon_gold' });
   return { ...terminal, reward };
 }
 export async function extractPetRogueliteRun(db, run, extractionRewards = {}, analytics = {}) {
@@ -552,6 +583,8 @@ export async function extractPetRogueliteRun(db, run, extractionRewards = {}, an
       '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
       .bind(safeJson(reward.rewards), safeJson(Object.keys(reward.rewards?.relics || {})), `${run.run_id}:end`).run();
   }
+  if (reward.accepted) await recordMoonpetMemory(db, { telegram_id: run.telegram_id, event_key: `${run.run_id}:extraction:reward-memory`,
+    memory_type: 'activity', activity: 'adventure', reward_amount: reward.rewards?.moon_gold, reward_currency: 'moon_gold' });
   return { ...terminal, reward };
 }
 export const failPetRun = (db, run, analytics = {}) => finishPetRogueliteRun(db, run, 'failed', analytics);
