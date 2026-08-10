@@ -1065,6 +1065,8 @@ assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activi
 assert.ok(activityClaim.includes("claim_state: 'claiming'") && activityClaim.includes("claim_state: 'settled'"), 'activity claims must remain recoverable until reward settlement succeeds');
 assert.ok(activityClaim.includes('getRecoverablePetActivitySession'), 'activity claim retries must resume the persisted reward snapshot');
 assert.ok(activityClaim.indexOf('awardPetReward(db') < activityClaim.indexOf("claim_state: 'settled'"), 'activity claims must only become settled after reward issuance succeeds');
+assert.ok(activityClaim.includes('getPersistedPetActivityAward'), 'duplicate activity settlements must recover the original authoritative award');
+assert.ok(activityClaim.includes('authoritativeAward.rewards'), 'duplicate placeholders must not overwrite applied reward metadata');
 const activityCancel = worker.slice(worker.indexOf('async function cancelPetActivitySession'), worker.indexOf('async function processPetAction'));
 assert.ok(activityCancel.includes("SET status = 'cancelled'"), 'cancel must mark the session cancelled');
 assert.ok(!activityCancel.includes('telegram_pet_events'), 'cancel must not award rewards');
@@ -1425,12 +1427,82 @@ assert.equal(recoverableActivity.db.database.prepare("SELECT COUNT(*) AS count F
 assert.equal(recoverableActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-reward-retry'").get().pet_xp, 26,
   'a reward failure followed by retry must grant the earned Pet XP exactly once');
 
+const committedActivity = seedPetActivitySession('activity-committed-retry', {
+  now: activityNow,
+  elapsed_seconds: 7200,
+  activity_type: 'explore',
+  ends_at: new Date(activityNow.getTime() + 6 * 3600 * 1000).toISOString(),
+});
+let failCommittedSettlement = true;
+committedActivity.db.beforeRun = async (sql) => {
+  if (failCommittedSettlement && sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes('SET metadata = ?')) {
+    failCommittedSettlement = false;
+    throw new Error('simulated_activity_settlement_failure');
+  }
+};
+await assert.rejects(
+  claimPetActivitySession(committedActivity.db, 'activity-committed-retry', { now: activityNow, source: 'activity_claim_regression' }),
+  /simulated_activity_settlement_failure/,
+  'a caller failure after reward commit must leave the committed award recoverable',
+);
+committedActivity.db.beforeRun = null;
+assert.equal(committedActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-committed-retry' AND event_type = 'activity_claim'").get().count, 1,
+  'the interrupted caller must have exactly one committed reward event');
+assert.equal(committedActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-committed-retry' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'the interrupted caller must retain its committed authority-backed item');
+const committedActivityRetry = await claimPetActivitySession(committedActivity.db, 'activity-committed-retry', {
+  now: new Date(activityNow.getTime() + 60_000), source: 'activity_claim_regression',
+});
+assert.equal(committedActivityRetry.accepted, true, 'retry after a committed reward must settle successfully');
+assert.equal(committedActivityRetry.duplicate, true, 'retry after a committed reward must reuse the original claim');
+assert.equal(committedActivityRetry.pet_xp_awarded, 36, 'retry must recover the original awarded Pet XP');
+assert.equal(committedActivityRetry.rewards.moon_gold, 32, 'retry must recover the original awarded currency');
+assert.equal(committedActivityRetry.rewards.items.adventure_map, 1, 'retry must recover the original applied item');
+assert.equal(committedActivityRetry.pet.telegram_id, 'activity-committed-retry', 'retry must recover the authoritative Pet state for user-facing output');
+const committedSettlementMetadata = JSON.parse(committedActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-committed-retry'",
+).get().metadata);
+assert.equal(committedSettlementMetadata.claim_state, 'settled', 'the recovered committed reward must settle the session');
+assert.equal(committedSettlementMetadata.applied_rewards.pet_xp, 36, 'settlement metadata must preserve original awarded Pet XP');
+assert.equal(committedSettlementMetadata.applied_rewards.moon_gold, 32, 'settlement metadata must preserve original awarded currency');
+assert.equal(committedSettlementMetadata.applied_rewards.items.adventure_map, 1, 'settlement metadata must preserve original applied items');
+const committedActivityDuplicate = await claimPetActivitySession(committedActivity.db, 'activity-committed-retry', {
+  now: new Date(activityNow.getTime() + 120_000), source: 'activity_claim_regression',
+});
+assert.equal(committedActivityDuplicate.accepted, false, 'a retry after settlement must not award again');
+assert.equal(committedActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-committed-retry'").get().pet_xp, 36,
+  'duplicate retry must not add Pet XP');
+assert.equal(committedActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-committed-retry' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'duplicate retry must not add items');
+assert.deepEqual(JSON.parse(committedActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-committed-retry'",
+).get().metadata), committedSettlementMetadata, 'duplicate retry must not corrupt settled metadata');
+
 const concurrentActivity = seedPetActivitySession('activity-concurrent', { now: activityNow, elapsed_seconds: 1800 });
-const concurrentActivityClaims = await Promise.all([
+let concurrentClaimReservations = 0;
+let releaseConcurrentClaims;
+let markConcurrentClaimsReached;
+const concurrentClaimsReached = new Promise((resolve) => { markConcurrentClaimsReached = resolve; });
+const continueConcurrentClaims = new Promise((resolve) => { releaseConcurrentClaims = resolve; });
+concurrentActivity.db.beforeRun = async (sql) => {
+  if (sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes("SET status = 'completed'")) {
+    concurrentClaimReservations += 1;
+    if (concurrentClaimReservations === 2) markConcurrentClaimsReached();
+    await continueConcurrentClaims;
+  }
+};
+const concurrentActivityClaimPromises = [
   claimPetActivitySession(concurrentActivity.db, 'activity-concurrent', { now: activityNow, source: 'activity_claim_regression' }),
   claimPetActivitySession(concurrentActivity.db, 'activity-concurrent', { now: activityNow, source: 'activity_claim_regression' }),
-]);
-assert.ok(concurrentActivityClaims.some((claim) => claim.accepted), 'one concurrent activity claim must settle the reward');
+];
+await concurrentClaimsReached;
+concurrentActivity.db.beforeRun = null;
+releaseConcurrentClaims();
+const concurrentActivityClaims = await Promise.all(concurrentActivityClaimPromises);
+assert.ok(concurrentActivityClaims.every((claim) => claim.accepted), 'both concurrent callers must receive the settled reward result');
+assert.deepEqual(concurrentActivityClaims.map((claim) => claim.pet_xp_awarded), [26, 26], 'concurrent callers must receive consistent awarded Pet XP');
+assert.deepEqual(concurrentActivityClaims.map((claim) => claim.xp_awarded), [2, 2], 'concurrent callers must receive consistent awarded Community XP');
+assert.ok(concurrentActivityClaims.every((claim) => claim.pet?.telegram_id === 'activity-concurrent'), 'concurrent callers must receive the authoritative Pet state');
 assert.equal(concurrentActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-concurrent' AND event_type = 'activity_claim'").get().count, 1,
   'two simultaneous activity claims must create exactly one reward event');
 assert.equal(concurrentActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-concurrent'").get().pet_xp, 26,

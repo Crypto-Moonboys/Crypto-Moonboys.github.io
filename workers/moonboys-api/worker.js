@@ -3506,6 +3506,49 @@ function getRecoverablePetActivityClaim(session) {
   };
 }
 
+function parsePersistedPetReward(value) {
+  try {
+    const parsed = JSON.parse(value || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getPersistedPetActivityAward(db, telegramId, eventKey) {
+  const persisted = await db.prepare(`
+    SELECT claim.claim_id, claim.applied_rewards,
+           event.pet_xp_awarded, event.xp_awarded
+    FROM telegram_pet_reward_claims AS claim
+    JOIN telegram_pet_events AS event
+      ON event.telegram_id = claim.telegram_id
+     AND event.event_key = ?
+     AND event.status = 'accepted'
+     AND json_valid(event.metadata) = 1
+     AND json_extract(event.metadata, '$.source') = 'pet_activity'
+     AND json_extract(event.metadata, '$.idempotency_key') = ?
+    WHERE claim.telegram_id = ?
+      AND claim.source = 'pet_activity'
+      AND claim.idempotency_key = ?
+      AND claim.status = 'awarded'
+    LIMIT 1
+  `).bind(eventKey, eventKey, String(telegramId), eventKey).first().catch(() => null);
+  const rewards = parsePersistedPetReward(persisted?.applied_rewards);
+  if (!persisted || !rewards) return null;
+  const pet = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`)
+    .bind(String(telegramId)).first().catch(() => null);
+  if (!pet) return null;
+  return {
+    accepted: true,
+    duplicate: true,
+    claim_id: persisted.claim_id,
+    pet_xp_awarded: Math.max(0, Math.floor(Number(persisted.pet_xp_awarded) || 0)),
+    xp_awarded: Math.max(0, Math.floor(Number(persisted.xp_awarded) || 0)),
+    rewards,
+    pet,
+  };
+}
+
 function computePetActivityRewards(activityType, elapsedSeconds) {
   const type = normalizePetActivityType(activityType);
   const cap = PET_ACTIVITY_CAP_SECONDS[type] || PET_ACTIVITY_MIN_SECONDS;
@@ -3602,9 +3645,27 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
   });
   if (!awarded.accepted) return { ...awarded, session, computed };
 
+  const authoritativeAward = awarded.duplicate
+    ? await getPersistedPetActivityAward(db, telegramId, eventKey)
+    : awarded;
+  if (!authoritativeAward) {
+    return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed };
+  }
+  const settledComputed = {
+    ...computed,
+    rewards: {
+      ...computed.rewards,
+      pet_xp: authoritativeAward.pet_xp_awarded,
+      community_xp: authoritativeAward.xp_awarded,
+      moon_gold: authoritativeAward.rewards.moon_gold,
+      moon_crystals: authoritativeAward.rewards.moon_crystals,
+      style_tokens: authoritativeAward.rewards.style_tokens,
+    },
+  };
+
   const settledMetadata = JSON.stringify({
-    computed,
-    applied_rewards: awarded.rewards,
+    computed: settledComputed,
+    applied_rewards: authoritativeAward.rewards,
     claim_state: 'settled',
     reward_idempotency_key: eventKey,
   });
@@ -3618,10 +3679,10 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
   `).bind(settledMetadata, session.id, telegramId, eventKey).run();
 
   return {
-    ...awarded,
-    reason: awarded.duplicate ? 'duplicate' : 'claimed',
+    ...authoritativeAward,
+    reason: authoritativeAward.duplicate ? 'duplicate' : 'claimed',
     session: { ...session, status: 'completed', metadata: settledMetadata },
-    computed,
+    computed: settledComputed,
   };
 }
 
