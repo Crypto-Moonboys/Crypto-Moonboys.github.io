@@ -3474,6 +3474,81 @@ async function getActivePetActivitySession(db, telegramId, now = new Date()) {
   `).bind(String(telegramId)).first().catch(() => null);
 }
 
+function parsePetActivitySessionMetadata(session) {
+  try {
+    const parsed = JSON.parse(session?.metadata || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function getRecoverablePetActivitySession(db, telegramId) {
+  return db.prepare(`
+    SELECT * FROM telegram_pet_activity_sessions
+    WHERE telegram_id = ?
+      AND status = 'completed'
+      AND json_valid(metadata) = 1
+      AND json_extract(metadata, '$.claim_state') = 'claiming'
+    ORDER BY claimed_at ASC LIMIT 1
+  `).bind(String(telegramId)).first().catch(() => null);
+}
+
+function getRecoverablePetActivityClaim(session) {
+  const metadata = parsePetActivitySessionMetadata(session);
+  const computed = metadata.computed;
+  if (session?.status !== 'completed' || metadata.claim_state !== 'claiming' || !computed?.rewards) return null;
+  const claimedAt = new Date(session.claimed_at || '');
+  return {
+    computed,
+    eventKey: metadata.reward_idempotency_key || buildStablePetEventKey(['pet_activity_claim', session.telegram_id, session.id]),
+    rewardNow: Number.isNaN(claimedAt.getTime()) ? new Date() : claimedAt,
+  };
+}
+
+function parsePersistedPetReward(value) {
+  try {
+    const parsed = JSON.parse(value || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getPersistedPetActivityAward(db, telegramId, eventKey) {
+  const persisted = await db.prepare(`
+    SELECT claim.claim_id, claim.applied_rewards,
+           event.pet_xp_awarded, event.xp_awarded
+    FROM telegram_pet_reward_claims AS claim
+    JOIN telegram_pet_events AS event
+      ON event.telegram_id = claim.telegram_id
+     AND event.event_key = ?
+     AND event.status = 'accepted'
+     AND json_valid(event.metadata) = 1
+     AND json_extract(event.metadata, '$.source') = 'pet_activity'
+     AND json_extract(event.metadata, '$.idempotency_key') = ?
+    WHERE claim.telegram_id = ?
+      AND claim.source = 'pet_activity'
+      AND claim.idempotency_key = ?
+      AND claim.status = 'awarded'
+    LIMIT 1
+  `).bind(eventKey, eventKey, String(telegramId), eventKey).first().catch(() => null);
+  const rewards = parsePersistedPetReward(persisted?.applied_rewards);
+  if (!persisted || !rewards) return null;
+  const pet = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`)
+    .bind(String(telegramId)).first().catch(() => null);
+  if (!pet) return null;
+  return {
+    accepted: true,
+    duplicate: true,
+    claim_id: persisted.claim_id,
+    pet_xp_awarded: Math.max(0, Math.floor(Number(persisted.pet_xp_awarded) || 0)),
+    xp_awarded: Math.max(0, Math.floor(Number(persisted.xp_awarded) || 0)),
+    rewards,
+    pet,
+  };
+}
+
 function computePetActivityRewards(activityType, elapsedSeconds) {
   const type = normalizePetActivityType(activityType);
   const cap = PET_ACTIVITY_CAP_SECONDS[type] || PET_ACTIVITY_MIN_SECONDS;
@@ -3499,6 +3574,8 @@ async function startPetActivitySession(db, telegramId, activityTypeRaw, options 
   const now = options.now || new Date();
   const active = await getActivePetActivitySession(db, telegramId, now);
   if (active) return { accepted: false, reason: 'already_busy', session: active, pet };
+  const pendingClaim = await getRecoverablePetActivitySession(db, telegramId);
+  if (pendingClaim) return { accepted: false, reason: 'activity_claim_pending', session: pendingClaim, pet };
   const cap = PET_ACTIVITY_CAP_SECONDS[activityType];
   const sessionId = crypto.randomUUID();
   await db.prepare(`
@@ -3511,36 +3588,111 @@ async function startPetActivitySession(db, telegramId, activityTypeRaw, options 
 
 async function claimPetActivitySession(db, telegramId, options = {}) {
   const now = options.now || new Date();
-  const session = await getActivePetActivitySession(db, telegramId, now);
-  if (!session) return { accepted: false, reason: 'no_active_activity' };
-  const elapsedSeconds = Math.floor((now.getTime() - new Date(session.started_at).getTime()) / 1000);
-  if (elapsedSeconds < PET_ACTIVITY_MIN_SECONDS) return { accepted: false, reason: 'activity_too_short', retry_after_seconds: PET_ACTIVITY_MIN_SECONDS - elapsedSeconds, session };
-  const eventKey = buildStablePetEventKey(['pet_activity_claim', telegramId, session.id]);
-  const computed = computePetActivityRewards(session.activity_type, elapsedSeconds);
+  let session = await getActivePetActivitySession(db, telegramId, now);
+  let recovery = null;
+
+  if (!session) {
+    session = await getRecoverablePetActivitySession(db, telegramId);
+    recovery = getRecoverablePetActivityClaim(session);
+    if (!session || !recovery) return { accepted: false, reason: 'no_active_activity' };
+  }
+
+  let computed;
+  let eventKey;
+  let rewardNow;
+
+  if (recovery) {
+    ({ computed, eventKey, rewardNow } = recovery);
+  } else {
+    const elapsedSeconds = Math.floor((now.getTime() - new Date(session.started_at).getTime()) / 1000);
+    if (elapsedSeconds < PET_ACTIVITY_MIN_SECONDS) {
+      return { accepted: false, reason: 'activity_too_short', retry_after_seconds: PET_ACTIVITY_MIN_SECONDS - elapsedSeconds, session };
+    }
+    eventKey = buildStablePetEventKey(['pet_activity_claim', telegramId, session.id]);
+    computed = computePetActivityRewards(session.activity_type, elapsedSeconds);
+    rewardNow = now;
+    const claimMetadata = JSON.stringify({ computed, claim_state: 'claiming', reward_idempotency_key: eventKey });
+    const claimResult = await db.prepare(`
+      UPDATE telegram_pet_activity_sessions
+      SET status = 'completed', claimed_at = ?, metadata = ?
+      WHERE id = ? AND telegram_id = ? AND status = 'active'
+        AND ends_at >= datetime(?, ?)
+    `).bind(
+      now.toISOString(), claimMetadata, session.id, telegramId, now.toISOString(),
+      `-${PET_ACTIVITY_GRACE_SECONDS} seconds`,
+    ).run();
+    if (Number(claimResult?.meta?.changes || 0) !== 1) {
+      const closedSession = await db.prepare(`SELECT * FROM telegram_pet_activity_sessions WHERE id = ? AND telegram_id = ? LIMIT 1`)
+        .bind(session.id, telegramId).first().catch(() => session);
+      recovery = getRecoverablePetActivityClaim(closedSession);
+      if (!recovery) {
+        return { accepted: false, reason: 'activity_already_closed', session: closedSession || session, computed };
+      }
+      session = closedSession;
+      ({ computed, eventKey, rewardNow } = recovery);
+    } else {
+      session = { ...session, status: 'completed', claimed_at: now.toISOString(), metadata: claimMetadata };
+    }
+  }
+
   const { item_key: itemKey, health, hunger, cleanliness, energy, happiness, ...permanentRewards } = computed.rewards;
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_activity', idempotency_key: eventKey, event_key: eventKey,
     event_type: 'activity_claim', reason: session.activity_type,
     rewards: { ...permanentRewards, items: itemKey ? { [itemKey]: 1 } : {} },
-    profile_deltas: { health, hunger, cleanliness, energy, happiness }, touch_streak: true, now,
+    profile_deltas: { health, hunger, cleanliness, energy, happiness }, touch_streak: true, now: rewardNow,
     context: { source: options.source || 'telegram_bot', session_id: session.id, activity_type: session.activity_type },
   });
   if (!awarded.accepted) return { ...awarded, session, computed };
-  const claimResult = await db.prepare(`
+
+  const authoritativeAward = awarded.duplicate
+    ? await getPersistedPetActivityAward(db, telegramId, eventKey)
+    : awarded;
+  if (!authoritativeAward) {
+    return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed };
+  }
+  const settledComputed = {
+    ...computed,
+    rewards: {
+      ...computed.rewards,
+      pet_xp: authoritativeAward.pet_xp_awarded,
+      community_xp: authoritativeAward.xp_awarded,
+      moon_gold: authoritativeAward.rewards.moon_gold,
+      moon_crystals: authoritativeAward.rewards.moon_crystals,
+      style_tokens: authoritativeAward.rewards.style_tokens,
+    },
+  };
+
+  const settledMetadata = JSON.stringify({
+    computed: settledComputed,
+    applied_rewards: authoritativeAward.rewards,
+    claim_state: 'settled',
+    reward_idempotency_key: eventKey,
+  });
+  await db.prepare(`
     UPDATE telegram_pet_activity_sessions
-    SET status = 'completed', claimed_at = ?, metadata = ?
-    WHERE id = ? AND telegram_id = ? AND status = 'active'
-  `).bind(now.toISOString(), JSON.stringify({ ...computed, rewards: awarded.rewards }), session.id, telegramId).run();
-  const claimedSession = Number(claimResult?.meta?.changes || 0) > 0
-    ? session
-    : await db.prepare(`SELECT * FROM telegram_pet_activity_sessions WHERE id = ? AND telegram_id = ? LIMIT 1`).bind(session.id, telegramId).first().catch(() => session);
-  return { ...awarded, reason: awarded.duplicate ? 'duplicate' : 'claimed', session: claimedSession || session, computed };
+    SET metadata = ?
+    WHERE id = ? AND telegram_id = ? AND status = 'completed'
+      AND json_valid(metadata) = 1
+      AND json_extract(metadata, '$.claim_state') = 'claiming'
+      AND json_extract(metadata, '$.reward_idempotency_key') = ?
+  `).bind(settledMetadata, session.id, telegramId, eventKey).run();
+
+  return {
+    ...authoritativeAward,
+    reason: authoritativeAward.duplicate ? 'duplicate' : 'claimed',
+    session: { ...session, status: 'completed', metadata: settledMetadata },
+    computed: settledComputed,
+  };
 }
 
 async function cancelPetActivitySession(db, telegramId) {
   const session = await getActivePetActivitySession(db, telegramId);
   if (!session) return { accepted: false, reason: 'no_active_activity' };
-  await db.prepare(`UPDATE telegram_pet_activity_sessions SET status = 'cancelled' WHERE id = ? AND telegram_id = ? AND status = 'active'`).bind(session.id, telegramId).run();
+  const cancelResult = await db.prepare(`UPDATE telegram_pet_activity_sessions SET status = 'cancelled' WHERE id = ? AND telegram_id = ? AND status = 'active'`).bind(session.id, telegramId).run();
+  if (Number(cancelResult?.meta?.changes || 0) !== 1) {
+    return { accepted: false, reason: 'activity_already_closed', session };
+  }
   return { accepted: true, reason: 'cancelled', session };
 }
 
@@ -9994,6 +10146,9 @@ export const __petMediaTestHooks = Object.freeze({
   parsePetRepeatRewardReservation,
   processPetRandomEvent,
   processPetAdventure,
+  claimPetActivitySession,
+  cancelPetActivitySession,
+  expireOldPetActivitySessions,
   getPetInventory,
   processPetUseItem,
   processPetRunExtract,

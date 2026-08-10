@@ -33,6 +33,9 @@ const {
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
   processPetAdventure,
+  claimPetActivitySession,
+  cancelPetActivitySession,
+  expireOldPetActivitySessions,
   getPetInventory,
   processPetUseItem,
   processPetRunExtract,
@@ -1048,14 +1051,22 @@ for (const token of ['telegram_pet_activity_sessions', 'activity_type', 'started
 const activityStart = worker.slice(worker.indexOf('async function startPetActivitySession'), worker.indexOf('async function claimPetActivitySession'));
 assert.ok(activityStart.includes('getActivePetActivitySession'), 'start session must block a second active session');
 assert.ok(activityStart.includes('already_busy'), 'start session must return already_busy');
+assert.ok(activityStart.includes('getRecoverablePetActivitySession') && activityStart.includes('activity_claim_pending'), 'start session must not bypass an unsettled activity claim');
 const activityClaim = worker.slice(worker.indexOf('async function claimPetActivitySession'), worker.indexOf('async function cancelPetActivitySession'));
 assert.ok(activityClaim.includes("buildStablePetEventKey(['pet_activity_claim', telegramId, session.id])"), 'claim must use stable idempotency event key');
 assert.ok(activityClaim.includes("source: 'pet_activity'") && activityClaim.includes('awardPetReward(db'), 'activity claims must apply both XP caps through the unified authority');
 assert.ok(activityClaim.includes("event_type: 'activity_claim'"), 'claim must audit rewards in telegram_pet_events');
 assert.ok(activityClaim.includes('duplicate'), 'duplicate claim must not double-award');
 assert.ok(activityClaim.includes('const claimResult = await db.prepare'), 'activity claim must capture the session completion update');
-assert.ok(activityClaim.includes('if (!awarded.accepted)'), 'activity completion must not advance when reward authorization fails');
-assert.ok(activityClaim.indexOf('awardPetReward(db') < activityClaim.indexOf('const claimResult = await db.prepare'), 'activity rewards must become retry-safe before the session is finalized');
+assert.ok(activityClaim.includes('if (!awarded.accepted)'), 'activity claims must return reward-authority rejection safely');
+assert.ok(activityClaim.includes("Number(claimResult?.meta?.changes || 0) !== 1"), 'activity rewards must require exactly one atomic session claim');
+assert.ok(activityClaim.includes("AND ends_at >= datetime(?, ?)"), 'activity session claims must reject rows that crossed the expiry boundary');
+assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activityClaim.indexOf('awardPetReward(db'), 'activity session state must be atomically claimed before rewards are awarded');
+assert.ok(activityClaim.includes("claim_state: 'claiming'") && activityClaim.includes("claim_state: 'settled'"), 'activity claims must remain recoverable until reward settlement succeeds');
+assert.ok(activityClaim.includes('getRecoverablePetActivitySession'), 'activity claim retries must resume the persisted reward snapshot');
+assert.ok(activityClaim.indexOf('awardPetReward(db') < activityClaim.indexOf("claim_state: 'settled'"), 'activity claims must only become settled after reward issuance succeeds');
+assert.ok(activityClaim.includes('getPersistedPetActivityAward'), 'duplicate activity settlements must recover the original authoritative award');
+assert.ok(activityClaim.includes('authoritativeAward.rewards'), 'duplicate placeholders must not overwrite applied reward metadata');
 const activityCancel = worker.slice(worker.indexOf('async function cancelPetActivitySession'), worker.indexOf('async function processPetAction'));
 assert.ok(activityCancel.includes("SET status = 'cancelled'"), 'cancel must mark the session cancelled');
 assert.ok(!activityCancel.includes('telegram_pet_events'), 'cancel must not award rewards');
@@ -1286,6 +1297,7 @@ class SqliteD1Statement {
   }
 
   async run() {
+    if (typeof this.adapter.beforeRun === 'function') await this.adapter.beforeRun(this.sql, this.args);
     const result = this.adapter.database.prepare(this.sql).run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
@@ -1297,6 +1309,7 @@ class SqliteD1 {
     this.database.exec(schema);
     this.batchCount = 0;
     this.failBatchNumber = null;
+    this.beforeRun = null;
   }
 
   prepare(sql) {
@@ -1347,6 +1360,225 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   `).run();
   return db;
 }
+
+function seedPetActivitySession(telegramId, options = {}) {
+  const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
+  const elapsedSeconds = Number(options.elapsed_seconds || 1800);
+  const startedAt = new Date(now.getTime() - elapsedSeconds * 1000).toISOString();
+  const endsAt = new Date(options.ends_at || now.getTime() + 3600 * 1000).toISOString().replace('T', ' ').replace('.000Z', '');
+  const sessionId = options.session_id || `activity-${telegramId}`;
+  const db = seedRepeatRewardPlayer(telegramId, 70, now.toISOString());
+  db.database.prepare(`
+    INSERT INTO telegram_pet_activity_sessions
+      (id, telegram_id, activity_type, started_at, ends_at, status, metadata)
+    VALUES (?, ?, ?, ?, ?, 'active', '{}')
+  `).run(sessionId, telegramId, options.activity_type || 'train', startedAt, endsAt);
+  return { db, sessionId, now };
+}
+
+const activityNow = new Date('2026-08-10T16:00:00.000Z');
+const normalActivity = seedPetActivitySession('activity-normal', { now: activityNow, elapsed_seconds: 1800 });
+const normalActivityClaim = await claimPetActivitySession(normalActivity.db, 'activity-normal', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(normalActivityClaim.accepted, true, 'an active activity past the minimum duration must claim successfully');
+assert.equal(normalActivityClaim.reason, 'claimed', 'the winning activity claim must report claimed');
+assert.deepEqual(
+  { ...normalActivity.db.database.prepare("SELECT status, claimed_at FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-normal'").get() },
+  { status: 'completed', claimed_at: activityNow.toISOString() },
+  'the session must reach its claimed terminal state before rewards are returned',
+);
+assert.deepEqual(
+  { ...normalActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-normal'").get(),
+    ...normalActivity.db.database.prepare("SELECT xp AS community_xp FROM telegram_users WHERE telegram_id = 'activity-normal'").get() },
+  { pet_xp: 26, community_xp: 2 },
+  'a normal activity claim must grant its Pet XP and Community XP exactly once',
+);
+const duplicateActivityClaim = await claimPetActivitySession(normalActivity.db, 'activity-normal', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(duplicateActivityClaim.accepted, false, 'a duplicate activity claim must lose after the session is terminal');
+assert.equal(duplicateActivityClaim.reason, 'no_active_activity', 'a duplicate activity claim must return safely');
+assert.equal(normalActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-normal' AND event_type = 'activity_claim'").get().count, 1,
+  'a duplicate activity claim must not create a second reward event');
+assert.equal(normalActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-normal'").get().pet_xp, 26,
+  'a duplicate activity claim must not grant Pet XP twice');
+
+const recoverableActivity = seedPetActivitySession('activity-reward-retry', { now: activityNow, elapsed_seconds: 1800 });
+recoverableActivity.db.failOnBatch(1);
+await assert.rejects(
+  claimPetActivitySession(recoverableActivity.db, 'activity-reward-retry', { now: activityNow, source: 'activity_claim_regression' }),
+  /simulated_d1_batch_failure/,
+  'a transient reward settlement failure must propagate so the caller can retry',
+);
+const interruptedActivitySession = recoverableActivity.db.database.prepare(
+  "SELECT status, metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-reward-retry'",
+).get();
+assert.equal(interruptedActivitySession.status, 'completed', 'a reserved claim must remain closed to cancel and expiry callbacks');
+assert.equal(JSON.parse(interruptedActivitySession.metadata).claim_state, 'claiming', 'a failed reward settlement must leave a recoverable claim checkpoint');
+assert.equal(recoverableActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-reward-retry'").get().count, 0,
+  'a failed transactional reward settlement must not leave partial rewards');
+const retriedActivityClaim = await claimPetActivitySession(recoverableActivity.db, 'activity-reward-retry', {
+  now: new Date(activityNow.getTime() + 60_000), source: 'activity_claim_regression',
+});
+assert.equal(retriedActivityClaim.accepted, true, 'retrying a recoverable activity claim must settle the original reward');
+assert.equal(retriedActivityClaim.reason, 'claimed', 'a successful recovery must report a claimed activity');
+assert.equal(JSON.parse(recoverableActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-reward-retry'",
+).get().metadata).claim_state, 'settled', 'the session must become settled only after reward issuance succeeds');
+assert.equal(recoverableActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-reward-retry' AND event_type = 'activity_claim'").get().count, 1,
+  'a reward failure followed by retry must create exactly one reward event');
+assert.equal(recoverableActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-reward-retry'").get().pet_xp, 26,
+  'a reward failure followed by retry must grant the earned Pet XP exactly once');
+
+const committedActivity = seedPetActivitySession('activity-committed-retry', {
+  now: activityNow,
+  elapsed_seconds: 7200,
+  activity_type: 'explore',
+  ends_at: new Date(activityNow.getTime() + 6 * 3600 * 1000).toISOString(),
+});
+let failCommittedSettlement = true;
+committedActivity.db.beforeRun = async (sql) => {
+  if (failCommittedSettlement && sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes('SET metadata = ?')) {
+    failCommittedSettlement = false;
+    throw new Error('simulated_activity_settlement_failure');
+  }
+};
+await assert.rejects(
+  claimPetActivitySession(committedActivity.db, 'activity-committed-retry', { now: activityNow, source: 'activity_claim_regression' }),
+  /simulated_activity_settlement_failure/,
+  'a caller failure after reward commit must leave the committed award recoverable',
+);
+committedActivity.db.beforeRun = null;
+assert.equal(committedActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-committed-retry' AND event_type = 'activity_claim'").get().count, 1,
+  'the interrupted caller must have exactly one committed reward event');
+assert.equal(committedActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-committed-retry' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'the interrupted caller must retain its committed authority-backed item');
+const committedActivityRetry = await claimPetActivitySession(committedActivity.db, 'activity-committed-retry', {
+  now: new Date(activityNow.getTime() + 60_000), source: 'activity_claim_regression',
+});
+assert.equal(committedActivityRetry.accepted, true, 'retry after a committed reward must settle successfully');
+assert.equal(committedActivityRetry.duplicate, true, 'retry after a committed reward must reuse the original claim');
+assert.equal(committedActivityRetry.pet_xp_awarded, 36, 'retry must recover the original awarded Pet XP');
+assert.equal(committedActivityRetry.rewards.moon_gold, 32, 'retry must recover the original awarded currency');
+assert.equal(committedActivityRetry.rewards.items.adventure_map, 1, 'retry must recover the original applied item');
+assert.equal(committedActivityRetry.pet.telegram_id, 'activity-committed-retry', 'retry must recover the authoritative Pet state for user-facing output');
+const committedSettlementMetadata = JSON.parse(committedActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-committed-retry'",
+).get().metadata);
+assert.equal(committedSettlementMetadata.claim_state, 'settled', 'the recovered committed reward must settle the session');
+assert.equal(committedSettlementMetadata.applied_rewards.pet_xp, 36, 'settlement metadata must preserve original awarded Pet XP');
+assert.equal(committedSettlementMetadata.applied_rewards.moon_gold, 32, 'settlement metadata must preserve original awarded currency');
+assert.equal(committedSettlementMetadata.applied_rewards.items.adventure_map, 1, 'settlement metadata must preserve original applied items');
+const committedActivityDuplicate = await claimPetActivitySession(committedActivity.db, 'activity-committed-retry', {
+  now: new Date(activityNow.getTime() + 120_000), source: 'activity_claim_regression',
+});
+assert.equal(committedActivityDuplicate.accepted, false, 'a retry after settlement must not award again');
+assert.equal(committedActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-committed-retry'").get().pet_xp, 36,
+  'duplicate retry must not add Pet XP');
+assert.equal(committedActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-committed-retry' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'duplicate retry must not add items');
+assert.deepEqual(JSON.parse(committedActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-committed-retry'",
+).get().metadata), committedSettlementMetadata, 'duplicate retry must not corrupt settled metadata');
+
+const concurrentActivity = seedPetActivitySession('activity-concurrent', { now: activityNow, elapsed_seconds: 1800 });
+let concurrentClaimReservations = 0;
+let releaseConcurrentClaims;
+let markConcurrentClaimsReached;
+const concurrentClaimsReached = new Promise((resolve) => { markConcurrentClaimsReached = resolve; });
+const continueConcurrentClaims = new Promise((resolve) => { releaseConcurrentClaims = resolve; });
+concurrentActivity.db.beforeRun = async (sql) => {
+  if (sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes("SET status = 'completed'")) {
+    concurrentClaimReservations += 1;
+    if (concurrentClaimReservations === 2) markConcurrentClaimsReached();
+    await continueConcurrentClaims;
+  }
+};
+const concurrentActivityClaimPromises = [
+  claimPetActivitySession(concurrentActivity.db, 'activity-concurrent', { now: activityNow, source: 'activity_claim_regression' }),
+  claimPetActivitySession(concurrentActivity.db, 'activity-concurrent', { now: activityNow, source: 'activity_claim_regression' }),
+];
+await concurrentClaimsReached;
+concurrentActivity.db.beforeRun = null;
+releaseConcurrentClaims();
+const concurrentActivityClaims = await Promise.all(concurrentActivityClaimPromises);
+assert.ok(concurrentActivityClaims.every((claim) => claim.accepted), 'both concurrent callers must receive the settled reward result');
+assert.deepEqual(concurrentActivityClaims.map((claim) => claim.pet_xp_awarded), [26, 26], 'concurrent callers must receive consistent awarded Pet XP');
+assert.deepEqual(concurrentActivityClaims.map((claim) => claim.xp_awarded), [2, 2], 'concurrent callers must receive consistent awarded Community XP');
+assert.ok(concurrentActivityClaims.every((claim) => claim.pet?.telegram_id === 'activity-concurrent'), 'concurrent callers must receive the authoritative Pet state');
+assert.equal(concurrentActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-concurrent' AND event_type = 'activity_claim'").get().count, 1,
+  'two simultaneous activity claims must create exactly one reward event');
+assert.equal(concurrentActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-concurrent'").get().pet_xp, 26,
+  'two simultaneous activity claims must grant Pet XP exactly once');
+
+const cancelRaceActivity = seedPetActivitySession('activity-cancel-race', { now: activityNow, elapsed_seconds: 1800 });
+let releaseCancelRaceClaim;
+let markCancelRaceClaimReached;
+const cancelRaceClaimReached = new Promise((resolve) => { markCancelRaceClaimReached = resolve; });
+const continueCancelRaceClaim = new Promise((resolve) => { releaseCancelRaceClaim = resolve; });
+cancelRaceActivity.db.beforeRun = async (sql) => {
+  if (sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes("SET status = 'completed'")) {
+    markCancelRaceClaimReached();
+    await continueCancelRaceClaim;
+  }
+};
+const racingActivityClaim = claimPetActivitySession(cancelRaceActivity.db, 'activity-cancel-race', { now: activityNow, source: 'activity_claim_regression' });
+await cancelRaceClaimReached;
+const racingActivityCancel = await cancelPetActivitySession(cancelRaceActivity.db, 'activity-cancel-race');
+cancelRaceActivity.db.beforeRun = null;
+releaseCancelRaceClaim();
+const losingActivityClaim = await racingActivityClaim;
+assert.equal(racingActivityCancel.accepted, true, 'cancellation must win when it atomically closes the active session first');
+assert.equal(losingActivityClaim.accepted, false, 'a claim callback that loses to cancellation must not award rewards');
+assert.equal(losingActivityClaim.reason, 'activity_already_closed', 'a claim callback that loses the terminal race must return safely');
+assert.equal(cancelRaceActivity.db.database.prepare("SELECT status FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-cancel-race'").get().status, 'cancelled',
+  'the claim/cancel race must preserve the winning cancellation state');
+assert.equal(cancelRaceActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-cancel-race'").get().count, 0,
+  'a claim callback that loses to cancellation must not create a reward event');
+assert.equal(cancelRaceActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-cancel-race'").get().pet_xp, 0,
+  'a claim callback that loses to cancellation must not grant Pet XP');
+
+const expiryEndsAt = new Date(activityNow.getTime() - 23 * 3600 * 1000).toISOString();
+const expiryRaceActivity = seedPetActivitySession('activity-expiry-race', {
+  now: activityNow, elapsed_seconds: 25 * 3600, ends_at: expiryEndsAt,
+});
+let releaseExpiryRaceClaim;
+let markExpiryRaceClaimReached;
+const expiryRaceClaimReached = new Promise((resolve) => { markExpiryRaceClaimReached = resolve; });
+const continueExpiryRaceClaim = new Promise((resolve) => { releaseExpiryRaceClaim = resolve; });
+expiryRaceActivity.db.beforeRun = async (sql) => {
+  if (sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes("SET status = 'completed'")) {
+    markExpiryRaceClaimReached();
+    await continueExpiryRaceClaim;
+  }
+};
+const racingExpiryClaim = claimPetActivitySession(expiryRaceActivity.db, 'activity-expiry-race', { now: activityNow, source: 'activity_claim_regression' });
+await expiryRaceClaimReached;
+await expireOldPetActivitySessions(expiryRaceActivity.db, 'activity-expiry-race', new Date(activityNow.getTime() + 2 * 3600 * 1000));
+expiryRaceActivity.db.beforeRun = null;
+releaseExpiryRaceClaim();
+const losingExpiryClaim = await racingExpiryClaim;
+assert.equal(losingExpiryClaim.accepted, false, 'a claim callback that loses to expiry must not award rewards');
+assert.equal(losingExpiryClaim.reason, 'activity_already_closed', 'an expiry-race loser must return safely');
+assert.equal(expiryRaceActivity.db.database.prepare("SELECT status FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-expiry-race'").get().status, 'expired',
+  'the claim/expiry race must preserve the winning expired state');
+assert.equal(expiryRaceActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-expiry-race'").get().count, 0,
+  'an expired session must not create a reward event');
+
+const cappedActivity = seedPetActivitySession('activity-caps', { now: activityNow, elapsed_seconds: 1800 });
+seedAcceptedDailyPetEvent(cappedActivity.db, 'activity-caps', 'activity-caps-prior', 1199, 249, '2026-08-10');
+const cappedActivityClaim = await claimPetActivitySession(cappedActivity.db, 'activity-caps', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(cappedActivityClaim.pet_xp_awarded, 1, 'activity claims must preserve the 1,200/day Pet XP cap');
+assert.equal(cappedActivityClaim.xp_awarded, 1, 'activity claims must preserve the 250/day Community XP cap');
+
+const itemActivity = seedPetActivitySession('activity-item', {
+  now: activityNow, elapsed_seconds: 7200, activity_type: 'explore',
+  ends_at: new Date(activityNow.getTime() + 6 * 3600 * 1000).toISOString(),
+});
+const itemActivityClaim = await claimPetActivitySession(itemActivity.db, 'activity-item', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(itemActivityClaim.accepted, true, 'an eligible explore activity item claim must succeed');
+assert.equal(itemActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-item' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'activity item rewards must use telegram_pet_inventory as their balance authority');
+await claimPetActivitySession(itemActivity.db, 'activity-item', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal((await getPetInventory(itemActivity.db, 'activity-item')).find((item) => item.key === 'adventure_map').count, 1,
+  'duplicate activity callbacks must not duplicate authority-backed item rewards');
 
 const inventoryAuthorityDb = seedRepeatRewardPlayer('inventory-authority', 70);
 const inventoryAwardRequest = {
