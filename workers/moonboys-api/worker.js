@@ -7,11 +7,11 @@ import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
-  PET_ROGUELITE_BOSSES, PET_ROGUELITE_REGIONS, PET_RUN_MODIFIERS,
+  PET_ROGUELITE_BOSSES, PET_ROGUELITE_ENEMIES, PET_ROGUELITE_REGIONS, PET_ROGUELITE_RELICS, PET_ROGUELITE_ROOMS, PET_RUN_MODIFIERS,
   advancePetRun, awardPetReward, buildPetProfileDeltas, choosePetRunModifier, completePetRun, createPetRunRoom,
-  failPetRun, finishPetRogueliteRun, generatePetRunRoom, persistPetRunRoomOutcome,
+  extractPetRogueliteRun, failPetRun, finishPetRogueliteRun, generatePetRunRoom, persistPetRunRoomOutcome,
   resolvePetRunRoom, rewardPetRogueliteBoss, rewardPetRunRoom, startPetRogueliteRun,
-  validatePetRunModifier,
+  validatePetRelicContent, validatePetRogueliteContent, validatePetRunModifier,
 } from './pets/roguelite-foundation.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
@@ -10113,7 +10113,10 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 
 export const __petMediaTestHooks = Object.freeze({
   PET_ROGUELITE_BOSSES,
+  PET_ROGUELITE_ENEMIES,
   PET_ROGUELITE_REGIONS,
+  PET_ROGUELITE_RELICS,
+  PET_ROGUELITE_ROOMS,
   PET_RUN_MODIFIERS,
   advancePetRun,
   awardPetReward,
@@ -10121,6 +10124,7 @@ export const __petMediaTestHooks = Object.freeze({
   choosePetRunModifier,
   completePetRun,
   createPetRunRoom,
+  extractPetRogueliteRun,
   failPetRun,
   finishPetRogueliteRun,
   generatePetRunRoom,
@@ -10129,6 +10133,8 @@ export const __petMediaTestHooks = Object.freeze({
   rewardPetRogueliteBoss,
   rewardPetRunRoom,
   startPetRogueliteRun,
+  validatePetRelicContent,
+  validatePetRogueliteContent,
   validatePetRunModifier,
   PET_MEDIA_MANIFEST,
   PET_RUN_CHOICE_LIBRARY,

@@ -2,17 +2,27 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import {
+  PET_ROGUELITE_BOSSES,
+  PET_ROGUELITE_ENEMIES,
   PET_ROGUELITE_REGIONS,
+  PET_ROGUELITE_RELICS,
+  PET_ROGUELITE_ROOMS,
   PET_RUN_MODIFIERS,
+  __rogueliteFoundationTestHooks,
   abandonPetRun,
   awardPetReward,
   buildPetProfileDeltas,
   completePetRun,
+  extractPetRogueliteRun,
   failPetRun,
   generatePetRunRoom,
+  persistPetRunRoomOutcome,
   resolvePetRunRoom,
   rewardPetRogueliteBoss,
   rewardPetRunRoom,
+  startPetRogueliteRun,
+  validatePetRelicContent,
+  validatePetRogueliteContent,
   validatePetRunModifier,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 
@@ -87,11 +97,24 @@ for (const token of ['telegram_pet_reward_claims', 'telegram_pet_run_modifiers',
 for (const field of ['run_id', 'telegram_id', 'region', 'difficulty', 'seed', 'current_room', 'max_room', 'status', 'started_at', 'ended_at', 'score']) {
   assert.ok(migration.includes(field), `run migration must preserve ${field}`);
 }
-for (const status of ['active', 'completed', 'failed', 'abandoned']) assert.ok(migration.includes(`'${status}'`));
-assert.deepEqual(Object.values(PET_ROGUELITE_REGIONS).map(({ name }) => name), ['Moon Alley', 'Neon District', 'Dark Chain Sector']);
+for (const status of ['active', 'completed', 'failed', 'abandoned', 'extracted']) assert.ok(migration.includes(`'${status}'`));
+assert.deepEqual(Object.values(PET_ROGUELITE_REGIONS).map(({ name }) => name), ['Moon Alley']);
 for (const region of Object.values(PET_ROGUELITE_REGIONS)) {
-  for (const field of ['difficulty', 'enemy_pool', 'event_pool', 'boss_pool', 'reward_pool']) assert.ok(region[field], `region must expose ${field}`);
+  for (const field of ['difficulty', 'room_pool', 'enemy_pool', 'boss_pool', 'reward_pool']) assert.ok(region[field], `region must expose ${field}`);
   for (const forbidden of ['xp', 'level', 'progression', 'currency']) assert.equal(region[forbidden], undefined, `regions cannot add a separate ${forbidden} system`);
+}
+assert.equal(Object.keys(PET_ROGUELITE_ROOMS).length, 10, 'Moon Alley must ship ten room definitions');
+assert.deepEqual(Object.values(PET_ROGUELITE_ROOMS).map(({ name }) => name), [
+  'Alley Entrance', 'Graffiti Wall', 'Rival Encounter', 'Hidden Cache', 'Street Market',
+  'Underground Tunnel', 'Police Heat', 'Neon Shortcut', 'Elite Encounter', 'Boss Room',
+]);
+assert.deepEqual(Object.values(PET_ROGUELITE_ENEMIES).map(({ name }) => name), ['Street Rat', 'Rival Moonpet', 'Cyber Guard']);
+assert.deepEqual(Object.values(PET_ROGUELITE_BOSSES).map(({ name }) => name), ['Alley King']);
+assert.equal(Object.keys(PET_ROGUELITE_RELICS).length, 10, 'Moon Alley must ship ten persistent relic definitions');
+assert.equal(Object.keys(PET_RUN_MODIFIERS).length, 10, 'Moon Alley must ship ten temporary run modifiers');
+assert.equal(validatePetRogueliteContent(), true);
+for (const filename of ['regions.json', 'rooms.json', 'enemies.json', 'bosses.json', 'relics.json', 'modifiers.json']) {
+  assert.ok(fs.existsSync(new URL(`../workers/moonboys-api/pets/content/${filename}`, import.meta.url)), `${filename} must remain separate from Worker core logic`);
 }
 
 await assert.rejects(() => awardPetReward(seedPlayer('bad-source'), {
@@ -169,24 +192,68 @@ assert.equal(duplicateDb.database.prepare("SELECT moon_gold FROM telegram_pet_pr
 assert.equal(duplicateDb.database.prepare("SELECT stage FROM telegram_pet_profiles WHERE telegram_id = 'duplicate-player'").get().stage, 'hatchling', 'unified rewards must preserve Pet stage progression');
 assert.equal(duplicateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_reward_claims').get().count, 1);
 
-assert.equal(validatePetRunModifier(PET_RUN_MODIFIERS.moon_battery), true);
+assert.equal(validatePetRunModifier(PET_RUN_MODIFIERS.low_energy), true);
+assert.equal(validatePetRunModifier({ effects: { energy_cost_modifier: -5 } }), true, 'temporary energy cost modifiers are valid content');
 assert.throws(() => validatePetRunModifier({ effects: { pet_xp: 999 } }), /cannot_change_permanent_rewards/);
 assert.throws(() => validatePetRunModifier({ effects: { nested: { completion_reward_pct: 999 } } }), /cannot_change_permanent_rewards/);
 assert.throws(() => validatePetRunModifier({ effects: { energy_recovery_pct: { pet_xp_multiplier: 99 } } }), /cannot_change_permanent_rewards/);
 assert.throws(() => validatePetRunModifier({ effects: { reward_cap: 999999 } }), /cannot_change_permanent_rewards/);
 assert.throws(() => validatePetRunModifier({ effects: { permanent_stats: { battle_power: 999 } } }), /cannot_change_permanent_rewards/);
+assert.throws(() => validatePetRunModifier({ effects: { xp_multiplier: 10 } }), /cannot_change_permanent_rewards/);
+assert.throws(() => validatePetRunModifier({ effects: { daily_cap_bonus: true } }), /cannot_change_permanent_rewards/);
+assert.throws(() => validatePetRelicContent({ rarity: 'rare', effects: { xp_multiplier: 2 } }), /cannot_change_reward_authority/);
 const generated = generatePetRunRoom({ run_id: 'room-run', seed: 3, current_room: 4, max_room: 5 });
 assert.equal(generated.room_type, 'boss');
+assert.equal(generated.name, 'Boss Room');
+assert.equal(generated.boss_id, 'alley_king');
 assert.equal(resolvePetRunRoom(generated, { success: true, score: 20 }).status, 'resolved');
+assert.deepEqual(Array.from({ length: 10 }, (_, index) => generatePetRunRoom({
+  run_id: 'moon-alley-route', region: 'moon_alley', seed: 9, current_room: index, max_room: 10,
+}).name), [
+  'Alley Entrance', 'Graffiti Wall', 'Rival Encounter', 'Hidden Cache', 'Street Market',
+  'Underground Tunnel', 'Police Heat', 'Neon Shortcut', 'Elite Encounter', 'Boss Room',
+], 'a default Moon Alley run must traverse the complete authored vertical slice');
+
+const startDb = seedPlayer('start-player');
+const started = await startPetRogueliteRun(startDb, { telegram_id: 'start-player', run_id: 'moon-alley-start', seed: 42 });
+assert.deepEqual({ region: started.region, difficulty: started.difficulty, max_room: started.max_room }, { region: 'moon_alley', difficulty: 1, max_room: 10 });
+
+const roomConcurrencyDb = seedPlayer('room-concurrency-player');
+roomConcurrencyDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room)
+  VALUES ('room-concurrency-row', 'room-concurrency-player', 'room-concurrency-run', 'season', 'moon_alley', 1, 7, 'active', 0, 10)`).run();
+roomConcurrencyDb.database.prepare(`INSERT INTO telegram_pet_run_rooms
+  (room_id, run_id, telegram_id, room_number, room_type, status, generated_data)
+  VALUES ('room-concurrency-run:1', 'room-concurrency-run', 'room-concurrency-player', 1, 'choice_event', 'pending', '{}')`).run();
+const pendingRoom = { room_id: 'room-concurrency-run:1', room: 1, room_type: 'choice_event', status: 'pending' };
+const concurrentRooms = await Promise.all(Array.from({ length: 12 }, () => persistPetRunRoomOutcome(
+  roomConcurrencyDb,
+  { run_id: 'room-concurrency-run', telegram_id: 'room-concurrency-player' },
+  pendingRoom,
+  { success: true, score: 10 },
+)));
+assert.equal(concurrentRooms.filter(({ duplicate }) => !duplicate).length, 1, 'concurrent room resolution must accept one callback only');
+assert.equal(roomConcurrencyDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_analytics WHERE analytics_id = 'room-concurrency-run:1:resolved'").get().count, 1,
+  'duplicate room callbacks must produce one room completion analytics event');
+
+const roomFailureDb = seedPlayer('room-failure-player');
+roomFailureDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status)
+  VALUES ('room-failure-row', 'room-failure-player', 'room-failure-run', 'season', 'active')`).run();
+roomFailureDb.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id, run_id, telegram_id, room_number, room_type, status, generated_data)
+  VALUES ('room-failure-run:1', 'room-failure-run', 'room-failure-player', 1, 'battle', 'pending', '{}')`).run();
+await persistPetRunRoomOutcome(roomFailureDb, { run_id: 'room-failure-run', telegram_id: 'room-failure-player' },
+  { room_id: 'room-failure-run:1', room: 1, room_type: 'battle', status: 'pending' }, { success: false, reason: 'defeated' });
+assert.equal(roomFailureDb.database.prepare("SELECT json_extract(event_data, '$.outcome.success') AS success FROM telegram_pet_run_analytics WHERE analytics_id = 'room-failure-run:1:resolved'").get().success, 0,
+  'failed rooms must remain visible to backend analytics');
 
 const runDb = seedPlayer('run-player');
 runDb.database.prepare(`INSERT INTO telegram_pet_runs
   (id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room, score)
   VALUES ('run-row', 'run-player', 'run-foundation', 'season', 'moon_alley', 1, 42, 'active', 5, 5, 100)`).run();
 runDb.database.prepare(`INSERT INTO telegram_pet_run_modifiers (run_id, telegram_id, modifier_id, effects_json)
-  VALUES ('run-foundation', 'run-player', 'moon_battery', '{"energy_recovery_pct":20}')`).run();
+  VALUES ('run-foundation', 'run-player', 'low_energy', '{"energy_cost_modifier":5}')`).run();
 const run = { run_id: 'run-foundation', telegram_id: 'run-player', started_at: new Date(Date.now() - 5000).toISOString(), current_room: 5, score: 100 };
-const completions = await Promise.all(Array.from({ length: 8 }, () => completePetRun(runDb, run, { pet_xp: 80, community_xp: 20, moon_gold: 40, moon_crystals: 3, style_tokens: 2 }, { rooms_completed: 5, boss_fought: 'alley_scrapper' })));
+const completions = await Promise.all(Array.from({ length: 8 }, () => completePetRun(runDb, run, { pet_xp: 80, community_xp: 20, moon_gold: 40, moon_crystals: 3, style_tokens: 2 }, { rooms_completed: 5, boss_fought: 'alley_king' })));
 assert.equal(runDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source = 'roguelite_completion'").get().count, 1, 'duplicate completion callbacks cannot duplicate completion rewards');
 assert.equal(runDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'run-player'").get().pet_xp, 80);
 assert.deepEqual({ ...runDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'run-player'").get() },
@@ -196,27 +263,48 @@ assert.equal(completions.filter(({ duplicate }) => !duplicate).length, 1);
 
 const failedDb = seedPlayer('failed-player');
 failedDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status) VALUES ('failed-row', 'failed-player', 'failed-run', 'season', 'active')`).run();
-failedDb.database.prepare(`INSERT INTO telegram_pet_run_modifiers (run_id, telegram_id, modifier_id, effects_json) VALUES ('failed-run', 'failed-player', 'cyber_eyes', '{"critical_chance_pct":15}')`).run();
+failedDb.database.prepare(`INSERT INTO telegram_pet_run_modifiers (run_id, telegram_id, modifier_id, effects_json) VALUES ('failed-run', 'failed-player', 'fast_enemies', '{"enemy_speed_pct":20}')`).run();
 await failPetRun(failedDb, { run_id: 'failed-run', telegram_id: 'failed-player', current_room: 2, score: 4 }, { death_reason: 'health_depleted', rooms_completed: 2 });
 assert.equal(failedDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_reward_claims').get().count, 0, 'failed runs cannot grant completion rewards');
 assert.equal(failedDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_modifiers WHERE run_id = 'failed-run'").get().count, 0, 'failed run modifiers must disappear');
+const failedExtraction = await extractPetRogueliteRun(failedDb, { run_id: 'failed-run', telegram_id: 'failed-player', current_room: 2, score: 4 }, { materials: { neon_scrap: 10 } });
+assert.equal(failedExtraction.status, 'failed', 'a failed run cannot be reopened by extraction');
+assert.equal(failedExtraction.reward, null, 'a failed extraction cannot award loot');
 const abandonedDb = seedPlayer('abandoned-player');
 abandonedDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status) VALUES ('abandoned-row', 'abandoned-player', 'abandoned-run', 'season', 'active')`).run();
-abandonedDb.database.prepare(`INSERT INTO telegram_pet_run_modifiers (run_id, telegram_id, modifier_id, effects_json) VALUES ('abandoned-run', 'abandoned-player', 'ghost_mode', '{"avoid_first_enemy":true}')`).run();
+abandonedDb.database.prepare(`INSERT INTO telegram_pet_run_modifiers (run_id, telegram_id, modifier_id, effects_json) VALUES ('abandoned-run', 'abandoned-player', 'hidden_route', '{"hidden_route":true}')`).run();
 await abandonPetRun(abandonedDb, { run_id: 'abandoned-run', telegram_id: 'abandoned-player', current_room: 1, score: 1 });
 assert.equal(abandonedDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_modifiers WHERE run_id = 'abandoned-run'").get().count, 0, 'abandoned run modifiers must disappear');
+
+const extractionDb = seedPlayer('extraction-player');
+extractionDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status, current_room, max_room, score)
+  VALUES ('extraction-row', 'extraction-player', 'extraction-run', 'season', 'active', 7, 10, 70)`).run();
+const extractions = await Promise.all(Array.from({ length: 8 }, () => extractPetRogueliteRun(extractionDb,
+  { run_id: 'extraction-run', telegram_id: 'extraction-player', current_room: 7, score: 70 },
+  { materials: { neon_scrap: 4 } }, { rooms_completed: 7 })));
+assert.equal(extractions.filter(({ duplicate }) => !duplicate).length, 1, 'duplicate extraction callbacks must finalize once');
+assert.equal(extractionDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'extraction-player' AND asset_key = 'neon_scrap'").get().quantity, 4);
+assert.deepEqual({ ...extractionDb.database.prepare(`SELECT json_extract(event_data, '$.status') AS status,
+  json_extract(event_data, '$.depth') AS depth, json_extract(event_data, '$.rewards.materials.neon_scrap') AS neon_scrap
+  FROM telegram_pet_run_analytics WHERE analytics_id = 'extraction-run:end'`).get() }, { status: 'extracted', depth: 7, neon_scrap: 4 },
+  'run-end analytics must expose successful extraction for extraction-rate aggregation');
 
 const bossDb = seedPlayer('boss-player');
 bossDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status) VALUES ('boss-row', 'boss-player', 'boss-run', 'season', 'active')`).run();
 bossDb.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id, run_id, telegram_id, room_number, room_type, status)
   VALUES ('boss-room', 'boss-run', 'boss-player', 5, 'boss', 'resolved')`).run();
-const bossReward = await rewardPetRogueliteBoss(bossDb, { run_id: 'boss-run', telegram_id: 'boss-player' }, 'alley_scrapper');
+const bossCallbacks = await Promise.all(Array.from({ length: 8 }, () => rewardPetRogueliteBoss(bossDb, { run_id: 'boss-run', telegram_id: 'boss-player' }, 'alley_king')));
+const bossReward = bossCallbacks.find(({ duplicate }) => !duplicate);
 assert.equal(bossReward.pet_xp_awarded, 0, 'repeatable bosses must not be a Pet XP farming source');
 assert.equal(bossReward.xp_awarded, 0, 'repeatable bosses must not be a Community XP farming source');
 assert.equal(bossDb.database.prepare("SELECT source FROM telegram_pet_reward_claims WHERE telegram_id = 'boss-player'").get().source, 'roguelite_boss', 'boss rewards must be routed through the unified reward service');
-assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'boss-player'").get().count, 1);
+assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id = 'boss-player' AND source = 'roguelite_boss'").get().count, 1, 'duplicate boss callbacks cannot duplicate rewards');
+assert.ok(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'boss-player'").get().count <= 1);
+assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_analytics WHERE event_type = 'boss_fought'").get().count, 2,
+  'backend analytics must record one boss attempt and one boss win despite duplicate callbacks');
 assert.deepEqual({ ...bossDb.database.prepare("SELECT health, hunger FROM telegram_pet_profiles WHERE telegram_id = 'boss-player'").get() },
-  { health: 79, hunger: 17 }, 'boss health and hunger recovery must use the same profile reward direction');
+  { health: 71, hunger: 25 }, 'Alley King rewards must preserve the unified authority health derivation and cannot inject need bonuses');
 const boundedRoomCurrency = await awardPetReward(bossDb, {
   telegram_id: 'boss-player', source: 'roguelite_room', idempotency_key: 'bounded-room-currency',
   context: { run_id: 'boss-run', room_id: 'boss-room' }, rewards: { moon_gold: 999999, moon_crystals: 999999, style_tokens: 999999 },
@@ -228,18 +316,18 @@ const recoveryDb = seedPlayer('recovery-player');
 recoveryDb.database.prepare(`INSERT INTO telegram_pet_runs
   (id, telegram_id, run_id, season_key, status, current_room, max_room) VALUES ('recovery-row', 'recovery-player', 'recovery-run', 'season', 'active', 5, 5)`).run();
 recoveryDb.database.prepare(`INSERT INTO telegram_pet_run_modifiers (run_id, telegram_id, modifier_id, effects_json)
-  VALUES ('recovery-run', 'recovery-player', 'ghost_mode', '{"avoid_first_enemy":true}')`).run();
+  VALUES ('recovery-run', 'recovery-player', 'hidden_route', '{"hidden_route":true}')`).run();
 const recoveryRun = { run_id: 'recovery-run', telegram_id: 'recovery-player', current_room: 5, score: 100 };
 recoveryDb.failBatchNumber = 2;
 await assert.rejects(() => completePetRun(recoveryDb, recoveryRun,
   { pet_xp: 30, community_xp: 5, moon_gold: 25, moon_crystals: 2, style_tokens: 1, materials: { dark_alloy: 3 }, items: { evolution_catalyst: 1 }, relics: { alpha_collar: { rarity: 'rare', effects: { battle_power_pct: 15 } } } },
-  { rooms_completed: 5, boss_fought: 'alley_scrapper' }), /injected_batch_failure/);
+  { rooms_completed: 5, boss_fought: 'alley_king' }), /injected_batch_failure/);
 assert.equal(recoveryDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id = 'recovery-run'").get().status, 'completed');
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id = 'recovery-player'").get().count, 0);
 recoveryDb.failBatchNumber = 0;
 await Promise.all(Array.from({ length: 8 }, () => completePetRun(recoveryDb, recoveryRun,
   { pet_xp: 30, community_xp: 5, moon_gold: 25, moon_crystals: 2, style_tokens: 1, materials: { dark_alloy: 3 }, items: { evolution_catalyst: 1 }, relics: { alpha_collar: { rarity: 'rare', effects: { battle_power_pct: 15 } } } },
-  { rooms_completed: 5, boss_fought: 'alley_scrapper' })));
+  { rooms_completed: 5, boss_fought: 'alley_king' })));
 assert.deepEqual({ ...recoveryDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'recovery-player'").get() }, { pet_xp: 30 });
 assert.deepEqual({ ...recoveryDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'recovery-player'").get() },
   { moon_gold: 25, moon_crystals: 2, style_tokens: 1 }, 'retry after partial completion failure must award currencies exactly once');
@@ -253,13 +341,34 @@ for (let index = 0; index < 260; index += 1) {
   const runId = `economy-${index}`, roomId = `${runId}:boss`;
   economyDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status) VALUES (?, 'economy-player', ?, 'season', 'active')`).run(`row-${index}`, runId);
   economyDb.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id, run_id, telegram_id, room_number, room_type, status) VALUES (?, ?, 'economy-player', 5, 'boss', 'resolved')`).run(roomId, runId);
-  await rewardPetRogueliteBoss(economyDb, { run_id: runId, telegram_id: 'economy-player' }, 'alley_scrapper');
+  await rewardPetRogueliteBoss(economyDb, { run_id: runId, telegram_id: 'economy-player' }, 'alley_king');
   economyDb.database.prepare("UPDATE telegram_pet_runs SET status = 'failed' WHERE run_id = ?").run(runId);
 }
 assert.equal(economyDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'").get().pet_xp, 0, 'repeated boss clears cannot farm Pet XP');
 assert.equal(economyDb.database.prepare("SELECT xp FROM telegram_users WHERE telegram_id = 'economy-player'").get().xp, 0, 'repeated boss clears cannot farm Community XP');
 assert.ok(economyDb.database.prepare("SELECT COALESCE(SUM(amount), 0) AS total FROM telegram_pet_reward_assets WHERE asset_type = 'material'").get().total <= 40, 'roguelite materials remain bounded');
 assert.ok(economyDb.database.prepare("SELECT COALESCE(SUM(amount), 0) AS total FROM telegram_pet_reward_assets WHERE asset_type = 'item'").get().total <= 10, 'roguelite items remain bounded');
-assert.equal(economyDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'economy-player'").get().count, 1, 'boss farming cannot duplicate relic ownership');
+assert.ok(economyDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'economy-player'").get().count <= 10, 'boss farming cannot duplicate relic ownership');
+
+let simulatedMaterials = 0;
+let simulatedItems = 0;
+const simulatedRelics = new Set();
+for (let index = 0; index < 10000; index += 1) {
+  const rewards = __rogueliteFoundationTestHooks.buildPetBossRewards(
+    PET_ROGUELITE_BOSSES.alley_king,
+    { run_id: `simulated-moon-alley-${index}` },
+    { room_id: `simulated-moon-alley-${index}:10` },
+  );
+  assert.equal(rewards.pet_xp, 0, '10,000-run simulation cannot create repeatable Pet XP');
+  assert.equal(rewards.community_xp, 0, '10,000-run simulation cannot create repeatable Community XP');
+  const requestedMaterials = Object.values(rewards.materials).reduce((total, amount) => total + amount, 0);
+  const requestedItems = Object.values(rewards.items).reduce((total, amount) => total + amount, 0);
+  simulatedMaterials += Math.min(requestedMaterials, Math.max(0, __rogueliteFoundationTestHooks.DAILY_ROGUELITE_MATERIAL_CAP - simulatedMaterials));
+  simulatedItems += Math.min(requestedItems, Math.max(0, __rogueliteFoundationTestHooks.DAILY_ROGUELITE_ITEM_CAP - simulatedItems));
+  for (const relicId of Object.keys(rewards.relics)) simulatedRelics.add(relicId);
+}
+assert.ok(simulatedMaterials <= 40, '10,000 Moon Alley runs cannot inflate materials beyond the authority cap');
+assert.ok(simulatedItems <= 10, '10,000 Moon Alley runs cannot inflate items beyond the authority cap');
+assert.ok(simulatedRelics.size <= Object.keys(PET_ROGUELITE_RELICS).length, '10,000 Moon Alley runs preserve unique relic ownership');
 
 console.log('Telegram Pets roguelite foundation tests passed.');

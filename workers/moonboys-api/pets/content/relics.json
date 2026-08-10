@@ -1,0 +1,12 @@
+[
+  { "relic_id": "bitcoin_heart", "name": "Bitcoin Heart", "rarity": "rare", "effects": { "start_energy": 10 } },
+  { "relic_id": "infinite_spray_can", "name": "Infinite Spray Can", "rarity": "rare", "effects": { "graffiti_outcome_bonus": 15 } },
+  { "relic_id": "hacker_lens", "name": "Hacker Lens", "rarity": "rare", "effects": { "reveal_hidden_choices": true } },
+  { "relic_id": "neon_boots", "name": "Neon Boots", "rarity": "common", "effects": { "movement_cost_modifier": -1 } },
+  { "relic_id": "golden_sticker", "name": "Golden Sticker", "rarity": "epic", "effects": { "rare_drop_chance_bps": 300 } },
+  { "relic_id": "ghost_tag", "name": "Ghost Tag", "rarity": "rare", "effects": { "avoid_encounters": 1 } },
+  { "relic_id": "moon_battery", "name": "Moon Battery", "rarity": "common", "effects": { "energy_support": 8 } },
+  { "relic_id": "cyber_collar", "name": "Cyber Collar", "rarity": "rare", "effects": { "combat_power_pct": 10 } },
+  { "relic_id": "chain_shield", "name": "Chain Shield", "rarity": "rare", "effects": { "damage_reduction_pct": 10 } },
+  { "relic_id": "lucky_coin", "name": "Lucky Coin", "rarity": "rare", "effects": { "event_outcome_bonus": 10 } }
+]

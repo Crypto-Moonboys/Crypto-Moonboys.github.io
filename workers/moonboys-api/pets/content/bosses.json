@@ -1,0 +1,30 @@
+[
+  {
+    "boss_id": "alley_king",
+    "name": "Alley King",
+    "difficulty": 4,
+    "health": 240,
+    "phases": [
+      { "threshold": 1, "pattern": "crown_slam" },
+      { "threshold": 0.5, "pattern": "neon_overdrive" }
+    ],
+    "rewards": {
+      "materials": { "neon_scrap": 3, "spray_pigment": 1 },
+      "items": { "evolution_fragment": 1 }
+    },
+    "relic_chance_bps": 2500,
+    "relic_pool": [
+      "bitcoin_heart",
+      "infinite_spray_can",
+      "hacker_lens",
+      "neon_boots",
+      "golden_sticker",
+      "ghost_tag",
+      "moon_battery",
+      "cyber_collar",
+      "chain_shield",
+      "lucky_coin"
+    ],
+    "achievement_id": "moon_alley_alley_king"
+  }
+]

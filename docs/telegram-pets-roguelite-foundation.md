@@ -1,6 +1,6 @@
 # Crypto Moonboy Pets Roguelite Foundation
 
-This foundation extends the protected Pet Run Engine shipped in PR #1155. It does not add Telegram commands, UI, paid power, new XP currencies, or unrestricted reward paths.
+This foundation and Moon Alley slice build on the protected Pet reward, run, and activity work shipped in PRs #1155, #1156, and #1157. They do not add Telegram commands, UI, paid power, new XP currencies, or unrestricted reward paths.
 
 ## Reward authority
 
@@ -15,6 +15,27 @@ All new roguelite modes must call `awardPetReward()` from `workers/moonboys-api/
 Existing Events, Kaiju, Jobs, Activities, Adventure, Arena, and legacy run banking now finalize through this authority. Event and Kaiju flows retain the PR #1155 pending reservation, repeat-slot, Energy-payment, original accounting-window, and callback recovery protections; the reservation ID is handed to `awardPetReward()` for atomic finalization. New modes cannot self-register an arbitrary source: the authority rejects sources outside its reviewed allowlist.
 
 Repeatable roguelite materials and items have daily service-level ceilings of 40 and 10 respectively. The starter boss awards no Pet XP or Community XP and instead uses materials, an evolution item, and idempotent relic ownership. Boss, room, and completion requests must prove a matching persisted run/room state before a claim can be created.
+
+## Moon Alley vertical slice
+
+Moon Alley is the first playable region catalog. It is a difficulty-one cyberpunk street-graffiti district with a ten-room default run:
+
+1. Alley Entrance
+2. Graffiti Wall
+3. Rival Encounter
+4. Hidden Cache
+5. Street Market
+6. Underground Tunnel
+7. Police Heat
+8. Neon Shortcut
+9. Elite Encounter
+10. Boss Room, which unlocks Alley King
+
+The server walks the authored room pool in order and deterministically selects encounter enemies from the persisted run seed. Street Rat, Rival Moonpet, and Cyber Guard are the initial enemy pool. A run can fail, be abandoned, complete, or extract; every terminal transition deletes its temporary modifiers, and duplicate terminal callbacks reuse the persisted terminal state.
+
+Alley King uses the existing boss and reward authority. A valid resolved boss room can award bounded Neon Scrap, Spray Pigment, one Evolution Fragment, and a deterministic 25% relic roll. It awards no repeatable Pet XP or Community XP. The ten relic definitions are persistent collectible ownership records; their gameplay effects are cataloged for later activation and are not XP multipliers, cap bonuses, or direct reward-authority bypasses. The ten run modifiers are temporary rows removed at run end.
+
+Backend analytics record run starts, room outcomes, modifier choices, boss attempts, boss wins, terminal status/depth, applied reward bundles, and relic discoveries. These raw events support room completion/failure counts, extraction rate, average depth, reward averages, and discovery reporting without adding a UI.
 
 ## Migration requirement
 
@@ -48,11 +69,22 @@ Because 042 is a table rebuild, a failed or partially manual application must be
 
 ## Expansion points
 
-- Add enemies, events, loot and bosses to the region pools without changing run persistence.
+- Add or revise content under `workers/moonboys-api/pets/content/`: `regions.json`, `rooms.json`, `enemies.json`, `bosses.json`, `relics.json`, and `modifiers.json`. Keep future regions and encounters out of `worker.js`.
+- Reference only IDs that already exist in the relevant catalog. Import-time validation rejects missing room, enemy, boss, and relic references.
+- Add enemies, events, loot and bosses to reviewed region pools without changing run persistence.
 - Add room resolvers behind `generatePetRunRoom`, `persistPetRunRoomOutcome`, `rewardPetRunRoom`, and `advancePetRun`.
 - Add run-only modifiers only through `choosePetRunModifier`; validation rejects XP, cap, and permanent-stat effects.
 - Add boss definitions to `PET_ROGUELITE_BOSSES`; `rewardPetRogueliteBoss` always routes their drops through `awardPetReward`.
 - Add permanent relic activation separately from run modifiers. Relic reward bonuses must still produce a requested bundle that is capped and claimed by the reward service.
-- Add APIs and Telegram controls in later PRs. This PR deliberately exposes no new command surface.
+- Re-run the content validation, callback/concurrency tests, and the 10,000-run economy simulation for every content expansion.
 
-The target loop remains: Care → Prepare → Run → Fight → Loot → Upgrade → Evolve → Repeat.
+## Content reward rules
+
+- Enemy, room, boss, extraction, and completion rewards must call `awardPetReward()` with a stable server-generated idempotency key.
+- Repeatable bosses must not award Pet XP or Community XP. Do not add XP multipliers, daily-cap bonuses, permanent-stat mutation, direct currency writes, or inventory writes to content effects.
+- Materials and items remain subject to the authority's daily caps; relic ownership remains unique through `telegram_pet_relics`.
+- Boss and room rewards require a matching resolved persisted room, and completion/extraction rewards require a matching terminal run state.
+- Relic probability and room selection must be deterministic from persisted run identifiers so retries cannot reroll outcomes.
+- New content does not imply that every cataloged effect is active. Activation belongs in a separately reviewed integration that preserves these rules.
+
+The Moon Alley loop is: Care → Prepare → Enter Moon Alley → Make choices → Fight → Loot → Extract → Upgrade → Repeat.

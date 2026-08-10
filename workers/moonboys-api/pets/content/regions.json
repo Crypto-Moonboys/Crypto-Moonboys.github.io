@@ -1,0 +1,24 @@
+[
+  {
+    "region_id": "moon_alley",
+    "name": "Moon Alley",
+    "theme": "Cyberpunk street graffiti district",
+    "difficulty": 1,
+    "max_rooms": 10,
+    "room_pool": [
+      "alley_entrance",
+      "graffiti_wall",
+      "rival_encounter",
+      "hidden_cache",
+      "street_market",
+      "underground_tunnel",
+      "police_heat",
+      "neon_shortcut",
+      "elite_encounter",
+      "boss_room"
+    ],
+    "enemy_pool": ["street_rat", "rival_moonpet", "cyber_guard"],
+    "boss_pool": ["alley_king"],
+    "reward_pool": ["neon_scrap", "spray_pigment", "evolution_fragment", "relic_drop"]
+  }
+]

@@ -1,0 +1,104 @@
+[
+  {
+    "room_id": "alley_entrance",
+    "name": "Alley Entrance",
+    "room_type": "choice_event",
+    "choices": [
+      { "choice_id": "explore", "label": "Explore" },
+      { "choice_id": "fight", "label": "Fight" },
+      { "choice_id": "search", "label": "Search" }
+    ]
+  },
+  {
+    "room_id": "graffiti_wall",
+    "name": "Graffiti Wall",
+    "room_type": "choice_event",
+    "choices": [
+      { "choice_id": "tag_wall", "label": "Tag wall" },
+      { "choice_id": "help_artist", "label": "Help artist" },
+      { "choice_id": "ignore", "label": "Ignore" }
+    ]
+  },
+  {
+    "room_id": "rival_encounter",
+    "name": "Rival Encounter",
+    "room_type": "battle",
+    "enemy_pool": ["rival_moonpet"],
+    "choices": [
+      { "choice_id": "challenge", "label": "Challenge" },
+      { "choice_id": "sneak_past", "label": "Sneak past" },
+      { "choice_id": "trade", "label": "Trade" }
+    ]
+  },
+  {
+    "room_id": "hidden_cache",
+    "name": "Hidden Cache",
+    "room_type": "loot",
+    "choices": [
+      { "choice_id": "open_cache", "label": "Open cache" },
+      { "choice_id": "scan_cache", "label": "Scan cache" },
+      { "choice_id": "leave", "label": "Leave" }
+    ]
+  },
+  {
+    "room_id": "street_market",
+    "name": "Street Market",
+    "room_type": "choice_event",
+    "choices": [
+      { "choice_id": "buy_supplies", "label": "Buy supplies" },
+      { "choice_id": "trade", "label": "Trade" },
+      { "choice_id": "gamble", "label": "Gamble" }
+    ]
+  },
+  {
+    "room_id": "underground_tunnel",
+    "name": "Underground Tunnel",
+    "room_type": "choice_event",
+    "choices": [
+      { "choice_id": "shortcut", "label": "Shortcut" },
+      { "choice_id": "explore", "label": "Explore" },
+      { "choice_id": "retreat", "label": "Retreat" }
+    ]
+  },
+  {
+    "room_id": "police_heat",
+    "name": "Police Heat",
+    "room_type": "battle",
+    "enemy_pool": ["street_rat", "cyber_guard"],
+    "choices": [
+      { "choice_id": "escape", "label": "Escape" },
+      { "choice_id": "hide", "label": "Hide" },
+      { "choice_id": "confront", "label": "Confront" }
+    ]
+  },
+  {
+    "room_id": "neon_shortcut",
+    "name": "Neon Shortcut",
+    "room_type": "choice_event",
+    "choices": [
+      { "choice_id": "speed_route", "label": "Speed route" },
+      { "choice_id": "safe_route", "label": "Safe route" },
+      { "choice_id": "risk_route", "label": "Risk route" }
+    ]
+  },
+  {
+    "room_id": "elite_encounter",
+    "name": "Elite Encounter",
+    "room_type": "elite",
+    "enemy_pool": ["cyber_guard"],
+    "choices": [
+      { "choice_id": "fight", "label": "Fight" },
+      { "choice_id": "escape", "label": "Escape" },
+      { "choice_id": "steal_loot", "label": "Steal loot" }
+    ]
+  },
+  {
+    "room_id": "boss_room",
+    "name": "Boss Room",
+    "room_type": "boss",
+    "boss_id": "alley_king",
+    "choices": [
+      { "choice_id": "challenge_alley_king", "label": "Challenge Alley King" }
+    ]
+  }
+]
