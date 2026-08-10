@@ -32,6 +32,7 @@ const {
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
+  processPetAdventure,
   getPetInventory,
   processPetUseItem,
   processPetRunExtract,
@@ -1391,6 +1392,56 @@ assert.equal(usedBankedItem.accepted, true, 'a banked run item must be usable');
 assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 0,
   'using a banked run item must consume its authoritative balance');
 
+async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
+  const db = seedRepeatRewardPlayer(telegramId, 18);
+  const originalRandom = Math.random;
+  Math.random = () => randomValue;
+  let result;
+  try {
+    result = await processPetAdventure(db, telegramId, 'push_forward', {
+      encounter_key: 'moon_alley', event_key: eventKey, source: 'adventure_energy_regression',
+    });
+  } finally {
+    Math.random = originalRandom;
+  }
+  return { db, result };
+}
+
+const moonAlleySuccess = await runMoonAlleyEnergyFixture('adventure-energy-success', 0.99, 'adventure-energy-success');
+assert.equal(moonAlleySuccess.result.accepted, true, 'Moon Alley must accept a pet with exactly its required 18 Energy');
+assert.equal(moonAlleySuccess.result.applied.costsApplied.energy, 16, 'the deterministic success fixture must roll the expected Energy cost');
+assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
+  'an accepted Moon Alley adventure must deduct its rolled Energy cost exactly once without extra drain');
+const duplicateMoonAlleySuccess = await processPetAdventure(moonAlleySuccess.db, 'adventure-energy-success', 'push_forward', {
+  encounter_key: 'moon_alley', event_key: 'adventure-energy-success', source: 'adventure_energy_regression',
+});
+assert.equal(duplicateMoonAlleySuccess.duplicate, true, 'a duplicate successful adventure callback must be idempotent');
+assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
+  'a duplicate successful adventure callback must not charge Energy again');
+
+const moonAlleyRisk = await runMoonAlleyEnergyFixture('adventure-energy-risk', 0, 'adventure-energy-risk');
+assert.equal(moonAlleyRisk.result.accepted, true, 'a Moon Alley risk outcome must settle through the reward authority');
+assert.equal(moonAlleyRisk.result.applied.costsApplied.energy, 13, 'the deterministic risk fixture must roll the expected Energy cost');
+assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
+  'a failed adventure outcome must consume only its rolled Energy cost and never drain below zero');
+const duplicateMoonAlleyRisk = await processPetAdventure(moonAlleyRisk.db, 'adventure-energy-risk', 'push_forward', {
+  encounter_key: 'moon_alley', event_key: 'adventure-energy-risk', source: 'adventure_energy_regression',
+});
+assert.equal(duplicateMoonAlleyRisk.duplicate, true, 'a duplicate failed adventure callback must be idempotent');
+assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
+  'a duplicate failed adventure callback must not consume Energy twice');
+
+const tiredMoonAlleyDb = seedRepeatRewardPlayer('adventure-energy-tired', 17);
+const tiredMoonAlleyRequest = {
+  encounter_key: 'moon_alley', event_key: 'adventure-energy-tired', source: 'adventure_energy_regression',
+};
+const firstTiredMoonAlley = await processPetAdventure(tiredMoonAlleyDb, 'adventure-energy-tired', 'push_forward', tiredMoonAlleyRequest);
+const retriedTiredMoonAlley = await processPetAdventure(tiredMoonAlleyDb, 'adventure-energy-tired', 'push_forward', tiredMoonAlleyRequest);
+assert.equal(firstTiredMoonAlley.reason, 'pet_tired', 'Moon Alley must reject a pet below the required 18 Energy');
+assert.equal(retriedTiredMoonAlley.reason, 'pet_tired', 'retrying a rejected adventure must remain rejected');
+assert.equal(tiredMoonAlleyDb.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-tired'").get().energy, 17,
+  'a failed adventure and its retry must not consume Energy');
+
 const runChoiceItemDb = seedRepeatRewardPlayer('run-choice-item', 90);
 runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_runs
   (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
@@ -1823,6 +1874,8 @@ assert.ok(randomEventHardening.includes('buildPetProfileDeltas(rewardsApplied, c
 assert.ok(!randomEventHardening.includes('savePetProfile(db, pet)'), 'Event rewards must not overwrite concurrent profile changes with a stale full-profile save');
 
 assert.ok(adventure.includes('buildPetProfileDeltas(applied.rewardsApplied, {'), 'Adventure hunger costs and recovery must use the centralized negative-stat direction');
+assert.ok(adventure.includes('energy: Number(applied.costsApplied.energy || 0),'), 'Adventure profile deltas must use only the rolled Energy cost');
+assert.ok(!adventure.includes('+ adventure.energy_cost'), 'Adventure profile deltas must not charge the base Energy cost a second time');
 
 const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
 assert.ok(kaijuHardening.indexOf('getPetProfileWithAtomicDecay') < kaijuHardening.indexOf('reservePetRepeatRewardEvent'), 'Kaiju must persist current stat decay before atomically claiming Energy and a reward slot');

@@ -3877,7 +3877,7 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   );
   const profileDeltas = buildPetProfileDeltas(applied.rewardsApplied, {
     ...applied.costsApplied,
-    energy: Number(applied.costsApplied.energy || 0) + adventure.energy_cost,
+    energy: Number(applied.costsApplied.energy || 0),
   });
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_adventure', idempotency_key: eventKey, event_key: eventKey,
@@ -9993,6 +9993,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetRepeatRewardMultiplier,
   parsePetRepeatRewardReservation,
   processPetRandomEvent,
+  processPetAdventure,
   getPetInventory,
   processPetUseItem,
   processPetRunExtract,
