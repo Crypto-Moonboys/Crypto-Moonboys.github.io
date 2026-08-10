@@ -1,0 +1,23 @@
+[
+  {
+    "enemy_id": "street_rat",
+    "name": "Street Rat",
+    "role": "common",
+    "difficulty": 1,
+    "reward_pool": ["neon_scrap"]
+  },
+  {
+    "enemy_id": "rival_moonpet",
+    "name": "Rival Moonpet",
+    "role": "mid_encounter",
+    "difficulty": 2,
+    "reward_pool": ["neon_scrap", "spray_pigment"]
+  },
+  {
+    "enemy_id": "cyber_guard",
+    "name": "Cyber Guard",
+    "role": "elite",
+    "difficulty": 3,
+    "reward_pool": ["spray_pigment", "relic_drop"]
+  }
+]

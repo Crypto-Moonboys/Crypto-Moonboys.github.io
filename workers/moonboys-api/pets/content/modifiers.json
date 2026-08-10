@@ -1,0 +1,12 @@
+[
+  { "modifier_id": "double_loot", "name": "Double Loot", "effects": { "loot_rolls": 2 } },
+  { "modifier_id": "dark_alley", "name": "Dark Alley", "effects": { "room_visibility": "dark" } },
+  { "modifier_id": "no_healing", "name": "No Healing", "effects": { "healing_disabled": true } },
+  { "modifier_id": "fast_enemies", "name": "Fast Enemies", "effects": { "enemy_speed_pct": 20 } },
+  { "modifier_id": "low_energy", "name": "Low Energy", "effects": { "energy_cost_modifier": 5 } },
+  { "modifier_id": "hidden_route", "name": "Hidden Route", "effects": { "hidden_route": true } },
+  { "modifier_id": "boss_rush", "name": "Boss Rush", "effects": { "boss_rooms_only": true } },
+  { "modifier_id": "rare_cache", "name": "Rare Cache", "effects": { "rare_cache_chance_bps": 1500 } },
+  { "modifier_id": "glass_cannon", "name": "Glass Cannon", "effects": { "damage_dealt_pct": 40, "damage_taken_pct": 40 } },
+  { "modifier_id": "lucky_run", "name": "Lucky Run", "effects": { "event_outcome_pct": 15 } }
+]

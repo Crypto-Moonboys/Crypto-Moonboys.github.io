@@ -1,3 +1,26 @@
+import {
+  PET_ROGUELITE_BOSSES,
+  PET_ROGUELITE_ENEMIES,
+  PET_ROGUELITE_REGIONS,
+  PET_ROGUELITE_RELICS,
+  PET_ROGUELITE_ROOMS,
+  PET_RUN_MODIFIERS,
+  validatePetRelicContent,
+  validatePetRogueliteContent,
+  validatePetRunModifierContent,
+} from './content/index.js';
+
+export {
+  PET_ROGUELITE_BOSSES,
+  PET_ROGUELITE_ENEMIES,
+  PET_ROGUELITE_REGIONS,
+  PET_ROGUELITE_RELICS,
+  PET_ROGUELITE_ROOMS,
+  PET_RUN_MODIFIERS,
+  validatePetRelicContent,
+  validatePetRogueliteContent,
+};
+
 const DAILY_PET_XP_CAP = 1200;
 const DAILY_COMMUNITY_XP_CAP = 250;
 const DAILY_ROGUELITE_MATERIAL_CAP = 40;
@@ -7,59 +30,14 @@ const MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM = 5;
 const MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM = 5;
 const MAX_CURRENCY = 999999;
 
-export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 'abandoned']);
+export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 'abandoned', 'extracted']);
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
 export const PET_REWARD_SOURCES = Object.freeze([
   'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action', 'pet_item_use',
   'roguelite_room', 'roguelite_boss', 'roguelite_completion',
 ]);
 
-export const PET_ROGUELITE_REGIONS = Object.freeze({
-  moon_alley: Object.freeze({
-    region_id: 'moon_alley', name: 'Moon Alley', difficulty: 1,
-    enemy_pool: Object.freeze(['alley_rat', 'scrap_drone']),
-    event_pool: Object.freeze(['graffiti_cache']),
-    boss_pool: Object.freeze(['alley_scrapper']),
-    reward_pool: Object.freeze(['scrap_metal', 'moon_gold']),
-  }),
-  neon_district: Object.freeze({
-    region_id: 'neon_district', name: 'Neon District', difficulty: 2,
-    enemy_pool: Object.freeze(['neon_hound', 'signal_thief']),
-    event_pool: Object.freeze(['holo_vendor']),
-    boss_pool: Object.freeze(['neon_enforcer']),
-    reward_pool: Object.freeze(['circuit_shard', 'style_tokens']),
-  }),
-  dark_chain_sector: Object.freeze({
-    region_id: 'dark_chain_sector', name: 'Dark Chain Sector', difficulty: 3,
-    enemy_pool: Object.freeze(['chain_wraith', 'void_miner']),
-    event_pool: Object.freeze(['broken_validator']),
-    boss_pool: Object.freeze(['chain_warden']),
-    reward_pool: Object.freeze(['dark_alloy', 'moon_crystals']),
-  }),
-});
-
-export const PET_ROGUELITE_BOSSES = Object.freeze({
-  alley_scrapper: Object.freeze({
-    boss_id: 'alley_scrapper', name: 'Alley Scrapper', difficulty: 1, health: 180,
-    phases: Object.freeze([{ threshold: 1, pattern: 'scrap_swing' }, { threshold: 0.4, pattern: 'overclock' }]),
-    rewards: Object.freeze({
-      health: 4,
-      hunger: 8,
-      materials: { scrap_metal: 2 },
-      items: { evolution_catalyst: 1 },
-      relics: { golden_bitcoin: { rarity: 'rare', effects: { reward_bonus_pct: 5 } } },
-    }),
-  }),
-});
-
-export const PET_RUN_MODIFIERS = Object.freeze({
-  moon_battery: Object.freeze({ modifier_id: 'moon_battery', name: 'Moon Battery', effects: { energy_recovery_pct: 20 } }),
-  cyber_eyes: Object.freeze({ modifier_id: 'cyber_eyes', name: 'Cyber Eyes', effects: { critical_chance_pct: 15 } }),
-  ghost_mode: Object.freeze({ modifier_id: 'ghost_mode', name: 'Ghost Mode', effects: { avoid_first_enemy: true } }),
-});
-
 const PERMANENT_REWARD_KEYS = new Set(['pet_xp', 'community_xp', 'moon_gold', 'moon_crystals', 'style_tokens', 'materials', 'items', 'relics']);
-const ALLOWED_RUN_MODIFIER_EFFECTS = new Set(['energy_recovery_pct', 'critical_chance_pct', 'avoid_first_enemy', 'battle_power_pct', 'event_outcome_pct']);
 const PET_RELIC_RARITIES = new Set(['common', 'rare', 'epic', 'legendary']);
 
 function positiveInteger(value, ceiling = MAX_CURRENCY) {
@@ -125,18 +103,7 @@ function normalizeCurrencyCosts(value = {}) {
 }
 
 export function validatePetRunModifier(modifier) {
-  const effects = modifier?.effects;
-  if (!effects || typeof effects !== 'object' || Array.isArray(effects)) throw new Error('invalid_run_modifier_effects');
-  const inspect = (value) => {
-    for (const [rawKey, nested] of Object.entries(value || {})) {
-      const key = String(rawKey).toLowerCase();
-      if (!ALLOWED_RUN_MODIFIER_EFFECTS.has(key) || (nested && typeof nested === 'object')) {
-        throw new Error('run_modifier_cannot_change_permanent_rewards');
-      }
-    }
-  };
-  inspect(effects);
-  return true;
+  return validatePetRunModifierContent(modifier);
 }
 
 function getRewardAuthorization(source, telegramId, context = {}) {
@@ -144,7 +111,7 @@ function getRewardAuthorization(source, telegramId, context = {}) {
   const roomId = String(context.room_id || '').trim();
   if (source === 'roguelite_completion') {
     if (!runId) throw new Error('invalid_pet_reward_context');
-    return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = 'completed')", args: [runId, telegramId] };
+    return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('completed', 'extracted'))", args: [runId, telegramId] };
   }
   if (source === 'pet_run_legacy') {
     if (!runId) throw new Error('invalid_pet_reward_context');
@@ -334,11 +301,55 @@ export async function awardPetReward(db, request = {}) {
   };
 }
 
+function stableContentRoll(value) {
+  let hash = 2166136261;
+  for (const char of String(value || '')) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+  return hash >>> 0;
+}
+
+function pickContentId(pool, roll) {
+  return Array.isArray(pool) && pool.length > 0 ? pool[roll % pool.length] : null;
+}
+
+function buildPetBossRewards(boss, run, room) {
+  const rewards = normalizePetReward(boss.rewards);
+  const rollKey = `${run.run_id}:${room.room_id}:${boss.boss_id}`;
+  const chanceRoll = stableContentRoll(`${rollKey}:chance`) % 10000;
+  if (chanceRoll >= positiveInteger(boss.relic_chance_bps, 10000)) return rewards;
+  const relicId = pickContentId(boss.relic_pool, stableContentRoll(`${rollKey}:relic`));
+  const relic = PET_ROGUELITE_RELICS[relicId];
+  if (!relic) return rewards;
+  return { ...rewards, relics: { [relicId]: { rarity: relic.rarity, effects: relic.effects } } };
+}
+
 export function generatePetRunRoom(run) {
   const room = Math.max(1, Number(run.current_room || 0) + 1);
   const maxRoom = Math.max(room, Number(run.max_room || 5));
-  const roomType = room === maxRoom ? 'boss' : PET_ROOM_TYPES[(Number(run.seed || 0) + room - 1) % (PET_ROOM_TYPES.length - 1)];
-  return { room_id: `${run.run_id}:${room}`, run_id: run.run_id, room, room_type: roomType, status: 'pending' };
+  const region = PET_ROGUELITE_REGIONS[String(run.region || 'moon_alley')] || PET_ROGUELITE_REGIONS.moon_alley;
+  const seed = Math.floor(Number(run.seed) || 0);
+  const bossRooms = region.room_pool.filter((roomId) => PET_ROGUELITE_ROOMS[roomId]?.room_type === 'boss');
+  const regularRooms = region.room_pool.filter((roomId) => PET_ROGUELITE_ROOMS[roomId]?.room_type !== 'boss');
+  const contentId = room === maxRoom
+    ? pickContentId(bossRooms, stableContentRoll(`${seed}:${room}:boss`))
+    : pickContentId(regularRooms, room - 1);
+  const definition = PET_ROGUELITE_ROOMS[contentId];
+  if (!definition) throw new Error('missing_pet_roguelite_room_content');
+  const enemyPool = definition.enemy_pool?.length ? definition.enemy_pool : region.enemy_pool;
+  const enemyId = ['battle', 'elite'].includes(definition.room_type)
+    ? pickContentId(enemyPool, stableContentRoll(`${seed}:${room}:enemy`))
+    : null;
+  return {
+    room_id: `${run.run_id}:${room}`,
+    run_id: run.run_id,
+    room,
+    content_id: definition.room_id,
+    name: definition.name,
+    room_type: definition.room_type,
+    choices: definition.choices,
+    enemy_id: enemyId,
+    boss_id: definition.boss_id || null,
+    status: 'pending',
+  };
 }
 
 export function resolvePetRunRoom(room, outcome = {}) {
@@ -352,7 +363,7 @@ export async function startPetRogueliteRun(db, request = {}) {
   if (!telegramId || !region) throw new Error('invalid_pet_roguelite_run');
   const runId = String(request.run_id || `rogue-${crypto.randomUUID()}`).slice(0, 120);
   const seed = Math.floor(Number(request.seed) || 0);
-  const maxRoom = Math.max(1, Math.min(100, Math.floor(Number(request.max_room) || 5)));
+  const maxRoom = Math.max(1, Math.min(100, Math.floor(Number(request.max_room) || region.max_rooms || 10)));
   const seasonKey = String(request.season_key || `pet-s${new Date().getUTCFullYear()}-001`);
   const analyticsId = `${runId}:start`;
   const results = await db.batch([
@@ -408,7 +419,7 @@ export async function choosePetRunModifier(db, run, modifierId) {
 
 export async function rewardPetRunRoom(db, run, room, rewards = {}, costs = {}) {
   if (room?.status !== 'resolved') return { accepted: false, reason: 'room_not_resolved' };
-  return awardPetReward(db, {
+  const awarded = await awardPetReward(db, {
     telegram_id: run.telegram_id,
     source: 'roguelite_room',
     idempotency_key: room.room_id,
@@ -416,6 +427,12 @@ export async function rewardPetRunRoom(db, run, room, rewards = {}, costs = {}) 
     profile_deltas: buildPetProfileDeltas(rewards, costs),
     context: { run_id: run.run_id, room_id: room.room_id, room: room.room, room_type: room.room_type },
   });
+  if (awarded.accepted && !awarded.duplicate) {
+    await db.prepare(`UPDATE telegram_pet_run_analytics SET event_data = json_set(event_data,
+      '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
+      .bind(safeJson(awarded.rewards), safeJson(Object.keys(awarded.rewards?.relics || {})), `${room.room_id}:resolved`).run();
+  }
+  return awarded;
 }
 
 export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
@@ -428,26 +445,43 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
       .bind(run.run_id, run.telegram_id).first().catch(() => null);
   if (!persistedRoom?.room_id) return { accepted: false, reason: 'boss_room_not_resolved', pet_xp_awarded: 0, xp_awarded: 0 };
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-    VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}`, run.run_id, run.telegram_id, safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, name: boss.name, difficulty: boss.difficulty })).run();
-  return awardPetReward(db, {
+    VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:attempt`, run.run_id, run.telegram_id,
+      safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, name: boss.name, difficulty: boss.difficulty, outcome: 'attempt' })).run();
+  const rewards = buildPetBossRewards(boss, run, persistedRoom);
+  const awarded = await awardPetReward(db, {
     telegram_id: run.telegram_id,
     source: 'roguelite_boss',
     idempotency_key: `${persistedRoom.room_id}:${bossId}`,
-    rewards: boss.rewards,
-    profile_deltas: buildPetProfileDeltas(boss.rewards, boss.costs),
+    rewards,
+    profile_deltas: buildPetProfileDeltas(rewards, boss.costs),
     context: { run_id: run.run_id, room_id: persistedRoom.room_id, boss_id: bossId },
   });
+  if (awarded.accepted && !awarded.duplicate) {
+    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
+      VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`, run.run_id, run.telegram_id,
+        safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: awarded.rewards,
+          relics_discovered: Object.keys(awarded.rewards?.relics || {}), achievement_id: boss.achievement_id || null })).run();
+  }
+  return awarded;
 }
 
 export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
   if (!PET_RUN_STATUSES.includes(status) || status === 'active') throw new Error('invalid_terminal_run_status');
   const durationSeconds = Math.max(0, Math.floor((Date.now() - new Date(run.started_at || Date.now()).getTime()) / 1000));
   const finalizationId = `${run.run_id}:end`;
+  const roomsCompleted = positiveInteger(analytics.rooms_completed ?? run.current_room);
+  const terminalAnalytics = {
+    status,
+    depth: roomsCompleted,
+    duration_seconds: durationSeconds,
+    extracted: status === 'extracted',
+    ...analytics,
+  };
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_runs SET status = ?, ended_at = CURRENT_TIMESTAMP, completed_at = CURRENT_TIMESTAMP,
         death_reason = ?, rewards_earned = ?, rooms_completed = ?, modifiers_chosen = ?, boss_fought = ?, updated_at = CURRENT_TIMESTAMP
         WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable') RETURNING run_id`)
-      .bind(status, analytics.death_reason || null, safeJson(analytics.rewards_earned || {}), positiveInteger(analytics.rooms_completed), safeJson(analytics.modifiers_chosen || []), analytics.boss_fought || null, run.run_id, run.telegram_id),
+      .bind(status, analytics.death_reason || null, safeJson(analytics.rewards_earned || {}), roomsCompleted, safeJson(analytics.modifiers_chosen || []), analytics.boss_fought || null, run.run_id, run.telegram_id),
     db.prepare(`DELETE FROM telegram_pet_run_modifiers WHERE run_id = ?
       AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = ?)`)
       .bind(run.run_id, run.run_id, run.telegram_id, status),
@@ -465,12 +499,12 @@ export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
           WHEN fastest_completion_seconds IS NULL THEN excluded.fastest_completion_seconds ELSE MIN(fastest_completion_seconds, excluded.fastest_completion_seconds) END,
         rare_discoveries = CASE WHEN excluded.rare_discoveries = '[]' THEN rare_discoveries ELSE excluded.rare_discoveries END,
         updated_at = CURRENT_TIMESTAMP`)
-      .bind(run.telegram_id, status === 'completed' ? 1 : 0, status === 'completed' && analytics.boss_fought ? 1 : 0,
-        positiveInteger(analytics.rooms_completed ?? run.current_room), positiveInteger(run.score), status === 'completed' ? durationSeconds : null,
+      .bind(run.telegram_id, ['completed', 'extracted'].includes(status) ? 1 : 0, ['completed', 'extracted'].includes(status) && analytics.boss_fought ? 1 : 0,
+        roomsCompleted, positiveInteger(run.score), ['completed', 'extracted'].includes(status) ? durationSeconds : null,
         safeJson(analytics.rare_discoveries || []), run.run_id, run.telegram_id, status, finalizationId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
       SELECT ?, ?, ?, 'run_end', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = ?)`)
-      .bind(finalizationId, run.run_id, run.telegram_id, safeJson({ status, ...analytics }), run.run_id, run.telegram_id, status),
+      .bind(finalizationId, run.run_id, run.telegram_id, safeJson(terminalAnalytics), run.run_id, run.telegram_id, status),
   ]);
   const terminal = results?.[0]?.results?.[0];
   if (!terminal) {
@@ -496,12 +530,35 @@ export async function completePetRun(db, run, completionRewards = {}, analytics 
     rewards: completionRewards,
     context: { run_id: run.run_id, rooms_completed: analytics.rooms_completed ?? run.current_room },
   });
+  if (reward.accepted && !reward.duplicate) {
+    await db.prepare(`UPDATE telegram_pet_run_analytics SET event_data = json_set(event_data,
+      '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
+      .bind(safeJson(reward.rewards), safeJson(Object.keys(reward.rewards?.relics || {})), `${run.run_id}:end`).run();
+  }
+  return { ...terminal, reward };
+}
+export async function extractPetRogueliteRun(db, run, extractionRewards = {}, analytics = {}) {
+  const terminal = await finishPetRogueliteRun(db, run, 'extracted', { ...analytics, extracted: true });
+  if (terminal.status !== 'extracted') return { ...terminal, reward: null };
+  const reward = await awardPetReward(db, {
+    telegram_id: run.telegram_id,
+    source: 'roguelite_completion',
+    idempotency_key: `${run.run_id}:extract`,
+    rewards: extractionRewards,
+    context: { run_id: run.run_id, rooms_completed: analytics.rooms_completed ?? run.current_room, extracted: true },
+  });
+  if (reward.accepted && !reward.duplicate) {
+    await db.prepare(`UPDATE telegram_pet_run_analytics SET event_data = json_set(event_data,
+      '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
+      .bind(safeJson(reward.rewards), safeJson(Object.keys(reward.rewards?.relics || {})), `${run.run_id}:end`).run();
+  }
   return { ...terminal, reward };
 }
 export const failPetRun = (db, run, analytics = {}) => finishPetRogueliteRun(db, run, 'failed', analytics);
 export const abandonPetRun = (db, run, analytics = {}) => finishPetRogueliteRun(db, run, 'abandoned', analytics);
 
 export const __rogueliteFoundationTestHooks = Object.freeze({
+  buildPetBossRewards,
   DAILY_PET_XP_CAP,
   DAILY_COMMUNITY_XP_CAP,
   DAILY_ROGUELITE_MATERIAL_CAP,
