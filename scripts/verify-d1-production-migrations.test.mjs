@@ -34,6 +34,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 042',
 );
 
+const withoutIdentityExpansion = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '043_telegram_pet_identity_expansion.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutIdentityExpansion),
+  /missing required migrations: 043_telegram_pet_identity_expansion\.sql/,
+  'deployment verification must reject an evidence request that omits migration 043',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -55,6 +65,14 @@ assert.throws(
   }], request),
   /missing migrations: 042_telegram_pet_roguelite_foundation\.sql/,
   'deployment verification must fail when production D1 has not applied migration 042',
+);
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '043_telegram_pet_identity_expansion.sql'),
+  }], request),
+  /missing migrations: 043_telegram_pet_identity_expansion\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 043',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');
