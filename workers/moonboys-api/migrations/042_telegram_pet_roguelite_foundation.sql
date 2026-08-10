@@ -120,6 +120,26 @@ CREATE TABLE telegram_pet_inventory (
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
+-- Materialize legacy event-ledger items once. From this migration onward,
+-- telegram_pet_inventory is the only balance authority; events remain audit-only.
+INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+SELECT telegram_id, 'item', asset_key, SUM(quantity_delta)
+FROM (
+  SELECT telegram_id,
+    COALESCE(json_extract(metadata, '$.item_key'), json_extract(metadata, '$.inventory_key')) AS asset_key,
+    MAX(1, CAST(COALESCE(json_extract(metadata, '$.count'), 1) AS INTEGER)) AS quantity_delta
+  FROM telegram_pet_events
+  WHERE status = 'accepted' AND json_valid(metadata)
+    AND COALESCE(json_extract(metadata, '$.item_key'), json_extract(metadata, '$.inventory_key')) IS NOT NULL
+  UNION ALL
+  SELECT telegram_id, json_extract(metadata, '$.consumed_item_key') AS asset_key, -1 AS quantity_delta
+  FROM telegram_pet_events
+  WHERE status = 'accepted' AND json_valid(metadata) AND json_extract(metadata, '$.consumed_item_key') IS NOT NULL
+)
+WHERE asset_key IN ('moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map')
+GROUP BY telegram_id, asset_key
+HAVING SUM(quantity_delta) > 0;
+
 CREATE TABLE telegram_pet_run_rooms (
   room_id TEXT PRIMARY KEY,
   run_id TEXT NOT NULL,

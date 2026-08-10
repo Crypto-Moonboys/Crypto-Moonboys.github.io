@@ -25,12 +25,15 @@ const {
   PET_KAIJU_CATEGORIES,
   PET_RANDOM_EVENTS,
   PET_REPEAT_REWARD_RULES,
+  awardPetReward,
   applyPetItemActionBonuses,
   awardPetKaijuPlayerResult,
   finishPetKaijuMatch,
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
+  getPetInventory,
+  processPetUseItem,
   processPetRunExtract,
   processPetRunStep,
   reservePetRepeatRewardEvent,
@@ -553,7 +556,8 @@ assertOrder(
 
 const useItem = asyncBlock('processPetUseItem');
 assert.ok(useItem.includes('duplicate'), 'use_item must short-circuit duplicate event keys');
-assert.ok(useItem.includes('PETS_DAILY_PET_XP_CAP'), 'use_item must respect the daily pet XP cap');
+assert.ok(useItem.includes("source: 'pet_item_use'") && useItem.includes('awardPetReward(db'), 'use_item rewards must use the capped unified reward authority');
+assert.ok(useItem.includes('UPDATE telegram_pet_inventory'), 'use_item must consume from the authoritative inventory table');
 assert.ok(useItem.includes('telegram_pet_events'), 'use_item must audit accepted items');
 assert.ok(useItem.includes('item_used'), 'use_item must write item_used results');
 assert.ok(useItem.includes('consumed_item_key'), 'use_item must write consumed item metadata');
@@ -563,7 +567,8 @@ assert.ok(useItem.includes("clean_wipe"), 'use_item must support clean_wipe');
 assert.ok(useItem.includes("lucky_charm"), 'use_item must support lucky_charm');
 assert.ok(useItem.includes("style_patch"), 'use_item must support style_patch');
 assert.ok(useItem.includes("adventure_map"), 'use_item must support adventure_map');
-assert.ok(worker.includes('consumed_item_key'), 'inventory counting must subtract consumed items');
+assert.ok(asyncBlock('getPetInventory').includes('FROM telegram_pet_inventory'), 'inventory reads must use the authoritative inventory table');
+assert.ok(!asyncBlock('getPetInventory').includes('telegram_pet_events'), 'inventory reads must not reconstruct balances from audit events');
 
 const work = asyncBlock('processPetJob');
 assert.ok(work.includes('duplicate'), 'work must short-circuit duplicate event keys');
@@ -741,7 +746,7 @@ assertOrder(
 );
 assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await savePetProfile(db, pet);'),
   'run stat rewards must be applied before saving the successful step pet');
-assert.ok(runStep.includes("AND depth = ?\n    RETURNING run_id"), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
+assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('RETURNING run_id'), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
 assert.ok(runStep.includes("if (!stepResults?.[1]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
   'a run step that loses a terminal-state race must be rejected without applying pet changes');
 
@@ -1339,6 +1344,70 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   `).run();
   return db;
 }
+
+const inventoryAuthorityDb = seedRepeatRewardPlayer('inventory-authority', 70);
+const inventoryAwardRequest = {
+  telegram_id: 'inventory-authority', source: 'pet_action', idempotency_key: 'inventory-authority-award',
+  event_key: 'inventory-authority-award', rewards: { items: { moon_snack: 1 } },
+};
+const [inventoryAward, duplicateInventoryAward] = await Promise.all([
+  awardPetReward(inventoryAuthorityDb, inventoryAwardRequest),
+  awardPetReward(inventoryAuthorityDb, inventoryAwardRequest),
+]);
+assert.equal(inventoryAward.accepted, true, 'awardPetReward item claims must succeed');
+assert.equal(duplicateInventoryAward.accepted, true, 'duplicate item reward callbacks must remain idempotently accepted');
+assert.equal(inventoryAuthorityDb.database.prepare(`SELECT quantity FROM telegram_pet_inventory
+  WHERE telegram_id = 'inventory-authority' AND asset_type = 'item' AND asset_key = 'moon_snack'`).get().quantity, 1,
+  'duplicate reward callbacks must write an item exactly once');
+assert.equal((await getPetInventory(inventoryAuthorityDb, 'inventory-authority')).find((item) => item.key === 'moon_snack').count, 1,
+  'awardPetReward items must appear through getPetInventory');
+const usedAuthorityItem = await processPetUseItem(inventoryAuthorityDb, 'inventory-authority', 'moon_snack', {
+  event_key: 'inventory-authority-use', source: 'inventory_authority_regression',
+});
+assert.equal(usedAuthorityItem.accepted, true, 'an authority-awarded item must be usable');
+assert.equal((await getPetInventory(inventoryAuthorityDb, 'inventory-authority')).find((item) => item.key === 'moon_snack').count, 0,
+  'using an item must decrement the authoritative inventory balance');
+const duplicateAuthorityUse = await processPetUseItem(inventoryAuthorityDb, 'inventory-authority', 'moon_snack', {
+  event_key: 'inventory-authority-use', source: 'inventory_authority_regression',
+});
+assert.equal(duplicateAuthorityUse.duplicate, true, 'duplicate use callbacks must not consume or reward an item twice');
+assert.equal(inventoryAuthorityDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'inventory-authority'").get().pet_xp, 4,
+  'duplicate item-use callbacks must award their capped effect exactly once');
+
+const bankedItemDb = seedRepeatRewardPlayer('banked-item', 70);
+bankedItemDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
+  VALUES ('banked-item-row', 'banked-item', 'banked-item-run', 'pet-s2026-003', 'active', 1, 5, 1, '{"energy_drink":1}')`).run();
+const bankedItemResult = await processPetRunExtract(bankedItemDb, 'banked-item', 'banked-item-run', { source: 'inventory_authority_regression' });
+assert.equal(bankedItemResult.accepted, true, 'run extraction with an item must bank successfully');
+assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 1,
+  'a banked run item must appear in the authoritative bag');
+const usedBankedItem = await processPetUseItem(bankedItemDb, 'banked-item', 'energy_drink', {
+  event_key: 'banked-item-use', source: 'inventory_authority_regression',
+});
+assert.equal(usedBankedItem.accepted, true, 'a banked run item must be usable');
+assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 0,
+  'using a banked run item must consume its authoritative balance');
+
+const runChoiceItemDb = seedRepeatRewardPlayer('run-choice-item', 90);
+runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
+  VALUES ('run-choice-item-row', 'run-choice-item', 'run-choice-item-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run();
+runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('run-choice-item', 'item', 'lucky_charm', 1)`).run();
+const runChoiceRandom = Math.random;
+Math.random = () => 0.99;
+let runChoiceItemResult;
+try {
+  runChoiceItemResult = await processPetRunStep(runChoiceItemDb, 'run-choice-item', 'run-choice-item-run', PET_RUN_STEP_CHOICES[0][0], {
+    event_key: 'run-choice-item-step', expected_step_index: 1, source: 'inventory_authority_regression',
+  });
+} finally {
+  Math.random = runChoiceRandom;
+}
+assert.equal(runChoiceItemResult.accepted, true, 'run choices must accept an available authority-backed one-use item');
+assert.equal((await getPetInventory(runChoiceItemDb, 'run-choice-item')).find((item) => item.key === 'lucky_charm').count, 0,
+  'run choices must consume one-use items from the authoritative inventory table');
 
 const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
 terminalRaceDb.database.prepare(`

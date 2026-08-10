@@ -10,7 +10,7 @@ const MAX_CURRENCY = 999999;
 export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 'abandoned']);
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
 export const PET_REWARD_SOURCES = Object.freeze([
-  'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action',
+  'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action', 'pet_item_use',
   'roguelite_room', 'roguelite_boss', 'roguelite_completion',
 ]);
 

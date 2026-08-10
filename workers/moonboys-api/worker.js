@@ -2284,14 +2284,17 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const weekKey = getPetWeekKey(new Date());
   const season = getPetSeasonInfo(new Date());
   const unbankedItems = outcome.item_key ? addPetRunItem(run.unbanked_items, outcome.item_key) : parsePetRunItems(run.unbanked_items);
+  const stepId = crypto.randomUUID();
   const stepInsertStatement = db.prepare(`
     INSERT OR IGNORE INTO telegram_pet_run_steps
       (id, telegram_id, run_id, step_index, choice_key, choice_type, event_key, success, risk_roll, pet_xp_delta, moon_gold_delta, moon_crystals_delta, style_tokens_delta, item_key, metadata)
     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
     WHERE EXISTS (SELECT 1 FROM telegram_pet_runs
       WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?)
+      AND (? IS NULL OR EXISTS (SELECT 1 FROM telegram_pet_inventory
+        WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0))
   `).bind(
-    crypto.randomUUID(),
+    stepId,
     telegramId,
     run.run_id,
     stepIndex,
@@ -2309,26 +2312,35 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     telegramId,
     run.run_id,
     stepIndex - 1,
+    outcome.consumed_item_key,
+    telegramId,
+    outcome.consumed_item_key,
   );
-  const consumedItemStatement = outcome.consumed_item_key
-    ? db.prepare(`
+  const consumedItemEventId = outcome.consumed_item_key ? crypto.randomUUID() : null;
+  const consumedItemStatements = outcome.consumed_item_key
+    ? [db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_events
         (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
       SELECT ?, ?, 'run_item_use', ?, 0, 0, ?, ?, ?, 'accepted', 'run_item_consumed', ?
-      WHERE EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE telegram_id = ? AND run_id = ? AND event_key = ?)
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ? AND telegram_id = ? AND run_id = ?)
     `).bind(
-      crypto.randomUUID(),
+      consumedItemEventId,
       telegramId,
       buildStablePetEventKey(['pet_run_item_use', telegramId, run.run_id, stepIndex, outcome.consumed_item_key]),
       season.key,
       dayKey,
       weekKey,
       JSON.stringify({ source: options.source || 'telegram_command', run_id: run.run_id, consumed_item_key: outcome.consumed_item_key, choice_key: choice.key }),
+      stepId,
       telegramId,
       run.run_id,
-      eventKey,
-    )
-    : null;
+    ), db.prepare(`
+      UPDATE telegram_pet_inventory
+      SET quantity = quantity - 1, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0
+        AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)
+    `).bind(telegramId, outcome.consumed_item_key, stepId)]
+    : [];
 
   if (!outcome.success) {
     const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
@@ -2350,9 +2362,9 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
           completed_at = CURRENT_TIMESTAMP,
           updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?
+        AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)
       RETURNING run_id
-    `).bind(stepIndex, telegramId, run.run_id, stepIndex - 1)];
-    if (consumedItemStatement) terminalStatements.push(consumedItemStatement);
+    `).bind(stepIndex, telegramId, run.run_id, stepIndex - 1, stepId), ...consumedItemStatements];
     const terminalResults = await db.batch(terminalStatements);
     if (!terminalResults?.[1]?.results?.[0]) {
       return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2403,6 +2415,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
         unbanked_items = ?,
         updated_at = CURRENT_TIMESTAMP
     WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?
+      AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)
     RETURNING run_id
   `).bind(
     stepIndex >= PET_RUN_MAX_DEPTH ? 'extractable' : 'extractable',
@@ -2415,8 +2428,8 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     telegramId,
     run.run_id,
     stepIndex - 1,
-  )];
-  if (consumedItemStatement) stepStatements.push(consumedItemStatement);
+    stepId,
+  ), ...consumedItemStatements];
   const stepResults = await db.batch(stepStatements);
   if (!stepResults?.[1]?.results?.[0]) {
     return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2435,22 +2448,14 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
 
 async function getPetInventory(db, telegramId) {
   const rows = await db.prepare(`
-    SELECT event_type, metadata, COUNT(*) AS count
-    FROM telegram_pet_events
-    WHERE telegram_id = ? AND status = 'accepted'
-    GROUP BY event_type, metadata
+    SELECT asset_key, quantity
+    FROM telegram_pet_inventory
+    WHERE telegram_id = ? AND asset_type = 'item' AND quantity > 0
   `).bind(telegramId).all().catch(() => ({ results: [] }));
   const inventory = {};
   for (const item of Object.values(PET_INVENTORY_ITEMS)) inventory[item.key] = 0;
   for (const row of rows.results || []) {
-    try {
-      const metadata = JSON.parse(row.metadata || '{}');
-      const grantedItemKey = metadata.item_key || metadata.inventory_key;
-      const consumedItemKey = metadata.consumed_item_key;
-      const metadataCount = Math.max(1, Math.floor(Number(metadata.count || 1)));
-      if (grantedItemKey && inventory[grantedItemKey] !== undefined) inventory[grantedItemKey] += Number(row.count || 0) * metadataCount;
-      if (consumedItemKey && inventory[consumedItemKey] !== undefined) inventory[consumedItemKey] -= Number(row.count || 0);
-    } catch {}
+    if (inventory[row.asset_key] !== undefined) inventory[row.asset_key] = Math.max(0, Math.floor(Number(row.quantity || 0)));
   }
   return Object.entries(PET_INVENTORY_ITEMS).map(([key, item]) => ({ ...item, count: Math.max(0, inventory[key] || 0) }));
 }
@@ -2463,13 +2468,9 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
   const eventKey = String(options.event_key || `pet:use_item:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
-  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
-  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
-  const inventory = await getPetInventory(db, telegramId);
-  const item = inventory.find((entry) => entry.key === key);
-  if (!item || item.count <= 0) return { accepted: false, reason: 'item_not_found', pet };
+  const item = PET_INVENTORY_ITEMS[key];
   const effects = {
     moon_snack: { hunger: -18, energy: 8, pet_xp: 4 },
     energy_drink: { energy: 22, pet_xp: 6 },
@@ -2478,22 +2479,46 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     style_patch: { style_tokens: 2, pet_xp: 5 },
     adventure_map: { energy: 6, pet_xp: 5 },
   }[key];
-  pet.hunger = clampPetStat(Number(pet.hunger || 0) + (effects.hunger || 0));
-  pet.energy = clampPetStat(Number(pet.energy || 0) + (effects.energy || 0));
-  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + (effects.cleanliness || 0));
-  pet.happiness = clampPetStat(Number(pet.happiness || 0) + (effects.happiness || 0));
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + (effects.style_tokens || 0));
-  let petXp = Math.max(0, effects.pet_xp || 0);
-  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
-  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
-  else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
-  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  updatePetStreakForAction(pet, dayKey);
-  pet.last_decay_at = now.toISOString();
-  await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'use_item', ?, 0, ?, ?, ?, ?, 'accepted', 'item_used', ?)`)
-    .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, JSON.stringify({ source: options.source || 'telegram_bot', consumed_item_key: key })).run();
-  await savePetProfile(db, pet);
-  return { accepted: true, reason: 'item_used', item, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+  const consumeEventId = crypto.randomUUID();
+  const consumeMetadata = JSON.stringify({ source: options.source || 'telegram_bot', consumed_item_key: key });
+  const consumeResults = await db.batch([
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, 'use_item', ?, 0, 0, ?, ?, ?, 'accepted', 'item_used', ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_inventory
+        WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0)
+      RETURNING id`).bind(consumeEventId, telegramId, eventKey, season.key, dayKey, weekKey, consumeMetadata, telegramId, key),
+    db.prepare(`UPDATE telegram_pet_inventory
+      SET quantity = quantity - 1, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0
+        AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted')`)
+      .bind(telegramId, key, consumeEventId),
+  ]);
+  const consumed = Boolean(consumeResults?.[0]?.results?.[0]);
+  if (!consumed) {
+    const existing = await db.prepare(`SELECT event_type, metadata FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`)
+      .bind(telegramId, eventKey).first().catch(() => null);
+    let existingItemKey = null;
+    try { existingItemKey = JSON.parse(existing?.metadata || '{}').consumed_item_key || null; } catch {}
+    if (existing?.event_type !== 'use_item' || existingItemKey !== key) return { accepted: false, reason: 'item_not_found', pet };
+  }
+  const awarded = await awardPetReward(db, {
+    telegram_id: telegramId,
+    source: 'pet_item_use',
+    idempotency_key: `item_use:${eventKey}`,
+    event_key: `${eventKey}:reward`,
+    event_type: 'use_item_reward',
+    reason: 'item_used',
+    rewards: { pet_xp: effects.pet_xp || 0, style_tokens: effects.style_tokens || 0 },
+    profile_deltas: { hunger: effects.hunger || 0, energy: effects.energy || 0, cleanliness: effects.cleanliness || 0, happiness: effects.happiness || 0 },
+    touch_streak: true,
+    now,
+    context: { source: options.source || 'telegram_bot', consumed_item_key: key },
+  });
+  const inventory = await getPetInventory(db, telegramId);
+  const updatedPet = awarded.pet || await getPetProfile(db, telegramId);
+  const rewardSettled = awarded.accepted === true;
+  return { ...awarded, accepted: rewardSettled, duplicate: !consumed || awarded.duplicate, reason: rewardSettled ? (consumed ? 'item_used' : 'duplicate') : (awarded.reason || 'item_reward_pending'), item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 }, pet: updatedPet };
 }
 
 async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
@@ -9968,6 +9993,8 @@ export const __petMediaTestHooks = Object.freeze({
   getPetRepeatRewardMultiplier,
   parsePetRepeatRewardReservation,
   processPetRandomEvent,
+  getPetInventory,
+  processPetUseItem,
   processPetRunExtract,
   processPetRunStep,
   reservePetRepeatRewardEvent,
