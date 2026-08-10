@@ -9,6 +9,7 @@ const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrat
 const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/032_telegram_pets_notifications.sql', import.meta.url), 'utf8');
 const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/033_telegram_pet_run_engine.sql', import.meta.url), 'utf8');
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
+const repeatRewardMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/041_telegram_pet_repeat_reward_slots.sql', import.meta.url), 'utf8');
 const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
 const arenaMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/036_telegram_pet_arena.sql', import.meta.url), 'utf8');
 const arenaTurnsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/037_telegram_pet_arena_turns.sql', import.meta.url), 'utf8');
@@ -22,6 +23,12 @@ const {
   PET_KAIJU_CARDS,
   PET_KAIJU_CATEGORIES,
   PET_RANDOM_EVENTS,
+  PET_REPEAT_REWARD_RULES,
+  applyPetItemActionBonuses,
+  claimPetRepeatRewardSlot,
+  getPetHighLevelGearXpMultiplier,
+  getPetRepeatRewardMultiplier,
+  scalePetRewards,
   buildPetKaijuCardReplyMarkup,
   buildPetKaijuLobbyReplyMarkup,
   buildPetKaijuMatchId,
@@ -577,7 +584,7 @@ assert.ok(randomEvent.includes('duplicate: true'), 'random event must short-circ
 assertOrder(
   randomEvent,
   "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);',
   'random event must check duplicate event keys before loading the pet'
 );
 assertOrder(
@@ -586,7 +593,7 @@ assertOrder(
   'const outcome = pickPetRandomEventOutcome(choice);',
   'random event must check duplicate event keys before the reward roll'
 );
-assert.ok(randomEvent.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'random event must keep daily caps');
+assert.ok(randomEvent.includes('PETS_DAILY_PET_XP_CAP') && randomEvent.includes('COALESCE(SUM(pet_xp_awarded), 0)'), 'random event must enforce its daily cap atomically while finalizing the event');
 
 const goldTrade = asyncBlock('processPetGoldTrade');
 assert.ok(goldTrade.includes("'trade'"), 'gold trades must use trade event type');
@@ -1099,5 +1106,74 @@ for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_fo
 for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petkaiju':", "case 'kaiju':", "case 'petrun':", "case 'petextract':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
   assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
 }
+
+assert.deepEqual(PET_REPEAT_REWARD_RULES.event, { full_rewarded: 6, reduced_rewarded: 10, reduced_multiplier: 0.5 }, 'Event repeat budget must remain 6 full and 4 half rewards');
+assert.deepEqual(PET_REPEAT_REWARD_RULES.kaiju, { full_rewarded: 5, reduced_rewarded: 10, reduced_multiplier: 0.5 }, 'Kaiju repeat budget must remain 5 full and 5 half rewards');
+for (const [mode, slot, expected] of [
+  ['event', 1, 1], ['event', 6, 1], ['event', 7, 0.5], ['event', 10, 0.5], ['event', 11, 0],
+  ['kaiju', 1, 1], ['kaiju', 5, 1], ['kaiju', 6, 0.5], ['kaiju', 10, 0.5], ['kaiju', 11, 0],
+]) {
+  assert.equal(getPetRepeatRewardMultiplier(mode, slot), expected, `${mode} slot ${slot} must use the correct reward tier`);
+}
+assert.deepEqual(scalePetRewards({ pet_xp: 21, moon_gold: 9, style_tokens: 1, happiness: 5 }, 0.5), { pet_xp: 10, moon_gold: 4, style_tokens: 0, happiness: 2 }, 'half rewards must floor every progression/currency reward');
+assert.deepEqual(scalePetRewards({ pet_xp: 21, moon_gold: 9, style_tokens: 1, happiness: 5 }, 0), { pet_xp: 0, moon_gold: 0, style_tokens: 0, happiness: 0 }, 'zero-tier repeat play must award no progression or currency');
+
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 3400 }), 1, 'level 35 gear XP stays at 100%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 3500 }), 0.6, 'level 36 gear XP tapers to 60%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 4900 }), 0.6, 'level 50 gear XP stays at 60%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 5000 }), 0.35, 'level 51 gear XP tapers to 35%');
+const highLevelGearRewards = { pet_xp: 6, moon_gold: 0, moon_crystals: 0, style_tokens: 0 };
+applyPetItemActionBonuses({ pet_xp: 3500, equipped_outfit: 'moon_armor' }, 'feed', { hunger: -28, energy: 4 }, highLevelGearRewards);
+assert.equal(highLevelGearRewards.pet_xp, 9, 'only the +5 gear bonus is tapered at level 36; base action XP remains 6');
+assert.equal(highLevelGearRewards.moon_gold, 1, 'gear currency utility must not be tapered');
+
+const atomicCounts = new Map();
+const atomicSql = [];
+const atomicDb = {
+  prepare(sql) {
+    atomicSql.push(sql);
+    return {
+      bind(telegramId, dayKey, mode) {
+        return {
+          async first() {
+            await Promise.resolve();
+            const key = `${telegramId}:${dayKey}:${mode}`;
+            const claimed_count = (atomicCounts.get(key) || 0) + 1;
+            atomicCounts.set(key, claimed_count);
+            return { claimed_count };
+          },
+        };
+      },
+    };
+  },
+};
+const eventClaims = await Promise.all(Array.from({ length: 12 }, () => claimPetRepeatRewardSlot(atomicDb, 'event-player', '2026-08-10', 'event')));
+assert.deepEqual(eventClaims.map((claim) => claim.claimed_slot).sort((a, b) => a - b), Array.from({ length: 12 }, (_, index) => index + 1), 'concurrent Event claims must receive unique atomic slot numbers');
+const kaijuClaims = await Promise.all(Array.from({ length: 12 }, () => claimPetRepeatRewardSlot(atomicDb, 'kaiju-player', '2026-08-10', 'kaiju')));
+assert.deepEqual(kaijuClaims.map((claim) => claim.claimed_slot).sort((a, b) => a - b), Array.from({ length: 12 }, (_, index) => index + 1), 'concurrent Kaiju claims must receive unique atomic slot numbers');
+assert.ok(atomicSql.every((sql) => sql.includes('ON CONFLICT(telegram_id, day_key, mode) DO UPDATE SET') && sql.includes('claimed_count = claimed_count + 1') && sql.includes('RETURNING claimed_count')), 'slot claims must increment and return the exact counter value in one D1 statement');
+
+for (const token of ['telegram_pet_repeat_reward_slots', 'telegram_id', 'day_key', 'mode', 'claimed_count', 'PRIMARY KEY (telegram_id, day_key, mode)']) {
+  assert.ok(repeatRewardMigration.includes(token), `repeat reward migration must include ${token}`);
+  assert.ok(schema.includes(token), `schema.sql must include ${token}`);
+}
+const randomEventHardening = asyncBlock('processPetRandomEvent');
+assert.ok(randomEventHardening.indexOf('getPetProfileWithAtomicDecay') < randomEventHardening.indexOf('reservePetRepeatRewardEvent'), 'Event processing must persist stat decay before reserving or awarding rewards');
+assert.ok(randomEventHardening.indexOf('reservePetRepeatRewardEvent') < randomEventHardening.indexOf('claimPetRepeatRewardSlot'), 'Event idempotency reservation must precede its reward-slot claim');
+assert.ok(randomEventHardening.indexOf('claimPetRepeatRewardSlot') < randomEventHardening.indexOf('pickPetRandomEventOutcome'), 'Event slot must be claimed before reward outcome calculation');
+assert.ok(randomEventHardening.includes("status = 'pending'") && randomEventHardening.includes("status = 'accepted'"), 'Event rewards must finalize only their pending idempotency reservation');
+assert.ok(randomEventHardening.includes('PETS_DAILY_PET_XP_CAP'), 'Event finalization must preserve the 1,200 daily Pet XP cap');
+assert.ok(!randomEventHardening.includes('savePetProfile(db, pet)'), 'Event rewards must not overwrite concurrent profile changes with a stale full-profile save');
+
+const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
+assert.ok(kaijuHardening.indexOf('getPetProfileWithAtomicDecay') < kaijuHardening.indexOf('energyClaim'), 'Kaiju must persist current stat decay before checking and claiming Energy');
+assert.match(kaijuHardening, /SET energy = energy - \?, updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND energy >= \?/, 'Kaiju Energy must be claimed with one conditional update');
+assert.ok(kaijuHardening.includes('Number(energyClaim?.meta?.changes || 0) !== 1'), 'Kaiju rewards must require exactly one successfully updated Energy row');
+assert.ok(kaijuHardening.indexOf('energyClaim') < kaijuHardening.indexOf('claimPetRepeatRewardSlot'), 'Kaiju must pay Energy before claiming a reward slot');
+assert.ok(kaijuHardening.indexOf('claimPetRepeatRewardSlot') < kaijuHardening.indexOf('scalePetRewards'), 'Kaiju slot must be claimed before rewards are calculated');
+assert.ok(kaijuHardening.includes("reason: 'insufficient_energy'") && kaijuHardening.includes('pet_xp_awarded: 0') && kaijuHardening.includes('xp_awarded: 0'), 'failed Energy claims must return no Pet or Community XP');
+assert.ok(kaijuHardening.includes('PETS_DAILY_PET_XP_CAP') && kaijuHardening.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'Kaiju finalization must preserve both global daily XP caps');
+assert.ok(!kaijuHardening.includes('savePetProfile(db, pet)'), 'Kaiju rewards must not restore spent Energy or overwrite concurrent rewards through a stale save');
+assert.ok(worker.includes("INSERT OR IGNORE INTO telegram_pet_events") && worker.includes("'pending', 'repeat_reward_pending'"), 'repeat reward reservations must reuse the unique event key for concurrent idempotency');
 
 console.log('telegram-pets-api.test.mjs passed');
