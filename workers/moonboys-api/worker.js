@@ -10148,8 +10148,9 @@ async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey
 
   const caption = formatTelegramPetMediaCaption(text, resolvedMediaKey);
   const captionOnly = shouldUsePhotoCaptionOnly(text, resolvedMediaKey);
+  const { reply_markup: replyMarkup, ...nonKeyboardExtra } = extra;
   const photoExtra = {
-    ...extra,
+    ...(captionOnly ? extra : nonKeyboardExtra),
     caption: captionOnly ? caption : formatTelegramPetHeroCaption(text, resolvedMediaKey),
     parse_mode: 'HTML',
   };
@@ -10159,7 +10160,7 @@ async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey
     return sendTelegramMessage(botToken, chatId, text, extra);
   }
   if (!captionOnly) {
-    return sendTelegramMessage(botToken, chatId, text);
+    return sendTelegramMessage(botToken, chatId, text, replyMarkup ? { ...extra, reply_markup: replyMarkup } : extra);
   }
   return photoResult;
 }
@@ -10220,6 +10221,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   parsePetRepeatRewardReservation,
+  processPetJob,
   processPetRandomEvent,
   processPetAdventure,
   claimPetActivitySession,

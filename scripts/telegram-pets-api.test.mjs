@@ -411,9 +411,9 @@ assert.equal(shouldUsePhotoCaptionOnly('<b>Pet Run Engine v1</b>\nRun: <code>run
     assert.ok(calls[1].url.includes('/sendMessage'), 'status/detail screens must follow with full text');
     const photoBody = JSON.parse(calls[0].init.body);
     const messageBody = JSON.parse(calls[1].init.body);
-    assert.deepEqual(photoBody.reply_markup, replyMarkup, 'status/detail screens must keep buttons on the photo');
+    assert.equal(photoBody.reply_markup, undefined, 'status/detail photo heroes must not carry buttons');
     assert.equal(messageBody.text, statusText, 'status/detail screens must preserve the full original text');
-    assert.equal(messageBody.reply_markup, undefined, 'status/detail follow-up text should not duplicate the keyboard');
+    assert.deepEqual(messageBody.reply_markup, replyMarkup, 'status/detail follow-up text must carry the keyboard below its instructions');
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -444,13 +444,49 @@ assert.equal(shouldUsePhotoCaptionOnly('<b>Pet Run Engine v1</b>\nRun: <code>run
     assert.ok(calls[1].url.includes('/sendMessage'), 'run prompts must follow with full text');
     const photoBody = JSON.parse(calls[0].init.body);
     const messageBody = JSON.parse(calls[1].init.body);
-    assert.deepEqual(photoBody.reply_markup, replyMarkup, 'run prompts must keep buttons on the photo');
+    assert.equal(photoBody.reply_markup, undefined, 'run prompt photo heroes must not carry buttons');
     assert.equal(messageBody.text, runPrompt, 'run prompts must preserve the full original text');
-    assert.equal(messageBody.reply_markup, undefined, 'run prompt follow-up text should not duplicate the keyboard');
+    assert.deepEqual(messageBody.reply_markup, replyMarkup, 'run prompt follow-up text must carry the keyboard below its instructions');
   } finally {
     globalThis.fetch = originalFetch;
   }
 }
+
+for (const surface of [
+  { name: 'Pet Events', mediaKey: 'event', text: '<b>Rival Pet Challenge</b>\nChoose one of the actions below.', action: 'Fight Back' },
+  { name: 'Pet Jobs', mediaKey: 'work', text: '<b>Pet Jobs</b>\nChoose a job below.', action: 'Street Artist' },
+  { name: 'Pet Shop', mediaKey: 'shop', text: '<b>Pet Shop</b>\nChoose an item below.', action: 'Buy' },
+  { name: 'Pet Bag', mediaKey: 'bag', text: '<b>Pet Bag</b>\nChoose an item below.', action: 'Use' },
+  { name: 'Kaiju', mediaKey: 'play', text: '<b>Kaiju Battle</b>\nChoose your card below.', action: 'Card' },
+  { name: 'Pet Run', mediaKey: 'petrun', text: '<b>Pet Run</b>\nPick a route below.', action: 'Route' },
+]) {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  const replyMarkup = { inline_keyboard: [
+    [{ text: surface.action, callback_data: `pet:test:${surface.mediaKey}` }],
+    [{ text: 'Back', callback_data: 'pet:bag' }],
+  ] };
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    return { ok: true, status: 200, text: async () => 'sent' };
+  };
+  try {
+    const result = await sendTelegramPetReply('bot-token', '123', surface.text, { reply_markup: replyMarkup }, surface.mediaKey);
+    assert.ok(result.ok, `${surface.name} media reply must succeed`);
+    assert.equal(calls.length, 2, `${surface.name} must send a hero image followed by its instructional text`);
+    const photoBody = JSON.parse(calls[0].init.body);
+    const messageBody = JSON.parse(calls[1].init.body);
+    assert.equal(photoBody.reply_markup, undefined, `${surface.name} must not attach its keyboard to the image`);
+    assert.equal(messageBody.text, surface.text, `${surface.name} must preserve its instructional text`);
+    assert.deepEqual(messageBody.reply_markup, replyMarkup, `${surface.name} and its Back button must render below the text`);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+const petArenaCommand = asyncBlock('cmdPetArena');
+assert.ok(petArenaCommand.includes('sendTelegramMessage'), 'Pet Arena must keep its instructional menus and buttons in one text message');
+assert.equal(petArenaCommand.includes('sendTelegramPetReply'), false, 'Pet Arena must not place buttons on a media message before its instructions');
 
 {
   const originalFetch = globalThis.fetch;
@@ -501,8 +537,10 @@ assert.equal(shouldUsePhotoCaptionOnly('<b>Pet Run Engine v1</b>\nRun: <code>run
     assert.ok(calls[1].url.includes('/sendMessage'), 'long caption fallback must send full details as text');
     const photoBody = JSON.parse(calls[0].init.body);
     assert.ok(photoBody.caption.length <= 1024, 'long caption fallback photo caption must stay within Telegram limits');
-    assert.deepEqual(photoBody.reply_markup, replyMarkup, 'long caption fallback must keep buttons on the photo');
-    assert.equal(JSON.parse(calls[1].init.body).text, longText, 'long caption fallback must preserve full detail text');
+    assert.equal(photoBody.reply_markup, undefined, 'long caption fallback must keep buttons off the photo');
+    const messageBody = JSON.parse(calls[1].init.body);
+    assert.equal(messageBody.text, longText, 'long caption fallback must preserve full detail text');
+    assert.deepEqual(messageBody.reply_markup, replyMarkup, 'long caption fallback must place buttons below the full detail text');
   } finally {
     globalThis.fetch = originalFetch;
   }
