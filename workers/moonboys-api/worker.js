@@ -9853,7 +9853,7 @@ function buildPetShopReplyMarkup(items = []) {
       };
     }));
   }
-  rows.push([{ text: 'Back', callback_data: 'pet:bag' }]);
+  rows.push([{ text: '⬅️ Management', callback_data: 'pet:menu:management' }]);
   return { inline_keyboard: rows };
 }
 
@@ -9866,11 +9866,8 @@ function buildPetBagReplyMarkup(inventory = []) {
       callback_data: `pet:use:${item.key}`,
     })));
   }
-  rows.push([
-    { text: 'Shop', callback_data: 'pet:shop' },
-    { text: 'Work', callback_data: 'pet:work' },
-    { text: 'Run', callback_data: 'pet:run' },
-  ]);
+  rows.push([{ text: '⚙️ Management', callback_data: 'pet:menu:management' }]);
+  rows.push([{ text: '⬅️ Back', callback_data: 'pet:back' }]);
   return { inline_keyboard: rows };
 }
 
@@ -10250,6 +10247,11 @@ export const __petMediaTestHooks = Object.freeze({
   getPetArenaBucketDistance,
   serializePet,
   formatPetStatus,
+  formatPetDetails,
+  petReplyMarkup,
+  buildPetAdventureMenuReplyMarkup,
+  buildPetManagementMenuReplyMarkup,
+  buildPetProgressMenuReplyMarkup,
   buildPetRunChoiceReplyMarkup,
   buildPetRunExtractEventKey,
   buildPetRunStepEventKey,
@@ -10298,6 +10300,17 @@ async function handleTelegramUpdate(update, env) {
       const payload = data.slice(4);
       const eventKey = buildTelegramCallbackPetEventKey(query, telegramId, data);
       const chatType = String(query.message?.chat?.type || '');
+      if (payload === 'back') { await answerTelegramCallback(tok, query.id, '/pet'); await cmdPetStatus(db, tok, chatId, telegramId); return; }
+      if (payload === 'menu:adventure') { await answerTelegramCallback(tok, query.id, 'Adventure'); await cmdPetMenu(tok, chatId, 'adventure'); return; }
+      if (payload === 'menu:management') { await answerTelegramCallback(tok, query.id, 'Management'); await cmdPetMenu(tok, chatId, 'management'); return; }
+      if (payload === 'menu:progress') { await answerTelegramCallback(tok, query.id, 'Progress'); await cmdPetMenu(tok, chatId, 'progress'); return; }
+      if (payload === 'details') { await answerTelegramCallback(tok, query.id, 'Details'); await cmdPetDetails(db, tok, chatId, telegramId); return; }
+      if (payload === 'equipment') { await answerTelegramCallback(tok, query.id, '/petgear'); await cmdPetGear(db, tok, chatId, telegramId); return; }
+      if (payload === 'trade') { await answerTelegramCallback(tok, query.id, 'Trade'); await cmdPetTradeMenu(tok, chatId); return; }
+      if (payload.startsWith('trade:')) { const wager = payload.slice(6); await answerTelegramCallback(tok, query.id, `/pettrade ${wager}`); await cmdPetTrade(db, tok, chatId, telegramId, wager); return; }
+      if (payload.startsWith('identity:')) { const section = payload.slice(9); await answerTelegramCallback(tok, query.id, 'Moonpet identity'); await cmdPetIdentity(db, tok, chatId, telegramId, section); return; }
+      if (payload === 'leaderboard') { await answerTelegramCallback(tok, query.id, '/petleaderboard'); await cmdPetLeaderboard(db, tok, chatId, buildPetProgressMenuReplyMarkup()); return; }
+      if (payload === 'streak') { await answerTelegramCallback(tok, query.id, 'Streak'); await cmdPetStreak(db, tok, chatId, telegramId); return; }
       if (payload === 'activity') { await answerTelegramCallback(tok, query.id, '/petactivity'); await cmdPetActivity(db, tok, chatId, telegramId); return; }
       if (payload === 'claim') { await answerTelegramCallback(tok, query.id, '/petclaim'); await cmdPetClaim(db, tok, chatId, telegramId); return; }
       if (payload === 'cancel') { await answerTelegramCallback(tok, query.id, '/petcancel'); await cmdPetCancel(db, tok, chatId, telegramId); return; }
@@ -10673,48 +10686,76 @@ function formatPetActivityLine(session, now = new Date()) {
   return `${escapeHtml(session.activity_type)}: ${formatPetDuration(elapsed)} elapsed, ${remaining > 0 ? `claim ready in ${formatPetDuration(remaining)}` : 'claim ready now'}`;
 }
 
-function formatPetStatus(pet, missions = null, activity = null) {
+function formatPetStat(label, value) {
+  const safeValue = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+  const filled = safeValue > 0 ? Math.ceil(safeValue / 10) : 0;
+  return `${label}\n${'█'.repeat(filled)}${'░'.repeat(10 - filled)} ${safeValue}%`;
+}
+
+function formatPetStatus(pet, identity = null, activity = null) {
   const p = serializePet(pet);
   if (!p) return 'No Crypto Moonboy Pet found. Use /adopt to start.';
-  const bar = (value) => {
-    const filled = Math.max(0, Math.min(10, Math.round((Number(value) || 0) / 10)));
-    return `[${'='.repeat(filled)}${'.'.repeat(10 - filled)}]`;
-  };
+  const stage = identity?.current_stage?.name || p.stage;
+  const traits = Array.isArray(identity?.personalities) ? identity.personalities.slice(0, 2) : [];
+  const favourite = String(identity?.memories?.favourite_activity || '').trim();
+  const needsCare = p.health <= 45 || p.hunger >= 75 || p.cleanliness <= 35 || p.happiness <= 35 || p.energy <= 25;
+  const identityLines = [];
+  if (favourite) identityLines.push(`<i>“Ready for ${escapeHtml(favourite)}.”</i>`);
+  if (traits.length) identityLines.push(`<b>Personality:</b> ${traits.map((trait) => escapeHtml(trait.name)).join(' · ')}`);
+  if (favourite) identityLines.push(`<b>Favourite:</b> ${escapeHtml(favourite)}`);
+  return [
+    `🌕 <b>${escapeHtml(p.pet_name || 'Moonpet')}</b>`,
+    '',
+    `<b>${escapeHtml(stage)}</b>`,
+    `Level ${p.level} | XP ${p.pet_xp}`,
+    ...identityLines,
+    '',
+    formatPetStat('❤️ Health', p.health),
+    '',
+    formatPetStat('🍖 Hunger', p.hunger),
+    '',
+    formatPetStat('😊 Happiness', p.happiness),
+    '',
+    formatPetStat('🧼 Cleanliness', p.cleanliness),
+    '',
+    formatPetStat('⚡ Energy', p.energy),
+    needsCare ? '\n⚠️ <b>Needs attention:</b>\nYour Moonpet requires care.' : '\n✅ Your Moonpet is feeling good.',
+    activity ? `\n🌙 <b>Activity:</b> ${formatPetActivityLine(activity)}` : '',
+  ].join('\n');
+}
+
+function formatPetDetails(pet, missions = null, activity = null, identity = null) {
+  const p = serializePet(pet);
+  if (!p) return 'No Crypto Moonboy Pet found. Use /adopt to start.';
+  const missionLines = Array.isArray(missions?.daily)
+    ? missions.daily.map((mission) => `${mission.completed ? '✅' : '⬜'} ${escapeHtml(mission.title)}`)
+    : [];
   const warnings = [];
   if (p.health <= 45) warnings.push('⚠️ Low health: urgent care needed.');
   if (p.hunger >= 75) warnings.push('🍖 High hunger: feed soon.');
   if (p.cleanliness <= 35) warnings.push('🧼 Low cleanliness: clean soon.');
   if (p.happiness <= 35) warnings.push('🎮 Low happiness: play soon.');
   if (p.energy <= 25) warnings.push('😴 Low energy: sleep before adventure.');
-  const missionLines = Array.isArray(missions?.daily)
-    ? missions.daily.map((m) => `${m.completed ? '✅' : '⬜'} ${escapeHtml(m.title)}`)
-    : [];
   return [
-    `🌕 <b>Pet</b>`,
-    `${escapeHtml(p.pet_name)} | Stage: ${escapeHtml(p.stage)} | Level ${p.level} | XP ${p.pet_xp}`,
-    `Health ${bar(p.health)} ${p.health}/100`,
-    `Hunger ${bar(100 - p.hunger)} ${p.hunger}/100`,
-    `Happiness ${bar(p.happiness)} ${p.happiness}/100`,
-    `Cleanliness ${bar(p.cleanliness)} ${p.cleanliness}/100`,
-    `Energy ${bar(p.energy)} ${p.energy}/100`,
-    activity ? `🌙 <b>Activity</b> ${formatPetActivityLine(activity)}` : '',
+    `📋 <b>${escapeHtml(p.pet_name)} Details</b>`,
+    `${escapeHtml(identity?.current_stage?.name || p.stage)} · Level ${p.level} · ${p.pet_xp} XP`,
+    activity ? `🌙 ${formatPetActivityLine(activity)}` : '',
     '',
-    `💰 <b>Wallet</b>`,
-    `Gold: ${p.moon_gold} | Crystals: ${p.moon_crystals} | Style: ${p.style_tokens}`,
+    '<b>Wallet</b>',
+    `${p.moon_gold} Gold · ${p.moon_crystals} Crystals · ${p.style_tokens} Style`,
     '',
-    `🎒 <b>Gear</b>`,
-    `Food: ${escapeHtml(p.equipped_food || 'basic')} | Toy: ${escapeHtml(p.equipped_toy || 'basic')} | Outfit: ${escapeHtml(p.equipped_outfit || 'none')}
-Armor: ${escapeHtml(p.equipped_armor || 'none')} | Weapon: ${escapeHtml(p.equipped_weapon || 'none')} | Charm: ${escapeHtml(p.equipped_charm || 'none')}`,
+    '<b>Equipment</b>',
+    `Food: ${escapeHtml(p.equipped_food || 'basic')} · Toy: ${escapeHtml(p.equipped_toy || 'basic')} · Outfit: ${escapeHtml(p.equipped_outfit || 'none')}`,
+    `Armor: ${escapeHtml(p.equipped_armor || 'none')} · Weapon: ${escapeHtml(p.equipped_weapon || 'none')} · Charm: ${escapeHtml(p.equipped_charm || 'none')}`,
     '',
-    `📊 <b>Needs</b>`,
-    ...(warnings.length ? warnings : ['All systems stable.']),
+    '<b>Needs</b>',
+    ...(warnings.length ? warnings : ['All needs are stable.']),
     '',
-    `🎯 <b>Daily Missions</b>`,
+    '<b>Daily Missions</b>',
     ...(missionLines.length ? missionLines : ['No missions available.']),
     '',
-    `🔥 <b>Streak</b>`,
-    `${p.streak_days} day(s)`,
-  ].join('\n');
+    `<b>Streak</b>\n🔥 ${p.streak_days} day(s)`,
+  ].filter(Boolean).join('\n');
 }
 
 function petReplyMarkup() {
@@ -10723,43 +10764,110 @@ function petReplyMarkup() {
       [
         { text: '🍖 Feed', callback_data: 'pet:feed' },
         { text: '🎮 Play', callback_data: 'pet:play' },
+      ],
+      [
         { text: '🧼 Clean', callback_data: 'pet:clean' },
-      ],
-      [
         { text: '😴 Sleep', callback_data: 'pet:sleep' },
-        { text: '🏋️ Train', callback_data: 'pet:train' },
       ],
-      [
-        { text: '🛒 Shop', callback_data: 'pet:shop' },
-        { text: '🎒 Bag', callback_data: 'pet:bag' },
-        { text: '💼 Work', callback_data: 'pet:work' },
-      ],
-      [
-        { text: '🎲 Event', callback_data: 'pet:event' },
-        { text: '🎁 Daily', callback_data: 'pet:daily' },
-        { text: '🦖 Kaiju', callback_data: 'pet:kaiju' },
-        { text: '⚔️ Arena', callback_data: 'pet:arena' },
-      ],
-      [
-        { text: '🏃 Run', callback_data: 'pet:run' },
-        { text: '⏱️ Activity', callback_data: 'pet:activity' },
-      ],
-      [
-        { text: '✅ Claim', callback_data: 'pet:claim' },
-        { text: '✖️ Cancel', callback_data: 'pet:cancel' },
-      ],
-      [
-        { text: '📖 How To Play', url: `${SITE_URL}/how-to-play-crypto-moonboy-pets.html` },
-        { text: '🏆 Pet Leaderboard', url: `${SITE_URL}/crypto-moonboy-pets-leaderboard.html` },
-      ],
+      [{ text: '⚔️ Adventure', callback_data: 'pet:menu:adventure' }],
+      [{ text: '🎒 Bag', callback_data: 'pet:bag' }, { text: '🛒 Shop', callback_data: 'pet:shop' }],
+      [{ text: '📋 Details', callback_data: 'pet:details' }],
     ],
   };
 }
+
+function buildPetAdventureMenuReplyMarkup() {
+  return { inline_keyboard: [
+    [{ text: '🏃 Moon Run', callback_data: 'pet:run' }],
+    [{ text: '💼 Pet Jobs', callback_data: 'pet:work' }],
+    [{ text: '🎲 Random Events', callback_data: 'pet:event' }],
+    [{ text: '🦖 Kaiju', callback_data: 'pet:kaiju' }],
+    [{ text: '⚔️ Arena', callback_data: 'pet:arena' }],
+    [{ text: '🎁 Daily', callback_data: 'pet:daily' }],
+    [{ text: '⬅️ Back', callback_data: 'pet:back' }],
+  ] };
+}
+
+function buildPetManagementMenuReplyMarkup() {
+  return { inline_keyboard: [
+    [{ text: '🎒 Bag', callback_data: 'pet:bag' }],
+    [{ text: '🛒 Shop', callback_data: 'pet:shop' }],
+    [{ text: '⚙️ Equipment', callback_data: 'pet:equipment' }],
+    [{ text: '💱 Trade', callback_data: 'pet:trade' }],
+    [{ text: '⬅️ Back', callback_data: 'pet:back' }],
+  ] };
+}
+
+function buildPetProgressMenuReplyMarkup() {
+  return { inline_keyboard: [
+    [{ text: '📋 Details', callback_data: 'pet:details' }],
+    [{ text: '🧬 Evolution', callback_data: 'pet:identity:evolution' }],
+    [{ text: '🧠 Personality', callback_data: 'pet:identity:personality' }],
+    [{ text: '📖 Memories', callback_data: 'pet:identity:memories' }],
+    [{ text: '🏆 Leaderboard', callback_data: 'pet:leaderboard' }],
+    [{ text: '🔥 Streak', callback_data: 'pet:streak' }],
+    [{ text: '⬅️ Back', callback_data: 'pet:back' }],
+  ] };
+}
+
+async function cmdPetMenu(tok, chatId, menu) {
+  const menus = {
+    adventure: ['⚔️ <b>Adventure</b>\nChoose your Moonpet’s next challenge.', buildPetAdventureMenuReplyMarkup()],
+    management: ['⚙️ <b>Management</b>\nItems, equipment, and trading.', buildPetManagementMenuReplyMarkup()],
+    progress: ['📈 <b>Progress</b>\nYour Moonpet’s identity and journey.', buildPetProgressMenuReplyMarkup()],
+  };
+  const selected = menus[menu];
+  if (selected) await sendTelegramMessage(tok, chatId, selected[0], { reply_markup: selected[1] });
+}
 async function cmdPetStatus(db, tok, chatId, telegramId) {
   const pet = await getPetProfile(db, telegramId).catch(() => null);
-  const missions = await buildPetMissions(db, telegramId).catch(() => null);
   const activity = await getActivePetActivitySession(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, missions, activity), { reply_markup: petReplyMarkup() }, 'how_to_play');
+  const identity = pet ? await getMoonpetIdentitySummary(db, telegramId).catch(() => null) : null;
+  await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, identity, activity), { reply_markup: petReplyMarkup() }, 'how_to_play');
+}
+
+async function cmdPetDetails(db, tok, chatId, telegramId) {
+  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  const missions = pet ? await buildPetMissions(db, telegramId).catch(() => null) : null;
+  const activity = pet ? await getActivePetActivitySession(db, telegramId).catch(() => null) : null;
+  const identity = pet ? await getMoonpetIdentitySummary(db, telegramId).catch(() => null) : null;
+  await sendTelegramMessage(tok, chatId, formatPetDetails(pet, missions, activity, identity), { reply_markup: buildPetProgressMenuReplyMarkup() });
+}
+
+async function cmdPetIdentity(db, tok, chatId, telegramId, section) {
+  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  if (!identity) {
+    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
+    return;
+  }
+  const memory = identity.memories || {};
+  const sectionCopy = {
+    evolution: `<b>🧬 Evolution</b>\n${escapeHtml(identity.current_stage?.name || 'Moon Egg')}`,
+    personality: `<b>🧠 Personality</b>\n${identity.personalities?.length ? identity.personalities.map((trait) => `• ${escapeHtml(trait.name)}`).join('\n') : '<i>Still forming</i>'}`,
+    memories: `<b>📖 Memories</b>\n${[
+      Number(memory.total_runs || 0) > 0 ? `• Runs completed: ${Number(memory.total_runs)}` : null,
+      memory.favourite_activity ? `• Favourite activity: ${escapeHtml(memory.favourite_activity)}` : null,
+      memory.first_boss_id ? `• First boss: ${escapeHtml(String(memory.first_boss_id).replaceAll('_', ' '))}` : null,
+      ...(Array.isArray(memory.milestones) ? memory.milestones.slice(0, 4).map((milestone) => `• ${escapeHtml(String(milestone).replaceAll('_', ' '))}`) : []),
+    ].filter(Boolean).join('\n') || '<i>Your story is just beginning.</i>'}`,
+  }[section];
+  await sendTelegramMessage(tok, chatId, sectionCopy || formatMoonpetIdentitySummary(identity), { reply_markup: buildPetProgressMenuReplyMarkup() });
+}
+
+async function cmdPetStreak(db, tok, chatId, telegramId) {
+  const pet = serializePet(await getPetProfile(db, telegramId).catch(() => null));
+  const text = pet ? `<b>🔥 Streak</b>\n${pet.streak_days} day(s)` : 'No Crypto Moonboy Pet found. Use /adopt to start.';
+  await sendTelegramMessage(tok, chatId, text, { reply_markup: buildPetProgressMenuReplyMarkup() });
+}
+
+async function cmdPetTradeMenu(tok, chatId) {
+  await sendTelegramMessage(tok, chatId,
+    `<b>💱 Trade</b>\nChoose how much Moon Gold to risk.`,
+    { reply_markup: { inline_keyboard: [
+      [{ text: '10 Gold', callback_data: 'pet:trade:10' }, { text: '25 Gold', callback_data: 'pet:trade:25' }, { text: '50 Gold', callback_data: 'pet:trade:50' }],
+      [{ text: '⬅️ Back', callback_data: 'pet:menu:management' }],
+    ] } },
+  );
 }
 
 async function cmdPetProgress(db, tok, chatId, telegramId) {
@@ -10771,7 +10879,7 @@ async function cmdPetProgress(db, tok, chatId, telegramId) {
   const state = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null);
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
   const identityCopy = identity ? `\n\n${formatMoonpetIdentitySummary(identity)}` : '';
-  await sendTelegramMessage(tok, chatId, `${buildPetProgressSummary(state || {})}${identityCopy}`);
+  await sendTelegramMessage(tok, chatId, `${buildPetProgressSummary(state || {})}${identityCopy}`, { reply_markup: buildPetProgressMenuReplyMarkup() });
 }
 
 async function cmdPetGear(db, tok, chatId, telegramId) {
@@ -10781,7 +10889,7 @@ async function cmdPetGear(db, tok, chatId, telegramId) {
     return;
   }
   const rows = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ? ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] }));
-  await sendTelegramMessage(tok, chatId, buildPetGearSummary(rows.results || []));
+  await sendTelegramMessage(tok, chatId, buildPetGearSummary(rows.results || []), { reply_markup: buildPetManagementMenuReplyMarkup() });
 }
 
 async function applyPetRuntimeCommandAward(db, telegramId, eventKey, action, options = {}) {
@@ -11399,7 +11507,7 @@ async function cmdPetNotify(db, tok, chatId, telegramId, argStr = '') {
   await sendTelegramMessage(tok, chatId, 'Use /petnotify on, /petnotify off, or /petnotify status.');
 }
 
-async function cmdPetLeaderboard(db, tok, chatId) {
+async function cmdPetLeaderboard(db, tok, chatId, replyMarkup = null) {
   const season = getPetSeasonInfo(new Date());
   const rows = await db.prepare(`
     SELECT s.telegram_id, s.season_xp, p.pet_name, p.stage, p.level,
@@ -11412,13 +11520,13 @@ async function cmdPetLeaderboard(db, tok, chatId) {
     LIMIT 10
   `).bind(season.key).all().catch(() => ({ results: [] }));
   if (!rows.results?.length) {
-    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pets leaderboard entries yet. Use /adopt to start.');
+    await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pets leaderboard entries yet. Use /adopt to start.', replyMarkup ? { reply_markup: replyMarkup } : {});
     return;
   }
   const lines = rows.results.map((row, index) => (
     `${index + 1}. ${escapeHtml(displayNameFromRow(row))} — ${escapeHtml(row.pet_name || 'Moonpet')} (${escapeHtml(row.stage || 'egg')}) ${row.season_xp || 0} pet XP`
   ));
-  await sendTelegramPetReply(tok, chatId, `<b>Crypto Moonboy Pets Leaderboard</b>\n${escapeHtml(season.key)}\n\n${lines.join('\n')}`, {}, 'leaderboard');
+  await sendTelegramPetReply(tok, chatId, `<b>Crypto Moonboy Pets Leaderboard</b>\n${escapeHtml(season.key)}\n\n${lines.join('\n')}`, replyMarkup ? { reply_markup: replyMarkup } : {}, 'leaderboard');
 }
 
 async function cmdGkLink(db, tok, chatId, telegramId) {
