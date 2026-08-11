@@ -2254,11 +2254,8 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
   await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:memory`,
     memory_type: options.completed ? 'run_completed' : 'extraction',
     milestone: options.completed ? 'first_run_completed' : 'first_extraction', reward_amount: awardedAuthority.rewards?.moon_gold, reward_currency: 'moon_gold' });
-  if (options.completed) {
-    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:boss:personality`, behaviour: 'combat', activity: 'combat', amount: 2 });
-    await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:boss:memory`, memory_type: 'boss_victory',
-      boss_id: 'alley_king', milestone: 'first_boss_victory' });
-  }
+  // Legacy runs have no persisted canonical boss room. Their completion may
+  // record exploration and completion memories, but never boss authority.
   return { ...awardedAuthority, reason: awardedAuthority.duplicate ? 'duplicate' : (options.completed ? 'run_completed' : 'run_extracted'),
     run: rewardRun, banked_items: bankedItemsAuthority };
 }
@@ -6551,7 +6548,6 @@ export default {
             run_id: body.run_id,
             choice_key: body.choice_key,
             expected_step_index: body.expected_step_index,
-            success: body.success,
           })
           : await processPetRunStep(env.DB, telegramId, body.run_id, body.choice_key, {
             event_key: body.event_key,
@@ -10229,6 +10225,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetInventory,
   processPetUseItem,
   processPetRunExtract,
+  recordPetRunBankedEvent,
   processPetRunStep,
   reservePetRepeatRewardEvent,
   scalePetRewards,

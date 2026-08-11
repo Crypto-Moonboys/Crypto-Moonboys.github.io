@@ -1,5 +1,7 @@
 import dailyChallenges from './content/daily-challenges.json' with { type: 'json' };
 import {
+  PET_ROGUELITE_BOSSES,
+  PET_ROGUELITE_ENEMIES,
   PET_ROGUELITE_REGIONS,
   PET_RUN_MODIFIERS,
   advancePetRun,
@@ -135,6 +137,76 @@ function dailyRoomScore(room) {
   return ({ choice_event: 50, loot: 75, battle: 100, elite: 175, boss: 250 })[String(room?.room_type)] || 50;
 }
 
+function stableDailyOutcomeRoll(value) {
+  let hash = 2166136261;
+  for (const char of String(value || '')) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+  return hash >>> 0;
+}
+
+function dailyChoiceRiskAdjustment(choiceId) {
+  const choice = String(choiceId || '').toLowerCase();
+  if (/(?:safe|escape|hide|leave|retreat|sneak|scan|ignore)/.test(choice)) return 700;
+  if (/(?:risk|gamble|steal|challenge|fight|confront)/.test(choice)) return -300;
+  return 0;
+}
+
+function dailyRoomDifficulty(room) {
+  if (room?.boss_id) return positiveInteger(PET_ROGUELITE_BOSSES[room.boss_id]?.difficulty, 10);
+  if (room?.enemy_id) return positiveInteger(PET_ROGUELITE_ENEMIES[room.enemy_id]?.difficulty, 10);
+  return room?.room_type === 'elite' ? 3 : 0;
+}
+
+async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
+  const [profile, modifierRows] = await Promise.all([
+    db.prepare(`SELECT pet_xp, level, health, energy, happiness, cleanliness
+      FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1`).bind(run.telegram_id).first(),
+    db.prepare(`SELECT modifier_id, effects_json FROM telegram_pet_run_modifiers
+      WHERE run_id = ? AND telegram_id = ? ORDER BY modifier_id`).bind(run.run_id, run.telegram_id).all()
+      .catch(() => ({ results: [] })),
+  ]);
+  if (!profile) throw new Error('daily_run_player_not_found');
+  const modifiers = (modifierRows.results || []).map((row) => ({
+    modifier_id: String(row.modifier_id || ''),
+    effects: parseJsonObject(row.effects_json),
+  }));
+  const effects = modifiers.reduce((combined, modifier) => ({ ...combined, ...modifier.effects }), {});
+  const roomType = String(room?.room_type || 'choice_event');
+  const baseChance = ({ choice_event: 9000, loot: 9500, battle: 8200, elite: 7600, boss: 7000 })[roomType] || 8500;
+  const stateAverage = ['health', 'energy', 'happiness', 'cleanliness']
+    .reduce((total, key) => total + Math.max(0, Math.min(100, Number(profile[key]) || 0)), 0) / 4;
+  const authoritativeLevel = Math.max(1, positiveInteger(profile.level, 100), Math.floor(positiveInteger(profile.pet_xp) / 100) + 1);
+  const playerAdjustment = Math.round((stateAverage - 50) * 25) + Math.min(1000, authoritativeLevel * 20);
+  const modifierAdjustment = (Number(effects.event_outcome_pct) || 0) * 100
+    + (Number(effects.damage_dealt_pct) || 0) * 15
+    - (Number(effects.damage_taken_pct) || 0) * 15
+    - (Number(effects.enemy_speed_pct) || 0) * 20
+    - (Number(effects.energy_cost_modifier) || 0) * 30;
+  const difficulty = dailyRoomDifficulty(room);
+  const successChanceBps = Math.max(500, Math.min(9950, Math.round(baseChance + playerAdjustment + modifierAdjustment
+    + dailyChoiceRiskAdjustment(choiceId) - (difficulty * 350))));
+  const rollKey = [run.seed, room.room, room.content_id, room.enemy_id || room.boss_id || '', choiceId,
+    ...modifiers.map((modifier) => modifier.modifier_id)].join(':');
+  const riskRollBps = stableDailyOutcomeRoll(rollKey) % 10000;
+  const success = riskRollBps < successChanceBps;
+  return {
+    success,
+    choice_id: choiceId,
+    score: success ? dailyRoomScore(room) : 0,
+    risk_roll_bps: riskRollBps,
+    success_chance_bps: successChanceBps,
+    difficulty,
+    modifier_ids: modifiers.map((modifier) => modifier.modifier_id),
+    player_state: {
+      level: authoritativeLevel,
+      health: positiveInteger(profile.health, 100),
+      energy: positiveInteger(profile.energy, 100),
+      happiness: positiveInteger(profile.happiness, 100),
+      cleanliness: positiveInteger(profile.cleanliness, 100),
+    },
+    authority: 'daily_moon_run_server_outcome_v1',
+  };
+}
+
 async function getPersistedDailyRoom(db, run, roomNumber) {
   const row = await db.prepare(`SELECT room_id, run_id, telegram_id, room_number, room_type, status, generated_data, outcome_data
     FROM telegram_pet_run_rooms WHERE run_id = ? AND telegram_id = ? AND room_number = ? LIMIT 1`)
@@ -247,9 +319,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
     status: daily.authoritative_status,
   };
   const generated = generatePetRunRoom(run);
-  const expectedRoom = request.expected_room == null
-    ? (request.expected_step_index == null ? null : positiveInteger(request.expected_step_index) + 1)
-    : positiveInteger(request.expected_room);
+  const expectedRoom = request.expected_step_index == null ? null : positiveInteger(request.expected_step_index) + 1;
   if (expectedRoom != null && expectedRoom !== generated.room) {
     return { accepted: false, duplicate: false, reason: 'stale_daily_room', expected_room: generated.room };
   }
@@ -260,12 +330,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
   }
   let resolved = room;
   if (room.status === 'pending') {
-    const outcome = {
-      success: request.success !== false,
-      choice_id: choiceId,
-      score: request.success === false ? 0 : dailyRoomScore(room),
-      authority: 'daily_moon_run_room_engine',
-    };
+    const outcome = await resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId);
     const authoritativeResolution = resolvePetRunRoom(room, outcome);
     resolved = await persistPetRunRoomOutcome(db, run, room, authoritativeResolution.outcome);
   }
@@ -304,6 +369,13 @@ export async function processDailyMoonRunStep(db, request = {}) {
 export async function extractDailyMoonRun(db, request = {}) {
   const daily = await getDailyMoonRunReservation(db, request);
   if (!daily) return { accepted: false, duplicate: false, reason: 'daily_run_not_found' };
+  const completedRoom = positiveInteger(daily.authoritative_depth) > 0
+    ? { count: 1 }
+    : await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_rooms
+      WHERE run_id = ? AND telegram_id = ? AND status = 'resolved'`).bind(daily.run_id, daily.telegram_id).first();
+  if (positiveInteger(daily.authoritative_depth) <= 0 && positiveInteger(completedRoom?.count) <= 0) {
+    return { accepted: false, duplicate: false, reason: 'daily_run_empty', daily_run: daily, extraction: null };
+  }
   const run = {
     ...daily,
     telegram_id: daily.telegram_id,
@@ -640,5 +712,6 @@ export const __dailyMoonRunTestHooks = Object.freeze({
   calculateStreaks,
   dailyModifierId,
   dailyRunId,
+  resolveAuthoritativeDailyRoomOutcome,
   validUtcDay,
 });

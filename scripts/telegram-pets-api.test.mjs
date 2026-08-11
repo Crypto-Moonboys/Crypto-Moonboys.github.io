@@ -39,7 +39,9 @@ const {
   getPetInventory,
   processPetUseItem,
   processPetRunExtract,
+  recordPetRunBankedEvent,
   processPetRunStep,
+  evolveMoonpet,
   reservePetRepeatRewardEvent,
   scalePetRewards,
   buildPetKaijuCardReplyMarkup,
@@ -794,6 +796,8 @@ assert.ok(runBank.includes("eventType = options.completed ? 'run_complete' : 'ru
 assert.ok(runBank.includes("options.completed ? (options.event_key || buildStablePetEventKey(['pet_run_complete', telegramId, run.run_id])) : buildPetRunExtractEventKey(telegramId, run.run_id)"), 'extract banking must ignore caller-provided event keys and use the deterministic run extract key');
 assert.ok(runBank.includes('RETURNING *') && runBank.includes('const rewardRun = claimedRow ? serializePetRun(claimedRow)'),
   'terminal claiming must atomically return the exact reward snapshot');
+assert.doesNotMatch(runBank, /memory_type:\s*'boss_victory'|boss_id:\s*'alley_king'/,
+  'legacy run completion must never create Alley King boss authority');
 assert.ok(runBank.includes("rewardRun.status !== terminalStatus"), 'a competing terminal transition must not authorize another reward path');
 assertOrder(
   runBank,
@@ -1623,6 +1627,42 @@ const usedBankedItem = await processPetUseItem(bankedItemDb, 'banked-item', 'ene
 assert.equal(usedBankedItem.accepted, true, 'a banked run item must be usable');
 assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 0,
   'using a banked run item must consume its authoritative balance');
+
+const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100);
+legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=5000, level=51, stage='street_moonpet'
+  WHERE telegram_id='legacy-boss-gate'`).run();
+for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1]]) {
+  legacyBossDb.database.prepare(`INSERT INTO telegram_pet_evolutions
+    (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
+    VALUES ('legacy-boss-gate', ?, ?, ?, 1)`).run(evolutionId, stage, `fixture:${evolutionId}`);
+}
+legacyBossDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES
+  ('legacy-boss-gate', 'material', 'neon_scrap', 10),
+  ('legacy-boss-gate', 'item', 'evolution_fragment', 3)`).run();
+legacyBossDb.database.prepare(`INSERT INTO telegram_pet_relics (telegram_id, relic_id, rarity) VALUES
+  ('legacy-boss-gate', 'bitcoin_heart', 'legendary'),
+  ('legacy-boss-gate', 'neon_boots', 'rare')`).run();
+for (let index = 1; index <= 3; index += 1) {
+  const runId = `legacy-completion-${index}`;
+  legacyBossDb.database.prepare(`INSERT INTO telegram_pet_runs
+    (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
+    VALUES (?, 'legacy-boss-gate', ?, 'pet-s2026-003', 'active', 5, 5, 1)`).run(`legacy-row-${index}`, runId);
+  const run = legacyBossDb.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(runId);
+  const pet = legacyBossDb.database.prepare("SELECT * FROM telegram_pet_profiles WHERE telegram_id='legacy-boss-gate'").get();
+  const completed = await recordPetRunBankedEvent(legacyBossDb, 'legacy-boss-gate', run, pet, {
+    completed: true, event_key: `legacy-complete:${index}`, source: 'legacy_boss_gate_regression',
+  });
+  assert.equal(completed.accepted, true, 'legacy completion must retain normal completion handling');
+}
+assert.equal(legacyBossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_boss_victories WHERE telegram_id='legacy-boss-gate'").get().count, 0,
+  'legacy completions must not create Alley King victory rows');
+assert.equal(legacyBossDb.database.prepare("SELECT total_runs FROM telegram_pet_memories WHERE telegram_id='legacy-boss-gate'").get().total_runs, 3,
+  'legacy completions may retain bounded completion memories');
+const blockedCyberEvolution = await evolveMoonpet(legacyBossDb, {
+  telegram_id: 'legacy-boss-gate', evolution_id: 'cyber_moonpet', event_key: 'legacy-boss-gate:evolve',
+});
+assert.equal(blockedCyberEvolution.accepted, false, 'legacy completion cannot unlock boss-gated evolution');
+assert.equal(blockedCyberEvolution.reason, 'evolution_requirements_not_met');
 
 async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
   const db = seedRepeatRewardPlayer(telegramId, 18);

@@ -5,6 +5,7 @@ import {
   PET_DAILY_CHALLENGES,
   __dailyMoonRunTestHooks,
   createDailyMoonRun,
+  extractDailyMoonRun,
   generateDailyMoonRunSeed,
   getDailyMoonRunAnalytics,
   getDailyMoonRunLeaderboard,
@@ -116,6 +117,9 @@ const dailyStepRoute = workerSource.slice(workerSource.indexOf("body.action === 
 assert.match(dailyStepRoute, /getDailyMoonRunReservation/, 'run_step must identify daily reservations before choosing an engine');
 assert.match(dailyStepRoute, /processDailyMoonRunStep/, 'daily run_step must route through the roguelite room adapter');
 assert.match(dailyStepRoute, /processPetRunStep/, 'non-daily runs must preserve the existing legacy compatibility path');
+assert.doesNotMatch(dailyStepRoute, /success:\s*body\.success/, 'daily run_step must not forward client-controlled outcomes');
+assert.doesNotMatch(dailySource, /request\.success/, 'daily room resolution must ignore client-controlled success fields');
+assert.doesNotMatch(dailySource, /request\.expected_room/, 'daily room resolution must accept only the expected step index as concurrency intent');
 const dailySyncRoute = workerSource.slice(workerSource.indexOf("body.action === 'daily_run_sync'"), workerSource.indexOf("body.action === 'evolve'"));
 assert.match(dailySyncRoute, /utc_day:\s*body\.utc_day/);
 assert.match(dailySyncRoute, /run_id:\s*body\.run_id/, 'daily sync must forward the reservation date authority or run ID');
@@ -159,6 +163,48 @@ assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run
   'daily creation must materialize its first room through the roguelite room engine');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE telegram_id='daily-player' AND event_key='daily:memory:first-run:daily-player'").get().count, 1,
   'First Daily Moon Run memory must be bounded and duplicate safe');
+
+const freshExtractionDb = new D1();
+seedPlayer(freshExtractionDb, 'fresh-extraction-player');
+const freshExtractionRun = await createDailyMoonRun(freshExtractionDb, { telegram_id: 'fresh-extraction-player', now });
+const freshExtraction = await extractDailyMoonRun(freshExtractionDb, {
+  telegram_id: 'fresh-extraction-player', run_id: freshExtractionRun.daily_run.run_id, now,
+});
+assert.equal(freshExtraction.accepted, false, 'a fresh Daily Moon Run cannot extract before resolving a room');
+assert.equal(freshExtraction.reason, 'daily_run_empty');
+assert.equal(freshExtractionDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE telegram_id='fresh-extraction-player'").get().status, 'active',
+  'rejected zero-room extraction must leave the authoritative run active');
+assert.equal(freshExtractionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_daily_analytics WHERE telegram_id='fresh-extraction-player' AND event_type='run_terminal'").get().count, 0,
+  'rejected zero-room extraction must not create terminal daily evidence');
+
+let forcedVictoryRegression = null;
+for (let day = 1; day <= 40 && !forcedVictoryRegression; day += 1) {
+  const forcedDb = new D1();
+  const telegramId = `forced-outcome-${day}`;
+  seedPlayer(forcedDb, telegramId);
+  forcedDb.database.prepare(`UPDATE telegram_pet_profiles SET health=0, energy=0, happiness=0, cleanliness=0 WHERE telegram_id=?`).run(telegramId);
+  const forcedNow = new Date(Date.UTC(2026, 8, day, 12));
+  const forcedRun = await createDailyMoonRun(forcedDb, { telegram_id: telegramId, now: forcedNow });
+  const pending = forcedDb.database.prepare(`SELECT generated_data FROM telegram_pet_run_rooms
+    WHERE telegram_id=? AND run_id=? AND room_number=1`).get(telegramId, forcedRun.daily_run.run_id);
+  const room = JSON.parse(pending.generated_data);
+  const result = await processDailyMoonRunStep(forcedDb, {
+    telegram_id: telegramId,
+    run_id: forcedRun.daily_run.run_id,
+    choice_key: room.choices[0].choice_id,
+    expected_step_index: 0,
+    success: true,
+    now: forcedNow,
+  });
+  if (result.reason === 'daily_room_failed') forcedVictoryRegression = { db: forcedDb, telegramId, result };
+}
+assert.ok(forcedVictoryRegression, 'the deterministic authority fixture must include a server-resolved failure');
+assert.equal(forcedVictoryRegression.result.room.outcome.success, false,
+  'client success=true cannot force a Daily Moon Run victory');
+assert.equal(forcedVictoryRegression.result.room.outcome.authority, 'daily_moon_run_server_outcome_v1');
+assert.equal(forcedVictoryRegression.db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_analytics
+  WHERE telegram_id=? AND event_type='boss_fought'`).get(forcedVictoryRegression.telegramId).count, 0,
+  'a client-forced outcome cannot create boss authority');
 
 insertCareEvent(db, 'daily-player', 'care-one', '2026-08-11');
 const [careA, careB] = await Promise.all([
@@ -207,7 +253,7 @@ assert.ok(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identi
 
 const engineDb = new D1();
 for (const telegramId of ['engine-player-a', 'engine-player-b']) seedPlayer(engineDb, telegramId);
-const engineDay = new Date('2026-08-14T08:00:00.000Z');
+const engineDay = new Date('2026-09-01T08:00:00.000Z');
 const engineRuns = [];
 for (const telegramId of ['engine-player-a', 'engine-player-b']) {
   const created = await createDailyMoonRun(engineDb, { telegram_id: telegramId, now: engineDay });
