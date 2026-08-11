@@ -10,6 +10,7 @@ import {
   validatePetRunModifierContent,
 } from './content/index.js';
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
+import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 
 export {
   PET_ROGUELITE_BOSSES,
@@ -135,6 +136,7 @@ export async function awardPetReward(db, request = {}) {
   const source = String(request.source || '').trim().toLowerCase().slice(0, 80);
   const idempotencyKey = String(request.idempotency_key || '').trim().slice(0, 160);
   if (!telegramId || !PET_REWARD_SOURCES.includes(source) || !idempotencyKey) throw new Error('invalid_pet_reward_request');
+  await reconcileLegacyPetInventory(db, telegramId);
   const reservationId = String(request.reservation_id || '').trim();
   let rewards = normalizePetReward(request.rewards);
   if (source.startsWith('roguelite_')) rewards = {

@@ -179,7 +179,8 @@ for (const [folder, service] of Object.entries(serviceByFolder)) {
     assert.ok(Number.isFinite(Date.parse(entry.deployed_at)), `${folder} verified-live deployed_at must be a valid timestamp`);
 
     const retainedEvidence = readRetainedEvidenceFromManifest(entry, folder);
-    assert.equal(retainedEvidence.expected_commit, entry.deployed_commit, `${folder} retained evidence commit must match the manifest`);
+    const retainedExpectedCommit = retainedEvidence.expected_commits?.[service] || retainedEvidence.expected_commit;
+    assert.equal(retainedExpectedCommit, entry.deployed_commit, `${folder} retained evidence commit must match the manifest`);
     const capturedWorker = (retainedEvidence.workers || []).find((worker) => worker?.service === service);
     assert.ok(capturedWorker, `${folder} must be present in retained evidence`);
     assert.equal(capturedWorker.commit, entry.deployed_commit, `${folder} captured commit must match the manifest`);

@@ -1,14 +1,10 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const SHA_RE = /^[0-9a-f]{40}$/i;
-const EXPECTED_COMMIT = String(process.env.EXPECTED_COMMIT || '').trim().toLowerCase();
-
-if (!SHA_RE.test(EXPECTED_COMMIT)) {
-  console.error('EXPECTED_COMMIT must be a 40-character repository commit SHA');
-  process.exit(1);
-}
 
 function git(args) {
   const result = spawnSync('git', args, {
@@ -21,24 +17,48 @@ function git(args) {
   };
 }
 
-const commitObject = git(['cat-file', '-e', `${EXPECTED_COMMIT}^{commit}`]);
-if (!commitObject.ok) {
-  throw new Error(`EXPECTED_COMMIT ${EXPECTED_COMMIT} is not a commit in this repository`);
+const targetUrls = Object.freeze({
+  'moonboys-api': 'https://moonboys-api.sercullen.workers.dev/deployment-info',
+  'moonboys-leaderboard': 'https://moonboys-leaderboard.sercullen.workers.dev/deployment-info',
+  'moonboys-anti-cheat': 'https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info',
+});
+
+function loadExpectations() {
+  const requestPath = process.argv[2];
+  if (!requestPath) {
+    const expectedCommit = String(process.env.EXPECTED_COMMIT || '').trim().toLowerCase();
+    if (!SHA_RE.test(expectedCommit)) throw new Error('EXPECTED_COMMIT must be a 40-character repository commit SHA');
+    const services = Object.keys(targetUrls);
+    return { services, expectedCommits: Object.fromEntries(services.map((service) => [service, expectedCommit])), legacyExpectedCommit: expectedCommit };
+  }
+
+  const request = JSON.parse(fs.readFileSync(path.resolve(requestPath), 'utf8'));
+  if (request.schema_version !== 2) throw new Error('Worker evidence request schema_version must equal 2');
+  if (!Array.isArray(request.services) || request.services.length === 0) throw new Error('Worker evidence request services must be a non-empty array');
+  const services = request.services.map(String);
+  if (new Set(services).size !== services.length) throw new Error('Worker evidence request services contains duplicates');
+  if (JSON.stringify([...services].sort()) !== JSON.stringify(Object.keys(targetUrls).sort())) throw new Error('Worker evidence request must contain exactly the tracked services');
+  if (!request.expected_commits || typeof request.expected_commits !== 'object' || Array.isArray(request.expected_commits)) throw new Error('Worker evidence request expected_commits must be an object');
+  if (JSON.stringify(Object.keys(request.expected_commits).sort()) !== JSON.stringify([...services].sort())) throw new Error('Worker evidence request expected_commits must contain exactly the tracked services');
+  const expectedCommits = Object.fromEntries(services.map((service) => {
+    const commit = String(request.expected_commits[service] || '').toLowerCase();
+    if (!SHA_RE.test(commit)) throw new Error(`${service}: expected commit must be a full Git SHA`);
+    return [service, commit];
+  }));
+  return { services, expectedCommits, legacyExpectedCommit: null };
 }
 
-const reachableFromMain = git(['merge-base', '--is-ancestor', EXPECTED_COMMIT, 'origin/main']);
-if (!reachableFromMain.ok) {
-  throw new Error(`EXPECTED_COMMIT ${EXPECTED_COMMIT} is not reachable from origin/main`);
+const { services, expectedCommits, legacyExpectedCommit } = loadExpectations();
+for (const expectedCommit of new Set(Object.values(expectedCommits))) {
+  const commitObject = git(['cat-file', '-e', `${expectedCommit}^{commit}`]);
+  if (!commitObject.ok) throw new Error(`Expected commit ${expectedCommit} is not a commit in this repository`);
+  const reachableFromMain = git(['merge-base', '--is-ancestor', expectedCommit, 'origin/main']);
+  if (!reachableFromMain.ok) throw new Error(`Expected commit ${expectedCommit} is not reachable from origin/main`);
 }
-
-const targets = [
-  ['moonboys-api', 'https://moonboys-api.sercullen.workers.dev/deployment-info'],
-  ['moonboys-leaderboard', 'https://moonboys-leaderboard.sercullen.workers.dev/deployment-info'],
-  ['moonboys-anti-cheat', 'https://moonboys-anti-cheat.sercullen.workers.dev/deployment-info'],
-];
 
 const results = [];
-for (const [service, url] of targets) {
+for (const service of services) {
+  const url = targetUrls[service];
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },
     redirect: 'error',
@@ -59,8 +79,8 @@ for (const [service, url] of targets) {
   }
   if (payload.service !== service) throw new Error(`${service}: service field mismatch`);
   if (!SHA_RE.test(String(payload.commit || ''))) throw new Error(`${service}: commit is not a full Git SHA`);
-  if (String(payload.commit).toLowerCase() !== EXPECTED_COMMIT) {
-    throw new Error(`${service}: deployed commit ${payload.commit} does not match ${EXPECTED_COMMIT}`);
+  if (String(payload.commit).toLowerCase() !== expectedCommits[service]) {
+    throw new Error(`${service}: deployed commit ${payload.commit} does not match ${expectedCommits[service]}`);
   }
   const deployedAt = new Date(String(payload.deployed_at || ''));
   if (!Number.isFinite(deployedAt.getTime()) || deployedAt.toISOString() !== payload.deployed_at) {
@@ -77,13 +97,13 @@ for (const [service, url] of targets) {
   results.push({ service, commit: payload.commit, deployed_at: payload.deployed_at, url });
 }
 
-const commits = new Set(results.map((result) => result.commit));
-if (commits.size !== 1) {
-  throw new Error('Tracked Workers did not report one consistent expected commit');
-}
-
-console.log(JSON.stringify({
+const output = {
   verified_at: new Date().toISOString(),
-  expected_commit: EXPECTED_COMMIT,
+  expected_commits: expectedCommits,
   workers: results,
-}, null, 2));
+};
+if (legacyExpectedCommit) {
+  delete output.expected_commits;
+  output.expected_commit = legacyExpectedCommit;
+}
+console.log(JSON.stringify(output, null, 2));

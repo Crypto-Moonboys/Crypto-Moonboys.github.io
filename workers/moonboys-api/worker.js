@@ -22,6 +22,7 @@ import {
   resolvePetRunRoom, rewardPetRogueliteBoss, rewardPetRunRoom, startPetRogueliteRun,
   validatePetRelicContent, validatePetRogueliteContent, validatePetRunModifier,
 } from './pets/roguelite-foundation.js';
+import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 /**
@@ -2469,6 +2470,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
 }
 
 async function getPetInventory(db, telegramId) {
+  await reconcileLegacyPetInventory(db, telegramId);
   const rows = await db.prepare(`
     SELECT asset_key, quantity
     FROM telegram_pet_inventory
@@ -2485,6 +2487,7 @@ async function getPetInventory(db, telegramId) {
 async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   const key = normalizePetInventoryItemKey(itemKeyRaw);
   if (!key) return { accepted: false, reason: 'invalid_item', xp_awarded: 0, pet_xp_awarded: 0 };
+  await reconcileLegacyPetInventory(db, telegramId);
   const now = new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);

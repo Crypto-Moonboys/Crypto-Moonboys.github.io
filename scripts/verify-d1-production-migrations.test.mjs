@@ -54,6 +54,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 044',
 );
 
+const withoutCutoverReconciliation = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '045_telegram_pet_inventory_cutover_reconciliation.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutCutoverReconciliation),
+  /missing required migrations: 045_telegram_pet_inventory_cutover_reconciliation\.sql/,
+  'deployment verification must reject an evidence request that omits migration 045',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -91,6 +101,14 @@ assert.throws(
   }], request),
   /missing migrations: 044_telegram_pet_daily_runs\.sql/,
   'deployment verification must fail when production D1 has not applied migration 044',
+);
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '045_telegram_pet_inventory_cutover_reconciliation.sql'),
+  }], request),
+  /missing migrations: 045_telegram_pet_inventory_cutover_reconciliation\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 045',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');
