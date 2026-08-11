@@ -34,6 +34,10 @@
 <section class="section"><h2>Core Commands</h2><table class="guide-table"><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody>
 <tr><td><code>/pet</code></td><td>Shows needs, health, currencies, missions, active activity and both equipped loadouts.</td></tr>
 <tr><td><code>/petprogress</code></td><td>Shows Care, Training, Adventure, Arena, Job and Bond XP, track levels, job rank, unlocked traits and prestige count.</td></tr>
+<tr><td><code>/petachievements</code></td><td>Shows 12 permanent achievement goals rebuilt from authoritative game history.</td></tr>
+<tr><td><code>/petevolve</code></td><td>Attempts the next ordered Moonpet evolution when its level, boss, relic and inventory requirements are met.</td></tr>
+<tr><td><code>/petboss</code></td><td>Opens the rotating weekly personal boss. One 12-Energy attempt is allowed per UTC day.</td></tr>
+<tr><td><code>/petseason</code></td><td>Shows and claims the four one-time reward tiers for the current 90-day pet season.</td></tr>
 <tr><td><code>/petgear</code></td><td>Shows recorded equipment levels, item XP, mastery XP and mastery tiers.</td></tr>
 <tr><td><code>/adopt</code></td><td>Creates your Crypto Moonboy Pet.</td></tr>
 <tr><td><code>/feed</code>, <code>/play</code>, <code>/clean</code>, <code>/sleep</code>, <code>/train</code></td><td>Runs instant care actions. Accepted actions can also progress specialist tracks, traits and equipped-item mastery.</td></tr>
@@ -42,9 +46,9 @@
 <tr><td><code>/petbuy moon_kibble</code></td><td>Buys and equips an eligible upgrade. Purchased equipment is registered for item progression.</td></tr>
 <tr><td><code>/petbag</code></td><td>Shows the authoritative consumable inventory.</td></tr>
 <tr><td><code>/petuse moon_snack</code></td><td>Uses a bag item through the protected item-balance authority.</td></tr>
-<tr><td><code>/petwork courier</code></td><td>Completes a short job and progresses Job XP when accepted.</td></tr>
+<tr><td><code>/petwork</code></td><td>Shows 12 jobs, including later work gated by Moonpet level and evolution stage. For example, <code>/petwork courier</code> starts the basic courier job.</td></tr>
 <tr><td><code>/petdaily</code></td><td>Claims the UTC daily chest and can progress Bond XP.</td></tr>
-<tr><td><code>/petevent</code></td><td>Generates a random encounter with three choices.</td></tr>
+<tr><td><code>/petevent</code></td><td>Generates a random encounter with three choices. The pool now contains 10 encounters, with later evolutions unlocking additional event types.</td></tr>
 <tr><td><code>/petstart train</code></td><td>Starts timed sleep, train, work or explore.</td></tr>
 <tr><td><code>/petactivity</code></td><td>Shows the active timed session.</td></tr>
 <tr><td><code>/petclaim</code></td><td>Claims a valid timed session through the protected reward authority. Interrupted settlements can be retried without double-awarding or losing the original result.</td></tr>
@@ -64,7 +68,9 @@
 
 <section class="section"><h2>Six Specialist Progression Tracks</h2><div class="pet-track-grid"><article class="pet-track-card"><h3>Care</h3><p>Raised mainly through feed, play, clean, sleep and some training. Represents daily pet management.</p></article><article class="pet-track-card"><h3>Training</h3><p>Raised through instant training and timed training claims.</p></article><article class="pet-track-card"><h3>Adventure</h3><p>Raised through exploration, successful run steps and extracted runs.</p></article><article class="pet-track-card"><h3>Arena</h3><p>Built by competitive combat actions and completed battle outcomes as those runtime hooks are used.</p></article><article class="pet-track-card"><h3>Job</h3><p>Raised by short jobs and timed work claims. Job XP also determines your displayed job rank.</p></article><article class="pet-track-card"><h3>Bond</h3><p>Raised by positive care actions and daily chest claims. Represents the long-term relationship with your Moonpet.</p></article></div><p>Each track has its own total, level calculation and daily award allowance. Daily counters reset by UTC day, while total specialist XP remains permanent.</p></section>
 
-<section class="section"><h2>Traits, Prestige And Long-Term Records</h2><p>Accepted gameplay actions can add hidden trait progress. When a trait reaches its required threshold it appears in <code>/petprogress</code>. Traits are earned by repeated behaviour rather than purchased directly.</p><p>The runtime progression state stores prestige count, completed regions, regional mastery and event-chain records. The newer roguelite foundation adds persistent run regions, deterministic seeds, room state, run modifiers, relic ownership, run history and analytics. These are backend foundations for expansion; they do not mean every future region, relic, boss or player-facing control is already live.</p></section>
+<section class="section"><h2>Personality, Memories, Achievements And Evolution</h2><p>Accepted combat, exploration, care and event behaviour builds hidden personality progress. Street Fighter, Explorer, Loyal and Curious traits now change reaction copy during jobs, events, weekly bosses and status checks.</p><p>Moonpets remember firsts, favourite activity, completed runs, boss victories, biggest rewards and evolution milestones. <code>/petachievements</code> turns authoritative history into 12 permanent progress goals.</p><p><code>/petevolve</code> moves through Moon Egg, Street Moonpet, Cyber Moonpet, Elite Moonpet and Legendary Moon Guardian in order. Later stages unlock jobs and events, increase bounded weekly-boss power and add a small fixed Style bonus to each seasonal tier claim.</p></section>
+
+<section class="section"><h2>Weekly Boss And Seasonal Rewards</h2><p><code>/petboss</code> rotates between four bosses by UTC week. Choose Strike, Outsmart or Endure. Each player gets one attempt per UTC day, enforced in D1, and damage persists until the weekly reset. Defeat rewards settle once through the protected reward authority.</p><p><code>/petseason</code> exposes one-time reward tiers at 250, 1,000, 3,000 and 7,500 seasonal Pet XP. Claims are unique per player, season and tier and can be safely retried after an interrupted response.</p></section>
 
 <section class="section"><h2>Understanding Your Two Loadouts</h2><p><strong>Care Loadout:</strong> Food, Toy and Outfit. These improve care actions, currencies, Pet XP and selected run modifiers.</p><p><strong>Battle Loadout:</strong> Armor, Weapon and Charm. These primarily affect Pet Arena attack, defense, crit, dodge and luck.</p><p>The loadouts are tracked independently. Changing one does not reset the other. Empty battle slots display <strong>none</strong>; there is no automatic starter Armor or starter Weapon.</p></section>
 
