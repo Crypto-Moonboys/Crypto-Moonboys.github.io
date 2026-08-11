@@ -1023,8 +1023,9 @@ assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item but
 assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
 
 const mainButtons = petReplyMarkup().inline_keyboard.flat();
-assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '⚔️ Adventure', '🎒 Bag', '🛒 Shop', '📋 Details'], '/pet must expose only primary companion actions');
-for (const removed of ['Train', 'Work', 'Events', 'Daily', 'Kaiju', 'Arena', 'Run', 'Activity', 'Claim', 'Cancel', 'How To Play', 'Leaderboard']) assert.ok(!mainButtons.some((button) => button.text.includes(removed)), `/pet main buttons must hide ${removed}`);
+assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '🏋️ Train', '⚔️ Adventure', '🎒 Bag', '🛒 Shop', '📋 Details'], '/pet must expose primary companion actions including Train');
+assert.equal(mainButtons.find((button) => button.text.includes('Train'))?.callback_data, 'pet:train', 'Train must invoke the existing pet action callback');
+for (const removed of ['Work', 'Events', 'Daily', 'Kaiju', 'Arena', 'Run', 'Activity', 'Claim', 'Cancel', 'How To Play', 'Leaderboard']) assert.ok(!mainButtons.some((button) => button.text.includes(removed)), `/pet main buttons must hide ${removed}`);
 
 const menuCases = [
   ['Adventure', buildPetAdventureMenuReplyMarkup(), ['Moon Run', 'Pet Jobs', 'Random Events', 'Kaiju', 'Arena', 'Daily']],

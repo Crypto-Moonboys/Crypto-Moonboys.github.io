@@ -10898,7 +10898,10 @@ function petReplyMarkup() {
         { text: '🧼 Clean', callback_data: 'pet:clean' },
         { text: '😴 Sleep', callback_data: 'pet:sleep' },
       ],
-      [{ text: '⚔️ Adventure', callback_data: 'pet:menu:adventure' }],
+      [
+        { text: '🏋️ Train', callback_data: 'pet:train' },
+        { text: '⚔️ Adventure', callback_data: 'pet:menu:adventure' },
+      ],
       [{ text: '🎒 Bag', callback_data: 'pet:bag' }, { text: '🛒 Shop', callback_data: 'pet:shop' }],
       [{ text: '📋 Details', callback_data: 'pet:details' }],
     ],
