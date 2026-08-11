@@ -11016,6 +11016,12 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
     .bind(telegramId, weekKey).first().catch(() => null);
   if (!action) return { accepted: true, preview: true, boss, progress: progressBefore, week_key: weekKey, energy_cost: 12 };
   if (getPetLevel(pet.pet_xp) < 5) return { accepted: false, reason: 'boss_level_locked', required_level: 5, boss, progress: progressBefore };
+  if (progressBefore?.defeated_at) {
+    const reward = progressBefore.reward_claimed_at
+      ? null
+      : await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progressBefore);
+    return { accepted: true, duplicate: true, reason: 'boss_already_defeated', boss, progress: progressBefore, reward, week_key: weekKey };
+  }
   if (existing) {
     const progress = progressBefore || await db.prepare(`SELECT * FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`).bind(telegramId, weekKey).first();
     const reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress);

@@ -38,6 +38,41 @@ for (const command of ['petachievements', 'petevolve', 'petboss', 'petseason']) 
 assert.match(workerSource, /awardPetReward\(db, \{[\s\S]*source: 'pet_weekly_boss'/);
 assert.match(workerSource, /source: 'pet_season_reward'/);
 
+let defeatedBossBatchCalls = 0;
+let defeatedBossWriteCalls = 0;
+const defeatedAt = '2026-08-10T12:00:00.000Z';
+const rewardClaimedAt = '2026-08-10T12:00:01.000Z';
+const defeatedBossDb = {
+  prepare(sql) {
+    const query = String(sql);
+    return {
+      bind() { return this; },
+      async first() {
+        if (query.includes('FROM telegram_pet_profiles')) return {
+          telegram_id: 'boss-winner', pet_xp: 500, hunger: 0, happiness: 100,
+          cleanliness: 100, energy: 80, health: 100, last_decay_at: new Date().toISOString(),
+        };
+        if (query.includes('FROM telegram_pet_weekly_boss_progress')) return {
+          telegram_id: 'boss-winner', week_key: 'current', boss_id: 'test',
+          attempts: 3, damage: 999, defeated_at: defeatedAt, reward_claimed_at: rewardClaimedAt,
+        };
+        return null;
+      },
+      async all() { return { results: [] }; },
+      async run() { defeatedBossWriteCalls += 1; return { meta: { changes: 1 } }; },
+    };
+  },
+  async batch() {
+    defeatedBossBatchCalls += 1;
+    throw new Error('a defeated weekly boss must never reserve another attack');
+  },
+};
+const defeatedBossResult = await hooks.processPetWeeklyBoss(defeatedBossDb, 'boss-winner', 'strike');
+assert.equal(defeatedBossResult.reason, 'boss_already_defeated');
+assert.equal(defeatedBossResult.progress.defeated_at, defeatedAt);
+assert.equal(defeatedBossBatchCalls, 0, 'post-defeat attacks must not enter the energy/damage reservation batch');
+assert.equal(defeatedBossWriteCalls, 0, 'post-defeat attacks must not consume energy or mutate boss state');
+
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
 for (const table of ['telegram_pet_achievements', 'telegram_pet_weekly_boss_progress', 'telegram_pet_weekly_boss_events', 'telegram_pet_season_reward_claims']) {
   assert.match(migration, new RegExp(`CREATE TABLE ${table}`), `${table} must be created by migration 048`);
