@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboy Pets is a Telegram pet RPG with specialist progression, equipment, Arena and Kaiju battles, protected rewards, and roguelite runs.">
+  <meta name="description" content="Crypto Moonboy Pets is a Telegram RPG with evolving personality and memories, achievements, weekly bosses, seasonal rewards, jobs, events and roguelite runs.">
   <meta name="keywords" content="Crypto Moonboy Pets, Telegram pet RPG, Moonpet, pet game, roguelite, Pet Arena, Kaiju Sticker Battle, pet progression, Pet XP, Community XP, pet gear, timed activities, pet jobs, crafting materials, relics, run modifiers">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Crypto Moonboy Pets — Crypto Moonboys Wiki">
@@ -51,7 +51,7 @@
   <article class="wiki-content" data-entity-slug="crypto-moonboy-pets">
     <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20how%20to%20play%20hero%20pets.jpg" alt="Crypto Moonboy Pets hero artwork showing care, progression, equipment, battles, runs, currencies and leaderboards." loading="eager" decoding="async">
 
-    <p class="lead-paragraph">Crypto Moonboy Pets is the live Telegram-first pet RPG and roguelite inside the Crypto Moonboys ecosystem. Players adopt a Moonpet, maintain its needs, build Pet XP, develop six specialist progression tracks, unlock traits, register equipment, complete timed activities and jobs, enter Pet Arena, play Kaiju Sticker Battle, and push through bank-or-risk Pet Runs backed by a growing roguelite foundation.</p>
+    <p class="lead-paragraph">Crypto Moonboy Pets is the live Telegram-first pet RPG and roguelite inside the Crypto Moonboys ecosystem. Players adopt a Moonpet, shape its personality and memories, unlock achievements, evolve through five identity stages, complete a larger pool of jobs and events, fight a changing weekly boss, claim 90-day season rewards, enter Pet Arena, play Kaiju Sticker Battle, and push through bank-or-risk Pet Runs.</p>
     <p>The Telegram bot remains the main game surface. The website provides the public information layer: current rules, the pet leaderboard, linked-player summaries, Community XP context and the searchable wiki record for the game.</p>
 
     <section class="wiki-section">
@@ -70,9 +70,20 @@
       <div class="pets-live-grid">
         <article class="pets-live-card"><h3>Care</h3><p>Feed, play, clean, sleep and train your Moonpet. Accepted care actions can affect needs, Pet XP, currencies, specialist XP and traits.</p></article>
         <article class="pets-live-card"><h3>Prepare</h3><p>Buy care upgrades, equip battle gear, manage authoritative bag items and check daily missions before committing to jobs, Arena battles or runs.</p></article>
-        <article class="pets-live-card"><h3>Risk</h3><p>Take jobs, random encounters, timed activities and five-step Pet Runs. The new roguelite foundation adds persistent region, room, modifier, relic, history and analytics support for future expansion while the current Telegram run remains the live five-step experience.</p></article>
-        <article class="pets-live-card"><h3>Compete</h3><p>Enter level 10+ Pet Arena, play Kaiju Sticker Battle, improve seasonal Pet XP and compare results on the pet leaderboard.</p></article>
+        <article class="pets-live-card"><h3>Risk</h3><p>Choose from 12 stage-gated jobs, 10 three-choice random encounters, timed activities and five-step Pet Runs. Later evolutions reveal harder work and stranger encounters.</p></article>
+        <article class="pets-live-card"><h3>Compete</h3><p>Fight one personal weekly boss attempt per UTC day, enter level 10+ Pet Arena, play Kaiju Sticker Battle and compare seasonal Pet XP.</p></article>
       </div>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Personality, Memories, Achievements And Evolution</h2>
+      <div class="pets-live-grid">
+        <article class="pets-live-card"><h3>Personality</h3><p>Combat, exploration, care and event behaviour can unlock Street Fighter, Explorer, Loyal and Curious traits. Those traits now change Moonpet reaction copy during jobs, events, status checks and weekly bosses.</p></article>
+        <article class="pets-live-card"><h3>Memories</h3><p>Your Moonpet remembers its first run, first extraction, first boss, completed runs, boss victories, favourite activity, biggest reward and evolution milestones. These records influence what it says.</p></article>
+        <article class="pets-live-card"><h3>Achievements</h3><p><code>/petachievements</code> displays 12 permanent goals covering care, jobs, event variety, runs, bosses, personality and evolution. Progress is rebuilt from authoritative game history rather than trusted client claims.</p></article>
+        <article class="pets-live-card"><h3>Evolution</h3><p><code>/petevolve</code> attempts the next stage in order: Moon Egg, Street Moonpet, Cyber Moonpet, Elite Moonpet and Legendary Moon Guardian. Requirements can include level, boss victories, relics and inventory materials.</p></article>
+      </div>
+      <p>Evolution is no longer cosmetic-only. Each later stage unlocks its own jobs and encounters, adds bounded weekly-boss power, changes reactions, and adds one extra Style Token per claimed seasonal tier. Stages cannot be skipped.</p>
     </section>
 
     <section class="wiki-section">
@@ -104,7 +115,7 @@
       <p><strong>Battle Loadout:</strong> armor, weapon and charm. Armor supports defense, weapons support attack, and charms support crit, dodge or luck.</p>
       <p>The two loadouts are independent. Changing one does not reset the other. Empty battle slots display <strong>none</strong>; the game does not invent starter armor or starter weapons.</p>
       <p><code>/petshop</code> opens care upgrades and Pet Arena equipment. <code>/petbuy item_key</code> buys and equips eligible items. <code>/petgear</code> displays registered equipment levels, item XP, mastery XP and mastery tiers, and repairs missing records for equipment already fitted to the pet.</p>
-      <p class="pets-status-note"><strong>Current boundary:</strong> equipment progression records and display are live. The newer roguelite backend can persist run rooms, modifiers, relic ownership, region data, run history and analytics, but those foundations do not automatically mean every future region, relic effect, boss or player-facing control is already live.</p>
+      <p class="pets-status-note"><strong>Current boundary:</strong> equipment progression records and display are live. The backend persists run rooms, modifiers, relic ownership, region data, run history and analytics, but not every defined future region or relic effect is a player-facing control yet.</p>
     </section>
 
     <section class="wiki-section">
@@ -117,12 +128,18 @@
         <li><code>/petactivity</code><br>Inspect the active session.</li>
         <li><code>/petclaim</code><br>Claim a valid timed session through the protected reward path.</li>
         <li><code>/petcancel</code><br>Cancel without rewards.</li>
-        <li><code>/petwork courier</code><br>Run a short job.</li>
+        <li><code>/petwork</code><br>View all 12 jobs and their level/evolution gates.</li>
         <li><code>/petdaily</code><br>Claim the UTC daily chest.</li>
-        <li><code>/petevent</code><br>Generate a random encounter with three choices.</li>
+        <li><code>/petevent</code><br>Generate one of 10 stage-gated encounters with three choices.</li>
       </ul>
       <p>The minimum timed claim is five minutes. Training caps at two hours. Sleep, work and exploration cap at eight hours. Valid longer sessions scale rewards up to their cap; cancellation awards nothing.</p>
       <p>Activity claims are protected against claim/cancel/expiry races. If a reward settlement is interrupted after persistence, retry recovery returns the original authoritative reward instead of creating a second award or losing the completed session.</p>
+    </section>
+
+    <section class="wiki-section">
+      <h2>Weekly Boss</h2>
+      <p><code>/petboss</code> opens the current personal weekly boss. The boss rotates deterministically each UTC week between Neon Titan, Rugpull Colossus, Kaiju Zero and Citadel Overlord. Choose <strong>Strike</strong>, <strong>Outsmart</strong> or <strong>Endure</strong>; matching the boss weakness, relevant personality and a later evolution stage improve damage.</p>
+      <p>Each player gets one attempt per UTC day, enforced by a D1 unique constraint. An attempt costs 12 Energy. Damage persists for the week, the boss reward settles once through the protected reward authority, and delivery retries recover the same result rather than creating extra attempts or rewards.</p>
     </section>
 
     <section class="wiki-section">
@@ -172,6 +189,7 @@
       <h2>Missions, Seasons And Leaderboards</h2>
       <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20pets%20Seasons.jpg" alt="Crypto Moonboy Pets automatic daily, weekly and 90-day seasonal progression." loading="lazy" decoding="async">
       <p>Daily missions reset by UTC day. Weekly windows and automatic 90-day pet seasons roll over independently without a manual reset.</p>
+      <p><code>/petseason</code> shows four one-time tiers at 250, 1,000, 3,000 and 7,500 seasonal Pet XP. Each tier is unique per player and season in D1. Claims use stable settlement keys, and the Moonpet’s evolution stage adds a small bounded Style bonus without increasing XP caps.</p>
       <p><code>/petleaderboard</code> and the website leaderboard rank Pet XP across daily, weekly, seasonal and all-time views. Specialist track levels, traits, job rank, equipment records, relic ownership and run-history data remain personal development systems rather than the current public leaderboard score.</p>
     </section>
 
@@ -187,6 +205,10 @@
       <ul class="pets-command-list">
         <li><code>/pet</code><br>Main Moonpet status.</li>
         <li><code>/petprogress</code><br>Tracks, traits, job rank and prestige record.</li>
+        <li><code>/petachievements</code><br>12 permanent achievement goals.</li>
+        <li><code>/petevolve</code><br>Attempt the next evolution stage.</li>
+        <li><code>/petboss</code><br>Current weekly personal boss.</li>
+        <li><code>/petseason</code><br>Season XP tiers and reward claims.</li>
         <li><code>/petgear</code><br>Equipment progression records.</li>
         <li><code>/petmissions</code><br>Current daily missions.</li>
         <li><code>/petshop</code><br>Care and Arena equipment.</li>
