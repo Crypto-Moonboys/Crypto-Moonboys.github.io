@@ -33,6 +33,7 @@ const {
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
+  processPetGoldTrade,
   processPetAdventure,
   claimPetActivitySession,
   cancelPetActivitySession,
@@ -955,6 +956,22 @@ assert.ok(petDaily.includes('dayKey = getPetDayKey(new Date())'), '/petdaily com
 assert.ok(petDaily.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'daily', dayKey])"), '/petdaily command must day-scope text retries');
 assert.ok(petDaily.includes('formatPetBlockedCopy('), '/petdaily command must use friendly blocked copy');
 
+for (const [command, label] of [
+  ['cmdPetStatus', '/pet'],
+  ['cmdPetAction', 'Feed and care actions'],
+  ['cmdPetWork', 'Work'],
+  ['cmdPetEvent', 'Event'],
+  ['cmdPetRun', 'Run'],
+]) {
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${label} status must retain stored Moonpet identity`);
+}
+for (const command of ['cmdPetUse', 'cmdPetDaily', 'cmdPetClaim', 'cmdPetTrade', 'cmdPetExtract']) {
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${command} status must pass identity instead of missions`);
+}
+assert.ok(!worker.includes('formatPetStatus(result.pet, await buildPetMissions(db, telegramId))'), 'missions must never be passed into the formatPetStatus identity parameter');
+assert.ok(asyncBlock('cmdPetDetails').includes('buildPetMissions(db, telegramId)'), 'missions must remain available in the separate Details response');
+assert.ok(asyncBlock('cmdPetMissions').includes('buildPetMissions(db, telegramId)'), '/petmissions functionality must remain intact');
+
 const petEvent = asyncBlock('cmdPetEvent');
 assert.ok(petEvent.includes('selectPetRandomEncounter'), '/petevent command must show a random encounter');
 assert.ok(petEvent.includes('buildPetRandomEventReplyMarkup'), '/petevent command must render encounter buttons');
@@ -1427,6 +1444,30 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   `).run();
   return db;
 }
+
+const repeatTradeDb = seedRepeatRewardPlayer('trade-repeat', 70);
+repeatTradeDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-repeat'").run();
+const originalTradeRandom = Math.random;
+Math.random = () => 0.9;
+try {
+  const firstTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:first', source: 'telegram_callback' });
+  assert.equal(firstTrade.accepted, true, 'first 50-gold callback trade must execute');
+  repeatTradeDb.database.prepare("UPDATE telegram_pet_events SET created_at = datetime('now', '-10 minutes') WHERE telegram_id = 'trade-repeat' AND event_key = 'callback:trade:first'").run();
+  const secondTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:second', source: 'telegram_callback' });
+  assert.equal(secondTrade.accepted, true, 'same 50-gold wager must execute again after cooldown with a new callback key');
+  assert.equal(secondTrade.duplicate, undefined, 'new callback identity must not be mistaken for the prior wager');
+  const goldAfterSecondTrade = repeatTradeDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'trade-repeat'").get().moon_gold;
+  const duplicateSecondTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:second', source: 'telegram_callback' });
+  assert.equal(duplicateSecondTrade.duplicate, true, 'repeated delivery of the same trade callback must resolve as a duplicate');
+  assert.equal(repeatTradeDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'trade-repeat'").get().moon_gold, goldAfterSecondTrade, 'duplicate callback must not apply gold twice');
+  assert.equal(repeatTradeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'trade-repeat' AND event_type = 'trade'").get().count, 2, 'two unique callbacks must create exactly two trade settlements');
+} finally {
+  Math.random = originalTradeRandom;
+}
+const tradeCommand = asyncBlock('cmdPetTrade');
+assert.ok(tradeCommand.includes('eventKey = null') && tradeCommand.includes('event_key: eventKey ||'), 'trade command must accept and prioritize the unique Telegram event key');
+assert.ok(tradeCommand.includes('if (result.duplicate)') && !tradeCommand.includes('Trade lost: undefined gold'), 'duplicate trade callbacks must return safe copy without undefined losses');
+assert.ok(callbackBranch.includes('cmdPetTrade(db, tok, chatId, telegramId, wager, eventKey)'), 'trade callback router must pass callback_query identity into settlement');
 
 function seedPetActivitySession(telegramId, options = {}) {
   const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
