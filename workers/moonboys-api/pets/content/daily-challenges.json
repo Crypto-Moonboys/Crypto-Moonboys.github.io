@@ -1,0 +1,63 @@
+[
+  {
+    "challenge_id": "daily_combat",
+    "category": "combat",
+    "target": 3,
+    "description": "Defeat 3 enemies in the official Daily Moon Run.",
+    "validation_rules": {
+      "event_type": "enemy_defeated",
+      "authority": "telegram_pet_run_rooms",
+      "requires_official_daily_run": true,
+      "progress_mode": "add"
+    }
+  },
+  {
+    "challenge_id": "daily_explorer",
+    "category": "explorer",
+    "target": 7,
+    "description": "Reach room depth 7 in the official Daily Moon Run.",
+    "validation_rules": {
+      "event_type": "room_resolved",
+      "authority": "telegram_pet_run_rooms",
+      "requires_official_daily_run": true,
+      "progress_mode": "max"
+    }
+  },
+  {
+    "challenge_id": "daily_extraction",
+    "category": "extraction",
+    "target": 1,
+    "description": "Successfully extract from the official Daily Moon Run.",
+    "validation_rules": {
+      "event_type": "run_extracted",
+      "authority": "telegram_pet_runs",
+      "requires_official_daily_run": true,
+      "progress_mode": "add"
+    }
+  },
+  {
+    "challenge_id": "daily_boss",
+    "category": "boss",
+    "target": 1,
+    "description": "Defeat Alley King in the official Daily Moon Run.",
+    "validation_rules": {
+      "event_type": "boss_defeated",
+      "authority": "telegram_pet_run_analytics",
+      "boss_id": "alley_king",
+      "requires_official_daily_run": true,
+      "progress_mode": "add"
+    }
+  },
+  {
+    "challenge_id": "daily_care",
+    "category": "care",
+    "target": 3,
+    "description": "Complete 3 accepted Moonpet care actions.",
+    "validation_rules": {
+      "event_type": "care_action",
+      "authority": "telegram_pet_events",
+      "accepted_actions": ["feed", "play", "clean", "sleep"],
+      "progress_mode": "add"
+    }
+  }
+]

@@ -1,6 +1,6 @@
 # Crypto Moonboy Pets Roguelite Foundation
 
-This foundation and Moon Alley slice build on the protected Pet reward, run, and activity work shipped in PRs #1155, #1156, and #1157. They do not add Telegram commands, UI, paid power, new XP currencies, or unrestricted reward paths.
+This foundation, Moon Alley slice, and Moonpet identity layer build on the protected Pet reward, run, and activity work shipped in PRs #1155, #1156, and #1157. They do not add Telegram commands, redesign UI, add paid power, create new currencies, or open unrestricted reward paths.
 
 ## Reward authority
 
@@ -37,6 +37,68 @@ Alley King uses the existing boss and reward authority. A valid resolved boss ro
 
 Backend analytics record run starts, room outcomes, modifier choices, boss attempts, boss wins, terminal status/depth, applied reward bundles, and relic discoveries. These raw events support room completion/failure counts, extraction rate, average depth, reward averages, and discovery reporting without adding a UI.
 
+## Moonpet evolution roadmap
+
+The implemented backend evolution order is Moon Egg, Street Moonpet, Cyber Moonpet, Elite Moonpet, and Legendary Moon Guardian. Definitions live separately in `workers/moonboys-api/pets/content/evolutions.json`; import-time validation requires ordered stages, valid requirement and unlock data, and rejects XP multipliers, reward multipliers, and cap increases.
+
+Each evolution is permanent and sequential. The backend checks Pet level, recorded boss victories, unique relic ownership, and authoritative `telegram_pet_inventory` quantities in one atomic D1 batch. Required inventory is consumed exactly once only when the evolution row is created. Duplicate requests return the existing evolution and cannot consume inventory again. Evolution unlocks store cosmetic IDs, animation-state IDs, and achievement IDs only. They do not award XP, increase caps, multiply rewards, or confer NFT power.
+
+The currently implemented requirements are:
+
+- Moon Egg: adoption and Pet level 1.
+- Street Moonpet: Pet level 5 and 5 Neon Scrap.
+- Cyber Moonpet: Pet level 20, three Alley King victories, two relics, 10 Neon Scrap, and three Evolution Fragments.
+- Elite Moonpet: Pet level 35, eight Alley King victories, five relics, 20 Neon Scrap, and eight Evolution Fragments.
+- Legendary Moon Guardian: Pet level 50, 15 Alley King victories, 10 relics, 40 Neon Scrap, and 15 Evolution Fragments.
+
+These identity stages and unlock records are live in the backend. No additional regions, evolution-only adventure content, combat power, or redesigned evolution screen is claimed by this implementation.
+
+## Personality system
+
+Personality progress is earned from accepted behaviour: Arena and boss combat advances Street Fighter, Adventure and successful run milestones advance Explorer, care actions advance Loyal, and random events advance Curious. `telegram_pet_personality_traits` stores one permanent progress row per Moonpet and trait. A unique identity-event ledger makes repeated or concurrent callbacks advance progress once, and a stable analytics key records each trait unlock once. Independent daily caps limit combat and exploration to four points, care and events to three points, and every callback to at most two points. Trait thresholds therefore require four to six active days; rotating cheap care actions cannot produce an instant unlock.
+
+Traits are presentation and future-content hooks. Their allowed uses are dialogue, cosmetics, event preferences, and future content routing. They are not raw XP multipliers, reward multipliers, cap changes, or combat-stat boosts.
+
+## Memory system
+
+`telegram_pet_memories` preserves first adoption, first run, first extraction, first boss victory, biggest Moon Gold reward, favourite activity, completed runs, bosses defeated, and milestone IDs. Per-boss victory totals support evolution checks without turning memories into rewards. Only important firsts, run terminals, boss victories, and evolution unlocks create memory-ledger events; ordinary accepted behaviour updates bounded aggregate counters through the personality transaction instead of appending memory records. Milestone JSON values remain unique, and duplicate callbacks cannot duplicate history.
+
+The existing `/petprogress` output now appends the current evolution stage, unlocked personality names, and concise memory highlights. This is an extension of the current text output, not a UI redesign.
+
+`telegram_pet_identity_analytics` records stable evolution unlocks, personality unlocks, and memory milestones. Evolution events include seconds since first adoption, allowing average time-to-evolution reporting; trait unlock counts can be compared with adopted-pet counts for balancing. Analytics do not issue rewards.
+
+## Daily Moon Run design
+
+The Daily Moon Run is an official Moon Alley run created through the existing roguelite run engine. `telegram_pet_daily_runs` reserves one `telegram_pet_runs.run_id` per Moonpet and UTC day; it does not implement rooms, combat, modifiers, bosses, terminal states, or rewards a second time. Creation is idempotent, and the deterministic run ID lets a retry recover if the existing run was committed before its daily reservation. A different already-open run blocks creation instead of replacing or bypassing the one-open-run rule.
+
+Every player receives the same Moon Alley difficulty, ten-room limit, boss pool, daily modifier, and numeric run seed for a given UTC date. The official daily row mirrors only authoritative run status, score, depth, boss victory, and completion time. A failed, abandoned, completed, or extracted run remains that day's sole official attempt. Retrying synchronization repairs a stale daily mirror and cannot create another attempt or increment records twice.
+
+The authenticated Pet action backend supports `daily_run` to create/resume the official run and immediately materialize its first `telegram_pet_run_rooms` record. Subsequent `run_step` actions detect the daily reservation and use `generatePetRunRoom()`, `createPetRunRoom()`, `resolvePetRunRoom()`, `persistPetRunRoomOutcome()`, and `completePetRun()` from the existing roguelite engine. Boss rooms use the existing boss reward and analytics authority; daily runs never write the legacy run-step ledger.
+
+`daily_run_sync` accepts the reservation's `utc_day`, or derives it from the persisted daily `run_id`. This keeps a run started before UTC midnight attached to its original official day when it completes afterward. Leaderboard and analytics query functions are backend-only in this foundation. No new public leaderboard route, Daily Moon Run screen, Telegram command, or redesigned UI is implemented or claimed.
+
+## Deterministic daily seed
+
+`generateDailyMoonRunSeed()` hashes the UTF-8 string `crypto_moonboys_daily_YYYY-MM-DD` with Web Crypto SHA-256. The first four digest bytes become the persisted numeric seed used by `generatePetRunRoom`; the public challenge seed combines the UTC date and that number. Player IDs and runtime randomness are not inputs. The daily modifier is selected deterministically from the validated existing modifier catalog, while the existing Moon Alley generator continues to own rooms, enemies, boss placement, and difficulty.
+
+## Daily challenges
+
+The initial catalog in `workers/moonboys-api/pets/content/daily-challenges.json` contains Combat, Explorer, Extraction, Boss, and Care challenges. Each definition names its target, description, progress mode, and authoritative validation table. Run challenges reconcile from official daily run rooms, terminal state, and boss analytics. Care progress accepts only already-persisted `feed`, `play`, `clean`, or `sleep` events for the same player and UTC day.
+
+`telegram_pet_daily_challenge_events` protects every evidence key, and `telegram_pet_daily_challenge_progress` stores one progress row per player/day/challenge. Completion, seasonal counting, and the analytics marker commit atomically in one D1 batch. Replayed or concurrent evidence cannot add progress or count completion twice. Challenges in this foundation do not define rewards. Any future reward attached to a completed challenge must call the unchanged `awardPetReward()` authority with a reviewed source and stable idempotency key; direct XP, currency, material, item, or inventory writes remain prohibited.
+
+## Seasonal challenge framework
+
+Seasonal tracking reuses the existing 90-day Pet season key and records completed daily challenges, the successful-run daily streak, Alley King records, and duplicate-safe personal achievement IDs. It does not store seasonal XP, currency, levels, reward multipliers, or a second progression track. `telegram_pet_seasonal_challenge_state` holds balancing totals, while `telegram_pet_seasonal_achievements` preserves one row per achievement and season.
+
+Daily identity integration adds five bounded milestone IDs: First Daily Moon Run, Highest Daily Score, Longest Daily Streak, Fastest Moon Alley Clear, and Daily Boss Victory. Each uses a fixed per-Moonpet identity event key, so later records update leaderboard facts without appending more memory events. The existing Moonpet memory transaction remains the only writer of milestone memory state.
+
+## Daily leaderboard and analytics
+
+The backend leaderboard orders a UTC day's official runs by score, boss result, depth, and successful completion time. Persistent personal records track highest score, fastest completed clear, deepest run, boss completions, successful extractions, current streak, and longest streak. A unique terminal analytics ID gates aggregate updates, so concurrent or retried completion callbacks cannot inflate counters.
+
+Balancing analytics report daily participation, successful completion rate, average depth, failed room counts, Alley King win percentage, per-challenge completion percentage, and streak length. These values are derived from daily reservations plus existing authoritative room/boss data. They are analytics only and issue no rewards.
+
 ## Migration requirement
 
 Apply `workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql` to the `wikicoms` D1 database before deploying Worker code that invokes this foundation.
@@ -56,6 +118,10 @@ Before production apply:
 
 Because 042 is a table rebuild, a failed or partially manual application must be treated as a stopped deployment. Do not rerun fragments or mark the migration applied until every copied field, index, and foreign key has been verified.
 
+After migration 042 is fully applied and verified, apply `workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql` before deploying the identity-enabled Worker. Migration 043 only adds identity tables and indexes, then copies existing profile/run history into those new tables. It does not update, rebuild, replace, or remove Pet profiles, XP, equipment, inventory, runs, migration 042 tables, inventory authority, reward claims, caps, triggers, run validation, or duplicate protections.
+
+Apply `workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql` only after both 042 and 043. Migration 044 creates daily reservations, challenge ledgers, personal records, seasonal tracking, achievements, analytics, and their indexes. It contains no `ALTER TABLE`, table rebuild, backfill mutation, or protected-table write. Production evidence must include migrations 042, 043, and 044 before deploying the daily-enabled Worker.
+
 ## Foundation tables
 
 - `telegram_pet_runs`: region, difficulty, deterministic seed, room progress, terminal status, score, and run summary analytics.
@@ -66,10 +132,22 @@ Because 042 is a table rebuild, a failed or partially manual application must be
 - `telegram_pet_relics`: permanent relic ownership, rarity, unlock time, and effects JSON.
 - `telegram_pet_run_history`: aggregate completion, boss, room, score, speed, and discovery records.
 - `telegram_pet_run_analytics`: start, room, modifier, boss, and end events used for balancing.
+- `telegram_pet_evolutions`: permanent sequential evolution unlocks and cosmetic/achievement state.
+- `telegram_pet_personality_traits`: permanent behaviour progress and one-time trait unlock timestamps.
+- `telegram_pet_memories`: permanent firsts, totals, favourite activity, biggest reward, and milestones.
+- `telegram_pet_identity_events`: callback idempotency ledger for personality and memory writes.
+- `telegram_pet_identity_analytics`: evolution, personality, milestone, and time-to-evolution balancing events.
+- `telegram_pet_daily_runs`: one official existing-engine run per Moonpet and UTC day.
+- `telegram_pet_daily_challenge_progress`: bounded progress and one completion timestamp per daily challenge.
+- `telegram_pet_daily_challenge_events`: authoritative evidence-key idempotency ledger.
+- `telegram_pet_daily_leaderboard_records`: highest score, fastest clear, depth, boss, extraction, and streak records.
+- `telegram_pet_seasonal_challenge_state`: challenge, streak, boss, and achievement totals without seasonal XP.
+- `telegram_pet_seasonal_achievements`: one duplicate-safe personal achievement per Moonpet and season.
+- `telegram_pet_daily_analytics`: idempotent run creation, terminal, and challenge-completion analytics markers.
 
 ## Expansion points
 
-- Add or revise content under `workers/moonboys-api/pets/content/`: `regions.json`, `rooms.json`, `enemies.json`, `bosses.json`, `relics.json`, and `modifiers.json`. Keep future regions and encounters out of `worker.js`.
+- Add or revise content under `workers/moonboys-api/pets/content/`: `regions.json`, `rooms.json`, `enemies.json`, `bosses.json`, `relics.json`, `modifiers.json`, and `evolutions.json`. Keep future regions and encounters out of `worker.js`.
 - Reference only IDs that already exist in the relevant catalog. Import-time validation rejects missing room, enemy, boss, and relic references.
 - Add enemies, events, loot and bosses to reviewed region pools without changing run persistence.
 - Add room resolvers behind `generatePetRunRoom`, `persistPetRunRoomOutcome`, `rewardPetRunRoom`, and `advancePetRun`.
