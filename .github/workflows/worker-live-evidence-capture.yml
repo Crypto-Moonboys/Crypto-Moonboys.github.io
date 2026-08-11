@@ -39,15 +39,13 @@ jobs:
       - name: Capture live Worker provenance
         shell: bash
         run: |
-          expected_commit="$(node -p "require('./deployments/worker-evidence-request.json').expected_commit")"
-          EXPECTED_COMMIT="$expected_commit" node scripts/live-worker-provenance-verify.mjs \
+          node scripts/live-worker-provenance-verify.mjs deployments/worker-evidence-request.json \
             | tee worker-provenance-evidence.json
 
       - name: Validate capture against committed evidence
         shell: bash
         run: |
-          expected_commit="$(node -p "require('./deployments/worker-evidence-request.json').expected_commit")"
-          committed_evidence="deployments/evidence/worker-provenance-${expected_commit}.json"
+          committed_evidence="$(node -p "require('./deployments/worker-evidence-request.json').retained_evidence")"
           node scripts/compare-worker-provenance-evidence.mjs \
             worker-provenance-evidence.json \
             "$committed_evidence" \

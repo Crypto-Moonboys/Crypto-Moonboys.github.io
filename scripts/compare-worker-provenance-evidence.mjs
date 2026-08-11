@@ -31,10 +31,14 @@ function validateCanonicalTimestamp(value, label) {
   }
 }
 
-function normalizeWorkers(payload, expectedServices, label) {
+function normalizeWorkers(payload, expectedServices, expectedCommits, label) {
   requireRecord(payload, label);
-  if (!SHA_RE.test(String(payload.expected_commit || ''))) {
-    throw new Error(`${label}.expected_commit must be a full Git SHA`);
+  const payloadCommits = requireRecord(payload.expected_commits, `${label}.expected_commits`);
+  if (JSON.stringify(Object.keys(payloadCommits).sort()) !== JSON.stringify([...expectedServices].sort())) throw new Error(`${label}.expected_commits must contain exactly the requested services`);
+  for (const service of expectedServices) {
+    const commit = String(payloadCommits[service] || '').toLowerCase();
+    if (!SHA_RE.test(commit)) throw new Error(`${label}.expected_commits.${service} must be a full Git SHA`);
+    if (commit !== expectedCommits[service]) throw new Error(`${label}.expected_commits.${service} does not match request`);
   }
   if (!Array.isArray(payload.workers)) throw new Error(`${label}.workers must be an array`);
 
@@ -49,6 +53,7 @@ function normalizeWorkers(payload, expectedServices, label) {
     if (!SHA_RE.test(String(worker.commit || ''))) {
       throw new Error(`${label}.${service}.commit must be a full Git SHA`);
     }
+    if (String(worker.commit).toLowerCase() !== expectedCommits[service]) throw new Error(`${label}.${service}.commit does not match request`);
     validateCanonicalTimestamp(worker.deployed_at, `${label}.${service}.deployed_at`);
     if (!HTTP_RE.test(String(worker.url || ''))) {
       throw new Error(`${label}.${service}.url must be HTTPS`);
@@ -67,17 +72,14 @@ function normalizeWorkers(payload, expectedServices, label) {
   }
 
   return {
-    expected_commit: String(payload.expected_commit).toLowerCase(),
+    expected_commits: Object.fromEntries(expectedServices.map((service) => [service, expectedCommits[service]])),
     workers: expectedServices.map((service) => byService.get(service)),
   };
 }
 
 export function compareWorkerProvenanceEvidence({ generated, committed, request }) {
   const requestRecord = requireRecord(request, 'request');
-  if (requestRecord.schema_version !== 1) throw new Error('request.schema_version must equal 1');
-  if (!SHA_RE.test(String(requestRecord.expected_commit || ''))) {
-    throw new Error('request.expected_commit must be a full Git SHA');
-  }
+  if (requestRecord.schema_version !== 2) throw new Error('request.schema_version must equal 2');
   if (!Array.isArray(requestRecord.services) || requestRecord.services.length === 0) {
     throw new Error('request.services must be a non-empty array');
   }
@@ -86,20 +88,22 @@ export function compareWorkerProvenanceEvidence({ generated, committed, request 
   if (new Set(expectedServices).size !== expectedServices.length) {
     throw new Error('request.services contains duplicates');
   }
+  if (!/^deployments\/evidence\/worker-provenance-[a-z0-9_-]+\.json$/.test(String(requestRecord.retained_evidence || ''))) {
+    throw new Error('request.retained_evidence must be a retained Worker provenance JSON path');
+  }
+  const requestCommits = requireRecord(requestRecord.expected_commits, 'request.expected_commits');
+  if (JSON.stringify(Object.keys(requestCommits).sort()) !== JSON.stringify([...expectedServices].sort())) throw new Error('request.expected_commits must contain exactly the requested services');
+  const expectedCommits = Object.fromEntries(expectedServices.map((service) => {
+    const commit = String(requestCommits[service] || '').toLowerCase();
+    if (!SHA_RE.test(commit)) throw new Error(`request.expected_commits.${service} must be a full Git SHA`);
+    return [service, commit];
+  }));
 
-  const generatedNormalized = normalizeWorkers(generated, expectedServices, 'generated');
+  const generatedNormalized = normalizeWorkers(generated, expectedServices, expectedCommits, 'generated');
   const committedRecord = requireRecord(committed, 'committed');
-  if (committedRecord.schema_version !== 1) throw new Error('committed.schema_version must equal 1');
+  if (committedRecord.schema_version !== 2) throw new Error('committed.schema_version must equal 2');
   validateCanonicalTimestamp(committedRecord.verified_at, 'committed.verified_at');
-  const committedNormalized = normalizeWorkers(committedRecord, expectedServices, 'committed');
-
-  const requestedCommit = String(requestRecord.expected_commit).toLowerCase();
-  if (generatedNormalized.expected_commit !== requestedCommit) {
-    throw new Error(`generated expected_commit ${generatedNormalized.expected_commit} does not match request ${requestedCommit}`);
-  }
-  if (committedNormalized.expected_commit !== requestedCommit) {
-    throw new Error(`committed expected_commit ${committedNormalized.expected_commit} does not match request ${requestedCommit}`);
-  }
+  const committedNormalized = normalizeWorkers(committedRecord, expectedServices, expectedCommits, 'committed');
 
   const generatedJson = JSON.stringify(generatedNormalized);
   const committedJson = JSON.stringify(committedNormalized);
@@ -125,7 +129,7 @@ function main() {
     committed: readJson(path.resolve(committedPath), 'committed evidence'),
     request: readJson(path.resolve(requestPath), 'evidence request'),
   });
-  console.log(`Worker provenance evidence matches live production for ${result.expected_commit}.`);
+  console.log(`Worker provenance evidence matches live production for ${result.workers.length} services.`);
 }
 
 const isCli = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
