@@ -74,6 +74,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 046',
 );
 
+const withoutLeaderboardRewardConstraint = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '047_fix_telegram_leaderboard_reward_constraint.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutLeaderboardRewardConstraint),
+  /missing required migrations: 047_fix_telegram_leaderboard_reward_constraint\.sql/,
+  'deployment verification must reject an evidence request that omits migration 047',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -127,6 +137,14 @@ assert.throws(
   }], request),
   /missing migrations: 046_fix_pet_runtime_unique_constraints\.sql/,
   'deployment verification must fail when production D1 has not applied migration 046',
+);
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '047_fix_telegram_leaderboard_reward_constraint.sql'),
+  }], request),
+  /missing migrations: 047_fix_telegram_leaderboard_reward_constraint\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 047',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');
