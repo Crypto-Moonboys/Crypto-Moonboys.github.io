@@ -27,6 +27,7 @@ const REQUIRED_D1_DATABASES = Object.freeze({
     '042_telegram_pet_roguelite_foundation.sql',
     '043_telegram_pet_identity_expansion.sql',
     '044_telegram_pet_daily_runs.sql',
+    '045_telegram_pet_inventory_cutover_reconciliation.sql',
   ]),
 });
 

@@ -21,6 +21,7 @@ const REQUIRED_PETS_MIGRATIONS = [
   '042_telegram_pet_roguelite_foundation.sql',
   '043_telegram_pet_identity_expansion.sql',
   '044_telegram_pet_daily_runs.sql',
+  '045_telegram_pet_inventory_cutover_reconciliation.sql',
 ];
 
 async function withFixture(readiness, truth, run) {

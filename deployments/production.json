@@ -124,11 +124,12 @@
         "041_telegram_pet_repeat_reward_slots.sql",
         "042_telegram_pet_roguelite_foundation.sql",
         "043_telegram_pet_identity_expansion.sql",
-        "044_telegram_pet_daily_runs.sql"
+        "044_telegram_pet_daily_runs.sql",
+        "045_telegram_pet_inventory_cutover_reconciliation.sql"
       ],
       "verified_migrations": [],
       "evidence": [],
-      "notes": "The migrations are committed, but production D1 application has not been evidenced in this manifest."
+      "notes": "Production D1 applied migrations 042-045 successfully and passed schema plus foreign-key checks on 2026-08-11; durable repository evidence remains pending."
     }
   }
 }
