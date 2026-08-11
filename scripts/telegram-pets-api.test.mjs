@@ -33,6 +33,7 @@ const {
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
+  processPetGoldTrade,
   processPetAdventure,
   claimPetActivitySession,
   cancelPetActivitySession,
@@ -61,6 +62,11 @@ const {
   getPetArenaBucketDistance,
   serializePet,
   formatPetStatus,
+  formatPetDetails,
+  petReplyMarkup,
+  buildPetAdventureMenuReplyMarkup,
+  buildPetManagementMenuReplyMarkup,
+  buildPetProgressMenuReplyMarkup,
   normalizePetActivityType,
   computePetActivityRewards,
   formatPetActivityLine,
@@ -210,7 +216,9 @@ assert.equal(serializedArenaPet.equipped_armor, 'moon_helmet', 'serialized pet s
 assert.equal(serializedArenaPet.equipped_weapon, 'laser_claws', 'serialized pet state must include equipped arena weapon');
 assert.equal(serializedArenaPet.equipped_charm, 'shield_charm', 'serialized pet state must include equipped arena charm');
 const arenaStatusCopy = formatPetStatus({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'moonbeast', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
-assert.ok(arenaStatusCopy.includes('Armor: moon_helmet') && arenaStatusCopy.includes('Weapon: laser_claws') && arenaStatusCopy.includes('Charm: shield_charm'), '/pet status copy must show equipped battle gear');
+assert.ok(!arenaStatusCopy.includes('Armor:') && !arenaStatusCopy.includes('Wallet'), '/pet status copy must keep gear and wallet details out of the default viewport');
+const arenaDetailsCopy = formatPetDetails({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'moonbeast', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
+assert.ok(arenaDetailsCopy.includes('Armor: moon_helmet') && arenaDetailsCopy.includes('Weapon: laser_claws') && arenaDetailsCopy.includes('Charm: shield_charm'), '/pet details copy must retain equipped battle gear');
 assert.ok(arenaMigration.includes('telegram_pet_arena_battles'), 'arena battle migration must create battle table');
 assert.ok(arenaMigration.includes('telegram_pet_arena_queue'), 'arena battle migration must create queue table');
 assert.ok(arenaMigration.includes('player1_ready_at') && arenaMigration.includes('player2_ready_at'), 'arena migration must store both ready timestamps');
@@ -903,20 +911,23 @@ assert.ok(shopRoute.includes('jobs'), 'GET /telegram-pets/shop must expose jobs'
 const petStatus = asyncBlock('cmdPetStatus');
 assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
 assert.ok(!petStatus.includes('getOrCreatePetProfile'), '/pet status command must not create pets');
-assert.ok(worker.includes('function formatPetStatus(pet, missions = null'), 'formatPetStatus must exist');
-const statusFormatter = worker.slice(worker.indexOf('function formatPetStatus(pet, missions = null'), worker.indexOf('function petReplyMarkup()'));
-for (const label of ['Pet', 'Wallet', 'Gear', 'Needs', 'Daily Missions', 'Streak']) {
-  assert.ok(statusFormatter.includes(label), `formatPetStatus must include ${label}`);
+assert.ok(worker.includes('function formatPetStatus(pet, identity = null'), 'formatPetStatus must exist');
+const statusFormatter = worker.slice(worker.indexOf('function formatPetStatus(pet, identity = null'), worker.indexOf('function formatPetDetails'));
+const redesignedStatus = formatPetStatus({ ...baseArenaPet, pet_name: 'Moonpet', pet_xp: 3887, health: 9, hunger: 100, happiness: 4, cleanliness: 32, energy: 0 }, {
+  current_stage: { name: 'Legendary Companion' },
+  personalities: [{ name: 'Curious' }, { name: 'Explorer' }],
+  memories: { favourite_activity: 'Adventure' },
+});
+for (const label of ['Moonpet', 'Legendary Companion', 'Health', 'Hunger', 'Happiness', 'Cleanliness', 'Energy', 'Needs attention', 'Curious', 'Explorer', 'Adventure']) {
+  assert.ok(redesignedStatus.includes(label), `/pet default response must include ${label}`);
 }
-for (const stat of ['Health', 'Hunger', 'Happiness', 'Cleanliness', 'Energy']) {
-  assert.ok(statusFormatter.includes(`${stat} `), `formatPetStatus must include ${stat} bars`);
-  assert.ok(statusFormatter.includes('bar('), `formatPetStatus must render ${stat.toLowerCase()} bars dynamically`);
+for (const removed of ['Wallet', 'Equipment', 'Daily Missions', 'Low health: urgent care needed']) {
+  assert.ok(!redesignedStatus.includes(removed), `/pet default response must move ${removed} into Details`);
 }
-for (const warning of ['Low health: urgent care needed', 'High hunger: feed soon', 'Low cleanliness: clean soon', 'Low happiness: play soon', 'Low energy: sleep before adventure']) {
-  assert.ok(statusFormatter.includes(warning), `formatPetStatus must include warning: ${warning}`);
-}
-assert.ok(statusFormatter.includes('Daily Missions'), 'formatPetStatus must include the mission section');
-assert.ok(statusFormatter.includes('m.completed') || statusFormatter.includes('completed ?') || statusFormatter.includes('completed ✅'), 'formatPetStatus must distinguish mission completion state');
+assert.match(redesignedStatus, /❤️ Health\n█░{9} 9%/, 'health must use a compact Telegram block bar');
+assert.match(redesignedStatus, /🍖 Hunger\n█{10} 100%/, 'hunger must use a compact Telegram block bar');
+assert.match(redesignedStatus, /⚡ Energy\n░{10} 0%/, 'zero energy must render an empty block bar');
+assert.ok(redesignedStatus.length < 800, '/pet default response must fit comfortably in one mobile viewport');
 
 assert.ok(worker.includes('formatPetBlockedCopy(kind, reason, extra = {})'), 'blocked copy helper must exist');
 for (const message of ['Moonpet is too tired for a', 'Moonpet needs a short break before another', 'You need a Moonpet first', 'not available right now']) {
@@ -944,6 +955,22 @@ assert.ok(petDaily.includes('eventKey = null'), '/petdaily command must accept o
 assert.ok(petDaily.includes('dayKey = getPetDayKey(new Date())'), '/petdaily command must include the UTC day in the fallback key');
 assert.ok(petDaily.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'daily', dayKey])"), '/petdaily command must day-scope text retries');
 assert.ok(petDaily.includes('formatPetBlockedCopy('), '/petdaily command must use friendly blocked copy');
+
+for (const [command, label] of [
+  ['cmdPetStatus', '/pet'],
+  ['cmdPetAction', 'Feed and care actions'],
+  ['cmdPetWork', 'Work'],
+  ['cmdPetEvent', 'Event'],
+  ['cmdPetRun', 'Run'],
+]) {
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${label} status must retain stored Moonpet identity`);
+}
+for (const command of ['cmdPetUse', 'cmdPetDaily', 'cmdPetClaim', 'cmdPetTrade', 'cmdPetExtract']) {
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${command} status must pass identity instead of missions`);
+}
+assert.ok(!worker.includes('formatPetStatus(result.pet, await buildPetMissions(db, telegramId))'), 'missions must never be passed into the formatPetStatus identity parameter');
+assert.ok(asyncBlock('cmdPetDetails').includes('buildPetMissions(db, telegramId)'), 'missions must remain available in the separate Details response');
+assert.ok(asyncBlock('cmdPetMissions').includes('buildPetMissions(db, telegramId)'), '/petmissions functionality must remain intact');
 
 const petEvent = asyncBlock('cmdPetEvent');
 assert.ok(petEvent.includes('selectPetRandomEncounter'), '/petevent command must show a random encounter');
@@ -995,18 +1022,32 @@ assert.ok(worker.includes('function buildPetBagReplyMarkup'), 'bag must have a d
 assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item buttons must carry item use callbacks');
 assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
 
-const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetStatus'));
-for (const label of ['Feed', 'Play', 'Clean', 'Sleep', 'Train', 'Shop', 'Bag', 'Work', 'Event', 'Daily', 'Kaiju', 'Run', 'How To Play', 'Pet Leaderboard']) {
-  assert.ok(petReply.includes(label), `petReplyMarkup must include ${label}`);
+const mainButtons = petReplyMarkup().inline_keyboard.flat();
+assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '⚔️ Adventure', '🎒 Bag', '🛒 Shop', '📋 Details'], '/pet must expose only primary companion actions');
+for (const removed of ['Train', 'Work', 'Events', 'Daily', 'Kaiju', 'Arena', 'Run', 'Activity', 'Claim', 'Cancel', 'How To Play', 'Leaderboard']) assert.ok(!mainButtons.some((button) => button.text.includes(removed)), `/pet main buttons must hide ${removed}`);
+
+const menuCases = [
+  ['Adventure', buildPetAdventureMenuReplyMarkup(), ['Moon Run', 'Pet Jobs', 'Random Events', 'Kaiju', 'Arena', 'Daily']],
+  ['Management', buildPetManagementMenuReplyMarkup(), ['Bag', 'Shop', 'Equipment', 'Trade']],
+  ['Progress', buildPetProgressMenuReplyMarkup(), ['Details', 'Evolution', 'Personality', 'Memories', 'Leaderboard', 'Streak']],
+];
+for (const [name, markup, labels] of menuCases) {
+  const buttons = markup.inline_keyboard.flat();
+  for (const label of labels) assert.ok(buttons.some((button) => button.text.includes(label)), `${name} submenu must include ${label}`);
+  assert.ok(buttons.some((button) => button.callback_data === 'pet:back'), `${name} submenu must include Back navigation`);
+  for (const button of buttons.filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `${name} callback too long: ${button.callback_data}`);
 }
-for (const callback of ['pet:feed', 'pet:play', 'pet:clean', 'pet:sleep', 'pet:train', 'pet:shop', 'pet:bag', 'pet:work', 'pet:event', 'pet:daily', 'pet:kaiju', 'pet:run']) {
-  assert.ok(petReply.includes(callback), `petReplyMarkup must preserve ${callback}`);
-}
+for (const callback of ['pet:work', 'pet:event', 'pet:daily', 'pet:kaiju', 'pet:arena', 'pet:run', 'pet:shop', 'pet:bag']) assert.ok(worker.includes(callback), `existing command must remain reachable through ${callback}`);
+const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetMenu'));
 assert.ok(!statusFormatter.includes('??'), 'formatPetStatus must not contain placeholder question marks');
 assert.ok(!petReply.includes('??'), 'petReplyMarkup must not contain placeholder question marks');
 assert.ok(!worker.includes('??? Train'), 'telegram pet UI must not contain the old Train placeholder');
 
 const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// Group-level events'));
+assert.ok(callbackBranch.includes("if (payload === 'back')") && callbackBranch.includes('cmdPetStatus(db, tok, chatId, telegramId)'), 'Back callbacks must return to the simplified /pet screen');
+for (const route of ["payload === 'menu:adventure'", "payload === 'menu:management'", "payload === 'details'", "payload === 'equipment'", "payload === 'trade'", "payload.startsWith('identity:')", "payload === 'leaderboard'", "payload === 'streak'"]) {
+  assert.ok(callbackBranch.includes(route), `callback router must preserve grouped navigation route: ${route}`);
+}
 assert.ok(
   callbackBranch.includes("const telegramId = String(query.from?.id || '');"),
   'pet:adventure callback must use callback_query.from.id as telegramId'
@@ -1404,6 +1445,30 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   return db;
 }
 
+const repeatTradeDb = seedRepeatRewardPlayer('trade-repeat', 70);
+repeatTradeDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-repeat'").run();
+const originalTradeRandom = Math.random;
+Math.random = () => 0.9;
+try {
+  const firstTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:first', source: 'telegram_callback' });
+  assert.equal(firstTrade.accepted, true, 'first 50-gold callback trade must execute');
+  repeatTradeDb.database.prepare("UPDATE telegram_pet_events SET created_at = datetime('now', '-10 minutes') WHERE telegram_id = 'trade-repeat' AND event_key = 'callback:trade:first'").run();
+  const secondTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:second', source: 'telegram_callback' });
+  assert.equal(secondTrade.accepted, true, 'same 50-gold wager must execute again after cooldown with a new callback key');
+  assert.equal(secondTrade.duplicate, undefined, 'new callback identity must not be mistaken for the prior wager');
+  const goldAfterSecondTrade = repeatTradeDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'trade-repeat'").get().moon_gold;
+  const duplicateSecondTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:second', source: 'telegram_callback' });
+  assert.equal(duplicateSecondTrade.duplicate, true, 'repeated delivery of the same trade callback must resolve as a duplicate');
+  assert.equal(repeatTradeDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'trade-repeat'").get().moon_gold, goldAfterSecondTrade, 'duplicate callback must not apply gold twice');
+  assert.equal(repeatTradeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'trade-repeat' AND event_type = 'trade'").get().count, 2, 'two unique callbacks must create exactly two trade settlements');
+} finally {
+  Math.random = originalTradeRandom;
+}
+const tradeCommand = asyncBlock('cmdPetTrade');
+assert.ok(tradeCommand.includes('eventKey = null') && tradeCommand.includes('event_key: eventKey ||'), 'trade command must accept and prioritize the unique Telegram event key');
+assert.ok(tradeCommand.includes('if (result.duplicate)') && !tradeCommand.includes('Trade lost: undefined gold'), 'duplicate trade callbacks must return safe copy without undefined losses');
+assert.ok(callbackBranch.includes('cmdPetTrade(db, tok, chatId, telegramId, wager, eventKey)'), 'trade callback router must pass callback_query identity into settlement');
+
 function seedPetActivitySession(telegramId, options = {}) {
   const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
   const elapsedSeconds = Number(options.elapsed_seconds || 1800);
@@ -1551,7 +1616,13 @@ assert.equal(concurrentActivity.db.database.prepare("SELECT COUNT(*) AS count FR
 assert.equal(concurrentActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-concurrent'").get().pet_xp, 26,
   'two simultaneous activity claims must grant Pet XP exactly once');
 
-const cancelRaceActivity = seedPetActivitySession('activity-cancel-race', { now: activityNow, elapsed_seconds: 1800 });
+const cancelRaceActivity = seedPetActivitySession('activity-cancel-race', {
+  now: activityNow,
+  elapsed_seconds: 1800,
+  // Keep this claim/cancel fixture independent from the wall clock. Expiry has
+  // its own dedicated race test below.
+  ends_at: '2099-01-01T00:00:00.000Z',
+});
 let releaseCancelRaceClaim;
 let markCancelRaceClaimReached;
 const cancelRaceClaimReached = new Promise((resolve) => { markCancelRaceClaimReached = resolve; });
