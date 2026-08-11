@@ -1,4 +1,5 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
+import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 const FORBIDDEN_EVOLUTION_KEYS = /(?:^|_)(?:xp|reward)_multiplier$|cap_(?:increase|bonus)$|(?:pet|community)_xp_cap/i;
@@ -260,6 +261,7 @@ export async function evolveMoonpet(db, request = {}) {
   const eventKey = String(request.event_key || `pet:evolve:${telegramId}:${evolutionId}`).trim().slice(0, 180);
   const definition = MOONPET_EVOLUTIONS[evolutionId];
   if (!telegramId || !eventKey || !definition) return { accepted: false, duplicate: false, reason: 'invalid_evolution' };
+  await reconcileLegacyPetInventory(db, telegramId);
   const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ?`)
     .bind(telegramId, evolutionId).first().catch(() => null);
   if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };

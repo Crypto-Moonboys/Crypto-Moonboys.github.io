@@ -674,6 +674,36 @@ CREATE TABLE IF NOT EXISTS telegram_pet_inventory (
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
+CREATE VIEW IF NOT EXISTS telegram_pet_legacy_item_balances_042 AS
+SELECT telegram_id, asset_key, MAX(0, SUM(quantity_delta)) AS quantity
+FROM (
+  SELECT telegram_id,
+    COALESCE(json_extract(metadata, '$.item_key'), json_extract(metadata, '$.inventory_key')) AS asset_key,
+    MAX(1, CAST(COALESCE(json_extract(metadata, '$.count'), 1) AS INTEGER)) AS quantity_delta
+  FROM telegram_pet_events
+  WHERE status = 'accepted' AND json_valid(metadata)
+    AND COALESCE(json_extract(metadata, '$.inventory_authority'), 0) <> 1
+    AND COALESCE(json_extract(metadata, '$.item_key'), json_extract(metadata, '$.inventory_key')) IS NOT NULL
+  UNION ALL
+  SELECT telegram_id, json_extract(metadata, '$.consumed_item_key') AS asset_key, -1 AS quantity_delta
+  FROM telegram_pet_events
+  WHERE status = 'accepted' AND json_valid(metadata)
+    AND COALESCE(json_extract(metadata, '$.inventory_authority'), 0) <> 1
+    AND json_extract(metadata, '$.consumed_item_key') IS NOT NULL
+)
+WHERE asset_key IN ('moon_snack', 'energy_drink', 'clean_wipe', 'lucky_charm', 'style_patch', 'adventure_map')
+GROUP BY telegram_id, asset_key
+HAVING SUM(quantity_delta) > 0;
+
+CREATE TABLE IF NOT EXISTS telegram_pet_inventory_legacy_sync_042 (
+  telegram_id TEXT NOT NULL,
+  asset_key TEXT NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (telegram_id, asset_key),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS telegram_pet_run_rooms (
   room_id TEXT PRIMARY KEY,
   run_id TEXT NOT NULL,

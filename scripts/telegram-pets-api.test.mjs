@@ -11,6 +11,7 @@ const notificationsMigration = fs.readFileSync(new URL('../workers/moonboys-api/
 const runMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/033_telegram_pet_run_engine.sql', import.meta.url), 'utf8');
 const kaijuMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/034_telegram_pet_kaiju.sql', import.meta.url), 'utf8');
 const repeatRewardMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/041_telegram_pet_repeat_reward_slots.sql', import.meta.url), 'utf8');
+const inventoryReconciliationMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/045_telegram_pet_inventory_cutover_reconciliation.sql', import.meta.url), 'utf8');
 const activityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/035_telegram_pet_activity_sessions.sql', import.meta.url), 'utf8');
 const arenaMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/036_telegram_pet_arena.sql', import.meta.url), 'utf8');
 const arenaTurnsMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/037_telegram_pet_arena_turns.sql', import.meta.url), 'utf8');
@@ -1612,6 +1613,43 @@ const duplicateAuthorityUse = await processPetUseItem(inventoryAuthorityDb, 'inv
 assert.equal(duplicateAuthorityUse.duplicate, true, 'duplicate use callbacks must not consume or reward an item twice');
 assert.equal(inventoryAuthorityDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'inventory-authority'").get().pet_xp, 4,
   'duplicate item-use callbacks must award their capped effect exactly once');
+
+// Mixed-version cutover: the legacy Worker writes only audit events, migration
+// 045 checkpoints them, and the new Worker closes any late-write gap before it
+// reads or mutates authoritative inventory.
+const cutoverDb = seedRepeatRewardPlayer('inventory-cutover', 70);
+const insertLegacyItemEvent = cutoverDb.database.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+  (id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES (?, 'inventory-cutover', ?, ?, 'pet-s2026-003', '2026-08-11', '2026-W33', 'accepted', ?, ?)`);
+insertLegacyItemEvent.run('cutover-before-045', 'daily_chest', 'cutover:grant:before-045', 'daily_chest', '{"item_key":"moon_snack","count":2}');
+cutoverDb.database.exec(inventoryReconciliationMigration);
+assert.equal(cutoverDb.database.prepare(`SELECT quantity FROM telegram_pet_inventory
+  WHERE telegram_id = 'inventory-cutover' AND asset_type = 'item' AND asset_key = 'moon_snack'`).get().quantity, 2,
+  'migration 045 must reconcile the legacy grant visible at migration time');
+
+insertLegacyItemEvent.run('cutover-after-045-grant', 'daily_chest', 'cutover:grant:after-045', 'daily_chest', '{"item_key":"moon_snack","count":2}');
+insertLegacyItemEvent.run('cutover-after-045-consume', 'use_item', 'cutover:consume:after-045', 'item_used', '{"consumed_item_key":"moon_snack"}');
+insertLegacyItemEvent.run('cutover-after-045-grant-duplicate', 'daily_chest', 'cutover:grant:after-045', 'daily_chest', '{"item_key":"moon_snack","count":2}');
+insertLegacyItemEvent.run('cutover-after-045-consume-duplicate', 'use_item', 'cutover:consume:after-045', 'item_used', '{"consumed_item_key":"moon_snack"}');
+
+assert.equal((await getPetInventory(cutoverDb, 'inventory-cutover')).find((item) => item.key === 'moon_snack').count, 3,
+  'the new Worker must reconcile late legacy grants and consumption exactly once at cutover');
+const cutoverAuthorityAward = {
+  telegram_id: 'inventory-cutover', source: 'pet_action', idempotency_key: 'cutover-authority-award',
+  event_key: 'cutover-authority-award', rewards: { items: { moon_snack: 1 } },
+};
+await awardPetReward(cutoverDb, cutoverAuthorityAward);
+await awardPetReward(cutoverDb, cutoverAuthorityAward);
+assert.equal((await getPetInventory(cutoverDb, 'inventory-cutover')).find((item) => item.key === 'moon_snack').count, 4,
+  'new-authority grants and duplicate callbacks must preserve the reconciled balance');
+await processPetUseItem(cutoverDb, 'inventory-cutover', 'moon_snack', {
+  event_key: 'cutover-authority-consume', source: 'inventory_cutover_regression',
+});
+await processPetUseItem(cutoverDb, 'inventory-cutover', 'moon_snack', {
+  event_key: 'cutover-authority-consume', source: 'inventory_cutover_regression',
+});
+assert.equal((await getPetInventory(cutoverDb, 'inventory-cutover')).find((item) => item.key === 'moon_snack').count, 3,
+  'new-authority consumption and duplicate callbacks must decrement exactly once');
 
 const bankedItemDb = seedRepeatRewardPlayer('banked-item', 70);
 bankedItemDb.database.prepare(`INSERT INTO telegram_pet_runs
