@@ -101,4 +101,54 @@ assert.equal(secondCard.reason, 'kaiju_completed');
 assert.ok(['player1_win', 'player2_win', 'draw'].includes(secondCard.match.result));
 assert.equal(await getPetKaijuMatchForPlayer(db, 'kaiju-one'), null);
 
+const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const clientSource = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+
+const legacyCommands = [
+  'pet', 'petcoach', 'petprogress', 'petachievements', 'petseason', 'petboss', 'petevolve', 'petgear',
+  'adopt', 'feed', 'play', 'clean', 'sleep', 'train', 'petstart', 'petclaim', 'petcancel', 'petactivity',
+  'pettrade', 'petname', 'petmissions', 'petshop', 'peteconomy', 'petbounties', 'petexpedition',
+  'petmarket', 'petbag', 'petbuy', 'petuse', 'petwork', 'petdaily', 'petevent', 'petarena', 'petkaiju',
+  'petrun', 'petextract', 'petadventure', 'petnotify', 'petleaderboard', 'petscore',
+];
+for (const command of legacyCommands) {
+  assert.match(workerSource, new RegExp(`case '${command}'`), `legacy /${command} route must remain represented`);
+}
+
+const appActions = [
+  'adopt', 'feed', 'play', 'clean', 'sleep', 'train', 'activity_start', 'activity_claim', 'activity_cancel',
+  'trade', 'rename', 'buy', 'use_item', 'work', 'daily_chest', 'random_event', 'adventure', 'run_start',
+  'run_step', 'run_extract', 'notification_set', 'bounty_claim', 'expedition', 'market_buy', 'weekly_boss',
+  'season_claim', 'evolve', 'arena_start', 'arena_matchmake', 'arena_ready', 'arena_move', 'arena_forfeit',
+  'arena_queue_cancel', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card', 'kaiju_queue_cancel',
+];
+for (const action of appActions) {
+  assert.ok(clientSource.includes(`'${action}'`), `Mini App must expose ${action}`);
+  if (['feed', 'play', 'clean', 'sleep', 'train'].includes(action)) continue;
+  assert.match(workerSource, new RegExp(`action === '${action}'`), `Worker must handle Mini App action ${action}`);
+}
+assert.match(workerSource, /\['feed', 'play', 'clean', 'sleep', 'train'\]\.includes\(action\)/, 'Worker must handle all five care actions');
+
+const informationSurfaces = [
+  'RECOMMENDED NEXT MOVE', 'VITAL SYSTEMS', 'COMPANION DETAILS', 'DAILY MISSION BUFFER',
+  'ACHIEVEMENT ARCHIVE', 'MEMORY ARCHIVE', 'LEARNED APTITUDES', 'EVOLUTION', 'CURRENT PERK',
+  'UNLOCK DIRECTORY', 'SPECIALIST TRACKS', 'SEASON //', 'TOP MOONPETS', 'WEEKLY BOSS', 'MOON RUN',
+  'PET ADVENTURE', 'STREET EVENT', 'PET ARENA', 'KAIJU CODE CARDS', 'TIMED ACTIVITY', 'JOB TERMINAL',
+  'DAILY BOUNTIES', 'CRYSTAL EXPEDITION', 'MOON MARKET', 'PERMANENT SHOP', 'INVENTORY',
+  'MOON GOLD TRADE', 'EQUIPMENT PROGRESSION', 'CRAFTING MATERIALS', 'RELIC VAULT',
+];
+for (const surface of informationSurfaces) {
+  assert.ok(clientSource.includes(surface), `Mini App must render ${surface}`);
+}
+
+assert.match(clientSource, /valueText\(bounty\.reward\)/, 'bounties must disclose their complete reward');
+assert.match(clientSource, /valueText\(offer\.reward\)/, 'market offers must disclose what they grant');
+assert.match(clientSource, /item\.description/, 'shop entries must explain what they buy');
+assert.match(clientSource, /POSSIBLE FINDS/, 'expeditions must disclose their possible reward pool');
+assert.match(clientSource, /boss\.remaining_hp/, 'weekly boss must expose live remaining HP');
+assert.match(clientSource, /boss\.weakness/, 'weekly boss must expose its weakness');
+assert.match(clientSource, /valueText\(tier\.reward\)/, 'season tiers must disclose their reward');
+assert.match(clientSource, /notice_keys: visible\.map/, 'only milestone notices actually shown may be acknowledged');
+assert.match(clientSource, /activeScreen === 'work' && activityActive/, 'timed activities must refresh while the Work screen is open');
+
 console.log('telegram-pets-mini-app-parity.test.mjs passed');

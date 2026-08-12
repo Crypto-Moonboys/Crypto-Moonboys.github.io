@@ -11808,14 +11808,29 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
       });
     }
   }
-  return { evolution_id: next.evolution_id, name: next.name, stage: next.stage, ready: missing.length === 0, missing };
+  return {
+    evolution_id: next.evolution_id,
+    name: next.name,
+    stage: next.stage,
+    perk: getPetEvolutionPerk(next.stage).perk,
+    ready: missing.length === 0,
+    missing,
+  };
 }
 
 function getPetGuidanceFeatures(level) {
   return [
+    { key: 'care_console', title: 'Care Console', available: level >= 1, detail: 'Feed, play, clean, sleep and train from the Pet screen.', callback_data: 'pet:details' },
+    { key: 'daily_missions', title: 'Daily Missions', available: level >= 1, detail: 'Seven tracked goals reset at 00:00 UTC.', callback_data: 'pet:missions' },
+    { key: 'timed_activities', title: 'Timed Activities', available: level >= 1, detail: 'Sleep, train, work or explore while rewards build over time.', callback_data: 'pet:activity' },
+    { key: 'moon_runs', title: 'Moon Runs', available: level >= 1, detail: 'Choose routes, risk unbanked rewards and extract before defeat.', callback_data: 'pet:run' },
+    { key: 'street_events', title: 'Street Events', available: level >= 1, detail: 'Server-selected encounters change with your choices.', callback_data: 'pet:event' },
+    { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1, detail: 'Battle a CRT rival or match with another player.', callback_data: 'pet:kaiju' },
     { key: 'weekly_boss', title: 'Weekly Boss', available: level >= 5, detail: 'One personal boss attack is available per UTC day.', callback_data: 'pet:boss' },
     { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL, detail: `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.`, callback_data: 'pet:arena' },
     { key: 'moon_economy', title: 'Moon Economy', available: level >= 1, detail: 'Daily bounties, Crystal Expeditions and rotating Moon Market offers are now available.', callback_data: 'pet:economy' },
+    { key: 'equipment_upgrades', title: 'Equipment Upgrades', available: level >= 15, detail: 'Owned equipment can now be upgraded through ten levels.', callback_data: 'pet:gear' },
+    { key: 'prestige', title: 'Prestige', available: level >= 100, detail: 'Prestige becomes possible after its gear, district and currency requirements are complete.', callback_data: 'pet:progress' },
   ];
 }
 
@@ -11948,6 +11963,8 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   const boss = getPetWeeklyBoss(weekKey);
   return {
     pet,
+    day_key: dayKey,
+    week_key: weekKey,
     identity,
     activity: activity ? {
       ...activity,
@@ -11957,11 +11974,25 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     active_run: activeRun,
     missions: missions.daily || [],
     evolution,
-    season: { key: seasonState.season.key, xp: seasonState.season_xp, tiers: seasonState.tiers },
+    current_evolution_perk: getPetEvolutionPerk(stage),
+    season: {
+      key: seasonState.season.key,
+      xp: seasonState.season_xp,
+      evolution_bonus_style: seasonState.evolution_stage,
+      tiers: seasonState.tiers,
+    },
     achievements,
     personalities: identity?.personalities || [],
     weekly_boss: {
+      boss_id: boss.boss_id,
       title: boss.title,
+      hp: boss.hp,
+      damage: Math.max(0, Number(weeklyProgress?.damage) || 0),
+      remaining_hp: Math.max(0, boss.hp - Math.max(0, Number(weeklyProgress?.damage) || 0)),
+      attempts: Math.max(0, Number(weeklyProgress?.attempts) || 0),
+      max_attempts: 7,
+      weakness: boss.weakness,
+      reward: boss.reward,
       available: level >= 5 && !weeklyProgress?.defeated_at && !weeklyAttempt && Number(pet.energy || 0) >= 12,
       attempt_used: Boolean(weeklyAttempt),
       defeated: Boolean(weeklyProgress?.defeated_at),

@@ -14,6 +14,7 @@
   var animationMode = 'idle';
   var animationUntil = 0;
   var noticesBusy = false;
+  var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var app = document.getElementById('moonpet-app');
@@ -193,15 +194,18 @@
   }
 
   function renderMissions() {
+    var guidance = state.guidance || {};
     var missions = state.guidance && state.guidance.missions || [];
     var rows = missions.map(function (mission) {
       return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>';
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && state.guidance.achievements || [];
+    var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
     var achievementRows = achievements.map(function (entry) {
       return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
-    return panel('DAILY MISSION BUFFER', rows, 'missions') + panel('ACHIEVEMENT ARCHIVE', achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
+    return panel('DAILY MISSION BUFFER', '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + rows, 'missions') +
+      panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
   function renderExplore() {
@@ -259,10 +263,15 @@
     }).join('');
     var seasonal = live.seasonal_boss || {};
     var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY', 'seasonal_boss', {}, { disabled: !seasonal.available }) + '</div>';
+    var bossReward = valueText(boss.reward);
+    var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
+      '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
+      '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
+      '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available }) + '</div>';
     return panel('DISTRICT NETWORK', regions, 'districts') + panel('MOON RUN', runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>', 'street-event') +
-      panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div><div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available }) + '</div>', 'weekly-boss') +
+      panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), bossBody, 'weekly-boss') +
       panel('STREET STORY CHAINS', chains || '<div class="line muted">NO CHAIN SIGNAL.</div>', 'story-chains') + panel('SEASONAL RAID', seasonalBody, 'seasonal-boss') +
       panel('PET ARENA', arenaBody, 'arena') + panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
   }
@@ -272,7 +281,8 @@
     var jobs = guidance.jobs || state.jobs || [];
     var jobsHtml = jobs.map(function (job) {
       var specialistGate = job.required_track ? ' // ' + words(job.required_track).toUpperCase() + ' ' + number(job.current_xp) + '/' + number(job.required_xp) : '';
-      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, detail: 'LVL ' + job.min_level + specialistGate + ' // +' + job.moon_gold + 'G // ' + (job.lore || '') });
+      var jobRewards = valueText({ pet_xp: job.pet_xp, moon_gold: job.moon_gold, moon_crystals: job.moon_crystals, style_tokens: job.style_tokens });
+      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, detail: 'LVL ' + job.min_level + ' // STAGE ' + number(job.min_evolution_stage) + specialistGate + ' // REWARD ' + jobRewards + ' // ' + (job.lore || '') });
     }).join('');
     var activity = guidance.activity;
     var activityHtml = activity
@@ -281,8 +291,21 @@
     return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs');
   }
 
+  function valueText(value) {
+    var output = [];
+    Object.entries(value || {}).forEach(function (entry) {
+      var key = entry[0];
+      var amount = entry[1];
+      if (amount == null || amount === 0) return;
+      if ((key === 'items' || key === 'materials') && typeof amount === 'object') {
+        Object.entries(amount).forEach(function (asset) { if (Number(asset[1]) > 0) output.push(number(asset[1]) + ' ' + words(asset[0])); });
+      } else if (typeof amount !== 'object') output.push(number(amount) + ' ' + words(key));
+    });
+    return output.join(' + ') || 'FREE';
+  }
+
   function costText(cost) {
-    return Object.entries(cost || {}).map(function (entry) { return number(entry[1]) + ' ' + words(entry[0]); }).join(' + ') || 'FREE';
+    return valueText(cost);
   }
 
   function renderEconomy() {
@@ -290,13 +313,14 @@
     var economy = guidance.economy || {};
     var bounties = (economy.bounties || []).map(function (bounty) {
       return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + '</div>' +
+        '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : '');
     }).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
-      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, detail: costText(offer.cost) });
+      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, detail: (offer.purchased ? 'SOLD // ' : '') + (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) });
     }).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
-      return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || item.equipped, detail: item.equipped ? 'EQUIPPED' : costText(item.cost) });
+      return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || !item.affordable || item.equipped, detail: item.equipped ? 'EQUIPPED // ' + (item.description || '') : (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + ' // COST ' + costText(item.cost) });
     }).join('');
     var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
@@ -320,7 +344,7 @@
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('RELIC VAULT', relics || '<div class="line muted">NO RELICS RECOVERED.</div>', 'relics') +
       panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>', 'bounties') +
-      panel('CRYSTAL EXPEDITION', '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left }) + '</div>', 'expedition') +
+      panel('CRYSTAL EXPEDITION // ' + escapeHtml(expedition.title || 'LOCKED'), '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="line muted">POSSIBLE FINDS // ' + escapeHtml((expedition.rewards || []).map(valueText).join(' / ')) + '</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left || Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0) }) + '</div>', 'expedition') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>', 'market') +
       panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB', '<div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
@@ -332,12 +356,14 @@
     var guidance = state.guidance || {};
     var identity = guidance.identity || {};
     var evolution = guidance.evolution;
+    var currentPerk = guidance.current_evolution_perk || {};
     var evoHtml = evolution
-      ? '<div class="line">NEXT: ' + escapeHtml(evolution.name) + '</div>' + (evolution.missing || []).map(function (entry) { return '<div class="line muted">' + escapeHtml(entry.label) + ' ' + number(entry.current) + '/' + number(entry.required) + '</div>'; }).join('') + '<div class="button-grid one">' + button('EVOLVE', 'evolve', { evolution_id: evolution.evolution_id }, { disabled: !evolution.ready }) + '</div>'
-      : '<div class="line complete">FINAL EVOLUTION ONLINE.</div>';
+      ? '<div class="line complete">CURRENT PERK // ' + escapeHtml(currentPerk.perk || 'Memories and traits are active.') + '</div><div class="line">NEXT: ' + escapeHtml(evolution.name) + '</div><div class="line muted">NEXT PERK // ' + escapeHtml(evolution.perk || '') + '</div>' + (evolution.missing || []).map(function (entry) { return '<div class="line muted">' + escapeHtml(entry.label) + ' ' + number(entry.current) + '/' + number(entry.required) + ' // ' + escapeHtml(entry.source || '') + '</div>'; }).join('') + '<div class="button-grid one">' + button('EVOLVE', 'evolve', { evolution_id: evolution.evolution_id }, { disabled: !evolution.ready }) + '</div>'
+      : '<div class="line complete">FINAL EVOLUTION ONLINE.</div><div class="line muted">' + escapeHtml(currentPerk.perk || '') + '</div>';
     var season = guidance.season || {};
     var tiers = (season.tiers || []).map(function (tier) {
       return '<div class="line ' + (tier.claimed_at ? 'complete' : tier.unlocked ? '' : 'locked') + '">' + escapeHtml(tier.title) + ' // ' + number(tier.required_xp) + ' XP</div>' +
+        '<div class="line muted">REWARD ' + escapeHtml(valueText(tier.reward)) + ' // +' + number(season.evolution_bonus_style) + ' EVOLUTION STYLE</div>' +
         (tier.unlocked && !tier.claimed_at ? '<div class="button-grid one">' + button('CLAIM ' + tier.title, 'season_claim', { tier_id: tier.tier_id }) + '</div>' : '');
     }).join('');
     var traits = (guidance.personalities || []).map(function (trait) { return '<div class="line complete">[' + escapeHtml(words(trait.trait_id || trait.name || trait)) + ']</div>'; }).join('');
@@ -357,12 +383,26 @@
       button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled }) +
       button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, danger: true }) + '</div>';
     var aptitudeRows = ['brave', 'loyal', 'clever', 'stylish', 'tough', 'lucky'].map(function (key) { return '<div class="line">' + key.toUpperCase() + ' ' + number(learnedTraits[key]) + '</div>'; }).join('');
+    var memory = identity.memories || {};
+    var memoryRows = [
+      memory.first_boss_id ? 'FIRST BOSS // ' + words(memory.first_boss_id) : '',
+      Number(memory.total_runs) > 0 ? 'RUNS COMPLETED // ' + number(memory.total_runs) : '',
+      Number(memory.total_bosses_defeated) > 0 ? 'BOSSES DEFEATED // ' + number(memory.total_bosses_defeated) : '',
+      memory.favourite_activity ? 'FAVOURITE // ' + words(memory.favourite_activity) : '',
+      Number(memory.biggest_reward_amount) > 0 ? 'BIGGEST REWARD // ' + number(memory.biggest_reward_amount) + ' ' + words(memory.biggest_reward_currency) : '',
+      'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
+    ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
+    var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
+    var featureRows = (guidance.features || []).map(function (feature) {
+      return '<div class="line ' + (feature.available ? 'complete' : 'locked') + '">' + (feature.available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(feature.detail || '') + '</div>';
+    }).join('');
     return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + '</div><div class="line muted">PERSONALITY REACTIONS</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) +
       panel('LEARNED APTITUDES', aptitudeRows) +
+      panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
       panel('PRESTIGE', '<div class="line">RANK ' + number(prestige.count) + ' // MASTERED GEAR ' + number(prestige.mastered_items) + '/3 // DISTRICTS ' + number(prestige.completed_regions) + '/4</div><div class="line muted">REQUIRES LEVEL 100 + 5,000 GOLD + 50 GEMS</div><div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: !prestige.ready }) + '</div>', 'prestige') +
-      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', leaders, 'leaderboard');
+      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', leaders, 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
@@ -415,7 +455,7 @@
     haptic('success');
     await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 850 });
     try {
-      var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: notices.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
+      var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
       state = acknowledged.state || state;
       render();
     } catch (_) {}
@@ -481,7 +521,7 @@
     render();
     haptic('light');
     typeBoot(['MOUNT /' + activeScreen.toUpperCase(), 'READING LIVE PLAYER STATE', 'MODULE READY'], { speed: 4, hold: 130 });
-    if (activeScreen === 'explore') refreshLiveState();
+    if (activeScreen === 'explore' || activeScreen === 'work') refreshLiveState();
   });
 
   function multiplayerFingerprint(snapshot) {
@@ -494,7 +534,11 @@
 
   async function refreshLiveState() {
     var multiplayerActive = state && (state.arena || state.arena_queue || state.kaiju && (state.kaiju.match || state.kaiju.queue));
-    if (busy || noticesBusy || !state || !state.adopted || activeScreen !== 'explore' || !multiplayerActive) return;
+    var activityActive = state && state.guidance && state.guidance.activity;
+    var relevant = activeScreen === 'explore' && multiplayerActive || activeScreen === 'work' && activityActive;
+    var minimumDelay = multiplayerActive && activeScreen === 'explore' ? 4500 : 14000;
+    if (busy || noticesBusy || !state || !state.adopted || !relevant || Date.now() - lastPassiveRefreshAt < minimumDelay) return;
+    lastPassiveRefreshAt = Date.now();
     var before = multiplayerFingerprint(state);
     try {
       var data = await post('/telegram-pets/app/state');
@@ -505,6 +549,9 @@
       if (before !== after && activeScreen === 'explore') {
         tell('MULTIPLAYER STATE UPDATED.');
         haptic('light');
+      } else if (activeScreen === 'work' && state.guidance && state.guidance.activity && state.guidance.activity.ready) {
+        tell('TIMED ACTIVITY REWARD READY.');
+        haptic('success');
       }
       await showPendingNotices();
     } catch (_) {}
