@@ -10881,9 +10881,9 @@ function getPetStageIcon(stageName) {
 
 function getPetMissionIcon(mission = {}) {
   const key = `${mission.key || ''} ${mission.title || ''}`.toLowerCase();
+  if (key.includes('care') || (key.includes('feed') && key.includes('play') && key.includes('clean'))) return '❤️';
   if (key.includes('feed')) return '🍖';
   if (key.includes('train')) return '🏋️';
-  if (key.includes('care') || (key.includes('play') && key.includes('clean'))) return '❤️';
   if (key.includes('trade')) return '💱';
   if (key.includes('shop') || key.includes('buy') || key.includes('equip')) return '🛒';
   if (key.includes('adventure') || key.includes('run')) return '⚔️';
