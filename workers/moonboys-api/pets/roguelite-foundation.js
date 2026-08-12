@@ -37,6 +37,7 @@ export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', '
 export const PET_REWARD_SOURCES = Object.freeze([
   'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action', 'pet_item_use',
   'pet_weekly_boss', 'pet_season_reward',
+  'pet_bounty', 'pet_expedition', 'pet_market',
   'roguelite_room', 'roguelite_boss', 'roguelite_completion',
 ]);
 
@@ -112,6 +113,17 @@ export function validatePetRunModifier(modifier) {
 function getRewardAuthorization(source, telegramId, context = {}) {
   const runId = String(context.run_id || '').trim();
   const roomId = String(context.room_id || '').trim();
+  if (source === 'pet_expedition') {
+    const dayKey = String(context.day_key || '').trim();
+    const energyCost = positiveInteger(context.energy_cost, 100);
+    if (!dayKey || !energyCost) throw new Error('invalid_pet_reward_context');
+    return {
+      sql: `AND (SELECT COUNT(*) FROM telegram_pet_reward_claims
+        WHERE telegram_id = ? AND source = 'pet_expedition' AND day_key = ? AND status IN ('pending', 'awarded')) < 3
+        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND energy >= ?)`,
+      args: [telegramId, dayKey, telegramId, energyCost],
+    };
+  }
   if (source === 'roguelite_completion') {
     if (!runId) throw new Error('invalid_pet_reward_context');
     return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('completed', 'extracted'))", args: [runId, telegramId] };
@@ -179,9 +191,12 @@ export async function awardPetReward(db, request = {}) {
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
       (claim_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, metadata)
       SELECT ?, ?, ?, ?, ?, 'pending', ?, ?
-      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?
+        AND moon_gold >= ? AND moon_crystals >= ? AND style_tokens >= ?)
       ${authorization.sql} ${reservationGuard}`)
-      .bind(claimId, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), safeJson(request.context || {}), telegramId, ...authorization.args, ...(reservationId ? [reservationId, telegramId] : [])),
+      .bind(claimId, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), safeJson(request.context || {}), telegramId,
+        currencyCosts.moon_gold, currencyCosts.moon_crystals, currencyCosts.style_tokens,
+        ...authorization.args, ...(reservationId ? [reservationId, telegramId] : [])),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
       (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
       SELECT ?, ?, ?, ?, 0, 0, ?, ?, ?, 'pending', 'reward_pending', ?

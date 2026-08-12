@@ -130,9 +130,14 @@ export function choosePetNextAction(state = {}) {
     const missing = state.evolution.missing[0];
     return { key: `evolution-grind:${missing.key || 'requirement'}`, title: `Work toward ${state.evolution.name}`, detail: `${missing.label}: ${positiveInteger(missing.current)}/${positiveInteger(missing.required)}. ${missing.source || 'Keep progressing to obtain it.'}`, label: missing.callback_data?.includes('boss') ? '👑 Fight Boss' : '🏃 Start Moon Run', callback_data: missing.callback_data || 'pet:run' };
   }
+  const economyAction = [...(state.economy_actions || [])]
+    .filter((entry) => entry?.callback_data)
+    .sort((left, right) => positiveInteger(right.priority) - positiveInteger(left.priority))[0];
+  if (economyAction && positiveInteger(economyAction.priority) >= 80) return economyAction;
   const mission = (state.missions || []).find((entry) => !entry.completed);
   if (mission) return { key: `mission:${mission.key}`, title: mission.title, detail: 'Complete this next to advance today’s mission set.', ...missionAction(mission) };
   if (state.weekly_boss?.available) return { key: 'weekly-boss', title: `Use today’s attack on ${state.weekly_boss.title || 'the Weekly Boss'}`, detail: 'One attempt is available before the UTC reset.', label: '👑 Weekly Boss', callback_data: 'pet:boss' };
+  if (economyAction) return economyAction;
   const upgrade = (state.shop_items || []).find((item) => item.unlocked && item.affordable && !item.equipped);
   if (upgrade) return { key: `buy:${upgrade.key}`, title: `Equip ${upgrade.title}`, detail: 'You already have enough currency for this upgrade.', label: '🛒 Open Shop', callback_data: 'pet:shop' };
   return { key: 'timed-work', title: 'Start a timed activity', detail: 'Timed work builds resources while you are away.', label: '⏱ Activities', callback_data: 'pet:activity' };
