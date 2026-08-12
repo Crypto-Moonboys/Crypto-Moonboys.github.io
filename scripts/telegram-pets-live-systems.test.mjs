@@ -21,6 +21,13 @@ assert.equal(Object.keys(PET_SEASONAL_BOSSES).length, 4);
 assert.ok(getActiveSeasonalBoss(new Date('2026-08-12T00:00:00Z')).hp >= 900);
 assert.equal(Object.keys(PET_FACTION_BONUSES).length, 9);
 assert.ok(applyPetFactionBonus({ moon_gold: 100 }, 'blockstars', 'jobs').rewards.moon_gold > 100);
+for (const [faction, definition] of Object.entries(PET_FACTION_BONUSES)) {
+  const applied = applyPetFactionBonus({ moon_gold: 100, pet_xp: 100 }, faction, definition.system);
+  assert.ok(applied.bonus, `${faction} must resolve in its declared gameplay system`);
+  if (definition.system !== 'training') assert.ok(applied.rewards.moon_gold > 100 || applied.rewards.pet_xp > 100, `${faction} must change a live reward`);
+}
+assert.match(worker, /track_multiplier: 1 \+ Number\(factionBonus/, 'training faction bonus must change runtime Training XP');
+assert.match(worker, /applyPetFactionBonus\(player1Scaled\.rewards/, 'Arena faction bonuses must be applied before settlement');
 assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9);
 assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 4);
 assert.equal(PET_PRESTIGE_REQUIREMENTS.min_level, 100);
