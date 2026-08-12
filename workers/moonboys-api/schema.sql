@@ -1126,6 +1126,22 @@ CREATE TABLE IF NOT EXISTS telegram_pet_dialogue_history (
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_dialogue_history_owner
   ON telegram_pet_dialogue_history (telegram_id, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS telegram_pet_guidance_notices (
+  telegram_id TEXT NOT NULL,
+  notice_key TEXT NOT NULL CHECK (length(notice_key) BETWEEN 1 AND 160),
+  notice_type TEXT NOT NULL CHECK (notice_type IN ('evolution_ready', 'season_reward', 'personality', 'achievement', 'feature', 'job', 'shop')),
+  title TEXT NOT NULL CHECK (length(title) BETWEEN 1 AND 160),
+  detail TEXT NOT NULL DEFAULT '' CHECK (length(detail) <= 500),
+  callback_data TEXT NOT NULL DEFAULT 'pet:coach' CHECK (length(callback_data) BETWEEN 1 AND 100),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  shown_at DATETIME,
+  PRIMARY KEY (telegram_id, notice_key),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_guidance_notices_unshown
+  ON telegram_pet_guidance_notices (telegram_id, shown_at, created_at);
+
 -- Crypto Moonboy Pets daily retention foundation.
 CREATE TABLE IF NOT EXISTS telegram_pet_daily_runs (
   telegram_id TEXT NOT NULL,

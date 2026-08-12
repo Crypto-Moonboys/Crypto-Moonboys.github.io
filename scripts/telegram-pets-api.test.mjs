@@ -1083,7 +1083,7 @@ assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item but
 assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
 
 const mainButtons = petReplyMarkup().inline_keyboard.flat();
-assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '🏋️ Train', '⚔️ Adventure', '⏱ Activities', '⚙️ Management', '📋 Details'], '/pet must expose care actions and the three primary navigation areas');
+assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '🏋️ Train', '⚔️ Adventure', '⏱ Activities', '⚙️ Management', '🧭 Coach', '📋 Details'], '/pet must expose care actions, guidance and the three primary navigation areas');
 assert.equal(mainButtons.find((button) => button.text.includes('Train'))?.callback_data, 'pet:train', 'Train must invoke the existing pet action callback');
 assert.equal(mainButtons.find((button) => button.text.includes('Activities'))?.callback_data, 'pet:activity', 'Activities must open timed activities');
 assert.equal(mainButtons.find((button) => button.text.includes('Management'))?.callback_data, 'pet:menu:management', 'Management must be reachable from /pet');
@@ -1092,7 +1092,7 @@ for (const removed of ['Work', 'Events', 'Daily', 'Kaiju', 'Arena', 'Run', 'Clai
 const menuCases = [
   ['Adventure', buildPetAdventureMenuReplyMarkup(), ['Moon Run', 'Pet Jobs', 'Random Events', 'Kaiju', 'Arena', 'Daily']],
   ['Management', buildPetManagementMenuReplyMarkup(), ['Bag', 'Shop', 'Equipment', 'Trade']],
-  ['Progress', buildPetProgressMenuReplyMarkup(), ['Details', 'Missions', 'Evolution', 'Personality', 'Memories', 'Achievements', 'Season Rewards', 'Leaderboard', 'Streak']],
+  ['Progress', buildPetProgressMenuReplyMarkup(), ['Recommended Next Move', 'Details', 'Missions', 'Evolution', 'Personality', 'Memories', 'Achievements', 'Season Rewards', 'Leaderboard', 'Streak']],
 ];
 for (const [name, markup, labels] of menuCases) {
   const buttons = markup.inline_keyboard.flat();
