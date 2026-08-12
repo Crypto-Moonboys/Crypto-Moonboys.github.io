@@ -57,12 +57,19 @@ seedPlayer(db, 'arena-one', 'Alley Cat', 1500);
 seedPlayer(db, 'arena-two', 'Cyber Cat', 1520);
 seedPlayer(db, 'kaiju-one', 'Kaiju Cat', 1400);
 seedPlayer(db, 'kaiju-two', 'Sticker Cat', 1450);
+seedPlayer(db, 'arena-queued', 'Queue Cat', 1450);
+seedPlayer(db, 'kaiju-queued', 'Queue Kaiju', 1450);
 
 const act = (telegramId, action, payload = {}) => processPetMiniAppAction(db, telegramId, { id: telegramId }, {
   action,
   request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
   ...payload,
 }, '123456:test-token');
+
+const soloArenaQueue = await act('arena-queued', 'arena_matchmake');
+assert.equal(soloArenaQueue.reason, 'arena_queued');
+assert.equal((await act('arena-queued', 'arena_start')).reason, 'arena_queue_active', 'queued Arena player must not start a solo battle');
+await act('arena-queued', 'arena_queue_cancel');
 
 const arenaQueued = await act('arena-one', 'arena_matchmake');
 assert.equal(arenaQueued.reason, 'arena_queued');
@@ -74,6 +81,8 @@ const arenaBattle = await getPetArenaBattleForPlayer(db, 'mini:arena:global', 'a
 assert.ok(arenaBattle?.battle_id);
 assert.equal(await getPetArenaQueueState(db, 'mini:arena:global', 'arena-one'), null);
 assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').player.pet_name, 'Cyber Cat', 'arena state must orient each player as self');
+assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').player.telegram_id, undefined, 'Arena DTO must redact the player Telegram ID');
+assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').opponent.telegram_id, undefined, 'Arena DTO must redact the opponent Telegram ID');
 
 const firstReady = await act('arena-one', 'arena_ready', { battle_id: arenaBattle.battle_id });
 assert.equal(firstReady.reason, 'waiting_for_opponent');
@@ -85,6 +94,10 @@ assert.equal(firstMove.reason, 'waiting_for_opponent');
 const secondMove = await act('arena-two', 'arena_move', { battle_id: arenaBattle.battle_id, expected_round: 1, move: 'bh' });
 assert.ok(['round_resolved', 'arena_completed'].includes(secondMove.reason));
 
+const soloKaijuQueue = await act('kaiju-queued', 'kaiju_matchmake');
+assert.equal(soloKaijuQueue.reason, 'kaiju_queued');
+assert.equal((await act('kaiju-queued', 'kaiju_start')).reason, 'kaiju_queue_active', 'queued Kaiju player must not start a solo match');
+await act('kaiju-queued', 'kaiju_queue_cancel');
 const kaijuQueued = await act('kaiju-one', 'kaiju_matchmake');
 assert.equal(kaijuQueued.reason, 'kaiju_queued');
 assert.equal((await getPetKaijuQueueState(db, 'kaiju-one')).waiting, true);
@@ -96,6 +109,11 @@ assert.equal(serializePetMiniAppKaijuMatch(kaijuMatch, 'kaiju-two').role, 'playe
 
 const firstCard = await act('kaiju-one', 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: 'big-daddy-kong' });
 assert.equal(firstCard.reason, 'kaiju_card_waiting');
+const hiddenKaiju = serializePetMiniAppKaijuMatch(firstCard.match, 'kaiju-two');
+assert.equal(hiddenKaiju.opponent_card_key, null, 'active Kaiju DTO must conceal the opponent card');
+assert.equal(hiddenKaiju.category_key, null, 'active Kaiju DTO must conceal the scoring category');
+assert.equal(hiddenKaiju.roll, null, 'active Kaiju DTO must conceal the scoring roll');
+assert.equal(hiddenKaiju.player1_telegram_id, undefined, 'Kaiju DTO must redact player identifiers');
 const secondCard = await act('kaiju-two', 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: 'god-dzilla' });
 assert.equal(secondCard.reason, 'kaiju_completed');
 assert.ok(['player1_win', 'player2_win', 'draw'].includes(secondCard.match.result));
@@ -108,7 +126,7 @@ const legacyCommands = [
   'pet', 'petcoach', 'petprogress', 'petachievements', 'petseason', 'petboss', 'petevolve', 'petgear',
   'adopt', 'feed', 'play', 'clean', 'sleep', 'train', 'petstart', 'petclaim', 'petcancel', 'petactivity',
   'pettrade', 'petname', 'petmissions', 'petshop', 'peteconomy', 'petbounties', 'petexpedition',
-  'petmarket', 'petbag', 'petbuy', 'petuse', 'petwork', 'petdaily', 'petevent', 'petarena', 'petkaiju',
+  'petmarket', 'petbag', 'petbuy', 'petuse', 'petwork', 'petdaily', 'petevent', 'petarena', 'petkaiju', 'kaiju',
   'petrun', 'petextract', 'petadventure', 'petnotify', 'petleaderboard', 'petscore',
 ];
 for (const command of legacyCommands) {

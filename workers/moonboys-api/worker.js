@@ -3057,14 +3057,27 @@ function isPetKaijuExpiredResult(fresh) {
   return Boolean(fresh?.expired);
 }
 
-async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo') {
+async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo', options = {}) {
   const matchId = buildPetKaijuMatchId();
   const status = mode === 'group' ? 'open' : 'selecting';
-  await db.prepare(`
+  const inserted = options.mini_app_solo_guard
+    ? await db.prepare(`
+    INSERT INTO telegram_pet_kaiju_matches
+      (id, match_id, chat_id, mode, status, player1_telegram_id)
+    SELECT ?, ?, ?, ?, ?, ?
+    WHERE NOT EXISTS (
+      SELECT 1 FROM telegram_pet_kaiju_queue
+      WHERE chat_id = ? AND telegram_id = ?
+        AND (status = 'waiting' OR updated_at LIKE 'claim:%')
+    )
+  `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId),
+      PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).run()
+    : await db.prepare(`
     INSERT INTO telegram_pet_kaiju_matches
       (id, match_id, chat_id, mode, status, player1_telegram_id)
     VALUES (?, ?, ?, ?, ?, ?)
   `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId)).run();
+  if (Number(inserted?.meta?.changes || 0) !== 1) return null;
   return getPetKaijuMatch(db, matchId);
 }
 
@@ -3129,17 +3142,24 @@ async function matchmakePetKaijuMiniApp(db, telegramId) {
     || await getActivePetKaijuMatch(db, `mini:kaiju:${telegramId}`);
   if (active) return { accepted: true, reason: 'kaiju_match_active', match: active };
   await enqueuePetKaijuPlayer(db, PET_MINI_APP_KAIJU_LOBBY, telegramId);
+  const activeAfterQueue = await getPetKaijuMatchForPlayer(db, telegramId)
+    || await getActivePetKaijuMatch(db, `mini:kaiju:${telegramId}`);
+  if (activeAfterQueue) {
+    await cancelPetKaijuMiniAppQueue(db, telegramId);
+    return { accepted: true, reason: 'kaiju_match_active', match: activeAfterQueue };
+  }
   const rows = await db.prepare(`SELECT telegram_id FROM telegram_pet_kaiju_queue
     WHERE chat_id=? AND status='waiting' AND telegram_id<>? ORDER BY queued_at ASC LIMIT 6`)
     .bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).all().catch(() => ({ results: [] }));
   const opponent = (rows.results || []).find((row) => String(row.telegram_id) !== String(telegramId));
   if (!opponent) return { accepted: true, reason: 'kaiju_queued', queue: await getPetKaijuQueueState(db, telegramId) };
-  const claimed = await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status='played', updated_at=CURRENT_TIMESTAMP
+  const claimToken = `claim:${crypto.randomUUID()}`;
+  const claimed = await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status='played', updated_at=?
     WHERE chat_id=? AND telegram_id IN (?,?) AND status='waiting'`)
-    .bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId), String(opponent.telegram_id)).run();
+    .bind(claimToken, PET_MINI_APP_KAIJU_LOBBY, String(telegramId), String(opponent.telegram_id)).run();
   if (Number(claimed?.meta?.changes || 0) !== 2) {
     await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status='waiting', updated_at=CURRENT_TIMESTAMP
-      WHERE chat_id=? AND telegram_id=? AND status='played'`).bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).run().catch(() => {});
+      WHERE chat_id=? AND status='played' AND updated_at=?`).bind(PET_MINI_APP_KAIJU_LOBBY, claimToken).run().catch(() => {});
     return { accepted: true, reason: 'kaiju_queued', queue: await getPetKaijuQueueState(db, telegramId) };
   }
   try {
@@ -3150,11 +3170,13 @@ async function matchmakePetKaijuMiniApp(db, telegramId) {
       WHERE match_id=? AND status='open' AND player2_telegram_id IS NULL`)
       .bind(String(telegramId), created.match_id).run();
     if (Number(joined?.meta?.changes || 0) !== 1) throw new Error('kaiju_match_claim_failed');
+    await db.prepare(`UPDATE telegram_pet_kaiju_queue SET updated_at=CURRENT_TIMESTAMP
+      WHERE chat_id=? AND status='played' AND updated_at=?`).bind(PET_MINI_APP_KAIJU_LOBBY, claimToken).run();
     return { accepted: true, reason: 'kaiju_match_found', match: await getPetKaijuMatch(db, created.match_id) };
   } catch (error) {
     await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status='waiting', updated_at=CURRENT_TIMESTAMP
-      WHERE chat_id=? AND telegram_id IN (?,?) AND status='played'`)
-      .bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId), String(opponent.telegram_id)).run().catch(() => {});
+      WHERE chat_id=? AND status='played' AND updated_at=?`)
+      .bind(PET_MINI_APP_KAIJU_LOBBY, claimToken).run().catch(() => {});
     throw error;
   }
 }
@@ -3541,6 +3563,12 @@ async function queuePetArenaMiniApp(db, telegramId, acceptAnyRank = false) {
       rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json,
       accept_any_rank=MAX(telegram_pet_arena_queue.accept_any_rank, excluded.accept_any_rank), updated_at=CURRENT_TIMESTAMP`)
     .bind(crypto.randomUUID(), PET_MINI_APP_ARENA_LOBBY, String(telegramId), bucket, JSON.stringify(buildPetArenaSnapshot(pet)), acceptAnyRank ? 1 : 0).run();
+  const activeAfterQueue = await getPetArenaBattleForPlayer(db, PET_MINI_APP_ARENA_LOBBY, telegramId)
+    || await getPetArenaBattleForPlayer(db, `mini:${telegramId}`, telegramId);
+  if (activeAfterQueue) {
+    await cancelPetArenaMiniAppQueue(db, telegramId);
+    return { accepted: true, reason: 'arena_match_active', battle: activeAfterQueue };
+  }
   const idx = PET_ARENA_BUCKET_ORDER.indexOf(bucket);
   const lower = PET_ARENA_BUCKET_ORDER[idx - 1] || '';
   const upper = PET_ARENA_BUCKET_ORDER[idx + 1] || '';
@@ -3555,21 +3583,24 @@ async function queuePetArenaMiniApp(db, telegramId, acceptAnyRank = false) {
   if (await hasActivePetArenaBattle(db, PET_MINI_APP_ARENA_LOBBY, opponent.telegram_id)) {
     return { accepted: true, reason: 'arena_queued', queue: await getPetArenaQueueState(db, PET_MINI_APP_ARENA_LOBBY, telegramId) };
   }
-  const claimed = await db.prepare(`UPDATE telegram_pet_arena_queue SET status='matched', updated_at=CURRENT_TIMESTAMP
+  const claimToken = `claim:${crypto.randomUUID()}`;
+  const claimed = await db.prepare(`UPDATE telegram_pet_arena_queue SET status='matched', updated_at=?
     WHERE chat_id=? AND telegram_id IN (?,?) AND status='waiting'`)
-    .bind(PET_MINI_APP_ARENA_LOBBY, String(telegramId), String(opponent.telegram_id)).run();
+    .bind(claimToken, PET_MINI_APP_ARENA_LOBBY, String(telegramId), String(opponent.telegram_id)).run();
   if (Number(claimed?.meta?.changes || 0) !== 2) {
     await db.prepare(`UPDATE telegram_pet_arena_queue SET status='waiting', updated_at=CURRENT_TIMESTAMP
-      WHERE chat_id=? AND telegram_id=? AND status='matched'`).bind(PET_MINI_APP_ARENA_LOBBY, String(telegramId)).run().catch(() => {});
+      WHERE chat_id=? AND status='matched' AND updated_at=?`).bind(PET_MINI_APP_ARENA_LOBBY, claimToken).run().catch(() => {});
     return { accepted: true, reason: 'arena_queued', queue: await getPetArenaQueueState(db, PET_MINI_APP_ARENA_LOBBY, telegramId) };
   }
   try {
     const battle = await createPetArenaBattle(db, PET_MINI_APP_ARENA_LOBBY, pet, safeParsePetArenaSnapshot(opponent.pet_snapshot_json), 'group');
+    await db.prepare(`UPDATE telegram_pet_arena_queue SET updated_at=CURRENT_TIMESTAMP
+      WHERE chat_id=? AND status='matched' AND updated_at=?`).bind(PET_MINI_APP_ARENA_LOBBY, claimToken).run();
     return { accepted: true, reason: 'arena_match_found', battle };
   } catch (error) {
     await db.prepare(`UPDATE telegram_pet_arena_queue SET status='waiting', updated_at=CURRENT_TIMESTAMP
-      WHERE chat_id=? AND telegram_id IN (?,?) AND status='matched'`)
-      .bind(PET_MINI_APP_ARENA_LOBBY, String(telegramId), String(opponent.telegram_id)).run().catch(() => {});
+      WHERE chat_id=? AND status='matched' AND updated_at=?`)
+      .bind(PET_MINI_APP_ARENA_LOBBY, claimToken).run().catch(() => {});
     throw error;
   }
 }
@@ -3578,7 +3609,27 @@ async function cancelPetArenaMiniAppQueue(db, telegramId) {
     WHERE chat_id=? AND telegram_id=? AND status='waiting'`).bind(PET_MINI_APP_ARENA_LOBBY, String(telegramId)).run();
   return { accepted: true, duplicate: Number(cancelled?.meta?.changes || 0) === 0, reason: 'arena_queue_cancelled' };
 }
-async function createPetArenaBattle(db, chatId, p1, p2, mode='group') { const battleId = buildPetArenaBattleId(); const p1p = calculatePetArenaPower(p1, `${battleId}:1`); const p2p = calculatePetArenaPower(p2, `${battleId}:2`); const status = mode === 'app' ? 'active' : 'readying'; const now = new Date().toISOString(); await db.prepare(`INSERT INTO telegram_pet_arena_battles (id,battle_id,chat_id,player1_telegram_id,player2_telegram_id,player1_pet_snapshot_json,player2_pet_snapshot_json,player1_power,player2_power,status,result,current_round,max_rounds,player1_hp,player2_hp,player1_special,player2_special,expires_at,player1_ready_at,player2_ready_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(crypto.randomUUID(), battleId, String(chatId), String(p1.telegram_id), mode === 'app' ? 'app' : String(p2.telegram_id), JSON.stringify(buildPetArenaSnapshot(p1)), JSON.stringify(buildPetArenaSnapshot(p2)), p1p, p2p, status, mode, 1, PET_ARENA_MAX_ROUNDS, PET_ARENA_MAX_HP, PET_ARENA_MAX_HP, 0, 0, petArenaExpiryTimestamp(), mode === 'app' ? now : null, mode === 'app' ? now : null).run(); await ensurePetArenaRound(db, battleId, 1); return getPetArenaBattle(db, battleId); }
+async function createPetArenaBattle(db, chatId, p1, p2, mode='group', options = {}) {
+  const battleId = buildPetArenaBattleId();
+  const p1p = calculatePetArenaPower(p1, `${battleId}:1`);
+  const p2p = calculatePetArenaPower(p2, `${battleId}:2`);
+  const status = mode === 'app' ? 'active' : 'readying';
+  const now = new Date().toISOString();
+  const values = [crypto.randomUUID(), battleId, String(chatId), String(p1.telegram_id), mode === 'app' ? 'app' : String(p2.telegram_id), JSON.stringify(buildPetArenaSnapshot(p1)), JSON.stringify(buildPetArenaSnapshot(p2)), p1p, p2p, status, mode, 1, PET_ARENA_MAX_ROUNDS, PET_ARENA_MAX_HP, PET_ARENA_MAX_HP, 0, 0, petArenaExpiryTimestamp(), mode === 'app' ? now : null, mode === 'app' ? now : null];
+  const columns = '(id,battle_id,chat_id,player1_telegram_id,player2_telegram_id,player1_pet_snapshot_json,player2_pet_snapshot_json,player1_power,player2_power,status,result,current_round,max_rounds,player1_hp,player2_hp,player1_special,player2_special,expires_at,player1_ready_at,player2_ready_at)';
+  const inserted = options.mini_app_solo_guard
+    ? await db.prepare(`INSERT INTO telegram_pet_arena_battles ${columns}
+        SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+        WHERE NOT EXISTS (
+          SELECT 1 FROM telegram_pet_arena_queue
+          WHERE chat_id=? AND telegram_id=?
+            AND (status='waiting' OR updated_at LIKE 'claim:%')
+        )`).bind(...values, PET_MINI_APP_ARENA_LOBBY, String(p1.telegram_id)).run()
+    : await db.prepare(`INSERT INTO telegram_pet_arena_battles ${columns} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(...values).run();
+  if (Number(inserted?.meta?.changes || 0) !== 1) return null;
+  await ensurePetArenaRound(db, battleId, 1);
+  return getPetArenaBattle(db, battleId);
+}
 function safeParsePetArenaSnapshot(jsonText) {
   try { return JSON.parse(String(jsonText || '{}')) || {}; } catch (_) { return {}; }
 }
@@ -6186,6 +6237,8 @@ function serializePetMiniAppArenaBattle(battle, telegramId = '') {
   const isPlayer2 = String(battle.player2_telegram_id || '') === String(telegramId);
   const player = safeParsePetArenaSnapshot(isPlayer2 ? battle.player2_pet_snapshot_json : battle.player1_pet_snapshot_json);
   const opponent = safeParsePetArenaSnapshot(isPlayer2 ? battle.player1_pet_snapshot_json : battle.player2_pet_snapshot_json);
+  delete player.telegram_id;
+  delete opponent.telegram_id;
   const winner = battle.winner_telegram_id || null;
   const outcome = !battle.result ? null : battle.result === 'draw' ? 'draw' : String(winner || '') === String(telegramId) ? 'win' : 'loss';
   return {
@@ -6201,7 +6254,6 @@ function serializePetMiniAppArenaBattle(battle, telegramId = '') {
     player,
     opponent,
     last_round: safeParsePetArenaSnapshot(battle.last_round_log_json),
-    winner,
     outcome,
     mode: String(battle.player2_telegram_id) === 'app' ? 'solo' : 'multiplayer',
     ready: Boolean(isPlayer2 ? battle.player2_ready_at : battle.player1_ready_at),
@@ -6215,8 +6267,17 @@ function serializePetMiniAppKaijuMatch(match, telegramId = '') {
   const ownCard = isPlayer2 ? match.player2_card_key : match.player1_card_key;
   const opponentCard = isPlayer2 ? match.player1_card_key : (match.mode === 'solo' ? match.cpu_card_key : match.player2_card_key);
   const winner = match.winner_telegram_id || null;
+  const completed = match.status === 'completed';
   return {
-    ...match,
+    match_id: match.match_id,
+    mode: match.mode,
+    status: match.status,
+    result: completed ? match.result : null,
+    category_key: completed ? match.category_key : null,
+    roll: completed ? match.roll : null,
+    score_json: completed ? match.score_json : null,
+    own_card_key: ownCard || null,
+    opponent_card_key: completed ? opponentCard || null : null,
     role: isPlayer2 ? 'player2' : 'player1',
     own_card_locked: Boolean(ownCard),
     opponent_card_locked: Boolean(opponentCard),
@@ -6520,7 +6581,9 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
       || await getPetArenaBattleForPlayer(db, miniChatId, telegramId);
     if (active) return { accepted: false, reason: 'arena_battle_active' };
     const appPet = { ...eligible.pet, telegram_id: 'app', pet_name: 'CRT-9 Rival', pet_xp: Math.max(0, Number(eligible.pet.pet_xp || 0) + 80), energy: 82, health: 88, happiness: 80, cleanliness: 80 };
-    return { accepted: true, reason: 'arena_started', battle: await createPetArenaBattle(db, miniChatId, eligible.pet, appPet, 'app') };
+    const battle = await createPetArenaBattle(db, miniChatId, eligible.pet, appPet, 'app', { mini_app_solo_guard: true });
+    if (!battle) return { accepted: false, reason: 'arena_queue_active' };
+    return { accepted: true, reason: 'arena_started', battle };
   }
   if (action === 'arena_matchmake') return queuePetArenaMiniApp(db, telegramId, body.accept_any_rank === true);
   if (action === 'arena_queue_cancel') return cancelPetArenaMiniAppQueue(db, telegramId);
@@ -6549,7 +6612,9 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     const miniChatId = `mini:kaiju:${telegramId}`;
     const active = await getPetKaijuMatchForPlayer(db, telegramId) || await getActivePetKaijuMatch(db, miniChatId);
     if (active) return { accepted: true, reason: active.mode === 'solo' ? 'kaiju_resumed' : 'kaiju_match_active', match: active };
-    return { accepted: true, reason: 'kaiju_started', match: await createPetKaijuMatch(db, miniChatId, telegramId, 'solo') };
+    const match = await createPetKaijuMatch(db, miniChatId, telegramId, 'solo', { mini_app_solo_guard: true });
+    if (!match) return { accepted: false, reason: 'kaiju_queue_active' };
+    return { accepted: true, reason: 'kaiju_started', match };
   }
   if (action === 'kaiju_matchmake') return matchmakePetKaijuMiniApp(db, telegramId);
   if (action === 'kaiju_queue_cancel') return cancelPetKaijuMiniAppQueue(db, telegramId);
