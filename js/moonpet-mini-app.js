@@ -150,7 +150,7 @@
     var pet = state.pet;
     var next = state.next || {};
     var nextKey = String(next.key || '') + ' ' + String(next.callback_data || '') + ' ' + String(next.title || '');
-    var nextScreen = /buy|shop|market|bount|econom/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait/i.test(nextKey) ? 'profile' : 'home';
+    var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait|prestige/i.test(nextKey) ? 'profile' : 'home');
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(pet.pet_name || 'MOONPET') + ' // ' + escapeHtml(words(pet.stage)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '">OPEN RECOMMENDED ROUTE</button></div>') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness)) +
@@ -204,12 +204,19 @@
       }).join('') + '</div>'
       : '<div class="line">PLAYER VS CRT OPPONENT.</div><div class="button-grid one">' + button('START KAIJU BATTLE', 'kaiju_start') + '</div>';
     var regions = (state.regions || []).map(function (region) {
-      return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : '') + '</div>';
+      return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.used_today ? 'COMPLETE TODAY' : region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">MASTERY ' + number(region.mastery_xp) + ' // BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : '<div class="button-grid one">' + button(region.used_today ? 'DISTRICT COMPLETE TODAY' : 'RUN DISTRICT MISSION // 10 ENERGY', 'district_mission', { region_key: region.key }, { disabled: !region.available }) + '</div>') + '</div>';
     }).join('');
+    var live = state.live_systems || {};
+    var chains = (live.chains || []).map(function (chain) {
+      return '<div class="line">' + escapeHtml(words(chain.key)) + ' // STEP ' + number(chain.step_index + 1) + '/' + number(chain.steps.length) + '</div><div class="button-grid one">' + button(chain.used_today ? 'STEP COMPLETE TODAY' : 'CONTINUE // ' + words(chain.current_step), 'event_chain', { chain_key: chain.key }, { disabled: !chain.available }) + '</div>';
+    }).join('');
+    var seasonal = live.seasonal_boss || {};
+    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY', 'seasonal_boss', {}, { disabled: !seasonal.available }) + '</div>';
     return panel('DISTRICT NETWORK', regions) + panel('MOON RUN', runBody) +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div><div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available }) + '</div>') +
+      panel('STREET STORY CHAINS', chains || '<div class="line muted">NO CHAIN SIGNAL.</div>') + panel('SEASONAL RAID', seasonalBody) +
       panel('PET ARENA', arenaBody) + panel('KAIJU CODE CARDS', kaijuBody);
   }
 
@@ -249,21 +256,26 @@
         ((item.kind === 'usable_item' || item.usable) ? '<div class="button-grid one">' + button('USE ' + (item.title || item.key), 'use_item', { item_key: item.key || item.item_key }) + '</div>' : '');
     }).join('');
     var expedition = economy.expedition || {};
+    var live = state.live_systems || {};
+    var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
     var gear = (state.gear || []).map(function (item) {
+      var upgrade = upgrades.get(item.item_key) || {};
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
-        '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>';
+        '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' +
+        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key }, { disabled: !upgrade.affordable, detail: (upgrade.unlocked ? '' : 'REQUIRES LEVEL ' + number(upgrade.required_level) + ' // ') + costText(upgrade.cost) }) + '</div>');
     }).join('');
     var materials = (state.materials || []).map(function (item) {
       return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
     }).join('');
     var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div>'; }).join('');
+    var cosmetics = (live.cosmetics || []).map(function (item) { return button(words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable || item.unlocked && !item.repeatable, detail: (item.unlocked ? 'OWNED x' + number(item.quantity) + ' // ' : '') + costText(item.cost) }); }).join('');
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>') +
       panel('RELIC VAULT', relics || '<div class="line muted">NO RELICS RECOVERED.</div>') +
       panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>') +
       panel('CRYSTAL EXPEDITION', '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left }) + '</div>') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>') +
-      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>') +
+      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>') + panel('STYLE LAB', '<div class="button-grid">' + cosmetics + '</div>') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>') +
       panel('MOON GOLD TRADE', '<div class="button-grid three">' + [10, 25, 50].map(function (wager) { return button(wager + ' GOLD', 'trade', { wager: wager }); }).join('') + '</div>');
   }
@@ -291,6 +303,9 @@
     }).join('');
     var leaders = (state.leaderboard || []).map(function (entry) { return '<div class="line">#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') + ' // LVL ' + number(entry.level) + ' // ' + number(entry.pet_xp) + ' XP</div>'; }).join('');
     var notifications = state.notifications || {};
+    var live = state.live_systems || {};
+    var faction = live.faction || {};
+    var prestige = live.prestige || {};
     var notificationPanel = '<div class="line ' + (notifications.enabled ? 'complete' : 'muted') + '">PROGRESSION ALERTS: ' + (notifications.enabled ? 'ONLINE' : 'OFFLINE') + '</div><div class="button-grid">' +
       button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled }) +
       button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, danger: true }) + '</div>';
@@ -298,7 +313,9 @@
     return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + '</div><div class="line muted">PERSONALITY REACTIONS</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) +
       panel('LEARNED APTITUDES', aptitudeRows) +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>') +
-      panel('EVOLUTION', evoHtml) + panel('SPECIALIST TRACKS', tracks) + panel('ALERT CONTROL', notificationPanel) + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers) + panel('TOP MOONPETS', leaders);
+      panel('EVOLUTION', evoHtml) + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>') +
+      panel('PRESTIGE', '<div class="line">RANK ' + number(prestige.count) + ' // MASTERED GEAR ' + number(prestige.mastered_items) + '/3 // DISTRICTS ' + number(prestige.completed_regions) + '/4</div><div class="line muted">REQUIRES LEVEL 100 + 5,000 GOLD + 50 GEMS</div><div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: !prestige.ready }) + '</div>') +
+      panel('SPECIALIST TRACKS', tracks) + panel('ALERT CONTROL', notificationPanel) + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers) + panel('TOP MOONPETS', leaders);
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };

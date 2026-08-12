@@ -38,6 +38,7 @@ export const PET_REWARD_SOURCES = Object.freeze([
   'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action', 'pet_item_use',
   'pet_weekly_boss', 'pet_season_reward',
   'pet_bounty', 'pet_expedition', 'pet_market',
+  'pet_district', 'pet_event_chain', 'pet_seasonal_boss',
   'roguelite_room', 'roguelite_boss', 'roguelite_completion',
 ]);
 
@@ -113,6 +114,23 @@ export function validatePetRunModifier(modifier) {
 function getRewardAuthorization(source, telegramId, context = {}) {
   const runId = String(context.run_id || '').trim();
   const roomId = String(context.room_id || '').trim();
+  if (source === 'pet_district' || source === 'pet_event_chain') {
+    const systemEventId = String(context.system_event_id || '').trim();
+    if (!systemEventId) throw new Error('invalid_pet_reward_context');
+    return {
+      sql: "AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id = ? AND telegram_id = ? AND status IN ('settling','completed'))",
+      args: [systemEventId, telegramId],
+    };
+  }
+  if (source === 'pet_seasonal_boss') {
+    const seasonKey = String(context.season_key || '').trim();
+    const bossKey = String(context.boss_key || '').trim();
+    if (!seasonKey || !bossKey) throw new Error('invalid_pet_reward_context');
+    return {
+      sql: 'AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE telegram_id = ? AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)',
+      args: [telegramId, seasonKey, bossKey],
+    };
+  }
   if (source === 'pet_expedition') {
     const dayKey = String(context.day_key || '').trim();
     const energyCost = positiveInteger(context.energy_cost, 100);

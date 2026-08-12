@@ -38,6 +38,10 @@ import {
 import { PET_CRAFTING_MATERIALS } from './pets/economy-phase-3.js';
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
+import {
+  applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetDistrictMission,
+  processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
+} from './pets/live-systems.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
@@ -2648,13 +2652,15 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
       return { accepted: false, reason: 'cooldown', retry_after_seconds: Math.max(1, Math.ceil(PETS_ACTION_COOLDOWN_SECONDS - elapsedSeconds)), pet };
     }
   }
-  const rewards = job;
+  const factionRow = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().catch(() => null);
+  const adjusted = applyPetFactionBonus(job, factionRow?.faction, 'jobs');
+  const rewards = adjusted.rewards;
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_job', idempotency_key: eventKey, event_key: eventKey,
     event_type: 'work', reason: key, rewards, touch_streak: true,
-    context: { source: options.source || 'telegram_bot', job_key: key },
+    context: { source: options.source || 'telegram_bot', job_key: key, faction_bonus: adjusted.bonus },
   });
-  return { ...awarded, reason: awarded.duplicate ? 'duplicate' : key, job };
+  return { ...awarded, reason: awarded.duplicate ? 'duplicate' : key, job: rewards, faction_bonus: adjusted.bonus };
 }
 
 async function processPetDailyChest(db, telegramId, options = {}) {
@@ -3500,9 +3506,16 @@ async function completePetArenaBattle(db, battle) {
   const lossRewards = { pet_xp: 10, community_xp: 0, moon_gold: 3 };
   const player1Scaled = scalePetArenaRewardsForPlayer(battle, result, String(battle.player1_telegram_id), result === 'player1_win' || result === 'draw' ? winRewards : lossRewards);
   const player2Scaled = scalePetArenaRewardsForPlayer(battle, result, String(battle.player2_telegram_id), result === 'player2_win' || result === 'draw' ? winRewards : lossRewards);
-  await awardPetKaijuPlayerResult(db, String(battle.player1_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player1Scaled.modifier }, result === 'player1_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player1Scaled.rewards);
-  if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await awardPetKaijuPlayerResult(db, String(battle.player2_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player2Scaled.modifier }, result === 'player2_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player2Scaled.rewards);
-  return { accepted:true, duplicate: duplicateCompletion, reason: duplicateCompletion ? 'already_completed' : 'arena_completed', battle: await getPetArenaBattle(db, battle.battle_id), result, rewards: { player1: player1Scaled, player2: player2Scaled } };
+  const [player1Faction, player2Faction] = await Promise.all([
+    db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(String(battle.player1_telegram_id)).first().catch(() => null),
+    battle.player2_telegram_id && battle.player2_telegram_id !== 'app'
+      ? db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(String(battle.player2_telegram_id)).first().catch(() => null) : null,
+  ]);
+  const player1Adjusted = applyPetFactionBonus(player1Scaled.rewards, player1Faction?.faction, 'arena');
+  const player2Adjusted = applyPetFactionBonus(player2Scaled.rewards, player2Faction?.faction, 'arena');
+  await awardPetKaijuPlayerResult(db, String(battle.player1_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player1Scaled.modifier, faction_bonus: player1Adjusted.bonus }, result === 'player1_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player1Adjusted.rewards);
+  if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await awardPetKaijuPlayerResult(db, String(battle.player2_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player2Scaled.modifier, faction_bonus: player2Adjusted.bonus }, result === 'player2_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player2Adjusted.rewards);
+  return { accepted:true, duplicate: duplicateCompletion, reason: duplicateCompletion ? 'already_completed' : 'arena_completed', battle: await getPetArenaBattle(db, battle.battle_id), result, rewards: { player1: { ...player1Scaled, rewards: player1Adjusted.rewards, faction_bonus: player1Adjusted.bonus }, player2: { ...player2Scaled, rewards: player2Adjusted.rewards, faction_bonus: player2Adjusted.bonus } } };
 }
 async function readyPetArenaBattle(db, battle, telegramId) {
   const isP1 = String(battle.player1_telegram_id) === String(telegramId);
@@ -6069,8 +6082,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       WHERE chat_id = ? AND player1_telegram_id = ? AND status IN ('readying','active')
       ORDER BY created_at DESC LIMIT 1`).bind(miniChatId, telegramId).first().catch(() => null),
     getActivePetKaijuMatch(db, `mini:kaiju:${telegramId}`).catch(() => null),
-    db.prepare(`SELECT pet_name, stage, level, pet_xp, streak_days
-      FROM telegram_pet_profiles ORDER BY pet_xp DESC, updated_at ASC LIMIT 10`)
+    db.prepare(`SELECT p.pet_name,
+        COALESCE((SELECT e.evolution_id FROM telegram_pet_evolutions e WHERE e.telegram_id=p.telegram_id ORDER BY e.stage DESC LIMIT 1), 'moon_egg') AS stage,
+        p.level, p.pet_xp, p.streak_days
+      FROM telegram_pet_profiles p ORDER BY p.pet_xp DESC, p.updated_at ASC LIMIT 10`)
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
   ]);
@@ -6086,9 +6101,26 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   ]);
   const canonicalPet = serializePet(petRaw, guidance?.identity);
   if (guidance) guidance.pet = canonicalPet;
-  let regionMastery = {};
-  try { regionMastery = JSON.parse(runtime?.region_mastery_json || '{}'); } catch {}
-  const next = guidance ? choosePetNextAction(guidance) : null;
+  const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || []);
+  const guidedNext = guidance ? choosePetNextAction(guidance) : null;
+  const affordableUpgrade = liveSystems.upgrades.find((item) => item.affordable && !item.maxed);
+  const availableDistrict = liveSystems.regions.find((region) => region.available && !region.completed);
+  const affordableCosmetic = liveSystems.cosmetics.find((item) => item.affordable && (!item.unlocked || item.repeatable));
+  const activeChain = liveSystems.chains.find((chain) => chain.available);
+  const liveNext = liveSystems.prestige.ready
+    ? { key: 'prestige', title: 'Ascend Prestige', detail: 'Requires Level 100, 3 mastered items and 4 completed districts. Cost: 5,000 Gold + 50 Gems. Reward: +1 Prestige rank and 3 Mastery Tokens.', action: 'prestige', destination: 'profile' }
+    : affordableUpgrade
+      ? { key: 'gear_upgrade', title: `Upgrade ${String(affordableUpgrade.item_key).replaceAll('_', ' ')}`, detail: `Cost: ${Object.entries(affordableUpgrade.cost).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(' + ')}. Reward: gear level ${affordableUpgrade.target_level}.`, action: 'gear_upgrade', destination: 'economy' }
+      : liveSystems.seasonal_boss.available
+        ? { key: 'seasonal_boss', title: `Raid ${liveSystems.seasonal_boss.title}`, detail: `Requires Level ${liveSystems.seasonal_boss.min_level}. Cost: 18 Energy. Defeat reward: 150 XP, 250 Gold, 8 Gems, 8 ${String(liveSystems.seasonal_boss.reward).replaceAll('_', ' ')} and 1 Mastery Token.`, action: 'seasonal_boss', destination: 'explore' }
+        : availableDistrict
+          ? { key: 'district_mission', title: `Build ${availableDistrict.title} mastery`, detail: `Cost: 10 Energy. Reward: 25 XP, 28 Gold and 1 focus material; each 100-mastery boss checkpoint pays 55 XP, 65 Gold and 3 materials.`, action: 'district_mission', destination: 'explore' }
+          : affordableCosmetic
+            ? { key: 'cosmetic_unlock', title: `Unlock ${String(affordableCosmetic.key).replaceAll('_', ' ')}`, detail: `Cost: ${Object.entries(affordableCosmetic.cost).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(' + ')}. Reward: permanent Style Lab unlock${affordableCosmetic.repeatable ? ' that may be collected again' : ''}.`, action: 'cosmetic_unlock', destination: 'economy' }
+            : activeChain
+              ? { key: 'event_chain', title: `Continue ${String(activeChain.key).replaceAll('_', ' ')}`, detail: `Current step ${activeChain.step_index + 1}/${activeChain.steps.length}: ${String(activeChain.current_step).replaceAll('_', ' ')}. Reward: 18 XP, 16 Gold and 1 Style; finale pays 45 XP, 50 Gold and 4 Style.`, action: 'event_chain', destination: 'explore' }
+              : null;
+  const next = guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
   const activeRun = guidance?.active_run || null;
   const dailyReservation = activeRun
     ? await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
@@ -6125,7 +6157,8 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       sources: definition.sources,
     })),
     relics: relics.results || [],
-    regions: buildPetRegionDirectory(canonicalPet.level, regionMastery),
+    regions: liveSystems.regions,
+    live_systems: liveSystems,
     inventory,
     run: activeRun ? {
       ...activeRun,
@@ -6244,6 +6277,40 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'bounty_claim') return claimPetEconomyBounty(db, telegramId, body.bounty_key);
   if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey);
   if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key);
+  if (action === 'district_mission') {
+    const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()));
+    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
+    return processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction);
+  }
+  if (action === 'event_chain') {
+    const petRaw = await getPetProfile(db, telegramId);
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
+    return processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction);
+  }
+  if (action === 'seasonal_boss') {
+    const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    return processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args));
+  }
+  if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
+  if (action === 'cosmetic_unlock') return processPetCosmeticUnlock(db, telegramId, body.cosmetic_key, eventKey);
+  if (action === 'prestige') {
+    const petRaw = await getPetProfile(db, telegramId);
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()));
+    const [gear, materials] = await Promise.all([
+      db.prepare('SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id=?').bind(telegramId).all(),
+      db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all(),
+    ]);
+    const live = await buildPetLiveSystemsState(db, telegramId, serializePet(petRaw, identity), runtime, gear.results || [], materials.results || []);
+    return processPetPrestige(db, telegramId, live, eventKey);
+  }
   if (action === 'weekly_boss') return processPetWeeklyBoss(db, telegramId, body.move, eventKey);
   if (action === 'season_claim') return claimPetSeasonReward(db, telegramId, body.tier_id, eventKey);
   if (action === 'evolve') {
@@ -6313,7 +6380,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null) {
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'encounter', 'choice', 'result_copy', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'encounter', 'choice', 'result_copy', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (result.pet) output.pet = serializePet(result.pet, identity);
@@ -6885,7 +6952,8 @@ export default {
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
       const rows = await env.DB.prepare(`
         SELECT e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
-               p.pet_name, p.stage, u.username, u.first_name, u.last_name
+               p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+               u.username, u.first_name, u.last_name
         FROM telegram_pet_events e
         LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
         LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
@@ -6915,7 +6983,7 @@ export default {
       let rows;
       if (period === 'daily') {
         rows = await env.DB.prepare(`
-          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage, p.level, p.streak_days, p.updated_at,
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_events e
           LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
@@ -6927,7 +6995,7 @@ export default {
         `).bind(dayKey, limit).all().catch(() => ({ results: [] }));
       } else if (period === 'weekly') {
         rows = await env.DB.prepare(`
-          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage, p.level, p.streak_days, p.updated_at,
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_events e
           LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
@@ -6939,7 +7007,7 @@ export default {
         `).bind(weekKey, limit).all().catch(() => ({ results: [] }));
       } else if (period === 'all_time') {
         rows = await env.DB.prepare(`
-          SELECT p.telegram_id, p.pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+          SELECT p.telegram_id, p.pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=p.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage, p.level, p.streak_days, p.updated_at,
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_profiles p
           LEFT JOIN telegram_users u ON u.telegram_id = p.telegram_id
@@ -6948,7 +7016,7 @@ export default {
         `).bind(limit).all().catch(() => ({ results: [] }));
       } else {
         rows = await env.DB.prepare(`
-          SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, p.stage, p.level, p.streak_days, p.updated_at,
+          SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage, p.level, p.streak_days, p.updated_at,
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_season_state s
           LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
@@ -12168,10 +12236,16 @@ async function cmdPetGear(db, tok, chatId, telegramId) {
 async function applyPetRuntimeCommandAward(db, telegramId, eventKey, action, options = {}) {
   const stableKey = String(eventKey || '').trim();
   if (!stableKey) return null;
-  const equipment = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(telegramId).all().catch(() => ({ results: [] }));
+  const [equipment, factionRow] = await Promise.all([
+    db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null),
+  ]);
+  const factionBonus = action === 'train' || action === 'timed_train'
+    ? applyPetFactionBonus({}, factionRow?.faction, 'training').bonus : null;
   return applyPetRuntimeAward(db, telegramId, stableKey, action, {
     day_key: getPetDayKey(new Date()),
     equipment_rows: equipment.results || [],
+    track_multiplier: 1 + Number(factionBonus?.effect?.training_xp_pct || 0) / 100,
     ...options,
   }).catch((error) => {
     logApiFailure('runtime_award_failed', { telegramId, action, eventKey: stableKey, message: error?.message || String(error) });
@@ -12955,7 +13029,7 @@ async function cmdPetNotify(db, tok, chatId, telegramId, argStr = '') {
 async function cmdPetLeaderboard(db, tok, chatId, replyMarkup = null) {
   const season = getPetSeasonInfo(new Date());
   const rows = await db.prepare(`
-    SELECT s.telegram_id, s.season_xp, p.pet_name, p.stage, p.level,
+    SELECT s.telegram_id, s.season_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage, p.level,
            u.username, u.first_name, u.last_name
     FROM telegram_pet_season_state s
     LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
