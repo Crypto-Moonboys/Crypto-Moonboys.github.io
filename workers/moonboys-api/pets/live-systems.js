@@ -17,7 +17,7 @@ export function applyPetFactionBonus(rewards = {}, factionKey, system) {
   const bonus = PET_FACTION_BONUSES[String(factionKey || '').toLowerCase()];
   const output = { ...rewards };
   if (!bonus || bonus.system !== system) return { rewards: output, bonus: null };
-  const pct = integer(bonus.effect.job_reward_pct || bonus.effect.event_reward_pct || bonus.effect.extract_reward_pct || 0);
+  const pct = integer(bonus.effect.job_reward_pct || bonus.effect.event_reward_pct || bonus.effect.run_reward_pct || bonus.effect.arena_reward_pct || 0);
   if (pct) for (const key of ['moon_gold', 'moon_crystals', 'style_tokens', 'pet_xp']) {
     if (output[key]) output[key] = integer(Number(output[key]) * (100 + pct) / 100);
   }
