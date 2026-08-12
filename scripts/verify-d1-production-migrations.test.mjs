@@ -94,6 +94,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 048',
 );
 
+const withoutDialogueHistory = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '049_telegram_pet_dialogue_history.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutDialogueHistory),
+  /missing required migrations: 049_telegram_pet_dialogue_history\.sql/,
+  'deployment verification must reject an evidence request that omits migration 049',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -163,6 +173,14 @@ assert.throws(
   }], request),
   /missing migrations: 048_telegram_pet_player_expansion\.sql/,
   'deployment verification must fail when production D1 has not applied migration 048',
+);
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '049_telegram_pet_dialogue_history.sql'),
+  }], request),
+  /missing migrations: 049_telegram_pet_dialogue_history\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 049',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');

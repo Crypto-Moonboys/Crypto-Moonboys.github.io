@@ -1111,6 +1111,21 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_events_owner ON telegram_pe
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_analytics_type ON telegram_pet_identity_analytics(event_type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_analytics_evolution ON telegram_pet_identity_analytics(evolution_id, duration_seconds);
 
+-- Recent player-facing dialogue. Runtime writes retain only the latest 40 rows
+-- per Moonpet; the table exists solely for reaction de-duplication.
+CREATE TABLE IF NOT EXISTS telegram_pet_dialogue_history (
+  id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  context TEXT NOT NULL CHECK (length(context) BETWEEN 1 AND 40),
+  reaction_key TEXT NOT NULL CHECK (length(reaction_key) BETWEEN 1 AND 100),
+  reaction_text TEXT NOT NULL CHECK (length(reaction_text) BETWEEN 1 AND 500),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_dialogue_history_owner
+  ON telegram_pet_dialogue_history (telegram_id, created_at DESC);
+
 -- Crypto Moonboy Pets daily retention foundation.
 CREATE TABLE IF NOT EXISTS telegram_pet_daily_runs (
   telegram_id TEXT NOT NULL,

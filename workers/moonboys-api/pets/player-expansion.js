@@ -4,6 +4,8 @@ const deepFreeze = (value) => {
   return Object.freeze(value);
 };
 
+export { MOONPET_REACTION_LIBRARY, buildMoonpetReaction, buildMoonpetReactionChoice, getMoonpetMood, selectMoonpetReaction } from './moonpet-reactions.js';
+
 export const PET_ACHIEVEMENTS = deepFreeze({
   moonpet_beginning: { title: 'Moonpet Beginning', target: 1, source: 'adoption', description: 'Adopt a Moonpet.' },
   caring_hand: { title: 'Caring Hand', target: 25, source: 'care_actions', description: 'Complete 25 care actions.' },
@@ -67,28 +69,4 @@ export function calculatePetWeeklyBossDamage(state = {}) {
 
 export function getPetSeasonRewardTier(tierId) {
   return PET_SEASON_REWARD_TIERS.find((tier) => tier.tier_id === String(tierId || '').trim().toLowerCase()) || null;
-}
-
-export function buildMoonpetReaction(contextRaw, identity = {}) {
-  const context = String(contextRaw || '').trim().toLowerCase();
-  const personalityIds = new Set((identity.personalities || []).map((trait) => trait.trait_id));
-  const stage = Math.max(0, Math.floor(Number(identity.current_stage?.stage) || 0));
-  const memories = identity.memories || {};
-  if (context === 'boss') {
-    if (personalityIds.has('street_fighter')) return 'Your Moonpet leans forward. It remembers every fight and wants this one.';
-    if (Number(memories.total_bosses_defeated || 0) > 0) return `Your Moonpet remembers its first boss win and refuses to flinch.`;
-    return 'Your Moonpet studies the giant silhouette, nervous but ready.';
-  }
-  if (context === 'job') {
-    if (personalityIds.has('loyal')) return 'Your Moonpet checks that you are coming too before starting the shift.';
-    if (String(memories.favourite_activity || '').toLowerCase() === 'care') return 'Your Moonpet works carefully, copying the patience you taught it.';
-    return stage >= 2 ? 'Your Moonpet scans the brief twice and gets straight to work.' : 'Your Moonpet looks proud to bring something home.';
-  }
-  if (context === 'event') {
-    if (personalityIds.has('curious')) return 'Curiosity wins immediately; your Moonpet is already inspecting the strange detail.';
-    if (personalityIds.has('explorer')) return 'Your Moonpet circles the scene and points out a route you nearly missed.';
-    return stage >= 3 ? 'Your Moonpet reads the danger before you say a word.' : 'Your Moonpet watches your choice and stores it away as another memory.';
-  }
-  if (context === 'evolution') return stage >= 4 ? 'The guardian aura settles in. Your Moonpet remembers the whole road here.' : 'Your Moonpet feels different now—and knows you noticed.';
-  return personalityIds.has('loyal') ? 'Your Moonpet stays close. The bond is becoming part of its character.' : 'Your Moonpet watches, learns and remembers.';
 }

@@ -26,6 +26,7 @@ import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
+  selectMoonpetReaction,
 } from './pets/player-expansion.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
@@ -3512,8 +3513,8 @@ async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = 
   await db.prepare(`UPDATE telegram_pet_arena_queue SET status='expired', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`).bind(String(chatId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run().catch(() => {});
   await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?`).bind(String(chatId), new Date().toISOString()).run().catch(() => {});
   const arg = String(argStr || '').trim();
-  if (arg.startsWith('ff:')) { const battleId = arg.slice(3); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId)) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const done = await forfeitPetArenaBattle(db, battle, telegramId); await sendTelegramMessage(tok, chatId, formatPetArenaResult(done.battle || battle)); return; }
-  if (arg.startsWith('mv:')) { const [, battleId, roundText, move] = arg.match(/^mv:(a-[a-f0-9]{10}):(\d{1,2}):(ah|ab|bh|bb|ch|sp)$/) || []; const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || Number(battle.current_round || 1) < 1 || String(battle.status) !== 'active') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } const applied = await applyPetArenaMove(db, battle, telegramId, Number(roundText), move); if (applied.reason === 'stale_arena_round') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } if (applied.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Move locked. Waiting for opponent.'); return; } if (applied.reason === 'move_already_locked') { await sendTelegramMessage(tok, chatId, 'Move already locked for this round. Waiting for the next round.'); return; } await sendTelegramMessage(tok, chatId, formatPetArenaRoundPrompt(applied.battle || battle), { reply_markup: (applied.battle?.status === 'active') ? buildPetArenaMoveReplyMarkup(battleId, applied.battle?.current_round) : undefined }); return; }
+  if (arg.startsWith('ff:')) { const battleId = arg.slice(3); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId)) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const done = await forfeitPetArenaBattle(db, battle, telegramId); const copy = await appendMoonpetReaction(db, telegramId, 'arena', formatPetArenaResult(done.battle || battle), null, { activity_label: 'the arena result' }); await sendTelegramMessage(tok, chatId, copy); return; }
+  if (arg.startsWith('mv:')) { const [, battleId, roundText, move] = arg.match(/^mv:(a-[a-f0-9]{10}):(\d{1,2}):(ah|ab|bh|bb|ch|sp)$/) || []; const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || Number(battle.current_round || 1) < 1 || String(battle.status) !== 'active') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } const applied = await applyPetArenaMove(db, battle, telegramId, Number(roundText), move); if (applied.reason === 'stale_arena_round') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } if (applied.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Move locked. Waiting for opponent.'); return; } if (applied.reason === 'move_already_locked') { await sendTelegramMessage(tok, chatId, 'Move already locked for this round. Waiting for the next round.'); return; } const latestBattle = applied.battle || battle; const prompt = formatPetArenaRoundPrompt(latestBattle); const copy = latestBattle.status === 'completed' ? await appendMoonpetReaction(db, telegramId, 'arena', prompt, null, { activity_label: 'the arena result' }) : prompt; await sendTelegramMessage(tok, chatId, copy, { reply_markup: (latestBattle.status === 'active') ? buildPetArenaMoveReplyMarkup(battleId, latestBattle.current_round) : undefined }); return; }
   if (arg.startsWith('stop:')) { const battleId = arg.slice(5); await db.prepare(`UPDATE telegram_pet_arena_battles SET status='cancelled', completed_at=CURRENT_TIMESTAMP WHERE battle_id=? AND chat_id=? AND status IN ('readying','active') AND (player1_telegram_id=? OR player2_telegram_id=?)`).bind(battleId, String(chatId), telegramId, telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena battle cancelled.'); return; }
   if (arg === 'cancel') { await db.prepare(`UPDATE telegram_pet_arena_queue SET status='cancelled', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id=? AND status='waiting'`).bind(String(chatId), telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena queue cancelled.'); return; }
   const eligible = await ensurePetArenaEligible(db, telegramId); if (!eligible.ok) { await sendTelegramMessage(tok, chatId, eligible.reason === 'level_locked' ? 'Pet Arena unlocks at level 10. Keep growing your Moonpet.' : 'Adopt or heal your Moonpet before entering Pet Arena.'); return; }
@@ -10821,7 +10822,7 @@ function formatPetStat(label, value) {
   return `${label}\n${'█'.repeat(filled)}${'░'.repeat(10 - filled)} ${safeValue}%`;
 }
 
-function formatPetStatus(pet, identity = null, activity = null) {
+function formatPetStatus(pet, identity = null, activity = null, reaction = undefined) {
   const p = serializePet(pet);
   if (!p) return 'No Crypto Moonboy Pet found. Use /adopt to start.';
   const stage = identity?.current_stage?.name || p.stage;
@@ -10829,7 +10830,7 @@ function formatPetStatus(pet, identity = null, activity = null) {
   const favourite = String(identity?.memories?.favourite_activity || '').trim();
   const needsCare = p.health <= 45 || p.hunger >= 75 || p.cleanliness <= 35 || p.happiness <= 35 || p.energy <= 25;
   const identityLines = [];
-  identityLines.push(`<i>“${escapeHtml(buildMoonpetReaction('status', identity || {}))}”</i>`);
+  if (reaction !== null) identityLines.push(`<i>“${escapeHtml(reaction === undefined ? buildMoonpetReaction('status', identity || {}, { pet: p }) : reaction)}”</i>`);
   if (traits.length) identityLines.push(`<b>Personality:</b> ${traits.map((trait) => escapeHtml(trait.name)).join(' · ')}`);
   if (favourite) identityLines.push(`<b>Favourite:</b> ${escapeHtml(favourite)}`);
   if (identity?.memories?.first_boss_id) identityLines.push(`<b>Remembers:</b> first defeating ${escapeHtml(String(identity.memories.first_boss_id).replaceAll('_', ' '))}`);
@@ -10852,6 +10853,13 @@ function formatPetStatus(pet, identity = null, activity = null) {
     needsCare ? '\n⚠️ <b>Needs attention:</b>\nYour Moonpet requires care.' : '\n✅ Your Moonpet is feeling good.',
     activity ? `\n🌙 <b>Activity:</b> ${formatPetActivityLine(activity)}` : '',
   ].join('\n');
+}
+
+async function appendMoonpetReaction(db, telegramId, context, text, pet = null, detail = {}) {
+  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const reaction = await selectMoonpetReaction(db, telegramId, context, identity || {}, { ...detail, pet })
+    .catch(() => buildMoonpetReaction(context, identity || {}, { ...detail, pet }));
+  return `${text}\n\n<i>${escapeHtml(reaction)}</i>`;
 }
 
 function formatPetDisplayNumber(value) {
@@ -11165,7 +11173,8 @@ async function cmdPetStatus(db, tok, chatId, telegramId) {
   const pet = await getPetProfile(db, telegramId).catch(() => null);
   const activity = await getActivePetActivitySession(db, telegramId).catch(() => null);
   const identity = pet ? await getMoonpetIdentitySummary(db, telegramId).catch(() => null) : null;
-  await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, identity, activity), { reply_markup: petReplyMarkup() }, 'how_to_play');
+  const reaction = pet ? await selectMoonpetReaction(db, telegramId, 'status', identity || {}, { pet }).catch(() => buildMoonpetReaction('status', identity || {}, { pet })) : null;
+  await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, identity, activity, reaction), { reply_markup: petReplyMarkup() }, 'how_to_play');
 }
 
 async function cmdPetDetails(db, tok, chatId, telegramId) {
@@ -11207,7 +11216,9 @@ async function cmdPetAchievements(db, tok, chatId, telegramId) {
   }
   const unlocked = achievements.filter((entry) => entry.unlocked_at);
   const lines = achievements.map((entry) => `${entry.unlocked_at ? '✅' : '▫️'} <b>${escapeHtml(entry.title)}</b> — ${Math.min(Number(entry.progress || 0), Number(entry.target))}/${entry.target}\n<i>${escapeHtml(entry.description)}</i>`);
-  await sendTelegramMessage(tok, chatId, `<b>🏅 Moonpet Achievements</b>\n${unlocked.length}/${achievements.length} unlocked\n\n${lines.join('\n')}`, { reply_markup: buildPetProgressMenuReplyMarkup() });
+  const text = `<b>🏅 Moonpet Achievements</b>\n${unlocked.length}/${achievements.length} unlocked\n\n${lines.join('\n')}`;
+  const copy = await appendMoonpetReaction(db, telegramId, 'achievement', text, null, { activity_label: 'reviewing achievements' });
+  await sendTelegramMessage(tok, chatId, copy, { reply_markup: buildPetProgressMenuReplyMarkup() });
 }
 
 async function cmdPetWeeklyBoss(db, tok, chatId, telegramId, action, eventKey = '') {
@@ -11224,8 +11235,9 @@ async function cmdPetWeeklyBoss(db, tok, chatId, telegramId, action, eventKey = 
   const duplicateLine = result.duplicate ? '\nToday’s attempt is already spent. Return after the UTC reset.' : '';
   const rewardLine = progress.defeated_at ? `\nWeekly reward: ${Object.entries(boss.reward).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(', ')}.` : '';
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const reaction = await selectMoonpetReaction(db, telegramId, 'boss', identity || {}, { pet: result.pet, activity_label: `${boss.title} boss fight` }).catch(() => buildMoonpetReaction('boss', identity || {}));
   await sendTelegramMessage(tok, chatId,
-    `<b>👑 Weekly Boss: ${escapeHtml(boss.title)}</b>\nWeek ${escapeHtml(result.week_key || getPetWeekKey(new Date()))}\nWeakness: ${escapeHtml(boss.weakness)}\nStatus: <b>${escapeHtml(status)}</b>\nAttempts: ${Number(progress.attempts || 0)}/7${actionLine}${duplicateLine}${rewardLine}\n\n<i>${escapeHtml(buildMoonpetReaction('boss', identity || {}))}</i>`,
+    `<b>👑 Weekly Boss: ${escapeHtml(boss.title)}</b>\nWeek ${escapeHtml(result.week_key || getPetWeekKey(new Date()))}\nWeakness: ${escapeHtml(boss.weakness)}\nStatus: <b>${escapeHtml(status)}</b>\nAttempts: ${Number(progress.attempts || 0)}/7${actionLine}${duplicateLine}${rewardLine}\n\n<i>${escapeHtml(reaction)}</i>`,
     { reply_markup: { inline_keyboard: progress.defeated_at ? [[{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }]] : [
       [{ text: '⚔️ Strike', callback_data: 'pet:boss:strike' }, { text: '🧠 Outsmart', callback_data: 'pet:boss:outsmart' }, { text: '🛡 Endure', callback_data: 'pet:boss:endure' }],
       [{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }],
@@ -11243,8 +11255,10 @@ async function cmdPetSeason(db, tok, chatId, telegramId, tierId = '', eventKey =
   const state = claim?.state || await getPetSeasonRewardState(db, telegramId);
   const lines = state.tiers.map((tier) => `${tier.claimed_at ? '✅' : tier.unlocked ? '🎁' : '🔒'} <b>${escapeHtml(tier.title)}</b> — ${tier.required_xp} season XP${tier.claimed_at ? ' · claimed' : ''}`);
   const buttons = state.tiers.filter((tier) => tier.unlocked && !tier.claimed_at).map((tier) => [{ text: `Claim ${tier.title}`, callback_data: `pet:season:claim:${tier.tier_id}` }]);
+  const text = `${claim ? `<b>🎟 ${escapeHtml(claim.tier.title)} claimed.</b>\n\n` : ''}<b>Season Rewards</b>\n${escapeHtml(state.season.key)} · ${state.season_xp} XP\nEvolution bonus: +${state.evolution_stage} Style per claimed tier\n\n${lines.join('\n')}`;
+  const copy = claim ? await appendMoonpetReaction(db, telegramId, 'season', text, null, { activity_label: `claiming ${claim.tier.title}` }) : text;
   await sendTelegramMessage(tok, chatId,
-    `${claim ? `<b>🎟 ${escapeHtml(claim.tier.title)} claimed.</b>\n\n` : ''}<b>Season Rewards</b>\n${escapeHtml(state.season.key)} · ${state.season_xp} XP\nEvolution bonus: +${state.evolution_stage} Style per claimed tier\n\n${lines.join('\n')}`,
+    copy,
     { reply_markup: { inline_keyboard: [...buttons, [{ text: '⬅️ Progress', callback_data: 'pet:menu:progress' }]] } },
   );
 }
@@ -11276,7 +11290,8 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
   }
   const updated = await getMoonpetIdentitySummary(db, telegramId);
   await syncPetAchievements(db, telegramId).catch(() => []);
-  await sendTelegramMessage(tok, chatId, `<b>🧬 Evolution complete: ${escapeHtml(next.name)}</b>\n${escapeHtml(getPetEvolutionPerk(next.stage).perk)}\n\n<i>${escapeHtml(buildMoonpetReaction('evolution', updated))}</i>`, { reply_markup: buildPetProgressMenuReplyMarkup() });
+  const reaction = await selectMoonpetReaction(db, telegramId, 'evolution', updated, { activity_label: `evolving into ${next.name}` }).catch(() => buildMoonpetReaction('evolution', updated));
+  await sendTelegramMessage(tok, chatId, `<b>🧬 Evolution complete: ${escapeHtml(next.name)}</b>\n${escapeHtml(getPetEvolutionPerk(next.stage).perk)}\n\n<i>${escapeHtml(reaction)}</i>`, { reply_markup: buildPetProgressMenuReplyMarkup() });
 }
 
 async function cmdPetStreak(db, tok, chatId, telegramId) {
@@ -11500,7 +11515,8 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
         return;
       }
       const recovered = await finishPetKaijuMatch(db, match);
-      await sendTelegramPetReply(tok, chatId, formatPetKaijuResult(recovered), { reply_markup: petReplyMarkup() }, 'play');
+      const copy = await appendMoonpetReaction(db, telegramId, 'kaiju', formatPetKaijuResult(recovered), pet, { activity_label: 'the Kaiju battle result' });
+      await sendTelegramPetReply(tok, chatId, copy, { reply_markup: petReplyMarkup() }, 'play');
       return;
     }
     if (!cardKey) {
@@ -11546,7 +11562,8 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
       return;
     }
     const completed = await finishPetKaijuMatch(db, updated);
-    await sendTelegramPetReply(tok, chatId, formatPetKaijuResult(completed), { reply_markup: petReplyMarkup() }, 'play');
+    const copy = await appendMoonpetReaction(db, telegramId, 'kaiju', formatPetKaijuResult(completed), pet, { activity_label: 'the Kaiju battle result' });
+    await sendTelegramPetReply(tok, chatId, copy, { reply_markup: petReplyMarkup() }, 'play');
     return;
   }
 
@@ -11622,10 +11639,11 @@ async function cmdPetUse(db, tok, chatId, telegramId, argStr, eventKey = null) {
   }
   const inventory = await getPetInventory(db, telegramId).catch(() => []);
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const reaction = await selectMoonpetReaction(db, telegramId, 'item', identity || {}, { pet: result.pet, activity_label: `using ${result.item?.title || itemKey || 'an item'}` }).catch(() => buildMoonpetReaction('item', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(
     tok,
     chatId,
-    `Item used: <b>${escapeHtml(result.item?.title || itemKey || 'item')}</b>.\n\n${formatPetStatus(result.pet, identity)}`,
+    `Item used: <b>${escapeHtml(result.item?.title || itemKey || 'item')}</b>.\n<i>${escapeHtml(reaction)}</i>\n\n${formatPetStatus(result.pet, identity, null, null)}`,
     { reply_markup: buildPetBagReplyMarkup(inventory) },
     'bag',
   );
@@ -11662,7 +11680,8 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) 
   }
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:job:${eventKey || jobKey}`, 'job');
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.\n<i>${escapeHtml(buildMoonpetReaction('job', identity || {}))}</i>\n\n${formatPetStatus(result.pet, identity)}`, { reply_markup: petReplyMarkup() }, 'work');
+  const reaction = await selectMoonpetReaction(db, telegramId, 'job', identity || {}, { pet: result.pet, activity_label: result.job?.title || jobKey }).catch(() => buildMoonpetReaction('job', identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.\n<i>${escapeHtml(reaction)}</i>\n\n${formatPetStatus(result.pet, identity, null, null)}`, { reply_markup: petReplyMarkup() }, 'work');
 }
 
 async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
@@ -11677,7 +11696,8 @@ async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
   }
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:daily:${eventKey || dayKey}`, 'daily_chest');
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.\n\n${formatPetStatus(result.pet, identity)}`, { reply_markup: petReplyMarkup() }, 'daily');
+  const reaction = await selectMoonpetReaction(db, telegramId, 'daily', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('daily', identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.\n<i>${escapeHtml(reaction)}</i>\n\n${formatPetStatus(result.pet, identity, null, null)}`, { reply_markup: petReplyMarkup() }, 'daily');
 }
 
 async function cmdPetEvent(db, tok, chatId, telegramId, argStr, eventKey = null) {
@@ -11709,9 +11729,10 @@ Choose one of the actions below.`,
   }
   const summary = formatPetRandomEventSummary(result.encounter, result.choice, { copy: result.result_copy }, result.applied);
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `${summary}\n<i>${escapeHtml(buildMoonpetReaction('event', identity || {}))}</i>
+  const reaction = await selectMoonpetReaction(db, telegramId, 'event', identity || {}, { pet: result.pet, activity_label: result.encounter?.title || 'this encounter' }).catch(() => buildMoonpetReaction('event', identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `${summary}\n<i>${escapeHtml(reaction)}</i>
 
-${formatPetStatus(result.pet, identity)}`, { reply_markup: petReplyMarkup() }, "event");
+${formatPetStatus(result.pet, identity, null, null)}`, { reply_markup: petReplyMarkup() }, "event");
 }
 async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action, stableEventKey = null) {
   await upsertTelegramUser(db, fromUser).catch(() => {});
@@ -11730,7 +11751,8 @@ async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action, stabl
     ? 'Crypto Moonboy Pet adopted.'
     : `Action accepted: /${escapeHtml(action)} (+${result.pet_xp_awarded || 0} pet XP, +${result.xp_awarded || 0} Community XP).`;
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `${prefix}\n\n${formatPetStatus(result.pet, identity)}`, { reply_markup: petReplyMarkup() }, action === 'adopt' ? 'level_up' : action);
+  const reaction = await selectMoonpetReaction(db, telegramId, action, identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction(action, identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `${prefix}\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, action === 'adopt' ? 'level_up' : action);
 }
 
 
@@ -11745,7 +11767,9 @@ async function cmdPetActivity(db, tok, chatId, telegramId) {
 async function cmdPetStart(db, tok, chatId, telegramId, argStr) {
   const result = await startPetActivitySession(db, telegramId, argStr, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'activity_start_failed' }));
   if (!result.accepted) { await sendTelegramMessage(tok, chatId, result.reason === 'already_busy' ? `Already busy: ${formatPetActivityLine(result.session)}.` : formatPetBlockedCopy('activity', result.reason, result)); return; }
-  await sendTelegramMessage(tok, chatId, `Started ${escapeHtml(result.session.activity_type)}. Tiny rewards unlock after 5m; rewards scale until the cap.`, { reply_markup: { inline_keyboard: [[{ text: 'Claim', callback_data: 'pet:claim' }, { text: 'Cancel', callback_data: 'pet:cancel' }], [{ text: '⬅️ Back', callback_data: 'pet:back' }]] } });
+  const [identity, pet] = await Promise.all([getMoonpetIdentitySummary(db, telegramId).catch(() => null), getPetProfile(db, telegramId).catch(() => null)]);
+  const reaction = await selectMoonpetReaction(db, telegramId, 'activity_start', identity || {}, { pet, activity_label: result.session.activity_type }).catch(() => buildMoonpetReaction('activity_start', identity || {}, { pet }));
+  await sendTelegramMessage(tok, chatId, `Started ${escapeHtml(result.session.activity_type)}. Tiny rewards unlock after 5m; rewards scale until the cap.\n\n<i>${escapeHtml(reaction)}</i>`, { reply_markup: { inline_keyboard: [[{ text: 'Claim', callback_data: 'pet:claim' }, { text: 'Cancel', callback_data: 'pet:cancel' }], [{ text: '⬅️ Back', callback_data: 'pet:back' }]] } });
 }
 async function cmdPetClaim(db, tok, chatId, telegramId) {
   const result = await claimPetActivitySession(db, telegramId, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'activity_claim_failed' }));
@@ -11753,11 +11777,18 @@ async function cmdPetClaim(db, tok, chatId, telegramId) {
   const runtimeAction = result.session.activity_type === 'train' ? 'timed_train' : result.session.activity_type === 'work' ? 'timed_work' : result.session.activity_type;
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:activity:${result.session.id}`, runtimeAction);
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `Claimed ${escapeHtml(result.session.activity_type)} rewards: +${result.pet_xp_awarded} pet XP, +${result.xp_awarded} Community XP, +${result.computed?.rewards?.moon_gold || 0} gold, +${result.computed?.rewards?.moon_crystals || 0} crystals.\n\n${formatPetStatus(result.pet, identity)}`, { reply_markup: petReplyMarkup() }, result.session.activity_type);
+  const reaction = await selectMoonpetReaction(db, telegramId, 'activity_claim', identity || {}, { pet: result.pet, activity_label: result.session.activity_type }).catch(() => buildMoonpetReaction('activity_claim', identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `Claimed ${escapeHtml(result.session.activity_type)} rewards: +${result.pet_xp_awarded} pet XP, +${result.xp_awarded} Community XP, +${result.computed?.rewards?.moon_gold || 0} gold, +${result.computed?.rewards?.moon_crystals || 0} crystals.\n<i>${escapeHtml(reaction)}</i>\n\n${formatPetStatus(result.pet, identity, null, null)}`, { reply_markup: petReplyMarkup() }, result.session.activity_type);
 }
 async function cmdPetCancel(db, tok, chatId, telegramId) {
   const result = await cancelPetActivitySession(db, telegramId).catch((error) => ({ accepted: false, reason: error?.message || 'activity_cancel_failed' }));
-  await sendTelegramMessage(tok, chatId, result.accepted ? `Cancelled ${escapeHtml(result.session.activity_type)}. No rewards awarded.` : formatPetBlockedCopy('activity cancel', result.reason, result), { reply_markup: petReplyMarkup() });
+  let copy = formatPetBlockedCopy('activity cancel', result.reason, result);
+  if (result.accepted) {
+    const [identity, pet] = await Promise.all([getMoonpetIdentitySummary(db, telegramId).catch(() => null), getPetProfile(db, telegramId).catch(() => null)]);
+    const reaction = await selectMoonpetReaction(db, telegramId, 'activity_cancel', identity || {}, { pet, activity_label: result.session.activity_type }).catch(() => buildMoonpetReaction('activity_cancel', identity || {}, { pet }));
+    copy = `Cancelled ${escapeHtml(result.session.activity_type)}. No rewards awarded.\n\n<i>${escapeHtml(reaction)}</i>`;
+  }
+  await sendTelegramMessage(tok, chatId, copy, { reply_markup: petReplyMarkup() });
 }
 
 async function cmdPetTrade(db, tok, chatId, telegramId, argStr, eventKey = null) {
@@ -11777,7 +11808,9 @@ async function cmdPetTrade(db, tok, chatId, telegramId, argStr, eventKey = null)
     ? `🎰 Trade won: +${result.gold_delta} gold, +${result.crystal_delta} crystals, +${result.pet_xp_awarded || 0} pet XP.`
     : `🎰 Trade lost: ${result.gold_delta} gold, +${result.pet_xp_awarded || 0} pet XP.`;
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `${escapeHtml(outcome)}\n\n${formatPetStatus(result.pet, identity)}`, { reply_markup: petReplyMarkup() }, result.won ? 'trade_win' : 'trade_loss');
+  const reactionContext = result.won ? 'trade_win' : 'trade_loss';
+  const reaction = await selectMoonpetReaction(db, telegramId, reactionContext, identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction(reactionContext, identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `${escapeHtml(outcome)}\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, reactionContext);
 }
 
 async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
@@ -11788,7 +11821,8 @@ async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
   }
   const result = await processPetAction(db, telegramId, 'rename', { pet_name: petName, source: 'telegram_command' });
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `🌕 Pet renamed.\n\n${formatPetStatus(result.pet, identity)}`, { reply_markup: petReplyMarkup() }, 'level_up');
+  const reaction = await selectMoonpetReaction(db, telegramId, 'rename', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('rename', identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `🌕 Pet renamed.\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, 'level_up');
 }
 
 async function cmdPetMissions(db, tok, chatId, telegramId) {
@@ -11850,13 +11884,15 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr, eventKey = null) {
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('shop purchase', result.reason, result));
     return;
   }
+  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const reaction = await selectMoonpetReaction(db, telegramId, 'purchase', identity || {}, { pet: result.pet, activity_label: `equipping ${result.item.title}` }).catch(() => buildMoonpetReaction('purchase', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(
     tok,
     chatId,
     `🛒 Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n` +
       `<b>Next upgrade run</b>\n` +
       `Buy another upgrade, spend resources deeper, or grind more gold/crystals/style before the next tier.\n\n` +
-      `${formatPetStatus(result.pet, await getMoonpetIdentitySummary(db, telegramId).catch(() => null))}`,
+      `${formatPetStatus(result.pet, identity, null, reaction)}`,
     { reply_markup: buildPetPurchaseNextReplyMarkup(result.pet) },
     'purchase_complete',
   );
@@ -11876,10 +11912,11 @@ async function cmdPetRun(db, tok, chatId, telegramId, argStr = '', eventKey = nu
       await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('run', result.reason, result));
       return;
     }
+    const copy = await appendMoonpetReaction(db, telegramId, 'adventure', formatPetRunPrompt(result.run, result.pet), result.pet, { activity_label: 'starting the Moon Run' });
     await sendTelegramPetReply(
       tok,
       chatId,
-      formatPetRunPrompt(result.run, result.pet),
+      copy,
       { reply_markup: buildPetRunChoiceReplyMarkup(result.run) },
       'petrun',
     );
@@ -11907,7 +11944,8 @@ async function cmdPetRun(db, tok, chatId, telegramId, argStr = '', eventKey = nu
     ? buildPetRunAfterStepReplyMarkup(result.run)
     : petReplyMarkup();
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
-  await sendTelegramPetReply(tok, chatId, `${summary}\n\n${formatPetStatus(result.pet, identity)}`, { reply_markup: markup }, result.reason === 'run_failed' ? 'adventure_fail' : 'adventure_win');
+  const reaction = await selectMoonpetReaction(db, telegramId, 'run', identity || {}, { pet: result.pet, activity_label: result.reason === 'run_failed' ? 'the failed Moon Run' : 'the Moon Run' }).catch(() => buildMoonpetReaction('run', identity || {}, { pet: result.pet }));
+  await sendTelegramPetReply(tok, chatId, `${summary}\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: markup }, result.reason === 'run_failed' ? 'adventure_fail' : 'adventure_win');
 }
 
 async function cmdPetExtract(db, tok, chatId, telegramId, argStr = '', eventKey = null) {
@@ -11925,10 +11963,11 @@ async function cmdPetExtract(db, tok, chatId, telegramId, argStr = '', eventKey 
   }
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:run-extract:${eventKey || result.run?.run_id || argStr || 'active'}`, 'run_extract');
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const reaction = await selectMoonpetReaction(db, telegramId, 'extract', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('extract', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(
     tok,
     chatId,
-    `${formatPetRunBankSummary(result)}\n\n${formatPetStatus(result.pet, identity)}`,
+    `${formatPetRunBankSummary(result)}\n\n${formatPetStatus(result.pet, identity, null, reaction)}`,
     { reply_markup: petReplyMarkup() },
     'adventure_win',
   );
