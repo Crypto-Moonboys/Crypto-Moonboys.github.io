@@ -3,7 +3,11 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from '../workers/moonboys-api/pets/content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_EQUIPMENT_UPGRADE_COSTS, PET_PRESTIGE_REQUIREMENTS } from '../workers/moonboys-api/pets/economy-phase-3.js';
-import { applyPetFactionBonus, getActiveSeasonalBoss } from '../workers/moonboys-api/pets/live-systems.js';
+import {
+  applyPetFactionBonus, getActiveSeasonalBoss, processPetCosmeticUnlock, processPetDistrictMission,
+  processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
+} from '../workers/moonboys-api/pets/live-systems.js';
+import { awardPetReward, PET_REWARD_SOURCES } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { buildPetRegionDirectory, PET_REGION_LORE } from '../workers/moonboys-api/pets/game-content.js';
 
 const root = new URL('../', import.meta.url);
@@ -19,6 +23,7 @@ assert.ok(unlocked.every((region) => region.playable), 'district gates must use 
 assert.equal(Object.keys(PET_EVENT_CHAINS).length, 4);
 assert.equal(Object.keys(PET_SEASONAL_BOSSES).length, 4);
 assert.ok(getActiveSeasonalBoss(new Date('2026-08-12T00:00:00Z')).hp >= 900);
+assert.notEqual(getActiveSeasonalBoss(new Date('2026-08-12T00:00:00Z')).season_instance, getActiveSeasonalBoss(new Date('2026-09-09T00:00:00Z')).season_instance, 'boss persistence must reset on later rotations');
 assert.equal(Object.keys(PET_FACTION_BONUSES).length, 9);
 assert.ok(applyPetFactionBonus({ moon_gold: 100 }, 'blockstars', 'jobs').rewards.moon_gold > 100);
 for (const [faction, definition] of Object.entries(PET_FACTION_BONUSES)) {
@@ -36,6 +41,9 @@ for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_
   assert.match(worker, new RegExp(`action === '${action}'`), `${action} needs a server action`);
   assert.ok(client.includes(`'${action}'`), `${action} needs a Mini App control`);
 }
+for (const source of ['pet_district', 'pet_event_chain', 'pet_seasonal_boss']) assert.ok(PET_REWARD_SOURCES.includes(source), `${source} must be authorized`);
+assert.match(worker, /processPetEquipmentUpgrade\(db, telegramId, body\.item_key, eventKey\)/, 'gear upgrades must retain request idempotency');
+assert.match(worker, /destination: 'economy'/, 'recommendations must provide explicit destinations');
 for (const table of ['telegram_pet_system_events', 'telegram_pet_event_chain_progress', 'telegram_pet_seasonal_boss_progress', 'telegram_pet_cosmetic_unlocks']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`));
   assert.ok(migration.includes(`CREATE TABLE IF NOT EXISTS ${table}`));
@@ -48,5 +56,129 @@ db.prepare("INSERT INTO telegram_pet_profiles (telegram_id) VALUES ('live-player
 db.exec(migration);
 assert.equal(db.prepare("SELECT COUNT(*) AS count FROM sqlite_master WHERE type='table' AND name LIKE 'telegram_pet_%'").get().count > 0, true);
 assert.equal(db.prepare('PRAGMA foreign_key_check').all().length, 0);
+
+class D1Statement {
+  constructor(owner, sql) { this.owner = owner; this.sql = sql; this.args = []; }
+  bind(...args) { this.args = args; return this; }
+  run() {
+    const result = this.owner.raw.prepare(this.sql).run(...this.args);
+    if (/INSERT OR IGNORE INTO telegram_pet_system_events/i.test(this.sql) && Number(result.changes || 0) > 0) this.owner.afterReservation?.();
+    return Promise.resolve({ meta: { changes: Number(result.changes || 0) } });
+  }
+  first() { return Promise.resolve(this.owner.raw.prepare(this.sql).get(...this.args) || null); }
+  all() { return Promise.resolve({ results: this.owner.raw.prepare(this.sql).all(...this.args) }); }
+}
+class D1Database {
+  constructor(raw) { this.raw = raw; this.afterReservation = null; }
+  prepare(sql) { return new D1Statement(this, sql); }
+  async batch(statements) {
+    this.raw.exec('BEGIN');
+    try {
+      const output = statements.map((entry) => {
+        if (/\bRETURNING\b/i.test(entry.sql)) {
+          const rows = this.raw.prepare(entry.sql).all(...entry.args);
+          return { results: rows, meta: { changes: rows.length } };
+        }
+        const result = this.raw.prepare(entry.sql).run(...entry.args);
+        return { meta: { changes: Number(result.changes || 0) } };
+      });
+      this.raw.exec('COMMIT');
+      return output;
+    } catch (error) {
+      this.raw.exec('ROLLBACK');
+      throw error;
+    }
+  }
+}
+
+const runtimeDb = new DatabaseSync(':memory:');
+runtimeDb.exec(schema);
+const d1 = new D1Database(runtimeDb);
+function seedPlayer(id, overrides = {}) {
+  runtimeDb.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(id);
+  runtimeDb.prepare(`INSERT INTO telegram_pet_profiles
+    (telegram_id, pet_xp, level, energy, moon_gold, moon_crystals, style_tokens) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, overrides.pet_xp ?? 9900, overrides.level ?? 100, overrides.energy ?? 100, overrides.moon_gold ?? 10000, overrides.moon_crystals ?? 100, overrides.style_tokens ?? 500);
+  runtimeDb.prepare('INSERT INTO telegram_pet_progression_state (telegram_id, completed_regions_json) VALUES (?, ?)').run(id, JSON.stringify(['moon_alley', 'neon_rooftops', 'rugpull_mines', 'blockchain_sewers']));
+  runtimeDb.prepare("INSERT INTO blocktopia_progression (telegram_id, faction) VALUES (?, 'blockstars')").run(id);
+}
+seedPlayer('live-1');
+for (const material of ['scrap_metal', 'crystal_shard', 'arena_token', 'spray_core']) runtimeDb.prepare('INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES (?, ?, 100)').run('live-1', material);
+for (let index = 0; index < 3; index += 1) runtimeDb.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot, mastery_tier) VALUES (?, ?, ?, 5)').run('live-1', `mastered_${index}`, `slot_${index}`);
+runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'hoverboard', 'toy')").run();
+
+const reward = (request) => awardPetReward(d1, request);
+const runtimeState = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get();
+const district = await processPetDistrictMission(d1, 'live-1', 'moon_alley', { level: 100, energy: 100 }, runtimeState, reward, 'nomad-bears');
+assert.equal(district.accepted, true);
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().energy, 90);
+const districtReplay = await processPetDistrictMission(d1, 'live-1', 'moon_alley', { level: 100, energy: 90 }, runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get(), reward, 'nomad-bears');
+assert.equal(districtReplay.duplicate, true);
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().energy, 90);
+
+const chain = await processPetEventChain(d1, 'live-1', 'lost_delivery_drone', reward, 'graffpunks');
+assert.equal(chain.accepted, true);
+assert.equal((await processPetEventChain(d1, 'live-1', 'lost_delivery_drone', reward, 'graffpunks')).duplicate, true);
+
+seedPlayer('chain-recovery');
+let chainFailure = true;
+const recoverableReward = async (request) => { if (chainFailure) { chainFailure = false; throw new Error('simulated interruption'); } return awardPetReward(d1, request); };
+await assert.rejects(() => processPetEventChain(d1, 'chain-recovery', 'signal_hijack', recoverableReward, 'graffpunks'), /simulated interruption/);
+assert.equal((await processPetEventChain(d1, 'chain-recovery', 'signal_hijack', recoverableReward, 'graffpunks')).accepted, true, 'a settling chain must recover after reward interruption');
+
+const goldBeforeUpgrade = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().moon_gold;
+assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1')).accepted, true);
+assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-1' AND item_key='hoverboard'").get().item_level, 2);
+assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1')).duplicate, true);
+assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().moon_gold, goldBeforeUpgrade - 80);
+
+runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'race_item', 'toy')").run();
+d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_material_balances SET quantity=0 WHERE telegram_id='live-1' AND material_key='scrap_metal'").run(); };
+const racedUpgrade = await processPetEquipmentUpgrade(d1, 'live-1', 'race_item', 'request-upgrade-race');
+assert.equal(racedUpgrade.accepted, false);
+assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-1' AND item_key='race_item'").get().item_level, 1, 'stale affordability must not grant an upgrade');
+
+runtimeDb.prepare("UPDATE telegram_pet_material_balances SET quantity=100 WHERE telegram_id='live-1' AND material_key='scrap_metal'").run();
+const cosmetic = await processPetCosmeticUnlock(d1, 'live-1', 'profile_frame', 'request-cosmetic-1');
+assert.equal(cosmetic.accepted, true);
+assert.equal((await processPetCosmeticUnlock(d1, 'live-1', 'profile_frame', 'request-cosmetic-1')).duplicate, true);
+assert.equal((await processPetCosmeticUnlock(d1, 'live-1', 'profile_frame', 'request-cosmetic-2')).reason, 'cosmetic_owned');
+
+const renameBefore = runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='live-1' AND cosmetic_key='rename_badge'").get().count;
+d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET style_tokens=0 WHERE telegram_id='live-1'").run(); };
+assert.equal((await processPetCosmeticUnlock(d1, 'live-1', 'rename_badge', 'request-cosmetic-race')).accepted, false);
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='live-1' AND cosmetic_key='rename_badge'").get().count, renameBefore, 'stale cosmetic affordability must not grant an unlock');
+
+const liveState = { prestige: { ready: true, count: 0 } };
+const prestige = await processPetPrestige(d1, 'live-1', liveState, 'request-prestige-1');
+assert.equal(prestige.accepted, true);
+assert.equal((await processPetPrestige(d1, 'live-1', { prestige: { ready: false, count: 1 } }, 'request-prestige-1')).duplicate, true);
+assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get().prestige_count, 1);
+
+seedPlayer('prestige-race');
+for (let index = 0; index < 3; index += 1) runtimeDb.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot, mastery_tier) VALUES (?, ?, ?, 5)').run('prestige-race', `race_mastered_${index}`, `slot_${index}`);
+d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id='prestige-race'").run(); };
+assert.equal((await processPetPrestige(d1, 'prestige-race', { prestige: { ready: true, count: 0 } }, 'request-prestige-race')).accepted, false);
+assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='prestige-race'").get().prestige_count, 0, 'stale prestige affordability must not grant rank');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_material_balances WHERE telegram_id='prestige-race' AND material_key='mastery_token'").get().count, 0);
+
+seedPlayer('energy-retry', { energy: 0 });
+const tiredRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='energy-retry'").get();
+assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', { level: 100, energy: 100 }, tiredRuntime, reward, null)).reason, 'pet_tired');
+runtimeDb.prepare("UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id='energy-retry'").run();
+assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', { level: 100, energy: 100 }, tiredRuntime, reward, null)).accepted, true, 'rejected Energy reservations must be safely retryable');
+
+seedPlayer('boss-1');
+const boss = getActiveSeasonalBoss();
+runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (telegram_id, season_key, boss_key, damage) VALUES (?, ?, ?, ?)').run('boss-1', boss.season_instance, boss.key, boss.hp - 1);
+const bossResult = await processPetSeasonalBoss(d1, 'boss-1', { level: 100, energy: 100 }, reward);
+assert.equal(bossResult.progress.defeated, true);
+assert.ok(runtimeDb.prepare('SELECT reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE telegram_id=? AND season_key=? AND boss_key=?').get('boss-1', boss.season_instance, boss.key).reward_claimed_at);
+
+seedPlayer('boss-recovery');
+runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (telegram_id, season_key, boss_key, damage, defeated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)').run('boss-recovery', boss.season_instance, boss.key, boss.hp);
+const recovered = await processPetSeasonalBoss(d1, 'boss-recovery', { level: 100, energy: 100 }, reward);
+assert.equal(recovered.reason, 'seasonal_boss_reward_recovered');
+assert.ok(runtimeDb.prepare('SELECT reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE telegram_id=? AND season_key=? AND boss_key=?').get('boss-recovery', boss.season_instance, boss.key).reward_claimed_at);
 
 console.log('telegram-pets-live-systems.test.mjs passed');
