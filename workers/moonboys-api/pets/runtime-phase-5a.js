@@ -125,6 +125,8 @@ export function buildPetRuntimeAwardPlan(action, options = {}) {
     equipment_action: String(options.equipment_action || key),
     material: null,
   };
+  const trackMultiplier = Math.max(1, Number(options.track_multiplier) || 1);
+  if (trackMultiplier !== 1) for (const track of Object.keys(plan.tracks)) plan.tracks[track] = Math.max(0, Math.round(plan.tracks[track] * trackMultiplier));
   const table = ACTION_DROP_TABLE[key];
   if (table && options.drop_roll !== undefined) {
     plan.material = resolvePetRareDrop(table, options.drop_roll);
