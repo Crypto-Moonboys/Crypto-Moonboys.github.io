@@ -3506,9 +3506,16 @@ async function completePetArenaBattle(db, battle) {
   const lossRewards = { pet_xp: 10, community_xp: 0, moon_gold: 3 };
   const player1Scaled = scalePetArenaRewardsForPlayer(battle, result, String(battle.player1_telegram_id), result === 'player1_win' || result === 'draw' ? winRewards : lossRewards);
   const player2Scaled = scalePetArenaRewardsForPlayer(battle, result, String(battle.player2_telegram_id), result === 'player2_win' || result === 'draw' ? winRewards : lossRewards);
-  await awardPetKaijuPlayerResult(db, String(battle.player1_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player1Scaled.modifier }, result === 'player1_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player1Scaled.rewards);
-  if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await awardPetKaijuPlayerResult(db, String(battle.player2_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player2Scaled.modifier }, result === 'player2_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player2Scaled.rewards);
-  return { accepted:true, duplicate: duplicateCompletion, reason: duplicateCompletion ? 'already_completed' : 'arena_completed', battle: await getPetArenaBattle(db, battle.battle_id), result, rewards: { player1: player1Scaled, player2: player2Scaled } };
+  const [player1Faction, player2Faction] = await Promise.all([
+    db.prepare('SELECT faction FROM telegram_progression WHERE telegram_id=?').bind(String(battle.player1_telegram_id)).first().catch(() => null),
+    battle.player2_telegram_id && battle.player2_telegram_id !== 'app'
+      ? db.prepare('SELECT faction FROM telegram_progression WHERE telegram_id=?').bind(String(battle.player2_telegram_id)).first().catch(() => null) : null,
+  ]);
+  const player1Adjusted = applyPetFactionBonus(player1Scaled.rewards, player1Faction?.faction, 'arena');
+  const player2Adjusted = applyPetFactionBonus(player2Scaled.rewards, player2Faction?.faction, 'arena');
+  await awardPetKaijuPlayerResult(db, String(battle.player1_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player1Scaled.modifier, faction_bonus: player1Adjusted.bonus }, result === 'player1_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player1Adjusted.rewards);
+  if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await awardPetKaijuPlayerResult(db, String(battle.player2_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player2Scaled.modifier, faction_bonus: player2Adjusted.bonus }, result === 'player2_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player2Adjusted.rewards);
+  return { accepted:true, duplicate: duplicateCompletion, reason: duplicateCompletion ? 'already_completed' : 'arena_completed', battle: await getPetArenaBattle(db, battle.battle_id), result, rewards: { player1: { ...player1Scaled, rewards: player1Adjusted.rewards, faction_bonus: player1Adjusted.bonus }, player2: { ...player2Scaled, rewards: player2Adjusted.rewards, faction_bonus: player2Adjusted.bonus } } };
 }
 async function readyPetArenaBattle(db, battle, telegramId) {
   const isP1 = String(battle.player1_telegram_id) === String(telegramId);
@@ -12217,10 +12224,16 @@ async function cmdPetGear(db, tok, chatId, telegramId) {
 async function applyPetRuntimeCommandAward(db, telegramId, eventKey, action, options = {}) {
   const stableKey = String(eventKey || '').trim();
   if (!stableKey) return null;
-  const equipment = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(telegramId).all().catch(() => ({ results: [] }));
+  const [equipment, factionRow] = await Promise.all([
+    db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare('SELECT faction FROM telegram_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null),
+  ]);
+  const factionBonus = action === 'train' || action === 'timed_train'
+    ? applyPetFactionBonus({}, factionRow?.faction, 'training').bonus : null;
   return applyPetRuntimeAward(db, telegramId, stableKey, action, {
     day_key: getPetDayKey(new Date()),
     equipment_rows: equipment.results || [],
+    track_multiplier: 1 + Number(factionBonus?.effect?.training_xp_pct || 0) / 100,
     ...options,
   }).catch((error) => {
     logApiFailure('runtime_award_failed', { telegramId, action, eventKey: stableKey, message: error?.message || String(error) });
