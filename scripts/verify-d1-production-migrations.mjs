@@ -18,6 +18,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '049_telegram_pet_dialogue_history.sql',
   '050_telegram_pet_guided_progression.sql',
   '051_telegram_pet_content_reconciliation.sql',
+  '052_telegram_pet_live_systems.sql',
 ]);
 
 function readJson(filePath, label) {
