@@ -13,6 +13,9 @@
   var typingToken = 0;
   var animationMode = 'idle';
   var animationUntil = 0;
+  var animationLabel = '';
+  var actionSequence = 0;
+  var reducedMotionAnimationTimer = 0;
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -105,6 +108,9 @@
     var token = ++typingToken;
     var content = (Array.isArray(lines) ? lines : [lines]).filter(Boolean).join('\n');
     var reduced = reducedMotion;
+    bootLayer.classList.toggle('is-compact', Boolean(state) && !(options && options.full));
+    bootLayer.classList.toggle('is-notice', Boolean(options && options.notice));
+    bootLayer.scrollTop = 0;
     bootLayer.classList.remove('is-hidden');
     bootText.textContent = '';
     var speed = reduced ? 0 : Number(options && options.speed || 7);
@@ -443,7 +449,10 @@
     if (!panelId) return;
     window.setTimeout(function () {
       var target = screen.querySelector('[data-panel="' + CSS.escape(panelId) + '"]');
-      if (target) target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+      if (target) {
+        var relativeTop = target.getBoundingClientRect().top - screen.getBoundingClientRect().top + screen.scrollTop;
+        screen.scrollTo({ top: Math.max(0, relativeTop - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
+      }
     }, 0);
   }
 
@@ -453,7 +462,7 @@
     noticesBusy = true;
     var visible = notices.slice(0, 5);
     haptic('success');
-    await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 850 });
+    await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 1600, notice: true });
     try {
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
       state = acknowledged.state || state;
@@ -462,9 +471,43 @@
     noticesBusy = false;
   }
 
-  function animateAction(action) {
-    animationMode = action;
-    animationUntil = performance.now() + 1100;
+  function actionAnimationFamily(action, payload) {
+    var key = String(action || '').toLowerCase();
+    if (key === 'activity_start') key = String(payload && payload.activity_type || '').toLowerCase();
+    if (key === 'activity_claim') return 'celebrate';
+    if (key === 'activity_cancel') return 'interact';
+    if (/feed|use_item/.test(key)) return 'feed';
+    if (/play/.test(key)) return 'play';
+    if (/clean/.test(key)) return 'clean';
+    if (/sleep|rest/.test(key)) return 'sleep';
+    if (/train/.test(key)) return 'train';
+    if (/boss|arena|kaiju|fight|attack|district/.test(key)) return 'battle';
+    if (/run|adventure|expedition|random_event|event_chain/.test(key)) return 'travel';
+    if (/job|activity|work/.test(key)) return 'work';
+    if (/buy|market|equipment|cosmetic|gear/.test(key)) return 'equip';
+    if (/evolve|prestige/.test(key)) return 'evolve';
+    if (/trade/.test(key)) return 'trade';
+    if (/claim|chest|bounty|season|reward|achievement/.test(key)) return 'celebrate';
+    return 'interact';
+  }
+
+  function animateAction(action, accepted, duration, payload) {
+    animationMode = accepted === false ? 'blocked' : actionAnimationFamily(action, payload);
+    animationLabel = accepted === false ? 'NOT READY' : words(animationMode);
+    actionSequence += 1;
+    var animationDuration = duration || 2400;
+    animationUntil = performance.now() + animationDuration;
+    if (reducedMotion) {
+      window.clearTimeout(reducedMotionAnimationTimer);
+      var sequence = actionSequence;
+      drawWorld(performance.now());
+      reducedMotionAnimationTimer = window.setTimeout(function () {
+        if (sequence !== actionSequence) return;
+        animationMode = 'idle';
+        animationLabel = '';
+        drawWorld(performance.now());
+      }, animationDuration);
+    }
   }
 
   async function runAction(action, payload, buttonElement) {
@@ -472,7 +515,7 @@
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
-    animateAction(action);
+    animateAction(action, true, 8000, payload);
     tell('TRANSMITTING ' + words(action) + '...');
     try {
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
@@ -480,10 +523,12 @@
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
+      animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
       render();
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: 240 });
       await showPendingNotices();
     } catch (error) {
+      animateAction('blocked', false, 2800);
       tell(error.message || 'CONNECTION FAILED', 'danger');
       haptic('error');
       await typeBoot(['FAULT DETECTED', error.message || 'CONNECTION FAILED', 'RETRY WHEN LINK IS STABLE'], { speed: 8, hold: 500 });
@@ -519,6 +564,7 @@
     if (!target || busy) return;
     activeScreen = target.dataset.screen;
     render();
+    screen.scrollTop = 0;
     haptic('light');
     typeBoot(['MOUNT /' + activeScreen.toUpperCase(), 'READING LIVE PLAYER STATE', 'MODULE READY'], { speed: 4, hold: 130 });
     if (activeScreen === 'explore' || activeScreen === 'work') refreshLiveState();
@@ -562,40 +608,134 @@
     ctx.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
   }
 
+  function petStage(pet) {
+    if (!pet) return 0;
+    var explicit = pet.evolution_stage == null ? NaN : Number(pet.evolution_stage);
+    if (Number.isFinite(explicit)) return Math.max(0, Math.min(4, explicit));
+    var label = String(pet.stage || '').toLowerCase();
+    if (label.includes('legend')) return 4;
+    if (label.includes('elite')) return 3;
+    if (label.includes('cyber')) return 2;
+    if (label.includes('street')) return 1;
+    return 0;
+  }
+
+  function petMood(pet) {
+    if (!pet) return 'curious';
+    if (Number(pet.health) < 35) return 'hurt';
+    if (Number(pet.energy) < 20) return 'tired';
+    if (Number(pet.hunger) > 78) return 'hungry';
+    if (Number(pet.cleanliness) < 30) return 'scruffy';
+    if (Number(pet.happiness) > 78) return 'happy';
+    return 'curious';
+  }
+
+  function drawPixelText(text, x, y, color, align) {
+    ctx.save();
+    ctx.shadowColor = color; ctx.shadowBlur = 4;
+    ctx.fillStyle = color; ctx.font = 'bold 8px "Courier New", monospace'; ctx.textAlign = align || 'left';
+    ctx.fillText(String(text), x, y);
+    ctx.restore();
+  }
+
+  function drawActionEffects(time, x, y, active) {
+    if (!active) return;
+    var phase = Math.floor(time / 90) + actionSequence * 7;
+    var i;
+    if (animationMode === 'feed') {
+      drawPixelRect(x + 36, y - 7, 15, 8, '#ffb84d'); drawPixelRect(x + 43, y - 13, 6, 6, '#f4ff65');
+      drawPixelText('NOM!', x + 52, y - 20, '#f4ff65', 'center');
+    } else if (animationMode === 'play') {
+      var ballX = x + Math.round(Math.sin(time / 105) * 48); var ballY = y - 10 - Math.abs(Math.round(Math.cos(time / 105) * 25));
+      drawPixelRect(ballX - 5, ballY - 5, 10, 10, '#f6a7ff'); drawPixelRect(ballX - 2, ballY - 2, 4, 4, '#61f5ff');
+    } else if (animationMode === 'clean') {
+      for (i = 0; i < 7; i += 1) { var bubbleY = y - 5 - ((phase * 3 + i * 13) % 62); drawPixelRect(x - 45 + i * 15, bubbleY, 4 + i % 2, 4 + i % 2, '#b3ffff'); }
+    } else if (animationMode === 'sleep') {
+      drawPixelText('Z', x + 33, y - 32, '#d8f9ff'); drawPixelText('Z', x + 43, y - 45, '#d8f9ff'); drawPixelText('Z', x + 55, y - 60, '#d8f9ff');
+    } else if (animationMode === 'train') {
+      drawPixelRect(x - 55, y - 7, 34, 5, '#aab5ae'); drawPixelRect(x - 59, y - 13, 5, 17, '#aab5ae'); drawPixelRect(x - 65, y - 16, 6, 23, '#4ea85a');
+      drawPixelText('+XP', x + 45, y - 40, '#f4ff65', 'center');
+    } else if (animationMode === 'battle') {
+      for (i = 0; i < 4; i += 1) { var slash = (phase * 6 + i * 17) % 70; drawPixelRect(x - 50 + slash, y - 55 + i * 9, 18, 2, i % 2 ? '#ff6d6d' : '#f4ff65'); }
+      drawPixelText('COMBO!', x, y - 65, '#ff6d6d', 'center');
+    } else if (animationMode === 'travel') {
+      for (i = 0; i < 6; i += 1) drawPixelRect(x - 62 - ((phase * 4 + i * 15) % 42), y + 18 - i % 3 * 5, 8, 2, '#4ea85a');
+      drawPixelText('RUN!', x + 44, y - 45, '#f4ff65', 'center');
+    } else if (animationMode === 'work') {
+      drawPixelRect(x + 36, y - 28, 4, 28, '#ffcf68'); drawPixelRect(x + 29, y - 33, 19, 7, '#aab5ae');
+      drawPixelText('WORK', x + 43, y - 43, '#f4ff65', 'center');
+    } else if (animationMode === 'equip') {
+      for (i = 0; i < 5; i += 1) { var sparkle = (phase + i * 11) % 40; drawPixelRect(x - 46 + i * 23, y - 18 - sparkle, 3, 3, '#61f5ff'); }
+      drawPixelText('GEAR ON', x, y - 65, '#61f5ff', 'center');
+    } else if (animationMode === 'evolve') {
+      ctx.strokeStyle = phase % 2 ? '#f6a7ff' : '#f4ff65'; ctx.lineWidth = 3; ctx.strokeRect(x - 45 - phase % 8, y - 58 - phase % 8, 90 + phase % 16, 82 + phase % 16);
+      drawPixelText('EVOLVING', x, y - 70, '#f6a7ff', 'center');
+    } else if (animationMode === 'trade' || animationMode === 'celebrate') {
+      for (i = 0; i < 8; i += 1) { var coinY = y - ((phase * 4 + i * 17) % 76); drawPixelRect(x - 55 + i * 16, coinY, 5, 5, i % 3 ? '#f4ff65' : '#61f5ff'); }
+      drawPixelText(animationMode === 'trade' ? 'DEAL!' : 'REWARD!', x, y - 68, '#f4ff65', 'center');
+    } else if (animationMode === 'blocked') {
+      drawPixelRect(x - 50, y - 58, 100, 3, '#ff6d6d'); drawPixelRect(x - 50, y - 58, 3, 20, '#ff6d6d');
+      drawPixelText('NOT READY', x, y - 45, '#ff6d6d', 'center');
+    } else {
+      drawPixelText('!', x + 40, y - 44, '#f4ff65', 'center');
+    }
+  }
+
   function drawPet(time) {
     var pet = state && state.pet;
-    var stage = pet ? Math.max(0, Math.min(4, Number(pet.evolution_stage || ({ egg: 0, street: 1, cyber: 2, elite: 3, legendary: 4 })[pet.stage] || 0))) : 0;
+    var stage = petStage(pet);
+    var mood = petMood(pet);
+    var renderTime = reducedMotion ? performance.now() : time;
+    var active = animationUntil > renderTime;
     var x = 160;
-    var bob = Math.round(Math.sin(time / 260) * 2);
-    var y = 139 + bob;
-    var flash = animationUntil > time;
-    if (animationMode === 'play' && flash) x += Math.round(Math.sin(time / 55) * 18);
-    if (animationMode === 'train' && flash) y -= Math.abs(Math.round(Math.sin(time / 65) * 12));
-    var outline = '#071109';
-    var body = stage >= 3 ? '#e7ff75' : stage >= 2 ? '#80ffd5' : '#a9ff9a';
-    var glow = stage >= 4 ? '#f6a7ff' : '#4ea85a';
-    ctx.shadowColor = glow; ctx.shadowBlur = stage * 3 + (flash ? 8 : 0);
+    var bob = mood === 'tired' ? 0 : Math.round(Math.sin(time / 270) * 2);
+    var y = 150 + bob;
+    if (active && animationMode === 'play') x += Math.round(Math.sin(time / 70) * 20);
+    if (active && animationMode === 'travel') x += Math.round(Math.sin(time / 115) * 12);
+    if (active && (animationMode === 'train' || animationMode === 'celebrate' || animationMode === 'evolve')) y -= Math.abs(Math.round(Math.sin(time / 80) * 11));
+    if (active && animationMode === 'blocked') x += Math.round(Math.sin(time / 28) * 3);
+
+    var outline = '#061009';
+    var body = stage >= 4 ? '#f6a7ff' : stage >= 3 ? '#e7ff75' : stage >= 2 ? '#80ffd5' : '#a9ff9a';
+    var shade = stage >= 4 ? '#a95ec2' : stage >= 3 ? '#8fa942' : stage >= 2 ? '#36a9a8' : '#4ea85a';
+    var glow = stage >= 4 ? '#f6a7ff' : stage >= 2 ? '#61f5ff' : '#4ea85a';
+    ctx.shadowColor = glow; ctx.shadowBlur = stage * 2 + (active ? 6 : 2);
+
+    // Tail, body, legs and head form a readable young cat silhouette at every stage.
+    var tailLift = active && (animationMode === 'play' || animationMode === 'celebrate') ? 12 : 0;
+    drawPixelRect(x + 27, y - 29 - tailLift, 9, 28 + tailLift, outline); drawPixelRect(x + 30, y - 26 - tailLift, 4, 22 + tailLift, body);
+    drawPixelRect(x - 24, y - 21, 51, 32, outline); drawPixelRect(x - 20, y - 17, 43, 24, body);
+    drawPixelRect(x - 20, y + 5, 12, 14, outline); drawPixelRect(x + 10, y + 5, 12, 14, outline);
+    drawPixelRect(x - 17, y + 7, 8, 9, body); drawPixelRect(x + 12, y + 7, 8, 9, body);
+    drawPixelRect(x - 27, y - 51, 54, 39, outline); drawPixelRect(x - 23, y - 47, 46, 31, body);
+    drawPixelRect(x - 22, y - 62, 15, 15, outline); drawPixelRect(x + 7, y - 62, 15, 15, outline);
+    drawPixelRect(x - 18, y - 57, 8, 10, shade); drawPixelRect(x + 10, y - 57, 8, 10, shade);
+
+    // The Moon Egg becomes a cracked shell cradle instead of hiding the companion in a block.
     if (stage === 0) {
-      drawPixelRect(x - 22, y - 30, 44, 48, outline);
-      drawPixelRect(x - 18, y - 26, 36, 40, body);
-      drawPixelRect(x - 12, y - 6, 7, 4, outline); drawPixelRect(x + 5, y - 6, 7, 4, outline);
-      drawPixelRect(x - 3, y + 3, 6, 4, outline);
-    } else {
-      drawPixelRect(x - 28, y - 35, 56, 47, outline); drawPixelRect(x - 24, y - 31, 48, 39, body);
-      drawPixelRect(x - 21, y - 45, 12, 15, outline); drawPixelRect(x + 9, y - 45, 12, 15, outline);
-      drawPixelRect(x - 18, y - 41, 7, 12, body); drawPixelRect(x + 11, y - 41, 7, 12, body);
-      var blink = Math.floor(time / 1700) % 8 === 0;
-      drawPixelRect(x - 15, y - 18, 7, blink ? 2 : 7, outline); drawPixelRect(x + 8, y - 18, 7, blink ? 2 : 7, outline);
-      drawPixelRect(x - 5, y - 5, 10, 4, outline);
-      drawPixelRect(x - 20, y + 9, 13, 8, outline); drawPixelRect(x + 7, y + 9, 13, 8, outline);
-      if (stage >= 2) { drawPixelRect(x - 31, y - 25, 7, 22, '#61f5ff'); drawPixelRect(x + 24, y - 25, 7, 22, '#61f5ff'); }
-      if (stage >= 3) { drawPixelRect(x - 37, y - 11, 9, 20, body); drawPixelRect(x + 28, y - 11, 9, 20, body); }
-      if (stage >= 4) { drawPixelRect(x - 18, y - 51, 36, 5, '#f6a7ff'); drawPixelRect(x - 3, y - 60, 6, 9, '#f6a7ff'); }
+      drawPixelRect(x - 31, y - 10, 62, 25, '#d8f9ff'); drawPixelRect(x - 27, y - 7, 54, 18, '#6eb8a1');
+      drawPixelRect(x - 24, y - 12, 9, 8, outline); drawPixelRect(x - 7, y - 12, 12, 8, outline); drawPixelRect(x + 15, y - 12, 9, 8, outline);
     }
+
+    var blink = !reducedMotion && Math.floor(renderTime / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
+    var eyeHeight = blink ? 2 : mood === 'hurt' ? 4 : 7;
+    drawPixelRect(x - 15, y - 37, 7, eyeHeight, outline); drawPixelRect(x + 8, y - 37, 7, eyeHeight, outline);
+    drawPixelRect(x - 3, y - 27, 6, 4, outline);
+    if (mood === 'happy' || active && ['play', 'celebrate', 'feed'].includes(animationMode)) {
+      drawPixelRect(x - 8, y - 20, 6, 3, outline); drawPixelRect(x + 2, y - 20, 6, 3, outline);
+    } else if (mood === 'hungry') drawPixelRect(x - 5, y - 20, 10, 5, outline);
+    else { drawPixelRect(x - 6, y - 20, 12, 2, outline); drawPixelRect(x - 2, y - 18, 4, 2, outline); }
+
+    // Each formal evolution adds a permanent, instantly recognisable visual layer.
+    if (stage >= 1) { drawPixelRect(x - 23, y - 11, 46, 7, '#20262b'); drawPixelRect(x - 7, y - 11, 14, 7, '#f4ff65'); }
+    if (stage >= 2) { drawPixelRect(x - 30, y - 43, 7, 24, '#61f5ff'); drawPixelRect(x + 23, y - 43, 7, 24, '#61f5ff'); drawPixelRect(x - 4, y - 52, 8, 5, '#61f5ff'); }
+    if (stage >= 3) { drawPixelRect(x - 34, y - 17, 10, 23, body); drawPixelRect(x + 24, y - 17, 10, 23, body); drawPixelRect(x - 19, y - 7, 38, 4, '#f4ff65'); }
+    if (stage >= 4) { drawPixelRect(x - 21, y - 67, 42, 5, '#f6a7ff'); drawPixelRect(x - 16, y - 75, 6, 8, '#f6a7ff'); drawPixelRect(x - 3, y - 79, 6, 12, '#f4ff65'); drawPixelRect(x + 10, y - 75, 6, 8, '#f6a7ff'); }
     ctx.shadowBlur = 0;
-    if (flash && animationMode === 'feed') { drawPixelRect(x + 42, y - 8, 12, 8, '#ffcf68'); drawPixelRect(x + 48, y - 14, 5, 6, '#ffcf68'); }
-    if (flash && animationMode === 'clean') { for (var i = 0; i < 5; i += 1) drawPixelRect(x - 44 + i * 19, y - 50 - (i % 2) * 8, 5, 5, '#b3ffff'); }
-    if (flash && animationMode === 'sleep') { ctx.fillStyle = '#d8f9ff'; ctx.font = 'bold 12px monospace'; ctx.fillText('Z', x + 35, y - 45); }
+
+    if (!active && mood !== 'curious') drawPixelText(mood.toUpperCase(), x, y - 69, mood === 'hurt' ? '#ff6d6d' : '#f4ff65', 'center');
+    drawActionEffects(time, x, y, active);
+    if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
   }
 
   function drawWorld(time) {
@@ -619,7 +759,7 @@
 
   function frame(time) {
     drawWorld(time);
-    if (animationUntil <= time) animationMode = 'idle';
+    if (animationUntil <= time) { animationMode = 'idle'; animationLabel = ''; }
     if (reducedMotion) return;
     requestAnimationFrame(frame);
   }
