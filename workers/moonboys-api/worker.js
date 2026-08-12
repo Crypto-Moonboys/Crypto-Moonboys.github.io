@@ -2945,7 +2945,7 @@ function buildPetKaijuLobbyReplyMarkup(match) {
       ],
       [
         { text: '🎮 Web Card Game', url: `${SITE_URL}/games/kaiju-sticker-battle/` },
-        { text: '🌕 Pet Menu', callback_data: 'pet:bag' },
+        { text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' },
       ],
     ],
   };
@@ -3370,7 +3370,7 @@ function calculatePetArenaPower(pet, seed = '') {
   const gear = sumPetArenaGearPower(weapon, armor, charm) + outfit + toy;
   return Math.max(1, Math.round((s.level * 10 + Math.sqrt(s.pet_xp) + morale + gear + rng) * condition));
 }
-function buildPetArenaMenuReplyMarkup() { return { inline_keyboard: [[{ text: 'Find Pet Battle', callback_data: 'pet:arena:find' }, { text: 'Battle App Pet', callback_data: 'pet:arena:app' }], [{ text: 'My Arena Status', callback_data: 'pet:arena:status' }, { text: 'Cancel Queue', callback_data: 'pet:arena:cancel' }], [{ text: 'Gear Shop', callback_data: 'pet:shop' }, { text: 'Pet Menu', callback_data: 'pet:bag' }]] }; }
+function buildPetArenaMenuReplyMarkup() { return { inline_keyboard: [[{ text: 'Find Pet Battle', callback_data: 'pet:arena:find' }, { text: 'Battle App Pet', callback_data: 'pet:arena:app' }], [{ text: 'My Arena Status', callback_data: 'pet:arena:status' }, { text: 'Cancel Queue', callback_data: 'pet:arena:cancel' }], [{ text: 'Gear Shop', callback_data: 'pet:shop' }, { text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }]] }; }
 function buildPetArenaMatchReplyMarkup(battleId) { return { inline_keyboard: [[{ text: 'Ready', callback_data: `pet:arena:ready:${battleId}` }, { text: 'Cancel', callback_data: `pet:arena:stop:${battleId}` }]] }; }
 function buildPetArenaMoveReplyMarkup(battleId, roundNumber = 1) { const r = Math.max(1, Math.floor(Number(roundNumber) || 1)); return { inline_keyboard: [[{ text: 'Attack Head', callback_data: `pet:arena:mv:${battleId}:${r}:ah` }, { text: 'Attack Body', callback_data: `pet:arena:mv:${battleId}:${r}:ab` }], [{ text: 'Block Head', callback_data: `pet:arena:mv:${battleId}:${r}:bh` }, { text: 'Block Body', callback_data: `pet:arena:mv:${battleId}:${r}:bb` }], [{ text: 'Charge Special', callback_data: `pet:arena:mv:${battleId}:${r}:ch` }, { text: 'Special Move', callback_data: `pet:arena:mv:${battleId}:${r}:sp` }], [{ text: 'Forfeit', callback_data: `pet:arena:ff:${battleId}` }]] }; }
 function parsePetArenaCallbackPayload(payload) {
@@ -9786,7 +9786,7 @@ function buildPetRandomEventReplyMarkup(encounter) {
         text: choice.label,
         callback_data: `pet:event:${encounter.event_key}:${choice.key}`,
       })),
-      [{ text: 'Back', callback_data: 'pet:bag' }],
+      [{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }],
     ],
   };
 }
@@ -9825,7 +9825,7 @@ function buildPetAdventureReplyMarkup(encounter) {
         text: choice.label,
         callback_data: `pet:adventure:${encounter.key}:${choice.key}`,
       })),
-      [{ text: 'Back', callback_data: 'pet:bag' }],
+      [{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }],
     ],
   };
 }
@@ -9854,9 +9854,9 @@ function buildPetRunAfterStepReplyMarkup(run) {
     ],
   ];
   if (Number(run.depth || 0) >= Number(run.max_depth || PET_RUN_MAX_DEPTH)) {
-    rows[0] = [{ text: 'Boss Cleared', callback_data: 'pet:bag' }];
+    rows[0] = [{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }];
   }
-  rows.push([{ text: 'Pet Status', callback_data: 'pet:bag' }]);
+  rows.push([{ text: '🌕 Pet Status', callback_data: 'pet:back' }]);
   return { inline_keyboard: rows };
 }
 
@@ -10419,6 +10419,7 @@ async function handleTelegramUpdate(update, env) {
       if (payload === 'menu:management') { await answerTelegramCallback(tok, query.id, 'Management'); await cmdPetMenu(tok, chatId, 'management'); return; }
       if (payload === 'menu:progress') { await answerTelegramCallback(tok, query.id, 'Progress'); await cmdPetMenu(tok, chatId, 'progress'); return; }
       if (payload === 'details') { await answerTelegramCallback(tok, query.id, 'Details'); await cmdPetDetails(db, tok, chatId, telegramId); return; }
+      if (payload === 'missions') { await answerTelegramCallback(tok, query.id, '/petmissions'); await cmdPetMissions(db, tok, chatId, telegramId); return; }
       if (payload === 'equipment') { await answerTelegramCallback(tok, query.id, '/petgear'); await cmdPetGear(db, tok, chatId, telegramId); return; }
       if (payload === 'trade') { await answerTelegramCallback(tok, query.id, 'Trade'); await cmdPetTradeMenu(tok, chatId); return; }
       if (payload.startsWith('trade:')) { const wager = payload.slice(6); await answerTelegramCallback(tok, query.id, `/pettrade ${wager}`); await cmdPetTrade(db, tok, chatId, telegramId, wager, eventKey); return; }
@@ -10902,7 +10903,7 @@ function petReplyMarkup() {
         { text: '🏋️ Train', callback_data: 'pet:train' },
         { text: '⚔️ Adventure', callback_data: 'pet:menu:adventure' },
       ],
-      [{ text: '🎒 Bag', callback_data: 'pet:bag' }, { text: '🛒 Shop', callback_data: 'pet:shop' }],
+      [{ text: '⏱ Activities', callback_data: 'pet:activity' }, { text: '⚙️ Management', callback_data: 'pet:menu:management' }],
       [{ text: '📋 Details', callback_data: 'pet:details' }],
     ],
   };
@@ -10934,6 +10935,7 @@ function buildPetManagementMenuReplyMarkup() {
 function buildPetProgressMenuReplyMarkup() {
   return { inline_keyboard: [
     [{ text: '📋 Details', callback_data: 'pet:details' }],
+    [{ text: '🎯 Missions', callback_data: 'pet:missions' }],
     [{ text: '🧬 Evolution', callback_data: 'pet:identity:evolution' }],
     [{ text: '🧠 Personality', callback_data: 'pet:identity:personality' }],
     [{ text: '📖 Memories', callback_data: 'pet:identity:memories' }],
@@ -11598,7 +11600,7 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) 
       reply_markup: {
         inline_keyboard: [
           ...rows,
-          [{ text: 'Back', callback_data: 'pet:bag' }],
+          [{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }],
         ],
       },
     }, 'work');
@@ -11689,15 +11691,15 @@ async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action, stabl
 async function cmdPetActivity(db, tok, chatId, telegramId) {
   const session = await getActivePetActivitySession(db, telegramId);
   if (!session) {
-    await sendTelegramMessage(tok, chatId, '<b>Timed Pet Activities</b>\nStart one: /petstart sleep, /petstart train, /petstart work, or /petstart explore.', { reply_markup: { inline_keyboard: [[{ text: 'Sleep', callback_data: 'pet:start:sleep' }, { text: 'Train', callback_data: 'pet:start:train' }], [{ text: 'Work', callback_data: 'pet:start:work' }, { text: 'Explore', callback_data: 'pet:start:explore' }]] } });
+    await sendTelegramMessage(tok, chatId, '<b>Timed Pet Activities</b>\nStart one: /petstart sleep, /petstart train, /petstart work, or /petstart explore.', { reply_markup: { inline_keyboard: [[{ text: 'Sleep', callback_data: 'pet:start:sleep' }, { text: 'Train', callback_data: 'pet:start:train' }], [{ text: 'Work', callback_data: 'pet:start:work' }, { text: 'Explore', callback_data: 'pet:start:explore' }], [{ text: '⬅️ Back', callback_data: 'pet:back' }]] } });
     return;
   }
-  await sendTelegramMessage(tok, chatId, `Moonpet is ${escapeHtml(session.activity_type)}: ${formatPetActivityLine(session)}.`, { reply_markup: { inline_keyboard: [[{ text: 'Claim', callback_data: 'pet:claim' }, { text: 'Cancel', callback_data: 'pet:cancel' }]] } });
+  await sendTelegramMessage(tok, chatId, `Moonpet is ${escapeHtml(session.activity_type)}: ${formatPetActivityLine(session)}.`, { reply_markup: { inline_keyboard: [[{ text: 'Claim', callback_data: 'pet:claim' }, { text: 'Cancel', callback_data: 'pet:cancel' }], [{ text: '⬅️ Back', callback_data: 'pet:back' }]] } });
 }
 async function cmdPetStart(db, tok, chatId, telegramId, argStr) {
   const result = await startPetActivitySession(db, telegramId, argStr, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'activity_start_failed' }));
   if (!result.accepted) { await sendTelegramMessage(tok, chatId, result.reason === 'already_busy' ? `Already busy: ${formatPetActivityLine(result.session)}.` : formatPetBlockedCopy('activity', result.reason, result)); return; }
-  await sendTelegramMessage(tok, chatId, `Started ${escapeHtml(result.session.activity_type)}. Tiny rewards unlock after 5m; rewards scale until the cap.`, { reply_markup: { inline_keyboard: [[{ text: 'Claim', callback_data: 'pet:claim' }, { text: 'Cancel', callback_data: 'pet:cancel' }]] } });
+  await sendTelegramMessage(tok, chatId, `Started ${escapeHtml(result.session.activity_type)}. Tiny rewards unlock after 5m; rewards scale until the cap.`, { reply_markup: { inline_keyboard: [[{ text: 'Claim', callback_data: 'pet:claim' }, { text: 'Cancel', callback_data: 'pet:cancel' }], [{ text: '⬅️ Back', callback_data: 'pet:back' }]] } });
 }
 async function cmdPetClaim(db, tok, chatId, telegramId) {
   const result = await claimPetActivitySession(db, telegramId, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'activity_claim_failed' }));
@@ -11709,7 +11711,7 @@ async function cmdPetClaim(db, tok, chatId, telegramId) {
 }
 async function cmdPetCancel(db, tok, chatId, telegramId) {
   const result = await cancelPetActivitySession(db, telegramId).catch((error) => ({ accepted: false, reason: error?.message || 'activity_cancel_failed' }));
-  await sendTelegramMessage(tok, chatId, result.accepted ? `Cancelled ${escapeHtml(result.session.activity_type)}. No rewards awarded.` : formatPetBlockedCopy('activity cancel', result.reason, result));
+  await sendTelegramMessage(tok, chatId, result.accepted ? `Cancelled ${escapeHtml(result.session.activity_type)}. No rewards awarded.` : formatPetBlockedCopy('activity cancel', result.reason, result), { reply_markup: petReplyMarkup() });
 }
 
 async function cmdPetTrade(db, tok, chatId, telegramId, argStr, eventKey = null) {
@@ -11751,7 +11753,7 @@ async function cmdPetMissions(db, tok, chatId, telegramId) {
     `Day: ${escapeHtml(missions.day_key)}\n` +
     `Week: ${escapeHtml(missions.week_key)}\n` +
     `Season: ${escapeHtml(missions.season.key)}\n\n${daily}`,
-    {},
+    { reply_markup: buildPetProgressMenuReplyMarkup() },
     'daily',
   );
 }
