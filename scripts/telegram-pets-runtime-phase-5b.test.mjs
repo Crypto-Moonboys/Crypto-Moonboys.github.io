@@ -47,7 +47,9 @@ assert.match(finalWorker, /baseWorker\.scheduled/, 'the final entrypoint must pr
 
 assert.match(worker, /getPetDayKey\(new Date\(\)\)/, 'direct command awards must use the existing UTC pet day authority');
 assert.match(worker, /runtime_award_failed/, 'direct runtime failures must be logged without breaking existing pet rewards');
-assert.match(worker, /\/petprogress — View secondary XP, traits and prestige/, 'help must advertise the live progress command');
-assert.match(worker, /\/petgear — View equipment levels and mastery/, 'help must advertise the live gear command');
+assert.match(worker, /\/pet — Open Moonpet OS/, 'help must advertise the Mini App launch command');
+assert.match(worker, /All pet care, progression, jobs, economy, runs, bosses, Arena, Kaiju, alerts and leaderboards now run inside Moonpet OS/, 'help must direct gameplay into the Mini App');
+assert.doesNotMatch(worker, /\/petprogress — View secondary XP, traits and prestige/, 'help must not advertise retired chat gameplay controls');
+assert.doesNotMatch(worker, /\/petgear — View equipment levels and mastery/, 'help must not advertise retired chat gameplay controls');
 
 console.log('telegram-pets-runtime-phase-5b.test.mjs passed (audited provenance + Phase 5 entrypoints)');
