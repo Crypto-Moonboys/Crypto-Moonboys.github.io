@@ -3,12 +3,16 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import {
   PET_ACHIEVEMENTS,
+  MOONPET_REACTION_LIBRARY,
   PET_SEASON_REWARD_TIERS,
   PET_WEEKLY_BOSSES,
   buildMoonpetReaction,
+  buildMoonpetReactionChoice,
   calculatePetWeeklyBossDamage,
   getPetEvolutionPerk,
+  getMoonpetMood,
   getPetWeeklyBoss,
+  selectMoonpetReaction,
 } from '../workers/moonboys-api/pets/player-expansion.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -23,8 +27,35 @@ const baseDamage = calculatePetWeeklyBossDamage({ boss, action: 'strike', level:
 const evolvedDamage = calculatePetWeeklyBossDamage({ boss, action: boss.weakness, level: 20, evolution_stage: 4, health: 80, energy: 80, roll: 0 });
 assert.ok(evolvedDamage > baseDamage, 'evolution and exploiting a weakness must materially improve weekly boss power');
 assert.match(getPetEvolutionPerk(4).perk, /guardian content/i);
-assert.match(buildMoonpetReaction('event', { personalities: [{ trait_id: 'curious' }] }), /Curiosity/i);
-assert.match(buildMoonpetReaction('boss', { memories: { total_bosses_defeated: 2 } }), /remembers/i);
+assert.ok(Object.keys(MOONPET_REACTION_LIBRARY.activities).length >= 25, 'reaction library must cover every major player activity');
+assert.deepEqual(Object.keys(MOONPET_REACTION_LIBRARY.traits).sort(), ['curious', 'explorer', 'loyal', 'street_fighter']);
+assert.equal(Object.keys(MOONPET_REACTION_LIBRARY.moods).length, 8, 'reaction library must cover eight meaningful stat-driven moods');
+assert.equal(Object.keys(MOONPET_REACTION_LIBRARY.evolutions).length, 5, 'every evolution stage must have its own reactions');
+assert.ok(Object.keys(MOONPET_REACTION_LIBRARY.milestones).length >= 14, 'stored milestones and aggregate memories must affect dialogue');
+const reactionCount = Object.values(MOONPET_REACTION_LIBRARY).flatMap((group) => Object.values(group)).reduce((total, pool) => total + pool.length, 0);
+assert.ok(reactionCount >= 225, `reaction expansion must contain at least 225 lines, received ${reactionCount}`);
+for (const group of Object.values(MOONPET_REACTION_LIBRARY)) for (const pool of Object.values(group)) {
+  assert.ok(pool.length >= 4, 'each activity, trait, mood, evolution and memory needs real variation');
+}
+assert.equal(getMoonpetMood({ health: 40, energy: 100 }), 'unwell');
+assert.equal(getMoonpetMood({ health: 100, energy: 20 }), 'exhausted');
+assert.equal(getMoonpetMood({ health: 100, energy: 100, hunger: 80 }), 'hungry');
+assert.equal(getMoonpetMood({ health: 100, energy: 100, hunger: 0, happiness: 100, cleanliness: 100 }), 'thriving');
+assert.equal(getMoonpetMood(), 'steady', 'missing pet stats must remain neutral instead of pretending the Moonpet is thriving');
+assert.equal(getMoonpetMood(null), 'steady', 'explicitly absent pet state must remain neutral');
+assert.equal(getMoonpetMood({ happiness: 100, energy: 100 }), 'steady', 'partial positive stats cannot prove a thriving or excited mood');
+assert.equal(getMoonpetMood({ energy: 20 }), 'exhausted', 'a known urgent stat may still select its truthful mood when other stats are absent');
+const reactionIdentity = {
+  current_stage: { evolution_id: 'cyber_moonpet', name: 'Cyber Moonpet', stage: 2 },
+  personalities: [{ trait_id: 'curious' }],
+  memories: { milestones: ['first_boss_victory'], total_bosses_defeated: 2 },
+};
+assert.equal(buildMoonpetReactionChoice('boss', reactionIdentity).mood, 'steady', 'callers without a profile must not emit a false thriving mood');
+const firstReaction = buildMoonpetReactionChoice('event', reactionIdentity, { pet: { health: 100, energy: 80, hunger: 10, happiness: 90, cleanliness: 90 }, seed: 'player-1' });
+const nextReaction = buildMoonpetReactionChoice('event', reactionIdentity, { pet: { health: 100, energy: 80, hunger: 10, happiness: 90, cleanliness: 90 }, seed: 'player-1', recent_dialogue: [firstReaction] });
+assert.notEqual(nextReaction.key, firstReaction.key, 'recent reaction keys must be excluded from the next selection');
+assert.notEqual(nextReaction.text, firstReaction.text, 'recent reaction text must not immediately repeat');
+assert.ok(buildMoonpetReaction('event', reactionIdentity).length > 20);
 
 assert.equal(Object.keys(hooks.PET_JOBS).length, 12, 'jobs must expand from four to twelve');
 assert.equal(Object.keys(hooks.PET_RANDOM_EVENTS).length, 10, 'random events must expand from five to ten');
@@ -74,6 +105,7 @@ assert.equal(defeatedBossBatchCalls, 0, 'post-defeat attacks must not enter the 
 assert.equal(defeatedBossWriteCalls, 0, 'post-defeat attacks must not consume energy or mutate boss state');
 
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
+const dialogueMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/049_telegram_pet_dialogue_history.sql', import.meta.url), 'utf8');
 for (const table of ['telegram_pet_achievements', 'telegram_pet_weekly_boss_progress', 'telegram_pet_weekly_boss_events', 'telegram_pet_season_reward_claims']) {
   assert.match(migration, new RegExp(`CREATE TABLE ${table}`), `${table} must be created by migration 048`);
 }
@@ -87,6 +119,7 @@ db.exec(`
   INSERT INTO telegram_pet_profiles (telegram_id) VALUES ('player-1');
 `);
 db.exec(migration);
+db.exec(dialogueMigration);
 db.prepare(`
   INSERT INTO telegram_pet_weekly_boss_events
     (event_id, telegram_id, week_key, day_key, boss_id, event_key, action, damage)
@@ -107,6 +140,25 @@ assert.throws(() => db.prepare(`
     (telegram_id, season_key, tier_id, event_key)
   VALUES (?, ?, ?, ?)
 `).run('player-1', '2026-S3', 'stardust', 'season:2026-S3:duplicate'), /UNIQUE constraint failed/, 'D1 schema must reject duplicate season tier claims');
+
+class D1DatabaseAdapter {
+  constructor(database) { this.database = database; }
+  prepare(sql) {
+    const statement = this.database.prepare(sql);
+    let values = [];
+    return {
+      bind(...params) { values = params; return this; },
+      async all() { return { results: statement.all(...values).map((row) => ({ ...row })) }; },
+      async run() { const result = statement.run(...values); return { meta: { changes: Number(result.changes || 0) } }; },
+    };
+  }
+  async batch(statements) { return Promise.all(statements.map((statement) => statement.run())); }
+}
+const dialogueDb = new D1DatabaseAdapter(db);
+const storedFirst = await selectMoonpetReaction(dialogueDb, 'player-1', 'feed', reactionIdentity, { pet: { health: 100, energy: 80, hunger: 10, happiness: 90, cleanliness: 90 }, seed: 'stored-player' });
+const storedSecond = await selectMoonpetReaction(dialogueDb, 'player-1', 'feed', reactionIdentity, { pet: { health: 100, energy: 80, hunger: 10, happiness: 90, cleanliness: 90 }, seed: 'stored-player' });
+assert.notEqual(storedSecond, storedFirst, 'persisted recent dialogue must prevent immediate repetition across requests');
+assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_dialogue_history WHERE telegram_id = 'player-1'`).get().count, 2);
 db.close();
 
 console.log('Telegram Pets player expansion tests passed.');
