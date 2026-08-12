@@ -108,6 +108,8 @@
     var content = (Array.isArray(lines) ? lines : [lines]).filter(Boolean).join('\n');
     var reduced = reducedMotion;
     bootLayer.classList.toggle('is-compact', Boolean(state) && !(options && options.full));
+    bootLayer.classList.toggle('is-notice', Boolean(options && options.notice));
+    bootLayer.scrollTop = 0;
     bootLayer.classList.remove('is-hidden');
     bootText.textContent = '';
     var speed = reduced ? 0 : Number(options && options.speed || 7);
@@ -446,7 +448,10 @@
     if (!panelId) return;
     window.setTimeout(function () {
       var target = screen.querySelector('[data-panel="' + CSS.escape(panelId) + '"]');
-      if (target) screen.scrollTo({ top: Math.max(0, target.offsetTop - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
+      if (target) {
+        var relativeTop = target.getBoundingClientRect().top - screen.getBoundingClientRect().top + screen.scrollTop;
+        screen.scrollTo({ top: Math.max(0, relativeTop - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
+      }
     }, 0);
   }
 
@@ -456,7 +461,7 @@
     noticesBusy = true;
     var visible = notices.slice(0, 5);
     haptic('success');
-    await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 850 });
+    await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 1600, notice: true });
     try {
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
       state = acknowledged.state || state;
@@ -592,7 +597,7 @@
 
   function petStage(pet) {
     if (!pet) return 0;
-    var explicit = Number(pet.evolution_stage);
+    var explicit = pet.evolution_stage == null ? NaN : Number(pet.evolution_stage);
     if (Number.isFinite(explicit)) return Math.max(0, Math.min(4, explicit));
     var label = String(pet.stage || '').toLowerCase();
     if (label.includes('legend')) return 4;
@@ -667,7 +672,8 @@
     var pet = state && state.pet;
     var stage = petStage(pet);
     var mood = petMood(pet);
-    var active = animationUntil > time;
+    var renderTime = reducedMotion ? performance.now() : time;
+    var active = animationUntil > renderTime;
     var x = 160;
     var bob = mood === 'tired' ? 0 : Math.round(Math.sin(time / 270) * 2);
     var y = 150 + bob;
@@ -698,7 +704,7 @@
       drawPixelRect(x - 24, y - 12, 9, 8, outline); drawPixelRect(x - 7, y - 12, 12, 8, outline); drawPixelRect(x + 15, y - 12, 9, 8, outline);
     }
 
-    var blink = Math.floor(time / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
+    var blink = !reducedMotion && Math.floor(renderTime / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
     var eyeHeight = blink ? 2 : mood === 'hurt' ? 4 : 7;
     drawPixelRect(x - 15, y - 37, 7, eyeHeight, outline); drawPixelRect(x + 8, y - 37, 7, eyeHeight, outline);
     drawPixelRect(x - 3, y - 27, 6, 4, outline);
