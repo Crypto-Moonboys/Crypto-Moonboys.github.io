@@ -218,7 +218,60 @@ assert.equal(serializedArenaPet.equipped_charm, 'shield_charm', 'serialized pet 
 const arenaStatusCopy = formatPetStatus({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'moonbeast', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
 assert.ok(!arenaStatusCopy.includes('Armor:') && !arenaStatusCopy.includes('Wallet'), '/pet status copy must keep gear and wallet details out of the default viewport');
 const arenaDetailsCopy = formatPetDetails({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'moonbeast', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
-assert.ok(arenaDetailsCopy.includes('Armor: moon_helmet') && arenaDetailsCopy.includes('Weapon: laser_claws') && arenaDetailsCopy.includes('Charm: shield_charm'), '/pet details copy must retain equipped battle gear');
+assert.ok(arenaDetailsCopy.includes('🛡️ <b>Armor</b> — Moon Helmet') && arenaDetailsCopy.includes('🥊 <b>Weapon</b> — Laser Claws') && arenaDetailsCopy.includes('🧿 <b>Charm</b> — Shield Charm'), '/pet details copy must present equipped battle gear with icons and player-facing names');
+
+const polishedDetailsCopy = formatPetDetails({
+  ...baseArenaPet,
+  pet_name: 'Moonpet',
+  stage: 'egg',
+  pet_xp: 4206,
+  level: 43,
+  health: 90,
+  hunger: 20,
+  happiness: 90,
+  cleanliness: 92,
+  energy: 0,
+  moon_gold: 925,
+  moon_crystals: 6,
+  style_tokens: 23,
+  streak_days: 15,
+  equipped_food: 'nebula_snack',
+  equipped_toy: 'laser_ball',
+  equipped_outfit: 'moon_armor',
+  equipped_armor: 'moon_helmet',
+  equipped_weapon: 'foam_claws',
+  equipped_charm: 'shield_charm',
+}, {
+  daily: [
+    { key: 'pet-daily-feed', title: 'Feed your Moonpet', completed: true },
+    { key: 'pet-daily-train', title: 'Train once', completed: true },
+    { key: 'pet-daily-care-set', title: 'Complete feed, play and clean', completed: true },
+    { key: 'pet-daily-trade', title: 'Run one Moon Gold trade', completed: false },
+    { key: 'pet-daily-adventure', title: 'Run one pet adventure', completed: false },
+  ],
+}, null, { current_stage: { name: 'Moon Egg' } });
+for (const copy of [
+  '🥚 <b>Moon Egg</b>',
+  '⭐ Level 43 · ✨ 4,206 XP',
+  '🪙 925 Moon Gold',
+  '💎 6 Moon Crystals',
+  '🎨 23 Style',
+  '🍖 <b>Food</b> — Nebula Snack',
+  '🎾 <b>Toy</b> — Laser Ball',
+  '👕 <b>Outfit</b> — Moon Armor',
+  '🛡️ <b>Armor</b> — Moon Helmet',
+  '🥊 <b>Weapon</b> — Foam Claws',
+  '🧿 <b>Charm</b> — Shield Charm',
+  '✅ 🍖 Feed your Moonpet',
+  '✅ 🏋️ Train once',
+  '✅ ❤️ Complete feed, play and clean',
+  '⬜️ 💱 Run one Moon Gold trade',
+  '⬜️ ⚔️ Run one pet adventure',
+  '🔥 15-day streak',
+]) assert.ok(polishedDetailsCopy.includes(copy), `polished /pet details must include: ${copy}`);
+for (const rawKey of ['nebula_snack', 'laser_ball', 'moon_armor', 'moon_helmet', 'foam_claws', 'shield_charm']) {
+  assert.ok(!polishedDetailsCopy.includes(rawKey), `polished /pet details must hide raw item key: ${rawKey}`);
+}
 assert.ok(arenaMigration.includes('telegram_pet_arena_battles'), 'arena battle migration must create battle table');
 assert.ok(arenaMigration.includes('telegram_pet_arena_queue'), 'arena battle migration must create queue table');
 assert.ok(arenaMigration.includes('player1_ready_at') && arenaMigration.includes('player2_ready_at'), 'arena migration must store both ready timestamps');
