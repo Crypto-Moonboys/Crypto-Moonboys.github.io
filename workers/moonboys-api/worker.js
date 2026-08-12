@@ -10854,37 +10854,83 @@ function formatPetStatus(pet, identity = null, activity = null) {
   ].join('\n');
 }
 
+function formatPetDisplayNumber(value) {
+  return Math.max(0, Math.floor(Number(value) || 0)).toLocaleString('en-GB');
+}
+
+function formatPetItemDisplayName(itemKey, fallback = 'None equipped') {
+  const key = String(itemKey || '').trim();
+  if (!key || key === 'none') return fallback;
+  if (key === 'basic') return 'Basic';
+  const title = PET_SHOP_ITEMS[key]?.title || PET_INVENTORY_ITEMS[key]?.title;
+  if (title) return title;
+  return key
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getPetStageIcon(stageName) {
+  const stage = String(stageName || '').toLowerCase();
+  if (stage.includes('egg')) return '🥚';
+  if (stage.includes('hatch') || stage.includes('baby')) return '🐣';
+  if (stage.includes('legendary') || stage.includes('guardian')) return '👑';
+  if (stage.includes('adult') || stage.includes('evolved')) return '🌕';
+  return '🧬';
+}
+
+function getPetMissionIcon(mission = {}) {
+  const key = `${mission.key || ''} ${mission.title || ''}`.toLowerCase();
+  if (key.includes('feed')) return '🍖';
+  if (key.includes('train')) return '🏋️';
+  if (key.includes('care') || (key.includes('play') && key.includes('clean'))) return '❤️';
+  if (key.includes('trade')) return '💱';
+  if (key.includes('shop') || key.includes('buy') || key.includes('equip')) return '🛒';
+  if (key.includes('adventure') || key.includes('run')) return '⚔️';
+  if (key.includes('bank') || key.includes('gold')) return '🏦';
+  return '🎯';
+}
+
 function formatPetDetails(pet, missions = null, activity = null, identity = null) {
   const p = serializePet(pet);
   if (!p) return 'No Crypto Moonboy Pet found. Use /adopt to start.';
   const missionLines = Array.isArray(missions?.daily)
-    ? missions.daily.map((mission) => `${mission.completed ? '✅' : '⬜'} ${escapeHtml(mission.title)}`)
+    ? missions.daily.map((mission) => `${mission.completed ? '✅' : '⬜️'} ${getPetMissionIcon(mission)} ${escapeHtml(mission.title)}`)
     : [];
   const warnings = [];
-  if (p.health <= 45) warnings.push('⚠️ Low health: urgent care needed.');
+  if (p.health <= 45) warnings.push('🩹 Low health: urgent care needed.');
   if (p.hunger >= 75) warnings.push('🍖 High hunger: feed soon.');
   if (p.cleanliness <= 35) warnings.push('🧼 Low cleanliness: clean soon.');
   if (p.happiness <= 35) warnings.push('🎮 Low happiness: play soon.');
   if (p.energy <= 25) warnings.push('😴 Low energy: sleep before adventure.');
+  const stage = identity?.current_stage?.name || p.stage;
   return [
     `📋 <b>${escapeHtml(p.pet_name)} Details</b>`,
-    `${escapeHtml(identity?.current_stage?.name || p.stage)} · Level ${p.level} · ${p.pet_xp} XP`,
-    activity ? `🌙 ${formatPetActivityLine(activity)}` : '',
+    `${getPetStageIcon(stage)} <b>${escapeHtml(stage)}</b>`,
+    `⭐ Level ${formatPetDisplayNumber(p.level)} · ✨ ${formatPetDisplayNumber(p.pet_xp)} XP`,
+    activity ? `⏱️ <b>Current activity:</b> ${formatPetActivityLine(activity)}` : '',
     '',
-    '<b>Wallet</b>',
-    `${p.moon_gold} Gold · ${p.moon_crystals} Crystals · ${p.style_tokens} Style`,
+    '💰 <b>Wallet</b>',
+    `🪙 ${formatPetDisplayNumber(p.moon_gold)} Moon Gold`,
+    `💎 ${formatPetDisplayNumber(p.moon_crystals)} Moon Crystals`,
+    `🎨 ${formatPetDisplayNumber(p.style_tokens)} Style`,
     '',
-    '<b>Equipment</b>',
-    `Food: ${escapeHtml(p.equipped_food || 'basic')} · Toy: ${escapeHtml(p.equipped_toy || 'basic')} · Outfit: ${escapeHtml(p.equipped_outfit || 'none')}`,
-    `Armor: ${escapeHtml(p.equipped_armor || 'none')} · Weapon: ${escapeHtml(p.equipped_weapon || 'none')} · Charm: ${escapeHtml(p.equipped_charm || 'none')}`,
+    '🎒 <b>Equipment</b>',
+    `🍖 <b>Food</b> — ${escapeHtml(formatPetItemDisplayName(p.equipped_food, 'Basic Food'))}`,
+    `🎾 <b>Toy</b> — ${escapeHtml(formatPetItemDisplayName(p.equipped_toy, 'Basic Toy'))}`,
+    `👕 <b>Outfit</b> — ${escapeHtml(formatPetItemDisplayName(p.equipped_outfit))}`,
+    `🛡️ <b>Armor</b> — ${escapeHtml(formatPetItemDisplayName(p.equipped_armor))}`,
+    `🥊 <b>Weapon</b> — ${escapeHtml(formatPetItemDisplayName(p.equipped_weapon))}`,
+    `🧿 <b>Charm</b> — ${escapeHtml(formatPetItemDisplayName(p.equipped_charm))}`,
     '',
-    '<b>Needs</b>',
-    ...(warnings.length ? warnings : ['All needs are stable.']),
+    '❤️‍🩹 <b>Needs</b>',
+    ...(warnings.length ? warnings : ['✅ All needs are stable.']),
     '',
-    '<b>Daily Missions</b>',
-    ...(missionLines.length ? missionLines : ['No missions available.']),
+    '🎯 <b>Daily Missions</b>',
+    ...(missionLines.length ? missionLines : ['▫️ No missions available.']),
     '',
-    `<b>Streak</b>\n🔥 ${p.streak_days} day(s)`,
+    '🔥 <b>Streak</b>',
+    `🔥 ${formatPetDisplayNumber(p.streak_days)}-day streak`,
   ].filter(Boolean).join('\n');
 }
 
