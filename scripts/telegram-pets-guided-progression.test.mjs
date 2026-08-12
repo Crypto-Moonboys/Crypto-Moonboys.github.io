@@ -105,7 +105,11 @@ const oneTime = await hooks.persistPetGuidanceNotices(d1, 'player-1', [{
 assert.equal(oneTime.length, 1);
 assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', [{
   key: 'evolution-ready:street_moonpet', type: 'evolution_ready', title: 'Street Moonpet evolution is ready', detail: 'Evolve now.', callback_data: 'pet:evolve',
-}])).length, 0, 'a shown progression notice must never repeat');
+}])).length, 1, 'an undelivered progression notice must remain pending');
+await hooks.markPetGuidanceAfterDelivery(d1, 'player-1', oneTime, { ok: false });
+assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', [])).length, 1, 'a failed Telegram delivery must not consume the notice');
+await hooks.markPetGuidanceAfterDelivery(d1, 'player-1', oneTime, { ok: true });
+assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', [])).length, 0, 'a successfully delivered progression notice must never repeat');
 db.close();
 
 const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
@@ -113,6 +117,8 @@ assert.match(workerSource, /case 'petcoach'/);
 assert.match(workerSource, /payload === 'coach'/);
 assert.match(workerSource, /Recommended Next Move/);
 assert.match(workerSource, /getPetEvolutionGuidance/);
+assert.match(workerSource, /buildPetGuidanceCandidates\(guidanceState \|\| \{\}\)/, 'scheduled alerts must generate current unlock candidates');
+assert.match(workerSource, /markPetGuidanceAfterDelivery/, 'interactive notices must be acknowledged only after delivery');
 assert.ok((workerSource.match(/telegram_pet_guidance_notices/g) || []).length >= 2);
 
 console.log('Telegram Pets guided progression tests passed.');

@@ -7,6 +7,13 @@ import {
 } from './verify-d1-production-migrations.mjs';
 
 const request = JSON.parse(fs.readFileSync(new URL('../deployments/d1-evidence-request.json', import.meta.url), 'utf8'));
+const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-migration-verify.yml', import.meta.url), 'utf8');
+const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
+assert.match(
+  remoteQueryStep,
+  /050_telegram_pet_guided_progression\.sql/,
+  'the workflow_dispatch D1 query must request migration 050 from production',
+);
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),

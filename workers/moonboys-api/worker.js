@@ -4268,22 +4268,26 @@ async function runPetNeedsNotifications(env, options = {}) {
   let skipped = 0;
   let failed = 0;
   for (const row of rows.results || []) {
+    const telegramId = String(row.telegram_id);
     const pet = applyPetDecay({ ...row });
-    const missions = await buildPetMissions(env.DB, String(row.telegram_id)).catch(() => null);
+    let guidanceState = null;
     let guidanceNotices = [];
     try {
+      guidanceState = await buildPetGuidanceState(env.DB, telegramId, pet);
       guidanceNotices = await persistPetGuidanceNotices(
         env.DB,
-        String(row.telegram_id),
-        [],
-        { mark_shown: false },
+        telegramId,
+        buildPetGuidanceCandidates(guidanceState || {}),
       );
     } catch (error) {
       logApiFailure('telegram_pet_guidance_notification_failed', {
-        telegramId: String(row.telegram_id),
+        telegramId,
         message: error?.message || String(error),
       });
     }
+    const missions = guidanceState
+      ? { daily: guidanceState.missions || [] }
+      : await buildPetMissions(env.DB, telegramId).catch(() => null);
     const alert = guidanceNotices.length
       ? {
           reason: 'progress_ready',
@@ -4294,12 +4298,12 @@ async function runPetNeedsNotifications(env, options = {}) {
       skipped += 1;
       continue;
     }
-    const result = await sendTelegramMessage(tok, String(row.telegram_id), `<b>Crypto Moonboy Pet Update</b>\n${escapeHtml(alert.text)}\n\nNotifications: /petnotify off\nStatus: /pet`, { reply_markup: petReplyMarkup() });
+    const result = await sendTelegramMessage(tok, telegramId, `<b>Crypto Moonboy Pet Update</b>\n${escapeHtml(alert.text)}\n\nNotifications: /petnotify off\nStatus: /pet`, { reply_markup: petReplyMarkup() });
     if (result?.ok) {
       sent += 1;
-      if (guidanceNotices.length) await markPetGuidanceNoticesShown(env.DB, String(row.telegram_id), guidanceNotices).catch((error) => {
+      if (guidanceNotices.length) await markPetGuidanceNoticesShown(env.DB, telegramId, guidanceNotices).catch((error) => {
         logApiFailure('telegram_pet_guidance_notification_mark_failed', {
-          telegramId: String(row.telegram_id),
+          telegramId,
           message: error?.message || String(error),
         });
       });
@@ -4307,7 +4311,7 @@ async function runPetNeedsNotifications(env, options = {}) {
         UPDATE telegram_pet_notification_settings
         SET last_notified_at = CURRENT_TIMESTAMP, last_reason = ?, updated_at = CURRENT_TIMESTAMP
         WHERE telegram_id = ?
-      `).bind(alert.reason, String(row.telegram_id)).run().catch(() => {});
+      `).bind(alert.reason, telegramId).run().catch(() => {});
     } else {
       failed += 1;
     }
@@ -10268,8 +10272,9 @@ async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
 }
 
 async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey = null, guidance = null) {
+  let guidedReply = null;
   if (guidance?.db && guidance?.telegram_id && guidance?.pet) {
-    const guided = await buildPetGuidedReply(
+    guidedReply = await buildPetGuidedReply(
       guidance.db,
       String(guidance.telegram_id),
       guidance.pet,
@@ -10277,13 +10282,19 @@ async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey
       extra.reply_markup || null,
       { surface_notices: guidance.surface_notices !== false },
     );
-    text = guided.text;
-    extra = { ...extra, reply_markup: guided.reply_markup };
+    text = guidedReply.text;
+    extra = { ...extra, reply_markup: guidedReply.reply_markup };
   }
+  const finishDelivery = (result) => markPetGuidanceAfterDelivery(
+    guidance?.db,
+    String(guidance?.telegram_id || ''),
+    guidedReply?.notices || [],
+    result,
+  );
   const resolvedMediaKey = resolvePetMediaKey(mediaKey);
   const photoUrl = resolvedMediaKey ? buildPetMediaUrl(resolvedMediaKey) : null;
   if (!photoUrl) {
-    return sendTelegramMessage(botToken, chatId, text, extra);
+    return finishDelivery(await sendTelegramMessage(botToken, chatId, text, extra));
   }
 
   const caption = formatTelegramPetMediaCaption(text, resolvedMediaKey);
@@ -10297,12 +10308,12 @@ async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey
   const photoResult = await sendTelegramPhoto(botToken, chatId, photoUrl, photoExtra)
     .catch((error) => ({ ok: false, error: error?.message || String(error) }));
   if (!photoResult.ok) {
-    return sendTelegramMessage(botToken, chatId, text, extra);
+    return finishDelivery(await sendTelegramMessage(botToken, chatId, text, extra));
   }
   if (!captionOnly) {
-    return sendTelegramMessage(botToken, chatId, text, replyMarkup ? { ...extra, reply_markup: replyMarkup } : extra);
+    return finishDelivery(await sendTelegramMessage(botToken, chatId, text, replyMarkup ? { ...extra, reply_markup: replyMarkup } : extra));
   }
-  return photoResult;
+  return finishDelivery(photoResult);
 }
 
 function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
@@ -10406,6 +10417,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetEvolutionGuidance,
   buildPetGuidanceState,
   persistPetGuidanceNotices,
+  markPetGuidanceAfterDelivery,
   buildPetGuidedReply,
   petReplyMarkup,
   buildPetAdventureMenuReplyMarkup,
@@ -11098,7 +11110,23 @@ async function markPetGuidanceNoticesShown(db, telegramId, notices) {
     .bind(telegramId, notice.key || notice.notice_key)));
 }
 
-async function persistPetGuidanceNotices(db, telegramId, candidates, options = {}) {
+async function markPetGuidanceAfterDelivery(db, telegramId, notices, delivery) {
+  if (!delivery?.ok || !db || !telegramId || !notices?.length) return delivery;
+  await markPetGuidanceNoticesShown(db, telegramId, notices).catch((error) => {
+    logApiFailure('telegram_pet_guidance_delivery_mark_failed', {
+      telegramId,
+      message: error?.message || String(error),
+    });
+  });
+  return delivery;
+}
+
+async function sendTelegramBuiltPetGuidedReply(botToken, chatId, db, telegramId, guided) {
+  const delivery = await sendTelegramMessage(botToken, chatId, guided.text, { reply_markup: guided.reply_markup });
+  return markPetGuidanceAfterDelivery(db, telegramId, guided.notices, delivery);
+}
+
+async function persistPetGuidanceNotices(db, telegramId, candidates) {
   const writes = candidates.map((notice) => db.prepare(`INSERT OR IGNORE INTO telegram_pet_guidance_notices
     (telegram_id, notice_key, notice_type, title, detail, callback_data)
     VALUES (?, ?, ?, ?, ?, ?)`)
@@ -11110,9 +11138,7 @@ async function persistPetGuidanceNotices(db, telegramId, candidates, options = {
       WHEN 'evolution_ready' THEN 100 WHEN 'season_reward' THEN 90 WHEN 'personality' THEN 80
       WHEN 'achievement' THEN 70 WHEN 'feature' THEN 60 WHEN 'job' THEN 50 ELSE 40 END DESC,
       created_at ASC LIMIT 50`).bind(telegramId).all();
-  const notices = pending.results || [];
-  if (options.mark_shown !== false) await markPetGuidanceNoticesShown(db, telegramId, notices);
-  return notices;
+  return pending.results || [];
 }
 
 async function buildPetGuidedReply(db, telegramId, pet, text, replyMarkup = null, options = {}) {
@@ -11380,7 +11406,7 @@ async function cmdPetDetails(db, tok, chatId, telegramId) {
   const guided = pet
     ? await buildPetGuidedReply(db, telegramId, pet, formatPetDetails(pet, missions, activity, identity), buildPetProgressMenuReplyMarkup())
     : { text: formatPetDetails(pet, missions, activity, identity), reply_markup: buildPetProgressMenuReplyMarkup() };
-  await sendTelegramMessage(tok, chatId, guided.text, { reply_markup: guided.reply_markup });
+  await sendTelegramBuiltPetGuidedReply(tok, chatId, db, telegramId, guided);
 }
 
 async function cmdPetCoach(db, tok, chatId, telegramId) {
@@ -11402,7 +11428,7 @@ async function cmdPetCoach(db, tok, chatId, telegramId) {
       ? `\n\n<b>🧬 ${escapeHtml(evolution.name)}</b>\n✅ Every evolution requirement is complete.`
       : `\n\n<b>🧬 ${escapeHtml(evolution.name)} progress</b>\n${evolution.missing.map((item) => `• ${escapeHtml(item.label)}: ${item.current}/${item.required}`).join('\n')}`
     : '\n\n<b>🧬 Evolution</b>\n✅ Final evolution reached.';
-  await sendTelegramMessage(tok, chatId, `${guided.text}${evolutionLines}`, { reply_markup: guided.reply_markup });
+  await sendTelegramBuiltPetGuidedReply(tok, chatId, db, telegramId, { ...guided, text: `${guided.text}${evolutionLines}` });
 }
 
 async function cmdPetIdentity(db, tok, chatId, telegramId, section) {
@@ -11470,7 +11496,7 @@ async function cmdPetWeeklyBoss(db, tok, chatId, telegramId, action, eventKey = 
       [{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }],
     ] };
   const guided = await buildPetGuidedReply(db, telegramId, result.pet, bossText, bossMarkup);
-  await sendTelegramMessage(tok, chatId, guided.text, { reply_markup: guided.reply_markup });
+  await sendTelegramBuiltPetGuidedReply(tok, chatId, db, telegramId, guided);
 }
 
 async function cmdPetSeason(db, tok, chatId, telegramId, tierId = '', eventKey = '') {
@@ -11488,7 +11514,7 @@ async function cmdPetSeason(db, tok, chatId, telegramId, tierId = '', eventKey =
   const pet = await getPetProfile(db, telegramId).catch(() => null);
   const seasonMarkup = { inline_keyboard: [...buttons, [{ text: '⬅️ Progress', callback_data: 'pet:menu:progress' }]] };
   const guided = pet ? await buildPetGuidedReply(db, telegramId, pet, copy, seasonMarkup) : { text: copy, reply_markup: seasonMarkup };
-  await sendTelegramMessage(tok, chatId, guided.text, { reply_markup: guided.reply_markup });
+  await sendTelegramBuiltPetGuidedReply(tok, chatId, db, telegramId, guided);
 }
 
 async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', eventKey = '') {
@@ -11524,7 +11550,7 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
   const pet = await getPetProfile(db, telegramId).catch(() => null);
   const evolutionText = `<b>🧬 Evolution complete: ${escapeHtml(next.name)}</b>\n${escapeHtml(getPetEvolutionPerk(next.stage).perk)}\n\n<i>${escapeHtml(reaction)}</i>`;
   const guided = pet ? await buildPetGuidedReply(db, telegramId, pet, evolutionText, buildPetProgressMenuReplyMarkup()) : { text: evolutionText, reply_markup: buildPetProgressMenuReplyMarkup() };
-  await sendTelegramMessage(tok, chatId, guided.text, { reply_markup: guided.reply_markup });
+  await sendTelegramBuiltPetGuidedReply(tok, chatId, db, telegramId, guided);
 }
 
 async function cmdPetStreak(db, tok, chatId, telegramId) {
