@@ -50,7 +50,7 @@ export const PET_DAILY_BOUNTIES = freeze([
   { key: 'event_scout', title: 'Street Scout', detail: 'Resolve 1 random event.', event_types: ['random_event'], required: 1, reward: { moon_gold: 30, style_tokens: 1 } },
   { key: 'activity_claim', title: 'Patient Worker', detail: 'Claim 1 timed activity.', event_types: ['activity_claim'], required: 1, reward: { moon_gold: 40 } },
   { key: 'run_bank', title: 'Bring It Home', detail: 'Complete or extract 1 Moon Run.', event_types: ['run_complete', 'run_extract', 'adventure'], required: 1, reward: { moon_gold: 55, moon_crystals: 1 } },
-  { key: 'arena_card', title: 'Arena Card', detail: 'Complete 1 Arena battle.', event_types: ['arena_battle'], required: 1, reward: { moon_gold: 40, style_tokens: 2 }, min_level: 10 },
+  { key: 'daily_cache', title: 'Daily Cache', detail: 'Open today’s Moonpet chest.', event_types: ['daily_chest'], required: 1, reward: { moon_gold: 40, style_tokens: 2 } },
   { key: 'kaiju_watch', title: 'Kaiju Watch', detail: 'Complete 1 Kaiju battle.', event_types: ['kaiju_battle'], required: 1, reward: { moon_gold: 45, moon_crystals: 1 } },
   { key: 'item_user', title: 'Prepared Moonpet', detail: 'Use 1 consumable item.', event_types: ['use_item', 'use_item_reward'], required: 1, reward: { moon_gold: 25, style_tokens: 1 } },
 ]);
@@ -76,14 +76,12 @@ export const PET_EXPEDITION_TIERS = freeze([
   { key: 'guardian_rift', title: 'Guardian Rift', min_level: 25, energy: 24, rewards: [{ moon_gold: 55, moon_crystals: 1 }, { moon_gold: 40, style_tokens: 3, materials: { spray_core: 1 } }, { moon_gold: 30, moon_crystals: 2 }] },
 ]);
 
-export function getPetDailyBounties(dayKey, level = 1) {
-  const unlocked = PET_DAILY_BOUNTIES.filter((bounty) => integer(level) >= integer(bounty.min_level || 1));
-  return rotate(unlocked, `bounty:${dayKey}`, Math.min(4, unlocked.length));
+export function getPetDailyBounties(dayKey) {
+  return rotate(PET_DAILY_BOUNTIES, `bounty:${dayKey}`, 4);
 }
 
-export function getPetMarketOffers(dayKey, level = 1) {
-  const unlocked = PET_MARKET_OFFERS.filter((offer) => integer(level) >= offer.min_level);
-  return rotate(unlocked, `market:${dayKey}`, Math.min(4, unlocked.length));
+export function getPetMarketOffers(dayKey) {
+  return rotate(PET_MARKET_OFFERS, `market:${dayKey}`, 4);
 }
 
 export function getPetExpedition(level = 1) {

@@ -115,11 +115,13 @@ function getRewardAuthorization(source, telegramId, context = {}) {
   const roomId = String(context.room_id || '').trim();
   if (source === 'pet_expedition') {
     const dayKey = String(context.day_key || '').trim();
-    if (!dayKey) throw new Error('invalid_pet_reward_context');
+    const energyCost = positiveInteger(context.energy_cost, 100);
+    if (!dayKey || !energyCost) throw new Error('invalid_pet_reward_context');
     return {
       sql: `AND (SELECT COUNT(*) FROM telegram_pet_reward_claims
-        WHERE telegram_id = ? AND source = 'pet_expedition' AND day_key = ? AND status IN ('pending', 'awarded')) < 3`,
-      args: [telegramId, dayKey],
+        WHERE telegram_id = ? AND source = 'pet_expedition' AND day_key = ? AND status IN ('pending', 'awarded')) < 3
+        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND energy >= ?)`,
+      args: [telegramId, dayKey, telegramId, energyCost],
     };
   }
   if (source === 'roguelite_completion') {

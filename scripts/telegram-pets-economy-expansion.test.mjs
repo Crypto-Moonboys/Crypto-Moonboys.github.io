@@ -25,12 +25,13 @@ assert.equal(firstBoard.length, 4);
 assert.deepEqual(firstBoard, getPetDailyBounties('2026-08-12'), 'daily bounty selection must be deterministic');
 assert.notDeepEqual(firstBoard.map(({ key }) => key), getPetDailyBounties('2026-08-13').map(({ key }) => key), 'daily boards should rotate');
 assert.equal(new Set(firstBoard.map(({ key }) => key)).size, 4);
-assert.ok(getPetDailyBounties('2026-08-12', 1).every(({ min_level = 1 }) => min_level <= 1), 'a starter board cannot demand locked gameplay');
+assert.deepEqual(getPetDailyBounties('2026-08-12', 1), getPetDailyBounties('2026-08-12', 99), 'level-ups cannot replace the fixed daily bounty board');
+assert.ok(PET_DAILY_BOUNTIES.every(({ min_level = 1 }) => min_level <= 1), 'every bounty in the fixed board pool must be available to starters');
 
 const starterMarket = getPetMarketOffers('2026-08-12', 1);
-assert.ok(starterMarket.every(({ min_level }) => min_level <= 1), 'locked offers must never occupy starter stock');
 assert.equal(getPetMarketOffers('2026-08-12', 43).length, 4);
 assert.deepEqual(getPetMarketOffers('2026-08-12', 43), getPetMarketOffers('2026-08-12', 43));
+assert.deepEqual(starterMarket, getPetMarketOffers('2026-08-12', 99), 'level-ups cannot replace the fixed daily market stock');
 
 const expedition = resolvePetExpeditionReward('2026-08-12', 'player-1', 1, 43);
 assert.equal(expedition.expedition.key, 'guardian_rift');
@@ -58,6 +59,7 @@ const rewardFoundation = fs.readFileSync(new URL('../workers/moonboys-api/pets/r
 for (const source of ['pet_bounty', 'pet_expedition', 'pet_market']) assert.match(rewardFoundation, new RegExp(`'${source}'`));
 assert.match(rewardFoundation, /moon_gold >= \? AND moon_crystals >= \? AND style_tokens >= \?/, 'currency exchanges must be authorized before rewards are created');
 assert.match(rewardFoundation, /source = 'pet_expedition'[\s\S]*status IN \('pending', 'awarded'\)\) < 3/, 'the expedition cap must be reserved inside reward settlement');
+assert.match(rewardFoundation, /telegram_pet_profiles WHERE telegram_id = \? AND energy >= \?/, 'the full expedition Energy cost must be reserved atomically');
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 for (const command of ['peteconomy', 'petbounties', 'petexpedition', 'petmarket']) assert.match(worker, new RegExp(`case '${command}'`));
@@ -106,7 +108,7 @@ sqlite.prepare(`INSERT INTO telegram_seasons (name, start_date, end_date, is_act
   VALUES ('Economy test', '2026-01-01', '2027-01-01', 1)`).run();
 const d1 = new D1Adapter(sqlite);
 const currentDay = new Date().toISOString().slice(0, 10);
-const bounty = getPetDailyBounties(currentDay, 44)[0];
+const bounty = getPetDailyBounties(currentDay)[0];
 for (let index = 0; index < bounty.required; index += 1) {
   sqlite.prepare(`INSERT INTO telegram_pet_events
     (id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
@@ -129,6 +131,15 @@ assert.equal(sqlite.prepare(`SELECT energy FROM telegram_pet_profiles WHERE tele
 assert.equal((await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-2')).accepted, true);
 assert.equal((await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-3')).accepted, true);
 assert.equal((await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-4')).reason, 'expedition_daily_limit');
+
+sqlite.prepare(`UPDATE telegram_pet_profiles SET energy = 10 WHERE telegram_id = 'economy-player'`).run();
+const rejectedEnergyClaim = await hooks.awardPetReward(d1, {
+  telegram_id: 'economy-player', source: 'pet_expedition', idempotency_key: 'energy-guard-review',
+  event_key: 'energy-guard-review', rewards: { moon_gold: 999 }, profile_deltas: { energy: -24 },
+  context: { day_key: '2099-01-01', energy_cost: 24 }, now: new Date('2099-01-01T00:00:00.000Z'),
+});
+assert.equal(rejectedEnergyClaim.accepted, false, 'an expedition reward cannot reserve when the full Energy cost is unavailable');
+assert.equal(sqlite.prepare(`SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().moon_gold < 2999, true, 'rejected expedition must not pay its reward');
 
 const offer = (await hooks.getPetEconomyState(d1, 'economy-player')).market_offers.find(({ affordable }) => affordable);
 assert.ok(offer);

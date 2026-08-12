@@ -11101,14 +11101,15 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
   const counts = new Map((eventRows.results || []).map((row) => [String(row.event_type), Math.max(0, Number(row.total) || 0)]));
   const claims = claimRows.results || [];
   const claimedKeys = new Set(claims.map((row) => `${row.source}:${row.idempotency_key}`));
-  const bounties = getPetDailyBounties(dayKey, level).map((bounty) => {
+  const bounties = getPetDailyBounties(dayKey).map((bounty) => {
     const progress = bounty.event_types.reduce((sum, eventType) => sum + (counts.get(eventType) || 0), 0);
     return { ...bounty, progress: Math.min(bounty.required, progress), complete: progress >= bounty.required,
       claimed: claimedKeys.has(`pet_bounty:${dayKey}:${bounty.key}`) };
   });
-  const marketOffers = getPetMarketOffers(dayKey, level).map((offer) => ({
+  const marketOffers = getPetMarketOffers(dayKey).map((offer) => ({
     ...offer,
-    affordable: canAffordPetWallet(pet, offer.cost),
+    unlocked: level >= offer.min_level,
+    affordable: level >= offer.min_level && canAffordPetWallet(pet, offer.cost),
     purchased: claimedKeys.has(`pet_market:${dayKey}:${offer.key}`),
   }));
   const expeditionAttempts = claims.filter((row) => row.source === 'pet_expedition').length;
@@ -11154,7 +11155,7 @@ async function runPetCrystalExpedition(db, telegramId, now = new Date(), request
     event_key: `pet:economy:expedition:${telegramId}:${settlementKey}`.slice(0, 220),
     event_type: 'economy_expedition', reason: resolved.expedition.key, rewards: { ...resolved.reward, pet_xp: 12 },
     profile_deltas: { energy: -resolved.expedition.energy }, touch_streak: true, now,
-    context: { expedition_key: resolved.expedition.key, attempt, day_key: state.day_key },
+    context: { expedition_key: resolved.expedition.key, attempt, day_key: state.day_key, energy_cost: resolved.expedition.energy },
   });
   return { ...awarded, reason: awarded.accepted ? 'expedition_complete' : awarded.reason, attempt, expedition: resolved.expedition };
 }
@@ -11165,6 +11166,7 @@ async function buyPetMarketOffer(db, telegramId, offerKey, now = new Date()) {
   const offer = state.market_offers.find((entry) => entry.key === String(offerKey || ''));
   if (!offer) return { accepted: false, reason: 'market_offer_not_available', state };
   if (offer.purchased) return { accepted: true, duplicate: true, reason: 'market_offer_sold', offer, state };
+  if (!offer.unlocked) return { accepted: false, reason: 'market_offer_locked', offer, state };
   if (!offer.affordable) return { accepted: false, reason: 'not_enough_pet_currency', offer, state };
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_market', idempotency_key: `${state.day_key}:${offer.key}`,
@@ -12244,7 +12246,7 @@ function buildPetBountyReplyMarkup(state) {
 }
 
 function buildPetMarketReplyMarkup(state) {
-  const rows = (state?.market_offers || []).filter((offer) => !offer.purchased)
+  const rows = (state?.market_offers || []).filter((offer) => !offer.purchased && offer.unlocked)
     .map((offer) => [{ text: `${offer.affordable ? '🛍️' : '🔒'} ${offer.title}`.slice(0, 40), callback_data: `pet:market:${offer.key}` }]);
   return { inline_keyboard: [...rows, [{ text: '💰 Economy', callback_data: 'pet:economy' }, { text: '⬅️ Back', callback_data: 'pet:menu:management' }]] };
 }
@@ -12318,7 +12320,7 @@ async function cmdPetMarket(db, tok, chatId, telegramId) {
   const state = await getPetEconomyState(db, telegramId).catch(() => null);
   if (!state) { await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.'); return; }
   const lines = state.market_offers.map((offer) =>
-    `${offer.purchased ? '✅ SOLD' : offer.affordable ? '🛍️ READY' : '🔒 SAVE'} <b>${escapeHtml(offer.title)}</b>\n` +
+    `${offer.purchased ? '✅ SOLD' : !offer.unlocked ? `🔒 LEVEL ${offer.min_level}` : offer.affordable ? '🛍️ READY' : '🔒 SAVE'} <b>${escapeHtml(offer.title)}</b>\n` +
     `${escapeHtml(offer.detail)}\nCost: ${escapeHtml(formatPetEconomyValue(offer.cost))}\nGives: ${escapeHtml(formatPetEconomyValue(offer.reward))}`).join('\n\n');
   await sendTelegramPetReply(tok, chatId,
     `<b>🌙 Moon Market</b>\nFour offers rotate at 00:00 UTC · one purchase per offer\n\n${lines}`,
@@ -12328,7 +12330,9 @@ async function cmdPetMarket(db, tok, chatId, telegramId) {
 async function cmdPetMarketBuy(db, tok, chatId, telegramId, offerKey) {
   const result = await buyPetMarketOffer(db, telegramId, offerKey).catch((error) => ({ accepted: false, reason: error?.message || 'market_failed' }));
   if (!result.accepted) {
-    const copy = result.reason === 'not_enough_pet_currency' && result.offer
+    const copy = result.reason === 'market_offer_locked' && result.offer
+      ? `${result.offer.title} unlocks at Level ${result.offer.min_level}. The offer remains in today’s fixed stock if you level up before 00:00 UTC.`
+      : result.reason === 'not_enough_pet_currency' && result.offer
       ? `You need ${formatPetEconomyValue(result.offer.cost)} for ${result.offer.title}. Open Coach for the best earning route.`
       : 'That Moon Market offer is not available now.';
     await sendTelegramMessage(tok, chatId, copy, { reply_markup: buildPetEconomyMenuReplyMarkup() }); return;
