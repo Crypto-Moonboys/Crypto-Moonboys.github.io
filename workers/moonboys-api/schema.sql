@@ -1243,7 +1243,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_seasonal_state_season ON telegram_pe
 -- Player-facing live systems (districts, story chains, raids, upgrades and style sinks).
 CREATE TABLE IF NOT EXISTS telegram_pet_system_events (
   id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, system_key TEXT NOT NULL, action_key TEXT NOT NULL,
-  period_key TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','rejected')),
+  period_key TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','settling','completed','rejected')),
   payload_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE (telegram_id, system_key, action_key, period_key),
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
