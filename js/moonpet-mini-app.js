@@ -150,7 +150,11 @@
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
-      return button(choice.label, 'random_event', { choice: choice.key, event_key: encounter.event_key });
+      return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token });
+    }).join('') : '';
+    var adventure = state.adventure;
+    var adventureButtons = adventure ? adventure.choices.map(function (choice) {
+      return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token });
     }).join('') : '';
     var boss = guidance.weekly_boss || {};
     var run = state.run;
@@ -175,6 +179,7 @@
       }).join('') + '</div>'
       : '<div class="line">PLAYER VS CRT OPPONENT.</div><div class="button-grid one">' + button('START KAIJU BATTLE', 'kaiju_start') + '</div>';
     return panel('MOON RUN', runBody) +
+      panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div><div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available }) + '</div>') +
       panel('PET ARENA', arenaBody) + panel('KAIJU CODE CARDS', kaijuBody);
@@ -210,7 +215,7 @@
     var shop = (guidance.shop_items || []).map(function (item) {
       return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || item.equipped, detail: item.equipped ? 'EQUIPPED' : costText(item.cost) });
     }).join('');
-    var inventory = (state.inventory || []).map(function (item) {
+    var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
         ((item.kind === 'usable_item' || item.usable) ? '<div class="button-grid one">' + button('USE ' + (item.title || item.key), 'use_item', { item_key: item.key || item.item_key }) + '</div>' : '');
     }).join('');
@@ -281,6 +286,9 @@
     var reward = result.rewards || result.applied || result.computed && result.computed.rewards || {};
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
     var parts = [result.accepted ? 'ACTION ACCEPTED' : 'ACTION BLOCKED', words(result.reason)];
+    var terminalResult = result.battle && result.battle.result || result.resolved && result.resolved.result || result.match && result.match.result;
+    if (terminalResult) parts.push('OUTCOME ' + words(terminalResult.replace('player1', 'you').replace('player2', 'opponent')));
+    if (result.result_copy) parts.push(String(result.result_copy));
     if (result.damage) parts.push('DAMAGE ' + number(result.damage));
     if (result.pet_xp_awarded) parts.push('+' + number(result.pet_xp_awarded) + ' PET XP');
     if (gains.length) parts.push(gains.join(' // '));

@@ -35,7 +35,7 @@ import {
   PET_ECONOMY_ROUTES, buildPetEconomyGuidanceActions, formatPetEconomyValue,
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
-import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
+import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
@@ -6009,7 +6009,7 @@ function serializePetMiniAppArenaBattle(battle) {
   };
 }
 
-async function buildPetMiniAppState(db, telegramId) {
+async function buildPetMiniAppState(db, telegramId, botToken) {
   const petRaw = await getPetProfile(db, telegramId).catch(() => null);
   if (!petRaw) {
     return {
@@ -6042,6 +6042,15 @@ async function buildPetMiniAppState(db, telegramId) {
     getPetNotificationPreference(db, telegramId),
   ]);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
+  const adventureBase = selectPetAdventureEncounter(petRaw);
+  const adventure = adventureBase ? {
+    ...adventureBase,
+    event_key: `${adventureBase.key}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.slice(0, 120),
+  } : null;
+  const [encounterToken, adventureToken] = await Promise.all([
+    encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
+    adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
+  ]);
   const next = guidance ? choosePetNextAction(guidance) : null;
   const activeRun = guidance?.active_run || null;
   const dailyReservation = activeRun
@@ -6085,9 +6094,18 @@ async function buildPetMiniAppState(db, telegramId) {
     encounter: encounter ? {
       key: encounter.key,
       event_key: encounter.event_key,
+      challenge_token: encounterToken,
       title: encounter.title,
       intro: encounter.intro,
       choices: encounter.choices.map((choice) => ({ key: choice.key, label: choice.label })),
+    } : null,
+    adventure: adventure ? {
+      key: adventure.key,
+      event_key: adventure.event_key,
+      challenge_token: adventureToken,
+      title: adventure.title,
+      intro: adventure.intro,
+      choices: adventure.choices.map((choice) => ({ key: choice.key, label: choice.label })),
     } : null,
     arena: serializePetMiniAppArenaBattle(arena),
     kaiju: {
@@ -6110,7 +6128,7 @@ function petMiniAppEventKey(telegramId, action, requestId) {
   return buildStablePetEventKey(['mini', telegramId, action, suffix]);
 }
 
-async function processPetMiniAppAction(db, telegramId, user, body) {
+async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
   const source = 'telegram_mini_app';
@@ -6135,11 +6153,21 @@ async function processPetMiniAppAction(db, telegramId, user, body) {
     return result;
   }
   if (action === 'random_event') {
-    const displayedEventKey = String(body.event_key || '').slice(0, 120);
-    if (!resolvePetRandomEncounter(displayedEventKey)) return { accepted: false, reason: 'invalid_event_key' };
-    return processPetRandomEvent(db, telegramId, body.choice, { event_key: displayedEventKey, source });
+    const challenge = await verifyPetMiniAppChallenge(body.challenge_token, botToken, { type: 'event', telegram_id: telegramId });
+    if (!challenge.ok) return { accepted: false, reason: challenge.reason };
+    const displayedEventKey = String(challenge.payload.event_key || '').slice(0, 120);
+    const encounter = resolvePetRandomEncounter(displayedEventKey);
+    if (!encounter || encounter.key !== challenge.payload.encounter_key) return { accepted: false, reason: 'invalid_event_key' };
+    return processPetRandomEvent(db, telegramId, body.choice, { event_key: displayedEventKey, encounter, source });
   }
-  if (action === 'adventure') return processPetAdventure(db, telegramId, body.adventure_key, { event_key: eventKey, source });
+  if (action === 'adventure') {
+    const challenge = await verifyPetMiniAppChallenge(body.challenge_token, botToken, { type: 'adventure', telegram_id: telegramId });
+    if (!challenge.ok) return { accepted: false, reason: challenge.reason };
+    const displayedEventKey = String(challenge.payload.event_key || '').slice(0, 120);
+    const encounter = resolvePetAdventureEncounter(displayedEventKey);
+    if (!encounter || encounter.key !== challenge.payload.encounter_key) return { accepted: false, reason: 'invalid_adventure_key' };
+    return processPetAdventure(db, telegramId, body.adventure_key, { event_key: displayedEventKey, encounter, source });
+  }
   if (action === 'run_start') return startOrResumePetRun(db, telegramId, { run_id: body.run_id, source });
   if (action === 'daily_run_start') return createDailyMoonRun(db, { telegram_id: telegramId });
   if (action === 'run_step') {
@@ -6189,9 +6217,11 @@ async function processPetMiniAppAction(db, telegramId, user, body) {
     return { accepted: true, reason: 'arena_started', battle: await createPetArenaBattle(db, miniChatId, eligible.pet, appPet, 'app') };
   }
   if (action === 'arena_move') {
+    const move = String(body.move || '').trim().toLowerCase();
+    if (!Object.prototype.hasOwnProperty.call(PET_ARENA_MOVES, move)) return { accepted: false, reason: 'arena_move_invalid' };
     const battle = await getPetArenaBattle(db, body.battle_id);
     if (!battle || String(battle.chat_id) !== `mini:${telegramId}`) return { accepted: false, reason: 'arena_battle_not_found' };
-    return applyPetArenaMove(db, battle, telegramId, body.expected_round, body.move);
+    return applyPetArenaMove(db, battle, telegramId, body.expected_round, move);
   }
   if (action === 'arena_forfeit') {
     const battle = await getPetArenaBattle(db, body.battle_id);
@@ -6741,7 +6771,7 @@ export default {
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
-      const state = await buildPetMiniAppState(env.DB, verified.telegramId);
+      const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN);
       return json({ ok: true, state });
     }
 
@@ -6753,9 +6783,14 @@ export default {
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/action', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
-      const result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body)
-        .catch((error) => ({ accepted: false, reason: error?.message || 'mini_app_action_failed' }));
-      const state = await buildPetMiniAppState(env.DB, verified.telegramId).catch(() => null);
+      let result;
+      try {
+        result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body, env.TELEGRAM_BOT_TOKEN);
+      } catch (error) {
+        logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
+        return err('mini_app_action_failed', 500);
+      }
+      const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN).catch(() => null);
       return json({ ok: Boolean(result.accepted), result: serializePetMiniAppActionResult(result), state }, result.accepted ? 200 : 409);
     }
 
