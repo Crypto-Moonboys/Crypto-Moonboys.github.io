@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_system_events (
   system_key TEXT NOT NULL,
   action_key TEXT NOT NULL,
   period_key TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','rejected')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','settling','completed','rejected')),
   payload_json TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
