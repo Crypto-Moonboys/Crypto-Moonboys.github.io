@@ -9,8 +9,7 @@
       { "threshold": 0.5, "pattern": "neon_overdrive" }
     ],
     "rewards": {
-      "materials": { "neon_scrap": 3, "spray_pigment": 1 },
-      "items": { "evolution_fragment": 1 }
+      "materials": { "scrap_metal": 3, "moon_fabric": 1, "evolution_fragment": 1 }
     },
     "relic_chance_bps": 2500,
     "relic_pool": [

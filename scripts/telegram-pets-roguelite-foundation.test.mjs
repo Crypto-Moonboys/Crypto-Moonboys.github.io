@@ -154,7 +154,14 @@ const capped = await awardPetReward(capDb, {
 assert.equal(capped.pet_xp_awarded, 10, 'unified reward service must clamp Pet XP to the existing 1,200 daily cap');
 assert.equal(capped.xp_awarded, 5, 'unified reward service must clamp Community XP to the existing 250 daily cap');
 assert.deepEqual({ ...capDb.database.prepare('SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?').get('cap-player') }, { pet_xp: 10, moon_gold: 7, moon_crystals: 2, style_tokens: 3 });
-assert.equal(capDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'cap-player' AND asset_type = 'material' AND asset_key = 'scrap_metal'").get().quantity, 2);
+assert.equal(capDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = 'cap-player' AND material_key = 'scrap_metal'").get().quantity, 2);
+capDb.database.prepare("UPDATE telegram_pet_material_balances SET quantity = 9998 WHERE telegram_id = 'cap-player' AND material_key = 'scrap_metal'").run();
+await awardPetReward(capDb, {
+  telegram_id: 'cap-player', source: 'pet_action', idempotency_key: 'material-stack-cap', now: '2026-08-10T12:01:00Z',
+  rewards: { materials: { scrap_metal: 5 } },
+});
+assert.equal(capDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = 'cap-player' AND material_key = 'scrap_metal'").get().quantity, 9999,
+  'unified rewards must clamp canonical material stacks to 9,999');
 
 assert.equal(buildPetProfileDeltas({}, { hunger: 9 }).hunger, 9, 'a positive hunger cost must increase the hunger value');
 assert.equal(buildPetProfileDeltas({ hunger: 12 }, {}).hunger, -12, 'a positive hunger reward must decrease the hunger value');
@@ -292,12 +299,12 @@ extractionDb.database.prepare(`INSERT INTO telegram_pet_runs
   VALUES ('extraction-row', 'extraction-player', 'extraction-run', 'season', 'active', 7, 10, 70)`).run();
 const extractions = await Promise.all(Array.from({ length: 8 }, () => extractPetRogueliteRun(extractionDb,
   { run_id: 'extraction-run', telegram_id: 'extraction-player', current_room: 7, score: 70 },
-  { materials: { neon_scrap: 4 } }, { rooms_completed: 7 })));
+  { materials: { scrap_metal: 4 } }, { rooms_completed: 7 })));
 assert.equal(extractions.filter(({ duplicate }) => !duplicate).length, 1, 'duplicate extraction callbacks must finalize once');
-assert.equal(extractionDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'extraction-player' AND asset_key = 'neon_scrap'").get().quantity, 4);
+assert.equal(extractionDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = 'extraction-player' AND material_key = 'scrap_metal'").get().quantity, 4);
 assert.deepEqual({ ...extractionDb.database.prepare(`SELECT json_extract(event_data, '$.status') AS status,
-  json_extract(event_data, '$.depth') AS depth, json_extract(event_data, '$.rewards.materials.neon_scrap') AS neon_scrap
-  FROM telegram_pet_run_analytics WHERE analytics_id = 'extraction-run:end'`).get() }, { status: 'extracted', depth: 7, neon_scrap: 4 },
+  json_extract(event_data, '$.depth') AS depth, json_extract(event_data, '$.rewards.materials.scrap_metal') AS scrap_metal
+FROM telegram_pet_run_analytics WHERE analytics_id = 'extraction-run:end'`).get() }, { status: 'extracted', depth: 7, scrap_metal: 4 },
   'run-end analytics must expose successful extraction for extraction-rate aggregation');
 
 let bossRunId = null;
@@ -409,7 +416,7 @@ await Promise.all(Array.from({ length: 8 }, () => completePetRun(recoveryDb, rec
 assert.deepEqual({ ...recoveryDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'recovery-player'").get() }, { pet_xp: 30 });
 assert.deepEqual({ ...recoveryDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'recovery-player'").get() },
   { moon_gold: 25, moon_crystals: 2, style_tokens: 1 }, 'retry after partial completion failure must award currencies exactly once');
-assert.equal(recoveryDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'recovery-player' AND asset_type = 'material'").get().quantity, 3);
+assert.equal(recoveryDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = 'recovery-player' AND material_key = 'dark_alloy'").get().quantity, 3);
 assert.equal(recoveryDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'recovery-player' AND asset_type = 'item'").get().quantity, 1);
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'recovery-player'").get().count, 1);
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_modifiers WHERE run_id = 'recovery-run'").get().count, 0);

@@ -115,8 +115,8 @@ assert.deepEqual(await evolveMoonpet(invalidDb, { telegram_id: 'invalid-evolutio
   { accepted: false, duplicate: false, reason: 'invalid_evolution' });
 
 const evolutionDb = seedPlayer();
-evolutionDb.database.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('identity-player', 'material', 'neon_scrap', 15)").run();
-evolutionDb.database.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('identity-player', 'item', 'evolution_fragment', 3)").run();
+evolutionDb.database.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('identity-player', 'scrap_metal', 15)").run();
+evolutionDb.database.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('identity-player', 'evolution_fragment', 3)").run();
 for (const relicId of ['bitcoin_heart', 'cyber_collar']) evolutionDb.database.prepare(
   "INSERT INTO telegram_pet_relics (telegram_id, relic_id, rarity, effects_json) VALUES ('identity-player', ?, 'rare', '{}')",
 ).run(relicId);
@@ -129,8 +129,8 @@ assert.equal((await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player',
 const cyber = await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player', evolution_id: 'cyber_moonpet', event_key: 'cyber' });
 assert.equal(cyber.accepted, true, 'valid evolution must succeed');
 assert.equal(cyber.duplicate, false);
-assert.deepEqual(evolutionDb.database.prepare("SELECT asset_key, quantity FROM telegram_pet_inventory WHERE telegram_id='identity-player' ORDER BY asset_key").all().map((row) => ({ ...row })), [
-  { asset_key: 'evolution_fragment', quantity: 0 }, { asset_key: 'neon_scrap', quantity: 0 },
+assert.deepEqual(evolutionDb.database.prepare("SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id='identity-player' ORDER BY material_key").all().map((row) => ({ ...row })), [
+  { material_key: 'evolution_fragment', quantity: 0 }, { material_key: 'scrap_metal', quantity: 0 },
 ]);
 const duplicateCyber = await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player', evolution_id: 'cyber_moonpet', event_key: 'cyber-retry' });
 assert.equal(duplicateCyber.duplicate, true, 'duplicate evolution cannot happen');
@@ -138,7 +138,7 @@ assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegra
 assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE event_type='evolution_unlock'").get().count, 3);
 
 const concurrentEvolutionDb = seedPlayer('concurrent-evolution');
-concurrentEvolutionDb.database.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('concurrent-evolution', 'material', 'neon_scrap', 5)").run();
+concurrentEvolutionDb.database.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('concurrent-evolution', 'scrap_metal', 5)").run();
 await evolveMoonpet(concurrentEvolutionDb, { telegram_id: 'concurrent-evolution', evolution_id: 'moon_egg', event_key: 'concurrent-egg' });
 const concurrentEvolutionCallbacks = await Promise.all(Array.from({ length: 8 }, (_, index) => evolveMoonpet(concurrentEvolutionDb, {
   telegram_id: 'concurrent-evolution', evolution_id: 'street_moonpet', event_key: `concurrent-street:${index}`,
@@ -146,7 +146,7 @@ const concurrentEvolutionCallbacks = await Promise.all(Array.from({ length: 8 },
 assert.equal(concurrentEvolutionCallbacks.filter(({ duplicate }) => !duplicate).length, 1, 'concurrent evolution callbacks must unlock once');
 assert.equal(concurrentEvolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions WHERE telegram_id='concurrent-evolution' AND evolution_id='street_moonpet'").get().count, 1,
   'concurrent evolution callbacks must create one evolution row');
-assert.equal(concurrentEvolutionDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='concurrent-evolution' AND asset_key='neon_scrap'").get().quantity, 0,
+assert.equal(concurrentEvolutionDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='concurrent-evolution' AND material_key='scrap_metal'").get().quantity, 0,
   'concurrent evolution callbacks must consume authoritative materials once');
 const concurrentEvolutionMemory = JSON.parse(concurrentEvolutionDb.database.prepare("SELECT milestones FROM telegram_pet_memories WHERE telegram_id='concurrent-evolution'").get().milestones);
 assert.equal(concurrentEvolutionMemory.filter((milestone) => milestone === 'evolution_street_moonpet').length, 1,

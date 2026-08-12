@@ -376,7 +376,7 @@ assert.equal(challengeClaims.size, 365, 'challenge completion keys must be dupli
 assert.equal(memoryKeys.size, 1, 'milestone memories cannot spam across 10,000 runs');
 for (let index = 0; index < 10000; index += 1) await awardPetReward(simulationDb, {
   telegram_id: 'simulation-player', source: 'roguelite_completion', idempotency_key: 'simulation-run',
-  rewards: { pet_xp: 1200, community_xp: 250, materials: { neon_scrap: 40 }, items: { evolution_fragment: 10 } },
+  rewards: { pet_xp: 1200, community_xp: 250, materials: { scrap_metal: 40 }, items: { moon_snack: 10 } },
   context: { run_id: 'simulation-run' }, now: new Date('2026-08-11T00:00:00.000Z'),
 });
 assert.equal(simulationDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='simulation-player'").get().pet_xp, 1200,
@@ -385,7 +385,7 @@ assert.equal(simulationDb.database.prepare("SELECT xp FROM telegram_users WHERE 
   'Community XP must remain capped after 10,000 callbacks');
 assert.equal(simulationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='simulation-player'").get().count, 1,
   'reward claims cannot duplicate across 10,000 callbacks');
-assert.equal(simulationDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='simulation-player' AND asset_type='material'").get().quantity, 40,
+assert.equal(simulationDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='simulation-player' AND material_key='scrap_metal'").get().quantity, 40,
   'materials must remain bounded after 10,000 callbacks');
 assert.equal(simulationDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='simulation-player' AND asset_type='item'").get().quantity, 10,
   'items must remain bounded after 10,000 callbacks');

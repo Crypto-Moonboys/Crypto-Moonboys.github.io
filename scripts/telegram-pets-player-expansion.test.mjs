@@ -16,7 +16,8 @@ import {
 } from '../workers/moonboys-api/pets/player-expansion.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
-assert.equal(Object.keys(PET_ACHIEVEMENTS).length, 12, 'expansion must ship twelve permanent achievements');
+assert.equal(Object.keys(PET_ACHIEVEMENTS).length, 13, 'expansion must cover every formal evolution, including Elite Moonpet');
+assert.ok(PET_ACHIEVEMENTS.moon_alley_elite, 'Elite Moonpet evolution must reference a registered achievement');
 assert.equal(PET_SEASON_REWARD_TIERS.length, 4, 'season track must ship four bounded claim tiers');
 assert.equal(PET_WEEKLY_BOSSES.length, 4, 'weekly rotation must include four bosses');
 assert.equal(getPetWeeklyBoss('2026-W33'), getPetWeeklyBoss('2026-W33'), 'weekly boss selection must be deterministic');
@@ -57,7 +58,8 @@ assert.notEqual(nextReaction.key, firstReaction.key, 'recent reaction keys must 
 assert.notEqual(nextReaction.text, firstReaction.text, 'recent reaction text must not immediately repeat');
 assert.ok(buildMoonpetReaction('event', reactionIdentity).length > 20);
 
-assert.equal(Object.keys(hooks.PET_JOBS).length, 12, 'jobs must expand from four to twelve');
+assert.equal(Object.keys(hooks.PET_JOBS).length, 14, 'all standard and elite jobs must share the live job authority');
+assert.ok(hooks.PET_JOBS.vault_security && hooks.PET_JOBS.kaiju_recovery, 'elite job definitions must be playable rather than orphaned content');
 assert.equal(Object.keys(hooks.PET_RANDOM_EVENTS).length, 10, 'random events must expand from five to ten');
 assert.equal(hooks.PET_JOBS.guardian_patrol.min_evolution_stage, 4, 'late jobs must use evolution as a content gate');
 assert.equal(hooks.PET_RANDOM_EVENTS.guardian_distress_call.min_evolution_stage, 4, 'late events must use evolution as a content gate');
@@ -148,6 +150,7 @@ class D1DatabaseAdapter {
     let values = [];
     return {
       bind(...params) { values = params; return this; },
+      async first() { const row = statement.get(...values); return row ? { ...row } : null; },
       async all() { return { results: statement.all(...values).map((row) => ({ ...row })) }; },
       async run() { const result = statement.run(...values); return { meta: { changes: Number(result.changes || 0) } }; },
     };
@@ -160,5 +163,27 @@ const storedSecond = await selectMoonpetReaction(dialogueDb, 'player-1', 'feed',
 assert.notEqual(storedSecond, storedFirst, 'persisted recent dialogue must prevent immediate repetition across requests');
 assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_dialogue_history WHERE telegram_id = 'player-1'`).get().count, 2);
 db.close();
+
+const fullSchema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
+const eliteSqlite = new DatabaseSync(':memory:');
+eliteSqlite.exec(fullSchema);
+eliteSqlite.prepare("INSERT INTO telegram_users (telegram_id, xp, level) VALUES ('elite-gate-player', 0, 1)").run();
+eliteSqlite.prepare("INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES ('elite-gate-player', 4500, 46)").run();
+eliteSqlite.prepare(`INSERT INTO telegram_pet_evolutions
+  (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
+  VALUES ('elite-gate-player', 'elite_moonpet', 3, 'test:elite-stage', 1)`).run();
+eliteSqlite.prepare(`INSERT INTO telegram_pet_progression_state
+  (telegram_id, training_xp, arena_xp)
+  VALUES ('elite-gate-player', 999, 1999)`).run();
+const eliteDb = new D1DatabaseAdapter(eliteSqlite);
+const vaultLocked = await hooks.processPetJob(eliteDb, 'elite-gate-player', 'vault_security', { event_key: 'test:vault-locked' });
+assert.equal(vaultLocked.reason, 'specialist_job_locked');
+assert.deepEqual({ track: vaultLocked.required_track, current: vaultLocked.current_xp, required: vaultLocked.required_xp },
+  { track: 'training', current: 999, required: 1000 });
+const kaijuLocked = await hooks.processPetJob(eliteDb, 'elite-gate-player', 'kaiju_recovery', { event_key: 'test:kaiju-locked' });
+assert.equal(kaijuLocked.reason, 'specialist_job_locked');
+assert.deepEqual({ track: kaijuLocked.required_track, current: kaijuLocked.current_xp, required: kaijuLocked.required_xp },
+  { track: 'arena', current: 1999, required: 2000 });
+eliteSqlite.close();
 
 console.log('Telegram Pets player expansion tests passed.');

@@ -11,7 +11,7 @@ function hasOwn(object, key) {
 export const PET_REGION_CONTENT = deepFreeze({
   moon_alley: {
     encounters: ['lost_delivery_drone', 'graffiti_wall_request', 'moon_crate_found'],
-    boss: 'alley_scrapper',
+    boss: 'alley_king',
     reward_focus: ['scrap_metal', 'moon_fabric'],
   },
   neon_rooftops: {

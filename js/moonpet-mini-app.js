@@ -166,7 +166,7 @@
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && state.guidance.achievements || [];
     var achievementRows = achievements.map(function (entry) {
-      return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div>';
+      return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
     return panel('DAILY MISSION BUFFER', rows) + panel('ACHIEVEMENT ARCHIVE', achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>');
   }
@@ -194,7 +194,7 @@
     var arena = state.arena;
     var arenaBody = arena ? '<div class="line">ROUND ' + number(arena.current_round) + ' // HP ' + number(arena.player_hp) + ' : ' + number(arena.opponent_hp) + '</div><div class="button-grid three">' +
       ['ah:ATTACK HEAD', 'ab:ATTACK BODY', 'bh:BLOCK HEAD', 'bb:BLOCK BODY', 'ch:CHARGE', 'sp:SPECIAL'].map(function (move) { var bits = move.split(':'); return button(bits[1], 'arena_move', { battle_id: arena.battle_id, expected_round: arena.current_round, move: bits[0] }); }).join('') +
-      '</div>' : '<div class="button-grid one">' + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
+      '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>' : '<div class="button-grid one">' + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
     var kaiju = state.kaiju || {};
     var kaijuMatch = kaiju.match;
     var kaijuBody = kaijuMatch
@@ -203,7 +203,10 @@
         return button(card.name, 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: card.id }, { detail: statLine });
       }).join('') + '</div>'
       : '<div class="line">PLAYER VS CRT OPPONENT.</div><div class="button-grid one">' + button('START KAIJU BATTLE', 'kaiju_start') + '</div>';
-    return panel('MOON RUN', runBody) +
+    var regions = (state.regions || []).map(function (region) {
+      return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : '') + '</div>';
+    }).join('');
+    return panel('DISTRICT NETWORK', regions) + panel('MOON RUN', runBody) +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div><div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available }) + '</div>') +
@@ -214,7 +217,8 @@
     var guidance = state.guidance || {};
     var jobs = guidance.jobs || state.jobs || [];
     var jobsHtml = jobs.map(function (job) {
-      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, detail: 'LVL ' + job.min_level + ' // +' + job.moon_gold + 'G' });
+      var specialistGate = job.required_track ? ' // ' + words(job.required_track).toUpperCase() + ' ' + number(job.current_xp) + '/' + number(job.required_xp) : '';
+      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, detail: 'LVL ' + job.min_level + specialistGate + ' // +' + job.moon_gold + 'G // ' + (job.lore || '') });
     }).join('');
     var activity = guidance.activity;
     var activityHtml = activity
@@ -249,7 +253,13 @@
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
         '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>';
     }).join('');
+    var materials = (state.materials || []).map(function (item) {
+      return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
+    }).join('');
+    var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div>'; }).join('');
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>') +
+      panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>') +
+      panel('RELIC VAULT', relics || '<div class="line muted">NO RELICS RECOVERED.</div>') +
       panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>') +
       panel('CRYSTAL EXPEDITION', '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left }) + '</div>') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>') +
@@ -273,6 +283,8 @@
     }).join('');
     var traits = (guidance.personalities || []).map(function (trait) { return '<div class="line complete">[' + escapeHtml(words(trait.trait_id || trait.name || trait)) + ']</div>'; }).join('');
     var progress = state.progress || {};
+    var learnedTraits = {};
+    try { learnedTraits = JSON.parse(progress.traits_json || '{}'); } catch (_) {}
     var tracks = ['care', 'training', 'adventure', 'arena', 'job', 'bond'].map(function (key) {
       var xp = progress[key + '_xp'];
       return '<div class="line">' + escapeHtml(key.toUpperCase()) + ' XP ' + number(xp) + '</div>';
@@ -282,7 +294,9 @@
     var notificationPanel = '<div class="line ' + (notifications.enabled ? 'complete' : 'muted') + '">PROGRESSION ALERTS: ' + (notifications.enabled ? 'ONLINE' : 'OFFLINE') + '</div><div class="button-grid">' +
       button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled }) +
       button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, danger: true }) + '</div>';
-    return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + '</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) +
+    var aptitudeRows = ['brave', 'loyal', 'clever', 'stylish', 'tough', 'lucky'].map(function (key) { return '<div class="line">' + key.toUpperCase() + ' ' + number(learnedTraits[key]) + '</div>'; }).join('');
+    return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + '</div><div class="line muted">PERSONALITY REACTIONS</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) +
+      panel('LEARNED APTITUDES', aptitudeRows) +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>') +
       panel('EVOLUTION', evoHtml) + panel('SPECIALIST TRACKS', tracks) + panel('ALERT CONTROL', notificationPanel) + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers) + panel('TOP MOONPETS', leaders);
   }

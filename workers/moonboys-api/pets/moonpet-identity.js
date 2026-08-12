@@ -249,8 +249,13 @@ function evolutionRequirementSql(definition, telegramId) {
     args.push(telegramId, positiveInteger(requirements.relics_owned));
   }
   for (const [assetType, assets] of Object.entries(requirements.inventory || {})) for (const [assetKey, quantity] of Object.entries(assets)) {
-    clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_inventory WHERE telegram_id = ? AND asset_type = ? AND asset_key = ? AND quantity >= ?)`);
-    args.push(telegramId, assetType, assetKey, quantity);
+    if (assetType === 'material') {
+      clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_material_balances WHERE telegram_id = ? AND material_key = ? AND quantity >= ?)`);
+      args.push(telegramId, assetKey, quantity);
+    } else {
+      clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_inventory WHERE telegram_id = ? AND asset_type = ? AND asset_key = ? AND quantity >= ?)`);
+      args.push(telegramId, assetType, assetKey, quantity);
+    }
   }
   return { sql: clauses.join(' AND '), args };
 }
@@ -272,10 +277,17 @@ export async function evolveMoonpet(db, request = {}) {
     SELECT ?, ?, ?, ?, ?, ?, 0 WHERE ${requirements.sql}`)
     .bind(telegramId, evolutionId, definition.stage, eventKey, safeJson(definition.cosmetic_unlocks), safeJson(definition.achievement_unlocks), ...requirements.args)];
   for (const [assetType, assets] of Object.entries(definition.requirements.inventory || {})) for (const [assetKey, quantity] of Object.entries(assets)) {
-    statements.push(db.prepare(`UPDATE telegram_pet_inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ? AND asset_type = ? AND asset_key = ? AND quantity >= ?
-        AND EXISTS (SELECT 1 FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
-      .bind(quantity, telegramId, assetType, assetKey, quantity, telegramId, evolutionId));
+    if (assetType === 'material') {
+      statements.push(db.prepare(`UPDATE telegram_pet_material_balances SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ? AND material_key = ? AND quantity >= ?
+          AND EXISTS (SELECT 1 FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
+        .bind(quantity, telegramId, assetKey, quantity, telegramId, evolutionId));
+    } else {
+      statements.push(db.prepare(`UPDATE telegram_pet_inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ? AND asset_type = ? AND asset_key = ? AND quantity >= ?
+          AND EXISTS (SELECT 1 FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
+        .bind(quantity, telegramId, assetType, assetKey, quantity, telegramId, evolutionId));
+    }
   }
   statements.push(db.prepare(`INSERT INTO telegram_pet_memories (telegram_id, milestones)
     SELECT ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)

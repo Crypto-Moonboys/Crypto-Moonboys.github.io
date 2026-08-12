@@ -62,6 +62,9 @@ button { font: inherit; }
 .muted { color: var(--dim); }
 .complete { color: var(--hot); }
 .locked { opacity: .5; }
+.region-entry { margin: 0 0 8px; padding: 7px; border-left: 3px solid var(--line); background: rgba(7,23,12,.65); }
+.region-entry.complete { border-left-color: var(--hot); }
+.region-entry.locked { border-left-color: #315338; }
 .meter { display: grid; grid-template-columns: 72px 1fr 32px; align-items: center; gap: 6px; margin: 5px 0; font-size: 11px; }
 .meter-track { height: 8px; border: 1px solid var(--line); background: #020704; }
 .meter-fill { display: block; height: 100%; background: var(--ink); box-shadow: 0 0 8px var(--dim); }

@@ -680,6 +680,8 @@ assert.ok(!asyncBlock('getPetInventory').includes('telegram_pet_events'), 'inven
 const work = asyncBlock('processPetJob');
 assert.ok(work.includes('duplicate'), 'work must short-circuit duplicate event keys');
 assert.ok(work.includes("source: 'pet_job'") && work.includes('awardPetReward(db'), 'work must use the capped unified reward authority');
+assert.ok(work.includes('canStartPetEliteJob'), 'elite jobs must enforce their specialist-track XP gate server-side');
+assert.ok(work.includes("reason: 'specialist_job_locked'"), 'elite jobs must explain specialist-track locks');
 for (const job of ['street_artist', 'courier', 'crystal_miner', 'vault_guard']) {
   assert.ok(worker.includes(job), `work must support ${job}`);
 }
@@ -952,6 +954,7 @@ assert.ok(worker.includes('buildTelegramCallbackPetEventKey'), 'callback event k
 
 const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
+assert.ok(stateRoute.includes('getMoonpetIdentitySummary(env.DB, telegramId)'), 'GET /telegram-pets/state must derive evolution stage from stored identity');
 assert.ok(!stateRoute.includes('getOrCreatePetProfile'), 'GET /telegram-pets/state must not create pets');
 
 const inventoryRoute = routeBlock('/telegram-pets/inventory');
@@ -1855,9 +1858,9 @@ for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1]]) {
     (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
     VALUES ('legacy-boss-gate', ?, ?, ?, 1)`).run(evolutionId, stage, `fixture:${evolutionId}`);
 }
-legacyBossDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES
-  ('legacy-boss-gate', 'material', 'neon_scrap', 10),
-  ('legacy-boss-gate', 'item', 'evolution_fragment', 3)`).run();
+legacyBossDb.database.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES
+  ('legacy-boss-gate', 'scrap_metal', 10),
+  ('legacy-boss-gate', 'evolution_fragment', 3)`).run();
 legacyBossDb.database.prepare(`INSERT INTO telegram_pet_relics (telegram_id, relic_id, rarity) VALUES
   ('legacy-boss-gate', 'bitcoin_heart', 'legendary'),
   ('legacy-boss-gate', 'neon_boots', 'rare')`).run();

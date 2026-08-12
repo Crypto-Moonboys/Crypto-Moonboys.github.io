@@ -268,11 +268,17 @@ export async function awardPetReward(db, request = {}) {
           ), 0)))
           WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
           .bind(claimId, kind, key, quantity, rogueliteAsset ? dailyCap : MAX_CURRENCY, telegramId, dayKey, kind, eventId, metadata),
-        db.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity, updated_at)
-          SELECT ?, asset_type, asset_key, amount, CURRENT_TIMESTAMP FROM telegram_pet_reward_assets
-          WHERE claim_id = ? AND asset_type = ? AND asset_key = ? AND amount > 0
-          ON CONFLICT(telegram_id, asset_type, asset_key) DO UPDATE SET quantity = MIN(?, quantity + excluded.quantity), updated_at = CURRENT_TIMESTAMP`)
-          .bind(telegramId, claimId, kind, key, MAX_CURRENCY),
+        kind === 'material'
+          ? db.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity, updated_at)
+              SELECT ?, asset_key, amount, CURRENT_TIMESTAMP FROM telegram_pet_reward_assets
+              WHERE claim_id = ? AND asset_type = 'material' AND asset_key = ? AND amount > 0
+              ON CONFLICT(telegram_id, material_key) DO UPDATE SET quantity = MIN(?, quantity + excluded.quantity), updated_at = CURRENT_TIMESTAMP`)
+            .bind(telegramId, claimId, key, 9999)
+          : db.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity, updated_at)
+              SELECT ?, asset_type, asset_key, amount, CURRENT_TIMESTAMP FROM telegram_pet_reward_assets
+              WHERE claim_id = ? AND asset_type = ? AND asset_key = ? AND amount > 0
+              ON CONFLICT(telegram_id, asset_type, asset_key) DO UPDATE SET quantity = MIN(?, quantity + excluded.quantity), updated_at = CURRENT_TIMESTAMP`)
+            .bind(telegramId, claimId, kind, key, MAX_CURRENCY),
       );
     }
   }
