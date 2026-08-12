@@ -6104,9 +6104,9 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || []);
   const guidedNext = guidance ? choosePetNextAction(guidance) : null;
   const affordableUpgrade = liveSystems.upgrades.find((item) => item.affordable && !item.maxed);
-  const availableDistrict = liveSystems.regions.find((region) => region.playable && !region.completed);
+  const availableDistrict = liveSystems.regions.find((region) => region.available && !region.completed);
   const affordableCosmetic = liveSystems.cosmetics.find((item) => item.affordable && (!item.unlocked || item.repeatable));
-  const activeChain = liveSystems.chains[0];
+  const activeChain = liveSystems.chains.find((chain) => chain.available);
   const liveNext = liveSystems.prestige.ready
     ? { key: 'prestige', title: 'Ascend Prestige', detail: 'Requires Level 100, 3 mastered items and 4 completed districts. Cost: 5,000 Gold + 50 Gems. Reward: +1 Prestige rank and 3 Mastery Tokens.', action: 'prestige', destination: 'profile' }
     : affordableUpgrade
@@ -6286,6 +6286,8 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     return processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction);
   }
   if (action === 'event_chain') {
+    const petRaw = await getPetProfile(db, telegramId);
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
     const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
     return processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction);
   }
