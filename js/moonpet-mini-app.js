@@ -15,6 +15,7 @@
   var animationUntil = 0;
   var animationLabel = '';
   var actionSequence = 0;
+  var reducedMotionAnimationTimer = 0;
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -494,7 +495,19 @@
     animationMode = accepted === false ? 'blocked' : actionAnimationFamily(action, payload);
     animationLabel = accepted === false ? 'NOT READY' : words(animationMode);
     actionSequence += 1;
-    animationUntil = performance.now() + (duration || 2400);
+    var animationDuration = duration || 2400;
+    animationUntil = performance.now() + animationDuration;
+    if (reducedMotion) {
+      window.clearTimeout(reducedMotionAnimationTimer);
+      var sequence = actionSequence;
+      drawWorld(performance.now());
+      reducedMotionAnimationTimer = window.setTimeout(function () {
+        if (sequence !== actionSequence) return;
+        animationMode = 'idle';
+        animationLabel = '';
+        drawWorld(performance.now());
+      }, animationDuration);
+    }
   }
 
   async function runAction(action, payload, buttonElement) {
