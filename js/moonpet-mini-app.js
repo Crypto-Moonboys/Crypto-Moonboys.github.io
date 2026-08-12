@@ -4,7 +4,7 @@
   var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   var apiConfig = window.MOONBOYS_API || {};
   var apiBase = apiConfig.BASE_URL || 'https://moonboys-api.sercullen.workers.dev';
-  var initData = tg ? String(tg.initData || '') : '';
+  var initData = '';
   var telegramAuth = null;
   var state = null;
   var activeScreen = 'home';
@@ -25,6 +25,31 @@
   var bootText = document.getElementById('boot-text');
   var title = document.getElementById('system-title');
   var clock = document.getElementById('system-clock');
+
+  function launchParameter(name) {
+    var locations = [String(window.location.hash || '').replace(/^#/, ''), String(window.location.search || '').replace(/^\?/, '')];
+    for (var index = 0; index < locations.length; index += 1) {
+      if (!locations[index]) continue;
+      var value = new URLSearchParams(locations[index]).get(name);
+      if (value) return String(value);
+    }
+    return '';
+  }
+
+  function refreshTelegramContext() {
+    tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : tg;
+    initData = String(tg && tg.initData || launchParameter('tgWebAppData') || '');
+    return Boolean(initData);
+  }
+
+  async function waitForTelegramContext() {
+    if (refreshTelegramContext()) return true;
+    for (var attempt = 0; attempt < 20; attempt += 1) {
+      await new Promise(function (resolve) { setTimeout(resolve, 50); });
+      if (refreshTelegramContext()) return true;
+    }
+    return false;
+  }
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
@@ -422,6 +447,7 @@
   }
 
   async function start() {
+    await waitForTelegramContext();
     if (tg) {
       try { tg.ready(); tg.expand(); tg.setHeaderColor('#06110b'); tg.setBackgroundColor('#010402'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (_) {}
     }
