@@ -50,6 +50,7 @@ button { font: inherit; }
 
 .boot-layer { position: absolute; inset: 0; padding: 14px; background: rgba(1,7,3,.93); overflow: hidden; transition: opacity .18s linear; }
 .boot-layer.is-compact { inset: auto 8px 8px; max-height: 45%; padding: 8px 10px; border: 1px solid var(--line); background: rgba(1,7,3,.88); box-shadow: 3px 3px 0 #020704; }
+.boot-layer.is-compact.is-notice { inset: 8px; max-height: none; overflow-y: auto; overscroll-behavior: contain; }
 .boot-layer.is-compact pre { font-size: clamp(9px, 2.2vw, 12px); line-height: 1.3; }
 .boot-layer.is-compact .cursor { width: 6px; height: 10px; }
 .boot-layer.is-hidden { opacity: 0; pointer-events: none; }
