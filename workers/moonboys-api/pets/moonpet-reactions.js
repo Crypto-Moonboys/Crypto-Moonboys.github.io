@@ -416,18 +416,18 @@ function safeText(value, fallback = '') {
 }
 
 export function getMoonpetMood(pet = {}) {
-  const health = Number(pet.health ?? 100);
-  const hunger = Number(pet.hunger ?? 0);
-  const happiness = Number(pet.happiness ?? 100);
-  const cleanliness = Number(pet.cleanliness ?? 100);
-  const energy = Number(pet.energy ?? 100);
-  if (health <= 45) return 'unwell';
-  if (energy <= 25) return 'exhausted';
-  if (hunger >= 75) return 'hungry';
-  if (cleanliness <= 35) return 'grubby';
-  if (happiness <= 35) return 'lonely';
-  if (health >= 80 && hunger <= 30 && happiness >= 75 && cleanliness >= 70 && energy >= 60) return 'thriving';
-  if (happiness >= 80 && energy >= 55) return 'excited';
+  const stats = Object.fromEntries(['health', 'hunger', 'happiness', 'cleanliness', 'energy'].map((key) => {
+    const value = pet && typeof pet === 'object' && pet[key] != null ? Number(pet[key]) : NaN;
+    return [key, Number.isFinite(value) ? value : null];
+  }));
+  if (stats.health != null && stats.health <= 45) return 'unwell';
+  if (stats.energy != null && stats.energy <= 25) return 'exhausted';
+  if (stats.hunger != null && stats.hunger >= 75) return 'hungry';
+  if (stats.cleanliness != null && stats.cleanliness <= 35) return 'grubby';
+  if (stats.happiness != null && stats.happiness <= 35) return 'lonely';
+  const hasCompleteStats = Object.values(stats).every((value) => value != null);
+  if (hasCompleteStats && stats.health >= 80 && stats.hunger <= 30 && stats.happiness >= 75 && stats.cleanliness >= 70 && stats.energy >= 60) return 'thriving';
+  if (hasCompleteStats && stats.happiness >= 80 && stats.energy >= 55) return 'excited';
   return 'steady';
 }
 
@@ -476,7 +476,7 @@ function renderTemplate(template, context, identity, detail = {}) {
 export function buildMoonpetReactionChoice(contextRaw, identity = {}, detail = {}) {
   const requestedContext = safeText(contextRaw).toLowerCase().replaceAll('-', '_');
   const context = activities[requestedContext] ? requestedContext : 'generic';
-  const pet = detail.pet || identity.pet || {};
+  const pet = detail.pet || identity.pet || null;
   const mood = safeText(detail.mood || identity.mood || getMoonpetMood(pet), 'steady');
   const evolutionId = safeText(identity.current_stage?.evolution_id, 'moon_egg');
   const candidates = [];

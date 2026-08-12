@@ -41,11 +41,16 @@ assert.equal(getMoonpetMood({ health: 40, energy: 100 }), 'unwell');
 assert.equal(getMoonpetMood({ health: 100, energy: 20 }), 'exhausted');
 assert.equal(getMoonpetMood({ health: 100, energy: 100, hunger: 80 }), 'hungry');
 assert.equal(getMoonpetMood({ health: 100, energy: 100, hunger: 0, happiness: 100, cleanliness: 100 }), 'thriving');
+assert.equal(getMoonpetMood(), 'steady', 'missing pet stats must remain neutral instead of pretending the Moonpet is thriving');
+assert.equal(getMoonpetMood(null), 'steady', 'explicitly absent pet state must remain neutral');
+assert.equal(getMoonpetMood({ happiness: 100, energy: 100 }), 'steady', 'partial positive stats cannot prove a thriving or excited mood');
+assert.equal(getMoonpetMood({ energy: 20 }), 'exhausted', 'a known urgent stat may still select its truthful mood when other stats are absent');
 const reactionIdentity = {
   current_stage: { evolution_id: 'cyber_moonpet', name: 'Cyber Moonpet', stage: 2 },
   personalities: [{ trait_id: 'curious' }],
   memories: { milestones: ['first_boss_victory'], total_bosses_defeated: 2 },
 };
+assert.equal(buildMoonpetReactionChoice('boss', reactionIdentity).mood, 'steady', 'callers without a profile must not emit a false thriving mood');
 const firstReaction = buildMoonpetReactionChoice('event', reactionIdentity, { pet: { health: 100, energy: 80, hunger: 10, happiness: 90, cleanliness: 90 }, seed: 'player-1' });
 const nextReaction = buildMoonpetReactionChoice('event', reactionIdentity, { pet: { health: 100, energy: 80, hunger: 10, happiness: 90, cleanliness: 90 }, seed: 'player-1', recent_dialogue: [firstReaction] });
 assert.notEqual(nextReaction.key, firstReaction.key, 'recent reaction keys must be excluded from the next selection');
