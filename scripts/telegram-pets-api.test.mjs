@@ -970,7 +970,14 @@ for (const command of ['cmdPetUse', 'cmdPetDaily', 'cmdPetClaim', 'cmdPetTrade',
 }
 assert.ok(!worker.includes('formatPetStatus(result.pet, await buildPetMissions(db, telegramId))'), 'missions must never be passed into the formatPetStatus identity parameter');
 assert.ok(asyncBlock('cmdPetDetails').includes('buildPetMissions(db, telegramId)'), 'missions must remain available in the separate Details response');
-assert.ok(asyncBlock('cmdPetMissions').includes('buildPetMissions(db, telegramId)'), '/petmissions functionality must remain intact');
+const petMissionsCommand = asyncBlock('cmdPetMissions');
+assert.ok(petMissionsCommand.includes('buildPetMissions(db, telegramId)'), '/petmissions functionality must remain intact');
+assert.ok(petMissionsCommand.includes('buildPetProgressMenuReplyMarkup()'), '/petmissions must return players to Progress');
+const petActivityCommand = asyncBlock('cmdPetActivity');
+assert.ok(petActivityCommand.includes("callback_data: 'pet:start:sleep'"), '/petactivity must expose timed activity choices');
+assert.ok(petActivityCommand.includes("callback_data: 'pet:back'"), '/petactivity must provide Back navigation');
+assert.ok(asyncBlock('cmdPetStart').includes("callback_data: 'pet:back'"), 'started activities must allow navigation back without cancelling');
+assert.ok(asyncBlock('cmdPetCancel').includes('petReplyMarkup()'), 'activity cancellation must return the main dashboard');
 
 const petEvent = asyncBlock('cmdPetEvent');
 assert.ok(petEvent.includes('selectPetRandomEncounter'), '/petevent command must show a random encounter');
@@ -1023,14 +1030,16 @@ assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item but
 assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
 
 const mainButtons = petReplyMarkup().inline_keyboard.flat();
-assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '🏋️ Train', '⚔️ Adventure', '🎒 Bag', '🛒 Shop', '📋 Details'], '/pet must expose primary companion actions including Train');
+assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '🏋️ Train', '⚔️ Adventure', '⏱ Activities', '⚙️ Management', '📋 Details'], '/pet must expose care actions and the three primary navigation areas');
 assert.equal(mainButtons.find((button) => button.text.includes('Train'))?.callback_data, 'pet:train', 'Train must invoke the existing pet action callback');
-for (const removed of ['Work', 'Events', 'Daily', 'Kaiju', 'Arena', 'Run', 'Activity', 'Claim', 'Cancel', 'How To Play', 'Leaderboard']) assert.ok(!mainButtons.some((button) => button.text.includes(removed)), `/pet main buttons must hide ${removed}`);
+assert.equal(mainButtons.find((button) => button.text.includes('Activities'))?.callback_data, 'pet:activity', 'Activities must open timed activities');
+assert.equal(mainButtons.find((button) => button.text.includes('Management'))?.callback_data, 'pet:menu:management', 'Management must be reachable from /pet');
+for (const removed of ['Work', 'Events', 'Daily', 'Kaiju', 'Arena', 'Run', 'Claim', 'Cancel', 'How To Play', 'Leaderboard', 'Bag', 'Shop']) assert.ok(!mainButtons.some((button) => button.text.includes(removed)), `/pet main buttons must hide ${removed}`);
 
 const menuCases = [
   ['Adventure', buildPetAdventureMenuReplyMarkup(), ['Moon Run', 'Pet Jobs', 'Random Events', 'Kaiju', 'Arena', 'Daily']],
   ['Management', buildPetManagementMenuReplyMarkup(), ['Bag', 'Shop', 'Equipment', 'Trade']],
-  ['Progress', buildPetProgressMenuReplyMarkup(), ['Details', 'Evolution', 'Personality', 'Memories', 'Leaderboard', 'Streak']],
+  ['Progress', buildPetProgressMenuReplyMarkup(), ['Details', 'Missions', 'Evolution', 'Personality', 'Memories', 'Achievements', 'Season Rewards', 'Leaderboard', 'Streak']],
 ];
 for (const [name, markup, labels] of menuCases) {
   const buttons = markup.inline_keyboard.flat();
@@ -1038,7 +1047,16 @@ for (const [name, markup, labels] of menuCases) {
   assert.ok(buttons.some((button) => button.callback_data === 'pet:back'), `${name} submenu must include Back navigation`);
   for (const button of buttons.filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `${name} callback too long: ${button.callback_data}`);
 }
-for (const callback of ['pet:work', 'pet:event', 'pet:daily', 'pet:kaiju', 'pet:arena', 'pet:run', 'pet:shop', 'pet:bag']) assert.ok(worker.includes(callback), `existing command must remain reachable through ${callback}`);
+for (const callback of ['pet:activity', 'pet:missions', 'pet:work', 'pet:event', 'pet:daily', 'pet:kaiju', 'pet:arena', 'pet:run', 'pet:shop', 'pet:bag']) assert.ok(worker.includes(callback), `existing command must remain reachable through ${callback}`);
+for (const obsolete of [
+  "text: '🌕 Pet Menu', callback_data: 'pet:bag'",
+  "text: 'Pet Menu', callback_data: 'pet:bag'",
+  "text: 'Back', callback_data: 'pet:bag'",
+  "text: 'Pet Status', callback_data: 'pet:bag'",
+  "text: 'Boss Cleared', callback_data: 'pet:bag'",
+]) assert.ok(!worker.includes(obsolete), `misleading navigation must be removed: ${obsolete}`);
+assert.ok(worker.includes("text: '🌕 Pet Status', callback_data: 'pet:back'"), 'Moon Run Pet Status must return to /pet');
+assert.ok(worker.includes("text: '⬅️ Adventure', callback_data: 'pet:menu:adventure'"), 'adventure features must navigate back to Adventure');
 const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetMenu'));
 assert.ok(!statusFormatter.includes('??'), 'formatPetStatus must not contain placeholder question marks');
 assert.ok(!petReply.includes('??'), 'petReplyMarkup must not contain placeholder question marks');
@@ -1046,7 +1064,7 @@ assert.ok(!worker.includes('??? Train'), 'telegram pet UI must not contain the o
 
 const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// Group-level events'));
 assert.ok(callbackBranch.includes("if (payload === 'back')") && callbackBranch.includes('cmdPetStatus(db, tok, chatId, telegramId)'), 'Back callbacks must return to the simplified /pet screen');
-for (const route of ["payload === 'menu:adventure'", "payload === 'menu:management'", "payload === 'details'", "payload === 'equipment'", "payload === 'trade'", "payload.startsWith('identity:')", "payload === 'leaderboard'", "payload === 'streak'"]) {
+for (const route of ["payload === 'menu:adventure'", "payload === 'menu:management'", "payload === 'menu:progress'", "payload === 'details'", "payload === 'missions'", "payload === 'activity'", "payload === 'equipment'", "payload === 'trade'", "payload.startsWith('identity:')", "payload === 'leaderboard'", "payload === 'streak'"]) {
   assert.ok(callbackBranch.includes(route), `callback router must preserve grouped navigation route: ${route}`);
 }
 assert.ok(
