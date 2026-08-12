@@ -78,7 +78,8 @@ assert.doesNotMatch(html, /id="moonpet-app"[^>]*aria-live/);
 assert.match(worker, /return err\('mini_app_action_failed', 500\)/);
 
 assert.doesNotMatch(html, /<img\b/i);
-assert.doesNotMatch(html + client + css, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
+const gameSurfaceWithoutRequiredFavicon = html.replace(/<link\s+rel="icon"\s+type="image\/png"\s+href="\/favicon\.png">/i, '');
+assert.doesNotMatch(gameSurfaceWithoutRequiredFavicon + client + css, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
 assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
