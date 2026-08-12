@@ -155,6 +155,13 @@ assert.equal(capped.pet_xp_awarded, 10, 'unified reward service must clamp Pet X
 assert.equal(capped.xp_awarded, 5, 'unified reward service must clamp Community XP to the existing 250 daily cap');
 assert.deepEqual({ ...capDb.database.prepare('SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?').get('cap-player') }, { pet_xp: 10, moon_gold: 7, moon_crystals: 2, style_tokens: 3 });
 assert.equal(capDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = 'cap-player' AND material_key = 'scrap_metal'").get().quantity, 2);
+capDb.database.prepare("UPDATE telegram_pet_material_balances SET quantity = 9998 WHERE telegram_id = 'cap-player' AND material_key = 'scrap_metal'").run();
+await awardPetReward(capDb, {
+  telegram_id: 'cap-player', source: 'pet_action', idempotency_key: 'material-stack-cap', now: '2026-08-10T12:01:00Z',
+  rewards: { materials: { scrap_metal: 5 } },
+});
+assert.equal(capDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = 'cap-player' AND material_key = 'scrap_metal'").get().quantity, 9999,
+  'unified rewards must clamp canonical material stacks to 9,999');
 
 assert.equal(buildPetProfileDeltas({}, { hunger: 9 }).hunger, 9, 'a positive hunger cost must increase the hunger value');
 assert.equal(buildPetProfileDeltas({ hunger: 12 }, {}).hunger, -12, 'a positive hunger reward must decrease the hunger value');

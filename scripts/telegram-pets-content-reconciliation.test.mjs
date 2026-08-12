@@ -33,19 +33,28 @@ for (const job of ['vault_security', 'kaiju_recovery']) {
 }
 assert.match(miniApp, /arena_forfeit/, 'server-supported Arena forfeit must have a Mini App control');
 for (const panel of ['DISTRICT NETWORK', 'CRAFTING MATERIALS', 'RELIC VAULT', 'LEARNED APTITUDES']) assert.ok(miniApp.includes(panel), `${panel} must be player-facing`);
+assert.match(worker, /growth_stage: getPetGrowthStage/, 'XP maturity must be exposed separately from earned evolution identity');
+assert.match(worker, /stage: currentEvolution\?\.name \|\| null/, 'public evolution stage must come from stored identity, never XP thresholds');
+assert.doesNotMatch(worker, /stage: 'Street Moonpet', min_xp/, 'formal evolution names cannot be assigned from XP alone');
+assert.match(worker, /canStartPetEliteJob\(key/, 'elite job execution must enforce specialist XP');
+assert.match(worker, /canStartPetEliteJob\(job\.key/, 'elite job availability must enforce specialist XP');
 
 const db = new DatabaseSync(':memory:');
 db.exec(schema);
 db.prepare("INSERT INTO telegram_users (telegram_id, xp, level) VALUES ('reconcile-player', 0, 1)").run();
 db.prepare("INSERT INTO telegram_pet_profiles (telegram_id) VALUES ('reconcile-player')").run();
 db.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('reconcile-player', 'material', 'scrap_metal', 3)").run();
+db.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('reconcile-player', 'item', 'evolution_fragment', 7)").run();
 db.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('reconcile-player', 'scrap_metal', 2)").run();
+db.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('reconcile-player', 'evolution_fragment', 2)").run();
 db.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('reconcile-player', 'neon_scrap', 4)").run();
 db.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('reconcile-player', 'spray_pigment', 5)").run();
 db.exec(migration);
 assert.equal(db.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='reconcile-player' AND material_key='scrap_metal'").get().quantity, 9);
 assert.equal(db.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='reconcile-player' AND material_key='moon_fabric'").get().quantity, 5);
+assert.equal(db.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='reconcile-player' AND material_key='evolution_fragment'").get().quantity, 9);
 assert.equal(db.prepare("SELECT COUNT(*) AS count FROM telegram_pet_inventory WHERE telegram_id='reconcile-player' AND asset_type='material'").get().count, 0);
+assert.equal(db.prepare("SELECT COUNT(*) AS count FROM telegram_pet_inventory WHERE telegram_id='reconcile-player' AND asset_type='item' AND asset_key='evolution_fragment'").get().count, 0);
 assert.equal(db.prepare("SELECT COUNT(*) AS count FROM telegram_pet_material_balances WHERE material_key IN ('neon_scrap','spray_pigment')").get().count, 0);
 assert.equal(db.prepare('PRAGMA foreign_key_check').all().length, 0);
 

@@ -273,7 +273,7 @@ export async function awardPetReward(db, request = {}) {
               SELECT ?, asset_key, amount, CURRENT_TIMESTAMP FROM telegram_pet_reward_assets
               WHERE claim_id = ? AND asset_type = 'material' AND asset_key = ? AND amount > 0
               ON CONFLICT(telegram_id, material_key) DO UPDATE SET quantity = MIN(?, quantity + excluded.quantity), updated_at = CURRENT_TIMESTAMP`)
-            .bind(telegramId, claimId, key, MAX_CURRENCY)
+            .bind(telegramId, claimId, key, 9999)
           : db.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity, updated_at)
               SELECT ?, asset_type, asset_key, amount, CURRENT_TIMESTAMP FROM telegram_pet_reward_assets
               WHERE claim_id = ? AND asset_type = ? AND asset_key = ? AND amount > 0

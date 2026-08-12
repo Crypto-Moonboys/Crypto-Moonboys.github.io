@@ -13,6 +13,20 @@ ON CONFLICT(telegram_id, material_key) DO UPDATE SET
 
 DELETE FROM telegram_pet_inventory WHERE asset_type = 'material';
 
+-- Evolution Fragments were awarded as items before becoming a canonical
+-- crafting material. Preserve every earned fragment during the cutover.
+INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity, updated_at)
+SELECT telegram_id, 'evolution_fragment', SUM(quantity), CURRENT_TIMESTAMP
+FROM telegram_pet_inventory
+WHERE asset_type = 'item' AND asset_key = 'evolution_fragment' AND quantity > 0
+GROUP BY telegram_id
+ON CONFLICT(telegram_id, material_key) DO UPDATE SET
+  quantity = MIN(9999, telegram_pet_material_balances.quantity + excluded.quantity),
+  updated_at = CURRENT_TIMESTAMP;
+
+DELETE FROM telegram_pet_inventory
+WHERE asset_type = 'item' AND asset_key = 'evolution_fragment';
+
 -- Translate pre-canonical evolution resources if any were already earned.
 INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity, updated_at)
 SELECT telegram_id, 'scrap_metal', quantity, CURRENT_TIMESTAMP

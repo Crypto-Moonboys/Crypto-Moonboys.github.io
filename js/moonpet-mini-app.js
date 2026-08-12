@@ -217,7 +217,8 @@
     var guidance = state.guidance || {};
     var jobs = guidance.jobs || state.jobs || [];
     var jobsHtml = jobs.map(function (job) {
-      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, detail: 'LVL ' + job.min_level + ' // +' + job.moon_gold + 'G // ' + (job.lore || '') });
+      var specialistGate = job.required_track ? ' // ' + words(job.required_track).toUpperCase() + ' ' + number(job.current_xp) + '/' + number(job.required_xp) : '';
+      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, detail: 'LVL ' + job.min_level + specialistGate + ' // +' + job.moon_gold + 'G // ' + (job.lore || '') });
     }).join('');
     var activity = guidance.activity;
     var activityHtml = activity

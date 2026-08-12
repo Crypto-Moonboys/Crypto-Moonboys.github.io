@@ -36,6 +36,7 @@ import {
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
 import { PET_CRAFTING_MATERIALS } from './pets/economy-phase-3.js';
+import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
@@ -1265,12 +1266,13 @@ async function getCurrentSeason(db) {
   ).first().catch(() => null);
 }
 
-const PET_STAGE_THRESHOLDS = [
-  { stage: 'Moon Egg', min_xp: 0 },
-  { stage: 'Street Moonpet', min_xp: 400 },
-  { stage: 'Cyber Moonpet', min_xp: 1900 },
-  { stage: 'Elite Moonpet', min_xp: 3400 },
-  { stage: 'Legendary Moon Guardian', min_xp: 4900 },
+const PET_GROWTH_STAGE_THRESHOLDS = [
+  { stage: 'egg', min_xp: 0 },
+  { stage: 'hatchling', min_xp: 25 },
+  { stage: 'runner', min_xp: 120 },
+  { stage: 'street scout', min_xp: 360 },
+  { stage: 'moon guardian', min_xp: 900 },
+  { stage: 'legendary companion', min_xp: 1800 },
 ];
 
 const PET_ACTIONS = Object.freeze({
@@ -1734,10 +1736,10 @@ function clampPetStat(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 }
 
-function getPetStage(petXp) {
-  return PET_STAGE_THRESHOLDS.reduce((current, candidate) => (
+function getPetGrowthStage(petXp) {
+  return PET_GROWTH_STAGE_THRESHOLDS.reduce((current, candidate) => (
     Number(petXp || 0) >= candidate.min_xp ? candidate : current
-  ), PET_STAGE_THRESHOLDS[0]).stage;
+  ), PET_GROWTH_STAGE_THRESHOLDS[0]).stage;
 }
 
 function getPetDayKey(now = new Date()) {
@@ -2625,6 +2627,20 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   if (level < Math.max(1, Number(job.min_level) || 1) || evolutionStage < Math.max(0, Number(job.min_evolution_stage) || 0)) {
     return { accepted: false, reason: 'job_locked', required_level: job.min_level, required_evolution_stage: job.min_evolution_stage, pet };
   }
+  const eliteJob = PET_ELITE_JOBS[key] || null;
+  if (eliteJob) {
+    const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now)).catch(() => null);
+    if (!runtime || !canStartPetEliteJob(key, { ...runtime, level })) {
+      return {
+        accepted: false,
+        reason: 'specialist_job_locked',
+        required_track: eliteJob.required_track,
+        required_xp: eliteJob.required_xp,
+        current_xp: Math.max(0, Number(runtime?.[`${eliteJob.required_track}_xp`]) || 0),
+        pet,
+      };
+    }
+  }
   const lastWork = await db.prepare(`SELECT created_at FROM telegram_pet_events WHERE telegram_id = ? AND event_type = 'work' AND status = 'accepted' ORDER BY created_at DESC LIMIT 1`).bind(telegramId).first().catch(() => null);
   if (lastWork?.created_at) {
     const elapsedSeconds = (now.getTime() - new Date(lastWork.created_at).getTime()) / 1000;
@@ -2848,7 +2864,7 @@ function updatePetStreakForAction(pet, dayKey) {
 }
 
 async function savePetProfile(db, pet) {
-  pet.stage = getPetStage(pet.pet_xp);
+  pet.stage = getPetGrowthStage(pet.pet_xp);
   pet.health = calculatePetHealth(pet);
   await db.prepare(`
     UPDATE telegram_pet_profiles
@@ -4167,14 +4183,18 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   };
 }
 
-function serializePet(pet) {
+function serializePet(pet, identity = null) {
   if (!pet) return null;
   const decayed = applyPetDecay({ ...pet });
+  const currentEvolution = identity?.current_stage || null;
   return {
     telegram_id: decayed.telegram_id,
     pet_name: decayed.pet_name,
     species: decayed.species,
-    stage: getPetStage(decayed.pet_xp),
+    stage: currentEvolution?.name || null,
+    evolution_id: currentEvolution?.evolution_id || null,
+    evolution_stage: currentEvolution ? Math.max(0, Number(currentEvolution.stage) || 0) : null,
+    growth_stage: getPetGrowthStage(decayed.pet_xp),
     pet_xp: Number(decayed.pet_xp || 0),
     level: getPetLevel(decayed.pet_xp),
     hunger: clampPetStat(decayed.hunger),
@@ -6064,8 +6084,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
   ]);
-  const identityStage = guidance?.identity?.current_stage || { evolution_id: 'moon_egg', name: 'Moon Egg', stage: 0 };
-  const canonicalPet = { ...pet, stage: identityStage.name, evolution_id: identityStage.evolution_id, evolution_stage: Number(identityStage.stage || 0) };
+  const canonicalPet = serializePet(petRaw, guidance?.identity);
   if (guidance) guidance.pet = canonicalPet;
   let regionMastery = {};
   try { regionMastery = JSON.parse(runtime?.region_mastery_json || '{}'); } catch {}
@@ -6285,7 +6304,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   return { accepted: false, reason: 'mini_app_action_invalid' };
 }
 
-function serializePetMiniAppActionResult(result = {}) {
+function serializePetMiniAppActionResult(result = {}, identity = null) {
   const output = {
     accepted: Boolean(result.accepted),
     duplicate: Boolean(result.duplicate),
@@ -6297,7 +6316,7 @@ function serializePetMiniAppActionResult(result = {}) {
   for (const key of ['rewards', 'applied', 'job', 'item', 'encounter', 'choice', 'result_copy', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  if (result.pet) output.pet = serializePet(result.pet);
+  if (result.pet) output.pet = serializePet(result.pet, identity);
   if (result.battle) output.battle = serializePetMiniAppArenaBattle(result.battle);
   return output;
 }
@@ -6817,7 +6836,7 @@ export default {
         return err('mini_app_action_failed', 500);
       }
       const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN).catch(() => null);
-      return json({ ok: Boolean(result.accepted), result: serializePetMiniAppActionResult(result), state }, result.accepted ? 200 : 409);
+      return json({ ok: Boolean(result.accepted), result: serializePetMiniAppActionResult(result, state?.guidance?.identity), state }, result.accepted ? 200 : 409);
     }
 
     // ── Crypto Moonboys Pets API ──────────────────────────────────────────
@@ -6830,7 +6849,8 @@ export default {
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
       const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
       if (!pet) return err('Pet profile not found', 404);
-      return json({ pet: serializePet(pet), missions: await buildPetMissions(env.DB, telegramId) });
+      const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
+      return json({ pet: serializePet(pet, identity), missions: await buildPetMissions(env.DB, telegramId) });
     }
 
     if (path === '/telegram-pets/inventory' && request.method === 'GET') {
@@ -6838,7 +6858,8 @@ export default {
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
       const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
       if (!pet) return err('Pet profile not found', 404);
-      return json({ pet: serializePet(pet), inventory: await getPetInventory(env.DB, telegramId) });
+      const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
+      return json({ pet: serializePet(pet, identity), inventory: await getPetInventory(env.DB, telegramId) });
     }
 
     if (path === '/telegram-pets/missions' && request.method === 'GET') {
@@ -6850,9 +6871,10 @@ export default {
     if (path === '/telegram-pets/shop' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       const pet = /^\d{1,20}$/.test(telegramId) ? await getPetProfile(env.DB, telegramId).catch(() => null) : null;
+      const identity = pet ? await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null) : null;
       return json({
         currencies: ['moon_gold', 'moon_crystals', 'style_tokens'],
-        pet: serializePet(pet),
+        pet: serializePet(pet, identity),
         items: petShopItemsForPet(pet),
         usable_items: Object.values(PET_INVENTORY_ITEMS),
         jobs: Object.values(PET_JOBS),
@@ -7049,7 +7071,8 @@ export default {
           source: 'telegram_pets_api',
         });
       }
-      return json({ ...result, pet: serializePet(result.pet) }, result.accepted ? 200 : 409);
+      const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
+      return json({ ...result, pet: serializePet(result.pet, identity) }, result.accepted ? 200 : 409);
     }
 
     // ── GET /telegram/profile?telegram_id= ────────────────────────────────
@@ -11313,9 +11336,9 @@ function formatPetStat(label, value) {
 }
 
 function formatPetStatus(pet, identity = null, activity = null, reaction = undefined) {
-  const p = serializePet(pet);
+  const p = serializePet(pet, identity);
   if (!p) return 'No Crypto Moonboy Pet found. Use /adopt to start.';
-  const stage = identity?.current_stage?.name || p.stage;
+  const stage = p.stage || 'Moon Egg';
   const traits = Array.isArray(identity?.personalities) ? identity.personalities.slice(0, 2) : [];
   const favourite = String(identity?.memories?.favourite_activity || '').trim();
   const needsCare = p.health <= 45 || p.hunger >= 75 || p.cleanliness <= 35 || p.happiness <= 35 || p.energy <= 25;
@@ -11390,7 +11413,7 @@ function getPetMissionIcon(mission = {}) {
 }
 
 function formatPetDetails(pet, missions = null, activity = null, identity = null) {
-  const p = serializePet(pet);
+  const p = serializePet(pet, identity);
   if (!p) return 'No Crypto Moonboy Pet found. Use /adopt to start.';
   const missionLines = Array.isArray(missions?.daily)
     ? missions.daily.map((mission) => `${mission.completed ? '✅' : '⬜️'} ${getPetMissionIcon(mission)} ${escapeHtml(mission.title)}`)
@@ -11401,7 +11424,7 @@ function formatPetDetails(pet, missions = null, activity = null, identity = null
   if (p.cleanliness <= 35) warnings.push('🧼 Low cleanliness: clean soon.');
   if (p.happiness <= 35) warnings.push('🎮 Low happiness: play soon.');
   if (p.energy <= 25) warnings.push('😴 Low energy: sleep before adventure.');
-  const stage = identity?.current_stage?.name || p.stage;
+  const stage = p.stage || 'Moon Egg';
   return [
     `📋 <b>${escapeHtml(p.pet_name)} Details</b>`,
     `${getPetStageIcon(stage)} <b>${escapeHtml(stage)}</b>`,
@@ -11588,12 +11611,13 @@ async function buyPetMarketOffer(db, telegramId, offerKey, now = new Date()) {
 }
 
 async function buildPetGuidanceState(db, telegramId, petRaw = null) {
-  const pet = serializePet(petRaw || await getPetProfile(db, telegramId).catch(() => null));
+  const sourcePet = petRaw || await getPetProfile(db, telegramId).catch(() => null);
+  const pet = serializePet(sourcePet);
   if (!pet) return null;
   const now = new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
-  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt] = await Promise.all([
+  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime] = await Promise.all([
     getMoonpetIdentitySummary(db, telegramId).catch(() => null),
     getActivePetActivitySession(db, telegramId, now).catch(() => null),
     getActivePetRun(db, telegramId).catch(() => null),
@@ -11604,7 +11628,9 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
       .bind(telegramId, weekKey).first().catch(() => null),
     db.prepare(`SELECT 1 AS used FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
       .bind(telegramId, weekKey, dayKey).first().catch(() => null),
+    getOrCreatePetRuntimeState(db, telegramId, dayKey).catch(() => null),
   ]);
+  Object.assign(pet, serializePet(sourcePet, identity));
   const [evolution, economy] = await Promise.all([
     getPetEvolutionGuidance(db, telegramId, pet, identity),
     getPetEconomyState(db, telegramId, pet, now),
@@ -11637,7 +11663,12 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     jobs: Object.values(PET_JOBS).map((job) => ({
       ...job,
       lore: PET_JOB_LORE[job.key] || '',
-      available: level >= job.min_level && stage >= job.min_evolution_stage,
+      required_track: PET_ELITE_JOBS[job.key]?.required_track || null,
+      required_xp: PET_ELITE_JOBS[job.key]?.required_xp || 0,
+      current_xp: PET_ELITE_JOBS[job.key]
+        ? Math.max(0, Number(runtime?.[`${PET_ELITE_JOBS[job.key].required_track}_xp`]) || 0) : 0,
+      available: level >= job.min_level && stage >= job.min_evolution_stage
+        && (!PET_ELITE_JOBS[job.key] || canStartPetEliteJob(job.key, { ...runtime, level })),
     })),
     shop_items: petShopItemsForPet(pet),
     economy,
