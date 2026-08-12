@@ -129,6 +129,8 @@ assert.match(client, /target\.getBoundingClientRect\(\)\.top - screen\.getBoundi
 assert.match(client, /pet\.evolution_stage == null \? NaN : Number\(pet\.evolution_stage\)/);
 assert.match(client, /var renderTime = reducedMotion \? performance\.now\(\) : time/);
 assert.match(client, /var active = animationUntil > renderTime/);
+assert.match(client, /reducedMotionAnimationTimer = window\.setTimeout/);
+assert.match(client, /drawWorld\(performance\.now\(\)\)/);
 assert.match(client, /var blink = !reducedMotion && Math\.floor\(renderTime \/ 1800\)/);
 assert.match(client, /hold: 1600, notice: true/);
 assert.match(css, /\.boot-layer\.is-compact\.is-notice \{[^}]*max-height: none;[^}]*overflow-y: auto/s);
