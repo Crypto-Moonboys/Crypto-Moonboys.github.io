@@ -36,6 +36,7 @@ import {
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
+import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
 /**
@@ -302,13 +303,13 @@ function consumeMemoryRateLimit(key, limit, now) {
 function enforcePublicRateLimit(request, env, routeKey, body, corsHeaders, options = {}) {
   const now = Date.now();
   pruneRateLimitMemory(now);
-  const ipLimit = readPositiveIntegerEnv(env, 'RATE_LIMIT_PUBLIC_PER_MINUTE', RATE_LIMIT_DEFAULT_PUBLIC_PER_MINUTE);
-  const telegramLimit = readPositiveIntegerEnv(env, 'RATE_LIMIT_TELEGRAM_PER_MINUTE', RATE_LIMIT_DEFAULT_TELEGRAM_PER_MINUTE);
+  const ipLimit = Math.max(1, Math.floor(Number(options.ipLimit) || readPositiveIntegerEnv(env, 'RATE_LIMIT_PUBLIC_PER_MINUTE', RATE_LIMIT_DEFAULT_PUBLIC_PER_MINUTE)));
+  const telegramLimit = Math.max(1, Math.floor(Number(options.telegramLimit) || readPositiveIntegerEnv(env, 'RATE_LIMIT_TELEGRAM_PER_MINUTE', RATE_LIMIT_DEFAULT_TELEGRAM_PER_MINUTE)));
   const checks = [];
   if (options.includeIp !== false) {
     checks.push({ scope: 'ip', id: getClientIp(request), limit: ipLimit });
   }
-  const telegramId = extractRateLimitTelegramId(body);
+  const telegramId = String(options.telegramId || extractRateLimitTelegramId(body) || '').trim();
   if (options.includeTelegram !== false && telegramId) {
     checks.push({ scope: 'telegram', id: telegramId, limit: telegramLimit });
   }
@@ -6024,7 +6025,7 @@ async function buildPetMiniAppState(db, telegramId) {
 
   const pet = serializePet(petRaw);
   const miniChatId = `mini:${telegramId}`;
-  const [guidance, inventory, runtime, gear, arena, kaiju, leaderboard] = await Promise.all([
+  const [guidance, inventory, runtime, gear, arena, kaiju, leaderboard, notifications] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
@@ -6038,9 +6039,32 @@ async function buildPetMiniAppState(db, telegramId) {
     db.prepare(`SELECT pet_name, stage, level, pet_xp, streak_days
       FROM telegram_pet_profiles ORDER BY pet_xp DESC, updated_at ASC LIMIT 10`)
       .all().catch(() => ({ results: [] })),
+    getPetNotificationPreference(db, telegramId),
   ]);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const next = guidance ? choosePetNextAction(guidance) : null;
+  const activeRun = guidance?.active_run || null;
+  const dailyReservation = activeRun
+    ? await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
+    : null;
+  let dailyRoom = null;
+  if (dailyReservation) {
+    const roomNumber = Math.max(1, Number(dailyReservation.current_room || 0) + 1);
+    const row = await db.prepare(`SELECT room_number, room_type, status, generated_data
+      FROM telegram_pet_run_rooms
+      WHERE telegram_id = ? AND run_id = ? AND room_number = ? LIMIT 1`)
+      .bind(telegramId, activeRun.run_id, roomNumber).first().catch(() => null);
+    if (row) dailyRoom = { ...safeJsonParse(row.generated_data, {}), room: row.room_number, room_type: row.room_type, status: row.status };
+  }
+  const runChoices = activeRun
+    ? (dailyReservation
+      ? (dailyRoom?.choices || []).map((choice) => ({
+        key: choice.choice_id,
+        label: choice.label || choice.title || choice.copy || String(choice.choice_id || '').replaceAll('_', ' '),
+        type: dailyRoom.room_type,
+      }))
+      : getPetRunStepChoices(activeRun).map((choice) => ({ key: choice.key, label: choice.label, type: choice.type })))
+    : [];
   return {
     adopted: true,
     pet,
@@ -6049,12 +6073,18 @@ async function buildPetMiniAppState(db, telegramId) {
     progress: runtime,
     gear: gear.results || [],
     inventory,
-    run: guidance?.active_run ? {
-      ...guidance.active_run,
-      choices: getPetRunStepChoices(guidance.active_run).map((choice) => ({ key: choice.key, label: choice.label, type: choice.type })),
+    run: activeRun ? {
+      ...activeRun,
+      daily: Boolean(dailyReservation),
+      current_room: Number(dailyReservation?.current_room ?? activeRun.current_room ?? activeRun.depth ?? 0),
+      max_room: Number(dailyReservation?.max_room ?? activeRun.max_room ?? activeRun.max_depth ?? 0),
+      expected_step_index: Number(dailyReservation?.current_room ?? activeRun.depth ?? 0),
+      room: dailyRoom,
+      choices: runChoices,
     } : null,
     encounter: encounter ? {
       key: encounter.key,
+      event_key: encounter.event_key,
       title: encounter.title,
       intro: encounter.intro,
       choices: encounter.choices.map((choice) => ({ key: choice.key, label: choice.label })),
@@ -6066,6 +6096,11 @@ async function buildPetMiniAppState(db, telegramId) {
       categories: PET_KAIJU_CATEGORIES,
     },
     leaderboard: (leaderboard.results || []).map((entry, index) => ({ rank: index + 1, ...entry })),
+    notifications: {
+      enabled: Boolean(notifications?.enabled),
+      last_notified_at: notifications?.last_notified_at || null,
+      last_reason: notifications?.last_reason || null,
+    },
     server_time: new Date().toISOString(),
   };
 }
@@ -6099,7 +6134,11 @@ async function processPetMiniAppAction(db, telegramId, user, body) {
     if (result.accepted) await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, 'daily_chest');
     return result;
   }
-  if (action === 'random_event') return processPetRandomEvent(db, telegramId, body.choice, { event_key: eventKey, source });
+  if (action === 'random_event') {
+    const displayedEventKey = String(body.event_key || '').slice(0, 120);
+    if (!resolvePetRandomEncounter(displayedEventKey)) return { accepted: false, reason: 'invalid_event_key' };
+    return processPetRandomEvent(db, telegramId, body.choice, { event_key: displayedEventKey, source });
+  }
   if (action === 'adventure') return processPetAdventure(db, telegramId, body.adventure_key, { event_key: eventKey, source });
   if (action === 'run_start') return startOrResumePetRun(db, telegramId, { run_id: body.run_id, source });
   if (action === 'daily_run_start') return createDailyMoonRun(db, { telegram_id: telegramId });
@@ -6125,6 +6164,10 @@ async function processPetMiniAppAction(db, telegramId, user, body) {
     return result;
   }
   if (action === 'activity_cancel') return cancelPetActivitySession(db, telegramId);
+  if (action === 'notification_set') {
+    const preference = await setPetNotificationPreference(db, telegramId, body.enabled === true);
+    return { accepted: true, reason: preference.enabled ? 'notifications_enabled' : 'notifications_disabled', preference };
+  }
   if (action === 'bounty_claim') return claimPetEconomyBounty(db, telegramId, body.bounty_key);
   if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey);
   if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key);
@@ -6696,6 +6739,7 @@ export default {
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
       const verified = await authenticatePetMiniApp(body, env);
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
       const state = await buildPetMiniAppState(env.DB, verified.telegramId);
       return json({ ok: true, state });
@@ -6707,6 +6751,7 @@ export default {
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/action', body, corsHeaders, { ipLimit: 120 }); if (limited) return limited; }
       const verified = await authenticatePetMiniApp(body, env);
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/action', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
       const result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body)
         .catch((error) => ({ accepted: false, reason: error?.message || 'mini_app_action_failed' }));
@@ -10729,12 +10774,13 @@ async function handleTelegramUpdate(update, env) {
     const fromUser = query.from || {};
     const telegramId = String(query.from?.id || '');
     const chatId = String(query.message?.chat?.id || '');
-    if (data.startsWith('pet:') && telegramId && chatId && env.PET_MINI_APP_ENABLED === 'true') {
-      await answerTelegramCallback(tok, query.id, 'Opening Moonpet OS');
-      await cmdPetMiniAppLauncher(tok, chatId, telegramId, String(query.message?.chat?.type || 'private'));
-      return;
-      /* Legacy callback routing is retained below for rollback safety. New
-         deployments intercept above so gameplay no longer runs in chat. */
+    if (data.startsWith('pet:') && telegramId && chatId) {
+      if (resolvePetCallbackRoute(data, env.PET_MINI_APP_ENABLED) === 'mini_app') {
+        await answerTelegramCallback(tok, query.id, 'Opening Moonpet OS');
+        await cmdPetMiniAppLauncher(tok, chatId, telegramId, String(query.message?.chat?.type || 'private'));
+        return;
+      }
+      /* Legacy callback routing is retained below for rollback safety. */
       const payload = data.slice(4);
       const eventKey = buildTelegramCallbackPetEventKey(query, telegramId, data);
       const chatType = String(query.message?.chat?.type || '');

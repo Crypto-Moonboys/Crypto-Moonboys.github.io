@@ -12,6 +12,7 @@
   var typingToken = 0;
   var animationMode = 'idle';
   var animationUntil = 0;
+  var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var app = document.getElementById('moonpet-app');
   var canvas = document.getElementById('moonpet-canvas');
@@ -75,7 +76,7 @@
   async function typeBoot(lines, options) {
     var token = ++typingToken;
     var content = (Array.isArray(lines) ? lines : [lines]).filter(Boolean).join('\n');
-    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var reduced = reducedMotion;
     bootLayer.classList.remove('is-hidden');
     bootText.textContent = '';
     var speed = reduced ? 0 : Number(options && options.speed || 7);
@@ -149,14 +150,14 @@
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
-      return button(choice.label, 'random_event', { choice: choice.key });
+      return button(choice.label, 'random_event', { choice: choice.key, event_key: encounter.event_key });
     }).join('') : '';
     var boss = guidance.weekly_boss || {};
     var run = state.run;
     var runBody;
     if (run) {
-      runBody = '<div class="line">DEPTH ' + number(run.depth) + '/' + number(run.max_depth) + ' // RISK ' + number(run.risk_level) + '</div><div class="line muted">UNBANKED: ' + number(run.unbanked_pet_xp) + ' XP / ' + number(run.unbanked_moon_gold) + ' GOLD</div><div class="button-grid">' +
-        (run.choices || []).map(function (choice) { return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.depth }); }).join('') +
+      runBody = '<div class="line">DEPTH ' + number(run.current_room != null ? run.current_room : run.depth) + '/' + number(run.max_room || run.max_depth) + ' // RISK ' + number(run.risk_level) + '</div><div class="line muted">UNBANKED: ' + number(run.unbanked_pet_xp) + ' XP / ' + number(run.unbanked_moon_gold) + ' GOLD</div><div class="button-grid">' +
+        (run.choices || []).map(function (choice) { return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }); }).join('') +
         button('EXTRACT', 'run_extract', { run_id: run.run_id }, { danger: true }) + '</div>';
     } else {
       runBody = '<div class="line">NO ACTIVE RUN.</div><div class="button-grid">' + button('START MOON RUN', 'run_start') + button('DAILY RUN', 'daily_run_start') + '</div>';
@@ -214,7 +215,12 @@
         ((item.kind === 'usable_item' || item.usable) ? '<div class="button-grid one">' + button('USE ' + (item.title || item.key), 'use_item', { item_key: item.key || item.item_key }) + '</div>' : '');
     }).join('');
     var expedition = economy.expedition || {};
-    return panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>') +
+    var gear = (state.gear || []).map(function (item) {
+      return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
+        '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>';
+    }).join('');
+    return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>') +
+      panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>') +
       panel('CRYSTAL EXPEDITION', '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left }) + '</div>') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>') +
       panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>') +
@@ -223,6 +229,7 @@
   }
 
   function renderProfile() {
+    if (!state.pet) return panel('IDENTITY CORE', '<div class="line muted">INITIALISE A MOONPET TO UNLOCK THIS MODULE.</div>');
     var guidance = state.guidance || {};
     var identity = guidance.identity || {};
     var evolution = guidance.evolution;
@@ -241,9 +248,13 @@
       return '<div class="line">' + escapeHtml(key.toUpperCase()) + ' XP ' + number(xp) + '</div>';
     }).join('');
     var leaders = (state.leaderboard || []).map(function (entry) { return '<div class="line">#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') + ' // LVL ' + number(entry.level) + ' // ' + number(entry.pet_xp) + ' XP</div>'; }).join('');
+    var notifications = state.notifications || {};
+    var notificationPanel = '<div class="line ' + (notifications.enabled ? 'complete' : 'muted') + '">PROGRESSION ALERTS: ' + (notifications.enabled ? 'ONLINE' : 'OFFLINE') + '</div><div class="button-grid">' +
+      button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled }) +
+      button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, danger: true }) + '</div>';
     return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + '</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>') +
-      panel('EVOLUTION', evoHtml) + panel('SPECIALIST TRACKS', tracks) + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers) + panel('TOP MOONPETS', leaders);
+      panel('EVOLUTION', evoHtml) + panel('SPECIALIST TRACKS', tracks) + panel('ALERT CONTROL', notificationPanel) + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers) + panel('TOP MOONPETS', leaders);
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
@@ -262,6 +273,7 @@
     renderNav();
     screen.innerHTML = state ? screens[activeScreen]() : '';
     title.textContent = state && state.pet ? (state.pet.pet_name || 'MOONPET') + ' OS' : 'MOONPET OS';
+    if (reducedMotion) drawWorld(0);
   }
 
   function resultMessage(result) {
@@ -397,6 +409,7 @@
   function frame(time) {
     drawWorld(time);
     if (animationUntil <= time) animationMode = 'idle';
+    if (reducedMotion) return;
     requestAnimationFrame(frame);
   }
 

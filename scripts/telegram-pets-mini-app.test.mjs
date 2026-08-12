@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import { verifyTelegramMiniAppInitData } from '../workers/moonboys-api/pets/mini-app-auth.js';
+import { resolvePetCallbackRoute } from '../workers/moonboys-api/pets/mini-app-routing.js';
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
@@ -49,17 +50,31 @@ assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method =
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
 assert.match(worker, /setChatMenuButton/);
 assert.match(worker, /Chat gameplay controls are retired/);
-assert.match(worker, /data\.startsWith\('pet:'\).*PET_MINI_APP_ENABLED === 'true'/);
-assert.ok(worker.indexOf("if (data.startsWith('pet:')") < worker.indexOf("const payload = data.slice(4)"), 'enabled Mini App callbacks must be intercepted before legacy gameplay routing');
+assert.equal(resolvePetCallbackRoute('pet:feed', true), 'mini_app', 'enabled callbacks must open only the Mini App launcher');
+assert.equal(resolvePetCallbackRoute('pet:feed', false), 'legacy', 'disabled callbacks must reach legacy gameplay routing');
+assert.equal(resolvePetCallbackRoute('other:feed', true), 'ignore');
+assert.match(worker, /resolvePetCallbackRoute\(data, env\.PET_MINI_APP_ENABLED\) === 'mini_app'/);
+assert.ok(worker.indexOf("if (data.startsWith('pet:')") < worker.indexOf("const payload = data.slice(4)"), 'Mini App interception must precede legacy gameplay routing');
+assert.match(worker, /event_key: encounter\.event_key/);
+assert.match(client, /event_key: encounter\.event_key/);
+assert.match(worker, /resolvePetRandomEncounter\(displayedEventKey\)/);
+assert.match(worker, /FROM telegram_pet_run_rooms/);
+assert.match(worker, /key: choice\.choice_id/);
+assert.match(worker, /telegramId: verified\.telegramId/);
+assert.match(client, /EQUIPMENT PROGRESSION/);
+assert.match(client, /notification_set/);
 
 assert.doesNotMatch(html, /<img\b/i);
 assert.doesNotMatch(html + client + css, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
 assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
+assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
 assert.doesNotMatch(client, /new Image\s*\(/);
 assert.match(client, /typeBoot/);
 assert.match(css, /repeating-linear-gradient/);
 assert.match(css, /prefers-reduced-motion/);
+assert.match(css, /\.meter-fill \{ display: block;/);
+assert.doesNotMatch(html, /maximum-scale|user-scalable/i);
 
 console.log('telegram-pets-mini-app.test.mjs passed');

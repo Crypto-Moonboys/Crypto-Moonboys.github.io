@@ -64,7 +64,7 @@ button { font: inherit; }
 .locked { opacity: .5; }
 .meter { display: grid; grid-template-columns: 72px 1fr 32px; align-items: center; gap: 6px; margin: 5px 0; font-size: 11px; }
 .meter-track { height: 8px; border: 1px solid var(--line); background: #020704; }
-.meter-fill { height: 100%; background: var(--ink); box-shadow: 0 0 8px var(--dim); }
+.meter-fill { display: block; height: 100%; background: var(--ink); box-shadow: 0 0 8px var(--dim); }
 
 .button-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
 .button-grid.one { grid-template-columns: 1fr; }
