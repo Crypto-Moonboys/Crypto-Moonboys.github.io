@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#06110b">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Moonpet OS</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/css/moonpet-mini-app.css">
+</head>
+<body class="page-standalone-tool">
+  <main id="moonpet-app" class="terminal-shell">
+    <header class="system-bar">
+      <span id="system-title"></span>
+      <span id="system-clock"></span>
+    </header>
+    <section class="viewport">
+      <canvas id="moonpet-canvas" width="320" height="220" aria-label="Animated Moonpet room"></canvas>
+      <div id="hud" class="hud"></div>
+      <div id="boot-layer" class="boot-layer"><pre id="boot-text"></pre><span class="cursor" aria-hidden="true"></span></div>
+    </section>
+    <section id="terminal-output" class="terminal-output" aria-live="assertive"></section>
+    <section id="screen" class="screen" aria-label="Game controls"></section>
+    <nav id="nav" class="dock" aria-label="Moonpet sections"></nav>
+  </main>
+  <noscript>This game requires JavaScript.</noscript>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script data-cfasync="false" src="/js/api-config.js"></script>
+  <script data-cfasync="false" src="/js/identity-gate.js"></script>
+  <script data-cfasync="false" src="/js/moonpet-mini-app.js"></script>
+</body>
+</html>
