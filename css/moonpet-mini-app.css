@@ -1,0 +1,102 @@
+:root {
+  color-scheme: dark;
+  --ink: #a9ff9a;
+  --dim: #4ea85a;
+  --hot: #f4ff65;
+  --danger: #ff6d6d;
+  --glass: #06110b;
+  --panel: #091b10;
+  --line: #2c6c39;
+  --shadow: #020704;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  font-family: "Courier New", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: #010402; color: var(--ink); }
+body { overflow-x: hidden; image-rendering: pixelated; }
+button { font: inherit; }
+
+.terminal-shell {
+  width: min(100%, 720px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding-bottom: calc(76px + var(--safe-bottom));
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at 50% 18%, #0c2615 0, var(--glass) 55%, #020704 100%);
+  border-inline: 2px solid #173e22;
+  box-shadow: 0 0 50px #000 inset;
+}
+
+.terminal-shell::after {
+  position: fixed; inset: 0; z-index: 99; pointer-events: none; content: "";
+  background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,.16) 50%), linear-gradient(90deg, rgba(255,0,0,.02), rgba(0,255,0,.01), rgba(0,0,255,.02));
+  background-size: 100% 4px, 6px 100%;
+  mix-blend-mode: screen;
+}
+
+.system-bar, .dock { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.system-bar { min-height: 38px; padding: 8px 12px; border-bottom: 2px solid var(--line); color: var(--hot); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+
+.viewport { position: relative; aspect-ratio: 16/11; overflow: hidden; border-bottom: 2px solid var(--line); background: #020704; }
+#moonpet-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.hud { position: absolute; inset: 8px 8px auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; pointer-events: none; }
+.hud-chip { min-width: 0; padding: 4px 6px; border: 1px solid var(--line); background: rgba(2,7,4,.82); color: var(--ink); font-size: 11px; text-shadow: 0 0 5px var(--dim); }
+.hud-chip strong { color: var(--hot); }
+
+.boot-layer { position: absolute; inset: 0; padding: 14px; background: rgba(1,7,3,.93); overflow: hidden; transition: opacity .18s linear; }
+.boot-layer.is-hidden { opacity: 0; pointer-events: none; }
+.boot-layer pre { margin: 0; white-space: pre-wrap; color: var(--ink); font: 700 clamp(11px, 2.8vw, 15px)/1.45 "Courier New", monospace; text-shadow: 0 0 7px var(--dim); }
+.cursor { display: inline-block; width: 8px; height: 14px; background: var(--ink); animation: blink .72s steps(1) infinite; }
+
+.terminal-output { min-height: 48px; padding: 10px 12px; border-bottom: 1px dashed var(--line); color: var(--hot); font-size: 13px; line-height: 1.45; white-space: pre-wrap; }
+.terminal-output[data-tone="danger"] { color: var(--danger); }
+.terminal-output::before { content: "> "; color: var(--dim); }
+
+.screen { padding: 10px; }
+.panel { margin-bottom: 10px; border: 2px solid var(--line); background: rgba(4,15,8,.88); box-shadow: 3px 3px 0 var(--shadow); }
+.panel-title { margin: 0; padding: 7px 8px; border-bottom: 1px solid var(--line); color: var(--hot); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.panel-body { padding: 8px; }
+.line { margin: 4px 0; font-size: 12px; line-height: 1.4; }
+.muted { color: var(--dim); }
+.complete { color: var(--hot); }
+.locked { opacity: .5; }
+.meter { display: grid; grid-template-columns: 72px 1fr 32px; align-items: center; gap: 6px; margin: 5px 0; font-size: 11px; }
+.meter-track { height: 8px; border: 1px solid var(--line); background: #020704; }
+.meter-fill { height: 100%; background: var(--ink); box-shadow: 0 0 8px var(--dim); }
+
+.button-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.button-grid.one { grid-template-columns: 1fr; }
+.button-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.terminal-button {
+  min-height: 44px; padding: 8px 5px; border: 2px solid var(--dim); border-radius: 0;
+  background: #07170c; color: var(--ink); text-transform: uppercase; font-size: 11px; font-weight: 700;
+  box-shadow: 3px 3px 0 #020704; touch-action: manipulation;
+}
+.terminal-button:active, .terminal-button.is-active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #020704; color: #031006; background: var(--ink); }
+.terminal-button:disabled { opacity: .35; filter: grayscale(1); }
+.terminal-button.danger { color: var(--danger); border-color: #963e3e; }
+.terminal-button small { display: block; margin-top: 3px; color: var(--dim); font-size: 9px; text-transform: none; }
+.terminal-input { width: 100%; margin: 5px 0 8px; padding: 10px; border: 2px solid var(--line); border-radius: 0; outline: 0; background: #020704; color: var(--hot); font: 700 14px "Courier New", monospace; text-transform: uppercase; }
+.terminal-input:focus { border-color: var(--ink); box-shadow: 0 0 10px rgba(169,255,154,.25); }
+
+.dock { position: fixed; z-index: 60; left: 50%; bottom: 0; width: min(100%, 720px); transform: translateX(-50%); padding: 7px 7px calc(7px + var(--safe-bottom)); border-top: 2px solid var(--line); background: rgba(2,9,5,.97); }
+.dock button { flex: 1; min-height: 50px; padding: 4px 2px; border: 1px solid transparent; background: transparent; color: var(--dim); font-size: 9px; text-transform: uppercase; }
+.dock button span { display: block; margin-bottom: 2px; color: inherit; font-size: 18px; }
+.dock button[aria-current="page"] { border-color: var(--line); color: var(--hot); background: #0b1c10; }
+
+.ticker { overflow: hidden; white-space: nowrap; border-block: 1px solid var(--line); padding: 5px 0; color: var(--dim); font-size: 10px; }
+.ticker span { display: inline-block; padding-left: 100%; animation: ticker 18s linear infinite; }
+@keyframes ticker { to { transform: translateX(-100%); } }
+@keyframes blink { 50% { opacity: 0; } }
+
+@media (min-width: 560px) {
+  .screen { padding: 14px; }
+  .button-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hud-chip { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
