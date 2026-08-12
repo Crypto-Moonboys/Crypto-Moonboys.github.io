@@ -245,6 +245,7 @@ const polishedDetailsCopy = formatPetDetails({
   daily: [
     { key: 'pet-daily-feed', title: 'Feed your Moonpet', completed: true },
     { key: 'pet-daily-train', title: 'Train once', completed: true },
+    { key: 'pet-daily-care-set', title: 'Complete feed, play and clean', completed: true },
     { key: 'pet-daily-trade', title: 'Run one Moon Gold trade', completed: false },
     { key: 'pet-daily-adventure', title: 'Run one pet adventure', completed: false },
   ],
@@ -263,6 +264,7 @@ for (const copy of [
   '🧿 <b>Charm</b> — Shield Charm',
   '✅ 🍖 Feed your Moonpet',
   '✅ 🏋️ Train once',
+  '✅ ❤️ Complete feed, play and clean',
   '⬜️ 💱 Run one Moon Gold trade',
   '⬜️ ⚔️ Run one pet adventure',
   '🔥 15-day streak',
