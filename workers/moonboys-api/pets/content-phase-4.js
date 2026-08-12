@@ -84,14 +84,14 @@ export const PET_SEASONAL_BOSSES = deepFreeze({
 
 export const PET_FACTION_BONUSES = deepFreeze({
   'hard-fork-rockers': { system: 'training', effect: { training_xp_pct: 5, streak_protection: 1 } },
-  'rugpull-miners': { system: 'runs', effect: { run_survival_pct: 5, crystal_find_pct: 4 } },
+  'rugpull-miners': { system: 'runs', effect: { run_reward_pct: 5, crystal_find_pct: 4 } },
   graffpunks: { system: 'events', effect: { event_reward_pct: 5, style_reward_pct: 5 } },
-  'blockchain-furies': { system: 'arena', effect: { arena_speed: 2, revenge_damage_pct: 5 } },
-  'crypto-moongirls': { system: 'arena', effect: { accuracy_pct: 4, status_resist_pct: 5 } },
+  'blockchain-furies': { system: 'arena', effect: { arena_reward_pct: 5, revenge_damage_pct: 5 } },
+  'crypto-moongirls': { system: 'arena', effect: { arena_reward_pct: 4, status_resist_pct: 5 } },
   blockstars: { system: 'jobs', effect: { job_reward_pct: 5, spotlight_xp_pct: 5 } },
-  'all-city-bulls': { system: 'arena', effect: { arena_attack: 2, win_streak_reward_pct: 4 } },
-  'nomad-bears': { system: 'runs', effect: { route_variety_pct: 5, extract_reward_pct: 4 } },
-  'crypto-stoned-boys': { system: 'events', effect: { random_branch_luck: 4, care_decay_reduction_pct: 4 } },
+  'all-city-bulls': { system: 'arena', effect: { arena_reward_pct: 6, win_streak_reward_pct: 4 } },
+  'nomad-bears': { system: 'runs', effect: { run_reward_pct: 4, route_variety_pct: 5 } },
+  'crypto-stoned-boys': { system: 'events', effect: { event_reward_pct: 4, care_decay_reduction_pct: 4 } },
 });
 
 export function getPetRegionContent(regionKey) {
