@@ -465,8 +465,11 @@
     noticesBusy = false;
   }
 
-  function actionAnimationFamily(action) {
+  function actionAnimationFamily(action, payload) {
     var key = String(action || '').toLowerCase();
+    if (key === 'activity_start') key = String(payload && payload.activity_type || '').toLowerCase();
+    if (key === 'activity_claim') return 'celebrate';
+    if (key === 'activity_cancel') return 'interact';
     if (/feed|use_item/.test(key)) return 'feed';
     if (/play/.test(key)) return 'play';
     if (/clean/.test(key)) return 'clean';
@@ -482,8 +485,8 @@
     return 'interact';
   }
 
-  function animateAction(action, accepted, duration) {
-    animationMode = accepted === false ? 'blocked' : actionAnimationFamily(action);
+  function animateAction(action, accepted, duration, payload) {
+    animationMode = accepted === false ? 'blocked' : actionAnimationFamily(action, payload);
     animationLabel = accepted === false ? 'NOT READY' : words(animationMode);
     actionSequence += 1;
     animationUntil = performance.now() + (duration || 2400);
@@ -494,7 +497,7 @@
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
-    animateAction(action, true, 8000);
+    animateAction(action, true, 8000, payload);
     tell('TRANSMITTING ' + words(action) + '...');
     try {
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
@@ -502,7 +505,7 @@
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
-      animateAction(action, Boolean(data.result && data.result.accepted), 2800);
+      animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
       render();
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: 240 });
       await showPendingNotices();
