@@ -60,6 +60,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-pets-guided-progression.test.mjs'],
     ['node', 'scripts/telegram-pets-economy-expansion.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app.test.mjs'],
+    ['node', 'scripts/telegram-pets-content-reconciliation.test.mjs'],
     ['node', 'scripts/telegram-pets-runtime-phase-5a.test.mjs'],
     ['node', 'scripts/telegram-pets-runtime-phase-5b.test.mjs'],
     ['node', 'scripts/telegram-pets-runtime-unique-constraints.test.mjs'],

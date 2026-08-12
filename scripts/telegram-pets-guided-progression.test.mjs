@@ -32,7 +32,7 @@ assert.equal(choosePetNextAction({ pet: healthyPet, season: { tiers: [{ tier_id:
 assert.equal(choosePetNextAction({ pet: healthyPet, evolution: { name: 'Street Moonpet', ready: true } }).key, 'evolve');
 const materialGrind = choosePetNextAction({
   pet: healthyPet,
-  evolution: { name: 'Street Moonpet', ready: false, missing: [{ key: 'material:neon_scrap', label: 'neon scrap', current: 3, required: 5, source: 'Find it in Moon Runs.', callback_data: 'pet:run' }] },
+  evolution: { name: 'Street Moonpet', ready: false, missing: [{ key: 'material:scrap_metal', label: 'scrap metal', current: 3, required: 5, source: 'Find it in Moon Runs.', callback_data: 'pet:run' }] },
 });
 assert.equal(materialGrind.callback_data, 'pet:run');
 assert.match(materialGrind.detail, /3\/5/);
@@ -65,6 +65,10 @@ db.exec(`
     telegram_id TEXT NOT NULL, asset_type TEXT NOT NULL, asset_key TEXT NOT NULL, quantity INTEGER NOT NULL,
     PRIMARY KEY (telegram_id, asset_type, asset_key)
   );
+  CREATE TABLE telegram_pet_material_balances (
+    telegram_id TEXT NOT NULL, material_key TEXT NOT NULL, quantity INTEGER NOT NULL,
+    PRIMARY KEY (telegram_id, material_key)
+  );
   CREATE TABLE telegram_pet_boss_victories (
     telegram_id TEXT NOT NULL, boss_id TEXT NOT NULL, victories INTEGER NOT NULL,
     PRIMARY KEY (telegram_id, boss_id)
@@ -73,8 +77,8 @@ db.exec(`
     telegram_id TEXT NOT NULL, relic_id TEXT NOT NULL,
     PRIMARY KEY (telegram_id, relic_id)
   );
-  INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
-  VALUES ('player-1', 'material', 'neon_scrap', 3);
+  INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity)
+  VALUES ('player-1', 'scrap_metal', 3);
 `);
 class D1DatabaseAdapter {
   constructor(database) { this.database = database; }
@@ -95,9 +99,9 @@ const identity = { current_stage: { evolution_id: 'moon_egg', stage: 0 } };
 const blockedEvolution = await hooks.getPetEvolutionGuidance(d1, 'player-1', { pet_xp: 4200 }, identity);
 assert.equal(blockedEvolution.name, 'Street Moonpet');
 assert.deepEqual(blockedEvolution.missing.map(({ key, current, required }) => ({ key, current, required })), [
-  { key: 'material:neon_scrap', current: 3, required: 5 },
+  { key: 'material:scrap_metal', current: 3, required: 5 },
 ]);
-db.prepare(`UPDATE telegram_pet_inventory SET quantity = 5 WHERE telegram_id = 'player-1' AND asset_key = 'neon_scrap'`).run();
+db.prepare(`UPDATE telegram_pet_material_balances SET quantity = 5 WHERE telegram_id = 'player-1' AND material_key = 'scrap_metal'`).run();
 assert.equal((await hooks.getPetEvolutionGuidance(d1, 'player-1', { pet_xp: 4200 }, identity)).ready, true);
 const oneTime = await hooks.persistPetGuidanceNotices(d1, 'player-1', [{
   key: 'evolution-ready:street_moonpet', type: 'evolution_ready', title: 'Street Moonpet evolution is ready', detail: 'Evolve now.', callback_data: 'pet:evolve',

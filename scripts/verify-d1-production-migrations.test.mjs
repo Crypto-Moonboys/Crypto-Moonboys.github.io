@@ -14,6 +14,11 @@ assert.match(
   /050_telegram_pet_guided_progression\.sql/,
   'the workflow_dispatch D1 query must request migration 050 from production',
 );
+assert.match(
+  remoteQueryStep,
+  /051_telegram_pet_content_reconciliation\.sql/,
+  'the workflow_dispatch D1 query must request migration 051 from production',
+);
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),
@@ -115,6 +120,15 @@ const withoutGuidedProgression = {
   ...request,
   required_migrations: request.required_migrations.filter((name) => name !== '050_telegram_pet_guided_progression.sql'),
 };
+const withoutContentReconciliation = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '051_telegram_pet_content_reconciliation.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutContentReconciliation),
+  /missing required migrations: 051_telegram_pet_content_reconciliation\.sql/,
+  'deployment verification must reject an evidence request that omits migration 051',
+);
 assert.throws(
   () => validateRequest(withoutGuidedProgression),
   /missing required migrations: 050_telegram_pet_guided_progression\.sql/,
@@ -206,6 +220,14 @@ assert.throws(
   }], request),
   /missing migrations: 050_telegram_pet_guided_progression\.sql/,
   'deployment verification must fail when production D1 has not applied migration 050',
+);
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '051_telegram_pet_content_reconciliation.sql'),
+  }], request),
+  /missing migrations: 051_telegram_pet_content_reconciliation\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 051',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');

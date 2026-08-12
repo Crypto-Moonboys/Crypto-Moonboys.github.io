@@ -1855,9 +1855,9 @@ for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1]]) {
     (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
     VALUES ('legacy-boss-gate', ?, ?, ?, 1)`).run(evolutionId, stage, `fixture:${evolutionId}`);
 }
-legacyBossDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES
-  ('legacy-boss-gate', 'material', 'neon_scrap', 10),
-  ('legacy-boss-gate', 'item', 'evolution_fragment', 3)`).run();
+legacyBossDb.database.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES
+  ('legacy-boss-gate', 'scrap_metal', 10),
+  ('legacy-boss-gate', 'evolution_fragment', 3)`).run();
 legacyBossDb.database.prepare(`INSERT INTO telegram_pet_relics (telegram_id, relic_id, rarity) VALUES
   ('legacy-boss-gate', 'bitcoin_heart', 'legendary'),
   ('legacy-boss-gate', 'neon_boots', 'rare')`).run();

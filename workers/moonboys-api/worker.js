@@ -35,6 +35,8 @@ import {
   PET_ECONOMY_ROUTES, buildPetEconomyGuidanceActions, formatPetEconomyValue,
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
+import { PET_CRAFTING_MATERIALS } from './pets/economy-phase-3.js';
+import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
@@ -1264,12 +1266,11 @@ async function getCurrentSeason(db) {
 }
 
 const PET_STAGE_THRESHOLDS = [
-  { stage: 'egg', min_xp: 0 },
-  { stage: 'hatchling', min_xp: 25 },
-  { stage: 'runner', min_xp: 120 },
-  { stage: 'street scout', min_xp: 360 },
-  { stage: 'moon guardian', min_xp: 900 },
-  { stage: 'legendary companion', min_xp: 1800 },
+  { stage: 'Moon Egg', min_xp: 0 },
+  { stage: 'Street Moonpet', min_xp: 400 },
+  { stage: 'Cyber Moonpet', min_xp: 1900 },
+  { stage: 'Elite Moonpet', min_xp: 3400 },
+  { stage: 'Legendary Moon Guardian', min_xp: 4900 },
 ];
 
 const PET_ACTIONS = Object.freeze({
@@ -1387,6 +1388,14 @@ const PET_JOBS = Object.freeze({
   guardian_patrol: {
     key: 'guardian_patrol', title: 'Guardian Patrol', pet_xp: 62, moon_gold: 60, moon_crystals: 3,
     min_level: 50, min_evolution_stage: 4,
+  },
+  vault_security: {
+    key: 'vault_security', title: 'Vault Security', pet_xp: 54, moon_gold: 58, style_tokens: 2,
+    min_level: 25, min_evolution_stage: 2,
+  },
+  kaiju_recovery: {
+    key: 'kaiju_recovery', title: 'Kaiju Recovery', pet_xp: 66, moon_gold: 48, moon_crystals: 4,
+    min_level: 45, min_evolution_stage: 3,
   },
 });
 
@@ -6025,13 +6034,17 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
 
   const pet = serializePet(petRaw);
   const miniChatId = `mini:${telegramId}`;
-  const [guidance, inventory, runtime, gear, arena, kaiju, leaderboard, notifications] = await Promise.all([
+  const [guidance, inventory, runtime, gear, materials, relics, arena, kaiju, leaderboard, notifications] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
     db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
       FROM telegram_pet_equipment_progression WHERE telegram_id = ?
       ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
+      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT relic_id, acquired_at FROM telegram_pet_relics
+      WHERE telegram_id = ? ORDER BY acquired_at DESC`).bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT * FROM telegram_pet_arena_battles
       WHERE chat_id = ? AND player1_telegram_id = ? AND status IN ('readying','active')
       ORDER BY created_at DESC LIMIT 1`).bind(miniChatId, telegramId).first().catch(() => null),
@@ -6051,6 +6064,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
   ]);
+  const identityStage = guidance?.identity?.current_stage || { evolution_id: 'moon_egg', name: 'Moon Egg', stage: 0 };
+  const canonicalPet = { ...pet, stage: identityStage.name, evolution_id: identityStage.evolution_id, evolution_stage: Number(identityStage.stage || 0) };
+  if (guidance) guidance.pet = canonicalPet;
+  let regionMastery = {};
+  try { regionMastery = JSON.parse(runtime?.region_mastery_json || '{}'); } catch {}
   const next = guidance ? choosePetNextAction(guidance) : null;
   const activeRun = guidance?.active_run || null;
   const dailyReservation = activeRun
@@ -6076,11 +6094,19 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     : [];
   return {
     adopted: true,
-    pet,
+    pet: canonicalPet,
     next,
     guidance,
     progress: runtime,
     gear: gear.results || [],
+    materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
+      key,
+      label: definition.label,
+      quantity: Math.max(0, Number((materials.results || []).find((row) => row.material_key === key)?.quantity || 0)),
+      sources: definition.sources,
+    })),
+    relics: relics.results || [],
+    regions: buildPetRegionDirectory(canonicalPet.level, regionMastery),
     inventory,
     run: activeRun ? {
       ...activeRun,
@@ -11411,8 +11437,10 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
   const currentStage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => Number(entry.stage) === currentStage + 1) || null;
   if (!next) return null;
-  const [inventory, victories, relicCount] = await Promise.all([
+  const [inventory, materials, victories, relicCount] = await Promise.all([
     db.prepare(`SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory WHERE telegram_id = ? AND quantity > 0`)
+      .bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND quantity > 0`)
       .bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT boss_id, victories FROM telegram_pet_boss_victories WHERE telegram_id = ?`)
       .bind(telegramId).all().catch(() => ({ results: [] })),
@@ -11420,6 +11448,7 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
       .bind(telegramId).first().catch(() => ({ count: 0 })),
   ]);
   const inventoryCounts = new Map((inventory.results || []).map((row) => [`${row.asset_type}:${row.asset_key}`, Math.max(0, Number(row.quantity) || 0)]));
+  for (const row of materials.results || []) inventoryCounts.set(`material:${row.material_key}`, Math.max(0, Number(row.quantity) || 0));
   const bossCounts = new Map((victories.results || []).map((row) => [String(row.boss_id), Math.max(0, Number(row.victories) || 0)]));
   const missing = [];
   const level = getPetLevel(pet?.pet_xp);
@@ -11605,7 +11634,11 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
       defeated: Boolean(weeklyProgress?.defeated_at),
     },
     features: getPetGuidanceFeatures(level),
-    jobs: Object.values(PET_JOBS).map((job) => ({ ...job, available: level >= job.min_level && stage >= job.min_evolution_stage })),
+    jobs: Object.values(PET_JOBS).map((job) => ({
+      ...job,
+      lore: PET_JOB_LORE[job.key] || '',
+      available: level >= job.min_level && stage >= job.min_evolution_stage,
+    })),
     shop_items: petShopItemsForPet(pet),
     economy,
     economy_actions: economy?.guidance_actions || [],

@@ -16,7 +16,8 @@ import {
 } from '../workers/moonboys-api/pets/player-expansion.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
-assert.equal(Object.keys(PET_ACHIEVEMENTS).length, 12, 'expansion must ship twelve permanent achievements');
+assert.equal(Object.keys(PET_ACHIEVEMENTS).length, 13, 'expansion must cover every formal evolution, including Elite Moonpet');
+assert.ok(PET_ACHIEVEMENTS.moon_alley_elite, 'Elite Moonpet evolution must reference a registered achievement');
 assert.equal(PET_SEASON_REWARD_TIERS.length, 4, 'season track must ship four bounded claim tiers');
 assert.equal(PET_WEEKLY_BOSSES.length, 4, 'weekly rotation must include four bosses');
 assert.equal(getPetWeeklyBoss('2026-W33'), getPetWeeklyBoss('2026-W33'), 'weekly boss selection must be deterministic');
@@ -57,7 +58,8 @@ assert.notEqual(nextReaction.key, firstReaction.key, 'recent reaction keys must 
 assert.notEqual(nextReaction.text, firstReaction.text, 'recent reaction text must not immediately repeat');
 assert.ok(buildMoonpetReaction('event', reactionIdentity).length > 20);
 
-assert.equal(Object.keys(hooks.PET_JOBS).length, 12, 'jobs must expand from four to twelve');
+assert.equal(Object.keys(hooks.PET_JOBS).length, 14, 'all standard and elite jobs must share the live job authority');
+assert.ok(hooks.PET_JOBS.vault_security && hooks.PET_JOBS.kaiju_recovery, 'elite job definitions must be playable rather than orphaned content');
 assert.equal(Object.keys(hooks.PET_RANDOM_EVENTS).length, 10, 'random events must expand from five to ten');
 assert.equal(hooks.PET_JOBS.guardian_patrol.min_evolution_stage, 4, 'late jobs must use evolution as a content gate');
 assert.equal(hooks.PET_RANDOM_EVENTS.guardian_distress_call.min_evolution_stage, 4, 'late events must use evolution as a content gate');

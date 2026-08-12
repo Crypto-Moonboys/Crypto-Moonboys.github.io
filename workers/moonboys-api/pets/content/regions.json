@@ -19,6 +19,6 @@
     ],
     "enemy_pool": ["street_rat", "rival_moonpet", "cyber_guard"],
     "boss_pool": ["alley_king"],
-    "reward_pool": ["neon_scrap", "spray_pigment", "evolution_fragment", "relic_drop"]
+    "reward_pool": ["scrap_metal", "moon_fabric", "evolution_fragment", "relic_drop"]
   }
 ]

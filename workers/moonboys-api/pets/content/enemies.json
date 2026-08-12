@@ -4,20 +4,20 @@
     "name": "Street Rat",
     "role": "common",
     "difficulty": 1,
-    "reward_pool": ["neon_scrap"]
+    "reward_pool": ["scrap_metal"]
   },
   {
     "enemy_id": "rival_moonpet",
     "name": "Rival Moonpet",
     "role": "mid_encounter",
     "difficulty": 2,
-    "reward_pool": ["neon_scrap", "spray_pigment"]
+    "reward_pool": ["scrap_metal", "moon_fabric"]
   },
   {
     "enemy_id": "cyber_guard",
     "name": "Cyber Guard",
     "role": "elite",
     "difficulty": 3,
-    "reward_pool": ["spray_pigment", "relic_drop"]
+    "reward_pool": ["moon_fabric", "relic_drop"]
   }
 ]

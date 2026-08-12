@@ -12,6 +12,8 @@ export const PET_CRAFTING_MATERIALS = deepFreeze({
   spray_core: { label: 'Spray Core', sources: ['street_artist', 'event', 'run_boss'], max_stack: 9999 },
   kaiju_fragment: { label: 'Kaiju Fragment', sources: ['kaiju_win', 'run_boss'], max_stack: 9999 },
   arena_token: { label: 'Arena Token', sources: ['arena_win', 'arena_draw', 'arena_daily'], max_stack: 9999 },
+  evolution_fragment: { label: 'Evolution Fragment', sources: ['run_boss', 'weekly_boss'], max_stack: 9999 },
+  mastery_token: { label: 'Mastery Token', sources: ['prestige_challenge', 'season_guardian'], max_stack: 9999 },
 });
 
 export const PET_EQUIPMENT_UPGRADE_COSTS = deepFreeze({
