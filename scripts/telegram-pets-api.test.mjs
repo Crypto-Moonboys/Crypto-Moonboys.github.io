@@ -342,19 +342,19 @@ for (const column of ['current_round','max_rounds','player1_hp','player2_hp','pl
 for (const indexName of ['idx_pet_arena_queue_match', 'idx_pet_arena_queue_one_waiting', 'idx_pet_arena_battles_p1_active', 'idx_pet_arena_battles_p2_active']) assert.ok(workerSchema.includes(indexName), `schema.sql must include arena index: ${indexName}`);
 
 
-assert.equal(PET_RUN_MAX_DEPTH, 5, 'Pet Run Engine must use 5-step runs');
-assert.equal(PET_RUN_STEP_CHOICES.length, 5, 'Pet Run Engine must define five choice steps');
+assert.equal(PET_RUN_MAX_DEPTH, 100, 'Pet Run Engine must use repeatable 100-room expedition cycles');
+assert.equal(PET_RUN_STEP_CHOICES.length, 5, 'Pet Run Engine retains five legacy choice templates for compatibility');
 for (const stepChoices of PET_RUN_STEP_CHOICES) {
   assert.equal(stepChoices.length, 3, 'each Pet Run Engine step must expose exactly 3 choices');
 }
-for (const choiceType of ['fight', 'sneak', 'loot', 'rest', 'trade', 'gamble', 'boss']) {
+for (const choiceType of ['fight', 'sneak', 'loot', 'rest', 'trade', 'gamble', 'hidden_route', 'elite', 'boss']) {
   assert.ok(PET_RUN_CHOICE_LIBRARY[choiceType], `Pet Run Engine must support ${choiceType}`);
 }
 const stableStepKeyA = buildPetRunStepEventKey('123', 'run-abc', 2, 'sneak');
 const stableStepKeyB = buildPetRunStepEventKey('123', 'run-abc', 2, 'sneak');
 assert.equal(stableStepKeyA, stableStepKeyB, 'run step event keys must be stable for retry-safe callbacks');
 assert.equal(buildPetRunExtractEventKey('123', 'run-abc'), 'pet_run_extract:123:run-abc', 'run extract event keys must not depend on callback query ids');
-const runMarkup = buildPetRunChoiceReplyMarkup({ run_id: 'run-abc', depth: 0, max_depth: 5, risk_level: 1, unbanked_items: '{}' });
+const runMarkup = buildPetRunChoiceReplyMarkup({ run_id: 'run-abc', seed: 42, depth: 0, max_depth: 100, risk_level: 1, unbanked_items: '{}' });
 assert.equal(runMarkup.inline_keyboard[0].length, 3, 'run keyboard must expose exactly 3 choices');
 assert.ok(runMarkup.inline_keyboard[0][0].callback_data.startsWith('pet:run:run-abc:step:1:'), 'run choice callbacks must carry run id and step');
 assert.ok(runMarkup.inline_keyboard.flat().some((button) => button.callback_data === 'pet:run:run-abc:extract'), 'run keyboard must include Extract');
@@ -2020,9 +2020,11 @@ runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_i
   VALUES ('run-choice-item', 'item', 'lucky_charm', 1)`).run();
 const runChoiceRandom = Math.random;
 Math.random = () => 0.99;
+const offeredRunChoice = buildPetRunChoiceReplyMarkup({ run_id: 'run-choice-item-run', depth: 0, max_depth: 100, risk_level: 1, unbanked_items: '{}' })
+  .inline_keyboard[0][0].callback_data.split(':').at(-1);
 let runChoiceItemResult;
 try {
-  runChoiceItemResult = await processPetRunStep(runChoiceItemDb, 'run-choice-item', 'run-choice-item-run', PET_RUN_STEP_CHOICES[0][0], {
+  runChoiceItemResult = await processPetRunStep(runChoiceItemDb, 'run-choice-item', 'run-choice-item-run', offeredRunChoice, {
     event_key: 'run-choice-item-step', expected_step_index: 1, source: 'inventory_authority_regression',
   });
 } finally {
@@ -2047,7 +2049,7 @@ let racingStepResult;
 try {
   [extractResult, racingStepResult] = await Promise.all([
     processPetRunExtract(terminalRaceDb, 'terminal-race', 'terminal-race-run', { source: 'concurrency_regression' }),
-    processPetRunStep(terminalRaceDb, 'terminal-race', 'terminal-race-run', 'boss', {
+    processPetRunStep(terminalRaceDb, 'terminal-race', 'terminal-race-run', 'elite', {
       source: 'concurrency_regression', expected_step_index: 5, event_key: 'terminal-race-step',
     }),
   ]);
