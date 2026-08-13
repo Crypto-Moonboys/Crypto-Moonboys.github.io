@@ -16,6 +16,10 @@ import {
   validateMoonpetEvolutionContent,
 } from './pets/moonpet-identity.js';
 import {
+  MOONPET_SPECIES, createMoonEggLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
+  syncMoonpetLifecycleStage,
+} from './pets/species-lifecycle.js';
+import {
   PET_ROGUELITE_BOSSES, PET_ROGUELITE_ENEMIES, PET_ROGUELITE_REGIONS, PET_ROGUELITE_RELICS, PET_ROGUELITE_ROOMS, PET_RUN_MODIFIERS,
   advancePetRun, awardPetReward, buildPetProfileDeltas, choosePetRunModifier, completePetRun, createPetRunRoom,
   extractPetRogueliteRun, failPetRun, finishPetRogueliteRun, generatePetRunRoom, persistPetRunRoomOutcome,
@@ -6300,6 +6304,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   }
 
   const pet = serializePet(petRaw);
+  const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
   const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
@@ -6360,7 +6365,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
             : activeChain
               ? { key: 'event_chain', title: `Continue ${String(activeChain.key).replaceAll('_', ' ')}`, detail: `Current step ${activeChain.step_index + 1}/${activeChain.steps.length}: ${String(activeChain.current_step).replaceAll('_', ' ')}. Reward: 18 XP, 16 Gold and 1 Style; finale pays 45 XP, 50 Gold and 4 Style.`, action: 'event_chain', destination: 'explore' }
               : null;
-  const next = guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
+  const next = lifecycle?.phase === 'egg'
+    ? { key: 'incubate', title: lifecycle.incubation.ready ? 'Hatch the Moon Egg' : 'Shape the Moon Egg', detail: lifecycle.incubation.ready ? 'The shell is answering. Hatch when ready.' : `Build ${lifecycle.incubation.target} signal with at least three kinds of care.`, action: lifecycle.incubation.ready ? 'hatch' : 'incubate', destination: 'home' }
+    : lifecycle?.rare?.ready
+      ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
+      : guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
   const guidanceNotices = guidance
     ? await persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance)).catch(() => [])
     : [];
@@ -6389,6 +6398,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   return {
     adopted: true,
     pet: canonicalPet,
+    lifecycle,
     next,
     guidance,
     notices: guidanceNotices,
@@ -6458,7 +6468,18 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
   const source = 'telegram_mini_app';
-  if (action === 'adopt') return processPetAction(db, telegramId, 'adopt', { event_key: eventKey, source });
+  if (action === 'adopt') {
+    const result = await processPetAction(db, telegramId, 'adopt', { event_key: eventKey, source });
+    if (result.accepted) result.lifecycle = await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
+    return result;
+  }
+  if (action === 'incubate') return incubateMoonEgg(db, telegramId, body.care_type, eventKey);
+  if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
+  if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
+  const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
+  if (lifecycle?.phase === 'egg' && action !== 'guidance_ack' && action !== 'notification_set') {
+    return { accepted: false, reason: 'moon_egg_must_hatch', lifecycle };
+  }
   if (['feed', 'play', 'clean', 'sleep', 'train'].includes(action)) {
     const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source });
     if (result.accepted) await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, action);
@@ -6571,7 +6592,9 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
     const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
     if (!next) return { accepted: false, reason: 'final_evolution_reached' };
-    return evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
+    const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
+    if (result.accepted) result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+    return result;
   }
   if (action === 'arena_start') {
     const eligible = await ensurePetArenaEligible(db, telegramId);
@@ -6662,7 +6685,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (result.pet) output.pet = serializePet(result.pet, identity);
@@ -11097,6 +11120,13 @@ export const __petMediaTestHooks = Object.freeze({
   PET_JOBS,
   MOONPET_EVOLUTIONS,
   MOONPET_PERSONALITY_TRAITS,
+  MOONPET_SPECIES,
+  createMoonEggLifecycle,
+  getMoonpetLifecycle,
+  hatchMoonpet,
+  incubateMoonEgg,
+  morphMoonpetRare,
+  syncMoonpetLifecycleStage,
   PET_ROGUELITE_BOSSES,
   PET_ROGUELITE_ENEMIES,
   PET_ROGUELITE_REGIONS,
