@@ -814,6 +814,7 @@
   };
   var COMPANION_PRESENCE_FRAME = { behavior: 'chill', phase: 0.72, thought: 'GOOD VIBES', slot: -1, screen: '', seed: -1 };
   var COMBAT_RIVAL_COLORS = ['#ff6d6d', '#ff954f', '#f6a7ff', '#61f5ff', '#f4ff65', '#c99cff'];
+  var COMBAT_ARENA_SPECIAL_MAX = 3;
   var COMBAT_PRESENTATION_FRAME = {
     active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
     playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
@@ -918,7 +919,7 @@
       COMBAT_PRESENTATION_FRAME.title = arena.mode === 'multiplayer' ? 'PLAYER ARENA' : 'CRT ARENA';
       COMBAT_PRESENTATION_FRAME.status = arena.status === 'readying'
         ? arena.ready ? 'LOCKED IN // WAITING' : 'MATCH FOUND // READY UP'
-        : 'ROUND ' + Number(arena.current_round || 1) + ' LIVE';
+        : 'ROUND ' + Number(arena.current_round || 1) + '/' + Number(arena.max_rounds || 5) + ' LIVE';
       COMBAT_PRESENTATION_FRAME.opponentName = String(arena.opponent && arena.opponent.pet_name || 'RIVAL');
       COMBAT_PRESENTATION_FRAME.rivalColor = combatRivalColor(COMBAT_PRESENTATION_FRAME);
       COMBAT_PRESENTATION_FRAME.round = Number(arena.current_round || 1);
@@ -1543,13 +1544,14 @@
     if (combat.mode === 'arena') {
       drawCombatMeter(16, 69, 128, combat.playerValue, combat.maxValue, '#a9ff9a', false);
       drawCombatMeter(176, 69, 128, combat.opponentValue, combat.maxValue, rivalColor, true);
-      drawCombatMeter(16, 78, 64, combat.playerSpecial, 100, '#61f5ff', false);
-      drawCombatMeter(240, 78, 64, combat.opponentSpecial, 100, '#61f5ff', true);
-      drawPixelText('HP ' + Number(combat.playerValue), 16, 90, '#a9ff9a', 'left');
-      drawPixelText(Number(combat.opponentValue) + ' HP', 304, 90, rivalColor, 'right');
+      drawCombatMeter(16, 78, 64, combat.playerSpecial, COMBAT_ARENA_SPECIAL_MAX, '#61f5ff', false);
+      drawCombatMeter(240, 78, 64, combat.opponentSpecial, COMBAT_ARENA_SPECIAL_MAX, '#61f5ff', true);
+      drawPixelText('HP ' + Number(combat.playerValue) + ' // SP ' + Number(combat.playerSpecial) + '/' + COMBAT_ARENA_SPECIAL_MAX, 16, 90, '#a9ff9a', 'left');
+      drawPixelText('SP ' + Number(combat.opponentSpecial) + '/' + COMBAT_ARENA_SPECIAL_MAX + ' // ' + Number(combat.opponentValue) + ' HP', 304, 90, rivalColor, 'right');
     } else if (combat.mode === 'kaiju') {
       drawPixelText(combat.playerValue ? 'YOU // LOCKED' : 'YOU // SELECT', 16, 80, combat.playerValue ? '#f4ff65' : '#aab5ae', 'left');
       drawPixelText(combat.opponentValue ? 'RIVAL // LOCKED' : 'RIVAL // WAITING', 304, 80, combat.opponentValue ? rivalColor : '#aab5ae', 'right');
+      if (combat.playerCardKey) drawPixelText('CARD // ' + compactFeedback(words(combat.playerCardKey), 12), 16, 90, '#d8f9ff', 'left');
     } else {
       drawCombatMeter(16, 74, 288, combat.playerValue, combat.maxValue, scene.accent, false);
       drawPixelText('PROGRESS', 16, 84, scene.accent, 'left');
