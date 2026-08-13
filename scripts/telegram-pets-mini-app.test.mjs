@@ -133,7 +133,14 @@ assert.match(client, /animateAction\(action, Boolean\(data\.result && data\.resu
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.match(client, /hold: actionResultHoldMs/);
 assert.match(client, /hold: 2200/);
+assert.match(client, /function createPetPalette/);
+assert.match(client, /var PET_APPEARANCE_PALETTES =/);
+assert.match(client, /var PET_SPECIES_PALETTES =/);
+assert.match(client, /var DEFAULT_PET_PALETTE = createPetPalette/);
 assert.match(client, /function petPalette/);
+assert.match(client, /return stage >= 4 \? selected\.legendary : selected\.normal/);
+const petPaletteSource = client.slice(client.indexOf('function petPalette'), client.indexOf('function petPose'));
+assert.doesNotMatch(petPaletteSource, /var palettes|var species|\[[^\]]*,[^\]]*,[^\]]*\]/, 'per-frame palette lookup must not allocate tables or colour arrays');
 assert.match(client, /function petPose/);
 assert.match(client, /function drawRaccoon/);
 assert.match(client, /function drawRam/);
