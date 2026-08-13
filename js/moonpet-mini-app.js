@@ -39,6 +39,8 @@
   var companionSeedMarking = null;
   var companionSeedName = null;
   var companionSeedValue = 0;
+  var combatSnapshot = null;
+  var combatScreen = '';
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -815,7 +817,7 @@
   var COMBAT_PRESENTATION_FRAME = {
     active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
     playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
-    playerCardKey: '', opponentCardKey: '', source: null,
+    playerCardKey: '', opponentCardKey: '', rivalColor: '#ff6d6d', source: null,
   };
 
   function companionIdentitySeed(pet, lifecycle) {
@@ -898,11 +900,15 @@
     COMBAT_PRESENTATION_FRAME.opponentSpecial = 0;
     COMBAT_PRESENTATION_FRAME.playerCardKey = '';
     COMBAT_PRESENTATION_FRAME.opponentCardKey = '';
+    COMBAT_PRESENTATION_FRAME.rivalColor = '#ff6d6d';
     COMBAT_PRESENTATION_FRAME.source = null;
     return COMBAT_PRESENTATION_FRAME;
   }
 
   function updateCombatPresentation(snapshot) {
+    if (snapshot === combatSnapshot && activeScreen === combatScreen) return COMBAT_PRESENTATION_FRAME;
+    combatSnapshot = snapshot;
+    combatScreen = activeScreen;
     clearCombatPresentation();
     if (activeScreen !== 'explore' || !snapshot || !snapshot.adopted) return COMBAT_PRESENTATION_FRAME;
     var arena = snapshot.arena;
@@ -914,6 +920,7 @@
         ? arena.ready ? 'LOCKED IN // WAITING' : 'MATCH FOUND // READY UP'
         : 'ROUND ' + Number(arena.current_round || 1) + ' LIVE';
       COMBAT_PRESENTATION_FRAME.opponentName = String(arena.opponent && arena.opponent.pet_name || 'RIVAL');
+      COMBAT_PRESENTATION_FRAME.rivalColor = combatRivalColor(COMBAT_PRESENTATION_FRAME);
       COMBAT_PRESENTATION_FRAME.round = Number(arena.current_round || 1);
       COMBAT_PRESENTATION_FRAME.maxRounds = Number(arena.max_rounds || 5);
       COMBAT_PRESENTATION_FRAME.playerValue = Math.max(0, Number(arena.player_hp || 0));
@@ -933,6 +940,7 @@
         ? kaiju.opponent_card_locked ? 'BOTH CARDS LOCKED' : 'YOUR CARD LOCKED // WAIT'
         : 'SELECT YOUR CODE CARD';
       COMBAT_PRESENTATION_FRAME.opponentName = kaiju.mode === 'group' ? 'RIVAL CARD' : 'CRT CARD';
+      COMBAT_PRESENTATION_FRAME.rivalColor = combatRivalColor(COMBAT_PRESENTATION_FRAME);
       COMBAT_PRESENTATION_FRAME.playerValue = kaiju.own_card_locked ? 1 : 0;
       COMBAT_PRESENTATION_FRAME.opponentValue = kaiju.opponent_card_locked ? 1 : 0;
       COMBAT_PRESENTATION_FRAME.maxValue = 1;
@@ -950,6 +958,7 @@
       COMBAT_PRESENTATION_FRAME.title = String(run.daily ? 'DAILY MOON RUN' : 'MOON RUN');
       COMBAT_PRESENTATION_FRAME.status = 'DEPTH ' + depth + '/' + maxDepth + ' // RISK ' + Number(run.risk_level || 1);
       COMBAT_PRESENTATION_FRAME.opponentName = 'ALLEY THREAT';
+      COMBAT_PRESENTATION_FRAME.rivalColor = combatRivalColor(COMBAT_PRESENTATION_FRAME);
       COMBAT_PRESENTATION_FRAME.playerValue = depth;
       COMBAT_PRESENTATION_FRAME.opponentValue = Math.max(0, maxDepth - depth);
       COMBAT_PRESENTATION_FRAME.maxValue = maxDepth;
@@ -1479,7 +1488,7 @@
 
   function drawCombatOpponent(time, scene, combat) {
     if (!combat || !combat.active) return;
-    var rivalColor = combatRivalColor(combat);
+    var rivalColor = combat.rivalColor || '#ff6d6d';
     var pulse = reducedMotion ? 0 : Math.round(Math.sin(time / 260) * 2);
     var x = 235;
     var y = 151 + pulse;
@@ -1524,7 +1533,7 @@
 
   function drawCombatHud(scene, combat) {
     if (!combat || !combat.active) return;
-    var rivalColor = combatRivalColor(combat);
+    var rivalColor = combat.rivalColor || '#ff6d6d';
     drawPixelRect(7, 54, 306, 32, '#020704');
     drawPixelRect(7, 54, 306, 2, scene.neon);
     drawPixelText(combat.title, 16, 66, scene.neon, 'left');
