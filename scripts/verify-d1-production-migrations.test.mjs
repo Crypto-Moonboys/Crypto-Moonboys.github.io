@@ -21,7 +21,7 @@ assert.match(
 );
 assert.match(
   remoteQueryStep,
-  /053_telegram_pet_species_lifecycle\\.sql/,
+  /053_telegram_pet_species_lifecycle\.sql/,
   'the workflow_dispatch D1 query must request migration 053 from production',
 );
 assert.deepEqual(
@@ -146,7 +146,7 @@ const withoutSpeciesLifecycle = {
 };
 assert.throws(
   () => validateRequest(withoutSpeciesLifecycle),
-  /missing required migrations: 053_telegram_pet_species_lifecycle\\.sql/,
+  /missing required migrations: 053_telegram_pet_species_lifecycle\.sql/,
   'deployment verification must reject an evidence request that omits migration 053',
 );
 
@@ -250,7 +250,7 @@ assert.throws(
     success: true,
     results: verifiedRows.filter(({ name }) => name !== '053_telegram_pet_species_lifecycle.sql'),
   }], request),
-  /missing migrations: 053_telegram_pet_species_lifecycle\\.sql/,
+  /missing migrations: 053_telegram_pet_species_lifecycle\.sql/,
   'deployment verification must fail when production D1 has not applied migration 053',
 );
 
