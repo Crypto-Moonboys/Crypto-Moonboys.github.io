@@ -4419,7 +4419,7 @@ function serializePetLeaderboardEntry(row, index = 0) {
   const speciesId = revealed && MOONPET_SPECIES[row?.lifecycle_species_id] ? String(row.lifecycle_species_id) : null;
   const rareMorphId = phase === 'rare' && row?.rare_morph_id ? String(row.rare_morph_id) : null;
   return {
-    rank: Math.max(1, Number(index) + 1),
+    rank: Math.max(1, Number(row?.rank) || Number(index) + 1),
     pet_name: row?.pet_name || 'Moonpet',
     stage: rareMorphId || row?.stage || 'moon_egg',
     phase,
@@ -6350,6 +6350,60 @@ function serializePetMiniAppKaijuMatch(match, telegramId = '') {
   };
 }
 
+const PET_MINI_APP_LEADERBOARD_PERIODS = new Set(['daily', 'weekly', 'seasonal', 'all_time']);
+
+async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'seasonal', requestedLimit = 25) {
+  const period = PET_MINI_APP_LEADERBOARD_PERIODS.has(String(requestedPeriod || '').toLowerCase())
+    ? String(requestedPeriod).toLowerCase()
+    : 'seasonal';
+  const limit = Math.min(Math.max(Number(requestedLimit) || 25, 1), 50);
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  let scoreSql;
+  let scoreBindings = [];
+  if (period === 'daily') {
+    scoreSql = `SELECT telegram_id, SUM(pet_xp_awarded) AS pet_xp
+      FROM telegram_pet_events WHERE day_key = ? AND status = 'accepted' GROUP BY telegram_id`;
+    scoreBindings = [dayKey];
+  } else if (period === 'weekly') {
+    scoreSql = `SELECT telegram_id, SUM(pet_xp_awarded) AS pet_xp
+      FROM telegram_pet_events WHERE week_key = ? AND status = 'accepted' GROUP BY telegram_id`;
+    scoreBindings = [weekKey];
+  } else if (period === 'all_time') {
+    scoreSql = 'SELECT telegram_id, pet_xp FROM telegram_pet_profiles';
+  } else {
+    scoreSql = 'SELECT telegram_id, season_xp AS pet_xp FROM telegram_pet_season_state WHERE season_key = ?';
+    scoreBindings = [season.key];
+  }
+  const rows = await db.prepare(`
+    WITH scores AS (${scoreSql}),
+    ranked AS (
+      SELECT scores.telegram_id, scores.pet_xp, p.pet_name,
+        COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=scores.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+        p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
+        l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
+        ROW_NUMBER() OVER (ORDER BY scores.pet_xp DESC, COALESCE(p.updated_at, '') ASC, scores.telegram_id ASC) AS rank
+      FROM scores
+      LEFT JOIN telegram_pet_profiles p ON p.telegram_id = scores.telegram_id
+      LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = scores.telegram_id
+    )
+    SELECT * FROM ranked WHERE rank <= ? OR telegram_id = ? ORDER BY rank
+  `).bind(...scoreBindings, limit, String(telegramId)).all().catch(() => ({ results: [] }));
+  const materialized = await materializePetLeaderboardRows(db, rows.results || []);
+  const serialized = materialized.map((row) => ({
+    ...serializePetLeaderboardEntry(row, Number(row.rank || 1) - 1),
+    is_current: String(row.telegram_id) === String(telegramId),
+  }));
+  return {
+    period,
+    season,
+    entries: serialized.filter((entry) => entry.rank <= limit),
+    self: serialized.find((entry) => entry.is_current) || null,
+  };
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken) {
   const petRaw = await getPetProfile(db, telegramId).catch(() => null);
   if (!petRaw) {
@@ -7292,6 +7346,21 @@ export default {
           message: error?.message || String(error),
         });
         return err('mini_app_state_failed', 500);
+      }
+    }
+
+    if (path === '/telegram-pets/app/leaderboard' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/leaderboard', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/leaderboard', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      try {
+        return json(await buildPetMiniAppLeaderboard(env.DB, verified.telegramId, body.period, body.limit));
+      } catch (error) {
+        logApiFailure('pet_mini_app_leaderboard_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return err('mini_app_leaderboard_failed', 500);
       }
     }
 
@@ -10355,7 +10424,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-full-system-audit`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-navigation-guide`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -11370,7 +11439,7 @@ async function handleTelegramUpdate(update, env) {
     if (data.startsWith('pet:') && telegramId && chatId) {
       if (resolvePetCallbackRoute(data, env.PET_MINI_APP_ENABLED) === 'mini_app') {
         await answerTelegramCallback(tok, query.id, 'Opening Moonpet OS');
-        await cmdPetMiniAppLauncher(tok, chatId, telegramId, String(query.message?.chat?.type || 'private'), petMiniAppDestinationForCallback(data));
+        await cmdPetMiniAppLauncher(tok, chatId, telegramId, String(query.message?.chat?.type || 'private'), petMiniAppDestinationForCallback(data), petMiniAppFocusForCallback(data));
         return;
       }
       /* Legacy callback routing is retained below for rollback safety. */
@@ -11611,7 +11680,7 @@ async function handleTelegramUpdate(update, env) {
   const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
 
   if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && isPetMiniAppStartArgument(argStr)))) {
-    await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType, petMiniAppDestinationForCommand(cmdBase, argStr));
+    await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType, petMiniAppDestinationForCommand(cmdBase, argStr), petMiniAppFocusForCommand(cmdBase, argStr));
     return;
   }
 
@@ -11712,6 +11781,16 @@ function isPetMiniAppCommand(command) {
 }
 
 const PET_MINI_APP_SCREENS = new Set(['home', 'missions', 'explore', 'work', 'economy', 'profile']);
+const PET_MINI_APP_FOCUSES = new Set(['recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
+const PET_MINI_APP_COMMAND_FOCUSES = Object.freeze({
+  adopt: 'care', feed: 'care', play: 'care', clean: 'care', sleep: 'care', train: 'care', petdaily: 'care',
+  petmissions: 'missions', petachievements: 'achievements', petarena: 'arena', petkaiju: 'kaiju', kaiju: 'kaiju',
+  petrun: 'moon-run', petextract: 'moon-run', petadventure: 'moon-run', petevent: 'street-event', petboss: 'weekly-boss',
+  petstart: 'timed-activity', petclaim: 'timed-activity', petcancel: 'timed-activity', petactivity: 'timed-activity', petwork: 'jobs',
+  petshop: 'shop', petbounties: 'bounties', petexpedition: 'expedition', petmarket: 'market', petbag: 'inventory',
+  petbuy: 'shop', petuse: 'inventory', pettrade: 'trade', petgear: 'equipment', petprogress: 'tracks', petseason: 'season',
+  petevolve: 'evolution', petnotify: 'alerts', petleaderboard: 'leaderboard', petscore: 'leaderboard', petname: 'callsign',
+});
 const PET_MINI_APP_COMMAND_DESTINATIONS = Object.freeze({
   petmissions: 'missions',
   petachievements: 'missions',
@@ -11753,17 +11832,26 @@ function normalizePetMiniAppDestination(destination) {
   return PET_MINI_APP_SCREENS.has(screen) ? screen : 'home';
 }
 
+function parsePetMiniAppStartArgument(argument) {
+  const match = String(argument || '').toLowerCase().match(/^moonpet(?:_(home|missions|explore|work|economy|profile))?(?:_([a-z0-9-]+))?$/);
+  if (!match) return null;
+  return { screen: normalizePetMiniAppDestination(match[1] || 'home'), focus: PET_MINI_APP_FOCUSES.has(match[2]) ? match[2] : '' };
+}
+
 function petMiniAppDestinationForCommand(command, startArgument = '') {
   const normalizedCommand = String(command || '').toLowerCase();
-  if (normalizedCommand === 'start') {
-    const match = String(startArgument || '').toLowerCase().match(/^moonpet(?:_(home|missions|explore|work|economy|profile))?$/);
-    return normalizePetMiniAppDestination(match?.[1] || 'home');
-  }
+  if (normalizedCommand === 'start') return parsePetMiniAppStartArgument(startArgument)?.screen || 'home';
   return PET_MINI_APP_COMMAND_DESTINATIONS[normalizedCommand] || 'home';
 }
 
+function petMiniAppFocusForCommand(command, startArgument = '') {
+  const normalizedCommand = String(command || '').toLowerCase();
+  if (normalizedCommand === 'start') return parsePetMiniAppStartArgument(startArgument)?.focus || '';
+  return PET_MINI_APP_COMMAND_FOCUSES[normalizedCommand] || '';
+}
+
 function isPetMiniAppStartArgument(argument) {
-  return /^moonpet(?:_(?:home|missions|explore|work|economy|profile))?$/.test(String(argument || '').toLowerCase());
+  return Boolean(parsePetMiniAppStartArgument(argument));
 }
 
 function petMiniAppDestinationForCallback(data) {
@@ -11774,6 +11862,38 @@ function petMiniAppDestinationForCallback(data) {
   if (payload === 'menu:management' || /^(shop|economy|bount|expedition|market|bag|buy|use|trade|equipment|gear|cosmetic)/.test(payload)) return 'economy';
   if (payload === 'menu:progress' || /^(details|progress|season|evolve|leaderboard|score|streak|notify|name|prestige|identity)/.test(payload)) return 'profile';
   return 'home';
+}
+
+function petMiniAppFocusForCallback(data) {
+  const payload = String(data || '').toLowerCase().replace(/^pet:/, '');
+  if (payload === 'missions' || payload.startsWith('mission:')) return 'missions';
+  if (payload.startsWith('achievement')) return 'achievements';
+  if (payload.startsWith('arena')) return 'arena';
+  if (payload.startsWith('kaiju')) return 'kaiju';
+  if (/^(run|extract)/.test(payload)) return 'moon-run';
+  if (payload.startsWith('adventure')) return 'adventure';
+  if (/^(event_chain|chain)/.test(payload)) return 'story-chains';
+  if (payload.startsWith('event')) return 'street-event';
+  if (payload.startsWith('seasonal_boss')) return 'seasonal-boss';
+  if (payload.startsWith('district')) return 'districts';
+  if (payload.startsWith('boss')) return 'weekly-boss';
+  if (/^(work|activity|job|start:|claim$|cancel$)/.test(payload)) return payload.startsWith('job') || payload === 'work' ? 'jobs' : 'timed-activity';
+  if (/^(bount)/.test(payload)) return 'bounties';
+  if (/^(expedition)/.test(payload)) return 'expedition';
+  if (/^(market)/.test(payload)) return 'market';
+  if (/^(bag|use)/.test(payload)) return 'inventory';
+  if (/^(trade)/.test(payload)) return 'trade';
+  if (/^(equipment|gear)/.test(payload)) return 'equipment';
+  if (/^(shop|buy)/.test(payload)) return 'shop';
+  if (/^(cosmetic)/.test(payload)) return 'style-lab';
+  if (/^(season)/.test(payload)) return 'season';
+  if (/^(evolve)/.test(payload)) return 'evolution';
+  if (/^(leaderboard|score)/.test(payload)) return 'leaderboard';
+  if (/^(notify)/.test(payload)) return 'alerts';
+  if (/^(name)/.test(payload)) return 'callsign';
+  if (/^(prestige)/.test(payload)) return 'prestige';
+  if (/^(progress)/.test(payload)) return 'tracks';
+  return '';
 }
 
 async function setPetMiniAppMenuButton(botToken, telegramId) {
@@ -11789,18 +11909,24 @@ async function setPetMiniAppMenuButton(botToken, telegramId) {
   }).catch(() => null);
 }
 
-function buildPetMiniAppLaunchReplyMarkup(destination = 'home') {
+function petMiniAppLaunchUrl(destination = 'home', requestedFocus = '') {
   const screen = normalizePetMiniAppDestination(destination);
-  return { inline_keyboard: [[{ text: 'OPEN MOONPET OS', web_app: { url: `${MOONPET_MINI_APP_URL}#screen=${screen}` } }]] };
+  const focus = PET_MINI_APP_FOCUSES.has(String(requestedFocus || '')) ? String(requestedFocus) : '';
+  return `${MOONPET_MINI_APP_URL}#screen=${screen}${focus ? `&focus=${focus}` : ''}`;
 }
 
-async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'private', destination = 'home') {
+function buildPetMiniAppLaunchReplyMarkup(destination = 'home', focus = '') {
+  return { inline_keyboard: [[{ text: 'OPEN MOONPET OS', web_app: { url: petMiniAppLaunchUrl(destination, focus) } }]] };
+}
+
+async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'private', destination = 'home', focus = '') {
   const screen = normalizePetMiniAppDestination(destination);
-  const url = `${MOONPET_MINI_APP_URL}#screen=${screen}`;
+  const normalizedFocus = PET_MINI_APP_FOCUSES.has(String(focus || '')) ? String(focus) : '';
+  const url = petMiniAppLaunchUrl(screen, normalizedFocus);
   if (String(chatType) === 'private') await setPetMiniAppMenuButton(botToken, telegramId);
   const launchButton = String(chatType) === 'private'
     ? { text: 'OPEN MOONPET OS', web_app: { url } }
-    : { text: 'OPEN MOONPET OS', url: `https://t.me/WIKICOMSBOT?start=moonpet_${screen}` };
+    : { text: 'OPEN MOONPET OS', url: `https://t.me/WIKICOMSBOT?start=moonpet_${screen}${normalizedFocus ? `_${normalizedFocus}` : ''}` };
   await sendTelegramMessage(botToken, chatId,
     `<b>MOONPET OS</b>\nThe pet game now runs inside its HTML5 Mini App. Chat gameplay controls are retired.`,
     { reply_markup: { inline_keyboard: [[launchButton]] } },
