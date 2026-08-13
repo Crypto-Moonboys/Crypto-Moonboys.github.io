@@ -2047,7 +2047,7 @@ let racingStepResult;
 try {
   [extractResult, racingStepResult] = await Promise.all([
     processPetRunExtract(terminalRaceDb, 'terminal-race', 'terminal-race-run', { source: 'concurrency_regression' }),
-    processPetRunStep(terminalRaceDb, 'terminal-race', 'terminal-race-run', 'boss', {
+    processPetRunStep(terminalRaceDb, 'terminal-race', 'terminal-race-run', 'elite', {
       source: 'concurrency_regression', expected_step_index: 5, event_key: 'terminal-race-step',
     }),
   ]);
