@@ -93,6 +93,7 @@ assert.match(worker, /petMiniAppDestinationForCallback\(data\)/);
 assert.match(worker, /isPetMiniAppStartArgument\(argStr\)/);
 assert.match(worker, /start=moonpet_\$\{screen\}/);
 assert.match(worker, /system_key = 'equipment_upgrade'/);
+// Upgrade mission credit follows completion time, not the earlier reservation timestamp.
 assert.match(worker, /updated_at >= \? AND updated_at < \?/);
 assert.match(worker, /equipmentUpgradeCount/);
 assert.doesNotMatch(worker, /date\(created_at\) = \?/);
