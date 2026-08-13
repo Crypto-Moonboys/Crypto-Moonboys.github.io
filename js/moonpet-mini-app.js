@@ -252,7 +252,7 @@
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
       '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
       '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
-      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>RUN contains districts, Moon Runs, events, bosses, Arena and Kaiju. Extract a run to bank its unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
       '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards, prestige and hidden rare-morph signals.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +

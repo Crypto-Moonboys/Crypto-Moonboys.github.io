@@ -62,6 +62,7 @@ const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), '
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
+const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
@@ -675,4 +676,9 @@ assert.match(client, /story-decisions/, 'Story Chains need a branching surface')
 assert.match(client, /mission\.objective/, 'District Missions must render objectives');
 assert.match(client, /scene\.objective/, 'Story Chains must render objectives');
 assert.match(css, /\.district-mission/, 'District briefs need responsive styling');
+assert.match(client, /Districts show an objective/, 'the in-app guide must explain new district decisions');
+assert.match(guide, /18 authored encounters/, 'the complete guide must document district content');
+assert.match(guide, /12 authored scenes/, 'the complete guide must document story content');
+assert.match(guide, /100-room Standard Moon Run/, 'the complete guide must describe the current Moon Run');
+assert.doesNotMatch(guide, /five-step/i, 'the complete guide must not describe the retired five-step run');
 console.log('telegram-pets-mini-app.test.mjs passed');
