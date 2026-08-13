@@ -16,7 +16,7 @@ import {
   validateMoonpetEvolutionContent,
 } from './pets/moonpet-identity.js';
 import {
-  MOONPET_SPECIES, createMoonEggLifecycle, getExistingMoonpetLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
+  MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle, getExistingMoonpetLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
   syncMoonpetLifecycleStage,
 } from './pets/species-lifecycle.js';
 import {
@@ -7273,8 +7273,16 @@ export default {
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
-      const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN);
-      return json({ ok: true, state });
+      try {
+        const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN);
+        return json({ ok: true, state });
+      } catch (error) {
+        logApiFailure('pet_mini_app_state_failed', {
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+        });
+        return err('mini_app_state_failed', 500);
+      }
     }
 
     if (path === '/telegram-pets/app/action' && request.method === 'POST') {
@@ -11293,6 +11301,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetKaijuQueueState,
   serializePet,
   serializePetLeaderboardEntry,
+  materializePetLeaderboardRows,
   formatPetStatus,
   formatPetDetails,
   getPetEvolutionGuidance,
