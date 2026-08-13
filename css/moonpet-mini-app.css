@@ -22,6 +22,7 @@ button { font: inherit; }
   height: 100dvh;
   max-height: 100dvh;
   margin: 0 auto;
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(178px, 32dvh) auto minmax(0, 1fr) auto;
   overflow: hidden;
@@ -118,4 +119,60 @@ button { font: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
+
+
+/* Moonpet navigation and discoverability utilities */
+.utility-rail {
+  position: sticky; top: -10px; z-index: 24; display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px;
+  margin: -10px -10px 10px; padding: 7px 10px;
+  border-bottom: 1px solid var(--line); background: rgba(2,9,5,.97);
+  box-shadow: 0 3px 0 var(--shadow);
+}
+.utility-button, .jump-button, .utility-close, .period-button {
+  min-height: 34px; padding: 6px; border: 1px solid var(--line);
+  background: #07170c; color: var(--ink); font: 700 10px "Courier New", monospace;
+  text-transform: uppercase; touch-action: manipulation;
+}
+.utility-button:active, .jump-button:active, .utility-close:active, .period-button:active,
+.period-button[aria-pressed="true"] { background: var(--ink); color: #031006; }
+.utility-button:focus-visible, .jump-button:focus-visible, .utility-close:focus-visible,
+.period-button:focus-visible, #moonpet-canvas:focus-visible {
+  outline: 2px solid var(--hot); outline-offset: 2px;
+}
+.section-jumps {
+  display: flex; gap: 5px; margin: 0 0 10px; padding: 6px;
+  overflow-x: auto; border: 1px solid var(--line); background: rgba(4,15,8,.88);
+  scrollbar-width: thin;
+}
+.jump-button { flex: 0 0 auto; min-height: 30px; white-space: nowrap; color: var(--hot); }
+.utility-layer {
+  position: absolute; inset: 0; z-index: 140; padding: max(10px, env(safe-area-inset-top, 0px)) 10px calc(10px + var(--safe-bottom));
+  background: rgba(1,4,2,.96); overflow: hidden;
+}
+.utility-layer[hidden] { display: none; }
+.utility-dialog {
+  width: 100%; height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr);
+  border: 2px solid var(--line); background: var(--glass); box-shadow: 6px 6px 0 #000;
+}
+.utility-dialog-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px; border-bottom: 2px solid var(--line); background: #07170c;
+}
+.utility-dialog-header h2 { margin: 0; color: var(--hot); font-size: 14px; letter-spacing: .08em; }
+.utility-close { color: var(--danger); border-color: #963e3e; }
+.utility-content { min-height: 0; padding: 10px; overflow-y: auto; overscroll-behavior: contain; }
+.guide-step { margin: 0 0 9px; padding: 8px; border-left: 3px solid var(--line); background: rgba(7,23,12,.72); }
+.guide-step strong { display: block; margin-bottom: 3px; color: var(--hot); }
+.period-tabs { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 4px; margin-bottom: 10px; }
+.period-button { min-width: 0; padding-inline: 2px; font-size: 9px; }
+.leader-row { margin-bottom: 7px; padding: 7px; border: 1px solid var(--line); background: rgba(7,23,12,.65); }
+.leader-row.is-current { border-color: var(--hot); box-shadow: inset 3px 0 0 var(--hot); }
+.leader-row strong { color: var(--hot); }
+.connection-fault { padding: 12px; border: 2px solid #963e3e; color: var(--danger); }
+
+@media (min-width: 560px) {
+  .utility-rail { top: -14px; margin: -14px -14px 12px; padding-inline: 14px; }
+  .utility-dialog { width: min(100%, 620px); margin-inline: auto; }
 }
