@@ -66,7 +66,7 @@ const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.u
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase5-combat-presentation`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase6-lifecycle-ceremonies`/);
 assert.match(worker, /const url = MOONPET_MINI_APP_URL/);
 assert.match(worker, /`\$\{MOONPET_MINI_APP_URL\}#screen=\$\{screen\}`/);
 assert.match(worker, /setChatMenuButton/);
@@ -86,7 +86,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase5-combat-presentation/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase6-lifecycle-ceremonies/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -210,7 +210,7 @@ assert.match(client, /var crack = Math\.min\(2, Math\.floor\(progress \/ target 
 assert.match(client, /function petGrowthShape/);
 assert.match(client, /phase === 'young'.*scaleX: 0\.9, scaleY: 0\.76/s);
 assert.match(client, /phase === 'rare'.*scaleX: 1\.22, scaleY: 1\.18/s);
-assert.match(client, /ctx\.scale\(growth\.scaleX \* pose\.squashX \* combatScale, growth\.scaleY \* pose\.squashY \* combatScale\)/);
+assert.match(client, /ctx\.scale\(growth\.scaleX \* pose\.squashX \* combatScale \* ceremonyScale, growth\.scaleY \* pose\.squashY \* combatScale \* ceremonyScale\)/);
 assert.match(client, /function petFaceOffset/);
 assert.match(client, /speciesId === 'sneaker_snail' \? 18 : 0/);
 assert.match(client, /ctx\.translate\(faceX, 0\)/);
@@ -271,7 +271,7 @@ assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards
 assert.match(client, /var reward = resultRewardMap\(result\)/);
 assert.equal((client.match(/var reward = resultRewardMap\(result\)/g) || []).length, 2, 'terminal and canvas feedback must share reward normalization');
 assert.match(client, /presentResultFeedback\(data\.result\)/);
-assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*presentResultFeedback\(data\.result\)/s);
+assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result\)/s);
 assert.doesNotMatch(client, /presentResultFeedback\(data\.result\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
 assert.equal((client.match(/presentResultFeedback\(/g) || []).length, 2, 'only the helper and real server-result call may present reward feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
@@ -287,7 +287,7 @@ assert.match(client, /drawPixelText\(feedbackReaction, 181, 98, '#f4ff65', 'left
 assert.doesNotMatch(client, /'MOONPET \/\/ ' \+ feedbackReaction/, 'reaction prefix and copy must render on separate fitted lines');
 assert.match(client, /function drawSceneTransition\(time, scene\)/);
 assert.match(client, /if \(reducedMotion \|\| sceneTransitionUntil <= time\) return/);
-assert.match(client, /drawActionFlash\(renderTime, scene\);\s*drawCinematicFeedback\(renderTime, scene\);\s*drawSceneTransition\(renderTime, scene\)/s);
+assert.match(client, /drawActionFlash\(renderTime, scene\);\s*drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);\s*drawSceneTransition\(renderTime, scene\)/s);
 assert.doesNotMatch(client, /Math\.random\(\).*feedback|feedback.*Math\.random\(\)/s, 'Phase 3 feedback must never invent random rewards');
 
 
@@ -378,7 +378,7 @@ assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime, presence, combat\)/);
 assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
-assert.match(client, /drawUtcAmbience\(scene\);\s*drawCombatHud\(scene, combat\);\s*if \(!combat\.active\) drawCompanionPresence\(renderTime, scene, presence\)/s);
+assert.match(client, /drawUtcAmbience\(scene\);\s*drawCombatHud\(scene, combat\);\s*if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence\(renderTime, scene, presence\)/s);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
 assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
@@ -416,8 +416,8 @@ assert.match(client, /var pulse = reducedMotion \? 0 : Math\.round\(Math\.sin\(t
 assert.match(client, /var combatScale = combat && combat\.active \? 0\.78 : 1/);
 assert.match(client, /combat && combat\.active \? -62 : 0/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
-assert.match(client, /if \(!combat\.active\) drawCompanionPresence/);
-assert.match(client, /COMBAT_PRESENTATION_FRAME\.active\) return;/);
+assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/);
+assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
 const combatDirectorMatch = client.match(/  function clearCombatPresentation\(\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
@@ -474,5 +474,112 @@ assert.equal(runtimeCombatFrame.opponentValue, 4);
 combatRuntime.screen('home');
 combatRuntime.update({ adopted: true, arena: { status: 'active', player_hp: 10, opponent_hp: 10 } });
 assert.equal(runtimeCombatFrame.active, false, 'combat presentation must remain scoped to the Explore module');
+
+
+assert.match(client, /var lifecycleCeremony = null/);
+assert.match(client, /function lifecycleStateSnapshot\(snapshot\)/);
+assert.match(client, /function planLifecycleCeremony\(beforeState, afterState, action, result\)/);
+assert.match(client, /function lifecycleCeremonyActive\(time\)/);
+assert.match(client, /function startLifecycleCeremony\(ceremony\)/);
+const lifecycleStartMatch = client.match(/  function startLifecycleCeremony\(ceremony\) \{[\s\S]*?\n  \}\n\n  function scrollToPanel/);
+assert.ok(lifecycleStartMatch, 'Phase 6 lifecycle ceremony starter must be extractable for haptic regression coverage');
+assert.doesNotMatch(lifecycleStartMatch[0], /haptic\('success'\)/, 'accepted lifecycle actions must emit only the runAction success haptic');
+assert.match(client, /function clearLifecycleCeremony\(redraw\)/);
+assert.match(client, /function drawLifecycleCeremony\(time, scene\)/);
+assert.match(client, /EGG SIGNAL STRENGTHENED/);
+assert.match(client, /HATCH COMPLETE/);
+assert.match(client, /EVOLUTION COMPLETE/);
+assert.match(client, /HIDDEN MORPH REVEALED/);
+assert.match(client, /after\.progress \+ '\/' \+ after\.target/);
+assert.match(client, /after\.speciesName/);
+assert.match(client, /after\.rareName/);
+assert.match(client, /after\.stage > before\.stage/);
+assert.match(client, /result\.duplicate/);
+assert.match(client, /duration: 7600/);
+assert.match(client, /duration: 8200/);
+assert.match(client, /drawPixelRect\(7, 50, 306, 2, color\)/, 'Phase 6 ceremony copy must remain below the DOM HUD');
+assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/, 'Phase 6 ceremonies must suppress overlapping thought bubbles');
+assert.match(client, /mood !== 'curious' && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping mood labels');
+assert.match(client, /\(!combat \|\| !combat\.active\) && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping identity labels');
+assert.equal((client.match(/animationLabel && !lifecycleCeremonyActive\(time\)/g) || []).length, 2, 'Phase 6 ceremonies must suppress egg and companion action labels');
+assert.match(client, /var ceremonyScale = lifecycleCeremonyActive\(time\)/);
+assert.match(client, /reducedMotion \? 1\.08/);
+assert.match(client, /var burst = reducedMotion \? 38/);
+assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
+assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
+assert.match(client, /drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);/s);
+assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result\);/);
+assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
+assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
+assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
+assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)/);
+assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:ceremony|lifecycle)|(?:ceremony|lifecycle)[^\n]*Math\.random\(\)/i, 'Phase 6 lifecycle presentation must remain deterministic');
+
+const lifecycleDirectorMatch = client.match(/  function lifecycleStateSnapshot\(snapshot\) \{[\s\S]*?\n  \}\n\n  function lifecycleCeremonyActive/);
+assert.ok(lifecycleDirectorMatch, 'Phase 6 lifecycle director must be extractable for runtime smoke coverage');
+const lifecycleDirectorSource = lifecycleDirectorMatch[0].replace(/\n\n  function lifecycleCeremonyActive$/, '');
+assert.doesNotMatch(lifecycleDirectorSource, /identity_seed|rare_route_index|species odds/i, 'Phase 6 must not expose hidden lifecycle authority');
+const planCeremonyRuntime = new Function(
+  'words',
+  lifecycleDirectorSource + '; return planLifecycleCeremony;',
+)(value => String(value || '').replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase()));
+
+const eggState = {
+  adopted: true,
+  pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Moon Egg' },
+  lifecycle: { phase: 'egg', incubation: { progress: 4, target: 12 } },
+};
+const dormantState = { adopted: false, pet: null, lifecycle: null };
+const initialEggCeremony = planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true });
+assert.equal(initialEggCeremony.kind, 'egg');
+assert.equal(initialEggCeremony.title, 'MOON EGG INITIALISED');
+assert.equal(initialEggCeremony.primary, 'IDENTITY SIGNAL DORMANT');
+assert.equal(planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true, duplicate: true }), null);
+
+const strongerEggState = {
+  adopted: true,
+  pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Moon Egg' },
+  lifecycle: { phase: 'egg', incubation: { progress: 6, target: 12 } },
+};
+const signalCeremony = planCeremonyRuntime(eggState, strongerEggState, 'incubate', { accepted: true, care_type: 'music' });
+assert.equal(signalCeremony.kind, 'signal');
+assert.equal(signalCeremony.primary, '6/12');
+assert.equal(signalCeremony.secondary, 'Music RESONANCE');
+
+const youngState = {
+  adopted: true,
+  pet: { species: 'neon_raccoon', evolution_stage: 1, stage: 'Street Moonpet' },
+  lifecycle: {
+    phase: 'young', species_id: 'neon_raccoon', species_name: 'Neon Raccoon', temperament: 'bold',
+    appearance: { marking: 'spray_mask' }, innate_traits: ['alley_brave', 'collector'],
+    incubation: { progress: 12, target: 12 }, rare: { name: null },
+  },
+};
+const hatchCeremony = planCeremonyRuntime(strongerEggState, youngState, 'hatch', { accepted: true, species: 'Neon Raccoon' });
+assert.equal(hatchCeremony.kind, 'hatch');
+assert.equal(hatchCeremony.primary, 'Neon Raccoon');
+assert.equal(hatchCeremony.secondary, 'Bold TEMPERAMENT');
+assert.match(hatchCeremony.detail, /Spray Mask/);
+assert.match(hatchCeremony.detail, /Alley Brave/);
+
+const adultState = {
+  adopted: true,
+  pet: { species: 'neon_raccoon', evolution_stage: 2, stage: 'Cyber Moonpet' },
+  lifecycle: { ...youngState.lifecycle, phase: 'adult' },
+};
+const evolutionCeremony = planCeremonyRuntime(youngState, adultState, 'evolve', { accepted: true });
+assert.equal(evolutionCeremony.kind, 'evolve');
+assert.equal(evolutionCeremony.primary, 'Cyber Moonpet');
+
+const rareState = {
+  adopted: true,
+  pet: { species: 'neon_raccoon', evolution_stage: 4, stage: 'Legendary Moonpet' },
+  lifecycle: { ...adultState.lifecycle, phase: 'rare', rare: { name: 'Subway Phantom' } },
+};
+const rareCeremony = planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: true, rare_morph: 'Subway Phantom' });
+assert.equal(rareCeremony.kind, 'rare');
+assert.equal(rareCeremony.primary, 'Subway Phantom');
+assert.equal(planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: true, duplicate: true }), null);
+assert.equal(planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: false }), null);
 
 console.log('telegram-pets-mini-app.test.mjs passed');

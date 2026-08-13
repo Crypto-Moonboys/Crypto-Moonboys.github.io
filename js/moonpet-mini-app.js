@@ -26,6 +26,10 @@
   var feedbackTone = '';
   var feedbackLines = [];
   var feedbackReaction = '';
+  var lifecycleCeremony = null;
+  var lifecycleCeremonyStartedAt = 0;
+  var lifecycleCeremonyUntil = 0;
+  var lifecycleCeremonyTimer = 0;
   var sceneTransitionStartedAt = 0;
   var sceneTransitionUntil = 0;
   var sceneTransitionDirection = 1;
@@ -547,6 +551,96 @@
     }
   }
 
+  function lifecycleStateSnapshot(snapshot) {
+    var lifecycle = snapshot && snapshot.lifecycle || {};
+    var incubation = lifecycle.incubation || {};
+    var rare = lifecycle.rare || {};
+    var pet = snapshot && snapshot.pet || {};
+    return {
+      adopted: Boolean(snapshot && snapshot.adopted),
+      phase: String(lifecycle.phase || ''),
+      speciesId: String(lifecycle.species_id || pet.species || ''),
+      speciesName: String(lifecycle.species_name || words(pet.species) || ''),
+      temperament: String(lifecycle.temperament || ''),
+      marking: String(lifecycle.appearance && lifecycle.appearance.marking || ''),
+      traits: Array.isArray(lifecycle.innate_traits) ? lifecycle.innate_traits.slice(0, 2) : [],
+      rareName: String(rare.name || ''),
+      progress: Math.max(0, Number(incubation.progress || 0)),
+      target: Math.max(1, Number(incubation.target || 12)),
+      stage: pet.evolution_stage == null ? 0 : Math.max(0, Number(pet.evolution_stage || 0)),
+      stageName: String(pet.stage || lifecycle.phase || ''),
+    };
+  }
+
+  function planLifecycleCeremony(beforeState, afterState, action, result) {
+    if (!result || !result.accepted || result.duplicate || !afterState) return null;
+    var before = lifecycleStateSnapshot(beforeState);
+    var after = lifecycleStateSnapshot(afterState);
+    var actionKey = String(action || '').toLowerCase();
+    if (actionKey === 'adopt' && !before.adopted && after.phase === 'egg') {
+      return { kind: 'egg', title: 'MOON EGG INITIALISED', primary: 'IDENTITY SIGNAL DORMANT', secondary: 'CARE SHAPES WHAT HATCHES', detail: '', duration: 5200 };
+    }
+    if (before.phase === 'egg' && after.phase === 'young' && after.speciesId) {
+      return {
+        kind: 'hatch', title: 'HATCH COMPLETE', primary: after.speciesName,
+        secondary: words(after.temperament || 'forming') + ' TEMPERAMENT',
+        detail: [after.marking].concat(after.traits).filter(Boolean).map(words).join(' // '), duration: 7600,
+      };
+    }
+    if (before.phase !== 'rare' && after.phase === 'rare' && after.rareName) {
+      return {
+        kind: 'rare', title: 'HIDDEN MORPH REVEALED', primary: after.rareName,
+        secondary: after.speciesName ? after.speciesName + ' // RARE SIGNAL LIVE' : 'RARE SIGNAL LIVE',
+        detail: after.traits.map(words).join(' // '), duration: 8200,
+      };
+    }
+    if (after.stage > before.stage || before.phase === 'young' && after.phase === 'adult') {
+      return {
+        kind: 'evolve', title: 'EVOLUTION COMPLETE', primary: words(after.stageName || after.phase),
+        secondary: after.speciesName || 'MOONPET FORM STABLE',
+        detail: after.traits.map(words).join(' // '), duration: 6800,
+      };
+    }
+    if (actionKey === 'incubate' && after.phase === 'egg' && after.progress > before.progress) {
+      return {
+        kind: 'signal', title: 'EGG SIGNAL STRENGTHENED', primary: after.progress + '/' + after.target,
+        secondary: words(result.care_type || 'care') + ' RESONANCE', detail: '',
+        progress: after.progress, target: after.target, duration: 4200,
+      };
+    }
+    return null;
+  }
+
+  function lifecycleCeremonyActive(time) {
+    return Boolean(lifecycleCeremony && lifecycleCeremonyUntil > Number(time == null ? performance.now() : time));
+  }
+
+  function clearLifecycleCeremony(redraw) {
+    window.clearTimeout(lifecycleCeremonyTimer);
+    lifecycleCeremony = null;
+    lifecycleCeremonyStartedAt = 0;
+    lifecycleCeremonyUntil = 0;
+    if (redraw && reducedMotion) drawWorld(performance.now());
+  }
+
+  function startLifecycleCeremony(ceremony) {
+    if (!ceremony) return false;
+    clearResultFeedback(false);
+    window.clearTimeout(lifecycleCeremonyTimer);
+    lifecycleCeremony = ceremony;
+    lifecycleCeremonyStartedAt = performance.now();
+    lifecycleCeremonyUntil = lifecycleCeremonyStartedAt + Math.max(3200, Number(ceremony.duration || 6200));
+    if (reducedMotion) {
+      drawWorld(lifecycleCeremonyStartedAt);
+      var activeCeremony = ceremony;
+      lifecycleCeremonyTimer = window.setTimeout(function () {
+        if (lifecycleCeremony !== activeCeremony) return;
+        clearLifecycleCeremony(true);
+      }, Math.max(3200, Number(ceremony.duration || 6200)) + 20);
+    }
+    return true;
+  }
+
   function scrollToPanel(panelId) {
     if (!panelId) return;
     window.setTimeout(function () {
@@ -624,6 +718,11 @@
 
   async function runAction(action, payload, buttonElement) {
     if (busy) return;
+    if (lifecycleCeremonyActive()) {
+      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      haptic('light');
+      return;
+    }
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
@@ -631,8 +730,11 @@
     animateAction(action, true, 8000, payload);
     tell('TRANSMITTING ' + words(action) + '...');
     try {
+      var stateBeforeAction = state;
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
-      state = data.state || state;
+      var nextState = data.state || state;
+      var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
+      state = nextState;
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
@@ -640,7 +742,7 @@
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
       animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
-      presentResultFeedback(data.result);
+      if (!startLifecycleCeremony(plannedCeremony)) presentResultFeedback(data.result);
     } catch (error) {
       animateAction('blocked', false, 2800);
       tell(error.message || 'CONNECTION FAILED', 'danger');
@@ -663,6 +765,11 @@
   }
 
   screen.addEventListener('click', function (event) {
+    if (lifecycleCeremonyActive()) {
+      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      haptic('light');
+      return;
+    }
     var jump = event.target.closest('[data-jump]');
     if (jump && !busy) {
       if (!SCREEN_ORDER.includes(jump.dataset.jump)) {
@@ -700,7 +807,7 @@
 
   function greetCompanion() {
     var now = performance.now();
-    if (busy || !state || !state.adopted || feedbackUntil > now || animationUntil > now || COMBAT_PRESENTATION_FRAME.active) return;
+    if (busy || !state || !state.adopted || feedbackUntil > now || animationUntil > now || COMBAT_PRESENTATION_FRAME.active || lifecycleCeremonyActive(now)) return;
     companionTapSequence += 1;
     companionGreeting = compactFeedback(companionGreetingCopy(state.pet, state.lifecycle || {}), 24);
     companionGreetingUntil = now + 2600;
@@ -728,6 +835,11 @@
   nav.addEventListener('click', function (event) {
     var target = event.target.closest('[data-screen]');
     if (!target || busy) return;
+    if (lifecycleCeremonyActive()) {
+      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      haptic('light');
+      return;
+    }
     switchScreen(target.dataset.screen);
     screen.scrollTop = 0;
     haptic('light');
@@ -1359,7 +1471,7 @@
     if (lifecycle.phase === 'egg') {
       drawMoonEgg(time, active, lifecycle.incubation);
       drawActionEffects(time, 160, 150, active);
-      if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
     }
 
@@ -1367,7 +1479,10 @@
     var rareName = lifecycle.rare && lifecycle.rare.name || '';
     var growth = petGrowthShape(lifecycle.phase, stage);
     var combatScale = combat && combat.active ? 0.78 : 1;
-    var scale = Math.max(growth.scaleX, growth.scaleY) * combatScale;
+    var ceremonyScale = lifecycleCeremonyActive(time)
+      ? reducedMotion ? 1.08 : 1.06 + Math.sin((time - lifecycleCeremonyStartedAt) / 180) * 0.05
+      : 1;
+    var scale = Math.max(growth.scaleX, growth.scaleY) * combatScale * ceremonyScale;
     var palette = petPalette(lifecycle, stage);
     var speciesId = lifecycle.species_id || pet && pet.species || 'neon_raccoon';
     var faceX = petFaceOffset(speciesId);
@@ -1375,7 +1490,7 @@
     var y = 150 + pose.y + growth.offsetY;
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(growth.scaleX * pose.squashX * combatScale, growth.scaleY * pose.squashY * combatScale);
+    ctx.scale(growth.scaleX * pose.squashX * combatScale * ceremonyScale, growth.scaleY * pose.squashY * combatScale * ceremonyScale);
     ctx.shadowColor = lifecycle.phase === 'rare' ? palette.accent : stage >= 2 ? '#61f5ff' : palette.body;
     ctx.shadowBlur = lifecycle.phase === 'rare' ? 12 : stage * 2 + (active ? 6 : 2);
     drawRareMorphShell(rareName, palette, pose);
@@ -1401,14 +1516,14 @@
     ctx.restore();
     ctx.shadowBlur = 0;
 
-    if (!active && mood !== 'curious') drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
-    if (!combat || !combat.active) {
+    if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
+    if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
       if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
       else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
     }
     drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
     drawActionEffects(time, x, y, active);
-    if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+    if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
   }
 
   var WORLD_SCENES = {
@@ -1787,6 +1902,47 @@
     ctx.restore();
   }
 
+  function drawLifecycleCeremony(time, scene) {
+    if (!lifecycleCeremonyActive(time)) return;
+    var ceremony = lifecycleCeremony;
+    var duration = Math.max(1, lifecycleCeremonyUntil - lifecycleCeremonyStartedAt);
+    var progress = Math.max(0, Math.min(1, (time - lifecycleCeremonyStartedAt) / duration));
+    var color = ceremony.kind === 'rare' ? '#f6a7ff'
+      : ceremony.kind === 'hatch' ? '#f4ff65'
+        : ceremony.kind === 'evolve' ? '#61f5ff' : scene.accent;
+    var fade = reducedMotion ? 1 : Math.min(1, progress * 5, (1 - progress) * 7);
+    var burst = reducedMotion ? 38 : 24 + Math.sin(progress * Math.PI) * 44;
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = 'rgba(1,4,2,.58)';
+    ctx.fillRect(0, 46, 320, 174);
+    drawPixelRect(7, 50, 306, 2, color);
+    drawPixelRect(7, 216, 306, 2, color);
+    drawPixelText(ceremony.title, 160, 63, color, 'center');
+    drawPixelText(compactFeedback(ceremony.primary, 28), 160, 78, '#ffffff', 'center');
+    drawPixelText(compactFeedback(ceremony.secondary, 34), 160, 91, '#d8f9ff', 'center');
+    for (var spark = 0; spark < 18; spark += 1) {
+      var angle = spark * Math.PI * 2 / 18;
+      var sparkX = 160 + Math.cos(angle) * burst;
+      var sparkY = 151 + Math.sin(angle) * burst * 0.62;
+      drawPixelRect(sparkX, sparkY, spark % 3 === 0 ? 4 : 2, 2, spark % 2 ? color : '#ffffff');
+    }
+    drawPixelRect(101, 103, 3, 24, color); drawPixelRect(101, 103, 22, 3, color);
+    drawPixelRect(216, 103, 3, 24, color); drawPixelRect(197, 103, 22, 3, color);
+    drawPixelRect(101, 178, 3, 18, color); drawPixelRect(101, 193, 22, 3, color);
+    drawPixelRect(216, 178, 3, 18, color); drawPixelRect(197, 193, 22, 3, color);
+    if (ceremony.kind === 'signal') {
+      drawCombatMeter(76, 201, 168, ceremony.progress, ceremony.target, color, false);
+      drawPixelText('HATCH SIGNAL ' + Number(ceremony.progress) + '/' + Number(ceremony.target), 160, 198, color, 'center');
+    } else if (ceremony.detail) {
+      drawPixelRect(43, 199, 234, 15, '#020704');
+      drawPixelText(compactFeedback(ceremony.detail, 38), 160, 210, color, 'center');
+    } else {
+      drawPixelText('SERVER IDENTITY CONFIRMED', 160, 210, color, 'center');
+    }
+    ctx.restore();
+  }
+
   function drawSceneTransition(time, scene) {
     if (reducedMotion || sceneTransitionUntil <= time) return;
     var duration = Math.max(1, sceneTransitionUntil - sceneTransitionStartedAt);
@@ -1824,9 +1980,10 @@
     drawWorldForeground(scene);
     drawUtcAmbience(scene);
     drawCombatHud(scene, combat);
-    if (!combat.active) drawCompanionPresence(renderTime, scene, presence);
+    if (!combat.active && !lifecycleCeremonyActive(renderTime)) drawCompanionPresence(renderTime, scene, presence);
     drawActionFlash(renderTime, scene);
     drawCinematicFeedback(renderTime, scene);
+    drawLifecycleCeremony(renderTime, scene);
     drawSceneTransition(renderTime, scene);
   }
 
@@ -1837,6 +1994,7 @@
       companionGreeting = '';
       companionGreetingUntil = 0;
     }
+    if (lifecycleCeremony && lifecycleCeremonyUntil <= time) clearLifecycleCeremony(false);
     if (reducedMotion) return;
     requestAnimationFrame(frame);
   }
