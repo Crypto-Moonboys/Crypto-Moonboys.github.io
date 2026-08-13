@@ -872,7 +872,7 @@
       COMPANION_PRESENCE_FRAME.seed = seed;
     }
     COMPANION_PRESENCE_FRAME.phase = reducedMotion ? 0.72 : presenceTime % 8000 / 8000;
-    COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[behavior] || 'STAY READY');
+    COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[COMPANION_PRESENCE_FRAME.behavior] || 'STAY READY');
     return COMPANION_PRESENCE_FRAME;
   }
 
@@ -1657,6 +1657,10 @@
   function frame(time) {
     drawWorld(time);
     if (animationUntil <= time) { animationMode = 'idle'; animationLabel = ''; }
+    if (companionGreetingUntil > 0 && companionGreetingUntil <= time) {
+      companionGreeting = '';
+      companionGreetingUntil = 0;
+    }
     if (reducedMotion) return;
     requestAnimationFrame(frame);
   }
