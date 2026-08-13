@@ -183,6 +183,13 @@
       return panel('DORMANT MOON EGG', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
     }
     var pet = state.pet;
+    var lifecycle = state.lifecycle || {};
+    var incubation = lifecycle.incubation || {};
+    if (lifecycle.phase === 'egg') {
+      var signals = incubation.signals || {};
+      return '<div class="ticker"><span>MOON EGG // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
+        panel('INCUBATION CHAMBER', '<div class="line complete">THE EGG REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">Use at least three types of care. Your pattern shapes the hatch; no species odds are exposed.</div>' + meter('HATCH SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM EGG', 'incubate', { care_type: 'warm' }) + button('TALK TO EGG', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH MOONPET', 'hatch', {}, { disabled: !incubation.ready }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation');
+    }
     var next = state.next || {};
     var nextKey = String(next.key || '') + ' ' + String(next.callback_data || '') + ' ' + String(next.title || '');
     var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait|prestige/i.test(nextKey) ? 'profile' : 'home');
@@ -196,7 +203,7 @@
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') + button('DAILY CACHE', 'daily_chest') +
       '</div>', 'care') +
-      panel('COMPANION DETAILS', '<div class="line complete">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div>' + equipped, 'details');
+      panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
   function renderMissions() {
@@ -402,7 +409,11 @@
     var featureRows = (guidance.features || []).map(function (feature) {
       return '<div class="line ' + (feature.available ? 'complete' : 'locked') + '">' + (feature.available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(feature.detail || '') + '</div>';
     }).join('');
-    return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + '</div><div class="line muted">PERSONALITY REACTIONS</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) +
+    var lifecycle = state.lifecycle || {};
+    var rare = lifecycle.rare || {};
+    var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
+    var rarePanel = '<div class="line ' + (rare.ready ? 'complete' : 'muted') + '">HIDDEN SIGNAL // ' + escapeHtml(words(rare.signal || 'dormant')) + ' // ' + number(rare.progress) + '%</div>' + (rare.name ? '<div class="line complete">REVEALED // ' + escapeHtml(rare.name) + '</div>' : '<div class="line muted">The route remains hidden until your evolution, traits and memories align.</div>') + (rare.ready ? '<div class="button-grid one">' + button('ANSWER RARE SIGNAL', 'rare_morph') + '</div>' : '');
+    return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">LEARNED PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('LEARNED APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>') +
@@ -479,6 +490,8 @@
     if (/feed|use_item/.test(key)) return 'feed';
     if (/play/.test(key)) return 'play';
     if (/clean/.test(key)) return 'clean';
+    if (/hatch|rare_morph/.test(key)) return 'evolve';
+    if (/incubate/.test(key)) return String(payload && payload.care_type || '') === 'music' ? 'play' : String(payload && payload.care_type || '') === 'rest' ? 'sleep' : 'interact';
     if (/sleep|rest/.test(key)) return 'sleep';
     if (/train/.test(key)) return 'train';
     if (/boss|arena|kaiju|fight|attack|district/.test(key)) return 'battle';
@@ -683,7 +696,8 @@
 
   function drawPet(time) {
     var pet = state && state.pet;
-    var stage = petStage(pet);
+    var lifecycle = state && state.lifecycle || {};
+    var stage = lifecycle.phase === 'egg' ? 0 : petStage(pet);
     var mood = petMood(pet);
     var renderTime = reducedMotion ? performance.now() : time;
     var active = animationUntil > renderTime;
@@ -696,19 +710,24 @@
     if (active && animationMode === 'blocked') x += Math.round(Math.sin(time / 28) * 3);
 
     var outline = '#061009';
-    var body = stage >= 4 ? '#f6a7ff' : stage >= 3 ? '#e7ff75' : stage >= 2 ? '#80ffd5' : '#a9ff9a';
+    var speciesHue = { neon_raccoon: '#80ffd5', bubble_ram: '#ff8bbd', comet_gecko: '#61a8ff', vinyl_crab: '#f4ff65', lantern_fox: '#c99cff', sneaker_snail: '#a9ff55', alley_drake: '#ff954f', moon_ferret: '#61f5ff' }[lifecycle.species_id];
+    var body = speciesHue || (stage >= 4 ? '#f6a7ff' : stage >= 3 ? '#e7ff75' : stage >= 2 ? '#80ffd5' : '#a9ff9a');
     var shade = stage >= 4 ? '#a95ec2' : stage >= 3 ? '#8fa942' : stage >= 2 ? '#36a9a8' : '#4ea85a';
     var glow = stage >= 4 ? '#f6a7ff' : stage >= 2 ? '#61f5ff' : '#4ea85a';
     ctx.shadowColor = glow; ctx.shadowBlur = stage * 2 + (active ? 6 : 2);
 
-    // Tail, body, legs and head form a readable young cat silhouette at every stage.
+    // Stable species identity changes silhouette without downloading image assets.
+    var speciesId = lifecycle.species_id || '';
     var tailLift = active && (animationMode === 'play' || animationMode === 'celebrate') ? 12 : 0;
     drawPixelRect(x + 27, y - 29 - tailLift, 9, 28 + tailLift, outline); drawPixelRect(x + 30, y - 26 - tailLift, 4, 22 + tailLift, body);
     drawPixelRect(x - 24, y - 21, 51, 32, outline); drawPixelRect(x - 20, y - 17, 43, 24, body);
     drawPixelRect(x - 20, y + 5, 12, 14, outline); drawPixelRect(x + 10, y + 5, 12, 14, outline);
     drawPixelRect(x - 17, y + 7, 8, 9, body); drawPixelRect(x + 12, y + 7, 8, 9, body);
     drawPixelRect(x - 27, y - 51, 54, 39, outline); drawPixelRect(x - 23, y - 47, 46, 31, body);
-    drawPixelRect(x - 22, y - 62, 15, 15, outline); drawPixelRect(x + 7, y - 62, 15, 15, outline);
+    if (speciesId === 'bubble_ram') { drawPixelRect(x - 35, y - 51, 13, 17, shade); drawPixelRect(x + 22, y - 51, 13, 17, shade); }
+    else if (speciesId === 'vinyl_crab') { drawPixelRect(x - 40, y - 18, 16, 9, outline); drawPixelRect(x + 24, y - 18, 16, 9, outline); }
+    else if (speciesId === 'sneaker_snail') { drawPixelRect(x - 40, y - 26, 24, 24, shade); drawPixelRect(x - 36, y - 22, 16, 16, body); }
+    else { drawPixelRect(x - 22, y - 62, 15, 15, outline); drawPixelRect(x + 7, y - 62, 15, 15, outline); }
     drawPixelRect(x - 18, y - 57, 8, 10, shade); drawPixelRect(x + 10, y - 57, 8, 10, shade);
 
     // The Moon Egg becomes a cracked shell cradle instead of hiding the companion in a block.
