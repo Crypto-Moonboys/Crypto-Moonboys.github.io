@@ -262,7 +262,7 @@ assert.match(client, /var CAMERA_FRAME = \{ x: 0, y: 0, zoom: 1 \}/);
 assert.match(client, /function updateCameraFrame\(time\)/);
 assert.match(client, /if \(reducedMotion \|\| cameraImpactUntil <= time/);
 assert.match(client, /function drawActionFlash\(time, scene\)/);
-assert.match(client, /if \(reducedMotion \|\| time < actionStartedAt/);
+assert.match(client, /if \(reducedMotion \|\| actionStartedAt <= 0 \|\| time < actionStartedAt/);
 assert.match(client, /function actionFeedback\(result\)/);
 assert.match(client, /var reward = result\.rewards \|\| result\.applied \|\| result\.computed && result\.computed\.rewards \|\| \{\}/);
 assert.match(client, /presentResultFeedback\(data\.result\)/);
