@@ -45,7 +45,7 @@ function words(value) {
 function getDistrictMission(telegramId, pet, region, today = dayKey()) {
   const content = PET_REGION_CONTENT[region.key];
   const mastery = integer(region.mastery_xp);
-  const boss = mastery > 0 && mastery % 100 >= 75;
+  const boss = mastery > 0 && mastery % 100 >= 70;
   const encounterKey = boss ? content.boss : content.encounters[stableLiveSystemRoll(telegramId, region.key, today, mastery) % content.encounters.length];
   const authored = boss ? {
     title: `${words(content.boss)} // Checkpoint`,
@@ -214,9 +214,12 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   const mastery = parse(runtime?.region_mastery_json, {});
   const currentMastery = integer(mastery[region.key]);
   const succeeded = !explicitApproach || stableLiveSystemRoll(telegramId, region.key, dayKey(), mission.key, choice.key) % 100 >= choice.risk_percent;
-  const masteryGain = succeeded ? choice.mastery_success : choice.mastery_setback;
+  const nextCheckpoint = (Math.floor(currentMastery / 100) + 1) * 100;
+  const masteryGain = succeeded
+    ? choice.mastery_success
+    : Math.min(choice.mastery_setback, Math.max(0, nextCheckpoint - currentMastery - 1));
   const nextMastery = currentMastery + masteryGain;
-  const bossVictory = succeeded && Math.floor(currentMastery / 100) < Math.floor(nextMastery / 100);
+  const bossVictory = succeeded && mission.boss && currentMastery < nextCheckpoint && nextMastery >= nextCheckpoint;
   const rewardMaterial = content.reward_focus[Math.floor(currentMastery / 25) % content.reward_focus.length];
   const scale = succeeded ? choice.reward_multiplier : 0.55;
   const baseRewards = { pet_xp: Math.max(8, Math.floor((bossVictory ? 55 : 25) * scale)), moon_gold: Math.max(6, Math.floor((bossVictory ? 65 : 28) * scale)), materials: { [rewardMaterial]: bossVictory ? 3 : succeeded ? 1 : 0 } };

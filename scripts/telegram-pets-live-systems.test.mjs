@@ -227,6 +227,37 @@ assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', 
 runtimeDb.prepare("UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id='energy-retry'").run();
 assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', { level: 100, energy: 100 }, tiredRuntime, reward, null)).accepted, true, 'rejected Energy reservations must be safely retryable');
 
+seedPlayer('invalid-district-choice');
+const invalidDistrictRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='invalid-district-choice'").get();
+const invalidDistrict = await processPetDistrictMission(d1, 'invalid-district-choice', 'moon_alley', { level: 100, energy: 100 }, invalidDistrictRuntime, reward, null, 'not_a_real_approach');
+assert.equal(invalidDistrict.reason, 'district_approach_invalid');
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='invalid-district-choice'").get().energy, 100, 'invalid district choices must be rejected before Energy settlement');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='invalid-district-choice'").get().count, 0);
+
+seedPlayer('invalid-story-choice');
+const invalidStory = await processPetEventChain(d1, 'invalid-story-choice', 'lost_delivery_drone', reward, null, 'not_a_real_choice');
+assert.equal(invalidStory.reason, 'event_chain_choice_invalid');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='invalid-story-choice'").get().count, 0);
+
+let checkpointSetback = null;
+for (let index = 0; index < 64 && !checkpointSetback; index += 1) {
+  const telegramId = `checkpoint-setback-${index}`;
+  seedPlayer(telegramId);
+  runtimeDb.prepare('UPDATE telegram_pet_progression_state SET region_mastery_json=?, completed_regions_json=? WHERE telegram_id=?')
+    .run(JSON.stringify({ moon_alley: 90 }), '[]', telegramId);
+  const checkpointRuntime = runtimeDb.prepare('SELECT * FROM telegram_pet_progression_state WHERE telegram_id=?').get(telegramId);
+  const checkpointState = await buildPetLiveSystemsState(d1, telegramId, { level: 100, energy: 100, moon_gold: 10000 }, checkpointRuntime, [], []);
+  assert.equal(checkpointState.regions.find((region) => region.key === 'moon_alley').mission.boss, true, 'a possible 100-mastery crossing must present the district boss');
+  const result = await processPetDistrictMission(d1, telegramId, 'moon_alley', { level: 100, energy: 100 }, checkpointRuntime, reward, null, 'bold');
+  if (!result.outcome.success) checkpointSetback = { telegramId, result };
+}
+assert.ok(checkpointSetback, 'deterministic district coverage must include a setback');
+assert.equal(checkpointSetback.result.reason, 'district_mission_setback');
+assert.ok(checkpointSetback.result.region.mastery_xp < 100, 'a setback must not cross a mastery checkpoint');
+const checkpointProgress = runtimeDb.prepare('SELECT region_mastery_json, completed_regions_json FROM telegram_pet_progression_state WHERE telegram_id=?').get(checkpointSetback.telegramId);
+assert.ok(JSON.parse(checkpointProgress.region_mastery_json).moon_alley < 100);
+assert.equal(JSON.parse(checkpointProgress.completed_regions_json).includes('moon_alley'), false, 'a setback must not unlock the next district');
+
 seedPlayer('boss-1');
 const boss = getActiveSeasonalBoss();
 runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (telegram_id, season_key, boss_key, damage) VALUES (?, ?, ?, ?)').run('boss-1', boss.season_instance, boss.key, boss.hp - 1);
