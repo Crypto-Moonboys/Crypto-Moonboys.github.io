@@ -66,7 +66,7 @@ const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.u
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase4-living-companion`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase5-combat-presentation`/);
 assert.match(worker, /const url = MOONPET_MINI_APP_URL/);
 assert.match(worker, /`\$\{MOONPET_MINI_APP_URL\}#screen=\$\{screen\}`/);
 assert.match(worker, /setChatMenuButton/);
@@ -86,7 +86,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase4-living-companion/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase5-combat-presentation/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -201,7 +201,7 @@ assert.match(client, /WORLD_REACTION_COLORS\[animationMode\]/);
 assert.match(client, /var worldTime = reducedMotion \? 0 : time/);
 assert.match(client, /drawWorldSky\(worldTime, scene\)/);
 assert.match(client, /drawWorldReaction\(worldTime, scene\)/);
-assert.match(client, /drawPet\(renderTime, presence\);\s*ctx\.restore\(\);\s*drawWorldForeground\(scene\)/s);
+assert.match(client, /drawPet\(renderTime, presence, combat\);\s*drawCombatOpponent\(worldTime, scene, combat\);\s*ctx\.restore\(\);\s*drawWorldForeground\(scene\)/s);
 assert.doesNotMatch(client, /new Image\s*\(/);
 assert.match(client, /function drawMoonEgg/);
 assert.match(client, /drawMoonEgg\(time, active, lifecycle\.incubation\)/);
@@ -380,5 +380,83 @@ assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil 
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
 assert.match(client, /drawUtcAmbience\(scene\);\s*drawCompanionPresence\(renderTime, scene, presence\)/s);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
+
+assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
+assert.match(client, /var COMBAT_RIVAL_COLORS =/);
+assert.match(client, /function clearCombatPresentation\(\)/);
+assert.match(client, /function updateCombatPresentation\(snapshot\)/);
+assert.match(client, /snapshot === combatSnapshot && activeScreen === combatScreen/);
+assert.match(client, /var arena = snapshot\.arena/);
+assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'arena'/);
+assert.match(client, /arena\.player_hp/);
+assert.match(client, /arena\.opponent_hp/);
+assert.match(client, /arena\.player_special/);
+assert.match(client, /arena\.opponent_special/);
+assert.match(client, /var kaiju = snapshot\.kaiju && snapshot\.kaiju\.match/);
+assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'kaiju'/);
+assert.match(client, /kaiju\.own_card_locked/);
+assert.match(client, /kaiju\.opponent_card_locked/);
+assert.match(client, /var run = snapshot\.run/);
+assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'run'/);
+assert.match(client, /run\.current_room != null \? run\.current_room : run\.depth/);
+assert.match(client, /function drawCombatOpponent\(time, scene, combat\)/);
+assert.match(client, /function drawCombatMeter\(x, y, width, value, maximum, color, reverse\)/);
+assert.match(client, /function drawCombatHud\(scene, combat\)/);
+assert.match(client, /var pulse = reducedMotion \? 0 : Math\.round\(Math\.sin\(time \/ 260\) \* 2\)/);
+assert.match(client, /var combatScale = combat && combat\.active \? 0\.78 : 1/);
+assert.match(client, /combat && combat\.active \? -62 : 0/);
+assert.match(client, /drawCombatHud\(scene, combat\)/);
+assert.match(client, /if \(!combat\.active\) drawCompanionPresence/);
+assert.match(client, /COMBAT_PRESENTATION_FRAME\.active\) return;/);
+assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
+
+const combatDirectorMatch = client.match(/  function clearCombatPresentation\(\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
+assert.ok(combatDirectorMatch, 'Phase 5 combat director must be extractable for runtime smoke coverage');
+const combatDirectorSource = combatDirectorMatch[0].replace(/\n\n  function drawPixelText$/, '');
+const runtimeCombatFrame = {
+  active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
+  playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
+  playerCardKey: '', opponentCardKey: '', rivalColor: '#ff6d6d', source: null,
+};
+const combatRuntime = new Function(
+  'COMBAT_PRESENTATION_FRAME', 'activeScreen', 'combatSnapshot', 'combatScreen', 'combatRivalColor',
+  combatDirectorSource + '; return { update: updateCombatPresentation, screen: function (value) { activeScreen = value; } };',
+)(
+  runtimeCombatFrame,
+  'explore',
+  null,
+  '',
+  () => '#61f5ff',
+);
+assert.doesNotThrow(() => combatRuntime.update({
+  adopted: true,
+  arena: {
+    status: 'active', mode: 'multiplayer', current_round: 3, max_rounds: 5,
+    player_hp: 74, opponent_hp: 38, player_special: 55, opponent_special: 20,
+    opponent: { pet_name: 'Rival Smoke' },
+  },
+}), 'Phase 5 Arena director must execute from server-returned battle state');
+assert.equal(runtimeCombatFrame.mode, 'arena');
+assert.equal(runtimeCombatFrame.playerValue, 74);
+assert.equal(runtimeCombatFrame.opponentValue, 38);
+assert.equal(runtimeCombatFrame.round, 3);
+assert.equal(runtimeCombatFrame.rivalColor, '#61f5ff');
+assert.doesNotThrow(() => combatRuntime.update({
+  adopted: true,
+  kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: true, opponent_card_locked: false, own_card_key: 'neon-claw' } },
+}), 'Phase 5 Kaiju director must execute from live card-lock state');
+assert.equal(runtimeCombatFrame.mode, 'kaiju');
+assert.equal(runtimeCombatFrame.playerValue, 1);
+assert.equal(runtimeCombatFrame.opponentValue, 0);
+assert.doesNotThrow(() => combatRuntime.update({
+  adopted: true,
+  run: { status: 'active', current_room: 4, max_room: 8, risk_level: 3 },
+}), 'Phase 5 Moon Run director must execute from persisted run state');
+assert.equal(runtimeCombatFrame.mode, 'run');
+assert.equal(runtimeCombatFrame.playerValue, 4);
+assert.equal(runtimeCombatFrame.opponentValue, 4);
+combatRuntime.screen('home');
+combatRuntime.update({ adopted: true, arena: { status: 'active', player_hp: 10, opponent_hp: 10 } });
+assert.equal(runtimeCombatFrame.active, false, 'combat presentation must remain scoped to the Explore module');
 
 console.log('telegram-pets-mini-app.test.mjs passed');
