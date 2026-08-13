@@ -26,8 +26,8 @@ Moonpet has a strong technical foundation and an unusually broad feature set for
 | Missions | 7.5/10 | Good cross-system credit and progress visibility; mission variety needs expansion. |
 | District missions | 5.5/10 | Connected but mechanically thin and too close to a task list. |
 | Story chains | 5/10 | Present, but branches, character choices and persistent consequences remain shallow. |
-| Arena | 6.5/10 | Sound reward authority and ranking foundation; tactics and opponent telegraphing are limited. |
-| Kaiju | 5.5/10 | Functional event loop but needs phase mechanics, roles and clearer mastery. |
+| Arena | 7.8/10 | Server-owned move previews, charge state, solo telegraphs, sealed PvP intent and perspective-correct recaps make the existing counter combat readable. Persistent builds and richer opponent archetypes remain future work. |
+| Kaiju | 7.3/10 | The active category is now persisted before selection, every card exposes its relevant value and strengths, and results explain the score. Collection roles and multi-round mastery remain future work. |
 | Economy and gear | 7/10 | Broad and authoritative; build identity and meaningful trade-offs need stronger presentation. |
 | Progression and endgame | 7/10 | Deep breadth across prestige, relics, rare morphs and leaderboards; balance still needs live data. |
 | Navigation and accessibility | 8/10 | Strong Mini App routing and utility controls with reduced-motion support. |
@@ -37,9 +37,8 @@ Moonpet has a strong technical foundation and an unusually broad feature set for
 ## Next priority phases
 
 1. District and story depth: branching objectives, named rivals, persistent choices, and multi-step failure/recovery routes.
-2. Arena and Kaiju combat: tactical loadout decisions, opponent telegraphs, counters, phase changes, and post-match analysis.
-3. Roguelite buildcraft: checkpoint relic drafting, run modifiers, synergies, curses, and build summaries.
-4. Feel and polish: restrained procedural audio, better input anticipation, hit timing, animation transitions, and device profiling.
+2. Roguelite buildcraft: checkpoint relic drafting, run modifiers, synergies, curses, and build summaries.
+3. Feel and polish: restrained procedural audio, better input anticipation, hit timing, animation transitions, and device profiling.
 5. Live balancing: funnel, choice, failure, extraction, economy, and retention telemetry with documented tuning gates.
 
 ## Release boundary

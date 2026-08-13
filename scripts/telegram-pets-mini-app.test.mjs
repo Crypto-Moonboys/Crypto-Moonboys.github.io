@@ -67,7 +67,7 @@ const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-aaa-district-stories`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-aaa-combat-intelligence`/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
 assert.match(worker, /const url = petMiniAppLaunchUrl\(screen, normalizedFocus\)/);
 assert.match(worker, /setChatMenuButton/);
@@ -102,7 +102,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260813-aaa-district-stories/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260813-aaa-combat-intelligence/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
@@ -138,7 +138,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-aaa-district-stories/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-aaa-combat-intelligence/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -650,8 +650,8 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260813-aaa-district-stories/);
-assert.match(worker, /20260813-aaa-district-stories/);
+assert.match(html, /20260813-aaa-combat-intelligence/);
+assert.match(worker, /20260813-aaa-combat-intelligence/);
 
 assert.match(worker, /function serializePetRunRoom/, 'standard runs must serialize authored room objectives and opponents');
 assert.match(worker, /output\.result_copy === undefined && result\.outcome\?\.copy/, 'run outcome copy must survive Mini App action serialization');
@@ -681,4 +681,20 @@ assert.match(guide, /18 authored encounters/, 'the complete guide must document 
 assert.match(guide, /12 authored scenes/, 'the complete guide must document story content');
 assert.match(guide, /100-room Standard Moon Run/, 'the complete guide must describe the current Moon Run');
 assert.doesNotMatch(guide, /five-step/i, 'the complete guide must not describe the retired five-step run');
+
+assert.match(worker, /const PET_ARENA_MOVE_GUIDE/, 'Arena must expose one server-owned tactical move guide');
+assert.match(worker, /moves: buildPetArenaMovePreviews/, 'Arena state must serialize readable move previews');
+assert.match(worker, /opponent_intent: mode === 'solo' && battle\.status === 'active'/, 'only solo Arena may reveal a deterministic opponent intent');
+assert.match(worker, /last_round: orientPetArenaLastRound/, 'Arena recaps must orient moves to the current player');
+assert.match(client, /CRT TELEGRAPH/, 'solo Arena must render the opponent telegraph');
+assert.match(client, /RIVAL INTENT \/\/ HIDDEN/, 'PvP Arena must explicitly preserve sealed intent');
+assert.match(client, /class="button-grid arena-decisions"/, 'Arena decisions need a readable tactical card grid');
+assert.match(worker, /player1_telegram_id, category_key, roll/, 'Kaiju category must be persisted when the match is created');
+assert.match(worker, /category_key: category\?\.key \|\| null/, 'Kaiju category must be visible before card lock');
+assert.match(worker, /serializePetKaijuCardPreview\(card, kaiju\?\.category_key\)/, 'Kaiju cards must include the active-category score');
+assert.match(client, /BATTLE CATEGORY/, 'Kaiju must state what the current duel values');
+assert.match(client, /ACTIVE ' \+ active/, 'Kaiju cards must emphasize their active score');
+assert.match(css, /\.combat-intent/, 'combat intelligence panels need responsive styling');
+assert.match(guide, /Player-vs-player intent always stays hidden/, 'the complete guide must document Arena fairness');
+assert.match(guide, /before either card locks/, 'the complete guide must explain informed Kaiju drafting');
 console.log('telegram-pets-mini-app.test.mjs passed');

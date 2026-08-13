@@ -252,7 +252,7 @@
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
       '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
       '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
-      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts and Stories offer authored decisions. Arena reveals attack odds, counters and solo CRT intent; Kaiju reveals the scoring category before card lock. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
       '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards, prestige and hidden rare-morph signals.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
@@ -418,10 +418,28 @@
     var arenaQueue = state.arena_queue;
     var arenaBody;
     if (arena) {
-      var arenaHeader = '<div class="line complete">' + escapeHtml(arena.mode === 'multiplayer' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // ' + escapeHtml(arena.opponent && arena.opponent.pet_name || 'RIVAL') + '</div><div class="line">ROUND ' + number(arena.current_round) + ' // HP ' + number(arena.player_hp) + ' : ' + number(arena.opponent_hp) + '</div>';
-      arenaBody = arenaHeader + (arena.status === 'readying'
+      var specialCost = number(arena.special_cost || 3);
+      var arenaHeader = '<div class="combat-intel"><div class="line complete">' + escapeHtml(arena.mode === 'multiplayer' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // ' + escapeHtml(arena.opponent && arena.opponent.pet_name || 'RIVAL') + '</div><div class="line">ROUND ' + number(arena.current_round) + '/' + number(arena.max_rounds) + ' // HP ' + number(arena.player_hp) + ' : ' + number(arena.opponent_hp) + '</div><div class="line signal">SPECIAL ' + number(arena.player_special) + '/' + specialCost + (number(arena.player_special) >= specialCost ? ' // READY' : ' // BUILD CHARGE') + '</div></div>';
+      var intent = arena.opponent_intent
+        ? '<div class="combat-intent"><strong>CRT TELEGRAPH // ' + escapeHtml(arena.opponent_intent.label) + '</strong><span>' + escapeHtml(arena.opponent_intent.detail) + '</span></div>'
+        : arena.mode === 'multiplayer' && arena.status === 'active'
+          ? '<div class="combat-intent is-hidden"><strong>RIVAL INTENT // HIDDEN</strong><span>PvP choices stay sealed until both players lock.</span></div>'
+          : '';
+      var recap = arena.last_round
+        ? '<div class="combat-recap"><strong>ROUND ' + number(arena.last_round.round) + ' RECAP</strong><span>YOU // ' + escapeHtml(arena.last_round.player_log || words(arena.last_round.player_move)) + '</span><span>RIVAL // ' + escapeHtml(arena.last_round.opponent_log || words(arena.last_round.opponent_move)) + '</span></div>'
+        : '';
+      var arenaMoves = (arena.moves || []).map(function (move) {
+        var stats = move.base_damage ? number(move.accuracy) + '% HIT // ' + number(move.base_damage) + ' BASE' : escapeHtml(words(move.role));
+        var counter = move.counter_label ? ' // COUNTER ' + escapeHtml(move.counter_label) : '';
+        var lock = move.available ? '' : ' // NEED ' + number(move.requirement) + ' CHARGE';
+        return button(move.label, 'arena_move', { battle_id: arena.battle_id, expected_round: arena.current_round, move: move.key }, {
+          disabled: !move.available,
+          detail: stats + counter + lock + ' // ' + move.detail,
+        });
+      }).join('');
+      arenaBody = arenaHeader + intent + recap + (arena.status === 'readying'
         ? '<div class="line muted">' + (arena.ready ? 'YOU ARE READY. WAITING FOR RIVAL.' : 'MATCH FOUND. LOCK IN WHEN READY.') + '</div><div class="button-grid">' + button('READY', 'arena_ready', { battle_id: arena.battle_id }, { disabled: arena.ready }) + button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>'
-        : '<div class="button-grid three">' + ['ah:ATTACK HEAD', 'ab:ATTACK BODY', 'bh:BLOCK HEAD', 'bb:BLOCK BODY', 'ch:CHARGE', 'sp:SPECIAL'].map(function (move) { var bits = move.split(':'); return button(bits[1], 'arena_move', { battle_id: arena.battle_id, expected_round: arena.current_round, move: bits[0] }); }).join('') + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
+        : '<div class="button-grid arena-decisions">' + arenaMoves + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
     } else if (arenaQueue) {
       arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
         button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank }) + button('LEAVE QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
@@ -433,13 +451,14 @@
     var kaijuMatch = kaiju.match;
     var kaijuQueue = kaiju.queue;
     var kaijuBody = kaijuMatch
-      ? '<div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid">' + (kaiju.cards || []).map(function (card) {
-        var statLine = Object.entries(card.stats || {}).map(function (entry) { return entry[0].slice(0, 3).toUpperCase() + ':' + entry[1]; }).join(' ');
-        return button(card.name, 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: card.id }, { detail: statLine });
+      ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid kaiju-decisions">' + (kaiju.cards || []).map(function (card) {
+        var leaders = (card.strongest || []).map(function (entry) { return entry.label + ' ' + entry.value; }).join(' // ');
+        var active = card.active_stat ? card.active_stat + ' ' + number(card.active_value) : 'CATEGORY PENDING';
+        return button(card.name + (card.active_value != null ? ' // ' + number(card.active_value) : ''), 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: card.id }, { detail: 'ACTIVE ' + active + ' // BEST ' + leaders });
       }).join('') + '</div>')
       : kaijuQueue
         ? '<div class="line">KAIJU MATCHMAKING // POSITION ' + number(kaijuQueue.position) + '</div><div class="button-grid one">' + button('LEAVE KAIJU QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) + '</div>'
-        : (kaiju.result ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
+        : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
     var regions = (state.regions || []).map(function (region) {
       var mission = region.mission || {};
       var opponent = mission.opponent || {};
