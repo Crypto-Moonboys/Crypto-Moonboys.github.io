@@ -280,7 +280,7 @@ assert.match(client, /drawActionEffects/);
 assert.match(client, /animationMode === 'battle'/);
 assert.match(client, /animationMode === 'evolve'/);
 assert.match(client, /bootLayer\.classList\.toggle\('is-compact'/);
-assert.match(client, /target\.getBoundingClientRect\(\)\.top - screen\.getBoundingClientRect\(\)\.top \+ screen\.scrollTop/);
+assert.match(client, /target\.getBoundingClientRect\(\)\.top - screenRect\.top \+ screen\.scrollTop/);
 assert.match(client, /pet\.evolution_stage == null \? NaN : Number\(pet\.evolution_stage\)/);
 assert.match(client, /var renderTime = reducedMotion \? performance\.now\(\) : time/);
 assert.match(client, /var active = animationUntil > renderTime/);
