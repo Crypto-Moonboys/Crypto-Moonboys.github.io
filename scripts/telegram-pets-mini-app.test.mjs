@@ -271,7 +271,7 @@ assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards
 assert.match(client, /var reward = resultRewardMap\(result\)/);
 assert.equal((client.match(/var reward = resultRewardMap\(result\)/g) || []).length, 2, 'terminal and canvas feedback must share reward normalization');
 assert.match(client, /presentResultFeedback\(data\.result\)/);
-assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*presentResultFeedback\(data\.result\)/s);
+assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result\)/s);
 assert.doesNotMatch(client, /presentResultFeedback\(data\.result\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
 assert.equal((client.match(/presentResultFeedback\(/g) || []).length, 2, 'only the helper and real server-result call may present reward feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
