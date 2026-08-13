@@ -53,7 +53,7 @@
 
     <p class="lead-paragraph">Crypto Moonboy Pets is an HTML5 Telegram Mini App RPG and roguelite inside the Crypto Moonboys ecosystem. The bot launches Moonpet OS; care, jobs, events, runs, economy, progression and battles take place inside the game instead of through chat-button menus.</p>
     <p><a class="button" href="https://t.me/WIKICOMSBOT?start=moonpet">Open Moonpet OS in Telegram</a></p>
-    <p>The Telegram bot remains the main game surface. The website provides the public information layer: current rules, the pet leaderboard, linked-player summaries, Community XP context and the searchable wiki record for the game.</p>
+    <p>Moonpet OS inside Telegram is the main gameplay surface. The bot is the authenticated launcher and notification bridge; the website provides the public rules, leaderboard, linked-player summaries, Community XP context and searchable wiki record.</p>
 
     <section class="wiki-section">
       <h2>Start Playing</h2>
@@ -71,7 +71,7 @@
       <div class="pets-live-grid">
         <article class="pets-live-card"><h3>Care</h3><p>Feed, play, clean, sleep and train your Moonpet. Accepted care actions can affect needs, Pet XP, currencies, specialist XP and traits.</p></article>
         <article class="pets-live-card"><h3>Prepare</h3><p>Buy care upgrades, equip battle gear, manage authoritative bag items and check daily missions before committing to jobs, Arena battles or runs.</p></article>
-        <article class="pets-live-card"><h3>Risk</h3><p>Choose from 12 stage-gated jobs, 10 three-choice random encounters, timed activities and five-step Pet Runs. Later evolutions reveal harder work and stranger encounters.</p></article>
+        <article class="pets-live-card"><h3>Risk</h3><p>Choose from 14 stage- and specialist-gated jobs, 10 three-choice random encounters, timed activities, authored district missions, persistent story choices and a 100-room Standard Moon Run. Later evolutions reveal harder work and stranger encounters.</p></article>
         <article class="pets-live-card"><h3>Compete</h3><p>Fight one personal weekly boss attempt per UTC day, enter level 10+ Pet Arena, play Kaiju Sticker Battle and compare seasonal Pet XP.</p></article>
         <article class="pets-live-card"><h3>Follow The Coach</h3><p>The Moonpet Coach prioritises urgent care, active runs, ready claims, evolution requirements, verified bounties, missions, weekly bosses, expeditions and affordable upgrades. Every economy recommendation carries exact progress, cost or remaining attempts, its reward/use and a direct action button. One-time alerts announce newly available traits, achievements, jobs, equipment, economy features and season rewards without repeating forever.</p></article>
       </div>
@@ -82,7 +82,7 @@
       <div class="pets-live-grid">
         <article class="pets-live-card"><h3>Personality</h3><p>Combat, exploration, care and event behaviour can unlock Street Fighter, Explorer, Loyal and Curious traits. Those traits now change Moonpet reaction copy during jobs, events, status checks and weekly bosses.</p></article>
         <article class="pets-live-card"><h3>Memories</h3><p>Your Moonpet remembers its first run, first extraction, first boss, completed runs, boss victories, favourite activity, biggest reward and evolution milestones. These records influence what it says.</p></article>
-        <article class="pets-live-card"><h3>Achievements</h3><p><code>/petachievements</code> displays 12 permanent goals covering care, jobs, event variety, runs, bosses, personality and evolution. Progress is rebuilt from authoritative game history rather than trusted client claims.</p></article>
+        <article class="pets-live-card"><h3>Achievements</h3><p>The TASKS module displays 12 permanent goals covering care, jobs, event variety, runs, bosses, personality and evolution. Progress is rebuilt from authoritative game history rather than trusted client claims.</p></article>
         <article class="pets-live-card"><h3>Evolution</h3><p>Moonpet OS follows one canonical sequence: Moon Egg, Street Moonpet, Cyber Moonpet, Elite Moonpet and Legendary Moon Guardian. Requirements can include level, Alley King victories, relics and canonical material balances.</p></article>
       </div>
       <p>Evolution is no longer cosmetic-only. Each later stage unlocks its own jobs and encounters, adds bounded weekly-boss power, changes reactions, and adds one extra Style Token per claimed seasonal tier. Stages cannot be skipped.</p>
@@ -108,7 +108,7 @@
         <li><strong>Job:</strong> short jobs and completed timed work; Job XP also determines job rank.</li>
         <li><strong>Bond:</strong> positive care behaviour and daily chest claims.</li>
       </ul>
-      <p>Daily specialist counters reset by UTC day. Permanent track totals remain. Repeated behaviour also contributes to hidden trait thresholds that become visible through <code>/petprogress</code> once unlocked.</p>
+      <p>Daily specialist counters reset by UTC day. Permanent track totals remain. Repeated behaviour also contributes to hidden trait thresholds that become visible in CORE once unlocked.</p>
     </section>
 
     <section class="wiki-section">
@@ -116,43 +116,32 @@
       <p><strong>Care Loadout:</strong> Food, Toy and Outfit. These affect care actions, selected currencies, Pet XP and some run modifiers.</p>
       <p><strong>Battle Loadout:</strong> armor, weapon and charm. Armor supports defense, weapons support attack, and charms support crit, dodge or luck.</p>
       <p>The two loadouts are independent. Changing one does not reset the other. Empty battle slots display <strong>none</strong>; the game does not invent starter armor or starter weapons.</p>
-      <p><code>/petshop</code> opens care upgrades and Pet Arena equipment. <code>/petbuy item_key</code> buys and equips eligible items. <code>/petgear</code> displays registered equipment levels, item XP, mastery XP and mastery tiers, and repairs missing records for equipment already fitted to the pet.</p>
+      <p>The GEAR module opens care upgrades and Pet Arena equipment, buys and equips eligible items, and displays registered equipment levels, item XP, mastery XP and mastery tiers. The server repairs missing progression records for equipment already fitted to the pet.</p>
       <h3>Expanded Moonpet Economy</h3>
-      <p><code>/peteconomy</code> is the earn → spend → upgrade → unlock dashboard. <code>/petbounties</code> selects four goals from ten each UTC day and only pays goals proven by accepted server events. <code>/petexpedition</code> provides three daily attempts across Dust Tunnels, Crystal Caves and Guardian Rift, with higher zones unlocked by level. <code>/petmarket</code> rotates four offers from twelve, each with one unit of personal daily stock.</p>
+      <p>GEAR is the earn → spend → upgrade → unlock dashboard. Bounties select four goals from ten each UTC day and only pay goals proven by accepted server events. Expeditions provide three daily attempts across Dust Tunnels, Crystal Caves and Guardian Rift, with higher zones unlocked by level. The Market rotates four offers from twelve, each with one unit of personal daily stock.</p>
       <p>The larger loop connects care, 14 standard and elite jobs, activities, events, runs, Arena, Kaiju, bosses and seasons to Moon Gold, Moon Crystals, Style Tokens, consumables and nine canonical upgrade materials. Consumable items and materials have separate, explicit balance authorities. Daily caps, Energy costs, wallet checks, stable settlement keys and one-stock offers prevent unlimited faucets.</p>
       <p class="pets-status-note"><strong>Live systems:</strong> all six districts now have playable mastery missions and boss checkpoints. The Mini App also exposes persistent story chains, rotating seasonal raids, exact-cost equipment upgrades, Style Lab cosmetics and prestige. Its CORE screen contains the remembered-milestone archive, unlock directory, current and next evolution perks, full season rewards and specialist progress. Jobs, bounties, shops, markets, expeditions and bosses disclose their complete requirements, costs and rewards before play. Every new upgrade route supplies the Coach with its cost, requirement, use and direct destination.</p>
     </section>
 
     <section class="wiki-section">
       <h2>Timed Activities, Jobs And Events</h2>
-      <ul class="pets-command-list">
-        <li><code>/petstart sleep</code><br>Start a timed rest session.</li>
-        <li><code>/petstart train</code><br>Build timed Training progression.</li>
-        <li><code>/petstart work</code><br>Complete longer Job progression.</li>
-        <li><code>/petstart explore</code><br>Build Adventure progression and possible loot.</li>
-        <li><code>/petactivity</code><br>Inspect the active session.</li>
-        <li><code>/petclaim</code><br>Claim a valid timed session through the protected reward path.</li>
-        <li><code>/petcancel</code><br>Cancel without rewards.</li>
-        <li><code>/petwork</code><br>View all 12 jobs and their level/evolution gates.</li>
-        <li><code>/petdaily</code><br>Claim the UTC daily chest.</li>
-        <li><code>/petevent</code><br>Generate one of 10 stage-gated encounters with three choices.</li>
-      </ul>
+      <p>The WORK module starts timed Sleep, Train, Work and Explore sessions; shows the active timer; and exposes Claim or Cancel when applicable. It also lists all 14 jobs with their level, evolution and specialist-track gates. PET contains the UTC daily cache, while RUN contains the ten stage-gated random encounters.</p>
       <p>The minimum timed claim is five minutes. Training caps at two hours. Sleep, work and exploration cap at eight hours. Valid longer sessions scale rewards up to their cap; cancellation awards nothing.</p>
       <p>Activity claims are protected against claim/cancel/expiry races. If a reward settlement is interrupted after persistence, retry recovery returns the original authoritative reward instead of creating a second award or losing the completed session.</p>
     </section>
 
     <section class="wiki-section">
       <h2>Weekly Boss</h2>
-      <p><code>/petboss</code> opens the current personal weekly boss. The boss rotates deterministically each UTC week between Neon Titan, Rugpull Colossus, Kaiju Zero and Citadel Overlord. Choose <strong>Strike</strong>, <strong>Outsmart</strong> or <strong>Endure</strong>; matching the boss weakness, relevant personality and a later evolution stage improve damage.</p>
+      <p>The RUN module opens the current personal weekly boss. The boss rotates deterministically each UTC week between Neon Titan, Rugpull Colossus, Kaiju Zero and Citadel Overlord. Choose <strong>Strike</strong>, <strong>Outsmart</strong> or <strong>Endure</strong>; matching the boss weakness, relevant personality and a later evolution stage improve damage.</p>
       <p>Each player gets one attempt per UTC day, enforced by a D1 unique constraint. An attempt costs 12 Energy. Damage persists for the week, the boss reward settles once through the protected reward authority, and delivery retries recover the same result rather than creating extra attempts or rewards.</p>
     </section>
 
     <section class="wiki-section">
       <h2>Pet Run Engine And Roguelite Foundation</h2>
       <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20247%20Pet%20Loop.jpg" alt="Crypto Moonboy Pets roguelite loop showing alerts, activities, jobs, missions and run decisions." loading="lazy" decoding="async">
-      <p><code>/petrun</code> still starts or resumes the current five-step Telegram run. Each step offers route choices with different costs, risk and possible rewards. Run rewards remain unbanked until extraction or boss completion.</p>
-      <p><code>/petextract</code> banks current unbanked rewards. Successful steps and extraction contribute to Adventure progression. Failed runs lose unbanked loot but may retain a small Pet XP lesson. <code>/petadventure</code> remains an alias for the Pet Run Engine.</p>
-      <p>The merged roguelite foundation now gives the backend persistent support for regions, deterministic run seeds, room state, temporary run modifiers, permanent relic ownership, terminal run history and balancing analytics. These systems are designed for later content expansion without creating new uncapped XP paths.</p>
+      <p>The RUN module starts or resumes the 100-room Standard Moon Run. Every room presents an authored location, objective and opponent plus server-derived previews for risk, costs, reward ranges and equipped-gear advantage. Elite encounters appear every five rooms and district bosses every ten.</p>
+      <p>Rewards remain unbanked until extraction or terminal completion. Extracting banks the current bag and contributes to Adventure progression; a failed room loses unbanked loot but may retain a small Pet XP lesson. The separate Daily Moon Run provides one authoritative seeded run per UTC day.</p>
+      <p>The backend persists region, deterministic seed, room state, temporary modifiers, permanent relic ownership, terminal run history and balancing analytics without creating new uncapped XP paths.</p>
       <p>Run completion, room and boss reward requests are state-checked and idempotent. Terminal run transitions serialize against competing step callbacks so a late room action cannot mutate a reward snapshot after extraction or completion begins.</p>
     </section>
 
@@ -171,6 +160,7 @@
       <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Pet%20Arena%20In%20Telegram.jpg" alt="Crypto Moonboy Pets turn-based Pet Arena with attack, defense, armor, weapons and special moves." loading="lazy" decoding="async">
       <p>Moonpet OS exposes the level 10+ turn-based Moonpet combat system. Pet Arena is separate from Kaiju Sticker Battle.</p>
       <p>Battle power is calculated server-side using pet level, Pet XP, health, energy, morale, cleanliness, care modifiers and Battle Loadout equipment. The Mini App supports global player matchmaking, same-rank preference, any-rank widening, ready-up, locked turns, polling and solo CRT practice.</p>
+      <p>Move cards disclose accuracy, base damage, role, counters and Special charge requirements. Solo CRT intent is telegraphed before commitment; player-versus-player intent remains sealed until both choices lock. Perspective-correct round recaps explain what each side did.</p>
       <p>Round-scoped controls reject stale moves, duplicate taps and replayed callbacks. Winners, losers and draws receive capped game rewards through the protected reward authority.</p>
     </section>
 
@@ -178,7 +168,7 @@
       <h2>Kaiju Sticker Battle</h2>
       <img class="crypto-pets-section-art" src="/img/pets/crypto%20moonboys%20Kaiju%20Sticker%20Battle%20In%20Telegram.jpg" alt="Crypto Moonboy Pets Kaiju Sticker Battle with players selecting monster cards and comparing stats." loading="lazy" decoding="async">
       <p>Moonpet OS contains the separate Kaiju card-battle system with global player matchmaking and solo CRT practice. Both players choose their cards inside the Mini App and receive an oriented result.</p>
-      <p>The game selects one category from Power, Size, Attack, Defence, Speed or Legacy. The selected cards are compared using that category, and the higher stat wins. Kaiju progression retains the protected repeat-slot, Energy reservation, original accounting-window and retry-recovery safeguards introduced by the anti-farm hardening.</p>
+      <p>The game selects one category from Power, Size, Attack, Defence, Speed or Legacy before card commitment. Every card shows its value in the active category plus its strongest stats, while the rival card remains sealed. The higher active value wins. Kaiju progression retains protected repeat slots, Energy reservations, original accounting windows and retry-recovery safeguards.</p>
     </section>
 
     <section class="wiki-section">
@@ -234,7 +224,7 @@
     <section class="wiki-section">
       <h2>Play And Track</h2>
       <div class="swarmsy-action-grid" role="navigation" aria-label="Crypto Moonboy Pets links">
-        <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer"><strong>PLAY ON TELEGRAM</strong><span>Open the bot and use /adopt.</span></a>
+        <a class="swarmsy-action-card swarmsy-action-card--gold" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer"><strong>OPEN MOONPET OS</strong><span>Launch the signed Mini App and initialise or resume your companion.</span></a>
         <a class="swarmsy-action-card" href="/how-to-play-crypto-moonboy-pets.html"><strong>HOW TO PLAY</strong><span>Read the complete Moonpet OS progression guide.</span></a>
         <a class="swarmsy-action-card swarmsy-action-card--magenta" href="/crypto-moonboy-pets-leaderboard.html"><strong>PET LEADERBOARD</strong><span>View daily, weekly, seasonal and all-time ranks.</span></a>
       </div>

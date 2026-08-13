@@ -49,6 +49,8 @@
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var audioContext = null;
+  var audioEnabled = readAudioPreference();
 
   var app = document.getElementById('moonpet-app');
   var canvas = document.getElementById('moonpet-canvas');
@@ -107,7 +109,56 @@
     return Math.max(0, Math.floor(Number(value) || 0)).toLocaleString('en-GB');
   }
 
+  function readAudioPreference() {
+    try { return window.localStorage.getItem('moonpet-audio') !== 'off'; } catch (_) { return true; }
+  }
+
+  function ensureAudio() {
+    if (!audioEnabled) return null;
+    if (!audioContext) {
+      if (navigator.userActivation && !navigator.userActivation.isActive) return null;
+      var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+      try { audioContext = new AudioContextClass(); } catch (_) { return null; }
+    }
+    if (audioContext.state === 'suspended') audioContext.resume().catch(function () {});
+    return audioContext;
+  }
+
+  function playAudioCue(kind) {
+    var audio = ensureAudio();
+    if (!audio || audio.state === 'closed') return;
+    var cues = {
+      light: [240, 0.025, 'square'], medium: [320, 0.045, 'square'],
+      success: [520, 0.12, 'triangle'], error: [110, 0.16, 'sawtooth'],
+    };
+    var cue = cues[kind] || cues.light;
+    var now = audio.currentTime;
+    var oscillator = audio.createOscillator();
+    var gain = audio.createGain();
+    oscillator.type = cue[2];
+    oscillator.frequency.setValueAtTime(cue[0], now);
+    if (kind === 'success') oscillator.frequency.exponentialRampToValueAtTime(780, now + cue[1]);
+    if (kind === 'error') oscillator.frequency.exponentialRampToValueAtTime(72, now + cue[1]);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(kind === 'light' ? 0.018 : 0.035, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + cue[1]);
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+    oscillator.start(now);
+    oscillator.stop(now + cue[1] + 0.01);
+  }
+
+  function toggleAudio() {
+    audioEnabled = !audioEnabled;
+    try { window.localStorage.setItem('moonpet-audio', audioEnabled ? 'on' : 'off'); } catch (_) {}
+    if (audioEnabled) playAudioCue('success');
+    render();
+    tell('AUDIO ' + (audioEnabled ? 'ONLINE.' : 'MUTED.'));
+  }
+
   function haptic(kind) {
+    playAudioCue(kind);
     try {
       if (!tg || !tg.HapticFeedback) return;
       if (kind === 'success' || kind === 'error') tg.HapticFeedback.notificationOccurred(kind);
@@ -216,6 +267,7 @@
     return '<nav class="utility-rail" aria-label="Game utilities">' +
       '<button type="button" class="utility-button" data-utility="guide">HOW TO PLAY</button>' +
       '<button type="button" class="utility-button" data-utility="leaderboard">LEADERBOARD</button>' +
+      '<button type="button" class="utility-button" data-utility="audio" aria-pressed="' + (audioEnabled ? 'true' : 'false') + '">AUDIO ' + (audioEnabled ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
       '</nav>';
   }
@@ -952,6 +1004,7 @@
     var utility = event.target.closest('[data-utility]');
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
+      else if (utility.dataset.utility === 'audio') toggleAudio();
       else if (utility.dataset.utility === 'sync') syncState();
       else if (utility.dataset.utility === 'retry') window.location.reload();
       return;
@@ -2253,6 +2306,11 @@
     await restoreBrowserAuth();
     if (!initData && !telegramAuth) {
       tell('OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
+      screen.innerHTML = panel('TELEGRAM SIGNATURE REQUIRED',
+        '<div class="line">MOONPET OS READS YOUR LIVE SAVE ONLY AFTER TELEGRAM VERIFIES YOUR IDENTITY.</div>' +
+        '<div class="line muted">No player data was requested in this browser. Open the signed Mini App, then initialise or resume your Moonpet.</div>' +
+        '<div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
+        '<button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY</button></div>', 'telegram-auth');
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });
       return;
     }

@@ -4,6 +4,9 @@
   --dim: #4ea85a;
   --hot: #f4ff65;
   --danger: #ff6d6d;
+  --cyan: #61f5ff;
+  --green: #a9ff9a;
+  --muted: #78a884;
   --glass: #06110b;
   --panel: #091b10;
   --line: #2c6c39;
@@ -85,6 +88,14 @@ button { font: inherit; }
   background: #07170c; color: var(--ink); text-transform: uppercase; font-size: 11px; font-weight: 700;
   box-shadow: 3px 3px 0 #020704; touch-action: manipulation;
 }
+.terminal-link-button {
+  display: flex; min-height: 48px; align-items: center; justify-content: center;
+  padding: 9px; border: 2px solid var(--hot); background: #07170c; color: var(--hot);
+  font-size: 11px; font-weight: 700; text-align: center; text-decoration: none; text-transform: uppercase;
+  box-shadow: 3px 3px 0 #020704; touch-action: manipulation;
+}
+.terminal-link-button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #020704; color: #031006; background: var(--hot); }
+.terminal-link-button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .terminal-button:active, .terminal-button.is-active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #020704; color: #031006; background: var(--ink); }
 .terminal-button:disabled { opacity: .35; filter: grayscale(1); }
 .terminal-button.danger { color: var(--danger); border-color: #963e3e; }
@@ -125,7 +136,7 @@ button { font: inherit; }
 /* Moonpet navigation and discoverability utilities */
 .utility-rail {
   position: sticky; top: -10px; z-index: 24; display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px;
   margin: -10px -10px 10px; padding: 7px 10px;
   border-bottom: 1px solid var(--line); background: rgba(2,9,5,.97);
   box-shadow: 0 3px 0 var(--shadow);

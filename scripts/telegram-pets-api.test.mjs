@@ -1636,6 +1636,8 @@ assert.equal(
 const repeatTradeDb = seedRepeatRewardPlayer('trade-repeat', 70);
 repeatTradeDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-repeat'").run();
 const originalTradeRandom = Math.random;
+const originalTimezone = process.env.TZ;
+process.env.TZ = 'America/New_York';
 Math.random = () => 0.9;
 try {
   const firstTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:first', source: 'telegram_callback' });
@@ -1651,6 +1653,8 @@ try {
   assert.equal(repeatTradeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'trade-repeat' AND event_type = 'trade'").get().count, 2, 'two unique callbacks must create exactly two trade settlements');
 } finally {
   Math.random = originalTradeRandom;
+  if (originalTimezone == null) delete process.env.TZ;
+  else process.env.TZ = originalTimezone;
 }
 const tradeCommand = asyncBlock('cmdPetTrade');
 assert.ok(tradeCommand.includes('eventKey = null') && tradeCommand.includes('event_key: eventKey ||'), 'trade command must accept and prioritize the unique Telegram event key');
