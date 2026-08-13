@@ -60,6 +60,7 @@ assert.equal((await verifyPetMiniAppChallenge(challenge, token, { type: 'event',
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
@@ -77,6 +78,10 @@ assert.match(worker, /verifyPetMiniAppChallenge/);
 assert.match(client, /challenge_token: encounter\.challenge_token/);
 assert.match(client, /challenge_token: adventure\.challenge_token/);
 assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/js\/telegram-web-app\.js"><\/script>/);
+assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
+assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
+assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-first-party-api/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
