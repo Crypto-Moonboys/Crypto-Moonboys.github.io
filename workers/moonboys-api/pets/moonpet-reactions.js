@@ -184,6 +184,26 @@ const activities = {
   ],
 };
 
+const lifecycleTemperaments = {
+  bold: ['A bold little stance turns {activity} into a challenge worth meeting.', 'Your Moonpet steps into {activity} first and checks for danger second.'],
+  social: ['Your social Moonpet checks your reaction before committing to {activity}.', 'For your Moonpet, {activity} is better because the two of you are doing it together.'],
+  rhythmic: ['Your Moonpet finds a beat inside {activity} and moves exactly on it.', 'A quiet head-nod gives {activity} its own private soundtrack.'],
+  calm: ['Your calm Moonpet takes one measured breath before {activity}.', 'Nothing about {activity} can rush your Moonpet out of its steady rhythm.'],
+  curious: ['Your Moonpet tilts its head and searches {activity} for the detail everyone missed.', 'Curiosity pulls your Moonpet closer to {activity}.'],
+  loyal: ['Your Moonpet stays shoulder-to-ankle close throughout {activity}.', 'A loyal glance confirms your Moonpet will not face {activity} without you.'],
+};
+
+const innateTraits = {
+  night_owl: ['Moonlight seems to sharpen your Moonpet during {activity}.'],
+  beat_seeker: ['Your Moonpet tests {activity} for a bassline before anything else.'],
+  snack_scout: ['Your Moonpet completes a quick snack check before {activity}.'],
+  alley_brave: ['Old alley nerve makes your Moonpet stand taller during {activity}.'],
+  soft_hearted: ['Your Moonpet brings an unexpectedly gentle touch to {activity}.'],
+  lucky_steps: ['One lucky-looking sidestep changes the rhythm of {activity}.'],
+  collector: ['Your Moonpet quietly checks whether {activity} left anything worth keeping.'],
+  showboat: ['Your Moonpet makes absolutely certain you noticed its best moment in {activity}.'],
+};
+
 const traits = {
   street_fighter: [
     'Your Street Fighter circles {activity} like a challenge waiting to be solved.',
@@ -409,7 +429,7 @@ const milestones = {
   ],
 };
 
-export const MOONPET_REACTION_LIBRARY = deepFreeze({ activities, traits, moods, evolutions, milestones });
+export const MOONPET_REACTION_LIBRARY = deepFreeze({ activities, traits, lifecycleTemperaments, innateTraits, moods, evolutions, milestones });
 
 function safeText(value, fallback = '') {
   return String(value ?? fallback).trim().slice(0, 120);
@@ -482,6 +502,9 @@ export function buildMoonpetReactionChoice(contextRaw, identity = {}, detail = {
   const candidates = [];
   addPool(candidates, 'activity', context, activities[context]);
   for (const trait of identity.personalities || []) addPool(candidates, 'trait', trait.trait_id, traits[trait.trait_id]);
+  const lifecycle = identity.lifecycle || {};
+  addPool(candidates, 'temperament', lifecycle.temperament, lifecycleTemperaments[lifecycle.temperament]);
+  for (const trait of lifecycle.innate_traits || []) addPool(candidates, 'innate', trait, innateTraits[trait]);
   addPool(candidates, 'mood', mood, moods[mood] || moods.steady);
   addPool(candidates, 'evolution', evolutionId, evolutions[evolutionId] || evolutions.moon_egg);
   for (const milestone of rememberedMilestones(identity.memories || {})) addPool(candidates, 'milestone', milestone, milestones[milestone]);
