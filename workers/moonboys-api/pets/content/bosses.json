@@ -4,12 +4,23 @@
     "name": "Alley King",
     "difficulty": 4,
     "health": 240,
+    "intro": "The gold-chained ruler of Moon Alley.",
     "phases": [
-      { "threshold": 1, "pattern": "crown_slam" },
-      { "threshold": 0.5, "pattern": "neon_overdrive" }
+      {
+        "threshold": 1,
+        "pattern": "crown_slam"
+      },
+      {
+        "threshold": 0.5,
+        "pattern": "neon_overdrive"
+      }
     ],
     "rewards": {
-      "materials": { "scrap_metal": 3, "moon_fabric": 1, "evolution_fragment": 1 }
+      "materials": {
+        "scrap_metal": 3,
+        "moon_fabric": 1,
+        "evolution_fragment": 1
+      }
     },
     "relic_chance_bps": 2500,
     "relic_pool": [
@@ -25,5 +36,89 @@
       "lucky_coin"
     ],
     "achievement_id": "moon_alley_alley_king"
+  },
+  {
+    "boss_id": "neon_warden",
+    "name": "Neon Warden",
+    "difficulty": 5,
+    "health": 320,
+    "intro": "A district jailer who turns streets into attack patterns.",
+    "phases": [
+      {
+        "threshold": 1,
+        "pattern": "lane_lock"
+      },
+      {
+        "threshold": 0.66,
+        "pattern": "signal_jam"
+      },
+      {
+        "threshold": 0.33,
+        "pattern": "full_spectrum"
+      }
+    ],
+    "rewards": {
+      "materials": {
+        "scrap_metal": 2,
+        "moon_fabric": 3,
+        "evolution_fragment": 1
+      }
+    },
+    "relic_chance_bps": 3000,
+    "relic_pool": [
+      "bitcoin_heart",
+      "infinite_spray_can",
+      "hacker_lens",
+      "neon_boots",
+      "golden_sticker",
+      "ghost_tag",
+      "moon_battery",
+      "cyber_collar",
+      "chain_shield",
+      "lucky_coin"
+    ],
+    "achievement_id": "moon_alley_neon_warden"
+  },
+  {
+    "boss_id": "chrome_jackal",
+    "name": "Chrome Jackal",
+    "difficulty": 6,
+    "health": 400,
+    "intro": "A mimic boss that studies the route you used to reach it.",
+    "phases": [
+      {
+        "threshold": 1,
+        "pattern": "mirror_stance"
+      },
+      {
+        "threshold": 0.5,
+        "pattern": "stolen_combo"
+      },
+      {
+        "threshold": 0.2,
+        "pattern": "vault_breaker"
+      }
+    ],
+    "rewards": {
+      "materials": {
+        "scrap_metal": 4,
+        "moon_fabric": 3,
+        "evolution_fragment": 2
+      }
+    },
+    "relic_chance_bps": 3500,
+    "relic_pool": [
+      "bitcoin_heart",
+      "infinite_spray_can",
+      "hacker_lens",
+      "neon_boots",
+      "golden_sticker",
+      "ghost_tag",
+      "moon_battery",
+      "cyber_collar",
+      "chain_shield",
+      "lucky_coin"
+    ],
+    "achievement_id": "moon_alley_chrome_jackal"
   }
 ]

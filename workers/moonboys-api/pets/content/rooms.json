@@ -3,102 +3,545 @@
     "room_id": "alley_entrance",
     "name": "Alley Entrance",
     "room_type": "choice_event",
+    "description": "Rain hisses on neon brick. Three routes split beneath a hacked district sign.",
+    "objective": "Choose how loudly to enter the run.",
+    "threat": 1,
+    "engine_choices": [
+      "fight",
+      "sneak",
+      "loot"
+    ],
     "choices": [
-      { "choice_id": "explore", "label": "Explore" },
-      { "choice_id": "fight", "label": "Fight" },
-      { "choice_id": "search", "label": "Search" }
+      {
+        "choice_id": "explore",
+        "label": "Explore"
+      },
+      {
+        "choice_id": "fight",
+        "label": "Fight"
+      },
+      {
+        "choice_id": "search",
+        "label": "Search"
+      }
     ]
   },
   {
     "room_id": "graffiti_wall",
     "name": "Graffiti Wall",
     "room_type": "choice_event",
+    "description": "A fresh chrome wall waits beside an unfinished crew piece and a humming security camera.",
+    "objective": "Leave a mark without losing the route.",
+    "threat": 2,
+    "engine_choices": [
+      "sneak",
+      "loot",
+      "fight"
+    ],
     "choices": [
-      { "choice_id": "tag_wall", "label": "Tag wall" },
-      { "choice_id": "help_artist", "label": "Help artist" },
-      { "choice_id": "ignore", "label": "Ignore" }
+      {
+        "choice_id": "tag_wall",
+        "label": "Tag wall"
+      },
+      {
+        "choice_id": "help_artist",
+        "label": "Help artist"
+      },
+      {
+        "choice_id": "ignore",
+        "label": "Ignore"
+      }
     ]
   },
   {
     "room_id": "rival_encounter",
     "name": "Rival Encounter",
     "room_type": "battle",
-    "enemy_pool": ["rival_moonpet"],
+    "description": "A rival Moonpet crew blocks the alley and measures your companion from ears to kicks.",
+    "objective": "Outplay the crew or break contact.",
+    "threat": 2,
+    "enemy_pool": [
+      "rival_moonpet"
+    ],
+    "engine_choices": [
+      "fight",
+      "sneak",
+      "trade"
+    ],
     "choices": [
-      { "choice_id": "challenge", "label": "Challenge" },
-      { "choice_id": "sneak_past", "label": "Sneak past" },
-      { "choice_id": "trade", "label": "Trade" }
+      {
+        "choice_id": "challenge",
+        "label": "Challenge"
+      },
+      {
+        "choice_id": "sneak_past",
+        "label": "Sneak past"
+      },
+      {
+        "choice_id": "trade",
+        "label": "Trade"
+      }
     ]
   },
   {
     "room_id": "hidden_cache",
     "name": "Hidden Cache",
     "room_type": "loot",
+    "description": "A crypto-locker pulses behind loose bricks. The warning light is still warm.",
+    "objective": "Decide how much risk the cache is worth.",
+    "threat": 2,
+    "engine_choices": [
+      "loot",
+      "hidden_route",
+      "sneak"
+    ],
     "choices": [
-      { "choice_id": "open_cache", "label": "Open cache" },
-      { "choice_id": "scan_cache", "label": "Scan cache" },
-      { "choice_id": "leave", "label": "Leave" }
+      {
+        "choice_id": "open_cache",
+        "label": "Open cache"
+      },
+      {
+        "choice_id": "scan_cache",
+        "label": "Scan cache"
+      },
+      {
+        "choice_id": "leave",
+        "label": "Leave"
+      }
     ]
   },
   {
     "room_id": "street_market",
     "name": "Street Market",
     "room_type": "choice_event",
+    "description": "Bootleg tech, spray caps and mystery boxes crowd a market that never asks names.",
+    "objective": "Convert resources without getting played.",
+    "threat": 2,
+    "engine_choices": [
+      "trade",
+      "rest",
+      "gamble"
+    ],
     "choices": [
-      { "choice_id": "buy_supplies", "label": "Buy supplies" },
-      { "choice_id": "trade", "label": "Trade" },
-      { "choice_id": "gamble", "label": "Gamble" }
+      {
+        "choice_id": "buy_supplies",
+        "label": "Buy supplies"
+      },
+      {
+        "choice_id": "trade",
+        "label": "Trade"
+      },
+      {
+        "choice_id": "gamble",
+        "label": "Gamble"
+      }
     ]
   },
   {
     "room_id": "underground_tunnel",
     "name": "Underground Tunnel",
     "room_type": "choice_event",
+    "description": "The tunnel map glitches between a safe platform and a signal no official route admits exists.",
+    "objective": "Pick speed, safety or discovery.",
+    "threat": 3,
+    "engine_choices": [
+      "hidden_route",
+      "sneak",
+      "rest"
+    ],
     "choices": [
-      { "choice_id": "shortcut", "label": "Shortcut" },
-      { "choice_id": "explore", "label": "Explore" },
-      { "choice_id": "retreat", "label": "Retreat" }
+      {
+        "choice_id": "shortcut",
+        "label": "Shortcut"
+      },
+      {
+        "choice_id": "explore",
+        "label": "Explore"
+      },
+      {
+        "choice_id": "retreat",
+        "label": "Retreat"
+      }
     ]
   },
   {
     "room_id": "police_heat",
     "name": "Police Heat",
     "room_type": "battle",
-    "enemy_pool": ["street_rat", "cyber_guard"],
+    "description": "Search drones flood the block with white light while a cyber guard seals the obvious exits.",
+    "objective": "Escape the sweep with the stash intact.",
+    "threat": 4,
+    "enemy_pool": [
+      "street_rat",
+      "cyber_guard",
+      "search_drone"
+    ],
+    "engine_choices": [
+      "sneak",
+      "fight",
+      "hidden_route"
+    ],
     "choices": [
-      { "choice_id": "escape", "label": "Escape" },
-      { "choice_id": "hide", "label": "Hide" },
-      { "choice_id": "confront", "label": "Confront" }
+      {
+        "choice_id": "escape",
+        "label": "Escape"
+      },
+      {
+        "choice_id": "hide",
+        "label": "Hide"
+      },
+      {
+        "choice_id": "confront",
+        "label": "Confront"
+      }
     ]
   },
   {
     "room_id": "neon_shortcut",
     "name": "Neon Shortcut",
     "room_type": "choice_event",
+    "description": "A rooftop rail cuts five blocks from the route, but its power surges in the rain.",
+    "objective": "Balance pace against control.",
+    "threat": 3,
+    "engine_choices": [
+      "sneak",
+      "rest",
+      "gamble"
+    ],
     "choices": [
-      { "choice_id": "speed_route", "label": "Speed route" },
-      { "choice_id": "safe_route", "label": "Safe route" },
-      { "choice_id": "risk_route", "label": "Risk route" }
+      {
+        "choice_id": "speed_route",
+        "label": "Speed route"
+      },
+      {
+        "choice_id": "safe_route",
+        "label": "Safe route"
+      },
+      {
+        "choice_id": "risk_route",
+        "label": "Risk route"
+      }
+    ]
+  },
+  {
+    "room_id": "abandoned_arcade",
+    "name": "Abandoned Arcade",
+    "room_type": "loot",
+    "description": "Dead cabinets wake as your Moonpet enters. One machine still pays in district tokens.",
+    "objective": "Beat the cabinet or strip it for parts.",
+    "threat": 2,
+    "enemy_pool": [
+      "glitch_sprite"
+    ],
+    "engine_choices": [
+      "gamble",
+      "loot",
+      "rest"
+    ],
+    "choices": [
+      {
+        "choice_id": "gamble",
+        "label": "Play the impossible cabinet"
+      },
+      {
+        "choice_id": "loot",
+        "label": "Salvage the prize hopper"
+      },
+      {
+        "choice_id": "rest",
+        "label": "Hide in the projection booth"
+      }
+    ]
+  },
+  {
+    "room_id": "rooftop_relay",
+    "name": "Rooftop Relay",
+    "room_type": "choice_event",
+    "description": "A pirate transmitter broadcasts crew locations across the skyline. Its operator has vanished.",
+    "objective": "Use the signal before somebody traces it.",
+    "threat": 3,
+    "enemy_pool": [
+      "search_drone"
+    ],
+    "engine_choices": [
+      "hidden_route",
+      "loot",
+      "fight"
+    ],
+    "choices": [
+      {
+        "choice_id": "hidden_route",
+        "label": "Decode hidden routes"
+      },
+      {
+        "choice_id": "loot",
+        "label": "Strip the signal core"
+      },
+      {
+        "choice_id": "fight",
+        "label": "Hold off the drones"
+      }
+    ]
+  },
+  {
+    "room_id": "sticker_shrine",
+    "name": "Sticker Shrine",
+    "room_type": "choice_event",
+    "description": "Thousands of old crew stickers cover a moonlit doorway. Some names have not been seen in years.",
+    "objective": "Respect the archive or hunt its secret.",
+    "threat": 1,
+    "engine_choices": [
+      "rest",
+      "hidden_route",
+      "loot"
+    ],
+    "choices": [
+      {
+        "choice_id": "rest",
+        "label": "Leave a tribute"
+      },
+      {
+        "choice_id": "hidden_route",
+        "label": "Follow the oldest tag"
+      },
+      {
+        "choice_id": "loot",
+        "label": "Lift a rare foil"
+      }
+    ]
+  },
+  {
+    "room_id": "crypto_kiosk",
+    "name": "Crypto Kiosk",
+    "room_type": "choice_event",
+    "description": "A cracked street kiosk offers a volatile swap while its owner watches from behind mirrored glass.",
+    "objective": "Trade, manipulate or walk away stronger.",
+    "threat": 2,
+    "enemy_pool": [
+      "market_hustler"
+    ],
+    "engine_choices": [
+      "trade",
+      "gamble",
+      "fight"
+    ],
+    "choices": [
+      {
+        "choice_id": "trade",
+        "label": "Make the clean swap"
+      },
+      {
+        "choice_id": "gamble",
+        "label": "Push the volatile pair"
+      },
+      {
+        "choice_id": "fight",
+        "label": "Call out the rigged rate"
+      }
+    ]
+  },
+  {
+    "room_id": "storm_drain",
+    "name": "Storm Drain",
+    "room_type": "loot",
+    "description": "Runoff carries glowing scrap toward a chamber marked with a forbidden crew symbol.",
+    "objective": "Recover materials before the flood rises.",
+    "threat": 3,
+    "enemy_pool": [
+      "sewer_mutt"
+    ],
+    "engine_choices": [
+      "loot",
+      "hidden_route",
+      "sneak"
+    ],
+    "choices": [
+      {
+        "choice_id": "loot",
+        "label": "Sweep the scrap channel"
+      },
+      {
+        "choice_id": "hidden_route",
+        "label": "Open the marked chamber"
+      },
+      {
+        "choice_id": "sneak",
+        "label": "Move before the flood"
+      }
+    ]
+  },
+  {
+    "room_id": "mural_contest",
+    "name": "Midnight Mural Contest",
+    "room_type": "choice_event",
+    "description": "Three crews race across legal walls while spectators bet on style, speed and nerve.",
+    "objective": "Win respect without burning the whole run.",
+    "threat": 3,
+    "enemy_pool": [
+      "rival_moonpet"
+    ],
+    "engine_choices": [
+      "fight",
+      "gamble",
+      "trade"
+    ],
+    "choices": [
+      {
+        "choice_id": "fight",
+        "label": "Battle for the centre wall"
+      },
+      {
+        "choice_id": "gamble",
+        "label": "Attempt the one-line piece"
+      },
+      {
+        "choice_id": "trade",
+        "label": "Form a temporary crew"
+      }
     ]
   },
   {
     "room_id": "elite_encounter",
-    "name": "Elite Encounter",
+    "name": "Chrome Crew Captain",
     "room_type": "elite",
-    "enemy_pool": ["cyber_guard"],
+    "description": "The district captain steps out in reactive armour and locks the route behind you.",
+    "objective": "Claim the checkpoint or escape with less glory.",
+    "threat": 4,
+    "enemy_pool": [
+      "cyber_guard"
+    ],
+    "engine_choices": [
+      "elite",
+      "sneak",
+      "loot"
+    ],
     "choices": [
-      { "choice_id": "fight", "label": "Fight" },
-      { "choice_id": "escape", "label": "Escape" },
-      { "choice_id": "steal_loot", "label": "Steal loot" }
+      {
+        "choice_id": "fight",
+        "label": "Fight"
+      },
+      {
+        "choice_id": "escape",
+        "label": "Escape"
+      },
+      {
+        "choice_id": "steal_loot",
+        "label": "Steal loot"
+      }
+    ]
+  },
+  {
+    "room_id": "drone_enforcer",
+    "name": "Drone Enforcer",
+    "room_type": "elite",
+    "description": "A heavy enforcement drone predicts ordinary movement and punishes repeated tactics.",
+    "objective": "Break its pattern or evade the checkpoint.",
+    "threat": 4,
+    "enemy_pool": [
+      "drone_enforcer"
+    ],
+    "engine_choices": [
+      "elite",
+      "hidden_route",
+      "sneak"
+    ],
+    "choices": [
+      {
+        "choice_id": "elite",
+        "label": "Attack its blind cycle"
+      },
+      {
+        "choice_id": "hidden_route",
+        "label": "Hijack its navigation"
+      },
+      {
+        "choice_id": "sneak",
+        "label": "Ghost beneath its scan"
+      }
+    ]
+  },
+  {
+    "room_id": "subway_champion",
+    "name": "Subway Champion",
+    "room_type": "elite",
+    "description": "The undefeated platform champion offers passage only to crews willing to prove their nerve.",
+    "objective": "Win the platform or find another way.",
+    "threat": 5,
+    "enemy_pool": [
+      "subway_champion"
+    ],
+    "engine_choices": [
+      "elite",
+      "fight",
+      "trade"
+    ],
+    "choices": [
+      {
+        "choice_id": "elite",
+        "label": "Take the title fight"
+      },
+      {
+        "choice_id": "fight",
+        "label": "Force a quick opening"
+      },
+      {
+        "choice_id": "trade",
+        "label": "Wager the unbanked bag"
+      }
     ]
   },
   {
     "room_id": "boss_room",
-    "name": "Boss Room",
+    "name": "Alley King Throne",
     "room_type": "boss",
+    "description": "Gold chains swing above a throne built from street signs. The Alley King owns every exit.",
+    "objective": "Defeat the district ruler and open the next tier.",
+    "threat": 5,
     "boss_id": "alley_king",
+    "engine_choices": [
+      "boss"
+    ],
     "choices": [
-      { "choice_id": "challenge_alley_king", "label": "Challenge Alley King" }
+      {
+        "choice_id": "challenge_alley_king",
+        "label": "Challenge Alley King"
+      }
+    ]
+  },
+  {
+    "room_id": "neon_warden_room",
+    "name": "Neon Warden Gate",
+    "room_type": "boss",
+    "description": "The Neon Warden turns the entire block into a pulsing cage of laser-bright lanes.",
+    "objective": "Break the gate and carry the run into a harder district.",
+    "threat": 5,
+    "boss_id": "neon_warden",
+    "engine_choices": [
+      "boss"
+    ],
+    "choices": [
+      {
+        "choice_id": "boss",
+        "label": "Break the Neon Warden"
+      }
+    ]
+  },
+  {
+    "room_id": "chrome_jackal_room",
+    "name": "Chrome Jackal Den",
+    "room_type": "boss",
+    "description": "Chrome Jackal circles the stash vault, copying every move your Moonpet has already shown.",
+    "objective": "Change rhythm, win the vault and ascend.",
+    "threat": 5,
+    "boss_id": "chrome_jackal",
+    "engine_choices": [
+      "boss"
+    ],
+    "choices": [
+      {
+        "choice_id": "boss",
+        "label": "Face Chrome Jackal"
+      }
     ]
   }
 ]

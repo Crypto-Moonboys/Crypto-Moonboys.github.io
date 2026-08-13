@@ -66,7 +66,7 @@ const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.u
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-endless-roguelite`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-aaa-gameplay-foundation`/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
 assert.match(worker, /const url = petMiniAppLaunchUrl\(screen, normalizedFocus\)/);
 assert.match(worker, /setChatMenuButton/);
@@ -101,7 +101,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260813-endless-roguelite/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260813-aaa-gameplay-foundation/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
@@ -137,7 +137,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-endless-roguelite/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-aaa-gameplay-foundation/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -647,9 +647,25 @@ assert.match(client, /period === 'run_depth' \? number\(entry\.pet_xp\) \+ ' ROO
 assert.match(worker, /max_depth: Math\.max\(PET_RUN_MAX_DEPTH/);
 assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
-assert.match(worker, /if \(!regular\.length\) return rooms\[0\]/);
+assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260813-endless-roguelite/);
-assert.match(worker, /20260813-endless-roguelite/);
+assert.match(html, /20260813-aaa-gameplay-foundation/);
+assert.match(worker, /20260813-aaa-gameplay-foundation/);
+
+assert.match(worker, /function serializePetRunRoom/, 'standard runs must serialize authored room objectives and opponents');
+assert.match(worker, /output\.result_copy === undefined && result\.outcome\?\.copy/, 'run outcome copy must survive Mini App action serialization');
+assert.match(worker, /PET_ROGUELITE_ROOMS\[persistedRoom\.content_id\]/, 'daily rooms must recover their authored content definition');
+assert.match(worker, /persistedRoom\.boss_id \|\| persistedRoom\.enemy_id \|\| null/, 'daily room briefs must preserve the generated opponent');
+assert.match(worker, /function analyzePetRunChoice/, 'run previews and outcomes must share one risk analysis');
+assert.match(worker, /function serializePetRunChoicePreview/, 'run choices must expose risk, cost and reward previews');
+assert.match(worker, /analysis\.gear\.risk_delta - analysis\.gear\.survival_bonus < 0/, 'gear shield preview must use the same net risk reduction as authoritative resolution');
+assert.match(worker, /room\.engine_choices/, 'authored rooms must drive mechanically coherent choice pools');
+assert.match(worker, /wantedType === 'boss'/, 'boss checkpoints must select boss rooms');
+assert.match(worker, /wantedType === 'elite'/, 'elite checkpoints must select elite rooms');
+assert.match(client, /class="run-brief"/, 'Moon Run must present an authored encounter brief');
+assert.match(client, /class="run-stakes"/, 'Moon Run must explain unbanked extraction stakes');
+assert.match(client, /choice\.detail/, 'Moon Run choices must render server-authored decision previews');
+assert.match(client, /result\.outcome && result\.outcome\.copy/, 'authoritative run outcome copy must reach player feedback');
+assert.match(css, /\.run-decisions/, 'run decision cards must remain responsive and readable');
 
 console.log('telegram-pets-mini-app.test.mjs passed');
