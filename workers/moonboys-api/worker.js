@@ -4501,7 +4501,7 @@ async function buildPetMissions(db, telegramId) {
       SELECT COUNT(*) AS count
       FROM telegram_pet_system_events
       WHERE telegram_id = ? AND system_key = 'equipment_upgrade' AND status = 'completed'
-        AND created_at >= ? AND created_at < ?
+        AND updated_at >= ? AND updated_at < ?
     `).bind(telegramId, dayKey, nextDayKey).first().catch(() => null),
     getPetProfile(db, telegramId).catch(() => null),
   ]);
@@ -11770,7 +11770,7 @@ function petMiniAppDestinationForCallback(data) {
   const payload = String(data || '').toLowerCase().replace(/^pet:/, '');
   if (payload === 'missions' || payload.startsWith('mission:') || payload.startsWith('achievement')) return 'missions';
   if (payload === 'menu:adventure' || /^(arena|kaiju|run|extract|adventure|event|boss|district|chain|seasonal_boss)/.test(payload)) return 'explore';
-  if (/^(work|activity|job)/.test(payload)) return 'work';
+  if (/^(work|activity|job|start:|claim$|cancel$)/.test(payload)) return 'work';
   if (payload === 'menu:management' || /^(shop|economy|bount|expedition|market|bag|buy|use|trade|equipment|gear|cosmetic)/.test(payload)) return 'economy';
   if (payload === 'menu:progress' || /^(details|progress|season|evolve|leaderboard|score|streak|notify|name|prestige|identity)/.test(payload)) return 'profile';
   return 'home';
