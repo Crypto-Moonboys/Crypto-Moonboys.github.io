@@ -105,7 +105,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const BASE = 'https://cryptomoonboys.com';
-const EXPECTED_API_BASE        = 'https://moonboys-api.sercullen.workers.dev';
+const EXPECTED_API_BASE        = 'https://api.cryptomoonboys.com';
 const EXPECTED_LEADERBOARD_URL = 'https://moonboys-leaderboard.sercullen.workers.dev';
 const RIGHT_PANEL_PAGES = [];
 const STANDALONE_CSP_PAGES = [];
