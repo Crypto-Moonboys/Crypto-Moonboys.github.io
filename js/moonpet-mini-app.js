@@ -1539,7 +1539,7 @@
     drawPixelRect(7, 54, 306, 38, '#020704');
     drawPixelRect(7, 54, 306, 2, scene.neon);
     drawPixelText(combat.title, 16, 65, scene.neon, 'left');
-    drawPixelText(combat.status, 304, 65, '#d8f9ff', 'right');
+    drawPixelText(compactFeedback(combat.status, 17), 304, 65, '#d8f9ff', 'right');
     if (combat.mode === 'arena') {
       drawCombatMeter(16, 69, 128, combat.playerValue, combat.maxValue, '#a9ff9a', false);
       drawCombatMeter(176, 69, 128, combat.opponentValue, combat.maxValue, rivalColor, true);
@@ -1548,7 +1548,7 @@
       drawPixelText('HP ' + Number(combat.playerValue), 16, 90, '#a9ff9a', 'left');
       drawPixelText(Number(combat.opponentValue) + ' HP', 304, 90, rivalColor, 'right');
     } else if (combat.mode === 'kaiju') {
-      drawPixelText(combat.playerValue ? 'YOUR CARD // LOCKED' : 'YOUR CARD // SELECT', 16, 80, combat.playerValue ? '#f4ff65' : '#aab5ae', 'left');
+      drawPixelText(combat.playerValue ? 'YOU // LOCKED' : 'YOU // SELECT', 16, 80, combat.playerValue ? '#f4ff65' : '#aab5ae', 'left');
       drawPixelText(combat.opponentValue ? 'RIVAL // LOCKED' : 'RIVAL // WAITING', 304, 80, combat.opponentValue ? rivalColor : '#aab5ae', 'right');
     } else {
       drawCombatMeter(16, 74, 288, combat.playerValue, combat.maxValue, scene.accent, false);
