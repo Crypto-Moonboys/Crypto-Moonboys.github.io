@@ -120,7 +120,7 @@
   var api = window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object'
     ? window.MOONBOYS_API
     : {};
-  var PRODUCTION_BASE_URL = 'https://moonboys-api.sercullen.workers.dev';
+  var PRODUCTION_BASE_URL = 'https://api.cryptomoonboys.com';
   var PRODUCTION_LEADERBOARD_URL = 'https://moonboys-leaderboard.sercullen.workers.dev';
   var PRODUCTION_HOSTS = Object.freeze([
     'cryptomoonboys.com',
