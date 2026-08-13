@@ -259,19 +259,20 @@
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
 
-  function leaderboardRowsMarkup(entries, self) {
+  function leaderboardRowsMarkup(entries, self, period) {
     var rows = (entries || []).map(function (entry) {
       var form = entry.phase === 'rare' ? entry.rare_morph_name : entry.species_name || (entry.phase === 'egg' ? 'Moon Egg' : entry.stage);
-      return '<div class="leader-row' + (entry.is_current ? ' is-current' : '') + '"><strong>#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') + (entry.is_current ? ' // YOU' : '') + '</strong><div class="line">' + escapeHtml(words(form || 'moonpet')) + ' // LVL ' + number(entry.level) + ' // ' + number(entry.pet_xp) + ' XP</div></div>';
+      var metric = period === 'run_depth' ? number(entry.pet_xp) + ' ROOMS' : number(entry.pet_xp) + ' XP';
+      return '<div class="leader-row' + (entry.is_current ? ' is-current' : '') + '"><strong>#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') + (entry.is_current ? ' // YOU' : '') + '</strong><div class="line">' + escapeHtml(words(form || 'moonpet')) + ' // LVL ' + number(entry.level) + ' // ' + metric + '</div></div>';
     }).join('');
     var selfOutside = self && !(entries || []).some(function (entry) { return entry.is_current; })
-      ? '<div class="line muted">YOUR POSITION</div>' + leaderboardRowsMarkup([Object.assign({}, self, { is_current: true })], null)
+      ? '<div class="line muted">YOUR POSITION</div>' + leaderboardRowsMarkup([Object.assign({}, self, { is_current: true })], null, period)
       : '';
     return rows + selfOutside || '<div class="line muted">NO RANKED MOONPETS IN THIS PERIOD.</div>';
   }
 
   async function loadLeaderboard(period) {
-    var selected = ['daily', 'weekly', 'seasonal', 'all_time'].includes(period) ? period : 'seasonal';
+    var selected = ['daily', 'weekly', 'seasonal', 'all_time', 'run_depth'].includes(period) ? period : 'seasonal';
     var generation = ++utilityRequestGeneration;
     utilityTitle.textContent = 'MOONPET LEADERBOARD';
     utilityContent.innerHTML = '<div class="line">LOADING ' + escapeHtml(words(selected)) + ' RANKS...</div>';
@@ -281,7 +282,7 @@
       var tabs = ['daily', 'weekly', 'seasonal', 'all_time', 'run_depth'].map(function (key) {
         return '<button type="button" class="period-button" data-leaderboard-period="' + key + '" aria-pressed="' + (key === selected ? 'true' : 'false') + '">' + escapeHtml(words(key)) + '</button>';
       }).join('');
-      utilityContent.innerHTML = '<div class="period-tabs">' + tabs + '</div><div class="line muted">' + (selected === 'run_depth' ? 'DEEPEST ROOM RANKS' : 'PET XP RANKS') + ' // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self);
+      utilityContent.innerHTML = '<div class="period-tabs">' + tabs + '</div><div class="line muted">' + (selected === 'run_depth' ? 'DEEPEST ROOM RANKS' : 'PET XP RANKS') + ' // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self, selected);
     } catch (error) {
       if (generation !== utilityRequestGeneration || utilityLayer.hidden || activeUtility !== 'leaderboard') return;
       utilityContent.innerHTML = '<div class="connection-fault">RANKING LINK FAILED // ' + escapeHtml(error.message || 'CONNECTION FAILED') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-leaderboard-period="' + selected + '">RETRY LEADERBOARD</button></div>';

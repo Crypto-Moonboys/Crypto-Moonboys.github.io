@@ -2020,9 +2020,11 @@ runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_i
   VALUES ('run-choice-item', 'item', 'lucky_charm', 1)`).run();
 const runChoiceRandom = Math.random;
 Math.random = () => 0.99;
+const offeredRunChoice = buildPetRunChoiceReplyMarkup({ run_id: 'run-choice-item-run', depth: 0, max_depth: 100, risk_level: 1, unbanked_items: '{}' })
+  .inline_keyboard[0][0].callback_data.split(':').at(-1);
 let runChoiceItemResult;
 try {
-  runChoiceItemResult = await processPetRunStep(runChoiceItemDb, 'run-choice-item', 'run-choice-item-run', 'hidden_route', {
+  runChoiceItemResult = await processPetRunStep(runChoiceItemDb, 'run-choice-item', 'run-choice-item-run', offeredRunChoice, {
     event_key: 'run-choice-item-step', expected_step_index: 1, source: 'inventory_authority_regression',
   });
 } finally {

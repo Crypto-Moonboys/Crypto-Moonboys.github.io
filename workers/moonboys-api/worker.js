@@ -2132,7 +2132,8 @@ function getPetEndlessRoomDefinition(run) {
   const depth = Math.max(0, Math.floor(Number(run?.depth || run?.current_room || 0))), nextRoom = depth + 1;
   if (nextRoom % PET_RUN_BOSS_INTERVAL === 0) return rooms.find((room) => room.room_type === 'boss') || rooms[rooms.length - 1];
   const regular = rooms.filter((room) => room.room_type !== 'boss');
-  return regular[stablePetRunIndex(run, nextRoom, regular.length)] || regular[0];
+  if (!regular.length) return rooms[0];
+  return regular[stablePetRunIndex(run, nextRoom, regular.length)];
 }
 function serializePetRun(run) {
   if (!run) return null;
@@ -2141,10 +2142,10 @@ function serializePetRun(run) {
   return {
     id: run.id || null, telegram_id: String(run.telegram_id || ''), run_id: String(run.run_id || ''),
     season_key: String(run.season_key || ''), status: String(run.status || 'active'), region: String(run.region || 'moon_alley'),
-    difficulty: Math.max(1, Math.floor(Number(run.difficulty || Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1))),
+    difficulty: Math.max(1, Math.floor(Number(run.difficulty || 1)), Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1),
     seed: run.seed == null ? null : Number(run.seed), depth, current_room: depth,
-    max_depth: Math.max(1, Math.floor(Number(run.max_depth || run.max_room || PET_RUN_MAX_DEPTH))),
-    max_room: Math.max(1, Math.floor(Number(run.max_room || run.max_depth || PET_RUN_MAX_DEPTH))),
+    max_depth: Math.max(PET_RUN_MAX_DEPTH, Math.floor(Number(run.max_depth || run.max_room || 0))),
+    max_room: Math.max(PET_RUN_MAX_DEPTH, Math.floor(Number(run.max_room || run.max_depth || 0))),
     score: Math.max(0, Math.floor(Number(run.score || 0))), rooms_completed: Math.max(depth, Math.floor(Number(run.rooms_completed || 0))),
     risk_level: Math.max(1, Math.floor(Number(run.risk_level || 1))),
     room: room ? { key: room.room_id || room.key, title: room.title || room.name, room_type: room.room_type } : null,
@@ -2214,7 +2215,7 @@ function applyPetRunGearBonuses(pet, choice, inventory = []) {
 function buildPetRunStepOutcome(run, choice, pet, inventory = []) {
   const depth = Math.max(0, Math.floor(Number(run?.depth || 0)));
   const stepIndex = depth + 1;
-  const difficulty = Math.max(1, Math.floor(Number(run?.difficulty || Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1)));
+  const difficulty = Math.max(1, Math.floor(Number(run?.difficulty || 1)), Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1);
   const multiplier = 1 + (Math.min(depth, 40) * 0.08) + ((difficulty - 1) * 0.12);
   const gear = applyPetRunGearBonuses(pet, choice, inventory);
   const riskChance = Math.max(0.05, Math.min(0.78, Number(choice.base_risk || 0.2) + (Math.min(depth, 30) * 0.012) + ((difficulty - 1) * 0.015) + gear.risk_delta - gear.survival_bonus));
@@ -2558,7 +2559,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   `).bind(
     stepIndex >= PET_RUN_MAX_DEPTH ? 'extractable' : 'extractable',
     stepIndex, stepIndex, stepIndex,
-    Math.floor((stepIndex - 1) / PET_RUN_BOSS_INTERVAL) + 1,
+    Math.floor(stepIndex / PET_RUN_BOSS_INTERVAL) + 1,
     Math.max(10, Math.floor((outcome.rewards.pet_xp + outcome.rewards.moon_gold) * (choice.type === 'boss' ? 2.5 : choice.key === 'elite' ? 1.75 : 1))),
     Math.min(10, Math.floor(stepIndex / PET_RUN_ELITE_INTERVAL) + 1),
     clampPetCurrency(outcome.rewards.pet_xp),
@@ -6586,7 +6587,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       daily: Boolean(dailyReservation),
       current_room: Number(dailyReservation?.current_room ?? activeRun.current_room ?? activeRun.depth ?? 0),
       max_room: Number(dailyReservation?.max_room ?? activeRun.max_room ?? activeRun.max_depth ?? 0),
-      expected_step_index: Number(dailyReservation?.current_room ?? activeRun.depth ?? 0),
+      expected_step_index: Number(dailyReservation ? dailyReservation.current_room : Number(activeRun.depth || 0) + 1),
       room: dailyRoom || activeRun.room || null,
       choices: runChoices,
     } : null,
