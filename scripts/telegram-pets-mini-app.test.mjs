@@ -115,7 +115,14 @@ assert.match(client, /import\('\/js\/arcade\/core\/radio\.js\?v=20260813-moonpet
 assert.match(client, /new Audio\(radio\.ARCADE_RADIO_URL\)/);
 assert.match(client, /arcade_radio_on/);
 assert.match(client, /else if \(utility\.dataset\.utility === 'radio'\) toggleRadio\(\)/);
-assert.match(client, /radioPlayer\.pause\(\); radioPlayer\.src = ''/);
+assert.match(client, /var radioRequestGeneration = 0/);
+assert.match(client, /radioRequestedOn = Boolean\(on\)/);
+assert.match(client, /setRadioEnabled\(!radioRequestedOn, true\)/);
+assert.match(client, /var requestGeneration = \+\+radioRequestGeneration/);
+assert.match(client, /requestGeneration !== radioRequestGeneration[\s\S]*await player\.play\(\)[\s\S]*requestGeneration !== radioRequestGeneration/);
+assert.match(client, /window\.addEventListener\('pagehide'[\s\S]*radioRequestGeneration \+= 1;[\s\S]*radioPlayer\.pause\(\)/);
+assert.match(client, /window\.addEventListener\('pageshow'[\s\S]*event\.persisted && radioEnabled[\s\S]*setRadioEnabled\(true, false\)/);
+assert.doesNotMatch(client, /radioPlayer\.src = ''/, 'BFCache teardown must preserve the stream source');
 assert.match(arcadeRadio, /export const ARCADE_RADIO_URL = 'https:\/\/stream\.radiojar\.com\/2qm1fc5kb'/);
 assert.match(arcadeRadio, /export const ARCADE_RADIO_STORAGE_KEY = 'arcade_radio_on'/);
 assert.match(client, /function playAudioCue\(kind\)/);

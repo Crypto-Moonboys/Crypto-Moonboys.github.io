@@ -54,6 +54,8 @@
   var radioPlayer = null;
   var radioLoadPromise = null;
   var radioEnabled = readRadioPreference();
+  var radioRequestedOn = radioEnabled;
+  var radioRequestGeneration = 0;
 
   var app = document.getElementById('moonpet-app');
   var canvas = document.getElementById('moonpet-canvas');
@@ -141,6 +143,8 @@
   }
 
   async function setRadioEnabled(on, announce) {
+    radioRequestedOn = Boolean(on);
+    var requestGeneration = ++radioRequestGeneration;
     if (!on) {
       if (radioPlayer) radioPlayer.pause();
       radioEnabled = false;
@@ -149,15 +153,22 @@
       if (announce !== false) tell('GRAFFPUNKS RADIO OFFLINE.');
       return false;
     }
+    if (state) render();
     try {
       var player = await loadRadioPlayer();
+      if (requestGeneration !== radioRequestGeneration || !radioRequestedOn) return false;
       await player.play();
+      if (requestGeneration !== radioRequestGeneration) {
+        if (!radioRequestedOn) player.pause();
+        return false;
+      }
       radioEnabled = true;
       saveRadioPreference(true);
       if (state) render();
       if (announce !== false) tell('GRAFFPUNKS RADIO LIVE.');
       return true;
     } catch (_) {
+      radioRequestedOn = false;
       radioEnabled = false;
       saveRadioPreference(false);
       if (state) render();
@@ -168,7 +179,7 @@
 
   function toggleRadio() {
     haptic('light');
-    return setRadioEnabled(!radioEnabled, true);
+    return setRadioEnabled(!radioRequestedOn, true);
   }
 
   function ensureAudio() {
@@ -326,7 +337,7 @@
       '<button type="button" class="utility-button" data-utility="guide">HOW TO PLAY</button>' +
       '<button type="button" class="utility-button" data-utility="leaderboard">LEADERBOARD</button>' +
       '<button type="button" class="utility-button" data-utility="audio" aria-pressed="' + (audioEnabled ? 'true' : 'false') + '">AUDIO ' + (audioEnabled ? 'ON' : 'OFF') + '</button>' +
-      '<button type="button" class="utility-button" data-utility="radio" aria-pressed="' + (radioEnabled ? 'true' : 'false') + '">RADIO ' + (radioEnabled ? 'ON' : 'OFF') + '</button>' +
+      '<button type="button" class="utility-button" data-utility="radio" aria-pressed="' + (radioRequestedOn ? 'true' : 'false') + '">RADIO ' + (radioRequestedOn ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
       '</nav>';
   }
@@ -2392,9 +2403,12 @@
   }
 
   window.addEventListener('pagehide', function () {
-    if (!radioPlayer) return;
-    try { radioPlayer.pause(); radioPlayer.src = ''; } catch (_) {}
-  }, { once: true });
+    radioRequestGeneration += 1;
+    if (radioPlayer) radioPlayer.pause();
+  });
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted && radioEnabled) setRadioEnabled(true, false);
+  });
 
   start();
 }());
