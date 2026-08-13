@@ -16,7 +16,7 @@ import {
   validateMoonpetEvolutionContent,
 } from './pets/moonpet-identity.js';
 import {
-  MOONPET_SPECIES, createMoonEggLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
+  MOONPET_SPECIES, createMoonEggLifecycle, getExistingMoonpetLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
   syncMoonpetLifecycleStage,
 } from './pets/species-lifecycle.js';
 import {
@@ -11862,7 +11862,7 @@ function formatPetStatus(pet, identity = null, activity = null, reaction = undef
 async function getMoonpetIdentityWithLifecycle(db, telegramId) {
   const [identity, lifecycle] = await Promise.all([
     getMoonpetIdentitySummary(db, telegramId).catch(() => null),
-    getMoonpetLifecycle(db, telegramId).catch(() => null),
+    getExistingMoonpetLifecycle(db, telegramId).catch(() => null),
   ]);
   if (identity) identity.lifecycle = lifecycle;
   return identity;
