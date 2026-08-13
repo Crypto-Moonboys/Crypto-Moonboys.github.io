@@ -894,7 +894,7 @@
       return;
     }
     var petGreeting = event.target.closest('[data-pet-greet]');
-    if (petGreeting) { greetCompanion(); return; }
+    if (petGreeting) { canvas.dispatchEvent(new CustomEvent('moonpet:greet')); return; }
     if (lifecycleCeremonyActive()) {
       tell('LIFECYCLE REVEAL IN PROGRESS.');
       haptic('light');
@@ -954,7 +954,7 @@
     }
   }
 
-  canvas.addEventListener('click', function (event) {
+  canvas.addEventListener('moonpet:greet', greetCompanion);\n\n  canvas.addEventListener('click', function (event) {
     var bounds = canvas.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
     var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
