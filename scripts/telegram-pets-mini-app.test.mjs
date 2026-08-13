@@ -647,7 +647,7 @@ assert.match(client, /period === 'run_depth' \? number\(entry\.pet_xp\) \+ ' ROO
 assert.match(worker, /max_depth: Math\.max\(PET_RUN_MAX_DEPTH/);
 assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
-assert.match(worker, /if \(!regular\.length\) return rooms\[0\]/);
+assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260813-aaa-gameplay-foundation/);
 assert.match(worker, /20260813-aaa-gameplay-foundation/);

@@ -114,8 +114,8 @@ for (const region of Object.values(PET_ROGUELITE_REGIONS)) {
   for (const forbidden of ['xp', 'level', 'progression', 'currency']) assert.equal(region[forbidden], undefined, `regions cannot add a separate ${forbidden} system`);
 }
 assert.ok(Object.keys(PET_ROGUELITE_ROOMS).length >= 20, 'Moon Alley must ship at least twenty authored room definitions');
-assert.ok(Object.values(PET_ROGUELITE_ROOMS).every(({ description, objective, threat, engine_choices }) =>
-  description && objective && Number(threat) >= 1 && Array.isArray(engine_choices) && engine_choices.length >= 2),
+assert.ok(Object.values(PET_ROGUELITE_ROOMS).every(({ description, objective, threat, engine_choices, room_type }) =>
+  description && objective && Number(threat) >= 1 && Array.isArray(engine_choices) && engine_choices.length >= (room_type === 'boss' ? 1 : 2)),
   'every authored room must explain its fiction, objective, threat and meaningful choices');
 assert.ok(Object.keys(PET_ROGUELITE_ENEMIES).length >= 9, 'Moon Alley must ship at least nine enemy identities');
 assert.ok(Object.keys(PET_ROGUELITE_BOSSES).length >= 3, 'Moon Alley must ship at least three boss identities');
@@ -220,14 +220,14 @@ assert.throws(() => validatePetRunModifier({ effects: { daily_cap_bonus: true } 
 assert.throws(() => validatePetRelicContent({ rarity: 'rare', effects: { xp_multiplier: 2 } }), /cannot_change_reward_authority/);
 const generated = generatePetRunRoom({ run_id: 'room-run', seed: 3, current_room: 4, max_room: 5 });
 assert.equal(generated.room_type, 'boss');
-assert.equal(generated.name, 'Boss Room');
+assert.equal(generated.name, 'Alley King Throne');
 assert.equal(generated.boss_id, 'alley_king');
 assert.equal(resolvePetRunRoom(generated, { success: true, score: 20 }).status, 'resolved');
 assert.deepEqual(Array.from({ length: 10 }, (_, index) => generatePetRunRoom({
   run_id: 'moon-alley-route', region: 'moon_alley', seed: 9, current_room: index, max_room: 10,
 }).name), [
   'Alley Entrance', 'Graffiti Wall', 'Rival Encounter', 'Hidden Cache', 'Street Market',
-  'Underground Tunnel', 'Police Heat', 'Neon Shortcut', 'Elite Encounter', 'Boss Room',
+  'Underground Tunnel', 'Police Heat', 'Neon Shortcut', 'Elite Encounter', 'Alley King Throne',
 ], 'a default Moon Alley run must traverse the complete authored vertical slice');
 
 const startDb = seedPlayer('start-player');
