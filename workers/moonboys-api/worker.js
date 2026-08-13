@@ -10337,6 +10337,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-first-party-api`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -11692,7 +11693,7 @@ function isPetMiniAppCommand(command) {
 
 async function setPetMiniAppMenuButton(botToken, telegramId) {
   if (!botToken || !telegramId) return;
-  const url = `${SITE_URL}/moonpet-game.html`;
+  const url = MOONPET_MINI_APP_URL;
   await fetch(`https://api.telegram.org/bot${botToken}/setChatMenuButton`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -11705,11 +11706,11 @@ async function setPetMiniAppMenuButton(botToken, telegramId) {
 
 function buildPetMiniAppLaunchReplyMarkup(destination = 'home') {
   const screen = ['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(String(destination)) ? String(destination) : 'home';
-  return { inline_keyboard: [[{ text: 'OPEN MOONPET OS', web_app: { url: `${SITE_URL}/moonpet-game.html#screen=${screen}` } }]] };
+  return { inline_keyboard: [[{ text: 'OPEN MOONPET OS', web_app: { url: `${MOONPET_MINI_APP_URL}#screen=${screen}` } }]] };
 }
 
 async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'private') {
-  const url = `${SITE_URL}/moonpet-game.html`;
+  const url = MOONPET_MINI_APP_URL;
   if (String(chatType) === 'private') await setPetMiniAppMenuButton(botToken, telegramId);
   const launchButton = String(chatType) === 'private'
     ? { text: 'OPEN MOONPET OS', web_app: { url } }
