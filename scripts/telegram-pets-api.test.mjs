@@ -185,6 +185,9 @@ assert.match(worker, /display_name: \[row\.first_name, row\.last_name\][\s\S]*'A
 assert.match(worker, /MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle,/, 'legacy lifecycle materialization dependency must be imported');
 assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboards must materialize deterministic identities for legacy rows');
 assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
+const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
+assert.match(miniAppStateBuilder, /SELECT p\.telegram_id, p\.pet_name,/, 'Mini App leaderboard must select the owner ID needed to materialize legacy lifecycle rows');
+assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
 assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
 assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\)/, 'legacy evolve command must synchronize lifecycle adulthood');
