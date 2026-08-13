@@ -1094,9 +1094,10 @@
   function drawWorldSky(time, scene) {
     drawPixelRect(0, 0, 320, 112, scene.sky);
     drawPixelRect(0, 72, 320, 40, scene.haze);
-    var drift = reducedMotion ? 0 : Math.floor(time / 2400) % 320;
+    var driftPhase = reducedMotion ? 0 : Math.floor(time / 2400);
     for (var star = 0; star < WORLD_STAR_X.length; star += 1) {
-      var starX = (WORLD_STAR_X[star] + drift * (star % 3 === 0 ? 1 : 0.35)) % 320;
+      var starSpeed = star % 3 === 0 ? 1 : 0.35;
+      var starX = (WORLD_STAR_X[star] + driftPhase * starSpeed) % 320;
       var twinkle = reducedMotion ? 1 : 1 + (Math.floor(time / 420) + star) % 3;
       drawPixelRect(Math.floor(starX), WORLD_STAR_Y[star], twinkle === 3 ? 2 : 1, 1, star % 4 ? scene.neon : scene.accent);
     }
