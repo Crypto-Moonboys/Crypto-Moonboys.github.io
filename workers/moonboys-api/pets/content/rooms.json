@@ -13,16 +13,16 @@
     ],
     "choices": [
       {
+        "choice_id": "explore",
+        "label": "Explore"
+      },
+      {
         "choice_id": "fight",
-        "label": "Challenge the lookouts"
+        "label": "Fight"
       },
       {
-        "choice_id": "sneak",
-        "label": "Slip through service lanes"
-      },
-      {
-        "choice_id": "loot",
-        "label": "Search the abandoned bags"
+        "choice_id": "search",
+        "label": "Search"
       }
     ]
   },
@@ -40,16 +40,16 @@
     ],
     "choices": [
       {
-        "choice_id": "sneak",
-        "label": "Ghost-tag the blind spot"
+        "choice_id": "tag_wall",
+        "label": "Tag wall"
       },
       {
-        "choice_id": "loot",
-        "label": "Salvage premium paint"
+        "choice_id": "help_artist",
+        "label": "Help artist"
       },
       {
-        "choice_id": "fight",
-        "label": "Defend the wall"
+        "choice_id": "ignore",
+        "label": "Ignore"
       }
     ]
   },
@@ -70,16 +70,16 @@
     ],
     "choices": [
       {
-        "choice_id": "fight",
-        "label": "Square up"
+        "choice_id": "challenge",
+        "label": "Challenge"
       },
       {
-        "choice_id": "sneak",
-        "label": "Bait and bypass"
+        "choice_id": "sneak_past",
+        "label": "Sneak past"
       },
       {
         "choice_id": "trade",
-        "label": "Cut a street deal"
+        "label": "Trade"
       }
     ]
   },
@@ -97,16 +97,16 @@
     ],
     "choices": [
       {
-        "choice_id": "loot",
-        "label": "Crack the cache"
+        "choice_id": "open_cache",
+        "label": "Open cache"
       },
       {
-        "choice_id": "hidden_route",
-        "label": "Trace its owner signal"
+        "choice_id": "scan_cache",
+        "label": "Scan cache"
       },
       {
-        "choice_id": "sneak",
-        "label": "Scan and leave clean"
+        "choice_id": "leave",
+        "label": "Leave"
       }
     ]
   },
@@ -124,16 +124,16 @@
     ],
     "choices": [
       {
-        "choice_id": "trade",
-        "label": "Trade for supplies"
+        "choice_id": "buy_supplies",
+        "label": "Buy supplies"
       },
       {
-        "choice_id": "rest",
-        "label": "Recover at the noodle stall"
+        "choice_id": "trade",
+        "label": "Trade"
       },
       {
         "choice_id": "gamble",
-        "label": "Buy the sealed crate"
+        "label": "Gamble"
       }
     ]
   },
@@ -151,16 +151,16 @@
     ],
     "choices": [
       {
-        "choice_id": "hidden_route",
-        "label": "Follow the ghost signal"
+        "choice_id": "shortcut",
+        "label": "Shortcut"
       },
       {
-        "choice_id": "sneak",
-        "label": "Take the maintenance track"
+        "choice_id": "explore",
+        "label": "Explore"
       },
       {
-        "choice_id": "rest",
-        "label": "Hold for the next train"
+        "choice_id": "retreat",
+        "label": "Retreat"
       }
     ]
   },
@@ -183,16 +183,16 @@
     ],
     "choices": [
       {
-        "choice_id": "sneak",
-        "label": "Break line of sight"
+        "choice_id": "escape",
+        "label": "Escape"
       },
       {
-        "choice_id": "fight",
-        "label": "Punch through the cordon"
+        "choice_id": "hide",
+        "label": "Hide"
       },
       {
-        "choice_id": "hidden_route",
-        "label": "Drop into the storm drain"
+        "choice_id": "confront",
+        "label": "Confront"
       }
     ]
   },
@@ -210,16 +210,16 @@
     ],
     "choices": [
       {
-        "choice_id": "sneak",
-        "label": "Ride the fast line"
+        "choice_id": "speed_route",
+        "label": "Speed route"
       },
       {
-        "choice_id": "rest",
-        "label": "Take the safe stairs"
+        "choice_id": "safe_route",
+        "label": "Safe route"
       },
       {
-        "choice_id": "gamble",
-        "label": "Overcharge the rail"
+        "choice_id": "risk_route",
+        "label": "Risk route"
       }
     ]
   },
@@ -417,16 +417,16 @@
     ],
     "choices": [
       {
-        "choice_id": "elite",
-        "label": "Challenge the captain"
+        "choice_id": "fight",
+        "label": "Fight"
       },
       {
-        "choice_id": "sneak",
-        "label": "Trigger a false alarm"
+        "choice_id": "escape",
+        "label": "Escape"
       },
       {
-        "choice_id": "loot",
-        "label": "Steal the checkpoint cache"
+        "choice_id": "steal_loot",
+        "label": "Steal loot"
       }
     ]
   },
@@ -503,8 +503,8 @@
     ],
     "choices": [
       {
-        "choice_id": "boss",
-        "label": "Challenge the Alley King"
+        "choice_id": "challenge_alley_king",
+        "label": "Challenge Alley King"
       }
     ]
   },
