@@ -16,6 +16,7 @@
   var animationLabel = '';
   var actionSequence = 0;
   var reducedMotionAnimationTimer = 0;
+  var actionResultHoldMs = 3600;
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -546,13 +547,13 @@
       haptic(data.result && data.result.accepted ? 'success' : 'error');
       animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
       render();
-      await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: 240 });
+      await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
     } catch (error) {
       animateAction('blocked', false, 2800);
       tell(error.message || 'CONNECTION FAILED', 'danger');
       haptic('error');
-      await typeBoot(['FAULT DETECTED', error.message || 'CONNECTION FAILED', 'RETRY WHEN LINK IS STABLE'], { speed: 8, hold: 500 });
+      await typeBoot(['FAULT DETECTED', error.message || 'CONNECTION FAILED', 'RETRY WHEN LINK IS STABLE'], { speed: 8, hold: 2200 });
     } finally {
       busy = false;
       if (buttonElement) buttonElement.classList.remove('is-active');
