@@ -334,7 +334,7 @@ const updatePresenceRuntime = new Function(
 assert.doesNotThrow(() => updatePresenceRuntime(
   { pet_name: 'Smoke', species: 'neon_raccoon', health: 100, energy: 100, hunger: 0, cleanliness: 100, happiness: 100 },
   { species_id: 'neon_raccoon', temperament: 'curious' },
-  16000,
+  0,
 ), 'Phase 4 presence director must execute without unresolved render-loop identifiers');
 assert.equal(runtimePresenceFrame.thought, 'ALLEY CHECK');
 
