@@ -66,8 +66,8 @@ const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.u
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase6-lifecycle-ceremonies`/);
-assert.match(worker, /const url = MOONPET_MINI_APP_URL/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-full-system-audit`/);
+assert.match(worker, /const url = `\$\{MOONPET_MINI_APP_URL\}#screen=\$\{screen\}`/);
 assert.match(worker, /`\$\{MOONPET_MINI_APP_URL\}#screen=\$\{screen\}`/);
 assert.match(worker, /setChatMenuButton/);
 assert.match(worker, /Chat gameplay controls are retired/);
@@ -76,6 +76,21 @@ assert.equal(resolvePetCallbackRoute('pet:feed', false), 'legacy', 'disabled cal
 assert.equal(resolvePetCallbackRoute('other:feed', true), 'ignore');
 assert.match(worker, /const PET_MINI_APP_COMMANDS = new Set\(\[\s*'moonpet',/, 'literal /moonpet command must open the Mini App launcher');
 assert.match(worker, /isPetMiniAppCommand\(cmdBase\)/, 'Mini App commands must be intercepted before legacy routing');
+assert.ok(
+  worker.indexOf("if (env.PET_MINI_APP_ENABLED === 'true'") < worker.indexOf('const legacyPetGameplayCommands'),
+  'enabled Mini App routing must precede the legacy egg gate',
+);
+assert.match(worker, /petmissions: 'missions'/);
+assert.match(worker, /petarena: 'explore'/);
+assert.match(worker, /petwork: 'work'/);
+assert.match(worker, /petshop: 'economy'/);
+assert.match(worker, /petleaderboard: 'profile'/);
+assert.match(worker, /petMiniAppDestinationForCallback\(data\)/);
+assert.match(worker, /date\(created_at\) = \?/);
+assert.match(worker, /systemCounts\.equipment_upgrade/);
+assert.match(worker, /counts\.district_mission/);
+assert.match(client, /DAILY MISSION BUFFER \/\/ /);
+assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(worker, /resolvePetCallbackRoute\(data, env\.PET_MINI_APP_ENABLED\) === 'mini_app'/);
 assert.ok(worker.indexOf("if (data.startsWith('pet:')") < worker.indexOf("const payload = data.slice(4)"), 'Mini App interception must precede legacy gameplay routing');
 assert.match(worker, /issuePetMiniAppChallenge/);
@@ -86,7 +101,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase6-lifecycle-ceremonies/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-full-system-audit/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
