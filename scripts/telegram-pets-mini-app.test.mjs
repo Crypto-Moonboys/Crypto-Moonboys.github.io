@@ -66,7 +66,7 @@ const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.u
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase1-visual-identity`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase2-reactive-world`/);
 assert.match(worker, /const url = MOONPET_MINI_APP_URL/);
 assert.match(worker, /`\$\{MOONPET_MINI_APP_URL\}#screen=\$\{screen\}`/);
 assert.match(worker, /setChatMenuButton/);
@@ -86,7 +86,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase1-visual-identity/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase2-reactive-world/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -166,6 +166,43 @@ assert.match(client, /function drawCosmeticLayers/);
 assert.match(client, /profile_frame/);
 assert.match(client, /victory_pose/);
 assert.match(client, /run_trail/);
+assert.match(client, /var WORLD_SCENES =/);
+for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
+  assert.match(client, new RegExp(scene + ": \\{ label:"), `Phase 2 must include the ${scene} world scene`);
+}
+assert.match(client, /MOONBLOCK ROOFTOP/);
+assert.match(client, /QUEST UNDERPASS/);
+assert.match(client, /NEON RUN ALLEY/);
+assert.match(client, /SCRAP YARD 85/);
+assert.match(client, /CHAIN MARKET/);
+assert.match(client, /ALL-CITY HEIGHTS/);
+assert.match(client, /function drawWorldSky/);
+assert.match(client, /var driftPhase = reducedMotion \? 0 : Math\.floor\(time \/ 2400\)/);
+assert.match(client, /var starSpeed = star % 3 === 0 \? 1 : 0\.35/);
+assert.match(client, /\(WORLD_STAR_X\[star\] \+ driftPhase \* starSpeed\) % 320/);
+assert.doesNotMatch(client, /Math\.floor\(time \/ 2400\) % 320/, 'star drift phase must remain unbounded before per-star speed is applied');
+assert.match(client, /function drawWorldSkyline/);
+assert.match(client, /function drawGraffitiTag/);
+assert.match(client, /function drawGraffitiWall/);
+assert.match(client, /function drawWorldLandmarks/);
+for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
+  assert.match(client, new RegExp("sceneKey === '" + scene + "'"), `Phase 2 must draw a distinct ${scene} landmark silhouette`);
+}
+assert.match(client, /drawWorldLandmarks\(activeScreen, scene\)/);
+assert.match(client, /var drift = reducedMotion \? 0 : Math\.round\(Math\.sin\(time \/ 3600\) \* 4\)/);
+assert.doesNotMatch(client, /Math\.floor\(time \/ 180\) % 36/, 'skyline motion must not snap at a modulo boundary');
+assert.doesNotMatch(client, /drawPixelText\('₿'/, 'crypto moon mark must not depend on a platform font glyph');
+assert.match(client, /interact: '#a9ff9a'/);
+assert.match(client, /function drawWorldStreet/);
+assert.match(client, /function drawWorldReaction/);
+assert.match(client, /function drawWorldForeground/);
+assert.match(client, /var WORLD_REACTION_COLORS =/);
+assert.match(client, /WORLD_REACTION_COLORS\[animationMode\]/);
+assert.match(client, /var worldTime = reducedMotion \? 0 : time/);
+assert.match(client, /drawWorldSky\(worldTime, scene\)/);
+assert.match(client, /drawWorldReaction\(worldTime, scene\)/);
+assert.match(client, /drawPet\(time\);\s*drawWorldForeground\(scene\)/s);
+assert.doesNotMatch(client, /new Image\s*\(/);
 assert.match(client, /function drawMoonEgg/);
 assert.match(client, /drawMoonEgg\(time, active, lifecycle\.incubation\)/);
 assert.match(client, /var progress = Math\.max\(0, Number\(incubation && incubation\.progress \|\| 0\)\)/);

@@ -1070,23 +1070,217 @@
     if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
   }
 
+  var WORLD_SCENES = {
+    home: { label: 'MOONBLOCK ROOFTOP', sky: '#03060b', haze: '#10251c', wall: '#102117', mortar: '#285b36', neon: '#a9ff9a', accent: '#61f5ff', leftTag: 'MOON', rightTag: 'HOME' },
+    missions: { label: 'QUEST UNDERPASS', sky: '#090516', haze: '#241137', wall: '#21152c', mortar: '#5f3473', neon: '#f6a7ff', accent: '#f4ff65', leftTag: 'QUEST', rightTag: 'XP' },
+    explore: { label: 'NEON RUN ALLEY', sky: '#02081a', haze: '#092b42', wall: '#0d2631', mortar: '#17607a', neon: '#61f5ff', accent: '#ff6d6d', leftTag: 'RUN', rightTag: 'BOSS' },
+    work: { label: 'SCRAP YARD 85', sky: '#100805', haze: '#34200d', wall: '#2a2014', mortar: '#70522b', neon: '#ffcf68', accent: '#a9ff9a', leftTag: 'WORK', rightTag: '85' },
+    economy: { label: 'CHAIN MARKET', sky: '#080414', haze: '#22103d', wall: '#211433', mortar: '#603d80', neon: '#f4ff65', accent: '#61f5ff', leftTag: 'GEMS', rightTag: 'TRADE' },
+    profile: { label: 'ALL-CITY HEIGHTS', sky: '#08030d', haze: '#32102a', wall: '#271325', mortar: '#6d315e', neon: '#ff8bbd', accent: '#f4ff65', leftTag: 'RARE', rightTag: 'CORE' },
+  };
+  var WORLD_STAR_X = [13, 41, 78, 109, 147, 181, 214, 249, 286, 311, 28, 64, 126, 167, 231, 274];
+  var WORLD_STAR_Y = [17, 31, 12, 48, 24, 39, 15, 52, 29, 8, 68, 57, 73, 61, 79, 66];
+  var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
+  var WORLD_REACTION_COLORS = {
+    feed: '#ffb84d', play: '#f6a7ff', clean: '#b3ffff', sleep: '#8091c9', train: '#f4ff65',
+    battle: '#ff4f64', travel: '#61f5ff', work: '#ffcf68', equip: '#61f5ff', evolve: '#f6a7ff',
+    trade: '#f4ff65', celebrate: '#a9ff55', interact: '#a9ff9a', blocked: '#ff4f64',
+  };
+
+  function worldScene() {
+    return WORLD_SCENES[activeScreen] || WORLD_SCENES.home;
+  }
+
+  function drawWorldSky(time, scene) {
+    drawPixelRect(0, 0, 320, 112, scene.sky);
+    drawPixelRect(0, 72, 320, 40, scene.haze);
+    var driftPhase = reducedMotion ? 0 : Math.floor(time / 2400);
+    for (var star = 0; star < WORLD_STAR_X.length; star += 1) {
+      var starSpeed = star % 3 === 0 ? 1 : 0.35;
+      var starX = (WORLD_STAR_X[star] + driftPhase * starSpeed) % 320;
+      var twinkle = reducedMotion ? 1 : 1 + (Math.floor(time / 420) + star) % 3;
+      drawPixelRect(Math.floor(starX), WORLD_STAR_Y[star], twinkle === 3 ? 2 : 1, 1, star % 4 ? scene.neon : scene.accent);
+    }
+    drawPixelRect(271, 17, 25, 25, scene.neon);
+    drawPixelRect(275, 13, 17, 33, scene.neon);
+    drawPixelRect(267, 21, 33, 17, scene.neon);
+    drawPixelRect(275, 21, 17, 17, scene.sky);
+    drawPixelRect(279, 23, 3, 14, scene.accent);
+    drawPixelRect(282, 23, 7, 3, scene.accent);
+    drawPixelRect(282, 29, 7, 3, scene.accent);
+    drawPixelRect(282, 34, 7, 3, scene.accent);
+    drawPixelRect(288, 25, 3, 5, scene.accent);
+    drawPixelRect(288, 31, 3, 5, scene.accent);
+    drawPixelRect(281, 20, 2, 4, scene.accent);
+    drawPixelRect(286, 20, 2, 4, scene.accent);
+    drawPixelRect(281, 36, 2, 4, scene.accent);
+    drawPixelRect(286, 36, 2, 4, scene.accent);
+  }
+
+  function drawWorldSkyline(time, scene) {
+    var drift = reducedMotion ? 0 : Math.round(Math.sin(time / 3600) * 4);
+    for (var building = -1; building < WORLD_BUILDING_HEIGHTS.length; building += 1) {
+      var index = (building + WORLD_BUILDING_HEIGHTS.length) % WORLD_BUILDING_HEIGHTS.length;
+      var bx = building * 36 - drift;
+      var bh = WORLD_BUILDING_HEIGHTS[index];
+      drawPixelRect(bx, 112 - bh, 31, bh, '#07100d');
+      drawPixelRect(bx + 4, 112 - bh + 5, 23, 4, scene.mortar);
+      for (var wy = 14; wy < bh - 4; wy += 11) {
+        drawPixelRect(bx + 6, 112 - bh + wy, 4, 4, index % 2 ? scene.neon : scene.accent);
+        if ((wy + index) % 3) drawPixelRect(bx + 19, 112 - bh + wy, 4, 4, scene.neon);
+      }
+    }
+    drawPixelRect(0, 108, 320, 4, scene.mortar);
+  }
+
+  function drawGraffitiTag(text, x, y, color, align) {
+    ctx.save();
+    ctx.globalAlpha = 0.88;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = color;
+    ctx.font = 'bold italic 13px "Courier New", monospace';
+    ctx.textAlign = align || 'left';
+    ctx.fillText(text, x, y);
+    ctx.fillRect(align === 'right' ? x - 42 : x, y + 3, 42, 2);
+    ctx.restore();
+  }
+
+  function drawGraffitiWall(scene) {
+    drawPixelRect(0, 112, 320, 66, scene.wall);
+    for (var row = 0; row < 5; row += 1) {
+      var brickOffset = row % 2 ? -17 : 0;
+      for (var brick = brickOffset; brick < 320; brick += 34) {
+        drawPixelRect(brick, 114 + row * 13, 32, 2, scene.mortar);
+        drawPixelRect(brick + 31, 114 + row * 13, 2, 13, scene.mortar);
+      }
+    }
+    drawPixelRect(105, 117, 110, 54, '#09110d');
+    drawPixelRect(111, 123, 98, 42, scene.haze);
+    drawPixelRect(118, 130, 84, 28, '#07100d');
+    drawGraffitiTag(scene.leftTag, 9, 143, scene.neon, 'left');
+    drawGraffitiTag(scene.rightTag, 311, 164, scene.accent, 'right');
+    drawPixelText('CHAIN // 85', 160, 121, scene.mortar, 'center');
+  }
+
+  function drawWorldLandmarks(sceneKey, scene) {
+    if (sceneKey === 'home') {
+      drawPixelRect(26, 126, 48, 8, '#09100d');
+      drawPixelRect(31, 119, 38, 9, scene.mortar);
+      drawPixelRect(35, 113, 30, 7, '#09100d');
+      drawPixelRect(36, 134, 5, 26, scene.mortar);
+      drawPixelRect(59, 134, 5, 26, scene.mortar);
+      drawPixelRect(269, 116, 4, 44, scene.mortar);
+      drawPixelRect(257, 123, 28, 3, scene.neon);
+      drawPixelRect(264, 129, 15, 3, scene.accent);
+    } else if (sceneKey === 'missions') {
+      drawPixelRect(12, 119, 72, 47, '#080a09');
+      drawPixelRect(17, 124, 62, 37, scene.mortar);
+      drawPixelRect(22, 129, 52, 27, scene.wall);
+      drawPixelText('?', 48, 148, scene.neon, 'center');
+      drawPixelRect(250, 126, 43, 5, scene.accent);
+      drawPixelRect(260, 136, 43, 5, scene.neon);
+      drawPixelRect(250, 146, 43, 5, scene.accent);
+    } else if (sceneKey === 'explore') {
+      drawPixelRect(11, 116, 5, 50, scene.mortar);
+      drawPixelRect(71, 116, 5, 50, scene.mortar);
+      drawPixelRect(16, 122, 55, 4, scene.neon);
+      drawPixelRect(16, 137, 55, 4, scene.mortar);
+      drawPixelRect(16, 152, 55, 4, scene.accent);
+      drawPixelRect(249, 119, 55, 34, '#060b0d');
+      drawPixelRect(254, 124, 45, 24, scene.mortar);
+      drawPixelText('RUN', 276, 140, scene.neon, 'center');
+    } else if (sceneKey === 'work') {
+      drawPixelRect(23, 116, 6, 49, scene.mortar);
+      drawPixelRect(29, 116, 65, 5, scene.neon);
+      drawPixelRect(84, 121, 5, 22, scene.mortar);
+      drawPixelRect(78, 141, 17, 8, '#070b09');
+      drawPixelRect(82, 149, 9, 7, scene.accent);
+      drawPixelRect(247, 152, 59, 14, '#080b09');
+      drawPixelRect(254, 143, 21, 9, scene.mortar);
+      drawPixelRect(277, 138, 18, 14, scene.accent);
+      drawPixelRect(296, 147, 10, 5, scene.neon);
+    } else if (sceneKey === 'economy') {
+      drawPixelRect(10, 125, 78, 9, scene.neon);
+      drawPixelRect(14, 134, 70, 30, '#080a09');
+      drawPixelRect(20, 140, 19, 20, scene.mortar);
+      drawPixelRect(57, 140, 19, 20, scene.accent);
+      drawPixelRect(232, 125, 78, 9, scene.accent);
+      drawPixelRect(236, 134, 70, 30, '#080a09');
+      drawPixelRect(243, 141, 56, 5, scene.mortar);
+      drawPixelText('G', 271, 158, scene.neon, 'center');
+    } else if (sceneKey === 'profile') {
+      drawPixelRect(18, 151, 66, 14, '#080a09');
+      drawPixelRect(26, 141, 50, 10, scene.mortar);
+      drawPixelRect(35, 129, 8, 12, scene.neon);
+      drawPixelRect(47, 123, 8, 18, scene.accent);
+      drawPixelRect(59, 129, 8, 12, scene.neon);
+      drawPixelRect(244, 119, 59, 46, '#080a09');
+      drawPixelRect(250, 125, 47, 34, scene.mortar);
+      drawPixelRect(256, 131, 35, 22, scene.wall);
+      drawPixelText('★', 274, 147, scene.accent, 'center');
+    }
+  }
+
+  function drawWorldStreet(time, scene) {
+    drawPixelRect(0, 178, 320, 42, '#070b09');
+    drawPixelRect(0, 178, 320, 4, scene.mortar);
+    drawPixelRect(0, 212, 320, 8, '#020504');
+    var roadDrift = reducedMotion ? 0 : Math.floor(time / 70) % 32;
+    for (var line = -32; line < 352; line += 32) drawPixelRect(line - roadDrift, 201, 15, 2, scene.mortar);
+    drawPixelRect(15, 164, 18, 14, '#121916');
+    drawPixelRect(19, 159, 10, 5, scene.accent);
+    drawPixelRect(22, 155, 4, 4, scene.neon);
+    drawPixelRect(284, 161, 20, 17, '#121916');
+    drawPixelRect(288, 157, 12, 4, scene.neon);
+    drawPixelRect(291, 151, 6, 6, scene.accent);
+  }
+
+  function drawWorldReaction(time, scene) {
+    var active = animationUntil > (reducedMotion ? performance.now() : time);
+    if (!active) return;
+    var color = WORLD_REACTION_COLORS[animationMode] || scene.neon;
+    ctx.save();
+    ctx.globalAlpha = animationMode === 'blocked' ? 0.2 : 0.14;
+    ctx.fillStyle = color;
+    ctx.fillRect(82, 86, 156, 96);
+    ctx.restore();
+    var pulse = reducedMotion ? 0 : Math.floor(time / 85);
+    if (animationMode === 'battle' || animationMode === 'evolve' || animationMode === 'celebrate') {
+      for (var spark = 0; spark < 9; spark += 1) {
+        var sparkX = (spark * 41 + pulse * 7) % 320;
+        var sparkY = 31 + (spark * 19 + pulse * 5) % 132;
+        drawPixelRect(sparkX, sparkY, 3, 3, spark % 2 ? color : scene.accent);
+      }
+    } else if (animationMode === 'sleep') {
+      drawPixelRect(0, 0, 320, 112, 'rgba(4,6,20,.28)');
+    } else if (animationMode === 'clean') {
+      for (var drop = 0; drop < 8; drop += 1) {
+        var dropY = (drop * 27 + pulse * 5) % 176;
+        drawPixelRect(18 + drop * 41, dropY, 2, 7, color);
+      }
+    }
+  }
+
+  function drawWorldForeground(scene) {
+    drawPixelRect(3, 185, 7, 27, '#18201c');
+    drawPixelRect(10, 188, 4, 24, scene.neon);
+    drawPixelRect(306, 184, 10, 28, '#18201c');
+    drawPixelRect(302, 191, 4, 21, scene.accent);
+    drawPixelText(scene.label, 6, 11, scene.neon, 'left');
+  }
+
   function drawWorld(time) {
-    drawPixelRect(0, 0, 320, 220, '#020704');
-    for (var star = 0; star < 24; star += 1) {
-      var sx = (star * 47 + 13) % 320; var sy = (star * 29 + 17) % 105;
-      drawPixelRect(sx, sy, star % 5 ? 1 : 2, 1, star % 3 ? '#2c6c39' : '#a9ff9a');
-    }
-    drawPixelRect(0, 105, 320, 3, '#2c6c39');
-    for (var building = 0; building < 10; building += 1) {
-      var bx = building * 36 - 8; var bh = 28 + (building * 17 % 42);
-      drawPixelRect(bx, 105 - bh, 30, bh, '#07170c');
-      for (var wy = 0; wy < bh - 8; wy += 10) for (var wx = 5; wx < 27; wx += 9) if ((building + wy + wx) % 3) drawPixelRect(bx + wx, 110 - bh + wy, 3, 3, '#4ea85a');
-    }
-    drawPixelRect(0, 177, 320, 43, '#08140c'); drawPixelRect(0, 177, 320, 4, '#2c6c39');
-    for (var line = 0; line < 320; line += 24) drawPixelRect(line, 202, 12, 2, '#1d4a28');
-    drawPixelRect(24, 132, 42, 45, '#07170c'); drawPixelRect(30, 141, 30, 25, '#143522');
-    drawPixelRect(254, 138, 42, 39, '#07170c'); drawPixelRect(260, 146, 30, 22, '#143522');
+    var scene = worldScene();
+    var worldTime = reducedMotion ? 0 : time;
+    drawWorldSky(worldTime, scene);
+    drawWorldSkyline(worldTime, scene);
+    drawGraffitiWall(scene);
+    drawWorldLandmarks(activeScreen, scene);
+    drawWorldStreet(worldTime, scene);
+    drawWorldReaction(worldTime, scene);
     drawPet(time);
+    drawWorldForeground(scene);
   }
 
   function frame(time) {
