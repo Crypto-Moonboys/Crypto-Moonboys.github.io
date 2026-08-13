@@ -4047,10 +4047,13 @@ async function processPetAction(db, telegramId, action, options = {}) {
   const eventKey = String(options.event_key || `pet:${normalizedAction || action}:${telegramId}:${Date.now()}`).slice(0, 120);
 
   if (action === 'adopt') {
+    const existingPet = await getPetProfile(db, telegramId);
+    if (existingPet) return { accepted: false, reason: 'pet_already_adopted', xp_awarded: 0, pet_xp_awarded: 0, pet: existingPet };
     const pet = await getOrCreatePetProfile(db, telegramId, options);
     await savePetProfile(db, pet);
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'first_adoption', milestone: 'first_adoption' });
     await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: 'moon_egg', event_key: `${eventKey}:moon_egg` });
+    await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
     return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
 
@@ -6345,7 +6348,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
   ]);
   const canonicalPet = serializePet(petRaw, guidance?.identity);
-  if (guidance) guidance.pet = canonicalPet;
+  if (guidance) {
+    guidance.pet = canonicalPet;
+    if (guidance.identity) guidance.identity.lifecycle = lifecycle;
+  }
   const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || []);
   const guidedNext = guidance ? choosePetNextAction(guidance) : null;
   const affordableUpgrade = liveSystems.upgrades.find((item) => item.affordable && !item.maxed);
@@ -6468,11 +6474,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
   const source = 'telegram_mini_app';
-  if (action === 'adopt') {
-    const result = await processPetAction(db, telegramId, 'adopt', { event_key: eventKey, source });
-    if (result.accepted) result.lifecycle = await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
-    return result;
-  }
+  if (action === 'adopt') return processPetAction(db, telegramId, 'adopt', { event_key: eventKey, source });
   if (action === 'incubate') return incubateMoonEgg(db, telegramId, body.care_type, eventKey);
   if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
   if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
@@ -7400,7 +7402,10 @@ export default {
         last_name: user.last_name || body.last_name || null,
       });
       let result;
-      if (body.action === 'buy') {
+      const lifecycleBeforeAction = await getMoonpetLifecycle(env.DB, telegramId).catch(() => null);
+      if (lifecycleBeforeAction?.phase === 'egg' && body.action !== 'adopt') {
+        result = { accepted: false, reason: 'moon_egg_must_hatch', lifecycle: lifecycleBeforeAction };
+      } else if (body.action === 'buy') {
         result = await processPetShopPurchase(env.DB, telegramId, body.item_key, {
           event_key: body.event_key,
           source: 'telegram_pets_api',
@@ -7468,6 +7473,10 @@ export default {
         result = await syncDailyMoonRun(env.DB, { telegram_id: telegramId, utc_day: body.utc_day, run_id: body.run_id });
       } else if (body.action === 'evolve') {
         result = await evolveMoonpet(env.DB, { telegram_id: telegramId, evolution_id: body.evolution_id, event_key: body.event_key });
+        if (result.accepted) {
+          const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
+          result.lifecycle = await syncMoonpetLifecycleStage(env.DB, telegramId, identity?.current_stage?.stage || 0);
+        }
       } else {
         result = await processPetAction(env.DB, telegramId, body.action, {
           event_key: body.event_key,
@@ -11513,6 +11522,19 @@ async function handleTelegramUpdate(update, env) {
   const cmdBase  = rawCmd.split('@')[0].toLowerCase(); // strip @botname suffix
   const argStr   = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
   const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
+  const legacyPetGameplayCommands = new Set([
+    'feed', 'play', 'clean', 'sleep', 'train', 'petstart', 'petclaim', 'petcancel', 'pettrade', 'petname',
+    'petshop', 'peteconomy', 'petbounties', 'petexpedition', 'petmarket', 'petbag', 'petbuy', 'petuse',
+    'petwork', 'petdaily', 'petevent', 'petarena', 'petkaiju', 'kaiju', 'petrun', 'petextract',
+    'petadventure', 'petmissions', 'petseason', 'petboss', 'petevolve', 'petgear',
+  ]);
+  if (legacyPetGameplayCommands.has(cmdBase)) {
+    const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
+    if (lifecycle?.phase === 'egg') {
+      await sendTelegramMessage(tok, chatId, 'Your Moon Egg must be cared for and hatched in the Moonpet Mini App before gameplay unlocks.');
+      return;
+    }
+  }
 
   if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && argStr.toLowerCase() === 'moonpet'))) {
     await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType);
