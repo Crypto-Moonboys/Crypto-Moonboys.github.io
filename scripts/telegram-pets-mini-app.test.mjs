@@ -66,7 +66,7 @@ const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.u
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase2-reactive-world`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase3-cinematic-feedback`/);
 assert.match(worker, /const url = MOONPET_MINI_APP_URL/);
 assert.match(worker, /`\$\{MOONPET_MINI_APP_URL\}#screen=\$\{screen\}`/);
 assert.match(worker, /setChatMenuButton/);
@@ -86,7 +86,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase2-reactive-world/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase3-cinematic-feedback/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -201,7 +201,7 @@ assert.match(client, /WORLD_REACTION_COLORS\[animationMode\]/);
 assert.match(client, /var worldTime = reducedMotion \? 0 : time/);
 assert.match(client, /drawWorldSky\(worldTime, scene\)/);
 assert.match(client, /drawWorldReaction\(worldTime, scene\)/);
-assert.match(client, /drawPet\(time\);\s*drawWorldForeground\(scene\)/s);
+assert.match(client, /drawPet\(renderTime\);\s*ctx\.restore\(\);\s*drawWorldForeground\(scene\)/s);
 assert.doesNotMatch(client, /new Image\s*\(/);
 assert.match(client, /function drawMoonEgg/);
 assert.match(client, /drawMoonEgg\(time, active, lifecycle\.incubation\)/);
@@ -246,5 +246,48 @@ assert.match(css, /\.boot-layer\.is-compact/);
 assert.match(css, /prefers-reduced-motion/);
 assert.match(css, /\.meter-fill \{ display: block;/);
 assert.doesNotMatch(html, /maximum-scale|user-scalable/i);
+
+
+assert.match(client, /var SCREEN_ORDER = \['home', 'missions', 'explore', 'work', 'economy', 'profile'\]/);
+assert.match(client, /function switchScreen\(nextScreen\)/);
+assert.match(client, /sceneTransitionDirection = SCREEN_ORDER\.indexOf\(nextScreen\)/);
+assert.match(client, /sceneTransitionUntil = reducedMotion \? 0 : sceneTransitionStartedAt \+ 420/);
+assert.match(client, /if \(!SCREEN_ORDER\.includes\(jump\.dataset\.jump\)\)/);
+assert.match(client, /tell\('ROUTE NOT FOUND\.', 'danger'\)/);
+assert.match(client, /switchScreen\(jump\.dataset\.jump\)/);
+assert.match(client, /switchScreen\(target\.dataset\.screen\)/);
+assert.match(client, /var CAMERA_IMPACT_STRENGTH =/);
+for (const family of ['feed', 'play', 'clean', 'sleep', 'train', 'battle', 'travel', 'work', 'equip', 'evolve', 'trade', 'celebrate', 'interact', 'blocked']) {
+  assert.match(client, new RegExp(family + ': \\d'), `Phase 3 must define camera impact for ${family}`);
+}
+assert.match(client, /var CAMERA_FRAME = \{ x: 0, y: 0, zoom: 1 \}/);
+assert.match(client, /function updateCameraFrame\(time\)/);
+assert.match(client, /if \(reducedMotion \|\| cameraImpactUntil <= time/);
+assert.match(client, /function drawActionFlash\(time, scene\)/);
+assert.match(client, /if \(reducedMotion \|\| actionStartedAt <= 0 \|\| time < actionStartedAt/);
+assert.match(client, /function actionFeedback\(result\)/);
+assert.match(client, /function resultRewardMap\(result\)/);
+assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards_applied\)/);
+assert.match(client, /var reward = resultRewardMap\(result\)/);
+assert.equal((client.match(/var reward = resultRewardMap\(result\)/g) || []).length, 2, 'terminal and canvas feedback must share reward normalization');
+assert.match(client, /presentResultFeedback\(data\.result\)/);
+assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*presentResultFeedback\(data\.result\)/s);
+assert.doesNotMatch(client, /presentResultFeedback\(data\.result\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
+assert.equal((client.match(/presentResultFeedback\(/g) || []).length, 2, 'only the helper and real server-result call may present reward feedback');
+assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
+assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
+assert.match(client, /feedbackRedrawTimer = window\.setTimeout/);
+assert.match(client, /clearResultFeedback\(true\)/);
+assert.match(client, /clearResultFeedback\(false\);\s*animateAction\(action, true, 8000, payload\)/s);
+assert.match(client, /reaction: compactFeedback\(result\.reaction, 24\)/);
+assert.match(client, /actionStartedAt <= 0/);
+assert.match(client, /function drawCinematicFeedback\(time, scene\)/);
+assert.match(client, /drawPixelText\('MOONPET \/\/', 181, 86, scene\.accent, 'left'\)/);
+assert.match(client, /drawPixelText\(feedbackReaction, 181, 98, '#f4ff65', 'left'\)/);
+assert.doesNotMatch(client, /'MOONPET \/\/ ' \+ feedbackReaction/, 'reaction prefix and copy must render on separate fitted lines');
+assert.match(client, /function drawSceneTransition\(time, scene\)/);
+assert.match(client, /if \(reducedMotion \|\| sceneTransitionUntil <= time\) return/);
+assert.match(client, /drawActionFlash\(renderTime, scene\);\s*drawCinematicFeedback\(renderTime, scene\);\s*drawSceneTransition\(renderTime, scene\)/s);
+assert.doesNotMatch(client, /Math\.random\(\).*feedback|feedback.*Math\.random\(\)/s, 'Phase 3 feedback must never invent random rewards');
 
 console.log('telegram-pets-mini-app.test.mjs passed');
