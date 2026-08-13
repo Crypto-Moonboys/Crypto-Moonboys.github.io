@@ -22,6 +22,7 @@
   var cameraImpactUntil = 0;
   var cameraImpactStrength = 0;
   var feedbackUntil = 0;
+  var feedbackRedrawTimer = 0;
   var feedbackTone = '';
   var feedbackLines = [];
   var feedbackReaction = '';
@@ -496,16 +497,32 @@
     });
     if (lines.length < 3 && result.result_copy) lines.push(compactFeedback(result.result_copy, 34));
     if (!result.accepted && lines.length < 3 && result.reason) lines.push(words(compactFeedback(result.reason, 30)));
-    return { tone: result.accepted ? 'success' : 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 38) };
+    return { tone: result.accepted ? 'success' : 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
+  }
+
+  function clearResultFeedback(redraw) {
+    window.clearTimeout(feedbackRedrawTimer);
+    feedbackUntil = 0;
+    feedbackTone = '';
+    feedbackLines = [];
+    feedbackReaction = '';
+    if (redraw && reducedMotion) drawWorld(performance.now());
   }
 
   function presentResultFeedback(result) {
     var feedback = actionFeedback(result);
+    var feedbackDuration = Math.max(5200, actionResultHoldMs + 1600);
+    window.clearTimeout(feedbackRedrawTimer);
     feedbackTone = feedback.tone;
     feedbackLines = feedback.lines;
     feedbackReaction = feedback.reaction;
-    feedbackUntil = performance.now() + Math.max(5200, actionResultHoldMs + 1600);
-    if (reducedMotion) drawWorld(performance.now());
+    feedbackUntil = performance.now() + feedbackDuration;
+    if (reducedMotion) {
+      drawWorld(performance.now());
+      feedbackRedrawTimer = window.setTimeout(function () {
+        clearResultFeedback(true);
+      }, feedbackDuration + 20);
+    }
   }
 
   function scrollToPanel(panelId) {
@@ -588,6 +605,7 @@
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
+    clearResultFeedback(false);
     animateAction(action, true, 8000, payload);
     tell('TRANSMITTING ' + words(action) + '...');
     try {
@@ -1344,7 +1362,7 @@
   }
 
   function drawActionFlash(time, scene) {
-    if (reducedMotion || time < actionStartedAt || time - actionStartedAt > 210) return;
+    if (reducedMotion || actionStartedAt <= 0 || time < actionStartedAt || time - actionStartedAt > 210) return;
     var color = WORLD_REACTION_COLORS[animationMode] || scene.neon;
     ctx.save();
     ctx.globalAlpha = Math.max(0, 0.24 * (1 - (time - actionStartedAt) / 210));
