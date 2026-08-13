@@ -387,7 +387,15 @@
       var xp = progress[key + '_xp'];
       return '<div class="line">' + escapeHtml(key.toUpperCase()) + ' XP ' + number(xp) + '</div>';
     }).join('');
-    var leaders = (state.leaderboard || []).map(function (entry) { return '<div class="line">#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') + ' // LVL ' + number(entry.level) + ' // ' + number(entry.pet_xp) + ' XP</div>'; }).join('');
+    var leaders = (state.leaderboard || []).map(function (entry) {
+      var form = entry.phase === 'rare'
+        ? entry.rare_morph_name
+        : entry.species_name || (entry.phase === 'egg' ? 'Moon Egg' : entry.stage);
+      return '<div class="line">#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') +
+        ' // ' + escapeHtml(words(form || 'moonpet')) + ' // LVL ' + number(entry.level) + ' // ' + number(entry.pet_xp) + ' XP</div>' +
+        '<div class="line muted">GOLD ' + number(entry.moon_gold) + ' // GEMS ' + number(entry.moon_crystals) +
+        ' // STYLE ' + number(entry.style_tokens) + '</div>';
+    }).join('');
     var notifications = state.notifications || {};
     var live = state.live_systems || {};
     var faction = live.faction || {};
