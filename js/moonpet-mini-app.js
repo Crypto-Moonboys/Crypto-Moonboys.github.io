@@ -705,7 +705,8 @@
   function drawPet(time) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
-    var stage = lifecycle.phase === 'egg' ? 0 : petStage(pet);
+    var isEgg = lifecycle.phase === 'egg';
+    var stage = petStage(pet);
     var mood = petMood(pet);
     var renderTime = reducedMotion ? performance.now() : time;
     var active = animationUntil > renderTime;
@@ -739,7 +740,7 @@
     drawPixelRect(x - 18, y - 57, 8, 10, shade); drawPixelRect(x + 10, y - 57, 8, 10, shade);
 
     // The Moon Egg becomes a cracked shell cradle instead of hiding the companion in a block.
-    if (stage === 0) {
+    if (isEgg) {
       drawPixelRect(x - 31, y - 10, 62, 25, '#d8f9ff'); drawPixelRect(x - 27, y - 7, 54, 18, '#6eb8a1');
       drawPixelRect(x - 24, y - 12, 9, 8, outline); drawPixelRect(x - 7, y - 12, 12, 8, outline); drawPixelRect(x + 15, y - 12, 9, 8, outline);
     }
