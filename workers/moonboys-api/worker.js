@@ -1760,6 +1760,20 @@ const PET_KAIJU_CARDS = Object.freeze([
   Object.freeze({ id: 'mecha-zilla', name: 'Mecha-Zilla', stats: Object.freeze({ pwr: 6, size: 6, atk: 8, def: 8, spd: 2, lgcy: 4 }) }),
 ]);
 
+function serializePetKaijuCardPreview(card, categoryKey = '') {
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === categoryKey) || null;
+  const strongest = PET_KAIJU_CATEGORIES
+    .map((entry) => ({ key: entry.key, label: entry.label, value: Number(card?.stats?.[entry.key] || 0) }))
+    .sort((left, right) => right.value - left.value || left.label.localeCompare(right.label))
+    .slice(0, 2);
+  return {
+    ...card,
+    active_stat: category?.label || null,
+    active_value: category ? Number(card?.stats?.[category.key] || 0) : null,
+    strongest,
+  };
+}
+
 function clampPetStat(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 }
@@ -3131,10 +3145,11 @@ function buildPetKaijuLobbyReplyMarkup(match) {
 
 function buildPetKaijuCardReplyMarkup(match) {
   const matchId = String(match?.match_id || '');
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match?.category_key) || null;
   const rows = [];
   for (let i = 0; i < PET_KAIJU_CARDS.length; i += 2) {
     rows.push(PET_KAIJU_CARDS.slice(i, i + 2).map((card) => ({
-      text: `🃏 ${card.name}`,
+      text: `🃏 ${card.name}${category ? ` · ${category.label} ${card.stats[category.key]}` : ''}`,
       callback_data: `pet:kaiju:card:${matchId}:${card.id}`,
     })));
   }
@@ -3142,10 +3157,13 @@ function buildPetKaijuCardReplyMarkup(match) {
   return { inline_keyboard: rows };
 }
 
-function formatPetKaijuCardList() {
-  return PET_KAIJU_CARDS.map((card) => {
+function formatPetKaijuCardList(match = null) {
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match?.category_key) || null;
+  const categoryLine = category ? `🎯 ACTIVE CATEGORY: <b>${escapeHtml(category.name)} [${escapeHtml(category.label)}]</b>\n\n` : '';
+  return categoryLine + PET_KAIJU_CARDS.map((card) => {
     const stats = PET_KAIJU_CATEGORIES.map((cat) => `${cat.label} ${card.stats[cat.key]}`).join(' | ');
-    return `🃏 <code>${escapeHtml(card.id)}</code> — ${escapeHtml(card.name)}\n${escapeHtml(stats)}`;
+    const active = category ? ` ← ACTIVE ${category.label} ${card.stats[category.key]}` : '';
+    return `🃏 <code>${escapeHtml(card.id)}</code> — ${escapeHtml(card.name)}${escapeHtml(active)}\n${escapeHtml(stats)}`;
   }).join('\n\n');
 }
 
@@ -3192,26 +3210,38 @@ function isPetKaijuExpiredResult(fresh) {
   return Boolean(fresh?.expired);
 }
 
+async function ensurePetKaijuMatchCategory(db, match) {
+  if (!match || match.category_key || !['open', 'selecting'].includes(String(match.status || ''))) return match;
+  const category = pickPetKaijuCategory();
+  await db.prepare(`
+    UPDATE telegram_pet_kaiju_matches
+    SET category_key = ?, roll = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE match_id = ? AND status IN ('open', 'selecting') AND category_key IS NULL
+  `).bind(category.key, category.roll, String(match.match_id)).run();
+  return getPetKaijuMatch(db, match.match_id);
+}
+
 async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo', options = {}) {
   const matchId = buildPetKaijuMatchId();
   const status = mode === 'group' ? 'open' : 'selecting';
+  const category = pickPetKaijuCategory();
   const inserted = options.mini_app_solo_guard
     ? await db.prepare(`
     INSERT INTO telegram_pet_kaiju_matches
-      (id, match_id, chat_id, mode, status, player1_telegram_id)
-    SELECT ?, ?, ?, ?, ?, ?
+      (id, match_id, chat_id, mode, status, player1_telegram_id, category_key, roll)
+    SELECT ?, ?, ?, ?, ?, ?, ?, ?
     WHERE NOT EXISTS (
       SELECT 1 FROM telegram_pet_kaiju_queue
       WHERE chat_id = ? AND telegram_id = ?
         AND (status = 'waiting' OR updated_at LIKE 'claim:%')
     )
-  `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId),
+  `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId), category.key, category.roll,
       PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).run()
     : await db.prepare(`
     INSERT INTO telegram_pet_kaiju_matches
-      (id, match_id, chat_id, mode, status, player1_telegram_id)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId)).run();
+      (id, match_id, chat_id, mode, status, player1_telegram_id, category_key, roll)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId), category.key, category.roll).run();
   if (Number(inserted?.meta?.changes || 0) !== 1) return null;
   return getPetKaijuMatch(db, matchId);
 }
@@ -3618,6 +3648,41 @@ const PET_ARENA_MAX_ROUNDS = 8;
 const PET_ARENA_MAX_HP = 100;
 const PET_ARENA_SPECIAL_COST = 3;
 const PET_ARENA_MOVES = Object.freeze({ ah: 'Attack Head', ab: 'Attack Body', bh: 'Block Head', bb: 'Block Body', ch: 'Charge Special', sp: 'Special Move' });
+const PET_ARENA_MOVE_GUIDE = Object.freeze({
+  ah: Object.freeze({ key: 'ah', label: 'Attack Head', role: 'pressure', accuracy: 78, base_damage: 18, counter_key: 'bh', charge_delta: 1, detail: 'Heavy strike. Block Head counters it.' }),
+  ab: Object.freeze({ key: 'ab', label: 'Attack Body', role: 'pressure', accuracy: 90, base_damage: 14, counter_key: 'bb', charge_delta: 1, detail: 'Reliable strike. Block Body counters it.' }),
+  bh: Object.freeze({ key: 'bh', label: 'Block Head', role: 'guard', accuracy: null, base_damage: 0, counter_key: 'ah', charge_delta: 0, detail: 'Guards against Attack Head.' }),
+  bb: Object.freeze({ key: 'bb', label: 'Block Body', role: 'guard', accuracy: null, base_damage: 0, counter_key: 'ab', charge_delta: 0, detail: 'Guards against Attack Body.' }),
+  ch: Object.freeze({ key: 'ch', label: 'Charge Special', role: 'charge', accuracy: null, base_damage: 0, counter_key: null, charge_delta: 1, detail: 'Builds one guaranteed Special charge.' }),
+  sp: Object.freeze({ key: 'sp', label: 'Special Move', role: 'finisher', accuracy: 82, base_damage: 28, counter_key: null, charge_delta: -PET_ARENA_SPECIAL_COST, detail: 'High-impact finisher. Requires three charges.' }),
+});
+function serializePetArenaMovePreview(moveKey, special = 0) {
+  const move = PET_ARENA_MOVE_GUIDE[String(moveKey || '')];
+  if (!move) return null;
+  const available = move.key !== 'sp' || Number(special || 0) >= PET_ARENA_SPECIAL_COST;
+  return {
+    ...move,
+    available,
+    counter_label: move.counter_key ? PET_ARENA_MOVES[move.counter_key] : null,
+    requirement: move.key === 'sp' ? PET_ARENA_SPECIAL_COST : 0,
+  };
+}
+function buildPetArenaMovePreviews(battle, telegramId = '') {
+  const isPlayer2 = String(battle?.player2_telegram_id || '') === String(telegramId);
+  const special = Number(isPlayer2 ? battle?.player2_special || 0 : battle?.player1_special || 0);
+  return Object.keys(PET_ARENA_MOVE_GUIDE).map((key) => serializePetArenaMovePreview(key, special));
+}
+function orientPetArenaLastRound(battle, isPlayer2 = false) {
+  const round = safeParsePetArenaSnapshot(battle?.last_round_log_json);
+  if (!Array.isArray(round.moves) || !Array.isArray(round.log)) return null;
+  return {
+    round: Number(round.round || 0),
+    player_move: round.moves[isPlayer2 ? 1 : 0] || null,
+    opponent_move: round.moves[isPlayer2 ? 0 : 1] || null,
+    player_log: round.log[isPlayer2 ? 1 : 0] || '',
+    opponent_log: round.log[isPlayer2 ? 0 : 1] || '',
+  };
+}
 function buildPetArenaBattleId() { return `a-${crypto.randomUUID().replace(/-/g, '').slice(0, 10)}`; }
 function petArenaGearEffect(pet, slot) { return PET_SHOP_ITEMS[String(pet?.[`equipped_${slot}`] || '')]?.arena || {}; }
 function sumPetArenaGearPower(...items) {
@@ -3788,7 +3853,8 @@ function resolvePetArenaRoundState(battle, p1Move, p2Move) {
     if (move === 'bh' || move === 'bb') return { damage: 0, text: `${PET_ARENA_MOVES[move]} guarded this round.`, specialDelta: 0 };
     if (move === 'sp' && special < PET_ARENA_SPECIAL_COST) move = 'ab';
     const atkGear = petArenaGearEffect(atk, 'weapon'), defGear = petArenaGearEffect(def, 'armor'), charm = petArenaGearEffect(atk, 'charm');
-    const base = move === 'sp' ? 28 : move === 'ah' ? 18 : 14; const acc = move === 'ah' ? 78 : move === 'sp' ? 82 : 90;
+    const moveDefinition = PET_ARENA_MOVE_GUIDE[move] || PET_ARENA_MOVE_GUIDE.ab;
+    const base = Number(moveDefinition.base_damage || 0); const acc = Number(moveDefinition.accuracy || 100);
     let h = 0; for (const ch of `${battle.battle_id}:${battle.current_round}:${atk.telegram_id}:${move}`) h = ((h * 31) + ch.charCodeAt(0)) >>> 0;
     const dodged = (h % 100) >= Math.min(98, acc + Math.floor(Number(charm.luck || 0) / 2) - Math.floor(Number(petArenaGearEffect(def, 'charm').dodge || 0) / 3));
     if (dodged) return { damage: 0, text: `${PET_ARENA_MOVES[move]} missed.`, specialDelta: move === 'sp' ? -PET_ARENA_SPECIAL_COST : 1 };
@@ -6436,6 +6502,7 @@ function serializePetMiniAppArenaBattle(battle, telegramId = '') {
   delete player.telegram_id;
   delete opponent.telegram_id;
   const winner = battle.winner_telegram_id || null;
+  const mode = String(battle.player2_telegram_id) === 'app' ? 'solo' : 'multiplayer';
   const outcome = !battle.result ? null : battle.result === 'draw' ? 'draw' : String(winner || '') === String(telegramId) ? 'win' : 'loss';
   return {
     battle_id: battle.battle_id,
@@ -6447,11 +6514,16 @@ function serializePetMiniAppArenaBattle(battle, telegramId = '') {
     opponent_hp: Number(isPlayer2 ? battle.player1_hp ?? PET_ARENA_MAX_HP : battle.player2_hp ?? PET_ARENA_MAX_HP),
     player_special: Number(isPlayer2 ? battle.player2_special || 0 : battle.player1_special || 0),
     opponent_special: Number(isPlayer2 ? battle.player1_special || 0 : battle.player2_special || 0),
+    special_cost: PET_ARENA_SPECIAL_COST,
     player,
     opponent,
-    last_round: safeParsePetArenaSnapshot(battle.last_round_log_json),
+    moves: buildPetArenaMovePreviews(battle, telegramId),
+    opponent_intent: mode === 'solo' && battle.status === 'active'
+      ? serializePetArenaMovePreview(selectPetArenaAppMove(battle), Number(battle.player2_special || 0))
+      : null,
+    last_round: orientPetArenaLastRound(battle, isPlayer2),
     outcome,
-    mode: String(battle.player2_telegram_id) === 'app' ? 'solo' : 'multiplayer',
+    mode,
     ready: Boolean(isPlayer2 ? battle.player2_ready_at : battle.player1_ready_at),
     opponent_ready: Boolean(isPlayer2 ? battle.player1_ready_at : battle.player2_ready_at),
   };
@@ -6464,14 +6536,23 @@ function serializePetMiniAppKaijuMatch(match, telegramId = '') {
   const opponentCard = isPlayer2 ? match.player1_card_key : (match.mode === 'solo' ? match.cpu_card_key : match.player2_card_key);
   const winner = match.winner_telegram_id || null;
   const completed = match.status === 'completed';
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match.category_key) || null;
+  const rawScore = completed ? safeParsePetArenaSnapshot(match.score_json) : {};
+  const ownScore = isPlayer2 ? rawScore.opponent : rawScore.player1;
+  const rivalScore = isPlayer2 ? rawScore.player1 : rawScore.opponent;
   return {
     match_id: match.match_id,
     mode: match.mode,
     status: match.status,
     result: completed ? match.result : null,
-    category_key: completed ? match.category_key : null,
-    roll: completed ? match.roll : null,
+    category_key: category?.key || null,
+    category,
+    roll: category ? Number(match.roll || category.roll || 0) : null,
     score_json: completed ? match.score_json : null,
+    score: completed ? {
+      player: Number(ownScore?.score || 0),
+      opponent: Number(rivalScore?.score || 0),
+    } : null,
     own_card_key: ownCard || null,
     opponent_card_key: completed ? opponentCard || null : null,
     role: isPlayer2 ? 'player2' : 'player1',
@@ -6586,6 +6667,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     getPetNotificationPreference(db, telegramId),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
+  const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const adventureBase = selectPetAdventureEncounter(petRaw);
   const adventure = adventureBase ? {
@@ -6707,10 +6789,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     arena_queue: arenaQueue,
     arena_result: serializePetMiniAppArenaBattle(recentArena, telegramId),
     kaiju: {
-      match: serializePetMiniAppKaijuMatch(kaiju, telegramId),
+      match: serializePetMiniAppKaijuMatch(hydratedKaiju, telegramId),
       queue: kaijuQueue,
       result: serializePetMiniAppKaijuMatch(recentKaiju, telegramId),
-      cards: PET_KAIJU_CARDS,
+      cards: PET_KAIJU_CARDS.map((card) => serializePetKaijuCardPreview(card, hydratedKaiju?.category_key)),
       categories: PET_KAIJU_CATEGORIES,
     },
     leaderboard: leaderboardRows.map((entry, index) => serializePetLeaderboardEntry(entry, index)),
@@ -10569,7 +10651,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-aaa-district-stories`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-aaa-combat-intelligence`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -11475,6 +11557,7 @@ export const __petMediaTestHooks = Object.freeze({
   PET_RUN_STEP_CHOICES,
   PET_KAIJU_CARDS,
   PET_KAIJU_CATEGORIES,
+  PET_ARENA_MOVE_GUIDE,
   PET_RANDOM_EVENTS,
   PET_REPEAT_REWARD_RULES,
   PET_ECONOMY_ROUTES,
@@ -13101,14 +13184,16 @@ async function cmdPetBag(db, tok, chatId, telegramId) {
 
 
 function formatPetKaijuLobby(match, queue = []) {
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match?.category_key) || null;
   return [
     `🦖 <b>Kaiju Sticker Battle</b>`,
     `Table: <code>${escapeHtml(match.match_id)}</code>`,
     '',
     `Host: <code>${escapeHtml(match.player1_telegram_id)}</code>`,
     `Mode: ${match.mode === 'group' ? 'Group 2-player' : 'Player vs App'}`,
+    category ? `Active category: <b>${escapeHtml(category.name)} [${escapeHtml(category.label)}]</b>` : `Active category: arming`,
     '',
-    `Pick a kaiju sticker card. The app rolls one stat: PWR, SIZE, ATK, DEF, SPD or LGCY. Highest stat wins.`,
+    `Pick the card with the highest active-category stat. The rival card stays sealed until resolution.`,
     '',
     queue.length ? `Queue: ${queue.map((id) => `<code>${escapeHtml(id)}</code>`).join(', ')}` : `No queue yet.`,
   ].join('\n');
@@ -13308,7 +13393,7 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
     await sendTelegramPetReply(
       tok,
       chatId,
-      `🦖 <b>Kaiju Sticker Battle: Player vs App</b>\nChoose a card.\n\n${formatPetKaijuCardList()}`,
+      `🦖 <b>Kaiju Sticker Battle: Player vs App</b>\nChoose the strongest card for the active category.\n\n${formatPetKaijuCardList(match)}`,
       { reply_markup: buildPetKaijuCardReplyMarkup(match) },
       'play',
     );

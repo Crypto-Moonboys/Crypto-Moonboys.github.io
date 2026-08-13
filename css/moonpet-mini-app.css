@@ -193,6 +193,25 @@ button { font: inherit; }
 
 
 /* Authored district and story decisions */
+.combat-intel, .combat-intent, .combat-recap {
+  margin: 8px 0; padding: 9px 10px; border: 1px solid rgba(97,245,255,.3);
+  background: linear-gradient(135deg, rgba(4,19,13,.97), rgba(11,8,25,.95));
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+.combat-intent { display: grid; gap: 4px; border-color: rgba(244,255,101,.42); box-shadow: inset 3px 0 0 var(--hot); }
+.combat-intent strong { color: var(--hot); }
+.combat-intent span, .combat-recap span { color: var(--muted); }
+.combat-intent.is-hidden { border-style: dashed; opacity: .88; }
+.combat-recap { display: grid; gap: 4px; box-shadow: inset 3px 0 0 var(--green); }
+.combat-recap strong { color: var(--green); }
+.arena-decisions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kaiju-decisions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.arena-decisions .terminal-button, .kaiju-decisions .terminal-button { min-height: 82px; align-content: start; }
+@media (max-width: 620px) {
+  .arena-decisions, .kaiju-decisions { grid-template-columns: 1fr; }
+  .arena-decisions .terminal-button, .kaiju-decisions .terminal-button { min-height: 0; }
+}
+
 .district-mission, .story-scene {
   margin-top: 9px; padding: 9px; border: 1px solid rgba(97,245,255,.28);
   background: linear-gradient(135deg, rgba(4,19,13,.96), rgba(11,8,25,.94));
