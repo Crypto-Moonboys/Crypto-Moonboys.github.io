@@ -766,6 +766,11 @@
   }
 
   screen.addEventListener('click', function (event) {
+    if (lifecycleCeremonyActive()) {
+      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      haptic('light');
+      return;
+    }
     var jump = event.target.closest('[data-jump]');
     if (jump && !busy) {
       if (!SCREEN_ORDER.includes(jump.dataset.jump)) {
@@ -830,7 +835,12 @@
 
   nav.addEventListener('click', function (event) {
     var target = event.target.closest('[data-screen]');
-    if (!target || busy || lifecycleCeremonyActive()) return;
+    if (!target || busy) return;
+    if (lifecycleCeremonyActive()) {
+      tell('LIFECYCLE REVEAL IN PROGRESS.');
+      haptic('light');
+      return;
+    }
     switchScreen(target.dataset.screen);
     screen.scrollTop = 0;
     haptic('light');
