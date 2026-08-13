@@ -185,23 +185,23 @@ const activities = {
 };
 
 const lifecycleTemperaments = {
-  bold: ['A bold little stance turns {activity} into a challenge worth meeting.', 'Your Moonpet steps into {activity} first and checks for danger second.'],
-  social: ['Your social Moonpet checks your reaction before committing to {activity}.', 'For your Moonpet, {activity} is better because the two of you are doing it together.'],
-  rhythmic: ['Your Moonpet finds a beat inside {activity} and moves exactly on it.', 'A quiet head-nod gives {activity} its own private soundtrack.'],
-  calm: ['Your calm Moonpet takes one measured breath before {activity}.', 'Nothing about {activity} can rush your Moonpet out of its steady rhythm.'],
-  curious: ['Your Moonpet tilts its head and searches {activity} for the detail everyone missed.', 'Curiosity pulls your Moonpet closer to {activity}.'],
-  loyal: ['Your Moonpet stays shoulder-to-ankle close throughout {activity}.', 'A loyal glance confirms your Moonpet will not face {activity} without you.'],
+  bold: ['A bold little stance turns {activity} into a challenge worth meeting.', 'Your Moonpet steps into {activity} first and checks for danger second.', 'Your bold Moonpet squares up to {activity} like the outcome is personal.', 'Hesitation never gets a vote when your Moonpet faces {activity}.'],
+  social: ['Your social Moonpet checks your reaction before committing to {activity}.', 'For your Moonpet, {activity} is better because the two of you are doing it together.', 'Your Moonpet turns {activity} into a shared joke only you understand.', 'Even during {activity}, your Moonpet makes time to win over everyone nearby.'],
+  rhythmic: ['Your Moonpet finds a beat inside {activity} and moves exactly on it.', 'A quiet head-nod gives {activity} its own private soundtrack.', 'Four perfectly timed steps carry your Moonpet through {activity}.', 'Your Moonpet refuses to begin {activity} until the rhythm feels right.'],
+  calm: ['Your calm Moonpet takes one measured breath before {activity}.', 'Nothing about {activity} can rush your Moonpet out of its steady rhythm.', 'Your Moonpet studies {activity} in silence, then moves without wasted effort.', 'A quiet confidence settles over your Moonpet as {activity} begins.'],
+  curious: ['Your Moonpet tilts its head and searches {activity} for the detail everyone missed.', 'Curiosity pulls your Moonpet closer to {activity}.', 'Your Moonpet circles {activity} once just to see it from another angle.', 'One unanswered question makes {activity} impossible for your Moonpet to ignore.'],
+  loyal: ['Your Moonpet stays shoulder-to-ankle close throughout {activity}.', 'A loyal glance confirms your Moonpet will not face {activity} without you.', 'Your Moonpet checks you are safe before taking anything from {activity}.', 'Whatever {activity} brings, your Moonpet keeps the route back to you clear.'],
 };
 
 const innateTraits = {
-  night_owl: ['Moonlight seems to sharpen your Moonpet during {activity}.'],
-  beat_seeker: ['Your Moonpet tests {activity} for a bassline before anything else.'],
-  snack_scout: ['Your Moonpet completes a quick snack check before {activity}.'],
-  alley_brave: ['Old alley nerve makes your Moonpet stand taller during {activity}.'],
-  soft_hearted: ['Your Moonpet brings an unexpectedly gentle touch to {activity}.'],
-  lucky_steps: ['One lucky-looking sidestep changes the rhythm of {activity}.'],
-  collector: ['Your Moonpet quietly checks whether {activity} left anything worth keeping.'],
-  showboat: ['Your Moonpet makes absolutely certain you noticed its best moment in {activity}.'],
+  night_owl: ['Moonlight seems to sharpen your Moonpet during {activity}.', 'The late-hour quiet makes your Night Owl especially alert during {activity}.', 'Your Moonpet treats darkness as an advantage throughout {activity}.', 'A nocturnal spark wakes up the moment {activity} begins.'],
+  beat_seeker: ['Your Moonpet tests {activity} for a bassline before anything else.', 'A tiny shoulder bounce means your Beat Seeker approves of {activity}.', 'Your Moonpet taps out a new rhythm while working through {activity}.', 'Silence never lasts long once your Moonpet joins {activity}.'],
+  snack_scout: ['Your Moonpet completes a quick snack check before {activity}.', 'Your Snack Scout searches the edges of {activity} for crumbs and clues.', 'One hopeful sniff interrupts {activity}, just in case.', 'Your Moonpet has mapped every possible snack stop around {activity}.'],
+  alley_brave: ['Old alley nerve makes your Moonpet stand taller during {activity}.', 'Your Alley Brave refuses to give {activity} the satisfaction of fear.', 'Moon Alley instincts keep your Moonpet sharp through {activity}.', 'Your Moonpet meets {activity} with the confidence of a backstreet veteran.'],
+  soft_hearted: ['Your Moonpet brings an unexpectedly gentle touch to {activity}.', 'Your Soft Heart notices who needs help during {activity}.', 'A kind instinct changes how your Moonpet approaches {activity}.', 'Even when {activity} gets rough, your Moonpet protects the smallest thing nearby.'],
+  lucky_steps: ['One lucky-looking sidestep changes the rhythm of {activity}.', 'Your Moonpet chooses the improbable route through {activity}, and it works.', 'A fortunate little bounce starts {activity} on the right foot.', 'Your Lucky Steps seem to land exactly where {activity} needs them.'],
+  collector: ['Your Moonpet quietly checks whether {activity} left anything worth keeping.', 'Nothing useful escapes your Collector during {activity}.', 'Your Moonpet sorts every interesting find before leaving {activity}.', 'A tiny hidden treasure makes {activity} instantly worthwhile.'],
+  showboat: ['Your Moonpet makes absolutely certain you noticed its best moment in {activity}.', 'A dramatic pose turns the end of {activity} into a performance.', 'Your Showboat adds one unnecessary flourish to {activity}, perfectly.', 'Your Moonpet checks for an audience before finishing {activity} in style.'],
 };
 
 const traits = {
