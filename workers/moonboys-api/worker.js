@@ -6378,7 +6378,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     db.prepare(`SELECT * FROM telegram_pet_kaiju_matches WHERE status='completed'
       AND (player1_telegram_id=? OR player2_telegram_id=?) ORDER BY completed_at DESC LIMIT 1`)
       .bind(String(telegramId), String(telegramId)).first().catch(() => null),
-    db.prepare(`SELECT p.pet_name,
+    db.prepare(`SELECT p.telegram_id, p.pet_name,
         COALESCE((SELECT e.evolution_id FROM telegram_pet_evolutions e WHERE e.telegram_id=p.telegram_id ORDER BY e.stage DESC LIMIT 1), 'moon_egg') AS stage,
         p.level, p.pet_xp, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days,
         l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id
