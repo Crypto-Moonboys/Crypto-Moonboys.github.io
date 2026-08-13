@@ -698,7 +698,7 @@
 
   function greetCompanion() {
     var now = performance.now();
-    if (busy || !state || !state.adopted || feedbackUntil > now || animationUntil > now) return;
+    if (busy || !state || !state.adopted || feedbackUntil > now || animationUntil > now || COMBAT_PRESENTATION_FRAME.active) return;
     companionTapSequence += 1;
     companionGreeting = compactFeedback(companionGreetingCopy(state.pet, state.lifecycle || {}), 24);
     companionGreetingUntil = now + 2600;
@@ -811,6 +811,12 @@
     listen: 'TELL ME MORE', fidget: 'LET US MOVE', chill: 'GOOD VIBES',
   };
   var COMPANION_PRESENCE_FRAME = { behavior: 'chill', phase: 0.72, thought: 'GOOD VIBES', slot: -1, screen: '', seed: -1 };
+  var COMBAT_RIVAL_COLORS = ['#ff6d6d', '#ff954f', '#f6a7ff', '#61f5ff', '#f4ff65', '#c99cff'];
+  var COMBAT_PRESENTATION_FRAME = {
+    active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
+    playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
+    playerCardKey: '', opponentCardKey: '', source: null,
+  };
 
   function companionIdentitySeed(pet, lifecycle) {
     var appearance = lifecycle && lifecycle.appearance;
@@ -875,6 +881,81 @@
     COMPANION_PRESENCE_FRAME.phase = reducedMotion ? 0.72 : presenceTime % 8000 / 8000;
     COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[COMPANION_PRESENCE_FRAME.behavior] || 'STAY READY');
     return COMPANION_PRESENCE_FRAME;
+  }
+
+  function clearCombatPresentation() {
+    COMBAT_PRESENTATION_FRAME.active = false;
+    COMBAT_PRESENTATION_FRAME.mode = '';
+    COMBAT_PRESENTATION_FRAME.title = '';
+    COMBAT_PRESENTATION_FRAME.status = '';
+    COMBAT_PRESENTATION_FRAME.opponentName = '';
+    COMBAT_PRESENTATION_FRAME.round = 0;
+    COMBAT_PRESENTATION_FRAME.maxRounds = 0;
+    COMBAT_PRESENTATION_FRAME.playerValue = 0;
+    COMBAT_PRESENTATION_FRAME.opponentValue = 0;
+    COMBAT_PRESENTATION_FRAME.maxValue = 100;
+    COMBAT_PRESENTATION_FRAME.playerSpecial = 0;
+    COMBAT_PRESENTATION_FRAME.opponentSpecial = 0;
+    COMBAT_PRESENTATION_FRAME.playerCardKey = '';
+    COMBAT_PRESENTATION_FRAME.opponentCardKey = '';
+    COMBAT_PRESENTATION_FRAME.source = null;
+    return COMBAT_PRESENTATION_FRAME;
+  }
+
+  function updateCombatPresentation(snapshot) {
+    clearCombatPresentation();
+    if (activeScreen !== 'explore' || !snapshot || !snapshot.adopted) return COMBAT_PRESENTATION_FRAME;
+    var arena = snapshot.arena;
+    if (arena && arena.status !== 'completed' && !arena.outcome) {
+      COMBAT_PRESENTATION_FRAME.active = true;
+      COMBAT_PRESENTATION_FRAME.mode = 'arena';
+      COMBAT_PRESENTATION_FRAME.title = arena.mode === 'multiplayer' ? 'PLAYER ARENA' : 'CRT ARENA';
+      COMBAT_PRESENTATION_FRAME.status = arena.status === 'readying'
+        ? arena.ready ? 'LOCKED IN // WAITING' : 'MATCH FOUND // READY UP'
+        : 'ROUND ' + Number(arena.current_round || 1) + ' LIVE';
+      COMBAT_PRESENTATION_FRAME.opponentName = String(arena.opponent && arena.opponent.pet_name || 'RIVAL');
+      COMBAT_PRESENTATION_FRAME.round = Number(arena.current_round || 1);
+      COMBAT_PRESENTATION_FRAME.maxRounds = Number(arena.max_rounds || 5);
+      COMBAT_PRESENTATION_FRAME.playerValue = Math.max(0, Number(arena.player_hp || 0));
+      COMBAT_PRESENTATION_FRAME.opponentValue = Math.max(0, Number(arena.opponent_hp || 0));
+      COMBAT_PRESENTATION_FRAME.maxValue = Math.max(100, COMBAT_PRESENTATION_FRAME.playerValue, COMBAT_PRESENTATION_FRAME.opponentValue);
+      COMBAT_PRESENTATION_FRAME.playerSpecial = Math.max(0, Number(arena.player_special || 0));
+      COMBAT_PRESENTATION_FRAME.opponentSpecial = Math.max(0, Number(arena.opponent_special || 0));
+      COMBAT_PRESENTATION_FRAME.source = arena;
+      return COMBAT_PRESENTATION_FRAME;
+    }
+    var kaiju = snapshot.kaiju && snapshot.kaiju.match;
+    if (kaiju && kaiju.status !== 'completed' && !kaiju.outcome) {
+      COMBAT_PRESENTATION_FRAME.active = true;
+      COMBAT_PRESENTATION_FRAME.mode = 'kaiju';
+      COMBAT_PRESENTATION_FRAME.title = kaiju.mode === 'group' ? 'PLAYER KAIJU DUEL' : 'CRT KAIJU DUEL';
+      COMBAT_PRESENTATION_FRAME.status = kaiju.own_card_locked
+        ? kaiju.opponent_card_locked ? 'BOTH CARDS LOCKED' : 'YOUR CARD LOCKED // WAIT'
+        : 'SELECT YOUR CODE CARD';
+      COMBAT_PRESENTATION_FRAME.opponentName = kaiju.mode === 'group' ? 'RIVAL CARD' : 'CRT CARD';
+      COMBAT_PRESENTATION_FRAME.playerValue = kaiju.own_card_locked ? 1 : 0;
+      COMBAT_PRESENTATION_FRAME.opponentValue = kaiju.opponent_card_locked ? 1 : 0;
+      COMBAT_PRESENTATION_FRAME.maxValue = 1;
+      COMBAT_PRESENTATION_FRAME.playerCardKey = String(kaiju.own_card_key || '');
+      COMBAT_PRESENTATION_FRAME.opponentCardKey = String(kaiju.opponent_card_key || '');
+      COMBAT_PRESENTATION_FRAME.source = kaiju;
+      return COMBAT_PRESENTATION_FRAME;
+    }
+    var run = snapshot.run;
+    if (run && ['active', 'extractable'].includes(String(run.status || 'active'))) {
+      var depth = Number(run.current_room != null ? run.current_room : run.depth || 0);
+      var maxDepth = Math.max(1, Number(run.max_room || run.max_depth || 1));
+      COMBAT_PRESENTATION_FRAME.active = true;
+      COMBAT_PRESENTATION_FRAME.mode = 'run';
+      COMBAT_PRESENTATION_FRAME.title = String(run.daily ? 'DAILY MOON RUN' : 'MOON RUN');
+      COMBAT_PRESENTATION_FRAME.status = 'DEPTH ' + depth + '/' + maxDepth + ' // RISK ' + Number(run.risk_level || 1);
+      COMBAT_PRESENTATION_FRAME.opponentName = 'ALLEY THREAT';
+      COMBAT_PRESENTATION_FRAME.playerValue = depth;
+      COMBAT_PRESENTATION_FRAME.opponentValue = Math.max(0, maxDepth - depth);
+      COMBAT_PRESENTATION_FRAME.maxValue = maxDepth;
+      COMBAT_PRESENTATION_FRAME.source = run;
+    }
+    return COMBAT_PRESENTATION_FRAME;
   }
 
   function drawPixelText(text, x, y, color, align) {
@@ -1258,7 +1339,7 @@
     if (active) drawPixelText('SIGNAL!', 160, eggY - 58, '#f4ff65', 'center');
   }
 
-  function drawPet(time, presence) {
+  function drawPet(time, presence, combat) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
     var stage = petStage(pet);
@@ -1275,15 +1356,16 @@
     var pose = petPose(time, active, mood, presence);
     var rareName = lifecycle.rare && lifecycle.rare.name || '';
     var growth = petGrowthShape(lifecycle.phase, stage);
-    var scale = Math.max(growth.scaleX, growth.scaleY);
+    var combatScale = combat && combat.active ? 0.78 : 1;
+    var scale = Math.max(growth.scaleX, growth.scaleY) * combatScale;
     var palette = petPalette(lifecycle, stage);
-    var speciesId = lifecycle.species_id || 'neon_raccoon';
+    var speciesId = lifecycle.species_id || pet && pet.species || 'neon_raccoon';
     var faceX = petFaceOffset(speciesId);
-    var x = 160 + pose.x;
+    var x = 160 + pose.x + (combat && combat.active ? -62 : 0);
     var y = 150 + pose.y + growth.offsetY;
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(growth.scaleX * pose.squashX, growth.scaleY * pose.squashY);
+    ctx.scale(growth.scaleX * pose.squashX * combatScale, growth.scaleY * pose.squashY * combatScale);
     ctx.shadowColor = lifecycle.phase === 'rare' ? palette.accent : stage >= 2 ? '#61f5ff' : palette.body;
     ctx.shadowBlur = lifecycle.phase === 'rare' ? 12 : stage * 2 + (active ? 6 : 2);
     drawRareMorphShell(rareName, palette, pose);
@@ -1310,8 +1392,8 @@
     ctx.shadowBlur = 0;
 
     if (!active && mood !== 'curious') drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
-    if (rareName) drawPixelText(rareName.toUpperCase(), 160, 70, palette.accent, 'center');
-    else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), 160, 78, palette.accent, 'center');
+    if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
+    else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
     drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
     drawActionEffects(time, x, y, active);
     if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
@@ -1386,6 +1468,82 @@
     drawPixelText(copy, 16, bubbleY + 24, '#f4ff65', 'left');
     drawPixelRect(143, bubbleY + 31, 6, 4, '#020704');
     drawPixelRect(149, bubbleY + 35, 4, 4, '#020704');
+  }
+
+  function combatRivalColor(combat) {
+    var source = String(combat && combat.opponentName || combat && combat.mode || 'rival');
+    var hash = 0;
+    for (var index = 0; index < source.length; index += 1) hash = (hash * 33 + source.charCodeAt(index)) | 0;
+    return COMBAT_RIVAL_COLORS[Math.abs(hash) % COMBAT_RIVAL_COLORS.length];
+  }
+
+  function drawCombatOpponent(time, scene, combat) {
+    if (!combat || !combat.active) return;
+    var rivalColor = combatRivalColor(combat);
+    var pulse = reducedMotion ? 0 : Math.round(Math.sin(time / 260) * 2);
+    var x = 235;
+    var y = 151 + pulse;
+    if (combat.mode === 'kaiju') {
+      drawPixelRect(202, 82, 66, 82, '#020704');
+      drawPixelRect(202, 82, 66, 3, rivalColor);
+      drawPixelRect(205, 88, 60, 49, scene.haze);
+      drawPixelRect(218, 99, 34, 29, rivalColor);
+      drawPixelRect(224, 93, 8, 8, rivalColor); drawPixelRect(242, 93, 8, 8, rivalColor);
+      drawPixelRect(225, 108, 5, 7, '#020704'); drawPixelRect(241, 108, 5, 7, '#020704');
+      drawPixelRect(228, 122, 18, 3, '#020704');
+      drawPixelText(combat.opponentValue ? 'LOCKED' : 'HIDDEN', 235, 148, combat.opponentValue ? '#f4ff65' : '#aab5ae', 'center');
+      drawPixelText('VS', 160, 128, '#ff6d6d', 'center');
+      return;
+    }
+    if (combat.mode === 'run') {
+      drawPixelRect(x - 25, y - 43, 50, 48, '#020704');
+      drawPixelRect(x - 19, y - 55, 38, 25, rivalColor);
+      drawPixelRect(x - 25, y - 42, 7, 36, rivalColor); drawPixelRect(x + 18, y - 42, 7, 36, rivalColor);
+      drawPixelRect(x - 14, y - 49, 7, 5, '#f4ff65'); drawPixelRect(x + 7, y - 49, 7, 5, '#f4ff65');
+      drawPixelRect(x - 17, y + 5, 13, 8, '#020704'); drawPixelRect(x + 4, y + 5, 13, 8, '#020704');
+      drawPixelText('THREAT', x, y - 67, rivalColor, 'center');
+      return;
+    }
+    drawPixelRect(x - 27, y - 39, 54, 39, rivalColor);
+    drawPixelRect(x - 21, y - 62, 42, 31, rivalColor);
+    drawPixelRect(x - 25, y - 68, 12, 12, rivalColor); drawPixelRect(x + 13, y - 68, 12, 12, rivalColor);
+    drawPixelRect(x - 13, y - 53, 8, 7, '#020704'); drawPixelRect(x + 5, y - 53, 8, 7, '#020704');
+    drawPixelRect(x - 7, y - 41, 14, 4, '#020704');
+    drawPixelRect(x - 38, y - 31, 11, 8, rivalColor); drawPixelRect(x + 27, y - 31, 11, 8, rivalColor);
+    drawPixelRect(x - 20, y, 14, 10, '#020704'); drawPixelRect(x + 6, y, 14, 10, '#020704');
+    drawPixelText(compactFeedback(combat.opponentName, 15), x, y - 77, rivalColor, 'center');
+  }
+
+  function drawCombatMeter(x, y, width, value, maximum, color, reverse) {
+    var safeMax = Math.max(1, Number(maximum || 1));
+    var fill = Math.round(Math.max(0, Math.min(1, Number(value || 0) / safeMax)) * (width - 4));
+    drawPixelRect(x, y, width, 7, '#020704');
+    drawPixelRect(x, y, width, 1, color);
+    if (fill > 0) drawPixelRect(reverse ? x + width - 2 - fill : x + 2, y + 2, fill, 3, color);
+  }
+
+  function drawCombatHud(scene, combat) {
+    if (!combat || !combat.active) return;
+    var rivalColor = combatRivalColor(combat);
+    drawPixelRect(7, 54, 306, 32, '#020704');
+    drawPixelRect(7, 54, 306, 2, scene.neon);
+    drawPixelText(combat.title, 16, 66, scene.neon, 'left');
+    drawPixelText(combat.status, 304, 66, '#d8f9ff', 'right');
+    if (combat.mode === 'arena') {
+      drawCombatMeter(16, 72, 128, combat.playerValue, combat.maxValue, '#a9ff9a', false);
+      drawCombatMeter(176, 72, 128, combat.opponentValue, combat.maxValue, rivalColor, true);
+      drawPixelText('HP ' + Number(combat.playerValue), 16, 84, '#a9ff9a', 'left');
+      drawPixelText(Number(combat.opponentValue) + ' HP', 304, 84, rivalColor, 'right');
+      drawCombatMeter(16, 88, 64, combat.playerSpecial, 100, '#61f5ff', false);
+      drawCombatMeter(240, 88, 64, combat.opponentSpecial, 100, '#61f5ff', true);
+    } else if (combat.mode === 'kaiju') {
+      drawPixelText(combat.playerValue ? 'YOUR CARD // LOCKED' : 'YOUR CARD // SELECT', 16, 80, combat.playerValue ? '#f4ff65' : '#aab5ae', 'left');
+      drawPixelText(combat.opponentValue ? 'RIVAL // LOCKED' : 'RIVAL // WAITING', 304, 80, combat.opponentValue ? rivalColor : '#aab5ae', 'right');
+    } else {
+      drawCombatMeter(16, 74, 288, combat.playerValue, combat.maxValue, scene.accent, false);
+      drawPixelText('PROGRESS', 16, 84, scene.accent, 'left');
+      drawPixelText(Number(combat.opponentValue) + ' ROOMS REMAIN', 304, 84, rivalColor, 'right');
+    }
   }
 
   var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
@@ -1637,6 +1795,7 @@
     var worldTime = reducedMotion ? 0 : time;
     var camera = updateCameraFrame(renderTime);
     var presence = updateCompanionPresence(state && state.pet, state && state.lifecycle || {}, renderTime);
+    var combat = updateCombatPresentation(state);
     drawPixelRect(0, 0, 320, 220, scene.sky);
     ctx.save();
     ctx.translate(160 + camera.x, 110 + camera.y); ctx.scale(camera.zoom, camera.zoom); ctx.translate(-160, -110);
@@ -1646,11 +1805,13 @@
     drawWorldLandmarks(activeScreen, scene);
     drawWorldStreet(worldTime, scene);
     drawWorldReaction(worldTime, scene);
-    drawPet(renderTime, presence);
+    drawPet(renderTime, presence, combat);
+    drawCombatOpponent(worldTime, scene, combat);
     ctx.restore();
     drawWorldForeground(scene);
     drawUtcAmbience(scene);
-    drawCompanionPresence(renderTime, scene, presence);
+    drawCombatHud(scene, combat);
+    if (!combat.active) drawCompanionPresence(renderTime, scene, presence);
     drawActionFlash(renderTime, scene);
     drawCinematicFeedback(renderTime, scene);
     drawSceneTransition(renderTime, scene);
