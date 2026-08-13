@@ -62,6 +62,7 @@ const {
   getPetArenaBucketDistance,
   serializePet,
   serializePetLeaderboardEntry,
+  materializePetLeaderboardRows,
   formatPetStatus,
   formatPetDetails,
   petReplyMarkup,
@@ -181,7 +182,12 @@ const eggLeaderboardEntry = serializePetLeaderboardEntry({
 assert.equal(eggLeaderboardEntry.species_id, null, 'leaderboard must not reveal an egg species');
 assert.equal(eggLeaderboardEntry.species_name, null, 'leaderboard must not reveal an egg species name');
 assert.match(worker, /display_name: \[row\.first_name, row\.last_name\][\s\S]*'Anonymous'/, 'public pet leaderboard must never fall back to a Telegram ID');
+assert.match(worker, /MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle,/, 'legacy lifecycle materialization dependency must be imported');
 assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboards must materialize deterministic identities for legacy rows');
+assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
+const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
+assert.match(miniAppStateBuilder, /SELECT p\.telegram_id, p\.pet_name,/, 'Mini App leaderboard must select the owner ID needed to materialize legacy lifecycle rows');
+assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
 assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
 assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\)/, 'legacy evolve command must synchronize lifecycle adulthood');
@@ -1572,6 +1578,23 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   `).run();
   return db;
 }
+
+const legacyLifecycleStateDb = seedRepeatRewardPlayer('legacy-lifecycle-state');
+const materializedLegacyRows = await materializePetLeaderboardRows(legacyLifecycleStateDb, [{
+  telegram_id: 'legacy-lifecycle-state',
+  pet_name: 'Legacy',
+  lifecycle_phase: null,
+  lifecycle_species_id: null,
+  rare_morph_id: null,
+}]);
+assert.equal(materializedLegacyRows.length, 1);
+assert.equal(materializedLegacyRows[0].lifecycle_phase, 'adult', 'legacy player state must materialize an adult lifecycle instead of crashing');
+assert.ok(materializedLegacyRows[0].lifecycle_species_id, 'legacy player state must derive a deterministic species');
+assert.equal(
+  legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle WHERE telegram_id = ?').get('legacy-lifecycle-state').count,
+  1,
+  'legacy player state must persist exactly one lifecycle row',
+);
 
 const repeatTradeDb = seedRepeatRewardPlayer('trade-repeat', 70);
 repeatTradeDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-repeat'").run();
