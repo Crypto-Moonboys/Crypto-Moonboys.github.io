@@ -684,6 +684,9 @@ assert.doesNotMatch(guide, /five-step/i, 'the complete guide must not describe t
 
 assert.match(worker, /const PET_ARENA_MOVE_GUIDE/, 'Arena must expose one server-owned tactical move guide');
 assert.match(worker, /moves: buildPetArenaMovePreviews/, 'Arena state must serialize readable move previews');
+assert.match(worker, /const moveDefinition = PET_ARENA_MOVE_GUIDE\[move\]/, 'Arena resolution and previews must share one move definition');
+assert.match(worker, /ensurePetKaijuMatchCategory\(db, kaiju\)/, 'pre-deployment Kaiju matches must receive a visible category before selection');
+assert.match(worker, /ACTIVE CATEGORY:/, 'legacy Telegram Kaiju controls must expose the active category');
 assert.match(worker, /opponent_intent: mode === 'solo' && battle\.status === 'active'/, 'only solo Arena may reveal a deterministic opponent intent');
 assert.match(worker, /last_round: orientPetArenaLastRound/, 'Arena recaps must orient moves to the current player');
 assert.match(client, /CRT TELEGRAPH/, 'solo Arena must render the opponent telegraph');

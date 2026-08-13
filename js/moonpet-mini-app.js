@@ -429,7 +429,7 @@
         ? '<div class="combat-recap"><strong>ROUND ' + number(arena.last_round.round) + ' RECAP</strong><span>YOU // ' + escapeHtml(arena.last_round.player_log || words(arena.last_round.player_move)) + '</span><span>RIVAL // ' + escapeHtml(arena.last_round.opponent_log || words(arena.last_round.opponent_move)) + '</span></div>'
         : '';
       var arenaMoves = (arena.moves || []).map(function (move) {
-        var stats = move.base_damage ? number(move.accuracy) + '% HIT // ' + number(move.base_damage) + ' BASE' : escapeHtml(words(move.role));
+        var stats = move.base_damage ? number(move.accuracy) + '% BASE ACC // ' + number(move.base_damage) + ' BASE DMG' : escapeHtml(words(move.role));
         var counter = move.counter_label ? ' // COUNTER ' + escapeHtml(move.counter_label) : '';
         var lock = move.available ? '' : ' // NEED ' + number(move.requirement) + ' CHARGE';
         return button(move.label, 'arena_move', { battle_id: arena.battle_id, expected_round: arena.current_round, move: move.key }, {

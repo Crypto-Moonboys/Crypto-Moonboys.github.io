@@ -39,7 +39,7 @@ Moonpet has a strong technical foundation and an unusually broad feature set for
 1. District and story depth: branching objectives, named rivals, persistent choices, and multi-step failure/recovery routes.
 2. Roguelite buildcraft: checkpoint relic drafting, run modifiers, synergies, curses, and build summaries.
 3. Feel and polish: restrained procedural audio, better input anticipation, hit timing, animation transitions, and device profiling.
-5. Live balancing: funnel, choice, failure, extraction, economy, and retention telemetry with documented tuning gates.
+4. Live balancing: funnel, choice, failure, extraction, economy, and retention telemetry with documented tuning gates.
 
 ## Release boundary
 

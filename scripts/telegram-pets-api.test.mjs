@@ -24,6 +24,7 @@ const {
   PET_RUN_STEP_CHOICES,
   PET_KAIJU_CARDS,
   PET_KAIJU_CATEGORIES,
+  PET_ARENA_MOVE_GUIDE,
   PET_RANDOM_EVENTS,
   PET_REPEAT_REWARD_RULES,
   awardPetReward,
@@ -57,6 +58,8 @@ const {
   buildPetArenaMoveReplyMarkup,
   parsePetArenaCallbackPayload,
   resolvePetArenaRoundState,
+  serializePetMiniAppArenaBattle,
+  serializePetMiniAppKaijuMatch,
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
@@ -381,9 +384,43 @@ for (const button of generatedKaijuCards.inline_keyboard.flat().filter((entry) =
 const kaijuLobby = buildPetKaijuLobbyReplyMarkup({ match_id: 'kaiju-abc' });
 assert.ok(kaijuLobby.inline_keyboard.flat().some((button) => button.callback_data === 'pet:kaiju:join:kaiju-abc'), 'Kaiju lobby must include a group join button');
 assert.ok(kaijuLobby.inline_keyboard.flat().some((button) => button.callback_data === 'pet:kaiju:cpu:kaiju-abc'), 'Kaiju lobby must support player vs app');
-const kaijuCards = buildPetKaijuCardReplyMarkup({ match_id: 'kaiju-abc' });
+const kaijuCards = buildPetKaijuCardReplyMarkup({ match_id: 'kaiju-abc', category_key: 'lgcy' });
 assert.ok(kaijuCards.inline_keyboard.flat().some((button) => button.callback_data === 'pet:kaiju:card:kaiju-abc:god-dzilla'), 'Kaiju card picker must include stable card callbacks');
+assert.ok(kaijuCards.inline_keyboard.flat().some((button) => button.text.includes('LGCY 10')), 'legacy Kaiju picker must show the active score');
 assert.equal(resolvePetKaijuBattle('god-dzilla', 'big-daddy-kong', 'lgcy').result, 'player1_win', 'Kaiju resolver must compare the rolled stat category');
+
+const arenaFixture = {
+  battle_id: 'a-1234567890',
+  status: 'active',
+  current_round: 2,
+  max_rounds: 8,
+  player1_telegram_id: 'player',
+  player2_telegram_id: 'app',
+  player1_hp: 88,
+  player2_hp: 76,
+  player1_special: 2,
+  player2_special: 3,
+  player1_pet_snapshot_json: JSON.stringify({ telegram_id: 'player', pet_name: 'Player Pet' }),
+  player2_pet_snapshot_json: JSON.stringify({ telegram_id: 'app', pet_name: 'CRT Pet' }),
+  last_round_log_json: JSON.stringify({ round: 1, moves: ['ah', 'bh'], log: ['Attack Head hit.', 'Block Head guarded.'] }),
+};
+const soloArenaPreview = serializePetMiniAppArenaBattle(arenaFixture, 'player');
+assert.ok(soloArenaPreview.opponent_intent, 'solo Arena must reveal the deterministic CRT intent');
+assert.equal(soloArenaPreview.last_round.player_move, 'ah', 'Arena recap must preserve player perspective');
+assert.equal(soloArenaPreview.moves.find((move) => move.key === 'sp').available, false, 'Special must stay locked below its charge cost');
+const pvpArenaPreview = serializePetMiniAppArenaBattle({ ...arenaFixture, player2_telegram_id: 'rival' }, 'player');
+assert.equal(pvpArenaPreview.opponent_intent, null, 'PvP Arena must never reveal the rival intent');
+assert.equal(PET_ARENA_MOVE_GUIDE.ah.base_damage, 18, 'Arena preview balance must match authoritative head-attack damage');
+const prelockKaijuPreview = serializePetMiniAppKaijuMatch({
+  match_id: 'k-123456789abc',
+  mode: 'solo',
+  status: 'selecting',
+  player1_telegram_id: 'player',
+  category_key: 'lgcy',
+  roll: 6,
+}, 'player');
+assert.equal(prelockKaijuPreview.category_key, 'lgcy', 'Kaiju category must be visible before card lock');
+assert.equal(prelockKaijuPreview.category.name, 'Legacy', 'Kaiju pre-lock state must include readable category metadata');
 
 assert.ok(PET_RANDOM_EVENTS, 'PET_RANDOM_EVENTS must be exported');
 assert.ok(Object.keys(PET_RANDOM_EVENTS).length >= 5, 'PET_RANDOM_EVENTS must include at least 5 event types');

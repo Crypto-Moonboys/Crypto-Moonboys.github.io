@@ -3145,10 +3145,11 @@ function buildPetKaijuLobbyReplyMarkup(match) {
 
 function buildPetKaijuCardReplyMarkup(match) {
   const matchId = String(match?.match_id || '');
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match?.category_key) || null;
   const rows = [];
   for (let i = 0; i < PET_KAIJU_CARDS.length; i += 2) {
     rows.push(PET_KAIJU_CARDS.slice(i, i + 2).map((card) => ({
-      text: `🃏 ${card.name}`,
+      text: `🃏 ${card.name}${category ? ` · ${category.label} ${card.stats[category.key]}` : ''}`,
       callback_data: `pet:kaiju:card:${matchId}:${card.id}`,
     })));
   }
@@ -3156,10 +3157,13 @@ function buildPetKaijuCardReplyMarkup(match) {
   return { inline_keyboard: rows };
 }
 
-function formatPetKaijuCardList() {
-  return PET_KAIJU_CARDS.map((card) => {
+function formatPetKaijuCardList(match = null) {
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match?.category_key) || null;
+  const categoryLine = category ? `🎯 ACTIVE CATEGORY: <b>${escapeHtml(category.name)} [${escapeHtml(category.label)}]</b>\n\n` : '';
+  return categoryLine + PET_KAIJU_CARDS.map((card) => {
     const stats = PET_KAIJU_CATEGORIES.map((cat) => `${cat.label} ${card.stats[cat.key]}`).join(' | ');
-    return `🃏 <code>${escapeHtml(card.id)}</code> — ${escapeHtml(card.name)}\n${escapeHtml(stats)}`;
+    const active = category ? ` ← ACTIVE ${category.label} ${card.stats[category.key]}` : '';
+    return `🃏 <code>${escapeHtml(card.id)}</code> — ${escapeHtml(card.name)}${escapeHtml(active)}\n${escapeHtml(stats)}`;
   }).join('\n\n');
 }
 
@@ -3204,6 +3208,17 @@ async function getFreshPetKaijuMatch(db, matchId) {
 
 function isPetKaijuExpiredResult(fresh) {
   return Boolean(fresh?.expired);
+}
+
+async function ensurePetKaijuMatchCategory(db, match) {
+  if (!match || match.category_key || !['open', 'selecting'].includes(String(match.status || ''))) return match;
+  const category = pickPetKaijuCategory();
+  await db.prepare(`
+    UPDATE telegram_pet_kaiju_matches
+    SET category_key = ?, roll = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE match_id = ? AND status IN ('open', 'selecting') AND category_key IS NULL
+  `).bind(category.key, category.roll, String(match.match_id)).run();
+  return getPetKaijuMatch(db, match.match_id);
 }
 
 async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo', options = {}) {
@@ -3838,7 +3853,8 @@ function resolvePetArenaRoundState(battle, p1Move, p2Move) {
     if (move === 'bh' || move === 'bb') return { damage: 0, text: `${PET_ARENA_MOVES[move]} guarded this round.`, specialDelta: 0 };
     if (move === 'sp' && special < PET_ARENA_SPECIAL_COST) move = 'ab';
     const atkGear = petArenaGearEffect(atk, 'weapon'), defGear = petArenaGearEffect(def, 'armor'), charm = petArenaGearEffect(atk, 'charm');
-    const base = move === 'sp' ? 28 : move === 'ah' ? 18 : 14; const acc = move === 'ah' ? 78 : move === 'sp' ? 82 : 90;
+    const moveDefinition = PET_ARENA_MOVE_GUIDE[move] || PET_ARENA_MOVE_GUIDE.ab;
+    const base = Number(moveDefinition.base_damage || 0); const acc = Number(moveDefinition.accuracy || 100);
     let h = 0; for (const ch of `${battle.battle_id}:${battle.current_round}:${atk.telegram_id}:${move}`) h = ((h * 31) + ch.charCodeAt(0)) >>> 0;
     const dodged = (h % 100) >= Math.min(98, acc + Math.floor(Number(charm.luck || 0) / 2) - Math.floor(Number(petArenaGearEffect(def, 'charm').dodge || 0) / 3));
     if (dodged) return { damage: 0, text: `${PET_ARENA_MOVES[move]} missed.`, specialDelta: move === 'sp' ? -PET_ARENA_SPECIAL_COST : 1 };
@@ -6651,6 +6667,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     getPetNotificationPreference(db, telegramId),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
+  const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const adventureBase = selectPetAdventureEncounter(petRaw);
   const adventure = adventureBase ? {
@@ -6772,10 +6789,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     arena_queue: arenaQueue,
     arena_result: serializePetMiniAppArenaBattle(recentArena, telegramId),
     kaiju: {
-      match: serializePetMiniAppKaijuMatch(kaiju, telegramId),
+      match: serializePetMiniAppKaijuMatch(hydratedKaiju, telegramId),
       queue: kaijuQueue,
       result: serializePetMiniAppKaijuMatch(recentKaiju, telegramId),
-      cards: PET_KAIJU_CARDS.map((card) => serializePetKaijuCardPreview(card, kaiju?.category_key)),
+      cards: PET_KAIJU_CARDS.map((card) => serializePetKaijuCardPreview(card, hydratedKaiju?.category_key)),
       categories: PET_KAIJU_CATEGORIES,
     },
     leaderboard: leaderboardRows.map((entry, index) => serializePetLeaderboardEntry(entry, index)),
@@ -11540,6 +11557,7 @@ export const __petMediaTestHooks = Object.freeze({
   PET_RUN_STEP_CHOICES,
   PET_KAIJU_CARDS,
   PET_KAIJU_CATEGORIES,
+  PET_ARENA_MOVE_GUIDE,
   PET_RANDOM_EVENTS,
   PET_REPEAT_REWARD_RULES,
   PET_ECONOMY_ROUTES,
@@ -13166,14 +13184,16 @@ async function cmdPetBag(db, tok, chatId, telegramId) {
 
 
 function formatPetKaijuLobby(match, queue = []) {
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match?.category_key) || null;
   return [
     `🦖 <b>Kaiju Sticker Battle</b>`,
     `Table: <code>${escapeHtml(match.match_id)}</code>`,
     '',
     `Host: <code>${escapeHtml(match.player1_telegram_id)}</code>`,
     `Mode: ${match.mode === 'group' ? 'Group 2-player' : 'Player vs App'}`,
+    category ? `Active category: <b>${escapeHtml(category.name)} [${escapeHtml(category.label)}]</b>` : `Active category: arming`,
     '',
-    `Pick a kaiju sticker card. The app rolls one stat: PWR, SIZE, ATK, DEF, SPD or LGCY. Highest stat wins.`,
+    `Pick the card with the highest active-category stat. The rival card stays sealed until resolution.`,
     '',
     queue.length ? `Queue: ${queue.map((id) => `<code>${escapeHtml(id)}</code>`).join(', ')}` : `No queue yet.`,
   ].join('\n');
@@ -13373,7 +13393,7 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
     await sendTelegramPetReply(
       tok,
       chatId,
-      `🦖 <b>Kaiju Sticker Battle: Player vs App</b>\nChoose a card.\n\n${formatPetKaijuCardList()}`,
+      `🦖 <b>Kaiju Sticker Battle: Player vs App</b>\nChoose the strongest card for the active category.\n\n${formatPetKaijuCardList(match)}`,
       { reply_markup: buildPetKaijuCardReplyMarkup(match) },
       'play',
     );
