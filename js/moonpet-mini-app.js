@@ -866,7 +866,7 @@
       COMPANION_PRESENCE_FRAME.behavior = selector === 0
         ? SCENE_COMPANION_HABITS[activeScreen] || 'moon_gaze'
         : selector === 1
-          ? SPECIES_COMPANION_HABITS[lifecycle && lifecycle.species_id] || 'listen'
+          ? SPECIES_COMPANION_HABITS[lifecycle && lifecycle.species_id || pet && pet.species] || 'listen'
           : temperamentCompanionHabit(lifecycle && lifecycle.temperament);
       COMPANION_PRESENCE_FRAME.slot = slot;
       COMPANION_PRESENCE_FRAME.screen = activeScreen;
@@ -1379,12 +1379,13 @@
     var copy = greetingActive ? companionGreeting : presence.phase >= 0.58 ? presence.thought : '';
     if (!copy) return;
     copy = compactFeedback(copy, 24);
-    drawPixelRect(7, 18, 150, 31, '#020704');
-    drawPixelRect(7, 18, 3, 31, scene.accent);
-    drawPixelText(greetingActive ? 'CHECK-IN //' : 'MOONPET THINKS //', 16, 30, scene.accent, 'left');
-    drawPixelText(copy, 16, 42, '#f4ff65', 'left');
-    drawPixelRect(143, 49, 6, 4, '#020704');
-    drawPixelRect(149, 53, 4, 4, '#020704');
+    var bubbleY = 54;
+    drawPixelRect(7, bubbleY, 150, 31, '#020704');
+    drawPixelRect(7, bubbleY, 3, 31, scene.accent);
+    drawPixelText(greetingActive ? 'CHECK-IN //' : 'MOONPET THINKS //', 16, bubbleY + 12, scene.accent, 'left');
+    drawPixelText(copy, 16, bubbleY + 24, '#f4ff65', 'left');
+    drawPixelRect(143, bubbleY + 31, 6, 4, '#020704');
+    drawPixelRect(149, bubbleY + 35, 4, 4, '#020704');
   }
 
   var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
