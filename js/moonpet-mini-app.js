@@ -9,6 +9,7 @@
   var state = null;
   var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
+  var requestedFocus = launchParameter('focus');
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
   var busy = false;
   var typingToken = 0;
@@ -60,6 +61,9 @@
   var bootText = document.getElementById('boot-text');
   var title = document.getElementById('system-title');
   var clock = document.getElementById('system-clock');
+  var utilityLayer = document.getElementById('utility-layer');
+  var utilityTitle = document.getElementById('utility-title');
+  var utilityContent = document.getElementById('utility-content');
 
   function launchParameter(name) {
     var locations = [String(window.location.hash || '').replace(/^#/, ''), String(window.location.search || '').replace(/^\?/, '')];
@@ -199,6 +203,115 @@
     return '<div class="meter"><span>' + escapeHtml(label) + '</span><span class="meter-track"><span class="meter-fill" style="width:' + amount + '%"></span></span><strong>' + Math.floor(amount) + '</strong></div>';
   }
 
+  var SECTION_JUMPS = {
+    explore: [['districts', 'DISTRICTS'], ['moon-run', 'RUN'], ['weekly-boss', 'BOSS'], ['story-chains', 'STORIES'], ['seasonal-boss', 'RAID'], ['arena', 'ARENA'], ['kaiju', 'KAIJU']],
+    economy: [['equipment', 'GEAR'], ['materials', 'MATERIALS'], ['bounties', 'BOUNTIES'], ['expedition', 'EXPEDITION'], ['market', 'MARKET'], ['shop', 'SHOP'], ['inventory', 'BAG'], ['trade', 'TRADE']],
+    profile: [['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['prestige', 'PRESTIGE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
+  };
+
+  function utilityRail() {
+    return '<nav class="utility-rail" aria-label="Game utilities">' +
+      '<button type="button" class="utility-button" data-utility="guide">HOW TO PLAY</button>' +
+      '<button type="button" class="utility-button" data-utility="leaderboard">LEADERBOARD</button>' +
+      '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
+      '</nav>';
+  }
+
+  function sectionJumpBar(screenKey) {
+    var jumps = SECTION_JUMPS[screenKey] || [];
+    if (!jumps.length) return '';
+    return '<nav class="section-jumps" aria-label="' + escapeHtml(words(screenKey)) + ' shortcuts">' + jumps.map(function (jump) {
+      return '<button type="button" class="jump-button" data-panel-jump="' + escapeHtml(jump[0]) + '">' + escapeHtml(jump[1]) + '</button>';
+    }).join('') + '</nav>';
+  }
+
+  function closeUtility() {
+    utilityLayer.hidden = true;
+    utilityContent.innerHTML = '';
+    if (screen) screen.focus({ preventScroll: true });
+  }
+
+  function openExternalGuide() {
+    var url = 'https://cryptomoonboys.com/how-to-play-crypto-moonboy-pets.html';
+    try {
+      if (tg && typeof tg.openLink === 'function') tg.openLink(url);
+      else window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (_) { window.location.href = url; }
+  }
+
+  function guideMarkup() {
+    return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
+      '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
+      '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
+      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>RUN contains districts, Moon Runs, events, bosses, Arena and Kaiju. Extract a run to bank its unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
+      '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards, prestige and hidden rare-morph signals.</div>' +
+      '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
+      '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
+  }
+
+  function leaderboardRowsMarkup(entries, self) {
+    var rows = (entries || []).map(function (entry) {
+      var form = entry.phase === 'rare' ? entry.rare_morph_name : entry.species_name || (entry.phase === 'egg' ? 'Moon Egg' : entry.stage);
+      return '<div class="leader-row' + (entry.is_current ? ' is-current' : '') + '"><strong>#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') + (entry.is_current ? ' // YOU' : '') + '</strong><div class="line">' + escapeHtml(words(form || 'moonpet')) + ' // LVL ' + number(entry.level) + ' // ' + number(entry.pet_xp) + ' XP</div></div>';
+    }).join('');
+    var selfOutside = self && !(entries || []).some(function (entry) { return entry.is_current; })
+      ? '<div class="line muted">YOUR POSITION</div>' + leaderboardRowsMarkup([Object.assign({}, self, { is_current: true })], null)
+      : '';
+    return rows + selfOutside || '<div class="line muted">NO RANKED MOONPETS IN THIS PERIOD.</div>';
+  }
+
+  async function loadLeaderboard(period) {
+    var selected = ['daily', 'weekly', 'seasonal', 'all_time'].includes(period) ? period : 'seasonal';
+    utilityTitle.textContent = 'MOONPET LEADERBOARD';
+    utilityContent.innerHTML = '<div class="line">LOADING ' + escapeHtml(words(selected)) + ' RANKS...</div>';
+    try {
+      var data = await post('/telegram-pets/app/leaderboard', { period: selected, limit: 25 });
+      var tabs = ['daily', 'weekly', 'seasonal', 'all_time'].map(function (key) {
+        return '<button type="button" class="period-button" data-leaderboard-period="' + key + '" aria-pressed="' + (key === selected ? 'true' : 'false') + '">' + escapeHtml(words(key)) + '</button>';
+      }).join('');
+      utilityContent.innerHTML = '<div class="period-tabs">' + tabs + '</div><div class="line muted">PET XP RANKS // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self);
+    } catch (error) {
+      utilityContent.innerHTML = '<div class="connection-fault">RANKING LINK FAILED // ' + escapeHtml(error.message || 'CONNECTION FAILED') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-leaderboard-period="' + selected + '">RETRY LEADERBOARD</button></div>';
+    }
+  }
+
+  function openUtility(kind) {
+    utilityLayer.hidden = false;
+    if (kind === 'guide') {
+      utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
+      utilityContent.innerHTML = guideMarkup();
+    } else {
+      loadLeaderboard('seasonal');
+    }
+    var close = utilityLayer.querySelector('[data-utility-close]');
+    if (close) close.focus({ preventScroll: true });
+  }
+
+  async function syncState() {
+    if (busy) return;
+    busy = true;
+    tell('REFRESHING LIVE SAVE...');
+    try {
+      var data = await post('/telegram-pets/app/state');
+      if (data.state) state = data.state;
+      render();
+      tell('LIVE SAVE REFRESHED.');
+      haptic('success');
+    } catch (error) {
+      tell(error.message || 'REFRESH FAILED', 'danger');
+      haptic('error');
+    } finally { busy = false; }
+  }
+
+  function applyRequestedFocus() {
+    if (!requestedFocus) return;
+    var focus = requestedFocus;
+    requestedFocus = '';
+    if (focus === 'leaderboard') openUtility('leaderboard');
+    else scrollToPanel(focus);
+  }
+
   function renderHud() {
     if (!state || !state.pet) { hud.innerHTML = ''; return; }
     var pet = state.pet;
@@ -230,7 +343,7 @@
       panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
-        button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') + button('DAILY CACHE', 'daily_chest') +
+        button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') + button('DAILY CACHE', 'daily_chest') + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
       '</div>', 'care') +
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
@@ -455,10 +568,10 @@
     return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">LEARNED PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('LEARNED APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
-      panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>') +
+      panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
       panel('PRESTIGE', '<div class="line">RANK ' + number(prestige.count) + ' // MASTERED GEAR ' + number(prestige.mastered_items) + '/3 // DISTRICTS ' + number(prestige.completed_regions) + '/4</div><div class="line muted">REQUIRES LEVEL 100 + 5,000 GOLD + 50 GEMS</div><div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: !prestige.ready }) + '</div>', 'prestige') +
-      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', leaders, 'leaderboard');
+      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
@@ -475,7 +588,7 @@
   function render() {
     renderHud();
     renderNav();
-    screen.innerHTML = state ? screens[activeScreen]() : '';
+    screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
     title.textContent = state && state.pet ? (state.pet.pet_name || 'MOONPET') + ' OS' : 'MOONPET OS';
     if (reducedMotion) drawWorld(0);
   }
@@ -767,6 +880,21 @@
   }
 
   screen.addEventListener('click', function (event) {
+    var utility = event.target.closest('[data-utility]');
+    if (utility) {
+      if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
+      else if (utility.dataset.utility === 'sync') syncState();
+      else if (utility.dataset.utility === 'retry') window.location.reload();
+      return;
+    }
+    var panelJump = event.target.closest('[data-panel-jump]');
+    if (panelJump) {
+      scrollToPanel(panelJump.dataset.panelJump);
+      haptic('light');
+      return;
+    }
+    var petGreeting = event.target.closest('[data-pet-greet]');
+    if (petGreeting) { greetCompanion(); return; }
     if (lifecycleCeremonyActive()) {
       tell('LIFECYCLE REVEAL IN PROGRESS.');
       haptic('light');
@@ -832,6 +960,26 @@
     var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
     var canvasY = (event.clientY - bounds.top) * canvas.height / bounds.height;
     if (canvasX >= 92 && canvasX <= 228 && canvasY >= 66 && canvasY <= 190) greetCompanion();
+  });
+
+  canvas.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    greetCompanion();
+  });
+
+  utilityLayer.addEventListener('click', function (event) {
+    if (event.target === utilityLayer || event.target.closest('[data-utility-close]')) {
+      closeUtility();
+      return;
+    }
+    var period = event.target.closest('[data-leaderboard-period]');
+    if (period) { loadLeaderboard(period.dataset.leaderboardPeriod); return; }
+    if (event.target.closest('[data-open-full-guide]')) openExternalGuide();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !utilityLayer.hidden) closeUtility();
   });
 
   nav.addEventListener('click', function (event) {
@@ -2030,10 +2178,12 @@
       tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'MOON EGG READY FOR INITIALISATION.');
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
       await showPendingNotices();
+      applyRequestedFocus();
       window.setInterval(refreshLiveState, 5000);
     } catch (error) {
       tell(error.message || 'STARTUP FAILED', 'danger');
-      await typeBoot(['STARTUP FAULT', error.message || 'API UNAVAILABLE', 'CLOSE AND REOPEN THE MINI APP'], { speed: 8, hold: 900 });
+      screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>';
+      await typeBoot(['STARTUP FAULT', error.message || 'API UNAVAILABLE', 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
     }
   }
 
