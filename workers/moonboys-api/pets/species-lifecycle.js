@@ -83,7 +83,8 @@ export async function createMoonEggLifecycle(db, telegramId, eventKey = '') {
       WHERE EXISTS (SELECT 1 FROM telegram_pet_lifecycle WHERE telegram_id=?)`)
       .bind(crypto.randomUUID(), id, String(eventKey).slice(0, 180), id).run();
   }
-  return readLifecycle(db, id);
+  const row = await readLifecycle(db, id);
+  return publicLifecycle(row, { signal: 'dormant', ready: false, percent: 0 });
 }
 
 export async function ensureMoonpetLifecycle(db, telegramId) {
@@ -104,6 +105,8 @@ export async function ensureMoonpetLifecycle(db, telegramId) {
       innate_traits_json=?, rare_route_index=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND species_id IS NULL`)
       .bind(derived.species_id, derived.palette_id, derived.marking_id, derived.eye_style, derived.temperament,
         JSON.stringify(derived.innate_traits), derived.rare_route_index, id).run();
+    await db.prepare(`UPDATE telegram_pet_profiles SET species=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND species='moonbeast'`)
+      .bind(derived.species_id, id).run();
     row = await readLifecycle(db, id);
   }
   return row;
@@ -132,6 +135,11 @@ function publicLifecycle(row, rare) {
   const incubation = safeJson(row.incubation_json);
   const revealed = row.phase !== 'egg';
   const species = revealed ? MOONPET_SPECIES[row.species_id] : null;
+  const innateTraits = revealed ? safeJson(row.innate_traits_json, []) : [];
+  const preferences = revealed ? [...new Set([
+    row.temperament === 'rhythmic' ? 'play' : row.temperament === 'bold' ? 'train' : row.temperament === 'calm' ? 'sleep' : row.temperament === 'social' ? 'care' : 'explore',
+    innateTraits.includes('snack_scout') ? 'feed' : innateTraits.includes('beat_seeker') ? 'play' : innateTraits.includes('alley_brave') ? 'battle' : innateTraits.includes('collector') ? 'expedition' : innateTraits.includes('night_owl') ? 'adventure' : 'bond',
+  ])] : [];
   return {
     version: Number(row.lifecycle_version || 1),
     phase: row.phase,
@@ -139,11 +147,12 @@ function publicLifecycle(row, rare) {
     species_name: species?.name || null,
     appearance: revealed ? { palette: row.palette_id, marking: row.marking_id, eyes: row.eye_style } : null,
     temperament: revealed ? row.temperament : null,
-    innate_traits: revealed ? safeJson(row.innate_traits_json, []) : [],
+    innate_traits: innateTraits,
+    preferences,
     incubation: {
       progress: Number(row.incubation_progress || 0),
       target: HATCH_PROGRESS,
-      ready: Number(row.incubation_progress || 0) >= HATCH_PROGRESS && Object.values(incubation).filter(Number).length >= 3,
+      ready: Number(row.incubation_progress || 0) >= HATCH_PROGRESS && Object.keys(CARE_TYPES).filter((key) => Number(incubation[key] || 0) > 0).length >= 3,
       signals: Object.fromEntries(Object.keys(CARE_TYPES).map((key) => [key, Number(incubation[key] || 0)])),
       actions_today: Number(row.actions_today || 0),
       daily_cap: DAILY_INCUBATION_CAP,
@@ -178,25 +187,32 @@ export async function incubateMoonEgg(db, telegramId, careType, eventKey) {
   const existing = await db.prepare('SELECT event_id FROM telegram_pet_lifecycle_events WHERE telegram_id=? AND event_key=?').bind(id, key).first().catch(() => null);
   if (existing) return { accepted: true, duplicate: true, reason: 'duplicate', lifecycle: await getMoonpetLifecycle(db, id) };
   const eventId = crypto.randomUUID();
-  const inserted = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_events
-    (event_id, telegram_id, event_key, action, payload_json, progress_delta, day_key)
-    SELECT ?, ?, ?, ?, ?, ?, ?
-    WHERE (SELECT COUNT(*) FROM telegram_pet_lifecycle_events WHERE telegram_id=? AND action LIKE 'incubate_%' AND day_key=?) < ?`)
-    .bind(eventId, id, key, `incubate_${care}`, JSON.stringify({ care_type: care }), definition.progress, dayKey, id, dayKey, DAILY_INCUBATION_CAP).run();
-  if (Number(inserted?.meta?.changes || 0) !== 1) return { accepted: false, reason: 'incubation_daily_cap', lifecycle: await getMoonpetLifecycle(db, id) };
-  const incubation = safeJson(row.incubation_json);
-  incubation[care] = Number(incubation[care] || 0) + 1;
-  incubation[definition.affinity] = Number(incubation[definition.affinity] || 0) + 1;
-  await db.batch([
-    db.prepare(`UPDATE telegram_pet_lifecycle SET incubation_progress=MIN(?, incubation_progress+?), incubation_json=?, updated_at=CURRENT_TIMESTAMP
-      WHERE telegram_id=? AND phase='egg'`).bind(HATCH_PROGRESS, definition.progress, JSON.stringify(incubation), id),
-    db.prepare('UPDATE telegram_pet_lifecycle_events SET applied_at=CURRENT_TIMESTAMP WHERE event_id=?').bind(eventId),
+  const carePath = `$.${care}`;
+  const affinityPath = `$.${definition.affinity}`;
+  const results = await db.batch([
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_events
+      (event_id, telegram_id, event_key, action, payload_json, progress_delta, day_key)
+      SELECT ?, ?, ?, ?, ?, ?, ?
+      WHERE (SELECT COUNT(*) FROM telegram_pet_lifecycle_events WHERE telegram_id=? AND action LIKE 'incubate_%' AND day_key=?) < ?`)
+      .bind(eventId, id, key, `incubate_${care}`, JSON.stringify({ care_type: care }), definition.progress, dayKey, id, dayKey, DAILY_INCUBATION_CAP),
+    db.prepare(`UPDATE telegram_pet_lifecycle SET incubation_progress=MIN(?, incubation_progress+?),
+      incubation_json=json_set(incubation_json, ?, COALESCE(json_extract(incubation_json, ?), 0)+1,
+        ?, COALESCE(json_extract(incubation_json, ?), 0)+1), updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND phase='egg' AND EXISTS (
+        SELECT 1 FROM telegram_pet_lifecycle_events WHERE event_id=? AND applied_at IS NULL)`)
+      .bind(HATCH_PROGRESS, definition.progress, carePath, carePath, affinityPath, affinityPath, id, eventId),
+    db.prepare('UPDATE telegram_pet_lifecycle_events SET applied_at=CURRENT_TIMESTAMP WHERE event_id=? AND applied_at IS NULL').bind(eventId),
   ]);
+  if (Number(results?.[0]?.meta?.changes || 0) !== 1) return { accepted: false, reason: 'incubation_daily_cap', lifecycle: await getMoonpetLifecycle(db, id) };
   return { accepted: true, reason: 'egg_signal_strengthened', care_type: care, lifecycle: await getMoonpetLifecycle(db, id) };
 }
 
 export async function hatchMoonpet(db, telegramId, eventKey) {
   const id = cleanId(telegramId);
+  const key = String(eventKey || crypto.randomUUID()).slice(0, 180);
+  const existing = await db.prepare(`SELECT event_id FROM telegram_pet_lifecycle_events
+    WHERE telegram_id=? AND event_key=? AND action='hatch'`).bind(id, key).first().catch(() => null);
+  if (existing) return { accepted: true, duplicate: true, reason: 'duplicate', lifecycle: await getMoonpetLifecycle(db, id) };
   const row = await ensureMoonpetLifecycle(db, id);
   if (!row) return { accepted: false, reason: 'pet_not_adopted' };
   if (row.phase !== 'egg') return { accepted: false, reason: 'already_hatched', lifecycle: await getMoonpetLifecycle(db, id) };
@@ -205,15 +221,21 @@ export async function hatchMoonpet(db, telegramId, eventKey) {
     return { accepted: false, reason: 'egg_not_ready', lifecycle: await getMoonpetLifecycle(db, id) };
   }
   const identity = await deriveIdentity(row.identity_seed, incubation);
-  const updated = await db.prepare(`UPDATE telegram_pet_lifecycle SET phase='young', species_id=?, palette_id=?, marking_id=?, eye_style=?, temperament=?,
-    innate_traits_json=?, rare_route_index=?, hatched_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND phase='egg'`)
-    .bind(identity.species_id, identity.palette_id, identity.marking_id, identity.eye_style, identity.temperament,
-      JSON.stringify(identity.innate_traits), identity.rare_route_index, id).run();
-  if (Number(updated?.meta?.changes || 0) !== 1) return { accepted: false, reason: 'hatch_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
-  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_events
-    (event_id, telegram_id, event_key, action, payload_json, progress_delta, applied_at)
-    VALUES (?, ?, ?, 'hatch', ?, 0, CURRENT_TIMESTAMP)`)
-    .bind(crypto.randomUUID(), id, String(eventKey || crypto.randomUUID()).slice(0, 180), JSON.stringify({ species_id: identity.species_id })).run();
+  const results = await db.batch([
+    db.prepare(`UPDATE telegram_pet_lifecycle SET phase='young', species_id=?, palette_id=?, marking_id=?, eye_style=?, temperament=?,
+      innate_traits_json=?, rare_route_index=?, hatched_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND phase='egg'`)
+      .bind(identity.species_id, identity.palette_id, identity.marking_id, identity.eye_style, identity.temperament,
+        JSON.stringify(identity.innate_traits), identity.rare_route_index, id),
+    db.prepare(`UPDATE telegram_pet_profiles SET species=?, stage='young', updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_lifecycle WHERE telegram_id=? AND phase='young')`)
+      .bind(identity.species_id, id, id),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_events
+      (event_id, telegram_id, event_key, action, payload_json, progress_delta, applied_at)
+      SELECT ?, ?, ?, 'hatch', ?, 0, CURRENT_TIMESTAMP
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_lifecycle WHERE telegram_id=? AND phase='young')`)
+      .bind(crypto.randomUUID(), id, key, JSON.stringify({ species_id: identity.species_id }), id),
+  ]);
+  if (Number(results?.[0]?.meta?.changes || 0) !== 1) return { accepted: false, reason: 'hatch_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
   return { accepted: true, reason: 'moonpet_hatched', species: MOONPET_SPECIES[identity.species_id].name, lifecycle: await getMoonpetLifecycle(db, id) };
 }
 
@@ -222,24 +244,33 @@ export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
   if (Number(stage) < 2) return getMoonpetLifecycle(db, id);
   await db.prepare(`UPDATE telegram_pet_lifecycle SET phase='adult', adult_at=COALESCE(adult_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP
     WHERE telegram_id=? AND phase='young'`).bind(id).run();
+  await db.prepare(`UPDATE telegram_pet_profiles SET stage='adult', updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND stage='young'`).bind(id).run();
   return getMoonpetLifecycle(db, id);
 }
 
 export async function morphMoonpetRare(db, telegramId, eventKey) {
   const id = cleanId(telegramId);
+  const key = String(eventKey || crypto.randomUUID()).slice(0, 180);
+  const existing = await db.prepare(`SELECT event_id FROM telegram_pet_lifecycle_events
+    WHERE telegram_id=? AND event_key=? AND action='rare_morph'`).bind(id, key).first().catch(() => null);
+  if (existing) return { accepted: true, duplicate: true, reason: 'duplicate', lifecycle: await getMoonpetLifecycle(db, id) };
   const row = await ensureMoonpetLifecycle(db, id);
   if (!row) return { accepted: false, reason: 'pet_not_adopted' };
   if (row.phase === 'rare') return { accepted: false, reason: 'rare_morph_complete', lifecycle: await getMoonpetLifecycle(db, id) };
   const progress = await rareProgress(db, id, row);
   if (!progress.ready) return { accepted: false, reason: 'rare_signal_not_ready', lifecycle: publicLifecycle(row, progress) };
   const route = RARE_ROUTES[Number(row.rare_route_index || 0)];
-  await db.batch([
+  const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_lifecycle SET phase='rare', rare_morph_id=?, rare_morphed_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
       WHERE telegram_id=? AND phase='adult'`).bind(route.id, id),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_events
       (event_id, telegram_id, event_key, action, payload_json, progress_delta, applied_at)
       VALUES (?, ?, ?, 'rare_morph', ?, 0, CURRENT_TIMESTAMP)`)
-      .bind(crypto.randomUUID(), id, String(eventKey || crypto.randomUUID()).slice(0, 180), JSON.stringify({ rare_morph_id: route.id })),
+      .bind(crypto.randomUUID(), id, key, JSON.stringify({ rare_morph_id: route.id })),
+    db.prepare(`UPDATE telegram_pet_profiles SET stage='rare', updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_lifecycle WHERE telegram_id=? AND phase='rare' AND rare_morph_id=?)`)
+      .bind(id, id, route.id),
   ]);
+  if (Number(results?.[0]?.meta?.changes || 0) !== 1) return { accepted: false, reason: 'rare_morph_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
   return { accepted: true, reason: 'rare_morph_revealed', rare_morph: route.name, lifecycle: await getMoonpetLifecycle(db, id) };
 }
