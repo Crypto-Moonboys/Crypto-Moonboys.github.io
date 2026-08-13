@@ -111,8 +111,9 @@ const firstCard = await act('kaiju-one', 'kaiju_card', { match_id: kaijuMatch.ma
 assert.equal(firstCard.reason, 'kaiju_card_waiting');
 const hiddenKaiju = serializePetMiniAppKaijuMatch(firstCard.match, 'kaiju-two');
 assert.equal(hiddenKaiju.opponent_card_key, null, 'active Kaiju DTO must conceal the opponent card');
-assert.equal(hiddenKaiju.category_key, null, 'active Kaiju DTO must conceal the scoring category');
-assert.equal(hiddenKaiju.roll, null, 'active Kaiju DTO must conceal the scoring roll');
+assert.equal(hiddenKaiju.category_key, kaijuMatch.category_key, 'active Kaiju DTO must reveal the persisted scoring category before card lock');
+assert.ok(Number(hiddenKaiju.roll) >= 1 && Number(hiddenKaiju.roll) <= 6, 'active Kaiju DTO must reveal the persisted category roll');
+assert.equal(hiddenKaiju.score, null, 'active Kaiju DTO must conceal unresolved scores');
 assert.equal(hiddenKaiju.player1_telegram_id, undefined, 'Kaiju DTO must redact player identifiers');
 const secondCard = await act('kaiju-two', 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: 'god-dzilla' });
 assert.equal(secondCard.reason, 'kaiju_completed');
