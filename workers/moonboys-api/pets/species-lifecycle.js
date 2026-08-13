@@ -265,8 +265,12 @@ export async function morphMoonpetRare(db, telegramId, eventKey) {
       WHERE telegram_id=? AND phase='adult'`).bind(route.id, id),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_events
       (event_id, telegram_id, event_key, action, payload_json, progress_delta, applied_at)
-      VALUES (?, ?, ?, 'rare_morph', ?, 0, CURRENT_TIMESTAMP)`)
-      .bind(crypto.randomUUID(), id, key, JSON.stringify({ rare_morph_id: route.id })),
+      SELECT ?, ?, ?, 'rare_morph', ?, 0, CURRENT_TIMESTAMP
+      WHERE EXISTS (
+        SELECT 1 FROM telegram_pet_lifecycle
+        WHERE telegram_id=? AND phase='rare' AND rare_morph_id=?
+      )`)
+      .bind(crypto.randomUUID(), id, key, JSON.stringify({ rare_morph_id: route.id }), id, route.id),
     db.prepare(`UPDATE telegram_pet_profiles SET stage='rare', updated_at=CURRENT_TIMESTAMP
       WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_lifecycle WHERE telegram_id=? AND phase='rare' AND rare_morph_id=?)`)
       .bind(id, id, route.id),
