@@ -3,7 +3,7 @@
 
   var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   var apiConfig = window.MOONBOYS_API || {};
-  var apiBase = apiConfig.BASE_URL || 'https://moonboys-api.sercullen.workers.dev';
+  var apiBase = apiConfig.BASE_URL || 'https://api.cryptomoonboys.com';
   var initData = '';
   var telegramAuth = null;
   var state = null;
