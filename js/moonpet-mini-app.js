@@ -462,9 +462,19 @@
     if (reducedMotion) drawWorld(0);
   }
 
+  function resultRewardMap(result) {
+    var applied = result && result.applied;
+    var reward = result && result.rewards
+      || applied && (applied.rewardsApplied || applied.rewards_applied)
+      || result && result.computed && result.computed.rewards
+      || applied
+      || {};
+    return reward && typeof reward === 'object' && !Array.isArray(reward) ? reward : {};
+  }
+
   function resultMessage(result) {
     if (!result) return 'SYSTEM RESPONSE LOST.';
-    var reward = result.rewards || result.applied || result.computed && result.computed.rewards || {};
+    var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
     var parts = [result.accepted ? 'ACTION ACCEPTED' : 'ACTION BLOCKED', words(result.reason)];
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
@@ -489,7 +499,7 @@
     if (terminalResult) lines.push('OUTCOME ' + words(String(terminalResult).replace('player1', 'you').replace('player2', 'opponent')));
     if (result.damage) lines.push('DAMAGE ' + number(result.damage));
     if (result.pet_xp_awarded) lines.push('+' + number(result.pet_xp_awarded) + ' PET XP');
-    var reward = result.rewards || result.applied || result.computed && result.computed.rewards || {};
+    var reward = resultRewardMap(result);
     Object.entries(reward).some(function (entry) {
       if (lines.length >= 3) return true;
       if (Number(entry[1]) > 0 && typeof entry[1] !== 'object') lines.push('+' + number(entry[1]) + ' ' + words(entry[0]));
@@ -614,11 +624,11 @@
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
-      animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
-      presentResultFeedback(data.result);
       render();
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
+      animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
+      presentResultFeedback(data.result);
     } catch (error) {
       animateAction('blocked', false, 2800);
       tell(error.message || 'CONNECTION FAILED', 'danger');
@@ -643,6 +653,11 @@
   screen.addEventListener('click', function (event) {
     var jump = event.target.closest('[data-jump]');
     if (jump && !busy) {
+      if (!SCREEN_ORDER.includes(jump.dataset.jump)) {
+        tell('ROUTE NOT FOUND.', 'danger');
+        haptic('error');
+        return;
+      }
       switchScreen(jump.dataset.jump);
       scrollToPanel(jump.dataset.focus);
       haptic('light');
@@ -1379,8 +1394,9 @@
     drawPixelRect(53, 174, 214, 2, color); drawPixelRect(53, 207, 214, 2, color);
     for (var line = 0; line < feedbackLines.length; line += 1) drawPixelText(feedbackLines[line], 160, 185 + line * 10, line === 0 ? color : '#d8f9ff', 'center');
     if (feedbackReaction) {
-      drawPixelRect(177, 80, 136, 20, '#020704'); drawPixelRect(177, 80, 3, 20, scene.accent);
-      drawPixelText('MOONPET // ' + feedbackReaction, 184, 93, '#f4ff65', 'left');
+      drawPixelRect(172, 74, 141, 31, '#020704'); drawPixelRect(172, 74, 3, 31, scene.accent);
+      drawPixelText('MOONPET //', 181, 86, scene.accent, 'left');
+      drawPixelText(feedbackReaction, 181, 98, '#f4ff65', 'left');
     }
     ctx.restore();
   }
