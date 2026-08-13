@@ -703,30 +703,38 @@
     }
   }
 
+  function createPetPalette(body, shade, accent) {
+    return {
+      normal: { body: body, shade: shade, accent: accent, outline: '#061009' },
+      legendary: { body: body, shade: shade, accent: '#f6a7ff', outline: '#061009' },
+    };
+  }
+
+  var PET_APPEARANCE_PALETTES = {
+    mint_punch: createPetPalette('#80ffd5', '#36a878', '#f4ff65'),
+    coral_pop: createPetPalette('#ff8bbd', '#c84f78', '#61f5ff'),
+    cobalt_lime: createPetPalette('#61a8ff', '#3158a8', '#a9ff55'),
+    gold_violet: createPetPalette('#f4cf58', '#8450aa', '#f6a7ff'),
+    lavender_ice: createPetPalette('#d8b7ff', '#7757a8', '#b3ffff'),
+    turquoise_flame: createPetPalette('#61f5ff', '#158f94', '#ff954f'),
+  };
+  var PET_SPECIES_PALETTES = {
+    neon_raccoon: createPetPalette('#80ffd5', '#2c8f70', '#f4ff65'),
+    bubble_ram: createPetPalette('#ff8bbd', '#a84770', '#61f5ff'),
+    comet_gecko: createPetPalette('#61a8ff', '#3158a8', '#a9ff55'),
+    vinyl_crab: createPetPalette('#f4ff65', '#bd703b', '#ff8bbd'),
+    lantern_fox: createPetPalette('#c99cff', '#713d91', '#ffcf68'),
+    sneaker_snail: createPetPalette('#a9ff55', '#4d9938', '#61f5ff'),
+    alley_drake: createPetPalette('#ff954f', '#9c4329', '#f4ff65'),
+    moon_ferret: createPetPalette('#61f5ff', '#277f91', '#f6a7ff'),
+  };
+  var DEFAULT_PET_PALETTE = createPetPalette('#a9ff9a', '#4ea85a', '#f4ff65');
+
   function petPalette(lifecycle, stage) {
-    var palettes = {
-      mint_punch: ['#80ffd5', '#36a878', '#f4ff65'],
-      coral_pop: ['#ff8bbd', '#c84f78', '#61f5ff'],
-      cobalt_lime: ['#61a8ff', '#3158a8', '#a9ff55'],
-      gold_violet: ['#f4cf58', '#8450aa', '#f6a7ff'],
-      lavender_ice: ['#d8b7ff', '#7757a8', '#b3ffff'],
-      turquoise_flame: ['#61f5ff', '#158f94', '#ff954f'],
-    };
-    var species = {
-      neon_raccoon: ['#80ffd5', '#2c8f70', '#f4ff65'],
-      bubble_ram: ['#ff8bbd', '#a84770', '#61f5ff'],
-      comet_gecko: ['#61a8ff', '#3158a8', '#a9ff55'],
-      vinyl_crab: ['#f4ff65', '#bd703b', '#ff8bbd'],
-      lantern_fox: ['#c99cff', '#713d91', '#ffcf68'],
-      sneaker_snail: ['#a9ff55', '#4d9938', '#61f5ff'],
-      alley_drake: ['#ff954f', '#9c4329', '#f4ff65'],
-      moon_ferret: ['#61f5ff', '#277f91', '#f6a7ff'],
-    };
-    var selected = palettes[lifecycle && lifecycle.appearance && lifecycle.appearance.palette]
-      || species[lifecycle && lifecycle.species_id]
-      || ['#a9ff9a', '#4ea85a', '#f4ff65'];
-    if (stage >= 4) selected = [selected[0], selected[1], '#f6a7ff'];
-    return { body: selected[0], shade: selected[1], accent: selected[2], outline: '#061009' };
+    var selected = PET_APPEARANCE_PALETTES[lifecycle && lifecycle.appearance && lifecycle.appearance.palette]
+      || PET_SPECIES_PALETTES[lifecycle && lifecycle.species_id]
+      || DEFAULT_PET_PALETTE;
+    return stage >= 4 ? selected.legendary : selected.normal;
   }
 
   function petPose(time, active, mood) {
