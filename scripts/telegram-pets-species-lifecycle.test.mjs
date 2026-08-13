@@ -44,6 +44,10 @@ assert.equal(lifecycle.species_id, null, 'species must stay secret before hatchi
 for (const [index, care] of ['warm', 'talk', 'music', 'warm', 'talk', 'music'].entries()) {
   assert.equal((await incubateMoonEgg(db, 'new-player', care, `care:${index}`)).accepted, true);
 }
+for (const care of ['warm', 'talk', 'music', 'rest']) {
+  assert.equal((await incubateMoonEgg(db, 'new-player', care, `cap:${care}`)).accepted, care === 'warm' || care === 'talk');
+}
+assert.equal((await incubateMoonEgg(db, 'new-player', 'rest', 'cap:blocked')).reason, 'incubation_daily_cap');
 assert.equal((await incubateMoonEgg(db, 'new-player', 'music', 'care:0')).duplicate, true, 'request keys must be idempotent');
 lifecycle = await getMoonpetLifecycle(db, 'new-player');
 assert.equal(lifecycle.incubation.ready, true);
