@@ -732,8 +732,10 @@
   function petPose(time, active, mood) {
     var pose = { x: 0, y: 0, headY: 0, squashX: 1, squashY: 1, arm: 0, tail: 0 };
     if (!active) {
-      pose.y = mood === 'tired' ? 2 : Math.round(Math.sin(time / 270) * 2);
-      pose.headY = mood === 'hurt' ? 2 : 0;
+      pose.y = mood === 'tired' ? 3 : Math.round(Math.sin(time / 270) * 2);
+      if (mood === 'happy') { pose.y -= 2; pose.arm = -3; pose.tail = 8; }
+      else if (mood === 'hungry') { pose.headY = 4; pose.arm = 5; pose.squashY = 0.96; }
+      else if (mood === 'hurt') { pose.headY = 4; pose.x = -2; pose.squashX = 0.94; pose.squashY = 0.92; }
       return pose;
     }
     if (animationMode === 'feed') { pose.headY = 5; pose.arm = 7; pose.squashY = 0.96; }
@@ -744,9 +746,21 @@
     else if (animationMode === 'battle') { pose.x = Math.round(Math.sin(time / 65) * 7); pose.headY = -2; pose.arm = -11; }
     else if (animationMode === 'travel') { pose.x = Math.round(Math.sin(time / 115) * 12); pose.y = -Math.abs(Math.round(Math.sin(time / 90) * 4)); pose.tail = 9; }
     else if (animationMode === 'work') { pose.headY = 2; pose.arm = -7; }
-    else if (animationMode === 'celebrate' || animationMode === 'evolve') { pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 11)); pose.arm = -13; pose.tail = 14; }
+    else if (animationMode === 'celebrate') { pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 11)); pose.arm = -13; pose.tail = 14; pose.squashX = 1.06; }
+    else if (animationMode === 'evolve') { pose.y = -6; pose.arm = -13; pose.tail = 14; pose.squashX = 1.08 + Math.sin(time / 90) * 0.05; pose.squashY = 1.08 + Math.sin(time / 90) * 0.05; }
     else if (animationMode === 'blocked') { pose.x = Math.round(Math.sin(time / 28) * 3); pose.squashX = 0.96; }
     return pose;
+  }
+
+  function petGrowthShape(phase, stage) {
+    if (phase === 'young') return { scaleX: 0.9, scaleY: 0.76, offsetY: 12 };
+    if (phase === 'rare') return { scaleX: 1.22, scaleY: 1.18, offsetY: -7 };
+    var adultScale = 1 + Math.min(4, stage) * 0.025;
+    return { scaleX: adultScale, scaleY: adultScale, offsetY: 0 };
+  }
+
+  function petFaceOffset(speciesId) {
+    return speciesId === 'sneaker_snail' ? 18 : 0;
   }
 
   function drawPetEyes(eyeStyle, mood, blink, outline, accent, headY) {
@@ -974,8 +988,10 @@
     }
   }
 
-  function drawMoonEgg(time, active) {
-    var crack = Math.floor(time / 260) % 3;
+  function drawMoonEgg(time, active, incubation) {
+    var progress = Math.max(0, Number(incubation && incubation.progress || 0));
+    var target = Math.max(1, Number(incubation && incubation.target || 12));
+    var crack = Math.min(2, Math.floor(progress / target * 3));
     var eggY = 150 + (active ? -Math.abs(Math.round(Math.sin(time / 100) * 5)) : Math.round(Math.sin(time / 340) * 2));
     drawPixelRect(134, eggY - 48, 52, 57, '#061009');
     drawPixelRect(138, eggY - 44, 44, 49, '#d8f9ff');
@@ -996,7 +1012,7 @@
     var renderTime = reducedMotion ? performance.now() : time;
     var active = animationUntil > renderTime;
     if (lifecycle.phase === 'egg') {
-      drawMoonEgg(time, active);
+      drawMoonEgg(time, active, lifecycle.incubation);
       drawActionEffects(time, 160, 150, active);
       if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
@@ -1004,29 +1020,38 @@
 
     var pose = petPose(time, active, mood);
     var rareName = lifecycle.rare && lifecycle.rare.name || '';
-    var scale = lifecycle.phase === 'young' ? 0.82 : lifecycle.phase === 'rare' ? 1.13 : 1 + Math.min(4, stage) * 0.025;
+    var growth = petGrowthShape(lifecycle.phase, stage);
+    var scale = Math.max(growth.scaleX, growth.scaleY);
     var palette = petPalette(lifecycle, stage);
+    var speciesId = lifecycle.species_id || 'neon_raccoon';
+    var faceX = petFaceOffset(speciesId);
     var x = 160 + pose.x;
-    var y = 150 + pose.y + (lifecycle.phase === 'young' ? 8 : lifecycle.phase === 'rare' ? -4 : 0);
+    var y = 150 + pose.y + growth.offsetY;
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(scale * pose.squashX, scale * pose.squashY);
+    ctx.scale(growth.scaleX * pose.squashX, growth.scaleY * pose.squashY);
     ctx.shadowColor = lifecycle.phase === 'rare' ? palette.accent : stage >= 2 ? '#61f5ff' : palette.body;
     ctx.shadowBlur = lifecycle.phase === 'rare' ? 12 : stage * 2 + (active ? 6 : 2);
     drawRareMorphShell(rareName, palette, pose);
-    drawSpeciesSilhouette(lifecycle.species_id || 'neon_raccoon', palette, pose);
+    drawSpeciesSilhouette(speciesId, palette, pose);
+    ctx.save();
+    ctx.translate(faceX, 0);
     drawPetMarking(lifecycle.appearance && lifecycle.appearance.marking, palette, pose.headY);
+    ctx.restore();
     drawEvolutionLayers(stage, palette);
     drawEquipmentLayers(pet, palette, pose);
     drawCosmeticLayers(time, palette, active);
 
     var blink = !reducedMotion && Math.floor(renderTime / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
+    ctx.save();
+    ctx.translate(faceX, 0);
     drawPetEyes(lifecycle.appearance && lifecycle.appearance.eyes || 'bright', mood, blink, palette.outline, palette.accent, pose.headY);
     drawPixelRect(-3, -27 + pose.headY, 6, 4, palette.outline);
     if (mood === 'happy' || active && ['play', 'celebrate', 'feed'].includes(animationMode)) {
       drawPixelRect(-8, -20 + pose.headY, 6, 3, palette.outline); drawPixelRect(2, -20 + pose.headY, 6, 3, palette.outline);
     } else if (mood === 'hungry') drawPixelRect(-5, -20 + pose.headY, 10, 5, palette.outline);
     else { drawPixelRect(-6, -20 + pose.headY, 12, 2, palette.outline); drawPixelRect(-2, -18 + pose.headY, 4, 2, palette.outline); }
+    ctx.restore();
     ctx.restore();
     ctx.shadowBlur = 0;
 
