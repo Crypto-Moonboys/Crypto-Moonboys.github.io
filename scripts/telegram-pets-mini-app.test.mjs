@@ -417,7 +417,7 @@ assert.match(client, /var combatScale = combat && combat\.active \? 0\.78 : 1/);
 assert.match(client, /combat && combat\.active \? -62 : 0/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
 assert.match(client, /if \(!combat\.active\) drawCompanionPresence/);
-assert.match(client, /COMBAT_PRESENTATION_FRAME\.active\) return;/);
+assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
 const combatDirectorMatch = client.match(/  function clearCombatPresentation\(\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
