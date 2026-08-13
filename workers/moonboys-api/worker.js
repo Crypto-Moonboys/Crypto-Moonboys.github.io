@@ -2630,7 +2630,7 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const job = PET_JOBS[key];
   const level = getPetLevel(pet.pet_xp);
   const evolutionStage = Math.max(0, Math.floor(Number(identity?.current_stage?.stage) || 0));
@@ -2702,7 +2702,7 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const encounter = resolvePetRandomEncounter(options.event_key || options.encounter_key || options.eventKey) || options.encounter || selectPetRandomEncounter(identity);
   if (!encounter) return { accepted: false, reason: 'event_unavailable', xp_awarded: 0, pet_xp_awarded: 0 };
   const evolutionStage = Math.max(0, Math.floor(Number(identity?.current_stage?.stage) || 0));
@@ -4048,12 +4048,21 @@ async function processPetAction(db, telegramId, action, options = {}) {
 
   if (action === 'adopt') {
     const existingPet = await getPetProfile(db, telegramId);
-    if (existingPet) return { accepted: false, reason: 'pet_already_adopted', xp_awarded: 0, pet_xp_awarded: 0, pet: existingPet };
+    if (existingPet) {
+      const lifecycleRow = await db.prepare('SELECT phase FROM telegram_pet_lifecycle WHERE telegram_id=?')
+        .bind(telegramId).first().catch(() => null);
+      if (!lifecycleRow) {
+        await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle-repair`);
+        await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory-repair`, memory_type: 'first_adoption', milestone: 'first_adoption' });
+        await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: 'moon_egg', event_key: `${eventKey}:moon-egg-repair` });
+      }
+      return { accepted: false, reason: 'pet_already_adopted', xp_awarded: 0, pet_xp_awarded: 0, pet: existingPet };
+    }
     const pet = await getOrCreatePetProfile(db, telegramId, options);
     await savePetProfile(db, pet);
+    await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'first_adoption', milestone: 'first_adoption' });
     await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: 'moon_egg', event_key: `${eventKey}:moon_egg` });
-    await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
     return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
 
@@ -4425,6 +4434,20 @@ function serializePetLeaderboardEntry(row, index = 0) {
     style_tokens: clampPetCurrency(row?.style_tokens),
     streak_days: Number(row?.streak_days || 0),
   };
+}
+
+async function materializePetLeaderboardRows(db, rows = []) {
+  return Promise.all(rows.map(async (row) => {
+    if (row.lifecycle_phase && (row.lifecycle_phase === 'egg' || row.lifecycle_species_id)) return row;
+    const lifecycle = await ensureMoonpetLifecycle(db, row.telegram_id).catch(() => null);
+    if (!lifecycle) return row;
+    return {
+      ...row,
+      lifecycle_phase: lifecycle.phase,
+      lifecycle_species_id: lifecycle.species_id,
+      rare_morph_id: lifecycle.rare_morph_id,
+    };
+  }));
 }
 
 function serializePet(pet, identity = null) {
@@ -6365,6 +6388,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
   ]);
+  const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const adventureBase = selectPetAdventureEncounter(petRaw);
   const adventure = adventureBase ? {
@@ -6483,7 +6507,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       cards: PET_KAIJU_CARDS,
       categories: PET_KAIJU_CATEGORIES,
     },
-    leaderboard: (leaderboard.results || []).map((entry, index) => serializePetLeaderboardEntry(entry, index)),
+    leaderboard: leaderboardRows.map((entry, index) => serializePetLeaderboardEntry(entry, index)),
     notifications: {
       enabled: Boolean(notifications?.enabled),
       last_notified_at: notifications?.last_notified_at || null,
@@ -6585,7 +6609,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'district_mission') {
     const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
-    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()));
     const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
     return processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction);
@@ -6599,7 +6623,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'seasonal_boss') {
     const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
-    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     return processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args));
   }
   if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
@@ -6607,7 +6631,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'prestige') {
     const petRaw = await getPetProfile(db, telegramId);
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
-    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()));
     const [gear, materials] = await Promise.all([
       db.prepare('SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id=?').bind(telegramId).all(),
@@ -6619,7 +6643,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'weekly_boss') return processPetWeeklyBoss(db, telegramId, body.move, eventKey);
   if (action === 'season_claim') return claimPetSeasonReward(db, telegramId, body.tier_id, eventKey);
   if (action === 'evolve') {
-    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
     if (!next) return { accepted: false, reason: 'final_evolution_reached' };
     const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
@@ -7405,12 +7429,13 @@ export default {
           LIMIT ?
         `).bind(season.key, limit).all().catch(() => ({ results: [] }));
       }
+      const leaderboardRows = await materializePetLeaderboardRows(env.DB, rows.results || []);
       return json({
         period,
         season,
-        entries: (rows.results || []).map((row, index) => ({
+        entries: leaderboardRows.map((row, index) => ({
           ...serializePetLeaderboardEntry(row, index),
-          display_name: displayNameFromRow(row),
+          display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous',
           username: row.username || null,
           last_active_label: timeAgo(row.updated_at),
         })),
@@ -11330,6 +11355,12 @@ async function handleTelegramUpdate(update, env) {
       }
       /* Legacy callback routing is retained below for rollback safety. */
       const payload = data.slice(4);
+      const callbackLifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
+      if (callbackLifecycle?.phase === 'egg') {
+        await answerTelegramCallback(tok, query.id, 'Hatch your Moon Egg first');
+        await sendTelegramMessage(tok, chatId, 'Your Moon Egg must be cared for and hatched in the Moonpet Mini App before gameplay unlocks.');
+        return;
+      }
       const eventKey = buildTelegramCallbackPetEventKey(query, telegramId, data);
       const chatType = String(query.message?.chat?.type || '');
       if (payload === 'back') { await answerTelegramCallback(tok, query.id, '/pet'); await cmdPetStatus(db, tok, chatId, telegramId); return; }
@@ -11828,8 +11859,17 @@ function formatPetStatus(pet, identity = null, activity = null, reaction = undef
   ].join('\n');
 }
 
+async function getMoonpetIdentityWithLifecycle(db, telegramId) {
+  const [identity, lifecycle] = await Promise.all([
+    getMoonpetIdentitySummary(db, telegramId).catch(() => null),
+    getMoonpetLifecycle(db, telegramId).catch(() => null),
+  ]);
+  if (identity) identity.lifecycle = lifecycle;
+  return identity;
+}
+
 async function appendMoonpetReaction(db, telegramId, context, text, pet = null, detail = {}) {
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, context, identity || {}, { ...detail, pet })
     .catch(() => buildMoonpetReaction(context, identity || {}, { ...detail, pet }));
   return `${text}\n\n<i>${escapeHtml(reaction)}</i>`;
@@ -12093,7 +12133,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime] = await Promise.all([
-    getMoonpetIdentitySummary(db, telegramId).catch(() => null),
+    getMoonpetIdentityWithLifecycle(db, telegramId),
     getActivePetActivitySession(db, telegramId, now).catch(() => null),
     getActivePetRun(db, telegramId).catch(() => null),
     buildPetMissions(db, telegramId).catch(() => ({ daily: [] })),
@@ -12352,7 +12392,7 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
   const boss = getPetWeeklyBoss(weekKey);
   const [pet, identity, existing] = await Promise.all([
     getPetProfileWithAtomicDecay(db, telegramId, now),
-    getMoonpetIdentitySummary(db, telegramId).catch(() => null),
+    getMoonpetIdentityWithLifecycle(db, telegramId),
     db.prepare(`SELECT event_id, action, damage FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
       .bind(telegramId, weekKey, dayKey).first().catch(() => null),
   ]);
@@ -12417,7 +12457,7 @@ async function getPetSeasonRewardState(db, telegramId) {
   const [state, claims, identity] = await Promise.all([
     db.prepare(`SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id = ? AND season_key = ?`).bind(telegramId, season.key).first().catch(() => null),
     db.prepare(`SELECT tier_id, claimed_at FROM telegram_pet_season_reward_claims WHERE telegram_id = ? AND season_key = ?`).bind(telegramId, season.key).all().catch(() => ({ results: [] })),
-    getMoonpetIdentitySummary(db, telegramId).catch(() => null),
+    getMoonpetIdentityWithLifecycle(db, telegramId),
   ]);
   const claimed = new Map((claims.results || []).map((row) => [row.tier_id, row.claimed_at]));
   const seasonXp = Math.max(0, Math.floor(Number(state?.season_xp) || 0));
@@ -12458,7 +12498,7 @@ async function cmdPetMenu(tok, chatId, menu) {
 async function cmdPetStatus(db, tok, chatId, telegramId) {
   const pet = await getPetProfile(db, telegramId).catch(() => null);
   const activity = await getActivePetActivitySession(db, telegramId).catch(() => null);
-  const identity = pet ? await getMoonpetIdentitySummary(db, telegramId).catch(() => null) : null;
+  const identity = pet ? await getMoonpetIdentityWithLifecycle(db, telegramId) : null;
   const reaction = pet ? await selectMoonpetReaction(db, telegramId, 'status', identity || {}, { pet }).catch(() => buildMoonpetReaction('status', identity || {}, { pet })) : null;
   await sendTelegramPetReply(tok, chatId, formatPetStatus(pet, identity, activity, reaction), { reply_markup: petReplyMarkup() }, 'how_to_play', { db, telegram_id: telegramId, pet });
 }
@@ -12467,7 +12507,7 @@ async function cmdPetDetails(db, tok, chatId, telegramId) {
   const pet = await getPetProfile(db, telegramId).catch(() => null);
   const missions = pet ? await buildPetMissions(db, telegramId).catch(() => null) : null;
   const activity = pet ? await getActivePetActivitySession(db, telegramId).catch(() => null) : null;
-  const identity = pet ? await getMoonpetIdentitySummary(db, telegramId).catch(() => null) : null;
+  const identity = pet ? await getMoonpetIdentityWithLifecycle(db, telegramId) : null;
   const guided = pet
     ? await buildPetGuidedReply(db, telegramId, pet, formatPetDetails(pet, missions, activity, identity), buildPetProgressMenuReplyMarkup())
     : { text: formatPetDetails(pet, missions, activity, identity), reply_markup: buildPetProgressMenuReplyMarkup() };
@@ -12497,7 +12537,7 @@ async function cmdPetCoach(db, tok, chatId, telegramId) {
 }
 
 async function cmdPetIdentity(db, tok, chatId, telegramId, section) {
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   if (!identity) {
     await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
     return;
@@ -12553,7 +12593,7 @@ async function cmdPetWeeklyBoss(db, tok, chatId, telegramId, action, eventKey = 
   const actionLine = result.damage ? `\nYou dealt <b>${result.damage}</b> damage with ${escapeHtml(result.action)}.` : '';
   const duplicateLine = result.duplicate ? '\nToday’s attempt is already spent. Return after the UTC reset.' : '';
   const rewardLine = progress.defeated_at ? `\nWeekly reward: ${Object.entries(boss.reward).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(', ')}.` : '';
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'boss', identity || {}, { pet: result.pet, activity_label: `${boss.title} boss fight` }).catch(() => buildMoonpetReaction('boss', identity || {}));
   const bossText = `<b>👑 Weekly Boss: ${escapeHtml(boss.title)}</b>\nWeek ${escapeHtml(result.week_key || getPetWeekKey(new Date()))}\nWeakness: ${escapeHtml(boss.weakness)}\nStatus: <b>${escapeHtml(status)}</b>\nAttempts: ${Number(progress.attempts || 0)}/7${actionLine}${duplicateLine}${rewardLine}\n\n<i>${escapeHtml(reaction)}</i>`;
   const bossMarkup = { inline_keyboard: progress.defeated_at ? [[{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }]] : [
@@ -12583,7 +12623,7 @@ async function cmdPetSeason(db, tok, chatId, telegramId, tierId = '', eventKey =
 }
 
 async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', eventKey = '') {
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   if (!identity) {
     await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
     return;
@@ -12609,7 +12649,8 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
     await sendTelegramMessage(tok, chatId, `<b>🧬 ${escapeHtml(next.name)} is not ready</b>\n${missing}\n\n${escapeHtml(getPetEvolutionPerk(next.stage).perk)}`, { reply_markup: evolveMarkup });
     return;
   }
-  const updated = await getMoonpetIdentitySummary(db, telegramId);
+  await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+  const updated = await getMoonpetIdentityWithLifecycle(db, telegramId);
   await syncPetAchievements(db, telegramId).catch(() => []);
   const reaction = await selectMoonpetReaction(db, telegramId, 'evolution', updated, { activity_label: `evolving into ${next.name}` }).catch(() => buildMoonpetReaction('evolution', updated));
   const pet = await getPetProfile(db, telegramId).catch(() => null);
@@ -12641,7 +12682,7 @@ async function cmdPetProgress(db, tok, chatId, telegramId) {
     return;
   }
   const state = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null);
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const identityCopy = identity ? `\n\n${formatMoonpetIdentitySummary(identity)}` : '';
   await sendTelegramMessage(tok, chatId, `${buildPetProgressSummary(state || {})}${identityCopy}`, { reply_markup: buildPetProgressMenuReplyMarkup() });
 }
@@ -12969,7 +13010,7 @@ async function cmdPetUse(db, tok, chatId, telegramId, argStr, eventKey = null) {
     return;
   }
   const inventory = await getPetInventory(db, telegramId).catch(() => []);
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'item', identity || {}, { pet: result.pet, activity_label: `using ${result.item?.title || itemKey || 'an item'}` }).catch(() => buildMoonpetReaction('item', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(
     tok,
@@ -12984,7 +13025,7 @@ async function cmdPetUse(db, tok, chatId, telegramId, argStr, eventKey = null) {
 async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const jobKey = normalizePetJobKey(argStr);
   if (!jobKey) {
-    const [pet, identity] = await Promise.all([getPetProfile(db, telegramId), getMoonpetIdentitySummary(db, telegramId).catch(() => null)]);
+    const [pet, identity] = await Promise.all([getPetProfile(db, telegramId), getMoonpetIdentityWithLifecycle(db, telegramId)]);
     if (!pet) { await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.'); return; }
     const level = getPetLevel(pet.pet_xp);
     const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
@@ -13011,7 +13052,7 @@ async function cmdPetWork(db, tok, chatId, telegramId, argStr, eventKey = null) 
     return;
   }
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:job:${eventKey || jobKey}`, 'job');
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'job', identity || {}, { pet: result.pet, activity_label: result.job?.title || jobKey }).catch(() => buildMoonpetReaction('job', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `Job complete: ${escapeHtml(result.job?.title || jobKey)}.\n<i>${escapeHtml(reaction)}</i>\n\n${formatPetStatus(result.pet, identity, null, null)}`, { reply_markup: petReplyMarkup() }, 'work', { db, telegram_id: telegramId, pet: result.pet });
 }
@@ -13027,7 +13068,7 @@ async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
     return;
   }
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:daily:${eventKey || dayKey}`, 'daily_chest');
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'daily', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('daily', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `Daily chest opened: +${result.pet_xp_awarded || 0} pet XP.\n<i>${escapeHtml(reaction)}</i>\n\n${formatPetStatus(result.pet, identity, null, null)}`, { reply_markup: petReplyMarkup() }, 'daily', { db, telegram_id: telegramId, pet: result.pet });
 }
@@ -13035,7 +13076,7 @@ async function cmdPetDaily(db, tok, chatId, telegramId, eventKey = null) {
 async function cmdPetEvent(db, tok, chatId, telegramId, argStr, eventKey = null) {
   const choice = normalizePetRandomEventChoice(argStr);
   if (!choice || (!eventKey && choice !== 'open' && choice !== 'sell' && choice !== 'ignore')) {
-    const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const encounter = selectPetRandomEncounter(identity);
     if (!encounter) {
       await sendTelegramMessage(tok, chatId, 'No pet encounters are available right now.');
@@ -13060,7 +13101,7 @@ Choose one of the actions below.`,
     return;
   }
   const summary = formatPetRandomEventSummary(result.encounter, result.choice, { copy: result.result_copy }, result.applied);
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'event', identity || {}, { pet: result.pet, activity_label: result.encounter?.title || 'this encounter' }).catch(() => buildMoonpetReaction('event', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `${summary}\n<i>${escapeHtml(reaction)}</i>
 
@@ -13082,7 +13123,7 @@ async function cmdPetAction(db, tok, chatId, telegramId, fromUser, action, stabl
   const prefix = action === 'adopt'
     ? 'Crypto Moonboy Pet adopted.'
     : `Action accepted: /${escapeHtml(action)} (+${result.pet_xp_awarded || 0} pet XP, +${result.xp_awarded || 0} Community XP).`;
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, action, identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction(action, identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `${prefix}\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, action === 'adopt' ? 'level_up' : action, { db, telegram_id: telegramId, pet: result.pet });
 }
@@ -13099,7 +13140,7 @@ async function cmdPetActivity(db, tok, chatId, telegramId) {
 async function cmdPetStart(db, tok, chatId, telegramId, argStr) {
   const result = await startPetActivitySession(db, telegramId, argStr, { source: 'telegram_command' }).catch((error) => ({ accepted: false, reason: error?.message || 'activity_start_failed' }));
   if (!result.accepted) { await sendTelegramMessage(tok, chatId, result.reason === 'already_busy' ? `Already busy: ${formatPetActivityLine(result.session)}.` : formatPetBlockedCopy('activity', result.reason, result)); return; }
-  const [identity, pet] = await Promise.all([getMoonpetIdentitySummary(db, telegramId).catch(() => null), getPetProfile(db, telegramId).catch(() => null)]);
+  const [identity, pet] = await Promise.all([getMoonpetIdentityWithLifecycle(db, telegramId), getPetProfile(db, telegramId).catch(() => null)]);
   const reaction = await selectMoonpetReaction(db, telegramId, 'activity_start', identity || {}, { pet, activity_label: result.session.activity_type }).catch(() => buildMoonpetReaction('activity_start', identity || {}, { pet }));
   await sendTelegramMessage(tok, chatId, `Started ${escapeHtml(result.session.activity_type)}. Tiny rewards unlock after 5m; rewards scale until the cap.\n\n<i>${escapeHtml(reaction)}</i>`, { reply_markup: { inline_keyboard: [[{ text: 'Claim', callback_data: 'pet:claim' }, { text: 'Cancel', callback_data: 'pet:cancel' }], [{ text: '⬅️ Back', callback_data: 'pet:back' }]] } });
 }
@@ -13108,7 +13149,7 @@ async function cmdPetClaim(db, tok, chatId, telegramId) {
   if (!result.accepted) { await sendTelegramMessage(tok, chatId, result.reason === 'activity_too_short' ? `Claim ready in ${formatPetDuration(result.retry_after_seconds)}.` : formatPetBlockedCopy('activity claim', result.reason, result)); return; }
   const runtimeAction = result.session.activity_type === 'train' ? 'timed_train' : result.session.activity_type === 'work' ? 'timed_work' : result.session.activity_type;
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:activity:${result.session.id}`, runtimeAction);
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'activity_claim', identity || {}, { pet: result.pet, activity_label: result.session.activity_type }).catch(() => buildMoonpetReaction('activity_claim', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `Claimed ${escapeHtml(result.session.activity_type)} rewards: +${result.pet_xp_awarded} pet XP, +${result.xp_awarded} Community XP, +${result.computed?.rewards?.moon_gold || 0} gold, +${result.computed?.rewards?.moon_crystals || 0} crystals.\n<i>${escapeHtml(reaction)}</i>\n\n${formatPetStatus(result.pet, identity, null, null)}`, { reply_markup: petReplyMarkup() }, result.session.activity_type, { db, telegram_id: telegramId, pet: result.pet });
 }
@@ -13116,7 +13157,7 @@ async function cmdPetCancel(db, tok, chatId, telegramId) {
   const result = await cancelPetActivitySession(db, telegramId).catch((error) => ({ accepted: false, reason: error?.message || 'activity_cancel_failed' }));
   let copy = formatPetBlockedCopy('activity cancel', result.reason, result);
   if (result.accepted) {
-    const [identity, pet] = await Promise.all([getMoonpetIdentitySummary(db, telegramId).catch(() => null), getPetProfile(db, telegramId).catch(() => null)]);
+    const [identity, pet] = await Promise.all([getMoonpetIdentityWithLifecycle(db, telegramId), getPetProfile(db, telegramId).catch(() => null)]);
     const reaction = await selectMoonpetReaction(db, telegramId, 'activity_cancel', identity || {}, { pet, activity_label: result.session.activity_type }).catch(() => buildMoonpetReaction('activity_cancel', identity || {}, { pet }));
     copy = `Cancelled ${escapeHtml(result.session.activity_type)}. No rewards awarded.\n\n<i>${escapeHtml(reaction)}</i>`;
   }
@@ -13139,7 +13180,7 @@ async function cmdPetTrade(db, tok, chatId, telegramId, argStr, eventKey = null)
   const outcome = result.won
     ? `🎰 Trade won: +${result.gold_delta} gold, +${result.crystal_delta} crystals, +${result.pet_xp_awarded || 0} pet XP.`
     : `🎰 Trade lost: ${result.gold_delta} gold, +${result.pet_xp_awarded || 0} pet XP.`;
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reactionContext = result.won ? 'trade_win' : 'trade_loss';
   const reaction = await selectMoonpetReaction(db, telegramId, reactionContext, identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction(reactionContext, identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `${escapeHtml(outcome)}\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, reactionContext, { db, telegram_id: telegramId, pet: result.pet });
@@ -13152,7 +13193,7 @@ async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const result = await processPetAction(db, telegramId, 'rename', { pet_name: petName, source: 'telegram_command' });
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'rename', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('rename', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `🌕 Pet renamed.\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, 'level_up', { db, telegram_id: telegramId, pet: result.pet });
 }
@@ -13332,7 +13373,7 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr, eventKey = null) {
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('shop purchase', result.reason, result));
     return;
   }
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'purchase', identity || {}, { pet: result.pet, activity_label: `equipping ${result.item.title}` }).catch(() => buildMoonpetReaction('purchase', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(
     tok,
@@ -13393,7 +13434,7 @@ async function cmdPetRun(db, tok, chatId, telegramId, argStr = '', eventKey = nu
   const markup = result.reason === 'run_step_complete'
     ? buildPetRunAfterStepReplyMarkup(result.run)
     : petReplyMarkup();
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'run', identity || {}, { pet: result.pet, activity_label: result.reason === 'run_failed' ? 'the failed Moon Run' : 'the Moon Run' }).catch(() => buildMoonpetReaction('run', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `${summary}\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: markup }, result.reason === 'run_failed' ? 'adventure_fail' : 'adventure_win', { db, telegram_id: telegramId, pet: result.pet });
 }
@@ -13412,7 +13453,7 @@ async function cmdPetExtract(db, tok, chatId, telegramId, argStr = '', eventKey 
     return;
   }
   await applyPetRuntimeCommandAward(db, telegramId, `runtime:run-extract:${eventKey || result.run?.run_id || argStr || 'active'}`, 'run_extract');
-  const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'extract', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('extract', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(
     tok,
