@@ -11783,6 +11783,7 @@ function isPetMiniAppCommand(command) {
 const PET_MINI_APP_SCREENS = new Set(['home', 'missions', 'explore', 'work', 'economy', 'profile']);
 const PET_MINI_APP_FOCUSES = new Set(['recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
 const PET_MINI_APP_COMMAND_FOCUSES = Object.freeze({
+  petcoach: 'recommended',
   adopt: 'care', feed: 'care', play: 'care', clean: 'care', sleep: 'care', train: 'care', petdaily: 'care',
   petmissions: 'missions', petachievements: 'achievements', petarena: 'arena', petkaiju: 'kaiju', kaiju: 'kaiju',
   petrun: 'moon-run', petextract: 'moon-run', petadventure: 'moon-run', petevent: 'street-event', petboss: 'weekly-boss',
@@ -11866,6 +11867,8 @@ function petMiniAppDestinationForCallback(data) {
 
 function petMiniAppFocusForCallback(data) {
   const payload = String(data || '').toLowerCase().replace(/^pet:/, '');
+  if (payload === 'coach') return 'recommended';
+  if (payload === 'details' || payload.startsWith('identity') || payload.startsWith('streak')) return 'details';
   if (payload === 'missions' || payload.startsWith('mission:')) return 'missions';
   if (payload.startsWith('achievement')) return 'achievements';
   if (payload.startsWith('arena')) return 'arena';

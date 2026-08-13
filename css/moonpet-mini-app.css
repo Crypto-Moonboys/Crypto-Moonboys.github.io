@@ -137,6 +137,10 @@ button { font: inherit; }
 }
 .utility-button:active, .jump-button:active, .utility-close:active, .period-button:active,
 .period-button[aria-pressed="true"] { background: var(--ink); color: #031006; }
+.utility-button:focus-visible, .jump-button:focus-visible, .utility-close:focus-visible,
+.period-button:focus-visible, #moonpet-canvas:focus-visible {
+  outline: 2px solid var(--hot); outline-offset: 2px;
+}
 .section-jumps {
   display: flex; gap: 5px; margin: 0 0 10px; padding: 6px;
   overflow-x: auto; border: 1px solid var(--line); background: rgba(4,15,8,.88);

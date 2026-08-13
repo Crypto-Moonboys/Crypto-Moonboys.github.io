@@ -64,6 +64,7 @@
   var utilityLayer = document.getElementById('utility-layer');
   var utilityTitle = document.getElementById('utility-title');
   var utilityContent = document.getElementById('utility-content');
+  var utilityReturnFocus = null;
 
   function launchParameter(name) {
     var locations = [String(window.location.hash || '').replace(/^#/, ''), String(window.location.search || '').replace(/^\?/, '')];
@@ -228,7 +229,11 @@
   function closeUtility() {
     utilityLayer.hidden = true;
     utilityContent.innerHTML = '';
-    if (screen) screen.focus({ preventScroll: true });
+    var returnTarget = utilityReturnFocus && utilityReturnFocus.isConnected
+      ? utilityReturnFocus
+      : nav.querySelector('[aria-current="page"]') || canvas;
+    utilityReturnFocus = null;
+    if (returnTarget && typeof returnTarget.focus === 'function') returnTarget.focus({ preventScroll: true });
   }
 
   function openExternalGuide() {
@@ -277,6 +282,7 @@
   }
 
   function openUtility(kind) {
+    if (utilityLayer.hidden && document.activeElement instanceof HTMLElement) utilityReturnFocus = document.activeElement;
     utilityLayer.hidden = false;
     if (kind === 'guide') {
       utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
@@ -954,7 +960,9 @@
     }
   }
 
-  canvas.addEventListener('moonpet:greet', greetCompanion);\n\n  canvas.addEventListener('click', function (event) {
+  canvas.addEventListener('moonpet:greet', greetCompanion);
+
+  canvas.addEventListener('click', function (event) {
     var bounds = canvas.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
     var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
