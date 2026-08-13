@@ -210,7 +210,7 @@ assert.match(client, /var crack = Math\.min\(2, Math\.floor\(progress \/ target 
 assert.match(client, /function petGrowthShape/);
 assert.match(client, /phase === 'young'.*scaleX: 0\.9, scaleY: 0\.76/s);
 assert.match(client, /phase === 'rare'.*scaleX: 1\.22, scaleY: 1\.18/s);
-assert.match(client, /ctx\.scale\(growth\.scaleX \* pose\.squashX, growth\.scaleY \* pose\.squashY\)/);
+assert.match(client, /ctx\.scale\(growth\.scaleX \* pose\.squashX \* combatScale, growth\.scaleY \* pose\.squashY \* combatScale\)/);
 assert.match(client, /function petFaceOffset/);
 assert.match(client, /speciesId === 'sneaker_snail' \? 18 : 0/);
 assert.match(client, /ctx\.translate\(faceX, 0\)/);
