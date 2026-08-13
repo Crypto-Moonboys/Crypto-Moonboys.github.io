@@ -2145,10 +2145,12 @@ function getPetEndlessRoomDefinition(run) {
   return pool[stablePetRunIndex(run, nextRoom, pool.length)] || pool[0];
 }
 
-function serializePetRunRoom(run, room) {
+function serializePetRunRoom(run, room, opponentIdOverride = null) {
   if (!room) return null;
-  const opponentId = room.boss_id || (room.enemy_pool || [])[stablePetRunIndex(run, Number(run?.depth || 0) + 41, (room.enemy_pool || []).length)];
-  const opponentDefinition = room.boss_id ? PET_ROGUELITE_BOSSES[opponentId] : PET_ROGUELITE_ENEMIES[opponentId];
+  const opponentId = opponentIdOverride || room.boss_id
+    || (room.enemy_pool || [])[stablePetRunIndex(run, Number(run?.depth || 0) + 41, (room.enemy_pool || []).length)];
+  const bossOpponent = Boolean(room.boss_id || PET_ROGUELITE_BOSSES[opponentId]);
+  const opponentDefinition = bossOpponent ? PET_ROGUELITE_BOSSES[opponentId] : PET_ROGUELITE_ENEMIES[opponentId];
   return {
     key: room.room_id || room.key,
     title: room.title || room.name,
@@ -2159,7 +2161,7 @@ function serializePetRunRoom(run, room) {
     opponent: opponentDefinition ? {
       id: opponentId,
       name: opponentDefinition.name,
-      role: opponentDefinition.role || (room.boss_id ? 'boss' : 'enemy'),
+      role: opponentDefinition.role || (bossOpponent ? 'boss' : 'enemy'),
       difficulty: Math.max(1, Number(opponentDefinition.difficulty || 1)),
       intro: String(opponentDefinition.intro || ''),
     } : null,
@@ -6637,7 +6639,16 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       FROM telegram_pet_run_rooms
       WHERE telegram_id = ? AND run_id = ? AND room_number = ? LIMIT 1`)
       .bind(telegramId, activeRun.run_id, roomNumber).first().catch(() => null);
-    if (row) dailyRoom = { ...safeJsonParse(row.generated_data, {}), room: row.room_number, room_type: row.room_type, status: row.status };
+    if (row) {
+      const persistedRoom = { ...safeJsonParse(row.generated_data, {}), room: row.room_number, room_type: row.room_type, status: row.status };
+      const roomDefinition = PET_ROGUELITE_ROOMS[persistedRoom.content_id] || null;
+      const authoredRoom = serializePetRunRoom(
+        { ...activeRun, depth: Number(dailyReservation.current_room || 0) },
+        roomDefinition,
+        persistedRoom.boss_id || persistedRoom.enemy_id || null,
+      );
+      dailyRoom = authoredRoom ? { ...persistedRoom, ...authoredRoom, choices: persistedRoom.choices || [] } : persistedRoom;
+    }
   }
   const runChoices = activeRun
     ? (dailyReservation
@@ -6936,6 +6947,9 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   }
   for (const key of ['rewards', 'applied', 'job', 'item', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type']) {
     if (result[key] !== undefined) output[key] = result[key];
+  }
+  if (output.result_copy === undefined && result.outcome?.copy) {
+    output.result_copy = clampText(result.outcome.copy, 500, 'run_outcome');
   }
   if (result.pet) output.pet = serializePet(result.pet, identity);
   if (result.battle) output.battle = serializePetMiniAppArenaBattle(result.battle, telegramId);

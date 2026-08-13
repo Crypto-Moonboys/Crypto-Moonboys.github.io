@@ -653,6 +653,9 @@ assert.match(html, /20260813-aaa-gameplay-foundation/);
 assert.match(worker, /20260813-aaa-gameplay-foundation/);
 
 assert.match(worker, /function serializePetRunRoom/, 'standard runs must serialize authored room objectives and opponents');
+assert.match(worker, /output\.result_copy === undefined && result\.outcome\?\.copy/, 'run outcome copy must survive Mini App action serialization');
+assert.match(worker, /PET_ROGUELITE_ROOMS\[persistedRoom\.content_id\]/, 'daily rooms must recover their authored content definition');
+assert.match(worker, /persistedRoom\.boss_id \|\| persistedRoom\.enemy_id \|\| null/, 'daily room briefs must preserve the generated opponent');
 assert.match(worker, /function analyzePetRunChoice/, 'run previews and outcomes must share one risk analysis');
 assert.match(worker, /function serializePetRunChoicePreview/, 'run choices must expose risk, cost and reward previews');
 assert.match(worker, /analysis\.gear\.risk_delta - analysis\.gear\.survival_bonus < 0/, 'gear shield preview must use the same net risk reduction as authoritative resolution');
