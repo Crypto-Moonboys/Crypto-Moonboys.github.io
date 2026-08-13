@@ -300,6 +300,9 @@ for (const species of ['neon_raccoon', 'bubble_ram', 'comet_gecko', 'vinyl_crab'
   assert.match(client, new RegExp(species + ": '[a-z_]+"), `Phase 4 must include an idle signature for ${species}`);
 }
 assert.match(client, /function companionIdentitySeed\(pet, lifecycle\)/);
+assert.match(client, /return companionSeedValue/);
+assert.match(client, /COMPANION_PRESENCE_FRAME\.slot !== slot/);
+assert.match(client, /COMPANION_PRESENCE_FRAME\.screen !== activeScreen/);
 assert.match(client, /function temperamentCompanionHabit\(temperament\)/);
 assert.match(client, /function companionNeedThought\(pet, lifecycle, fallback\)/);
 assert.match(client, /Number\(pet\.health\) < 35.*I NEED PATCHING/s);
@@ -311,6 +314,8 @@ assert.match(client, /function updateCompanionPresence\(pet, lifecycle, time\)/)
 assert.match(client, /var presenceTime = reducedMotion \? 0 : Math\.max\(0, time\)/);
 assert.match(client, /COMPANION_PRESENCE_FRAME\.phase = reducedMotion \? 0\.72/);
 assert.match(client, /function drawCompanionHabitEffects\(time, x, y, presence, color, active\)/);
+assert.match(client, /var effectTime = reducedMotion \? 0 : time/);
+assert.match(client, /var angle = effectTime \/ 900/);
 assert.match(client, /function companionAmbienceMode\(hour\)/);
 assert.match(client, /NIGHT SHIFT/);
 assert.match(client, /DAWN SHIFT/);
@@ -318,6 +323,7 @@ assert.match(client, /DAY SHIFT/);
 assert.match(client, /DUSK SHIFT/);
 assert.match(client, /function drawUtcAmbience\(scene\)/);
 assert.match(client, /function drawCompanionPresence\(time, scene, presence\)/);
+assert.match(client, /if \(feedbackActive \|\| actionActive && !greetingActive\) return/);
 assert.match(client, /feedbackUntil > time/);
 assert.match(client, /function companionGreetingCopy\(pet, lifecycle\)/);
 assert.match(client, /function greetCompanion\(\)/);
