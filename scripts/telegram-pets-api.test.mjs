@@ -61,6 +61,7 @@ const {
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
   serializePet,
+  serializePetLeaderboardEntry,
   formatPetStatus,
   formatPetDetails,
   petReplyMarkup,
@@ -139,6 +140,58 @@ assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route 
 assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
 assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
 assert.ok(worker.includes('export const __petMediaTestHooks'), 'pet media test hooks must be exported');
+
+const rareLeaderboardEntry = serializePetLeaderboardEntry({
+  pet_name: 'Cipher',
+  stage: 'cyber',
+  lifecycle_phase: 'rare',
+  lifecycle_species_id: 'neon_raccoon',
+  rare_morph_id: 'graffiti_guardian',
+  level: 19,
+  pet_xp: 4242,
+  moon_gold: 777,
+  moon_crystals: 23,
+  style_tokens: 41,
+  streak_days: 9,
+}, 2);
+assert.deepEqual(rareLeaderboardEntry, {
+  rank: 3,
+  pet_name: 'Cipher',
+  stage: 'graffiti_guardian',
+  phase: 'rare',
+  species_id: 'neon_raccoon',
+  species_name: 'Neon Raccoon',
+  rare_morph_id: 'graffiti_guardian',
+  rare_morph_name: 'Graffiti Guardian',
+  level: 19,
+  pet_xp: 4242,
+  moon_gold: 777,
+  moon_crystals: 23,
+  style_tokens: 41,
+  streak_days: 9,
+}, 'leaderboard serializer must carry lifecycle identity and all persisted Moonpet currencies');
+const eggLeaderboardEntry = serializePetLeaderboardEntry({
+  pet_name: 'Unhatched',
+  lifecycle_phase: 'egg',
+  lifecycle_species_id: 'alley_drake',
+  moon_gold: 10,
+  moon_crystals: 2,
+  style_tokens: 1,
+}, 0);
+assert.equal(eggLeaderboardEntry.species_id, null, 'leaderboard must not reveal an egg species');
+assert.equal(eggLeaderboardEntry.species_name, null, 'leaderboard must not reveal an egg species name');
+assert.match(worker, /display_name: \[row\.first_name, row\.last_name\][\s\S]*'Anonymous'/, 'public pet leaderboard must never fall back to a Telegram ID');
+assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboards must materialize deterministic identities for legacy rows');
+assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
+assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
+assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\)/, 'legacy evolve command must synchronize lifecycle adulthood');
+assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');
+assert.match(worker, /getExistingMoonpetLifecycle\(db, telegramId\)/, 'reaction reads must not materialize lifecycle rows or mutate state');
+const petLeaderboardRoute = routeBlock('/telegram-pets/leaderboard');
+assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle l'), 'public leaderboard must join persisted Moonpet lifecycle');
+for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_phase', 'lifecycle_species_id', 'rare_morph_id']) {
+  assert.ok(petLeaderboardRoute.includes(field), `public leaderboard must return ${field}`);
+}
 
 assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
 assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include Arena button');
@@ -1019,10 +1072,10 @@ for (const [command, label] of [
   ['cmdPetEvent', 'Event'],
   ['cmdPetRun', 'Run'],
 ]) {
-  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${label} status must retain stored Moonpet identity`);
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId)'), `${label} status must retain stored Moonpet identity`);
 }
 for (const command of ['cmdPetUse', 'cmdPetDaily', 'cmdPetClaim', 'cmdPetTrade', 'cmdPetExtract']) {
-  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${command} status must pass identity instead of missions`);
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId)'), `${command} status must pass identity instead of missions`);
 }
 assert.ok(!worker.includes('formatPetStatus(result.pet, await buildPetMissions(db, telegramId))'), 'missions must never be passed into the formatPetStatus identity parameter');
 assert.ok(asyncBlock('cmdPetDetails').includes('buildPetMissions(db, telegramId)'), 'missions must remain available in the separate Details response');
