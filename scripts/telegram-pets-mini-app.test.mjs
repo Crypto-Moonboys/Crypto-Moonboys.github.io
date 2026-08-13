@@ -180,6 +180,15 @@ assert.match(client, /function drawWorldSky/);
 assert.match(client, /function drawWorldSkyline/);
 assert.match(client, /function drawGraffitiTag/);
 assert.match(client, /function drawGraffitiWall/);
+assert.match(client, /function drawWorldLandmarks/);
+for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
+  assert.match(client, new RegExp("sceneKey === '" + scene + "'"), `Phase 2 must draw a distinct ${scene} landmark silhouette`);
+}
+assert.match(client, /drawWorldLandmarks\(activeScreen, scene\)/);
+assert.match(client, /var drift = reducedMotion \? 0 : Math\.round\(Math\.sin\(time \/ 3600\) \* 4\)/);
+assert.doesNotMatch(client, /Math\.floor\(time \/ 180\) % 36/, 'skyline motion must not snap at a modulo boundary');
+assert.doesNotMatch(client, /drawPixelText\('₿'/, 'crypto moon mark must not depend on a platform font glyph');
+assert.match(client, /interact: '#a9ff9a'/);
 assert.match(client, /function drawWorldStreet/);
 assert.match(client, /function drawWorldReaction/);
 assert.match(client, /function drawWorldForeground/);
