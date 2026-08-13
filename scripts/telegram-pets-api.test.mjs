@@ -2022,7 +2022,7 @@ const runChoiceRandom = Math.random;
 Math.random = () => 0.99;
 let runChoiceItemResult;
 try {
-  runChoiceItemResult = await processPetRunStep(runChoiceItemDb, 'run-choice-item', 'run-choice-item-run', PET_RUN_STEP_CHOICES[0][0], {
+  runChoiceItemResult = await processPetRunStep(runChoiceItemDb, 'run-choice-item', 'run-choice-item-run', 'hidden_route', {
     event_key: 'run-choice-item-step', expected_step_index: 1, source: 'inventory_authority_regression',
   });
 } finally {
