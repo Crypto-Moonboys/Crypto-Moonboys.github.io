@@ -227,7 +227,7 @@ assert.deepEqual(Array.from({ length: 10 }, (_, index) => generatePetRunRoom({
   run_id: 'moon-alley-route', region: 'moon_alley', seed: 9, current_room: index, max_room: 10,
 }).name), [
   'Alley Entrance', 'Graffiti Wall', 'Rival Encounter', 'Hidden Cache', 'Street Market',
-  'Underground Tunnel', 'Police Heat', 'Neon Shortcut', 'Elite Encounter', 'Alley King Throne',
+  'Underground Tunnel', 'Police Heat', 'Neon Shortcut', 'Chrome Crew Captain', 'Alley King Throne',
 ], 'a default Moon Alley run must traverse the complete authored vertical slice');
 
 const startDb = seedPlayer('start-player');
