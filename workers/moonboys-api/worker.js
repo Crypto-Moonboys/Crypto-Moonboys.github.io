@@ -4489,14 +4489,23 @@ async function buildPetMissions(db, telegramId) {
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
-  const events = await db.prepare(`
-    SELECT event_type, COUNT(*) AS count
-    FROM telegram_pet_events
-    WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
-    GROUP BY event_type
-  `).bind(telegramId, dayKey).all().catch(() => ({ results: [] }));
+  const [events, systemEvents, pet] = await Promise.all([
+    db.prepare(`
+      SELECT event_type, COUNT(*) AS count
+      FROM telegram_pet_events
+      WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+      GROUP BY event_type
+    `).bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
+    db.prepare(`
+      SELECT system_key, COUNT(*) AS count
+      FROM telegram_pet_system_events
+      WHERE telegram_id = ? AND status = 'completed' AND date(created_at) = ?
+      GROUP BY system_key
+    `).bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
+    getPetProfile(db, telegramId).catch(() => null),
+  ]);
   const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
-  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  const systemCounts = Object.fromEntries((systemEvents.results || []).map((row) => [row.system_key, Number(row.count || 0)]));
   const fullCareDone = ['feed', 'play', 'clean'].every((key) => counts[key] > 0);
   return {
     day_key: dayKey,
@@ -4512,8 +4521,8 @@ async function buildPetMissions(db, telegramId) {
       { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: Number(counts.train || 0) > 0 },
       { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone },
       { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: Number(counts.trade || 0) > 0 },
-      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or equip one pet upgrade', completed: Number(counts.buy || 0) > 0 },
-      { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: Number(counts.adventure || 0) + Number(counts.run_extract || 0) + Number(counts.run_complete || 0) > 0 },
+      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or upgrade one pet item', completed: Number(counts.buy || 0) + Number(systemCounts.equipment_upgrade || 0) > 0 },
+      { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: Number(counts.adventure || 0) + Number(counts.run_extract || 0) + Number(counts.run_complete || 0) + Number(counts.district_mission || 0) + Number(counts.event_chain || 0) + Number(counts.seasonal_boss || 0) > 0 },
       { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: clampPetCurrency(pet?.moon_gold) >= 50 },
     ],
   };
@@ -10345,7 +10354,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-phase6-lifecycle-ceremonies`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-full-system-audit`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -11360,7 +11369,7 @@ async function handleTelegramUpdate(update, env) {
     if (data.startsWith('pet:') && telegramId && chatId) {
       if (resolvePetCallbackRoute(data, env.PET_MINI_APP_ENABLED) === 'mini_app') {
         await answerTelegramCallback(tok, query.id, 'Opening Moonpet OS');
-        await cmdPetMiniAppLauncher(tok, chatId, telegramId, String(query.message?.chat?.type || 'private'));
+        await cmdPetMiniAppLauncher(tok, chatId, telegramId, String(query.message?.chat?.type || 'private'), petMiniAppDestinationForCallback(data));
         return;
       }
       /* Legacy callback routing is retained below for rollback safety. */
@@ -11599,6 +11608,12 @@ async function handleTelegramUpdate(update, env) {
   const cmdBase  = rawCmd.split('@')[0].toLowerCase(); // strip @botname suffix
   const argStr   = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
   const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
+
+  if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && argStr.toLowerCase() === 'moonpet'))) {
+    await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType, petMiniAppDestinationForCommand(cmdBase));
+    return;
+  }
+
   const legacyPetGameplayCommands = new Set([
     'feed', 'play', 'clean', 'sleep', 'train', 'petstart', 'petclaim', 'petcancel', 'pettrade', 'petname',
     'petshop', 'peteconomy', 'petbounties', 'petexpedition', 'petmarket', 'petbag', 'petbuy', 'petuse',
@@ -11611,11 +11626,6 @@ async function handleTelegramUpdate(update, env) {
       await sendTelegramMessage(tok, chatId, 'Your Moon Egg must be cared for and hatched in the Moonpet Mini App before gameplay unlocks.');
       return;
     }
-  }
-
-  if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && argStr.toLowerCase() === 'moonpet'))) {
-    await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType);
-    return;
   }
 
   switch (cmdBase) {
@@ -11700,6 +11710,62 @@ function isPetMiniAppCommand(command) {
   return PET_MINI_APP_COMMANDS.has(String(command || '').toLowerCase());
 }
 
+const PET_MINI_APP_SCREENS = new Set(['home', 'missions', 'explore', 'work', 'economy', 'profile']);
+const PET_MINI_APP_COMMAND_DESTINATIONS = Object.freeze({
+  petmissions: 'missions',
+  petachievements: 'missions',
+  petarena: 'explore',
+  petkaiju: 'explore',
+  kaiju: 'explore',
+  petrun: 'explore',
+  petextract: 'explore',
+  petadventure: 'explore',
+  petevent: 'explore',
+  petboss: 'explore',
+  petstart: 'work',
+  petclaim: 'work',
+  petcancel: 'work',
+  petactivity: 'work',
+  petwork: 'work',
+  petshop: 'economy',
+  peteconomy: 'economy',
+  petbounties: 'economy',
+  petexpedition: 'economy',
+  petmarket: 'economy',
+  petbag: 'economy',
+  petbuy: 'economy',
+  petuse: 'economy',
+  pettrade: 'economy',
+  petgear: 'economy',
+  petcoach: 'profile',
+  petprogress: 'profile',
+  petseason: 'profile',
+  petevolve: 'profile',
+  petnotify: 'profile',
+  petleaderboard: 'profile',
+  petscore: 'profile',
+  petname: 'profile',
+});
+
+function normalizePetMiniAppDestination(destination) {
+  const screen = String(destination || 'home').toLowerCase();
+  return PET_MINI_APP_SCREENS.has(screen) ? screen : 'home';
+}
+
+function petMiniAppDestinationForCommand(command) {
+  return PET_MINI_APP_COMMAND_DESTINATIONS[String(command || '').toLowerCase()] || 'home';
+}
+
+function petMiniAppDestinationForCallback(data) {
+  const payload = String(data || '').toLowerCase().replace(/^pet:/, '');
+  if (payload === 'missions' || payload.startsWith('mission:') || payload.startsWith('achievement')) return 'missions';
+  if (payload === 'menu:adventure' || /^(arena|kaiju|run|extract|adventure|event|boss|district|chain|seasonal_boss)/.test(payload)) return 'explore';
+  if (payload === 'menu:management' || /^(work|activity|job)/.test(payload)) return 'work';
+  if (/^(shop|economy|bount|expedition|market|bag|buy|use|trade|equipment|gear|cosmetic)/.test(payload)) return 'economy';
+  if (payload === 'menu:progress' || /^(details|progress|season|evolve|leaderboard|score|streak|notify|name|prestige|identity)/.test(payload)) return 'profile';
+  return 'home';
+}
+
 async function setPetMiniAppMenuButton(botToken, telegramId) {
   if (!botToken || !telegramId) return;
   const url = MOONPET_MINI_APP_URL;
@@ -11714,12 +11780,13 @@ async function setPetMiniAppMenuButton(botToken, telegramId) {
 }
 
 function buildPetMiniAppLaunchReplyMarkup(destination = 'home') {
-  const screen = ['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(String(destination)) ? String(destination) : 'home';
+  const screen = normalizePetMiniAppDestination(destination);
   return { inline_keyboard: [[{ text: 'OPEN MOONPET OS', web_app: { url: `${MOONPET_MINI_APP_URL}#screen=${screen}` } }]] };
 }
 
-async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'private') {
-  const url = MOONPET_MINI_APP_URL;
+async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'private', destination = 'home') {
+  const screen = normalizePetMiniAppDestination(destination);
+  const url = `${MOONPET_MINI_APP_URL}#screen=${screen}`;
   if (String(chatType) === 'private') await setPetMiniAppMenuButton(botToken, telegramId);
   const launchButton = String(chatType) === 'private'
     ? { text: 'OPEN MOONPET OS', web_app: { url } }
