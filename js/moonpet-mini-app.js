@@ -29,6 +29,16 @@
   var sceneTransitionStartedAt = 0;
   var sceneTransitionUntil = 0;
   var sceneTransitionDirection = 1;
+  var utcHour = new Date().getUTCHours();
+  var companionGreeting = '';
+  var companionGreetingUntil = 0;
+  var companionGreetingTimer = 0;
+  var companionTapSequence = 0;
+  var companionSeedSpecies = null;
+  var companionSeedTemperament = null;
+  var companionSeedMarking = null;
+  var companionSeedName = null;
+  var companionSeedValue = 0;
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -675,6 +685,44 @@
     runAction(target.dataset.action, payload, target);
   });
 
+  function companionGreetingCopy(pet, lifecycle) {
+    var mood = petMood(pet);
+    if (lifecycle && lifecycle.phase === 'egg') return 'SIGNAL RECEIVED';
+    if (mood === 'hurt') return 'STAY WITH ME';
+    if (mood === 'tired') return 'FIVE MORE MINUTES';
+    if (mood === 'hungry') return 'YOU BROUGHT SNACKS?';
+    if (mood === 'scruffy') return 'DO NOT JUDGE';
+    if (mood === 'happy') return 'WE RUN THIS CITY';
+    return temperamentCompanionHabit(lifecycle && lifecycle.temperament) === 'swagger' ? 'WHAT IS THE MOVE?' : 'GOOD TO SEE YOU';
+  }
+
+  function greetCompanion() {
+    var now = performance.now();
+    if (busy || !state || !state.adopted || feedbackUntil > now || animationUntil > now) return;
+    companionTapSequence += 1;
+    companionGreeting = compactFeedback(companionGreetingCopy(state.pet, state.lifecycle || {}), 24);
+    companionGreetingUntil = now + 2600;
+    window.clearTimeout(companionGreetingTimer);
+    animateAction('interact', true, 1400, { source: 'pet_tap', sequence: companionTapSequence });
+    animationLabel = 'HELLO';
+    haptic('light');
+    if (reducedMotion) {
+      companionGreetingTimer = window.setTimeout(function () {
+        companionGreeting = '';
+        companionGreetingUntil = 0;
+        drawWorld(performance.now());
+      }, 2620);
+    }
+  }
+
+  canvas.addEventListener('click', function (event) {
+    var bounds = canvas.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
+    var canvasY = (event.clientY - bounds.top) * canvas.height / bounds.height;
+    if (canvasX >= 92 && canvasX <= 228 && canvasY >= 66 && canvasY <= 190) greetCompanion();
+  });
+
   nav.addEventListener('click', function (event) {
     var target = event.target.closest('[data-screen]');
     if (!target || busy) return;
@@ -743,6 +791,90 @@
     if (Number(pet.cleanliness) < 30) return 'scruffy';
     if (Number(pet.happiness) > 78) return 'happy';
     return 'curious';
+  }
+
+  var SCENE_COMPANION_HABITS = {
+    home: 'moon_gaze', missions: 'signal_scan', explore: 'alley_prowl',
+    work: 'scrap_tinker', economy: 'window_shop', profile: 'memory_glow',
+  };
+  var SPECIES_COMPANION_HABITS = {
+    neon_raccoon: 'mask_wash', bubble_ram: 'hoof_tap', comet_gecko: 'wall_cling',
+    vinyl_crab: 'claw_click', lantern_fox: 'ear_flick', sneaker_snail: 'shell_rock',
+    alley_drake: 'wing_flex', moon_ferret: 'tunnel_peek',
+  };
+  var COMPANION_THOUGHTS = {
+    moon_gaze: 'MOON LOOKS CLOSE', signal_scan: 'SIGNAL LOCKED', alley_prowl: 'ALLEY CHECK',
+    scrap_tinker: 'MAKING SOMETHING', window_shop: 'THAT GEAR THOUGH', memory_glow: 'I REMEMBER',
+    mask_wash: 'MASK STAYS FRESH', hoof_tap: 'KEEP THE BEAT', wall_cling: 'UP HERE!',
+    claw_click: 'CLICK CLACK', ear_flick: 'HEARD SOMETHING', shell_rock: 'ROLL WITH IT',
+    wing_flex: 'READY TO LIFT', tunnel_peek: 'SECRET ROUTE?', swagger: 'ALL CITY ENERGY',
+    listen: 'TELL ME MORE', fidget: 'LET US MOVE', chill: 'GOOD VIBES',
+  };
+  var COMPANION_PRESENCE_FRAME = { behavior: 'chill', phase: 0.72, thought: 'GOOD VIBES', slot: -1, screen: '', seed: -1 };
+
+  function companionIdentitySeed(pet, lifecycle) {
+    var appearance = lifecycle && lifecycle.appearance;
+    var species = lifecycle && lifecycle.species_id || pet && pet.species || 'moonpet';
+    var temperament = lifecycle && lifecycle.temperament || 'curious';
+    var marking = appearance && appearance.marking || 'moon_mark';
+    var petName = pet && pet.pet_name || 'moonpet';
+    if (species === companionSeedSpecies && temperament === companionSeedTemperament && marking === companionSeedMarking && petName === companionSeedName) return companionSeedValue;
+    var source = String(species) + '|' + String(temperament) + '|' + String(marking) + '|' + String(petName);
+    var hash = 0;
+    for (var index = 0; index < source.length; index += 1) hash = (hash * 31 + source.charCodeAt(index)) | 0;
+    companionSeedSpecies = species;
+    companionSeedTemperament = temperament;
+    companionSeedMarking = marking;
+    companionSeedName = petName;
+    companionSeedValue = Math.abs(hash);
+    return companionSeedValue;
+  }
+
+  function temperamentCompanionHabit(temperament) {
+    var key = String(temperament || '').toLowerCase();
+    if (/bold|brave|fierce|confident/.test(key)) return 'swagger';
+    if (/rhythmic|play|wild|chaos|energetic/.test(key)) return 'fidget';
+    if (/calm|soft|patient|loyal/.test(key)) return 'chill';
+    if (/social|curious|alert|observant/.test(key)) return 'listen';
+    return 'listen';
+  }
+
+  function companionNeedThought(pet, lifecycle, fallback) {
+    if (!pet) return fallback;
+    if (Number(pet.health) < 35) return 'I NEED PATCHING';
+    if (Number(pet.energy) < 20) return 'NAP SIGNAL';
+    if (Number(pet.hunger) > 78) return 'SNACK PLEASE';
+    if (Number(pet.cleanliness) < 30) return 'WASH TIME';
+    if (Number(pet.happiness) < 30) return 'PLAY WITH ME';
+    if (lifecycle && lifecycle.phase === 'young') return 'WHAT IS NEXT?';
+    if (lifecycle && lifecycle.phase === 'rare') return 'RARE SIGNAL LIVE';
+    return fallback;
+  }
+
+  function updateCompanionPresence(pet, lifecycle, time) {
+    if (!pet) {
+      COMPANION_PRESENCE_FRAME.behavior = 'chill';
+      COMPANION_PRESENCE_FRAME.phase = 0.72;
+      COMPANION_PRESENCE_FRAME.thought = '';
+      return COMPANION_PRESENCE_FRAME;
+    }
+    var presenceTime = reducedMotion ? 0 : Math.max(0, time);
+    var slot = reducedMotion ? 0 : Math.floor(presenceTime / 8000);
+    var seed = companionIdentitySeed(pet, lifecycle);
+    if (COMPANION_PRESENCE_FRAME.slot !== slot || COMPANION_PRESENCE_FRAME.screen !== activeScreen || COMPANION_PRESENCE_FRAME.seed !== seed) {
+      var selector = (seed + slot) % 3;
+      COMPANION_PRESENCE_FRAME.behavior = selector === 0
+        ? SCENE_COMPANION_HABITS[activeScreen] || 'moon_gaze'
+        : selector === 1
+          ? SPECIES_COMPANION_HABITS[lifecycle && lifecycle.species_id || pet && pet.species] || 'listen'
+          : temperamentCompanionHabit(lifecycle && lifecycle.temperament);
+      COMPANION_PRESENCE_FRAME.slot = slot;
+      COMPANION_PRESENCE_FRAME.screen = activeScreen;
+      COMPANION_PRESENCE_FRAME.seed = seed;
+    }
+    COMPANION_PRESENCE_FRAME.phase = reducedMotion ? 0.72 : presenceTime % 8000 / 8000;
+    COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[COMPANION_PRESENCE_FRAME.behavior] || 'STAY READY');
+    return COMPANION_PRESENCE_FRAME;
   }
 
   function drawPixelText(text, x, y, color, align) {
@@ -830,13 +962,34 @@
     return stage >= 4 ? selected.legendary : selected.normal;
   }
 
-  function petPose(time, active, mood) {
+  function petPose(time, active, mood, presence) {
     var pose = { x: 0, y: 0, headY: 0, squashX: 1, squashY: 1, arm: 0, tail: 0 };
     if (!active) {
       pose.y = mood === 'tired' ? 3 : Math.round(Math.sin(time / 270) * 2);
       if (mood === 'happy') { pose.y -= 2; pose.arm = -3; pose.tail = 8; }
       else if (mood === 'hungry') { pose.headY = 4; pose.arm = 5; pose.squashY = 0.96; }
       else if (mood === 'hurt') { pose.headY = 4; pose.x = -2; pose.squashX = 0.94; pose.squashY = 0.92; }
+      var idleTime = reducedMotion ? 0 : time;
+      var idleWave = Math.sin(idleTime / 520);
+      var behavior = presence && presence.behavior || 'chill';
+      if (behavior === 'moon_gaze') { pose.headY -= 3; pose.x += 2; pose.tail += 3; }
+      else if (behavior === 'signal_scan') { pose.x += Math.round(idleWave * 3); pose.headY -= 1; }
+      else if (behavior === 'alley_prowl') { pose.x += Math.round(idleWave * 6); pose.y += Math.abs(Math.round(idleWave * 2)); pose.tail += 5; }
+      else if (behavior === 'scrap_tinker') { pose.headY += 2; pose.arm = -5; }
+      else if (behavior === 'window_shop') { pose.x += 3; pose.headY -= 2; pose.arm = -2; }
+      else if (behavior === 'memory_glow') { pose.y -= 2; pose.arm = -3; pose.tail += 4; }
+      else if (behavior === 'mask_wash') { pose.arm = -7; pose.headY += 1; }
+      else if (behavior === 'hoof_tap') { pose.y += Math.abs(Math.round(idleWave * 2)); pose.squashY = 0.98; }
+      else if (behavior === 'wall_cling') { pose.x += 4; pose.y -= 3; pose.squashY = 1.04; }
+      else if (behavior === 'claw_click') { pose.arm = Math.round(idleWave * 5); }
+      else if (behavior === 'ear_flick') { pose.headY += Math.round(idleWave * 2); pose.tail += 4; }
+      else if (behavior === 'shell_rock') { pose.x += Math.round(idleWave * 3); pose.squashX = 1.03; }
+      else if (behavior === 'wing_flex') { pose.arm = -8; pose.squashX = 1.04; }
+      else if (behavior === 'tunnel_peek') { pose.x -= 4; pose.headY += 2; }
+      else if (behavior === 'swagger') { pose.x += 3; pose.arm = -4; pose.tail += 6; }
+      else if (behavior === 'listen') { pose.headY -= 2; pose.x += Math.round(idleWave); }
+      else if (behavior === 'fidget') { pose.y -= Math.abs(Math.round(idleWave * 3)); pose.tail += 8; }
+      else { pose.squashX = 1 + idleWave * 0.012; pose.squashY = 1 - idleWave * 0.012; }
       return pose;
     }
     if (animationMode === 'feed') { pose.headY = 5; pose.arm = 7; pose.squashY = 0.96; }
@@ -1105,7 +1258,7 @@
     if (active) drawPixelText('SIGNAL!', 160, eggY - 58, '#f4ff65', 'center');
   }
 
-  function drawPet(time) {
+  function drawPet(time, presence) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
     var stage = petStage(pet);
@@ -1119,7 +1272,7 @@
       return;
     }
 
-    var pose = petPose(time, active, mood);
+    var pose = petPose(time, active, mood, presence);
     var rareName = lifecycle.rare && lifecycle.rare.name || '';
     var growth = petGrowthShape(lifecycle.phase, stage);
     var scale = Math.max(growth.scaleX, growth.scaleY);
@@ -1159,6 +1312,7 @@
     if (!active && mood !== 'curious') drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
     if (rareName) drawPixelText(rareName.toUpperCase(), 160, 70, palette.accent, 'center');
     else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), 160, 78, palette.accent, 'center');
+    drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
     drawActionEffects(time, x, y, active);
     if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
   }
@@ -1173,6 +1327,67 @@
   };
   var WORLD_STAR_X = [13, 41, 78, 109, 147, 181, 214, 249, 286, 311, 28, 64, 126, 167, 231, 274];
   var WORLD_STAR_Y = [17, 31, 12, 48, 24, 39, 15, 52, 29, 8, 68, 57, 73, 61, 79, 66];
+
+  function drawCompanionHabitEffects(time, x, y, presence, color, active) {
+    if (active || !presence) return;
+    var behavior = presence.behavior;
+    var effectTime = reducedMotion ? 0 : time;
+    var phase = Math.floor(effectTime / 260);
+    if (behavior === 'signal_scan') {
+      drawPixelRect(x - 48, y - 52 + phase % 7 * 5, 96, 1, color);
+    } else if (behavior === 'scrap_tinker' || behavior === 'claw_click') {
+      for (var spark = 0; spark < 3; spark += 1) drawPixelRect(x + 31 + spark * 6, y - 18 - (phase + spark * 3) % 13, 2, 2, color);
+    } else if (behavior === 'memory_glow') {
+      for (var memory = 0; memory < 4; memory += 1) {
+        var angle = effectTime / 900 + memory * Math.PI / 2;
+        drawPixelRect(x + Math.cos(angle) * 54, y - 28 + Math.sin(angle) * 18, 3, 3, color);
+      }
+    } else if (behavior === 'alley_prowl' || behavior === 'tunnel_peek') {
+      drawPixelRect(x - 57, y + 17, 5, 2, color); drawPixelRect(x - 45, y + 13, 5, 2, color);
+    } else if (behavior === 'moon_gaze' || behavior === 'ear_flick') {
+      drawPixelRect(x + 45, y - 67, 3, 3, color); drawPixelRect(x + 52, y - 75, 2, 2, color);
+    } else if (behavior === 'window_shop') {
+      drawPixelRect(x + 48, y - 47, 5, 5, color); drawPixelRect(x + 44, y - 43, 13, 1, color);
+    }
+  }
+
+  function companionAmbienceMode(hour) {
+    if (hour < 6) return 'NIGHT SHIFT';
+    if (hour < 9) return 'DAWN SHIFT';
+    if (hour < 18) return 'DAY SHIFT';
+    if (hour < 21) return 'DUSK SHIFT';
+    return 'NIGHT SHIFT';
+  }
+
+  function drawUtcAmbience(scene) {
+    var mode = companionAmbienceMode(utcHour);
+    var tint = mode === 'DAY SHIFT' ? '#f4ff65' : mode === 'DAWN SHIFT' ? '#ff954f' : mode === 'DUSK SHIFT' ? '#f6a7ff' : '#61a8ff';
+    ctx.save();
+    ctx.globalAlpha = mode === 'DAY SHIFT' ? 0.025 : 0.055;
+    ctx.fillStyle = tint;
+    ctx.fillRect(0, 0, 320, 220);
+    ctx.restore();
+    drawPixelText(mode, 314, 11, tint, 'right');
+  }
+
+  function drawCompanionPresence(time, scene, presence) {
+    if (!state || !state.adopted || !state.pet || !presence) return;
+    var actionActive = animationUntil > time;
+    var feedbackActive = feedbackUntil > time;
+    var greetingActive = companionGreetingUntil > time && companionGreeting;
+    if (feedbackActive || actionActive && !greetingActive) return;
+    var copy = greetingActive ? companionGreeting : presence.phase >= 0.58 ? presence.thought : '';
+    if (!copy) return;
+    copy = compactFeedback(copy, 24);
+    var bubbleY = 54;
+    drawPixelRect(7, bubbleY, 150, 31, '#020704');
+    drawPixelRect(7, bubbleY, 3, 31, scene.accent);
+    drawPixelText(greetingActive ? 'CHECK-IN //' : 'MOONPET THINKS //', 16, bubbleY + 12, scene.accent, 'left');
+    drawPixelText(copy, 16, bubbleY + 24, '#f4ff65', 'left');
+    drawPixelRect(143, bubbleY + 31, 6, 4, '#020704');
+    drawPixelRect(149, bubbleY + 35, 4, 4, '#020704');
+  }
+
   var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
   var WORLD_REACTION_COLORS = {
     feed: '#ffb84d', play: '#f6a7ff', clean: '#b3ffff', sleep: '#8091c9', train: '#f4ff65',
@@ -1421,6 +1636,7 @@
     var renderTime = reducedMotion ? performance.now() : time;
     var worldTime = reducedMotion ? 0 : time;
     var camera = updateCameraFrame(renderTime);
+    var presence = updateCompanionPresence(state && state.pet, state && state.lifecycle || {}, renderTime);
     drawPixelRect(0, 0, 320, 220, scene.sky);
     ctx.save();
     ctx.translate(160 + camera.x, 110 + camera.y); ctx.scale(camera.zoom, camera.zoom); ctx.translate(-160, -110);
@@ -1430,9 +1646,11 @@
     drawWorldLandmarks(activeScreen, scene);
     drawWorldStreet(worldTime, scene);
     drawWorldReaction(worldTime, scene);
-    drawPet(renderTime);
+    drawPet(renderTime, presence);
     ctx.restore();
     drawWorldForeground(scene);
+    drawUtcAmbience(scene);
+    drawCompanionPresence(renderTime, scene, presence);
     drawActionFlash(renderTime, scene);
     drawCinematicFeedback(renderTime, scene);
     drawSceneTransition(renderTime, scene);
@@ -1441,6 +1659,10 @@
   function frame(time) {
     drawWorld(time);
     if (animationUntil <= time) { animationMode = 'idle'; animationLabel = ''; }
+    if (companionGreetingUntil > 0 && companionGreetingUntil <= time) {
+      companionGreeting = '';
+      companionGreetingUntil = 0;
+    }
     if (reducedMotion) return;
     requestAnimationFrame(frame);
   }
@@ -1450,7 +1672,15 @@
     if (tg) {
       try { tg.ready(); tg.expand(); tg.setHeaderColor('#06110b'); tg.setBackgroundColor('#010402'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (_) {}
     }
-    setInterval(function () { clock.textContent = new Date().toISOString().slice(11, 19) + ' UTC'; }, 1000);
+    setInterval(function () {
+      var now = new Date();
+      var nextUtcHour = now.getUTCHours();
+      if (nextUtcHour !== utcHour) {
+        utcHour = nextUtcHour;
+        if (reducedMotion) drawWorld(performance.now());
+      }
+      clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
+    }, 1000);
     requestAnimationFrame(frame);
     await typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });
     await restoreBrowserAuth();

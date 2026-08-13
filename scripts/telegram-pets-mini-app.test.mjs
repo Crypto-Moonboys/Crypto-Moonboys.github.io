@@ -66,7 +66,7 @@ const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.u
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase3-cinematic-feedback`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-phase4-living-companion`/);
 assert.match(worker, /const url = MOONPET_MINI_APP_URL/);
 assert.match(worker, /`\$\{MOONPET_MINI_APP_URL\}#screen=\$\{screen\}`/);
 assert.match(worker, /setChatMenuButton/);
@@ -86,7 +86,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase3-cinematic-feedback/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-phase4-living-companion/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -201,7 +201,7 @@ assert.match(client, /WORLD_REACTION_COLORS\[animationMode\]/);
 assert.match(client, /var worldTime = reducedMotion \? 0 : time/);
 assert.match(client, /drawWorldSky\(worldTime, scene\)/);
 assert.match(client, /drawWorldReaction\(worldTime, scene\)/);
-assert.match(client, /drawPet\(renderTime\);\s*ctx\.restore\(\);\s*drawWorldForeground\(scene\)/s);
+assert.match(client, /drawPet\(renderTime, presence\);\s*ctx\.restore\(\);\s*drawWorldForeground\(scene\)/s);
 assert.doesNotMatch(client, /new Image\s*\(/);
 assert.match(client, /function drawMoonEgg/);
 assert.match(client, /drawMoonEgg\(time, active, lifecycle\.incubation\)/);
@@ -289,5 +289,96 @@ assert.match(client, /function drawSceneTransition\(time, scene\)/);
 assert.match(client, /if \(reducedMotion \|\| sceneTransitionUntil <= time\) return/);
 assert.match(client, /drawActionFlash\(renderTime, scene\);\s*drawCinematicFeedback\(renderTime, scene\);\s*drawSceneTransition\(renderTime, scene\)/s);
 assert.doesNotMatch(client, /Math\.random\(\).*feedback|feedback.*Math\.random\(\)/s, 'Phase 3 feedback must never invent random rewards');
+
+
+assert.match(client, /var SCENE_COMPANION_HABITS =/);
+for (const habit of ['moon_gaze', 'signal_scan', 'alley_prowl', 'scrap_tinker', 'window_shop', 'memory_glow']) {
+  assert.match(client, new RegExp(habit), `Phase 4 must include scene habit ${habit}`);
+}
+assert.match(client, /var SPECIES_COMPANION_HABITS =/);
+for (const species of ['neon_raccoon', 'bubble_ram', 'comet_gecko', 'vinyl_crab', 'lantern_fox', 'sneaker_snail', 'alley_drake', 'moon_ferret']) {
+  assert.match(client, new RegExp(species + ": '[a-z_]+"), `Phase 4 must include an idle signature for ${species}`);
+}
+assert.match(client, /function companionIdentitySeed\(pet, lifecycle\)/);
+assert.match(client, /return companionSeedValue/);
+assert.match(client, /COMPANION_PRESENCE_FRAME\.slot !== slot/);
+assert.match(client, /COMPANION_PRESENCE_FRAME\.screen !== activeScreen/);
+assert.match(client, /function temperamentCompanionHabit\(temperament\)/);
+assert.match(client, /bold\|brave\|fierce\|confident.*return 'swagger'/s);
+assert.match(client, /rhythmic\|play\|wild\|chaos\|energetic.*return 'fidget'/s);
+assert.match(client, /calm\|soft\|patient\|loyal.*return 'chill'/s);
+assert.match(client, /social\|curious\|alert\|observant.*return 'listen'/s);
+assert.match(client, /function companionNeedThought\(pet, lifecycle, fallback\)/);
+assert.match(client, /Number\(pet\.health\) < 35.*I NEED PATCHING/s);
+assert.match(client, /Number\(pet\.energy\) < 20.*NAP SIGNAL/s);
+assert.match(client, /Number\(pet\.hunger\) > 78.*SNACK PLEASE/s);
+assert.match(client, /Number\(pet\.cleanliness\) < 30.*WASH TIME/s);
+assert.match(client, /Number\(pet\.happiness\) < 30.*PLAY WITH ME/s);
+assert.match(client, /function updateCompanionPresence\(pet, lifecycle, time\)/);
+const presenceFunctionMatch = client.match(/  function updateCompanionPresence\(pet, lifecycle, time\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
+assert.ok(presenceFunctionMatch, 'Phase 4 presence director must be extractable for runtime smoke coverage');
+const presenceFunctionSource = presenceFunctionMatch[0].replace(/\n\n  function drawPixelText$/, '');
+const runtimePresenceFrame = { behavior: 'chill', phase: 0.72, thought: '', slot: -1, screen: '', seed: -1 };
+const updatePresenceRuntime = new Function(
+  'reducedMotion', 'activeScreen', 'COMPANION_PRESENCE_FRAME', 'companionIdentitySeed',
+  'SCENE_COMPANION_HABITS', 'SPECIES_COMPANION_HABITS', 'temperamentCompanionHabit',
+  'companionNeedThought', 'COMPANION_THOUGHTS',
+  presenceFunctionSource + '; return updateCompanionPresence;'
+)(
+  false,
+  'explore',
+  runtimePresenceFrame,
+  () => 12,
+  { explore: 'alley_prowl' },
+  { neon_raccoon: 'mask_wash' },
+  () => 'listen',
+  (_pet, _lifecycle, fallback) => fallback,
+  { alley_prowl: 'ALLEY CHECK', mask_wash: 'MASK STAYS FRESH', listen: 'TELL ME MORE' },
+);
+assert.doesNotThrow(() => updatePresenceRuntime(
+  { pet_name: 'Smoke', species: 'neon_raccoon', health: 100, energy: 100, hunger: 0, cleanliness: 100, happiness: 100 },
+  { species_id: 'neon_raccoon', temperament: 'curious' },
+  0,
+), 'Phase 4 presence director must execute without unresolved render-loop identifiers');
+assert.equal(runtimePresenceFrame.thought, 'ALLEY CHECK');
+assert.doesNotThrow(() => updatePresenceRuntime(
+  { pet_name: 'Smoke', species: 'neon_raccoon', health: 100, energy: 100, hunger: 0, cleanliness: 100, happiness: 100 },
+  null,
+  8000,
+), 'Phase 4 species habits must fall back to pet.species when lifecycle identity is incomplete');
+assert.equal(runtimePresenceFrame.behavior, 'mask_wash');
+assert.equal(runtimePresenceFrame.thought, 'MASK STAYS FRESH');
+
+assert.match(client, /var presenceTime = reducedMotion \? 0 : Math\.max\(0, time\)/);
+assert.match(client, /COMPANION_PRESENCE_FRAME\.phase = reducedMotion \? 0\.72/);
+assert.match(client, /function drawCompanionHabitEffects\(time, x, y, presence, color, active\)/);
+assert.match(client, /var effectTime = reducedMotion \? 0 : time/);
+assert.match(client, /var angle = effectTime \/ 900/);
+assert.match(client, /function companionAmbienceMode\(hour\)/);
+assert.match(client, /NIGHT SHIFT/);
+assert.match(client, /DAWN SHIFT/);
+assert.match(client, /DAY SHIFT/);
+assert.match(client, /DUSK SHIFT/);
+assert.match(client, /function drawUtcAmbience\(scene\)/);
+assert.match(client, /if \(nextUtcHour !== utcHour\)/);
+assert.match(client, /if \(reducedMotion\) drawWorld\(performance\.now\(\)\)/);
+assert.match(client, /function drawCompanionPresence\(time, scene, presence\)/);
+assert.match(client, /var bubbleY = 54/);
+assert.match(client, /drawPixelRect\(7, bubbleY, 150, 31/);
+assert.doesNotMatch(client, /drawPixelRect\(7, 18, 150, 31/, 'companion copy must remain below the DOM HUD');
+assert.match(client, /if \(feedbackActive \|\| actionActive && !greetingActive\) return/);
+assert.match(client, /feedbackUntil > time/);
+assert.match(client, /function companionGreetingCopy\(pet, lifecycle\)/);
+assert.match(client, /function greetCompanion\(\)/);
+assert.match(client, /canvas\.addEventListener\('click'/);
+assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 66 && canvasY <= 190/);
+assert.match(client, /animateAction\('interact', true, 1400, \{ source: 'pet_tap'/);
+assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
+assert.match(client, /companionGreetingTimer = window\.setTimeout/);
+assert.match(client, /drawPet\(renderTime, presence\)/);
+assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
+assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
+assert.match(client, /drawUtcAmbience\(scene\);\s*drawCompanionPresence\(renderTime, scene, presence\)/s);
+assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
 console.log('telegram-pets-mini-app.test.mjs passed');
