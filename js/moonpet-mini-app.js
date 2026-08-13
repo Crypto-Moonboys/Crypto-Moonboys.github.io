@@ -833,8 +833,9 @@
   function temperamentCompanionHabit(temperament) {
     var key = String(temperament || '').toLowerCase();
     if (/bold|brave|fierce|confident/.test(key)) return 'swagger';
-    if (/play|wild|chaos|energetic/.test(key)) return 'fidget';
+    if (/rhythmic|play|wild|chaos|energetic/.test(key)) return 'fidget';
     if (/calm|soft|patient|loyal/.test(key)) return 'chill';
+    if (/social|curious|alert|observant/.test(key)) return 'listen';
     return 'listen';
   }
 
@@ -1672,7 +1673,11 @@
     }
     setInterval(function () {
       var now = new Date();
-      utcHour = now.getUTCHours();
+      var nextUtcHour = now.getUTCHours();
+      if (nextUtcHour !== utcHour) {
+        utcHour = nextUtcHour;
+        if (reducedMotion) drawWorld(performance.now());
+      }
       clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
     }, 1000);
     requestAnimationFrame(frame);
