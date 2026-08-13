@@ -311,6 +311,33 @@ assert.match(client, /Number\(pet\.hunger\) > 78.*SNACK PLEASE/s);
 assert.match(client, /Number\(pet\.cleanliness\) < 30.*WASH TIME/s);
 assert.match(client, /Number\(pet\.happiness\) < 30.*PLAY WITH ME/s);
 assert.match(client, /function updateCompanionPresence\(pet, lifecycle, time\)/);
+const presenceFunctionMatch = client.match(/  function updateCompanionPresence\(pet, lifecycle, time\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
+assert.ok(presenceFunctionMatch, 'Phase 4 presence director must be extractable for runtime smoke coverage');
+const presenceFunctionSource = presenceFunctionMatch[0].replace(/\n\n  function drawPixelText$/, '');
+const runtimePresenceFrame = { behavior: 'chill', phase: 0.72, thought: '', slot: -1, screen: '', seed: -1 };
+const updatePresenceRuntime = new Function(
+  'reducedMotion', 'activeScreen', 'COMPANION_PRESENCE_FRAME', 'companionIdentitySeed',
+  'SCENE_COMPANION_HABITS', 'SPECIES_COMPANION_HABITS', 'temperamentCompanionHabit',
+  'companionNeedThought', 'COMPANION_THOUGHTS',
+  presenceFunctionSource + '; return updateCompanionPresence;'
+)(
+  false,
+  'explore',
+  runtimePresenceFrame,
+  () => 12,
+  { explore: 'alley_prowl' },
+  { neon_raccoon: 'mask_wash' },
+  () => 'listen',
+  (_pet, _lifecycle, fallback) => fallback,
+  { alley_prowl: 'ALLEY CHECK', mask_wash: 'MASK STAYS FRESH', listen: 'TELL ME MORE' },
+);
+assert.doesNotThrow(() => updatePresenceRuntime(
+  { pet_name: 'Smoke', species: 'neon_raccoon', health: 100, energy: 100, hunger: 0, cleanliness: 100, happiness: 100 },
+  { species_id: 'neon_raccoon', temperament: 'curious' },
+  16000,
+), 'Phase 4 presence director must execute without unresolved render-loop identifiers');
+assert.equal(runtimePresenceFrame.thought, 'ALLEY CHECK');
+
 assert.match(client, /var presenceTime = reducedMotion \? 0 : Math\.max\(0, time\)/);
 assert.match(client, /COMPANION_PRESENCE_FRAME\.phase = reducedMotion \? 0\.72/);
 assert.match(client, /function drawCompanionHabitEffects\(time, x, y, presence, color, active\)/);
@@ -333,6 +360,8 @@ assert.match(client, /animateAction\('interact', true, 1400, \{ source: 'pet_tap
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
 assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime, presence\)/);
+assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
+assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
 assert.match(client, /drawUtcAmbience\(scene\);\s*drawCompanionPresence\(renderTime, scene, presence\)/s);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
