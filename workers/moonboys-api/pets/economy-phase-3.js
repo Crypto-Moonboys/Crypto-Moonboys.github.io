@@ -16,6 +16,14 @@ export const PET_CRAFTING_MATERIALS = deepFreeze({
   mastery_token: { label: 'Mastery Token', sources: ['prestige_challenge', 'season_guardian'], max_stack: 9999 },
 });
 
+export const PET_CRAFTING_RECIPES = deepFreeze({
+  street_rations: { title: 'Street Rations', detail: 'Two Moon Snacks for long care and run sessions.', min_level: 3, cost: { scrap_metal: 2, moon_fabric: 1 }, output: { item_key: 'moon_snack', quantity: 2 } },
+  clean_kit: { title: 'Clean Kit', detail: 'Two Clean Wipes to recover cleanliness between missions.', min_level: 4, cost: { moon_fabric: 2, spray_core: 1 }, output: { item_key: 'clean_wipe', quantity: 2 } },
+  battery_pack: { title: 'Battery Pack', detail: 'An Energy Drink for demanding runs and boss fights.', min_level: 6, cost: { battery_cell: 3, crystal_shard: 1 }, output: { item_key: 'energy_drink', quantity: 1 } },
+  style_patch: { title: 'Style Patch', detail: 'A wearable patch that converts into Style Tokens when used.', min_level: 8, cost: { moon_fabric: 3, spray_core: 2 }, output: { item_key: 'style_patch', quantity: 1 } },
+  route_map: { title: 'Route Map', detail: 'An Adventure Map for safer expedition and run routing.', min_level: 10, cost: { scrap_metal: 4, crystal_shard: 2 }, output: { item_key: 'adventure_map', quantity: 1 } },
+});
+
 export const PET_EQUIPMENT_UPGRADE_COSTS = deepFreeze({
   2: { moon_gold: 80, crystal_shard: 0, scrap_metal: 2 },
   3: { moon_gold: 140, crystal_shard: 1, scrap_metal: 4 },
@@ -62,6 +70,11 @@ function hasOwn(object, key) {
 export function normalizePetMaterial(value) {
   const key = String(value || '').trim().toLowerCase();
   return hasOwn(PET_CRAFTING_MATERIALS, key) ? key : null;
+}
+
+export function getPetCraftingRecipe(value) {
+  const key = String(value || '').trim().toLowerCase();
+  return hasOwn(PET_CRAFTING_RECIPES, key) ? { key, ...PET_CRAFTING_RECIPES[key], cost: { ...PET_CRAFTING_RECIPES[key].cost }, output: { ...PET_CRAFTING_RECIPES[key].output } } : null;
 }
 
 export function clampPetMaterialStack(materialKey, current, delta) {

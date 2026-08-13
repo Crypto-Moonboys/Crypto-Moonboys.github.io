@@ -1,5 +1,5 @@
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
-import { PET_COSMETIC_SINKS, PET_PRESTIGE_REQUIREMENTS, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
+import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
 import { normalizeFaction } from '../shared/faction-canon.js';
 
@@ -107,6 +107,10 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     key, ...sink, unlocked: unlockedCosmetics.has(key), quantity: integer(unlockedCosmetics.get(key)?.quantity),
     affordable: Object.entries(sink.cost).every(([costKey, amount]) => integer(economyWallet[costKey]) >= amount),
   }));
+  const crafting = Object.entries(PET_CRAFTING_RECIPES).map(([key, recipe]) => ({
+    key, ...recipe, unlocked: integer(pet.level) >= recipe.min_level,
+    affordable: integer(pet.level) >= recipe.min_level && Object.entries(recipe.cost).every(([costKey, amount]) => integer(materialMap[costKey]) >= amount),
+  }));
   const masteredItems = gear.filter((item) => integer(item.mastery_tier) >= 5).length;
   const prestige = {
     requirements: PET_PRESTIGE_REQUIREMENTS,
@@ -128,9 +132,43 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: integer(pet.level) >= boss.min_level && !bossRow.defeated_at && !bossUsedToday },
     upgrades: upgradeRows,
     cosmetics: cosmeticState,
+    crafting,
     prestige,
     faction: { key: faction, bonus: PET_FACTION_BONUSES[faction] || null },
   };
+}
+
+export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKey) {
+  const recipe = getPetCraftingRecipe(recipeKey);
+  if (!recipe) return { accepted: false, reason: 'crafting_recipe_invalid' };
+  const replay = await getCompletedRequest(db, telegramId, 'crafting', recipe.key, requestKey);
+  if (replay) return { accepted: true, duplicate: true, reason: 'crafting_already_completed', recipe: parse(replay.payload_json, {}) };
+  const pet = await db.prepare('SELECT level FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
+  if (integer(pet.level) < recipe.min_level) return { accepted: false, reason: 'crafting_locked', required_level: recipe.min_level };
+  const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
+  const wallet = Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)]));
+  if (!Object.entries(recipe.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'crafting_materials_missing', cost: recipe.cost };
+  const reservation = await reserveSystemEvent(db, telegramId, 'crafting', recipe.key, String(requestKey || crypto.randomUUID()), { cost: recipe.cost, output: recipe.output });
+  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'crafting_already_completed', recipe };
+  const costs = Object.entries(recipe.cost).filter(([, amount]) => integer(amount) > 0);
+  const checks = costs.map(() => 'AND EXISTS (SELECT 1 FROM telegram_pet_material_balances WHERE telegram_id=? AND material_key=? AND quantity>=?)').join(' ');
+  const results = await db.batch([
+    db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected') ${checks}`)
+      .bind(reservation.id, ...costs.flatMap(([key, amount]) => [telegramId, key, amount])),
+    ...costs.map(([key, amount]) => db.prepare("UPDATE telegram_pet_material_balances SET quantity=quantity-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND material_key=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(amount, telegramId, key, reservation.id)),
+    db.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+      SELECT ?, 'item', ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')
+      ON CONFLICT(telegram_id, asset_type, asset_key) DO UPDATE SET quantity=MIN(9999, quantity+excluded.quantity)`)
+      .bind(telegramId, recipe.output.item_key, recipe.output.quantity, reservation.id),
+    db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling'")
+      .bind(JSON.stringify({ key: recipe.key, title: recipe.title, cost: recipe.cost, output: recipe.output }), reservation.id),
+  ]);
+  if (Number(results[0]?.meta?.changes || 0) < 1 || Number(results.at(-2)?.meta?.changes || 0) < 1) {
+    await db.prepare("UPDATE telegram_pet_system_events SET status='rejected', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status<>'completed'").bind(reservation.id).run();
+    return { accepted: false, reason: 'crafting_settlement_conflict', cost: recipe.cost };
+  }
+  return { accepted: true, reason: 'crafting_complete', recipe: { key: recipe.key, title: recipe.title, output: recipe.output }, cost: recipe.cost, rewards: { items: { [recipe.output.item_key]: recipe.output.quantity } } };
 }
 
 async function reserveSystemEvent(db, telegramId, system, action, period, payload = {}) {

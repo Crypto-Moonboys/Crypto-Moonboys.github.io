@@ -28,7 +28,7 @@ Moonpet has a strong technical foundation and an unusually broad feature set for
 | Story chains | 5/10 | Present, but branches, character choices and persistent consequences remain shallow. |
 | Arena | 7.8/10 | Server-owned move previews, charge state, solo telegraphs, sealed PvP intent and perspective-correct recaps make the existing counter combat readable. Persistent builds and richer opponent archetypes remain future work. |
 | Kaiju | 7.3/10 | The active category is now persisted before selection, every card exposes its relevant value and strengths, and results explain the score. Collection roles and multi-round mastery remain future work. |
-| Economy and gear | 7/10 | Broad and authoritative; build identity and meaningful trade-offs need stronger presentation. |
+| Economy and gear | 7.5/10 | The material economy now has a protected five-recipe Workshop and clear cost/output previews; deeper build identity and meaningful trade-offs still need expansion. |
 | Progression and endgame | 7/10 | Deep breadth across prestige, relics, rare morphs and leaderboards; balance still needs live data. |
 | Navigation and accessibility | 8/10 | Strong Mini App routing and utility controls with reduced-motion support. |
 | Performance | 8/10 | Canvas/code art and lightweight DOM are appropriate for Telegram; profile on low-end devices before launch scale. |
@@ -67,4 +67,8 @@ The full-surface audit found five release-critical polish defects outside the co
 
 This pass makes persisted timestamps UTC-safe across care decay, cooldowns, activities, digest retry timing, and roguelite duration; invalid activity timestamps now fail closed. It also adds opt-in procedural interface audio with a persistent toggle, a signed Telegram launch fallback, explicit combat color tokens, current Moonpet OS documentation, and cache-busted Mini App assets.
 
-The remaining AAA gap is content and production depth rather than broken plumbing: authored music and sound design, richer persistent buildcraft, live telemetry-led balance, broader encounter variety, and profiling on representative low-end Telegram devices are still required before describing Moonpet as a content-complete AAA game.
+The remaining AAA gap is content and production depth rather than broken plumbing: authored music and sound design, richer persistent buildcraft beyond consumable recipes, live telemetry-led balance, broader encounter variety, and profiling on representative low-end Telegram devices are still required before describing Moonpet as a content-complete AAA game.
+
+## Workshop follow-up — 2026-08-14
+
+The previously read-only material collection now supports five level-gated recipes in Moonpet OS. Recipe definitions are immutable and canonical, the state response exposes affordability, the UI shows exact costs and outputs, and the server owns validation and settlement. Request IDs make retries safe; a final balance check prevents a stale client from crafting after another action spends the required materials. The workshop deliberately produces bounded existing consumables instead of adding a new currency faucet.
