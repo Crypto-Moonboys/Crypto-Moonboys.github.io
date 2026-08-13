@@ -6587,7 +6587,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       current_room: Number(dailyReservation?.current_room ?? activeRun.current_room ?? activeRun.depth ?? 0),
       max_room: Number(dailyReservation?.max_room ?? activeRun.max_room ?? activeRun.max_depth ?? 0),
       expected_step_index: Number(dailyReservation?.current_room ?? activeRun.depth ?? 0),
-      room: dailyRoom,
+      room: dailyRoom || activeRun.room || null,
       choices: runChoices,
     } : null,
     encounter: encounter ? {
