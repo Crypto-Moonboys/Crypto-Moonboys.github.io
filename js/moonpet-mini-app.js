@@ -238,6 +238,8 @@
   function renderMissions() {
     var guidance = state.guidance || {};
     var missions = state.guidance && state.guidance.missions || [];
+    var completedMissions = missions.filter(function (mission) { return mission.completed; }).length;
+    var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
     var rows = missions.map(function (mission) {
       return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>';
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
@@ -246,7 +248,7 @@
     var achievementRows = achievements.map(function (entry) {
       return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
-    return panel('DAILY MISSION BUFFER', '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + rows, 'missions') +
+    return panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
