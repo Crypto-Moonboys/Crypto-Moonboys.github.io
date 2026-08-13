@@ -49,6 +49,27 @@
     patchCanvasText(ctx);
   }
 
+  function logicalPointerEvent(event, canvas) {
+    var bounds = canvas.getBoundingClientRect();
+    var logicalClientX = bounds.left + (event.clientX - bounds.left) / RENDER_SCALE;
+    var logicalClientY = bounds.top + (event.clientY - bounds.top) / RENDER_SCALE;
+    var proxy = Object.create(event);
+    Object.defineProperty(proxy, 'clientX', { value: logicalClientX });
+    Object.defineProperty(proxy, 'clientY', { value: logicalClientY });
+    return proxy;
+  }
+
+  var originalAddEventListener = HTMLCanvasElement.prototype.addEventListener;
+  HTMLCanvasElement.prototype.addEventListener = function (type, listener, options) {
+    if (this && this.id === TARGET_CANVAS_ID && type === 'click' && typeof listener === 'function') {
+      var canvas = this;
+      return originalAddEventListener.call(canvas, type, function (event) {
+        return listener.call(this, logicalPointerEvent(event, canvas));
+      }, options);
+    }
+    return originalAddEventListener.call(this, type, listener, options);
+  };
+
   var originalGetContext = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, options) {
     var ctx = originalGetContext.call(this, type, options);
@@ -57,14 +78,4 @@
     }
     return ctx;
   };
-
-  window.addEventListener('DOMContentLoaded', function () {
-    var canvas = document.getElementById(TARGET_CANVAS_ID);
-    if (canvas) {
-      canvas.width = WORLD_WIDTH * RENDER_SCALE;
-      canvas.height = WORLD_HEIGHT * RENDER_SCALE;
-      canvas.style.imageRendering = 'pixelated';
-      canvas.style.imageRendering = 'crisp-edges';
-    }
-  });
 })();
