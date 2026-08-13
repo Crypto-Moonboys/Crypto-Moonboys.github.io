@@ -441,11 +441,27 @@
         ? '<div class="line">KAIJU MATCHMAKING // POSITION ' + number(kaijuQueue.position) + '</div><div class="button-grid one">' + button('LEAVE KAIJU QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) + '</div>'
         : (kaiju.result ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
     var regions = (state.regions || []).map(function (region) {
-      return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.used_today ? 'COMPLETE TODAY' : region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">MASTERY ' + number(region.mastery_xp) + ' // BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : '<div class="button-grid one">' + button(region.used_today ? 'DISTRICT COMPLETE TODAY' : 'RUN DISTRICT MISSION // 10 ENERGY', 'district_mission', { region_key: region.key }, { disabled: !region.available }) + '</div>') + '</div>';
+      var mission = region.mission || {};
+      var opponent = mission.opponent || {};
+      var decisions = (mission.choices || []).map(function (choice) {
+        return button(choice.label, 'district_mission', { region_key: region.key, approach_key: choice.key }, {
+          disabled: !region.available,
+          detail: number(choice.success_percent) + '% CLEAR // +' + number(choice.mastery_success) + ' MASTERY // ' + number(Math.round(number(choice.reward_multiplier) * 100)) + '% REWARD // ' + choice.detail,
+        });
+      }).join('');
+      var brief = mission.title
+        ? '<div class="district-mission"><div class="line signal"><strong>' + escapeHtml(mission.title) + '</strong> // THREAT ' + number(mission.threat) + '/5' + (mission.boss ? ' // BOSS CHECKPOINT' : '') + '</div><div class="line">' + escapeHtml(mission.intro) + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(mission.objective) + '</div>' + (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role)) + '<small>' + escapeHtml(opponent.intro || '') + '</small></div>' : '') + '</div>'
+        : '';
+      return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.used_today ? 'COMPLETE TODAY' : region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">MASTERY ' + number(region.mastery_xp) + ' // BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + brief + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : region.used_today ? '<div class="line complete">DISTRICT PLAY COMPLETE TODAY</div>' : '<div class="button-grid district-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
     var live = state.live_systems || {};
     var chains = (live.chains || []).map(function (chain) {
-      return '<div class="line">' + escapeHtml(words(chain.key)) + ' // STEP ' + number(chain.step_index + 1) + '/' + number(chain.steps.length) + '</div><div class="button-grid one">' + button(chain.used_today ? 'STEP COMPLETE TODAY' : 'CONTINUE // ' + words(chain.current_step), 'event_chain', { chain_key: chain.key }, { disabled: !chain.available }) + '</div>';
+      var scene = chain.scene || {};
+      var decisions = (scene.choices || []).map(function (choice) {
+        var bonus = valueText(choice.reward_bonus);
+        return button(choice.label, 'event_chain', { chain_key: chain.key, choice_key: choice.key }, { disabled: !chain.available, detail: choice.detail + (bonus === 'FREE' ? '' : ' // BONUS ' + bonus) });
+      }).join('');
+      return '<div class="story-scene"><div class="line signal"><strong>' + escapeHtml(chain.title || words(chain.key)) + '</strong> // STEP ' + number(chain.step_index + 1) + '/' + number(chain.steps.length) + '</div><div class="line"><strong>' + escapeHtml(scene.title || words(chain.current_step)) + '</strong></div><div class="line">' + escapeHtml(scene.intro || '') + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(scene.objective || '') + '</div>' + (chain.used_today ? '<div class="line complete">STORY CHOICE LOCKED IN TODAY</div>' : '<div class="button-grid story-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
     var seasonal = live.seasonal_boss || {};
     var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY', 'seasonal_boss', {}, { disabled: !seasonal.available }) + '</div>';

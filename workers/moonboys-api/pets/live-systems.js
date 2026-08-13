@@ -1,4 +1,4 @@
-import { PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
+import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_PRESTIGE_REQUIREMENTS, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
 import { normalizeFaction } from '../shared/faction-canon.js';
@@ -30,6 +30,44 @@ export function applyPetFactionBonus(rewards = {}, factionKey, system) {
   return { rewards: output, bonus: { faction, system: bonus.system, effect: activeEffect } };
 }
 
+const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, Number(value) || 0));
+
+function stableLiveSystemRoll(...parts) {
+  let hash = 2166136261;
+  for (const character of parts.join('|')) { hash ^= character.charCodeAt(0); hash = Math.imul(hash, 16777619); }
+  return hash >>> 0;
+}
+
+function words(value) {
+  return String(value || '').replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getDistrictMission(telegramId, pet, region, today = dayKey()) {
+  const content = PET_REGION_CONTENT[region.key];
+  const mastery = integer(region.mastery_xp);
+  const boss = mastery > 0 && mastery % 100 >= 75;
+  const encounterKey = boss ? content.boss : content.encounters[stableLiveSystemRoll(telegramId, region.key, today, mastery) % content.encounters.length];
+  const authored = boss ? {
+    title: `${words(content.boss)} // Checkpoint`,
+    intro: `${words(content.boss)} blocks the next district tier.`,
+    objective: 'Win the checkpoint and carry mastery across the line.',
+    threat: 5,
+    opponent: { name: words(content.boss), role: 'district boss', intro: 'A permanent street-memory checkpoint.' },
+  } : PET_DISTRICT_ENCOUNTERS[encounterKey];
+  const relief = Math.min(12, Math.floor(integer(pet?.level) / 10)) + Math.min(8, Math.floor(mastery / 25));
+  const choices = Object.entries(PET_DISTRICT_APPROACHES).map(([key, approach]) => {
+    const riskPercent = Math.round(clamp(12 + integer(authored.threat) * 7 - relief + approach.risk_delta, 8, 70));
+    return { key, label: approach.label, detail: approach.detail, risk_percent: riskPercent, success_percent: 100 - riskPercent, mastery_success: approach.mastery_success, mastery_setback: approach.mastery_setback, reward_multiplier: approach.reward_multiplier };
+  });
+  return { key: encounterKey, ...authored, boss, choices };
+}
+
+function getEventChainScene(chain, stepIndex) {
+  const step = chain.steps[stepIndex] || chain.steps[0];
+  const authored = chain.step_content?.[step] || {};
+  return { key: step, title: authored.title || words(step), intro: authored.intro || '', objective: authored.objective || '', choices: (authored.choices || []).map((choice) => ({ key: choice.key, label: choice.label, detail: choice.detail, reward_bonus: { ...(choice.reward_bonus || {}) } })) };
+}
+
 export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gear = [], materials = []) {
   const mastery = parse(runtime?.region_mastery_json, {});
   const completed = parse(runtime?.completed_regions_json, []);
@@ -50,7 +88,8 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   const chainState = Object.entries(PET_EVENT_CHAINS).map(([key, chain]) => {
     const row = chainRows.get(key) || { step_index: 0, completed_cycles: 0 };
     const dailyUsed = usedToday.has(`event_chain:${key}`);
-    return { key, steps: [...chain.steps], current_step: chain.steps[integer(row.step_index)] || chain.steps[0], step_index: integer(row.step_index), completed_cycles: integer(row.completed_cycles), final_outcomes: [...chain.final_outcomes], used_today: dailyUsed, available: !dailyUsed };
+    const stepIndex = integer(row.step_index);
+    return { key, title: chain.title || words(key), steps: [...chain.steps], current_step: chain.steps[stepIndex] || chain.steps[0], step_index: stepIndex, completed_cycles: integer(row.completed_cycles), final_outcomes: [...chain.final_outcomes], scene: getEventChainScene(chain, stepIndex), used_today: dailyUsed, available: !dailyUsed };
   });
   const boss = getActiveSeasonalBoss();
   const bossRow = (bossProgress.results || []).find((row) => row.boss_key === boss.key && row.season_key === boss.season_instance) || {};
@@ -82,7 +121,8 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   return {
     regions: buildPetRegionDirectory(pet.level, mastery).map((region) => {
       const dailyUsed = usedToday.has(`district:${region.key}`);
-      return { ...region, completed: completed.includes(region.key), energy_cost: 10, mastery_gain: 25, used_today: dailyUsed, available: region.playable && !dailyUsed };
+      const mission = getDistrictMission(telegramId, pet, region, today);
+      return { ...region, completed: completed.includes(region.key), energy_cost: 10, mastery_gain: 25, mission, used_today: dailyUsed, available: region.playable && !dailyUsed };
     }),
     chains: chainState,
     seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: integer(pet.level) >= boss.min_level && !bossRow.defeated_at && !bossUsedToday },
@@ -156,73 +196,91 @@ async function releaseSettlement(db, reservationId, token) {
     WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?`).bind(reservationId, token).run();
 }
 
-export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey) {
+export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey, approachKey) {
   const directory = buildPetRegionDirectory(pet.level, parse(runtime?.region_mastery_json, {}));
   const region = directory.find((entry) => entry.key === String(regionKey || ''));
   if (!region) return { accepted: false, reason: 'district_invalid' };
   if (!region.playable) return { accepted: false, reason: 'district_locked', region };
   if (integer(pet.energy) < 10) return { accepted: false, reason: 'pet_tired' };
-  const reservation = await reserveSystemEvent(db, telegramId, 'district', region.key, dayKey(), { region_key: region.key });
+  const mission = getDistrictMission(telegramId, pet, region);
+  const explicitApproach = String(approachKey || '');
+  const choice = mission.choices.find((entry) => entry.key === explicitApproach) || (!explicitApproach ? mission.choices.find((entry) => entry.key === 'tactical') : null);
+  if (!choice) return { accepted: false, reason: 'district_approach_invalid', mission };
+  const reservation = await reserveSystemEvent(db, telegramId, 'district', region.key, dayKey(), { region_key: region.key, mission_key: mission.key, approach_key: choice.key });
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'district_completed_today', region };
   const claim = await claimEnergySettlement(db, reservation, telegramId, 10);
   if (claim.state !== 'settling') return { accepted: false, reason: claim.state === 'busy' ? 'district_busy' : 'pet_tired' };
   const content = PET_REGION_CONTENT[region.key];
   const mastery = parse(runtime?.region_mastery_json, {});
-  const nextMastery = integer(mastery[region.key]) + 25;
-  const bossVictory = nextMastery % 100 === 0;
-  const rewardMaterial = content.reward_focus[(Math.floor(nextMastery / 25) - 1) % content.reward_focus.length];
-  const baseRewards = { pet_xp: bossVictory ? 55 : 25, moon_gold: bossVictory ? 65 : 28, materials: { [rewardMaterial]: bossVictory ? 3 : 1 } };
+  const currentMastery = integer(mastery[region.key]);
+  const succeeded = !explicitApproach || stableLiveSystemRoll(telegramId, region.key, dayKey(), mission.key, choice.key) % 100 >= choice.risk_percent;
+  const masteryGain = succeeded ? choice.mastery_success : choice.mastery_setback;
+  const nextMastery = currentMastery + masteryGain;
+  const bossVictory = succeeded && Math.floor(currentMastery / 100) < Math.floor(nextMastery / 100);
+  const rewardMaterial = content.reward_focus[Math.floor(currentMastery / 25) % content.reward_focus.length];
+  const scale = succeeded ? choice.reward_multiplier : 0.55;
+  const baseRewards = { pet_xp: Math.max(8, Math.floor((bossVictory ? 55 : 25) * scale)), moon_gold: Math.max(6, Math.floor((bossVictory ? 65 : 28) * scale)), materials: { [rewardMaterial]: bossVictory ? 3 : succeeded ? 1 : 0 } };
   const adjusted = applyPetFactionBonus(baseRewards, factionKey, 'runs');
+  const resultCopy = bossVictory ? `${mission.opponent.name} falls. Your crew owns the next district tier.` : succeeded ? `${mission.title} cleared via ${choice.label}. The district remembers the play.` : `${choice.label} breaks under pressure. You save the route and keep partial mastery.`;
   let awarded;
   try { awarded = await awardReward({
     telegram_id: telegramId, source: 'pet_district', idempotency_key: `district:${reservation.id}`, event_key: `district:${reservation.id}`,
-    event_type: 'district_mission', reason: `${region.key}:${bossVictory ? 'boss' : 'encounter'}`, rewards: adjusted.rewards,
-    touch_streak: true, context: { system_event_id: reservation.id, region_key: region.key, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus },
+    event_type: 'district_mission', reason: `${region.key}:${mission.key}:${choice.key}:${succeeded ? 'clear' : 'setback'}`, rewards: adjusted.rewards,
+    touch_streak: true, context: { system_event_id: reservation.id, region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus },
   }); } catch (error) { await releaseSettlement(db, reservation.id, claim.token); throw error; }
   if (!awarded.accepted) { await releaseSettlement(db, reservation.id, claim.token); return awarded; }
-  const completionPayload = JSON.stringify({ region_key: region.key, mastery: nextMastery, boss: bossVictory });
+  const completionPayload = JSON.stringify({ region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, mastery: nextMastery, mastery_gain: masteryGain, boss: bossVictory, result_copy: resultCopy });
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_progression_state SET
-      region_mastery_json=json_set(COALESCE(region_mastery_json, '{}'), '$.' || ?, COALESCE(json_extract(region_mastery_json, '$.' || ?), 0) + 25),
+      region_mastery_json=json_set(COALESCE(region_mastery_json, '{}'), '$.' || ?, COALESCE(json_extract(region_mastery_json, '$.' || ?), 0) + ?),
       completed_regions_json=CASE
-        WHEN COALESCE(json_extract(region_mastery_json, '$.' || ?), 0) + 25 >= 100
+        WHEN COALESCE(json_extract(region_mastery_json, '$.' || ?), 0) + ? >= 100
           AND NOT EXISTS (SELECT 1 FROM json_each(COALESCE(completed_regions_json, '[]')) WHERE value=?)
         THEN json_insert(COALESCE(completed_regions_json, '[]'), '$[#]', ?)
         ELSE COALESCE(completed_regions_json, '[]') END,
-      adventure_xp=adventure_xp+25, updated_at=CURRENT_TIMESTAMP
+      adventure_xp=adventure_xp+?, updated_at=CURRENT_TIMESTAMP
       WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)`)
-      .bind(region.key, region.key, region.key, region.key, region.key, telegramId, reservation.id, claim.token),
+      .bind(region.key, region.key, masteryGain, region.key, masteryGain, region.key, region.key, masteryGain, telegramId, reservation.id, claim.token),
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(completionPayload, reservation.id, claim.token),
   ]);
   if (Number(results?.[1]?.meta?.changes || 0) < 1) return { accepted: false, reason: 'district_busy' };
-  return { ...awarded, reason: bossVictory ? 'district_boss_defeated' : 'district_mission_complete', region: { ...region, mastery_xp: nextMastery }, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus };
+  return { ...awarded, reason: bossVictory ? 'district_boss_defeated' : succeeded ? 'district_mission_complete' : 'district_mission_setback', region: { ...region, mastery_xp: nextMastery }, mission: { key: mission.key, title: mission.title, boss: mission.boss }, choice: { key: choice.key, label: choice.label }, outcome: { success: succeeded, copy: resultCopy, risk_percent: choice.risk_percent, mastery_gain: masteryGain }, result_copy: resultCopy, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus };
 }
 
-export async function processPetEventChain(db, telegramId, chainKey, awardReward, factionKey) {
+export async function processPetEventChain(db, telegramId, chainKey, awardReward, factionKey, choiceKey) {
   const chain = PET_EVENT_CHAINS[String(chainKey || '')];
   if (!chain) return { accepted: false, reason: 'event_chain_invalid' };
   const row = await db.prepare('SELECT step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE telegram_id=? AND chain_key=?').bind(telegramId, chainKey).first();
   const stepIndex = integer(row?.step_index);
-  const reservation = await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, dayKey(), { step_index: stepIndex });
+  const scene = getEventChainScene(chain, stepIndex);
+  const explicitChoice = String(choiceKey || '');
+  const authoredChoices = chain.step_content?.[scene.key]?.choices || [];
+  const selectedChoice = authoredChoices.find((choice) => choice.key === explicitChoice) || (!explicitChoice ? authoredChoices[0] : null);
+  if (!selectedChoice) return { accepted: false, reason: 'event_chain_choice_invalid', scene };
+  const reservation = await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, dayKey(), { step_index: stepIndex, step: scene.key, choice_key: selectedChoice.key });
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'event_chain_step_used_today' };
   const claim = await claimNoCostSettlement(db, reservation);
   if (claim.state !== 'settling') return { accepted: false, reason: 'event_chain_busy' };
   const final = stepIndex >= chain.steps.length - 1;
-  const reward = applyPetFactionBonus({ pet_xp: final ? 45 : 18, moon_gold: final ? 50 : 16, style_tokens: final ? 4 : 1 }, factionKey, 'events');
+  const baseRewards = { pet_xp: final ? 45 : 18, moon_gold: final ? 50 : 16, style_tokens: final ? 4 : 1 };
+  for (const [key, amount] of Object.entries(selectedChoice.reward_bonus || {})) baseRewards[key] = integer(baseRewards[key]) + integer(amount);
+  const reward = applyPetFactionBonus(baseRewards, factionKey, 'events');
   let awarded;
-  try { awarded = await awardReward({ telegram_id: telegramId, source: 'pet_event_chain', idempotency_key: `chain:${reservation.id}`, event_key: `chain:${reservation.id}`, event_type: 'event_chain', reason: `${chainKey}:${chain.steps[stepIndex]}`, rewards: reward.rewards, touch_streak: true, context: { system_event_id: reservation.id, chain_key: chainKey, step: chain.steps[stepIndex], final, faction_bonus: reward.bonus } }); }
+  try { awarded = await awardReward({ telegram_id: telegramId, source: 'pet_event_chain', idempotency_key: `chain:${reservation.id}`, event_key: `chain:${reservation.id}`, event_type: 'event_chain', reason: `${chainKey}:${scene.key}:${selectedChoice.key}`, rewards: reward.rewards, touch_streak: true, context: { system_event_id: reservation.id, chain_key: chainKey, step: scene.key, choice_key: selectedChoice.key, final, faction_bonus: reward.bonus } }); }
   catch (error) { await releaseSettlement(db, reservation.id, claim.token); throw error; }
   if (!awarded.accepted) { await releaseSettlement(db, reservation.id, claim.token); return awarded; }
+  const resultCopy = selectedChoice.result_copy || `${selectedChoice.label} advances ${chain.title || words(chainKey)}.`;
+  const completionPayload = JSON.stringify({ chain_key: chainKey, step: scene.key, choice_key: selectedChoice.key, final, result_copy: resultCopy });
   const results = await db.batch([
     db.prepare(`INSERT INTO telegram_pet_event_chain_progress (telegram_id, chain_key, step_index, completed_cycles)
       SELECT ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)
       ON CONFLICT(telegram_id, chain_key) DO UPDATE SET step_index=excluded.step_index, completed_cycles=excluded.completed_cycles, updated_at=CURRENT_TIMESTAMP
       WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)`)
       .bind(telegramId, chainKey, final ? 0 : stepIndex + 1, integer(row?.completed_cycles) + (final ? 1 : 0), reservation.id, claim.token, reservation.id, claim.token),
-    db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(JSON.stringify({ chain_key: chainKey, step: chain.steps[stepIndex], final }), reservation.id, claim.token),
+    db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(completionPayload, reservation.id, claim.token),
   ]);
   if (Number(results?.[1]?.meta?.changes || 0) < 1) return { accepted: false, reason: 'event_chain_busy' };
-  return { ...awarded, reason: final ? 'event_chain_completed' : 'event_chain_advanced', chain_key: chainKey, step: chain.steps[stepIndex], final, faction_bonus: reward.bonus };
+  return { ...awarded, reason: final ? 'event_chain_completed' : 'event_chain_advanced', chain_key: chainKey, step: scene.key, choice: { key: selectedChoice.key, label: selectedChoice.label }, result_copy: resultCopy, final, faction_bonus: reward.bonus };
 }
 
 export async function processPetSeasonalBoss(db, telegramId, pet, awardReward) {
