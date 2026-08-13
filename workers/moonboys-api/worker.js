@@ -4489,7 +4489,8 @@ async function buildPetMissions(db, telegramId) {
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
-  const [events, systemEvents, pet] = await Promise.all([
+  const nextDayKey = getPetDayKey(new Date(now.getTime() + 86400000));
+  const [events, equipmentUpgradeEvents, pet] = await Promise.all([
     db.prepare(`
       SELECT event_type, COUNT(*) AS count
       FROM telegram_pet_events
@@ -4497,15 +4498,15 @@ async function buildPetMissions(db, telegramId) {
       GROUP BY event_type
     `).bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
     db.prepare(`
-      SELECT system_key, COUNT(*) AS count
+      SELECT COUNT(*) AS count
       FROM telegram_pet_system_events
-      WHERE telegram_id = ? AND status = 'completed' AND date(created_at) = ?
-      GROUP BY system_key
-    `).bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
+      WHERE telegram_id = ? AND system_key = 'equipment_upgrade' AND status = 'completed'
+        AND created_at >= ? AND created_at < ?
+    `).bind(telegramId, dayKey, nextDayKey).first().catch(() => null),
     getPetProfile(db, telegramId).catch(() => null),
   ]);
   const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
-  const systemCounts = Object.fromEntries((systemEvents.results || []).map((row) => [row.system_key, Number(row.count || 0)]));
+  const equipmentUpgradeCount = Number(equipmentUpgradeEvents?.count || 0);
   const fullCareDone = ['feed', 'play', 'clean'].every((key) => counts[key] > 0);
   return {
     day_key: dayKey,
@@ -4521,7 +4522,7 @@ async function buildPetMissions(db, telegramId) {
       { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: Number(counts.train || 0) > 0 },
       { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone },
       { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: Number(counts.trade || 0) > 0 },
-      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or upgrade one pet item', completed: Number(counts.buy || 0) + Number(systemCounts.equipment_upgrade || 0) > 0 },
+      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or upgrade one pet item', completed: Number(counts.buy || 0) + equipmentUpgradeCount > 0 },
       { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: Number(counts.adventure || 0) + Number(counts.run_extract || 0) + Number(counts.run_complete || 0) + Number(counts.district_mission || 0) + Number(counts.event_chain || 0) + Number(counts.seasonal_boss || 0) > 0 },
       { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: clampPetCurrency(pet?.moon_gold) >= 50 },
     ],
@@ -11609,8 +11610,8 @@ async function handleTelegramUpdate(update, env) {
   const argStr   = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
   const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
 
-  if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && argStr.toLowerCase() === 'moonpet'))) {
-    await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType, petMiniAppDestinationForCommand(cmdBase));
+  if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && isPetMiniAppStartArgument(argStr)))) {
+    await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType, petMiniAppDestinationForCommand(cmdBase, argStr));
     return;
   }
 
@@ -11737,7 +11738,7 @@ const PET_MINI_APP_COMMAND_DESTINATIONS = Object.freeze({
   petuse: 'economy',
   pettrade: 'economy',
   petgear: 'economy',
-  petcoach: 'profile',
+  petcoach: 'home',
   petprogress: 'profile',
   petseason: 'profile',
   petevolve: 'profile',
@@ -11752,16 +11753,25 @@ function normalizePetMiniAppDestination(destination) {
   return PET_MINI_APP_SCREENS.has(screen) ? screen : 'home';
 }
 
-function petMiniAppDestinationForCommand(command) {
-  return PET_MINI_APP_COMMAND_DESTINATIONS[String(command || '').toLowerCase()] || 'home';
+function petMiniAppDestinationForCommand(command, startArgument = '') {
+  const normalizedCommand = String(command || '').toLowerCase();
+  if (normalizedCommand === 'start') {
+    const match = String(startArgument || '').toLowerCase().match(/^moonpet(?:_(home|missions|explore|work|economy|profile))?$/);
+    return normalizePetMiniAppDestination(match?.[1] || 'home');
+  }
+  return PET_MINI_APP_COMMAND_DESTINATIONS[normalizedCommand] || 'home';
+}
+
+function isPetMiniAppStartArgument(argument) {
+  return /^moonpet(?:_(?:home|missions|explore|work|economy|profile))?$/.test(String(argument || '').toLowerCase());
 }
 
 function petMiniAppDestinationForCallback(data) {
   const payload = String(data || '').toLowerCase().replace(/^pet:/, '');
   if (payload === 'missions' || payload.startsWith('mission:') || payload.startsWith('achievement')) return 'missions';
   if (payload === 'menu:adventure' || /^(arena|kaiju|run|extract|adventure|event|boss|district|chain|seasonal_boss)/.test(payload)) return 'explore';
-  if (payload === 'menu:management' || /^(work|activity|job)/.test(payload)) return 'work';
-  if (/^(shop|economy|bount|expedition|market|bag|buy|use|trade|equipment|gear|cosmetic)/.test(payload)) return 'economy';
+  if (/^(work|activity|job)/.test(payload)) return 'work';
+  if (payload === 'menu:management' || /^(shop|economy|bount|expedition|market|bag|buy|use|trade|equipment|gear|cosmetic)/.test(payload)) return 'economy';
   if (payload === 'menu:progress' || /^(details|progress|season|evolve|leaderboard|score|streak|notify|name|prestige|identity)/.test(payload)) return 'profile';
   return 'home';
 }
@@ -11790,7 +11800,7 @@ async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'p
   if (String(chatType) === 'private') await setPetMiniAppMenuButton(botToken, telegramId);
   const launchButton = String(chatType) === 'private'
     ? { text: 'OPEN MOONPET OS', web_app: { url } }
-    : { text: 'OPEN MOONPET OS', url: 'https://t.me/WIKICOMSBOT?start=moonpet' };
+    : { text: 'OPEN MOONPET OS', url: `https://t.me/WIKICOMSBOT?start=moonpet_${screen}` };
   await sendTelegramMessage(botToken, chatId,
     `<b>MOONPET OS</b>\nThe pet game now runs inside its HTML5 Mini App. Chat gameplay controls are retired.`,
     { reply_markup: { inline_keyboard: [[launchButton]] } },
