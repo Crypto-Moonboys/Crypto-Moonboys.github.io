@@ -703,66 +703,336 @@
     }
   }
 
+  function petPalette(lifecycle, stage) {
+    var palettes = {
+      mint_punch: ['#80ffd5', '#36a878', '#f4ff65'],
+      coral_pop: ['#ff8bbd', '#c84f78', '#61f5ff'],
+      cobalt_lime: ['#61a8ff', '#3158a8', '#a9ff55'],
+      gold_violet: ['#f4cf58', '#8450aa', '#f6a7ff'],
+      lavender_ice: ['#d8b7ff', '#7757a8', '#b3ffff'],
+      turquoise_flame: ['#61f5ff', '#158f94', '#ff954f'],
+    };
+    var species = {
+      neon_raccoon: ['#80ffd5', '#2c8f70', '#f4ff65'],
+      bubble_ram: ['#ff8bbd', '#a84770', '#61f5ff'],
+      comet_gecko: ['#61a8ff', '#3158a8', '#a9ff55'],
+      vinyl_crab: ['#f4ff65', '#bd703b', '#ff8bbd'],
+      lantern_fox: ['#c99cff', '#713d91', '#ffcf68'],
+      sneaker_snail: ['#a9ff55', '#4d9938', '#61f5ff'],
+      alley_drake: ['#ff954f', '#9c4329', '#f4ff65'],
+      moon_ferret: ['#61f5ff', '#277f91', '#f6a7ff'],
+    };
+    var selected = palettes[lifecycle && lifecycle.appearance && lifecycle.appearance.palette]
+      || species[lifecycle && lifecycle.species_id]
+      || ['#a9ff9a', '#4ea85a', '#f4ff65'];
+    if (stage >= 4) selected = [selected[0], selected[1], '#f6a7ff'];
+    return { body: selected[0], shade: selected[1], accent: selected[2], outline: '#061009' };
+  }
+
+  function petPose(time, active, mood) {
+    var pose = { x: 0, y: 0, headY: 0, squashX: 1, squashY: 1, arm: 0, tail: 0 };
+    if (!active) {
+      pose.y = mood === 'tired' ? 2 : Math.round(Math.sin(time / 270) * 2);
+      pose.headY = mood === 'hurt' ? 2 : 0;
+      return pose;
+    }
+    if (animationMode === 'feed') { pose.headY = 5; pose.arm = 7; pose.squashY = 0.96; }
+    else if (animationMode === 'play') { pose.x = Math.round(Math.sin(time / 70) * 20); pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 7)); pose.arm = -8; pose.tail = 13; }
+    else if (animationMode === 'clean') { pose.x = Math.round(Math.sin(time / 90) * 3); pose.squashX = 1.04; }
+    else if (animationMode === 'sleep') { pose.y = 7; pose.headY = 5; pose.squashX = 1.12; pose.squashY = 0.84; }
+    else if (animationMode === 'train') { pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 11)); pose.arm = -10; }
+    else if (animationMode === 'battle') { pose.x = Math.round(Math.sin(time / 65) * 7); pose.headY = -2; pose.arm = -11; }
+    else if (animationMode === 'travel') { pose.x = Math.round(Math.sin(time / 115) * 12); pose.y = -Math.abs(Math.round(Math.sin(time / 90) * 4)); pose.tail = 9; }
+    else if (animationMode === 'work') { pose.headY = 2; pose.arm = -7; }
+    else if (animationMode === 'celebrate' || animationMode === 'evolve') { pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 11)); pose.arm = -13; pose.tail = 14; }
+    else if (animationMode === 'blocked') { pose.x = Math.round(Math.sin(time / 28) * 3); pose.squashX = 0.96; }
+    return pose;
+  }
+
+  function drawPetEyes(eyeStyle, mood, blink, outline, accent, headY) {
+    var leftX = -15;
+    var rightX = 8;
+    var eyeHeight = blink ? 2 : mood === 'hurt' ? 4 : eyeStyle === 'sleepy' ? 4 : 7;
+    if (eyeStyle === 'soft') { leftX = -13; rightX = 8; }
+    if (eyeStyle === 'focused' && !blink) {
+      drawPixelRect(leftX, -38 + headY, 8, 3, outline); drawPixelRect(rightX, -38 + headY, 8, 3, outline);
+      drawPixelRect(leftX + 2, -35 + headY, 6, 4, outline); drawPixelRect(rightX, -35 + headY, 6, 4, outline);
+    } else if (eyeStyle === 'mischief' && !blink) {
+      drawPixelRect(leftX, -37 + headY, 7, 6, outline); drawPixelRect(rightX, -38 + headY, 8, 3, outline);
+      drawPixelRect(rightX + 2, -35 + headY, 5, 3, outline);
+    } else {
+      drawPixelRect(leftX, -37 + headY, eyeStyle === 'soft' ? 6 : 7, eyeHeight, outline);
+      drawPixelRect(rightX, -37 + headY, eyeStyle === 'soft' ? 6 : 7, eyeHeight, outline);
+    }
+    if (!blink && eyeStyle === 'bright') {
+      drawPixelRect(leftX + 2, -36 + headY, 2, 2, accent); drawPixelRect(rightX + 2, -36 + headY, 2, 2, accent);
+    }
+  }
+
+  function drawPetMarking(marking, palette, headY) {
+    if (marking === 'moon_mask') {
+      drawPixelRect(-21, -44 + headY, 13, 6, palette.shade); drawPixelRect(8, -44 + headY, 13, 6, palette.shade);
+    } else if (marking === 'spray_stripe') {
+      drawPixelRect(-22, -49 + headY, 8, 28, palette.accent); drawPixelRect(-14, -46 + headY, 5, 8, palette.accent);
+    } else if (marking === 'pixel_freckles') {
+      [-19, -10, 10, 18].forEach(function (markX, index) { drawPixelRect(markX, -27 + headY + index % 2 * 3, 3, 3, palette.accent); });
+    } else if (marking === 'split_face') {
+      drawPixelRect(0, -47 + headY, 22, 29, palette.shade); drawPixelRect(0, -47 + headY, 4, 29, palette.accent);
+    } else if (marking === 'star_patch') {
+      drawPixelRect(11, -45 + headY, 5, 17, palette.accent); drawPixelRect(5, -39 + headY, 17, 5, palette.accent);
+    } else if (marking === 'ink_drops') {
+      drawPixelRect(-20, -45 + headY, 5, 9, palette.shade); drawPixelRect(-12, -47 + headY, 4, 13, palette.shade); drawPixelRect(15, -42 + headY, 4, 8, palette.shade);
+    }
+  }
+
+  function drawRaccoon(palette, pose) {
+    drawPixelRect(27, -31 - pose.tail, 12, 32 + pose.tail, palette.outline); drawPixelRect(30, -28 - pose.tail, 6, 8, palette.body);
+    drawPixelRect(30, -16 - pose.tail, 6, 7, palette.accent); drawPixelRect(30, -4 - pose.tail, 6, 5, palette.body);
+    drawPixelRect(-25, -22, 52, 34, palette.outline); drawPixelRect(-21, -18, 44, 26, palette.body);
+    drawPixelRect(-27, -52 + pose.headY, 54, 39, palette.outline); drawPixelRect(-23, -48 + pose.headY, 46, 31, palette.body);
+    drawPixelRect(-23, -64 + pose.headY, 16, 17, palette.outline); drawPixelRect(7, -64 + pose.headY, 16, 17, palette.outline);
+    drawPixelRect(-18, -59 + pose.headY, 8, 11, palette.shade); drawPixelRect(10, -59 + pose.headY, 8, 11, palette.shade);
+    drawPixelRect(-21, -44 + pose.headY, 15, 8, palette.shade); drawPixelRect(6, -44 + pose.headY, 15, 8, palette.shade);
+  }
+
+  function drawRam(palette, pose) {
+    drawPixelRect(-28, -26, 56, 38, palette.outline); drawPixelRect(-24, -22, 48, 30, palette.body);
+    drawPixelRect(-27, -53 + pose.headY, 54, 40, palette.outline); drawPixelRect(-23, -49 + pose.headY, 46, 32, palette.body);
+    drawPixelRect(-42, -57 + pose.headY, 18, 23, palette.outline); drawPixelRect(24, -57 + pose.headY, 18, 23, palette.outline);
+    drawPixelRect(-38, -53 + pose.headY, 11, 16, palette.accent); drawPixelRect(27, -53 + pose.headY, 11, 16, palette.accent);
+    drawPixelRect(-34, -49 + pose.headY, 7, 8, palette.shade); drawPixelRect(27, -49 + pose.headY, 7, 8, palette.shade);
+    drawPixelRect(-18, 6, 12, 15, palette.outline); drawPixelRect(8, 6, 12, 15, palette.outline);
+  }
+
+  function drawGecko(palette, pose) {
+    drawPixelRect(-32, -19, 58, 28, palette.outline); drawPixelRect(-28, -15, 50, 20, palette.body);
+    drawPixelRect(21, -16 - pose.tail, 17, 9, palette.outline); drawPixelRect(34, -25 - pose.tail, 16, 9, palette.outline);
+    drawPixelRect(47, -36 - pose.tail, 12, 9, palette.outline); drawPixelRect(24, -13 - pose.tail, 14, 4, palette.accent);
+    drawPixelRect(-31, -49 + pose.headY, 58, 35, palette.outline); drawPixelRect(-27, -45 + pose.headY, 50, 27, palette.body);
+    drawPixelRect(-24, -57 + pose.headY, 13, 13, palette.body); drawPixelRect(10, -57 + pose.headY, 13, 13, palette.body);
+    drawPixelRect(-31, 3, 16, 8, palette.outline); drawPixelRect(11, 3, 16, 8, palette.outline);
+  }
+
+  function drawCrab(palette, pose) {
+    drawPixelRect(-31, -24, 62, 34, palette.outline); drawPixelRect(-27, -20, 54, 26, palette.body);
+    drawPixelRect(-48, -28 + pose.arm, 20, 13, palette.outline); drawPixelRect(28, -28 + pose.arm, 20, 13, palette.outline);
+    drawPixelRect(-54, -38 + pose.arm, 16, 16, palette.outline); drawPixelRect(38, -38 + pose.arm, 16, 16, palette.outline);
+    drawPixelRect(-49, -34 + pose.arm, 8, 8, palette.accent); drawPixelRect(41, -34 + pose.arm, 8, 8, palette.accent);
+    drawPixelRect(-27, -52 + pose.headY, 54, 34, palette.outline); drawPixelRect(-23, -48 + pose.headY, 46, 26, palette.body);
+    [-24, -8, 8, 24].forEach(function (legX) { drawPixelRect(legX, 7, 8, 13, palette.outline); });
+  }
+
+  function drawFox(palette, pose) {
+    drawPixelRect(-23, -22, 48, 33, palette.outline); drawPixelRect(-19, -18, 40, 25, palette.body);
+    drawPixelRect(23, -33 - pose.tail, 20, 35 + pose.tail, palette.outline); drawPixelRect(27, -29 - pose.tail, 12, 25 + pose.tail, palette.body);
+    drawPixelRect(29, -11 - pose.tail, 10, 7, palette.accent);
+    drawPixelRect(-27, -53 + pose.headY, 54, 39, palette.outline); drawPixelRect(-23, -49 + pose.headY, 46, 31, palette.body);
+    drawPixelRect(-25, -72 + pose.headY, 18, 23, palette.outline); drawPixelRect(7, -72 + pose.headY, 18, 23, palette.outline);
+    drawPixelRect(-20, -65 + pose.headY, 8, 14, palette.accent); drawPixelRect(12, -65 + pose.headY, 8, 14, palette.accent);
+    drawPixelRect(-17, 6, 11, 14, palette.outline); drawPixelRect(8, 6, 11, 14, palette.outline);
+  }
+
+  function drawSnail(palette, pose) {
+    drawPixelRect(-38, -33, 38, 38, palette.outline); drawPixelRect(-34, -29, 30, 30, palette.shade);
+    drawPixelRect(-27, -22, 17, 17, palette.body); drawPixelRect(-21, -16, 7, 7, palette.accent);
+    drawPixelRect(-8, -21, 42, 28, palette.outline); drawPixelRect(-4, -17, 34, 20, palette.body);
+    drawPixelRect(3, -49 + pose.headY, 33, 34, palette.outline); drawPixelRect(7, -45 + pose.headY, 25, 26, palette.body);
+    drawPixelRect(8, -62 + pose.headY, 5, 17, palette.outline); drawPixelRect(26, -62 + pose.headY, 5, 17, palette.outline);
+    drawPixelRect(7, -65 + pose.headY, 7, 7, palette.accent); drawPixelRect(25, -65 + pose.headY, 7, 7, palette.accent);
+    drawPixelRect(-8, 3, 46, 9, palette.outline); drawPixelRect(-4, 4, 38, 4, palette.accent);
+  }
+
+  function drawDrake(palette, pose) {
+    drawPixelRect(-24, -25, 50, 36, palette.outline); drawPixelRect(-20, -21, 42, 28, palette.body);
+    drawPixelRect(-43, -34 + pose.arm, 22, 29, palette.outline); drawPixelRect(21, -34 + pose.arm, 22, 29, palette.outline);
+    drawPixelRect(-38, -29 + pose.arm, 14, 19, palette.shade); drawPixelRect(24, -29 + pose.arm, 14, 19, palette.shade);
+    drawPixelRect(24, -21 - pose.tail, 25, 11, palette.outline); drawPixelRect(44, -30 - pose.tail, 14, 10, palette.outline);
+    drawPixelRect(-27, -54 + pose.headY, 54, 40, palette.outline); drawPixelRect(-23, -50 + pose.headY, 46, 32, palette.body);
+    drawPixelRect(-19, -68 + pose.headY, 8, 18, palette.accent); drawPixelRect(11, -68 + pose.headY, 8, 18, palette.accent);
+    drawPixelRect(-18, 6, 11, 15, palette.outline); drawPixelRect(8, 6, 11, 15, palette.outline);
+  }
+
+  function drawFerret(palette, pose) {
+    drawPixelRect(-38, -20, 66, 30, palette.outline); drawPixelRect(-34, -16, 58, 22, palette.body);
+    drawPixelRect(24, -23 - pose.tail, 30, 12, palette.outline); drawPixelRect(49, -31 - pose.tail, 13, 12, palette.outline);
+    drawPixelRect(-31, -50 + pose.headY, 58, 35, palette.outline); drawPixelRect(-27, -46 + pose.headY, 50, 27, palette.body);
+    drawPixelRect(-25, -61 + pose.headY, 14, 15, palette.outline); drawPixelRect(10, -61 + pose.headY, 14, 15, palette.outline);
+    drawPixelRect(-20, -56 + pose.headY, 7, 9, palette.accent); drawPixelRect(13, -56 + pose.headY, 7, 9, palette.accent);
+    drawPixelRect(-27, 5, 13, 13, palette.outline); drawPixelRect(10, 5, 13, 13, palette.outline);
+  }
+
+  function drawSpeciesSilhouette(speciesId, palette, pose) {
+    if (speciesId === 'bubble_ram') drawRam(palette, pose);
+    else if (speciesId === 'comet_gecko') drawGecko(palette, pose);
+    else if (speciesId === 'vinyl_crab') drawCrab(palette, pose);
+    else if (speciesId === 'lantern_fox') drawFox(palette, pose);
+    else if (speciesId === 'sneaker_snail') drawSnail(palette, pose);
+    else if (speciesId === 'alley_drake') drawDrake(palette, pose);
+    else if (speciesId === 'moon_ferret') drawFerret(palette, pose);
+    else drawRaccoon(palette, pose);
+  }
+
+  function drawRareMorphShell(name, palette, pose) {
+    if (!name) return;
+    if (name === 'Celestial Serpent') {
+      [-55, -43, -31, -19].forEach(function (segmentX, index) {
+        drawPixelRect(segmentX, -8 - index * 8, 15, 13, palette.outline); drawPixelRect(segmentX + 3, -5 - index * 8, 9, 7, index % 2 ? palette.accent : palette.body);
+      });
+      drawPixelRect(-62, -5, 8, 8, palette.accent);
+    } else if (name === 'Crown Beast') {
+      drawPixelRect(-36, -66 + pose.headY, 72, 7, palette.accent);
+      [-31, -15, 1, 17].forEach(function (spikeX, index) { drawPixelRect(spikeX, -78 - index % 2 * 5 + pose.headY, 9, 15 + index % 2 * 5, palette.accent); });
+    } else if (name === 'Boombox Kaiju') {
+      drawPixelRect(-57, -34, 28, 38, palette.outline); drawPixelRect(29, -34, 28, 38, palette.outline);
+      drawPixelRect(-52, -29, 18, 18, palette.accent); drawPixelRect(34, -29, 18, 18, palette.accent);
+      drawPixelRect(-47, -24, 8, 8, palette.outline); drawPixelRect(39, -24, 8, 8, palette.outline);
+    } else if (name === 'Graffiti Guardian') {
+      drawPixelRect(-61, -49 + pose.arm, 34, 12, palette.outline); drawPixelRect(27, -49 + pose.arm, 34, 12, palette.outline);
+      drawPixelRect(-55, -37 + pose.arm, 27, 9, palette.accent); drawPixelRect(28, -37 + pose.arm, 27, 9, palette.accent);
+      drawPixelRect(-48, -27 + pose.arm, 19, 7, palette.body); drawPixelRect(29, -27 + pose.arm, 19, 7, palette.body);
+    }
+  }
+
+  function drawEvolutionLayers(stage, palette) {
+    if (stage >= 1) {
+      drawPixelRect(-24, -11, 48, 8, '#20262b'); drawPixelRect(-7, -11, 14, 8, palette.accent);
+    }
+    if (stage >= 2) {
+      drawPixelRect(-31, -44, 7, 25, '#61f5ff'); drawPixelRect(24, -44, 7, 25, '#61f5ff');
+      drawPixelRect(-4, -53, 8, 5, '#61f5ff');
+    }
+    if (stage >= 3) {
+      drawPixelRect(-36, -18, 12, 24, palette.outline); drawPixelRect(24, -18, 12, 24, palette.outline);
+      drawPixelRect(-32, -14, 7, 16, palette.body); drawPixelRect(25, -14, 7, 16, palette.body);
+      drawPixelRect(-20, -7, 40, 4, palette.accent);
+    }
+    if (stage >= 4) {
+      drawPixelRect(-24, -70, 48, 6, '#f6a7ff'); drawPixelRect(-18, -79, 7, 9, '#f6a7ff');
+      drawPixelRect(-4, -84, 8, 14, palette.accent); drawPixelRect(11, -79, 7, 9, '#f6a7ff');
+    }
+  }
+
+  function drawEquipmentLayers(pet, palette, pose) {
+    var outfit = String(pet && pet.equipped_outfit || '');
+    var armor = String(pet && pet.equipped_armor || '');
+    var weapon = String(pet && pet.equipped_weapon || '');
+    var charm = String(pet && pet.equipped_charm || '');
+    var toy = String(pet && pet.equipped_toy || '');
+    var food = String(pet && pet.equipped_food || '');
+    if (outfit && !/none/.test(outfit)) {
+      drawPixelRect(-22, -16, 44, 13, '#242a38'); drawPixelRect(-18, -13, 36, 5, outfit === 'crown_jacket' ? '#f4cf58' : palette.accent);
+      drawPixelRect(-3, -16, 6, 13, '#f6a7ff');
+    }
+    if (armor && !/none/.test(armor)) {
+      var armorColor = armor === 'cyber_armor' ? '#61f5ff' : armor === 'street_armor' ? '#aab5ae' : '#5b6570';
+      drawPixelRect(-34, -20 + pose.arm, 13, 19, palette.outline); drawPixelRect(21, -20 + pose.arm, 13, 19, palette.outline);
+      drawPixelRect(-30, -16 + pose.arm, 8, 12, armorColor); drawPixelRect(22, -16 + pose.arm, 8, 12, armorColor);
+    }
+    if (weapon && !/none/.test(weapon)) {
+      if (weapon === 'moon_blaster') {
+        drawPixelRect(30, -25 + pose.arm, 29, 10, palette.outline); drawPixelRect(34, -22 + pose.arm, 20, 5, '#61f5ff');
+        drawPixelRect(28, -17 + pose.arm, 9, 13, palette.outline);
+      } else {
+        drawPixelRect(29, -23 + pose.arm, 18, 7, palette.outline);
+        drawPixelRect(39, -31 + pose.arm, 4, 12, weapon === 'laser_claws' ? '#61f5ff' : '#aab5ae');
+        drawPixelRect(46, -29 + pose.arm, 4, 12, weapon === 'laser_claws' ? '#61f5ff' : '#aab5ae');
+      }
+    }
+    if (charm && !/none/.test(charm)) {
+      drawPixelRect(-2, -10, 4, 11, '#f4cf58'); drawPixelRect(-6, -1, 12, 10, palette.outline);
+      drawPixelRect(-3, 1, 6, 5, charm === 'shield_charm' ? '#61f5ff' : '#f4ff65');
+    }
+    if (toy === 'hoverboard') {
+      drawPixelRect(-30, 18, 62, 6, palette.outline); drawPixelRect(-24, 18, 49, 3, '#f6a7ff');
+      drawPixelRect(-23, 24, 8, 4, '#61f5ff'); drawPixelRect(17, 24, 8, 4, '#61f5ff');
+    }
+    if (food === 'crystal_bowl') {
+      drawPixelRect(-51, 5, 20, 8, palette.outline); drawPixelRect(-48, 4, 14, 5, '#61f5ff');
+    }
+  }
+
+  function unlockedCosmetic(key) {
+    var cosmetics = state && state.live_systems && state.live_systems.cosmetics || [];
+    return cosmetics.some(function (item) { return item && item.key === key && item.unlocked; });
+  }
+
+  function drawCosmeticLayers(time, palette, active) {
+    if (unlockedCosmetic('profile_frame')) {
+      drawPixelRect(-61, -73, 22, 4, palette.accent); drawPixelRect(-61, -73, 4, 22, palette.accent);
+      drawPixelRect(39, -73, 22, 4, palette.accent); drawPixelRect(57, -73, 4, 22, palette.accent);
+      drawPixelRect(-61, 17, 22, 4, palette.accent); drawPixelRect(-61, -1, 4, 22, palette.accent);
+      drawPixelRect(39, 17, 22, 4, palette.accent); drawPixelRect(57, -1, 4, 22, palette.accent);
+    }
+    if (unlockedCosmetic('run_trail') && active && animationMode === 'travel') {
+      for (var trail = 0; trail < 5; trail += 1) drawPixelRect(-73 - trail * 9, 5 - trail % 2 * 7, 7, 3, trail % 2 ? palette.accent : '#61f5ff');
+    }
+    if (unlockedCosmetic('victory_pose') && active && animationMode === 'celebrate') {
+      drawPixelText('★ ALL CITY ★', 0, -91, palette.accent, 'center');
+    }
+    if (unlockedCosmetic('rename_badge')) {
+      drawPixelRect(-18, 12, 36, 7, '#20262b'); drawPixelRect(-14, 14, 28, 3, palette.accent);
+    }
+  }
+
+  function drawMoonEgg(time, active) {
+    var crack = Math.floor(time / 260) % 3;
+    var eggY = 150 + (active ? -Math.abs(Math.round(Math.sin(time / 100) * 5)) : Math.round(Math.sin(time / 340) * 2));
+    drawPixelRect(134, eggY - 48, 52, 57, '#061009');
+    drawPixelRect(138, eggY - 44, 44, 49, '#d8f9ff');
+    drawPixelRect(142, eggY - 38, 8, 10, '#61f5ff'); drawPixelRect(174, eggY - 23, 6, 12, '#f6a7ff');
+    drawPixelRect(147, eggY - 18, 7, 6, '#061009'); drawPixelRect(167, eggY - 18, 7, 6, '#061009');
+    drawPixelRect(157, eggY - 9, 8, 3, '#061009');
+    if (crack > 0) { drawPixelRect(158, eggY - 47, 4, 12, '#061009'); drawPixelRect(161, eggY - 38, 8, 4, '#061009'); }
+    if (crack > 1) { drawPixelRect(151, eggY - 34, 11, 4, '#061009'); drawPixelRect(148, eggY - 30, 4, 9, '#061009'); }
+    drawPixelRect(128, eggY + 5, 64, 11, '#6eb8a1'); drawPixelRect(134, eggY + 8, 52, 7, '#d8f9ff');
+    if (active) drawPixelText('SIGNAL!', 160, eggY - 58, '#f4ff65', 'center');
+  }
+
   function drawPet(time) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
-    var isEgg = lifecycle.phase === 'egg';
     var stage = petStage(pet);
     var mood = petMood(pet);
     var renderTime = reducedMotion ? performance.now() : time;
     var active = animationUntil > renderTime;
-    var x = 160;
-    var bob = mood === 'tired' ? 0 : Math.round(Math.sin(time / 270) * 2);
-    var y = 150 + bob;
-    if (active && animationMode === 'play') x += Math.round(Math.sin(time / 70) * 20);
-    if (active && animationMode === 'travel') x += Math.round(Math.sin(time / 115) * 12);
-    if (active && (animationMode === 'train' || animationMode === 'celebrate' || animationMode === 'evolve')) y -= Math.abs(Math.round(Math.sin(time / 80) * 11));
-    if (active && animationMode === 'blocked') x += Math.round(Math.sin(time / 28) * 3);
-
-    var outline = '#061009';
-    var speciesHue = { neon_raccoon: '#80ffd5', bubble_ram: '#ff8bbd', comet_gecko: '#61a8ff', vinyl_crab: '#f4ff65', lantern_fox: '#c99cff', sneaker_snail: '#a9ff55', alley_drake: '#ff954f', moon_ferret: '#61f5ff' }[lifecycle.species_id];
-    var body = speciesHue || (stage >= 4 ? '#f6a7ff' : stage >= 3 ? '#e7ff75' : stage >= 2 ? '#80ffd5' : '#a9ff9a');
-    var shade = stage >= 4 ? '#a95ec2' : stage >= 3 ? '#8fa942' : stage >= 2 ? '#36a9a8' : '#4ea85a';
-    var glow = stage >= 4 ? '#f6a7ff' : stage >= 2 ? '#61f5ff' : '#4ea85a';
-    ctx.shadowColor = glow; ctx.shadowBlur = stage * 2 + (active ? 6 : 2);
-
-    // Stable species identity changes silhouette without downloading image assets.
-    var speciesId = lifecycle.species_id || '';
-    var tailLift = active && (animationMode === 'play' || animationMode === 'celebrate') ? 12 : 0;
-    drawPixelRect(x + 27, y - 29 - tailLift, 9, 28 + tailLift, outline); drawPixelRect(x + 30, y - 26 - tailLift, 4, 22 + tailLift, body);
-    drawPixelRect(x - 24, y - 21, 51, 32, outline); drawPixelRect(x - 20, y - 17, 43, 24, body);
-    drawPixelRect(x - 20, y + 5, 12, 14, outline); drawPixelRect(x + 10, y + 5, 12, 14, outline);
-    drawPixelRect(x - 17, y + 7, 8, 9, body); drawPixelRect(x + 12, y + 7, 8, 9, body);
-    drawPixelRect(x - 27, y - 51, 54, 39, outline); drawPixelRect(x - 23, y - 47, 46, 31, body);
-    if (speciesId === 'bubble_ram') { drawPixelRect(x - 35, y - 51, 13, 17, shade); drawPixelRect(x + 22, y - 51, 13, 17, shade); }
-    else if (speciesId === 'vinyl_crab') { drawPixelRect(x - 40, y - 18, 16, 9, outline); drawPixelRect(x + 24, y - 18, 16, 9, outline); }
-    else if (speciesId === 'sneaker_snail') { drawPixelRect(x - 40, y - 26, 24, 24, shade); drawPixelRect(x - 36, y - 22, 16, 16, body); }
-    else { drawPixelRect(x - 22, y - 62, 15, 15, outline); drawPixelRect(x + 7, y - 62, 15, 15, outline); }
-    drawPixelRect(x - 18, y - 57, 8, 10, shade); drawPixelRect(x + 10, y - 57, 8, 10, shade);
-
-    // The Moon Egg becomes a cracked shell cradle instead of hiding the companion in a block.
-    if (isEgg) {
-      drawPixelRect(x - 31, y - 10, 62, 25, '#d8f9ff'); drawPixelRect(x - 27, y - 7, 54, 18, '#6eb8a1');
-      drawPixelRect(x - 24, y - 12, 9, 8, outline); drawPixelRect(x - 7, y - 12, 12, 8, outline); drawPixelRect(x + 15, y - 12, 9, 8, outline);
+    if (lifecycle.phase === 'egg') {
+      drawMoonEgg(time, active);
+      drawActionEffects(time, 160, 150, active);
+      if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+      return;
     }
 
-    var blink = !reducedMotion && Math.floor(renderTime / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
-    var eyeHeight = blink ? 2 : mood === 'hurt' ? 4 : 7;
-    drawPixelRect(x - 15, y - 37, 7, eyeHeight, outline); drawPixelRect(x + 8, y - 37, 7, eyeHeight, outline);
-    drawPixelRect(x - 3, y - 27, 6, 4, outline);
-    if (mood === 'happy' || active && ['play', 'celebrate', 'feed'].includes(animationMode)) {
-      drawPixelRect(x - 8, y - 20, 6, 3, outline); drawPixelRect(x + 2, y - 20, 6, 3, outline);
-    } else if (mood === 'hungry') drawPixelRect(x - 5, y - 20, 10, 5, outline);
-    else { drawPixelRect(x - 6, y - 20, 12, 2, outline); drawPixelRect(x - 2, y - 18, 4, 2, outline); }
+    var pose = petPose(time, active, mood);
+    var rareName = lifecycle.rare && lifecycle.rare.name || '';
+    var scale = lifecycle.phase === 'young' ? 0.82 : lifecycle.phase === 'rare' ? 1.13 : 1 + Math.min(4, stage) * 0.025;
+    var palette = petPalette(lifecycle, stage);
+    var x = 160 + pose.x;
+    var y = 150 + pose.y + (lifecycle.phase === 'young' ? 8 : lifecycle.phase === 'rare' ? -4 : 0);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale * pose.squashX, scale * pose.squashY);
+    ctx.shadowColor = lifecycle.phase === 'rare' ? palette.accent : stage >= 2 ? '#61f5ff' : palette.body;
+    ctx.shadowBlur = lifecycle.phase === 'rare' ? 12 : stage * 2 + (active ? 6 : 2);
+    drawRareMorphShell(rareName, palette, pose);
+    drawSpeciesSilhouette(lifecycle.species_id || 'neon_raccoon', palette, pose);
+    drawPetMarking(lifecycle.appearance && lifecycle.appearance.marking, palette, pose.headY);
+    drawEvolutionLayers(stage, palette);
+    drawEquipmentLayers(pet, palette, pose);
+    drawCosmeticLayers(time, palette, active);
 
-    // Each formal evolution adds a permanent, instantly recognisable visual layer.
-    if (stage >= 1) { drawPixelRect(x - 23, y - 11, 46, 7, '#20262b'); drawPixelRect(x - 7, y - 11, 14, 7, '#f4ff65'); }
-    if (stage >= 2) { drawPixelRect(x - 30, y - 43, 7, 24, '#61f5ff'); drawPixelRect(x + 23, y - 43, 7, 24, '#61f5ff'); drawPixelRect(x - 4, y - 52, 8, 5, '#61f5ff'); }
-    if (stage >= 3) { drawPixelRect(x - 34, y - 17, 10, 23, body); drawPixelRect(x + 24, y - 17, 10, 23, body); drawPixelRect(x - 19, y - 7, 38, 4, '#f4ff65'); }
-    if (stage >= 4) { drawPixelRect(x - 21, y - 67, 42, 5, '#f6a7ff'); drawPixelRect(x - 16, y - 75, 6, 8, '#f6a7ff'); drawPixelRect(x - 3, y - 79, 6, 12, '#f4ff65'); drawPixelRect(x + 10, y - 75, 6, 8, '#f6a7ff'); }
+    var blink = !reducedMotion && Math.floor(renderTime / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
+    drawPetEyes(lifecycle.appearance && lifecycle.appearance.eyes || 'bright', mood, blink, palette.outline, palette.accent, pose.headY);
+    drawPixelRect(-3, -27 + pose.headY, 6, 4, palette.outline);
+    if (mood === 'happy' || active && ['play', 'celebrate', 'feed'].includes(animationMode)) {
+      drawPixelRect(-8, -20 + pose.headY, 6, 3, palette.outline); drawPixelRect(2, -20 + pose.headY, 6, 3, palette.outline);
+    } else if (mood === 'hungry') drawPixelRect(-5, -20 + pose.headY, 10, 5, palette.outline);
+    else { drawPixelRect(-6, -20 + pose.headY, 12, 2, palette.outline); drawPixelRect(-2, -18 + pose.headY, 4, 2, palette.outline); }
+    ctx.restore();
     ctx.shadowBlur = 0;
 
-    if (!active && mood !== 'curious') drawPixelText(mood.toUpperCase(), x, y - 69, mood === 'hurt' ? '#ff6d6d' : '#f4ff65', 'center');
+    if (!active && mood !== 'curious') drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
+    if (rareName) drawPixelText(rareName.toUpperCase(), 160, 70, palette.accent, 'center');
+    else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), 160, 78, palette.accent, 'center');
     drawActionEffects(time, x, y, active);
     if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
   }
