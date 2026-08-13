@@ -45,3 +45,19 @@ Moonpet has a strong technical foundation and an unusually broad feature set for
 ## Release boundary
 
 This is an AAA-quality gameplay foundation pass, not a claim that Moonpet is now a content-complete AAA production. Worker deployment and static-site publication are both required. No D1 migration or new binding is introduced.
+
+
+## August 13 follow-up: District Stories
+
+The post-Moon-Run audit found the largest remaining gameplay gap in District Missions and Street Story Chains. Both had progression and rewards, but each resolved through one generic button with no objective, opponent, risk read, or player choice.
+
+This pass adds 18 authored district encounters across all six regions, three server-derived approaches with distinct odds/mastery/reward ceilings, and twelve story scenes with two server-recorded choices each. Outcomes and rewards remain Worker-authoritative. Cached clients keep the former guaranteed balanced path. No migration, daily-limit relaxation, or idempotency change is required.
+
+| System | Before | After |
+| --- | ---: | ---: |
+| District Missions | 5.5 | 7.8 |
+| Story Chains | 5.0 | 7.6 |
+| Moon Run | 8.0 | 8.0 |
+| Overall gameplay foundation | 7.1 | 7.6 |
+
+The next highest-impact work is Arena/Kaiju tactical depth: opponent intent, build counters, multi-round decisions, and stronger post-match progression identity.

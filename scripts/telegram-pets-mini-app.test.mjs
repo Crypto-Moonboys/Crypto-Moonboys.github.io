@@ -62,11 +62,12 @@ const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), '
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
+const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-aaa-gameplay-foundation`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260813-aaa-district-stories`/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
 assert.match(worker, /const url = petMiniAppLaunchUrl\(screen, normalizedFocus\)/);
 assert.match(worker, /setChatMenuButton/);
@@ -101,7 +102,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260813-aaa-gameplay-foundation/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260813-aaa-district-stories/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
@@ -137,7 +138,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-aaa-gameplay-foundation/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260813-aaa-district-stories/);
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -649,8 +650,8 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260813-aaa-gameplay-foundation/);
-assert.match(worker, /20260813-aaa-gameplay-foundation/);
+assert.match(html, /20260813-aaa-district-stories/);
+assert.match(worker, /20260813-aaa-district-stories/);
 
 assert.match(worker, /function serializePetRunRoom/, 'standard runs must serialize authored room objectives and opponents');
 assert.match(worker, /output\.result_copy === undefined && result\.outcome\?\.copy/, 'run outcome copy must survive Mini App action serialization');
@@ -668,4 +669,16 @@ assert.match(client, /choice\.detail/, 'Moon Run choices must render server-auth
 assert.match(client, /result\.outcome && result\.outcome\.copy/, 'authoritative run outcome copy must reach player feedback');
 assert.match(css, /\.run-decisions/, 'run decision cards must remain responsive and readable');
 
+assert.match(worker, /body\.approach_key/, 'district approach payload must reach the Worker');
+assert.match(worker, /body\.choice_key/, 'story choice payload must reach the Worker');
+assert.match(client, /district-decisions/, 'District Missions need a decision surface');
+assert.match(client, /story-decisions/, 'Story Chains need a branching surface');
+assert.match(client, /mission\.objective/, 'District Missions must render objectives');
+assert.match(client, /scene\.objective/, 'Story Chains must render objectives');
+assert.match(css, /\.district-mission/, 'District briefs need responsive styling');
+assert.match(client, /Districts show an objective/, 'the in-app guide must explain new district decisions');
+assert.match(guide, /18 authored encounters/, 'the complete guide must document district content');
+assert.match(guide, /12 authored scenes/, 'the complete guide must document story content');
+assert.match(guide, /100-room Standard Moon Run/, 'the complete guide must describe the current Moon Run');
+assert.doesNotMatch(guide, /five-step/i, 'the complete guide must not describe the retired five-step run');
 console.log('telegram-pets-mini-app.test.mjs passed');

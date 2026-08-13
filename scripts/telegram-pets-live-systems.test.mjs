@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from '../workers/moonboys-api/pets/content-phase-4.js';
+import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from '../workers/moonboys-api/pets/content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_EQUIPMENT_UPGRADE_COSTS, PET_PRESTIGE_REQUIREMENTS } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, getActiveSeasonalBoss, processPetCosmeticUnlock, processPetDistrictMission,
@@ -20,7 +20,11 @@ assert.equal(Object.keys(PET_REGION_CONTENT).length, 6);
 assert.ok(Object.values(PET_REGION_LORE).every((region) => region.status === 'live'), 'all six districts must be live');
 const unlocked = buildPetRegionDirectory(100, { moon_alley: 100, neon_rooftops: 300, rugpull_mines: 700, blockchain_sewers: 1400, kaiju_district: 3000 });
 assert.ok(unlocked.every((region) => region.playable), 'district gates must use the preceding district mastery');
+assert.equal(Object.keys(PET_DISTRICT_ENCOUNTERS).length, 18, 'every district encounter needs an authored brief');
+assert.equal(Object.keys(PET_DISTRICT_APPROACHES).length, 3, 'district missions need three risk profiles');
+assert.ok(Object.values(PET_DISTRICT_ENCOUNTERS).every((entry) => entry.title && entry.objective && entry.opponent?.name && entry.threat >= 1));
 assert.equal(Object.keys(PET_EVENT_CHAINS).length, 4);
+assert.ok(Object.values(PET_EVENT_CHAINS).every((chain) => chain.title && chain.steps.every((step) => chain.step_content?.[step]?.choices?.length === 2)));
 assert.equal(Object.keys(PET_SEASONAL_BOSSES).length, 4);
 assert.ok(getActiveSeasonalBoss(new Date('2026-08-12T00:00:00Z')).hp >= 900);
 assert.notEqual(getActiveSeasonalBoss(new Date('2026-08-12T00:00:00Z')).season_instance, getActiveSeasonalBoss(new Date('2026-09-09T00:00:00Z')).season_instance, 'boss persistence must reset on later rotations');
@@ -115,6 +119,8 @@ const reward = (request) => awardPetReward(d1, request);
 const runtimeState = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get();
 const district = await processPetDistrictMission(d1, 'live-1', 'moon_alley', { level: 100, energy: 100 }, runtimeState, reward, 'nomad-bears');
 assert.equal(district.accepted, true);
+assert.equal(district.choice.key, 'tactical', 'cached clients must retain the balanced guaranteed path');
+assert.equal(district.outcome.success, true);
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().energy, 90);
 const districtReplay = await processPetDistrictMission(d1, 'live-1', 'moon_alley', { level: 100, energy: 90 }, runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get(), reward, 'nomad-bears');
 assert.equal(districtReplay.duplicate, true);
@@ -122,6 +128,8 @@ assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE t
 
 const usedState = await buildPetLiveSystemsState(d1, 'live-1', { level: 100, moon_gold: 10000, moon_crystals: 100, style_tokens: 500 }, runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get(), [], []);
 assert.equal(usedState.regions.find((region) => region.key === 'moon_alley').used_today, true, 'completed daily districts must be disabled in refreshed state');
+assert.equal(usedState.regions.find((region) => region.key === 'neon_rooftops').mission.choices.length, 3);
+assert.equal(usedState.chains[0].scene.choices.length, 2);
 
 seedPlayer('lease-race');
 const leaseRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='lease-race'").get();
@@ -167,6 +175,8 @@ assert.equal(aliasState.upgrades[0].affordable, false, 'Level 15 server gate mus
 
 const chain = await processPetEventChain(d1, 'live-1', 'lost_delivery_drone', reward, 'graffpunks');
 assert.equal(chain.accepted, true);
+assert.ok(chain.choice.key);
+assert.ok(chain.result_copy);
 assert.equal((await processPetEventChain(d1, 'live-1', 'lost_delivery_drone', reward, 'graffpunks')).duplicate, true);
 
 seedPlayer('chain-recovery');
@@ -217,6 +227,37 @@ assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', 
 runtimeDb.prepare("UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id='energy-retry'").run();
 assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', { level: 100, energy: 100 }, tiredRuntime, reward, null)).accepted, true, 'rejected Energy reservations must be safely retryable');
 
+seedPlayer('invalid-district-choice');
+const invalidDistrictRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='invalid-district-choice'").get();
+const invalidDistrict = await processPetDistrictMission(d1, 'invalid-district-choice', 'moon_alley', { level: 100, energy: 100 }, invalidDistrictRuntime, reward, null, 'not_a_real_approach');
+assert.equal(invalidDistrict.reason, 'district_approach_invalid');
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='invalid-district-choice'").get().energy, 100, 'invalid district choices must be rejected before Energy settlement');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='invalid-district-choice'").get().count, 0);
+
+seedPlayer('invalid-story-choice');
+const invalidStory = await processPetEventChain(d1, 'invalid-story-choice', 'lost_delivery_drone', reward, null, 'not_a_real_choice');
+assert.equal(invalidStory.reason, 'event_chain_choice_invalid');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='invalid-story-choice'").get().count, 0);
+
+let checkpointSetback = null;
+for (let index = 0; index < 64 && !checkpointSetback; index += 1) {
+  const telegramId = `checkpoint-setback-${index}`;
+  seedPlayer(telegramId);
+  runtimeDb.prepare('UPDATE telegram_pet_progression_state SET region_mastery_json=?, completed_regions_json=? WHERE telegram_id=?')
+    .run(JSON.stringify({ moon_alley: 90 }), '[]', telegramId);
+  const checkpointRuntime = runtimeDb.prepare('SELECT * FROM telegram_pet_progression_state WHERE telegram_id=?').get(telegramId);
+  const checkpointState = await buildPetLiveSystemsState(d1, telegramId, { level: 100, energy: 100, moon_gold: 10000 }, checkpointRuntime, [], []);
+  assert.equal(checkpointState.regions.find((region) => region.key === 'moon_alley').mission.boss, true, 'a possible 100-mastery crossing must present the district boss');
+  const result = await processPetDistrictMission(d1, telegramId, 'moon_alley', { level: 100, energy: 100 }, checkpointRuntime, reward, null, 'bold');
+  if (!result.outcome.success) checkpointSetback = { telegramId, result };
+}
+assert.ok(checkpointSetback, 'deterministic district coverage must include a setback');
+assert.equal(checkpointSetback.result.reason, 'district_mission_setback');
+assert.ok(checkpointSetback.result.region.mastery_xp < 100, 'a setback must not cross a mastery checkpoint');
+const checkpointProgress = runtimeDb.prepare('SELECT region_mastery_json, completed_regions_json FROM telegram_pet_progression_state WHERE telegram_id=?').get(checkpointSetback.telegramId);
+assert.ok(JSON.parse(checkpointProgress.region_mastery_json).moon_alley < 100);
+assert.equal(JSON.parse(checkpointProgress.completed_regions_json).includes('moon_alley'), false, 'a setback must not unlock the next district');
+
 seedPlayer('boss-1');
 const boss = getActiveSeasonalBoss();
 runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (telegram_id, season_key, boss_key, damage) VALUES (?, ?, ?, ?)').run('boss-1', boss.season_instance, boss.key, boss.hp - 1);
@@ -230,4 +271,8 @@ const recovered = await processPetSeasonalBoss(d1, 'boss-recovery', { level: 100
 assert.equal(recovered.reason, 'seasonal_boss_reward_recovered');
 assert.ok(runtimeDb.prepare('SELECT reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE telegram_id=? AND season_key=? AND boss_key=?').get('boss-recovery', boss.season_instance, boss.key).reward_claimed_at);
 
+assert.match(worker, /body\.approach_key/);
+assert.match(worker, /body\.choice_key/);
+assert.match(client, /class="district-mission"/);
+assert.match(client, /class="story-scene"/);
 console.log('telegram-pets-live-systems.test.mjs passed');

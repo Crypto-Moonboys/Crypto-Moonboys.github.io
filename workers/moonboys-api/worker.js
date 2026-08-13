@@ -6614,11 +6614,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       : liveSystems.seasonal_boss.available
         ? { key: 'seasonal_boss', title: `Raid ${liveSystems.seasonal_boss.title}`, detail: `Requires Level ${liveSystems.seasonal_boss.min_level}. Cost: 18 Energy. Defeat reward: 150 XP, 250 Gold, 8 Gems, 8 ${String(liveSystems.seasonal_boss.reward).replaceAll('_', ' ')} and 1 Mastery Token.`, action: 'seasonal_boss', destination: 'explore' }
         : availableDistrict
-          ? { key: 'district_mission', title: `Build ${availableDistrict.title} mastery`, detail: `Cost: 10 Energy. Reward: 25 XP, 28 Gold and 1 focus material; each 100-mastery boss checkpoint pays 55 XP, 65 Gold and 3 materials.`, action: 'district_mission', destination: 'explore' }
+          ? { key: 'district_mission', title: `Build ${availableDistrict.title} mastery`, detail: `Cost: 10 Energy. Choose safe, balanced or bold: the server previews clear odds, mastery and reward ceiling. Setbacks bank partial mastery; crossing each 100-mastery line requires a district boss clear.`, action: 'district_mission', destination: 'explore' }
           : affordableCosmetic
             ? { key: 'cosmetic_unlock', title: `Unlock ${String(affordableCosmetic.key).replaceAll('_', ' ')}`, detail: `Cost: ${Object.entries(affordableCosmetic.cost).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(' + ')}. Reward: permanent Style Lab unlock${affordableCosmetic.repeatable ? ' that may be collected again' : ''}.`, action: 'cosmetic_unlock', destination: 'economy' }
             : activeChain
-              ? { key: 'event_chain', title: `Continue ${String(activeChain.key).replaceAll('_', ' ')}`, detail: `Current step ${activeChain.step_index + 1}/${activeChain.steps.length}: ${String(activeChain.current_step).replaceAll('_', ' ')}. Reward: 18 XP, 16 Gold and 1 Style; finale pays 45 XP, 50 Gold and 4 Style.`, action: 'event_chain', destination: 'explore' }
+              ? { key: 'event_chain', title: `Continue ${String(activeChain.key).replaceAll('_', ' ')}`, detail: `Current step ${activeChain.step_index + 1}/${activeChain.steps.length}: ${String(activeChain.current_step).replaceAll('_', ' ')}. Choose one of two authored routes; each choice adds its shown bonus to the protected base reward.`, action: 'event_chain', destination: 'explore' }
               : null;
   const next = lifecycle?.phase === 'egg'
     ? { key: 'incubate', title: lifecycle.incubation.ready ? 'Hatch the Moon Egg' : 'Shape the Moon Egg', detail: lifecycle.incubation.ready ? 'The shell is answering. Hatch when ready.' : `Build ${lifecycle.incubation.target} signal with at least three kinds of care.`, action: lifecycle.incubation.ready ? 'hatch' : 'incubate', destination: 'home' }
@@ -6818,13 +6818,13 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()));
     const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
-    return processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction);
+    return processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction, body.approach_key);
   }
   if (action === 'event_chain') {
     const petRaw = await getPetProfile(db, telegramId);
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
     const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
-    return processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction);
+    return processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction, body.choice_key);
   }
   if (action === 'seasonal_boss') {
     const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
@@ -10569,7 +10569,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-aaa-gameplay-foundation`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-aaa-district-stories`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

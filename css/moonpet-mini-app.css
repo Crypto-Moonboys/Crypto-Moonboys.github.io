@@ -190,3 +190,19 @@ button { font: inherit; }
 @media (min-width: 560px) {
   .run-decisions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+
+/* Authored district and story decisions */
+.district-mission, .story-scene {
+  margin-top: 9px; padding: 9px; border: 1px solid rgba(97,245,255,.28);
+  background: linear-gradient(135deg, rgba(4,19,13,.96), rgba(11,8,25,.94));
+  box-shadow: inset 3px 0 0 rgba(244,255,101,.65);
+}
+.district-mission .signal, .story-scene .signal { color: var(--hot); letter-spacing: .04em; }
+.district-decisions, .story-decisions { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }
+.story-decisions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.district-decisions .terminal-button, .story-decisions .terminal-button { min-height: 72px; align-content: start; }
+@media (max-width: 620px) {
+  .district-decisions, .story-decisions { grid-template-columns: 1fr; }
+  .district-decisions .terminal-button, .story-decisions .terminal-button { min-height: 0; }
+}
