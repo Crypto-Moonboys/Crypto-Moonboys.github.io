@@ -383,6 +383,8 @@ assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(
 
 assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
 assert.match(client, /var COMBAT_RIVAL_COLORS =/);
+assert.match(client, /var COMBAT_ARENA_SPECIAL_MAX = 3;/);
+assert.match(worker, /const PET_ARENA_SPECIAL_COST = 3;/, 'Phase 5 special presentation must match the authoritative Arena charge cost');
 assert.match(client, /function clearCombatPresentation\(\)/);
 assert.match(client, /function updateCombatPresentation\(snapshot\)/);
 assert.match(client, /snapshot === combatSnapshot && activeScreen === combatScreen/);
@@ -392,6 +394,7 @@ assert.match(client, /arena\.player_hp/);
 assert.match(client, /arena\.opponent_hp/);
 assert.match(client, /arena\.player_special/);
 assert.match(client, /arena\.opponent_special/);
+assert.match(client, /'ROUND ' \+ Number\(arena\.current_round \|\| 1\) \+ '\/' \+ Number\(arena\.max_rounds \|\| 5\) \+ ' LIVE'/);
 assert.match(client, /var kaiju = snapshot\.kaiju && snapshot\.kaiju\.match/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'kaiju'/);
 assert.match(client, /kaiju\.own_card_locked/);
@@ -402,6 +405,9 @@ assert.match(client, /run\.current_room != null \? run\.current_room : run\.dept
 assert.match(client, /function drawCombatOpponent\(time, scene, combat\)/);
 assert.match(client, /function drawCombatMeter\(x, y, width, value, maximum, color, reverse\)/);
 assert.match(client, /function drawCombatHud\(scene, combat\)/);
+assert.match(client, /combat\.playerSpecial, COMBAT_ARENA_SPECIAL_MAX/);
+assert.match(client, /combat\.opponentSpecial, COMBAT_ARENA_SPECIAL_MAX/);
+assert.match(client, /'CARD \/\/ ' \+ compactFeedback\(words\(combat\.playerCardKey\), 12\)/);
 assert.match(client, /drawPixelRect\(7, 54, 306, 38/);
 assert.match(client, /compactFeedback\(combat\.status, 17\)/);
 assert.match(client, /var y = 160 \+ pulse/);
@@ -436,7 +442,7 @@ assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
   arena: {
     status: 'active', mode: 'multiplayer', current_round: 3, max_rounds: 5,
-    player_hp: 74, opponent_hp: 38, player_special: 55, opponent_special: 20,
+    player_hp: 74, opponent_hp: 38, player_special: 2, opponent_special: 1,
     opponent: { pet_name: 'Rival Smoke' },
   },
 }), 'Phase 5 Arena director must execute from server-returned battle state');
@@ -444,6 +450,10 @@ assert.equal(runtimeCombatFrame.mode, 'arena');
 assert.equal(runtimeCombatFrame.playerValue, 74);
 assert.equal(runtimeCombatFrame.opponentValue, 38);
 assert.equal(runtimeCombatFrame.round, 3);
+assert.equal(runtimeCombatFrame.maxRounds, 5);
+assert.equal(runtimeCombatFrame.status, 'ROUND 3/5 LIVE');
+assert.equal(runtimeCombatFrame.playerSpecial, 2);
+assert.equal(runtimeCombatFrame.opponentSpecial, 1);
 assert.equal(runtimeCombatFrame.rivalColor, '#61f5ff');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
@@ -452,11 +462,13 @@ assert.doesNotThrow(() => combatRuntime.update({
 assert.equal(runtimeCombatFrame.mode, 'kaiju');
 assert.equal(runtimeCombatFrame.playerValue, 1);
 assert.equal(runtimeCombatFrame.opponentValue, 0);
+assert.equal(runtimeCombatFrame.playerCardKey, 'neon-claw');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
-  run: { status: 'active', current_room: 4, max_room: 8, risk_level: 3 },
+  run: { status: 'active', daily: true, current_room: 4, max_room: 8, risk_level: 3 },
 }), 'Phase 5 Moon Run director must execute from persisted run state');
 assert.equal(runtimeCombatFrame.mode, 'run');
+assert.equal(runtimeCombatFrame.title, 'DAILY MOON RUN');
 assert.equal(runtimeCombatFrame.playerValue, 4);
 assert.equal(runtimeCombatFrame.opponentValue, 4);
 combatRuntime.screen('home');
