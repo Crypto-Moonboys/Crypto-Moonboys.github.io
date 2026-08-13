@@ -61,6 +61,7 @@ const {
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
   serializePet,
+  serializePetLeaderboardEntry,
   formatPetStatus,
   formatPetDetails,
   petReplyMarkup,
@@ -139,6 +140,51 @@ assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route 
 assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
 assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
 assert.ok(worker.includes('export const __petMediaTestHooks'), 'pet media test hooks must be exported');
+
+const rareLeaderboardEntry = serializePetLeaderboardEntry({
+  pet_name: 'Cipher',
+  stage: 'cyber',
+  lifecycle_phase: 'rare',
+  lifecycle_species_id: 'neon_raccoon',
+  rare_morph_id: 'graffiti_guardian',
+  level: 19,
+  pet_xp: 4242,
+  moon_gold: 777,
+  moon_crystals: 23,
+  style_tokens: 41,
+  streak_days: 9,
+}, 2);
+assert.deepEqual(rareLeaderboardEntry, {
+  rank: 3,
+  pet_name: 'Cipher',
+  stage: 'graffiti_guardian',
+  phase: 'rare',
+  species_id: 'neon_raccoon',
+  species_name: 'Neon Raccoon',
+  rare_morph_id: 'graffiti_guardian',
+  rare_morph_name: 'Graffiti Guardian',
+  level: 19,
+  pet_xp: 4242,
+  moon_gold: 777,
+  moon_crystals: 23,
+  style_tokens: 41,
+  streak_days: 9,
+}, 'leaderboard serializer must carry lifecycle identity and all persisted Moonpet currencies');
+const eggLeaderboardEntry = serializePetLeaderboardEntry({
+  pet_name: 'Unhatched',
+  lifecycle_phase: 'egg',
+  lifecycle_species_id: 'alley_drake',
+  moon_gold: 10,
+  moon_crystals: 2,
+  style_tokens: 1,
+}, 0);
+assert.equal(eggLeaderboardEntry.species_id, null, 'leaderboard must not reveal an egg species');
+assert.equal(eggLeaderboardEntry.species_name, null, 'leaderboard must not reveal an egg species name');
+const petLeaderboardRoute = routeBlock('/telegram-pets/leaderboard');
+assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle l'), 'public leaderboard must join persisted Moonpet lifecycle');
+for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_phase', 'lifecycle_species_id', 'rare_morph_id']) {
+  assert.ok(petLeaderboardRoute.includes(field), `public leaderboard must return ${field}`);
+}
 
 assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
 assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include Arena button');
