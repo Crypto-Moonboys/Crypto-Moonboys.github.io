@@ -1639,7 +1639,9 @@ const PET_ADVENTURE_ENCOUNTERS = Object.freeze(Object.fromEntries(
   PET_ADVENTURES.map((adventure) => [adventure.key, buildPetAdventureEncounter(adventure)]),
 ));
 
-const PET_RUN_MAX_DEPTH = 5;
+const PET_RUN_MAX_DEPTH = 100;
+const PET_RUN_ELITE_INTERVAL = 5;
+const PET_RUN_BOSS_INTERVAL = 10;
 const PET_RUN_COMPLETED_STATUSES = Object.freeze(['completed', 'failed', 'extracted']);
 
 const PET_RUN_CHOICE_LIBRARY = Object.freeze({
@@ -1702,6 +1704,22 @@ const PET_RUN_CHOICE_LIBRARY = Object.freeze({
     base_risk: 0.38,
     rewards: Object.freeze({ pet_xp: [18, 36], moon_gold: [40, 84], moon_crystals: [1, 3], style_tokens: [0, 2] }),
     costs: Object.freeze({ energy: [12, 22], hunger: [6, 12] }),
+  }),
+  hidden_route: Object.freeze({
+    key: 'hidden_route', label: 'Hidden Route', type: 'sneak',
+    copy: 'Your Moonpet reads the alley signs and opens a rare shortcut.',
+    risk_copy: 'The hidden route folds into a trap. The expedition takes a heavy setback.',
+    base_risk: 0.31,
+    rewards: Object.freeze({ pet_xp: [20, 38], moon_gold: [30, 68], moon_crystals: [0, 2], style_tokens: [1, 3] }),
+    costs: Object.freeze({ energy: [10, 18], hunger: [4, 9] }),
+  }),
+  elite: Object.freeze({
+    key: 'elite', label: 'Elite Scrap', type: 'fight',
+    copy: 'Your Moonpet drops the elite crew and claims the checkpoint.',
+    risk_copy: 'The elite crew wins the exchange. The expedition ends with a scar and a lesson.',
+    base_risk: 0.36,
+    rewards: Object.freeze({ pet_xp: [30, 58], moon_gold: [48, 96], moon_crystals: [1, 3], style_tokens: [2, 5] }),
+    costs: Object.freeze({ energy: [14, 24], hunger: [7, 13], cleanliness: [3, 8] }),
   }),
   boss: Object.freeze({
     key: 'boss',
@@ -2102,32 +2120,49 @@ function addPetRunItem(items, itemKey, count = 1) {
   return next;
 }
 
+function stablePetRunIndex(run, step, modulo) {
+  const source = String(run?.seed || run?.run_id || 'moon-run') + ':' + String(step);
+  let hash = 2166136261;
+  for (let index = 0; index < source.length; index += 1) { hash ^= source.charCodeAt(index); hash = Math.imul(hash, 16777619); }
+  return modulo > 0 ? (hash >>> 0) % modulo : 0;
+}
+function getPetEndlessRoomDefinition(run) {
+  const rooms = Object.values(PET_ROGUELITE_ROOMS || {});
+  if (!rooms.length) return null;
+  const depth = Math.max(0, Math.floor(Number(run?.depth || run?.current_room || 0))), nextRoom = depth + 1;
+  if (nextRoom % PET_RUN_BOSS_INTERVAL === 0) return rooms.find((room) => room.room_type === 'boss') || rooms[rooms.length - 1];
+  const regular = rooms.filter((room) => room.room_type !== 'boss');
+  return regular[stablePetRunIndex(run, nextRoom, regular.length)] || regular[0];
+}
 function serializePetRun(run) {
   if (!run) return null;
+  const depth = Math.max(0, Math.floor(Number(run.depth ?? run.current_room ?? 0)));
+  const room = getPetEndlessRoomDefinition({ ...run, depth });
   return {
-    id: run.id || null,
-    telegram_id: String(run.telegram_id || ''),
-    run_id: String(run.run_id || ''),
-    season_key: String(run.season_key || ''),
-    status: String(run.status || 'active'),
-    depth: Math.max(0, Math.floor(Number(run.depth || 0))),
-    max_depth: Math.max(1, Math.floor(Number(run.max_depth || PET_RUN_MAX_DEPTH))),
+    id: run.id || null, telegram_id: String(run.telegram_id || ''), run_id: String(run.run_id || ''),
+    season_key: String(run.season_key || ''), status: String(run.status || 'active'), region: String(run.region || 'moon_alley'),
+    difficulty: Math.max(1, Math.floor(Number(run.difficulty || Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1))),
+    seed: run.seed == null ? null : Number(run.seed), depth, current_room: depth,
+    max_depth: Math.max(1, Math.floor(Number(run.max_depth || run.max_room || PET_RUN_MAX_DEPTH))),
+    max_room: Math.max(1, Math.floor(Number(run.max_room || run.max_depth || PET_RUN_MAX_DEPTH))),
+    score: Math.max(0, Math.floor(Number(run.score || 0))), rooms_completed: Math.max(depth, Math.floor(Number(run.rooms_completed || 0))),
     risk_level: Math.max(1, Math.floor(Number(run.risk_level || 1))),
-    unbanked_pet_xp: clampPetCurrency(run.unbanked_pet_xp),
-    unbanked_moon_gold: clampPetCurrency(run.unbanked_moon_gold),
-    unbanked_moon_crystals: clampPetCurrency(run.unbanked_moon_crystals),
-    unbanked_style_tokens: clampPetCurrency(run.unbanked_style_tokens),
-    unbanked_items: parsePetRunItems(run.unbanked_items),
-    started_at: run.started_at || null,
-    completed_at: run.completed_at || null,
-    updated_at: run.updated_at || null,
+    room: room ? { key: room.room_id || room.key, title: room.title || room.name, room_type: room.room_type } : null,
+    checkpoint: (depth + 1) % PET_RUN_BOSS_INTERVAL === 0 ? 'boss' : (depth + 1) % PET_RUN_ELITE_INTERVAL === 0 ? 'elite' : 'street',
+    next_checkpoint: PET_RUN_ELITE_INTERVAL - (depth % PET_RUN_ELITE_INTERVAL),
+    unbanked_pet_xp: clampPetCurrency(run.unbanked_pet_xp), unbanked_moon_gold: clampPetCurrency(run.unbanked_moon_gold),
+    unbanked_moon_crystals: clampPetCurrency(run.unbanked_moon_crystals), unbanked_style_tokens: clampPetCurrency(run.unbanked_style_tokens),
+    unbanked_items: parsePetRunItems(run.unbanked_items), started_at: run.started_at || null, completed_at: run.completed_at || null, updated_at: run.updated_at || null,
   };
 }
-
 function getPetRunStepChoices(run) {
-  const depth = Math.max(0, Math.floor(Number(run?.depth || 0)));
-  const stepIndex = Math.min(Math.max(depth + 1, 1), PET_RUN_MAX_DEPTH);
-  return (PET_RUN_STEP_CHOICES[stepIndex - 1] || PET_RUN_STEP_CHOICES[0]).map((key) => PET_RUN_CHOICE_LIBRARY[key]).filter(Boolean);
+  const depth = Math.max(0, Math.floor(Number(run?.depth || 0))), stepIndex = depth + 1;
+  if (stepIndex % PET_RUN_BOSS_INTERVAL === 0) return [PET_RUN_CHOICE_LIBRARY.boss];
+  if (stepIndex % PET_RUN_ELITE_INTERVAL === 0) return [PET_RUN_CHOICE_LIBRARY.elite, PET_RUN_CHOICE_LIBRARY.sneak];
+  const pools = [['fight','sneak','loot'],['rest','trade','fight'],['sneak','loot','gamble'],['rest','hidden_route','gamble']];
+  const selected = pools[stablePetRunIndex(run, stepIndex, pools.length)].slice();
+  if (stepIndex > PET_RUN_BOSS_INTERVAL && stablePetRunIndex(run, stepIndex + 17, 3) === 0 && !selected.includes('hidden_route')) selected.push('hidden_route');
+  return selected.map((key) => PET_RUN_CHOICE_LIBRARY[key]).filter(Boolean);
 }
 
 function getPetRunChoice(run, choiceKey) {
@@ -2178,10 +2213,11 @@ function applyPetRunGearBonuses(pet, choice, inventory = []) {
 
 function buildPetRunStepOutcome(run, choice, pet, inventory = []) {
   const depth = Math.max(0, Math.floor(Number(run?.depth || 0)));
-  const stepIndex = Math.min(depth + 1, PET_RUN_MAX_DEPTH);
-  const multiplier = 1 + (depth * 0.22) + (Math.max(1, Number(run?.risk_level || 1)) - 1) * 0.08;
+  const stepIndex = depth + 1;
+  const difficulty = Math.max(1, Math.floor(Number(run?.difficulty || Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1)));
+  const multiplier = 1 + (Math.min(depth, 40) * 0.08) + ((difficulty - 1) * 0.12);
   const gear = applyPetRunGearBonuses(pet, choice, inventory);
-  const riskChance = Math.max(0.05, Math.min(0.72, Number(choice.base_risk || 0.2) + (depth * 0.045) + gear.risk_delta - gear.survival_bonus));
+  const riskChance = Math.max(0.05, Math.min(0.78, Number(choice.base_risk || 0.2) + (Math.min(depth, 30) * 0.012) + ((difficulty - 1) * 0.015) + gear.risk_delta - gear.survival_bonus));
   const riskRoll = Math.random();
   const failed = riskRoll < riskChance;
   const rewards = {};
@@ -2292,9 +2328,9 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
   const runId = `run-${crypto.randomUUID()}`.slice(0, 80);
   await db.prepare(`
     INSERT INTO telegram_pet_runs
-      (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
-    VALUES (?, ?, ?, ?, 'active', 0, ?, 1, '{}')
-  `).bind(crypto.randomUUID(), telegramId, runId, season.key, PET_RUN_MAX_DEPTH).run();
+      (id, telegram_id, run_id, season_key, status, region, difficulty, seed, depth, current_room, max_depth, max_room, score, rooms_completed, risk_level, unbanked_items)
+    VALUES (?, ?, ?, ?, 'active', 'moon_alley', 1, ?, 0, 0, ?, ?, 0, 0, 1, '{}')
+  `).bind(crypto.randomUUID(), telegramId, runId, season.key, crypto.getRandomValues(new Uint32Array(1))[0], PET_RUN_MAX_DEPTH, PET_RUN_MAX_DEPTH).run();
   await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
   const run = await getPetRunById(db, telegramId, runId);
   return { accepted: true, reason: 'run_started', run, pet };
@@ -2505,7 +2541,11 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     UPDATE telegram_pet_runs
     SET status = ?,
         depth = ?,
-        risk_level = risk_level + 1,
+        current_room = ?,
+        rooms_completed = ?,
+        difficulty = ?,
+        score = score + ?,
+        risk_level = ?,
         unbanked_pet_xp = unbanked_pet_xp + ?,
         unbanked_moon_gold = unbanked_moon_gold + ?,
         unbanked_moon_crystals = unbanked_moon_crystals + ?,
@@ -2517,7 +2557,10 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     RETURNING run_id
   `).bind(
     stepIndex >= PET_RUN_MAX_DEPTH ? 'extractable' : 'extractable',
-    stepIndex,
+    stepIndex, stepIndex, stepIndex,
+    Math.floor((stepIndex - 1) / PET_RUN_BOSS_INTERVAL) + 1,
+    Math.max(10, Math.floor((outcome.rewards.pet_xp + outcome.rewards.moon_gold) * (choice.type === 'boss' ? 2.5 : choice.key === 'elite' ? 1.75 : 1))),
+    Math.min(10, Math.floor(stepIndex / PET_RUN_ELITE_INTERVAL) + 1),
     clampPetCurrency(outcome.rewards.pet_xp),
     clampPetCurrency(outcome.rewards.moon_gold),
     clampPetCurrency(outcome.rewards.moon_crystals),
@@ -6350,7 +6393,7 @@ function serializePetMiniAppKaijuMatch(match, telegramId = '') {
   };
 }
 
-const PET_MINI_APP_LEADERBOARD_PERIODS = new Set(['daily', 'weekly', 'seasonal', 'all_time']);
+const PET_MINI_APP_LEADERBOARD_PERIODS = new Set(['daily', 'weekly', 'seasonal', 'all_time', 'run_depth']);
 
 async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'seasonal', requestedLimit = 25) {
   const period = PET_MINI_APP_LEADERBOARD_PERIODS.has(String(requestedPeriod || '').toLowerCase())
@@ -6373,6 +6416,8 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
     scoreBindings = [weekKey];
   } else if (period === 'all_time') {
     scoreSql = 'SELECT telegram_id, pet_xp FROM telegram_pet_profiles';
+  } else if (period === 'run_depth') {
+    scoreSql = `SELECT telegram_id, MAX(depth) AS pet_xp FROM telegram_pet_runs WHERE status IN ('completed','extracted','failed') GROUP BY telegram_id`;
   } else {
     scoreSql = 'SELECT telegram_id, season_xp AS pet_xp FROM telegram_pet_season_state WHERE season_key = ?';
     scoreBindings = [season.key];
@@ -10424,7 +10469,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-navigation-guide`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-endless-roguelite`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

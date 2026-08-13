@@ -278,10 +278,10 @@
     try {
       var data = await post('/telegram-pets/app/leaderboard', { period: selected, limit: 25 });
       if (generation !== utilityRequestGeneration || utilityLayer.hidden || activeUtility !== 'leaderboard') return;
-      var tabs = ['daily', 'weekly', 'seasonal', 'all_time'].map(function (key) {
+      var tabs = ['daily', 'weekly', 'seasonal', 'all_time', 'run_depth'].map(function (key) {
         return '<button type="button" class="period-button" data-leaderboard-period="' + key + '" aria-pressed="' + (key === selected ? 'true' : 'false') + '">' + escapeHtml(words(key)) + '</button>';
       }).join('');
-      utilityContent.innerHTML = '<div class="period-tabs">' + tabs + '</div><div class="line muted">PET XP RANKS // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self);
+      utilityContent.innerHTML = '<div class="period-tabs">' + tabs + '</div><div class="line muted">' + (selected === 'run_depth' ? 'DEEPEST ROOM RANKS' : 'PET XP RANKS') + ' // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self);
     } catch (error) {
       if (generation !== utilityRequestGeneration || utilityLayer.hidden || activeUtility !== 'leaderboard') return;
       utilityContent.innerHTML = '<div class="connection-fault">RANKING LINK FAILED // ' + escapeHtml(error.message || 'CONNECTION FAILED') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-leaderboard-period="' + selected + '">RETRY LEADERBOARD</button></div>';
@@ -394,7 +394,7 @@
     var run = state.run;
     var runBody;
     if (run) {
-      runBody = '<div class="line">DEPTH ' + number(run.current_room != null ? run.current_room : run.depth) + '/' + number(run.max_room || run.max_depth) + ' // RISK ' + number(run.risk_level) + '</div><div class="line muted">UNBANKED: ' + number(run.unbanked_pet_xp) + ' XP / ' + number(run.unbanked_moon_gold) + ' GOLD</div><div class="button-grid">' +
+      runBody = '<div class="line complete">ENDLESS MOON RUN // ' + escapeHtml(words(run.room && run.room.title || run.checkpoint || 'street')) + '</div><div class="line">ROOM ' + number(run.current_room != null ? run.current_room : run.depth) + '/' + number(run.max_room || run.max_depth) + ' // DISTRICT TIER ' + number(run.difficulty) + ' // SCORE ' + number(run.score) + '</div><div class="line muted">NEXT CHECKPOINT: ' + number(run.next_checkpoint) + ' ROOM(S) // UNBANKED: ' + number(run.unbanked_pet_xp) + ' XP / ' + number(run.unbanked_moon_gold) + ' GOLD</div><div class="button-grid">' +
         (run.choices || []).map(function (choice) { return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }); }).join('') +
         button('EXTRACT', 'run_extract', { run_id: run.run_id }, { danger: true }) + '</div>';
     } else {

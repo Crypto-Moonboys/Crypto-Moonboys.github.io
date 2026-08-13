@@ -633,4 +633,17 @@ assert.equal(rareCeremony.primary, 'Subway Phantom');
 assert.equal(planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: true, duplicate: true }), null);
 assert.equal(planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: false }), null);
 
+assert.match(worker, /const PET_RUN_MAX_DEPTH = 100;/);
+assert.match(worker, /PET_RUN_ELITE_INTERVAL = 5/);
+assert.match(worker, /PET_RUN_BOSS_INTERVAL = 10/);
+assert.match(worker, /hidden_route:[\s\S]*?elite:[\s\S]*?boss:/);
+assert.match(worker, /current_room = \?/);
+assert.match(worker, /score = score \+ \?/);
+assert.match(worker, /period === 'run_depth'/);
+assert.match(client, /ENDLESS MOON RUN/);
+assert.match(client, /NEXT CHECKPOINT/);
+assert.match(client, /'run_depth'/);
+assert.match(html, /20260813-endless-roguelite/);
+assert.match(worker, /20260813-endless-roguelite/);
+
 console.log('telegram-pets-mini-app.test.mjs passed');
