@@ -341,6 +341,13 @@ assert.doesNotThrow(() => updatePresenceRuntime(
   0,
 ), 'Phase 4 presence director must execute without unresolved render-loop identifiers');
 assert.equal(runtimePresenceFrame.thought, 'ALLEY CHECK');
+assert.doesNotThrow(() => updatePresenceRuntime(
+  { pet_name: 'Smoke', species: 'neon_raccoon', health: 100, energy: 100, hunger: 0, cleanliness: 100, happiness: 100 },
+  null,
+  8000,
+), 'Phase 4 species habits must fall back to pet.species when lifecycle identity is incomplete');
+assert.equal(runtimePresenceFrame.behavior, 'mask_wash');
+assert.equal(runtimePresenceFrame.thought, 'MASK STAYS FRESH');
 
 assert.match(client, /var presenceTime = reducedMotion \? 0 : Math\.max\(0, time\)/);
 assert.match(client, /COMPANION_PRESENCE_FRAME\.phase = reducedMotion \? 0\.72/);
@@ -356,6 +363,9 @@ assert.match(client, /function drawUtcAmbience\(scene\)/);
 assert.match(client, /if \(nextUtcHour !== utcHour\)/);
 assert.match(client, /if \(reducedMotion\) drawWorld\(performance\.now\(\)\)/);
 assert.match(client, /function drawCompanionPresence\(time, scene, presence\)/);
+assert.match(client, /var bubbleY = 54/);
+assert.match(client, /drawPixelRect\(7, bubbleY, 150, 31/);
+assert.doesNotMatch(client, /drawPixelRect\(7, 18, 150, 31/, 'companion copy must remain below the DOM HUD');
 assert.match(client, /if \(feedbackActive \|\| actionActive && !greetingActive\) return/);
 assert.match(client, /feedbackUntil > time/);
 assert.match(client, /function companionGreetingCopy\(pet, lifecycle\)/);
