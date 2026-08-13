@@ -7,8 +7,9 @@
   var initData = '';
   var telegramAuth = null;
   var state = null;
+  var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
-  var activeScreen = ['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(requestedScreen) ? requestedScreen : 'home';
+  var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
   var busy = false;
   var typingToken = 0;
   var animationMode = 'idle';
@@ -17,6 +18,16 @@
   var actionSequence = 0;
   var reducedMotionAnimationTimer = 0;
   var actionResultHoldMs = 3600;
+  var actionStartedAt = 0;
+  var cameraImpactUntil = 0;
+  var cameraImpactStrength = 0;
+  var feedbackUntil = 0;
+  var feedbackTone = '';
+  var feedbackLines = [];
+  var feedbackReaction = '';
+  var sceneTransitionStartedAt = 0;
+  var sceneTransitionUntil = 0;
+  var sceneTransitionDirection = 1;
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -465,6 +476,38 @@
     return parts.join(' // ');
   }
 
+  function compactFeedback(value, limit) {
+    var text = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+    return text.length > limit ? text.slice(0, Math.max(0, limit - 3)).trim() + '...' : text;
+  }
+
+  function actionFeedback(result) {
+    if (!result) return { tone: 'danger', lines: ['SYSTEM RESPONSE LOST'], reaction: '' };
+    var lines = [result.accepted ? 'ACTION COMPLETE' : 'ACTION BLOCKED'];
+    var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
+    if (terminalResult) lines.push('OUTCOME ' + words(String(terminalResult).replace('player1', 'you').replace('player2', 'opponent')));
+    if (result.damage) lines.push('DAMAGE ' + number(result.damage));
+    if (result.pet_xp_awarded) lines.push('+' + number(result.pet_xp_awarded) + ' PET XP');
+    var reward = result.rewards || result.applied || result.computed && result.computed.rewards || {};
+    Object.entries(reward).some(function (entry) {
+      if (lines.length >= 3) return true;
+      if (Number(entry[1]) > 0 && typeof entry[1] !== 'object') lines.push('+' + number(entry[1]) + ' ' + words(entry[0]));
+      return lines.length >= 3;
+    });
+    if (lines.length < 3 && result.result_copy) lines.push(compactFeedback(result.result_copy, 34));
+    if (!result.accepted && lines.length < 3 && result.reason) lines.push(words(compactFeedback(result.reason, 30)));
+    return { tone: result.accepted ? 'success' : 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 38) };
+  }
+
+  function presentResultFeedback(result) {
+    var feedback = actionFeedback(result);
+    feedbackTone = feedback.tone;
+    feedbackLines = feedback.lines;
+    feedbackReaction = feedback.reaction;
+    feedbackUntil = performance.now() + Math.max(5200, actionResultHoldMs + 1600);
+    if (reducedMotion) drawWorld(performance.now());
+  }
+
   function scrollToPanel(panelId) {
     if (!panelId) return;
     window.setTimeout(function () {
@@ -513,12 +556,20 @@
     return 'interact';
   }
 
+  var CAMERA_IMPACT_STRENGTH = {
+    feed: 1, play: 2, clean: 1, sleep: 0, train: 3, battle: 6, travel: 2,
+    work: 2, equip: 2, evolve: 5, trade: 2, celebrate: 4, interact: 1, blocked: 4,
+  };
+
   function animateAction(action, accepted, duration, payload) {
     animationMode = accepted === false ? 'blocked' : actionAnimationFamily(action, payload);
     animationLabel = accepted === false ? 'NOT READY' : words(animationMode);
     actionSequence += 1;
     var animationDuration = duration || 2400;
-    animationUntil = performance.now() + animationDuration;
+    actionStartedAt = performance.now();
+    cameraImpactStrength = reducedMotion ? 0 : CAMERA_IMPACT_STRENGTH[animationMode] || 0;
+    cameraImpactUntil = actionStartedAt + Math.min(animationDuration, 900);
+    animationUntil = actionStartedAt + animationDuration;
     if (reducedMotion) {
       window.clearTimeout(reducedMotionAnimationTimer);
       var sequence = actionSequence;
@@ -546,6 +597,7 @@
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
       animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
+      presentResultFeedback(data.result);
       render();
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
@@ -560,11 +612,20 @@
     }
   }
 
+  function switchScreen(nextScreen) {
+    if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
+    sceneTransitionDirection = SCREEN_ORDER.indexOf(nextScreen) >= SCREEN_ORDER.indexOf(activeScreen) ? 1 : -1;
+    activeScreen = nextScreen;
+    sceneTransitionStartedAt = performance.now();
+    sceneTransitionUntil = reducedMotion ? 0 : sceneTransitionStartedAt + 420;
+    render();
+    return true;
+  }
+
   screen.addEventListener('click', function (event) {
     var jump = event.target.closest('[data-jump]');
     if (jump && !busy) {
-      activeScreen = jump.dataset.jump;
-      render();
+      switchScreen(jump.dataset.jump);
       scrollToPanel(jump.dataset.focus);
       haptic('light');
       typeBoot(['ROUTING COACH RECOMMENDATION', 'MOUNT /' + activeScreen.toUpperCase(), 'REQUIREMENTS DISPLAYED'], { speed: 4, hold: 150 });
@@ -584,8 +645,7 @@
   nav.addEventListener('click', function (event) {
     var target = event.target.closest('[data-screen]');
     if (!target || busy) return;
-    activeScreen = target.dataset.screen;
-    render();
+    switchScreen(target.dataset.screen);
     screen.scrollTop = 0;
     haptic('light');
     typeBoot(['MOUNT /' + activeScreen.toUpperCase(), 'READING LIVE PLAYER STATE', 'MODULE READY'], { speed: 4, hold: 130 });
@@ -1270,17 +1330,78 @@
     drawPixelText(scene.label, 6, 11, scene.neon, 'left');
   }
 
+  var CAMERA_FRAME = { x: 0, y: 0, zoom: 1 };
+
+  function updateCameraFrame(time) {
+    CAMERA_FRAME.x = 0; CAMERA_FRAME.y = 0; CAMERA_FRAME.zoom = 1;
+    if (reducedMotion || cameraImpactUntil <= time || cameraImpactStrength <= 0) return CAMERA_FRAME;
+    var falloff = Math.max(0, Math.min(1, (cameraImpactUntil - time) / 900));
+    var impact = cameraImpactStrength * falloff;
+    CAMERA_FRAME.x = Math.round(Math.sin((time + actionSequence * 37) / 17) * impact);
+    CAMERA_FRAME.y = Math.round(Math.cos((time + actionSequence * 23) / 23) * impact * 0.55);
+    CAMERA_FRAME.zoom = 1 + Math.min(0.035, impact * 0.004);
+    return CAMERA_FRAME;
+  }
+
+  function drawActionFlash(time, scene) {
+    if (reducedMotion || time < actionStartedAt || time - actionStartedAt > 210) return;
+    var color = WORLD_REACTION_COLORS[animationMode] || scene.neon;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, 0.24 * (1 - (time - actionStartedAt) / 210));
+    ctx.fillStyle = color; ctx.fillRect(0, 0, 320, 220);
+    ctx.restore();
+  }
+
+  function drawCinematicFeedback(time, scene) {
+    if (feedbackUntil <= time || !feedbackLines.length) return;
+    var color = feedbackTone === 'danger' ? '#ff6d6d' : scene.neon;
+    var fade = reducedMotion ? 1 : Math.min(1, Math.max(0, (feedbackUntil - time) / 480));
+    ctx.save(); ctx.globalAlpha = fade;
+    drawPixelRect(53, 174, 214, 35, '#020704');
+    drawPixelRect(53, 174, 214, 2, color); drawPixelRect(53, 207, 214, 2, color);
+    for (var line = 0; line < feedbackLines.length; line += 1) drawPixelText(feedbackLines[line], 160, 185 + line * 10, line === 0 ? color : '#d8f9ff', 'center');
+    if (feedbackReaction) {
+      drawPixelRect(177, 80, 136, 20, '#020704'); drawPixelRect(177, 80, 3, 20, scene.accent);
+      drawPixelText('MOONPET // ' + feedbackReaction, 184, 93, '#f4ff65', 'left');
+    }
+    ctx.restore();
+  }
+
+  function drawSceneTransition(time, scene) {
+    if (reducedMotion || sceneTransitionUntil <= time) return;
+    var duration = Math.max(1, sceneTransitionUntil - sceneTransitionStartedAt);
+    var progress = Math.max(0, Math.min(1, (time - sceneTransitionStartedAt) / duration));
+    var cover = Math.ceil((1 - progress) * 320);
+    var origin = sceneTransitionDirection > 0 ? 320 - cover : 0;
+    drawPixelRect(origin, 0, cover, 220, '#020704');
+    for (var stripe = 0; stripe < 6; stripe += 1) {
+      var stripeWidth = Math.max(0, cover - stripe * 13);
+      var stripeX = sceneTransitionDirection > 0 ? 320 - stripeWidth : 0;
+      drawPixelRect(stripeX, 28 + stripe * 29, stripeWidth, 3, stripe % 2 ? scene.neon : scene.accent);
+    }
+    if (progress < 0.72) drawPixelText('ENTER // ' + scene.label, 160, 111, scene.neon, 'center');
+  }
+
   function drawWorld(time) {
     var scene = worldScene();
+    var renderTime = reducedMotion ? performance.now() : time;
     var worldTime = reducedMotion ? 0 : time;
+    var camera = updateCameraFrame(renderTime);
+    drawPixelRect(0, 0, 320, 220, scene.sky);
+    ctx.save();
+    ctx.translate(160 + camera.x, 110 + camera.y); ctx.scale(camera.zoom, camera.zoom); ctx.translate(-160, -110);
     drawWorldSky(worldTime, scene);
     drawWorldSkyline(worldTime, scene);
     drawGraffitiWall(scene);
     drawWorldLandmarks(activeScreen, scene);
     drawWorldStreet(worldTime, scene);
     drawWorldReaction(worldTime, scene);
-    drawPet(time);
+    drawPet(renderTime);
+    ctx.restore();
     drawWorldForeground(scene);
+    drawActionFlash(renderTime, scene);
+    drawCinematicFeedback(renderTime, scene);
+    drawSceneTransition(renderTime, scene);
   }
 
   function frame(time) {
