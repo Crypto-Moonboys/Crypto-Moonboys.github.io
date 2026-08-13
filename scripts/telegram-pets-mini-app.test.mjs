@@ -402,6 +402,10 @@ assert.match(client, /run\.current_room != null \? run\.current_room : run\.dept
 assert.match(client, /function drawCombatOpponent\(time, scene, combat\)/);
 assert.match(client, /function drawCombatMeter\(x, y, width, value, maximum, color, reverse\)/);
 assert.match(client, /function drawCombatHud\(scene, combat\)/);
+assert.match(client, /drawPixelRect\(7, 54, 306, 38/);
+assert.match(client, /compactFeedback\(combat\.status, 17\)/);
+assert.match(client, /var y = 160 \+ pulse/);
+assert.match(client, /if \(!combat \|\| !combat\.active\)/);
 assert.match(client, /var pulse = reducedMotion \? 0 : Math\.round\(Math\.sin\(time \/ 260\) \* 2\)/);
 assert.match(client, /var combatScale = combat && combat\.active \? 0\.78 : 1/);
 assert.match(client, /combat && combat\.active \? -62 : 0/);
