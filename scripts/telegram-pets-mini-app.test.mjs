@@ -378,7 +378,7 @@ assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime, presence, combat\)/);
 assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
-assert.match(client, /drawUtcAmbience\(scene\);\s*drawCombatHud\(scene, combat\);\s*if \(!combat\.active\) drawCompanionPresence\(renderTime, scene, presence\)/s);
+assert.match(client, /drawUtcAmbience\(scene\);\s*drawCombatHud\(scene, combat\);\s*if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence\(renderTime, scene, presence\)/s);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
 assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
@@ -416,7 +416,7 @@ assert.match(client, /var pulse = reducedMotion \? 0 : Math\.round\(Math\.sin\(t
 assert.match(client, /var combatScale = combat && combat\.active \? 0\.78 : 1/);
 assert.match(client, /combat && combat\.active \? -62 : 0/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
-assert.match(client, /if \(!combat\.active\) drawCompanionPresence/);
+assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
@@ -495,6 +495,10 @@ assert.match(client, /result\.duplicate/);
 assert.match(client, /duration: 7600/);
 assert.match(client, /duration: 8200/);
 assert.match(client, /drawPixelRect\(7, 50, 306, 2, color\)/, 'Phase 6 ceremony copy must remain below the DOM HUD');
+assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/, 'Phase 6 ceremonies must suppress overlapping thought bubbles');
+assert.match(client, /mood !== 'curious' && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping mood labels');
+assert.match(client, /\(!combat \|\| !combat\.active\) && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping identity labels');
+assert.equal((client.match(/animationLabel && !lifecycleCeremonyActive\(time\)/g) || []).length, 2, 'Phase 6 ceremonies must suppress egg and companion action labels');
 assert.match(client, /var ceremonyScale = lifecycleCeremonyActive\(time\)/);
 assert.match(client, /reducedMotion \? 1\.08/);
 assert.match(client, /var burst = reducedMotion \? 38/);
@@ -522,6 +526,13 @@ const eggState = {
   pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Moon Egg' },
   lifecycle: { phase: 'egg', incubation: { progress: 4, target: 12 } },
 };
+const dormantState = { adopted: false, pet: null, lifecycle: null };
+const initialEggCeremony = planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true });
+assert.equal(initialEggCeremony.kind, 'egg');
+assert.equal(initialEggCeremony.title, 'MOON EGG INITIALISED');
+assert.equal(initialEggCeremony.primary, 'IDENTITY SIGNAL DORMANT');
+assert.equal(planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true, duplicate: true }), null);
+
 const strongerEggState = {
   adopted: true,
   pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Moon Egg' },
