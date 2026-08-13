@@ -180,6 +180,12 @@ const eggLeaderboardEntry = serializePetLeaderboardEntry({
 }, 0);
 assert.equal(eggLeaderboardEntry.species_id, null, 'leaderboard must not reveal an egg species');
 assert.equal(eggLeaderboardEntry.species_name, null, 'leaderboard must not reveal an egg species name');
+assert.match(worker, /display_name: \[row\.first_name, row\.last_name\][\s\S]*'Anonymous'/, 'public pet leaderboard must never fall back to a Telegram ID');
+assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboards must materialize deterministic identities for legacy rows');
+assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
+assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
+assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\)/, 'legacy evolve command must synchronize lifecycle adulthood');
+assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');
 const petLeaderboardRoute = routeBlock('/telegram-pets/leaderboard');
 assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle l'), 'public leaderboard must join persisted Moonpet lifecycle');
 for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_phase', 'lifecycle_species_id', 'rare_morph_id']) {
