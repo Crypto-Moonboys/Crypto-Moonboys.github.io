@@ -163,6 +163,18 @@ function publicLifecycle(row, rare) {
   };
 }
 
+export async function getExistingMoonpetLifecycle(db, telegramId) {
+  const id = cleanId(telegramId);
+  if (!id) return null;
+  const row = await readLifecycle(db, id);
+  if (!row) return null;
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events
+    WHERE telegram_id=? AND action LIKE 'incubate_%' AND day_key=? AND applied_at IS NOT NULL`).bind(id, dayKey).first().catch(() => null);
+  row.actions_today = Number(daily?.count || 0);
+  return publicLifecycle(row, await rareProgress(db, id, row));
+}
+
 export async function getMoonpetLifecycle(db, telegramId) {
   const id = cleanId(telegramId);
   const row = await ensureMoonpetLifecycle(db, id);
