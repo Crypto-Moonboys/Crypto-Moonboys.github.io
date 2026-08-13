@@ -1472,7 +1472,7 @@
     if (lifecycle.phase === 'egg') {
       drawMoonEgg(time, active, lifecycle.incubation);
       drawActionEffects(time, 160, 150, active);
-      if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
     }
 
@@ -1517,14 +1517,14 @@
     ctx.restore();
     ctx.shadowBlur = 0;
 
-    if (!active && mood !== 'curious') drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
-    if (!combat || !combat.active) {
+    if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
+    if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
       if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
       else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
     }
     drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
     drawActionEffects(time, x, y, active);
-    if (active && animationLabel) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+    if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
   }
 
   var WORLD_SCENES = {
@@ -1981,7 +1981,7 @@
     drawWorldForeground(scene);
     drawUtcAmbience(scene);
     drawCombatHud(scene, combat);
-    if (!combat.active) drawCompanionPresence(renderTime, scene, presence);
+    if (!combat.active && !lifecycleCeremonyActive(renderTime)) drawCompanionPresence(renderTime, scene, presence);
     drawActionFlash(renderTime, scene);
     drawCinematicFeedback(renderTime, scene);
     drawLifecycleCeremony(renderTime, scene);
