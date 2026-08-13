@@ -35,6 +35,7 @@ db.database.exec(`
 `);
 db.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
 db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('new-player');
+db.database.prepare('DELETE FROM telegram_pet_lifecycle WHERE telegram_id=?').run('new-player');
 await createMoonEggLifecycle(db, 'new-player', 'adopt:1');
 let lifecycle = await getMoonpetLifecycle(db, 'new-player');
 assert.equal(lifecycle.phase, 'egg');
