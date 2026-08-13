@@ -1071,10 +1071,10 @@ for (const [command, label] of [
   ['cmdPetEvent', 'Event'],
   ['cmdPetRun', 'Run'],
 ]) {
-  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${label} status must retain stored Moonpet identity`);
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId)'), `${label} status must retain stored Moonpet identity`);
 }
 for (const command of ['cmdPetUse', 'cmdPetDaily', 'cmdPetClaim', 'cmdPetTrade', 'cmdPetExtract']) {
-  assert.ok(asyncBlock(command).includes('getMoonpetIdentitySummary(db, telegramId)'), `${command} status must pass identity instead of missions`);
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId)'), `${command} status must pass identity instead of missions`);
 }
 assert.ok(!worker.includes('formatPetStatus(result.pet, await buildPetMissions(db, telegramId))'), 'missions must never be passed into the formatPetStatus identity parameter');
 assert.ok(asyncBlock('cmdPetDetails').includes('buildPetMissions(db, telegramId)'), 'missions must remain available in the separate Details response');
