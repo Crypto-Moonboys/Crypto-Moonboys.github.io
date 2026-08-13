@@ -87,6 +87,7 @@ assert.match(worker, /petshop: 'economy'/);
 assert.match(worker, /petleaderboard: 'profile'/);
 assert.match(worker, /petcoach: 'home'/);
 assert.match(worker, /payload === 'menu:management'.*return 'economy'/);
+// Legacy timed-activity buttons must land beside the equivalent Mini App activity controls.
 assert.match(worker, /\^\(work\|activity\|job\|start:\|claim\$\|cancel\$\)/);
 assert.match(worker, /petMiniAppDestinationForCallback\(data\)/);
 assert.match(worker, /isPetMiniAppStartArgument\(argStr\)/);
