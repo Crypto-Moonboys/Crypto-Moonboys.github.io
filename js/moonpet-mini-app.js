@@ -65,6 +65,8 @@
   var utilityTitle = document.getElementById('utility-title');
   var utilityContent = document.getElementById('utility-content');
   var utilityReturnFocus = null;
+  var activeUtility = '';
+  var utilityRequestGeneration = 0;
 
   function launchParameter(name) {
     var locations = [String(window.location.hash || '').replace(/^#/, ''), String(window.location.search || '').replace(/^\?/, '')];
@@ -227,6 +229,8 @@
   }
 
   function closeUtility() {
+    activeUtility = '';
+    utilityRequestGeneration += 1;
     utilityLayer.hidden = true;
     utilityContent.innerHTML = '';
     var returnTarget = utilityReturnFocus && utilityReturnFocus.isConnected
@@ -268,21 +272,26 @@
 
   async function loadLeaderboard(period) {
     var selected = ['daily', 'weekly', 'seasonal', 'all_time'].includes(period) ? period : 'seasonal';
+    var generation = ++utilityRequestGeneration;
     utilityTitle.textContent = 'MOONPET LEADERBOARD';
     utilityContent.innerHTML = '<div class="line">LOADING ' + escapeHtml(words(selected)) + ' RANKS...</div>';
     try {
       var data = await post('/telegram-pets/app/leaderboard', { period: selected, limit: 25 });
+      if (generation !== utilityRequestGeneration || utilityLayer.hidden || activeUtility !== 'leaderboard') return;
       var tabs = ['daily', 'weekly', 'seasonal', 'all_time'].map(function (key) {
         return '<button type="button" class="period-button" data-leaderboard-period="' + key + '" aria-pressed="' + (key === selected ? 'true' : 'false') + '">' + escapeHtml(words(key)) + '</button>';
       }).join('');
       utilityContent.innerHTML = '<div class="period-tabs">' + tabs + '</div><div class="line muted">PET XP RANKS // ' + escapeHtml(words(data.period || selected)) + '</div>' + leaderboardRowsMarkup(data.entries, data.self);
     } catch (error) {
+      if (generation !== utilityRequestGeneration || utilityLayer.hidden || activeUtility !== 'leaderboard') return;
       utilityContent.innerHTML = '<div class="connection-fault">RANKING LINK FAILED // ' + escapeHtml(error.message || 'CONNECTION FAILED') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-leaderboard-period="' + selected + '">RETRY LEADERBOARD</button></div>';
     }
   }
 
   function openUtility(kind) {
     if (utilityLayer.hidden && document.activeElement instanceof HTMLElement) utilityReturnFocus = document.activeElement;
+    activeUtility = kind;
+    utilityRequestGeneration += 1;
     utilityLayer.hidden = false;
     if (kind === 'guide') {
       utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
@@ -767,8 +776,11 @@
     window.setTimeout(function () {
       var target = screen.querySelector('[data-panel="' + CSS.escape(panelId) + '"]');
       if (target) {
-        var relativeTop = target.getBoundingClientRect().top - screen.getBoundingClientRect().top + screen.scrollTop;
-        screen.scrollTo({ top: Math.max(0, relativeTop - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
+        var screenRect = screen.getBoundingClientRect();
+        var rail = screen.querySelector('.utility-rail');
+        var stickyInset = rail ? Math.max(0, rail.getBoundingClientRect().bottom - screenRect.top) : 0;
+        var relativeTop = target.getBoundingClientRect().top - screenRect.top + screen.scrollTop;
+        screen.scrollTo({ top: Math.max(0, relativeTop - stickyInset - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
       }
     }, 0);
   }
@@ -987,7 +999,21 @@
   });
 
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && !utilityLayer.hidden) closeUtility();
+    if (utilityLayer.hidden) return;
+    if (event.key === 'Escape') { closeUtility(); return; }
+    if (event.key !== 'Tab') return;
+    var focusable = Array.from(utilityLayer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) { event.preventDefault(); return; }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    var current = document.activeElement;
+    if (!utilityLayer.contains(current) || event.shiftKey && current === first) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    } else if (!event.shiftKey && current === last) {
+      event.preventDefault();
+      first.focus();
+    }
   });
 
   nav.addEventListener('click', function (event) {

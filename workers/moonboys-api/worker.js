@@ -6390,7 +6390,7 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
       LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = scores.telegram_id
     )
     SELECT * FROM ranked WHERE rank <= ? OR telegram_id = ? ORDER BY rank
-  `).bind(...scoreBindings, limit, String(telegramId)).all().catch(() => ({ results: [] }));
+  `).bind(...scoreBindings, limit, String(telegramId)).all();
   const materialized = await materializePetLeaderboardRows(db, rows.results || []);
   const serialized = materialized.map((row) => ({
     ...serializePetLeaderboardEntry(row, Number(row.rank || 1) - 1),
