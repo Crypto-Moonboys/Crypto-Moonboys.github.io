@@ -34,6 +34,11 @@
   var companionGreetingUntil = 0;
   var companionGreetingTimer = 0;
   var companionTapSequence = 0;
+  var companionSeedSpecies = null;
+  var companionSeedTemperament = null;
+  var companionSeedMarking = null;
+  var companionSeedName = null;
+  var companionSeedValue = 0;
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -805,17 +810,24 @@
     wing_flex: 'READY TO LIFT', tunnel_peek: 'SECRET ROUTE?', swagger: 'ALL CITY ENERGY',
     listen: 'TELL ME MORE', fidget: 'LET US MOVE', chill: 'GOOD VIBES',
   };
-  var COMPANION_PRESENCE_FRAME = { behavior: 'chill', phase: 0.72, thought: 'GOOD VIBES' };
+  var COMPANION_PRESENCE_FRAME = { behavior: 'chill', phase: 0.72, thought: 'GOOD VIBES', slot: -1, screen: '', seed: -1 };
 
   function companionIdentitySeed(pet, lifecycle) {
-    var appearance = lifecycle && lifecycle.appearance || {};
-    var source = String(lifecycle && lifecycle.species_id || pet && pet.species || 'moonpet')
-      + '|' + String(lifecycle && lifecycle.temperament || 'curious')
-      + '|' + String(appearance.marking || 'moon_mark')
-      + '|' + String(pet && pet.pet_name || 'moonpet');
+    var appearance = lifecycle && lifecycle.appearance;
+    var species = lifecycle && lifecycle.species_id || pet && pet.species || 'moonpet';
+    var temperament = lifecycle && lifecycle.temperament || 'curious';
+    var marking = appearance && appearance.marking || 'moon_mark';
+    var petName = pet && pet.pet_name || 'moonpet';
+    if (species === companionSeedSpecies && temperament === companionSeedTemperament && marking === companionSeedMarking && petName === companionSeedName) return companionSeedValue;
+    var source = String(species) + '|' + String(temperament) + '|' + String(marking) + '|' + String(petName);
     var hash = 0;
     for (var index = 0; index < source.length; index += 1) hash = (hash * 31 + source.charCodeAt(index)) | 0;
-    return Math.abs(hash);
+    companionSeedSpecies = species;
+    companionSeedTemperament = temperament;
+    companionSeedMarking = marking;
+    companionSeedName = petName;
+    companionSeedValue = Math.abs(hash);
+    return companionSeedValue;
   }
 
   function temperamentCompanionHabit(temperament) {
@@ -847,13 +859,18 @@
     }
     var presenceTime = reducedMotion ? 0 : Math.max(0, time);
     var slot = reducedMotion ? 0 : Math.floor(presenceTime / 8000);
-    var selector = (companionIdentitySeed(pet, lifecycle) + slot) % 3;
-    var behavior = selector === 0
-      ? SCENE_COMPANION_HABITS[activeScreen] || 'moon_gaze'
-      : selector === 1
-        ? SPECIES_COMPANION_HABITS[lifecycle && lifecycle.species_id] || 'listen'
-        : temperamentCompanionHabit(lifecycle && lifecycle.temperament);
-    COMPANION_PRESENCE_FRAME.behavior = behavior;
+    var seed = companionIdentitySeed(pet, lifecycle);
+    if (COMPANION_PRESENCE_FRAME.slot !== slot || COMPANION_PRESENCE_FRAME.screen !== activeScreen || COMPANION_PRESENCE_FRAME.seed !== seed) {
+      var selector = (seed + slot) % 3;
+      COMPANION_PRESENCE_FRAME.behavior = selector === 0
+        ? SCENE_COMPANION_HABITS[activeScreen] || 'moon_gaze'
+        : selector === 1
+          ? SPECIES_COMPANION_HABITS[lifecycle && lifecycle.species_id] || 'listen'
+          : temperamentCompanionHabit(lifecycle && lifecycle.temperament);
+      COMPANION_PRESENCE_FRAME.slot = slot;
+      COMPANION_PRESENCE_FRAME.screen = activeScreen;
+      COMPANION_PRESENCE_FRAME.seed = seed;
+    }
     COMPANION_PRESENCE_FRAME.phase = reducedMotion ? 0.72 : presenceTime % 8000 / 8000;
     COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[behavior] || 'STAY READY');
     return COMPANION_PRESENCE_FRAME;
@@ -1313,14 +1330,15 @@
   function drawCompanionHabitEffects(time, x, y, presence, color, active) {
     if (active || !presence) return;
     var behavior = presence.behavior;
-    var phase = reducedMotion ? 0 : Math.floor(time / 260);
+    var effectTime = reducedMotion ? 0 : time;
+    var phase = Math.floor(effectTime / 260);
     if (behavior === 'signal_scan') {
       drawPixelRect(x - 48, y - 52 + phase % 7 * 5, 96, 1, color);
     } else if (behavior === 'scrap_tinker' || behavior === 'claw_click') {
       for (var spark = 0; spark < 3; spark += 1) drawPixelRect(x + 31 + spark * 6, y - 18 - (phase + spark * 3) % 13, 2, 2, color);
     } else if (behavior === 'memory_glow') {
       for (var memory = 0; memory < 4; memory += 1) {
-        var angle = time / 900 + memory * Math.PI / 2;
+        var angle = effectTime / 900 + memory * Math.PI / 2;
         drawPixelRect(x + Math.cos(angle) * 54, y - 28 + Math.sin(angle) * 18, 3, 3, color);
       }
     } else if (behavior === 'alley_prowl' || behavior === 'tunnel_peek') {
@@ -1356,7 +1374,7 @@
     var actionActive = animationUntil > time;
     var feedbackActive = feedbackUntil > time;
     var greetingActive = companionGreetingUntil > time && companionGreeting;
-    if (actionActive || feedbackActive) return;
+    if (feedbackActive || actionActive && !greetingActive) return;
     var copy = greetingActive ? companionGreeting : presence.phase >= 0.58 ? presence.thought : '';
     if (!copy) return;
     copy = compactFeedback(copy, 24);
