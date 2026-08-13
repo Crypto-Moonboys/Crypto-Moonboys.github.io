@@ -201,7 +201,7 @@ assert.match(client, /WORLD_REACTION_COLORS\[animationMode\]/);
 assert.match(client, /var worldTime = reducedMotion \? 0 : time/);
 assert.match(client, /drawWorldSky\(worldTime, scene\)/);
 assert.match(client, /drawWorldReaction\(worldTime, scene\)/);
-assert.match(client, /drawPet\(renderTime\);\s*ctx\.restore\(\);\s*drawWorldForeground\(scene\)/s);
+assert.match(client, /drawPet\(renderTime, presence\);\s*ctx\.restore\(\);\s*drawWorldForeground\(scene\)/s);
 assert.doesNotMatch(client, /new Image\s*\(/);
 assert.match(client, /function drawMoonEgg/);
 assert.match(client, /drawMoonEgg\(time, active, lifecycle\.incubation\)/);
