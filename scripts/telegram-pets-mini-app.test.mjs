@@ -287,7 +287,7 @@ assert.match(client, /drawPixelText\(feedbackReaction, 181, 98, '#f4ff65', 'left
 assert.doesNotMatch(client, /'MOONPET \/\/ ' \+ feedbackReaction/, 'reaction prefix and copy must render on separate fitted lines');
 assert.match(client, /function drawSceneTransition\(time, scene\)/);
 assert.match(client, /if \(reducedMotion \|\| sceneTransitionUntil <= time\) return/);
-assert.match(client, /drawActionFlash\(renderTime, scene\);\s*drawCinematicFeedback\(renderTime, scene\);\s*drawSceneTransition\(renderTime, scene\)/s);
+assert.match(client, /drawActionFlash\(renderTime, scene\);\s*drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);\s*drawSceneTransition\(renderTime, scene\)/s);
 assert.doesNotMatch(client, /Math\.random\(\).*feedback|feedback.*Math\.random\(\)/s, 'Phase 3 feedback must never invent random rewards');
 
 
