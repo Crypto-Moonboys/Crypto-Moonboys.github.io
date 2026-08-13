@@ -39,7 +39,7 @@ import {
   PET_ECONOMY_ROUTES, buildPetEconomyGuidanceActions, formatPetEconomyValue,
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
-import { PET_CRAFTING_MATERIALS } from './pets/economy-phase-3.js';
+import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-phase-3.js';
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import {
@@ -2808,11 +2808,14 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   }
   const factionRow = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().catch(() => null);
   const adjusted = applyPetFactionBonus(job, factionRow?.faction, 'jobs');
-  const rewards = adjusted.rewards;
+  const setEffects = getPetActiveSetEffects(pet);
+  const jobSetPct = Math.max(0, Number(setEffects.job_reward_pct) || 0);
+  const scalableJobRewards = new Set(['pet_xp', 'community_xp', 'moon_gold', 'moon_crystals', 'style_tokens']);
+  const rewards = Object.fromEntries(Object.entries(adjusted.rewards).map(([rewardKey, value]) => [rewardKey, scalableJobRewards.has(rewardKey) && typeof value === 'number' && value > 0 ? Math.floor(value * (100 + jobSetPct) / 100) : value]));
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_job', idempotency_key: eventKey, event_key: eventKey,
     event_type: 'work', reason: key, rewards, touch_streak: true,
-    context: { source: options.source || 'telegram_bot', job_key: key, faction_bonus: adjusted.bonus },
+    context: { source: options.source || 'telegram_bot', job_key: key, faction_bonus: adjusted.bonus, equipment_set_bonus: jobSetPct ? { job_reward_pct: jobSetPct } : null },
   });
   return { ...awarded, reason: awarded.duplicate ? 'duplicate' : key, job: rewards, faction_bonus: adjusted.bonus };
 }
@@ -3688,6 +3691,13 @@ function orientPetArenaLastRound(battle, isPlayer2 = false) {
 }
 function buildPetArenaBattleId() { return `a-${crypto.randomUUID().replace(/-/g, '').slice(0, 10)}`; }
 function petArenaGearEffect(pet, slot) { return PET_SHOP_ITEMS[String(pet?.[`equipped_${slot}`] || '')]?.arena || {}; }
+function getPetActiveSetEffects(pet) {
+  const equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map((slot) => String(pet?.[`equipped_${slot}`] || '')).filter(Boolean);
+  return getActivePetSetBonuses(equipped).reduce((effects, set) => {
+    for (const [key, value] of Object.entries(set.effects || {})) effects[key] = Number(effects[key] || 0) + Number(value || 0);
+    return effects;
+  }, {});
+}
 function sumPetArenaGearPower(...items) {
   return items.reduce((total, item) => total + Object.entries(PET_ARENA_STAT_WEIGHTS).reduce((sum, [field, weight]) => sum + Math.max(0, Number(item?.[field] || 0)) * weight, 0), 0);
 }
@@ -3703,7 +3713,11 @@ function calculatePetArenaPower(pet, seed = '') {
   const condition = (s.health < 35 ? 0.65 : 1) * (s.energy < 30 ? 0.75 : 1);
   const morale = (s.happiness + s.cleanliness) / 20;
   const gear = sumPetArenaGearPower(weapon, armor, charm) + outfit + toy;
-  return Math.max(1, Math.round((s.level * 10 + Math.sqrt(s.pet_xp) + morale + gear + rng) * condition));
+  const setEffects = getPetActiveSetEffects(s);
+  const setPower = Math.max(0, Number(setEffects.arena_attack) || 0) * PET_ARENA_STAT_WEIGHTS.attack
+    + Math.max(0, Number(setEffects.arena_defense) || 0) * PET_ARENA_STAT_WEIGHTS.defense
+    + Math.max(0, Number(setEffects.arena_dodge) || 0) * PET_ARENA_STAT_WEIGHTS.dodge;
+  return Math.max(1, Math.round((s.level * 10 + Math.sqrt(s.pet_xp) + morale + gear + setPower + rng) * condition));
 }
 function buildPetArenaMenuReplyMarkup() { return { inline_keyboard: [[{ text: 'Find Pet Battle', callback_data: 'pet:arena:find' }, { text: 'Battle App Pet', callback_data: 'pet:arena:app' }], [{ text: 'My Arena Status', callback_data: 'pet:arena:status' }, { text: 'Cancel Queue', callback_data: 'pet:arena:cancel' }], [{ text: 'Gear Shop', callback_data: 'pet:shop' }, { text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }]] }; }
 function buildPetArenaMatchReplyMarkup(battleId) { return { inline_keyboard: [[{ text: 'Ready', callback_data: `pet:arena:ready:${battleId}` }, { text: 'Cancel', callback_data: `pet:arena:stop:${battleId}` }]] }; }
@@ -7052,8 +7066,8 @@ async function recordPetMiniAppPerformance(db, telegramId, body = {}) {
   const viewportWidth = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_width) || 0)));
   const viewportHeight = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_height) || 0)));
   if (!qualityTier || averageFps <= 0 || viewportWidth <= 1 || viewportHeight <= 1) return { accepted: false, reason: 'performance_sample_invalid' };
-  const deviceMemory = Number.isFinite(Number(body.device_memory)) ? Math.max(0, Math.min(64, Number(body.device_memory))) : null;
-  const hardwareConcurrency = Number.isFinite(Number(body.hardware_concurrency)) ? Math.max(1, Math.min(128, Math.floor(Number(body.hardware_concurrency)))) : null;
+  const deviceMemory = body.device_memory == null || body.device_memory === '' ? null : Number.isFinite(Number(body.device_memory)) ? Math.max(0, Math.min(64, Number(body.device_memory))) : null;
+  const hardwareConcurrency = body.hardware_concurrency == null || body.hardware_concurrency === '' ? null : Number.isFinite(Number(body.hardware_concurrency)) ? Math.max(1, Math.min(128, Math.floor(Number(body.hardware_concurrency)))) : null;
   await db.batch([
     db.prepare(`INSERT INTO telegram_pet_client_performance
       (sample_id, telegram_id, quality_tier, average_fps, slow_frame_pct, device_memory, hardware_concurrency, viewport_width, viewport_height, reduced_motion)

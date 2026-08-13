@@ -37,8 +37,8 @@ export const PET_EQUIPMENT_UPGRADE_COSTS = deepFreeze({
 });
 
 export const PET_EQUIPMENT_SETS = deepFreeze({
-  street_runner: { items: ['hoverboard', 'crown_jacket', 'lucky_charm'], bonuses: { 2: { explore_reward_pct: 5 }, 3: { run_sneak_pct: 8, arena_dodge: 2 } } },
-  crystal_beast: { items: ['crystal_bowl', 'cyber_armor', 'shield_charm'], bonuses: { 2: { run_survival_pct: 6 }, 3: { health_restore: 5, arena_defense: 3 } } },
+  street_runner: { items: ['hoverboard', 'crown_jacket', 'lucky_charm'], bonuses: { 2: { arena_dodge: 2 }, 3: { arena_attack: 3 } } },
+  crystal_beast: { items: ['crystal_bowl', 'cyber_armor', 'shield_charm'], bonuses: { 2: { arena_defense: 3 }, 3: { arena_attack: 2 } } },
   moon_enforcer: { items: ['moon_armor', 'street_armor', 'moon_blaster'], bonuses: { 2: { job_reward_pct: 5 }, 3: { arena_attack: 3, arena_defense: 3 } } },
 });
 

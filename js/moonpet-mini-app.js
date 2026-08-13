@@ -2488,8 +2488,12 @@
     if (radioPlayer) radioPlayer.pause();
   });
   window.addEventListener('pageshow', function (event) {
-    if (event.persisted && radioEnabled) setRadioEnabled(true, false);
+    if (event.persisted && radioRequestedOn) setRadioEnabled(true, false);
     if (event.persisted && audioEnabled && !radioRequestedOn) syncMoonpetScore();
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden || performanceSent) return;
+    performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
   });
 
   start();

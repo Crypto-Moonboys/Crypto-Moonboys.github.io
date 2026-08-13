@@ -205,6 +205,13 @@ const racedCraft = await processPetCraftRecipe(d1, 'live-1', 'battery_pack', 're
 assert.equal(racedCraft.accepted, false);
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_inventory WHERE telegram_id='live-1' AND asset_type='item' AND asset_key='energy_drink'").get().count, 0, 'stale affordability must not mint a crafted item');
 
+runtimeDb.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('live-1', 'item', 'clean_wipe', 1000005)").run();
+const fabricBeforeFullCraft = runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-1' AND material_key='moon_fabric'").get().quantity;
+const fullCraft = await processPetCraftRecipe(d1, 'live-1', 'clean_kit', 'request-craft-full');
+assert.equal(fullCraft.reason, 'crafting_inventory_full');
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='live-1' AND asset_type='item' AND asset_key='clean_wipe'").get().quantity, 1000005, 'crafting must never lower a legacy balance above the canonical cap');
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-1' AND material_key='moon_fabric'").get().quantity, fabricBeforeFullCraft, 'a full output stack must not consume materials');
+
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'race_item', 'toy')").run();
 d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_material_balances SET quantity=0 WHERE telegram_id='live-1' AND material_key='scrap_metal'").run(); };
 const racedUpgrade = await processPetEquipmentUpgrade(d1, 'live-1', 'race_item', 'request-upgrade-race');

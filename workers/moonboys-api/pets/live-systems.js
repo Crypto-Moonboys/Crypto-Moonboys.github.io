@@ -167,17 +167,21 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
   const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
   const wallet = Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)]));
   if (!Object.entries(recipe.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'crafting_materials_missing', cost: recipe.cost };
+  const outputBalance = await db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").bind(telegramId, recipe.output.item_key).first();
+  if (integer(outputBalance?.quantity) > 999999 - integer(recipe.output.quantity)) return { accepted: false, reason: 'crafting_inventory_full', recipe: { key: recipe.key, output: recipe.output } };
   const reservation = await reserveSystemEvent(db, telegramId, 'crafting', recipe.key, String(requestKey || crypto.randomUUID()), { cost: recipe.cost, output: recipe.output });
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'crafting_already_completed', recipe };
   const costs = Object.entries(recipe.cost).filter(([, amount]) => integer(amount) > 0);
   const checks = costs.map(() => 'AND EXISTS (SELECT 1 FROM telegram_pet_material_balances WHERE telegram_id=? AND material_key=? AND quantity>=?)').join(' ');
   const results = await db.batch([
-    db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected') ${checks}`)
-      .bind(reservation.id, ...costs.flatMap(([key, amount]) => [telegramId, key, amount])),
+    db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected') ${checks}
+      AND (NOT EXISTS (SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?)
+        OR EXISTS (SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=? AND quantity<=?))`)
+      .bind(reservation.id, ...costs.flatMap(([key, amount]) => [telegramId, key, amount]), telegramId, recipe.output.item_key, telegramId, recipe.output.item_key, 999999 - integer(recipe.output.quantity)),
     ...costs.map(([key, amount]) => db.prepare("UPDATE telegram_pet_material_balances SET quantity=quantity-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND material_key=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(amount, telegramId, key, reservation.id)),
     db.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
       SELECT ?, 'item', ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')
-      ON CONFLICT(telegram_id, asset_type, asset_key) DO UPDATE SET quantity=MIN(9999, quantity+excluded.quantity)`)
+      ON CONFLICT(telegram_id, asset_type, asset_key) DO UPDATE SET quantity=quantity+excluded.quantity`)
       .bind(telegramId, recipe.output.item_key, recipe.output.quantity, reservation.id),
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling'")
       .bind(JSON.stringify({ key: recipe.key, title: recipe.title, cost: recipe.cost, output: recipe.output }), reservation.id),

@@ -54,9 +54,9 @@ assert.ok(Object.keys(PET_EQUIPMENT_SETS).length >= 3, 'phase 3 must define mult
 const streetRunnerTwo = getActivePetSetBonuses(['hoverboard', 'crown_jacket']);
 assert.equal(streetRunnerTwo[0].set_key, 'street_runner');
 assert.equal(streetRunnerTwo[0].pieces, 2);
-assert.ok(streetRunnerTwo[0].effects.explore_reward_pct > 0);
+assert.ok(streetRunnerTwo[0].effects.arena_dodge > 0);
 const streetRunnerFull = getActivePetSetBonuses(['hoverboard', 'crown_jacket', 'lucky_charm']);
-assert.ok(streetRunnerFull[0].effects.arena_dodge > 0, 'three-piece bonus must add the full-set effect');
+assert.ok(streetRunnerFull[0].effects.arena_attack > 0, 'three-piece bonus must add the full-set effect');
 assert.deepEqual(getActivePetSetBonuses(['hoverboard']), [], 'one item must not activate a set bonus');
 assert.ok(Object.isFrozen(PET_EQUIPMENT_SETS.street_runner.items), 'set item arrays must be frozen');
 assert.ok(Object.isFrozen(PET_EQUIPMENT_SETS.street_runner.bonuses[3]), 'set bonus effect objects must be frozen');
