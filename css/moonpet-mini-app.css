@@ -176,3 +176,17 @@ button { font: inherit; }
   .utility-rail { top: -14px; margin: -14px -14px 12px; padding-inline: 14px; }
   .utility-dialog { width: min(100%, 620px); margin-inline: auto; }
 }
+
+
+/* AAA gameplay foundation: make Moon Run stakes and decisions scannable. */
+.run-brief { margin: 8px 0; padding: 8px; border: 1px solid var(--line); background: rgba(7,23,12,.75); }
+.run-opponent { margin-top: 7px; padding: 6px; border-left: 3px solid var(--danger); color: var(--hot); }
+.run-opponent small { display: block; margin-top: 3px; color: var(--dim); }
+.run-stakes { display: grid; gap: 3px; margin: 8px 0; padding: 8px; border: 1px solid #963e3e; background: rgba(40,5,5,.35); color: var(--danger); }
+.run-stakes span { color: var(--hot); font-size: 9px; }
+.run-decisions { grid-template-columns: 1fr; }
+.run-decisions .terminal-button { min-height: 66px; padding: 9px; text-align: left; }
+.run-decisions .terminal-button small { line-height: 1.35; }
+@media (min-width: 560px) {
+  .run-decisions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -4,20 +4,95 @@
     "name": "Street Rat",
     "role": "common",
     "difficulty": 1,
-    "reward_pool": ["scrap_metal"]
+    "intro": "Fast, hungry and never alone.",
+    "reward_pool": [
+      "scrap_metal"
+    ]
   },
   {
     "enemy_id": "rival_moonpet",
     "name": "Rival Moonpet",
     "role": "mid_encounter",
     "difficulty": 2,
-    "reward_pool": ["scrap_metal", "moon_fabric"]
+    "intro": "A street-trained companion with something to prove.",
+    "reward_pool": [
+      "scrap_metal",
+      "moon_fabric"
+    ]
   },
   {
     "enemy_id": "cyber_guard",
     "name": "Cyber Guard",
     "role": "elite",
     "difficulty": 3,
-    "reward_pool": ["moon_fabric", "relic_drop"]
+    "intro": "Armoured security built to punish direct attacks.",
+    "reward_pool": [
+      "moon_fabric",
+      "relic_drop"
+    ]
+  },
+  {
+    "enemy_id": "search_drone",
+    "name": "Search Drone",
+    "role": "hunter",
+    "difficulty": 2,
+    "intro": "Tracks heat signatures and broadcasts your route.",
+    "reward_pool": [
+      "scrap_metal"
+    ]
+  },
+  {
+    "enemy_id": "glitch_sprite",
+    "name": "Glitch Sprite",
+    "role": "trickster",
+    "difficulty": 2,
+    "intro": "A corrupted arcade mascot that rewrites the room rules.",
+    "reward_pool": [
+      "scrap_metal",
+      "moon_fabric"
+    ]
+  },
+  {
+    "enemy_id": "market_hustler",
+    "name": "Market Hustler",
+    "role": "controller",
+    "difficulty": 2,
+    "intro": "Wins by making the player choose too quickly.",
+    "reward_pool": [
+      "moon_fabric"
+    ]
+  },
+  {
+    "enemy_id": "sewer_mutt",
+    "name": "Sewer Mutt",
+    "role": "ambusher",
+    "difficulty": 3,
+    "intro": "Territorial, silent and strongest in flooded lanes.",
+    "reward_pool": [
+      "scrap_metal",
+      "moon_fabric"
+    ]
+  },
+  {
+    "enemy_id": "drone_enforcer",
+    "name": "Drone Enforcer",
+    "role": "elite",
+    "difficulty": 4,
+    "intro": "Learns repeated moves and closes predictable routes.",
+    "reward_pool": [
+      "moon_fabric",
+      "relic_drop"
+    ]
+  },
+  {
+    "enemy_id": "subway_champion",
+    "name": "Subway Champion",
+    "role": "elite",
+    "difficulty": 4,
+    "intro": "A patient fighter that turns panic into punishment.",
+    "reward_pool": [
+      "moon_fabric",
+      "evolution_fragment"
+    ]
   }
 ]

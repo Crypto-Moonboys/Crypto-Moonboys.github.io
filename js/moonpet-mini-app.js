@@ -395,9 +395,22 @@
     var run = state.run;
     var runBody;
     if (run) {
-      runBody = '<div class="line complete">ENDLESS MOON RUN // ' + escapeHtml(words(run.room && run.room.title || run.checkpoint || 'street')) + '</div><div class="line">ROOM ' + number(run.current_room != null ? run.current_room : run.depth) + '/' + number(run.max_room || run.max_depth) + ' // DISTRICT TIER ' + number(run.difficulty) + ' // SCORE ' + number(run.score) + '</div><div class="line muted">NEXT CHECKPOINT: ' + number(run.next_checkpoint) + ' ROOM(S) // UNBANKED: ' + number(run.unbanked_pet_xp) + ' XP / ' + number(run.unbanked_moon_gold) + ' GOLD</div><div class="button-grid">' +
-        (run.choices || []).map(function (choice) { return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }); }).join('') +
-        button('EXTRACT', 'run_extract', { run_id: run.run_id }, { danger: true }) + '</div>';
+      var runRoom = run.room || {};
+      var opponent = runRoom.opponent || {};
+      var unbankedSummary = number(run.unbanked_pet_xp) + ' XP // ' + number(run.unbanked_moon_gold) + ' GOLD // ' + number(run.unbanked_moon_crystals) + ' GEMS // ' + number(run.unbanked_style_tokens) + ' STYLE';
+      var roomBrief = '<div class="run-brief"><div class="line complete">ROOM SIGNAL // ' + escapeHtml(words(runRoom.title || run.checkpoint || 'street')) + '</div>' +
+        (runRoom.description ? '<div class="line">' + escapeHtml(runRoom.description) + '</div>' : '') +
+        (runRoom.objective ? '<div class="line muted">OBJECTIVE // ' + escapeHtml(runRoom.objective) + '</div>' : '') +
+        (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role || 'enemy')) + ' // THREAT ' + number(runRoom.threat) + '/5' + (opponent.intro ? '<small>' + escapeHtml(opponent.intro) + '</small>' : '') + '</div>' : '') +
+        meter('THREAT', number(runRoom.threat) * 20) + '</div>';
+      var runDecisionButtons = (run.choices || []).map(function (choice) {
+        return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }, { detail: choice.detail || words(choice.type) });
+      }).join('');
+      runBody = '<div class="line complete">ENDLESS MOON RUN // DISTRICT TIER ' + number(run.difficulty) + '</div><div class="line">ROOM ' + number(run.expected_step_index || Number(run.current_room != null ? run.current_room : run.depth || 0) + 1) + '/' + number(run.max_room || run.max_depth) + ' // SCORE ' + number(run.score) + ' // NEXT CHECKPOINT ' + number(run.next_checkpoint) + '</div>' +
+        roomBrief +
+        '<div class="run-stakes"><strong>UNBANKED // ' + escapeHtml(unbankedSummary) + '</strong><span>EXTRACT TO SECURE IT. A FAILED ROOM LOSES THE BAG.</span></div>' +
+        '<div class="button-grid run-decisions">' + runDecisionButtons +
+        button('EXTRACT & BANK', 'run_extract', { run_id: run.run_id }, { danger: true, detail: 'END RUN AND SECURE ' + unbankedSummary }) + '</div>';
     } else {
       runBody = '<div class="line">NO ACTIVE RUN.</div><div class="button-grid">' + button('START MOON RUN', 'run_start') + button('DAILY RUN', 'daily_run_start') + '</div>';
     }
@@ -626,7 +639,8 @@
     var parts = [result.accepted ? 'ACTION ACCEPTED' : 'ACTION BLOCKED', words(result.reason)];
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
     if (terminalResult) parts.push('OUTCOME ' + words(terminalResult.replace('player1', 'you').replace('player2', 'opponent')));
-    if (result.result_copy) parts.push(String(result.result_copy));
+    var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
+    if (resultCopy) parts.push(String(resultCopy));
     if (result.damage) parts.push('DAMAGE ' + number(result.damage));
     if (result.pet_xp_awarded) parts.push('+' + number(result.pet_xp_awarded) + ' PET XP');
     if (gains.length) parts.push(gains.join(' // '));
@@ -652,7 +666,8 @@
       if (Number(entry[1]) > 0 && typeof entry[1] !== 'object') lines.push('+' + number(entry[1]) + ' ' + words(entry[0]));
       return lines.length >= 3;
     });
-    if (lines.length < 3 && result.result_copy) lines.push(compactFeedback(result.result_copy, 34));
+    var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
+    if (lines.length < 3 && resultCopy) lines.push(compactFeedback(resultCopy, 34));
     if (!result.accepted && lines.length < 3 && result.reason) lines.push(words(compactFeedback(result.reason, 30)));
     return { tone: result.accepted ? 'success' : 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
   }

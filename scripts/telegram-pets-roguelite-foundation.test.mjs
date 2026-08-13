@@ -113,13 +113,12 @@ for (const region of Object.values(PET_ROGUELITE_REGIONS)) {
   for (const field of ['difficulty', 'room_pool', 'enemy_pool', 'boss_pool', 'reward_pool']) assert.ok(region[field], `region must expose ${field}`);
   for (const forbidden of ['xp', 'level', 'progression', 'currency']) assert.equal(region[forbidden], undefined, `regions cannot add a separate ${forbidden} system`);
 }
-assert.equal(Object.keys(PET_ROGUELITE_ROOMS).length, 10, 'Moon Alley must ship ten room definitions');
-assert.deepEqual(Object.values(PET_ROGUELITE_ROOMS).map(({ name }) => name), [
-  'Alley Entrance', 'Graffiti Wall', 'Rival Encounter', 'Hidden Cache', 'Street Market',
-  'Underground Tunnel', 'Police Heat', 'Neon Shortcut', 'Elite Encounter', 'Boss Room',
-]);
-assert.deepEqual(Object.values(PET_ROGUELITE_ENEMIES).map(({ name }) => name), ['Street Rat', 'Rival Moonpet', 'Cyber Guard']);
-assert.deepEqual(Object.values(PET_ROGUELITE_BOSSES).map(({ name }) => name), ['Alley King']);
+assert.ok(Object.keys(PET_ROGUELITE_ROOMS).length >= 20, 'Moon Alley must ship at least twenty authored room definitions');
+assert.ok(Object.values(PET_ROGUELITE_ROOMS).every(({ description, objective, threat, engine_choices }) =>
+  description && objective && Number(threat) >= 1 && Array.isArray(engine_choices) && engine_choices.length >= 2),
+  'every authored room must explain its fiction, objective, threat and meaningful choices');
+assert.ok(Object.keys(PET_ROGUELITE_ENEMIES).length >= 9, 'Moon Alley must ship at least nine enemy identities');
+assert.ok(Object.keys(PET_ROGUELITE_BOSSES).length >= 3, 'Moon Alley must ship at least three boss identities');
 assert.equal(Object.keys(PET_ROGUELITE_RELICS).length, 10, 'Moon Alley must ship ten persistent relic definitions');
 assert.equal(Object.keys(PET_RUN_MODIFIERS).length, 10, 'Moon Alley must ship ten temporary run modifiers');
 assert.equal(validatePetRogueliteContent(), true);
