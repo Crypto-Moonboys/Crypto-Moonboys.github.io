@@ -60,3 +60,11 @@ This pass adds 18 authored district encounters across all six regions, three ser
 | Overall gameplay foundation | 7.1 | 7.6 |
 
 The next highest-impact work is Arena/Kaiju tactical depth: opponent intent, build counters, multi-round decisions, and stronger post-match progression identity.
+
+## August 13 follow-up: integrity, feedback, and launch clarity
+
+The full-surface audit found five release-critical polish defects outside the combat loops: persisted D1 timestamps were parsed as local time outside UTC, combat UI colors referenced undefined CSS tokens, direct browser entry ended at a dead error panel, interaction feedback was silent, and the public guides still described the retired command-first flow.
+
+This pass makes persisted timestamps UTC-safe across care decay, cooldowns, activities, digest retry timing, and roguelite duration; invalid activity timestamps now fail closed. It also adds opt-in procedural interface audio with a persistent toggle, a signed Telegram launch fallback, explicit combat color tokens, current Moonpet OS documentation, and cache-busted Mini App assets.
+
+The remaining AAA gap is content and production depth rather than broken plumbing: authored music and sound design, richer persistent buildcraft, live telemetry-led balance, broader encounter variety, and profiling on representative low-end Telegram devices are still required before describing Moonpet as a content-complete AAA game.

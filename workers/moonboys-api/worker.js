@@ -399,7 +399,9 @@ async function hasDailyClaimToday(db, telegramId) {
 /** Format a SQLite datetime string to a human-readable "N time ago" label. */
 function timeAgo(dateStr) {
   if (!dateStr) return '';
-  const diffMs  = Date.now() - new Date(dateStr).getTime();
+  const parsed = parseSqliteTs(dateStr);
+  if (parsed == null) return '';
+  const diffMs  = Math.max(0, Date.now() - parsed);
   const diffSec = Math.floor(diffMs / 1000);
   if (diffSec < 60)    return 'just now';
   if (diffSec < 3600)  return Math.floor(diffSec / 60) + 'm ago';
@@ -1159,7 +1161,8 @@ function isoDayFromMs(ms = Date.now()) {
 
 function parseSqliteTs(value) {
   if (!value) return null;
-  const text = String(value).includes('T') ? String(value) : `${String(value).replace(' ', 'T')}Z`;
+  const raw = String(value).trim();
+  const text = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw) ? raw : `${raw.replace(' ', 'T')}Z`;
   const ts = Date.parse(text);
   return Number.isFinite(ts) ? ts : null;
 }
@@ -1825,7 +1828,7 @@ function calculatePetHealth(pet) {
 }
 
 function applyPetDecay(pet, now = new Date()) {
-  const last = new Date(pet.last_decay_at || pet.updated_at || pet.created_at || now.toISOString()).getTime();
+  const last = parseSqliteTs(pet.last_decay_at || pet.updated_at || pet.created_at) ?? now.getTime();
   const elapsedHours = Math.max(0, (now.getTime() - last) / 3600000);
   if (elapsedHours < 0.01) return pet;
   pet.hunger = clampPetStat(Number(pet.hunger || 0) + elapsedHours * 4.5);
@@ -2798,7 +2801,7 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   }
   const lastWork = await db.prepare(`SELECT created_at FROM telegram_pet_events WHERE telegram_id = ? AND event_type = 'work' AND status = 'accepted' ORDER BY created_at DESC LIMIT 1`).bind(telegramId).first().catch(() => null);
   if (lastWork?.created_at) {
-    const elapsedSeconds = (now.getTime() - new Date(lastWork.created_at).getTime()) / 1000;
+    const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastWork.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PETS_ACTION_COOLDOWN_SECONDS) {
       return { accepted: false, reason: 'cooldown', retry_after_seconds: Math.max(1, Math.ceil(PETS_ACTION_COOLDOWN_SECONDS - elapsedSeconds)), pet };
     }
@@ -4033,11 +4036,11 @@ function getRecoverablePetActivityClaim(session) {
   const metadata = parsePetActivitySessionMetadata(session);
   const computed = metadata.computed;
   if (session?.status !== 'completed' || metadata.claim_state !== 'claiming' || !computed?.rewards) return null;
-  const claimedAt = new Date(session.claimed_at || '');
+  const claimedAtMs = parseSqliteTs(session.claimed_at);
   return {
     computed,
     eventKey: metadata.reward_idempotency_key || buildStablePetEventKey(['pet_activity_claim', session.telegram_id, session.id]),
-    rewardNow: Number.isNaN(claimedAt.getTime()) ? new Date() : claimedAt,
+    rewardNow: claimedAtMs == null ? new Date() : new Date(claimedAtMs),
   };
 }
 
@@ -4139,7 +4142,9 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
   if (recovery) {
     ({ computed, eventKey, rewardNow } = recovery);
   } else {
-    const elapsedSeconds = Math.floor((now.getTime() - new Date(session.started_at).getTime()) / 1000);
+    const startedAtMs = parseSqliteTs(session.started_at);
+    if (startedAtMs == null) return { accepted: false, reason: 'activity_timestamp_invalid', session };
+    const elapsedSeconds = Math.floor((now.getTime() - startedAtMs) / 1000);
     if (elapsedSeconds < PET_ACTIVITY_MIN_SECONDS) {
       return { accepted: false, reason: 'activity_too_short', retry_after_seconds: PET_ACTIVITY_MIN_SECONDS - elapsedSeconds, session };
     }
@@ -4296,7 +4301,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     ORDER BY created_at DESC LIMIT 1
   `).bind(telegramId, normalizedAction).first().catch(() => null);
   if (lastAction?.created_at) {
-    const elapsedSeconds = (now.getTime() - new Date(lastAction.created_at).getTime()) / 1000;
+    const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAction.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PETS_ACTION_COOLDOWN_SECONDS) {
       return {
         accepted: false,
@@ -4468,7 +4473,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     ORDER BY created_at DESC LIMIT 1
   `).bind(telegramId).first().catch(() => null);
   if (lastTrade?.created_at) {
-    const elapsedSeconds = (now.getTime() - new Date(lastTrade.created_at).getTime()) / 1000;
+    const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastTrade.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PET_TRADE_COOLDOWN_SECONDS) {
       return {
         accepted: false,
@@ -4558,7 +4563,7 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
     ORDER BY created_at DESC LIMIT 1
   `).bind(telegramId).first().catch(() => null);
   if (lastAdventure?.created_at) {
-    const elapsedSeconds = (now.getTime() - new Date(lastAdventure.created_at).getTime()) / 1000;
+    const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAdventure.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PET_ADVENTURE_COOLDOWN_SECONDS) {
       return {
         accepted: false,
@@ -6036,7 +6041,7 @@ async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
   if (status === 'sent') {
     return { claimed: false, reason: 'already_sent' };
   }
-  const updatedAtTs = Date.parse(String(existing?.updated_at || ''));
+  const updatedAtTs = parseSqliteTs(existing?.updated_at);
   const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= retryCutoffTs);
   if (!forceRetry && status === 'pending' && !isStalePending) {
     return { claimed: false, reason: 'pending_recent' };
@@ -10651,7 +10656,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-aaa-combat-intelligence`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-aaa-integrity-audio`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -12259,7 +12264,7 @@ async function cmdGkHelp(tok, chatId) {
 
 function formatPetActivityLine(session, now = new Date()) {
   if (!session) return '';
-  const elapsed = Math.max(0, Math.floor((now.getTime() - new Date(session.started_at).getTime()) / 1000));
+  const elapsed = Math.max(0, Math.floor((now.getTime() - (parseSqliteTs(session.started_at) ?? now.getTime())) / 1000));
   const remaining = Math.max(0, PET_ACTIVITY_MIN_SECONDS - elapsed);
   return `${escapeHtml(session.activity_type)}: ${formatPetDuration(elapsed)} elapsed, ${remaining > 0 ? `claim ready in ${formatPetDuration(remaining)}` : 'claim ready now'}`;
 }
@@ -12596,7 +12601,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   ]);
   const level = getPetLevel(pet.pet_xp);
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
-  const elapsedSeconds = activity ? Math.max(0, Math.floor((now.getTime() - new Date(activity.started_at).getTime()) / 1000)) : 0;
+  const elapsedSeconds = activity ? Math.max(0, Math.floor((now.getTime() - (parseSqliteTs(activity.started_at) ?? now.getTime())) / 1000)) : 0;
   const boss = getPetWeeklyBoss(weekKey);
   return {
     pet,

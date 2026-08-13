@@ -53,6 +53,14 @@ function safeJson(value) {
   return JSON.stringify(value == null ? {} : value);
 }
 
+function parsePersistedTimestamp(value, fallback = Date.now()) {
+  if (!value) return fallback;
+  const raw = String(value).trim();
+  const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw) ? raw : `${raw.replace(' ', 'T')}Z`;
+  const timestamp = Date.parse(normalized);
+  return Number.isFinite(timestamp) ? timestamp : fallback;
+}
+
 function normalizeCollection(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   return Object.fromEntries(Object.entries(value)
@@ -526,7 +534,7 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
 
 export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
   if (!PET_RUN_STATUSES.includes(status) || status === 'active') throw new Error('invalid_terminal_run_status');
-  const durationSeconds = Math.max(0, Math.floor((Date.now() - new Date(run.started_at || Date.now()).getTime()) / 1000));
+  const durationSeconds = Math.max(0, Math.floor((Date.now() - parsePersistedTimestamp(run.started_at)) / 1000));
   const finalizationId = `${run.run_id}:end`;
   const roomsCompleted = positiveInteger(analytics.rooms_completed ?? run.current_room);
   const terminalAnalytics = {
