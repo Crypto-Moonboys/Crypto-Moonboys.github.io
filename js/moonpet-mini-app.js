@@ -630,7 +630,6 @@
     lifecycleCeremony = ceremony;
     lifecycleCeremonyStartedAt = performance.now();
     lifecycleCeremonyUntil = lifecycleCeremonyStartedAt + Math.max(3200, Number(ceremony.duration || 6200));
-    haptic('success');
     if (reducedMotion) {
       drawWorld(lifecycleCeremonyStartedAt);
       var activeCeremony = ceremony;
