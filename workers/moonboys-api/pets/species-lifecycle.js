@@ -99,7 +99,7 @@ export async function ensureMoonpetLifecycle(db, telegramId) {
       .bind(id, crypto.randomUUID(), HATCH_PROGRESS, id).run();
     row = await readLifecycle(db, id);
   }
-  if (row && !row.species_id) {
+  if (row && row.phase !== 'egg' && !row.species_id) {
     const derived = await deriveIdentity(row.identity_seed, safeJson(row.incubation_json));
     await db.prepare(`UPDATE telegram_pet_lifecycle SET species_id=?, palette_id=?, marking_id=?, eye_style=?, temperament=?,
       innate_traits_json=?, rare_route_index=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND species_id IS NULL`)
