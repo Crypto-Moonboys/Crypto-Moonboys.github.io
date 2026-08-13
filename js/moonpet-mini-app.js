@@ -51,6 +51,11 @@
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var audioContext = null;
   var audioEnabled = readAudioPreference();
+  var radioPlayer = null;
+  var radioLoadPromise = null;
+  var radioEnabled = readRadioPreference();
+  var radioRequestedOn = radioEnabled;
+  var radioRequestGeneration = 0;
 
   var app = document.getElementById('moonpet-app');
   var canvas = document.getElementById('moonpet-canvas');
@@ -111,6 +116,70 @@
 
   function readAudioPreference() {
     try { return window.localStorage.getItem('moonpet-audio') !== 'off'; } catch (_) { return true; }
+  }
+
+  function readRadioPreference() {
+    try { return window.localStorage.getItem('arcade_radio_on') === 'true'; } catch (_) { return false; }
+  }
+
+  function saveRadioPreference(on) {
+    try { window.localStorage.setItem('arcade_radio_on', on ? 'true' : 'false'); } catch (_) {}
+  }
+
+  function loadRadioPlayer() {
+    if (radioPlayer) return Promise.resolve(radioPlayer);
+    if (!radioLoadPromise) {
+      radioLoadPromise = import('/js/arcade/core/radio.js?v=20260813-moonpet-radio').then(function (radio) {
+        radioPlayer = new Audio(radio.ARCADE_RADIO_URL);
+        radioPlayer.preload = 'none';
+        radioPlayer.volume = 0.5;
+        return radioPlayer;
+      }).catch(function (error) {
+        radioLoadPromise = null;
+        throw error;
+      });
+    }
+    return radioLoadPromise;
+  }
+
+  async function setRadioEnabled(on, announce) {
+    radioRequestedOn = Boolean(on);
+    var requestGeneration = ++radioRequestGeneration;
+    if (!on) {
+      if (radioPlayer) radioPlayer.pause();
+      radioEnabled = false;
+      saveRadioPreference(false);
+      if (state) render();
+      if (announce !== false) tell('GRAFFPUNKS RADIO OFFLINE.');
+      return false;
+    }
+    if (state) render();
+    try {
+      var player = await loadRadioPlayer();
+      if (requestGeneration !== radioRequestGeneration || !radioRequestedOn) return false;
+      await player.play();
+      if (requestGeneration !== radioRequestGeneration) {
+        if (!radioRequestedOn) player.pause();
+        return false;
+      }
+      radioEnabled = true;
+      saveRadioPreference(true);
+      if (state) render();
+      if (announce !== false) tell('GRAFFPUNKS RADIO LIVE.');
+      return true;
+    } catch (_) {
+      radioRequestedOn = false;
+      radioEnabled = false;
+      saveRadioPreference(false);
+      if (state) render();
+      if (announce !== false) tell('RADIO STREAM BLOCKED. TAP RADIO TO RETRY.', 'danger');
+      return false;
+    }
+  }
+
+  function toggleRadio() {
+    haptic('light');
+    return setRadioEnabled(!radioRequestedOn, true);
   }
 
   function ensureAudio() {
@@ -268,6 +337,7 @@
       '<button type="button" class="utility-button" data-utility="guide">HOW TO PLAY</button>' +
       '<button type="button" class="utility-button" data-utility="leaderboard">LEADERBOARD</button>' +
       '<button type="button" class="utility-button" data-utility="audio" aria-pressed="' + (audioEnabled ? 'true' : 'false') + '">AUDIO ' + (audioEnabled ? 'ON' : 'OFF') + '</button>' +
+      '<button type="button" class="utility-button" data-utility="radio" aria-pressed="' + (radioRequestedOn ? 'true' : 'false') + '">RADIO ' + (radioRequestedOn ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
       '</nav>';
   }
@@ -1005,6 +1075,7 @@
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
       else if (utility.dataset.utility === 'audio') toggleAudio();
+      else if (utility.dataset.utility === 'radio') toggleRadio();
       else if (utility.dataset.utility === 'sync') syncState();
       else if (utility.dataset.utility === 'retry') window.location.reload();
       return;
@@ -2318,6 +2389,7 @@
       var data = await post('/telegram-pets/app/state');
       state = data.state;
       render();
+      if (radioEnabled) setRadioEnabled(true, false);
       tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'MOON EGG READY FOR INITIALISATION.');
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
       await showPendingNotices();
@@ -2329,6 +2401,14 @@
       await typeBoot(['STARTUP FAULT', error.message || 'API UNAVAILABLE', 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
     }
   }
+
+  window.addEventListener('pagehide', function () {
+    radioRequestGeneration += 1;
+    if (radioPlayer) radioPlayer.pause();
+  });
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted && radioEnabled) setRadioEnabled(true, false);
+  });
 
   start();
 }());

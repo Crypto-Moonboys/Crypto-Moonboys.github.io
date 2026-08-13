@@ -12,8 +12,10 @@
  * Safe to call multiple times — only mounts once per page load.
  */
 
-const RADIO_URL       = 'http://stream.radiojar.com/2qm1fc5kb';
-const STORAGE_KEY     = 'arcade_radio_on';
+export const ARCADE_RADIO_URL = 'https://stream.radiojar.com/2qm1fc5kb';
+export const ARCADE_RADIO_STORAGE_KEY = 'arcade_radio_on';
+const RADIO_URL       = ARCADE_RADIO_URL;
+const STORAGE_KEY     = ARCADE_RADIO_STORAGE_KEY;
 const PANEL_ID        = 'arcade-radio-panel';
 const LABEL_ON        = '📻 GraffPUNKS Radio  ·  ON';
 const LABEL_OFF       = '📻 GraffPUNKS Radio  ·  OFF';

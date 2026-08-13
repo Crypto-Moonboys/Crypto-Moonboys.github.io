@@ -136,7 +136,7 @@ button { font: inherit; }
 /* Moonpet navigation and discoverability utilities */
 .utility-rail {
   position: sticky; top: -10px; z-index: 24; display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px;
+  grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px;
   margin: -10px -10px 10px; padding: 7px 10px;
   border-bottom: 1px solid var(--line); background: rgba(2,9,5,.97);
   box-shadow: 0 3px 0 var(--shadow);
