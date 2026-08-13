@@ -129,7 +129,9 @@ assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE t
 const usedState = await buildPetLiveSystemsState(d1, 'live-1', { level: 100, moon_gold: 10000, moon_crystals: 100, style_tokens: 500 }, runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get(), [], []);
 assert.equal(usedState.regions.find((region) => region.key === 'moon_alley').used_today, true, 'completed daily districts must be disabled in refreshed state');
 assert.equal(usedState.regions.find((region) => region.key === 'neon_rooftops').mission.choices.length, 3);
+assert.ok(usedState.regions.find((region) => region.key === 'neon_rooftops').mission.complication?.key, 'daily district missions must include a deterministic authored complication');
 assert.equal(usedState.chains[0].scene.choices.length, 2);
+assert.equal(usedState.equipment_sets.length, 3, 'live state must expose persistent loadout set progress');
 
 seedPlayer('lease-race');
 const leaseRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='lease-race'").get();

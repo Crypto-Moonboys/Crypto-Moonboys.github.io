@@ -51,11 +51,22 @@
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var audioContext = null;
   var audioEnabled = readAudioPreference();
+  var scoreTimer = 0;
+  var scoreStep = 0;
   var radioPlayer = null;
   var radioLoadPromise = null;
   var radioEnabled = readRadioPreference();
   var radioRequestedOn = radioEnabled;
   var radioRequestGeneration = 0;
+  var deviceMemory = Number(navigator.deviceMemory || 0);
+  var hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
+  var renderQuality = reducedMotion || deviceMemory && deviceMemory <= 2 || hardwareConcurrency && hardwareConcurrency <= 2 ? 'low'
+    : deviceMemory && deviceMemory <= 4 || hardwareConcurrency && hardwareConcurrency <= 4 ? 'medium' : 'high';
+  var performanceFrames = 0;
+  var performanceSlowFrames = 0;
+  var performanceStartedAt = 0;
+  var performanceLastFrameAt = 0;
+  var performanceSent = false;
 
   var app = document.getElementById('moonpet-app');
   var canvas = document.getElementById('moonpet-canvas');
@@ -129,7 +140,7 @@
   function loadRadioPlayer() {
     if (radioPlayer) return Promise.resolve(radioPlayer);
     if (!radioLoadPromise) {
-      radioLoadPromise = import('/js/arcade/core/radio.js?v=20260814-moonpet-workshop').then(function (radio) {
+      radioLoadPromise = import('/js/arcade/core/radio.js?v=20260814-moonpet-aaa-pass').then(function (radio) {
         radioPlayer = new Audio(radio.ARCADE_RADIO_URL);
         radioPlayer.preload = 'none';
         radioPlayer.volume = 0.5;
@@ -149,6 +160,7 @@
       if (radioPlayer) radioPlayer.pause();
       radioEnabled = false;
       saveRadioPreference(false);
+      syncMoonpetScore();
       if (state) render();
       if (announce !== false) tell('GRAFFPUNKS RADIO OFFLINE.');
       return false;
@@ -164,6 +176,7 @@
       }
       radioEnabled = true;
       saveRadioPreference(true);
+      syncMoonpetScore();
       if (state) render();
       if (announce !== false) tell('GRAFFPUNKS RADIO LIVE.');
       return true;
@@ -171,6 +184,7 @@
       radioRequestedOn = false;
       radioEnabled = false;
       saveRadioPreference(false);
+      syncMoonpetScore();
       if (state) render();
       if (announce !== false) tell('RADIO STREAM BLOCKED. TAP RADIO TO RETRY.', 'danger');
       return false;
@@ -218,16 +232,52 @@
     oscillator.stop(now + cue[1] + 0.01);
   }
 
+  function scoreMotif() {
+    var motifs = {
+      home: [110, 165, 220, 165, 130, 196, 247, 196], missions: [130, 196, 261, 196, 146, 220, 293, 220],
+      explore: [98, 147, 196, 294, 110, 165, 220, 330], work: [123, 185, 247, 185, 138, 207, 277, 207],
+      economy: [147, 220, 294, 440, 165, 247, 330, 494], profile: [165, 247, 330, 247, 185, 277, 370, 277],
+    };
+    return motifs[activeScreen] || motifs.home;
+  }
+
+  function playScoreStep() {
+    if (!audioEnabled || radioRequestedOn || document.hidden) return;
+    var audio = ensureAudio();
+    if (!audio || audio.state === 'closed') return;
+    var motif = scoreMotif();
+    var frequency = motif[scoreStep % motif.length];
+    var now = audio.currentTime;
+    var oscillator = audio.createOscillator();
+    var bass = audio.createOscillator();
+    var gain = audio.createGain();
+    oscillator.type = scoreStep % 4 ? 'triangle' : 'square'; oscillator.frequency.setValueAtTime(frequency, now);
+    bass.type = 'sine'; bass.frequency.setValueAtTime(frequency / 2, now);
+    gain.gain.setValueAtTime(0.0001, now); gain.gain.exponentialRampToValueAtTime(0.012, now + 0.018); gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
+    oscillator.connect(gain); bass.connect(gain); gain.connect(audio.destination);
+    oscillator.start(now); bass.start(now); oscillator.stop(now + 0.35); bass.stop(now + 0.35);
+    scoreStep += 1;
+  }
+
+  function syncMoonpetScore() {
+    window.clearInterval(scoreTimer); scoreTimer = 0;
+    if (!audioEnabled || radioRequestedOn) return;
+    playScoreStep();
+    scoreTimer = window.setInterval(playScoreStep, 520);
+  }
+
   function toggleAudio() {
     audioEnabled = !audioEnabled;
     try { window.localStorage.setItem('moonpet-audio', audioEnabled ? 'on' : 'off'); } catch (_) {}
     if (audioEnabled) playAudioCue('success');
+    syncMoonpetScore();
     render();
     tell('AUDIO ' + (audioEnabled ? 'ONLINE.' : 'MUTED.'));
   }
 
   function haptic(kind) {
     playAudioCue(kind);
+    if (audioEnabled && !scoreTimer && !radioRequestedOn) syncMoonpetScore();
     try {
       if (!tg || !tg.HapticFeedback) return;
       if (kind === 'success' || kind === 'error') tg.HapticFeedback.notificationOccurred(kind);
@@ -685,8 +735,14 @@
       return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable, detail: (recipe.unlocked ? '' : 'REQUIRES LEVEL ' + number(recipe.min_level) + ' // ') + (recipe.detail || '') + ' // COST ' + costText(recipe.cost) + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
     }).join('');
     var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div>'; }).join('');
+    var equipmentSets = (live.equipment_sets || []).map(function (set) {
+      var bonuses = (set.active_bonuses || []).map(function (bonus) { return number(bonus.required) + ' PIECE // ' + valueText(bonus.effects); }).join(' / ');
+      return '<div class="line ' + (set.pieces >= 2 ? 'complete' : '') + '">' + escapeHtml(words(set.key)) + ' // EQUIPPED ' + number(set.pieces) + '/' + number(set.total_pieces) + ' // OWNED ' + number(set.owned_pieces) + '</div>' +
+        '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
+    }).join('');
     var cosmetics = (live.cosmetics || []).map(function (item) { return button(words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable || item.unlocked && !item.repeatable, detail: (item.unlocked ? 'OWNED x' + number(item.quantity) + ' // ' : '') + costText(item.cost) }); }).join('');
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>', 'equipment') +
+      panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('CRAFTING WORKSHOP', '<div class="button-grid">' + crafting + '</div>', 'crafting') +
       panel('RELIC VAULT', relics || '<div class="line muted">NO RELICS RECOVERED.</div>', 'relics') +
@@ -2204,7 +2260,7 @@
     ctx.restore();
     var pulse = reducedMotion ? 0 : Math.floor(time / 85);
     if (animationMode === 'battle' || animationMode === 'evolve' || animationMode === 'celebrate') {
-      for (var spark = 0; spark < 9; spark += 1) {
+      for (var spark = 0; spark < (renderQuality === 'low' ? 3 : renderQuality === 'medium' ? 6 : 9); spark += 1) {
         var sparkX = (spark * 41 + pulse * 7) % 320;
         var sparkY = 31 + (spark * 19 + pulse * 5) % 132;
         drawPixelRect(sparkX, sparkY, 3, 3, spark % 2 ? color : scene.accent);
@@ -2351,7 +2407,13 @@
   }
 
   function frame(time) {
-    drawWorld(time);
+    if (!performanceStartedAt) performanceStartedAt = time;
+    var delta = performanceLastFrameAt ? time - performanceLastFrameAt : 16.67;
+    performanceLastFrameAt = time;
+    performanceFrames += 1;
+    if (delta > 34) performanceSlowFrames += 1;
+    var skipLowFrame = renderQuality === 'low' && performanceFrames % 2 === 1;
+    if (!skipLowFrame) drawWorld(time);
     if (animationUntil <= time) { animationMode = 'idle'; animationLabel = ''; }
     if (companionGreetingUntil > 0 && companionGreetingUntil <= time) {
       companionGreeting = '';
@@ -2359,6 +2421,20 @@
     }
     if (lifecycleCeremony && lifecycleCeremonyUntil <= time) clearLifecycleCeremony(false);
     if (reducedMotion) return;
+    if (performanceFrames === 300) {
+      var sampleFps = performanceFrames * 1000 / Math.max(1, time - performanceStartedAt);
+      if (sampleFps < 42 && renderQuality === 'high') renderQuality = 'medium';
+      if (sampleFps < 28) renderQuality = 'low';
+    }
+    if (!performanceSent && performanceFrames >= 600 && state) {
+      performanceSent = true;
+      var elapsed = Math.max(1, time - performanceStartedAt);
+      post('/telegram-pets/app/performance', {
+        quality_tier: renderQuality, average_fps: Math.min(240, performanceFrames * 1000 / elapsed), slow_frame_pct: performanceSlowFrames * 100 / performanceFrames,
+        device_memory: deviceMemory || null, hardware_concurrency: hardwareConcurrency || null,
+        viewport_width: Math.max(1, window.innerWidth), viewport_height: Math.max(1, window.innerHeight), reduced_motion: reducedMotion,
+      }).catch(function () {});
+    }
     requestAnimationFrame(frame);
   }
 
@@ -2407,11 +2483,13 @@
   }
 
   window.addEventListener('pagehide', function () {
+    window.clearInterval(scoreTimer); scoreTimer = 0;
     radioRequestGeneration += 1;
     if (radioPlayer) radioPlayer.pause();
   });
   window.addEventListener('pageshow', function (event) {
     if (event.persisted && radioEnabled) setRadioEnabled(true, false);
+    if (event.persisted && audioEnabled && !radioRequestedOn) syncMoonpetScore();
   });
 
   start();

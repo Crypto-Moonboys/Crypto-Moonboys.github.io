@@ -1,5 +1,5 @@
-import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
-import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
+import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
+import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
 import { normalizeFaction } from '../shared/faction-canon.js';
 
@@ -54,12 +54,21 @@ function getDistrictMission(telegramId, pet, region, today = dayKey()) {
     threat: 5,
     opponent: { name: words(content.boss), role: 'district boss', intro: 'A permanent street-memory checkpoint.' },
   } : PET_DISTRICT_ENCOUNTERS[encounterKey];
+  const complication = boss ? null : PET_DISTRICT_COMPLICATIONS[stableLiveSystemRoll(telegramId, region.key, today, mastery, encounterKey, 'complication') % PET_DISTRICT_COMPLICATIONS.length];
+  const encounter = complication ? {
+    ...authored,
+    title: `${authored.title} // ${complication.label}`,
+    intro: `${authored.intro} ${complication.intro}`,
+    objective: `${authored.objective} ${complication.objective}`,
+    threat: Math.min(5, integer(authored.threat) + integer(complication.threat_delta)),
+    complication: { key: complication.key, label: complication.label },
+  } : authored;
   const relief = Math.min(12, Math.floor(integer(pet?.level) / 10)) + Math.min(8, Math.floor(mastery / 25));
   const choices = Object.entries(PET_DISTRICT_APPROACHES).map(([key, approach]) => {
-    const riskPercent = Math.round(clamp(12 + integer(authored.threat) * 7 - relief + approach.risk_delta, 8, 70));
+    const riskPercent = Math.round(clamp(12 + integer(encounter.threat) * 7 - relief + approach.risk_delta, 8, 70));
     return { key, label: approach.label, detail: approach.detail, risk_percent: riskPercent, success_percent: 100 - riskPercent, mastery_success: approach.mastery_success, mastery_setback: approach.mastery_setback, reward_multiplier: approach.reward_multiplier };
   });
-  return { key: encounterKey, ...authored, boss, choices };
+  return { key: encounterKey, ...encounter, boss, choices };
 }
 
 function getEventChainScene(chain, stepIndex) {
@@ -111,6 +120,14 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     key, ...recipe, unlocked: integer(pet.level) >= recipe.min_level,
     affordable: integer(pet.level) >= recipe.min_level && Object.entries(recipe.cost).every(([costKey, amount]) => integer(materialMap[costKey]) >= amount),
   }));
+  const ownedGear = new Set((gear || []).map((item) => item.item_key));
+  const equippedGear = new Set(['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map((slot) => pet?.[`equipped_${slot}`]).filter(Boolean));
+  const equipmentSets = Object.entries(PET_EQUIPMENT_SETS).map(([key, set]) => {
+    const owned = set.items.filter((item) => ownedGear.has(item));
+    const equipped = set.items.filter((item) => equippedGear.has(item));
+    const activeBonuses = Object.entries(set.bonuses).filter(([required]) => equipped.length >= Number(required)).map(([required, effects]) => ({ required: Number(required), effects }));
+    return { key, pieces: equipped.length, owned_pieces: owned.length, total_pieces: set.items.length, owned, equipped, missing: set.items.filter((item) => !ownedGear.has(item)), active_bonuses: activeBonuses };
+  });
   const masteredItems = gear.filter((item) => integer(item.mastery_tier) >= 5).length;
   const prestige = {
     requirements: PET_PRESTIGE_REQUIREMENTS,
@@ -133,6 +150,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     upgrades: upgradeRows,
     cosmetics: cosmeticState,
     crafting,
+    equipment_sets: equipmentSets,
     prestige,
     faction: { key: faction, bonus: PET_FACTION_BONUSES[faction] || null },
   };

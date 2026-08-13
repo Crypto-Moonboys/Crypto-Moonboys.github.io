@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   PET_ARENA_STATUS_EFFECTS,
   PET_ELITE_JOBS,
+  PET_DISTRICT_COMPLICATIONS,
   PET_EVENT_CHAINS,
   PET_FACTION_BONUSES,
   PET_REGION_CONTENT,
@@ -22,6 +23,9 @@ for (const [key, region] of Object.entries(PET_REGION_CONTENT)) {
 }
 assert.equal(getPetRegionContent('NEON_ROOFTOPS').boss, 'skyline_hunter');
 assert.equal(getPetRegionContent('constructor'), null);
+assert.ok(PET_DISTRICT_COMPLICATIONS.length >= 6, 'district missions need replay complications beyond the base encounter pool');
+assert.ok(PET_DISTRICT_COMPLICATIONS.every((entry) => entry.key && entry.intro && entry.objective && entry.threat_delta >= 0));
+assert.throws(() => { PET_DISTRICT_COMPLICATIONS.push({}); }, TypeError);
 
 assert.ok(Object.keys(PET_EVENT_CHAINS).length >= 4);
 for (const chain of Object.values(PET_EVENT_CHAINS)) {

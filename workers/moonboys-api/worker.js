@@ -7045,6 +7045,25 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   return output;
 }
 
+async function recordPetMiniAppPerformance(db, telegramId, body = {}) {
+  const qualityTier = ['low', 'medium', 'high'].includes(String(body.quality_tier || '')) ? String(body.quality_tier) : null;
+  const averageFps = Math.max(0, Math.min(240, Number(body.average_fps) || 0));
+  const slowFramePct = Math.max(0, Math.min(100, Number(body.slow_frame_pct) || 0));
+  const viewportWidth = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_width) || 0)));
+  const viewportHeight = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_height) || 0)));
+  if (!qualityTier || averageFps <= 0 || viewportWidth <= 1 || viewportHeight <= 1) return { accepted: false, reason: 'performance_sample_invalid' };
+  const deviceMemory = Number.isFinite(Number(body.device_memory)) ? Math.max(0, Math.min(64, Number(body.device_memory))) : null;
+  const hardwareConcurrency = Number.isFinite(Number(body.hardware_concurrency)) ? Math.max(1, Math.min(128, Math.floor(Number(body.hardware_concurrency)))) : null;
+  await db.batch([
+    db.prepare(`INSERT INTO telegram_pet_client_performance
+      (sample_id, telegram_id, quality_tier, average_fps, slow_frame_pct, device_memory, hardware_concurrency, viewport_width, viewport_height, reduced_motion)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(crypto.randomUUID(), telegramId, qualityTier, averageFps, slowFramePct, deviceMemory, hardwareConcurrency, viewportWidth, viewportHeight, body.reduced_motion ? 1 : 0),
+    db.prepare("DELETE FROM telegram_pet_client_performance WHERE sampled_at < datetime('now','-90 days')"),
+  ]);
+  return { accepted: true };
+}
+
 function getPetMiniAppReactionContext(action, result = {}) {
   if (action === 'work') return 'job';
   if (action === 'random_event' || action === 'event_chain') return 'event';
@@ -7594,6 +7613,21 @@ export default {
       } catch (error) {
         logApiFailure('pet_mini_app_leaderboard_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
         return err('mini_app_leaderboard_failed', 500);
+      }
+    }
+
+    if (path === '/telegram-pets/app/performance' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/performance', body, corsHeaders, { ipLimit: 20 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/performance', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId, telegramLimit: 6 }); if (limited) return limited; }
+      try {
+        return json({ ok: true, result: await recordPetMiniAppPerformance(env.DB, verified.telegramId, body) });
+      } catch (error) {
+        logApiFailure('pet_mini_app_performance_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return err('performance_sample_failed', 500);
       }
     }
 
@@ -10657,7 +10691,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260814-moonpet-workshop`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260814-moonpet-aaa-pass`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

@@ -269,6 +269,15 @@ export const PET_DISTRICT_ENCOUNTERS = deepFreeze({
   }
 });
 
+export const PET_DISTRICT_COMPLICATIONS = deepFreeze([
+  { key: 'blackout', label: 'BLACKOUT', intro: 'A district-wide blackout removes the safe route.', objective: 'Complete the objective before emergency power returns.', threat_delta: 1 },
+  { key: 'rival_clock', label: 'RIVAL CLOCK', intro: 'A rival crew broadcasts a live completion timer.', objective: 'Finish cleanly before the rival clock expires.', threat_delta: 1 },
+  { key: 'civilian_route', label: 'CIVILIAN ROUTE', intro: 'A civilian convoy crosses the conflict zone.', objective: 'Complete the objective while keeping the public route open.', threat_delta: 0 },
+  { key: 'acid_rain', label: 'ACID RAIN', intro: 'Corrosive rain turns every exposed surface dangerous.', objective: 'Secure cover, then complete the objective in short bursts.', threat_delta: 1 },
+  { key: 'false_signal', label: 'FALSE SIGNAL', intro: 'Three decoy signals mirror the real target.', objective: 'Identify the authentic signal before committing resources.', threat_delta: 0 },
+  { key: 'crew_debt', label: 'CREW DEBT', intro: 'An old ally calls in a favour during the operation.', objective: 'Complete the objective without abandoning the ally.', threat_delta: 1 },
+]);
+
 export const PET_EVENT_CHAINS = deepFreeze({
   "lost_delivery_drone": {
     "title": "THE DRONE THAT REMEMBERED",
