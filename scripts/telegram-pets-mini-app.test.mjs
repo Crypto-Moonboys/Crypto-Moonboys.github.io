@@ -655,6 +655,7 @@ assert.match(worker, /20260813-aaa-gameplay-foundation/);
 assert.match(worker, /function serializePetRunRoom/, 'standard runs must serialize authored room objectives and opponents');
 assert.match(worker, /function analyzePetRunChoice/, 'run previews and outcomes must share one risk analysis');
 assert.match(worker, /function serializePetRunChoicePreview/, 'run choices must expose risk, cost and reward previews');
+assert.match(worker, /analysis\.gear\.risk_delta - analysis\.gear\.survival_bonus < 0/, 'gear shield preview must use the same net risk reduction as authoritative resolution');
 assert.match(worker, /room\.engine_choices/, 'authored rooms must drive mechanically coherent choice pools');
 assert.match(worker, /wantedType === 'boss'/, 'boss checkpoints must select boss rooms');
 assert.match(worker, /wantedType === 'elite'/, 'elite checkpoints must select elite rooms');

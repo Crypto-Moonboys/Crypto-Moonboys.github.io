@@ -2280,7 +2280,7 @@ function serializePetRunChoicePreview(run, choice, pet, inventory = []) {
   const costs = Object.entries(choice.costs || {}).slice(0, 2).map(([key, range]) =>
     `${formatPetRunPreviewRange(range)} ${costLabels[key] || key.toUpperCase()}`);
   const advantages = [];
-  if (analysis.gear.risk_delta + analysis.gear.survival_bonus < 0) advantages.push('GEAR SHIELD');
+  if (analysis.gear.risk_delta - analysis.gear.survival_bonus < 0) advantages.push('GEAR SHIELD');
   if (analysis.gear.reward_multiplier > 1) advantages.push('GEAR BOOST');
   if (analysis.gear.consumed_item_key) advantages.push(`${analysis.gear.consumed_item_key.replaceAll('_', ' ').toUpperCase()} ACTIVE`);
   const riskPercent = Math.round(analysis.risk_chance * 100);
