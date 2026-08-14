@@ -120,8 +120,8 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     key, ...recipe, unlocked: integer(pet.level) >= recipe.min_level,
     affordable: integer(pet.level) >= recipe.min_level && Object.entries(recipe.cost).every(([costKey, amount]) => integer(materialMap[costKey]) >= amount),
   }));
-  const ownedGear = new Set((gear || []).map((item) => item.item_key));
   const equippedGear = new Set(['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map((slot) => pet?.[`equipped_${slot}`]).filter(Boolean));
+  const ownedGear = new Set([...(gear || []).map((item) => item.item_key), ...equippedGear]);
   const equipmentSets = Object.entries(PET_EQUIPMENT_SETS).map(([key, set]) => {
     const owned = set.items.filter((item) => ownedGear.has(item));
     const equipped = set.items.filter((item) => equippedGear.has(item));

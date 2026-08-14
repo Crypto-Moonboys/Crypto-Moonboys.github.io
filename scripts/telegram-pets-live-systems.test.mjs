@@ -133,6 +133,12 @@ assert.ok(usedState.regions.find((region) => region.key === 'neon_rooftops').mis
 assert.equal(usedState.chains[0].scene.choices.length, 2);
 assert.equal(usedState.equipment_sets.length, 3, 'live state must expose persistent loadout set progress');
 
+seedPlayer('equipped-only');
+const equippedOnlyState = await buildPetLiveSystemsState(d1, 'equipped-only', { level: 100, equipped_toy: 'hoverboard' }, runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='equipped-only'").get(), [], []);
+const equippedOnlySet = equippedOnlyState.equipment_sets.find((set) => set.key === 'street_runner');
+assert.deepEqual(equippedOnlySet.owned, ['hoverboard'], 'an equipped set piece must count as owned without a progression row');
+assert.deepEqual(equippedOnlySet.missing, ['crown_jacket', 'lucky_charm']);
+
 seedPlayer('lease-race');
 const leaseRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='lease-race'").get();
 let concurrentDistrict = null;

@@ -62,7 +62,7 @@
   var hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
   var renderQuality = reducedMotion || deviceMemory && deviceMemory <= 2 || hardwareConcurrency && hardwareConcurrency <= 2 ? 'low'
     : deviceMemory && deviceMemory <= 4 || hardwareConcurrency && hardwareConcurrency <= 4 ? 'medium' : 'high';
-  var performanceCallbacks = 0;
+  var LOW_RENDER_INTERVAL_MS = 1000 / 30;
   var performanceFrames = 0;
   var performanceSlowFrames = 0;
   var performanceStartedAt = 0;
@@ -2419,8 +2419,7 @@
   }
 
   function frame(time) {
-    performanceCallbacks += 1;
-    var skipLowFrame = renderQuality === 'low' && performanceCallbacks % 2 === 1;
+    var skipLowFrame = renderQuality === 'low' && performanceLastFrameAt && time - performanceLastFrameAt < LOW_RENDER_INTERVAL_MS;
     if (!skipLowFrame) {
       if (!performanceStartedAt) performanceStartedAt = time;
       var renderDelta = performanceLastFrameAt ? time - performanceLastFrameAt : renderQuality === 'low' ? 33.34 : 16.67;
@@ -2484,7 +2483,7 @@
         reducedMotionRenderMs = Math.max(1, performance.now() - reducedMotionStartedAt);
         sendPerformanceSample(1000 / reducedMotionRenderMs, reducedMotionRenderMs > 34 ? 100 : 0);
       } else {
-        performanceCallbacks = 0; performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
+        performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
         render();
       }
       if (radioEnabled) setRadioEnabled(true, false);
@@ -2511,7 +2510,7 @@
   });
   document.addEventListener('visibilitychange', function () {
     if (document.hidden || performanceSent) return;
-    performanceCallbacks = 0; performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
+    performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
   });
 
   start();
