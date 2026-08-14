@@ -67,6 +67,7 @@
   var performanceStartedAt = 0;
   var performanceLastFrameAt = 0;
   var performanceSent = false;
+  var reducedMotionRenderMs = 0;
 
   var app = document.getElementById('moonpet-app');
   var canvas = document.getElementById('moonpet-canvas');
@@ -2406,6 +2407,16 @@
     drawSceneTransition(renderTime, scene);
   }
 
+  function sendPerformanceSample(averageFps, slowFramePct) {
+    if (performanceSent || !state) return;
+    performanceSent = true;
+    post('/telegram-pets/app/performance', {
+      quality_tier: renderQuality, average_fps: Math.min(240, Math.max(0.01, averageFps)), slow_frame_pct: Math.min(100, Math.max(0, slowFramePct)),
+      device_memory: deviceMemory || null, hardware_concurrency: hardwareConcurrency || null,
+      viewport_width: Math.max(1, window.innerWidth), viewport_height: Math.max(1, window.innerHeight), reduced_motion: reducedMotion,
+    }).catch(function () {});
+  }
+
   function frame(time) {
     if (!performanceStartedAt) performanceStartedAt = time;
     var delta = performanceLastFrameAt ? time - performanceLastFrameAt : 16.67;
@@ -2427,13 +2438,8 @@
       if (sampleFps < 28) renderQuality = 'low';
     }
     if (!performanceSent && performanceFrames >= 600 && state) {
-      performanceSent = true;
       var elapsed = Math.max(1, time - performanceStartedAt);
-      post('/telegram-pets/app/performance', {
-        quality_tier: renderQuality, average_fps: Math.min(240, performanceFrames * 1000 / elapsed), slow_frame_pct: performanceSlowFrames * 100 / performanceFrames,
-        device_memory: deviceMemory || null, hardware_concurrency: hardwareConcurrency || null,
-        viewport_width: Math.max(1, window.innerWidth), viewport_height: Math.max(1, window.innerHeight), reduced_motion: reducedMotion,
-      }).catch(function () {});
+      sendPerformanceSample(performanceFrames * 1000 / elapsed, performanceSlowFrames * 100 / performanceFrames);
     }
     requestAnimationFrame(frame);
   }
@@ -2468,7 +2474,12 @@
     try {
       var data = await post('/telegram-pets/app/state');
       state = data.state;
-      render();
+      if (reducedMotion) {
+        var reducedMotionStartedAt = performance.now();
+        render();
+        reducedMotionRenderMs = Math.max(1, performance.now() - reducedMotionStartedAt);
+        sendPerformanceSample(1000 / reducedMotionRenderMs, reducedMotionRenderMs > 34 ? 100 : 0);
+      } else render();
       if (radioEnabled) setRadioEnabled(true, false);
       tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'MOON EGG READY FOR INITIALISATION.');
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });

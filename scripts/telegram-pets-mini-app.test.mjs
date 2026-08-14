@@ -692,6 +692,7 @@ assert.match(worker, /sampled_at < datetime\('now','-90 days'\)/, 'performance s
 assert.match(worker, /body\.device_memory == null \|\| body\.device_memory === '' \? null/, 'unknown device memory must remain null');
 assert.match(worker, /body\.hardware_concurrency == null \|\| body\.hardware_concurrency === '' \? null/, 'unknown CPU capability must remain null');
 assert.match(client, /visibilitychange[\s\S]*performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;/, 'hidden time must not contaminate FPS samples');
+assert.match(client, /if \(reducedMotion\) \{[\s\S]*reducedMotionStartedAt = performance\.now\(\);[\s\S]*render\(\);[\s\S]*sendPerformanceSample\(1000 \/ reducedMotionRenderMs, reducedMotionRenderMs > 34 \? 100 : 0\);/, 'reduced-motion sessions must submit a one-shot authenticated render sample');
 assert.match(client, /event\.persisted && radioRequestedOn/, 'BFCache restore must resume the latest requested radio state');
 assert.match(worker, /getPetActiveSetEffects\(pet\)/, 'authoritative job rewards must consume active set effects');
 assert.match(worker, /setEffects\.arena_attack[\s\S]*setEffects\.arena_defense[\s\S]*setEffects\.arena_dodge/, 'Arena power must consume active set effects');
