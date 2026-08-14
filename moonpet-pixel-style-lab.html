@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070b08">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Moonpet Pixel Style Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #d8f9ff;
+      --hot: #f5ff62;
+      --green: #73ff8b;
+      --line: #245c39;
+      --dark: #020403;
+      --panel: #07100b;
+      font-family: "Courier New", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #010201; color: var(--ink); }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      image-rendering: pixelated;
+    }
+    .lab-shell {
+      width: min(100%, 420px);
+      border: 3px solid #142718;
+      background: var(--dark);
+      box-shadow: 0 0 0 3px #000, 0 18px 60px #000;
+    }
+    .lab-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border-bottom: 3px solid #142718;
+      color: var(--hot);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .lab-viewport {
+      position: relative;
+      aspect-ratio: 320 / 220;
+      overflow: hidden;
+      background: #020403;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    .lab-viewport::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.2) 2px 3px),
+        linear-gradient(90deg, rgba(255,0,70,.04), rgba(0,255,130,.025), rgba(0,120,255,.04));
+      mix-blend-mode: screen;
+    }
+    .lab-caption {
+      min-height: 52px;
+      padding: 10px;
+      border-top: 3px solid #142718;
+      color: var(--green);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .lab-caption strong { color: var(--hot); }
+  </style>
+</head>
+<body>
+  <main class="lab-shell" aria-label="Moonpet pixel art style lab">
+    <header class="lab-top">
+      <span>Moonpet Style Lab</span>
+      <span>Code Pixels</span>
+    </header>
+    <section class="lab-viewport">
+      <canvas id="moonpet-style-canvas" width="320" height="220" aria-label="Code-rendered pixel art Moonpet scene"></canvas>
+    </section>
+    <section class="lab-caption">
+      <strong>Target:</strong> fine pixel mascot, graffiti-city depth, darker handheld-game mood, no image assets.
+    </section>
+  </main>
+  <script data-cfasync="false" src="/js/moonpet-pixel-style-lab.js?v=20260814-pixel-style-lab"></script>
+</body>
+</html>
