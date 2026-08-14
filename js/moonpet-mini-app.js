@@ -2479,7 +2479,10 @@
         render();
         reducedMotionRenderMs = Math.max(1, performance.now() - reducedMotionStartedAt);
         sendPerformanceSample(1000 / reducedMotionRenderMs, reducedMotionRenderMs > 34 ? 100 : 0);
-      } else render();
+      } else {
+        performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
+        render();
+      }
       if (radioEnabled) setRadioEnabled(true, false);
       tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'MOON EGG READY FOR INITIALISATION.');
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
