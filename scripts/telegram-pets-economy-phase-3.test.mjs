@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   PET_COSMETIC_SINKS,
   PET_CRAFTING_MATERIALS,
+  PET_CRAFTING_RECIPES,
   PET_EQUIPMENT_SETS,
   PET_EQUIPMENT_UPGRADE_COSTS,
   PET_PRESTIGE_REQUIREMENTS,
@@ -10,6 +11,7 @@ import {
   canPetPrestige,
   clampPetMaterialStack,
   getActivePetSetBonuses,
+  getPetCraftingRecipe,
   getPetEquipmentUpgradeCost,
   normalizePetMaterial,
   resolvePetRareDrop,
@@ -30,6 +32,15 @@ assert.equal(clampPetMaterialStack('scrap_metal', 9998, 10), 9999, 'material sta
 assert.equal(clampPetMaterialStack('scrap_metal', 2, -10), 0, 'material stacks cannot become negative');
 assert.equal(clampPetMaterialStack('constructor', 2, 10), 0, 'invalid materials must not produce balances');
 assert.throws(() => { PET_CRAFTING_MATERIALS.scrap_metal.sources.push('tamper'); }, TypeError, 'material source arrays must reject mutation');
+assert.equal(Object.keys(PET_CRAFTING_RECIPES).length, 5, 'the workshop needs a useful launch recipe set');
+for (const [key, recipe] of Object.entries(PET_CRAFTING_RECIPES)) {
+  assert.ok(recipe.title && recipe.detail && recipe.min_level > 0, `${key} needs player-facing recipe metadata`);
+  assert.ok(Object.keys(recipe.cost).every((material) => normalizePetMaterial(material)), `${key} may only consume canonical materials`);
+  assert.ok(['moon_snack', 'clean_wipe', 'energy_drink', 'style_patch', 'adventure_map'].includes(recipe.output.item_key), `${key} must produce a canonical usable item`);
+  assert.ok(Object.isFrozen(recipe.cost) && Object.isFrozen(recipe.output), `${key} economy rules must be immutable`);
+}
+assert.equal(getPetCraftingRecipe('BATTERY_PACK').output.item_key, 'energy_drink');
+assert.equal(getPetCraftingRecipe('constructor'), null, 'prototype keys must not resolve recipes');
 
 assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9, 'levels 2-10 must have upgrade costs');
 assert.deepEqual(getPetEquipmentUpgradeCost(2), PET_EQUIPMENT_UPGRADE_COSTS[2]);
@@ -43,9 +54,9 @@ assert.ok(Object.keys(PET_EQUIPMENT_SETS).length >= 3, 'phase 3 must define mult
 const streetRunnerTwo = getActivePetSetBonuses(['hoverboard', 'crown_jacket']);
 assert.equal(streetRunnerTwo[0].set_key, 'street_runner');
 assert.equal(streetRunnerTwo[0].pieces, 2);
-assert.ok(streetRunnerTwo[0].effects.explore_reward_pct > 0);
+assert.ok(streetRunnerTwo[0].effects.arena_dodge > 0);
 const streetRunnerFull = getActivePetSetBonuses(['hoverboard', 'crown_jacket', 'lucky_charm']);
-assert.ok(streetRunnerFull[0].effects.arena_dodge > 0, 'three-piece bonus must add the full-set effect');
+assert.ok(streetRunnerFull[0].effects.arena_attack > 0, 'three-piece bonus must add the full-set effect');
 assert.deepEqual(getActivePetSetBonuses(['hoverboard']), [], 'one item must not activate a set bonus');
 assert.ok(Object.isFrozen(PET_EQUIPMENT_SETS.street_runner.items), 'set item arrays must be frozen');
 assert.ok(Object.isFrozen(PET_EQUIPMENT_SETS.street_runner.bonuses[3]), 'set bonus effect objects must be frozen');

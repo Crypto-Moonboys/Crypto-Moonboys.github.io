@@ -5,7 +5,7 @@ import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET
 import { PET_COSMETIC_SINKS, PET_EQUIPMENT_UPGRADE_COSTS, PET_PRESTIGE_REQUIREMENTS } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, getActiveSeasonalBoss, processPetCosmeticUnlock, processPetDistrictMission,
-  processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
+  processPetCraftRecipe, processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
 } from '../workers/moonboys-api/pets/live-systems.js';
 import { awardPetReward, PET_REWARD_SOURCES } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { buildPetRegionDirectory, PET_REGION_LORE } from '../workers/moonboys-api/pets/game-content.js';
@@ -43,7 +43,7 @@ assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9);
 assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 4);
 assert.equal(PET_PRESTIGE_REQUIREMENTS.min_level, 100);
 
-for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_upgrade', 'cosmetic_unlock', 'prestige']) {
+for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_upgrade', 'craft', 'cosmetic_unlock', 'prestige']) {
   assert.match(worker, new RegExp(`action === '${action}'`), `${action} needs a server action`);
   assert.ok(client.includes(`'${action}'`), `${action} needs a Mini App control`);
 }
@@ -111,7 +111,7 @@ function seedPlayer(id, overrides = {}) {
   runtimeDb.prepare("INSERT INTO blocktopia_progression (telegram_id, faction) VALUES (?, 'blockstars')").run(id);
 }
 seedPlayer('live-1');
-for (const material of ['scrap_metal', 'crystal_shard', 'arena_token', 'spray_core']) runtimeDb.prepare('INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES (?, ?, 100)').run('live-1', material);
+for (const material of ['scrap_metal', 'moon_fabric', 'crystal_shard', 'battery_cell', 'arena_token', 'spray_core']) runtimeDb.prepare('INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES (?, ?, 100)').run('live-1', material);
 for (let index = 0; index < 3; index += 1) runtimeDb.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot, mastery_tier) VALUES (?, ?, ?, 5)').run('live-1', `mastered_${index}`, `slot_${index}`);
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'hoverboard', 'toy')").run();
 
@@ -129,7 +129,15 @@ assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE t
 const usedState = await buildPetLiveSystemsState(d1, 'live-1', { level: 100, moon_gold: 10000, moon_crystals: 100, style_tokens: 500 }, runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get(), [], []);
 assert.equal(usedState.regions.find((region) => region.key === 'moon_alley').used_today, true, 'completed daily districts must be disabled in refreshed state');
 assert.equal(usedState.regions.find((region) => region.key === 'neon_rooftops').mission.choices.length, 3);
+assert.ok(usedState.regions.find((region) => region.key === 'neon_rooftops').mission.complication?.key, 'daily district missions must include a deterministic authored complication');
 assert.equal(usedState.chains[0].scene.choices.length, 2);
+assert.equal(usedState.equipment_sets.length, 3, 'live state must expose persistent loadout set progress');
+
+seedPlayer('equipped-only');
+const equippedOnlyState = await buildPetLiveSystemsState(d1, 'equipped-only', { level: 100, equipped_toy: 'hoverboard' }, runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='equipped-only'").get(), [], []);
+const equippedOnlySet = equippedOnlyState.equipment_sets.find((set) => set.key === 'street_runner');
+assert.deepEqual(equippedOnlySet.owned, ['hoverboard'], 'an equipped set piece must count as owned without a progression row');
+assert.deepEqual(equippedOnlySet.missing, ['crown_jacket', 'lucky_charm']);
 
 seedPlayer('lease-race');
 const leaseRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='lease-race'").get();
@@ -190,6 +198,25 @@ assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'requ
 assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-1' AND item_key='hoverboard'").get().item_level, 2);
 assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1')).duplicate, true);
 assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().moon_gold, goldBeforeUpgrade - 80);
+
+const scrapBeforeCraft = runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-1' AND material_key='scrap_metal'").get().quantity;
+const crafted = await processPetCraftRecipe(d1, 'live-1', 'street_rations', 'request-craft-1');
+assert.equal(crafted.accepted, true);
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='live-1' AND asset_type='item' AND asset_key='moon_snack'").get().quantity, 2);
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-1' AND material_key='scrap_metal'").get().quantity, scrapBeforeCraft - 2);
+assert.equal((await processPetCraftRecipe(d1, 'live-1', 'street_rations', 'request-craft-1')).duplicate, true, 'craft retries must not mint twice');
+
+d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_material_balances SET quantity=0 WHERE telegram_id='live-1' AND material_key='battery_cell'").run(); };
+const racedCraft = await processPetCraftRecipe(d1, 'live-1', 'battery_pack', 'request-craft-race');
+assert.equal(racedCraft.accepted, false);
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_inventory WHERE telegram_id='live-1' AND asset_type='item' AND asset_key='energy_drink'").get().count, 0, 'stale affordability must not mint a crafted item');
+
+runtimeDb.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('live-1', 'item', 'clean_wipe', 1000005)").run();
+const fabricBeforeFullCraft = runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-1' AND material_key='moon_fabric'").get().quantity;
+const fullCraft = await processPetCraftRecipe(d1, 'live-1', 'clean_kit', 'request-craft-full');
+assert.equal(fullCraft.reason, 'crafting_inventory_full');
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='live-1' AND asset_type='item' AND asset_key='clean_wipe'").get().quantity, 1000005, 'crafting must never lower a legacy balance above the canonical cap');
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-1' AND material_key='moon_fabric'").get().quantity, fabricBeforeFullCraft, 'a full output stack must not consume materials');
 
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'race_item', 'toy')").run();
 d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_material_balances SET quantity=0 WHERE telegram_id='live-1' AND material_key='scrap_metal'").run(); };

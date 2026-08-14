@@ -39,11 +39,11 @@ import {
   PET_ECONOMY_ROUTES, buildPetEconomyGuidanceActions, formatPetEconomyValue,
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
-import { PET_CRAFTING_MATERIALS } from './pets/economy-phase-3.js';
+import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-phase-3.js';
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import {
-  applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetDistrictMission,
+  applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
   processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
 } from './pets/live-systems.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
@@ -2808,11 +2808,14 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   }
   const factionRow = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().catch(() => null);
   const adjusted = applyPetFactionBonus(job, factionRow?.faction, 'jobs');
-  const rewards = adjusted.rewards;
+  const setEffects = getPetActiveSetEffects(pet);
+  const jobSetPct = Math.max(0, Number(setEffects.job_reward_pct) || 0);
+  const scalableJobRewards = new Set(['pet_xp', 'community_xp', 'moon_gold', 'moon_crystals', 'style_tokens']);
+  const rewards = Object.fromEntries(Object.entries(adjusted.rewards).map(([rewardKey, value]) => [rewardKey, scalableJobRewards.has(rewardKey) && typeof value === 'number' && value > 0 ? Math.floor(value * (100 + jobSetPct) / 100) : value]));
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_job', idempotency_key: eventKey, event_key: eventKey,
     event_type: 'work', reason: key, rewards, touch_streak: true,
-    context: { source: options.source || 'telegram_bot', job_key: key, faction_bonus: adjusted.bonus },
+    context: { source: options.source || 'telegram_bot', job_key: key, faction_bonus: adjusted.bonus, equipment_set_bonus: jobSetPct ? { job_reward_pct: jobSetPct } : null },
   });
   return { ...awarded, reason: awarded.duplicate ? 'duplicate' : key, job: rewards, faction_bonus: adjusted.bonus };
 }
@@ -3688,6 +3691,13 @@ function orientPetArenaLastRound(battle, isPlayer2 = false) {
 }
 function buildPetArenaBattleId() { return `a-${crypto.randomUUID().replace(/-/g, '').slice(0, 10)}`; }
 function petArenaGearEffect(pet, slot) { return PET_SHOP_ITEMS[String(pet?.[`equipped_${slot}`] || '')]?.arena || {}; }
+function getPetActiveSetEffects(pet) {
+  const equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map((slot) => String(pet?.[`equipped_${slot}`] || '')).filter(Boolean);
+  return getActivePetSetBonuses(equipped).reduce((effects, set) => {
+    for (const [key, value] of Object.entries(set.effects || {})) effects[key] = Number(effects[key] || 0) + Number(value || 0);
+    return effects;
+  }, {});
+}
 function sumPetArenaGearPower(...items) {
   return items.reduce((total, item) => total + Object.entries(PET_ARENA_STAT_WEIGHTS).reduce((sum, [field, weight]) => sum + Math.max(0, Number(item?.[field] || 0)) * weight, 0), 0);
 }
@@ -3703,7 +3713,11 @@ function calculatePetArenaPower(pet, seed = '') {
   const condition = (s.health < 35 ? 0.65 : 1) * (s.energy < 30 ? 0.75 : 1);
   const morale = (s.happiness + s.cleanliness) / 20;
   const gear = sumPetArenaGearPower(weapon, armor, charm) + outfit + toy;
-  return Math.max(1, Math.round((s.level * 10 + Math.sqrt(s.pet_xp) + morale + gear + rng) * condition));
+  const setEffects = getPetActiveSetEffects(s);
+  const setPower = Math.max(0, Number(setEffects.arena_attack) || 0) * PET_ARENA_STAT_WEIGHTS.attack
+    + Math.max(0, Number(setEffects.arena_defense) || 0) * PET_ARENA_STAT_WEIGHTS.defense
+    + Math.max(0, Number(setEffects.arena_dodge) || 0) * PET_ARENA_STAT_WEIGHTS.dodge;
+  return Math.max(1, Math.round((s.level * 10 + Math.sqrt(s.pet_xp) + morale + gear + setPower + rng) * condition));
 }
 function buildPetArenaMenuReplyMarkup() { return { inline_keyboard: [[{ text: 'Find Pet Battle', callback_data: 'pet:arena:find' }, { text: 'Battle App Pet', callback_data: 'pet:arena:app' }], [{ text: 'My Arena Status', callback_data: 'pet:arena:status' }, { text: 'Cancel Queue', callback_data: 'pet:arena:cancel' }], [{ text: 'Gear Shop', callback_data: 'pet:shop' }, { text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }]] }; }
 function buildPetArenaMatchReplyMarkup(battleId) { return { inline_keyboard: [[{ text: 'Ready', callback_data: `pet:arena:ready:${battleId}` }, { text: 'Cancel', callback_data: `pet:arena:stop:${battleId}` }]] }; }
@@ -6920,6 +6934,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     return processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args));
   }
   if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
+  if (action === 'craft') return processPetCraftRecipe(db, telegramId, body.recipe_key, eventKey);
   if (action === 'cosmetic_unlock') return processPetCosmeticUnlock(db, telegramId, body.cosmetic_key, eventKey);
   if (action === 'prestige') {
     const petRaw = await getPetProfile(db, telegramId);
@@ -7032,7 +7047,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -7042,6 +7057,27 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   if (result.battle) output.battle = serializePetMiniAppArenaBattle(result.battle, telegramId);
   if (result.match) output.match = serializePetMiniAppKaijuMatch(result.match, telegramId);
   return output;
+}
+
+async function recordPetMiniAppPerformance(db, telegramId, body = {}) {
+  const qualityTier = ['low', 'medium', 'high'].includes(String(body.quality_tier || '')) ? String(body.quality_tier) : null;
+  const averageFps = Math.max(0, Math.min(240, Number(body.average_fps) || 0));
+  const slowFramePct = Math.max(0, Math.min(100, Number(body.slow_frame_pct) || 0));
+  const reducedMotion = Boolean(body.reduced_motion);
+  const renderDurationMs = body.render_duration_ms == null || body.render_duration_ms === '' ? null : Number.isFinite(Number(body.render_duration_ms)) ? Math.max(0.01, Math.min(10000, Number(body.render_duration_ms))) : null;
+  const viewportWidth = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_width) || 0)));
+  const viewportHeight = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_height) || 0)));
+  if (!qualityTier || viewportWidth <= 1 || viewportHeight <= 1 || (reducedMotion ? renderDurationMs == null : averageFps <= 0)) return { accepted: false, reason: 'performance_sample_invalid' };
+  const deviceMemory = body.device_memory == null || body.device_memory === '' ? null : Number.isFinite(Number(body.device_memory)) ? Math.max(0, Math.min(64, Number(body.device_memory))) : null;
+  const hardwareConcurrency = body.hardware_concurrency == null || body.hardware_concurrency === '' ? null : Number.isFinite(Number(body.hardware_concurrency)) ? Math.max(1, Math.min(128, Math.floor(Number(body.hardware_concurrency)))) : null;
+  await db.batch([
+    db.prepare(`INSERT INTO telegram_pet_client_performance
+      (sample_id, telegram_id, quality_tier, average_fps, slow_frame_pct, render_duration_ms, device_memory, hardware_concurrency, viewport_width, viewport_height, reduced_motion)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(crypto.randomUUID(), telegramId, qualityTier, averageFps, slowFramePct, renderDurationMs, deviceMemory, hardwareConcurrency, viewportWidth, viewportHeight, reducedMotion ? 1 : 0),
+    db.prepare("DELETE FROM telegram_pet_client_performance WHERE sampled_at < datetime('now','-90 days')"),
+  ]);
+  return { accepted: true };
 }
 
 function getPetMiniAppReactionContext(action, result = {}) {
@@ -7055,7 +7091,7 @@ function getPetMiniAppReactionContext(action, result = {}) {
   if (action === 'weekly_boss' || action === 'seasonal_boss') return 'boss';
   if (action === 'season_claim') return 'season';
   if (action === 'evolve') return 'evolution';
-  if (action === 'buy' || action === 'market_buy' || action === 'cosmetic_unlock' || action === 'gear_upgrade') return 'purchase';
+  if (action === 'buy' || action === 'market_buy' || action === 'cosmetic_unlock' || action === 'gear_upgrade' || action === 'craft') return 'purchase';
   if (action === 'use_item') return 'item';
   if (action === 'daily_chest' || action === 'bounty_claim') return 'daily';
   if (action.startsWith('activity_')) return action;
@@ -7593,6 +7629,21 @@ export default {
       } catch (error) {
         logApiFailure('pet_mini_app_leaderboard_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
         return err('mini_app_leaderboard_failed', 500);
+      }
+    }
+
+    if (path === '/telegram-pets/app/performance' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/performance', body, corsHeaders, { ipLimit: 20 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/performance', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId, telegramLimit: 6 }); if (limited) return limited; }
+      try {
+        return json({ ok: true, result: await recordPetMiniAppPerformance(env.DB, verified.telegramId, body) });
+      } catch (error) {
+        logApiFailure('pet_mini_app_performance_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return err('performance_sample_failed', 500);
       }
     }
 
@@ -10656,7 +10707,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260813-moonpet-radio`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260814-moonpet-aaa-pass`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
