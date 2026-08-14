@@ -7063,16 +7063,18 @@ async function recordPetMiniAppPerformance(db, telegramId, body = {}) {
   const qualityTier = ['low', 'medium', 'high'].includes(String(body.quality_tier || '')) ? String(body.quality_tier) : null;
   const averageFps = Math.max(0, Math.min(240, Number(body.average_fps) || 0));
   const slowFramePct = Math.max(0, Math.min(100, Number(body.slow_frame_pct) || 0));
+  const reducedMotion = Boolean(body.reduced_motion);
+  const renderDurationMs = body.render_duration_ms == null || body.render_duration_ms === '' ? null : Number.isFinite(Number(body.render_duration_ms)) ? Math.max(0.01, Math.min(10000, Number(body.render_duration_ms))) : null;
   const viewportWidth = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_width) || 0)));
   const viewportHeight = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_height) || 0)));
-  if (!qualityTier || averageFps <= 0 || viewportWidth <= 1 || viewportHeight <= 1) return { accepted: false, reason: 'performance_sample_invalid' };
+  if (!qualityTier || viewportWidth <= 1 || viewportHeight <= 1 || (reducedMotion ? renderDurationMs == null : averageFps <= 0)) return { accepted: false, reason: 'performance_sample_invalid' };
   const deviceMemory = body.device_memory == null || body.device_memory === '' ? null : Number.isFinite(Number(body.device_memory)) ? Math.max(0, Math.min(64, Number(body.device_memory))) : null;
   const hardwareConcurrency = body.hardware_concurrency == null || body.hardware_concurrency === '' ? null : Number.isFinite(Number(body.hardware_concurrency)) ? Math.max(1, Math.min(128, Math.floor(Number(body.hardware_concurrency)))) : null;
   await db.batch([
     db.prepare(`INSERT INTO telegram_pet_client_performance
-      (sample_id, telegram_id, quality_tier, average_fps, slow_frame_pct, device_memory, hardware_concurrency, viewport_width, viewport_height, reduced_motion)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .bind(crypto.randomUUID(), telegramId, qualityTier, averageFps, slowFramePct, deviceMemory, hardwareConcurrency, viewportWidth, viewportHeight, body.reduced_motion ? 1 : 0),
+      (sample_id, telegram_id, quality_tier, average_fps, slow_frame_pct, render_duration_ms, device_memory, hardware_concurrency, viewport_width, viewport_height, reduced_motion)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(crypto.randomUUID(), telegramId, qualityTier, averageFps, slowFramePct, renderDurationMs, deviceMemory, hardwareConcurrency, viewportWidth, viewportHeight, reducedMotion ? 1 : 0),
     db.prepare("DELETE FROM telegram_pet_client_performance WHERE sampled_at < datetime('now','-90 days')"),
   ]);
   return { accepted: true };

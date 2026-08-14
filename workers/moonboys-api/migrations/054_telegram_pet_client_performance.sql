@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_client_performance (
   quality_tier TEXT NOT NULL CHECK (quality_tier IN ('low', 'medium', 'high')),
   average_fps REAL NOT NULL CHECK (average_fps >= 0 AND average_fps <= 240),
   slow_frame_pct REAL NOT NULL CHECK (slow_frame_pct >= 0 AND slow_frame_pct <= 100),
+  render_duration_ms REAL CHECK (render_duration_ms > 0 AND render_duration_ms <= 10000),
   device_memory REAL,
   hardware_concurrency INTEGER,
   viewport_width INTEGER NOT NULL CHECK (viewport_width BETWEEN 1 AND 10000),

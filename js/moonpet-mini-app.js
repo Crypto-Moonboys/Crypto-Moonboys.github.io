@@ -2408,11 +2408,12 @@
     drawSceneTransition(renderTime, scene);
   }
 
-  function sendPerformanceSample(averageFps, slowFramePct) {
+  function sendPerformanceSample(averageFps, slowFramePct, renderDurationMs) {
     if (performanceSent || !state) return;
     performanceSent = true;
     post('/telegram-pets/app/performance', {
-      quality_tier: renderQuality, average_fps: Math.min(240, Math.max(0.01, averageFps)), slow_frame_pct: Math.min(100, Math.max(0, slowFramePct)),
+      quality_tier: renderQuality, average_fps: Math.min(240, Math.max(0, averageFps)), slow_frame_pct: Math.min(100, Math.max(0, slowFramePct)),
+      render_duration_ms: renderDurationMs == null ? null : Math.min(10000, Math.max(0.01, renderDurationMs)),
       device_memory: deviceMemory || null, hardware_concurrency: hardwareConcurrency || null,
       viewport_width: Math.max(1, window.innerWidth), viewport_height: Math.max(1, window.innerHeight), reduced_motion: reducedMotion,
     }).catch(function () {});
@@ -2481,7 +2482,7 @@
         var reducedMotionStartedAt = performance.now();
         render();
         reducedMotionRenderMs = Math.max(1, performance.now() - reducedMotionStartedAt);
-        sendPerformanceSample(1000 / reducedMotionRenderMs, reducedMotionRenderMs > 34 ? 100 : 0);
+        sendPerformanceSample(0, 0, reducedMotionRenderMs);
       } else {
         performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
         render();
