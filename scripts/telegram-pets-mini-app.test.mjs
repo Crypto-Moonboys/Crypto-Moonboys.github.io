@@ -691,9 +691,10 @@ assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_pet_client_performance
 assert.match(worker, /sampled_at < datetime\('now','-90 days'\)/, 'performance samples need explicit retention');
 assert.match(worker, /body\.device_memory == null \|\| body\.device_memory === '' \? null/, 'unknown device memory must remain null');
 assert.match(worker, /body\.hardware_concurrency == null \|\| body\.hardware_concurrency === '' \? null/, 'unknown CPU capability must remain null');
-assert.match(client, /visibilitychange[\s\S]*performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;/, 'hidden time must not contaminate FPS samples');
+assert.match(client, /visibilitychange[\s\S]*performanceCallbacks = 0; performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;/, 'hidden time must not contaminate FPS samples');
 assert.match(client, /if \(reducedMotion\) \{[\s\S]*reducedMotionStartedAt = performance\.now\(\);[\s\S]*render\(\);[\s\S]*sendPerformanceSample\(1000 \/ reducedMotionRenderMs, reducedMotionRenderMs > 34 \? 100 : 0\);/, 'reduced-motion sessions must submit a one-shot authenticated render sample');
-assert.match(client, /state = data\.state;[\s\S]*else \{[\s\S]*performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;[\s\S]*render\(\);/, 'normal-motion sampling must begin after authenticated game state loads');
+assert.match(client, /state = data\.state;[\s\S]*else \{[\s\S]*performanceCallbacks = 0; performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;[\s\S]*render\(\);/, 'normal-motion sampling must begin after authenticated game state loads');
+assert.match(client, /performanceCallbacks \+= 1;[\s\S]*skipLowFrame = renderQuality === 'low' && performanceCallbacks % 2 === 1;[\s\S]*if \(!skipLowFrame\) \{[\s\S]*performanceFrames \+= 1;[\s\S]*drawWorld\(time\);/, 'low-tier telemetry must count only frames that actually render');
 assert.match(client, /event\.persisted && radioRequestedOn/, 'BFCache restore must resume the latest requested radio state');
 assert.match(worker, /getPetActiveSetEffects\(pet\)/, 'authoritative job rewards must consume active set effects');
 assert.match(worker, /setEffects\.arena_attack[\s\S]*setEffects\.arena_defense[\s\S]*setEffects\.arena_dodge/, 'Arena power must consume active set effects');

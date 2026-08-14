@@ -62,6 +62,7 @@
   var hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
   var renderQuality = reducedMotion || deviceMemory && deviceMemory <= 2 || hardwareConcurrency && hardwareConcurrency <= 2 ? 'low'
     : deviceMemory && deviceMemory <= 4 || hardwareConcurrency && hardwareConcurrency <= 4 ? 'medium' : 'high';
+  var performanceCallbacks = 0;
   var performanceFrames = 0;
   var performanceSlowFrames = 0;
   var performanceStartedAt = 0;
@@ -2418,13 +2419,16 @@
   }
 
   function frame(time) {
-    if (!performanceStartedAt) performanceStartedAt = time;
-    var delta = performanceLastFrameAt ? time - performanceLastFrameAt : 16.67;
-    performanceLastFrameAt = time;
-    performanceFrames += 1;
-    if (delta > 34) performanceSlowFrames += 1;
-    var skipLowFrame = renderQuality === 'low' && performanceFrames % 2 === 1;
-    if (!skipLowFrame) drawWorld(time);
+    performanceCallbacks += 1;
+    var skipLowFrame = renderQuality === 'low' && performanceCallbacks % 2 === 1;
+    if (!skipLowFrame) {
+      if (!performanceStartedAt) performanceStartedAt = time;
+      var renderDelta = performanceLastFrameAt ? time - performanceLastFrameAt : renderQuality === 'low' ? 33.34 : 16.67;
+      performanceLastFrameAt = time;
+      performanceFrames += 1;
+      if (renderDelta > (renderQuality === 'low' ? 68 : 34)) performanceSlowFrames += 1;
+      drawWorld(time);
+    }
     if (animationUntil <= time) { animationMode = 'idle'; animationLabel = ''; }
     if (companionGreetingUntil > 0 && companionGreetingUntil <= time) {
       companionGreeting = '';
@@ -2432,12 +2436,12 @@
     }
     if (lifecycleCeremony && lifecycleCeremonyUntil <= time) clearLifecycleCeremony(false);
     if (reducedMotion) return;
-    if (performanceFrames === 300) {
+    if (!skipLowFrame && performanceFrames === 300) {
       var sampleFps = performanceFrames * 1000 / Math.max(1, time - performanceStartedAt);
       if (sampleFps < 42 && renderQuality === 'high') renderQuality = 'medium';
       if (sampleFps < 28) renderQuality = 'low';
     }
-    if (!performanceSent && performanceFrames >= 600 && state) {
+    if (!skipLowFrame && !performanceSent && performanceFrames >= 600 && state) {
       var elapsed = Math.max(1, time - performanceStartedAt);
       sendPerformanceSample(performanceFrames * 1000 / elapsed, performanceSlowFrames * 100 / performanceFrames);
     }
@@ -2480,7 +2484,7 @@
         reducedMotionRenderMs = Math.max(1, performance.now() - reducedMotionStartedAt);
         sendPerformanceSample(1000 / reducedMotionRenderMs, reducedMotionRenderMs > 34 ? 100 : 0);
       } else {
-        performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
+        performanceCallbacks = 0; performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
         render();
       }
       if (radioEnabled) setRadioEnabled(true, false);
@@ -2507,7 +2511,7 @@
   });
   document.addEventListener('visibilitychange', function () {
     if (document.hidden || performanceSent) return;
-    performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
+    performanceCallbacks = 0; performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
   });
 
   start();
