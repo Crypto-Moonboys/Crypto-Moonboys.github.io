@@ -35,42 +35,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_source_event
   ON telegram_pet_season_slots(telegram_id, season_key, source_event_key)
   WHERE source_event_key IS NOT NULL;
 
-CREATE TRIGGER IF NOT EXISTS trg_telegram_pet_profiles_seed_season_slot
-AFTER INSERT ON telegram_pet_profiles
-BEGIN
-  INSERT OR IGNORE INTO telegram_pet_season_slots
-    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
-  VALUES (
-    'pet:' || NEW.telegram_id || ':' || COALESCE((
-      SELECT s.season_key
-      FROM telegram_pet_season_state s
-      WHERE s.telegram_id = NEW.telegram_id
-      ORDER BY s.updated_at DESC
-      LIMIT 1
-    ), 'legacy-season') || ':1',
-    NEW.telegram_id,
-    COALESCE((
-      SELECT s.season_key
-      FROM telegram_pet_season_state s
-      WHERE s.telegram_id = NEW.telegram_id
-      ORDER BY s.updated_at DESC
-      LIMIT 1
-    ), 'legacy-season'),
-    1,
-    'free',
-    'profile_insert',
-    0,
-    'active'
-  );
-
-  INSERT OR IGNORE INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
-  SELECT telegram_id, pet_id, season_key
-  FROM telegram_pet_season_slots
-  WHERE telegram_id = NEW.telegram_id AND slot_number = 1 AND status = 'active'
-  ORDER BY updated_at DESC
-  LIMIT 1;
-END;
-
 UPDATE telegram_pet_profiles
 SET species = '', updated_at = CURRENT_TIMESTAMP
 WHERE species IS NULL OR species NOT IN (

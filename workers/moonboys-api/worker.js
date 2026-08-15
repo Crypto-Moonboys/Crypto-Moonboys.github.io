@@ -2997,6 +2997,37 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   throw new Error('pet_decay_sync_conflict');
 }
 
+async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
+  const normalizedTelegramId = String(telegramId || '').trim();
+  if (!normalizedTelegramId) return { ok: false, reason: 'missing_telegram_id' };
+  const seasonKey = getPetSeasonInfo(now).key;
+  const petId = `pet:${normalizedTelegramId}:${seasonKey}:1`;
+  try {
+    await db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_season_slots
+        (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+      SELECT ?, telegram_id, ?, 1, 'free', 'profile_insert', 0, 'active'
+      FROM telegram_pet_profiles
+      WHERE telegram_id = ?
+    `).bind(petId, seasonKey, normalizedTelegramId).run();
+
+    await db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+      SELECT telegram_id, pet_id, season_key
+      FROM telegram_pet_season_slots
+      WHERE telegram_id = ? AND season_key = ? AND slot_number = 1 AND status = 'active'
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `).bind(normalizedTelegramId, seasonKey).run();
+
+    return { ok: true, pet_id: petId, season_key: seasonKey };
+  } catch (error) {
+    if (/no such table: telegram_pet_(season|active)_slots/i.test(String(error?.message || error))) {
+      return { ok: false, reason: 'season_slots_unavailable' };
+    }
+    throw error;
+  }
+}
 async function getOrCreatePetProfile(db, telegramId, options = {}) {
   let pet = await getPetProfile(db, telegramId);
   if (!pet) {

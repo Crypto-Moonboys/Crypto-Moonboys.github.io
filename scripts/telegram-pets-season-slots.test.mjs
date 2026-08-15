@@ -26,7 +26,9 @@ db.prepare("INSERT INTO telegram_pet_profiles (telegram_id, species) VALUES (?, 
 db.prepare("INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)").run('blank-player');
 db.prepare("INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp, updated_at) VALUES (?, ?, ?, ?)").run('legacy-player', '2026-q3', 100, '2026-08-15T00:00:00Z');
 
+assert.ok(!migration.includes('CREATE TRIGGER'), 'D1 production migration must not rely on trigger DDL');
 db.exec(migration);
+assert.ok(!migration.includes('CREATE TRIGGER'), 'D1 production migration must not rely on trigger DDL');
 db.exec(migration);
 
 assert.equal(db.prepare('SELECT COUNT(*) AS count FROM telegram_pet_season_slots').get().count, 3, 'migration must create exactly one starter slot per existing pet profile');
