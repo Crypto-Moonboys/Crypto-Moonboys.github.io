@@ -3037,6 +3037,7 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
       INSERT INTO telegram_pet_profiles (telegram_id, pet_name, species)
       VALUES (?, ?, ?)
     `).bind(telegramId, petName, species).run();
+    await ensurePetStarterSeasonSlot(db, telegramId);
     pet = await db.prepare(`
       SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
     `).bind(telegramId).first();
@@ -4296,6 +4297,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
   if (action === 'adopt') {
     const existingPet = await getPetProfile(db, telegramId);
     if (existingPet) {
+      await ensurePetStarterSeasonSlot(db, telegramId, now);
       const lifecycleRow = await db.prepare('SELECT phase FROM telegram_pet_lifecycle WHERE telegram_id=?')
         .bind(telegramId).first().catch(() => null);
       if (!lifecycleRow) {
