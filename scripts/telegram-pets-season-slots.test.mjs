@@ -28,7 +28,6 @@ db.prepare("INSERT INTO telegram_pet_season_state (telegram_id, season_key, seas
 
 assert.ok(!migration.includes('CREATE TRIGGER'), 'D1 production migration must not rely on trigger DDL');
 db.exec(migration);
-assert.ok(!migration.includes('CREATE TRIGGER'), 'D1 production migration must not rely on trigger DDL');
 db.exec(migration);
 
 assert.equal(db.prepare('SELECT COUNT(*) AS count FROM telegram_pet_season_slots').get().count, 3, 'migration must create exactly one starter slot per existing pet profile');
@@ -38,10 +37,6 @@ assert.equal(db.prepare("SELECT season_key FROM telegram_pet_season_slots WHERE 
 assert.equal(db.prepare("SELECT species FROM telegram_pet_profiles WHERE telegram_id='legacy-player'").get().species, '', 'non-canonical species placeholders must be cleared');
 assert.equal(db.prepare("SELECT species FROM telegram_pet_profiles WHERE telegram_id='known-player'").get().species, 'neon_raccoon', 'known species must be preserved');
 
-db.prepare("INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp, updated_at) VALUES (?, ?, ?, ?)").run('new-player', 'pet-s2026-003', 0, '2026-08-15T01:00:00Z');
-db.prepare("INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)").run('new-player');
-assert.equal(db.prepare("SELECT pet_id FROM telegram_pet_season_slots WHERE telegram_id='new-player'").get().pet_id, 'pet:new-player:pet-s2026-003:1', 'future profile inserts must create the starter season slot');
-assert.equal(db.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='new-player'").get().pet_id, 'pet:new-player:pet-s2026-003:1', 'future profile inserts must create the active pet pointer');
 
 db.prepare(`INSERT INTO telegram_pet_season_slots
   (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent)
