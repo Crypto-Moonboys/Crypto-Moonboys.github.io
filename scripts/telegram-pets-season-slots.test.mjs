@@ -43,12 +43,15 @@ assert.equal(db.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE tele
 
 db.prepare(`INSERT INTO telegram_pet_season_slots
   (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent)
-  VALUES (?, ?, ?, ?, ?, ?, ?)`).run('pet:legacy-player:2026-q3:2', 'legacy-player', '2026-q3', 2, 'arcade_xp', 'arcade-buy-2', 500);
+  VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run('pet:legacy-player:2026-q3:2', 'legacy-player', '2026-q3', 2, 'arcade_xp', 'arcade-buy-2', 500);
 db.prepare(`INSERT INTO telegram_pet_season_slots
   (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent)
-  VALUES (?, ?, ?, ?, ?, ?, ?)`).run('pet:legacy-player:2026-q3:3', 'legacy-player', '2026-q3', 3, 'arcade_xp', 'arcade-buy-3', 1000);
+  VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run('pet:legacy-player:2026-q3:3', 'legacy-player', '2026-q3', 3, 'arcade_xp', 'arcade-buy-3', 1000);
 assert.throws(() => db.prepare(`INSERT INTO telegram_pet_season_slots
   (pet_id, telegram_id, season_key, slot_number, acquisition_type)
-  VALUES (?, ?, ?, ?, ?)`).run('pet:legacy-player:2026-q3:4', 'legacy-player', '2026-q3', 4, 'arcade_xp'), /CHECK constraint failed/, 'season slots must be capped at three');
+  VALUES (?, ?, ?, ?, ?)`)
+  .run('pet:legacy-player:2026-q3:4', 'legacy-player', '2026-q3', 4, 'arcade_xp'), /CHECK constraint failed/, 'season slots must be capped at three');
 
 console.log('telegram-pets-season-slots.test.mjs passed');
