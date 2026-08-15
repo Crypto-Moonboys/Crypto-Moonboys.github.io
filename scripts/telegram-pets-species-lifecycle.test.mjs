@@ -26,7 +26,7 @@ class D1 {
 
 const db = new D1();
 db.database.exec(`
-  CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT DEFAULT 'moonbeast', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
+  CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT NOT NULL DEFAULT '', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
   CREATE TABLE telegram_pet_evolutions (telegram_id TEXT, stage INTEGER);
   CREATE TABLE telegram_pet_memories (telegram_id TEXT PRIMARY KEY, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
     combat_actions INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0,
@@ -35,6 +35,7 @@ db.database.exec(`
 `);
 db.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
 db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('new-player');
+assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, '', 'new pet profiles must not default to a fake species');
 db.database.prepare('DELETE FROM telegram_pet_lifecycle WHERE telegram_id=?').run('new-player');
 const created = await createMoonEggLifecycle(db, 'new-player', 'adopt:1');
 assert.equal(Object.hasOwn(created, 'identity_seed'), false, 'private identity seed must never be returned');
@@ -63,7 +64,7 @@ assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHER
 
 const pendingDb = new D1();
 pendingDb.database.exec(`
-  CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT DEFAULT 'moonbeast', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
+  CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT NOT NULL DEFAULT '', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
   CREATE TABLE telegram_pet_evolutions (telegram_id TEXT, stage INTEGER);
   CREATE TABLE telegram_pet_memories (telegram_id TEXT PRIMARY KEY, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
     combat_actions INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0,
