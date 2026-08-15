@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS telegram_pet_profiles (
   telegram_id     TEXT PRIMARY KEY,
   pet_name        TEXT NOT NULL DEFAULT 'Moonpet',
-  species         TEXT NOT NULL DEFAULT 'moonbeast',
+  species         TEXT NOT NULL DEFAULT '',
   stage           TEXT NOT NULL DEFAULT 'egg',
   pet_xp          INTEGER NOT NULL DEFAULT 0 CHECK (pet_xp >= 0),
   level           INTEGER NOT NULL DEFAULT 1 CHECK (level >= 1),

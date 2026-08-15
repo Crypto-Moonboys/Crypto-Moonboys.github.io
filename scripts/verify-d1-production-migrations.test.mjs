@@ -24,6 +24,11 @@ assert.match(
   /053_telegram_pet_species_lifecycle\.sql/,
   'the workflow_dispatch D1 query must request migration 053 from production',
 );
+assert.match(
+  remoteQueryStep,
+  /055_telegram_pet_season_slots\.sql/,
+  'the workflow_dispatch D1 query must request migration 055 from production',
+);
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),
@@ -150,6 +155,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 053',
 );
 
+const withoutSeasonSlots = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '055_telegram_pet_season_slots.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutSeasonSlots),
+  /missing required migrations: 055_telegram_pet_season_slots\.sql/,
+  'deployment verification must reject an evidence request that omits migration 055',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -252,6 +267,15 @@ assert.throws(
   }], request),
   /missing migrations: 053_telegram_pet_species_lifecycle\.sql/,
   'deployment verification must fail when production D1 has not applied migration 053',
+);
+
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '055_telegram_pet_season_slots.sql'),
+  }], request),
+  /missing migrations: 055_telegram_pet_season_slots\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 055',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');

@@ -399,7 +399,7 @@ CREATE TABLE IF NOT EXISTS arcade_game_enforcement_state (
 CREATE TABLE IF NOT EXISTS telegram_pet_profiles (
   telegram_id     TEXT PRIMARY KEY,
   pet_name        TEXT NOT NULL DEFAULT 'Moonpet',
-  species         TEXT NOT NULL DEFAULT 'moonbeast',
+  species         TEXT NOT NULL DEFAULT '',
   stage           TEXT NOT NULL DEFAULT 'egg',
   pet_xp          INTEGER NOT NULL DEFAULT 0 CHECK (pet_xp >= 0),
   level           INTEGER NOT NULL DEFAULT 1 CHECK (level >= 1),
@@ -872,6 +872,38 @@ CREATE TABLE IF NOT EXISTS telegram_pet_season_state (
 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_season_state_rank
   ON telegram_pet_season_state(season_key, season_xp DESC);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_season_slots (
+  pet_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  slot_number INTEGER NOT NULL CHECK (slot_number BETWEEN 1 AND 3),
+  acquisition_type TEXT NOT NULL CHECK (acquisition_type IN ('free', 'arcade_xp')),
+  source_event_key TEXT,
+  arcade_xp_spent INTEGER NOT NULL DEFAULT 0 CHECK (arcade_xp_spent >= 0),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'retired', 'archived')),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (telegram_id, season_key, slot_number),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_active_slots (
+  telegram_id TEXT PRIMARY KEY,
+  pet_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_season_slots(pet_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_owner_season
+  ON telegram_pet_season_slots(telegram_id, season_key, slot_number);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_season_rank
+  ON telegram_pet_season_slots(season_key, status, slot_number);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_source_event
+  ON telegram_pet_season_slots(telegram_id, season_key, source_event_key)
+  WHERE source_event_key IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS telegram_pet_notification_settings (
   telegram_id TEXT PRIMARY KEY,
