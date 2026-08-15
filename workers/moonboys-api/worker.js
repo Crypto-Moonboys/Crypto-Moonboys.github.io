@@ -3001,7 +3001,7 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
   let pet = await getPetProfile(db, telegramId);
   if (!pet) {
     const petName = normalizePetName(options.pet_name) || 'Moonpet';
-    const species = normalizePetName(options.species) || 'moonbeast';
+    const species = normalizePetName(options.species) || '';
     await db.prepare(`
       INSERT INTO telegram_pet_profiles (telegram_id, pet_name, species)
       VALUES (?, ?, ?)
