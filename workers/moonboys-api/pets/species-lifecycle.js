@@ -105,7 +105,10 @@ export async function ensureMoonpetLifecycle(db, telegramId) {
       innate_traits_json=?, rare_route_index=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND species_id IS NULL`)
       .bind(derived.species_id, derived.palette_id, derived.marking_id, derived.eye_style, derived.temperament,
         JSON.stringify(derived.innate_traits), derived.rare_route_index, id).run();
-    await db.prepare(`UPDATE telegram_pet_profiles SET species=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND species='moonbeast'`)
+    await db.prepare(`UPDATE telegram_pet_profiles SET species=?, updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=?
+        AND (species IS NULL OR species NOT IN ('neon_raccoon', 'bubble_ram', 'comet_gecko', 'vinyl_crab',
+          'lantern_fox', 'sneaker_snail', 'alley_drake', 'moon_ferret'))`)
       .bind(derived.species_id, id).run();
     row = await readLifecycle(db, id);
   }
