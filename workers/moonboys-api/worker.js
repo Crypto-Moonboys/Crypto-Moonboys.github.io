@@ -3012,12 +3012,17 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
     `).bind(petId, seasonKey, normalizedTelegramId).run();
 
     await db.prepare(`
-      INSERT OR IGNORE INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+      INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
       SELECT telegram_id, pet_id, season_key
       FROM telegram_pet_season_slots
       WHERE telegram_id = ? AND season_key = ? AND slot_number = 1 AND status = 'active'
       ORDER BY updated_at DESC
       LIMIT 1
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        pet_id = excluded.pet_id,
+        season_key = excluded.season_key,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_pet_active_slots.season_key <> excluded.season_key
     `).bind(normalizedTelegramId, seasonKey).run();
 
     return { ok: true, pet_id: petId, season_key: seasonKey };
@@ -3028,6 +3033,100 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
     throw error;
   }
 }
+
+const PET_SEASON_EXTRA_SLOT_COSTS = Object.freeze({
+  2: 500,
+  3: 1000,
+});
+const PET_SEASON_MAX_SLOTS = 3;
+const PET_SEASON_SLOT_PURCHASE_DISABLED_REASON = 'per_pet_state_pending';
+
+function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0) {
+  const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
+  const unlocked = Boolean(row);
+  return {
+    slot_number: slotNumber,
+    pet_id: row?.pet_id || null,
+    status: row?.status || 'locked',
+    acquisition_type: row?.acquisition_type || null,
+    source_event_key: row?.source_event_key || null,
+    arcade_xp_spent: Number(row?.arcade_xp_spent || 0),
+    active: unlocked && String(row.pet_id) === String(activePetId || ''),
+    unlocked,
+    unlock_cost_arcade_xp: unlocked ? 0 : cost,
+    arcade_xp_available: Math.max(0, Number(arcadeXpAvailable || 0)),
+    purchase_enabled: false,
+    purchase_disabled_reason: unlocked ? null : PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
+    affordable: false,
+  };
+}
+
+async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
+  const normalizedTelegramId = String(telegramId || '').trim();
+  if (!normalizedTelegramId) return { adopted: false, reason: 'missing_telegram_id' };
+  const pet = await getPetProfile(db, normalizedTelegramId).catch(() => null);
+  if (!pet) {
+    return {
+      adopted: false,
+      season: getPetSeasonInfo(now),
+      max_slots: PET_SEASON_MAX_SLOTS,
+      active_pet_id: null,
+      arcade_xp_available: 0,
+      purchase_enabled: false,
+      purchase_disabled_reason: PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
+      slots: [],
+    };
+  }
+  const season = getPetSeasonInfo(now);
+  try {
+    await ensurePetStarterSeasonSlot(db, normalizedTelegramId, now);
+    const [slotRows, activeSlot, arcade] = await Promise.all([
+      db.prepare(`
+        SELECT pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status, created_at, updated_at
+        FROM telegram_pet_season_slots
+        WHERE telegram_id = ? AND season_key = ?
+        ORDER BY slot_number ASC
+      `).bind(normalizedTelegramId, season.key).all(),
+      db.prepare(`
+        SELECT pet_id, season_key FROM telegram_pet_active_slots
+        WHERE telegram_id = ? LIMIT 1
+      `).bind(normalizedTelegramId).first().catch(() => null),
+      getOrCreateArcadeProgressionState(db, normalizedTelegramId).catch(() => null),
+    ]);
+    const rowsBySlot = new Map((slotRows.results || []).map((row) => [Number(row.slot_number), row]));
+    const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rowsBySlot.get(1)?.pet_id || null;
+    const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
+    return {
+      adopted: true,
+      season,
+      max_slots: PET_SEASON_MAX_SLOTS,
+      active_pet_id: activePetId,
+      arcade_xp_available: arcadeXpAvailable,
+      purchase_enabled: false,
+      purchase_disabled_reason: PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
+      slots: Array.from({ length: PET_SEASON_MAX_SLOTS }, (_, index) => {
+        const slotNumber = index + 1;
+        return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable);
+      }),
+    };
+  } catch (error) {
+    if (/no such table: telegram_pet_(season|active)_slots/i.test(String(error?.message || error))) {
+      return {
+        adopted: true,
+        season,
+        max_slots: PET_SEASON_MAX_SLOTS,
+        active_pet_id: null,
+        arcade_xp_available: 0,
+        purchase_enabled: false,
+        purchase_disabled_reason: PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
+        slots: [],
+        unavailable: true,
+      };
+    }
+    throw error;
+  }
+}
+
 async function getOrCreatePetProfile(db, telegramId, options = {}) {
   let pet = await getPetProfile(db, telegramId);
   if (!pet) {
@@ -6681,12 +6780,13 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       shop_items: [],
       inventory: [],
       missions: [],
+      season_slots: null,
     };
   }
 
   const pet = serializePet(petRaw);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications] = await Promise.all([
+  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
@@ -6717,6 +6817,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       ORDER BY p.pet_xp DESC, p.updated_at ASC LIMIT 10`)
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
+    buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
@@ -6801,6 +6902,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     guidance,
     notices: guidanceNotices,
     progress: runtime,
+    season_slots: seasonSlots,
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
       key,
@@ -6871,9 +6973,11 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
   if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  if (lifecycle?.phase === 'egg' && action !== 'guidance_ack' && action !== 'notification_set') {
+  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots'];
+  if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     return { accepted: false, reason: 'moon_egg_must_hatch', lifecycle };
   }
+  if (action === 'season_slots') return { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
   if (['feed', 'play', 'clean', 'sleep', 'train'].includes(action)) {
     const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source });
     if (result.accepted) await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, action);
@@ -7080,7 +7184,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -7866,8 +7970,11 @@ export default {
       });
       let result;
       const lifecycleBeforeAction = await getMoonpetLifecycle(env.DB, telegramId).catch(() => null);
-      if (lifecycleBeforeAction?.phase === 'egg' && body.action !== 'adopt') {
+      const eggAllowedActions = ['adopt', 'season_slots'];
+      if (lifecycleBeforeAction?.phase === 'egg' && !eggAllowedActions.includes(String(body.action || ''))) {
         result = { accepted: false, reason: 'moon_egg_must_hatch', lifecycle: lifecycleBeforeAction };
+      } else if (body.action === 'season_slots') {
+        result = { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(env.DB, telegramId) };
       } else if (body.action === 'buy') {
         result = await processPetShopPurchase(env.DB, telegramId, body.item_key, {
           event_key: body.event_key,
@@ -11689,6 +11796,9 @@ export const __petMediaTestHooks = Object.freeze({
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
   processPetMiniAppAction,
+  PET_SEASON_EXTRA_SLOT_COSTS,
+  buildPetSeasonSlotSummary,
+  serializePetMiniAppActionResult,
   serializePetMiniAppArenaBattle,
   serializePetMiniAppKaijuMatch,
   getPetArenaBattleForPlayer,

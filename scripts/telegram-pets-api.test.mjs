@@ -59,7 +59,11 @@ const {
   parsePetArenaCallbackPayload,
   resolvePetArenaRoundState,
   serializePetMiniAppArenaBattle,
+  serializePetMiniAppActionResult,
   serializePetMiniAppKaijuMatch,
+  PET_SEASON_EXTRA_SLOT_COSTS,
+  buildPetSeasonSlotSummary,
+  processPetMiniAppAction,
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
@@ -130,6 +134,7 @@ assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');
 assert.ok(worker.includes("path === '/telegram-pets/action'"), '/telegram-pets/action route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/leaderboard'"), '/telegram-pets/leaderboard route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/state'"), '/telegram-pets/state route must exist');
+assert.ok(!worker.includes("path === '/telegram-pets/season/slots'"), '/telegram-pets/season/slots must not expose owner-specific slot data without auth');
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/shop'"), '/telegram-pets/shop route must exist');
@@ -140,6 +145,9 @@ assert.ok(worker.includes("body.action === 'use_item'"), 'telegram pets action r
 assert.ok(worker.includes("body.action === 'work'"), 'telegram pets action route must dispatch work actions');
 assert.ok(worker.includes("body.action === 'daily_chest'"), 'telegram pets action route must dispatch daily_chest actions');
 assert.ok(worker.includes("body.action === 'random_event'"), 'telegram pets action route must dispatch random_event actions');
+assert.ok(worker.includes("body.action === 'season_slots'"), 'telegram pets action route must dispatch season slot summary reads');
+assert.ok(!worker.includes("body.action === 'buy_pet_slot'"), 'season slot purchases must not be exposed before per-pet state exists');
+assert.ok(!worker.includes("body.action === 'switch_pet_slot'"), 'active slot switching must not be exposed before per-pet state exists');
 assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route must dispatch run start/resume actions');
 assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
 assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
@@ -190,6 +198,11 @@ assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboar
 assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
 const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
 assert.match(miniAppStateBuilder, /SELECT p\.telegram_id, p\.pet_name,/, 'Mini App leaderboard must select the owner ID needed to materialize legacy lifecycle rows');
+assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state must expose current-season pet slots');
+const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
+assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
+assert.doesNotMatch(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must not sell slots before per-pet state exists');
+assert.doesNotMatch(miniAppActionProcessor, /switchPetSeasonSlot\(db, telegramId/, 'Mini App action handler must not switch slots before per-pet state exists');
 assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
 assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
@@ -1615,6 +1628,34 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   `).run();
   return db;
 }
+
+const seasonSlotRuntimeDb = seedRepeatRewardPlayer('season-slot-runtime');
+seasonSlotRuntimeDb.database.prepare(`
+  INSERT INTO arcade_progression_state
+    (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
+  VALUES ('season-slot-runtime', 1400, 0, '2026-08-15', 0, NULL, CURRENT_TIMESTAMP)
+  ON CONFLICT(telegram_id) DO UPDATE SET arcade_xp_total = excluded.arcade_xp_total
+`).run();
+assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[2], 500, 'second seasonal pet slot must cost Arcade XP');
+assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[3], 1000, 'third seasonal pet slot must cost Arcade XP');
+const initialSeasonSlots = await buildPetSeasonSlotSummary(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
+assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must always expose the three season slots');
+assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
+assert.equal(initialSeasonSlots.purchase_enabled, false, 'season slot purchases must stay disabled until per-pet state exists');
+assert.equal(initialSeasonSlots.purchase_disabled_reason, 'per_pet_state_pending');
+assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its future Arcade XP cost');
+assert.equal(initialSeasonSlots.slots[1].affordable, false, 'slot 2 must not be marked affordable while purchase is disabled');
+assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start locked');
+const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
+  action: 'season_slots',
+  request_id: 'slot-summary',
+}, 'bot-token');
+assert.equal(slotSummaryAction.accepted, true, 'Mini App slot action must return the read-only slot summary');
+assert.equal(slotSummaryAction.season_slots.slots.length, 3, 'Mini App slot summary must include all three slots');
+const serializedSlotSummaryAction = serializePetMiniAppActionResult(slotSummaryAction);
+assert.equal(serializedSlotSummaryAction.season_slots.slots.length, 3, 'serialized Mini App slot action must include the slot summary payload');
+assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='season-slot-runtime'").get().arcade_xp_total, 1400, 'read-only slot summary must not spend Arcade XP');
+assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='season-slot-runtime'").get().count, 1, 'read-only slot summary must not create paid slots before per-pet state exists');
 
 const legacyLifecycleStateDb = seedRepeatRewardPlayer('legacy-lifecycle-state');
 const materializedLegacyRows = await materializePetLeaderboardRows(legacyLifecycleStateDb, [{
