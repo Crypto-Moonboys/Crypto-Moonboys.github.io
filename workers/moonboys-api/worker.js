@@ -3034,16 +3034,12 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
   }
 }
 
-const PET_SEASON_MAX_SLOTS = 3;
 const PET_SEASON_EXTRA_SLOT_COSTS = Object.freeze({
   2: 500,
   3: 1000,
 });
-
-function normalizePetSeasonSlotNumber(value) {
-  const slotNumber = Number(value);
-  return Number.isInteger(slotNumber) ? slotNumber : 0;
-}
+const PET_SEASON_MAX_SLOTS = 3;
+const PET_SEASON_SLOT_PURCHASE_DISABLED_REASON = 'per_pet_state_pending';
 
 function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0) {
   const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
@@ -3058,7 +3054,10 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     active: unlocked && String(row.pet_id) === String(activePetId || ''),
     unlocked,
     unlock_cost_arcade_xp: unlocked ? 0 : cost,
-    affordable: !unlocked && cost > 0 && Number(arcadeXpAvailable || 0) >= cost,
+    arcade_xp_available: Math.max(0, Number(arcadeXpAvailable || 0)),
+    purchase_enabled: false,
+    purchase_disabled_reason: unlocked ? null : PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
+    affordable: false,
   };
 }
 
@@ -3073,6 +3072,8 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       max_slots: PET_SEASON_MAX_SLOTS,
       active_pet_id: null,
       arcade_xp_available: 0,
+      purchase_enabled: false,
+      purchase_disabled_reason: PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
       slots: [],
     };
   }
@@ -3101,6 +3102,8 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       max_slots: PET_SEASON_MAX_SLOTS,
       active_pet_id: activePetId,
       arcade_xp_available: arcadeXpAvailable,
+      purchase_enabled: false,
+      purchase_disabled_reason: PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
       slots: Array.from({ length: PET_SEASON_MAX_SLOTS }, (_, index) => {
         const slotNumber = index + 1;
         return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable);
@@ -3114,124 +3117,14 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
         max_slots: PET_SEASON_MAX_SLOTS,
         active_pet_id: null,
         arcade_xp_available: 0,
+        purchase_enabled: false,
+        purchase_disabled_reason: PET_SEASON_SLOT_PURCHASE_DISABLED_REASON,
         slots: [],
         unavailable: true,
       };
     }
     throw error;
   }
-}
-
-async function buyPetSeasonSlot(db, telegramId, requestedSlotNumber, options = {}) {
-  const normalizedTelegramId = String(telegramId || '').trim();
-  const slotNumber = normalizePetSeasonSlotNumber(requestedSlotNumber);
-  if (!normalizedTelegramId) return { accepted: false, reason: 'missing_telegram_id' };
-  if (!PET_SEASON_EXTRA_SLOT_COSTS[slotNumber]) return { accepted: false, reason: 'invalid_slot' };
-  const pet = await getPetProfile(db, normalizedTelegramId).catch(() => null);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
-  const now = options.now instanceof Date ? options.now : new Date();
-  const season = getPetSeasonInfo(now);
-  await ensurePetStarterSeasonSlot(db, normalizedTelegramId, now);
-  const existing = await db.prepare(`
-    SELECT * FROM telegram_pet_season_slots
-    WHERE telegram_id = ? AND season_key = ? AND slot_number = ? AND status = 'active'
-    LIMIT 1
-  `).bind(normalizedTelegramId, season.key, slotNumber).first().catch(() => null);
-  if (existing) {
-    return {
-      accepted: true,
-      duplicate: true,
-      reason: 'season_slot_already_unlocked',
-      slot: serializePetSeasonSlot(existing, slotNumber, existing.pet_id, 0),
-      season_slots: await buildPetSeasonSlotSummary(db, normalizedTelegramId, now),
-    };
-  }
-  if (slotNumber > 2) {
-    const previous = await db.prepare(`
-      SELECT 1 FROM telegram_pet_season_slots
-      WHERE telegram_id = ? AND season_key = ? AND slot_number = ? AND status = 'active'
-      LIMIT 1
-    `).bind(normalizedTelegramId, season.key, slotNumber - 1).first().catch(() => null);
-    if (!previous) return { accepted: false, reason: 'previous_slot_required', slot_number: slotNumber };
-  }
-  const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
-  const arcade = await getOrCreateArcadeProgressionState(db, normalizedTelegramId);
-  if (Number(arcade?.arcade_xp_total || 0) < cost) {
-    return {
-      accepted: false,
-      reason: 'insufficient_arcade_xp',
-      slot_number: slotNumber,
-      cost_arcade_xp: cost,
-      arcade_xp_available: Math.max(0, Number(arcade?.arcade_xp_total || 0)),
-    };
-  }
-  const sourceEventKey = String(options.event_key || `season_slot:${season.key}:${slotNumber}`).slice(0, 120);
-  const petId = `pet:${normalizedTelegramId}:${season.key}:${slotNumber}`;
-  const batch = await db.batch([
-    db.prepare(`
-      UPDATE arcade_progression_state
-      SET arcade_xp_total = arcade_xp_total - ?, updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ? AND arcade_xp_total >= ?
-    `).bind(cost, normalizedTelegramId, cost),
-    db.prepare(`
-      INSERT INTO telegram_pet_season_slots
-        (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
-      VALUES (?, ?, ?, ?, 'arcade_xp', ?, ?, 'active')
-    `).bind(petId, normalizedTelegramId, season.key, slotNumber, sourceEventKey, cost),
-    db.prepare(`
-      INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
-      VALUES (?, ?, ?)
-      ON CONFLICT(telegram_id) DO UPDATE SET
-        pet_id = excluded.pet_id,
-        season_key = excluded.season_key,
-        updated_at = CURRENT_TIMESTAMP
-    `).bind(normalizedTelegramId, petId, season.key),
-  ]);
-  if (Number(batch?.[0]?.meta?.changes || 0) <= 0) {
-    return { accepted: false, reason: 'insufficient_arcade_xp', slot_number: slotNumber, cost_arcade_xp: cost };
-  }
-  const seasonSlots = await buildPetSeasonSlotSummary(db, normalizedTelegramId, now);
-  return {
-    accepted: true,
-    reason: 'season_slot_unlocked',
-    slot_number: slotNumber,
-    pet_id: petId,
-    cost_arcade_xp: cost,
-    season_slots: seasonSlots,
-  };
-}
-
-async function switchPetSeasonSlot(db, telegramId, requestedSlotNumber, options = {}) {
-  const normalizedTelegramId = String(telegramId || '').trim();
-  const slotNumber = normalizePetSeasonSlotNumber(requestedSlotNumber);
-  if (!normalizedTelegramId) return { accepted: false, reason: 'missing_telegram_id' };
-  if (slotNumber < 1 || slotNumber > PET_SEASON_MAX_SLOTS) return { accepted: false, reason: 'invalid_slot' };
-  const pet = await getPetProfile(db, normalizedTelegramId).catch(() => null);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
-  const now = options.now instanceof Date ? options.now : new Date();
-  const season = getPetSeasonInfo(now);
-  await ensurePetStarterSeasonSlot(db, normalizedTelegramId, now);
-  const slot = await db.prepare(`
-    SELECT * FROM telegram_pet_season_slots
-    WHERE telegram_id = ? AND season_key = ? AND slot_number = ? AND status = 'active'
-    LIMIT 1
-  `).bind(normalizedTelegramId, season.key, slotNumber).first().catch(() => null);
-  if (!slot) return { accepted: false, reason: 'slot_not_unlocked', slot_number: slotNumber };
-  await db.prepare(`
-    INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
-    VALUES (?, ?, ?)
-    ON CONFLICT(telegram_id) DO UPDATE SET
-      pet_id = excluded.pet_id,
-      season_key = excluded.season_key,
-      updated_at = CURRENT_TIMESTAMP
-  `).bind(normalizedTelegramId, slot.pet_id, season.key).run();
-  return {
-    accepted: true,
-    reason: 'active_slot_switched',
-    slot_number: slotNumber,
-    pet_id: slot.pet_id,
-    season_slots: await buildPetSeasonSlotSummary(db, normalizedTelegramId, now),
-  };
 }
 
 async function getOrCreatePetProfile(db, telegramId, options = {}) {
@@ -7080,17 +6973,11 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
   if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'unlock_pet_slot', 'switch_pet_slot', 'set_active_pet_slot'];
+  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     return { accepted: false, reason: 'moon_egg_must_hatch', lifecycle };
   }
   if (action === 'season_slots') return { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
-  if (action === 'buy_pet_slot' || action === 'unlock_pet_slot') {
-    return buyPetSeasonSlot(db, telegramId, body.slot_number ?? body.slot, { event_key: eventKey, source });
-  }
-  if (action === 'switch_pet_slot' || action === 'set_active_pet_slot') {
-    return switchPetSeasonSlot(db, telegramId, body.slot_number ?? body.slot, { event_key: eventKey, source });
-  }
   if (['feed', 'play', 'clean', 'sleep', 'train'].includes(action)) {
     const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source });
     if (result.accepted) await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, action);
@@ -8089,21 +7976,11 @@ export default {
       });
       let result;
       const lifecycleBeforeAction = await getMoonpetLifecycle(env.DB, telegramId).catch(() => null);
-      const eggAllowedActions = ['adopt', 'season_slots', 'buy_pet_slot', 'unlock_pet_slot', 'switch_pet_slot', 'set_active_pet_slot'];
+      const eggAllowedActions = ['adopt', 'season_slots'];
       if (lifecycleBeforeAction?.phase === 'egg' && !eggAllowedActions.includes(String(body.action || ''))) {
         result = { accepted: false, reason: 'moon_egg_must_hatch', lifecycle: lifecycleBeforeAction };
       } else if (body.action === 'season_slots') {
         result = { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(env.DB, telegramId) };
-      } else if (body.action === 'buy_pet_slot' || body.action === 'unlock_pet_slot') {
-        result = await buyPetSeasonSlot(env.DB, telegramId, body.slot_number ?? body.slot, {
-          event_key: body.event_key,
-          source: 'telegram_pets_api',
-        });
-      } else if (body.action === 'switch_pet_slot' || body.action === 'set_active_pet_slot') {
-        result = await switchPetSeasonSlot(env.DB, telegramId, body.slot_number ?? body.slot, {
-          event_key: body.event_key,
-          source: 'telegram_pets_api',
-        });
       } else if (body.action === 'buy') {
         result = await processPetShopPurchase(env.DB, telegramId, body.item_key, {
           event_key: body.event_key,
@@ -11927,8 +11804,6 @@ export const __petMediaTestHooks = Object.freeze({
   processPetMiniAppAction,
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
-  buyPetSeasonSlot,
-  switchPetSeasonSlot,
   serializePetMiniAppArenaBattle,
   serializePetMiniAppKaijuMatch,
   getPetArenaBattleForPlayer,
