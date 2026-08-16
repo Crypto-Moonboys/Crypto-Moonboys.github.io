@@ -104,7 +104,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260814-moonpet-aaa-pass/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260816-season-slots-ui/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
@@ -166,7 +166,26 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260814-moonpet-aaa-pass/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-slots-ui/);
+// Season slot UI: summary, purchase affordance, switching, and rejection copy.
+assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
+assert.match(client, /\[1, 2, 3\]\.map/, 'slot summary must always materialize all three seasonal slots');
+assert.match(client, /ARCADE XP AVAILABLE/, 'slot summary must display the shared Arcade XP balance');
+assert.match(client, /data-season-slot=/, 'each rendered slot must expose its slot number');
+assert.match(client, /canPurchase \? button\('BUY SLOT ' \+ slotNumber, 'buy_pet_slot', \{ slot_number: slotNumber \}/, 'buy controls must dispatch buy_pet_slot with slot_number only when purchasing is enabled');
+assert.match(client, /disabled: !affordable/, 'unaffordable slot purchases must be disabled');
+assert.match(client, /NEED ' \+ number\(Math\.max\(0, cost - available\)\) \+ ' MORE ARCADE XP'/, 'disabled purchases must explain the XP shortfall');
+assert.match(client, /owned \? button\('SWITCH TO SLOT ' \+ slotNumber, 'switch_pet_slot', \{ pet_id: slot\.pet_id, slot_number: slotNumber \}\)/, 'owned inactive slots must dispatch switch_pet_slot');
+assert.match(client, /active \? '<strong class="slot-active-marker"/, 'active slots must show a marker instead of a switch control');
+for (const reason of ['insufficient_arcade_xp', 'pet_slot_already_owned', 'pet_slot_not_switchable', 'pet_activity_active', 'pet_run_active', 'pet_arena_active', 'pet_kaiju_active', 'season_slots_unavailable']) {
+  assert.match(client, new RegExp(`${reason}:`), `Mini App must explain ${reason}`);
+}
+assert.match(worker, /LEFT JOIN telegram_pet_instances i[\s\S]*lifecycle_species_id/, 'slot summaries must include owned pet identity details');
+assert.match(worker, /pet: unlocked \? \{[\s\S]*name:[\s\S]*species:[\s\S]*stage:/, 'serialized owned slots must expose pet name, species, and stage');
+// Season slots panel must be reachable during egg phase (slot controls cannot be hidden behind the egg early-return).
+assert.match(client, /phase === 'egg'[\s\S]{1,3000}renderSeasonSlots\(\)/, 'season slot panel must render during egg phase so players can view and switch slots');
+// Arcade XP zero must not be treated as missing — nullish checks are required.
+assert.match(client, /arcade_xp_available != null/, 'arcade_xp_available zero must not fall back via || operator');
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
@@ -678,7 +697,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260814-moonpet-aaa-pass/);
+assert.match(html, /20260816-season-slots-ui/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
