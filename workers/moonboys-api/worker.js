@@ -27,6 +27,7 @@ import {
   validatePetRelicContent, validatePetRogueliteContent, validatePetRunModifier,
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
+import { evaluatePetSeasonCompletion, getPetSeasonWeek } from './pets/season-completion.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -3308,6 +3309,7 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
       hunger: clampPetStat(Number(row?.hunger == null ? 25 : row.hunger)),
       happiness: clampPetStat(Number(row?.happiness == null ? 70 : row.happiness)),
       cleanliness: clampPetStat(Number(row?.cleanliness == null ? 70 : row.cleanliness)),
+      progression: row?.progression || null,
     } : null,
   };
 }
@@ -3377,12 +3379,17 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
     // This endpoint is a read-only display projection. Preview canonical decay
     // in memory; gameplay/switch paths persist decay against the pet instance.
-    const currentRows = rawRows.map((row) => mergePetInstanceDisplayFields(row, applyPetDecay({ ...row }, now)));
+    const progressionRows = await Promise.all(rawRows.map(async (row) => ({
+      ...row,
+      progression: await evaluatePetSeasonCompletion(db, row.pet_id, row.season_key, now, { telegram_id: normalizedTelegramId, season_week: getPetSeasonWeek(season, now) }).catch(() => null),
+    })));
+    const currentRows = progressionRows.map((row) => mergePetInstanceDisplayFields(row, applyPetDecay({ ...row }, now)));
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
     return {
       adopted: true,
       season,
+      current_season_week: getPetSeasonWeek(season, now),
       max_slots: PET_SEASON_MAX_SLOTS,
       active_pet_id: activePetId,
       arcade_xp_available: arcadeXpAvailable,
