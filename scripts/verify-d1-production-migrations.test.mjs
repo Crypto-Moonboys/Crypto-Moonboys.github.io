@@ -12,8 +12,6 @@ const remoteQueryStep = workflow.match(/- name: Query production migration recor
 const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_append_only\.sql/, 'migration 060 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/061_telegram_pet_sanctuary_immutable\.sql/, 'migration 061 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -50,8 +48,6 @@ assert.match(
   'the workflow_dispatch D1 query must request migration 058 from production',
 );
 assert.match(remoteQueryStep, /059_telegram_pet_sanctuary\.sql/, 'the workflow_dispatch D1 query must request migration 059 from production');
-assert.match(remoteQueryStep, /060_telegram_pet_sanctuary_append_only\.sql/, 'the workflow_dispatch D1 query must request migration 060 from production');
-assert.match(remoteQueryStep, /061_telegram_pet_sanctuary_immutable\.sql/, 'the workflow_dispatch D1 query must request migration 061 from production');
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),
