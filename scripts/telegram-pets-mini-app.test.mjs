@@ -66,7 +66,7 @@ const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const arcadeRadio = fs.readFileSync(new URL('../js/arcade/core/radio.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
-const seasonTimingSource = client.match(/(?<=  \/\/ TEST-EXPORT: seasonTiming:start\n)  function seasonTiming\(season, elapsedMs\) \{[\s\S]*?\n  \}(?=\n  \/\/ TEST-EXPORT: seasonTiming:end)/)?.[0];
+const seasonTimingSource = client.match(/^[\t ]*\/\/ TEST-EXPORT: seasonTiming:start[\t ]*\r?\n([\s\S]*?)^[\t ]*\/\/ TEST-EXPORT: seasonTiming:end[\t ]*$/m)?.[1];
 assert.ok(seasonTimingSource, 'seasonTiming source must remain independently testable');
 const seasonTiming = Function(`"use strict";${seasonTimingSource}\nreturn seasonTiming;`)();
 const originalDateNow = Date.now;
