@@ -18,6 +18,7 @@ import { buildPetProgressSummary } from '../workers/moonboys-api/pets/runtime-ph
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql', import.meta.url), 'utf8');
 const identitySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/moonpet-identity.js', import.meta.url), 'utf8');
+const TEST_SEASON_KEY = 'pet-s2026-003';
 
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
@@ -59,16 +60,37 @@ class D1 {
   }
 }
 
+function seedPetSlot(db, telegramId, slotNumber, acquisitionType = 'free') {
+  const petId = `pet:${telegramId}:${TEST_SEASON_KEY}:${slotNumber}`;
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`)
+    .run(petId, telegramId, TEST_SEASON_KEY, slotNumber, acquisitionType, slotNumber > 1 ? `fixture:slot:${slotNumber}` : null, slotNumber > 1 ? 500 : 0);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_name, source_profile_updated_at, status)
+    VALUES (?, ?, ?, ?, 'Moonpet', '2026-08-16T00:00:00Z', 'active')`)
+    .run(petId, telegramId, TEST_SEASON_KEY, slotNumber);
+  return petId;
+}
+
+function setActivePetSlot(db, telegramId, petId) {
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, ?)
+    ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=CURRENT_TIMESTAMP`)
+    .run(telegramId, petId, TEST_SEASON_KEY);
+}
+
 function seedPlayer(telegramId = 'identity-player') {
   const db = new D1();
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES (?, 1900, 20)').run(telegramId);
+  setActivePetSlot(db, telegramId, seedPetSlot(db, telegramId, 1, 'free'));
   return db;
 }
 
-for (const table of ['telegram_pet_evolutions', 'telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_identity_events', 'telegram_pet_identity_analytics']) {
+for (const table of ['telegram_pet_evolutions', 'telegram_pet_evolutions_by_pet', 'telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_identity_events', 'telegram_pet_identity_analytics']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must exist in canonical schema`);
-  assert.ok(migration.includes(`CREATE TABLE ${table}`), `${table} must exist in migration 043`);
+  if (table !== 'telegram_pet_evolutions_by_pet') assert.ok(migration.includes(`CREATE TABLE ${table}`), `${table} must exist in migration 043`);
 }
 const migrationDb = new DatabaseSync(':memory:');
 migrationDb.exec(schema.split('-- Crypto Moonboy Pets identity expansion.')[0]);
@@ -134,7 +156,7 @@ assert.deepEqual(evolutionDb.database.prepare("SELECT material_key, quantity FRO
 ]);
 const duplicateCyber = await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player', evolution_id: 'cyber_moonpet', event_key: 'cyber-retry' });
 assert.equal(duplicateCyber.duplicate, true, 'duplicate evolution cannot happen');
-assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions WHERE evolution_id='cyber_moonpet'").get().count, 1);
+assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions_by_pet WHERE evolution_id='cyber_moonpet'").get().count, 1);
 assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE event_type='evolution_unlock'").get().count, 3);
 
 const concurrentEvolutionDb = seedPlayer('concurrent-evolution');
@@ -144,7 +166,7 @@ const concurrentEvolutionCallbacks = await Promise.all(Array.from({ length: 8 },
   telegram_id: 'concurrent-evolution', evolution_id: 'street_moonpet', event_key: `concurrent-street:${index}`,
 })));
 assert.equal(concurrentEvolutionCallbacks.filter(({ duplicate }) => !duplicate).length, 1, 'concurrent evolution callbacks must unlock once');
-assert.equal(concurrentEvolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions WHERE telegram_id='concurrent-evolution' AND evolution_id='street_moonpet'").get().count, 1,
+assert.equal(concurrentEvolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions_by_pet WHERE telegram_id='concurrent-evolution' AND evolution_id='street_moonpet'").get().count, 1,
   'concurrent evolution callbacks must create one evolution row');
 assert.equal(concurrentEvolutionDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='concurrent-evolution' AND material_key='scrap_metal'").get().quantity, 0,
   'concurrent evolution callbacks must consume authoritative materials once');
@@ -208,6 +230,19 @@ await assert.rejects(() => recordMoonpetMemory(memoryDb, {
 const summary = await getMoonpetIdentitySummary(evolutionDb, 'identity-player');
 assert.equal(summary.current_stage.name, 'Cyber Moonpet');
 assert.ok(summary.memories.milestones.includes('first_adoption'));
+const multiPetDb = seedPlayer('multi-pet-evolution');
+multiPetDb.database.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('multi-pet-evolution', 'scrap_metal', 10)").run();
+await recordMoonpetMemory(multiPetDb, { telegram_id: 'multi-pet-evolution', event_key: 'multi-adoption', memory_type: 'first_adoption', milestone: 'first_adoption' });
+assert.equal((await evolveMoonpet(multiPetDb, { telegram_id: 'multi-pet-evolution', evolution_id: 'moon_egg', event_key: 'multi-starter-egg' })).accepted, true);
+assert.equal((await evolveMoonpet(multiPetDb, { telegram_id: 'multi-pet-evolution', evolution_id: 'street_moonpet', event_key: 'multi-starter-street' })).accepted, true);
+const paidPetId = seedPetSlot(multiPetDb, 'multi-pet-evolution', 2, 'arcade_xp');
+setActivePetSlot(multiPetDb, 'multi-pet-evolution', paidPetId);
+assert.equal((await getMoonpetIdentitySummary(multiPetDb, 'multi-pet-evolution')).current_stage.evolution_id, 'moon_egg',
+  'switching to a paid pet must not inherit the starter evolution rows');
+assert.equal((await evolveMoonpet(multiPetDb, { telegram_id: 'multi-pet-evolution', evolution_id: 'moon_egg', event_key: 'multi-paid-egg' })).accepted, true);
+assert.equal((await evolveMoonpet(multiPetDb, { telegram_id: 'multi-pet-evolution', evolution_id: 'street_moonpet', event_key: 'multi-paid-street' })).accepted, true);
+assert.equal(multiPetDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions_by_pet WHERE telegram_id='multi-pet-evolution' AND evolution_id='street_moonpet'").get().count, 2,
+  'starter and paid pets must each retain their own street-stage unlock');
 const analytics = await getMoonpetIdentityAnalytics(evolutionDb);
 assert.equal(analytics.adopted_pets, 1);
 assert.ok(analytics.events.some(({ event_type, average_time_to_evolution_seconds }) => event_type === 'evolution_unlock' && Number(average_time_to_evolution_seconds) >= 0));

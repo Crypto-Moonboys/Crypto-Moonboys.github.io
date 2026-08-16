@@ -55,6 +55,21 @@ assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.life
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\)\.catch\(\(\) => null\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
 assert.match(worker, /if \(!result\.duplicate\) await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'command evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
 assert.match(
+  migration057,
+  /CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet/,
+  'migration 057 must create per-pet evolution storage',
+);
+assert.match(
+  migration057,
+  /PRIMARY KEY \(pet_id, evolution_id\)[\s\S]*UNIQUE \(pet_id, stage\)[\s\S]*UNIQUE \(pet_id, unlock_event_key\)/,
+  'migration 057 must enforce per-pet evolution uniqueness',
+);
+assert.match(
+  migration057,
+  /INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet[\s\S]*FROM telegram_pet_evolutions e[\s\S]*JOIN telegram_pet_season_slots s ON s\.telegram_id=e\.telegram_id AND s\.slot_number=1/,
+  'migration 057 must backfill starter-slot evolution rows from the legacy owner table',
+);
+assert.match(
   migration056,
   /FOREIGN KEY \(pet_id, telegram_id, season_key, slot_number\)\s+REFERENCES telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)\s+ON DELETE CASCADE/,
   'pet instances must reference the complete season-slot ownership tuple',
@@ -83,6 +98,19 @@ db.exec(`
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (telegram_id, season_key)
   );
+  CREATE TABLE telegram_pet_evolutions (
+    telegram_id TEXT NOT NULL,
+    evolution_id TEXT NOT NULL,
+    stage INTEGER NOT NULL,
+    unlock_event_key TEXT NOT NULL,
+    cosmetic_unlocks TEXT NOT NULL DEFAULT '[]',
+    achievement_unlocks TEXT NOT NULL DEFAULT '[]',
+    materials_consumed INTEGER NOT NULL DEFAULT 0,
+    unlocked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (telegram_id, evolution_id),
+    UNIQUE (telegram_id, stage),
+    UNIQUE (telegram_id, unlock_event_key)
+  );
 `);
 
 db.prepare(`INSERT INTO telegram_pet_profiles (
@@ -99,6 +127,11 @@ db.prepare(`INSERT INTO telegram_pet_profiles (
 );
 db.prepare('INSERT INTO telegram_pet_season_state (telegram_id, season_key, updated_at) VALUES (?, ?, ?)')
   .run('state-player', '2026-q3', '2026-08-15T00:00:00Z');
+db.prepare(`INSERT INTO telegram_pet_evolutions
+  (telegram_id, evolution_id, stage, unlock_event_key, cosmetic_unlocks, achievement_unlocks, materials_consumed, unlocked_at)
+  VALUES
+  ('state-player', 'moon_egg', 0, 'legacy:moon-egg', '[]', '[]', 1, '2026-01-02T03:04:05Z'),
+  ('state-player', 'street_moonpet', 1, 'legacy:street', '[]', '[]', 1, '2026-02-03T04:05:06Z')`).run();
 
 db.exec(migration055);
 db.exec(migration056);
@@ -107,6 +140,11 @@ db.exec(migration053);
 db.exec(migration057);
 db.exec(migration057);
 assert.equal(db.prepare(`SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:2026-q3:1'`).get().phase, 'adult', 'migration must retain the starter lifecycle');
+assert.deepEqual(
+  db.prepare(`SELECT evolution_id, stage FROM telegram_pet_evolutions_by_pet WHERE pet_id='pet:state-player:2026-q3:1' ORDER BY stage`).all().map((row) => ({ ...row })),
+  [{ evolution_id: 'moon_egg', stage: 0 }, { evolution_id: 'street_moonpet', stage: 1 }],
+  'migration must backfill starter evolution rows onto the starter pet instance only',
+);
 
 assert.equal(db.prepare('SELECT COUNT(*) AS count FROM telegram_pet_instances').get().count, 1, 'exactly one starter-slot instance must be backfilled');
 const instance = db.prepare('SELECT * FROM telegram_pet_instances').get();

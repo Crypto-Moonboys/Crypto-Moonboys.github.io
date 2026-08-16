@@ -1115,6 +1115,23 @@ CREATE TABLE IF NOT EXISTS telegram_pet_evolutions (
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet (
+  pet_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  evolution_id TEXT NOT NULL,
+  stage INTEGER NOT NULL CHECK (stage BETWEEN 0 AND 4),
+  unlock_event_key TEXT NOT NULL,
+  cosmetic_unlocks TEXT NOT NULL DEFAULT '[]',
+  achievement_unlocks TEXT NOT NULL DEFAULT '[]',
+  materials_consumed INTEGER NOT NULL DEFAULT 0 CHECK (materials_consumed IN (0, 1)),
+  unlocked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (pet_id, evolution_id),
+  UNIQUE (pet_id, stage),
+  UNIQUE (pet_id, unlock_event_key),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS telegram_pet_personality_traits (
   telegram_id TEXT NOT NULL,
   trait_id TEXT NOT NULL,
@@ -1406,6 +1423,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_lifecycle_events_by_pet (
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_owner ON telegram_pet_lifecycle_by_pet(telegram_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_phase ON telegram_pet_lifecycle_by_pet(phase, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_events_daily ON telegram_pet_lifecycle_events_by_pet(pet_id, day_key, action);
+CREATE INDEX IF NOT EXISTS idx_pet_evolutions_by_pet_owner ON telegram_pet_evolutions_by_pet(telegram_id, stage DESC, unlocked_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_evolutions_by_pet_stage ON telegram_pet_evolutions_by_pet(stage, unlocked_at DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_client_performance (
   sample_id TEXT PRIMARY KEY,

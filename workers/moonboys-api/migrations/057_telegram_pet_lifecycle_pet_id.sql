@@ -52,6 +52,35 @@ SELECT e.event_id, l.pet_id, e.telegram_id, e.event_key, e.action, e.payload_jso
 FROM telegram_pet_lifecycle_events e
 JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id=e.telegram_id;
 
+CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet (
+  pet_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  evolution_id TEXT NOT NULL,
+  stage INTEGER NOT NULL CHECK (stage BETWEEN 0 AND 4),
+  unlock_event_key TEXT NOT NULL,
+  cosmetic_unlocks TEXT NOT NULL DEFAULT '[]',
+  achievement_unlocks TEXT NOT NULL DEFAULT '[]',
+  materials_consumed INTEGER NOT NULL DEFAULT 0 CHECK (materials_consumed IN (0, 1)),
+  unlocked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (pet_id, evolution_id),
+  UNIQUE (pet_id, stage),
+  UNIQUE (pet_id, unlock_event_key),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+);
+
+INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet
+  (pet_id, telegram_id, evolution_id, stage, unlock_event_key, cosmetic_unlocks, achievement_unlocks,
+   materials_consumed, unlocked_at)
+SELECT s.pet_id, e.telegram_id, e.evolution_id, e.stage, e.unlock_event_key, e.cosmetic_unlocks,
+  e.achievement_unlocks, e.materials_consumed, e.unlocked_at
+FROM telegram_pet_evolutions e
+JOIN telegram_pet_season_slots s ON s.telegram_id=e.telegram_id AND s.slot_number=1
+JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+WHERE s.status='active' AND i.status='active';
+
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_by_pet_owner ON telegram_pet_lifecycle_by_pet(telegram_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_by_pet_phase ON telegram_pet_lifecycle_by_pet(phase, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_events_by_pet_daily ON telegram_pet_lifecycle_events_by_pet(pet_id, day_key, action);
+CREATE INDEX IF NOT EXISTS idx_pet_evolutions_by_pet_owner ON telegram_pet_evolutions_by_pet(telegram_id, stage DESC, unlocked_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_evolutions_by_pet_stage ON telegram_pet_evolutions_by_pet(stage, unlocked_at DESC);

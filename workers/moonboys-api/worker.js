@@ -6997,7 +6997,13 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
     WITH scores AS (${scoreSql}),
     ranked AS (
       SELECT scores.telegram_id, scores.pet_xp, p.pet_name,
-        COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=scores.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+        COALESCE(
+          (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
+            WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = scores.telegram_id)
+            ORDER BY pe.stage DESC LIMIT 1),
+          (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=scores.telegram_id ORDER BY pe.stage DESC LIMIT 1),
+          'moon_egg'
+        ) AS stage,
         p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
         l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
         ROW_NUMBER() OVER (ORDER BY scores.pet_xp DESC, COALESCE(p.updated_at, '') ASC, scores.telegram_id ASC) AS rank
@@ -7060,7 +7066,13 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       AND (player1_telegram_id=? OR player2_telegram_id=?) ORDER BY completed_at DESC LIMIT 1`)
       .bind(String(telegramId), String(telegramId)).first().catch(() => null),
     db.prepare(`SELECT p.telegram_id, p.pet_name,
-        COALESCE((SELECT e.evolution_id FROM telegram_pet_evolutions e WHERE e.telegram_id=p.telegram_id ORDER BY e.stage DESC LIMIT 1), 'moon_egg') AS stage,
+        COALESCE(
+          (SELECT e.evolution_id FROM telegram_pet_evolutions_by_pet e
+            WHERE e.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
+            ORDER BY e.stage DESC LIMIT 1),
+          (SELECT e.evolution_id FROM telegram_pet_evolutions e WHERE e.telegram_id=p.telegram_id ORDER BY e.stage DESC LIMIT 1),
+          'moon_egg'
+        ) AS stage,
         p.level, p.pet_xp, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days,
         l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id
       FROM telegram_pet_profiles p
@@ -8105,7 +8117,13 @@ export default {
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
       const rows = await env.DB.prepare(`
         SELECT e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
-               p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+               p.pet_name, COALESCE(
+                 (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
+                   WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
+                   ORDER BY pe.stage DESC LIMIT 1),
+                 (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
+                 'moon_egg'
+               ) AS stage,
                u.username, u.first_name, u.last_name
         FROM telegram_pet_events e
         LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
@@ -8136,7 +8154,13 @@ export default {
       let rows;
       if (period === 'daily') {
         rows = await env.DB.prepare(`
-          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE(
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
+                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
+                     ORDER BY pe.stage DESC LIMIT 1),
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
+                   'moon_egg'
+                 ) AS stage,
                  p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
                  l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
                  u.username, u.first_name, u.last_name
@@ -8151,7 +8175,13 @@ export default {
         `).bind(dayKey, limit).all().catch(() => ({ results: [] }));
       } else if (period === 'weekly') {
         rows = await env.DB.prepare(`
-          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE(
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
+                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
+                     ORDER BY pe.stage DESC LIMIT 1),
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
+                   'moon_egg'
+                 ) AS stage,
                  p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
                  l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
                  u.username, u.first_name, u.last_name
@@ -8166,7 +8196,13 @@ export default {
         `).bind(weekKey, limit).all().catch(() => ({ results: [] }));
       } else if (period === 'all_time') {
         rows = await env.DB.prepare(`
-          SELECT p.telegram_id, p.pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=p.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+          SELECT p.telegram_id, p.pet_xp, p.pet_name, COALESCE(
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
+                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
+                     ORDER BY pe.stage DESC LIMIT 1),
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=p.telegram_id ORDER BY pe.stage DESC LIMIT 1),
+                   'moon_egg'
+                 ) AS stage,
                  p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
                  l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
                  u.username, u.first_name, u.last_name
@@ -8178,7 +8214,13 @@ export default {
         `).bind(limit).all().catch(() => ({ results: [] }));
       } else {
         rows = await env.DB.prepare(`
-          SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage,
+          SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, COALESCE(
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
+                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = s.telegram_id)
+                     ORDER BY pe.stage DESC LIMIT 1),
+                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1),
+                   'moon_egg'
+                 ) AS stage,
                  p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
                  l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
                  u.username, u.first_name, u.last_name
@@ -13256,7 +13298,11 @@ async function syncPetAchievements(db, telegramId) {
       FROM telegram_pet_events WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT total_runs, total_bosses_defeated FROM telegram_pet_memories WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE telegram_id = ? AND unlocked_at IS NOT NULL`).bind(telegramId).first().catch(() => null),
-    db.prepare(`SELECT MAX(stage) AS stage FROM telegram_pet_evolutions WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
+    db.prepare(`SELECT COALESCE(
+      (SELECT MAX(stage) FROM telegram_pet_evolutions_by_pet WHERE telegram_id = ?),
+      (SELECT MAX(stage) FROM telegram_pet_evolutions WHERE telegram_id = ?),
+      0
+    ) AS stage`).bind(telegramId, telegramId).first().catch(() => null),
   ]);
   if (!profile) return [];
   const values = {
@@ -14415,7 +14461,13 @@ async function cmdPetNotify(db, tok, chatId, telegramId, argStr = '') {
 async function cmdPetLeaderboard(db, tok, chatId, replyMarkup = null) {
   const season = getPetSeasonInfo(new Date());
   const rows = await db.prepare(`
-    SELECT s.telegram_id, s.season_xp, p.pet_name, COALESCE((SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1), 'moon_egg') AS stage, p.level,
+    SELECT s.telegram_id, s.season_xp, p.pet_name, COALESCE(
+             (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
+               WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = s.telegram_id)
+               ORDER BY pe.stage DESC LIMIT 1),
+             (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1),
+             'moon_egg'
+           ) AS stage, p.level,
            u.username, u.first_name, u.last_name
     FROM telegram_pet_season_state s
     LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
