@@ -1,6 +1,6 @@
 # Moonpet Reward Authority and Receipts
 
-**Status:** Canonical security and support contract. Existing protected reward paths are **LIVE**; seasonal slots, Sanctuary, catch-up, and Fusion rewards remain **IN DEVELOPMENT** or **FUTURE** as identified in the seasonal model.
+**Status:** Canonical security and support contract. Existing protected reward paths and seasonal slot unlocks are **LIVE**; Sanctuary, catch-up, and Fusion rewards remain **IN DEVELOPMENT** or **FUTURE** as identified in the seasonal model.
 
 ## Authority boundary
 
@@ -28,4 +28,4 @@ This is receipt-based community support, not “failed purchase” administratio
 
 ## Deferred implementation
 
-This document does not implement a slot purchase API, Arcade XP spending route, slot UI, Rested XP, Crest recovery, breeding/Fusion, or an admin dashboard. Those require separate reviewed PRs and must preserve this authority boundary.
+This documentation-only change does not modify the live slot-unlock API, Arcade XP spending route, or slot UI, and it does not implement Rested XP, Crest recovery, breeding/Fusion, or an admin dashboard. Future changes require separate reviewed PRs and must preserve this authority boundary.

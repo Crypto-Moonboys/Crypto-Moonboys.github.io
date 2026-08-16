@@ -17,15 +17,19 @@ Crypto Moonboy Pets is a **community-only game**. There are no cash purchases, c
 | Rule | Status | Canonical behavior |
 | --- | --- | --- |
 | Season length | **LIVE** | A season lasts 90 days. |
-| Seasonal roster | **IN DEVELOPMENT** | Each player may have at most three Moonpets in a season. |
-| Pet 1 | **IN DEVELOPMENT** | The first seasonal Moonpet is free each season. |
-| Pet 2 | **IN DEVELOPMENT** | Unlock by spending 10,000 **spendable Arcade XP** earned through community play. |
-| Pet 3 | **IN DEVELOPMENT** | Unlock by spending 25,000 **spendable Arcade XP** earned through community play. |
+| Seasonal roster | **LIVE** | Each player may have at most three Moonpets in a season. |
+| Pet 1 | **LIVE** | The first seasonal Moonpet is free each season. |
+| Pet 2 | **LIVE** | Unlock by spending 500 **spendable Arcade XP** earned through community play. |
+| Pet 3 | **LIVE** | Unlock by spending 1,000 **spendable Arcade XP** earned through community play. |
 | Active pet | **IN DEVELOPMENT** | A player has one active seasonal Moonpet at a time. Every action and reward affects only the active or explicitly participating `pet_id`. |
 | Daily growth | **IN DEVELOPMENT** | Pet XP may exceed the daily target, with diminishing returns planned; Growth Marks are capped at one per `pet_id` per day. |
 | Weekly growth | **IN DEVELOPMENT** | Weekly Crests are capped at one per `pet_id` per week. |
 
-Pet 2 and Pet 3 are **gameplay unlocks**, not purchases with money or crypto. No paid shortcut or paid recovery route exists. Slot APIs, Arcade XP spending, and Pet 2/Pet 3 interfaces are deliberately deferred to later implementation PRs.
+Pet 2 and Pet 3 are **gameplay unlocks**, not purchases with money or crypto. No paid shortcut or paid recovery route exists. The 500 and 1,000 spendable Arcade XP amounts are the current live Season 1 community XP unlock costs.
+
+### Future balancing note
+
+Higher costs such as 10,000 Arcade XP for Pet 2 and 25,000 Arcade XP for Pet 3 may be considered only in a later economy-balancing PR. They are not current Season 1 costs. Any replacement must update runtime behavior, UI copy, tests, and public documentation together so the source of truth cannot drift from the live game.
 
 ## Active and participating Moonpets
 
@@ -54,4 +58,3 @@ The 90-day window and the 60-day/10-week gates are intentionally shaped so a con
 **FUTURE.** Breeding/Fusion unlocks only after a player has completed Legendary Sanctuary pets. It is planned as a later weekly event system, not a Season 1 core progression feature. Species, Variant, Trait, Mutation, Fusion, Lunar File/Event File, and Critter are the preferred vocabulary for future content.
 
 No breeding route, Fusion route, Fusion reward, or associated interface is authorized by this rules-only foundation.
-
