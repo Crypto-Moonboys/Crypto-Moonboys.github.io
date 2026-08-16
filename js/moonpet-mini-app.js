@@ -7,6 +7,9 @@
   var initData = '';
   var telegramAuth = null;
   var state = null;
+  var seasonSnapshotReceivedAt = 0;
+  var lastSeasonServerRefreshAt = 0;
+  var seasonRefreshBusy = false;
   var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
   var requestedFocus = launchParameter('focus');
@@ -484,7 +487,7 @@
     tell('REFRESHING LIVE SAVE...');
     try {
       var data = await post('/telegram-pets/app/state');
-      if (data.state) state = data.state;
+      setStateSnapshot(data.state);
       render();
       tell('LIVE SAVE REFRESHED.');
       haptic('success');
@@ -540,10 +543,23 @@
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
-  function seasonTiming(season) {
+  function setStateSnapshot(nextState) {
+    if (!nextState) return false;
+    state = nextState;
+    seasonSnapshotReceivedAt = performance.now();
+    lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
+    return true;
+  }
+
+  function seasonSnapshotElapsed() {
+    return seasonSnapshotReceivedAt > 0 ? Math.max(0, performance.now() - seasonSnapshotReceivedAt) : 0;
+  }
+
+  function seasonTiming(season, elapsedMs) {
     var start = Date.parse(season && season.start_at || '');
     var end = Date.parse(season && season.end_at || '');
-    var current = Date.parse(season && season.current_at || '');
+    var serverCurrent = Date.parse(season && season.current_at || '');
+    var current = serverCurrent + Math.max(0, Number(elapsedMs) || 0);
     if (!Number.isFinite(start) || !Number.isFinite(end) || !Number.isFinite(current) || end <= start) {
       return { status: 'UNAVAILABLE', day: 0, totalDays: 0, remaining: 0, partial: false, percent: 0 };
     }
@@ -576,7 +592,7 @@
   function renderSeasonSlots() {
     var summary = state.season_slots || {};
     var season = summary.season || {};
-    var timing = seasonTiming(season);
+    var timing = seasonTiming(season, seasonSnapshotElapsed());
     var accountSeason = state.guidance && state.guidance.season || {};
     var tiers = Array.isArray(accountSeason.tiers) ? accountSeason.tiers : [];
     var unlockedTiers = tiers.filter(function (tier) { return tier.unlocked || tier.claimed_at; }).length;
@@ -1124,7 +1140,7 @@
     await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 1600, notice: true });
     try {
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
-      state = acknowledged.state || state;
+      setStateSnapshot(acknowledged.state);
       render();
     } catch (_) {}
     noticesBusy = false;
@@ -1197,7 +1213,7 @@
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
       var nextState = data.state || state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
-      state = nextState;
+      setStateSnapshot(nextState);
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
@@ -1382,7 +1398,7 @@
     try {
       var data = await post('/telegram-pets/app/state');
       if (!data.state) return;
-      state = data.state;
+      setStateSnapshot(data.state);
       render();
       var after = multiplayerFingerprint(state);
       if (before !== after && activeScreen === 'explore') {
@@ -1394,6 +1410,33 @@
       }
       await showPendingNotices();
     } catch (_) {}
+  }
+
+  async function refreshSeasonSnapshot(force) {
+    var monotonicNow = performance.now();
+    if (busy || noticesBusy || seasonRefreshBusy || !state || !state.adopted) return;
+    if (!force && lastSeasonServerRefreshAt > 0 && monotonicNow - lastSeasonServerRefreshAt < 300000) return;
+    seasonRefreshBusy = true;
+    try {
+      var data = await post('/telegram-pets/app/state');
+      if (!setStateSnapshot(data.state)) return;
+      var scrollTop = screen.scrollTop;
+      render();
+      screen.scrollTop = scrollTop;
+    } catch (_) {
+    } finally {
+      seasonRefreshBusy = false;
+    }
+  }
+
+  function tickSeasonDisplay() {
+    if (!state || !state.adopted || busy || noticesBusy) return;
+    if (activeScreen === 'home') {
+      var scrollTop = screen.scrollTop;
+      render();
+      screen.scrollTop = scrollTop;
+    }
+    refreshSeasonSnapshot(false);
   }
 
   function drawPixelRect(x, y, width, height, color) {
@@ -2572,7 +2615,7 @@
     }
     try {
       var data = await post('/telegram-pets/app/state');
-      state = data.state;
+      setStateSnapshot(data.state);
       if (reducedMotion) {
         var reducedMotionStartedAt = performance.now();
         render();
@@ -2588,6 +2631,7 @@
       await showPendingNotices();
       applyRequestedFocus();
       window.setInterval(refreshLiveState, 5000);
+      window.setInterval(tickSeasonDisplay, 30000);
     } catch (error) {
       tell(error.message || 'STARTUP FAILED', 'danger');
       screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>';
@@ -2603,9 +2647,12 @@
   window.addEventListener('pageshow', function (event) {
     if (event.persisted && radioRequestedOn) setRadioEnabled(true, false);
     if (event.persisted && audioEnabled && !radioRequestedOn) syncMoonpetScore();
+    if (event.persisted) refreshSeasonSnapshot(true);
   });
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden || performanceSent) return;
+    if (document.hidden) return;
+    refreshSeasonSnapshot(true);
+    if (performanceSent) return;
     performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
   });
 

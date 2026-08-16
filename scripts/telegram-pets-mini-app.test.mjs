@@ -66,7 +66,7 @@ const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const arcadeRadio = fs.readFileSync(new URL('../js/arcade/core/radio.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
-const seasonTimingSource = client.match(/  function seasonTiming\(season\) \{[\s\S]*?\n  \}(?=\n\n  function renderPetInstanceCard)/)?.[0];
+const seasonTimingSource = client.match(/  function seasonTiming\(season, elapsedMs\) \{[\s\S]*?\n  \}(?=\n\n  function renderPetInstanceCard)/)?.[0];
 assert.ok(seasonTimingSource, 'seasonTiming source must remain independently testable');
 const seasonTiming = Function(`"use strict";${seasonTimingSource}\nreturn seasonTiming;`)();
 const originalDateNow = Date.now;
@@ -80,6 +80,19 @@ try {
   assert.equal(authoritativeTiming.status, 'ACTIVE', 'server current_at must control season phase despite an incorrect client clock');
   assert.equal(authoritativeTiming.day, 10, 'server current_at must control displayed season position');
   assert.equal(authoritativeTiming.remaining, 81, 'server current_at must control displayed remaining days');
+  const advancedTiming = seasonTiming({
+    start_at: '2026-01-01T00:00:00.000Z',
+    end_at: '2026-04-01T00:00:00.000Z',
+    current_at: '2026-01-10T12:00:00.000Z',
+  }, 2 * 86400000);
+  assert.equal(advancedTiming.day, 12, 'monotonic elapsed time must keep an open app season position advancing');
+  assert.equal(advancedTiming.remaining, 79, 'monotonic elapsed time must keep an open app remaining time advancing');
+  const refreshedTiming = seasonTiming({
+    start_at: '2026-01-01T00:00:00.000Z',
+    end_at: '2026-04-01T00:00:00.000Z',
+    current_at: '2026-01-20T00:00:00.000Z',
+  }, 0);
+  assert.equal(refreshedTiming.day, 20, 'a refreshed server snapshot must reset the elapsed offset from its new current_at');
   assert.equal(seasonTiming({
     start_at: '2026-02-01T00:00:00.000Z',
     end_at: '2026-05-01T00:00:00.000Z',
@@ -132,7 +145,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260816-season-roster-ui/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260816-season-roster-live-time/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
@@ -194,12 +207,16 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-ui/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-live-time/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
-assert.match(client, /function seasonTiming\(season\)/, 'season status must derive position from authoritative runtime boundaries');
+assert.match(client, /function seasonTiming\(season, elapsedMs\)/, 'season status must derive position from an authoritative server snapshot plus monotonic elapsed time');
 assert.match(client, /Date\.parse\(season && season\.current_at/, 'season timing must consume the server timestamp');
 assert.doesNotMatch(seasonTimingSource, /Date\.now\(/, 'season timing must not depend on the browser clock');
+assert.match(client, /seasonSnapshotReceivedAt = performance\.now\(\)/, 'client must record snapshot receipt with a monotonic clock');
+assert.match(client, /seasonTiming\(season, seasonSnapshotElapsed\(\)\)/, 'season rendering must advance from the server snapshot using monotonic elapsed time');
+assert.match(client, /setInterval\(tickSeasonDisplay, 30000\)/, 'open apps must periodically advance and refresh season presentation');
+assert.match(client, /visibilitychange[\s\S]*refreshSeasonSnapshot\(true\)/, 'returning to the app must refresh the authoritative season snapshot');
 assert.match(client, /YEAR-END PARTIAL.*90-DAY TARGET/, 'season status must distinguish a shortened runtime season from the target cycle');
 assert.match(client, /SEASON STATUS \/\/ LIVE/, 'season panel must label current runtime timing as live');
 assert.match(client, /PET PROGRESSION[\s\S]*SEASON PROGRESSION/, 'season UI must separate pet-instance progression from account seasonal progression');
@@ -739,7 +756,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260816-season-roster-ui/);
+assert.match(html, /20260816-season-roster-live-time/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
@@ -756,7 +773,7 @@ assert.match(client, /visibilitychange[\s\S]*performanceFrames = 0; performanceS
 assert.match(client, /if \(reducedMotion\) \{[\s\S]*reducedMotionStartedAt = performance\.now\(\);[\s\S]*render\(\);[\s\S]*sendPerformanceSample\(0, 0, reducedMotionRenderMs\);/, 'reduced-motion sessions must submit measured render duration without synthetic FPS');
 assert.match(schema, /render_duration_ms REAL CHECK \(render_duration_ms > 0 AND render_duration_ms <= 10000\)/, 'static-mode render duration needs a dedicated bounded telemetry field');
 assert.match(worker, /reducedMotion \? renderDurationMs == null : averageFps <= 0/, 'reduced-motion samples must validate render duration instead of requiring FPS');
-assert.match(client, /state = data\.state;[\s\S]*else \{[\s\S]*performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;[\s\S]*render\(\);/, 'normal-motion sampling must begin after authenticated game state loads');
+assert.match(client, /setStateSnapshot\(data\.state\);[\s\S]*else \{[\s\S]*performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;[\s\S]*render\(\);/, 'normal-motion sampling must begin after authenticated game state loads');
 assert.match(client, /LOW_RENDER_INTERVAL_MS = 1000 \/ 30;[\s\S]*skipLowFrame = renderQuality === 'low' && performanceLastFrameAt && time - performanceLastFrameAt < LOW_RENDER_INTERVAL_MS;[\s\S]*if \(!skipLowFrame\) \{[\s\S]*performanceFrames \+= 1;[\s\S]*drawWorld\(time\);/, 'low-tier rendering and telemetry must use a timestamp-based 30 FPS cap');
 assert.match(client, /event\.persisted && radioRequestedOn/, 'BFCache restore must resume the latest requested radio state');
 assert.match(worker, /getPetActiveSetEffects\(pet\)/, 'authoritative job rewards must consume active set effects');
