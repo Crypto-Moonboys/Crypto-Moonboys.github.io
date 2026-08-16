@@ -2970,14 +2970,18 @@ async function getPetProfile(db, telegramId) {
   `).bind(telegramId).first().catch(() => null);
   if (!instance) return profile ? applyPetDecay(profile) : null;
 
-  const profileUpdatedAt = petStateTimestamp(profile?.updated_at);
-  const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
-  if (profile && profileUpdatedAt > instanceProfileVersion) {
-    await writeActivePetInstance(db, telegramId, profile);
-    return applyPetDecay({ ...instance, ...profile, pet_id: instance.pet_id });
+  if (profile && petStateColumnsDiffer(profile, instance)) {
+    const profileUpdatedAt = petStateTimestamp(profile.updated_at);
+    const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
+    const instanceUpdatedAt = petStateTimestamp(instance.updated_at);
+    const profileIsNewer = profileUpdatedAt > instanceProfileVersion
+      || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion);
+    if (profileIsNewer) {
+      await writeActivePetInstance(db, telegramId, profile);
+      return applyPetDecay({ ...instance, ...profile, pet_id: instance.pet_id });
+    }
+    await mirrorActivePetInstanceToProfile(db, instance);
   }
-
-  await mirrorActivePetInstanceToProfile(db, instance);
   return applyPetDecay(instance);
 }
 
@@ -2991,13 +2995,14 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
     const priorDecayAt = stored.last_decay_at;
     const decayed = applyPetDecay({ ...stored }, now);
     if (decayed.last_decay_at === priorDecayAt) return decayed;
+    const syncedAt = formatPetStateTimestamp(now);
     const targetTable = instance ? 'telegram_pet_instances' : 'telegram_pet_profiles';
     const targetKey = instance ? 'pet_id' : 'telegram_id';
     const targetValue = instance ? instance.pet_id : telegramId;
     const sync = await db.prepare(`
       UPDATE ${targetTable}
       SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
-          last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+          last_decay_at = ?, updated_at = ?
       WHERE ${targetKey} = ? AND last_decay_at = ?
     `).bind(
       clampPetStat(decayed.hunger),
@@ -3006,11 +3011,12 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
       clampPetStat(decayed.energy),
       clampPetStat(decayed.health),
       decayed.last_decay_at,
+      syncedAt,
       targetValue,
       priorDecayAt,
     ).run();
     if (Number(sync?.meta?.changes || 0) === 1) {
-      if (instance) await mirrorActivePetInstanceToProfile(db, { ...instance, ...decayed });
+      if (instance) await mirrorActivePetInstanceToProfile(db, { ...instance, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt });
       return decayed;
     }
   }
@@ -3031,9 +3037,23 @@ function isPetInstanceSchemaUnavailable(error) {
 
 function petStateTimestamp(value) {
   if (!value) return 0;
-  const normalized = String(value).includes('T') ? String(value) : `${String(value).replace(' ', 'T')}Z`;
+  const normalizedValue = String(value).trim();
+  const zoned = normalizedValue.includes('T') ? normalizedValue : `${normalizedValue.replace(' ', 'T')}Z`;
+  const normalized = /(?:Z|[+-]\d\d:\d\d)$/.test(zoned)
+    ? zoned.replace(/\.\d+(?=(Z|[+-]\d\d:\d\d)$)/, '$1')
+    : `${zoned.replace(/\.\d+$/, '')}Z`;
   const timestamp = Date.parse(normalized);
   return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function formatPetStateTimestamp(value = new Date()) {
+  const timestamp = value instanceof Date ? value.getTime() : petStateTimestamp(value);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return new Date().toISOString().slice(0, 19).replace('T', ' ');
+  return new Date(Math.floor(timestamp / 1000) * 1000).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function petStateColumnsDiffer(left, right) {
+  return PET_INSTANCE_STATE_COLUMNS.some((column) => (left?.[column] ?? null) !== (right?.[column] ?? null));
 }
 
 async function findActivePetSlot(db, telegramId) {
@@ -3086,18 +3106,22 @@ async function writeActivePetInstance(db, telegramId, pet) {
   const instance = await ensureActivePetInstance(db, telegramId);
   if (!instance) return false;
   const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
-  await db.prepare(`UPDATE telegram_pet_instances SET ${assignments}, source_profile_updated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE pet_id = ?`)
-    .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), instance.pet_id).run();
+  const syncedAt = formatPetStateTimestamp(pet?.source_profile_updated_at || pet?.updated_at);
+  await db.prepare(`UPDATE telegram_pet_instances SET ${assignments}, source_profile_updated_at = ?, updated_at = ? WHERE pet_id = ?`)
+    .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), syncedAt, syncedAt, instance.pet_id).run();
   return true;
 }
 
 async function mirrorActivePetInstanceToProfile(db, pet) {
+  const profile = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(pet.telegram_id).first().catch(() => null);
+  if (!profile || !petStateColumnsDiffer(profile, pet)) return false;
   const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
-  const mirroredAt = new Date().toISOString();
+  const mirroredAt = formatPetStateTimestamp(pet.updated_at || pet.source_profile_updated_at);
   await db.prepare(`UPDATE telegram_pet_profiles SET ${assignments}, updated_at = ? WHERE telegram_id = ?`)
     .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), mirroredAt, pet.telegram_id).run();
   await db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at = ? WHERE pet_id = ?`)
     .bind(mirroredAt, pet.pet_id).run();
+  return true;
 }
 
 async function mirrorPetProfileToActiveInstance(db, telegramId) {
@@ -3277,6 +3301,7 @@ function updatePetStreakForAction(pet, dayKey) {
 async function savePetProfile(db, pet) {
   pet.stage = getPetGrowthStage(pet.pet_xp);
   pet.health = calculatePetHealth(pet);
+  const persistedAt = formatPetStateTimestamp();
   await db.prepare(`
     UPDATE telegram_pet_profiles
     SET pet_name = ?, species = ?, stage = ?, pet_xp = ?, level = ?,
@@ -3284,7 +3309,7 @@ async function savePetProfile(db, pet) {
         streak_days = ?, moon_gold = ?, moon_crystals = ?, style_tokens = ?,
         equipped_food = ?, equipped_toy = ?, equipped_outfit = ?,
         equipped_armor = ?, equipped_weapon = ?, equipped_charm = ?,
-        last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+        last_active_day = ?, last_decay_at = ?, updated_at = ?
     WHERE telegram_id = ?
   `).bind(
     pet.pet_name,
@@ -3309,6 +3334,7 @@ async function savePetProfile(db, pet) {
     pet.equipped_charm || null,
     pet.last_active_day || null,
     pet.last_decay_at || new Date().toISOString(),
+    persistedAt,
     pet.telegram_id,
   ).run();
   await writeActivePetInstance(db, pet.telegram_id, {
@@ -3316,6 +3342,8 @@ async function savePetProfile(db, pet) {
     stage: pet.stage,
     level: getPetLevel(pet.pet_xp),
     health: clampPetStat(pet.health),
+    updated_at: persistedAt,
+    source_profile_updated_at: persistedAt,
   });
 }
 

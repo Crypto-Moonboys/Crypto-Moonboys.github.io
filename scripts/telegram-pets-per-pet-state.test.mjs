@@ -144,7 +144,8 @@ const {
 const d1 = new SqliteD1(db);
 
 db.prepare(`UPDATE telegram_pet_instances SET pet_name='Instance Nova', pet_xp=5100, level=52,
-  moon_gold=901, energy=88, last_decay_at=?, updated_at='2026-08-16T03:00:00Z' WHERE telegram_id='state-player'`).run(new Date().toISOString());
+  moon_gold=901, energy=88, last_decay_at=?, source_profile_updated_at='2026-08-16 02:59:59',
+  updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run(new Date().toISOString());
 db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Stale Profile', pet_xp=1, level=1,
   moon_gold=2, energy=3 WHERE telegram_id='state-player'`).run();
 const runtimePet = await getPetProfile(d1, 'state-player');
@@ -159,13 +160,21 @@ assert.deepEqual(
   'instance reads must mirror the legacy profile payload fields',
 );
 
-db.prepare(`UPDATE telegram_pet_profiles SET energy=64, updated_at=datetime('now', '+1 minute') WHERE telegram_id='state-player'`).run();
+db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at='2026-08-16T03:00:00.500Z' WHERE telegram_id='state-player'`).run();
+db.prepare(`UPDATE telegram_pet_profiles SET energy=64, updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run();
 const profileMutationPet = await getPetProfile(d1, 'state-player');
 assert.equal(profileMutationPet.energy, 64, 'a newer profile-only gameplay mutation must not be overwritten by stale instance state');
 assert.equal(
   db.prepare(`SELECT energy FROM telegram_pet_instances WHERE telegram_id='state-player'`).get().energy,
   64,
-  'a newer profile-only gameplay mutation must synchronize to the active instance before the read returns',
+  'a same-second profile-only gameplay mutation must synchronize to the active instance before the read returns',
+);
+const syncedProfileUpdatedAt = db.prepare(`SELECT updated_at FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().updated_at;
+await getPetProfile(d1, 'state-player');
+assert.equal(
+  db.prepare(`SELECT updated_at FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().updated_at,
+  syncedProfileUpdatedAt,
+  'compatibility reads must not rewrite profile updated_at when state is already synchronized',
 );
 
 runtimePet.pet_name = 'Saved Nova';
