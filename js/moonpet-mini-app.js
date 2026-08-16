@@ -574,6 +574,7 @@
     return seasonSnapshotReceivedAt > 0 ? Math.max(0, performance.now() - seasonSnapshotReceivedAt) : 0;
   }
 
+  // TEST-EXPORT: seasonTiming:start
   function seasonTiming(season, elapsedMs) {
     var start = Date.parse(season && season.start_at || '');
     var end = Date.parse(season && season.end_at || '');
@@ -595,6 +596,7 @@
       percent: Math.round(day / totalDays * 100),
     };
   }
+  // TEST-EXPORT: seasonTiming:end
 
   function renderPetInstanceCard(slot) {
     var pet = slot.pet || {};
