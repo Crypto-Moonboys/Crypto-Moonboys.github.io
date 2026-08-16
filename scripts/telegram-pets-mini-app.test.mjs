@@ -149,8 +149,8 @@ draftDocument.activeElement = mountedCallsignInput;
 draftHelpers.setRenderedPet(draftState.pet);
 const dirtySamePetDraft = draftHelpers.captureEditableState();
 assert.deepEqual(
-  { petId: dirtySamePetDraft.petId, value: dirtySamePetDraft.value, dirty: dirtySamePetDraft.dirty, focused: dirtySamePetDraft.focused },
-  { petId: 'pet-a', value: 'Local A', dirty: true, focused: true },
+  { petId: dirtySamePetDraft.petId, petName: dirtySamePetDraft.petName, value: dirtySamePetDraft.value, dirty: dirtySamePetDraft.dirty, focused: dirtySamePetDraft.focused },
+  { petId: 'pet-a', petName: 'Server A', value: 'Local A', dirty: true, focused: true },
   'dirty callsign drafts must capture ownership and focus for the active pet instance',
 );
 draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A refreshed' };
@@ -172,6 +172,17 @@ draftState.pet = { pet_id: 'pet-b', pet_name: 'Server B' };
 mountedCallsignInput = callsignInput('Server B');
 draftHelpers.restoreEditableState(dirtySamePetDraft);
 assert.equal(mountedCallsignInput.value, 'Server B', 'a draft owned by Pet A must not cross an active switch to Pet B');
+
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A switched' };
+mountedCallsignInput = callsignInput('Server A switched');
+draftDocument.activeElement = null;
+draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
+assert.equal(mountedCallsignInput.value, 'Server A switched', 'a blurred draft must not overwrite a newer canonical callsign for the same pet');
+
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+mountedCallsignInput = callsignInput('Server A');
+draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
+assert.equal(mountedCallsignInput.value, 'Local A', 'a blurred dirty draft must still survive rerenders while the canonical callsign is unchanged');
 
 draftState.pet = { pet_id: 'pet-b', pet_name: 'Server Normalized B' };
 mountedCallsignInput = callsignInput('Server Normalized B');

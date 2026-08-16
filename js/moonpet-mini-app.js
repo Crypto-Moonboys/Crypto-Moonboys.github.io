@@ -956,6 +956,7 @@
     if (!input) return null;
     return {
       petId: renderedPetId,
+      petName: renderedPetName,
       value: input.value,
       dirty: input.value !== renderedPetName,
       focused: document.activeElement === input,
@@ -966,6 +967,7 @@
 
   function restoreEditableState(draft) {
     if (!draft || !draft.dirty || !draft.petId || !state || !state.pet || draft.petId !== state.pet.pet_id) return;
+    if (!draft.focused && String(state.pet.pet_name || '') !== String(draft.petName || '')) return;
     var input = document.getElementById('pet-name-input');
     if (!input) return;
     input.value = draft.value;
