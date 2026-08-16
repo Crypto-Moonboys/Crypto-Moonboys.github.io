@@ -26,9 +26,10 @@ async function hasPendingActivity(db, telegramId) {
   return null;
 }
 
-export async function listSanctuaryPets(db, telegramId) {
+export async function listSanctuaryPets(db, telegramId, options = {}) {
   const result = await db.prepare(`SELECT sanctuary_id, pet_id, original_season_key, completed_at,
       entered_sanctuary_at, species, variant, stage, legendary_evolution_id,
+      json_extract(identity_snapshot_json, '$.pet_name') AS pet_name,
       identity_snapshot_json, cosmetic_snapshot_json, trait_snapshot_json, memory_snapshot_json
     FROM telegram_pet_sanctuary WHERE telegram_id=? AND status='resident'
     ORDER BY completed_at DESC, sanctuary_id`).bind(String(telegramId)).all();
@@ -43,10 +44,13 @@ export async function listSanctuaryPets(db, telegramId) {
     completed_season: row.original_season_key,
     completed_at: row.completed_at,
     entered_sanctuary_at: row.entered_sanctuary_at,
-    identity: json(row.identity_snapshot_json, {}),
-    cosmetics: json(row.cosmetic_snapshot_json, {}),
-    traits: json(row.trait_snapshot_json, []),
-    memories: json(row.memory_snapshot_json, {}),
+    name: row.pet_name || 'Moonpet',
+    ...(options.includeSnapshots ? {
+      identity: json(row.identity_snapshot_json, {}),
+      cosmetics: json(row.cosmetic_snapshot_json, {}),
+      traits: json(row.trait_snapshot_json, []),
+      memories: json(row.memory_snapshot_json, {}),
+    } : {}),
   }));
 }
 
@@ -101,7 +105,28 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
     const replacement = await db.prepare(`SELECT pet_id FROM telegram_pet_season_slots
       WHERE telegram_id=? AND pet_id<>? AND status='active' ORDER BY CASE WHEN season_key=? THEN 0 ELSE 1 END, updated_at DESC, slot_number LIMIT 1`)
       .bind(telegramId, petId, seasonKey).first();
-    if (!replacement) return { accepted: false, reason: 'replacement_required', pet_id: petId };
+    if (!replacement) {
+      const openSlot = await db.prepare(`SELECT value AS slot_number FROM json_each('[1,2,3]')
+        WHERE value NOT IN (SELECT slot_number FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=?)
+        ORDER BY value LIMIT 1`).bind(telegramId, seasonKey).first();
+      if (!openSlot) return { accepted: false, reason: 'replacement_slot_unavailable', pet_id: petId };
+      const successorId = `${petId}:successor`;
+      archiveStatements.unshift(
+        db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_slots
+          (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status, created_at, updated_at)
+          VALUES (?, ?, ?, ?, 'free', ?, 0, 'active', ?, ?)`).bind(
+          successorId, telegramId, seasonKey, openSlot.slot_number, `sanctuary-successor:${petId}`, timestamp, timestamp,
+        ),
+        db.prepare(`INSERT OR IGNORE INTO telegram_pet_instances
+          (pet_id, telegram_id, season_key, slot_number, pet_name, species, stage, pet_xp, level,
+           hunger, happiness, cleanliness, energy, health, streak_days, moon_gold, moon_crystals,
+           style_tokens, status, last_decay_at, source_profile_updated_at, created_at, updated_at)
+          VALUES (?, ?, ?, ?, 'Moonpet', '', 'egg', 0, 1, 25, 70, 70, 70, 75, 0, 0, 0, 0,
+           'active', ?, ?, ?, ?)`).bind(
+          successorId, telegramId, seasonKey, openSlot.slot_number, timestamp, timestamp, timestamp, timestamp,
+        ),
+      );
+    }
   }
   const pending = options.getPendingActivity
     ? await options.getPendingActivity(db, telegramId)

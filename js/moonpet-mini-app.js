@@ -949,7 +949,7 @@
     }).join('');
     var sanctuaryPets = state.sanctuary || [];
     var sanctuaryRows = sanctuaryPets.map(function (pet) {
-      var identityName = pet.identity && pet.identity.pet_name || pet.pet_id;
+      var identityName = pet.name || pet.pet_id;
       return '<div class="line complete">◆ ' + escapeHtml(identityName) + ' // ' + escapeHtml(words(pet.species)) + '</div>' +
         '<div class="line">FINAL EVOLUTION // ' + escapeHtml(words(pet.legendary_evolution_id || pet.stage)) + '</div>' +
         '<div class="line muted">COMPLETED ' + escapeHtml(words(pet.completed_season)) + ' // ' + escapeHtml(String(pet.completed_at || '').slice(0, 10)) + '</div>';

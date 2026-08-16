@@ -2486,7 +2486,9 @@ async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {})
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', run, xp_awarded: 0, pet_xp_awarded: 0 };
   if (run.depth <= 0) return { accepted: false, reason: 'run_empty', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
-  return recordPetRunBankedEvent(db, telegramId, run, pet, { ...options, event_key: buildPetRunExtractEventKey(telegramId, run.run_id) });
+  const result = await recordPetRunBankedEvent(db, telegramId, run, pet, { ...options, event_key: buildPetRunExtractEventKey(telegramId, run.run_id) });
+  if (result.accepted) await reconcileCompletedPetsToSanctuary(db, telegramId);
+  return result;
 }
 
 async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options = {}) {
@@ -4137,6 +4139,8 @@ async function finishPetKaijuMatch(db, match) {
   if (completionResult?.meta?.changes !== undefined && Number(completionResult.meta.changes || 0) <= 0) {
     // A completed match may still have a recoverable pending player award from an earlier D1 failure.
     const rewardResults = await awardPetKaijuMatchResults(db, match, resolved);
+    await reconcileCompletedPetsToSanctuary(db, String(match.player1_telegram_id));
+    if (match.player2_telegram_id) await reconcileCompletedPetsToSanctuary(db, String(match.player2_telegram_id));
     return {
       accepted: true,
       duplicate: true,
@@ -4155,6 +4159,8 @@ async function finishPetKaijuMatch(db, match) {
     WHERE chat_id = ? AND telegram_id IN (?, ?) AND status = 'waiting'
   `).bind(String(match.chat_id), String(match.player1_telegram_id), String(match.player2_telegram_id || '')).run().catch(() => {});
   const queue = await getPetKaijuQueue(db, match.chat_id, [match.player1_telegram_id, match.player2_telegram_id || '']);
+  await reconcileCompletedPetsToSanctuary(db, String(match.player1_telegram_id));
+  if (match.player2_telegram_id) await reconcileCompletedPetsToSanctuary(db, String(match.player2_telegram_id));
   return { accepted: true, reason: 'kaiju_completed', match: await getPetKaijuMatch(db, match.match_id), resolved, reward_results: rewardResults, queue };
 }
 
@@ -4443,6 +4449,8 @@ async function completePetArenaBattle(db, battle) {
   const player2Adjusted = applyPetFactionBonus(player2Scaled.rewards, player2Faction?.faction, 'arena');
   await awardPetKaijuPlayerResult(db, String(battle.player1_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player1Scaled.modifier, faction_bonus: player1Adjusted.bonus }, result === 'player1_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player1Adjusted.rewards);
   if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await awardPetKaijuPlayerResult(db, String(battle.player2_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player2Scaled.modifier, faction_bonus: player2Adjusted.bonus }, result === 'player2_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player2Adjusted.rewards);
+  await reconcileCompletedPetsToSanctuary(db, String(battle.player1_telegram_id));
+  if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await reconcileCompletedPetsToSanctuary(db, String(battle.player2_telegram_id));
   return { accepted:true, duplicate: duplicateCompletion, reason: duplicateCompletion ? 'already_completed' : 'arena_completed', battle: await getPetArenaBattle(db, battle.battle_id), result, rewards: { player1: { ...player1Scaled, rewards: player1Adjusted.rewards, faction_bonus: player1Adjusted.bonus }, player2: { ...player2Scaled, rewards: player2Adjusted.rewards, faction_bonus: player2Adjusted.bonus } } };
 }
 async function readyPetArenaBattle(db, battle, telegramId) {
@@ -8188,7 +8196,7 @@ export default {
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       try {
-        return json({ pets: await listSanctuaryPets(env.DB, verified.telegramId) });
+        return json({ pets: await listSanctuaryPets(env.DB, verified.telegramId, { includeSnapshots: true }) });
       } catch (error) {
         logApiFailure('pet_mini_app_sanctuary_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
         return err('mini_app_sanctuary_failed', 500);
