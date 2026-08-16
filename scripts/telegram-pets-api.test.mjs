@@ -1647,7 +1647,7 @@ assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must alway
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
 assert.deepEqual(
   Object.keys(initialSeasonSlots.slots[0].pet).sort(),
-  ['cleanliness', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_xp', 'species', 'stage', 'variant'].sort(),
+  ['cleanliness', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
   'owned slot summaries must expose only the pet-instance fields required by the roster card',
 );
 assert.equal(initialSeasonSlots.slots[0].pet.level >= 1, true, 'owned slot cards must include a valid level');

@@ -604,14 +604,24 @@
 
   function renderPetInstanceCard(slot) {
     var pet = slot.pet || {};
+    if (!pet.progression) return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '"><div class="pet-instance-heading"><strong>' + escapeHtml(pet.name || 'Moonpet') + '</strong>' + (slot.active ? '<span>◆ ACTIVE</span>' : '<span>OWNED</span>') + '</div><div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div></div>';
+    var progression = pet.progression || {};
+    var lifecycle = progression.lifecycle || {};
+    var growth = progression.growth_marks || {};
+    var crests = progression.weekly_crests || {};
+    var completion = progression.season_complete
+      ? '<div class="line complete"><strong>SEASON COMPLETE</strong> // SANCTUARY ELIGIBLE</div>'
+      : progression.legendary ? '<div class="line complete"><strong>LEGENDARY</strong> // SEASON JOURNEY STILL INCOMPLETE</div>'
+        : '<div class="line muted"><strong>ROAD TO LEGENDARY</strong></div>';
     var variant = pet.variant ? '<div><span>VARIANT</span><strong>' + escapeHtml(words(pet.variant)) + '</strong></div>' : '';
     return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '">' +
       '<div class="pet-instance-heading"><strong>' + escapeHtml(pet.name || 'Moonpet') + '</strong>' + (slot.active ? '<span>◆ ACTIVE</span>' : '<span>OWNED</span>') + '</div>' +
       '<div class="pet-instance-grid"><div><span>SPECIES</span><strong>' + escapeHtml(words(pet.species || 'forming')) + '</strong></div>' + variant +
       '<div><span>LIFECYCLE</span><strong>' + escapeHtml(words(pet.stage || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div>' +
       '<div><span>PET XP</span><strong>' + number(pet.pet_xp) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div>' +
-      '<div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div><div><span>HUNGER</span><strong>' + number(pet.hunger) + '</strong></div>' +
-      '<div><span>FUN</span><strong>' + number(pet.happiness) + '</strong></div><div><span>CLEAN</span><strong>' + number(pet.cleanliness) + '</strong></div></div></div>';
+      '<div><span>STAGE</span><strong>' + number(lifecycle.current_stage || 1) + '/' + number(lifecycle.total_stages || 5) + '</strong></div><div><span>GROWTH</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
+      '<div><span>CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div><div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div><div><span>HUNGER</span><strong>' + number(pet.hunger) + '</strong></div>' +
+      '<div><span>FUN</span><strong>' + number(pet.happiness) + '</strong></div><div><span>CLEAN</span><strong>' + number(pet.cleanliness) + '</strong></div></div>' + completion + '</div>';
   }
 
   function renderSeasonSlots() {
@@ -624,6 +634,17 @@
     var provided = Array.isArray(summary.slots) ? summary.slots : [];
     var byNumber = {};
     provided.forEach(function (slot) { byNumber[Number(slot.slot_number)] = slot; });
+    var activeSlot = provided.find(function (slot) { return slot.active; }) || {};
+    var journey = activeSlot.pet && activeSlot.pet.progression || {};
+    var journeyLifecycle = journey.lifecycle || {};
+    var journeyGrowth = journey.growth_marks || {};
+    var journeyCrests = journey.weekly_crests || {};
+    var nextEvolution = journeyLifecycle.next_evolution || {};
+    var levelRequirement = journeyLifecycle.requirements && journeyLifecycle.requirements.pet_level || {};
+    var journeyStatus = journey.season_complete ? 'SEASON COMPLETE // SANCTUARY ELIGIBLE'
+      : journey.legendary ? 'LEGENDARY // SEASON JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
+    var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO') : 'FINAL FORM REACHED';
+    var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>SEASON JOURNEY // WEEK ' + number(summary.current_season_week) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
     var available = Number(summary.arcade_xp_available != null ? summary.arcade_xp_available : (provided[0] && provided[0].arcade_xp_available != null ? provided[0].arcade_xp_available : 0));
     var rows = [1, 2, 3].map(function (slotNumber) {
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
@@ -649,7 +670,7 @@
       : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + number(timing.remaining) + ' DAYS</strong></div><div><span>CYCLE</span><strong>' + (timing.partial ? 'YEAR-END PARTIAL' : '90-DAY TARGET') + '</strong></div></div>' + meter('SEASON', timing.percent);
     return panel('SEASON STATUS // LIVE',
       '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
-      '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>SEASON PROGRESSION</strong><span>' + number(accountSeason.xp) + ' seasonal XP // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // account leaderboard status</span></div></div>' +
+      journeyPanel + '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>SEASON PROGRESSION</strong><span>' + number(accountSeason.xp) + ' seasonal XP // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // account leaderboard status</span></div></div>' +
       '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
       '<div class="line muted">PET 1 IS FREE // PET 2 REQUIRES 500 XP // PET 3 REQUIRES 1,000 XP // EARNED COMMUNITY PROGRESSION</div><div class="season-slot-grid">' + rows + '</div>' +
       '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
