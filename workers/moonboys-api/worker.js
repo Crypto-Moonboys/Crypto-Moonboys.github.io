@@ -3180,6 +3180,30 @@ async function awardPetReward(db, options) {
   return result;
 }
 
+async function getPetActiveSlotPendingWork(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return null;
+  const [activity, pendingClaim] = await Promise.all([
+    getActivePetActivitySession(db, owner, now),
+    getRecoverablePetActivitySession(db, owner),
+  ]);
+  const blockingActivity = activity || pendingClaim;
+  if (blockingActivity) return { reason: 'pet_activity_active', activity: blockingActivity };
+  // Other owner-scoped in-flight systems also settle rewards through the active
+  // pet. Until those tables carry pet_id, keep the pointer stable while pending.
+  const pendingSystems = [
+    ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`],
+    ['pet_arena_active', `SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+    ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+  ];
+  for (const [reason, sql] of pendingSystems) {
+    const bindings = reason === 'pet_arena_active' ? [owner, owner] : [owner];
+    const pending = await db.prepare(sql).bind(...bindings).first().catch(() => null);
+    if (pending) return { reason, pending };
+  }
+  return null;
+}
+
 async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
   const normalizedTelegramId = String(telegramId || '').trim();
   if (!normalizedTelegramId) return { ok: false, reason: 'missing_telegram_id' };
@@ -3229,6 +3253,7 @@ async function preparePetMiniAppState(db, telegramId, now = new Date()) {
   // Reconcile while the outgoing pointer still owns the compatibility profile.
   // Once the pointer advances, that association can no longer be recovered.
   if (outgoing) await getPetProfile(db, owner);
+  if (isRollover && await getPetActiveSlotPendingWork(db, owner, now)) return true;
   const starter = await ensurePetStarterSeasonSlot(db, owner, now);
   if (!starter.ok) return false;
   if (isRollover) {
@@ -3439,26 +3464,8 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
   const requested = /^\d+$/.test(String(requestedPetId || ''))
     ? `pet:${owner}:${season.key}:${Number(requestedPetId)}`
     : String(requestedPetId || '');
-  const [activity, pendingClaim] = await Promise.all([
-    getActivePetActivitySession(db, owner, options.now || new Date()),
-    getRecoverablePetActivitySession(db, owner),
-  ]);
-  const blockingActivity = activity || pendingClaim;
-  if (blockingActivity) {
-    return { accepted: false, reason: 'pet_activity_active', activity: blockingActivity, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
-  }
-  // Other owner-scoped in-flight systems also settle rewards through the active
-  // pet. Until those tables carry pet_id, keep the pointer stable while pending.
-  const pendingSystems = [
-    ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`],
-    ['pet_arena_active', `SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
-    ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
-  ];
-  for (const [reason, sql] of pendingSystems) {
-    const bindings = reason === 'pet_arena_active' ? [owner, owner] : [owner];
-    const pending = await db.prepare(sql).bind(...bindings).first().catch(() => null);
-    if (pending) return { accepted: false, reason, pending, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
-  }
+  const pendingWork = await getPetActiveSlotPendingWork(db, owner, options.now || new Date());
+  if (pendingWork) return { accepted: false, ...pendingWork, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   const slot = await db.prepare(`SELECT s.pet_id FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active' LIMIT 1`)
