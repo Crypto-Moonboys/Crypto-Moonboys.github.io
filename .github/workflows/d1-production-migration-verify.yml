@@ -24,6 +24,7 @@ on:
       - workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql
       - workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql
       - workers/moonboys-api/migrations/057_telegram_pet_lifecycle_pet_id.sql
+      - workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql
       - .github/workflows/d1-production-migration-verify.yml
   workflow_dispatch:
 

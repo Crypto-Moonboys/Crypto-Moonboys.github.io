@@ -97,7 +97,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey) {
   const pet = await ownedPet(db, petId, seasonKey);
   if (!pet) return null;
   const current = await db.prepare(`SELECT evolution_id, stage FROM telegram_pet_evolutions_by_pet
-    WHERE pet_id=? ORDER BY stage DESC LIMIT 1`).bind(petId).first();
+    WHERE pet_id=? AND telegram_id=? ORDER BY stage DESC LIMIT 1`).bind(petId, pet.telegram_id).first();
   const stage = integer(current?.stage);
   const next = evolutions.find((entry) => Number(entry.stage) === stage + 1) || null;
   const level = Math.max(1, integer(pet.level || integer(pet.pet_xp / 100) + 1));
@@ -136,10 +136,10 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
   const seasonWeek = Math.min(13, Math.max(1, integer(options.season_week || 1)));
   const [legendary, growth, crests, currentCrest, existing, lifecycle] = await Promise.all([
     isPetLegendary(db, petId, seasonKey),
-    db.prepare(`SELECT COUNT(*) AS earned FROM telegram_pet_growth_marks WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first(),
-    db.prepare(`SELECT COUNT(*) AS earned, COUNT(DISTINCT season_week) AS weeks FROM telegram_pet_weekly_crests WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first(),
-    db.prepare(`SELECT 1 AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND season_key=? AND season_week=? LIMIT 1`).bind(petId, seasonKey, seasonWeek).first(),
-    db.prepare(`SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first(),
+    db.prepare(`SELECT COUNT(*) AS earned FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first(),
+    db.prepare(`SELECT COUNT(*) AS evidence_rows, COUNT(DISTINCT season_week) AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first(),
+    db.prepare(`SELECT 1 AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=? AND season_week=? LIMIT 1`).bind(petId, pet.telegram_id, seasonKey, seasonWeek).first(),
+    db.prepare(`SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first(),
     buildPetLifecycleProgress(db, petId, seasonKey),
   ]);
   const growthEarned = integer(growth?.earned);
@@ -149,12 +149,12 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
     (pet_id, telegram_id, season_key, completed_at, legendary_evolution_id, growth_marks_earned, weekly_crests_earned, authority_version)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
     .bind(petId, pet.telegram_id, seasonKey, new Date(now).toISOString(), FINAL_EVOLUTION.evolution_id, growthEarned, crestEarned, PET_SEASON_COMPLETION_CONFIG.authority_version).run();
-  const completion = existing || (requirementsMet ? await db.prepare(`SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first() : null);
+  const completion = existing || (requirementsMet ? await db.prepare(`SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first() : null);
   return {
     pet_id: petId, lifecycle, legendary,
     state: completion ? 'season_complete' : legendary ? 'legendary' : 'not_legendary',
     growth_marks: { earned: growthEarned, required: PET_SEASON_COMPLETION_CONFIG.required_growth_marks },
-    weekly_crests: { earned: crestEarned, required: PET_SEASON_COMPLETION_CONFIG.required_weekly_crests, weeks_completed: integer(crests?.weeks), current_season_week: seasonWeek, current_week_crest_earned: Boolean(currentCrest?.earned) },
+    weekly_crests: { earned: crestEarned, required: PET_SEASON_COMPLETION_CONFIG.required_weekly_crests, weeks_completed: crestEarned, evidence_rows: integer(crests?.evidence_rows), current_season_week: seasonWeek, current_week_crest_earned: Boolean(currentCrest?.earned) },
     requirements_met: requirementsMet, season_complete: Boolean(completion), completed_at: completion?.completed_at || null,
     completion_season: completion ? seasonKey : null, sanctuary_eligible: Boolean(completion),
   };

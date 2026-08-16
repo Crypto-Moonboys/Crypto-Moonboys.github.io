@@ -9,6 +9,8 @@ import {
 const request = JSON.parse(fs.readFileSync(new URL('../deployments/d1-evidence-request.json', import.meta.url), 'utf8'));
 const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-migration-verify.yml', import.meta.url), 'utf8');
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
+const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,

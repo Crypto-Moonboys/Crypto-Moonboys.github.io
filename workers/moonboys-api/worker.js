@@ -27,7 +27,7 @@ import {
   validatePetRelicContent, validatePetRogueliteContent, validatePetRunModifier,
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
-import { evaluatePetSeasonCompletion, getPetSeasonWeek } from './pets/season-completion.js';
+import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek } from './pets/season-completion.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -1810,11 +1810,10 @@ function getPetWeekKey(now = new Date()) {
 
 function getPetSeasonInfo(now = new Date()) {
   const year = now.getUTCFullYear();
-  const yearStart = Date.UTC(year, 0, 1);
-  const dayOfYear = Math.floor((Date.UTC(year, now.getUTCMonth(), now.getUTCDate()) - yearStart) / 86400000);
-  const seasonNumber = Math.floor(dayOfYear / 90) + 1;
-  const start = new Date(yearStart + ((seasonNumber - 1) * 90 * 86400000));
-  const end = new Date(Math.min(Date.UTC(year + 1, 0, 1), start.getTime() + 90 * 86400000));
+  const quarter = Math.floor(now.getUTCMonth() / 3);
+  const seasonNumber = quarter + 1;
+  const start = new Date(Date.UTC(year, quarter * 3, 1));
+  const end = quarter === 3 ? new Date(Date.UTC(year + 1, 0, 1)) : new Date(Date.UTC(year, (quarter + 1) * 3, 1));
   return {
     key: `pet-s${year}-${String(seasonNumber).padStart(3, '0')}`,
     season_number: seasonNumber,
@@ -12192,6 +12191,8 @@ export const __petMediaTestHooks = Object.freeze({
   getPetWeeklyBoss,
   syncPetAchievements,
   processPetWeeklyBoss,
+  awardWeeklyBossVictoryCrest,
+  getPetSeasonInfo,
   getPetSeasonRewardState,
   claimPetSeasonReward,
   validateMoonpetEvolutionContent,
@@ -13481,6 +13482,21 @@ async function settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress
   return award;
 }
 
+async function awardWeeklyBossVictoryCrest(db, telegramId, eventKey, now = new Date()) {
+  const active = await findActivePetSlot(db, telegramId);
+  if (!active) return { accepted: false, reason: 'active_pet_missing' };
+  const season = getPetSeasonInfo(now);
+  if (active.season_key !== season.key) return { accepted: false, reason: 'active_pet_previous_season' };
+  return awardPetWeeklyCrest(db, {
+    pet_id: active.pet_id,
+    telegram_id: active.telegram_id,
+    season_key: active.season_key,
+    season_week: getPetSeasonWeek(season, now),
+    objective: 'weekly_boss',
+    evidence_key: `weekly-boss:${eventKey}`,
+  });
+}
+
 async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '') {
   const action = ['strike', 'outsmart', 'endure'].includes(String(actionRaw || '').trim().toLowerCase()) ? String(actionRaw).trim().toLowerCase() : null;
   const now = new Date();
@@ -13502,6 +13518,7 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
     const reward = progressBefore.reward_claimed_at
       ? null
       : await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progressBefore);
+    await awardWeeklyBossVictoryCrest(db, telegramId, `${weekKey}:${boss.boss_id}`, now);
     return { accepted: true, duplicate: true, reason: 'boss_already_defeated', boss, progress: progressBefore, reward, week_key: weekKey, pet };
   }
   if (existing) {
@@ -13545,6 +13562,7 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
     reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress);
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'boss_victory', boss_id: boss.boss_id, milestone: 'first_boss_victory' });
     await applyPetRuntimeCommandAward(db, telegramId, `runtime:${eventKey}`, 'run_boss');
+    await awardWeeklyBossVictoryCrest(db, telegramId, `${weekKey}:${boss.boss_id}`, now);
   }
   await mirrorPetProfileToActiveInstance(db, telegramId);
   return { accepted: true, duplicate: false, reason: newlyDefeated ? 'boss_defeated' : 'boss_damaged', boss, progress, damage, action, reward, week_key: weekKey, pet: await getPetProfile(db, telegramId) };

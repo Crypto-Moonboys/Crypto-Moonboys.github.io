@@ -1,4 +1,7 @@
 -- Append-only, pet-instance season journey evidence and completion history.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_completion_tuple
+  ON telegram_pet_season_slots(pet_id, telegram_id, season_key);
+
 CREATE TABLE IF NOT EXISTS telegram_pet_growth_marks (
   mark_id TEXT PRIMARY KEY,
   pet_id TEXT NOT NULL,
@@ -8,7 +11,10 @@ CREATE TABLE IF NOT EXISTS telegram_pet_growth_marks (
   evidence_key TEXT NOT NULL,
   earned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (pet_id, season_key, milestone_type, evidence_key),
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id)
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS telegram_pet_weekly_crests (
@@ -22,7 +28,10 @@ CREATE TABLE IF NOT EXISTS telegram_pet_weekly_crests (
   earned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (pet_id, season_key, season_week, objective_id),
   UNIQUE (pet_id, season_key, evidence_key),
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id)
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS telegram_pet_season_completions (
@@ -35,7 +44,10 @@ CREATE TABLE IF NOT EXISTS telegram_pet_season_completions (
   weekly_crests_earned INTEGER NOT NULL,
   authority_version INTEGER NOT NULL DEFAULT 1,
   PRIMARY KEY (pet_id, season_key),
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id)
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_pet_growth_marks_owner ON telegram_pet_growth_marks(telegram_id, season_key, pet_id);
