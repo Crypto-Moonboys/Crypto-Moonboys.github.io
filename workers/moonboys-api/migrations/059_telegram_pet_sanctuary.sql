@@ -18,12 +18,12 @@ CREATE TABLE IF NOT EXISTS telegram_pet_sanctuary (
   status TEXT NOT NULL DEFAULT 'resident' CHECK (status = 'resident'),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE RESTRICT,
-  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE RESTRICT,
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id),
   FOREIGN KEY (pet_id, telegram_id, original_season_key)
-    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE RESTRICT,
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key),
   FOREIGN KEY (pet_id, original_season_key)
-    REFERENCES telegram_pet_season_completions(pet_id, season_key) ON DELETE RESTRICT
+    REFERENCES telegram_pet_season_completions(pet_id, season_key)
 );
 
 CREATE INDEX IF NOT EXISTS idx_pet_sanctuary_owner_completed
