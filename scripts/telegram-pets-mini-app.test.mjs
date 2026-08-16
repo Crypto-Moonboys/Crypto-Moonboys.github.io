@@ -182,6 +182,10 @@ for (const reason of ['insufficient_arcade_xp', 'pet_slot_already_owned', 'pet_s
 }
 assert.match(worker, /LEFT JOIN telegram_pet_instances i[\s\S]*lifecycle_species_id/, 'slot summaries must include owned pet identity details');
 assert.match(worker, /pet: unlocked \? \{[\s\S]*name:[\s\S]*species:[\s\S]*stage:/, 'serialized owned slots must expose pet name, species, and stage');
+// Season slots panel must be reachable during egg phase (slot controls cannot be hidden behind the egg early-return).
+assert.match(client, /phase === 'egg'[\s\S]{1,3000}renderSeasonSlots\(\)/, 'season slot panel must render during egg phase so players can view and switch slots');
+// Arcade XP zero must not be treated as missing — nullish checks are required.
+assert.match(client, /arcade_xp_available != null/, 'arcade_xp_available zero must not fall back via || operator');
 assert.match(client, /launchParameter\('tgWebAppData'\)/);
 assert.match(client, /await waitForTelegramContext\(\)/);
 assert.match(worker, /Object\.prototype\.hasOwnProperty\.call\(PET_ARENA_MOVES, move\)/);
