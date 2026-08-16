@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
 import {
   PET_SEASON_COMPLETION_CONFIG, awardPetGrowthMark, awardPetWeeklyCrest,
-  evaluatePetSeasonCompletion, getPetSeasonWeek, isPetLegendary,
+  evaluatePetSeasonCompletion, getPetSeasonWeek, isPetLegendary, reconcileEvolutionGrowthMarks,
 } from '../workers/moonboys-api/pets/season-completion.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -29,8 +29,8 @@ CREATE TABLE telegram_pet_material_balances (telegram_id TEXT, material_key TEXT
 CREATE TABLE telegram_pet_inventory (telegram_id TEXT, asset_type TEXT, asset_key TEXT, quantity INTEGER, PRIMARY KEY(telegram_id,asset_type,asset_key));
 CREATE TABLE telegram_pet_relics (telegram_id TEXT, relic_id TEXT);
 INSERT INTO telegram_pet_profiles VALUES ('owner'), ('attacker'), ('production-owner');
-INSERT INTO telegram_pet_season_slots VALUES ('pet-a','owner','s1',1,'active','free'), ('pet-b','owner','s1',2,'active','arcade_xp'), ('forged','attacker','s1',1,'active','free'), ('production-pet','production-owner','pet-s2026-001',1,'active','free');
-INSERT INTO telegram_pet_instances VALUES ('pet-a','owner','s1',1,50,4900,'active'), ('pet-b','owner','s1',2,1,0,'active'), ('forged','attacker','s1',1,50,4900,'active'), ('production-pet','production-owner','pet-s2026-001',1,5,400,'active');`);
+INSERT INTO telegram_pet_season_slots VALUES ('pet-a','owner','s1',1,'active','free'), ('pet-b','owner','s1',2,'active','arcade_xp'), ('forged','attacker','s1',1,'active','free'), ('production-pet','production-owner','pet-s2026-001',1,'active','free'), ('production-pet-b','production-owner','pet-s2026-001',2,'active','arcade_xp');
+INSERT INTO telegram_pet_instances VALUES ('pet-a','owner','s1',1,50,4900,'active'), ('pet-b','owner','s1',2,1,0,'active'), ('forged','attacker','s1',1,50,4900,'active'), ('production-pet','production-owner','pet-s2026-001',1,5,400,'active'), ('production-pet-b','production-owner','pet-s2026-001',2,5,400,'active');`);
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8'));
 const db = new D1(sqlite);
 
@@ -43,6 +43,7 @@ assert.equal(await isPetLegendary(db, 'pet-a', 's1'), true, 'the final persisted
 assert.equal(await isPetLegendary(db, 'pet-b', 's1'), false, 'Pet A evolution must not advance Pet B');
 sqlite.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet-b','attacker','legendary_moon_guardian',4,'forged-owner','2026-01-01')`).run();
 assert.equal((await isPetLegendary(db, 'pet-b', 's1')), false, 'a mismatched evolution owner cannot grant Legendary state');
+await reconcileEvolutionGrowthMarks(db, 'pet-a', 's1');
 assert.equal((await hooks.getPetSeasonInfo(new Date('2026-12-31T23:59:59Z'))).key, 'pet-s2026-004');
 assert.equal((await hooks.getPetSeasonInfo(new Date('2027-01-01T00:00:00Z'))).key, 'pet-s2027-001');
 for (const [before, after, beforeKey, afterKey] of [
@@ -73,17 +74,26 @@ await awardPetWeeklyCrest(db, { ...crest, season_week: 8, evidence_key: 'weekly-
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-28'), { telegram_id: 'owner' });
 assert.equal(state.season_complete, true);
 assert.equal(state.sanctuary_eligible, true);
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_season_completions WHERE pet_id='pet-a'`).get().count, 1, 'authoritative awards finalize completion without opening the Mini App');
 const completedAt = state.completed_at;
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-03-01'), { telegram_id: 'owner' });
 assert.equal(state.completed_at, completedAt, 'repeat evaluation preserves the immutable completion timestamp');
 assert.equal(sqlite.prepare('SELECT COUNT(*) count FROM telegram_pet_season_completions WHERE pet_id=?').get('pet-a').count, 1);
 assert.equal((await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date(), { telegram_id: 'attacker' })), null, 'ownership is checked from D1, not stale client state');
 assert.equal(sqlite.prepare('SELECT COUNT(*) count FROM telegram_pet_growth_marks WHERE pet_id=?').get('pet-b').count, 0, 'Pet B remains isolated');
+sqlite.prepare(`INSERT INTO telegram_pet_season_slots VALUES ('pet-next','owner','pet-s2026-002',1,'active','free')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_instances VALUES ('pet-next','owner','pet-s2026-002',1,1,0,'active')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_active_slots VALUES ('owner','pet-next','pet-s2026-002')`).run();
+assert.equal((await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date(), { telegram_id: 'owner' })).sanctuary_eligible, true, 'rollover does not erase persisted completion eligibility');
 
 sqlite.prepare(`INSERT INTO telegram_pet_active_slots VALUES ('production-owner','production-pet','pet-s2026-001')`).run();
-const productionCrest = await hooks.awardWeeklyBossVictoryCrest(db, 'production-owner', 'persisted-boss-event', new Date('2026-02-05'));
+const productionCrest = await hooks.recordWeeklyBossVictoryCrest(db, 'production-owner', '2026-W06', 'alley_king', 'persisted-boss-event', new Date('2026-02-05'));
 assert.equal(productionCrest.accepted || productionCrest.duplicate, true, 'the production weekly boss settlement hook awards an active-pet crest');
-assert.equal((await hooks.awardWeeklyBossVictoryCrest(db, 'production-owner', 'persisted-boss-event', new Date('2026-02-05'))).duplicate, true);
+sqlite.prepare(`UPDATE telegram_pet_active_slots SET pet_id='production-pet-b' WHERE telegram_id='production-owner'`).run();
+assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest(db, 'production-owner', '2026-W06', 'alley_king', new Date('2026-02-05'))).duplicate, true);
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_weekly_crests WHERE pet_id='production-pet'`).get().count, 1, 'recovery remains owned by victorious Pet A');
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_weekly_crests WHERE pet_id='production-pet-b'`).get().count, 0, 'active Pet B cannot steal Pet A victory crest');
+assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest({ prepare() { throw new Error('migration unavailable'); } }, 'production-owner', '2026-W06', 'alley_king')).non_fatal, true, 'crest storage failure cannot break boss settlement');
 
 assert.throws(() => sqlite.prepare(`INSERT INTO telegram_pet_growth_marks VALUES ('foreign','pet-a','attacker','s1','boss_milestone','boss:foreign',CURRENT_TIMESTAMP)`).run(), /FOREIGN KEY/);
 sqlite.prepare(`DELETE FROM telegram_pet_instances WHERE pet_id='pet-a'`).run();

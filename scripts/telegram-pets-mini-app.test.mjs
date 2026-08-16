@@ -62,6 +62,7 @@ const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), '
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 assert.match(client, /var lifecycleRequirement = journeyLifecycle\.next_evolution \?/, 'final-form lifecycle copy must branch on whether a next evolution exists');
 assert.doesNotMatch(client, /next_evolution[^\n]+LEVEL \/\/ 0\/0/, 'final-form lifecycle must never render a synthetic 0/0 requirement');
+assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'missing roster progression must render an explicit unavailable state');
 const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
 const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');

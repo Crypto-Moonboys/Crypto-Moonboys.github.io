@@ -34,6 +34,21 @@ CREATE TABLE IF NOT EXISTS telegram_pet_weekly_crests (
     REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS telegram_pet_weekly_boss_victories_by_pet (
+  telegram_id TEXT NOT NULL,
+  week_key TEXT NOT NULL,
+  boss_id TEXT NOT NULL,
+  pet_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  victory_event_key TEXT NOT NULL,
+  defeated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (telegram_id, week_key, boss_id),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS telegram_pet_season_completions (
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,

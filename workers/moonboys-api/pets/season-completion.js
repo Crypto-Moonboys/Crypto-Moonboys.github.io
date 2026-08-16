@@ -62,7 +62,9 @@ export async function awardPetGrowthMark(db, award) {
     (mark_id, pet_id, telegram_id, season_key, milestone_type, evidence_key, earned_at)
     VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
     .bind(markId, petId, pet.telegram_id, seasonKey, registry.type, evidenceKey, award.earned_at || null).run();
-  return { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, mark_id: markId };
+  const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, mark_id: markId };
+  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: award.earned_at });
+  return response;
 }
 
 export async function awardPetWeeklyCrest(db, award) {
@@ -79,7 +81,9 @@ export async function awardPetWeeklyCrest(db, award) {
     (crest_id, pet_id, telegram_id, season_key, season_week, objective_id, evidence_key, earned_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
     .bind(crestId, petId, pet.telegram_id, seasonKey, week, objective.objective_id, evidenceKey, award.earned_at || null).run();
-  return { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, crest_id: crestId };
+  const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, crest_id: crestId };
+  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: award.earned_at });
+  return response;
 }
 
 export async function reconcileEvolutionGrowthMarks(db, petId, seasonKey) {
@@ -132,7 +136,6 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey) {
 export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = new Date(), options = {}) {
   const pet = await ownedPet(db, petId, seasonKey, options.telegram_id);
   if (!pet) return null;
-  await reconcileEvolutionGrowthMarks(db, petId, seasonKey);
   const seasonWeek = Math.min(13, Math.max(1, integer(options.season_week || 1)));
   const [legendary, growth, crests, currentCrest, existing, lifecycle] = await Promise.all([
     isPetLegendary(db, petId, seasonKey),
@@ -145,11 +148,7 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
   const growthEarned = integer(growth?.earned);
   const crestEarned = integer(crests?.earned);
   const requirementsMet = legendary && growthEarned >= PET_SEASON_COMPLETION_CONFIG.required_growth_marks && crestEarned >= PET_SEASON_COMPLETION_CONFIG.required_weekly_crests;
-  if (requirementsMet && !existing) await db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_completions
-    (pet_id, telegram_id, season_key, completed_at, legendary_evolution_id, growth_marks_earned, weekly_crests_earned, authority_version)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-    .bind(petId, pet.telegram_id, seasonKey, new Date(now).toISOString(), FINAL_EVOLUTION.evolution_id, growthEarned, crestEarned, PET_SEASON_COMPLETION_CONFIG.authority_version).run();
-  const completion = existing || (requirementsMet ? await db.prepare(`SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first() : null);
+  const completion = existing;
   return {
     pet_id: petId, lifecycle, legendary,
     state: completion ? 'season_complete' : legendary ? 'legendary' : 'not_legendary',
@@ -158,4 +157,19 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
     requirements_met: requirementsMet, season_complete: Boolean(completion), completed_at: completion?.completed_at || null,
     completion_season: completion ? seasonKey : null, sanctuary_eligible: Boolean(completion),
   };
+}
+
+export async function finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
+  const state = await evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
+  if (!state?.requirements_met || state.season_complete) return state;
+  const pet = await ownedPet(db, petId, seasonKey, options.telegram_id);
+  if (!pet) return null;
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_completions
+    (pet_id, telegram_id, season_key, completed_at, legendary_evolution_id, growth_marks_earned, weekly_crests_earned, authority_version)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+    petId, pet.telegram_id, seasonKey, now.toISOString(), FINAL_EVOLUTION.evolution_id,
+    state.growth_marks.earned, state.weekly_crests.earned, PET_SEASON_COMPLETION_CONFIG.authority_version,
+  ).run();
+  return evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
 }
