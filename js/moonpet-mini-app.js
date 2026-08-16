@@ -540,8 +540,46 @@
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
+  function seasonTiming(season) {
+    var start = Date.parse(season && season.start_at || '');
+    var end = Date.parse(season && season.end_at || '');
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+      return { status: 'UNAVAILABLE', day: 0, totalDays: 0, remaining: 0, partial: false, percent: 0 };
+    }
+    var dayMs = 86400000;
+    var now = Date.now();
+    var totalDays = Math.max(1, Math.ceil((end - start) / dayMs));
+    var active = now >= start && now < end;
+    var day = now < start ? 0 : Math.min(totalDays, Math.floor((Math.min(now, end - 1) - start) / dayMs) + 1);
+    return {
+      status: now < start ? 'UPCOMING' : active ? 'ACTIVE' : 'COMPLETE',
+      day: day,
+      totalDays: totalDays,
+      remaining: active ? Math.max(0, Math.ceil((end - now) / dayMs)) : 0,
+      partial: totalDays < 90,
+      percent: Math.round(day / totalDays * 100),
+    };
+  }
+
+  function renderPetInstanceCard(slot) {
+    var pet = slot.pet || {};
+    var variant = pet.variant ? '<div><span>VARIANT</span><strong>' + escapeHtml(words(pet.variant)) + '</strong></div>' : '';
+    return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '">' +
+      '<div class="pet-instance-heading"><strong>' + escapeHtml(pet.name || 'Moonpet') + '</strong>' + (slot.active ? '<span>◆ ACTIVE</span>' : '<span>OWNED</span>') + '</div>' +
+      '<div class="pet-instance-grid"><div><span>SPECIES</span><strong>' + escapeHtml(words(pet.species || 'forming')) + '</strong></div>' + variant +
+      '<div><span>LIFECYCLE</span><strong>' + escapeHtml(words(pet.stage || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div>' +
+      '<div><span>PET XP</span><strong>' + number(pet.pet_xp) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div>' +
+      '<div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div><div><span>HUNGER</span><strong>' + number(pet.hunger) + '</strong></div>' +
+      '<div><span>FUN</span><strong>' + number(pet.happiness) + '</strong></div><div><span>CLEAN</span><strong>' + number(pet.cleanliness) + '</strong></div></div></div>';
+  }
+
   function renderSeasonSlots() {
     var summary = state.season_slots || {};
+    var season = summary.season || {};
+    var timing = seasonTiming(season);
+    var accountSeason = state.guidance && state.guidance.season || {};
+    var tiers = Array.isArray(accountSeason.tiers) ? accountSeason.tiers : [];
+    var unlockedTiers = tiers.filter(function (tier) { return tier.unlocked || tier.claimed_at; }).length;
     var provided = Array.isArray(summary.slots) ? summary.slots : [];
     var byNumber = {};
     provided.forEach(function (slot) { byNumber[Number(slot.slot_number)] = slot; });
@@ -550,26 +588,30 @@
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
       var owned = Boolean(slot.unlocked);
       var active = Boolean(slot.active);
-      var pet = slot.pet || {};
       var cost = Number(slot.unlock_cost_arcade_xp || 0);
-      var canPurchase = !owned && Boolean(slot.purchase_enabled);
-      var affordable = canPurchase && Boolean(slot.affordable);
+      var unlockEnabled = !owned && Boolean(slot.purchase_enabled);
+      var affordable = unlockEnabled && Boolean(slot.affordable);
       var status = active ? 'ACTIVE' : owned ? 'OWNED' : 'LOCKED';
-      var details = owned
-        ? escapeHtml(pet.name || 'Moonpet') + ' // ' + escapeHtml(words(pet.species || 'unknown species')) + ' // ' + escapeHtml(words(pet.stage || 'egg'))
-        : 'UNLOCK COST // ' + number(cost) + ' ARCADE XP';
+      var details = owned ? renderPetInstanceCard(slot)
+        : '<div class="slot-unlock-copy"><strong>COMMUNITY XP UNLOCK</strong><span>You have earned Arcade XP from community play.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
       var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
         : owned ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber })
-          : canPurchase ? button('BUY SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
+          : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
             disabled: !affordable,
-            detail: affordable ? number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
-          }) : '<div class="line muted">PURCHASE OFFLINE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
+            detail: affordable ? 'SPEND ' + number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
+          }) : '<div class="line muted">UNLOCK UNAVAILABLE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
       return '<article class="season-slot ' + (active ? 'is-active' : owned ? 'is-owned' : 'is-locked') + '" data-season-slot="' + slotNumber + '">' +
-        '<header><strong>SLOT ' + slotNumber + '</strong><span>' + status + '</span></header><div class="line">' + details + '</div><div class="slot-control">' + control + '</div></article>';
+        '<header><strong>PET ' + slotNumber + ' // SLOT ' + slotNumber + '</strong><span>' + status + '</span></header>' + details + '<div class="slot-control">' + control + '</div></article>';
     }).join('');
-    return panel('SEASON SLOTS // ' + escapeHtml(summary.season && summary.season.key || 'CURRENT SEASON'),
-      '<div class="season-slot-balance"><strong>ARCADE XP AVAILABLE</strong><span>' + number(available) + '</span></div>' +
-      '<div class="line muted">SLOT 1 IS FREE // SLOTS 2 + 3 USE ARCADE XP</div><div class="season-slot-grid">' + rows + '</div>', 'season-slots');
+    var timingCopy = timing.status === 'UNAVAILABLE'
+      ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
+      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + number(timing.remaining) + ' DAYS</strong></div><div><span>CYCLE</span><strong>' + (timing.partial ? 'YEAR-END PARTIAL' : '90-DAY TARGET') + '</strong></div></div>' + meter('SEASON', timing.percent);
+    return panel('SEASON STATUS // LIVE',
+      '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
+      '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>SEASON PROGRESSION</strong><span>' + number(accountSeason.xp) + ' seasonal XP // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // account leaderboard status</span></div></div>' +
+      '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
+      '<div class="line muted">PET 1 IS FREE // PET 2 REQUIRES 500 XP // PET 3 REQUIRES 1,000 XP // EARNED COMMUNITY PROGRESSION</div><div class="season-slot-grid">' + rows + '</div>' +
+      '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
   }
 
   function renderMissions() {
@@ -904,7 +946,12 @@
   function rejectionMessage(reason) {
     var messages = {
       insufficient_arcade_xp: 'NOT ENOUGH ARCADE XP FOR THIS SLOT',
-      pet_slot_already_owned: 'THAT PET SLOT IS ALREADY OWNED',
+      pet_slot_purchased: 'SEASONAL PET SLOT UNLOCKED',
+      pet_slot_switched: 'ACTIVE MOONPET SWITCHED',
+      pet_slot_already_owned: 'THAT PET SLOT IS ALREADY UNLOCKED',
+      invalid_pet_slot: 'THAT SEASONAL PET SLOT IS INVALID',
+      pet_slot_purchase_conflict: 'PET SLOT UNLOCK COULD NOT BE COMPLETED',
+      pet_slot_creation_incomplete: 'PET SLOT UNLOCK NEEDS A SAFE RETRY',
       pet_slot_not_switchable: 'THAT PET SLOT CANNOT BE SWITCHED TO',
       pet_activity_active: 'FINISH OR CLAIM THE ACTIVE PET ACTIVITY FIRST',
       pet_run_active: 'FINISH THE ACTIVE MOON RUN BEFORE SWITCHING',

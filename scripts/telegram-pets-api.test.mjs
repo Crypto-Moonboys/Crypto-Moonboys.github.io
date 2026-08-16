@@ -1641,6 +1641,13 @@ assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[3], 1000, 'third seasonal pet slot must
 const initialSeasonSlots = await buildPetSeasonSlotSummary(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
 assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must always expose the three season slots');
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
+assert.deepEqual(
+  Object.keys(initialSeasonSlots.slots[0].pet).sort(),
+  ['cleanliness', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_xp', 'species', 'stage', 'variant'].sort(),
+  'owned slot summaries must expose only the pet-instance fields required by the roster card',
+);
+assert.equal(initialSeasonSlots.slots[0].pet.level >= 1, true, 'owned slot cards must include a valid level');
+assert.equal(initialSeasonSlots.slots[0].pet.pet_xp >= 0, true, 'owned slot cards must include pet-instance XP');
 assert.equal(initialSeasonSlots.purchase_enabled, true, 'season slot purchases must be enabled with per-pet state available');
 assert.equal(initialSeasonSlots.purchase_disabled_reason, null);
 assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its Arcade XP cost');

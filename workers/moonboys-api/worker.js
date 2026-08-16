@@ -3211,7 +3211,15 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     pet: unlocked ? {
       name: row?.pet_name || 'Moonpet',
       species: row?.lifecycle_species_id || row?.species || '',
+      variant: row?.rare_morph_id || null,
       stage: row?.lifecycle_phase || row?.stage || 'egg',
+      level: Math.max(1, Number(row?.level || 1)),
+      pet_xp: Math.max(0, Number(row?.pet_xp || 0)),
+      health: clampPetStat(Number(row?.health == null ? 75 : row.health)),
+      energy: clampPetStat(Number(row?.energy == null ? 70 : row.energy)),
+      hunger: clampPetStat(Number(row?.hunger == null ? 25 : row.hunger)),
+      happiness: clampPetStat(Number(row?.happiness == null ? 70 : row.happiness)),
+      cleanliness: clampPetStat(Number(row?.cleanliness == null ? 70 : row.cleanliness)),
     } : null,
   };
 }
@@ -3239,8 +3247,9 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       db.prepare(`
         SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
-          i.pet_name, i.species, i.stage, l.phase AS lifecycle_phase,
-          l.species_id AS lifecycle_species_id
+          i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
+          i.hunger, i.happiness, i.cleanliness, l.phase AS lifecycle_phase,
+          l.species_id AS lifecycle_species_id, l.rare_morph_id
         FROM telegram_pet_season_slots s
         LEFT JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
