@@ -59,6 +59,7 @@ const {
   parsePetArenaCallbackPayload,
   resolvePetArenaRoundState,
   serializePetMiniAppArenaBattle,
+  serializePetMiniAppActionResult,
   serializePetMiniAppKaijuMatch,
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
@@ -1651,6 +1652,8 @@ const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'se
 }, 'bot-token');
 assert.equal(slotSummaryAction.accepted, true, 'Mini App slot action must return the read-only slot summary');
 assert.equal(slotSummaryAction.season_slots.slots.length, 3, 'Mini App slot summary must include all three slots');
+const serializedSlotSummaryAction = serializePetMiniAppActionResult(slotSummaryAction);
+assert.equal(serializedSlotSummaryAction.season_slots.slots.length, 3, 'serialized Mini App slot action must include the slot summary payload');
 assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='season-slot-runtime'").get().arcade_xp_total, 1400, 'read-only slot summary must not spend Arcade XP');
 assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='season-slot-runtime'").get().count, 1, 'read-only slot summary must not create paid slots before per-pet state exists');
 
