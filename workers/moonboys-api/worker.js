@@ -2990,7 +2990,11 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   // Reconcile any legacy profile-only write before choosing the atomic decay target.
   await getPetProfile(db, telegramId);
   const instance = await readActivePetInstance(db, telegramId);
-  if (instance) return getPetInstanceWithAtomicDecay(db, instance.pet_id, now, { mirror_profile: true });
+  if (instance) {
+    const current = await getPetInstanceWithAtomicDecay(db, instance.pet_id, now);
+    if (current) await mirrorActivePetInstanceToProfile(db, current);
+    return current;
+  }
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const stored = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
     if (!stored) return null;
@@ -3019,7 +3023,7 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   throw new Error('pet_decay_sync_conflict');
 }
 
-async function getPetInstanceWithAtomicDecay(db, petId, now = new Date(), options = {}) {
+async function getPetInstanceWithAtomicDecay(db, petId, now = new Date()) {
   const normalizedPetId = String(petId || '').trim();
   if (!normalizedPetId) return null;
   for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -3046,9 +3050,7 @@ async function getPetInstanceWithAtomicDecay(db, petId, now = new Date(), option
       priorDecayAt,
     ).run();
     if (Number(sync?.meta?.changes || 0) !== 1) continue;
-    const current = { ...stored, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt };
-    if (options.mirror_profile) await mirrorActivePetInstanceToProfile(db, current);
-    return current;
+    return { ...stored, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt };
   }
   throw new Error('pet_decay_sync_conflict');
 }
@@ -3254,6 +3256,23 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
   };
 }
 
+function mergePetInstanceDisplayFields(slotRow, petInstance) {
+  if (!petInstance) return slotRow;
+  return {
+    ...slotRow,
+    pet_name: petInstance.pet_name,
+    species: petInstance.species,
+    stage: petInstance.stage,
+    level: petInstance.level,
+    pet_xp: petInstance.pet_xp,
+    health: petInstance.health,
+    energy: petInstance.energy,
+    hunger: petInstance.hunger,
+    happiness: petInstance.happiness,
+    cleanliness: petInstance.cleanliness,
+  };
+}
+
 async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   const normalizedTelegramId = String(telegramId || '').trim();
   if (!normalizedTelegramId) return { adopted: false, reason: 'missing_telegram_id' };
@@ -3306,19 +3325,7 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
         if (String(error?.message || error) !== 'pet_decay_sync_conflict') throw error;
         current = null;
       }
-      return current ? {
-        ...row,
-        pet_name: current.pet_name,
-        species: current.species,
-        stage: current.stage,
-        level: current.level,
-        pet_xp: current.pet_xp,
-        health: current.health,
-        energy: current.energy,
-        hunger: current.hunger,
-        happiness: current.happiness,
-        cleanliness: current.cleanliness,
-      } : row;
+      return mergePetInstanceDisplayFields(row, current);
     }));
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));

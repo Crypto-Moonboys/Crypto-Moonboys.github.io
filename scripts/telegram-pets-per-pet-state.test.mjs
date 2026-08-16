@@ -88,6 +88,13 @@ assert.ok(
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'runtime evolve handling must only sync lifecycle on a newly unlocked evolution');
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\)\.catch\(\(\) => null\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
 assert.match(worker, /if \(!result\.duplicate\) await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'command evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
+const rosterSummarySource = worker.slice(
+  worker.indexOf('async function buildPetSeasonSlotSummary'),
+  worker.indexOf('async function buyPetSeasonSlot'),
+);
+assert.doesNotMatch(rosterSummarySource, /mirrorActivePetInstanceToProfile|mirror_profile/, 'read-only roster construction must have no compatibility-profile mirror path');
+assert.doesNotMatch(rosterSummarySource, /\.\.\.current/, 'roster construction must not spread pet-instance state over season-slot authority');
+assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, current\)/, 'roster construction must merge only the explicit pet display allowlist');
 assert.match(
   migration057,
   /CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet/,
