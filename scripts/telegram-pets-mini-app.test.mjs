@@ -78,6 +78,8 @@ function extractTestExport(source, name) {
   return source.slice(bodyStart + 1, end);
 }
 
+// Keep every executable client-source test on marker boundaries so merges and
+// Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
   'seasonTiming', 'callsignDraft', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
