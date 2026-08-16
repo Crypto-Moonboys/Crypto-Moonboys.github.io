@@ -66,18 +66,65 @@ const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const arcadeRadio = fs.readFileSync(new URL('../js/arcade/core/radio.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
-const seasonTimingSource = client.match(/^[\t ]*\/\/ TEST-EXPORT: seasonTiming:start[\t ]*\r?\n([\s\S]*?)^[\t ]*\/\/ TEST-EXPORT: seasonTiming:end[\t ]*$/m)?.[1];
+function extractTestExport(source, name) {
+  const startMarker = `// TEST-EXPORT: ${name}:start`;
+  const endMarker = `// TEST-EXPORT: ${name}:end`;
+  const start = source.indexOf(startMarker);
+  if (start === -1) return null;
+  const bodyStart = source.indexOf('\n', start + startMarker.length);
+  if (bodyStart === -1) return null;
+  const end = source.indexOf(endMarker, bodyStart + 1);
+  if (end === -1) return null;
+  return source.slice(bodyStart + 1, end);
+}
+
+for (const name of ['seasonTiming', 'callsignDraft']) {
+  for (const newline of ['\n', '\r\n']) {
+    const synthetic = [
+      `  // TEST-EXPORT: ${name}:start`,
+      '    function independentlyExecutable() { return true; }',
+      `\t// TEST-EXPORT: ${name}:end`,
+    ].join(newline);
+    const extracted = extractTestExport(synthetic, name);
+    assert.ok(extracted, `${name} extraction must support ${newline === '\n' ? 'LF' : 'CRLF'} and indented markers`);
+    assert.equal(Function(`"use strict";${extracted}; return independentlyExecutable();`)(), true, `${name} synthetic export must remain executable`);
+  }
+}
+assert.equal(extractTestExport('// TEST-EXPORT: sample:end\nfunction sample() {}', 'sample'), null, 'a missing start marker must fail clearly');
+assert.equal(extractTestExport('// TEST-EXPORT: sample:start\nfunction sample() {}', 'sample'), null, 'a missing end marker must fail clearly');
+
+const seasonTimingSource = extractTestExport(client, 'seasonTiming');
 assert.ok(seasonTimingSource, 'seasonTiming source must remain independently testable');
 const seasonTiming = Function(`"use strict";${seasonTimingSource}\nreturn seasonTiming;`)();
-const callsignDraftSource = client.match(/^[\t ]*\/\/ TEST-EXPORT: callsignDraft:start[\t ]*\r?\n([\s\S]*?)^[\t ]*\/\/ TEST-EXPORT: callsignDraft:end[\t ]*$/m)?.[1];
+const callsignDraftSource = extractTestExport(client, 'callsignDraft');
 assert.ok(callsignDraftSource, 'callsign draft helpers must remain independently testable');
+const crlfClient = client.replace(/\r?\n/g, '\r\n');
+const crlfSeasonTimingSource = extractTestExport(crlfClient, 'seasonTiming');
+const crlfCallsignDraftSource = extractTestExport(crlfClient, 'callsignDraft');
+assert.equal(typeof Function(`"use strict";${crlfSeasonTimingSource}\nreturn seasonTiming;`)(), 'function', 'the real seasonTiming export must execute after CRLF conversion');
+assert.doesNotThrow(
+  () => Function('state', 'document', `"use strict"; var renderedPetId = null; var renderedPetName = ''; ${crlfCallsignDraftSource}`),
+  'the real callsignDraft export must compile after CRLF conversion',
+);
 const draftState = { pet: { pet_id: 'pet-a', pet_name: 'Server A' } };
 let mountedCallsignInput = null;
 const draftDocument = {
   activeElement: null,
   getElementById: () => mountedCallsignInput,
 };
-const draftHelpers = Function('state', 'document', `"use strict";${callsignDraftSource}\nreturn { captureEditableState, restoreEditableState };`)(draftState, draftDocument);
+const draftHelpers = Function('state', 'document', `"use strict";
+  var renderedPetId = null;
+  var renderedPetName = '';
+  ${callsignDraftSource}
+  return {
+    captureEditableState,
+    restoreEditableState,
+    setRenderedPet(pet) {
+      renderedPetId = pet && pet.pet_id || null;
+      renderedPetName = String(pet && pet.pet_name || '');
+    },
+  };
+`)(draftState, draftDocument);
 function callsignInput(value, selectionStart = 0, selectionEnd = 0) {
   return {
     value, selectionStart, selectionEnd, focused: false, selectionRestored: false,
@@ -88,6 +135,7 @@ function callsignInput(value, selectionStart = 0, selectionEnd = 0) {
 
 mountedCallsignInput = callsignInput('Local A', 2, 5);
 draftDocument.activeElement = mountedCallsignInput;
+draftHelpers.setRenderedPet(draftState.pet);
 const dirtySamePetDraft = draftHelpers.captureEditableState();
 assert.deepEqual(
   { petId: dirtySamePetDraft.petId, value: dirtySamePetDraft.value, dirty: dirtySamePetDraft.dirty, focused: dirtySamePetDraft.focused },
@@ -102,6 +150,7 @@ assert.equal(mountedCallsignInput.selectionRestored, true, 'a same-pet dirty dra
 
 draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
 mountedCallsignInput = callsignInput('Server A');
+draftHelpers.setRenderedPet(draftState.pet);
 const cleanDraft = draftHelpers.captureEditableState();
 draftState.pet.pet_name = 'New canonical A';
 mountedCallsignInput = callsignInput('New canonical A');
@@ -296,6 +345,18 @@ assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-state-g
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
 assert.match(client, /render\(\{ discardCallsignDraft: action === 'rename' && Boolean\(data\.result && data\.result\.accepted\) \}\)/, 'an accepted rename must discard the old draft so the server-normalized callsign wins');
+assert.match(callsignDraftSource, /petId: renderedPetId[\s\S]*dirty: input\.value !== renderedPetName/, 'draft capture ownership must come from the snapshot that rendered the existing DOM');
+const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  function resultRewardMap'));
+assert.ok(renderSource.indexOf('captureEditableState()') < renderSource.indexOf('renderedPetId = state'), 'render must capture the old DOM before recording the incoming snapshot identity');
+assert.ok(renderSource.indexOf('restoreEditableState(editableState)') < renderSource.indexOf('renderedPetId = state'), 'rendered snapshot identity must advance only after draft restoration is decided');
+for (const [pathName, startMarker, endMarker] of [
+  ['syncState', '  async function syncState()', '  function applyRequestedFocus'],
+  ['passive refresh', '  async function refreshLiveState()', '  async function refreshSeasonSnapshot'],
+]) {
+  const pathSource = client.slice(client.indexOf(startMarker), client.indexOf(endMarker, client.indexOf(startMarker)));
+  assert.match(pathSource, /setStateSnapshot\([\s\S]*render\(/, `${pathName} must render through snapshot-owned draft capture after accepting state`);
+  assert.doesNotMatch(pathSource, /renderedPetId\s*=|renderedPetName\s*=/, `${pathName} must not relabel the existing DOM with incoming snapshot identity before render captures it`);
+}
 assert.match(client, /function seasonTiming\(season, elapsedMs\)/, 'season status must derive position from an authoritative server snapshot plus monotonic elapsed time');
 assert.match(client, /Date\.parse\(season && season\.current_at/, 'season timing must consume the server timestamp');
 assert.doesNotMatch(seasonTimingSource, /Date\.now\(/, 'season timing must not depend on the browser clock');

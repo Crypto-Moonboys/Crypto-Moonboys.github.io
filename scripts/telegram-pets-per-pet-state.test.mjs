@@ -288,7 +288,16 @@ const rolloverReadChangesBefore = db.prepare('SELECT total_changes() AS count').
 const unpreparedRolloverRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rolloverNow);
 assert.equal(unpreparedRolloverRoster.slots[0].unlocked, false, 'a roster read alone must not synthesize a missing current-season starter');
 assert.equal(db.prepare('SELECT total_changes() AS count').get().count, rolloverReadChangesBefore, 'an unprepared rollover roster read must perform zero database mutations');
+db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Outgoing Final', pet_xp=7777, moon_gold=654,
+  health=62, equipped_weapon='outgoing-final-weapon', updated_at='2099-01-01 00:00:00'
+  WHERE telegram_id='state-player'`).run();
 assert.equal(await preparePetMiniAppState(d1, 'state-player', rolloverNow), true, 'Mini App state preparation must bootstrap an adopted player into the current season');
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_name, pet_xp, moon_gold, health, equipped_weapon FROM telegram_pet_instances
+    WHERE telegram_id='state-player' AND season_key='2026-q3' AND slot_number=1`).get() },
+  { pet_name: 'Outgoing Final', pet_xp: 7777, moon_gold: 654, health: 62, equipped_weapon: 'outgoing-final-weapon' },
+  'rollover preparation must reconcile the final legacy write onto the outgoing pet before moving the pointer',
+);
 assert.deepEqual(
   { ...db.prepare(`SELECT season_key, slot_number, acquisition_type, status FROM telegram_pet_season_slots
     WHERE telegram_id='state-player' AND season_key='pet-s2026-003' AND slot_number=1`).get() },
@@ -297,6 +306,12 @@ assert.deepEqual(
 );
 assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances
   WHERE telegram_id='state-player' AND season_key='pet-s2026-003' AND slot_number=1`).get().count, 1, 'state preparation must create the current-season starter pet instance');
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_name, pet_xp, moon_gold, health, equipped_weapon FROM telegram_pet_instances
+    WHERE telegram_id='state-player' AND season_key='pet-s2026-003' AND slot_number=1`).get() },
+  { pet_name: 'Moonpet', pet_xp: 0, moon_gold: 0, health: 75, equipped_weapon: null },
+  'the new-season starter must use fresh defaults rather than inheriting the outgoing pet mutation',
+);
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'state preparation must advance the active pointer from the previous season');
 const preparedRolloverRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rolloverNow);
 assert.equal(preparedRolloverRoster.season.key, 'pet-s2026-003', 'the subsequent roster must describe the current season');
@@ -305,7 +320,7 @@ const boughtSecond = await buyPetSeasonSlot(d1, 'state-player', 2, { now: new Da
 assert.equal(boughtSecond.accepted, true, 'slot 2 purchase must succeed with enough Arcade XP');
 assert.equal(db.prepare(`SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().phase, 'egg', 'a purchased pet must receive a fresh egg lifecycle');
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'purchase must not auto-switch');
-assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'adult', 'migration-safe lifecycle creation must preserve a legacy starter as adult');
+assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'a rollover starter must receive a fresh egg lifecycle');
 db.exec(`CREATE TABLE telegram_pet_activity_sessions (
   id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, activity_type TEXT NOT NULL,
   started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ends_at DATETIME NOT NULL,
@@ -324,7 +339,7 @@ assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'swit
 assert.equal((await getMoonpetIdentitySummary(d1, 'state-player')).current_stage.evolution_id, 'moon_egg', 'a switched paid pet must not inherit the starter evolution stage');
 await incubateMoonEgg(d1, 'state-player', 'warm', 'paid-pet-incubation');
 assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().incubation_progress, 2, 'incubation must progress the active paid pet only');
-assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:1'`).get().incubation_progress, 12, 'paid-pet incubation must not change the starter lifecycle');
+assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:1'`).get().incubation_progress, 0, 'paid-pet incubation must not change the fresh rollover starter lifecycle');
 assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Moonpet', 'gameplay reads must follow the switched fresh pet');
 assert.equal(db.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().pet_name, 'Moonpet', 'switching must mirror the selected pet to the legacy profile');
 const paidIdentity = await getMoonpetIdentitySummary(d1, 'state-player');
@@ -338,8 +353,8 @@ await savePetProfile(d1, paidPet);
 db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=73, moon_gold=81, equipped_weapon='paid-blaster',
   health=63, updated_at='2098-01-01 00:00:00' WHERE telegram_id='state-player'`).run();
 await switchActivePetSeasonSlot(d1, 'state-player', 1, { now: new Date('2026-08-16T12:00:00Z') });
-assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Saved Nova', 'switching back must restore the starter pet independent state');
-assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'adult', 'switching back must restore the starter lifecycle');
+assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Moonpet', 'switching back must restore the fresh rollover starter state');
+assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'switching back must restore the fresh rollover starter lifecycle');
 assert.equal(db.prepare(`SELECT energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get().energy, 42, 'writes must affect only the active paid pet');
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, moon_gold, equipped_weapon, health FROM telegram_pet_instances

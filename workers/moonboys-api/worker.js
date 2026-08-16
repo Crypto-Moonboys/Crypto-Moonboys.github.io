@@ -3223,9 +3223,28 @@ async function preparePetMiniAppState(db, telegramId, now = new Date()) {
   const adopted = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1`)
     .bind(owner).first().catch(() => null);
   if (!adopted) return false;
+  const outgoing = await findActivePetSlot(db, owner);
+  const currentSeason = getPetSeasonInfo(now);
+  const isRollover = Boolean(outgoing && outgoing.season_key !== currentSeason.key);
+  // Reconcile while the outgoing pointer still owns the compatibility profile.
+  // Once the pointer advances, that association can no longer be recovered.
+  if (outgoing) await getPetProfile(db, owner);
   const starter = await ensurePetStarterSeasonSlot(db, owner, now);
   if (!starter.ok) return false;
-  await ensureActivePetInstance(db, owner);
+  if (isRollover) {
+    // A new season starts a new pet. Never seed it from the outgoing pet's
+    // compatibility mirror; instance defaults are the authoritative baseline.
+    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_instances
+      (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
+      VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)`)
+      .bind(starter.pet_id, owner, starter.season_key).run();
+    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
+      (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
+      VALUES (?, ?, ?, 'egg', '{}', '[]')`)
+      .bind(starter.pet_id, owner, crypto.randomUUID()).run();
+  }
+  const active = await ensureActivePetInstance(db, owner);
+  if (isRollover && active) await mirrorActivePetInstanceToProfile(db, active);
   return true;
 }
 

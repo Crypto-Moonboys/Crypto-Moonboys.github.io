@@ -7,6 +7,8 @@
   var initData = '';
   var telegramAuth = null;
   var state = null;
+  var renderedPetId = null;
+  var renderedPetName = '';
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
@@ -950,11 +952,10 @@
   function captureEditableState() {
     var input = document.getElementById('pet-name-input');
     if (!input) return null;
-    var canonicalName = String(state && state.pet && state.pet.pet_name || '');
     return {
-      petId: state && state.pet && state.pet.pet_id || null,
+      petId: renderedPetId,
       value: input.value,
-      dirty: input.value !== canonicalName,
+      dirty: input.value !== renderedPetName,
       focused: document.activeElement === input,
       selectionStart: input.selectionStart,
       selectionEnd: input.selectionEnd,
@@ -981,6 +982,8 @@
     renderNav();
     screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
     restoreEditableState(editableState);
+    renderedPetId = state && state.pet && state.pet.pet_id || null;
+    renderedPetName = String(state && state.pet && state.pet.pet_name || '');
     title.textContent = state && state.pet ? (state.pet.pet_name || 'MOONPET') + ' OS' : 'MOONPET OS';
     if (reducedMotion) drawWorld(0);
   }
