@@ -3217,6 +3217,18 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
   }
 }
 
+async function preparePetMiniAppState(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return false;
+  const adopted = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1`)
+    .bind(owner).first().catch(() => null);
+  if (!adopted) return false;
+  const starter = await ensurePetStarterSeasonSlot(db, owner, now);
+  if (!starter.ok) return false;
+  await ensureActivePetInstance(db, owner);
+  return true;
+}
+
 const PET_SEASON_EXTRA_SLOT_COSTS = Object.freeze({
   2: 500,
   3: 1000,
@@ -5136,6 +5148,7 @@ function serializePet(pet, identity = null) {
   const decayed = applyPetDecay({ ...pet });
   const currentEvolution = identity?.current_stage || null;
   return {
+    pet_id: decayed.pet_id || null,
     telegram_id: decayed.telegram_id,
     pet_name: decayed.pet_name,
     species: decayed.species,
@@ -7109,6 +7122,9 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
 }
 
 async function buildPetMiniAppState(db, telegramId, botToken) {
+  // State preparation owns current-season initialization. Roster projection
+  // remains read-only and assumes this authoritative bootstrap already ran.
+  await preparePetMiniAppState(db, telegramId);
   const petRaw = await getPetProfile(db, telegramId).catch(() => null);
   if (!petRaw) {
     return {
@@ -12085,6 +12101,7 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 
 export const __petMediaTestHooks = Object.freeze({
   ensurePetStarterSeasonSlot,
+  preparePetMiniAppState,
   findActivePetSlot,
   ensureActivePetInstance,
   readActivePetInstance,

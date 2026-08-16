@@ -69,6 +69,66 @@ const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', imp
 const seasonTimingSource = client.match(/^[\t ]*\/\/ TEST-EXPORT: seasonTiming:start[\t ]*\r?\n([\s\S]*?)^[\t ]*\/\/ TEST-EXPORT: seasonTiming:end[\t ]*$/m)?.[1];
 assert.ok(seasonTimingSource, 'seasonTiming source must remain independently testable');
 const seasonTiming = Function(`"use strict";${seasonTimingSource}\nreturn seasonTiming;`)();
+const callsignDraftSource = client.match(/^[\t ]*\/\/ TEST-EXPORT: callsignDraft:start[\t ]*\r?\n([\s\S]*?)^[\t ]*\/\/ TEST-EXPORT: callsignDraft:end[\t ]*$/m)?.[1];
+assert.ok(callsignDraftSource, 'callsign draft helpers must remain independently testable');
+const draftState = { pet: { pet_id: 'pet-a', pet_name: 'Server A' } };
+let mountedCallsignInput = null;
+const draftDocument = {
+  activeElement: null,
+  getElementById: () => mountedCallsignInput,
+};
+const draftHelpers = Function('state', 'document', `"use strict";${callsignDraftSource}\nreturn { captureEditableState, restoreEditableState };`)(draftState, draftDocument);
+function callsignInput(value, selectionStart = 0, selectionEnd = 0) {
+  return {
+    value, selectionStart, selectionEnd, focused: false, selectionRestored: false,
+    focus() { this.focused = true; },
+    setSelectionRange(start, end) { this.selectionRestored = true; this.selectionStart = start; this.selectionEnd = end; },
+  };
+}
+
+mountedCallsignInput = callsignInput('Local A', 2, 5);
+draftDocument.activeElement = mountedCallsignInput;
+const dirtySamePetDraft = draftHelpers.captureEditableState();
+assert.deepEqual(
+  { petId: dirtySamePetDraft.petId, value: dirtySamePetDraft.value, dirty: dirtySamePetDraft.dirty, focused: dirtySamePetDraft.focused },
+  { petId: 'pet-a', value: 'Local A', dirty: true, focused: true },
+  'dirty callsign drafts must capture ownership and focus for the active pet instance',
+);
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A refreshed' };
+mountedCallsignInput = callsignInput('Server A refreshed');
+draftHelpers.restoreEditableState(dirtySamePetDraft);
+assert.equal(mountedCallsignInput.value, 'Local A', 'a dirty draft must survive a background refresh for the same pet');
+assert.equal(mountedCallsignInput.selectionRestored, true, 'a same-pet dirty draft must restore its valid selection');
+
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+mountedCallsignInput = callsignInput('Server A');
+const cleanDraft = draftHelpers.captureEditableState();
+draftState.pet.pet_name = 'New canonical A';
+mountedCallsignInput = callsignInput('New canonical A');
+draftHelpers.restoreEditableState(cleanDraft);
+assert.equal(mountedCallsignInput.value, 'New canonical A', 'a clean input must not overwrite a newer canonical callsign');
+
+draftState.pet = { pet_id: 'pet-b', pet_name: 'Server B' };
+mountedCallsignInput = callsignInput('Server B');
+draftHelpers.restoreEditableState(dirtySamePetDraft);
+assert.equal(mountedCallsignInput.value, 'Server B', 'a draft owned by Pet A must not cross an active switch to Pet B');
+
+draftState.pet = { pet_id: 'pet-b', pet_name: 'Server Normalized B' };
+mountedCallsignInput = callsignInput('Server Normalized B');
+draftHelpers.restoreEditableState(null);
+assert.equal(mountedCallsignInput.value, 'Server Normalized B', 'discarding an accepted rename draft must leave the server-normalized callsign visible');
+
+const unsafeSelectionDraft = { petId: 'pet-b', value: 'Local B', dirty: true, focused: true, selectionStart: null, selectionEnd: undefined };
+draftHelpers.restoreEditableState(unsafeSelectionDraft);
+assert.equal(mountedCallsignInput.value, 'Local B', 'a dirty same-pet draft still restores when selection metadata is unavailable');
+assert.equal(mountedCallsignInput.selectionRestored, false, 'selection restoration must be skipped unless both offsets are numbers');
+draftState.pet = { pet_id: null, pet_name: 'Unidentified canonical pet' };
+mountedCallsignInput = callsignInput('Unidentified canonical pet');
+draftHelpers.restoreEditableState({ ...unsafeSelectionDraft, petId: null, value: 'Unowned draft' });
+assert.equal(mountedCallsignInput.value, 'Unidentified canonical pet', 'a draft without an authoritative pet_id must never be restored');
+mountedCallsignInput = null;
+assert.equal(draftHelpers.captureEditableState(), null, 'draft capture must remain safe when the callsign input is not mounted');
+assert.doesNotThrow(() => draftHelpers.restoreEditableState(unsafeSelectionDraft), 'draft restoration must remain safe when the callsign input is not mounted');
 const originalDateNow = Date.now;
 Date.now = () => Date.parse('2099-12-31T23:59:59.000Z');
 try {
@@ -234,8 +294,8 @@ assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
 assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-state-gate/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
-assert.match(client, /function captureEditableState\(\)[\s\S]*pet-name-input[\s\S]*function restoreEditableState\(draft\)/, 'state refresh renders must preserve editable callsign drafts');
-assert.match(client, /function render\(\) \{\s*var editableState = captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must restore unsaved editable state after rebuilding the screen');
+assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
+assert.match(client, /render\(\{ discardCallsignDraft: action === 'rename' && Boolean\(data\.result && data\.result\.accepted\) \}\)/, 'an accepted rename must discard the old draft so the server-normalized callsign wins');
 assert.match(client, /function seasonTiming\(season, elapsedMs\)/, 'season status must derive position from an authoritative server snapshot plus monotonic elapsed time');
 assert.match(client, /Date\.parse\(season && season\.current_at/, 'season timing must consume the server timestamp');
 assert.doesNotMatch(seasonTimingSource, /Date\.now\(/, 'season timing must not depend on the browser clock');

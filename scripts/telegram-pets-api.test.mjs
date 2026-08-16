@@ -1652,6 +1652,7 @@ assert.deepEqual(
 );
 assert.equal(initialSeasonSlots.slots[0].pet.level >= 1, true, 'owned slot cards must include a valid level');
 assert.equal(initialSeasonSlots.slots[0].pet.pet_xp >= 0, true, 'owned slot cards must include pet-instance XP');
+assert.equal(typeof initialSeasonSlots.slots[0].pet_id, 'string', 'owned slot summaries must identify the authoritative pet instance');
 assert.equal(initialSeasonSlots.purchase_enabled, true, 'season slot purchases must be enabled with per-pet state available');
 assert.equal(initialSeasonSlots.purchase_disabled_reason, null);
 assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its Arcade XP cost');

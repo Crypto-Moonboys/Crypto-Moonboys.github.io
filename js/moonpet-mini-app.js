@@ -946,11 +946,15 @@
     }).join('');
   }
 
+  // TEST-EXPORT: callsignDraft:start
   function captureEditableState() {
     var input = document.getElementById('pet-name-input');
     if (!input) return null;
+    var canonicalName = String(state && state.pet && state.pet.pet_name || '');
     return {
+      petId: state && state.pet && state.pet.pet_id || null,
       value: input.value,
+      dirty: input.value !== canonicalName,
       focused: document.activeElement === input,
       selectionStart: input.selectionStart,
       selectionEnd: input.selectionEnd,
@@ -958,18 +962,21 @@
   }
 
   function restoreEditableState(draft) {
-    if (!draft) return;
+    if (!draft || !draft.dirty || !draft.petId || !state || !state.pet || draft.petId !== state.pet.pet_id) return;
     var input = document.getElementById('pet-name-input');
     if (!input) return;
     input.value = draft.value;
     if (draft.focused) {
       input.focus({ preventScroll: true });
-      input.setSelectionRange(draft.selectionStart, draft.selectionEnd);
+      if (typeof draft.selectionStart === 'number' && typeof draft.selectionEnd === 'number') {
+        input.setSelectionRange(draft.selectionStart, draft.selectionEnd);
+      }
     }
   }
+  // TEST-EXPORT: callsignDraft:end
 
-  function render() {
-    var editableState = captureEditableState();
+  function render(options) {
+    var editableState = options && options.discardCallsignDraft ? null : captureEditableState();
     renderHud();
     renderNav();
     screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
@@ -1263,7 +1270,7 @@
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
-      render();
+      render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
       animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
