@@ -28,7 +28,7 @@ import {
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
-import { listSanctuaryPets, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
+import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -8206,7 +8206,7 @@ export default {
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       try {
-        return json({ pets: await listSanctuaryPets(env.DB, verified.telegramId, { includeSnapshots: true }) });
+        return json({ pets: await listSanctuaryPetsPrivate(env.DB, verified.telegramId) });
       } catch (error) {
         logApiFailure('pet_mini_app_sanctuary_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
         return err('mini_app_sanctuary_failed', 500);
