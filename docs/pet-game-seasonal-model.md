@@ -45,7 +45,7 @@ This isolation does not make every progression system pet-owned. Seasonal XP, se
 - 10 Weekly Crests; and
 - the required Pet XP and trials defined by the eventual balancing contract.
 
-Standard seasons target a 90-day progression cycle. During a full-length cycle, the 60-day/10-week gates are designed to give a consistent player roughly two weeks of missed-time flexibility. Partial year-end seasons require separate balancing and cannot be assumed to provide the same buffer. Pet XP can continue past its normal daily target under the later diminishing-returns design, which must prevent heavy play from collapsing the intended seasonal journey into one week. Marks and Crests provide calendar-based fairness and remain independently capped per pet.
+Standard seasons target a 90-day progression cycle. The 60 Growth Mark requirement and 10 Weekly Crest requirement provide natural scheduling flexibility: Growth Marks allow up to roughly 30 missed daily opportunities, while Weekly Crests allow roughly 3 missed weekly windows during a full-length cycle. During a full-length cycle, the 60 Growth Mark and 10 Weekly Crest gates provide approximately three to four weeks of scheduling flexibility before additional balancing or catch-up systems are required. Partial year-end seasons require separate balancing because the available progression window may be shorter. Pet XP can continue past its normal daily target under the later diminishing-returns design, which must prevent heavy play from collapsing the intended seasonal journey into one week. Marks and Crests provide calendar-based fairness and remain independently capped per pet.
 
 ## Catch-up direction
 
