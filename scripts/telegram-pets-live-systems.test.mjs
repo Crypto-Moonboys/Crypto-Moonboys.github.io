@@ -11,10 +11,15 @@ import { awardPetReward, PET_REWARD_SOURCES } from '../workers/moonboys-api/pets
 import { buildPetRegionDirectory, PET_REGION_LORE } from '../workers/moonboys-api/pets/game-content.js';
 
 const root = new URL('../', import.meta.url);
-const worker = fs.readFileSync(new URL('workers/moonboys-api/worker.js', root), 'utf8');
-const client = fs.readFileSync(new URL('js/moonpet-mini-app.js', root), 'utf8');
-const schema = fs.readFileSync(new URL('workers/moonboys-api/schema.sql', root), 'utf8');
-const migration = fs.readFileSync(new URL('workers/moonboys-api/migrations/052_telegram_pet_live_systems.sql', root), 'utf8');
+function normalizeSourceNewlines(source) {
+  return source.replace(/\r\n?/g, '\n');
+}
+
+assert.equal(normalizeSourceNewlines('first\r\nsecond\rthird\nfourth'), 'first\nsecond\nthird\nfourth', 'source audits must normalize Windows and legacy line endings');
+const worker = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/worker.js', root), 'utf8'));
+const client = normalizeSourceNewlines(fs.readFileSync(new URL('js/moonpet-mini-app.js', root), 'utf8'));
+const schema = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/schema.sql', root), 'utf8'));
+const migration = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/migrations/052_telegram_pet_live_systems.sql', root), 'utf8'));
 
 assert.equal(Object.keys(PET_REGION_CONTENT).length, 6);
 assert.ok(Object.values(PET_REGION_LORE).every((region) => region.status === 'live'), 'all six districts must be live');
