@@ -31,17 +31,23 @@ class SqliteD1 {
   }
 }
 
-class DecayConflictD1 extends SqliteD1 {
+class PetDecayConflictD1 extends SqliteD1 {
+  constructor(database, conflictedPetId) {
+    super(database);
+    this.conflictedPetId = conflictedPetId;
+  }
+
   prepare(sql) {
     const statement = super.prepare(sql);
     if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
+    const conflictedPetId = this.conflictedPetId;
     return {
       bind(...bindings) {
         const bound = statement.bind(...bindings);
         return {
           first: () => bound.first(),
           all: () => bound.all(),
-          run: async () => ({ meta: { changes: 0 } }),
+          run: () => bindings[7] === conflictedPetId ? Promise.resolve({ meta: { changes: 0 } }) : bound.run(),
         };
       },
     };
@@ -390,23 +396,38 @@ assert.deepEqual(
   'switching to the dormant pet must not copy or mutate the starter pet state',
 );
 db.prepare(`UPDATE telegram_pet_instances SET hunger=15, last_decay_at=?
-  WHERE telegram_id='state-player' AND slot_number=3`).run(dormantDecayStart);
-const conflictSafeRoster = await buildPetSeasonSlotSummary(new DecayConflictD1(db), 'state-player', rosterNow);
-assert.equal(conflictSafeRoster.slots.length, 3, 'one temporary pet decay conflict must not break the roster response');
-assert.equal(conflictSafeRoster.slots[2].pet.hunger, 15, 'a conflicted pet must fall back to its existing row data');
-assert.equal(conflictSafeRoster.slots[1].pet.hunger, dormantSlot.pet.hunger, 'conflict fallback must preserve successfully resolved pet rows');
+  WHERE telegram_id='state-player' AND slot_number IN (1, 2, 3)`).run(dormantDecayStart);
+const conflictedPetId = 'pet:state-player:pet-s2026-003:2';
+const conflictSafeRoster = await buildPetSeasonSlotSummary(new PetDecayConflictD1(db, conflictedPetId), 'state-player', rosterNow);
+assert.equal(conflictSafeRoster.slots.length, 3, 'one temporary pet decay conflict must not break the three-pet roster response');
+assert.equal(conflictSafeRoster.slots[1].pet.hunger, 15, 'the conflicted middle pet must fall back to its existing row data');
+assert.ok(conflictSafeRoster.slots[0].pet.hunger > 15, 'the first pet must still return successfully decay-resolved state');
+assert.ok(conflictSafeRoster.slots[2].pet.hunger > 15, 'the third pet must still return successfully decay-resolved state');
 await assert.rejects(
   buildPetSeasonSlotSummary(new UnexpectedDecayFailureD1(db), 'state-player', rosterNow),
   /unexpected_decay_storage_failure/,
   'unexpected decay storage errors must still surface instead of being hidden by roster fallback',
 );
-db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=9999, energy=99, updated_at='2099-01-01 00:00:00'
+db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=9999, moon_gold=8888, moon_crystals=777,
+  style_tokens=666, equipped_food='new-food', equipped_toy='new-toy',
+  equipped_outfit='new-outfit', equipped_armor='new-armor', equipped_weapon='new-weapon',
+  equipped_charm='new-charm', hunger=11, happiness=98, cleanliness=97, energy=99,
+  health=96, updated_at='2099-01-01 00:00:00'
   WHERE telegram_id='state-player'`).run();
 await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
 assert.deepEqual(
-  { ...db.prepare(`SELECT pet_xp, energy, updated_at FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
-  { pet_xp: 9999, energy: 99, updated_at: '2099-01-01 00:00:00' },
-  'a stale roster read must not mirror its active instance snapshot over newer compatibility reward state',
+  { ...db.prepare(`SELECT pet_xp, moon_gold, moon_crystals, style_tokens, equipped_food,
+      equipped_toy, equipped_outfit, equipped_armor, equipped_weapon, equipped_charm,
+      hunger, happiness, cleanliness, energy, health, updated_at
+    FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
+  {
+    pet_xp: 9999, moon_gold: 8888, moon_crystals: 777, style_tokens: 666,
+    equipped_food: 'new-food', equipped_toy: 'new-toy', equipped_outfit: 'new-outfit',
+    equipped_armor: 'new-armor', equipped_weapon: 'new-weapon', equipped_charm: 'new-charm',
+    hunger: 11, happiness: 98, cleanliness: 97, energy: 99, health: 96,
+    updated_at: '2099-01-01 00:00:00',
+  },
+  'a stale roster read must not revert newer XP, currencies, equipment, or stat state in the compatibility profile',
 );
 db.prepare(`UPDATE telegram_pet_season_slots SET status='archived'
   WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
