@@ -163,7 +163,7 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
 export async function finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const state = await evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
-  if (!state?.requirements_met) return state;
+  if (!state?.requirements_met && !state?.season_complete) return state;
   const pet = await ownedPet(db, petId, seasonKey, options.telegram_id);
   if (!pet) return null;
   if (!state.season_complete) await db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_completions

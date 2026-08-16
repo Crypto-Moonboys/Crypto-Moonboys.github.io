@@ -7,9 +7,14 @@ async function rows(db, sql, ...bindings) {
   return result.results || [];
 }
 
+export const PET_RECOVERABLE_ACTIVITY_PREDICATE = `status = 'completed'
+  AND json_valid(metadata) = 1
+  AND json_extract(metadata, '$.claim_state') = 'claiming'`;
+
 async function hasPendingActivity(db, telegramId) {
   const checks = [
-    [`SELECT id FROM telegram_pet_activity_sessions WHERE telegram_id=? AND status IN ('active','pending','ready') LIMIT 1`, [telegramId]],
+    [`SELECT id FROM telegram_pet_activity_sessions WHERE telegram_id=?
+      AND (status IN ('active','pending','ready') OR (${PET_RECOVERABLE_ACTIVITY_PREDICATE})) LIMIT 1`, [telegramId]],
     [`SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','pending','ready','extractable') LIMIT 1`, [telegramId]],
     [`SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`, [telegramId, telegramId]],
     [`SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`, [telegramId, telegramId]],
@@ -70,6 +75,18 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
       WHERE telegram_id=? AND pet_id<>? AND status='active'
       ORDER BY CASE WHEN season_key=? THEN 0 ELSE 1 END, updated_at DESC, slot_number LIMIT 1
       ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=excluded.updated_at`).bind(timestamp, telegramId, petId, seasonKey),
+    db.prepare(`UPDATE telegram_pet_profiles SET
+      (pet_name, species, stage, pet_xp, level, hunger, happiness, cleanliness, energy, health,
+       streak_days, moon_gold, moon_crystals, style_tokens, equipped_food, equipped_toy,
+       equipped_outfit, equipped_armor, equipped_weapon, equipped_charm, last_active_day,
+       last_decay_at, updated_at) =
+      (SELECT i.pet_name, i.species, i.stage, i.pet_xp, i.level, i.hunger, i.happiness,
+       i.cleanliness, i.energy, i.health, i.streak_days, i.moon_gold, i.moon_crystals,
+       i.style_tokens, i.equipped_food, i.equipped_toy, i.equipped_outfit, i.equipped_armor,
+       i.equipped_weapon, i.equipped_charm, i.last_active_day, i.last_decay_at, ?
+       FROM telegram_pet_instances i JOIN telegram_pet_active_slots a ON a.pet_id=i.pet_id
+       WHERE a.telegram_id=? AND i.telegram_id=? LIMIT 1)
+      WHERE telegram_id=?`).bind(timestamp, telegramId, telegramId, telegramId),
     db.prepare(`DELETE FROM telegram_pet_active_slots WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId),
   ];
   const existing = await db.prepare(`SELECT pet_id FROM telegram_pet_sanctuary

@@ -28,7 +28,7 @@ import {
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
-import { listSanctuaryPets, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
+import { listSanctuaryPets, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -4557,9 +4557,7 @@ async function getRecoverablePetActivitySession(db, telegramId) {
   return db.prepare(`
     SELECT * FROM telegram_pet_activity_sessions
     WHERE telegram_id = ?
-      AND status = 'completed'
-      AND json_valid(metadata) = 1
-      AND json_extract(metadata, '$.claim_state') = 'claiming'
+      AND ${PET_RECOVERABLE_ACTIVITY_PREDICATE}
     ORDER BY claimed_at ASC LIMIT 1
   `).bind(String(telegramId)).first().catch(() => null);
 }
