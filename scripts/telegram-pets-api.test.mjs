@@ -146,8 +146,8 @@ assert.ok(worker.includes("body.action === 'work'"), 'telegram pets action route
 assert.ok(worker.includes("body.action === 'daily_chest'"), 'telegram pets action route must dispatch daily_chest actions');
 assert.ok(worker.includes("body.action === 'random_event'"), 'telegram pets action route must dispatch random_event actions');
 assert.ok(worker.includes("body.action === 'season_slots'"), 'telegram pets action route must dispatch season slot summary reads');
-assert.ok(!worker.includes("body.action === 'buy_pet_slot'"), 'season slot purchases must not be exposed before per-pet state exists');
-assert.ok(!worker.includes("body.action === 'switch_pet_slot'"), 'active slot switching must not be exposed before per-pet state exists');
+assert.ok(worker.includes("body.action === 'buy_pet_slot'"), 'season slot purchases must be exposed through the authenticated action route');
+assert.ok(worker.includes("body.action === 'switch_pet_slot'"), 'active slot switching must be exposed through the authenticated action route');
 assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route must dispatch run start/resume actions');
 assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
 assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
@@ -201,8 +201,8 @@ assert.match(miniAppStateBuilder, /SELECT p\.telegram_id, p\.pet_name,/, 'Mini A
 assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state must expose current-season pet slots');
 const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
 assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
-assert.doesNotMatch(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must not sell slots before per-pet state exists');
-assert.doesNotMatch(miniAppActionProcessor, /switchPetSeasonSlot\(db, telegramId/, 'Mini App action handler must not switch slots before per-pet state exists');
+assert.match(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must sell slots through the authenticated action flow');
+assert.match(miniAppActionProcessor, /switchActivePetSeasonSlot\(db, telegramId/, 'Mini App action handler must switch owned slots through the authenticated action flow');
 assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
 assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
@@ -1641,10 +1641,10 @@ assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[3], 1000, 'third seasonal pet slot must
 const initialSeasonSlots = await buildPetSeasonSlotSummary(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
 assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must always expose the three season slots');
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
-assert.equal(initialSeasonSlots.purchase_enabled, false, 'season slot purchases must stay disabled until per-pet state exists');
-assert.equal(initialSeasonSlots.purchase_disabled_reason, 'per_pet_state_pending');
-assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its future Arcade XP cost');
-assert.equal(initialSeasonSlots.slots[1].affordable, false, 'slot 2 must not be marked affordable while purchase is disabled');
+assert.equal(initialSeasonSlots.purchase_enabled, true, 'season slot purchases must be enabled with per-pet state available');
+assert.equal(initialSeasonSlots.purchase_disabled_reason, null);
+assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its Arcade XP cost');
+assert.equal(initialSeasonSlots.slots[1].affordable, true, 'slot 2 must be marked affordable when Arcade XP covers its cost');
 assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start locked');
 const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
   action: 'season_slots',

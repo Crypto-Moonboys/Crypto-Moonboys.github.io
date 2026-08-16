@@ -7,6 +7,7 @@ class SqliteD1Statement {
   constructor(database, sql, bindings = []) { this.database = database; this.sql = sql; this.bindings = bindings; }
   bind(...bindings) { return new SqliteD1Statement(this.database, this.sql, bindings); }
   async first() { return this.database.prepare(this.sql).get(...this.bindings) || null; }
+  async all() { return { results: this.database.prepare(this.sql).all(...this.bindings) }; }
   async run() {
     const result = this.database.prepare(this.sql).run(...this.bindings);
     return { meta: { changes: result.changes } };
@@ -16,6 +17,18 @@ class SqliteD1Statement {
 class SqliteD1 {
   constructor(database) { this.database = database; }
   prepare(sql) { return new SqliteD1Statement(this.database, sql); }
+  async batch(statements) {
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const results = [];
+      for (const statement of statements) results.push(await statement.run());
+      this.database.exec('COMMIT');
+      return results;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
 }
 
 const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql', import.meta.url), 'utf8');
@@ -139,7 +152,7 @@ assert.throws(
 
 const {
   findActivePetSlot, readActivePetInstance, writeActivePetInstance,
-  getPetProfile, savePetProfile,
+  getPetProfile, savePetProfile, buyPetSeasonSlot, switchActivePetSeasonSlot,
 } = __petMediaTestHooks;
 const d1 = new SqliteD1(db);
 
@@ -197,9 +210,44 @@ db.prepare(`DELETE FROM telegram_pet_instances WHERE telegram_id='state-player'`
 const recreated = await readActivePetInstance(d1, 'state-player');
 assert.equal(recreated.pet_name, 'Saved Nova', 'a missing active starter instance must be recreated from its compatibility profile');
 
-db.prepare(`UPDATE telegram_pet_active_slots SET pet_id='pet:state-player:2026-q3:2' WHERE telegram_id='state-player'`).run();
-assert.equal(await findActivePetSlot(d1, 'state-player'), null, 'a paid slot pointer must not be treated as active gameplay state before switching launches');
-assert.equal(await writeActivePetInstance(d1, 'state-player', runtimePet), false, 'paid slots must not have instances auto-created or used');
-assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE slot_number=2`).get().count, 0, 'paid slot rows must remain without auto-created instances');
+const missingSwitch = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal(missingSwitch.accepted, false, 'a paid slot missing its pet instance must be rejected');
+
+db.exec(`CREATE TABLE arcade_progression_state (
+  telegram_id TEXT PRIMARY KEY, arcade_xp_total INTEGER NOT NULL DEFAULT 0,
+  arcade_daily_xp INTEGER NOT NULL DEFAULT 0, arcade_daily_key TEXT NOT NULL DEFAULT '',
+  arcade_restriction_level INTEGER NOT NULL DEFAULT 0, restricted_until INTEGER,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`);
+db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('state-player', 1500)`).run();
+const boughtSecond = await buyPetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal(boughtSecond.accepted, true, 'slot 2 purchase must succeed with enough Arcade XP');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'purchase must not auto-switch');
+const switched = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal(switched.accepted, true, 'switching to an owned active paid pet must succeed');
+assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Moonpet', 'gameplay reads must follow the switched fresh pet');
+assert.equal(db.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().pet_name, 'Moonpet', 'switching must mirror the selected pet to the legacy profile');
+const paidPet = await getPetProfile(d1, 'state-player');
+paidPet.energy = 42;
+await savePetProfile(d1, paidPet);
+await switchActivePetSeasonSlot(d1, 'state-player', 1, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Saved Nova', 'switching back must restore the starter pet independent state');
+assert.equal(db.prepare(`SELECT energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get().energy, 42, 'writes must affect only the active paid pet');
+const boughtThird = await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal(boughtThird.accepted, true, 'slot 3 purchase must succeed with enough Arcade XP');
+assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='state-player'`).get().arcade_xp_total, 0, 'Arcade XP must be deducted exactly once');
+assert.deepEqual({ ...db.prepare(`SELECT pet_name, pet_xp, energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=3 AND telegram_id='state-player'`).get() }, { pet_name: 'Moonpet', pet_xp: 0, energy: 70 }, 'a purchased pet must be a fresh instance');
+assert.equal((await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'pet_slot_already_owned', 'duplicate purchase must be rejected without another deduction');
+assert.equal((await buyPetSeasonSlot(d1, 'state-player', 4, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'invalid_pet_slot', 'slot 4 must be rejected');
+assert.equal((await switchActivePetSeasonSlot(d1, 'other-player', 'pet:state-player:2026-q3:3', { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'another owner cannot switch to the player pet');
+db.prepare(`UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
+assert.equal((await switchActivePetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'an archived season slot cannot become active');
+
+db.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name) VALUES ('poor-player', 'Poor starter')`).run();
+db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('poor-player', 499)`).run();
+const insufficient = await buyPetSeasonSlot(d1, 'poor-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal(insufficient.reason, 'insufficient_arcade_xp', 'insufficient Arcade XP must reject a paid slot purchase');
+assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='poor-player' AND slot_number=2`).get().count, 0, 'insufficient XP must not create the paid slot');
+assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='poor-player'`).get().arcade_xp_total, 499, 'a rejected purchase must not deduct Arcade XP');
 
 console.log('telegram-pets-per-pet-state.test.mjs passed');
