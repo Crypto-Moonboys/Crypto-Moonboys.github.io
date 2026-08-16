@@ -7809,12 +7809,6 @@ export default {
       return json({ season: getPetSeasonInfo(new Date()) });
     }
 
-    if (path === '/telegram-pets/season/slots' && request.method === 'GET') {
-      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
-      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
-      return json({ season_slots: await buildPetSeasonSlotSummary(env.DB, telegramId) });
-    }
-
     if (path === '/telegram-pets/state' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
