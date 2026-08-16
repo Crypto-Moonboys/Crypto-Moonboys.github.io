@@ -78,7 +78,11 @@ function extractTestExport(source, name) {
   return source.slice(bodyStart + 1, end);
 }
 
-for (const name of ['seasonTiming', 'callsignDraft']) {
+const TEST_EXPORT_NAMES = [
+  'seasonTiming', 'callsignDraft', 'stateRequestGate', 'phase4PresenceDirector',
+  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
+];
+for (const name of TEST_EXPORT_NAMES) {
   for (const newline of ['\n', '\r\n']) {
     const synthetic = [
       `  // TEST-EXPORT: ${name}:start`,
@@ -106,6 +110,11 @@ assert.doesNotThrow(
   () => Function('state', 'document', `"use strict"; var renderedPetId = null; var renderedPetName = ''; ${crlfCallsignDraftSource}`),
   'the real callsignDraft export must compile after CRLF conversion',
 );
+for (const name of TEST_EXPORT_NAMES) {
+  const source = extractTestExport(crlfClient, name);
+  assert.ok(source, `the real ${name} export must remain extractable after CRLF conversion`);
+  assert.doesNotThrow(() => Function(`"use strict";${source}`), `the real ${name} export must compile after CRLF conversion`);
+}
 const draftState = { pet: { pet_id: 'pet-a', pet_name: 'Server A' } };
 let mountedCallsignInput = null;
 const draftDocument = {
@@ -216,7 +225,7 @@ try {
   Date.now = originalDateNow;
 }
 
-const stateRequestGateSource = client.match(/  function createStateRequestGate\(\) \{[\s\S]*?\n  \}(?=\n\n  function beginStateRequest)/)?.[0];
+const stateRequestGateSource = extractTestExport(client, 'stateRequestGate');
 assert.ok(stateRequestGateSource, 'state request freshness gate must remain independently testable');
 const createStateRequestGate = Function(`"use strict";${stateRequestGateSource}\nreturn createStateRequestGate;`)();
 const stateRequestGate = createStateRequestGate();
@@ -574,11 +583,11 @@ assert.match(client, /function actionFeedback\(result\)/);
 assert.match(client, /function resultRewardMap\(result\)/);
 assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards_applied\)/);
 assert.match(client, /var reward = resultRewardMap\(result\)/);
-assert.equal((client.match(/var reward = resultRewardMap\(result\)/g) || []).length, 2, 'terminal and canvas feedback must share reward normalization');
+assert.equal([...client.matchAll(/var reward = resultRewardMap\(result\)/g)].length, 2, 'terminal and canvas feedback must share reward normalization');
 assert.match(client, /presentResultFeedback\(data\.result\)/);
 assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result\)/s);
 assert.doesNotMatch(client, /presentResultFeedback\(data\.result\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
-assert.equal((client.match(/presentResultFeedback\(/g) || []).length, 2, 'only the helper and real server-result call may present reward feedback');
+assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 2, 'only the helper and real server-result call may present reward feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
 assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
 assert.match(client, /feedbackRedrawTimer = window\.setTimeout/);
@@ -620,9 +629,8 @@ assert.match(client, /Number\(pet\.hunger\) > 78.*SNACK PLEASE/s);
 assert.match(client, /Number\(pet\.cleanliness\) < 30.*WASH TIME/s);
 assert.match(client, /Number\(pet\.happiness\) < 30.*PLAY WITH ME/s);
 assert.match(client, /function updateCompanionPresence\(pet, lifecycle, time\)/);
-const presenceFunctionMatch = client.match(/  function updateCompanionPresence\(pet, lifecycle, time\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
-assert.ok(presenceFunctionMatch, 'Phase 4 presence director must be extractable for runtime smoke coverage');
-const presenceFunctionSource = presenceFunctionMatch[0].replace(/\n\n  function drawPixelText$/, '');
+const presenceFunctionSource = extractTestExport(client, 'phase4PresenceDirector');
+assert.ok(presenceFunctionSource, 'Phase 4 presence director must be extractable for runtime smoke coverage');
 const runtimePresenceFrame = { behavior: 'chill', phase: 0.72, thought: '', slot: -1, screen: '', seed: -1 };
 const updatePresenceRuntime = new Function(
   'reducedMotion', 'activeScreen', 'COMPANION_PRESENCE_FRAME', 'companionIdentitySeed',
@@ -725,9 +733,8 @@ assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTi
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
-const combatDirectorMatch = client.match(/  function clearCombatPresentation\(\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
-assert.ok(combatDirectorMatch, 'Phase 5 combat director must be extractable for runtime smoke coverage');
-const combatDirectorSource = combatDirectorMatch[0].replace(/\n\n  function drawPixelText$/, '');
+const combatDirectorSource = extractTestExport(client, 'combatDirector');
+assert.ok(combatDirectorSource, 'Phase 5 combat director must be extractable for runtime smoke coverage');
 const runtimeCombatFrame = {
   active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
   playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
@@ -786,9 +793,9 @@ assert.match(client, /function lifecycleStateSnapshot\(snapshot\)/);
 assert.match(client, /function planLifecycleCeremony\(beforeState, afterState, action, result\)/);
 assert.match(client, /function lifecycleCeremonyActive\(time\)/);
 assert.match(client, /function startLifecycleCeremony\(ceremony\)/);
-const lifecycleStartMatch = client.match(/  function startLifecycleCeremony\(ceremony\) \{[\s\S]*?\n  \}\n\n  function scrollToPanel/);
-assert.ok(lifecycleStartMatch, 'Phase 6 lifecycle ceremony starter must be extractable for haptic regression coverage');
-assert.doesNotMatch(lifecycleStartMatch[0], /haptic\('success'\)/, 'accepted lifecycle actions must emit only the runAction success haptic');
+const lifecycleStartSource = extractTestExport(client, 'lifecycleCeremonyStarter');
+assert.ok(lifecycleStartSource, 'Phase 6 lifecycle ceremony starter must be extractable for haptic regression coverage');
+assert.doesNotMatch(lifecycleStartSource, /haptic\('success'\)/, 'accepted lifecycle actions must emit only the runAction success haptic');
 assert.match(client, /function clearLifecycleCeremony\(redraw\)/);
 assert.match(client, /function drawLifecycleCeremony\(time, scene\)/);
 assert.match(client, /EGG SIGNAL STRENGTHENED/);
@@ -806,7 +813,7 @@ assert.match(client, /drawPixelRect\(7, 50, 306, 2, color\)/, 'Phase 6 ceremony 
 assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/, 'Phase 6 ceremonies must suppress overlapping thought bubbles');
 assert.match(client, /mood !== 'curious' && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping mood labels');
 assert.match(client, /\(!combat \|\| !combat\.active\) && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping identity labels');
-assert.equal((client.match(/animationLabel && !lifecycleCeremonyActive\(time\)/g) || []).length, 2, 'Phase 6 ceremonies must suppress egg and companion action labels');
+assert.equal([...client.matchAll(/animationLabel && !lifecycleCeremonyActive\(time\)/g)].length, 2, 'Phase 6 ceremonies must suppress egg and companion action labels');
 assert.match(client, /var ceremonyScale = lifecycleCeremonyActive\(time\)/);
 assert.match(client, /reducedMotion \? 1\.08/);
 assert.match(client, /var burst = reducedMotion \? 38/);
@@ -820,9 +827,8 @@ assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremo
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:ceremony|lifecycle)|(?:ceremony|lifecycle)[^\n]*Math\.random\(\)/i, 'Phase 6 lifecycle presentation must remain deterministic');
 
-const lifecycleDirectorMatch = client.match(/  function lifecycleStateSnapshot\(snapshot\) \{[\s\S]*?\n  \}\n\n  function lifecycleCeremonyActive/);
-assert.ok(lifecycleDirectorMatch, 'Phase 6 lifecycle director must be extractable for runtime smoke coverage');
-const lifecycleDirectorSource = lifecycleDirectorMatch[0].replace(/\n\n  function lifecycleCeremonyActive$/, '');
+const lifecycleDirectorSource = extractTestExport(client, 'lifecycleDirector');
+assert.ok(lifecycleDirectorSource, 'Phase 6 lifecycle director must be extractable for runtime smoke coverage');
 assert.doesNotMatch(lifecycleDirectorSource, /identity_seed|rare_route_index|species odds/i, 'Phase 6 must not expose hidden lifecycle authority');
 const planCeremonyRuntime = new Function(
   'words',

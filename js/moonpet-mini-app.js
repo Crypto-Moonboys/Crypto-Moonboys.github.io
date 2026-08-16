@@ -547,6 +547,7 @@
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
+  // TEST-EXPORT: stateRequestGate:start
   function createStateRequestGate() {
     var generation = 0;
     return {
@@ -559,6 +560,7 @@
       },
     };
   }
+  // TEST-EXPORT: stateRequestGate:end
 
   function beginStateRequest() {
     return stateRequestGate.begin();
@@ -1082,6 +1084,7 @@
     }
   }
 
+  // TEST-EXPORT: lifecycleDirector:start
   function lifecycleStateSnapshot(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
     var incubation = lifecycle.incubation || {};
@@ -1141,6 +1144,7 @@
     }
     return null;
   }
+  // TEST-EXPORT: lifecycleDirector:end
 
   function lifecycleCeremonyActive(time) {
     return Boolean(lifecycleCeremony && lifecycleCeremonyUntil > Number(time == null ? performance.now() : time));
@@ -1154,6 +1158,7 @@
     if (redraw && reducedMotion) drawWorld(performance.now());
   }
 
+  // TEST-EXPORT: lifecycleCeremonyStarter:start
   function startLifecycleCeremony(ceremony) {
     if (!ceremony) return false;
     clearResultFeedback(false);
@@ -1171,6 +1176,7 @@
     }
     return true;
   }
+  // TEST-EXPORT: lifecycleCeremonyStarter:end
 
   function scrollToPanel(panelId) {
     if (!panelId) return;
@@ -1589,6 +1595,7 @@
     return fallback;
   }
 
+  // TEST-EXPORT: phase4PresenceDirector:start
   function updateCompanionPresence(pet, lifecycle, time) {
     if (!pet) {
       COMPANION_PRESENCE_FRAME.behavior = 'chill';
@@ -1614,7 +1621,9 @@
     COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[COMPANION_PRESENCE_FRAME.behavior] || 'STAY READY');
     return COMPANION_PRESENCE_FRAME;
   }
+  // TEST-EXPORT: phase4PresenceDirector:end
 
+  // TEST-EXPORT: combatDirector:start
   function clearCombatPresentation() {
     COMBAT_PRESENTATION_FRAME.active = false;
     COMBAT_PRESENTATION_FRAME.mode = '';
@@ -1697,6 +1706,7 @@
     return COMBAT_PRESENTATION_FRAME;
   }
 
+  // TEST-EXPORT: combatDirector:end
   function drawPixelText(text, x, y, color, align) {
     ctx.save();
     ctx.shadowColor = color; ctx.shadowBlur = 4;
