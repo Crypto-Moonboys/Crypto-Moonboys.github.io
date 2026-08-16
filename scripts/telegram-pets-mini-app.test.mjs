@@ -107,6 +107,30 @@ try {
   Date.now = originalDateNow;
 }
 
+const stateRequestGateSource = client.match(/  function createStateRequestGate\(\) \{[\s\S]*?\n  \}(?=\n\n  function beginStateRequest)/)?.[0];
+assert.ok(stateRequestGateSource, 'state request freshness gate must remain independently testable');
+const createStateRequestGate = Function(`"use strict";${stateRequestGateSource}\nreturn createStateRequestGate;`)();
+const stateRequestGate = createStateRequestGate();
+let renderedState = { revision: 'initial' };
+let resolveRefresh;
+let resolveAction;
+const refreshGeneration = stateRequestGate.begin();
+const staleRefresh = new Promise((resolve) => { resolveRefresh = resolve; }).then((snapshot) => {
+  if (stateRequestGate.isCurrent(refreshGeneration)) renderedState = snapshot;
+});
+const actionGeneration = stateRequestGate.begin();
+const newerAction = new Promise((resolve) => { resolveAction = resolve; }).then((snapshot) => {
+  if (stateRequestGate.isCurrent(actionGeneration)) renderedState = snapshot;
+});
+resolveAction({ revision: 'action-result' });
+await newerAction;
+assert.equal(renderedState.revision, 'action-result', 'the latest action response must update rendered state');
+resolveRefresh({ revision: 'stale-refresh' });
+await staleRefresh;
+assert.equal(renderedState.revision, 'action-result', 'an older background refresh must not overwrite a newer action result');
+assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[\s\S]*stateRequestGate\.isCurrent\(requestGeneration\)/, 'all state snapshots must pass the request freshness gate');
+assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
+
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
@@ -145,7 +169,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260816-season-roster-live-time/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260816-season-roster-state-gate/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
@@ -207,7 +231,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-live-time/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-state-gate/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function seasonTiming\(season, elapsedMs\)/, 'season status must derive position from an authoritative server snapshot plus monotonic elapsed time');
@@ -756,7 +780,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260816-season-roster-live-time/);
+assert.match(html, /20260816-season-roster-state-gate/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
@@ -773,7 +797,7 @@ assert.match(client, /visibilitychange[\s\S]*performanceFrames = 0; performanceS
 assert.match(client, /if \(reducedMotion\) \{[\s\S]*reducedMotionStartedAt = performance\.now\(\);[\s\S]*render\(\);[\s\S]*sendPerformanceSample\(0, 0, reducedMotionRenderMs\);/, 'reduced-motion sessions must submit measured render duration without synthetic FPS');
 assert.match(schema, /render_duration_ms REAL CHECK \(render_duration_ms > 0 AND render_duration_ms <= 10000\)/, 'static-mode render duration needs a dedicated bounded telemetry field');
 assert.match(worker, /reducedMotion \? renderDurationMs == null : averageFps <= 0/, 'reduced-motion samples must validate render duration instead of requiring FPS');
-assert.match(client, /setStateSnapshot\(data\.state\);[\s\S]*else \{[\s\S]*performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;[\s\S]*render\(\);/, 'normal-motion sampling must begin after authenticated game state loads');
+assert.match(client, /setStateSnapshot\(data\.state, requestGeneration\)[\s\S]*else \{[\s\S]*performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;[\s\S]*render\(\);/, 'normal-motion sampling must begin after fresh authenticated game state loads');
 assert.match(client, /LOW_RENDER_INTERVAL_MS = 1000 \/ 30;[\s\S]*skipLowFrame = renderQuality === 'low' && performanceLastFrameAt && time - performanceLastFrameAt < LOW_RENDER_INTERVAL_MS;[\s\S]*if \(!skipLowFrame\) \{[\s\S]*performanceFrames \+= 1;[\s\S]*drawWorld\(time\);/, 'low-tier rendering and telemetry must use a timestamp-based 30 FPS cap');
 assert.match(client, /event\.persisted && radioRequestedOn/, 'BFCache restore must resume the latest requested radio state');
 assert.match(worker, /getPetActiveSetEffects\(pet\)/, 'authoritative job rewards must consume active set effects');

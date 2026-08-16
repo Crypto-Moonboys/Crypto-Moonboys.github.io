@@ -10,6 +10,7 @@
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
+  var stateRequestGate = createStateRequestGate();
   var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
   var requestedFocus = launchParameter('focus');
@@ -486,8 +487,9 @@
     busy = true;
     tell('REFRESHING LIVE SAVE...');
     try {
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
-      setStateSnapshot(data.state);
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
       render();
       tell('LIVE SAVE REFRESHED.');
       haptic('success');
@@ -543,8 +545,25 @@
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
-  function setStateSnapshot(nextState) {
-    if (!nextState) return false;
+  function createStateRequestGate() {
+    var generation = 0;
+    return {
+      begin: function () {
+        generation += 1;
+        return generation;
+      },
+      isCurrent: function (candidate) {
+        return candidate === generation;
+      },
+    };
+  }
+
+  function beginStateRequest() {
+    return stateRequestGate.begin();
+  }
+
+  function setStateSnapshot(nextState, requestGeneration) {
+    if (!nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
     state = nextState;
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
@@ -1139,9 +1158,9 @@
     haptic('success');
     await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 1600, notice: true });
     try {
+      var requestGeneration = beginStateRequest();
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
-      setStateSnapshot(acknowledged.state);
-      render();
+      if (setStateSnapshot(acknowledged.state, requestGeneration)) render();
     } catch (_) {}
     noticesBusy = false;
   }
@@ -1210,10 +1229,11 @@
     tell('TRANSMITTING ' + words(action) + '...');
     try {
       var stateBeforeAction = state;
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
-      var nextState = data.state || state;
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
-      setStateSnapshot(nextState);
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
@@ -1396,9 +1416,10 @@
     lastPassiveRefreshAt = Date.now();
     var before = multiplayerFingerprint(state);
     try {
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
       if (!data.state) return;
-      setStateSnapshot(data.state);
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
       render();
       var after = multiplayerFingerprint(state);
       if (before !== after && activeScreen === 'explore') {
@@ -1418,8 +1439,9 @@
     if (!force && lastSeasonServerRefreshAt > 0 && monotonicNow - lastSeasonServerRefreshAt < 300000) return;
     seasonRefreshBusy = true;
     try {
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
-      if (!setStateSnapshot(data.state)) return;
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;
@@ -2614,8 +2636,9 @@
       return;
     }
     try {
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
-      setStateSnapshot(data.state);
+      if (!setStateSnapshot(data.state, requestGeneration)) throw new Error('STALE INITIAL STATE RESPONSE');
       if (reducedMotion) {
         var reducedMotionStartedAt = performance.now();
         render();
