@@ -16,7 +16,7 @@ Crypto Moonboy Pets is a **community-only game**. There are no cash purchases, c
 
 | Rule | Status | Canonical behavior |
 | --- | --- | --- |
-| Season calendar | **LIVE** | Seasons target a 90-day progression cycle. The runtime starts a new calendar at each UTC year boundary, so the final partial season of a year may be shorter than 90 days. |
+| Season length | **LIVE** | Seasons target a 90-day progression cycle. The current runtime calendar resets at UTC year boundaries, so a year-end partial season may be shorter. |
 | Seasonal roster | **LIVE** | Each player may have at most three Moonpets in a season. |
 | Pet 1 | **LIVE** | The first seasonal Moonpet is free each season. |
 | Pet 2 | **LIVE** | Unlock by spending 500 **spendable Arcade XP** earned through community play. |
@@ -45,7 +45,7 @@ This isolation does not make every progression system pet-owned. Seasonal XP, se
 - 10 Weekly Crests; and
 - the required Pet XP and trials defined by the eventual balancing contract.
 
-The target 90-day cycle and the 60-day/10-week gates are designed to give a consistent player roughly two weeks of missed-time flexibility during a full-length cycle. Because the live calendar resets at the UTC year boundary, a year-end partial season may be shorter and cannot be assumed to provide the same buffer. Pet XP can continue past its normal daily target under the later diminishing-returns design, which must prevent heavy play from collapsing the intended seasonal journey into one week. Marks and Crests provide calendar-based fairness and remain independently capped per pet.
+Standard seasons target a 90-day progression cycle. During a full-length cycle, the 60-day/10-week gates are designed to give a consistent player roughly two weeks of missed-time flexibility. Partial year-end seasons require separate balancing and cannot be assumed to provide the same buffer. Pet XP can continue past its normal daily target under the later diminishing-returns design, which must prevent heavy play from collapsing the intended seasonal journey into one week. Marks and Crests provide calendar-based fairness and remain independently capped per pet.
 
 ## Catch-up direction
 
