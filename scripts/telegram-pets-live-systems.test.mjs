@@ -15,11 +15,17 @@ function normalizeSourceNewlines(source) {
   return source.replace(/\r\n?/g, '\n');
 }
 
+function normalizeSourceWhitespace(source) {
+  return normalizeSourceNewlines(source).replace(/\s+/g, ' ').trim();
+}
+
 assert.equal(normalizeSourceNewlines('first\r\nsecond\rthird\nfourth'), 'first\nsecond\nthird\nfourth', 'source audits must normalize Windows and legacy line endings');
 const worker = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/worker.js', root), 'utf8'));
 const client = normalizeSourceNewlines(fs.readFileSync(new URL('js/moonpet-mini-app.js', root), 'utf8'));
 const schema = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/schema.sql', root), 'utf8'));
 const migration = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/migrations/052_telegram_pet_live_systems.sql', root), 'utf8'));
+const workerSource = normalizeSourceWhitespace(worker);
+const clientSource = normalizeSourceWhitespace(client);
 
 assert.equal(Object.keys(PET_REGION_CONTENT).length, 6);
 assert.ok(Object.values(PET_REGION_LORE).every((region) => region.status === 'live'), 'all six districts must be live');
@@ -42,21 +48,21 @@ for (const [faction, definition] of Object.entries(PET_FACTION_BONUSES)) {
   assert.ok(applied.bonus, `${faction} must resolve in its declared gameplay system`);
   if (definition.system !== 'training') assert.ok(applied.rewards.moon_gold > 100 || applied.rewards.pet_xp > 100, `${faction} must change a live reward`);
 }
-assert.match(worker, /track_multiplier: 1 \+ Number\(factionBonus/, 'training faction bonus must change runtime Training XP');
-assert.match(worker, /applyPetFactionBonus\(player1Scaled\.rewards/, 'Arena faction bonuses must be applied before settlement');
+assert.match(workerSource, /track_multiplier: 1 \+ Number\(factionBonus/, 'training faction bonus must change runtime Training XP');
+assert.match(workerSource, /applyPetFactionBonus\(player1Scaled\.rewards/, 'Arena faction bonuses must be applied before settlement');
 assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9);
 assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 4);
 assert.equal(PET_PRESTIGE_REQUIREMENTS.min_level, 100);
 
 for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_upgrade', 'craft', 'cosmetic_unlock', 'prestige']) {
-  assert.match(worker, new RegExp(`action === '${action}'`), `${action} needs a server action`);
+  assert.match(workerSource, new RegExp(`action === '${action}'`), `${action} needs a server action`);
   assert.ok(client.includes(`'${action}'`), `${action} needs a Mini App control`);
 }
 for (const source of ['pet_district', 'pet_event_chain', 'pet_seasonal_boss']) assert.ok(PET_REWARD_SOURCES.includes(source), `${source} must be authorized`);
-assert.match(worker, /processPetEquipmentUpgrade\(db, telegramId, body\.item_key, eventKey\)/, 'gear upgrades must retain request idempotency');
-assert.match(worker, /if \(!petRaw\) return \{ accepted: false, reason: 'pet_not_adopted' \};\n    const faction = await db\.prepare\('SELECT faction FROM blocktopia_progression/, 'event chains must reject users without a pet before inserting a system event');
-assert.match(worker, /destination: 'economy'/, 'recommendations must provide explicit destinations');
-assert.match(client, /disabled: !item\.affordable \|\| item\.unlocked && !item\.repeatable/, 'Style Lab must disable unaffordable purchases');
+assert.match(workerSource, /processPetEquipmentUpgrade\(db, telegramId, body\.item_key, eventKey\)/, 'gear upgrades must retain request idempotency');
+assert.match(workerSource, /if \(!petRaw\) return \{ accepted: false, reason: 'pet_not_adopted' \}; const faction = await db\.prepare\('SELECT faction FROM blocktopia_progression/, 'event chains must reject users without a pet before inserting a system event');
+assert.match(workerSource, /destination: 'economy'/, 'recommendations must provide explicit destinations');
+assert.match(clientSource, /disabled: !item\.affordable \|\| item\.unlocked && !item\.repeatable/, 'Style Lab must disable unaffordable purchases');
 for (const table of ['telegram_pet_system_events', 'telegram_pet_event_chain_progress', 'telegram_pet_seasonal_boss_progress', 'telegram_pet_cosmetic_unlocks']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`));
   assert.ok(migration.includes(`CREATE TABLE IF NOT EXISTS ${table}`));
@@ -303,8 +309,8 @@ const recovered = await processPetSeasonalBoss(d1, 'boss-recovery', { level: 100
 assert.equal(recovered.reason, 'seasonal_boss_reward_recovered');
 assert.ok(runtimeDb.prepare('SELECT reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE telegram_id=? AND season_key=? AND boss_key=?').get('boss-recovery', boss.season_instance, boss.key).reward_claimed_at);
 
-assert.match(worker, /body\.approach_key/);
-assert.match(worker, /body\.choice_key/);
-assert.match(client, /class="district-mission"/);
-assert.match(client, /class="story-scene"/);
+assert.match(workerSource, /body\.approach_key/);
+assert.match(workerSource, /body\.choice_key/);
+assert.match(clientSource, /class="district-mission"/);
+assert.match(clientSource, /class="story-scene"/);
 console.log('telegram-pets-live-systems.test.mjs passed');
