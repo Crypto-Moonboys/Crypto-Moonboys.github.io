@@ -3,19 +3,19 @@ const json = (value, fallback) => {
 };
 
 async function rows(db, sql, ...bindings) {
-  const result = await db.prepare(sql).bind(...bindings).all().catch(() => ({ results: [] }));
+  const result = await db.prepare(sql).bind(...bindings).all();
   return result.results || [];
 }
 
 async function hasPendingActivity(db, telegramId) {
   const checks = [
-    [`SELECT session_id AS id FROM telegram_pet_activity_sessions WHERE telegram_id=? AND status IN ('active','pending','ready') LIMIT 1`, [telegramId]],
+    [`SELECT id FROM telegram_pet_activity_sessions WHERE telegram_id=? AND status IN ('active','pending','ready') LIMIT 1`, [telegramId]],
     [`SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','pending','ready','extractable') LIMIT 1`, [telegramId]],
     [`SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`, [telegramId, telegramId]],
-    [`SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`, [telegramId]],
+    [`SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`, [telegramId, telegramId]],
   ];
   for (const [sql, bindings] of checks) {
-    const pending = await db.prepare(sql).bind(...bindings).first().catch(() => null);
+    const pending = await db.prepare(sql).bind(...bindings).first();
     if (pending) return pending;
   }
   return null;
@@ -65,6 +65,11 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
       WHERE pet_id=? AND telegram_id=?`).bind(timestamp, petId, telegramId),
     db.prepare(`UPDATE telegram_pet_season_slots SET status='archived', updated_at=?
       WHERE pet_id=? AND telegram_id=?`).bind(timestamp, petId, telegramId),
+    db.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key, updated_at)
+      SELECT telegram_id, pet_id, season_key, ? FROM telegram_pet_season_slots
+      WHERE telegram_id=? AND pet_id<>? AND status='active'
+      ORDER BY CASE WHEN season_key=? THEN 0 ELSE 1 END, updated_at DESC, slot_number LIMIT 1
+      ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=excluded.updated_at`).bind(timestamp, telegramId, petId, seasonKey),
     db.prepare(`DELETE FROM telegram_pet_active_slots WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId),
   ];
   const existing = await db.prepare(`SELECT pet_id FROM telegram_pet_sanctuary
@@ -73,24 +78,41 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
     await db.batch(archiveStatements);
     return { accepted: true, duplicate: true, reason: 'already_in_sanctuary', pet_id: petId };
   }
+  const activePointer = await db.prepare(`SELECT pet_id FROM telegram_pet_active_slots
+    WHERE telegram_id=? LIMIT 1`).bind(telegramId).first();
+  if (String(activePointer?.pet_id || '') === petId) {
+    const replacement = await db.prepare(`SELECT pet_id FROM telegram_pet_season_slots
+      WHERE telegram_id=? AND pet_id<>? AND status='active' ORDER BY CASE WHEN season_key=? THEN 0 ELSE 1 END, updated_at DESC, slot_number LIMIT 1`)
+      .bind(telegramId, petId, seasonKey).first();
+    if (!replacement) return { accepted: false, reason: 'replacement_required', pet_id: petId };
+  }
   const pending = options.getPendingActivity
     ? await options.getPendingActivity(db, telegramId)
     : await hasPendingActivity(db, telegramId);
   if (pending) return { accepted: false, reason: 'pending_activity' };
 
-  const [lifecycle, evolutions, traits, memories, cosmetics, gear, progress] = await Promise.all([
-    db.prepare(`SELECT * FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId).first().catch(() => null),
-    rows(db, `SELECT evolution_id, stage, cosmetic_unlocks, achievement_unlocks, unlocked_at
-      FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=? ORDER BY stage`, petId, telegramId),
-    rows(db, `SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits
-      WHERE telegram_id=? ORDER BY trait_id`, telegramId),
-    db.prepare(`SELECT * FROM telegram_pet_memories WHERE telegram_id=?`).bind(telegramId).first().catch(() => null),
-    rows(db, `SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory
-      WHERE telegram_id=? AND asset_type='cosmetic' AND quantity>0 ORDER BY asset_key`, telegramId),
-    rows(db, `SELECT item_key, slot, item_level, mastery_tier FROM telegram_pet_equipment_progression
-      WHERE telegram_id=? ORDER BY slot, item_key`, telegramId),
-    db.prepare(`SELECT * FROM telegram_pet_progression WHERE telegram_id=?`).bind(telegramId).first().catch(() => null),
-  ]);
+  let snapshots;
+  try {
+    snapshots = await Promise.all([
+      db.prepare(`SELECT * FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId).first(),
+      rows(db, `SELECT evolution_id, stage, cosmetic_unlocks, achievement_unlocks, unlocked_at
+        FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=? ORDER BY stage`, petId, telegramId),
+      rows(db, `SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits
+        WHERE telegram_id=? ORDER BY trait_id`, telegramId),
+      db.prepare(`SELECT * FROM telegram_pet_memories WHERE telegram_id=?`).bind(telegramId).first(),
+      rows(db, `SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory
+        WHERE telegram_id=? AND asset_type='cosmetic' AND quantity>0 ORDER BY asset_key`, telegramId),
+      rows(db, `SELECT item_key, slot, item_level, mastery_tier FROM telegram_pet_equipment_progression
+        WHERE telegram_id=? ORDER BY slot, item_key`, telegramId),
+      db.prepare(`SELECT * FROM telegram_pet_progression WHERE telegram_id=?`).bind(telegramId).first(),
+    ]);
+  } catch (error) {
+    const detail = { event: 'pet_sanctuary_snapshot_failed', petId, telegramId, message: error?.message || String(error) };
+    if (options.logError) options.logError(detail);
+    else console.error('[moonpet-sanctuary]', JSON.stringify(detail));
+    return { accepted: false, reason: 'snapshot_read_failed', pet_id: petId };
+  }
+  const [lifecycle, evolutions, traits, memories, cosmetics, gear, progress] = snapshots;
   const finalEvolution = evolutions.at(-1);
   const identity = { pet_id: petId, pet_name: pet.pet_name, species: pet.species, lifecycle, evolutions };
   const equipment = {
@@ -111,4 +133,23 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
   const results = await db.batch([insert, ...archiveStatements]);
   const duplicate = Number(results?.[0]?.meta?.changes || 0) !== 1;
   return { accepted: true, duplicate, reason: duplicate ? 'already_in_sanctuary' : 'entered_sanctuary', pet_id: petId };
+}
+
+export async function reconcileCompletedPetsToSanctuary(db, telegramId, options = {}) {
+  let result;
+  try {
+    result = await db.prepare(`SELECT c.pet_id, c.telegram_id, c.season_key
+      FROM telegram_pet_season_completions c
+      LEFT JOIN telegram_pet_sanctuary s ON s.pet_id=c.pet_id
+      WHERE c.telegram_id=? AND s.pet_id IS NULL ORDER BY c.completed_at`).bind(String(telegramId)).all();
+  } catch (error) {
+    const message = String(error?.message || '');
+    if (message.includes('no such table: telegram_pet_season_completions') || message.includes('no such table: telegram_pet_sanctuary')) return [];
+    throw error;
+  }
+  const transitions = [];
+  for (const completion of result.results || []) {
+    transitions.push(await movePetToSanctuaryIfEligible(db, completion, options));
+  }
+  return transitions;
 }

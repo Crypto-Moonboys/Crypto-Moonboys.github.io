@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_sanctuary (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE RESTRICT,
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE RESTRICT,
+  FOREIGN KEY (pet_id, telegram_id, original_season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE RESTRICT,
   FOREIGN KEY (pet_id, original_season_key)
     REFERENCES telegram_pet_season_completions(pet_id, season_key) ON DELETE RESTRICT
 );

@@ -28,7 +28,7 @@ import {
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
-import { listSanctuaryPets } from './pets/sanctuary.js';
+import { listSanctuaryPets, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -4750,6 +4750,8 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
       AND json_extract(metadata, '$.reward_idempotency_key') = ?
   `).bind(settledMetadata, session.id, telegramId, eventKey).run();
 
+  await reconcileCompletedPetsToSanctuary(db, telegramId, { now: now.toISOString() });
+
   return {
     ...authoritativeAward,
     reason: authoritativeAward.duplicate ? 'duplicate' : 'claimed',
@@ -4765,6 +4767,7 @@ async function cancelPetActivitySession(db, telegramId) {
   if (Number(cancelResult?.meta?.changes || 0) !== 1) {
     return { accepted: false, reason: 'activity_already_closed', session };
   }
+  await reconcileCompletedPetsToSanctuary(db, telegramId);
   return { accepted: true, reason: 'cancelled', session };
 }
 
