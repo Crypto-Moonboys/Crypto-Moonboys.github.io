@@ -21,7 +21,7 @@ Crypto Moonboy Pets is a **community-only game**. There are no cash purchases, c
 | Pet 1 | **LIVE** | The first seasonal Moonpet is free each season. |
 | Pet 2 | **LIVE** | Unlock by spending 500 **spendable Arcade XP** earned through community play. |
 | Pet 3 | **LIVE** | Unlock by spending 1,000 **spendable Arcade XP** earned through community play. |
-| Active pet | **IN DEVELOPMENT** | A player has one active seasonal Moonpet at a time. Every action and reward affects only the active or explicitly participating `pet_id`. |
+| Active pet | **LIVE** | A player has one active seasonal Moonpet at a time. Actions and rewards resolve against the active or explicitly participating `pet_id`, and switching pets preserves each pet's independent progression. |
 | Daily growth | **IN DEVELOPMENT** | Pet XP may exceed the daily target, with diminishing returns planned; Growth Marks are capped at one per `pet_id` per day. |
 | Weekly growth | **IN DEVELOPMENT** | Weekly Crests are capped at one per `pet_id` per week. |
 
@@ -33,7 +33,7 @@ Higher costs such as 10,000 Arcade XP for Pet 2 and 25,000 Arcade XP for Pet 3 m
 
 ## Active and participating Moonpets
 
-The active-pet rule prevents one action from progressing an entire roster. A request must resolve one participating `pet_id`; Pet XP, Growth Marks, Weekly Crests, trials, and other pet progression belong only to that Moonpet. Changing the active Moonpet does not copy, pool, or retroactively move progression between pets.
+**LIVE.** The active-pet rule prevents one action from progressing an entire roster. A player has one active seasonal Moonpet at a time, and every action or reward request resolves one participating `pet_id`. Switching the active Moonpet preserves each pet's independent record: XP, stats, rewards, Growth Marks, Weekly Crests, trials, and other progression are not copied, pooled, or retroactively moved between pets.
 
 ## Legendary completion
 
