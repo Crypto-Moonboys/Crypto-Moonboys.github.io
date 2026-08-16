@@ -48,6 +48,23 @@ class DecayConflictD1 extends SqliteD1 {
   }
 }
 
+class UnexpectedDecayFailureD1 extends SqliteD1 {
+  prepare(sql) {
+    const statement = super.prepare(sql);
+    if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
+    return {
+      bind(...bindings) {
+        const bound = statement.bind(...bindings);
+        return {
+          first: () => bound.first(),
+          all: () => bound.all(),
+          run: async () => { throw new Error('unexpected_decay_storage_failure'); },
+        };
+      },
+    };
+  }
+}
+
 const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql', import.meta.url), 'utf8');
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
@@ -371,6 +388,11 @@ const conflictSafeRoster = await buildPetSeasonSlotSummary(new DecayConflictD1(d
 assert.equal(conflictSafeRoster.slots.length, 3, 'one temporary pet decay conflict must not break the roster response');
 assert.equal(conflictSafeRoster.slots[2].pet.hunger, 15, 'a conflicted pet must fall back to its existing row data');
 assert.equal(conflictSafeRoster.slots[1].pet.hunger, dormantSlot.pet.hunger, 'conflict fallback must preserve successfully resolved pet rows');
+await assert.rejects(
+  buildPetSeasonSlotSummary(new UnexpectedDecayFailureD1(db), 'state-player', rosterNow),
+  /unexpected_decay_storage_failure/,
+  'unexpected decay storage errors must still surface instead of being hidden by roster fallback',
+);
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'pet_slot_already_owned', 'duplicate purchase must be rejected without another deduction');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 4, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'invalid_pet_slot', 'slot 4 must be rejected');
 assert.equal((await switchActivePetSeasonSlot(d1, 'other-player', 'pet:state-player:2026-q3:3', { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'another owner cannot switch to the player pet');

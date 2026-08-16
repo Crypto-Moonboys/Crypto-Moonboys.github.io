@@ -80,6 +80,16 @@ try {
   assert.equal(authoritativeTiming.status, 'ACTIVE', 'server current_at must control season phase despite an incorrect client clock');
   assert.equal(authoritativeTiming.day, 10, 'server current_at must control displayed season position');
   assert.equal(authoritativeTiming.remaining, 81, 'server current_at must control displayed remaining days');
+  assert.equal(seasonTiming({
+    start_at: '2026-02-01T00:00:00.000Z',
+    end_at: '2026-05-01T00:00:00.000Z',
+    current_at: '2026-01-31T23:59:59.000Z',
+  }).status, 'UPCOMING', 'server current_at before start_at must control the UPCOMING state');
+  assert.equal(seasonTiming({
+    start_at: '2026-01-01T00:00:00.000Z',
+    end_at: '2026-04-01T00:00:00.000Z',
+    current_at: '2026-04-01T00:00:00.000Z',
+  }).status, 'COMPLETE', 'server current_at at end_at must control the COMPLETE state');
 } finally {
   Date.now = originalDateNow;
 }
