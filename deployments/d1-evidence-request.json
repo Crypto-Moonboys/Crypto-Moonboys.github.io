@@ -20,6 +20,7 @@
     "052_telegram_pet_live_systems.sql",
     "053_telegram_pet_species_lifecycle.sql",
     "054_telegram_pet_client_performance.sql",
-    "055_telegram_pet_season_slots.sql"
+    "055_telegram_pet_season_slots.sql",
+    "056_telegram_pet_instance_state.sql"
   ]
 }
