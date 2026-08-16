@@ -3180,6 +3180,30 @@ async function awardPetReward(db, options) {
   return result;
 }
 
+async function getPetActiveSlotPendingWork(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return null;
+  const [activity, pendingClaim] = await Promise.all([
+    getActivePetActivitySession(db, owner, now),
+    getRecoverablePetActivitySession(db, owner),
+  ]);
+  const blockingActivity = activity || pendingClaim;
+  if (blockingActivity) return { reason: 'pet_activity_active', activity: blockingActivity };
+  // Other owner-scoped in-flight systems also settle rewards through the active
+  // pet. Until those tables carry pet_id, keep the pointer stable while pending.
+  const pendingSystems = [
+    ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`],
+    ['pet_arena_active', `SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+    ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+  ];
+  for (const [reason, sql] of pendingSystems) {
+    const bindings = reason === 'pet_arena_active' ? [owner, owner] : [owner];
+    const pending = await db.prepare(sql).bind(...bindings).first().catch(() => null);
+    if (pending) return { reason, pending };
+  }
+  return null;
+}
+
 async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
   const normalizedTelegramId = String(telegramId || '').trim();
   if (!normalizedTelegramId) return { ok: false, reason: 'missing_telegram_id' };
@@ -3215,6 +3239,38 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
     }
     throw error;
   }
+}
+
+async function preparePetMiniAppState(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return false;
+  const adopted = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1`)
+    .bind(owner).first().catch(() => null);
+  if (!adopted) return false;
+  const outgoing = await findActivePetSlot(db, owner);
+  const currentSeason = getPetSeasonInfo(now);
+  const isRollover = Boolean(outgoing && outgoing.season_key !== currentSeason.key);
+  // Reconcile while the outgoing pointer still owns the compatibility profile.
+  // Once the pointer advances, that association can no longer be recovered.
+  if (outgoing) await getPetProfile(db, owner);
+  if (isRollover && await getPetActiveSlotPendingWork(db, owner, now)) return true;
+  const starter = await ensurePetStarterSeasonSlot(db, owner, now);
+  if (!starter.ok) return false;
+  if (isRollover) {
+    // A new season starts a new pet. Never seed it from the outgoing pet's
+    // compatibility mirror; instance defaults are the authoritative baseline.
+    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_instances
+      (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
+      VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)`)
+      .bind(starter.pet_id, owner, starter.season_key).run();
+    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
+      (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
+      VALUES (?, ?, ?, 'egg', '{}', '[]')`)
+      .bind(starter.pet_id, owner, crypto.randomUUID()).run();
+  }
+  const active = await ensureActivePetInstance(db, owner);
+  if (isRollover && active) await mirrorActivePetInstanceToProfile(db, active);
+  return true;
 }
 
 const PET_SEASON_EXTRA_SLOT_COSTS = Object.freeze({
@@ -3294,13 +3350,12 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   }
   const season = getPetSeasonInfo(now);
   try {
-    await ensurePetStarterSeasonSlot(db, normalizedTelegramId, now);
     const [slotRows, activeSlot, arcade] = await Promise.all([
       db.prepare(`
         SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
           i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
-          i.hunger, i.happiness, i.cleanliness, l.phase AS lifecycle_phase,
+          i.hunger, i.happiness, i.cleanliness, i.last_decay_at, l.phase AS lifecycle_phase,
           l.species_id AS lifecycle_species_id, l.rare_morph_id
         FROM telegram_pet_season_slots s
         LEFT JOIN telegram_pet_instances i
@@ -3314,23 +3369,15 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
         SELECT pet_id, season_key FROM telegram_pet_active_slots
         WHERE telegram_id = ? LIMIT 1
       `).bind(normalizedTelegramId).first().catch(() => null),
-      getOrCreateArcadeProgressionState(db, normalizedTelegramId).catch(() => null),
+      db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1`)
+        .bind(normalizedTelegramId).first().catch(() => null),
     ]);
     const rawRows = slotRows.results || [];
     const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
     const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
-    // This is a display projection. Decay may advance the individual instance,
-    // but roster reads must never reconcile or mirror into the legacy profile.
-    const currentRows = await Promise.all(rawRows.map(async (row) => {
-      let current;
-      try {
-        current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now);
-      } catch (error) {
-        if (String(error?.message || error) !== 'pet_decay_sync_conflict') throw error;
-        current = null;
-      }
-      return mergePetInstanceDisplayFields(row, current);
-    }));
+    // This endpoint is a read-only display projection. Preview canonical decay
+    // in memory; gameplay/switch paths persist decay against the pet instance.
+    const currentRows = rawRows.map((row) => mergePetInstanceDisplayFields(row, applyPetDecay({ ...row }, now)));
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
     return {
@@ -3417,31 +3464,17 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
   const requested = /^\d+$/.test(String(requestedPetId || ''))
     ? `pet:${owner}:${season.key}:${Number(requestedPetId)}`
     : String(requestedPetId || '');
-  const [activity, pendingClaim] = await Promise.all([
-    getActivePetActivitySession(db, owner, options.now || new Date()),
-    getRecoverablePetActivitySession(db, owner),
-  ]);
-  const blockingActivity = activity || pendingClaim;
-  if (blockingActivity) {
-    return { accepted: false, reason: 'pet_activity_active', activity: blockingActivity, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
-  }
-  // Other owner-scoped in-flight systems also settle rewards through the active
-  // pet. Until those tables carry pet_id, keep the pointer stable while pending.
-  const pendingSystems = [
-    ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`],
-    ['pet_arena_active', `SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
-    ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
-  ];
-  for (const [reason, sql] of pendingSystems) {
-    const bindings = reason === 'pet_arena_active' ? [owner, owner] : [owner];
-    const pending = await db.prepare(sql).bind(...bindings).first().catch(() => null);
-    if (pending) return { accepted: false, reason, pending, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
-  }
+  const pendingWork = await getPetActiveSlotPendingWork(db, owner, options.now || new Date());
+  if (pendingWork) return { accepted: false, ...pendingWork, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   const slot = await db.prepare(`SELECT s.pet_id FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active' LIMIT 1`)
     .bind(requested, owner, season.key).first().catch(() => null);
   if (!slot) return { accepted: false, reason: 'pet_slot_not_switchable', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
+  // Reconcile any newer compatibility-profile write onto the currently active
+  // instance before moving the pointer. Otherwise selecting another pet could
+  // strand or overwrite a same-second legacy gameplay mutation.
+  await getPetProfile(db, owner);
   const switched = await db.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?, season_key=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=?`)
     .bind(slot.pet_id, season.key, owner).run();
   if (Number(switched?.meta?.changes || 0) !== 1) {
@@ -5141,6 +5174,7 @@ function serializePet(pet, identity = null) {
   const decayed = applyPetDecay({ ...pet });
   const currentEvolution = identity?.current_stage || null;
   return {
+    pet_id: decayed.pet_id || null,
     telegram_id: decayed.telegram_id,
     pet_name: decayed.pet_name,
     species: decayed.species,
@@ -7114,6 +7148,9 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
 }
 
 async function buildPetMiniAppState(db, telegramId, botToken) {
+  // State preparation owns current-season initialization. Roster projection
+  // remains read-only and assumes this authoritative bootstrap already ran.
+  await preparePetMiniAppState(db, telegramId);
   const petRaw = await getPetProfile(db, telegramId).catch(() => null);
   if (!petRaw) {
     return {
@@ -12089,6 +12126,8 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  ensurePetStarterSeasonSlot,
+  preparePetMiniAppState,
   findActivePetSlot,
   ensureActivePetInstance,
   readActivePetInstance,

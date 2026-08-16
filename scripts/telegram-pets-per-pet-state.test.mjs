@@ -31,46 +31,6 @@ class SqliteD1 {
   }
 }
 
-class PetDecayConflictD1 extends SqliteD1 {
-  constructor(database, conflictedPetId) {
-    super(database);
-    this.conflictedPetId = conflictedPetId;
-  }
-
-  prepare(sql) {
-    const statement = super.prepare(sql);
-    if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
-    const conflictedPetId = this.conflictedPetId;
-    return {
-      bind(...bindings) {
-        const bound = statement.bind(...bindings);
-        return {
-          first: () => bound.first(),
-          all: () => bound.all(),
-          run: () => bindings[7] === conflictedPetId ? Promise.resolve({ meta: { changes: 0 } }) : bound.run(),
-        };
-      },
-    };
-  }
-}
-
-class UnexpectedDecayFailureD1 extends SqliteD1 {
-  prepare(sql) {
-    const statement = super.prepare(sql);
-    if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
-    return {
-      bind(...bindings) {
-        const bound = statement.bind(...bindings);
-        return {
-          first: () => bound.first(),
-          all: () => bound.all(),
-          run: async () => { throw new Error('unexpected_decay_storage_failure'); },
-        };
-      },
-    };
-  }
-}
-
 const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql', import.meta.url), 'utf8');
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
@@ -99,8 +59,20 @@ const rosterSummarySource = worker.slice(
   worker.indexOf('async function buyPetSeasonSlot'),
 );
 assert.doesNotMatch(rosterSummarySource, /mirrorActivePetInstanceToProfile|mirror_profile/, 'read-only roster construction must have no compatibility-profile mirror path');
+assert.doesNotMatch(rosterSummarySource, /(?:INSERT|UPDATE|DELETE)\s/i, 'read-only roster construction must contain no database mutation');
+assert.doesNotMatch(rosterSummarySource, /ensurePetStarterSeasonSlot|getOrCreateArcadeProgressionState|getPetInstanceWithAtomicDecay/, 'roster construction must not call helpers with hidden writes');
 assert.doesNotMatch(rosterSummarySource, /\.\.\.current/, 'roster construction must not spread pet-instance state over season-slot authority');
-assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, current\)/, 'roster construction must merge only the explicit pet display allowlist');
+assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, applyPetDecay\(\{ \.\.\.row \}, now\)\)/, 'roster construction must merge only an in-memory decay preview through the explicit pet display allowlist');
+const miniAppStateSource = worker.slice(worker.indexOf('async function buildPetMiniAppState'), worker.indexOf('async function processPetMiniAppAction'));
+assert.ok(
+  miniAppStateSource.indexOf('await preparePetMiniAppState(db, telegramId)') < miniAppStateSource.indexOf('buildPetSeasonSlotSummary(db, telegramId)'),
+  'normal Mini App state flow must bootstrap the current season before building the read-only roster projection',
+);
+const prepareMiniAppStateSource = worker.slice(worker.indexOf('async function preparePetMiniAppState'), worker.indexOf('const PET_SEASON_EXTRA_SLOT_COSTS'));
+const switchActivePetSource = worker.slice(worker.indexOf('async function switchActivePetSeasonSlot'), worker.indexOf('async function getOrCreatePetProfile'));
+assert.match(worker, /async function getPetActiveSlotPendingWork/, 'pending active-slot guard helper must exist');
+assert.match(prepareMiniAppStateSource, /await getPetActiveSlotPendingWork\(db, owner, now\)/, 'automatic season rollover must use the shared pending-work guard before advancing the active pointer');
+assert.match(switchActivePetSource, /await getPetActiveSlotPendingWork\(db, owner, options\.now \|\| new Date\(\)\)/, 'explicit pet switching must use the same pending-work guard helper');
 assert.match(
   migration057,
   /CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet/,
@@ -246,11 +218,36 @@ assert.throws(
 
 const {
   findActivePetSlot, readActivePetInstance, writeActivePetInstance,
-  getPetProfile, savePetProfile, buildPetSeasonSlotSummary, buyPetSeasonSlot, switchActivePetSeasonSlot,
+  getPetProfile, savePetProfile, preparePetMiniAppState, buildPetSeasonSlotSummary, buyPetSeasonSlot, switchActivePetSeasonSlot,
   getMoonpetLifecycle, incubateMoonEgg,
   getMoonpetIdentitySummary, serializePet,
 } = __petMediaTestHooks;
 const d1 = new SqliteD1(db);
+
+function seedPendingRolloverPlayer(id, overrides = {}) {
+  const petId = `pet:${id}:2026-q3:1`;
+  const petName = overrides.pet_name || `${id}-starter`;
+  const petXp = overrides.pet_xp ?? 120;
+  const moonGold = overrides.moon_gold ?? 25;
+  const energy = overrides.energy ?? 70;
+  const health = overrides.health ?? 75;
+  const updatedAt = overrides.updated_at || '2026-08-15T12:00:00Z';
+  db.prepare(`INSERT INTO telegram_pet_profiles
+    (telegram_id, pet_name, species, stage, pet_xp, level, energy, moon_gold, health, updated_at)
+    VALUES (?, ?, 'neon_raccoon', 'adult', ?, 5, ?, ?, ?, ?)`)
+    .run(id, petName, petXp, energy, moonGold, health, updatedAt);
+  db.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, '2026-q3', 1, 'free', 'profile_insert', 0, 'active')`)
+    .run(petId, id);
+  db.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, '2026-q3')`)
+    .run(id, petId);
+  db.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_name, species, stage, pet_xp, level, energy, moon_gold, health, source_profile_updated_at, updated_at)
+    VALUES (?, ?, '2026-q3', 1, ?, 'neon_raccoon', 'adult', ?, 5, ?, ?, ?, ?, ?)`)
+    .run(petId, id, petName, petXp, energy, moonGold, health, updatedAt, updatedAt);
+  return petId;
+}
 
 db.prepare(`UPDATE telegram_pet_instances SET pet_name='Instance Nova', pet_xp=5100, level=52,
   moon_gold=901, energy=88, last_decay_at=?, source_profile_updated_at='2026-08-16 02:59:59',
@@ -316,11 +313,45 @@ db.exec(`CREATE TABLE arcade_progression_state (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`);
 db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('state-player', 1500)`).run();
+const rolloverNow = new Date('2026-08-16T12:00:00Z');
+const rolloverReadChangesBefore = db.prepare('SELECT total_changes() AS count').get().count;
+const unpreparedRolloverRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rolloverNow);
+assert.equal(unpreparedRolloverRoster.slots[0].unlocked, false, 'a roster read alone must not synthesize a missing current-season starter');
+assert.equal(db.prepare('SELECT total_changes() AS count').get().count, rolloverReadChangesBefore, 'an unprepared rollover roster read must perform zero database mutations');
+db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Outgoing Final', pet_xp=7777, moon_gold=654,
+  health=62, equipped_weapon='outgoing-final-weapon', updated_at='2099-01-01 00:00:00'
+  WHERE telegram_id='state-player'`).run();
+assert.equal(await preparePetMiniAppState(d1, 'state-player', rolloverNow), true, 'Mini App state preparation must bootstrap an adopted player into the current season');
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_name, pet_xp, moon_gold, health, equipped_weapon FROM telegram_pet_instances
+    WHERE telegram_id='state-player' AND season_key='2026-q3' AND slot_number=1`).get() },
+  { pet_name: 'Outgoing Final', pet_xp: 7777, moon_gold: 654, health: 62, equipped_weapon: 'outgoing-final-weapon' },
+  'rollover preparation must reconcile the final legacy write onto the outgoing pet before moving the pointer',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT season_key, slot_number, acquisition_type, status FROM telegram_pet_season_slots
+    WHERE telegram_id='state-player' AND season_key='pet-s2026-003' AND slot_number=1`).get() },
+  { season_key: 'pet-s2026-003', slot_number: 1, acquisition_type: 'free', status: 'active' },
+  'state preparation must create the current-season free starter slot',
+);
+assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances
+  WHERE telegram_id='state-player' AND season_key='pet-s2026-003' AND slot_number=1`).get().count, 1, 'state preparation must create the current-season starter pet instance');
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_name, pet_xp, moon_gold, health, equipped_weapon FROM telegram_pet_instances
+    WHERE telegram_id='state-player' AND season_key='pet-s2026-003' AND slot_number=1`).get() },
+  { pet_name: 'Moonpet', pet_xp: 0, moon_gold: 0, health: 75, equipped_weapon: null },
+  'the new-season starter must use fresh defaults rather than inheriting the outgoing pet mutation',
+);
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'state preparation must advance the active pointer from the previous season');
+const preparedRolloverRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rolloverNow);
+assert.equal(preparedRolloverRoster.season.key, 'pet-s2026-003', 'the subsequent roster must describe the current season');
+assert.equal(preparedRolloverRoster.slots[0].unlocked, true, 'the subsequent roster must expose the bootstrapped starter');
+const rolloverSeasonKey = preparedRolloverRoster.season.key;
 const boughtSecond = await buyPetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtSecond.accepted, true, 'slot 2 purchase must succeed with enough Arcade XP');
 assert.equal(db.prepare(`SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().phase, 'egg', 'a purchased pet must receive a fresh egg lifecycle');
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'purchase must not auto-switch');
-assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'adult', 'migration-safe lifecycle creation must preserve a legacy starter as adult');
+assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'a rollover starter must receive a fresh egg lifecycle');
 db.exec(`CREATE TABLE telegram_pet_activity_sessions (
   id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, activity_type TEXT NOT NULL,
   started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ends_at DATETIME NOT NULL,
@@ -339,7 +370,7 @@ assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'swit
 assert.equal((await getMoonpetIdentitySummary(d1, 'state-player')).current_stage.evolution_id, 'moon_egg', 'a switched paid pet must not inherit the starter evolution stage');
 await incubateMoonEgg(d1, 'state-player', 'warm', 'paid-pet-incubation');
 assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().incubation_progress, 2, 'incubation must progress the active paid pet only');
-assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:1'`).get().incubation_progress, 12, 'paid-pet incubation must not change the starter lifecycle');
+assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:1'`).get().incubation_progress, 0, 'paid-pet incubation must not change the fresh rollover starter lifecycle');
 assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Moonpet', 'gameplay reads must follow the switched fresh pet');
 assert.equal(db.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().pet_name, 'Moonpet', 'switching must mirror the selected pet to the legacy profile');
 const paidIdentity = await getMoonpetIdentitySummary(d1, 'state-player');
@@ -350,10 +381,18 @@ assert.equal(serializePet(await getPetProfile(d1, 'state-player'), paidIdentity)
 const paidPet = await getPetProfile(d1, 'state-player');
 paidPet.energy = 42;
 await savePetProfile(d1, paidPet);
+db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=73, moon_gold=81, equipped_weapon='paid-blaster',
+  health=63, updated_at='2098-01-01 00:00:00' WHERE telegram_id='state-player'`).run();
 await switchActivePetSeasonSlot(d1, 'state-player', 1, { now: new Date('2026-08-16T12:00:00Z') });
-assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Saved Nova', 'switching back must restore the starter pet independent state');
-assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'adult', 'switching back must restore the starter lifecycle');
+assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Moonpet', 'switching back must restore the fresh rollover starter state');
+assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'switching back must restore the fresh rollover starter lifecycle');
 assert.equal(db.prepare(`SELECT energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get().energy, 42, 'writes must affect only the active paid pet');
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, moon_gold, equipped_weapon, health FROM telegram_pet_instances
+    WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get() },
+  { pet_xp: 73, moon_gold: 81, equipped_weapon: 'paid-blaster', health: 63 },
+  'switching must reconcile a newer legacy gameplay write to the old active instance before moving the pointer',
+);
 const boughtThird = await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtThird.accepted, true, 'slot 3 purchase must succeed with enough Arcade XP');
 assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='state-player'`).get().arcade_xp_total, 0, 'Arcade XP must be deducted exactly once');
@@ -374,6 +413,11 @@ assert.deepEqual(
   { pet_xp: dormantSlot.pet.pet_xp, hunger: dormantSlot.pet.hunger, happiness: dormantSlot.pet.happiness, cleanliness: dormantSlot.pet.cleanliness, energy: dormantSlot.pet.energy, health: dormantSlot.pet.health },
   { pet_xp: 345, hunger: 29, happiness: 74, cleanliness: 64, energy: 56, health: 66 },
   'roster summary must apply the canonical decay calculation to each dormant pet instance',
+);
+assert.equal(
+  db.prepare(`SELECT last_decay_at FROM telegram_pet_instances WHERE telegram_id='state-player' AND slot_number=2`).get().last_decay_at,
+  dormantDecayStart,
+  'roster decay must be a read-only preview and must not persist hidden pet-instance mutations',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, hunger, happiness, cleanliness, energy, health
@@ -397,17 +441,11 @@ assert.deepEqual(
 );
 db.prepare(`UPDATE telegram_pet_instances SET hunger=15, last_decay_at=?
   WHERE telegram_id='state-player' AND slot_number IN (1, 2, 3)`).run(dormantDecayStart);
-const conflictedPetId = 'pet:state-player:pet-s2026-003:2';
-const conflictSafeRoster = await buildPetSeasonSlotSummary(new PetDecayConflictD1(db, conflictedPetId), 'state-player', rosterNow);
-assert.equal(conflictSafeRoster.slots.length, 3, 'one temporary pet decay conflict must not break the three-pet roster response');
-assert.equal(conflictSafeRoster.slots[1].pet.hunger, 15, 'the conflicted middle pet must fall back to its existing row data');
-assert.ok(conflictSafeRoster.slots[0].pet.hunger > 15, 'the first pet must still return successfully decay-resolved state');
-assert.ok(conflictSafeRoster.slots[2].pet.hunger > 15, 'the third pet must still return successfully decay-resolved state');
-await assert.rejects(
-  buildPetSeasonSlotSummary(new UnexpectedDecayFailureD1(db), 'state-player', rosterNow),
-  /unexpected_decay_storage_failure/,
-  'unexpected decay storage errors must still surface instead of being hidden by roster fallback',
-);
+const readOnlyRosterChangesBefore = db.prepare('SELECT total_changes() AS count').get().count;
+const readOnlyRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
+assert.equal(readOnlyRoster.slots.length, 3, 'the read-only roster must return all three pet projections');
+assert.ok(readOnlyRoster.slots.every((slot) => slot.pet.hunger > 15), 'each roster card must preview canonical decay');
+assert.equal(db.prepare('SELECT total_changes() AS count').get().count, readOnlyRosterChangesBefore, 'a roster read must not mutate any database table');
 db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=9999, moon_gold=8888, moon_crystals=777,
   style_tokens=666, equipped_food='new-food', equipped_toy='new-toy',
   equipped_outfit='new-outfit', equipped_armor='new-armor', equipped_weapon='new-weapon',
@@ -446,5 +484,70 @@ const insufficient = await buyPetSeasonSlot(d1, 'poor-player', 2, { now: new Dat
 assert.equal(insufficient.reason, 'insufficient_arcade_xp', 'insufficient Arcade XP must reject a paid slot purchase');
 assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='poor-player' AND slot_number=2`).get().count, 0, 'insufficient XP must not create the paid slot');
 assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='poor-player'`).get().arcade_xp_total, 499, 'a rejected purchase must not deduct Arcade XP');
+
+db.exec(`CREATE TABLE telegram_pet_runs (
+  run_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  status TEXT NOT NULL
+)`);
+db.exec(`CREATE TABLE telegram_pet_arena_battles (
+  battle_id TEXT PRIMARY KEY,
+  player1_telegram_id TEXT NOT NULL,
+  player2_telegram_id TEXT,
+  status TEXT NOT NULL
+)`);
+db.exec(`CREATE TABLE telegram_pet_kaiju_matches (
+  match_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  status TEXT NOT NULL
+)`);
+
+const activityRolloverPet = seedPendingRolloverPlayer('rollover-activity', { pet_name: 'Activity Prime', pet_xp: 150, moon_gold: 30, health: 72 });
+db.prepare(`INSERT INTO telegram_pet_activity_sessions (id, telegram_id, activity_type, started_at, ends_at, status)
+  VALUES ('rollover-activity-session', 'rollover-activity', 'train', '2026-08-16 10:00:00', '2026-08-16 13:00:00', 'active')`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-activity', rolloverNow), true, 'rollover preparation must still succeed when pending work defers pointer movement');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-activity'`).get().pet_id, activityRolloverPet, 'an active timed activity must retain the previous-season active pointer');
+assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='rollover-activity' AND season_key=?`).get(rolloverSeasonKey).count, 0, 'blocked rollover must not create or activate the new-season starter yet');
+db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=333, moon_gold=444, health=61, updated_at='2099-01-01 00:00:00'
+  WHERE telegram_id='rollover-activity'`).run();
+db.prepare(`UPDATE telegram_pet_activity_sessions SET status='completed', metadata='{}' WHERE id='rollover-activity-session'`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-activity', rolloverNow), true, 'the next bootstrap after activity settlement must advance rollover safely');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-activity'`).get().pet_id, `pet:rollover-activity:${rolloverSeasonKey}:1`, 'activity clearance must allow the current-season starter to become active');
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, moon_gold, health FROM telegram_pet_instances WHERE pet_id=?`).get(activityRolloverPet) },
+  { pet_xp: 333, moon_gold: 444, health: 61 },
+  'outgoing activity settlement must reconcile onto the previous-season pet before the rollover pointer moves',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, moon_gold, health FROM telegram_pet_instances WHERE telegram_id='rollover-activity' AND season_key=? AND slot_number=1`).get(rolloverSeasonKey) },
+  { pet_xp: 0, moon_gold: 0, health: 75 },
+  'work started by the previous-season pet must not leak onto the new-season starter',
+);
+
+const runRolloverPet = seedPendingRolloverPlayer('rollover-run');
+db.prepare(`INSERT INTO telegram_pet_runs (run_id, telegram_id, status) VALUES ('run-rollover-active', 'rollover-run', 'active')`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-run', rolloverNow), true, 'run-gated rollover preparation must return successfully while deferring activation');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-run'`).get().pet_id, runRolloverPet, 'an active roguelite run must retain the previous-season active pointer');
+db.prepare(`UPDATE telegram_pet_runs SET status='completed' WHERE run_id='run-rollover-active'`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-run', rolloverNow), true, 'clearing the active run must allow rollover on the next bootstrap');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-run'`).get().pet_id, `pet:rollover-run:${rolloverSeasonKey}:1`, 'after run clearance the current-season starter must become active');
+
+const arenaRolloverPet = seedPendingRolloverPlayer('rollover-arena');
+db.prepare(`INSERT INTO telegram_pet_arena_battles (battle_id, player1_telegram_id, player2_telegram_id, status)
+  VALUES ('arena-rollover-active', 'rollover-arena', 'arena-rival', 'active')`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-arena', rolloverNow), true, 'arena-gated rollover preparation must return successfully while deferring activation');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-arena'`).get().pet_id, arenaRolloverPet, 'a pending arena battle must retain the previous-season active pointer');
+db.prepare(`UPDATE telegram_pet_arena_battles SET status='completed' WHERE battle_id='arena-rollover-active'`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-arena', rolloverNow), true, 'clearing the arena battle must allow rollover on the next bootstrap');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-arena'`).get().pet_id, `pet:rollover-arena:${rolloverSeasonKey}:1`, 'after arena clearance the current-season starter must become active');
+
+const kaijuRolloverPet = seedPendingRolloverPlayer('rollover-kaiju');
+db.prepare(`INSERT INTO telegram_pet_kaiju_matches (match_id, telegram_id, status)
+  VALUES ('kaiju-rollover-active', 'rollover-kaiju', 'active')`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-kaiju', rolloverNow), true, 'kaiju-gated rollover preparation must return successfully while deferring activation');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-kaiju'`).get().pet_id, kaijuRolloverPet, 'a pending kaiju match must retain the previous-season active pointer');
+db.prepare(`UPDATE telegram_pet_kaiju_matches SET status='completed' WHERE match_id='kaiju-rollover-active'`).run();
+assert.equal(await preparePetMiniAppState(d1, 'rollover-kaiju', rolloverNow), true, 'clearing the kaiju match must allow rollover on the next bootstrap');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-kaiju'`).get().pet_id, `pet:rollover-kaiju:${rolloverSeasonKey}:1`, 'after kaiju clearance the current-season starter must become active');
 
 console.log('telegram-pets-per-pet-state.test.mjs passed');

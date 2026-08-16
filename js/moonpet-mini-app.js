@@ -7,6 +7,8 @@
   var initData = '';
   var telegramAuth = null;
   var state = null;
+  var renderedPetId = null;
+  var renderedPetName = '';
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
@@ -545,6 +547,7 @@
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
+  // TEST-EXPORT: stateRequestGate:start
   function createStateRequestGate() {
     var generation = 0;
     return {
@@ -557,6 +560,7 @@
       },
     };
   }
+  // TEST-EXPORT: stateRequestGate:end
 
   function beginStateRequest() {
     return stateRequestGate.begin();
@@ -946,10 +950,44 @@
     }).join('');
   }
 
-  function render() {
+  // TEST-EXPORT: callsignDraft:start
+  function captureEditableState() {
+    var input = document.getElementById('pet-name-input');
+    if (!input) return null;
+    return {
+      petId: renderedPetId,
+      petName: renderedPetName,
+      value: input.value,
+      dirty: input.value !== renderedPetName,
+      focused: document.activeElement === input,
+      selectionStart: input.selectionStart,
+      selectionEnd: input.selectionEnd,
+    };
+  }
+
+  function restoreEditableState(draft) {
+    if (!draft || !draft.dirty || !draft.petId || !state || !state.pet || draft.petId !== state.pet.pet_id) return;
+    if (!draft.focused && String(state.pet.pet_name || '') !== String(draft.petName || '')) return;
+    var input = document.getElementById('pet-name-input');
+    if (!input) return;
+    input.value = draft.value;
+    if (draft.focused) {
+      input.focus({ preventScroll: true });
+      if (typeof draft.selectionStart === 'number' && typeof draft.selectionEnd === 'number') {
+        input.setSelectionRange(draft.selectionStart, draft.selectionEnd);
+      }
+    }
+  }
+  // TEST-EXPORT: callsignDraft:end
+
+  function render(options) {
+    var editableState = options && options.discardCallsignDraft ? null : captureEditableState();
     renderHud();
     renderNav();
     screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
+    restoreEditableState(editableState);
+    renderedPetId = state && state.pet && state.pet.pet_id || null;
+    renderedPetName = String(state && state.pet && state.pet.pet_name || '');
     title.textContent = state && state.pet ? (state.pet.pet_name || 'MOONPET') + ' OS' : 'MOONPET OS';
     if (reducedMotion) drawWorld(0);
   }
@@ -1048,6 +1086,7 @@
     }
   }
 
+  // TEST-EXPORT: lifecycleDirector:start
   function lifecycleStateSnapshot(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
     var incubation = lifecycle.incubation || {};
@@ -1107,6 +1146,7 @@
     }
     return null;
   }
+  // TEST-EXPORT: lifecycleDirector:end
 
   function lifecycleCeremonyActive(time) {
     return Boolean(lifecycleCeremony && lifecycleCeremonyUntil > Number(time == null ? performance.now() : time));
@@ -1120,6 +1160,7 @@
     if (redraw && reducedMotion) drawWorld(performance.now());
   }
 
+  // TEST-EXPORT: lifecycleCeremonyStarter:start
   function startLifecycleCeremony(ceremony) {
     if (!ceremony) return false;
     clearResultFeedback(false);
@@ -1137,6 +1178,7 @@
     }
     return true;
   }
+  // TEST-EXPORT: lifecycleCeremonyStarter:end
 
   function scrollToPanel(panelId) {
     if (!panelId) return;
@@ -1239,7 +1281,7 @@
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
-      render();
+      render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
       animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
@@ -1555,6 +1597,7 @@
     return fallback;
   }
 
+  // TEST-EXPORT: phase4PresenceDirector:start
   function updateCompanionPresence(pet, lifecycle, time) {
     if (!pet) {
       COMPANION_PRESENCE_FRAME.behavior = 'chill';
@@ -1580,7 +1623,9 @@
     COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[COMPANION_PRESENCE_FRAME.behavior] || 'STAY READY');
     return COMPANION_PRESENCE_FRAME;
   }
+  // TEST-EXPORT: phase4PresenceDirector:end
 
+  // TEST-EXPORT: combatDirector:start
   function clearCombatPresentation() {
     COMBAT_PRESENTATION_FRAME.active = false;
     COMBAT_PRESENTATION_FRAME.mode = '';
@@ -1663,6 +1708,7 @@
     return COMBAT_PRESENTATION_FRAME;
   }
 
+  // TEST-EXPORT: combatDirector:end
   function drawPixelText(text, x, y, color, align) {
     ctx.save();
     ctx.shadowColor = color; ctx.shadowBlur = 4;

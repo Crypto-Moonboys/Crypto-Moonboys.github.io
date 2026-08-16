@@ -66,9 +66,140 @@ const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const arcadeRadio = fs.readFileSync(new URL('../js/arcade/core/radio.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
-const seasonTimingSource = client.match(/^[\t ]*\/\/ TEST-EXPORT: seasonTiming:start[\t ]*\r?\n([\s\S]*?)^[\t ]*\/\/ TEST-EXPORT: seasonTiming:end[\t ]*$/m)?.[1];
+function extractTestExport(source, name) {
+  const startMarker = `// TEST-EXPORT: ${name}:start`;
+  const endMarker = `// TEST-EXPORT: ${name}:end`;
+  const start = source.indexOf(startMarker);
+  if (start === -1) return null;
+  const bodyStart = source.indexOf('\n', start + startMarker.length);
+  if (bodyStart === -1) return null;
+  const end = source.indexOf(endMarker, bodyStart + 1);
+  if (end === -1) return null;
+  return source.slice(bodyStart + 1, end);
+}
+
+// Keep every executable client-source test on marker boundaries so merges and
+// Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
+const TEST_EXPORT_NAMES = [
+  'seasonTiming', 'callsignDraft', 'stateRequestGate', 'phase4PresenceDirector',
+  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
+];
+for (const name of TEST_EXPORT_NAMES) {
+  for (const newline of ['\n', '\r\n']) {
+    const synthetic = [
+      `  // TEST-EXPORT: ${name}:start`,
+      '    function independentlyExecutable() { return true; }',
+      `\t// TEST-EXPORT: ${name}:end`,
+    ].join(newline);
+    const extracted = extractTestExport(synthetic, name);
+    assert.ok(extracted, `${name} extraction must support ${newline === '\n' ? 'LF' : 'CRLF'} and indented markers`);
+    assert.equal(Function(`"use strict";${extracted}; return independentlyExecutable();`)(), true, `${name} synthetic export must remain executable`);
+  }
+}
+assert.equal(extractTestExport('// TEST-EXPORT: sample:end\nfunction sample() {}', 'sample'), null, 'a missing start marker must fail clearly');
+assert.equal(extractTestExport('// TEST-EXPORT: sample:start\nfunction sample() {}', 'sample'), null, 'a missing end marker must fail clearly');
+
+const seasonTimingSource = extractTestExport(client, 'seasonTiming');
 assert.ok(seasonTimingSource, 'seasonTiming source must remain independently testable');
 const seasonTiming = Function(`"use strict";${seasonTimingSource}\nreturn seasonTiming;`)();
+const callsignDraftSource = extractTestExport(client, 'callsignDraft');
+assert.ok(callsignDraftSource, 'callsign draft helpers must remain independently testable');
+const crlfClient = client.replace(/\r?\n/g, '\r\n');
+const crlfSeasonTimingSource = extractTestExport(crlfClient, 'seasonTiming');
+const crlfCallsignDraftSource = extractTestExport(crlfClient, 'callsignDraft');
+assert.equal(typeof Function(`"use strict";${crlfSeasonTimingSource}\nreturn seasonTiming;`)(), 'function', 'the real seasonTiming export must execute after CRLF conversion');
+assert.doesNotThrow(
+  () => Function('state', 'document', `"use strict"; var renderedPetId = null; var renderedPetName = ''; ${crlfCallsignDraftSource}`),
+  'the real callsignDraft export must compile after CRLF conversion',
+);
+for (const name of TEST_EXPORT_NAMES) {
+  const source = extractTestExport(crlfClient, name);
+  assert.ok(source, `the real ${name} export must remain extractable after CRLF conversion`);
+  assert.doesNotThrow(() => Function(`"use strict";${source}`), `the real ${name} export must compile after CRLF conversion`);
+}
+const draftState = { pet: { pet_id: 'pet-a', pet_name: 'Server A' } };
+let mountedCallsignInput = null;
+const draftDocument = {
+  activeElement: null,
+  getElementById: () => mountedCallsignInput,
+};
+const draftHelpers = Function('state', 'document', `"use strict";
+  var renderedPetId = null;
+  var renderedPetName = '';
+  ${callsignDraftSource}
+  return {
+    captureEditableState,
+    restoreEditableState,
+    setRenderedPet(pet) {
+      renderedPetId = pet && pet.pet_id || null;
+      renderedPetName = String(pet && pet.pet_name || '');
+    },
+  };
+`)(draftState, draftDocument);
+function callsignInput(value, selectionStart = 0, selectionEnd = 0) {
+  return {
+    value, selectionStart, selectionEnd, focused: false, selectionRestored: false,
+    focus() { this.focused = true; },
+    setSelectionRange(start, end) { this.selectionRestored = true; this.selectionStart = start; this.selectionEnd = end; },
+  };
+}
+
+mountedCallsignInput = callsignInput('Local A', 2, 5);
+draftDocument.activeElement = mountedCallsignInput;
+draftHelpers.setRenderedPet(draftState.pet);
+const dirtySamePetDraft = draftHelpers.captureEditableState();
+assert.deepEqual(
+  { petId: dirtySamePetDraft.petId, petName: dirtySamePetDraft.petName, value: dirtySamePetDraft.value, dirty: dirtySamePetDraft.dirty, focused: dirtySamePetDraft.focused },
+  { petId: 'pet-a', petName: 'Server A', value: 'Local A', dirty: true, focused: true },
+  'dirty callsign drafts must capture ownership and focus for the active pet instance',
+);
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A refreshed' };
+mountedCallsignInput = callsignInput('Server A refreshed');
+draftHelpers.restoreEditableState(dirtySamePetDraft);
+assert.equal(mountedCallsignInput.value, 'Local A', 'a dirty draft must survive a background refresh for the same pet');
+assert.equal(mountedCallsignInput.selectionRestored, true, 'a same-pet dirty draft must restore its valid selection');
+
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+mountedCallsignInput = callsignInput('Server A');
+draftHelpers.setRenderedPet(draftState.pet);
+const cleanDraft = draftHelpers.captureEditableState();
+draftState.pet.pet_name = 'New canonical A';
+mountedCallsignInput = callsignInput('New canonical A');
+draftHelpers.restoreEditableState(cleanDraft);
+assert.equal(mountedCallsignInput.value, 'New canonical A', 'a clean input must not overwrite a newer canonical callsign');
+
+draftState.pet = { pet_id: 'pet-b', pet_name: 'Server B' };
+mountedCallsignInput = callsignInput('Server B');
+draftHelpers.restoreEditableState(dirtySamePetDraft);
+assert.equal(mountedCallsignInput.value, 'Server B', 'a draft owned by Pet A must not cross an active switch to Pet B');
+
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A switched' };
+mountedCallsignInput = callsignInput('Server A switched');
+draftDocument.activeElement = null;
+draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
+assert.equal(mountedCallsignInput.value, 'Server A switched', 'a blurred draft must not overwrite a newer canonical callsign for the same pet');
+
+draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+mountedCallsignInput = callsignInput('Server A');
+draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
+assert.equal(mountedCallsignInput.value, 'Local A', 'a blurred dirty draft must still survive rerenders while the canonical callsign is unchanged');
+
+draftState.pet = { pet_id: 'pet-b', pet_name: 'Server Normalized B' };
+mountedCallsignInput = callsignInput('Server Normalized B');
+draftHelpers.restoreEditableState(null);
+assert.equal(mountedCallsignInput.value, 'Server Normalized B', 'discarding an accepted rename draft must leave the server-normalized callsign visible');
+
+const unsafeSelectionDraft = { petId: 'pet-b', value: 'Local B', dirty: true, focused: true, selectionStart: null, selectionEnd: undefined };
+draftHelpers.restoreEditableState(unsafeSelectionDraft);
+assert.equal(mountedCallsignInput.value, 'Local B', 'a dirty same-pet draft still restores when selection metadata is unavailable');
+assert.equal(mountedCallsignInput.selectionRestored, false, 'selection restoration must be skipped unless both offsets are numbers');
+draftState.pet = { pet_id: null, pet_name: 'Unidentified canonical pet' };
+mountedCallsignInput = callsignInput('Unidentified canonical pet');
+draftHelpers.restoreEditableState({ ...unsafeSelectionDraft, petId: null, value: 'Unowned draft' });
+assert.equal(mountedCallsignInput.value, 'Unidentified canonical pet', 'a draft without an authoritative pet_id must never be restored');
+mountedCallsignInput = null;
+assert.equal(draftHelpers.captureEditableState(), null, 'draft capture must remain safe when the callsign input is not mounted');
+assert.doesNotThrow(() => draftHelpers.restoreEditableState(unsafeSelectionDraft), 'draft restoration must remain safe when the callsign input is not mounted');
 const originalDateNow = Date.now;
 Date.now = () => Date.parse('2099-12-31T23:59:59.000Z');
 try {
@@ -107,7 +238,7 @@ try {
   Date.now = originalDateNow;
 }
 
-const stateRequestGateSource = client.match(/  function createStateRequestGate\(\) \{[\s\S]*?\n  \}(?=\n\n  function beginStateRequest)/)?.[0];
+const stateRequestGateSource = extractTestExport(client, 'stateRequestGate');
 assert.ok(stateRequestGateSource, 'state request freshness gate must remain independently testable');
 const createStateRequestGate = Function(`"use strict";${stateRequestGateSource}\nreturn createStateRequestGate;`)();
 const stateRequestGate = createStateRequestGate();
@@ -234,6 +365,20 @@ assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
 assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-state-gate/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
+assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
+assert.match(client, /render\(\{ discardCallsignDraft: action === 'rename' && Boolean\(data\.result && data\.result\.accepted\) \}\)/, 'an accepted rename must discard the old draft so the server-normalized callsign wins');
+assert.match(callsignDraftSource, /petId: renderedPetId[\s\S]*dirty: input\.value !== renderedPetName/, 'draft capture ownership must come from the snapshot that rendered the existing DOM');
+const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  function resultRewardMap'));
+assert.ok(renderSource.indexOf('captureEditableState()') < renderSource.indexOf('renderedPetId = state'), 'render must capture the old DOM before recording the incoming snapshot identity');
+assert.ok(renderSource.indexOf('restoreEditableState(editableState)') < renderSource.indexOf('renderedPetId = state'), 'rendered snapshot identity must advance only after draft restoration is decided');
+for (const [pathName, startMarker, endMarker] of [
+  ['syncState', '  async function syncState()', '  function applyRequestedFocus'],
+  ['passive refresh', '  async function refreshLiveState()', '  async function refreshSeasonSnapshot'],
+]) {
+  const pathSource = client.slice(client.indexOf(startMarker), client.indexOf(endMarker, client.indexOf(startMarker)));
+  assert.match(pathSource, /setStateSnapshot\([\s\S]*render\(/, `${pathName} must render through snapshot-owned draft capture after accepting state`);
+  assert.doesNotMatch(pathSource, /renderedPetId\s*=|renderedPetName\s*=/, `${pathName} must not relabel the existing DOM with incoming snapshot identity before render captures it`);
+}
 assert.match(client, /function seasonTiming\(season, elapsedMs\)/, 'season status must derive position from an authoritative server snapshot plus monotonic elapsed time');
 assert.match(client, /Date\.parse\(season && season\.current_at/, 'season timing must consume the server timestamp');
 assert.doesNotMatch(seasonTimingSource, /Date\.now\(/, 'season timing must not depend on the browser clock');
@@ -451,11 +596,11 @@ assert.match(client, /function actionFeedback\(result\)/);
 assert.match(client, /function resultRewardMap\(result\)/);
 assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards_applied\)/);
 assert.match(client, /var reward = resultRewardMap\(result\)/);
-assert.equal((client.match(/var reward = resultRewardMap\(result\)/g) || []).length, 2, 'terminal and canvas feedback must share reward normalization');
+assert.equal([...client.matchAll(/var reward = resultRewardMap\(result\)/g)].length, 2, 'terminal and canvas feedback must share reward normalization');
 assert.match(client, /presentResultFeedback\(data\.result\)/);
 assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result\)/s);
 assert.doesNotMatch(client, /presentResultFeedback\(data\.result\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
-assert.equal((client.match(/presentResultFeedback\(/g) || []).length, 2, 'only the helper and real server-result call may present reward feedback');
+assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 2, 'only the helper and real server-result call may present reward feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
 assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
 assert.match(client, /feedbackRedrawTimer = window\.setTimeout/);
@@ -497,9 +642,8 @@ assert.match(client, /Number\(pet\.hunger\) > 78.*SNACK PLEASE/s);
 assert.match(client, /Number\(pet\.cleanliness\) < 30.*WASH TIME/s);
 assert.match(client, /Number\(pet\.happiness\) < 30.*PLAY WITH ME/s);
 assert.match(client, /function updateCompanionPresence\(pet, lifecycle, time\)/);
-const presenceFunctionMatch = client.match(/  function updateCompanionPresence\(pet, lifecycle, time\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
-assert.ok(presenceFunctionMatch, 'Phase 4 presence director must be extractable for runtime smoke coverage');
-const presenceFunctionSource = presenceFunctionMatch[0].replace(/\n\n  function drawPixelText$/, '');
+const presenceFunctionSource = extractTestExport(client, 'phase4PresenceDirector');
+assert.ok(presenceFunctionSource, 'Phase 4 presence director must be extractable for runtime smoke coverage');
 const runtimePresenceFrame = { behavior: 'chill', phase: 0.72, thought: '', slot: -1, screen: '', seed: -1 };
 const updatePresenceRuntime = new Function(
   'reducedMotion', 'activeScreen', 'COMPANION_PRESENCE_FRAME', 'companionIdentitySeed',
@@ -602,9 +746,8 @@ assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTi
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
-const combatDirectorMatch = client.match(/  function clearCombatPresentation\(\) \{[\s\S]*?\n  \}\n\n  function drawPixelText/);
-assert.ok(combatDirectorMatch, 'Phase 5 combat director must be extractable for runtime smoke coverage');
-const combatDirectorSource = combatDirectorMatch[0].replace(/\n\n  function drawPixelText$/, '');
+const combatDirectorSource = extractTestExport(client, 'combatDirector');
+assert.ok(combatDirectorSource, 'Phase 5 combat director must be extractable for runtime smoke coverage');
 const runtimeCombatFrame = {
   active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
   playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
@@ -663,9 +806,9 @@ assert.match(client, /function lifecycleStateSnapshot\(snapshot\)/);
 assert.match(client, /function planLifecycleCeremony\(beforeState, afterState, action, result\)/);
 assert.match(client, /function lifecycleCeremonyActive\(time\)/);
 assert.match(client, /function startLifecycleCeremony\(ceremony\)/);
-const lifecycleStartMatch = client.match(/  function startLifecycleCeremony\(ceremony\) \{[\s\S]*?\n  \}\n\n  function scrollToPanel/);
-assert.ok(lifecycleStartMatch, 'Phase 6 lifecycle ceremony starter must be extractable for haptic regression coverage');
-assert.doesNotMatch(lifecycleStartMatch[0], /haptic\('success'\)/, 'accepted lifecycle actions must emit only the runAction success haptic');
+const lifecycleStartSource = extractTestExport(client, 'lifecycleCeremonyStarter');
+assert.ok(lifecycleStartSource, 'Phase 6 lifecycle ceremony starter must be extractable for haptic regression coverage');
+assert.doesNotMatch(lifecycleStartSource, /haptic\('success'\)/, 'accepted lifecycle actions must emit only the runAction success haptic');
 assert.match(client, /function clearLifecycleCeremony\(redraw\)/);
 assert.match(client, /function drawLifecycleCeremony\(time, scene\)/);
 assert.match(client, /EGG SIGNAL STRENGTHENED/);
@@ -683,7 +826,7 @@ assert.match(client, /drawPixelRect\(7, 50, 306, 2, color\)/, 'Phase 6 ceremony 
 assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/, 'Phase 6 ceremonies must suppress overlapping thought bubbles');
 assert.match(client, /mood !== 'curious' && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping mood labels');
 assert.match(client, /\(!combat \|\| !combat\.active\) && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping identity labels');
-assert.equal((client.match(/animationLabel && !lifecycleCeremonyActive\(time\)/g) || []).length, 2, 'Phase 6 ceremonies must suppress egg and companion action labels');
+assert.equal([...client.matchAll(/animationLabel && !lifecycleCeremonyActive\(time\)/g)].length, 2, 'Phase 6 ceremonies must suppress egg and companion action labels');
 assert.match(client, /var ceremonyScale = lifecycleCeremonyActive\(time\)/);
 assert.match(client, /reducedMotion \? 1\.08/);
 assert.match(client, /var burst = reducedMotion \? 38/);
@@ -697,9 +840,8 @@ assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremo
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:ceremony|lifecycle)|(?:ceremony|lifecycle)[^\n]*Math\.random\(\)/i, 'Phase 6 lifecycle presentation must remain deterministic');
 
-const lifecycleDirectorMatch = client.match(/  function lifecycleStateSnapshot\(snapshot\) \{[\s\S]*?\n  \}\n\n  function lifecycleCeremonyActive/);
-assert.ok(lifecycleDirectorMatch, 'Phase 6 lifecycle director must be extractable for runtime smoke coverage');
-const lifecycleDirectorSource = lifecycleDirectorMatch[0].replace(/\n\n  function lifecycleCeremonyActive$/, '');
+const lifecycleDirectorSource = extractTestExport(client, 'lifecycleDirector');
+assert.ok(lifecycleDirectorSource, 'Phase 6 lifecycle director must be extractable for runtime smoke coverage');
 assert.doesNotMatch(lifecycleDirectorSource, /identity_seed|rare_route_index|species odds/i, 'Phase 6 must not expose hidden lifecycle authority');
 const planCeremonyRuntime = new Function(
   'words',
