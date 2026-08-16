@@ -28,15 +28,3 @@ CREATE TABLE IF NOT EXISTS telegram_pet_sanctuary (
 
 CREATE INDEX IF NOT EXISTS idx_pet_sanctuary_owner_completed
   ON telegram_pet_sanctuary(telegram_id, completed_at DESC);
-
-CREATE TRIGGER IF NOT EXISTS prevent_pet_sanctuary_delete
-BEFORE DELETE ON telegram_pet_sanctuary
-BEGIN
-  SELECT RAISE(ABORT, 'sanctuary_history_is_append_only');
-END;
-
-CREATE TRIGGER IF NOT EXISTS prevent_pet_sanctuary_snapshot_update
-BEFORE UPDATE ON telegram_pet_sanctuary
-BEGIN
-  SELECT RAISE(ABORT, 'sanctuary_snapshot_is_immutable');
-END;

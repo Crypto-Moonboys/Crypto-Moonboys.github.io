@@ -59,7 +59,17 @@ INSERT INTO telegram_pet_memories VALUES('owner','["first_boss"]',NULL);
 INSERT INTO telegram_pet_inventory VALUES('owner','cosmetic','crown',1);
 INSERT INTO telegram_pet_equipment_progression VALUES('owner','laser','weapon',5,2);
 INSERT INTO telegram_pet_progression_state VALUES('owner','{"brave":100}');`);
-sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/059_telegram_pet_sanctuary.sql',import.meta.url),'utf8'));
+const sanctuaryMigrationUrls = [
+  '../workers/moonboys-api/migrations/059_telegram_pet_sanctuary.sql',
+  '../workers/moonboys-api/migrations/060_telegram_pet_sanctuary_append_only.sql',
+  '../workers/moonboys-api/migrations/061_telegram_pet_sanctuary_immutable.sql',
+];
+const sanctuaryMigrations = await Promise.all(sanctuaryMigrationUrls.map((url) => readFile(new URL(url, import.meta.url), 'utf8')));
+assert.doesNotMatch(sanctuaryMigrations[0], /CREATE\s+TRIGGER/i, 'schema migration contains no compound trigger bodies');
+for (const triggerMigration of sanctuaryMigrations.slice(1)) {
+  assert.equal((triggerMigration.match(/CREATE\s+TRIGGER/gi) || []).length, 1, 'D1-safe protection migration contains one compound trigger');
+}
+for (const migration of sanctuaryMigrations) sqlite.exec(migration);
 const db=new D1(sqlite); const input={pet_id:'complete',telegram_id:'owner',season_key:'s1'};
 const completionSource=await readFile(new URL('../workers/moonboys-api/pets/season-completion.js',import.meta.url),'utf8');
 assert.match(completionSource,/finalizePetSeasonCompletionIfEligible[\s\S]*movePetToSanctuaryIfEligible\(db,/,'authoritative completion automatically invokes Sanctuary transition');
