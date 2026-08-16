@@ -2965,14 +2965,25 @@ function verifyPetsBotSecret(request, env) {
 
 async function getPetProfile(db, telegramId) {
   const instance = await readActivePetInstance(db, telegramId);
-  if (instance) await mirrorActivePetInstanceToProfile(db, instance);
-  const pet = instance || await db.prepare(`
+  const profile = await db.prepare(`
     SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
   `).bind(telegramId).first().catch(() => null);
-  return pet ? applyPetDecay(pet) : null;
+  if (!instance) return profile ? applyPetDecay(profile) : null;
+
+  const profileUpdatedAt = petStateTimestamp(profile?.updated_at);
+  const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
+  if (profile && profileUpdatedAt > instanceProfileVersion) {
+    await writeActivePetInstance(db, telegramId, profile);
+    return applyPetDecay({ ...instance, ...profile, pet_id: instance.pet_id });
+  }
+
+  await mirrorActivePetInstanceToProfile(db, instance);
+  return applyPetDecay(instance);
 }
 
 async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
+  // Reconcile any legacy profile-only write before choosing the atomic decay target.
+  await getPetProfile(db, telegramId);
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const instance = await readActivePetInstance(db, telegramId);
     const stored = instance || await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
@@ -3016,6 +3027,13 @@ const PET_INSTANCE_STATE_COLUMNS = Object.freeze([
 
 function isPetInstanceSchemaUnavailable(error) {
   return /no such table: telegram_pet_(instances|season_slots|active_slots)/i.test(String(error?.message || error));
+}
+
+function petStateTimestamp(value) {
+  if (!value) return 0;
+  const normalized = String(value).includes('T') ? String(value) : `${String(value).replace(' ', 'T')}Z`;
+  const timestamp = Date.parse(normalized);
+  return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
 async function findActivePetSlot(db, telegramId) {
@@ -3075,8 +3093,11 @@ async function writeActivePetInstance(db, telegramId, pet) {
 
 async function mirrorActivePetInstanceToProfile(db, pet) {
   const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
-  await db.prepare(`UPDATE telegram_pet_profiles SET ${assignments}, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?`)
-    .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), pet.telegram_id).run();
+  const mirroredAt = new Date().toISOString();
+  await db.prepare(`UPDATE telegram_pet_profiles SET ${assignments}, updated_at = ? WHERE telegram_id = ?`)
+    .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), mirroredAt, pet.telegram_id).run();
+  await db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at = ? WHERE pet_id = ?`)
+    .bind(mirroredAt, pet.pet_id).run();
 }
 
 async function mirrorPetProfileToActiveInstance(db, telegramId) {
@@ -13207,6 +13228,7 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'boss_victory', boss_id: boss.boss_id, milestone: 'first_boss_victory' });
     await applyPetRuntimeCommandAward(db, telegramId, `runtime:${eventKey}`, 'run_boss');
   }
+  await mirrorPetProfileToActiveInstance(db, telegramId);
   return { accepted: true, duplicate: false, reason: newlyDefeated ? 'boss_defeated' : 'boss_damaged', boss, progress, damage, action, reward, week_key: weekKey, pet: await getPetProfile(db, telegramId) };
 }
 
@@ -13408,6 +13430,7 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
     return;
   }
   await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+  await mirrorPetProfileToActiveInstance(db, telegramId);
   const updated = await getMoonpetIdentityWithLifecycle(db, telegramId);
   await syncPetAchievements(db, telegramId).catch(() => []);
   const reaction = await selectMoonpetReaction(db, telegramId, 'evolution', updated, { activity_label: `evolving into ${next.name}` }).catch(() => buildMoonpetReaction('evolution', updated));

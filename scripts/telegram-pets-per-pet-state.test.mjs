@@ -20,12 +20,21 @@ class SqliteD1 {
 
 const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql', import.meta.url), 'utf8');
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
+const worker = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 
 assert.doesNotMatch(migration056, /CREATE\s+TRIGGER/i, 'migration 056 must not rely on trigger DDL');
 assert.match(
   migration056,
   /CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_pet_owner_tuple\s+ON telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)/,
   'migration 056 must provide a unique parent key for the complete pet ownership tuple',
+);
+const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
+const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
+const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);
+assert.notEqual(weeklyBoss.indexOf('await mirrorPetProfileToActiveInstance(db, telegramId)'), -1, 'weekly boss must explicitly sync its profile-only mutation');
+assert.ok(
+  weeklyBoss.indexOf('await mirrorPetProfileToActiveInstance(db, telegramId)') < weeklyBoss.lastIndexOf('pet: await getPetProfile(db, telegramId)'),
+  'weekly boss must sync its direct profile Energy deduction to the active instance before returning pet state',
 );
 assert.match(
   migration056,
@@ -148,6 +157,15 @@ assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, level, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
   { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 901, energy: 88 },
   'instance reads must mirror the legacy profile payload fields',
+);
+
+db.prepare(`UPDATE telegram_pet_profiles SET energy=64, updated_at=datetime('now', '+1 minute') WHERE telegram_id='state-player'`).run();
+const profileMutationPet = await getPetProfile(d1, 'state-player');
+assert.equal(profileMutationPet.energy, 64, 'a newer profile-only gameplay mutation must not be overwritten by stale instance state');
+assert.equal(
+  db.prepare(`SELECT energy FROM telegram_pet_instances WHERE telegram_id='state-player'`).get().energy,
+  64,
+  'a newer profile-only gameplay mutation must synchronize to the active instance before the read returns',
 );
 
 runtimePet.pet_name = 'Saved Nova';
