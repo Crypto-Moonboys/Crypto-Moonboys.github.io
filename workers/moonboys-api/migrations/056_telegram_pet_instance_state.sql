@@ -1,6 +1,9 @@
 -- Per-pet Moonpet state foundation. Gameplay continues to use the legacy
 -- telegram_pet_profiles row until a later migration enables pet switching.
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_pet_owner_tuple
+  ON telegram_pet_season_slots(pet_id, telegram_id, season_key, slot_number);
+
 CREATE TABLE IF NOT EXISTS telegram_pet_instances (
   pet_id TEXT PRIMARY KEY,
   telegram_id TEXT NOT NULL,
@@ -33,7 +36,9 @@ CREATE TABLE IF NOT EXISTS telegram_pet_instances (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (telegram_id, season_key, slot_number),
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_season_slots(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key, slot_number)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key, slot_number)
+    ON DELETE CASCADE,
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
 

@@ -6,6 +6,16 @@ const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
 
 assert.doesNotMatch(migration056, /CREATE\s+TRIGGER/i, 'migration 056 must not rely on trigger DDL');
+assert.match(
+  migration056,
+  /CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_pet_owner_tuple\s+ON telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)/,
+  'migration 056 must provide a unique parent key for the complete pet ownership tuple',
+);
+assert.match(
+  migration056,
+  /FOREIGN KEY \(pet_id, telegram_id, season_key, slot_number\)\s+REFERENCES telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)\s+ON DELETE CASCADE/,
+  'pet instances must reference the complete season-slot ownership tuple',
+);
 
 const db = new DatabaseSync(':memory:');
 db.exec(`
@@ -90,5 +100,16 @@ db.prepare(`INSERT INTO telegram_pet_season_slots
   VALUES (?, ?, ?, ?, ?, ?, ?)`)
   .run('pet:state-player:2026-q3:2', 'state-player', '2026-q3', 2, 'arcade_xp', 'manual-paid-slot', 500);
 assert.equal(db.prepare('SELECT COUNT(*) AS count FROM telegram_pet_instances').get().count, 1, 'manually adding a paid slot must not auto-create an instance');
+
+db.prepare('INSERT INTO telegram_pet_profiles (telegram_id, species) VALUES (?, ?)')
+  .run('other-player', 'neon_raccoon');
+assert.throws(
+  () => db.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
+    VALUES (?, ?, ?, ?, ?)`)
+    .run('pet:state-player:2026-q3:2', 'other-player', '2026-q3', 2, '2026-08-16T02:00:00Z'),
+  /FOREIGN KEY constraint failed/,
+  'an instance must not combine one player\'s pet_id with another player\'s ownership tuple',
+);
 
 console.log('telegram-pets-per-pet-state.test.mjs passed');

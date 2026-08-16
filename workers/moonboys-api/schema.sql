@@ -904,6 +904,8 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_season_rank
 CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_source_event
   ON telegram_pet_season_slots(telegram_id, season_key, source_event_key)
   WHERE source_event_key IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_pet_owner_tuple
+  ON telegram_pet_season_slots(pet_id, telegram_id, season_key, slot_number);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_instances (
   pet_id TEXT PRIMARY KEY,
@@ -937,7 +939,9 @@ CREATE TABLE IF NOT EXISTS telegram_pet_instances (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (telegram_id, season_key, slot_number),
-  FOREIGN KEY (pet_id) REFERENCES telegram_pet_season_slots(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key, slot_number)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key, slot_number)
+    ON DELETE CASCADE,
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
 
