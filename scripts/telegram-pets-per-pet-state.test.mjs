@@ -393,11 +393,24 @@ await assert.rejects(
   /unexpected_decay_storage_failure/,
   'unexpected decay storage errors must still surface instead of being hidden by roster fallback',
 );
+db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=9999, energy=99, updated_at='2099-01-01 00:00:00'
+  WHERE telegram_id='state-player'`).run();
+await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, energy, updated_at FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
+  { pet_xp: 9999, energy: 99, updated_at: '2099-01-01 00:00:00' },
+  'a stale roster read must not mirror its active instance snapshot over newer compatibility reward state',
+);
+db.prepare(`UPDATE telegram_pet_season_slots SET status='archived'
+  WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
+db.prepare(`UPDATE telegram_pet_instances SET status='active'
+  WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
+const archivedRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
+assert.equal(archivedRoster.slots[2].status, 'archived', 'instance status must not overwrite authoritative archived season-slot status');
+assert.equal((await switchActivePetSeasonSlot(d1, 'state-player', 3, { now: rosterNow })).accepted, false, 'an archived season slot must remain unavailable to active-pet switching');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'pet_slot_already_owned', 'duplicate purchase must be rejected without another deduction');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 4, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'invalid_pet_slot', 'slot 4 must be rejected');
 assert.equal((await switchActivePetSeasonSlot(d1, 'other-player', 'pet:state-player:2026-q3:3', { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'another owner cannot switch to the player pet');
-db.prepare(`UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
-assert.equal((await switchActivePetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'an archived season slot cannot become active');
 
 db.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name) VALUES ('poor-player', 'Poor starter')`).run();
 db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('poor-player', 499)`).run();

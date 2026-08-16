@@ -3257,7 +3257,8 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
 async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   const normalizedTelegramId = String(telegramId || '').trim();
   if (!normalizedTelegramId) return { adopted: false, reason: 'missing_telegram_id' };
-  const pet = await getPetProfile(db, normalizedTelegramId).catch(() => null);
+  const pet = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1`)
+    .bind(normalizedTelegramId).first().catch(() => null);
   if (!pet) {
     return {
       adopted: false,
@@ -3300,14 +3301,24 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     const currentRows = await Promise.all(rawRows.map(async (row) => {
       let current;
       try {
-        current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now, {
-          mirror_profile: String(row.pet_id) === String(activePetId || ''),
-        });
+        current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now);
       } catch (error) {
         if (String(error?.message || error) !== 'pet_decay_sync_conflict') throw error;
         current = null;
       }
-      return current ? { ...row, ...current } : row;
+      return current ? {
+        ...row,
+        pet_name: current.pet_name,
+        species: current.species,
+        stage: current.stage,
+        level: current.level,
+        pet_xp: current.pet_xp,
+        health: current.health,
+        energy: current.energy,
+        hunger: current.hunger,
+        happiness: current.happiness,
+        cleanliness: current.cleanliness,
+      } : row;
     }));
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
