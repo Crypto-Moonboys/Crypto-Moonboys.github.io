@@ -28,6 +28,7 @@ import {
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
+import { listSanctuaryPets } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -7184,7 +7185,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
 
   const pet = serializePet(petRaw);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots] = await Promise.all([
+  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, sanctuary] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
@@ -7222,6 +7223,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
+    listSanctuaryPets(db, telegramId).catch(() => []),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
@@ -7307,6 +7309,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     notices: guidanceNotices,
     progress: runtime,
     season_slots: seasonSlots,
+    sanctuary,
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
       key,
@@ -8176,6 +8179,14 @@ export default {
       }
     }
 
+    if (path === '/telegram-pets/app/sanctuary' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      return json({ pets: await listSanctuaryPets(env.DB, verified.telegramId) });
+    }
+
     if (path === '/telegram-pets/app/performance' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('invalid json', 400); }
@@ -8216,6 +8227,14 @@ export default {
     // ── Crypto Moonboys Pets API ──────────────────────────────────────────
     if (path === '/telegram-pets/season/current' && request.method === 'GET') {
       return json({ season: getPetSeasonInfo(new Date()) });
+    }
+
+    // Public collection projection: ownership is selected by the server query,
+    // never by client-side filtering. Mutations are deliberately unavailable.
+    if (path === '/telegram/pets/sanctuary' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      return json({ pets: await listSanctuaryPets(env.DB, telegramId) });
     }
 
     if (path === '/telegram-pets/state' && request.method === 'GET') {

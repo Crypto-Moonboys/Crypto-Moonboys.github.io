@@ -11,6 +11,7 @@ const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-mig
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
 const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -46,6 +47,7 @@ assert.match(
   /058_telegram_pet_season_completion\.sql/,
   'the workflow_dispatch D1 query must request migration 058 from production',
 );
+assert.match(remoteQueryStep, /059_telegram_pet_sanctuary\.sql/, 'the workflow_dispatch D1 query must request migration 059 from production');
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),

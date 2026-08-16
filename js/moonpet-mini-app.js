@@ -947,6 +947,14 @@
     var featureRows = (guidance.features || []).map(function (feature) {
       return '<div class="line ' + (feature.available ? 'complete' : 'locked') + '">' + (feature.available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(feature.detail || '') + '</div>';
     }).join('');
+    var sanctuaryPets = state.sanctuary || [];
+    var sanctuaryRows = sanctuaryPets.map(function (pet) {
+      var identityName = pet.identity && pet.identity.pet_name || pet.pet_id;
+      return '<div class="line complete">◆ ' + escapeHtml(identityName) + ' // ' + escapeHtml(words(pet.species)) + '</div>' +
+        '<div class="line">FINAL EVOLUTION // ' + escapeHtml(words(pet.legendary_evolution_id || pet.stage)) + '</div>' +
+        '<div class="line muted">COMPLETED ' + escapeHtml(words(pet.completed_season)) + ' // ' + escapeHtml(String(pet.completed_at || '').slice(0, 10)) + '</div>';
+    }).join('');
+    var sanctuaryPanel = sanctuaryRows || '<div class="line muted">No Sanctuary pets yet.</div><div class="line">Complete a Legendary Moonpet season to unlock Sanctuary.</div>';
     var lifecycle = state.lifecycle || {};
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
@@ -957,7 +965,7 @@
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
       panel('PRESTIGE', '<div class="line">RANK ' + number(prestige.count) + ' // MASTERED GEAR ' + number(prestige.mastered_items) + '/3 // DISTRICTS ' + number(prestige.completed_regions) + '/4</div><div class="line muted">REQUIRES LEVEL 100 + 5,000 GOLD + 50 GEMS</div><div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: !prestige.ready }) + '</div>', 'prestige') +
-      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
+      panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
