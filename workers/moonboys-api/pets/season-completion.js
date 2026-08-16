@@ -1,4 +1,5 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
+import { movePetToSanctuaryIfEligible } from './sanctuary.js';
 
 // Product balancing assumptions: four distinct post-egg evolution milestones and
 // eight qualifying weeks. Named here so balancing never hides in route/UI code.
@@ -162,14 +163,26 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
 export async function finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const state = await evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
-  if (!state?.requirements_met || state.season_complete) return state;
+  if (!state?.requirements_met && !state?.season_complete) return state;
   const pet = await ownedPet(db, petId, seasonKey, options.telegram_id);
   if (!pet) return null;
-  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_completions
+  if (!state.season_complete) await db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_completions
     (pet_id, telegram_id, season_key, completed_at, legendary_evolution_id, growth_marks_earned, weekly_crests_earned, authority_version)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(
     petId, pet.telegram_id, seasonKey, now.toISOString(), FINAL_EVOLUTION.evolution_id,
     state.growth_marks.earned, state.weekly_crests.earned, PET_SEASON_COMPLETION_CONFIG.authority_version,
   ).run();
+  try {
+    await movePetToSanctuaryIfEligible(db, {
+      pet_id: petId,
+      telegram_id: pet.telegram_id,
+      season_key: seasonKey,
+    }, { now: now.toISOString(), getPendingActivity: options.getPendingActivity });
+  } catch (error) {
+    // Completion migration 058 may briefly precede migration 059 during a
+    // rolling deploy. Do not lose completion authority; every later evaluator
+    // retries the idempotent, self-healing Sanctuary transition.
+    if (!String(error?.message || '').includes('no such table: telegram_pet_sanctuary')) throw error;
+  }
   return evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
 }

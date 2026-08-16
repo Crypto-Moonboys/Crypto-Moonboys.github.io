@@ -28,6 +28,7 @@ import {
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
+import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -51,6 +52,17 @@ import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMini
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
+
+async function reconcileSanctuaryBestEffort(db, telegramId, context = 'terminal_settlement', options = {}) {
+  try {
+    return await reconcileCompletedPetsToSanctuary(db, telegramId, options);
+  } catch (error) {
+    logApiFailure('pet_sanctuary_reconciliation_failed', {
+      telegramId: String(telegramId), context, message: error?.message || String(error),
+    });
+    return [];
+  }
+}
 /**
  * Moonboys API — Cloudflare Worker entrypoint
  *
@@ -2474,6 +2486,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     milestone: options.completed ? 'first_run_completed' : 'first_extraction', reward_amount: awardedAuthority.rewards?.moon_gold, reward_currency: 'moon_gold' });
   // Legacy runs have no persisted canonical boss room. Their completion may
   // record exploration and completion memories, but never boss authority.
+  await reconcileSanctuaryBestEffort(db, telegramId, options.completed ? 'run_completed' : 'run_extracted');
   return { ...awardedAuthority, reason: awardedAuthority.duplicate ? 'duplicate' : (options.completed ? 'run_completed' : 'run_extracted'),
     run: rewardRun, banked_items: bankedItemsAuthority };
 }
@@ -4136,6 +4149,8 @@ async function finishPetKaijuMatch(db, match) {
   if (completionResult?.meta?.changes !== undefined && Number(completionResult.meta.changes || 0) <= 0) {
     // A completed match may still have a recoverable pending player award from an earlier D1 failure.
     const rewardResults = await awardPetKaijuMatchResults(db, match, resolved);
+    await reconcileSanctuaryBestEffort(db, String(match.player1_telegram_id), 'kaiju_terminal');
+    if (match.player2_telegram_id) await reconcileSanctuaryBestEffort(db, String(match.player2_telegram_id), 'kaiju_terminal');
     return {
       accepted: true,
       duplicate: true,
@@ -4154,6 +4169,8 @@ async function finishPetKaijuMatch(db, match) {
     WHERE chat_id = ? AND telegram_id IN (?, ?) AND status = 'waiting'
   `).bind(String(match.chat_id), String(match.player1_telegram_id), String(match.player2_telegram_id || '')).run().catch(() => {});
   const queue = await getPetKaijuQueue(db, match.chat_id, [match.player1_telegram_id, match.player2_telegram_id || '']);
+  await reconcileSanctuaryBestEffort(db, String(match.player1_telegram_id), 'kaiju_terminal');
+  if (match.player2_telegram_id) await reconcileSanctuaryBestEffort(db, String(match.player2_telegram_id), 'kaiju_terminal');
   return { accepted: true, reason: 'kaiju_completed', match: await getPetKaijuMatch(db, match.match_id), resolved, reward_results: rewardResults, queue };
 }
 
@@ -4442,6 +4459,8 @@ async function completePetArenaBattle(db, battle) {
   const player2Adjusted = applyPetFactionBonus(player2Scaled.rewards, player2Faction?.faction, 'arena');
   await awardPetKaijuPlayerResult(db, String(battle.player1_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player1Scaled.modifier, faction_bonus: player1Adjusted.bonus }, result === 'player1_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player1Adjusted.rewards);
   if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await awardPetKaijuPlayerResult(db, String(battle.player2_telegram_id), { match_id: battle.battle_id, mode: 'pet_arena', reward_modifier: player2Scaled.modifier, faction_bonus: player2Adjusted.bonus }, result === 'player2_win' ? 'arena_win' : result === 'draw' ? 'arena_draw' : 'arena_loss', player2Adjusted.rewards);
+  await reconcileSanctuaryBestEffort(db, String(battle.player1_telegram_id), 'arena_terminal');
+  if (battle.player2_telegram_id && battle.player2_telegram_id !== 'app') await reconcileSanctuaryBestEffort(db, String(battle.player2_telegram_id), 'arena_terminal');
   return { accepted:true, duplicate: duplicateCompletion, reason: duplicateCompletion ? 'already_completed' : 'arena_completed', battle: await getPetArenaBattle(db, battle.battle_id), result, rewards: { player1: { ...player1Scaled, rewards: player1Adjusted.rewards, faction_bonus: player1Adjusted.bonus }, player2: { ...player2Scaled, rewards: player2Adjusted.rewards, faction_bonus: player2Adjusted.bonus } } };
 }
 async function readyPetArenaBattle(db, battle, telegramId) {
@@ -4556,9 +4575,7 @@ async function getRecoverablePetActivitySession(db, telegramId) {
   return db.prepare(`
     SELECT * FROM telegram_pet_activity_sessions
     WHERE telegram_id = ?
-      AND status = 'completed'
-      AND json_valid(metadata) = 1
-      AND json_extract(metadata, '$.claim_state') = 'claiming'
+      AND ${PET_RECOVERABLE_ACTIVITY_PREDICATE}
     ORDER BY claimed_at ASC LIMIT 1
   `).bind(String(telegramId)).first().catch(() => null);
 }
@@ -4749,6 +4766,8 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
       AND json_extract(metadata, '$.reward_idempotency_key') = ?
   `).bind(settledMetadata, session.id, telegramId, eventKey).run();
 
+  await reconcileSanctuaryBestEffort(db, telegramId, 'activity_claim', { now: now.toISOString() });
+
   return {
     ...authoritativeAward,
     reason: authoritativeAward.duplicate ? 'duplicate' : 'claimed',
@@ -4764,6 +4783,7 @@ async function cancelPetActivitySession(db, telegramId) {
   if (Number(cancelResult?.meta?.changes || 0) !== 1) {
     return { accepted: false, reason: 'activity_already_closed', session };
   }
+  await reconcileSanctuaryBestEffort(db, telegramId, 'activity_cancel');
   return { accepted: true, reason: 'cancelled', session };
 }
 
@@ -7184,7 +7204,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
 
   const pet = serializePet(petRaw);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots] = await Promise.all([
+  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, sanctuary] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
@@ -7222,6 +7242,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
+    listSanctuaryPets(db, telegramId).catch(() => []),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
@@ -7307,6 +7328,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     notices: guidanceNotices,
     progress: runtime,
     season_slots: seasonSlots,
+    sanctuary,
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
       key,
@@ -8176,6 +8198,21 @@ export default {
       }
     }
 
+    if (path === '/telegram-pets/app/sanctuary' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      try {
+        return json({ pets: await listSanctuaryPetsPrivate(env.DB, verified.telegramId) });
+      } catch (error) {
+        logApiFailure('pet_mini_app_sanctuary_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return err('mini_app_sanctuary_failed', 500);
+      }
+    }
+
     if (path === '/telegram-pets/app/performance' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('invalid json', 400); }
@@ -8216,6 +8253,14 @@ export default {
     // ── Crypto Moonboys Pets API ──────────────────────────────────────────
     if (path === '/telegram-pets/season/current' && request.method === 'GET') {
       return json({ season: getPetSeasonInfo(new Date()) });
+    }
+
+    // Public collection projection: ownership is selected by the server query,
+    // never by client-side filtering. Mutations are deliberately unavailable.
+    if (path === '/telegram/pets/sanctuary' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      return json({ pets: await listSanctuaryPets(env.DB, telegramId) });
     }
 
     if (path === '/telegram-pets/state' && request.method === 'GET') {
