@@ -3308,6 +3308,10 @@ async function buyPetSeasonSlot(db, telegramId, requestedSlot, options = {}) {
       (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
       SELECT ?, ?, ?, ?, CURRENT_TIMESTAMP WHERE changes()=1`)
       .bind(petId, owner, season.key, slotNumber),
+    db.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+      (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
+      SELECT ?, ?, ?, 'egg', '{}', '[]' WHERE changes()=1`)
+      .bind(petId, owner, crypto.randomUUID()),
   ];
   await db.batch(statements);
   const created = await db.prepare(`SELECT pet_id FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? LIMIT 1`).bind(petId, owner).first();
@@ -3326,6 +3330,26 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
   const requested = /^\d+$/.test(String(requestedPetId || ''))
     ? `pet:${owner}:${season.key}:${Number(requestedPetId)}`
     : String(requestedPetId || '');
+  const [activity, pendingClaim] = await Promise.all([
+    getActivePetActivitySession(db, owner, options.now || new Date()),
+    getRecoverablePetActivitySession(db, owner),
+  ]);
+  const blockingActivity = activity || pendingClaim;
+  if (blockingActivity) {
+    return { accepted: false, reason: 'pet_activity_active', activity: blockingActivity, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
+  }
+  // Other owner-scoped in-flight systems also settle rewards through the active
+  // pet. Until those tables carry pet_id, keep the pointer stable while pending.
+  const pendingSystems = [
+    ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`],
+    ['pet_arena_active', `SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+    ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+  ];
+  for (const [reason, sql] of pendingSystems) {
+    const bindings = reason === 'pet_arena_active' ? [owner, owner] : [owner];
+    const pending = await db.prepare(sql).bind(...bindings).first().catch(() => null);
+    if (pending) return { accepted: false, reason, pending, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
+  }
   const slot = await db.prepare(`SELECT s.pet_id FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active' LIMIT 1`)
@@ -4622,7 +4646,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     const existingPet = await getPetProfile(db, telegramId);
     if (existingPet) {
       await ensurePetStarterSeasonSlot(db, telegramId, now);
-      const lifecycleRow = await db.prepare('SELECT phase FROM telegram_pet_lifecycle WHERE telegram_id=?')
+      const lifecycleRow = await db.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?')
         .bind(telegramId).first().catch(() => null);
       if (!lifecycleRow) {
         await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle-repair`);
@@ -5012,6 +5036,8 @@ function serializePetLeaderboardEntry(row, index = 0) {
 async function materializePetLeaderboardRows(db, rows = []) {
   return Promise.all(rows.map(async (row) => {
     if (row.lifecycle_phase && (row.lifecycle_phase === 'egg' || row.lifecycle_species_id)) return row;
+    await ensurePetStarterSeasonSlot(db, row.telegram_id).catch(() => null);
+    await ensureActivePetInstance(db, row.telegram_id).catch(() => null);
     const lifecycle = await ensureMoonpetLifecycle(db, row.telegram_id).catch(() => null);
     if (!lifecycle) return row;
     return {
@@ -6977,7 +7003,7 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
         ROW_NUMBER() OVER (ORDER BY scores.pet_xp DESC, COALESCE(p.updated_at, '') ASC, scores.telegram_id ASC) AS rank
       FROM scores
       LEFT JOIN telegram_pet_profiles p ON p.telegram_id = scores.telegram_id
-      LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = scores.telegram_id
+      LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = scores.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = scores.telegram_id)
     )
     SELECT * FROM ranked WHERE rank <= ? OR telegram_id = ? ORDER BY rank
   `).bind(...scoreBindings, limit, String(telegramId)).all();
@@ -7038,7 +7064,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
         p.level, p.pet_xp, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days,
         l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id
       FROM telegram_pet_profiles p
-      LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = p.telegram_id
+      LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = p.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
       ORDER BY p.pet_xp DESC, p.updated_at ASC LIMIT 10`)
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
@@ -8116,7 +8142,7 @@ export default {
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_events e
           LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
-          LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = e.telegram_id
+          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = e.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
           LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
           WHERE e.day_key = ? AND e.status = 'accepted'
           GROUP BY e.telegram_id
@@ -8131,7 +8157,7 @@ export default {
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_events e
           LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
-          LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = e.telegram_id
+          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = e.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
           LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
           WHERE e.week_key = ? AND e.status = 'accepted'
           GROUP BY e.telegram_id
@@ -8145,7 +8171,7 @@ export default {
                  l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_profiles p
-          LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = p.telegram_id
+          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = p.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
           LEFT JOIN telegram_users u ON u.telegram_id = p.telegram_id
           ORDER BY p.pet_xp DESC
           LIMIT ?
@@ -8158,7 +8184,7 @@ export default {
                  u.username, u.first_name, u.last_name
           FROM telegram_pet_season_state s
           LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
-          LEFT JOIN telegram_pet_lifecycle l ON l.telegram_id = s.telegram_id
+          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = s.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = s.telegram_id)
           LEFT JOIN telegram_users u ON u.telegram_id = s.telegram_id
           WHERE s.season_key = ?
           ORDER BY s.season_xp DESC

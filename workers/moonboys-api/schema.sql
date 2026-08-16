@@ -1383,6 +1383,30 @@ CREATE TABLE IF NOT EXISTS telegram_pet_lifecycle_events (
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_phase ON telegram_pet_lifecycle(phase, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_events_daily ON telegram_pet_lifecycle_events(telegram_id, day_key, action);
 
+
+CREATE TABLE IF NOT EXISTS telegram_pet_lifecycle_by_pet (
+  pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, lifecycle_version INTEGER NOT NULL DEFAULT 1,
+  identity_seed TEXT NOT NULL, phase TEXT NOT NULL DEFAULT 'egg' CHECK (phase IN ('egg', 'young', 'adult', 'rare')),
+  species_id TEXT, palette_id TEXT, marking_id TEXT, eye_style TEXT, temperament TEXT,
+  innate_traits_json TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(innate_traits_json)),
+  incubation_progress INTEGER NOT NULL DEFAULT 0 CHECK (incubation_progress BETWEEN 0 AND 12),
+  incubation_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(incubation_json)),
+  rare_route_index INTEGER CHECK (rare_route_index BETWEEN 0 AND 3), rare_morph_id TEXT,
+  hatched_at DATETIME, adult_at DATETIME, rare_morphed_at DATETIME, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE (telegram_id, pet_id),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS telegram_pet_lifecycle_events_by_pet (
+  event_id TEXT PRIMARY KEY, pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL, event_key TEXT NOT NULL,
+  action TEXT NOT NULL CHECK (action IN ('egg_created', 'incubate_warm', 'incubate_talk', 'incubate_music', 'incubate_rest', 'hatch', 'rare_morph')),
+  payload_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(payload_json)), progress_delta INTEGER NOT NULL DEFAULT 0 CHECK (progress_delta BETWEEN 0 AND 2),
+  day_key TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d', 'now')), applied_at DATETIME, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (pet_id, event_key), FOREIGN KEY (pet_id) REFERENCES telegram_pet_lifecycle_by_pet(pet_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_owner ON telegram_pet_lifecycle_by_pet(telegram_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_phase ON telegram_pet_lifecycle_by_pet(phase, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_lifecycle_events_daily ON telegram_pet_lifecycle_events_by_pet(pet_id, day_key, action);
+
 CREATE TABLE IF NOT EXISTS telegram_pet_client_performance (
   sample_id TEXT PRIMARY KEY,
   telegram_id TEXT NOT NULL,

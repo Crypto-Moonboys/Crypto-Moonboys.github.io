@@ -34,6 +34,11 @@ assert.match(
   /056_telegram_pet_instance_state\.sql/,
   'the workflow_dispatch D1 query must request migration 056 from production',
 );
+assert.match(
+  remoteQueryStep,
+  /057_telegram_pet_lifecycle_pet_id\.sql/,
+  'the workflow_dispatch D1 query must request migration 057 from production',
+);
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),

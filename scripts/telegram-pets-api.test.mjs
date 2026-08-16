@@ -210,7 +210,7 @@ assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.sta
 assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');
 assert.match(worker, /getExistingMoonpetLifecycle\(db, telegramId\)/, 'reaction reads must not materialize lifecycle rows or mutate state');
 const petLeaderboardRoute = routeBlock('/telegram-pets/leaderboard');
-assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle l'), 'public leaderboard must join persisted Moonpet lifecycle');
+assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle_by_pet l'), 'public leaderboard must join persisted Moonpet lifecycle');
 for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_phase', 'lifecycle_species_id', 'rare_morph_id']) {
   assert.ok(petLeaderboardRoute.includes(field), `public leaderboard must return ${field}`);
 }
@@ -1669,7 +1669,7 @@ assert.equal(materializedLegacyRows.length, 1);
 assert.equal(materializedLegacyRows[0].lifecycle_phase, 'adult', 'legacy player state must materialize an adult lifecycle instead of crashing');
 assert.ok(materializedLegacyRows[0].lifecycle_species_id, 'legacy player state must derive a deterministic species');
 assert.equal(
-  legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle WHERE telegram_id = ?').get('legacy-lifecycle-state').count,
+  legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet WHERE telegram_id = ?').get('legacy-lifecycle-state').count,
   1,
   'legacy player state must persist exactly one lifecycle row',
 );
