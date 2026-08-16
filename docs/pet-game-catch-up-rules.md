@@ -4,7 +4,7 @@
 
 ## Fairness principle
 
-A hard daily Pet XP cap punishes players whose available play time is concentrated on weekends, during events, or after an absence. It also turns play beyond the cap into a meaningless action. Completely uncapped full-rate XP creates the opposite problem: a small group can compress a 90-day journey into a few days and make community competition feel unreachable.
+A hard daily Pet XP cap punishes players whose available play time is concentrated on weekends, during events, or after an absence. It also turns play beyond the cap into a meaningless action. Completely uncapped full-rate XP creates the opposite problem: a small group can compress the target 90-day progression cycle into a few days and make community competition feel unreachable. The live season calendar resets at UTC year boundaries, so a final partial season may be shorter.
 
 Season 1 therefore targets a soft-cap curve. Players may keep progressing, while calendar-gated Growth Marks and Weekly Crests preserve the season's intended pace.
 
@@ -48,4 +48,3 @@ Statuses are guidance, not rewards, and must be calculated from authoritative re
 **FUTURE.** Behind-pace bonuses may increase eligible Pet XP for a genuinely behind pet. Each `pet_id` may also have at most one difficult seasonal Crest recovery challenge. The challenge recovers one legitimate missed Crest opportunity; it does not create an unlimited Crest source.
 
 Catch-up must never create fake Growth Marks, fake Weekly Crests, or fake Arcade XP. There is no cash/crypto shortcut and no paid recovery path.
-

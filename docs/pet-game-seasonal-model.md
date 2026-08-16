@@ -16,12 +16,12 @@ Crypto Moonboy Pets is a **community-only game**. There are no cash purchases, c
 
 | Rule | Status | Canonical behavior |
 | --- | --- | --- |
-| Season length | **LIVE** | A season lasts 90 days. |
+| Season calendar | **LIVE** | Seasons target a 90-day progression cycle. The runtime starts a new calendar at each UTC year boundary, so the final partial season of a year may be shorter than 90 days. |
 | Seasonal roster | **LIVE** | Each player may have at most three Moonpets in a season. |
 | Pet 1 | **LIVE** | The first seasonal Moonpet is free each season. |
 | Pet 2 | **LIVE** | Unlock by spending 500 **spendable Arcade XP** earned through community play. |
 | Pet 3 | **LIVE** | Unlock by spending 1,000 **spendable Arcade XP** earned through community play. |
-| Active pet | **LIVE** | A player has one active seasonal Moonpet at a time. Actions and rewards resolve against the active or explicitly participating `pet_id`, and switching pets preserves each pet's independent progression. |
+| Active pet | **LIVE** | A player has one active seasonal Moonpet at a time. Pet-instance state resolves against the active or explicitly participating `pet_id`; account seasonal systems remain account-level. |
 | Daily growth | **IN DEVELOPMENT** | Pet XP may exceed the daily target, with diminishing returns planned; Growth Marks are capped at one per `pet_id` per day. |
 | Weekly growth | **IN DEVELOPMENT** | Weekly Crests are capped at one per `pet_id` per week. |
 
@@ -33,7 +33,9 @@ Higher costs such as 10,000 Arcade XP for Pet 2 and 25,000 Arcade XP for Pet 3 m
 
 ## Active and participating Moonpets
 
-**LIVE.** The active-pet rule prevents one action from progressing an entire roster. A player has one active seasonal Moonpet at a time, and every action or reward request resolves one participating `pet_id`. Switching the active Moonpet preserves each pet's independent record: XP, stats, rewards, Growth Marks, Weekly Crests, trials, and other progression are not copied, pooled, or retroactively moved between pets.
+**LIVE.** A player has one active seasonal Moonpet at a time. Pet-instance actions resolve against one active or explicitly participating `pet_id`. Switching the active Moonpet preserves that instance's identity, stats, lifecycle, and other pet-specific progression rather than replacing them with another pet's state.
+
+This isolation does not make every progression system pet-owned. Seasonal XP, seasonal tiers, leaderboard progression, and other systems explicitly defined at account level remain shared account seasonal state. Implementations and public copy must distinguish pet-instance records from account seasonal records instead of implying that all XP, rewards, or progression are independent per pet.
 
 ## Legendary completion
 
@@ -43,7 +45,7 @@ Higher costs such as 10,000 Arcade XP for Pet 2 and 25,000 Arcade XP for Pet 3 m
 - 10 Weekly Crests; and
 - the required Pet XP and trials defined by the eventual balancing contract.
 
-The 90-day window and the 60-day/10-week gates are intentionally shaped so a consistent player can miss roughly two weeks and still complete a Moonpet. Pet XP can continue past its normal daily target, but later diminishing returns must prevent heavy play from collapsing a 90-day season into one week. Marks and Crests provide calendar-based fairness and remain independently capped per pet.
+The target 90-day cycle and the 60-day/10-week gates are designed to give a consistent player roughly two weeks of missed-time flexibility during a full-length cycle. Because the live calendar resets at the UTC year boundary, a year-end partial season may be shorter and cannot be assumed to provide the same buffer. Pet XP can continue past its normal daily target under the later diminishing-returns design, which must prevent heavy play from collapsing the intended seasonal journey into one week. Marks and Crests provide calendar-based fairness and remain independently capped per pet.
 
 ## Catch-up direction
 
