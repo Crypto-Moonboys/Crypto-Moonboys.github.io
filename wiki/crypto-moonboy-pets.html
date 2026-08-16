@@ -56,6 +56,19 @@
     <p>Moonpet OS inside Telegram is the main gameplay surface. The bot is the authenticated launcher and notification bridge; the website provides the public rules, leaderboard, linked-player summaries, Community XP context and searchable wiki record.</p>
 
     <section class="wiki-section">
+      <h2>Season 1 Rules And Status</h2>
+      <p class="pets-status-note"><strong>Community-only:</strong> Crypto Moonboy Pets has no cash purchases, crypto purchases, token cashout, paid recovery path or financial rewards. Arcade XP is earned community progression with no cash value.</p>
+      <div class="pets-live-grid">
+        <article class="pets-live-card"><h3>LIVE — 90-Day Seasons</h3><p>Each season lasts 90 days. Current pet play and server-authoritative progression remain live.</p></article>
+        <article class="pets-live-card"><h3>IN DEVELOPMENT — Three Pets</h3><p>Each player can have at most three seasonal Moonpets. Pet 1 is free each season; Pet 2 unlocks for 10,000 spendable Arcade XP and Pet 3 for 25,000 spendable Arcade XP. These are earned community XP unlocks—not money or crypto purchases.</p></article>
+        <article class="pets-live-card"><h3>IN DEVELOPMENT — Active Pet</h3><p>Only one seasonal pet is active at a time. An action affects only its active or explicitly participating <code>pet_id</code>; progression is not copied across the roster.</p></article>
+        <article class="pets-live-card"><h3>FUTURE — Sanctuary And Fusion</h3><p>Completed Legendary pets move into Sanctuary. Breeding/Fusion is a later weekly event system unlocked only after completing Legendary Sanctuary pets, not a Season 1 core feature.</p></article>
+      </div>
+      <p><strong>Legendary target — IN DEVELOPMENT:</strong> 60 Growth Marks, 10 Weekly Crests, and the required Pet XP and trials. Growth Marks are limited to one per pet per day and Weekly Crests to one per pet per week, leaving roughly two weeks of missed-time flexibility in a 90-day season.</p>
+      <p><strong>Catch-up — FUTURE:</strong> Rested XP, behind-pace bonuses and one difficult seasonal Crest recovery challenge per pet are planned. They will never fabricate Growth Marks, Weekly Crests or Arcade XP, and there will be no paid recovery route.</p>
+    </section>
+
+    <section class="wiki-section">
       <h2>Start Playing</h2>
       <ol>
         <li>Open <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a>.</li>
@@ -95,7 +108,7 @@
         <article class="pets-live-card"><h3>Specialist XP</h3><p>Records how the pet is played through Care, Training, Adventure, Arena, Job and Bond progression.</p></article>
         <article class="pets-live-card"><h3>Community XP</h3><p>Accepted linked actions can contribute to the player’s existing Crypto Moonboys profile. It remains separate from Pet XP and specialist XP.</p></article>
       </div>
-      <p class="pets-status-note"><strong>Server authority:</strong> reward-bearing actions now finalize through a central protected reward authority. Pet XP remains capped at 1,200 per UTC day and Community XP at 250 per UTC day, with source allowlisting, stable idempotency keys and duplicate protection.</p>
+      <p class="pets-status-note"><strong>Server authority — LIVE:</strong> reward-bearing actions finalize through the Cloudflare Worker/server with source allowlisting, stable idempotency keys and duplicate protection. The client cannot self-award progression. <strong>IN DEVELOPMENT:</strong> Pet XP will use a daily target followed by diminishing returns rather than a hard stop, while protected Growth Mark and Weekly Crest limits preserve seasonal fairness.</p>
     </section>
 
     <section class="wiki-section">
@@ -186,13 +199,14 @@
       <p>Daily missions reset by UTC day. Weekly windows and automatic 90-day pet seasons roll over independently without a manual reset.</p>
       <p><code>/petseason</code> shows four one-time tiers at 250, 1,000, 3,000 and 7,500 seasonal Pet XP. Each tier is unique per player and season in D1. Claims use stable settlement keys, and the Moonpet’s evolution stage adds a small bounded Style bonus without increasing XP caps.</p>
       <p><code>/petleaderboard</code> and the website leaderboard rank Pet XP across daily, weekly, seasonal and all-time views. Specialist track levels, traits, job rank, equipment records, relic ownership and run-history data remain personal development systems rather than the current public leaderboard score.</p>
+      <p><strong>IN DEVELOPMENT:</strong> Pet XP may beat its daily target at reduced rates so players with concentrated play time can still make progress. <strong>FUTURE:</strong> after a heavy-grind threshold, continued activity will provide only tiny prestige or cosmetic value. Marks and Crests—not a paid shortcut—protect the 90-day pace.</p>
     </section>
 
     <section class="wiki-section">
       <h2>Security, Caps And Duplicate Protection</h2>
       <p>The Moonboys API owns cooldowns, caps, equipment state, currencies, inventory and accepted progression. Progression-bearing actions use stable server-controlled event or idempotency keys.</p>
       <p>Event and Kaiju repeat rewards use protected daily slots, global Pet XP and Community XP caps remain enforced, and duplicate or concurrent callbacks settle once. Timed activity claims, run terminal transitions, item awards and item consumption also use protected state transitions so retries repair interrupted work instead of multiplying progression.</p>
-      <p class="pets-status-note"><strong>Anti-farm rule:</strong> unlimited gameplay does not mean unlimited progression rewards. Repeatable modes can remain playable after their rewarded allowance while protected reward tiers, daily caps and idempotency prevent endless XP farming.</p>
+      <p class="pets-status-note"><strong>Anti-farm rule:</strong> unlimited gameplay does not mean unlimited full-rate progression. Repeatable modes can remain playable while diminishing returns, protected reward tiers, per-pet Mark/Crest limits and idempotency prevent runaway XP farming.</p>
     </section>
 
     <section class="wiki-section">
