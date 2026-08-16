@@ -2988,22 +2988,20 @@ async function getPetProfile(db, telegramId) {
 async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   // Reconcile any legacy profile-only write before choosing the atomic decay target.
   await getPetProfile(db, telegramId);
+  const instance = await readActivePetInstance(db, telegramId);
+  if (instance) return getPetInstanceWithAtomicDecay(db, instance.pet_id, now, { mirror_profile: true });
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const instance = await readActivePetInstance(db, telegramId);
-    const stored = instance || await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
+    const stored = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
     if (!stored) return null;
     const priorDecayAt = stored.last_decay_at;
     const decayed = applyPetDecay({ ...stored }, now);
     if (decayed.last_decay_at === priorDecayAt) return decayed;
     const syncedAt = formatPetStateTimestamp(now);
-    const targetTable = instance ? 'telegram_pet_instances' : 'telegram_pet_profiles';
-    const targetKey = instance ? 'pet_id' : 'telegram_id';
-    const targetValue = instance ? instance.pet_id : telegramId;
     const sync = await db.prepare(`
-      UPDATE ${targetTable}
+      UPDATE telegram_pet_profiles
       SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
           last_decay_at = ?, updated_at = ?
-      WHERE ${targetKey} = ? AND last_decay_at = ?
+      WHERE telegram_id = ? AND last_decay_at = ?
     `).bind(
       clampPetStat(decayed.hunger),
       clampPetStat(decayed.happiness),
@@ -3012,13 +3010,44 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
       clampPetStat(decayed.health),
       decayed.last_decay_at,
       syncedAt,
-      targetValue,
+      telegramId,
       priorDecayAt,
     ).run();
-    if (Number(sync?.meta?.changes || 0) === 1) {
-      if (instance) await mirrorActivePetInstanceToProfile(db, { ...instance, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt });
-      return decayed;
-    }
+    if (Number(sync?.meta?.changes || 0) === 1) return decayed;
+  }
+  throw new Error('pet_decay_sync_conflict');
+}
+
+async function getPetInstanceWithAtomicDecay(db, petId, now = new Date(), options = {}) {
+  const normalizedPetId = String(petId || '').trim();
+  if (!normalizedPetId) return null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const stored = await db.prepare(`SELECT * FROM telegram_pet_instances WHERE pet_id = ? LIMIT 1`).bind(normalizedPetId).first().catch(() => null);
+    if (!stored) return null;
+    const priorDecayAt = stored.last_decay_at;
+    const decayed = applyPetDecay({ ...stored }, now);
+    if (decayed.last_decay_at === priorDecayAt) return decayed;
+    const syncedAt = formatPetStateTimestamp(now);
+    const sync = await db.prepare(`
+      UPDATE telegram_pet_instances
+      SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
+          last_decay_at = ?, updated_at = ?
+      WHERE pet_id = ? AND last_decay_at = ?
+    `).bind(
+      clampPetStat(decayed.hunger),
+      clampPetStat(decayed.happiness),
+      clampPetStat(decayed.cleanliness),
+      clampPetStat(decayed.energy),
+      clampPetStat(decayed.health),
+      decayed.last_decay_at,
+      syncedAt,
+      normalizedPetId,
+      priorDecayAt,
+    ).run();
+    if (Number(sync?.meta?.changes || 0) !== 1) continue;
+    const current = { ...stored, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt };
+    if (options.mirror_profile) await mirrorActivePetInstanceToProfile(db, current);
+    return current;
   }
   throw new Error('pet_decay_sync_conflict');
 }
@@ -3264,8 +3293,16 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       `).bind(normalizedTelegramId).first().catch(() => null),
       getOrCreateArcadeProgressionState(db, normalizedTelegramId).catch(() => null),
     ]);
-    const rowsBySlot = new Map((slotRows.results || []).map((row) => [Number(row.slot_number), row]));
-    const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rowsBySlot.get(1)?.pet_id || null;
+    const rawRows = slotRows.results || [];
+    const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
+    const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
+    const currentRows = await Promise.all(rawRows.map(async (row) => {
+      const current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now, {
+        mirror_profile: String(row.pet_id) === String(activePetId || ''),
+      });
+      return current ? { ...row, ...current } : row;
+    }));
+    const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
     return {
       adopted: true,
