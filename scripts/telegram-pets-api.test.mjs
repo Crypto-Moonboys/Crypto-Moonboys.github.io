@@ -146,8 +146,8 @@ assert.ok(worker.includes("body.action === 'work'"), 'telegram pets action route
 assert.ok(worker.includes("body.action === 'daily_chest'"), 'telegram pets action route must dispatch daily_chest actions');
 assert.ok(worker.includes("body.action === 'random_event'"), 'telegram pets action route must dispatch random_event actions');
 assert.ok(worker.includes("body.action === 'season_slots'"), 'telegram pets action route must dispatch season slot summary reads');
-assert.ok(!worker.includes("body.action === 'buy_pet_slot'"), 'season slot purchases must not be exposed before per-pet state exists');
-assert.ok(!worker.includes("body.action === 'switch_pet_slot'"), 'active slot switching must not be exposed before per-pet state exists');
+assert.ok(worker.includes("body.action === 'buy_pet_slot'"), 'season slot purchases must be exposed through the authenticated action route');
+assert.ok(worker.includes("body.action === 'switch_pet_slot'"), 'active slot switching must be exposed through the authenticated action route');
 assert.ok(worker.includes("body.action === 'run'"), 'telegram pets action route must dispatch run start/resume actions');
 assert.ok(worker.includes("body.action === 'run_step'"), 'telegram pets action route must dispatch run step actions');
 assert.ok(worker.includes("body.action === 'run_extract'"), 'telegram pets action route must dispatch run extract actions');
@@ -201,8 +201,8 @@ assert.match(miniAppStateBuilder, /SELECT p\.telegram_id, p\.pet_name,/, 'Mini A
 assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state must expose current-season pet slots');
 const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
 assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
-assert.doesNotMatch(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must not sell slots before per-pet state exists');
-assert.doesNotMatch(miniAppActionProcessor, /switchPetSeasonSlot\(db, telegramId/, 'Mini App action handler must not switch slots before per-pet state exists');
+assert.match(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must sell slots through the authenticated action flow');
+assert.match(miniAppActionProcessor, /switchActivePetSeasonSlot\(db, telegramId/, 'Mini App action handler must switch owned slots through the authenticated action flow');
 assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
 assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
@@ -210,7 +210,7 @@ assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.sta
 assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');
 assert.match(worker, /getExistingMoonpetLifecycle\(db, telegramId\)/, 'reaction reads must not materialize lifecycle rows or mutate state');
 const petLeaderboardRoute = routeBlock('/telegram-pets/leaderboard');
-assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle l'), 'public leaderboard must join persisted Moonpet lifecycle');
+assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle_by_pet l'), 'public leaderboard must join persisted Moonpet lifecycle');
 for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_phase', 'lifecycle_species_id', 'rare_morph_id']) {
   assert.ok(petLeaderboardRoute.includes(field), `public leaderboard must return ${field}`);
 }
@@ -1641,10 +1641,10 @@ assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[3], 1000, 'third seasonal pet slot must
 const initialSeasonSlots = await buildPetSeasonSlotSummary(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
 assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must always expose the three season slots');
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
-assert.equal(initialSeasonSlots.purchase_enabled, false, 'season slot purchases must stay disabled until per-pet state exists');
-assert.equal(initialSeasonSlots.purchase_disabled_reason, 'per_pet_state_pending');
-assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its future Arcade XP cost');
-assert.equal(initialSeasonSlots.slots[1].affordable, false, 'slot 2 must not be marked affordable while purchase is disabled');
+assert.equal(initialSeasonSlots.purchase_enabled, true, 'season slot purchases must be enabled with per-pet state available');
+assert.equal(initialSeasonSlots.purchase_disabled_reason, null);
+assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its Arcade XP cost');
+assert.equal(initialSeasonSlots.slots[1].affordable, true, 'slot 2 must be marked affordable when Arcade XP covers its cost');
 assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start locked');
 const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
   action: 'season_slots',
@@ -1669,7 +1669,7 @@ assert.equal(materializedLegacyRows.length, 1);
 assert.equal(materializedLegacyRows[0].lifecycle_phase, 'adult', 'legacy player state must materialize an adult lifecycle instead of crashing');
 assert.ok(materializedLegacyRows[0].lifecycle_species_id, 'legacy player state must derive a deterministic species');
 assert.equal(
-  legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle WHERE telegram_id = ?').get('legacy-lifecycle-state').count,
+  legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet WHERE telegram_id = ?').get('legacy-lifecycle-state').count,
   1,
   'legacy player state must persist exactly one lifecycle row',
 );

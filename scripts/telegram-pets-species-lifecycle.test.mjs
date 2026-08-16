@@ -23,6 +23,27 @@ class D1 {
     catch (error) { this.database.exec('ROLLBACK'); throw error; }
   }
 }
+function provisionActivePet(database, telegramId) {
+  database.exec(`
+    CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, status TEXT DEFAULT 'active');
+    CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_lifecycle_by_pet (
+      pet_id TEXT PRIMARY KEY, telegram_id TEXT, lifecycle_version INTEGER DEFAULT 1, identity_seed TEXT,
+      phase TEXT DEFAULT 'egg', species_id TEXT, palette_id TEXT, marking_id TEXT, eye_style TEXT, temperament TEXT,
+      innate_traits_json TEXT DEFAULT '[]', incubation_progress INTEGER DEFAULT 0, incubation_json TEXT DEFAULT '{}',
+      rare_route_index INTEGER, rare_morph_id TEXT, hatched_at TEXT, adult_at TEXT, rare_morphed_at TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE telegram_pet_lifecycle_events_by_pet (
+      event_id TEXT PRIMARY KEY, pet_id TEXT, telegram_id TEXT, event_key TEXT, action TEXT,
+      payload_json TEXT DEFAULT '{}', progress_delta INTEGER DEFAULT 0, day_key TEXT DEFAULT (strftime('%Y-%m-%d', 'now')),
+      applied_at TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(pet_id, event_key)
+    );
+  `);
+  const petId = `pet:${telegramId}:test:1`;
+  database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES (?, ?)`).run(petId, telegramId);
+  database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, 'test')`).run(telegramId, petId);
+}
 
 const db = new D1();
 db.database.exec(`
@@ -35,8 +56,9 @@ db.database.exec(`
 `);
 db.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
 db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('new-player');
+provisionActivePet(db.database, 'new-player');
 assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, '', 'new pet profiles must not default to a fake species');
-db.database.prepare('DELETE FROM telegram_pet_lifecycle WHERE telegram_id=?').run('new-player');
+db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').run('new-player');
 const created = await createMoonEggLifecycle(db, 'new-player', 'adopt:1');
 assert.equal(Object.hasOwn(created, 'identity_seed'), false, 'private identity seed must never be returned');
 let lifecycle = await getMoonpetLifecycle(db, 'new-player');
@@ -56,7 +78,7 @@ assert.equal(lifecycle.incubation.ready, true);
 const hatched = await hatchMoonpet(db, 'new-player', 'hatch:1');
 assert.equal(hatched.accepted, true);
 assert.equal((await hatchMoonpet(db, 'new-player', 'hatch:1')).duplicate, true, 'hatching must be idempotent');
-assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events WHERE telegram_id=? AND action='hatch' AND applied_at IS NOT NULL").get('new-player').count, 1, 'hatch must have exactly one applied audit event');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE telegram_id=? AND action='hatch' AND applied_at IS NOT NULL").get('new-player').count, 1, 'hatch must have exactly one applied audit event');
 assert.ok(Object.hasOwn(MOONPET_SPECIES, hatched.lifecycle.species_id));
 assert.equal(hatched.lifecycle.innate_traits.length, 2);
 assert.ok(hatched.lifecycle.preferences.length >= 1, 'identity must expose stable behaviour preferences');
@@ -73,11 +95,12 @@ pendingDb.database.exec(`
 `);
 pendingDb.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
 pendingDb.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('pending-player');
-pendingDb.database.prepare('DELETE FROM telegram_pet_lifecycle WHERE telegram_id=?').run('pending-player');
+provisionActivePet(pendingDb.database, 'pending-player');
+pendingDb.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').run('pending-player');
 await createMoonEggLifecycle(pendingDb, 'pending-player', 'adopt:pending');
-pendingDb.database.prepare(`INSERT INTO telegram_pet_lifecycle_events
-  (event_id, telegram_id, event_key, action, payload_json, progress_delta)
-  VALUES ('pending-event', 'pending-player', 'pending-care', 'incubate_warm', '{}', 2)`).run();
+pendingDb.database.prepare(`INSERT INTO telegram_pet_lifecycle_events_by_pet
+  (event_id, pet_id, telegram_id, event_key, action, payload_json, progress_delta)
+  VALUES ('pending-event', 'pet:pending-player:test:1', 'pending-player', 'pending-care', 'incubate_warm', '{}', 2)`).run();
 const pendingRetry = await incubateMoonEgg(pendingDb, 'pending-player', 'warm', 'pending-care');
 assert.equal(pendingRetry.accepted, false, 'a reserved but unapplied lifecycle event must not be reported as an accepted duplicate');
 assert.equal(pendingRetry.reason, 'incubation_conflict');
