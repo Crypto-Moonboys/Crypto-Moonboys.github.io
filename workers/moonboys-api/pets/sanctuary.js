@@ -77,8 +77,9 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
     db.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key, updated_at)
       SELECT telegram_id, pet_id, season_key, ? FROM telegram_pet_season_slots
       WHERE telegram_id=? AND pet_id<>? AND status='active'
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a WHERE a.telegram_id=? AND a.pet_id=?)
       ORDER BY CASE WHEN season_key=? THEN 0 ELSE 1 END, updated_at DESC, slot_number LIMIT 1
-      ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=excluded.updated_at`).bind(timestamp, telegramId, petId, seasonKey),
+      ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=excluded.updated_at`).bind(timestamp, telegramId, petId, telegramId, petId, seasonKey),
     db.prepare(`UPDATE telegram_pet_profiles SET
       (pet_name, species, stage, pet_xp, level, hunger, happiness, cleanliness, energy, health,
        streak_days, moon_gold, moon_crystals, style_tokens, equipped_food, equipped_toy,
@@ -124,6 +125,13 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
           VALUES (?, ?, ?, ?, 'Moonpet', '', 'egg', 0, 1, 25, 70, 70, 70, 75, 0, 0, 0, 0,
            'active', ?, ?, ?, ?)`).bind(
           successorId, telegramId, seasonKey, openSlot.slot_number, timestamp, timestamp, timestamp, timestamp,
+        ),
+        db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
+          (pet_id, telegram_id, lifecycle_version, identity_seed, phase, species_id, palette_id,
+           marking_id, eye_style, temperament, innate_traits_json, incubation_progress,
+           incubation_json, created_at, updated_at)
+          VALUES (?, ?, 1, ?, 'egg', NULL, NULL, NULL, NULL, NULL, '[]', 0, '{}', ?, ?)`).bind(
+          successorId, telegramId, `sanctuary-successor:${successorId}`, timestamp, timestamp,
         ),
       );
     }

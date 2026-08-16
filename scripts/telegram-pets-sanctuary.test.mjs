@@ -8,11 +8,11 @@ class D1 { constructor(db){this.db=db} prepare(sql){return new Statement(this.db
 const sqlite=new DatabaseSync(':memory:');
 sqlite.exec(`PRAGMA foreign_keys=ON;
 CREATE TABLE telegram_pet_profiles(telegram_id TEXT PRIMARY KEY,pet_name TEXT DEFAULT 'Moonpet',species TEXT DEFAULT '',stage TEXT DEFAULT 'egg',pet_xp INTEGER DEFAULT 0,level INTEGER DEFAULT 1,hunger INTEGER DEFAULT 25,happiness INTEGER DEFAULT 70,cleanliness INTEGER DEFAULT 70,energy INTEGER DEFAULT 70,health INTEGER DEFAULT 75,streak_days INTEGER DEFAULT 0,moon_gold INTEGER DEFAULT 0,moon_crystals INTEGER DEFAULT 0,style_tokens INTEGER DEFAULT 0,equipped_food TEXT,equipped_toy TEXT,equipped_outfit TEXT,equipped_armor TEXT,equipped_weapon TEXT,equipped_charm TEXT,last_active_day TEXT,last_decay_at TEXT,updated_at TEXT);
-CREATE TABLE telegram_pet_season_slots(pet_id TEXT PRIMARY KEY,telegram_id TEXT,season_key TEXT,slot_number INTEGER,acquisition_type TEXT DEFAULT 'free',source_event_key TEXT,arcade_xp_spent INTEGER DEFAULT 0,status TEXT,created_at TEXT,updated_at TEXT,UNIQUE(pet_id,telegram_id,season_key));
+CREATE TABLE telegram_pet_season_slots(pet_id TEXT PRIMARY KEY,telegram_id TEXT,season_key TEXT,slot_number INTEGER,acquisition_type TEXT DEFAULT 'free',source_event_key TEXT,arcade_xp_spent INTEGER DEFAULT 0,status TEXT,created_at TEXT,updated_at TEXT,UNIQUE(pet_id,telegram_id,season_key),UNIQUE(telegram_id,season_key,slot_number));
 CREATE TABLE telegram_pet_instances(pet_id TEXT PRIMARY KEY,telegram_id TEXT,season_key TEXT,pet_name TEXT,species TEXT,stage TEXT,equipped_food TEXT,equipped_toy TEXT,equipped_outfit TEXT,equipped_armor TEXT,equipped_weapon TEXT,equipped_charm TEXT,status TEXT,updated_at TEXT);
 CREATE TABLE telegram_pet_active_slots(telegram_id TEXT PRIMARY KEY,pet_id TEXT,season_key TEXT,updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE telegram_pet_season_completions(pet_id TEXT,telegram_id TEXT,season_key TEXT,completed_at TEXT,legendary_evolution_id TEXT,PRIMARY KEY(pet_id,season_key));
-CREATE TABLE telegram_pet_lifecycle_by_pet(pet_id TEXT PRIMARY KEY,telegram_id TEXT,species_id TEXT,palette_id TEXT,rare_morph_id TEXT);
+CREATE TABLE telegram_pet_lifecycle_by_pet(pet_id TEXT PRIMARY KEY,telegram_id TEXT,species_id TEXT,palette_id TEXT,rare_morph_id TEXT,lifecycle_version INTEGER DEFAULT 1,identity_seed TEXT DEFAULT '',phase TEXT DEFAULT 'egg',marking_id TEXT,eye_style TEXT,temperament TEXT,innate_traits_json TEXT DEFAULT '[]',incubation_progress INTEGER DEFAULT 0,incubation_json TEXT DEFAULT '{}',created_at TEXT,updated_at TEXT);
 CREATE TABLE telegram_pet_evolutions_by_pet(pet_id TEXT,telegram_id TEXT,evolution_id TEXT,stage INTEGER,cosmetic_unlocks TEXT,achievement_unlocks TEXT,unlocked_at TEXT);
 CREATE TABLE telegram_pet_personality_traits(telegram_id TEXT,trait_id TEXT,progress INTEGER,unlocked_at TEXT);
 CREATE TABLE telegram_pet_memories(telegram_id TEXT PRIMARY KEY,milestones TEXT,updated_at TEXT);
@@ -52,7 +52,7 @@ INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,pet_name,species,stage,equipped_food,equipped_toy,equipped_outfit,equipped_armor,equipped_weapon,equipped_charm,status,updated_at) VALUES('complete','owner','s1','Nova','legacy','legendary',NULL,NULL,'crown',NULL,'laser',NULL,'active',NULL),('legendary-only','owner','s1','Other','legacy','legendary',NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL);
 INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('owner','complete','s1');
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id) VALUES('complete','owner','s1','2026-03-31T00:00:00Z','legendary_moon_guardian');
-INSERT INTO telegram_pet_lifecycle_by_pet VALUES('complete','owner','lunar_fox','neon','neon_fox');
+INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_id,rare_morph_id) VALUES('complete','owner','lunar_fox','neon','neon_fox');
 INSERT INTO telegram_pet_evolutions_by_pet VALUES('complete','owner','moon_egg',0,'[]','[]','2026-01-01'),('complete','owner','legendary_moon_guardian',4,'["crown"]','[]','2026-03-31');
 INSERT INTO telegram_pet_personality_traits VALUES('owner','brave',100,'2026-02-01');
 INSERT INTO telegram_pet_memories VALUES('owner','["first_boss"]',NULL);
@@ -74,7 +74,7 @@ INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,pet_name,specie
 INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,updated_at) VALUES('auto-b','auto-owner','s2',2,'active',NULL);
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,pet_name,species,stage,status) VALUES('auto-b','auto-owner','s2','Auto B','fox','egg','active');
 INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('auto-owner','auto','s2');
-INSERT INTO telegram_pet_lifecycle_by_pet VALUES('auto','auto-owner','lunar_fox','neon',NULL);
+INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_id,rare_morph_id) VALUES('auto','auto-owner','lunar_fox','neon',NULL);
 INSERT INTO telegram_pet_evolutions_by_pet VALUES
  ('auto','auto-owner','moon_egg',0,'[]','[]','2026-01-01'),('auto','auto-owner','street_moonpet',1,'[]','[]','2026-01-02'),
  ('auto','auto-owner','cyber_moonpet',2,'[]','[]','2026-01-03'),('auto','auto-owner','elite_moonpet',3,'[]','[]','2026-01-04'),
@@ -100,12 +100,22 @@ INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,species,stage,status) VALUES('solo','solo-owner','s4',1,'Solo A','fox','legendary','active');
 INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('solo-owner','solo','s4');
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id) VALUES('solo','solo-owner','s4','2026-09-30','legendary_moon_guardian');
-INSERT INTO telegram_pet_lifecycle_by_pet VALUES('solo','solo-owner','lunar_fox','neon',NULL);`);
+INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_id,rare_morph_id) VALUES('solo','solo-owner','lunar_fox','neon',NULL);`);
 assert.equal((await movePetToSanctuaryIfEligible(db,{pet_id:'solo',telegram_id:'solo-owner',season_key:'s4'})).accepted,true,'single-pet owner receives a successor starter');
 const soloPointer=sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='solo-owner'`).get();
 assert.equal(soloPointer.pet_id,'solo:successor');
 assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id=?`).get(soloPointer.pet_id).status,'active','successor is valid active seasonal state');
 assert.equal(sqlite.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='solo-owner'`).get().pet_name,'Moonpet','successor state is mirrored into profile');
+const successorLifecycle=sqlite.prepare(`SELECT phase,identity_seed,incubation_progress,incubation_json FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).get(soloPointer.pet_id);
+assert.equal(successorLifecycle.phase,'egg','successor lifecycle begins at egg');
+assert.ok(successorLifecycle.identity_seed,'successor receives a stable lifecycle identity seed');
+assert.deepEqual([successorLifecycle.incubation_progress,successorLifecycle.incubation_json],[0,'{}'],'successor is initialized for the normal incubation and hatch flow');
+
+sqlite.exec(`INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,updated_at) VALUES('auto-c','auto-owner','s2',3,'active','2026-04-02');
+INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,species,stage,status) VALUES('auto-c','auto-owner','s2',3,'Auto C','fox','egg','active');
+UPDATE telegram_pet_active_slots SET pet_id='auto-b',season_key='s2' WHERE telegram_id='auto-owner';`);
+await movePetToSanctuaryIfEligible(db,{pet_id:'auto',telegram_id:'auto-owner',season_key:'s2'});
+assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='auto-owner'`).get().pet_id,'auto-b','repairing inactive Pet A preserves selected Pet B instead of choosing newer Pet C');
 assert.equal((await movePetToSanctuaryIfEligible(db,input,{getPendingActivity:async()=>({run_id:'run'}),now:'2026-04-01T00:00:00Z'})).reason,'pending_activity');
 assert.equal((await movePetToSanctuaryIfEligible(db,input,{getPendingActivity:async()=>null,now:'2026-04-01T00:00:00Z'})).accepted,true);
 assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id='complete'`).get().status,'archived','resident cannot remain an active seasonal pet');
@@ -150,7 +160,7 @@ INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,pet_name,species,stage,status) VALUES('reconcile','reconcile-owner','s3','Reconcile','fox','legendary','active'),('reconcile-b','reconcile-owner','s3','Reconcile B','fox','egg','active');
 INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('reconcile-owner','reconcile','s3');
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id) VALUES('reconcile','reconcile-owner','s3','2026-06-30','legendary_moon_guardian');
-INSERT INTO telegram_pet_lifecycle_by_pet VALUES('reconcile','reconcile-owner','lunar_fox','neon',NULL);
+INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_id,rare_morph_id) VALUES('reconcile','reconcile-owner','lunar_fox','neon',NULL);
 INSERT INTO telegram_pet_activity_sessions(id,telegram_id,status) VALUES('reconcile-activity','reconcile-owner','active');`);
 assert.equal((await movePetToSanctuaryIfEligible(db,{pet_id:'reconcile',telegram_id:'reconcile-owner',season_key:'s3'})).reason,'pending_activity','completion remains eligible while activity is pending');
 sqlite.prepare(`DELETE FROM telegram_pet_activity_sessions WHERE id='reconcile-activity'`).run();
