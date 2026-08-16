@@ -31,6 +31,46 @@ class SqliteD1 {
   }
 }
 
+class PetDecayConflictD1 extends SqliteD1 {
+  constructor(database, conflictedPetId) {
+    super(database);
+    this.conflictedPetId = conflictedPetId;
+  }
+
+  prepare(sql) {
+    const statement = super.prepare(sql);
+    if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
+    const conflictedPetId = this.conflictedPetId;
+    return {
+      bind(...bindings) {
+        const bound = statement.bind(...bindings);
+        return {
+          first: () => bound.first(),
+          all: () => bound.all(),
+          run: () => bindings[7] === conflictedPetId ? Promise.resolve({ meta: { changes: 0 } }) : bound.run(),
+        };
+      },
+    };
+  }
+}
+
+class UnexpectedDecayFailureD1 extends SqliteD1 {
+  prepare(sql) {
+    const statement = super.prepare(sql);
+    if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
+    return {
+      bind(...bindings) {
+        const bound = statement.bind(...bindings);
+        return {
+          first: () => bound.first(),
+          all: () => bound.all(),
+          run: async () => { throw new Error('unexpected_decay_storage_failure'); },
+        };
+      },
+    };
+  }
+}
+
 const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql', import.meta.url), 'utf8');
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
@@ -54,6 +94,13 @@ assert.ok(
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'runtime evolve handling must only sync lifecycle on a newly unlocked evolution');
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\)\.catch\(\(\) => null\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
 assert.match(worker, /if \(!result\.duplicate\) await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'command evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
+const rosterSummarySource = worker.slice(
+  worker.indexOf('async function buildPetSeasonSlotSummary'),
+  worker.indexOf('async function buyPetSeasonSlot'),
+);
+assert.doesNotMatch(rosterSummarySource, /mirrorActivePetInstanceToProfile|mirror_profile/, 'read-only roster construction must have no compatibility-profile mirror path');
+assert.doesNotMatch(rosterSummarySource, /\.\.\.current/, 'roster construction must not spread pet-instance state over season-slot authority');
+assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, current\)/, 'roster construction must merge only the explicit pet display allowlist');
 assert.match(
   migration057,
   /CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet/,
@@ -199,7 +246,7 @@ assert.throws(
 
 const {
   findActivePetSlot, readActivePetInstance, writeActivePetInstance,
-  getPetProfile, savePetProfile, buyPetSeasonSlot, switchActivePetSeasonSlot,
+  getPetProfile, savePetProfile, buildPetSeasonSlotSummary, buyPetSeasonSlot, switchActivePetSeasonSlot,
   getMoonpetLifecycle, incubateMoonEgg,
   getMoonpetIdentitySummary, serializePet,
 } = __petMediaTestHooks;
@@ -311,11 +358,87 @@ const boughtThird = await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Dat
 assert.equal(boughtThird.accepted, true, 'slot 3 purchase must succeed with enough Arcade XP');
 assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='state-player'`).get().arcade_xp_total, 0, 'Arcade XP must be deducted exactly once');
 assert.deepEqual({ ...db.prepare(`SELECT pet_name, pet_xp, energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=3 AND telegram_id='state-player'`).get() }, { pet_name: 'Moonpet', pet_xp: 0, energy: 70 }, 'a purchased pet must be a fresh instance');
+
+const rosterNow = new Date();
+const dormantDecayStart = new Date(rosterNow.getTime() - (2 * 60 * 60 * 1000)).toISOString();
+db.prepare(`UPDATE telegram_pet_instances SET hunger=20, happiness=80, cleanliness=70,
+  energy=60, health=75, pet_xp=345, last_decay_at=?
+  WHERE telegram_id='state-player' AND slot_number=2`).run(dormantDecayStart);
+db.prepare(`UPDATE telegram_pet_instances SET last_decay_at=?
+  WHERE telegram_id='state-player' AND slot_number=1`).run(rosterNow.toISOString());
+const starterBeforeRoster = { ...db.prepare(`SELECT pet_xp, hunger, happiness, cleanliness, energy, health
+  FROM telegram_pet_instances WHERE telegram_id='state-player' AND slot_number=1`).get() };
+const decayAwareRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
+const dormantSlot = decayAwareRoster.slots[1];
+assert.deepEqual(
+  { pet_xp: dormantSlot.pet.pet_xp, hunger: dormantSlot.pet.hunger, happiness: dormantSlot.pet.happiness, cleanliness: dormantSlot.pet.cleanliness, energy: dormantSlot.pet.energy, health: dormantSlot.pet.health },
+  { pet_xp: 345, hunger: 29, happiness: 74, cleanliness: 64, energy: 56, health: 66 },
+  'roster summary must apply the canonical decay calculation to each dormant pet instance',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, hunger, happiness, cleanliness, energy, health
+    FROM telegram_pet_instances WHERE telegram_id='state-player' AND slot_number=1`).get() },
+  starterBeforeRoster,
+  'resolving dormant roster decay must not mutate the other pet instance',
+);
+const switchedToDormant = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: rosterNow });
+assert.equal(switchedToDormant.accepted, true, 'the decay-resolved dormant pet must remain switchable');
+const dormantDetail = await getPetProfile(d1, 'state-player');
+assert.deepEqual(
+  { pet_xp: dormantDetail.pet_xp, hunger: dormantDetail.hunger, happiness: dormantDetail.happiness, cleanliness: dormantDetail.cleanliness, energy: dormantDetail.energy, health: dormantDetail.health },
+  { pet_xp: dormantSlot.pet.pet_xp, hunger: dormantSlot.pet.hunger, happiness: dormantSlot.pet.happiness, cleanliness: dormantSlot.pet.cleanliness, energy: dormantSlot.pet.energy, health: dormantSlot.pet.health },
+  'switching to a dormant pet must show the same authoritative stats as its roster card',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, hunger, happiness, cleanliness, energy, health
+    FROM telegram_pet_instances WHERE telegram_id='state-player' AND slot_number=1`).get() },
+  starterBeforeRoster,
+  'switching to the dormant pet must not copy or mutate the starter pet state',
+);
+db.prepare(`UPDATE telegram_pet_instances SET hunger=15, last_decay_at=?
+  WHERE telegram_id='state-player' AND slot_number IN (1, 2, 3)`).run(dormantDecayStart);
+const conflictedPetId = 'pet:state-player:pet-s2026-003:2';
+const conflictSafeRoster = await buildPetSeasonSlotSummary(new PetDecayConflictD1(db, conflictedPetId), 'state-player', rosterNow);
+assert.equal(conflictSafeRoster.slots.length, 3, 'one temporary pet decay conflict must not break the three-pet roster response');
+assert.equal(conflictSafeRoster.slots[1].pet.hunger, 15, 'the conflicted middle pet must fall back to its existing row data');
+assert.ok(conflictSafeRoster.slots[0].pet.hunger > 15, 'the first pet must still return successfully decay-resolved state');
+assert.ok(conflictSafeRoster.slots[2].pet.hunger > 15, 'the third pet must still return successfully decay-resolved state');
+await assert.rejects(
+  buildPetSeasonSlotSummary(new UnexpectedDecayFailureD1(db), 'state-player', rosterNow),
+  /unexpected_decay_storage_failure/,
+  'unexpected decay storage errors must still surface instead of being hidden by roster fallback',
+);
+db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=9999, moon_gold=8888, moon_crystals=777,
+  style_tokens=666, equipped_food='new-food', equipped_toy='new-toy',
+  equipped_outfit='new-outfit', equipped_armor='new-armor', equipped_weapon='new-weapon',
+  equipped_charm='new-charm', hunger=11, happiness=98, cleanliness=97, energy=99,
+  health=96, updated_at='2099-01-01 00:00:00'
+  WHERE telegram_id='state-player'`).run();
+await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, moon_gold, moon_crystals, style_tokens, equipped_food,
+      equipped_toy, equipped_outfit, equipped_armor, equipped_weapon, equipped_charm,
+      hunger, happiness, cleanliness, energy, health, updated_at
+    FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
+  {
+    pet_xp: 9999, moon_gold: 8888, moon_crystals: 777, style_tokens: 666,
+    equipped_food: 'new-food', equipped_toy: 'new-toy', equipped_outfit: 'new-outfit',
+    equipped_armor: 'new-armor', equipped_weapon: 'new-weapon', equipped_charm: 'new-charm',
+    hunger: 11, happiness: 98, cleanliness: 97, energy: 99, health: 96,
+    updated_at: '2099-01-01 00:00:00',
+  },
+  'a stale roster read must not revert newer XP, currencies, equipment, or stat state in the compatibility profile',
+);
+db.prepare(`UPDATE telegram_pet_season_slots SET status='archived'
+  WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
+db.prepare(`UPDATE telegram_pet_instances SET status='active'
+  WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
+const archivedRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
+assert.equal(archivedRoster.slots[2].status, 'archived', 'instance status must not overwrite authoritative archived season-slot status');
+assert.equal((await switchActivePetSeasonSlot(d1, 'state-player', 3, { now: rosterNow })).accepted, false, 'an archived season slot must remain unavailable to active-pet switching');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'pet_slot_already_owned', 'duplicate purchase must be rejected without another deduction');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 4, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'invalid_pet_slot', 'slot 4 must be rejected');
 assert.equal((await switchActivePetSeasonSlot(d1, 'other-player', 'pet:state-player:2026-q3:3', { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'another owner cannot switch to the player pet');
-db.prepare(`UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='pet:state-player:pet-s2026-003:3'`).run();
-assert.equal((await switchActivePetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'an archived season slot cannot become active');
 
 db.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name) VALUES ('poor-player', 'Poor starter')`).run();
 db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('poor-player', 499)`).run();

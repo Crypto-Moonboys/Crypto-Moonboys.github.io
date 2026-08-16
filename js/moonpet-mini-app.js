@@ -7,6 +7,10 @@
   var initData = '';
   var telegramAuth = null;
   var state = null;
+  var seasonSnapshotReceivedAt = 0;
+  var lastSeasonServerRefreshAt = 0;
+  var seasonRefreshBusy = false;
+  var stateRequestGate = createStateRequestGate();
   var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
   var requestedFocus = launchParameter('focus');
@@ -483,8 +487,9 @@
     busy = true;
     tell('REFRESHING LIVE SAVE...');
     try {
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
-      if (data.state) state = data.state;
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
       render();
       tell('LIVE SAVE REFRESHED.');
       haptic('success');
@@ -540,8 +545,76 @@
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
+  function createStateRequestGate() {
+    var generation = 0;
+    return {
+      begin: function () {
+        generation += 1;
+        return generation;
+      },
+      isCurrent: function (candidate) {
+        return candidate === generation;
+      },
+    };
+  }
+
+  function beginStateRequest() {
+    return stateRequestGate.begin();
+  }
+
+  function setStateSnapshot(nextState, requestGeneration) {
+    if (!nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
+    state = nextState;
+    seasonSnapshotReceivedAt = performance.now();
+    lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
+    return true;
+  }
+
+  function seasonSnapshotElapsed() {
+    return seasonSnapshotReceivedAt > 0 ? Math.max(0, performance.now() - seasonSnapshotReceivedAt) : 0;
+  }
+
+  function seasonTiming(season, elapsedMs) {
+    var start = Date.parse(season && season.start_at || '');
+    var end = Date.parse(season && season.end_at || '');
+    var serverCurrent = Date.parse(season && season.current_at || '');
+    var current = serverCurrent + Math.max(0, Number(elapsedMs) || 0);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || !Number.isFinite(current) || end <= start) {
+      return { status: 'UNAVAILABLE', day: 0, totalDays: 0, remaining: 0, partial: false, percent: 0 };
+    }
+    var dayMs = 86400000;
+    var totalDays = Math.max(1, Math.ceil((end - start) / dayMs));
+    var active = current >= start && current < end;
+    var day = current < start ? 0 : Math.min(totalDays, Math.floor((Math.min(current, end - 1) - start) / dayMs) + 1);
+    return {
+      status: current < start ? 'UPCOMING' : active ? 'ACTIVE' : 'COMPLETE',
+      day: day,
+      totalDays: totalDays,
+      remaining: active ? Math.max(0, Math.ceil((end - current) / dayMs)) : 0,
+      partial: totalDays < 90,
+      percent: Math.round(day / totalDays * 100),
+    };
+  }
+
+  function renderPetInstanceCard(slot) {
+    var pet = slot.pet || {};
+    var variant = pet.variant ? '<div><span>VARIANT</span><strong>' + escapeHtml(words(pet.variant)) + '</strong></div>' : '';
+    return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '">' +
+      '<div class="pet-instance-heading"><strong>' + escapeHtml(pet.name || 'Moonpet') + '</strong>' + (slot.active ? '<span>◆ ACTIVE</span>' : '<span>OWNED</span>') + '</div>' +
+      '<div class="pet-instance-grid"><div><span>SPECIES</span><strong>' + escapeHtml(words(pet.species || 'forming')) + '</strong></div>' + variant +
+      '<div><span>LIFECYCLE</span><strong>' + escapeHtml(words(pet.stage || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div>' +
+      '<div><span>PET XP</span><strong>' + number(pet.pet_xp) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div>' +
+      '<div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div><div><span>HUNGER</span><strong>' + number(pet.hunger) + '</strong></div>' +
+      '<div><span>FUN</span><strong>' + number(pet.happiness) + '</strong></div><div><span>CLEAN</span><strong>' + number(pet.cleanliness) + '</strong></div></div></div>';
+  }
+
   function renderSeasonSlots() {
     var summary = state.season_slots || {};
+    var season = summary.season || {};
+    var timing = seasonTiming(season, seasonSnapshotElapsed());
+    var accountSeason = state.guidance && state.guidance.season || {};
+    var tiers = Array.isArray(accountSeason.tiers) ? accountSeason.tiers : [];
+    var unlockedTiers = tiers.filter(function (tier) { return tier.unlocked || tier.claimed_at; }).length;
     var provided = Array.isArray(summary.slots) ? summary.slots : [];
     var byNumber = {};
     provided.forEach(function (slot) { byNumber[Number(slot.slot_number)] = slot; });
@@ -550,26 +623,30 @@
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
       var owned = Boolean(slot.unlocked);
       var active = Boolean(slot.active);
-      var pet = slot.pet || {};
       var cost = Number(slot.unlock_cost_arcade_xp || 0);
-      var canPurchase = !owned && Boolean(slot.purchase_enabled);
-      var affordable = canPurchase && Boolean(slot.affordable);
+      var unlockEnabled = !owned && Boolean(slot.purchase_enabled);
+      var affordable = unlockEnabled && Boolean(slot.affordable);
       var status = active ? 'ACTIVE' : owned ? 'OWNED' : 'LOCKED';
-      var details = owned
-        ? escapeHtml(pet.name || 'Moonpet') + ' // ' + escapeHtml(words(pet.species || 'unknown species')) + ' // ' + escapeHtml(words(pet.stage || 'egg'))
-        : 'UNLOCK COST // ' + number(cost) + ' ARCADE XP';
+      var details = owned ? renderPetInstanceCard(slot)
+        : '<div class="slot-unlock-copy"><strong>COMMUNITY XP UNLOCK</strong><span>You have earned Arcade XP from community play.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
       var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
         : owned ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber })
-          : canPurchase ? button('BUY SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
+          : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
             disabled: !affordable,
-            detail: affordable ? number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
-          }) : '<div class="line muted">PURCHASE OFFLINE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
+            detail: affordable ? 'SPEND ' + number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
+          }) : '<div class="line muted">UNLOCK UNAVAILABLE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
       return '<article class="season-slot ' + (active ? 'is-active' : owned ? 'is-owned' : 'is-locked') + '" data-season-slot="' + slotNumber + '">' +
-        '<header><strong>SLOT ' + slotNumber + '</strong><span>' + status + '</span></header><div class="line">' + details + '</div><div class="slot-control">' + control + '</div></article>';
+        '<header><strong>PET ' + slotNumber + ' // SLOT ' + slotNumber + '</strong><span>' + status + '</span></header>' + details + '<div class="slot-control">' + control + '</div></article>';
     }).join('');
-    return panel('SEASON SLOTS // ' + escapeHtml(summary.season && summary.season.key || 'CURRENT SEASON'),
-      '<div class="season-slot-balance"><strong>ARCADE XP AVAILABLE</strong><span>' + number(available) + '</span></div>' +
-      '<div class="line muted">SLOT 1 IS FREE // SLOTS 2 + 3 USE ARCADE XP</div><div class="season-slot-grid">' + rows + '</div>', 'season-slots');
+    var timingCopy = timing.status === 'UNAVAILABLE'
+      ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
+      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + number(timing.remaining) + ' DAYS</strong></div><div><span>CYCLE</span><strong>' + (timing.partial ? 'YEAR-END PARTIAL' : '90-DAY TARGET') + '</strong></div></div>' + meter('SEASON', timing.percent);
+    return panel('SEASON STATUS // LIVE',
+      '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
+      '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>SEASON PROGRESSION</strong><span>' + number(accountSeason.xp) + ' seasonal XP // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // account leaderboard status</span></div></div>' +
+      '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
+      '<div class="line muted">PET 1 IS FREE // PET 2 REQUIRES 500 XP // PET 3 REQUIRES 1,000 XP // EARNED COMMUNITY PROGRESSION</div><div class="season-slot-grid">' + rows + '</div>' +
+      '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
   }
 
   function renderMissions() {
@@ -904,7 +981,12 @@
   function rejectionMessage(reason) {
     var messages = {
       insufficient_arcade_xp: 'NOT ENOUGH ARCADE XP FOR THIS SLOT',
-      pet_slot_already_owned: 'THAT PET SLOT IS ALREADY OWNED',
+      pet_slot_purchased: 'SEASONAL PET SLOT UNLOCKED',
+      pet_slot_switched: 'ACTIVE MOONPET SWITCHED',
+      pet_slot_already_owned: 'THAT PET SLOT IS ALREADY UNLOCKED',
+      invalid_pet_slot: 'THAT SEASONAL PET SLOT IS INVALID',
+      pet_slot_purchase_conflict: 'PET SLOT UNLOCK COULD NOT BE COMPLETED',
+      pet_slot_creation_incomplete: 'PET SLOT UNLOCK NEEDS A SAFE RETRY',
       pet_slot_not_switchable: 'THAT PET SLOT CANNOT BE SWITCHED TO',
       pet_activity_active: 'FINISH OR CLAIM THE ACTIVE PET ACTIVITY FIRST',
       pet_run_active: 'FINISH THE ACTIVE MOON RUN BEFORE SWITCHING',
@@ -1076,9 +1158,9 @@
     haptic('success');
     await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 1600, notice: true });
     try {
+      var requestGeneration = beginStateRequest();
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
-      state = acknowledged.state || state;
-      render();
+      if (setStateSnapshot(acknowledged.state, requestGeneration)) render();
     } catch (_) {}
     noticesBusy = false;
   }
@@ -1147,10 +1229,11 @@
     tell('TRANSMITTING ' + words(action) + '...');
     try {
       var stateBeforeAction = state;
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
-      var nextState = data.state || state;
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
-      state = nextState;
       var message = resultMessage(data.result);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
@@ -1333,9 +1416,10 @@
     lastPassiveRefreshAt = Date.now();
     var before = multiplayerFingerprint(state);
     try {
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
       if (!data.state) return;
-      state = data.state;
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
       render();
       var after = multiplayerFingerprint(state);
       if (before !== after && activeScreen === 'explore') {
@@ -1347,6 +1431,34 @@
       }
       await showPendingNotices();
     } catch (_) {}
+  }
+
+  async function refreshSeasonSnapshot(force) {
+    var monotonicNow = performance.now();
+    if (busy || noticesBusy || seasonRefreshBusy || !state || !state.adopted) return;
+    if (!force && lastSeasonServerRefreshAt > 0 && monotonicNow - lastSeasonServerRefreshAt < 300000) return;
+    seasonRefreshBusy = true;
+    try {
+      var requestGeneration = beginStateRequest();
+      var data = await post('/telegram-pets/app/state');
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      var scrollTop = screen.scrollTop;
+      render();
+      screen.scrollTop = scrollTop;
+    } catch (_) {
+    } finally {
+      seasonRefreshBusy = false;
+    }
+  }
+
+  function tickSeasonDisplay() {
+    if (!state || !state.adopted || busy || noticesBusy) return;
+    if (activeScreen === 'home') {
+      var scrollTop = screen.scrollTop;
+      render();
+      screen.scrollTop = scrollTop;
+    }
+    refreshSeasonSnapshot(false);
   }
 
   function drawPixelRect(x, y, width, height, color) {
@@ -2524,8 +2636,9 @@
       return;
     }
     try {
+      var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
-      state = data.state;
+      if (!setStateSnapshot(data.state, requestGeneration)) throw new Error('STALE INITIAL STATE RESPONSE');
       if (reducedMotion) {
         var reducedMotionStartedAt = performance.now();
         render();
@@ -2541,6 +2654,7 @@
       await showPendingNotices();
       applyRequestedFocus();
       window.setInterval(refreshLiveState, 5000);
+      window.setInterval(tickSeasonDisplay, 30000);
     } catch (error) {
       tell(error.message || 'STARTUP FAILED', 'danger');
       screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>';
@@ -2556,9 +2670,12 @@
   window.addEventListener('pageshow', function (event) {
     if (event.persisted && radioRequestedOn) setRadioEnabled(true, false);
     if (event.persisted && audioEnabled && !radioRequestedOn) syncMoonpetScore();
+    if (event.persisted) refreshSeasonSnapshot(true);
   });
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden || performanceSent) return;
+    if (document.hidden) return;
+    refreshSeasonSnapshot(true);
+    if (performanceSent) return;
     performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
   });
 

@@ -1819,6 +1819,7 @@ function getPetSeasonInfo(now = new Date()) {
     season_number: seasonNumber,
     start_at: start.toISOString(),
     end_at: end.toISOString(),
+    current_at: now.toISOString(),
   };
 }
 
@@ -2988,22 +2989,24 @@ async function getPetProfile(db, telegramId) {
 async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   // Reconcile any legacy profile-only write before choosing the atomic decay target.
   await getPetProfile(db, telegramId);
+  const instance = await readActivePetInstance(db, telegramId);
+  if (instance) {
+    const current = await getPetInstanceWithAtomicDecay(db, instance.pet_id, now);
+    if (current) await mirrorActivePetInstanceToProfile(db, current);
+    return current;
+  }
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const instance = await readActivePetInstance(db, telegramId);
-    const stored = instance || await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
+    const stored = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
     if (!stored) return null;
     const priorDecayAt = stored.last_decay_at;
     const decayed = applyPetDecay({ ...stored }, now);
     if (decayed.last_decay_at === priorDecayAt) return decayed;
     const syncedAt = formatPetStateTimestamp(now);
-    const targetTable = instance ? 'telegram_pet_instances' : 'telegram_pet_profiles';
-    const targetKey = instance ? 'pet_id' : 'telegram_id';
-    const targetValue = instance ? instance.pet_id : telegramId;
     const sync = await db.prepare(`
-      UPDATE ${targetTable}
+      UPDATE telegram_pet_profiles
       SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
           last_decay_at = ?, updated_at = ?
-      WHERE ${targetKey} = ? AND last_decay_at = ?
+      WHERE telegram_id = ? AND last_decay_at = ?
     `).bind(
       clampPetStat(decayed.hunger),
       clampPetStat(decayed.happiness),
@@ -3012,13 +3015,42 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
       clampPetStat(decayed.health),
       decayed.last_decay_at,
       syncedAt,
-      targetValue,
+      telegramId,
       priorDecayAt,
     ).run();
-    if (Number(sync?.meta?.changes || 0) === 1) {
-      if (instance) await mirrorActivePetInstanceToProfile(db, { ...instance, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt });
-      return decayed;
-    }
+    if (Number(sync?.meta?.changes || 0) === 1) return decayed;
+  }
+  throw new Error('pet_decay_sync_conflict');
+}
+
+async function getPetInstanceWithAtomicDecay(db, petId, now = new Date()) {
+  const normalizedPetId = String(petId || '').trim();
+  if (!normalizedPetId) return null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const stored = await db.prepare(`SELECT * FROM telegram_pet_instances WHERE pet_id = ? LIMIT 1`).bind(normalizedPetId).first().catch(() => null);
+    if (!stored) return null;
+    const priorDecayAt = stored.last_decay_at;
+    const decayed = applyPetDecay({ ...stored }, now);
+    if (decayed.last_decay_at === priorDecayAt) return decayed;
+    const syncedAt = formatPetStateTimestamp(now);
+    const sync = await db.prepare(`
+      UPDATE telegram_pet_instances
+      SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
+          last_decay_at = ?, updated_at = ?
+      WHERE pet_id = ? AND last_decay_at = ?
+    `).bind(
+      clampPetStat(decayed.hunger),
+      clampPetStat(decayed.happiness),
+      clampPetStat(decayed.cleanliness),
+      clampPetStat(decayed.energy),
+      clampPetStat(decayed.health),
+      decayed.last_decay_at,
+      syncedAt,
+      normalizedPetId,
+      priorDecayAt,
+    ).run();
+    if (Number(sync?.meta?.changes || 0) !== 1) continue;
+    return { ...stored, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt };
   }
   throw new Error('pet_decay_sync_conflict');
 }
@@ -3211,15 +3243,43 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     pet: unlocked ? {
       name: row?.pet_name || 'Moonpet',
       species: row?.lifecycle_species_id || row?.species || '',
+      variant: row?.rare_morph_id || null,
       stage: row?.lifecycle_phase || row?.stage || 'egg',
+      level: Math.max(1, Number(row?.level || 1)),
+      pet_xp: Math.max(0, Number(row?.pet_xp || 0)),
+      health: clampPetStat(Number(row?.health == null ? 75 : row.health)),
+      energy: clampPetStat(Number(row?.energy == null ? 70 : row.energy)),
+      hunger: clampPetStat(Number(row?.hunger == null ? 25 : row.hunger)),
+      happiness: clampPetStat(Number(row?.happiness == null ? 70 : row.happiness)),
+      cleanliness: clampPetStat(Number(row?.cleanliness == null ? 70 : row.cleanliness)),
     } : null,
+  };
+}
+
+function mergePetInstanceDisplayFields(slotRow, petInstance) {
+  if (!petInstance) return slotRow;
+  // Slot ownership/status fields remain authoritative on slotRow. Never spread
+  // a complete telegram_pet_instances row into this roster projection.
+  return {
+    ...slotRow,
+    pet_name: petInstance.pet_name,
+    species: petInstance.species,
+    stage: petInstance.stage,
+    level: petInstance.level,
+    pet_xp: petInstance.pet_xp,
+    health: petInstance.health,
+    energy: petInstance.energy,
+    hunger: petInstance.hunger,
+    happiness: petInstance.happiness,
+    cleanliness: petInstance.cleanliness,
   };
 }
 
 async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   const normalizedTelegramId = String(telegramId || '').trim();
   if (!normalizedTelegramId) return { adopted: false, reason: 'missing_telegram_id' };
-  const pet = await getPetProfile(db, normalizedTelegramId).catch(() => null);
+  const pet = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1`)
+    .bind(normalizedTelegramId).first().catch(() => null);
   if (!pet) {
     return {
       adopted: false,
@@ -3239,8 +3299,9 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       db.prepare(`
         SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
-          i.pet_name, i.species, i.stage, l.phase AS lifecycle_phase,
-          l.species_id AS lifecycle_species_id
+          i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
+          i.hunger, i.happiness, i.cleanliness, l.phase AS lifecycle_phase,
+          l.species_id AS lifecycle_species_id, l.rare_morph_id
         FROM telegram_pet_season_slots s
         LEFT JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
@@ -3255,8 +3316,22 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       `).bind(normalizedTelegramId).first().catch(() => null),
       getOrCreateArcadeProgressionState(db, normalizedTelegramId).catch(() => null),
     ]);
-    const rowsBySlot = new Map((slotRows.results || []).map((row) => [Number(row.slot_number), row]));
-    const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rowsBySlot.get(1)?.pet_id || null;
+    const rawRows = slotRows.results || [];
+    const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
+    const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
+    // This is a display projection. Decay may advance the individual instance,
+    // but roster reads must never reconcile or mirror into the legacy profile.
+    const currentRows = await Promise.all(rawRows.map(async (row) => {
+      let current;
+      try {
+        current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now);
+      } catch (error) {
+        if (String(error?.message || error) !== 'pet_decay_sync_conflict') throw error;
+        current = null;
+      }
+      return mergePetInstanceDisplayFields(row, current);
+    }));
+    const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
     return {
       adopted: true,
