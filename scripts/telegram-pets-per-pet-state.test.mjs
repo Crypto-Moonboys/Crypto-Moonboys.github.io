@@ -51,6 +51,9 @@ assert.ok(
   weeklyBoss.indexOf('await mirrorPetProfileToActiveInstance(db, telegramId)') < weeklyBoss.lastIndexOf('pet: await getPetProfile(db, telegramId)'),
   'weekly boss must sync its direct profile Energy deduction to the active instance before returning pet state',
 );
+assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'runtime evolve handling must only sync lifecycle on a newly unlocked evolution');
+assert.match(worker, /if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\)\.catch\(\(\) => null\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
+assert.match(worker, /if \(!result\.duplicate\) await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'command evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
 assert.match(
   migration056,
   /FOREIGN KEY \(pet_id, telegram_id, season_key, slot_number\)\s+REFERENCES telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)\s+ON DELETE CASCADE/,
@@ -160,6 +163,7 @@ const {
   findActivePetSlot, readActivePetInstance, writeActivePetInstance,
   getPetProfile, savePetProfile, buyPetSeasonSlot, switchActivePetSeasonSlot,
   getMoonpetLifecycle, incubateMoonEgg,
+  getMoonpetIdentitySummary, serializePet,
 } = __petMediaTestHooks;
 const d1 = new SqliteD1(db);
 
@@ -247,11 +251,17 @@ db.prepare(`UPDATE telegram_pet_activity_sessions SET status='cancelled' WHERE i
 const switched = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(switched.accepted, true, 'switching to an owned active paid pet must succeed');
 assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'switching to a purchased pet must expose its egg lifecycle');
+assert.equal((await getMoonpetIdentitySummary(d1, 'state-player')).current_stage.evolution_id, 'moon_egg', 'a switched paid pet must not inherit the starter evolution stage');
 await incubateMoonEgg(d1, 'state-player', 'warm', 'paid-pet-incubation');
 assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().incubation_progress, 2, 'incubation must progress the active paid pet only');
 assert.equal(db.prepare(`SELECT incubation_progress FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:1'`).get().incubation_progress, 12, 'paid-pet incubation must not change the starter lifecycle');
 assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Moonpet', 'gameplay reads must follow the switched fresh pet');
 assert.equal(db.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().pet_name, 'Moonpet', 'switching must mirror the selected pet to the legacy profile');
+const paidIdentity = await getMoonpetIdentitySummary(d1, 'state-player');
+assert.equal(paidIdentity.current_stage.evolution_id, 'moon_egg', 'paid pet identity must not reuse the owner-scoped evolution unlocks');
+assert.deepEqual(paidIdentity.personalities, [], 'paid pet identity must not reuse the owner-scoped personality unlocks');
+assert.equal(paidIdentity.memories, null, 'paid pet identity must not reuse the owner-scoped memory payload');
+assert.equal(serializePet(await getPetProfile(d1, 'state-player'), paidIdentity).evolution_stage, 0, 'serialized paid pets must not expose starter evolution stage');
 const paidPet = await getPetProfile(d1, 'state-player');
 paidPet.energy = 42;
 await savePetProfile(d1, paidPet);

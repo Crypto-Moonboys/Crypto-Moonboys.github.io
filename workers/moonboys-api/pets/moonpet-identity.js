@@ -31,6 +31,14 @@ function safeTelegramText(value, maximum = 80) {
   return escapeTelegramHtml(String(value ?? '').slice(0, maximum));
 }
 
+async function readActivePetIdentityScope(db, telegramId) {
+  return db.prepare(`SELECT s.slot_number, s.acquisition_type
+    FROM telegram_pet_active_slots a
+    JOIN telegram_pet_season_slots s
+      ON s.pet_id = a.pet_id AND s.telegram_id = a.telegram_id AND s.season_key = a.season_key
+    WHERE a.telegram_id = ? LIMIT 1`).bind(telegramId).first().catch(() => null);
+}
+
 function validateInventoryRequirements(inventory) {
   if (inventory == null) return true;
   if (typeof inventory !== 'object' || Array.isArray(inventory)) throw new Error('invalid_evolution_inventory_requirements');
@@ -322,11 +330,20 @@ export async function evolveMoonpet(db, request = {}) {
 
 export async function getMoonpetIdentitySummary(db, telegramIdRaw) {
   const telegramId = String(telegramIdRaw || '').trim();
-  const [evolution, traits, memory] = await Promise.all([
+  const [evolution, traits, memory, scope] = await Promise.all([
     db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? ORDER BY stage DESC LIMIT 1`).bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits WHERE telegram_id = ? AND unlocked_at IS NOT NULL ORDER BY unlocked_at, trait_id LIMIT 4`).bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT * FROM telegram_pet_memories WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
+    readActivePetIdentityScope(db, telegramId),
   ]);
+  if (Number(scope?.slot_number || 1) > 1 && scope?.acquisition_type !== 'free') {
+    const current = MOONPET_EVOLUTIONS.moon_egg;
+    return {
+      current_stage: { evolution_id: current.evolution_id, name: current.name, stage: current.stage, unlocked_at: null },
+      personalities: [],
+      memories: null,
+    };
+  }
   const current = evolution ? MOONPET_EVOLUTIONS[evolution.evolution_id] : MOONPET_EVOLUTIONS.moon_egg;
   let milestones = [];
   try { milestones = JSON.parse(memory?.milestones || '[]'); } catch {}

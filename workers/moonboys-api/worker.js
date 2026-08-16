@@ -7345,7 +7345,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
     if (!next) return { accepted: false, reason: 'final_evolution_reached' };
     const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
-    if (result.accepted) result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+    if (result.accepted && !result.duplicate) result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, next.stage);
     return result;
   }
   if (action === 'arena_start') {
@@ -8306,7 +8306,7 @@ export default {
         result = await syncDailyMoonRun(env.DB, { telegram_id: telegramId, utc_day: body.utc_day, run_id: body.run_id });
       } else if (body.action === 'evolve') {
         result = await evolveMoonpet(env.DB, { telegram_id: telegramId, evolution_id: body.evolution_id, event_key: body.event_key });
-        if (result.accepted) {
+        if (result.accepted && !result.duplicate) {
           const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
           result.lifecycle = await syncMoonpetLifecycleStage(env.DB, telegramId, identity?.current_stage?.stage || 0);
         }
@@ -13568,7 +13568,7 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
     await sendTelegramMessage(tok, chatId, `<b>🧬 ${escapeHtml(next.name)} is not ready</b>\n${missing}\n\n${escapeHtml(getPetEvolutionPerk(next.stage).perk)}`, { reply_markup: evolveMarkup });
     return;
   }
-  await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+  if (!result.duplicate) await syncMoonpetLifecycleStage(db, telegramId, next.stage);
   await mirrorPetProfileToActiveInstance(db, telegramId);
   const updated = await getMoonpetIdentityWithLifecycle(db, telegramId);
   await syncPetAchievements(db, telegramId).catch(() => []);
