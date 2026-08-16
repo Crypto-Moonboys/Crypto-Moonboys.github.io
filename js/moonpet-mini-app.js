@@ -535,7 +535,40 @@
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') + button('DAILY CACHE', 'daily_chest') + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
       '</div>', 'care') +
+      renderSeasonSlots() +
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(lifecycle.species_name || words(pet.species)) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
+  }
+
+  function renderSeasonSlots() {
+    var summary = state.season_slots || {};
+    var provided = Array.isArray(summary.slots) ? summary.slots : [];
+    var byNumber = {};
+    provided.forEach(function (slot) { byNumber[Number(slot.slot_number)] = slot; });
+    var available = Number(summary.arcade_xp_available || provided[0] && provided[0].arcade_xp_available || 0);
+    var rows = [1, 2, 3].map(function (slotNumber) {
+      var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
+      var owned = Boolean(slot.unlocked);
+      var active = Boolean(slot.active);
+      var pet = slot.pet || {};
+      var cost = Number(slot.unlock_cost_arcade_xp || 0);
+      var canPurchase = !owned && Boolean(slot.purchase_enabled);
+      var affordable = canPurchase && Boolean(slot.affordable);
+      var status = active ? 'ACTIVE' : owned ? 'OWNED' : 'LOCKED';
+      var details = owned
+        ? escapeHtml(pet.name || 'Moonpet') + ' // ' + escapeHtml(words(pet.species || 'unknown species')) + ' // ' + escapeHtml(words(pet.stage || 'egg'))
+        : 'UNLOCK COST // ' + number(cost) + ' ARCADE XP';
+      var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
+        : owned ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber })
+          : canPurchase ? button('BUY SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
+            disabled: !affordable,
+            detail: affordable ? number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
+          }) : '<div class="line muted">PURCHASE OFFLINE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
+      return '<article class="season-slot ' + (active ? 'is-active' : owned ? 'is-owned' : 'is-locked') + '" data-season-slot="' + slotNumber + '">' +
+        '<header><strong>SLOT ' + slotNumber + '</strong><span>' + status + '</span></header><div class="line">' + details + '</div><div class="slot-control">' + control + '</div></article>';
+    }).join('');
+    return panel('SEASON SLOTS // ' + escapeHtml(summary.season && summary.season.key || 'CURRENT SEASON'),
+      '<div class="season-slot-balance"><strong>ARCADE XP AVAILABLE</strong><span>' + number(available) + '</span></div>' +
+      '<div class="line muted">SLOT 1 IS FREE // SLOTS 2 + 3 USE ARCADE XP</div><div class="season-slot-grid">' + rows + '</div>', 'season-slots');
   }
 
   function renderMissions() {
@@ -855,7 +888,7 @@
     if (!result) return 'SYSTEM RESPONSE LOST.';
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
-    var parts = [result.accepted ? 'ACTION ACCEPTED' : 'ACTION BLOCKED', words(result.reason)];
+    var parts = [result.accepted ? 'ACTION ACCEPTED' : 'ACTION BLOCKED', rejectionMessage(result.reason)];
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
     if (terminalResult) parts.push('OUTCOME ' + words(terminalResult.replace('player1', 'you').replace('player2', 'opponent')));
     var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
@@ -865,6 +898,20 @@
     if (gains.length) parts.push(gains.join(' // '));
     if (result.reaction) parts.push('MOONPET: ' + String(result.reaction));
     return parts.join(' // ');
+  }
+
+  function rejectionMessage(reason) {
+    var messages = {
+      insufficient_arcade_xp: 'NOT ENOUGH ARCADE XP FOR THIS SLOT',
+      pet_slot_already_owned: 'THAT PET SLOT IS ALREADY OWNED',
+      pet_slot_not_switchable: 'THAT PET SLOT CANNOT BE SWITCHED TO',
+      pet_activity_active: 'FINISH OR CLAIM THE ACTIVE PET ACTIVITY FIRST',
+      pet_run_active: 'FINISH THE ACTIVE MOON RUN BEFORE SWITCHING',
+      pet_arena_active: 'FINISH THE ACTIVE ARENA BATTLE BEFORE SWITCHING',
+      pet_kaiju_active: 'FINISH THE ACTIVE KAIJU MATCH BEFORE SWITCHING',
+      season_slots_unavailable: 'SEASON SLOTS ARE TEMPORARILY UNAVAILABLE',
+    };
+    return messages[String(reason || '')] || words(reason);
   }
 
   function compactFeedback(value, limit) {
@@ -887,7 +934,7 @@
     });
     var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
     if (lines.length < 3 && resultCopy) lines.push(compactFeedback(resultCopy, 34));
-    if (!result.accepted && lines.length < 3 && result.reason) lines.push(words(compactFeedback(result.reason, 30)));
+    if (!result.accepted && lines.length < 3 && result.reason) lines.push(compactFeedback(rejectionMessage(result.reason), 34));
     return { tone: result.accepted ? 'success' : 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
   }
 

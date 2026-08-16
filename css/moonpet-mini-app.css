@@ -76,6 +76,15 @@ button { font: inherit; }
 .region-entry { margin: 0 0 8px; padding: 7px; border-left: 3px solid var(--line); background: rgba(7,23,12,.65); }
 .region-entry.complete { border-left-color: var(--hot); }
 .region-entry.locked { border-left-color: #315338; }
+.season-slot-balance { display: flex; justify-content: space-between; gap: 8px; padding: 7px; border: 1px dashed var(--hot); color: var(--hot); font-size: 12px; }
+.season-slot-grid { display: grid; gap: 8px; margin-top: 8px; }
+.season-slot { padding: 8px; border: 2px solid var(--line); background: #06110b; box-shadow: 2px 2px 0 #020704; }
+.season-slot header { display: flex; justify-content: space-between; gap: 8px; color: var(--dim); font-size: 12px; }
+.season-slot.is-active { border-color: var(--hot); background: #101c0a; box-shadow: 0 0 10px rgba(244,255,101,.18), 2px 2px 0 #020704; }
+.season-slot.is-active header, .slot-active-marker { color: var(--hot); }
+.season-slot.is-locked { border-style: dashed; }
+.slot-control .terminal-button { width: 100%; }
+.slot-active-marker { display: block; padding: 9px 4px; letter-spacing: .12em; text-align: center; }
 .meter { display: grid; grid-template-columns: 72px 1fr 32px; align-items: center; gap: 6px; margin: 5px 0; font-size: 11px; }
 .meter-track { height: 8px; border: 1px solid var(--line); background: #020704; }
 .meter-fill { display: block; height: 100%; background: var(--ink); box-shadow: 0 0 8px var(--dim); }

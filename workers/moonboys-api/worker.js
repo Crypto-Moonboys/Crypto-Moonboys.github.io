@@ -3208,6 +3208,11 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     purchase_enabled: !unlocked && slotNumber > 1,
     purchase_disabled_reason: null,
     affordable: !unlocked && slotNumber > 1 && arcadeXpAvailable >= cost,
+    pet: unlocked ? {
+      name: row?.pet_name || 'Moonpet',
+      species: row?.lifecycle_species_id || row?.species || '',
+      stage: row?.lifecycle_phase || row?.stage || 'egg',
+    } : null,
   };
 }
 
@@ -3232,10 +3237,17 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     await ensurePetStarterSeasonSlot(db, normalizedTelegramId, now);
     const [slotRows, activeSlot, arcade] = await Promise.all([
       db.prepare(`
-        SELECT pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status, created_at, updated_at
-        FROM telegram_pet_season_slots
-        WHERE telegram_id = ? AND season_key = ?
-        ORDER BY slot_number ASC
+        SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,
+          s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
+          i.pet_name, i.species, i.stage, l.phase AS lifecycle_phase,
+          l.species_id AS lifecycle_species_id
+        FROM telegram_pet_season_slots s
+        LEFT JOIN telegram_pet_instances i
+          ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+        LEFT JOIN telegram_pet_lifecycle_by_pet l
+          ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
+        WHERE s.telegram_id = ? AND s.season_key = ?
+        ORDER BY s.slot_number ASC
       `).bind(normalizedTelegramId, season.key).all(),
       db.prepare(`
         SELECT pet_id, season_key FROM telegram_pet_active_slots
