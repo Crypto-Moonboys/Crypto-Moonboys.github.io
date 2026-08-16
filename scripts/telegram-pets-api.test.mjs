@@ -1639,6 +1639,7 @@ seasonSlotRuntimeDb.database.prepare(`
 assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[2], 500, 'second seasonal pet slot must cost Arcade XP');
 assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[3], 1000, 'third seasonal pet slot must cost Arcade XP');
 const initialSeasonSlots = await buildPetSeasonSlotSummary(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
+assert.equal(initialSeasonSlots.season.current_at, '2026-08-15T00:00:00.000Z', 'season summary must include the authoritative server timestamp used by the UI');
 assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must always expose the three season slots');
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
 assert.deepEqual(

@@ -1819,6 +1819,7 @@ function getPetSeasonInfo(now = new Date()) {
     season_number: seasonNumber,
     start_at: start.toISOString(),
     end_at: end.toISOString(),
+    current_at: now.toISOString(),
   };
 }
 
@@ -3297,9 +3298,15 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
     const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
     const currentRows = await Promise.all(rawRows.map(async (row) => {
-      const current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now, {
-        mirror_profile: String(row.pet_id) === String(activePetId || ''),
-      });
+      let current;
+      try {
+        current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now, {
+          mirror_profile: String(row.pet_id) === String(activePetId || ''),
+        });
+      } catch (error) {
+        if (String(error?.message || error) !== 'pet_decay_sync_conflict') throw error;
+        current = null;
+      }
       return current ? { ...row, ...current } : row;
     }));
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));

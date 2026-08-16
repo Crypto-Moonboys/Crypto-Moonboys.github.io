@@ -66,6 +66,24 @@ const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const arcadeRadio = fs.readFileSync(new URL('../js/arcade/core/radio.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
+const seasonTimingSource = client.match(/  function seasonTiming\(season\) \{[\s\S]*?\n  \}(?=\n\n  function renderPetInstanceCard)/)?.[0];
+assert.ok(seasonTimingSource, 'seasonTiming source must remain independently testable');
+const seasonTiming = Function(`"use strict";${seasonTimingSource}\nreturn seasonTiming;`)();
+const originalDateNow = Date.now;
+Date.now = () => Date.parse('2099-12-31T23:59:59.000Z');
+try {
+  const authoritativeTiming = seasonTiming({
+    start_at: '2026-01-01T00:00:00.000Z',
+    end_at: '2026-04-01T00:00:00.000Z',
+    current_at: '2026-01-10T12:00:00.000Z',
+  });
+  assert.equal(authoritativeTiming.status, 'ACTIVE', 'server current_at must control season phase despite an incorrect client clock');
+  assert.equal(authoritativeTiming.day, 10, 'server current_at must control displayed season position');
+  assert.equal(authoritativeTiming.remaining, 81, 'server current_at must control displayed remaining days');
+} finally {
+  Date.now = originalDateNow;
+}
+
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
@@ -170,6 +188,8 @@ assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-ui/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function seasonTiming\(season\)/, 'season status must derive position from authoritative runtime boundaries');
+assert.match(client, /Date\.parse\(season && season\.current_at/, 'season timing must consume the server timestamp');
+assert.doesNotMatch(seasonTimingSource, /Date\.now\(/, 'season timing must not depend on the browser clock');
 assert.match(client, /YEAR-END PARTIAL.*90-DAY TARGET/, 'season status must distinguish a shortened runtime season from the target cycle');
 assert.match(client, /SEASON STATUS \/\/ LIVE/, 'season panel must label current runtime timing as live');
 assert.match(client, /PET PROGRESSION[\s\S]*SEASON PROGRESSION/, 'season UI must separate pet-instance progression from account seasonal progression');

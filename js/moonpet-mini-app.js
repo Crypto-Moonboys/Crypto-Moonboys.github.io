@@ -543,19 +543,19 @@
   function seasonTiming(season) {
     var start = Date.parse(season && season.start_at || '');
     var end = Date.parse(season && season.end_at || '');
-    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+    var current = Date.parse(season && season.current_at || '');
+    if (!Number.isFinite(start) || !Number.isFinite(end) || !Number.isFinite(current) || end <= start) {
       return { status: 'UNAVAILABLE', day: 0, totalDays: 0, remaining: 0, partial: false, percent: 0 };
     }
     var dayMs = 86400000;
-    var now = Date.now();
     var totalDays = Math.max(1, Math.ceil((end - start) / dayMs));
-    var active = now >= start && now < end;
-    var day = now < start ? 0 : Math.min(totalDays, Math.floor((Math.min(now, end - 1) - start) / dayMs) + 1);
+    var active = current >= start && current < end;
+    var day = current < start ? 0 : Math.min(totalDays, Math.floor((Math.min(current, end - 1) - start) / dayMs) + 1);
     return {
-      status: now < start ? 'UPCOMING' : active ? 'ACTIVE' : 'COMPLETE',
+      status: current < start ? 'UPCOMING' : active ? 'ACTIVE' : 'COMPLETE',
       day: day,
       totalDays: totalDays,
-      remaining: active ? Math.max(0, Math.ceil((end - now) / dayMs)) : 0,
+      remaining: active ? Math.max(0, Math.ceil((end - current) / dayMs)) : 0,
       partial: totalDays < 90,
       percent: Math.round(day / totalDays * 100),
     };
