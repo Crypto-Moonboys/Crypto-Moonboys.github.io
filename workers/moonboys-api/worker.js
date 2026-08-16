@@ -3294,13 +3294,12 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   }
   const season = getPetSeasonInfo(now);
   try {
-    await ensurePetStarterSeasonSlot(db, normalizedTelegramId, now);
     const [slotRows, activeSlot, arcade] = await Promise.all([
       db.prepare(`
         SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
           i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
-          i.hunger, i.happiness, i.cleanliness, l.phase AS lifecycle_phase,
+          i.hunger, i.happiness, i.cleanliness, i.last_decay_at, l.phase AS lifecycle_phase,
           l.species_id AS lifecycle_species_id, l.rare_morph_id
         FROM telegram_pet_season_slots s
         LEFT JOIN telegram_pet_instances i
@@ -3314,23 +3313,15 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
         SELECT pet_id, season_key FROM telegram_pet_active_slots
         WHERE telegram_id = ? LIMIT 1
       `).bind(normalizedTelegramId).first().catch(() => null),
-      getOrCreateArcadeProgressionState(db, normalizedTelegramId).catch(() => null),
+      db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1`)
+        .bind(normalizedTelegramId).first().catch(() => null),
     ]);
     const rawRows = slotRows.results || [];
     const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
     const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
-    // This is a display projection. Decay may advance the individual instance,
-    // but roster reads must never reconcile or mirror into the legacy profile.
-    const currentRows = await Promise.all(rawRows.map(async (row) => {
-      let current;
-      try {
-        current = await getPetInstanceWithAtomicDecay(db, row.pet_id, now);
-      } catch (error) {
-        if (String(error?.message || error) !== 'pet_decay_sync_conflict') throw error;
-        current = null;
-      }
-      return mergePetInstanceDisplayFields(row, current);
-    }));
+    // This endpoint is a read-only display projection. Preview canonical decay
+    // in memory; gameplay/switch paths persist decay against the pet instance.
+    const currentRows = rawRows.map((row) => mergePetInstanceDisplayFields(row, applyPetDecay({ ...row }, now)));
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
     return {
@@ -3442,6 +3433,10 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active' LIMIT 1`)
     .bind(requested, owner, season.key).first().catch(() => null);
   if (!slot) return { accepted: false, reason: 'pet_slot_not_switchable', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
+  // Reconcile any newer compatibility-profile write onto the currently active
+  // instance before moving the pointer. Otherwise selecting another pet could
+  // strand or overwrite a same-second legacy gameplay mutation.
+  await getPetProfile(db, owner);
   const switched = await db.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?, season_key=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=?`)
     .bind(slot.pet_id, season.key, owner).run();
   if (Number(switched?.meta?.changes || 0) !== 1) {
@@ -12089,6 +12084,7 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  ensurePetStarterSeasonSlot,
   findActivePetSlot,
   ensureActivePetInstance,
   readActivePetInstance,

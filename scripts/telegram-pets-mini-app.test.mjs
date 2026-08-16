@@ -66,7 +66,7 @@ const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html',
 const arcadeRadio = fs.readFileSync(new URL('../js/arcade/core/radio.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 
-const seasonTimingSource = client.match(/(?<=  \/\/ TEST-EXPORT: seasonTiming:start\n)  function seasonTiming\(season, elapsedMs\) \{[\s\S]*?\n  \}(?=\n  \/\/ TEST-EXPORT: seasonTiming:end)/)?.[0];
+const seasonTimingSource = client.match(/^[\t ]*\/\/ TEST-EXPORT: seasonTiming:start[\t ]*\r?\n([\s\S]*?)^[\t ]*\/\/ TEST-EXPORT: seasonTiming:end[\t ]*$/m)?.[1];
 assert.ok(seasonTimingSource, 'seasonTiming source must remain independently testable');
 const seasonTiming = Function(`"use strict";${seasonTimingSource}\nreturn seasonTiming;`)();
 const originalDateNow = Date.now;
@@ -234,6 +234,8 @@ assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
 assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-season-roster-state-gate/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
+assert.match(client, /function captureEditableState\(\)[\s\S]*pet-name-input[\s\S]*function restoreEditableState\(draft\)/, 'state refresh renders must preserve editable callsign drafts');
+assert.match(client, /function render\(\) \{\s*var editableState = captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must restore unsaved editable state after rebuilding the screen');
 assert.match(client, /function seasonTiming\(season, elapsedMs\)/, 'season status must derive position from an authoritative server snapshot plus monotonic elapsed time');
 assert.match(client, /Date\.parse\(season && season\.current_at/, 'season timing must consume the server timestamp');
 assert.doesNotMatch(seasonTimingSource, /Date\.now\(/, 'season timing must not depend on the browser clock');

@@ -946,10 +946,34 @@
     }).join('');
   }
 
+  function captureEditableState() {
+    var input = document.getElementById('pet-name-input');
+    if (!input) return null;
+    return {
+      value: input.value,
+      focused: document.activeElement === input,
+      selectionStart: input.selectionStart,
+      selectionEnd: input.selectionEnd,
+    };
+  }
+
+  function restoreEditableState(draft) {
+    if (!draft) return;
+    var input = document.getElementById('pet-name-input');
+    if (!input) return;
+    input.value = draft.value;
+    if (draft.focused) {
+      input.focus({ preventScroll: true });
+      input.setSelectionRange(draft.selectionStart, draft.selectionEnd);
+    }
+  }
+
   function render() {
+    var editableState = captureEditableState();
     renderHud();
     renderNav();
     screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
+    restoreEditableState(editableState);
     title.textContent = state && state.pet ? (state.pet.pet_name || 'MOONPET') + ' OS' : 'MOONPET OS';
     if (reducedMotion) drawWorld(0);
   }

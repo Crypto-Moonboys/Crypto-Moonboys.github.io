@@ -31,46 +31,6 @@ class SqliteD1 {
   }
 }
 
-class PetDecayConflictD1 extends SqliteD1 {
-  constructor(database, conflictedPetId) {
-    super(database);
-    this.conflictedPetId = conflictedPetId;
-  }
-
-  prepare(sql) {
-    const statement = super.prepare(sql);
-    if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
-    const conflictedPetId = this.conflictedPetId;
-    return {
-      bind(...bindings) {
-        const bound = statement.bind(...bindings);
-        return {
-          first: () => bound.first(),
-          all: () => bound.all(),
-          run: () => bindings[7] === conflictedPetId ? Promise.resolve({ meta: { changes: 0 } }) : bound.run(),
-        };
-      },
-    };
-  }
-}
-
-class UnexpectedDecayFailureD1 extends SqliteD1 {
-  prepare(sql) {
-    const statement = super.prepare(sql);
-    if (!/UPDATE telegram_pet_instances[\s\S]*WHERE pet_id = \? AND last_decay_at = \?/.test(sql)) return statement;
-    return {
-      bind(...bindings) {
-        const bound = statement.bind(...bindings);
-        return {
-          first: () => bound.first(),
-          all: () => bound.all(),
-          run: async () => { throw new Error('unexpected_decay_storage_failure'); },
-        };
-      },
-    };
-  }
-}
-
 const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql', import.meta.url), 'utf8');
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
@@ -99,8 +59,10 @@ const rosterSummarySource = worker.slice(
   worker.indexOf('async function buyPetSeasonSlot'),
 );
 assert.doesNotMatch(rosterSummarySource, /mirrorActivePetInstanceToProfile|mirror_profile/, 'read-only roster construction must have no compatibility-profile mirror path');
+assert.doesNotMatch(rosterSummarySource, /(?:INSERT|UPDATE|DELETE)\s/i, 'read-only roster construction must contain no database mutation');
+assert.doesNotMatch(rosterSummarySource, /ensurePetStarterSeasonSlot|getOrCreateArcadeProgressionState|getPetInstanceWithAtomicDecay/, 'roster construction must not call helpers with hidden writes');
 assert.doesNotMatch(rosterSummarySource, /\.\.\.current/, 'roster construction must not spread pet-instance state over season-slot authority');
-assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, current\)/, 'roster construction must merge only the explicit pet display allowlist');
+assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, applyPetDecay\(\{ \.\.\.row \}, now\)\)/, 'roster construction must merge only an in-memory decay preview through the explicit pet display allowlist');
 assert.match(
   migration057,
   /CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet/,
@@ -350,10 +312,18 @@ assert.equal(serializePet(await getPetProfile(d1, 'state-player'), paidIdentity)
 const paidPet = await getPetProfile(d1, 'state-player');
 paidPet.energy = 42;
 await savePetProfile(d1, paidPet);
+db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=73, moon_gold=81, equipped_weapon='paid-blaster',
+  health=63, updated_at='2098-01-01 00:00:00' WHERE telegram_id='state-player'`).run();
 await switchActivePetSeasonSlot(d1, 'state-player', 1, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal((await getPetProfile(d1, 'state-player')).pet_name, 'Saved Nova', 'switching back must restore the starter pet independent state');
 assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'adult', 'switching back must restore the starter lifecycle');
 assert.equal(db.prepare(`SELECT energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get().energy, 42, 'writes must affect only the active paid pet');
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_xp, moon_gold, equipped_weapon, health FROM telegram_pet_instances
+    WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get() },
+  { pet_xp: 73, moon_gold: 81, equipped_weapon: 'paid-blaster', health: 63 },
+  'switching must reconcile a newer legacy gameplay write to the old active instance before moving the pointer',
+);
 const boughtThird = await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtThird.accepted, true, 'slot 3 purchase must succeed with enough Arcade XP');
 assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='state-player'`).get().arcade_xp_total, 0, 'Arcade XP must be deducted exactly once');
@@ -374,6 +344,11 @@ assert.deepEqual(
   { pet_xp: dormantSlot.pet.pet_xp, hunger: dormantSlot.pet.hunger, happiness: dormantSlot.pet.happiness, cleanliness: dormantSlot.pet.cleanliness, energy: dormantSlot.pet.energy, health: dormantSlot.pet.health },
   { pet_xp: 345, hunger: 29, happiness: 74, cleanliness: 64, energy: 56, health: 66 },
   'roster summary must apply the canonical decay calculation to each dormant pet instance',
+);
+assert.equal(
+  db.prepare(`SELECT last_decay_at FROM telegram_pet_instances WHERE telegram_id='state-player' AND slot_number=2`).get().last_decay_at,
+  dormantDecayStart,
+  'roster decay must be a read-only preview and must not persist hidden pet-instance mutations',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, hunger, happiness, cleanliness, energy, health
@@ -397,17 +372,11 @@ assert.deepEqual(
 );
 db.prepare(`UPDATE telegram_pet_instances SET hunger=15, last_decay_at=?
   WHERE telegram_id='state-player' AND slot_number IN (1, 2, 3)`).run(dormantDecayStart);
-const conflictedPetId = 'pet:state-player:pet-s2026-003:2';
-const conflictSafeRoster = await buildPetSeasonSlotSummary(new PetDecayConflictD1(db, conflictedPetId), 'state-player', rosterNow);
-assert.equal(conflictSafeRoster.slots.length, 3, 'one temporary pet decay conflict must not break the three-pet roster response');
-assert.equal(conflictSafeRoster.slots[1].pet.hunger, 15, 'the conflicted middle pet must fall back to its existing row data');
-assert.ok(conflictSafeRoster.slots[0].pet.hunger > 15, 'the first pet must still return successfully decay-resolved state');
-assert.ok(conflictSafeRoster.slots[2].pet.hunger > 15, 'the third pet must still return successfully decay-resolved state');
-await assert.rejects(
-  buildPetSeasonSlotSummary(new UnexpectedDecayFailureD1(db), 'state-player', rosterNow),
-  /unexpected_decay_storage_failure/,
-  'unexpected decay storage errors must still surface instead of being hidden by roster fallback',
-);
+const readOnlyRosterChangesBefore = db.prepare('SELECT total_changes() AS count').get().count;
+const readOnlyRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
+assert.equal(readOnlyRoster.slots.length, 3, 'the read-only roster must return all three pet projections');
+assert.ok(readOnlyRoster.slots.every((slot) => slot.pet.hunger > 15), 'each roster card must preview canonical decay');
+assert.equal(db.prepare('SELECT total_changes() AS count').get().count, readOnlyRosterChangesBefore, 'a roster read must not mutate any database table');
 db.prepare(`UPDATE telegram_pet_profiles SET pet_xp=9999, moon_gold=8888, moon_crystals=777,
   style_tokens=666, equipped_food='new-food', equipped_toy='new-toy',
   equipped_outfit='new-outfit', equipped_armor='new-armor', equipped_weapon='new-weapon',

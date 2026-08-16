@@ -27,6 +27,7 @@ const {
   PET_ARENA_MOVE_GUIDE,
   PET_RANDOM_EVENTS,
   PET_REPEAT_REWARD_RULES,
+  ensurePetStarterSeasonSlot,
   awardPetReward,
   applyPetItemActionBonuses,
   awardPetKaijuPlayerResult,
@@ -1630,6 +1631,8 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
 }
 
 const seasonSlotRuntimeDb = seedRepeatRewardPlayer('season-slot-runtime');
+await ensurePetStarterSeasonSlot(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(seasonSlotRuntimeDb, 'season-slot-runtime');
 seasonSlotRuntimeDb.database.prepare(`
   INSERT INTO arcade_progression_state
     (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
