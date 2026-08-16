@@ -3258,6 +3258,8 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
 
 function mergePetInstanceDisplayFields(slotRow, petInstance) {
   if (!petInstance) return slotRow;
+  // Slot ownership/status fields remain authoritative on slotRow. Never spread
+  // a complete telegram_pet_instances row into this roster projection.
   return {
     ...slotRow,
     pet_name: petInstance.pet_name,
@@ -3317,6 +3319,8 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     const rawRows = slotRows.results || [];
     const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
     const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
+    // This is a display projection. Decay may advance the individual instance,
+    // but roster reads must never reconcile or mirror into the legacy profile.
     const currentRows = await Promise.all(rawRows.map(async (row) => {
       let current;
       try {
