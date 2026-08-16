@@ -10,7 +10,7 @@ async function rows(db, sql, ...bindings) {
 async function hasPendingActivity(db, telegramId) {
   const checks = [
     [`SELECT session_id AS id FROM telegram_pet_activity_sessions WHERE telegram_id=? AND status IN ('active','pending','ready') LIMIT 1`, [telegramId]],
-    [`SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`, [telegramId]],
+    [`SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','pending','ready','extractable') LIMIT 1`, [telegramId]],
     [`SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`, [telegramId, telegramId]],
     [`SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`, [telegramId]],
   ];
