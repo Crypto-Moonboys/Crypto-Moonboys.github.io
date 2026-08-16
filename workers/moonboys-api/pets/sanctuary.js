@@ -53,14 +53,26 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
   const seasonKey = String(input?.season_key || '').trim();
   if (!petId || !telegramId || !seasonKey) return { accepted: false, reason: 'invalid_request' };
 
-  const existing = await db.prepare(`SELECT pet_id FROM telegram_pet_sanctuary WHERE pet_id=? LIMIT 1`).bind(petId).first();
-  if (existing) return { accepted: true, duplicate: true, reason: 'already_in_sanctuary', pet_id: petId };
   const pet = await db.prepare(`SELECT * FROM telegram_pet_instances
     WHERE pet_id=? AND telegram_id=? AND season_key=? LIMIT 1`).bind(petId, telegramId, seasonKey).first();
   if (!pet) return { accepted: false, reason: 'pet_not_owned' };
   const completion = await db.prepare(`SELECT * FROM telegram_pet_season_completions
     WHERE pet_id=? AND telegram_id=? AND season_key=? LIMIT 1`).bind(petId, telegramId, seasonKey).first();
   if (!completion) return { accepted: false, reason: 'season_not_complete' };
+  const timestamp = options.now || new Date().toISOString();
+  const archiveStatements = [
+    db.prepare(`UPDATE telegram_pet_instances SET status='archived', updated_at=?
+      WHERE pet_id=? AND telegram_id=?`).bind(timestamp, petId, telegramId),
+    db.prepare(`UPDATE telegram_pet_season_slots SET status='archived', updated_at=?
+      WHERE pet_id=? AND telegram_id=?`).bind(timestamp, petId, telegramId),
+    db.prepare(`DELETE FROM telegram_pet_active_slots WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId),
+  ];
+  const existing = await db.prepare(`SELECT pet_id FROM telegram_pet_sanctuary
+    WHERE pet_id=? AND telegram_id=? AND original_season_key=? LIMIT 1`).bind(petId, telegramId, seasonKey).first();
+  if (existing) {
+    await db.batch(archiveStatements);
+    return { accepted: true, duplicate: true, reason: 'already_in_sanctuary', pet_id: petId };
+  }
   const pending = options.getPendingActivity
     ? await options.getPendingActivity(db, telegramId)
     : await hasPendingActivity(db, telegramId);
@@ -85,23 +97,18 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
     equipped_food: pet.equipped_food, equipped_toy: pet.equipped_toy, equipped_outfit: pet.equipped_outfit,
     equipped_armor: pet.equipped_armor, equipped_weapon: pet.equipped_weapon, equipped_charm: pet.equipped_charm,
   };
-  const inserted = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_sanctuary
+  const insert = db.prepare(`INSERT OR IGNORE INTO telegram_pet_sanctuary
     (sanctuary_id, pet_id, telegram_id, original_season_key, completed_at, entered_sanctuary_at,
      species, variant, stage, legendary_evolution_id, identity_snapshot_json, cosmetic_snapshot_json,
      trait_snapshot_json, memory_snapshot_json, status, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'resident', ?, ?)`).bind(
-    `sanctuary:${petId}`, petId, telegramId, seasonKey, completion.completed_at, options.now || new Date().toISOString(),
+    `sanctuary:${petId}`, petId, telegramId, seasonKey, completion.completed_at, timestamp,
     lifecycle?.species_id || pet.species || 'unknown', lifecycle?.rare_morph_id || lifecycle?.palette_id || null,
     finalEvolution?.evolution_id || pet.stage, completion.legendary_evolution_id,
     JSON.stringify({ ...identity, progression: progress }), JSON.stringify({ inventory: cosmetics, equipment, gear }),
-    JSON.stringify(traits), JSON.stringify(memories || {}), options.now || new Date().toISOString(), options.now || new Date().toISOString(),
-  ).run();
-  if (Number(inserted?.meta?.changes || 0) !== 1) return { accepted: true, duplicate: true, reason: 'already_in_sanctuary', pet_id: petId };
-
-  await db.prepare(`UPDATE telegram_pet_instances SET status='archived', updated_at=CURRENT_TIMESTAMP
-    WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId).run();
-  await db.prepare(`UPDATE telegram_pet_season_slots SET status='archived', updated_at=CURRENT_TIMESTAMP
-    WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId).run();
-  await db.prepare(`DELETE FROM telegram_pet_active_slots WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId).run();
-  return { accepted: true, duplicate: false, reason: 'entered_sanctuary', pet_id: petId };
+    JSON.stringify(traits), JSON.stringify(memories || {}), timestamp, timestamp,
+  );
+  const results = await db.batch([insert, ...archiveStatements]);
+  const duplicate = Number(results?.[0]?.meta?.changes || 0) !== 1;
+  return { accepted: true, duplicate, reason: duplicate ? 'already_in_sanctuary' : 'entered_sanctuary', pet_id: petId };
 }

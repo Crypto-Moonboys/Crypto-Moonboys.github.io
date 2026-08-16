@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
 import { listSanctuaryPets, movePetToSanctuaryIfEligible } from '../workers/moonboys-api/pets/sanctuary.js';
 class Statement { constructor(db, sql, args=[]) { this.db=db; this.sql=sql; this.args=args; } bind(...args){return new Statement(this.db,this.sql,args)} async first(){return this.db.prepare(this.sql).get(...this.args)||null} async all(){return {results:this.db.prepare(this.sql).all(...this.args)}} async run(){const r=this.db.prepare(this.sql).run(...this.args);return {meta:{changes:r.changes}}} }
-class D1 { constructor(db){this.db=db} prepare(sql){return new Statement(this.db,sql)} }
+class D1 { constructor(db){this.db=db} prepare(sql){return new Statement(this.db,sql)} async batch(statements){this.db.exec('BEGIN');try{const results=[];for(const statement of statements)results.push(await statement.run());this.db.exec('COMMIT');return results}catch(error){this.db.exec('ROLLBACK');throw error}} }
 const sqlite=new DatabaseSync(':memory:');
 sqlite.exec(`PRAGMA foreign_keys=ON;
 CREATE TABLE telegram_pet_profiles(telegram_id TEXT PRIMARY KEY);
@@ -32,6 +32,8 @@ INSERT INTO telegram_pet_equipment_progression VALUES('owner','laser','weapon',5
 INSERT INTO telegram_pet_progression VALUES('owner','{"brave":100}');`);
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/059_telegram_pet_sanctuary.sql',import.meta.url),'utf8'));
 const db=new D1(sqlite); const input={pet_id:'complete',telegram_id:'owner',season_key:'s1'};
+const completionSource=await readFile(new URL('../workers/moonboys-api/pets/season-completion.js',import.meta.url),'utf8');
+assert.match(completionSource,/finalizePetSeasonCompletionIfEligible[\s\S]*movePetToSanctuaryIfEligible\(db,/,'authoritative completion automatically invokes Sanctuary transition');
 assert.equal((await movePetToSanctuaryIfEligible(db,{...input,telegram_id:'attacker'})).reason,'pet_not_owned','ownership is authoritative');
 assert.equal((await movePetToSanctuaryIfEligible(db,{pet_id:'legendary-only',telegram_id:'owner',season_key:'s1'})).reason,'season_not_complete','Legendary alone is rejected');
 assert.equal((await movePetToSanctuaryIfEligible(db,input,{getPendingActivity:async()=>({run_id:'run'}),now:'2026-04-01T00:00:00Z'})).reason,'pending_activity');
@@ -42,7 +44,20 @@ const before=(await listSanctuaryPets(db,'owner'))[0]; assert.equal(before.cosme
 sqlite.prepare(`UPDATE telegram_pet_instances SET equipped_outfit='changed' WHERE pet_id='complete'`).run();
 assert.equal((await listSanctuaryPets(db,'owner'))[0].cosmetics.equipment.equipped_outfit,'crown','snapshot is immutable when live state changes');
 assert.equal((await movePetToSanctuaryIfEligible(db,input)).duplicate,true,'replay is idempotent');
+sqlite.prepare(`UPDATE telegram_pet_instances SET status='active' WHERE pet_id='complete'`).run();
+sqlite.prepare(`UPDATE telegram_pet_season_slots SET status='active' WHERE pet_id='complete'`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_active_slots VALUES('owner','complete','s1')`).run();
+assert.equal((await movePetToSanctuaryIfEligible(db,input)).duplicate,true,'duplicate retry succeeds after repairing seasonal state');
+assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id='complete'`).get().status,'archived');
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_active_slots WHERE pet_id='complete'`).get().count,0);
 assert.equal(sqlite.prepare('SELECT COUNT(*) count FROM telegram_pet_sanctuary').get().count,1,'unique pet permits one resident only');
 assert.throws(() => sqlite.prepare(`UPDATE telegram_pet_sanctuary SET identity_snapshot_json='{}'`).run(), /sanctuary_snapshot_is_immutable/, 'historical snapshot columns are append-only');
 assert.throws(() => sqlite.prepare(`DELETE FROM telegram_pet_sanctuary`).run(), /sanctuary_history_is_append_only/, 'Sanctuary history cannot be deleted');
+sqlite.exec(`INSERT INTO telegram_pet_season_slots VALUES('rollback','owner','s1',3,'active',NULL);
+INSERT INTO telegram_pet_instances VALUES('rollback','owner','s1','Rollback','fox','legendary',NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL);
+INSERT INTO telegram_pet_season_completions VALUES('rollback','owner','s1','2026-03-31T00:00:00Z','legendary_moon_guardian');
+CREATE TRIGGER fail_archive BEFORE UPDATE ON telegram_pet_season_slots WHEN OLD.pet_id='rollback' BEGIN SELECT RAISE(ABORT,'forced_archive_failure'); END;`);
+await assert.rejects(movePetToSanctuaryIfEligible(db,{pet_id:'rollback',telegram_id:'owner',season_key:'s1'}),/forced_archive_failure/,'batch failure rolls back every transition statement');
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='rollback'`).get().count,0,'failed archive rolls back Sanctuary insert');
+assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id='rollback'`).get().status,'active','failed archive rolls back instance mutation');
 console.log('telegram pets sanctuary tests passed');

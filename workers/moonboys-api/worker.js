@@ -8182,9 +8182,16 @@ export default {
     if (path === '/telegram-pets/app/sanctuary' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
       const verified = await authenticatePetMiniApp(body, env);
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
-      return json({ pets: await listSanctuaryPets(env.DB, verified.telegramId) });
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      try {
+        return json({ pets: await listSanctuaryPets(env.DB, verified.telegramId) });
+      } catch (error) {
+        logApiFailure('pet_mini_app_sanctuary_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return err('mini_app_sanctuary_failed', 500);
+      }
     }
 
     if (path === '/telegram-pets/app/performance' && request.method === 'POST') {

@@ -34,10 +34,7 @@ BEGIN
 END;
 
 CREATE TRIGGER IF NOT EXISTS prevent_pet_sanctuary_snapshot_update
-BEFORE UPDATE OF pet_id, telegram_id, original_season_key, completed_at, entered_sanctuary_at,
-  species, variant, stage, legendary_evolution_id, identity_snapshot_json,
-  cosmetic_snapshot_json, trait_snapshot_json, memory_snapshot_json
-ON telegram_pet_sanctuary
+BEFORE UPDATE ON telegram_pet_sanctuary
 BEGIN
   SELECT RAISE(ABORT, 'sanctuary_snapshot_is_immutable');
 END;
