@@ -21,7 +21,7 @@ import {
 } from './pets/species-lifecycle.js';
 import {
   PET_ROGUELITE_BOSSES, PET_ROGUELITE_ENEMIES, PET_ROGUELITE_REGIONS, PET_ROGUELITE_RELICS, PET_ROGUELITE_ROOMS, PET_RUN_MODIFIERS,
-  advancePetRun, awardPetReward, buildPetProfileDeltas, choosePetRunModifier, completePetRun, createPetRunRoom,
+  advancePetRun, awardPetReward as awardLegacyPetReward, buildPetProfileDeltas, choosePetRunModifier, completePetRun, createPetRunRoom,
   extractPetRogueliteRun, failPetRun, finishPetRogueliteRun, generatePetRunRoom, persistPetRunRoomOutcome,
   resolvePetRunRoom, rewardPetRogueliteBoss, rewardPetRunRoom, startPetRogueliteRun,
   validatePetRelicContent, validatePetRogueliteContent, validatePetRunModifier,
@@ -2964,24 +2964,46 @@ function verifyPetsBotSecret(request, env) {
 }
 
 async function getPetProfile(db, telegramId) {
-  const pet = await db.prepare(`
+  const instance = await readActivePetInstance(db, telegramId);
+  const profile = await db.prepare(`
     SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
   `).bind(telegramId).first().catch(() => null);
-  return pet ? applyPetDecay(pet) : null;
+  if (!instance) return profile ? applyPetDecay(profile) : null;
+
+  if (profile && petStateColumnsDiffer(profile, instance)) {
+    const profileUpdatedAt = petStateTimestamp(profile.updated_at);
+    const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
+    const instanceUpdatedAt = petStateTimestamp(instance.updated_at);
+    const profileIsNewer = profileUpdatedAt > instanceProfileVersion
+      || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion);
+    if (profileIsNewer) {
+      await writeActivePetInstance(db, telegramId, profile);
+      return applyPetDecay({ ...instance, ...profile, pet_id: instance.pet_id });
+    }
+    await mirrorActivePetInstanceToProfile(db, instance);
+  }
+  return applyPetDecay(instance);
 }
 
 async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
+  // Reconcile any legacy profile-only write before choosing the atomic decay target.
+  await getPetProfile(db, telegramId);
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const stored = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
+    const instance = await readActivePetInstance(db, telegramId);
+    const stored = instance || await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
     if (!stored) return null;
     const priorDecayAt = stored.last_decay_at;
     const decayed = applyPetDecay({ ...stored }, now);
     if (decayed.last_decay_at === priorDecayAt) return decayed;
+    const syncedAt = formatPetStateTimestamp(now);
+    const targetTable = instance ? 'telegram_pet_instances' : 'telegram_pet_profiles';
+    const targetKey = instance ? 'pet_id' : 'telegram_id';
+    const targetValue = instance ? instance.pet_id : telegramId;
     const sync = await db.prepare(`
-      UPDATE telegram_pet_profiles
+      UPDATE ${targetTable}
       SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
-          last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ? AND last_decay_at = ?
+          last_decay_at = ?, updated_at = ?
+      WHERE ${targetKey} = ? AND last_decay_at = ?
     `).bind(
       clampPetStat(decayed.hunger),
       clampPetStat(decayed.happiness),
@@ -2989,12 +3011,130 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
       clampPetStat(decayed.energy),
       clampPetStat(decayed.health),
       decayed.last_decay_at,
-      telegramId,
+      syncedAt,
+      targetValue,
       priorDecayAt,
     ).run();
-    if (Number(sync?.meta?.changes || 0) === 1) return decayed;
+    if (Number(sync?.meta?.changes || 0) === 1) {
+      if (instance) await mirrorActivePetInstanceToProfile(db, { ...instance, ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt });
+      return decayed;
+    }
   }
   throw new Error('pet_decay_sync_conflict');
+}
+
+const PET_INSTANCE_STATE_COLUMNS = Object.freeze([
+  'pet_name', 'species', 'stage', 'pet_xp', 'level', 'hunger', 'happiness',
+  'cleanliness', 'energy', 'health', 'streak_days', 'moon_gold', 'moon_crystals',
+  'style_tokens', 'equipped_food', 'equipped_toy', 'equipped_outfit',
+  'equipped_armor', 'equipped_weapon', 'equipped_charm', 'last_active_day',
+  'last_decay_at',
+]);
+
+function isPetInstanceSchemaUnavailable(error) {
+  return /no such table: telegram_pet_(instances|season_slots|active_slots)/i.test(String(error?.message || error));
+}
+
+function petStateTimestamp(value) {
+  if (!value) return 0;
+  const normalizedValue = String(value).trim();
+  const zoned = normalizedValue.includes('T') ? normalizedValue : `${normalizedValue.replace(' ', 'T')}Z`;
+  const normalized = /(?:Z|[+-]\d\d:\d\d)$/.test(zoned)
+    ? zoned.replace(/\.\d+(?=(Z|[+-]\d\d:\d\d)$)/, '$1')
+    : `${zoned.replace(/\.\d+$/, '')}Z`;
+  const timestamp = Date.parse(normalized);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function formatPetStateTimestamp(value = new Date()) {
+  const timestamp = value instanceof Date ? value.getTime() : petStateTimestamp(value);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return new Date().toISOString().slice(0, 19).replace('T', ' ');
+  return new Date(Math.floor(timestamp / 1000) * 1000).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function petStateColumnsDiffer(left, right) {
+  return PET_INSTANCE_STATE_COLUMNS.some((column) => (left?.[column] ?? null) !== (right?.[column] ?? null));
+}
+
+async function findActivePetSlot(db, telegramId) {
+  try {
+    return await db.prepare(`
+      SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.status, s.acquisition_type
+      FROM telegram_pet_active_slots a
+      JOIN telegram_pet_season_slots s
+        ON s.pet_id = a.pet_id AND s.telegram_id = a.telegram_id AND s.season_key = a.season_key
+      WHERE a.telegram_id = ? AND s.slot_number = 1 AND s.acquisition_type = 'free' AND s.status = 'active'
+      LIMIT 1
+    `).bind(String(telegramId)).first();
+  } catch (error) {
+    if (isPetInstanceSchemaUnavailable(error)) return null;
+    throw error;
+  }
+}
+
+async function ensureActivePetInstance(db, telegramId) {
+  const slot = await findActivePetSlot(db, telegramId);
+  if (!slot) return null;
+  try {
+    await db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_instances (
+        pet_id, telegram_id, season_key, slot_number, pet_name, species, stage,
+        pet_xp, level, hunger, happiness, cleanliness, energy, health, streak_days,
+        moon_gold, moon_crystals, style_tokens, equipped_food, equipped_toy,
+        equipped_outfit, equipped_armor, equipped_weapon, equipped_charm, status,
+        last_active_day, last_decay_at, source_profile_updated_at, created_at, updated_at
+      )
+      SELECT ?, p.telegram_id, ?, ?, p.pet_name, p.species, p.stage, p.pet_xp, p.level,
+        p.hunger, p.happiness, p.cleanliness, p.energy, p.health, p.streak_days,
+        p.moon_gold, p.moon_crystals, p.style_tokens, p.equipped_food, p.equipped_toy,
+        p.equipped_outfit, p.equipped_armor, p.equipped_weapon, p.equipped_charm,
+        'active', p.last_active_day, p.last_decay_at, p.updated_at, p.created_at, p.updated_at
+      FROM telegram_pet_profiles p WHERE p.telegram_id = ?
+    `).bind(slot.pet_id, slot.season_key, slot.slot_number, String(telegramId)).run();
+    return await db.prepare(`SELECT * FROM telegram_pet_instances WHERE pet_id = ? LIMIT 1`).bind(slot.pet_id).first();
+  } catch (error) {
+    if (isPetInstanceSchemaUnavailable(error)) return null;
+    throw error;
+  }
+}
+
+async function readActivePetInstance(db, telegramId) {
+  return ensureActivePetInstance(db, telegramId);
+}
+
+async function writeActivePetInstance(db, telegramId, pet) {
+  const instance = await ensureActivePetInstance(db, telegramId);
+  if (!instance) return false;
+  const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
+  const syncedAt = formatPetStateTimestamp(pet?.source_profile_updated_at || pet?.updated_at);
+  await db.prepare(`UPDATE telegram_pet_instances SET ${assignments}, source_profile_updated_at = ?, updated_at = ? WHERE pet_id = ?`)
+    .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), syncedAt, syncedAt, instance.pet_id).run();
+  return true;
+}
+
+async function mirrorActivePetInstanceToProfile(db, pet) {
+  const profile = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(pet.telegram_id).first().catch(() => null);
+  if (!profile || !petStateColumnsDiffer(profile, pet)) return false;
+  const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
+  const mirroredAt = formatPetStateTimestamp(pet.updated_at || pet.source_profile_updated_at);
+  await db.prepare(`UPDATE telegram_pet_profiles SET ${assignments}, updated_at = ? WHERE telegram_id = ?`)
+    .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), mirroredAt, pet.telegram_id).run();
+  await db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at = ? WHERE pet_id = ?`)
+    .bind(mirroredAt, pet.pet_id).run();
+  return true;
+}
+
+async function mirrorPetProfileToActiveInstance(db, telegramId) {
+  const profile = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
+  return profile ? writeActivePetInstance(db, telegramId, profile) : false;
+}
+
+async function awardPetReward(db, options) {
+  await getPetProfile(db, options?.telegram_id);
+  const result = await awardLegacyPetReward(db, options);
+  await mirrorPetProfileToActiveInstance(db, options?.telegram_id);
+  if (result?.pet) result.pet = await getPetProfile(db, options?.telegram_id);
+  return result;
 }
 
 async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
@@ -3137,6 +3277,7 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
       VALUES (?, ?, ?)
     `).bind(telegramId, petName, species).run();
     await ensurePetStarterSeasonSlot(db, telegramId);
+    await ensureActivePetInstance(db, telegramId);
     pet = await db.prepare(`
       SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
     `).bind(telegramId).first();
@@ -3160,6 +3301,7 @@ function updatePetStreakForAction(pet, dayKey) {
 async function savePetProfile(db, pet) {
   pet.stage = getPetGrowthStage(pet.pet_xp);
   pet.health = calculatePetHealth(pet);
+  const persistedAt = formatPetStateTimestamp();
   await db.prepare(`
     UPDATE telegram_pet_profiles
     SET pet_name = ?, species = ?, stage = ?, pet_xp = ?, level = ?,
@@ -3167,7 +3309,7 @@ async function savePetProfile(db, pet) {
         streak_days = ?, moon_gold = ?, moon_crystals = ?, style_tokens = ?,
         equipped_food = ?, equipped_toy = ?, equipped_outfit = ?,
         equipped_armor = ?, equipped_weapon = ?, equipped_charm = ?,
-        last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+        last_active_day = ?, last_decay_at = ?, updated_at = ?
     WHERE telegram_id = ?
   `).bind(
     pet.pet_name,
@@ -3192,8 +3334,17 @@ async function savePetProfile(db, pet) {
     pet.equipped_charm || null,
     pet.last_active_day || null,
     pet.last_decay_at || new Date().toISOString(),
+    persistedAt,
     pet.telegram_id,
   ).run();
+  await writeActivePetInstance(db, pet.telegram_id, {
+    ...pet,
+    stage: pet.stage,
+    level: getPetLevel(pet.pet_xp),
+    health: clampPetStat(pet.health),
+    updated_at: persistedAt,
+    source_profile_updated_at: persistedAt,
+  });
 }
 
 async function getPetWindowTotals(db, telegramId, dayKey, weekKey) {
@@ -7794,7 +7945,9 @@ export default {
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
       let result;
       try {
+        await getPetProfile(env.DB, verified.telegramId);
         result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body, env.TELEGRAM_BOT_TOKEN);
+        await mirrorPetProfileToActiveInstance(env.DB, verified.telegramId);
       } catch (error) {
         logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
         return err('mini_app_action_failed', 500);
@@ -7969,6 +8122,7 @@ export default {
         last_name: user.last_name || body.last_name || null,
       });
       let result;
+      await getPetProfile(env.DB, telegramId);
       const lifecycleBeforeAction = await getMoonpetLifecycle(env.DB, telegramId).catch(() => null);
       const eggAllowedActions = ['adopt', 'season_slots'];
       if (lifecycleBeforeAction?.phase === 'egg' && !eggAllowedActions.includes(String(body.action || ''))) {
@@ -8055,6 +8209,8 @@ export default {
           source: 'telegram_pets_api',
         });
       }
+      await mirrorPetProfileToActiveInstance(env.DB, telegramId);
+      if (result.pet) result.pet = await getPetProfile(env.DB, telegramId);
       const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
       return json({ ...result, pet: serializePet(result.pet, identity) }, result.accepted ? 200 : 409);
     }
@@ -11695,6 +11851,14 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  findActivePetSlot,
+  ensureActivePetInstance,
+  readActivePetInstance,
+  writeActivePetInstance,
+  mirrorActivePetInstanceToProfile,
+  mirrorPetProfileToActiveInstance,
+  getPetProfile,
+  savePetProfile,
   PET_ACHIEVEMENTS,
   PET_SEASON_REWARD_TIERS,
   PET_JOBS,
@@ -13092,6 +13256,7 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'boss_victory', boss_id: boss.boss_id, milestone: 'first_boss_victory' });
     await applyPetRuntimeCommandAward(db, telegramId, `runtime:${eventKey}`, 'run_boss');
   }
+  await mirrorPetProfileToActiveInstance(db, telegramId);
   return { accepted: true, duplicate: false, reason: newlyDefeated ? 'boss_defeated' : 'boss_damaged', boss, progress, damage, action, reward, week_key: weekKey, pet: await getPetProfile(db, telegramId) };
 }
 
@@ -13293,6 +13458,7 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
     return;
   }
   await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+  await mirrorPetProfileToActiveInstance(db, telegramId);
   const updated = await getMoonpetIdentityWithLifecycle(db, telegramId);
   await syncPetAchievements(db, telegramId).catch(() => []);
   const reaction = await selectMoonpetReaction(db, telegramId, 'evolution', updated, { activity_label: `evolving into ${next.name}` }).catch(() => buildMoonpetReaction('evolution', updated));

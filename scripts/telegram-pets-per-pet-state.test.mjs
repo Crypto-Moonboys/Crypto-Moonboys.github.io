@@ -1,15 +1,40 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
+import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+
+class SqliteD1Statement {
+  constructor(database, sql, bindings = []) { this.database = database; this.sql = sql; this.bindings = bindings; }
+  bind(...bindings) { return new SqliteD1Statement(this.database, this.sql, bindings); }
+  async first() { return this.database.prepare(this.sql).get(...this.bindings) || null; }
+  async run() {
+    const result = this.database.prepare(this.sql).run(...this.bindings);
+    return { meta: { changes: result.changes } };
+  }
+}
+
+class SqliteD1 {
+  constructor(database) { this.database = database; }
+  prepare(sql) { return new SqliteD1Statement(this.database, sql); }
+}
 
 const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql', import.meta.url), 'utf8');
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
+const worker = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 
 assert.doesNotMatch(migration056, /CREATE\s+TRIGGER/i, 'migration 056 must not rely on trigger DDL');
 assert.match(
   migration056,
   /CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_pet_owner_tuple\s+ON telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)/,
   'migration 056 must provide a unique parent key for the complete pet ownership tuple',
+);
+const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
+const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
+const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);
+assert.notEqual(weeklyBoss.indexOf('await mirrorPetProfileToActiveInstance(db, telegramId)'), -1, 'weekly boss must explicitly sync its profile-only mutation');
+assert.ok(
+  weeklyBoss.indexOf('await mirrorPetProfileToActiveInstance(db, telegramId)') < weeklyBoss.lastIndexOf('pet: await getPetProfile(db, telegramId)'),
+  'weekly boss must sync its direct profile Energy deduction to the active instance before returning pet state',
 );
 assert.match(
   migration056,
@@ -111,5 +136,70 @@ assert.throws(
   /FOREIGN KEY constraint failed/,
   'an instance must not combine one player\'s pet_id with another player\'s ownership tuple',
 );
+
+const {
+  findActivePetSlot, readActivePetInstance, writeActivePetInstance,
+  getPetProfile, savePetProfile,
+} = __petMediaTestHooks;
+const d1 = new SqliteD1(db);
+
+db.prepare(`UPDATE telegram_pet_instances SET pet_name='Instance Nova', pet_xp=5100, level=52,
+  moon_gold=901, energy=88, last_decay_at=?, source_profile_updated_at='2026-08-16 02:59:59',
+  updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run(new Date().toISOString());
+db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Stale Profile', pet_xp=1, level=1,
+  moon_gold=2, energy=3 WHERE telegram_id='state-player'`).run();
+const runtimePet = await getPetProfile(d1, 'state-player');
+assert.deepEqual(
+  { pet_name: runtimePet.pet_name, pet_xp: runtimePet.pet_xp, level: runtimePet.level, moon_gold: runtimePet.moon_gold, energy: runtimePet.energy },
+  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 901, energy: 88 },
+  'gameplay reads must use the active starter pet instance instead of stale profile state',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_name, pet_xp, level, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
+  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 901, energy: 88 },
+  'instance reads must mirror the legacy profile payload fields',
+);
+
+db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at='2026-08-16T03:00:00.500Z' WHERE telegram_id='state-player'`).run();
+db.prepare(`UPDATE telegram_pet_profiles SET energy=64, updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run();
+const profileMutationPet = await getPetProfile(d1, 'state-player');
+assert.equal(profileMutationPet.energy, 64, 'a newer profile-only gameplay mutation must not be overwritten by stale instance state');
+assert.equal(
+  db.prepare(`SELECT energy FROM telegram_pet_instances WHERE telegram_id='state-player'`).get().energy,
+  64,
+  'a same-second profile-only gameplay mutation must synchronize to the active instance before the read returns',
+);
+const syncedProfileUpdatedAt = db.prepare(`SELECT updated_at FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().updated_at;
+await getPetProfile(d1, 'state-player');
+assert.equal(
+  db.prepare(`SELECT updated_at FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().updated_at,
+  syncedProfileUpdatedAt,
+  'compatibility reads must not rewrite profile updated_at when state is already synchronized',
+);
+
+runtimePet.pet_name = 'Saved Nova';
+runtimePet.pet_xp = 5200;
+runtimePet.moon_crystals = 55;
+runtimePet.energy = 77;
+await savePetProfile(d1, runtimePet);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_name, pet_xp, moon_crystals, energy FROM telegram_pet_instances WHERE telegram_id='state-player'`).get() },
+  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 55, energy: 77 },
+  'gameplay writes must update the active pet instance',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT pet_name, pet_xp, moon_crystals, energy FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
+  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 55, energy: 77 },
+  'gameplay writes must preserve the mirrored legacy profile',
+);
+
+db.prepare(`DELETE FROM telegram_pet_instances WHERE telegram_id='state-player'`).run();
+const recreated = await readActivePetInstance(d1, 'state-player');
+assert.equal(recreated.pet_name, 'Saved Nova', 'a missing active starter instance must be recreated from its compatibility profile');
+
+db.prepare(`UPDATE telegram_pet_active_slots SET pet_id='pet:state-player:2026-q3:2' WHERE telegram_id='state-player'`).run();
+assert.equal(await findActivePetSlot(d1, 'state-player'), null, 'a paid slot pointer must not be treated as active gameplay state before switching launches');
+assert.equal(await writeActivePetInstance(d1, 'state-player', runtimePet), false, 'paid slots must not have instances auto-created or used');
+assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE slot_number=2`).get().count, 0, 'paid slot rows must remain without auto-created instances');
 
 console.log('telegram-pets-per-pet-state.test.mjs passed');
