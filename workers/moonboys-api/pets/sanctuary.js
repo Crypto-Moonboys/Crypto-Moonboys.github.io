@@ -89,9 +89,11 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
        i.cleanliness, i.energy, i.health, i.streak_days, i.moon_gold, i.moon_crystals,
        i.style_tokens, i.equipped_food, i.equipped_toy, i.equipped_outfit, i.equipped_armor,
        i.equipped_weapon, i.equipped_charm, i.last_active_day, i.last_decay_at, ?
-       FROM telegram_pet_instances i JOIN telegram_pet_active_slots a ON a.pet_id=i.pet_id
+      FROM telegram_pet_instances i JOIN telegram_pet_active_slots a ON a.pet_id=i.pet_id
        WHERE a.telegram_id=? AND i.telegram_id=? LIMIT 1)
-      WHERE telegram_id=?`).bind(timestamp, telegramId, telegramId, telegramId),
+      WHERE telegram_id=? AND EXISTS (
+        SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances i ON i.pet_id=a.pet_id
+        WHERE a.telegram_id=? AND i.telegram_id=?)`).bind(timestamp, telegramId, telegramId, telegramId, telegramId, telegramId),
     db.prepare(`DELETE FROM telegram_pet_active_slots WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId),
   ];
   const existing = await db.prepare(`SELECT pet_id FROM telegram_pet_sanctuary
@@ -107,16 +109,15 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
       WHERE telegram_id=? AND pet_id<>? AND status='active' ORDER BY CASE WHEN season_key=? THEN 0 ELSE 1 END, updated_at DESC, slot_number LIMIT 1`)
       .bind(telegramId, petId, seasonKey).first();
     if (!replacement) {
-      const openSlot = await db.prepare(`SELECT value AS slot_number FROM json_each('[1,2,3]')
-        WHERE value NOT IN (SELECT slot_number FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=?)
-        ORDER BY value LIMIT 1`).bind(telegramId, seasonKey).first();
-      if (!openSlot) return { accepted: false, reason: 'replacement_slot_unavailable', pet_id: petId };
+      // Archived slots remain historical evidence. A successor starts a new
+      // allocation namespace instead of consuming/reusing the completed season.
+      const successorSeasonKey = String(options.successor_season_key || `${seasonKey}:successor:${petId}`);
       const successorId = `${petId}:successor`;
       archiveStatements.unshift(
         db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_slots
           (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status, created_at, updated_at)
           VALUES (?, ?, ?, ?, 'free', ?, 0, 'active', ?, ?)`).bind(
-          successorId, telegramId, seasonKey, openSlot.slot_number, `sanctuary-successor:${petId}`, timestamp, timestamp,
+          successorId, telegramId, successorSeasonKey, 1, `sanctuary-successor:${petId}`, timestamp, timestamp,
         ),
         db.prepare(`INSERT OR IGNORE INTO telegram_pet_instances
           (pet_id, telegram_id, season_key, slot_number, pet_name, species, stage, pet_xp, level,
@@ -124,7 +125,7 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
            style_tokens, status, last_decay_at, source_profile_updated_at, created_at, updated_at)
           VALUES (?, ?, ?, ?, 'Moonpet', '', 'egg', 0, 1, 25, 70, 70, 70, 75, 0, 0, 0, 0,
            'active', ?, ?, ?, ?)`).bind(
-          successorId, telegramId, seasonKey, openSlot.slot_number, timestamp, timestamp, timestamp, timestamp,
+          successorId, telegramId, successorSeasonKey, 1, timestamp, timestamp, timestamp, timestamp,
         ),
         db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
           (pet_id, telegram_id, lifecycle_version, identity_seed, phase, species_id, palette_id,

@@ -97,6 +97,7 @@ assert.equal(sqlite.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE te
 
 sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name) VALUES('solo-owner','Solo A');
 INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,updated_at) VALUES('solo','solo-owner','s4',1,'active',NULL);
+INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,updated_at) VALUES('solo-old-2','solo-owner','s4',2,'archived',NULL),('solo-old-3','solo-owner','s4',3,'archived',NULL);
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,species,stage,status) VALUES('solo','solo-owner','s4',1,'Solo A','fox','legendary','active');
 INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('solo-owner','solo','s4');
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id) VALUES('solo','solo-owner','s4','2026-09-30','legendary_moon_guardian');
@@ -104,6 +105,7 @@ INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_
 assert.equal((await movePetToSanctuaryIfEligible(db,{pet_id:'solo',telegram_id:'solo-owner',season_key:'s4'})).accepted,true,'single-pet owner receives a successor starter');
 const soloPointer=sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='solo-owner'`).get();
 assert.equal(soloPointer.pet_id,'solo:successor');
+assert.deepEqual({...sqlite.prepare(`SELECT season_key,slot_number FROM telegram_pet_season_slots WHERE pet_id=?`).get(soloPointer.pet_id)},{season_key:'s4:successor:solo',slot_number:1},'successor uses a new allocation even when every historical slot number is occupied');
 assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id=?`).get(soloPointer.pet_id).status,'active','successor is valid active seasonal state');
 assert.equal(sqlite.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='solo-owner'`).get().pet_name,'Moonpet','successor state is mirrored into profile');
 const successorLifecycle=sqlite.prepare(`SELECT phase,identity_seed,incubation_progress,incubation_json FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).get(soloPointer.pet_id);
