@@ -67,15 +67,6 @@ async function seasonSlotCreatedAt(db, petId, seasonKey) {
   }
 }
 
-async function legacyAccountLevel(db, telegramId) {
-  try {
-    const row = await db.prepare(`SELECT level, pet_xp FROM telegram_pet_profiles WHERE telegram_id=?`).bind(telegramId).first();
-    return Math.max(1, integer(row?.level), integer(integer(row?.pet_xp) / 100) + 1);
-  } catch {
-    return 1;
-  }
-}
-
 export async function isPetLegendary(db, petId, seasonKey) {
   const pet = await ownedPet(db, petId, seasonKey);
   if (!pet) return false;
@@ -143,9 +134,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     WHERE pet_id=? AND telegram_id=? ORDER BY stage DESC LIMIT 1`).bind(petId, pet.telegram_id).first();
   const stage = integer(current?.stage);
   const next = evolutions.find((entry) => Number(entry.stage) === stage + 1) || null;
-  const instanceLevel = Math.max(1, integer(pet.level || integer(pet.pet_xp / 100) + 1));
-  const legacyLevel = stage > 0 ? await legacyAccountLevel(db, pet.telegram_id) : 1;
-  const level = stage > 0 ? Math.max(instanceLevel, legacyLevel) : instanceLevel;
+  const level = Math.max(1, integer(pet.level), integer(pet.pet_xp / 100) + 1);
   let bossProgress = [];
   let itemProgress = [];
   let relicProgress = { current: 0, required: integer(next?.requirements?.relics_owned), complete: !next?.requirements?.relics_owned };
@@ -158,9 +147,10 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     const createdAtSource = await petLifecycleCreatedAt(db, petId) || await seasonSlotCreatedAt(db, petId, seasonKey);
     const createdAt = Date.parse(createdAtSource || '');
     const currentTime = new Date(now).getTime();
-    const ageDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
+    const computedAgeDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
       ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))
-      : 0;
+      : null;
+    const ageDays = computedAgeDays == null ? minAgeDays : computedAgeDays;
     ageProgress = { current: ageDays, required: minAgeDays, complete: ageDays >= minAgeDays };
     bossProgress = await Promise.all(Object.entries(next.requirements.boss_victories || {}).map(async ([bossId, required]) => {
       const row = await db.prepare(`SELECT victories FROM telegram_pet_boss_victories WHERE telegram_id=? AND boss_id=?`).bind(pet.telegram_id, bossId).first();
