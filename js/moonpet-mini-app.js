@@ -619,7 +619,7 @@
       '<div class="pet-instance-grid"><div><span>SPECIES</span><strong>' + escapeHtml(words(pet.species || 'forming')) + '</strong></div>' + variant +
       '<div><span>LIFECYCLE</span><strong>' + escapeHtml(words(pet.stage || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div>' +
       '<div><span>PET XP</span><strong>' + number(pet.pet_xp) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div>' +
-      '<div><span>STAGE</span><strong>' + number(lifecycle.current_stage || 1) + '/' + number(lifecycle.total_stages || 5) + '</strong></div><div><span>GROWTH</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
+      '<div><span>STAGE</span><strong>' + number(lifecycle.current_stage || 1) + '/' + number(lifecycle.total_stages || 6) + '</strong></div><div><span>GROWTH</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
       '<div><span>CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div><div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div><div><span>HUNGER</span><strong>' + number(pet.hunger) + '</strong></div>' +
       '<div><span>FUN</span><strong>' + number(pet.happiness) + '</strong></div><div><span>CLEAN</span><strong>' + number(pet.cleanliness) + '</strong></div></div>' + completion + '</div>';
   }
@@ -643,7 +643,7 @@
     var levelRequirement = journeyLifecycle.requirements && journeyLifecycle.requirements.pet_level || {};
     var journeyStatus = journey.season_complete ? 'SEASON COMPLETE // SANCTUARY ELIGIBLE'
       : journey.legendary ? 'LEGENDARY // SEASON JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
-    var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO') : 'FINAL FORM REACHED';
+    var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO // ' + words(journeyLifecycle.authority_reason || 'requirements not met')) : 'FINAL FORM REACHED';
     var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>SEASON JOURNEY // WEEK ' + number(summary.current_season_week) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
     var available = Number(summary.arcade_xp_available != null ? summary.arcade_xp_available : (provided[0] && provided[0].arcade_xp_available != null ? provided[0].arcade_xp_available : 0));
     var rows = [1, 2, 3].map(function (slotNumber) {
@@ -1542,9 +1542,10 @@
   function petStage(pet) {
     if (!pet) return 0;
     var explicit = pet.evolution_stage == null ? NaN : Number(pet.evolution_stage);
-    if (Number.isFinite(explicit)) return Math.max(0, Math.min(4, explicit));
+    if (Number.isFinite(explicit)) return Math.max(0, Math.min(5, explicit));
     var label = String(pet.stage || '').toLowerCase();
-    if (label.includes('legend')) return 4;
+    if (label.includes('legend')) return 5;
+    if (label.includes('guardian')) return 4;
     if (label.includes('elite')) return 3;
     if (label.includes('cyber')) return 2;
     if (label.includes('street')) return 1;
@@ -1820,7 +1821,7 @@
     var selected = PET_APPEARANCE_PALETTES[lifecycle && lifecycle.appearance && lifecycle.appearance.palette]
       || PET_SPECIES_PALETTES[lifecycle && lifecycle.species_id]
       || DEFAULT_PET_PALETTE;
-    return stage >= 4 ? selected.legendary : selected.normal;
+    return stage >= 5 ? selected.legendary : selected.normal;
   }
 
   function petPose(time, active, mood, presence) {
@@ -1870,7 +1871,7 @@
   function petGrowthShape(phase, stage) {
     if (phase === 'young') return { scaleX: 0.9, scaleY: 0.76, offsetY: 12 };
     if (phase === 'rare') return { scaleX: 1.22, scaleY: 1.18, offsetY: -7 };
-    var adultScale = 1 + Math.min(4, stage) * 0.025;
+    var adultScale = 1 + Math.min(5, stage) * 0.025;
     return { scaleX: adultScale, scaleY: adultScale, offsetY: 0 };
   }
 
@@ -2035,7 +2036,7 @@
       drawPixelRect(-32, -14, 7, 16, palette.body); drawPixelRect(25, -14, 7, 16, palette.body);
       drawPixelRect(-20, -7, 40, 4, palette.accent);
     }
-    if (stage >= 4) {
+    if (stage >= 5) {
       drawPixelRect(-24, -70, 48, 6, '#f6a7ff'); drawPixelRect(-18, -79, 7, 9, '#f6a7ff');
       drawPixelRect(-4, -84, 8, 14, palette.accent); drawPixelRect(11, -79, 7, 9, '#f6a7ff');
     }

@@ -12,7 +12,7 @@ import {
 } from './pets/daily-moon-run.js';
 import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
-  getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
+  evaluateMoonpetEvolutionRequirements, getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
   validateMoonpetEvolutionContent,
 } from './pets/moonpet-identity.js';
 import {
@@ -27,7 +27,7 @@ import {
   validatePetRelicContent, validatePetRogueliteContent, validatePetRunModifier,
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
-import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
+import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
 import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
@@ -1178,6 +1178,12 @@ function parseSqliteTs(value) {
   const text = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw) ? raw : `${raw.replace(' ', 'T')}Z`;
   const ts = Date.parse(text);
   return Number.isFinite(ts) ? ts : null;
+}
+
+function normalizeServerTimestamp(value, fallback = new Date()) {
+  const parsed = value instanceof Date ? value.getTime() : parseSqliteTs(value);
+  const fallbackParsed = fallback instanceof Date ? fallback.getTime() : parseSqliteTs(fallback);
+  return new Date(parsed ?? fallbackParsed ?? Date.now()).toISOString();
 }
 
 async function getOrCreateArcadeProgressionState(db, telegramId, nowMs = Date.now()) {
@@ -4766,6 +4772,8 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
       AND json_extract(metadata, '$.reward_idempotency_key') = ?
   `).bind(settledMetadata, session.id, telegramId, eventKey).run();
 
+  await awardActivePetActivityGrowthMark(db, telegramId, eventKey, rewardNow);
+
   await reconcileSanctuaryBestEffort(db, telegramId, 'activity_claim', { now: now.toISOString() });
 
   return {
@@ -4774,6 +4782,23 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     session: { ...session, status: 'completed', metadata: settledMetadata },
     computed: settledComputed,
   };
+}
+
+async function awardActivePetActivityGrowthMark(db, telegramId, settlementEventKey, settledAt = new Date()) {
+  try {
+    const active = await findActivePetSlot(db, telegramId);
+    if (!active) return { accepted: false, non_fatal: true, reason: 'active_pet_missing' };
+    return await awardPetGrowthMark(db, {
+      pet_id: active.pet_id,
+      telegram_id: active.telegram_id,
+      season_key: active.season_key,
+      milestone: 'care',
+      evidence_key: `care:activity:${settlementEventKey}`,
+      earned_at: settledAt instanceof Date ? settledAt.toISOString() : settledAt,
+    });
+  } catch {
+    return { accepted: false, non_fatal: true, reason: 'growth_mark_unavailable' };
+  }
 }
 
 async function cancelPetActivitySession(db, telegramId) {
@@ -12210,6 +12235,7 @@ export const __petMediaTestHooks = Object.freeze({
   getMoonpetLifecycle,
   hatchMoonpet,
   incubateMoonEgg,
+  awardActivePetActivityGrowthMark,
   morphMoonpetRare,
   syncMoonpetLifecycleStage,
   PET_ROGUELITE_BOSSES,
@@ -13113,7 +13139,7 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
   const currentStage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => Number(entry.stage) === currentStage + 1) || null;
   if (!next) return null;
-  const [inventory, materials, victories, relicCount] = await Promise.all([
+  const [inventory, materials, victories, relicCount, authority] = await Promise.all([
     db.prepare(`SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory WHERE telegram_id = ? AND quantity > 0`)
       .bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND quantity > 0`)
@@ -13122,6 +13148,7 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
       .bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = ?`)
       .bind(telegramId).first().catch(() => ({ count: 0 })),
+    evaluateMoonpetEvolutionRequirements(db, { telegram_id: telegramId, evolution_id: next.evolution_id }),
   ]);
   const inventoryCounts = new Map((inventory.results || []).map((row) => [`${row.asset_type}:${row.asset_key}`, Math.max(0, Number(row.quantity) || 0)]));
   for (const row of materials.results || []) inventoryCounts.set(`material:${row.material_key}`, Math.max(0, Number(row.quantity) || 0));
@@ -13154,12 +13181,23 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
       });
     }
   }
+  if (!authority.ready && missing.length === 0) missing.push({
+    key: `authority:${authority.reason || 'evolution_authority_unavailable'}`,
+    label: authority.reason === 'requirements_not_met' ? 'Season age, Growth Marks, or Weekly Crests' : 'Evolution authority',
+    current: 0,
+    required: 1,
+    source: authority.reason === 'requirements_not_met'
+      ? 'Continue qualified daily and weekly activity in the active pet season.'
+      : 'Server validation is temporarily unavailable; retry shortly.',
+    callback_data: 'pet:coach',
+  });
   return {
     evolution_id: next.evolution_id,
     name: next.name,
     stage: next.stage,
     perk: getPetEvolutionPerk(next.stage).perk,
-    ready: missing.length === 0,
+    ready: authority.ready,
+    authority_reason: authority.reason,
     missing,
   };
 }
@@ -13547,13 +13585,15 @@ async function awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId
       FROM telegram_pet_weekly_boss_victories_by_pet WHERE telegram_id=? AND week_key=? AND boss_id=? LIMIT 1`)
       .bind(telegramId, weekKey, bossId).first();
     if (!victory) return { accepted: false, non_fatal: true, reason: 'victorious_pet_evidence_missing' };
-    const defeatedAt = new Date(victory.defeated_at || now);
+    const defeatedAtIso = normalizeServerTimestamp(victory.defeated_at, now);
+    const defeatedAt = new Date(defeatedAtIso);
     const season = getPetSeasonInfo(defeatedAt);
     if (victory.season_key !== season.key) return { accepted: false, non_fatal: true, reason: 'victory_season_mismatch' };
     return await awardPetWeeklyCrest(db, {
       pet_id: victory.pet_id, telegram_id: victory.telegram_id, season_key: victory.season_key,
       season_week: getPetSeasonWeek(season, defeatedAt), objective: 'weekly_boss',
       evidence_key: `weekly-boss:${victory.victory_event_key}`,
+      earned_at: defeatedAtIso,
     });
   } catch (error) {
     return { accepted: false, non_fatal: true, reason: 'weekly_crest_unavailable' };
@@ -13564,14 +13604,15 @@ async function recordWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId, eve
   try {
     const active = victoriousPet || await findActivePetSlot(db, telegramId);
     if (!active || String(active.telegram_id) !== String(telegramId)) return { accepted: false, non_fatal: true, reason: 'victorious_pet_missing' };
-    const season = getPetSeasonInfo(new Date(defeatedAt));
+    const defeatedAtIso = normalizeServerTimestamp(defeatedAt);
+    const season = getPetSeasonInfo(new Date(defeatedAtIso));
     if (active.season_key !== season.key) return { accepted: false, non_fatal: true, reason: 'active_pet_previous_season' };
     await db.prepare(`INSERT OR IGNORE INTO telegram_pet_weekly_boss_victories_by_pet
       (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)`).bind(
-      telegramId, weekKey, bossId, active.pet_id, active.season_key, eventKey, new Date(defeatedAt).toISOString(),
+      telegramId, weekKey, bossId, active.pet_id, active.season_key, eventKey, defeatedAtIso,
     ).run();
-    return awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId, defeatedAt);
+    return awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId, defeatedAtIso);
   } catch (error) {
     return { accepted: false, non_fatal: true, reason: 'weekly_crest_unavailable' };
   }
@@ -13828,7 +13869,7 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
   const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity.current_stage?.stage || 0) + 1);
   const requested = String(evolutionIdRaw || next?.evolution_id || '').trim().toLowerCase();
   if (!next) {
-    await sendTelegramMessage(tok, chatId, `<b>🧬 Legendary Moon Guardian</b>\nFinal evolution reached.\n${escapeHtml(getPetEvolutionPerk(4).perk)}`, { reply_markup: buildPetProgressMenuReplyMarkup() });
+    await sendTelegramMessage(tok, chatId, `<b>🧬 Legendary Moon Guardian</b>\nFinal evolution reached.\n${escapeHtml(getPetEvolutionPerk(5).perk)}`, { reply_markup: buildPetProgressMenuReplyMarkup() });
     return;
   }
   if (requested !== next.evolution_id) {

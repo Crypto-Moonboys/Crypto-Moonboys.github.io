@@ -2,10 +2,14 @@ import assert from 'node:assert/strict';
 import { webcrypto } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import {
-  MOONPET_SPECIES, createMoonEggLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg,
+  MOONPET_SPECIES, createMoonEggLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, incubationAgeDays, morphMoonpetRare,
 } from '../workers/moonboys-api/pets/species-lifecycle.js';
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
+
+assert.equal(incubationAgeDays({ created_at: '2026-08-01 00:00:00' }, '2026-08-08T00:00:00Z'), 7);
+assert.equal(incubationAgeDays({ created_at: '2026-08-01T02:00:00+02:00' }, '2026-08-08T00:00:00Z'), 7,
+  'D1 UTC timestamps and equivalent offset timestamps produce identical incubation age');
 
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
@@ -25,8 +29,11 @@ class D1 {
 }
 function provisionActivePet(database, telegramId) {
   database.exec(`
-    CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, status TEXT DEFAULT 'active');
+    CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, level INTEGER DEFAULT 1, pet_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'active');
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_growth_marks (mark_id TEXT PRIMARY KEY, pet_id TEXT, telegram_id TEXT, season_key TEXT, milestone_type TEXT, evidence_key TEXT, earned_day TEXT, earned_at TEXT, UNIQUE(pet_id,season_key,earned_day));
+    CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT, telegram_id TEXT, season_key TEXT, qualification_week INTEGER);
     CREATE TABLE telegram_pet_lifecycle_by_pet (
       pet_id TEXT PRIMARY KEY, telegram_id TEXT, lifecycle_version INTEGER DEFAULT 1, identity_seed TEXT,
       phase TEXT DEFAULT 'egg', species_id TEXT, palette_id TEXT, marking_id TEXT, eye_style TEXT, temperament TEXT,
@@ -42,6 +49,7 @@ function provisionActivePet(database, telegramId) {
   `);
   const petId = `pet:${telegramId}:test:1`;
   database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES (?, ?)`).run(petId, telegramId);
+  database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key) VALUES (?, ?, 'test')`).run(petId, telegramId);
   database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, 'test')`).run(telegramId, petId);
 }
 
@@ -53,6 +61,7 @@ db.database.exec(`
     combat_actions INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0,
     adventure_actions INTEGER DEFAULT 0);
   CREATE TABLE telegram_pet_personality_traits (telegram_id TEXT, trait_id TEXT, unlocked_at TEXT);
+  CREATE TABLE telegram_pet_evolutions_by_pet (pet_id TEXT, telegram_id TEXT, evolution_id TEXT, stage INTEGER);
 `);
 db.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
 db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('new-player');
@@ -74,7 +83,17 @@ for (const care of ['warm', 'talk', 'music', 'rest']) {
 assert.equal((await incubateMoonEgg(db, 'new-player', 'rest', 'cap:blocked')).reason, 'incubation_daily_cap');
 assert.equal((await incubateMoonEgg(db, 'new-player', 'music', 'care:0')).duplicate, true, 'request keys must be idempotent');
 lifecycle = await getMoonpetLifecycle(db, 'new-player');
-assert.equal(lifecycle.incubation.ready, true);
+assert.equal(lifecycle.incubation.ready, false, 'strong engagement cannot compress incubation below seven days');
+assert.equal((await hatchMoonpet(db, 'new-player', 'hatch:too-early')).reason, 'egg_not_ready');
+db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET created_at=datetime('now','-7 days') WHERE telegram_id=?`).run('new-player');
+for (let offset = 1; offset <= 6; offset += 1) {
+  const awardDay = new Date(Date.now() + offset * 86400000);
+  assert.equal((await incubateMoonEgg(db, 'new-player', 'warm', `growth-day:${offset}`, awardDay)).accepted, true);
+}
+assert.equal(db.database.prepare(`SELECT COUNT(DISTINCT earned_day) count FROM telegram_pet_growth_marks WHERE pet_id='pet:new-player:test:1'`).get().count, 7,
+  'fresh eggs have a server-authoritative daily Growth Mark path before Street evolution');
+lifecycle = await getMoonpetLifecycle(db, 'new-player');
+assert.equal(lifecycle.incubation.ready, true, 'strong engagement enables the earliest day-seven hatch');
 const hatched = await hatchMoonpet(db, 'new-player', 'hatch:1');
 assert.equal(hatched.accepted, true);
 assert.equal((await hatchMoonpet(db, 'new-player', 'hatch:1')).duplicate, true, 'hatching must be idempotent');
@@ -83,6 +102,22 @@ assert.ok(Object.hasOwn(MOONPET_SPECIES, hatched.lifecycle.species_id));
 assert.equal(hatched.lifecycle.innate_traits.length, 2);
 assert.ok(hatched.lifecycle.preferences.length >= 1, 'identity must expose stable behaviour preferences');
 assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, hatched.lifecycle.species_id);
+db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult' WHERE telegram_id='new-player'`).run();
+db.database.prepare(`INSERT OR REPLACE INTO telegram_pet_memories VALUES ('new-player',100,100,100,100,100,100,100)`).run();
+for (const trait of ['explorer', 'curious', 'street_fighter', 'loyal']) db.database.prepare(
+  `INSERT INTO telegram_pet_personality_traits VALUES ('new-player',?,CURRENT_TIMESTAMP)`,
+).run(trait);
+db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','moon_guardian',4)`).run();
+assert.equal((await morphMoonpetRare(db, 'new-player', 'rare:before-legendary')).reason, 'rare_signal_not_ready',
+  'rare morph cannot trigger at the former final stage before Legendary stage 5');
+
+db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('guaranteed-player');
+db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES ('pet:guaranteed-player:test:1', 'guaranteed-player')`).run();
+db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES ('guaranteed-player', 'pet:guaranteed-player:test:1', 'test')`).run();
+db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').run('guaranteed-player');
+await createMoonEggLifecycle(db, 'guaranteed-player', 'adopt:guaranteed');
+db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET created_at=datetime('now','-14 days') WHERE telegram_id=?`).run('guaranteed-player');
+assert.equal((await hatchMoonpet(db, 'guaranteed-player', 'hatch:guaranteed')).accepted, true, 'day fourteen guarantees hatch without engagement acceleration');
 
 const pendingDb = new D1();
 pendingDb.database.exec(`

@@ -327,6 +327,13 @@ const evolutions = {
     'One controlled movement is enough for your Elite Moonpet to take charge of {activity}.',
     'Your Moonpet wastes nothing—not time, energy or attention—during {activity}.',
   ],
+  moon_guardian: [
+    'A steady guardian glow surrounds your Moonpet during {activity}.',
+    'Your Moon Guardian approaches {activity} with seasoned patience.',
+    'The long seasonal journey shows in every measured response to {activity}.',
+    'Your Moonpet stands watch while {activity} unfolds.',
+    'Guardian instincts keep {activity} calm and focused.',
+  ],
   legendary_moon_guardian: [
     'The guardian aura settles around {activity}, calm and impossible to ignore.',
     'Your Legendary Moon Guardian meets {activity} with the weight of the whole journey behind it.',
