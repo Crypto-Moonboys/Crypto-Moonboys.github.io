@@ -17,8 +17,14 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /SELECT s\.pet_id, s\.telegram_id, s\.season_key, s\.created_at, i\.level, i\.pet_xp/,
-  'Lifecycle readiness must read pet instance state, not the active account mirror.',
+  /SELECT s\.pet_id, s\.telegram_id, s\.season_key, i\.level, i\.pet_xp/,
+  'Lifecycle readiness must start from pet instance state, not the active account mirror.',
+);
+
+assert.match(
+  source,
+  /petLifecycleCreatedAt/,
+  'Lifecycle age checks must use the pet lifecycle table and not require season slot timestamp columns.',
 );
 
 assert.doesNotMatch(
