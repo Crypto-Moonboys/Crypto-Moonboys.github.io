@@ -1639,6 +1639,9 @@ seasonSlotRuntimeDb.database.prepare(`
   VALUES ('season-slot-runtime', 1400, 0, '2026-08-15', 0, NULL, CURRENT_TIMESTAMP)
   ON CONFLICT(telegram_id) DO UPDATE SET arcade_xp_total = excluded.arcade_xp_total
 `).run();
+seasonSlotRuntimeDb.database.prepare(`INSERT INTO arcade_xp_wallets
+  (telegram_id, arcade_xp_earned, arcade_xp_spendable, arcade_xp_spent)
+  VALUES ('season-slot-runtime', 1400, 1400, 0)`).run();
 assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[2], 500, 'second seasonal pet slot must cost Arcade XP');
 assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[3], 1000, 'third seasonal pet slot must cost Arcade XP');
 const initialSeasonSlots = await buildPetSeasonSlotSummary(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
@@ -1657,7 +1660,15 @@ assert.equal(initialSeasonSlots.purchase_enabled, true, 'season slot purchases m
 assert.equal(initialSeasonSlots.purchase_disabled_reason, null);
 assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its Arcade XP cost');
 assert.equal(initialSeasonSlots.slots[1].affordable, true, 'slot 2 must be marked affordable when Arcade XP covers its cost');
+assert.equal(initialSeasonSlots.arcade_xp_lifetime, 1400, 'slot payload must preserve lifetime XP');
+assert.equal(initialSeasonSlots.arcade_xp_spendable, 1400, 'slot payload must expose spend authority separately');
+assert.equal(initialSeasonSlots.arcade_xp_spent, 0, 'slot payload must expose spent XP');
+assert.equal(initialSeasonSlots.next_slot_cost, 500, 'slot payload must expose the next sequential cost');
+assert.equal(initialSeasonSlots.can_buy_next_slot, true, 'slot payload must expose wallet affordability');
 assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start locked');
+assert.equal(initialSeasonSlots.slots[2].purchase_enabled, false, 'slot 3 must remain disabled until slot 2 is owned');
+assert.equal(initialSeasonSlots.slots[2].purchase_disabled_reason, 'previous_pet_slot_required', 'slot 3 must advertise the sequential purchase requirement');
+assert.equal(initialSeasonSlots.slots[2].affordable, false, 'slot 3 must not be affordable before slot 2 is owned');
 const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
   action: 'season_slots',
   request_id: 'slot-summary',

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
 const sanctuarySource = readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
 const workerSource = readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const walletMigration = readFileSync(new URL('../workers/moonboys-api/migrations/063_arcade_xp_spendable_wallet.sql', import.meta.url), 'utf8');
 
 assert.match(
   source,
@@ -16,6 +17,28 @@ assert.doesNotMatch(
   /movePetToSanctuaryIfEligible/,
   'Finalizing a completed pet must not immediately archive it into Sanctuary.',
 );
+
+const slotPurchaseSource = workerSource.slice(
+  workerSource.indexOf('async function buyPetSeasonSlot'),
+  workerSource.indexOf('async function switchActivePetSeasonSlot'),
+);
+assert.match(slotPurchaseSource, /UPDATE arcade_xp_wallets SET arcade_xp_spendable=arcade_xp_spendable-\?/,
+  'Paid seasonal slots must debit the spendable Arcade XP wallet.');
+assert.doesNotMatch(slotPurchaseSource, /UPDATE arcade_progression_state SET arcade_xp_total=arcade_xp_total-\?/,
+  'Lifetime Arcade XP must never be direct spend authority for paid seasonal slots.');
+assert.match(walletMigration, /Existing lifetime XP is not backfilled/,
+  'Wallet migration must not reinterpret deployed lifetime XP as spendable credit.');
+assert.doesNotMatch(walletMigration, /CREATE TABLE IF NOT EXISTS arcade_xp_wallets/,
+  'Wallet migration must fail loudly on drift instead of masking an unexpected pre-existing table.');
+
+const progressionSyncSource = workerSource.slice(
+  workerSource.indexOf("if (path === '/arcade/progression/sync'"),
+  workerSource.indexOf("if (path === '/faction/status'"),
+);
+assert.match(workerSource, /SELECT COALESCE\(SUM\(xp_awarded\), 0\) AS earned_from_events[\s\S]*FROM arcade_progression_events[\s\S]*status = 'accepted'/,
+  'Arcade progression wallet credits must be recoverable from accepted event ledger rows.');
+assert.match(progressionSyncSource, /const walletRecoveredXp = await reconcileArcadeXpWalletFromEvents\(env\.DB, verified\.telegramId\);/,
+  'Arcade progression sync must reconcile wallet credits from accepted runs before returning.');
 
 assert.match(
   source,

@@ -13,6 +13,7 @@ const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_indexes\.sql/, 'migration 060 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/063_arcade_xp_spendable_wallet\.sql/, 'migration 063 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -50,6 +51,7 @@ assert.match(
 );
 assert.match(remoteQueryStep, /059_telegram_pet_sanctuary\.sql/, 'the workflow_dispatch D1 query must request migration 059 from production');
 assert.match(remoteQueryStep, /060_telegram_pet_sanctuary_indexes\.sql/, 'the workflow_dispatch D1 query must request migration 060 from production');
+assert.match(remoteQueryStep, /063_arcade_xp_spendable_wallet\.sql/, 'the workflow_dispatch D1 query must request migration 063 from production');
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),
@@ -196,6 +198,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 056',
 );
 
+const withoutArcadeXpSpendableWallet = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '063_arcade_xp_spendable_wallet.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutArcadeXpSpendableWallet),
+  /missing required migrations: 063_arcade_xp_spendable_wallet\.sql/,
+  'deployment verification must reject an evidence request that omits migration 063',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -316,6 +328,15 @@ assert.throws(
   }], request),
   /missing migrations: 056_telegram_pet_instance_state\.sql/,
   'deployment verification must fail when production D1 has not applied migration 056',
+);
+
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '063_arcade_xp_spendable_wallet.sql'),
+  }], request),
+  /missing migrations: 063_arcade_xp_spendable_wallet\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 063',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');

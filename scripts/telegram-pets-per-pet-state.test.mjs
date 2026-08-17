@@ -312,7 +312,13 @@ db.exec(`CREATE TABLE arcade_progression_state (
   arcade_restriction_level INTEGER NOT NULL DEFAULT 0, restricted_until INTEGER,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`);
+db.exec(`CREATE TABLE arcade_xp_wallets (
+  telegram_id TEXT PRIMARY KEY, arcade_xp_earned INTEGER NOT NULL DEFAULT 0,
+  arcade_xp_spendable INTEGER NOT NULL DEFAULT 0, arcade_xp_spent INTEGER NOT NULL DEFAULT 0,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`);
 db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('state-player', 1500)`).run();
+db.prepare(`INSERT INTO arcade_xp_wallets (telegram_id, arcade_xp_earned, arcade_xp_spendable) VALUES ('state-player', 1500, 1500)`).run();
 const rolloverNow = new Date('2026-08-16T12:00:00Z');
 const rolloverReadChangesBefore = db.prepare('SELECT total_changes() AS count').get().count;
 const unpreparedRolloverRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rolloverNow);
@@ -346,9 +352,14 @@ assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE tele
 const preparedRolloverRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rolloverNow);
 assert.equal(preparedRolloverRoster.season.key, 'pet-s2026-003', 'the subsequent roster must describe the current season');
 assert.equal(preparedRolloverRoster.slots[0].unlocked, true, 'the subsequent roster must expose the bootstrapped starter');
+assert.equal(preparedRolloverRoster.slots[2].purchase_enabled, false, 'slot 3 must stay disabled until slot 2 is owned');
+assert.equal(preparedRolloverRoster.slots[2].purchase_disabled_reason, 'previous_pet_slot_required', 'slot 3 must explain the sequential purchase gate');
+assert.equal(preparedRolloverRoster.slots[2].affordable, false, 'slot 3 must not be marked affordable before slot 2 exists');
 const rolloverSeasonKey = preparedRolloverRoster.season.key;
 const boughtSecond = await buyPetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtSecond.accepted, true, 'slot 2 purchase must succeed with enough Arcade XP');
+assert.equal(boughtSecond.season_slots.slots[2].purchase_enabled, true, 'slot 3 must become purchasable immediately after slot 2 is owned');
+assert.equal(boughtSecond.season_slots.slots[2].purchase_disabled_reason, null, 'slot 3 purchase lock reason must clear once slot 2 is owned');
 assert.equal(db.prepare(`SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().phase, 'egg', 'a purchased pet must receive a fresh egg lifecycle');
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'purchase must not auto-switch');
 assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'a rollover starter must receive a fresh egg lifecycle');
@@ -395,7 +406,8 @@ assert.deepEqual(
 );
 const boughtThird = await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtThird.accepted, true, 'slot 3 purchase must succeed with enough Arcade XP');
-assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='state-player'`).get().arcade_xp_total, 0, 'Arcade XP must be deducted exactly once');
+assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='state-player'`).get().arcade_xp_total, 1500, 'lifetime Arcade XP must not be spent');
+assert.deepEqual({ ...db.prepare(`SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id='state-player'`).get() }, { arcade_xp_spendable: 0, arcade_xp_spent: 1500 }, 'paid slots must debit only the spendable wallet exactly once');
 assert.deepEqual({ ...db.prepare(`SELECT pet_name, pet_xp, energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=3 AND telegram_id='state-player'`).get() }, { pet_name: 'Moonpet', pet_xp: 0, energy: 70 }, 'a purchased pet must be a fresh instance');
 
 const rosterNow = new Date();
@@ -475,15 +487,27 @@ const archivedRoster = await buildPetSeasonSlotSummary(d1, 'state-player', roste
 assert.equal(archivedRoster.slots[2].status, 'archived', 'instance status must not overwrite authoritative archived season-slot status');
 assert.equal((await switchActivePetSeasonSlot(d1, 'state-player', 3, { now: rosterNow })).accepted, false, 'an archived season slot must remain unavailable to active-pet switching');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'pet_slot_already_owned', 'duplicate purchase must be rejected without another deduction');
+assert.deepEqual({ ...db.prepare(`SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id='state-player'`).get() }, { arcade_xp_spendable: 0, arcade_xp_spent: 1500 }, 'a duplicate purchase retry must not debit the wallet twice');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 4, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'invalid_pet_slot', 'slot 4 must be rejected');
 assert.equal((await switchActivePetSeasonSlot(d1, 'other-player', 'pet:state-player:2026-q3:3', { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'another owner cannot switch to the player pet');
 
 db.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name) VALUES ('poor-player', 'Poor starter')`).run();
 db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('poor-player', 499)`).run();
+db.prepare(`INSERT INTO arcade_xp_wallets (telegram_id, arcade_xp_earned, arcade_xp_spendable) VALUES ('poor-player', 499, 499)`).run();
 const insufficient = await buyPetSeasonSlot(d1, 'poor-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(insufficient.reason, 'insufficient_arcade_xp', 'insufficient Arcade XP must reject a paid slot purchase');
 assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='poor-player' AND slot_number=2`).get().count, 0, 'insufficient XP must not create the paid slot');
 assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='poor-player'`).get().arcade_xp_total, 499, 'a rejected purchase must not deduct Arcade XP');
+
+db.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name) VALUES ('lifetime-only-player', 'Lifetime only')`).run();
+db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('lifetime-only-player', 99999)`).run();
+const lifetimeOnly = await buyPetSeasonSlot(d1, 'lifetime-only-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal(lifetimeOnly.reason, 'insufficient_arcade_xp', 'lifetime XP alone must never authorize a paid slot');
+
+db.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name) VALUES ('wallet-attacker', 'Attacker')`).run();
+db.prepare(`INSERT INTO arcade_xp_wallets (telegram_id, arcade_xp_earned, arcade_xp_spendable) VALUES ('wallet-victim', 500, 500)`).run();
+assert.equal((await buyPetSeasonSlot(d1, 'wallet-attacker', 2, { now: rolloverNow })).reason, 'insufficient_arcade_xp', 'a Telegram user cannot use another owner wallet');
+assert.equal(db.prepare(`SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id='wallet-victim'`).get().arcade_xp_spendable, 500, 'another owner wallet must remain untouched');
 
 db.exec(`CREATE TABLE telegram_pet_runs (
   run_id TEXT PRIMARY KEY,
