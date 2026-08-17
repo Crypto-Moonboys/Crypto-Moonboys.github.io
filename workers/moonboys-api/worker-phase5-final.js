@@ -56,18 +56,20 @@ async function readJsonSafe(request) {
   }
 }
 
-async function getEquipmentRows(db, telegramId) {
+async function getEquipmentRows(db, petId) {
   const result = await db.prepare(`
     SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
     FROM telegram_pet_equipment_progression
-    WHERE telegram_id = ?
-  `).bind(telegramId).all().catch(() => ({ results: [] }));
+    WHERE pet_id = ?
+  `).bind(petId).all().catch(() => ({ results: [] }));
   return result.results || [];
 }
 
 async function applyRuntimeAward(env, telegramId, eventKey, runtimeAction, options = {}) {
   if (!env?.DB || !telegramId || !eventKey || !runtimeAction) return null;
-  const equipmentRows = await getEquipmentRows(env.DB, telegramId);
+  const petId = String(options.pet_id || '').trim();
+  if (!petId) return null;
+  const equipmentRows = await getEquipmentRows(env.DB, petId);
   return applyPetRuntimeAward(
     env.DB,
     telegramId,
@@ -75,6 +77,7 @@ async function applyRuntimeAward(env, telegramId, eventKey, runtimeAction, optio
     runtimeAction,
     {
       day_key: utcDayKey(),
+      pet_id: petId,
       equipment_rows: equipmentRows,
       ...options,
     },
@@ -91,13 +94,13 @@ async function applyRuntimeAward(env, telegramId, eventKey, runtimeAction, optio
   });
 }
 
-async function repairEquippedProgressionRows(db, telegramId) {
+async function repairEquippedProgressionRows(db, telegramId, petId) {
   const pet = await db.prepare(`
     SELECT equipped_food, equipped_toy, equipped_outfit,
            equipped_armor, equipped_weapon, equipped_charm
-    FROM telegram_pet_profiles
-    WHERE telegram_id = ?
-  `).bind(telegramId).first().catch(() => null);
+    FROM telegram_pet_instances
+    WHERE pet_id = ?
+  `).bind(petId).first().catch(() => null);
   if (!pet) return;
 
   for (const slot of ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm']) {
@@ -105,21 +108,21 @@ async function repairEquippedProgressionRows(db, telegramId) {
     if (!itemKey) continue;
     await db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_equipment_progression
-        (telegram_id, item_key, slot)
-      VALUES (?, ?, ?)
-    `).bind(telegramId, itemKey, slot).run();
+        (telegram_id, pet_id, item_key, slot)
+      VALUES (?, ?, ?, ?)
+    `).bind(telegramId, petId, itemKey, slot).run();
   }
 }
 
-async function upsertPurchasedEquipment(db, telegramId, itemKey) {
+async function upsertPurchasedEquipment(db, telegramId, petId, itemKey) {
   const key = String(itemKey || '').trim();
   if (!key) return;
   const pet = await db.prepare(`
     SELECT equipped_food, equipped_toy, equipped_outfit,
            equipped_armor, equipped_weapon, equipped_charm
-    FROM telegram_pet_profiles
-    WHERE telegram_id = ?
-  `).bind(telegramId).first().catch(() => null);
+    FROM telegram_pet_instances
+    WHERE pet_id = ?
+  `).bind(petId).first().catch(() => null);
   if (!pet) return;
 
   const slot = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm']
@@ -127,12 +130,12 @@ async function upsertPurchasedEquipment(db, telegramId, itemKey) {
   if (!slot) return;
 
   await db.prepare(`
-    INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot)
-    VALUES (?, ?, ?)
-    ON CONFLICT (telegram_id, item_key) DO UPDATE SET
+    INSERT INTO telegram_pet_equipment_progression (telegram_id, pet_id, item_key, slot)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT (pet_id, item_key) WHERE pet_id IS NOT NULL DO UPDATE SET
       slot = excluded.slot,
       updated_at = CURRENT_TIMESTAMP
-  `).bind(telegramId, key, slot).run();
+  `).bind(telegramId, petId, key, slot).run();
 }
 
 function telegramMessageFromUpdate(update) {
@@ -150,7 +153,8 @@ async function preparePetGearRead(env, body) {
   const message = telegramMessageFromUpdate(body);
   const telegramId = String(message?.from?.id || '').trim();
   if (!telegramId || !env?.DB) return;
-  await repairEquippedProgressionRows(env.DB, telegramId).catch(() => {});
+  const active = await env.DB.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
+  if (active?.pet_id) await repairEquippedProgressionRows(env.DB, telegramId, active.pet_id).catch(() => {});
 }
 
 async function handlePetApiPostProcessing(env, body, response) {
@@ -167,7 +171,7 @@ async function handlePetApiPostProcessing(env, body, response) {
   if (!telegramId) return;
 
   if (body.action === 'buy') {
-    await upsertPurchasedEquipment(env.DB, telegramId, body.item_key).catch(() => {});
+    await upsertPurchasedEquipment(env.DB, telegramId, payload.pet?.pet_id, body.item_key).catch(() => {});
   }
 
   const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim()];
@@ -182,6 +186,7 @@ async function handlePetApiPostProcessing(env, body, response) {
     {
       drop_roll: body.drop_roll,
       material_amount: body.material_amount,
+      pet_id: payload.pet?.pet_id || payload.run?.pet_id || payload.session?.pet_id,
     },
   );
 }
@@ -231,11 +236,11 @@ async function repairTelegramRunRuntimeAward(env, update) {
   if (!context) return;
 
   const primary = context.table === 'telegram_pet_run_steps'
-    ? await env.DB.prepare(`SELECT event_key FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ? LIMIT 1`).bind(context.telegramId, context.primaryEventKey).first().catch(() => null)
-    : await env.DB.prepare(`SELECT event_key FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ? AND status = 'accepted' LIMIT 1`).bind(context.telegramId, context.primaryEventKey).first().catch(() => null);
+    ? await env.DB.prepare(`SELECT event_key, pet_id FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ? LIMIT 1`).bind(context.telegramId, context.primaryEventKey).first().catch(() => null)
+    : await env.DB.prepare(`SELECT event_key, pet_id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ? AND status = 'accepted' LIMIT 1`).bind(context.telegramId, context.primaryEventKey).first().catch(() => null);
   if (!primary?.event_key) return;
 
-  await applyRuntimeAward(env, context.telegramId, context.runtimeEventKey, context.runtimeAction);
+  await applyRuntimeAward(env, context.telegramId, context.runtimeEventKey, context.runtimeAction, { pet_id: primary.pet_id });
 }
 
 export default {

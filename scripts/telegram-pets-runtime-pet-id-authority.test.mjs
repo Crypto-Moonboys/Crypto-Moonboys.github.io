@@ -6,6 +6,9 @@ const migration = readFileSync(new URL('../workers/moonboys-api/migrations/064_m
 const worker = readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const rewards = readFileSync(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
 const identity = readFileSync(new URL('../workers/moonboys-api/pets/moonpet-identity.js', import.meta.url), 'utf8');
+const runtime = readFileSync(new URL('../workers/moonboys-api/pets/runtime-phase-5a.js', import.meta.url), 'utf8');
+const live = readFileSync(new URL('../workers/moonboys-api/pets/live-systems.js', import.meta.url), 'utf8');
+const phase5 = readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js', import.meta.url), 'utf8');
 const daily = readFileSync(new URL('../workers/moonboys-api/pets/daily-moon-run.js', import.meta.url), 'utf8');
 const block = (source, start, end = '\nasync function ') => {
   const from = source.indexOf(start);
@@ -22,11 +25,19 @@ for (const table of ['telegram_pet_activity_sessions', 'telegram_pet_runs', 'tel
 }
 const guards = [...migration.matchAll(/CREATE TRIGGER (require_[a-z_]+_pet_id)/g)].map((match) => match[1]);
 assert.deepEqual(guards.sort(), [
-  'require_activity_pet_id', 'require_boss_victory_pet_id', 'require_arena_battle_pet_id', 'require_arena_queue_pet_id', 'require_daily_run_pet_id',
+  'require_activity_pet_id', 'require_boss_victory_pet_id', 'require_cosmetic_pet_id', 'require_equipment_event_pet_id', 'require_equipment_pet_id', 'require_event_chain_pet_id', 'require_arena_battle_pet_id', 'require_arena_queue_pet_id', 'require_daily_run_pet_id',
   'require_daily_analytics_pet_id', 'require_identity_analytics_pet_id', 'require_identity_event_pet_id', 'require_kaiju_match_pet_id', 'require_kaiju_queue_pet_id', 'require_pet_event_pet_id',
-  'require_memory_pet_id', 'require_personality_pet_id', 'require_reward_asset_pet_id', 'require_reward_claim_pet_id', 'require_run_analytics_pet_id', 'require_run_history_pet_id', 'require_run_pet_id', 'require_run_room_pet_id', 'require_run_step_pet_id', 'require_season_reward_pet_id',
+  'require_memory_pet_id', 'require_progression_pet_id', 'require_personality_pet_id', 'require_reward_asset_pet_id', 'require_reward_claim_pet_id', 'require_run_analytics_pet_id', 'require_run_history_pet_id', 'require_run_pet_id', 'require_run_room_pet_id', 'require_run_step_pet_id', 'require_runtime_event_pet_id', 'require_season_reward_pet_id', 'require_seasonal_boss_pet_id', 'require_system_event_pet_id',
   'require_weekly_boss_event_pet_id', 'require_weekly_boss_progress_pet_id',
 ].sort(), 'every authoritative trigger must remain covered by this audit');
+assert.match(runtime, /telegram_pet_progression_state \(telegram_id, pet_id, daily_key\)/);
+assert.match(runtime, /telegram_pet_runtime_events \(id, telegram_id, pet_id, event_key/);
+assert.doesNotMatch(live, /UPDATE telegram_pet_profiles/, 'live settlement must mutate persisted instances, never the selector mirror');
+assert.match(live, /telegram_pet_system_events[\s\S]*\(id, telegram_id, pet_id/);
+assert.match(live, /telegram_pet_event_chain_progress \(telegram_id, pet_id/);
+assert.match(live, /telegram_pet_seasonal_boss_progress \(telegram_id, pet_id/);
+assert.match(live, /telegram_pet_cosmetic_unlocks \(telegram_id, pet_id/);
+assert.match(phase5, /telegram_pet_equipment_progression \(telegram_id, pet_id/);
 assert.doesNotMatch(migration, /UPDATE\s+telegram_pet_\w+\s+SET\s+pet_id/i, 'legacy rows must never be assigned to today’s active selector');
 
 const rewardWrapper = block(worker, 'async function awardPetReward');

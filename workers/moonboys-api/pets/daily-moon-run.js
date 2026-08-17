@@ -387,7 +387,7 @@ export async function extractDailyMoonRun(db, request = {}) {
   };
   const extraction = await extractPetRogueliteRun(db, run, {}, { rooms_completed: positiveInteger(run.current_room) });
   const synchronized = await syncDailyMoonRun(db, {
-    telegram_id: daily.telegram_id, utc_day: daily.utc_day, run_id: daily.run_id, now: request.now,
+    telegram_id: daily.telegram_id, pet_id: daily.pet_id, utc_day: daily.utc_day, run_id: daily.run_id, now: request.now,
   });
   return { ...synchronized, accepted: Boolean(extraction.accepted), duplicate: Boolean(extraction.duplicate), extraction };
 }
@@ -396,6 +396,7 @@ async function recordChallengeEvidence(db, request) {
   const challenge = PET_DAILY_CHALLENGES[request.challenge_id];
   if (!challenge) throw new Error('invalid_daily_challenge');
   const telegramId = String(request.telegram_id || '').trim();
+  const petId = String(request.pet_id || '').trim();
   const utcDay = String(request.utc_day || '');
   const eventKey = String(request.event_key || '').trim().slice(0, 180);
   if (!telegramId || !validUtcDay(utcDay) || !eventKey) throw new Error('invalid_daily_challenge_evidence');
@@ -422,10 +423,10 @@ async function recordChallengeEvidence(db, request) {
           CASE WHEN ${nextProgressSql} >= ${challenge.target} THEN CURRENT_TIMESTAMP END)`)
       .bind(telegramId, utcDay, challenge.challenge_id, challenge.target, eventId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
-      (analytics_id, telegram_id, utc_day, event_type, event_data)
-      SELECT ?, ?, ?, 'challenge_completed', ? FROM telegram_pet_daily_challenge_progress
+      (analytics_id, telegram_id${petId ? ', pet_id' : ''}, utc_day, event_type, event_data)
+      SELECT ?, ?${petId ? ', ?' : ''}, ?, 'challenge_completed', ? FROM telegram_pet_daily_challenge_progress
       WHERE telegram_id = ? AND utc_day = ? AND challenge_id = ? AND completed_at IS NOT NULL`)
-      .bind(analyticsId, telegramId, utcDay, safeJson({ challenge_id: challenge.challenge_id, category: challenge.category, target: challenge.target }),
+      .bind(analyticsId, telegramId, ...(petId ? [petId] : []), utcDay, safeJson({ challenge_id: challenge.challenge_id, category: challenge.category, target: challenge.target }),
         telegramId, utcDay, challenge.challenge_id),
     db.prepare(`INSERT INTO telegram_pet_seasonal_challenge_state
       (telegram_id, season_id, completed_daily_challenges)
@@ -463,6 +464,7 @@ export async function recordDailyCareChallenge(db, request = {}) {
   if (!evidence || !CARE_ACTIONS.has(String(evidence.event_type))) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
   return recordChallengeEvidence(db, {
     telegram_id: telegramId,
+    pet_id: petId,
     utc_day: utcDay,
     challenge_id: 'daily_care',
     event_key: `care:${eventKey}`,
@@ -479,23 +481,23 @@ async function reconcileRunChallenges(db, daily) {
   for (const room of rooms.results || []) {
     if (room.status !== 'resolved') continue;
     if (['battle', 'elite'].includes(room.room_type)) results.push(await recordChallengeEvidence(db, {
-      telegram_id: daily.telegram_id, utc_day: daily.utc_day, challenge_id: 'daily_combat',
+      telegram_id: daily.telegram_id, pet_id: daily.pet_id, utc_day: daily.utc_day, challenge_id: 'daily_combat',
       event_key: `room:${room.room_id}:enemy`, progress_value: 1,
       evidence: { authority: 'telegram_pet_run_rooms', run_id: daily.run_id, room_id: room.room_id },
     }));
     results.push(await recordChallengeEvidence(db, {
-      telegram_id: daily.telegram_id, utc_day: daily.utc_day, challenge_id: 'daily_explorer',
+      telegram_id: daily.telegram_id, pet_id: daily.pet_id, utc_day: daily.utc_day, challenge_id: 'daily_explorer',
       event_key: `room:${room.room_id}:depth`, progress_value: room.room_number,
       evidence: { authority: 'telegram_pet_run_rooms', run_id: daily.run_id, room_id: room.room_id, depth: room.room_number },
     }));
   }
   if (daily.status === 'extracted') results.push(await recordChallengeEvidence(db, {
-    telegram_id: daily.telegram_id, utc_day: daily.utc_day, challenge_id: 'daily_extraction',
+    telegram_id: daily.telegram_id, pet_id: daily.pet_id, utc_day: daily.utc_day, challenge_id: 'daily_extraction',
     event_key: `run:${daily.run_id}:extracted`, progress_value: 1,
     evidence: { authority: 'telegram_pet_runs', run_id: daily.run_id, status: daily.status },
   }));
   if (daily.boss_defeated) results.push(await recordChallengeEvidence(db, {
-    telegram_id: daily.telegram_id, utc_day: daily.utc_day, challenge_id: 'daily_boss',
+    telegram_id: daily.telegram_id, pet_id: daily.pet_id, utc_day: daily.utc_day, challenge_id: 'daily_boss',
     event_key: `run:${daily.run_id}:boss:alley_king`, progress_value: 1,
     evidence: { authority: 'telegram_pet_run_analytics', run_id: daily.run_id, boss_id: 'alley_king' },
   }));

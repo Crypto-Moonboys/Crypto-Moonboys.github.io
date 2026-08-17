@@ -36,7 +36,7 @@ assert.doesNotMatch(finalWorker, /accepted && !.*duplicate/, 'runtime repair mus
 assert.match(finalWorker, /body\?\.telegram_id \|\| body\?\.user\?\.id/, 'API post-processing must support both documented Telegram identity fields');
 assert.match(finalWorker, /Access-Control-Allow-Origin/, 'wrapper validation failures must preserve allowed CORS responses');
 assert.match(finalWorker, /corsHeadersFor\(request\)/, 'wrapper errors must use request-aware CORS headers');
-assert.match(finalWorker, /ON CONFLICT \(telegram_id, item_key\) DO UPDATE SET/, 'shop purchases must create or repair equipment progression rows');
+assert.match(finalWorker, /ON CONFLICT \(pet_id, item_key\) WHERE pet_id IS NOT NULL DO UPDATE SET/, 'shop purchases must create or repair equipment progression rows');
 assert.match(finalWorker, /INSERT OR IGNORE INTO telegram_pet_equipment_progression/, '/petgear must insert missing progression rows');
 assert.match(finalWorker, /equipped_\$\{slot\}/, '/petgear must derive missing progression rows from equipped profile slots');
 assert.match(finalWorker, /telegramRunCallbackContext/, 'Telegram run callback retries must have a repair path');

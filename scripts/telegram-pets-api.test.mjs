@@ -2559,7 +2559,7 @@ const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
 assert.ok(kaijuHardening.indexOf('getPetProfileWithAtomicDecay') < kaijuHardening.indexOf('reservePetRepeatRewardEvent'), 'Kaiju must persist current stat decay before atomically claiming Energy and a reward slot');
 assert.ok(kaijuHardening.indexOf('reservePetRepeatRewardEvent') < kaijuHardening.indexOf('scalePetRewards'), 'Kaiju Energy and slot must be claimed before rewards are calculated');
 assert.ok(kaijuHardening.includes('energy_cost: energyCost') && kaijuHardening.includes('existing_event: duplicate'), 'Kaiju retries must resume the original paid reservation without paying Energy twice');
-assert.ok(kaijuHardening.includes('const accountingDayKey = rewardSlot.day_key') && kaijuHardening.includes('accountingSeasonKey, accountingDayKey, accountingWeekKey'), 'Kaiju recovery must finalize caps and season totals against the stored reservation accounting window');
+assert.ok(kaijuHardening.includes('rewardSlotAuthority.day_key') && kaijuHardening.includes('rewardSlotAuthority.season_key'), 'Kaiju recovery must finalize against the stored reservation accounting window');
 assert.ok(kaijuHardening.includes("reason: 'insufficient_energy'") && kaijuHardening.includes('pet_xp_awarded: 0') && kaijuHardening.includes('xp_awarded: 0'), 'failed Energy claims must return no Pet or Community XP');
 assert.ok(kaijuHardening.includes("source: 'pet_kaiju'") && kaijuHardening.includes('reservation_id: reservation.reservation_id'), 'Kaiju finalization must preserve both global XP caps through the unified authority');
 assert.ok(!kaijuHardening.includes('awardCommunityXp(db, telegramId, communityXp'), 'Kaiju Community XP must commit in the same recoverable finalization batch');

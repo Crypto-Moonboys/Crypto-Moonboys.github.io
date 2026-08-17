@@ -74,7 +74,7 @@ function firstBatchRow(result) {
   return Array.isArray(result?.results) ? (result.results[0] || null) : null;
 }
 
-function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey) {
+function buildAtomicStateUpdate(plan, claimId, petId, dayKey) {
   const assignments = ['daily_key = ?', 'updated_at = CURRENT_TIMESTAMP'];
   const bindings = [dayKey];
   const claimSql = 'EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?)';
@@ -103,9 +103,9 @@ function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey) {
     bindings.push(...jsonBindings);
   }
 
-  bindings.push(telegramId, claimId);
+  bindings.push(petId, claimId);
   return {
-    sql: `UPDATE telegram_pet_progression_state SET ${assignments.join(', ')} WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?) RETURNING *`,
+    sql: `UPDATE telegram_pet_progression_state SET ${assignments.join(', ')} WHERE pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?) RETURNING *`,
     bindings,
   };
 }
@@ -183,14 +183,19 @@ export function buildPetGearSummary(rows = []) {
   return lines.join('\n');
 }
 
-export async function getOrCreatePetRuntimeState(db, telegramId, dayKey) {
+export async function getOrCreatePetRuntimeState(db, telegramId, dayKey, petId) {
   const id = String(telegramId || '').trim();
   const day = String(dayKey || '').trim();
-  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, day).run();
-  let state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
+  const immutablePetId = String(petId || '').trim();
+  if (!immutablePetId) {
+    // Legacy account-only state remains readable, but is never created or mutated.
+    return db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
+  }
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, pet_id, daily_key) VALUES (?, ?, ?)`).bind(id, immutablePetId, day).run();
+  let state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE pet_id = ?`).bind(immutablePetId).first();
   if (state && state.daily_key !== day) {
-    await db.prepare(`UPDATE telegram_pet_progression_state SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?`).bind(day, id).run();
-    state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
+    await db.prepare(`UPDATE telegram_pet_progression_state SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE pet_id = ?`).bind(day, immutablePetId).run();
+    state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE pet_id = ?`).bind(immutablePetId).first();
   }
   return state;
 }
@@ -198,16 +203,17 @@ export async function getOrCreatePetRuntimeState(db, telegramId, dayKey) {
 export async function applyPetRuntimeAward(db, telegramId, eventKey, action, options = {}) {
   const id = String(telegramId || '').trim();
   const stableEventKey = String(eventKey || '').trim();
+  const petId = String(options.pet_id || '').trim();
   const plan = buildPetRuntimeAwardPlan(action, options);
-  if (!id || !stableEventKey || !plan || typeof db?.batch !== 'function') return { ok: false, code: 'invalid_runtime_award' };
+  if (!id || !petId || !stableEventKey || !plan || typeof db?.batch !== 'function') return { ok: false, code: 'invalid_runtime_award' };
 
   const dayKey = String(options.day_key || new Date().toISOString().slice(0, 10));
   const claimId = crypto.randomUUID();
-  const stateUpdate = buildAtomicStateUpdate(plan, claimId, id, dayKey);
+  const stateUpdate = buildAtomicStateUpdate(plan, claimId, petId, dayKey);
   const statements = [
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, dayKey),
-    db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id),
-    db.prepare(`INSERT INTO telegram_pet_runtime_events (id, telegram_id, event_key, action, payload_json) VALUES (?, ?, ?, ?, ?) ON CONFLICT (telegram_id, event_key) DO NOTHING RETURNING id`).bind(claimId, id, stableEventKey, plan.action, JSON.stringify(plan)),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, pet_id, daily_key) VALUES (?, ?, ?)`).bind(id, petId, dayKey),
+    db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE pet_id = ?`).bind(petId),
+    db.prepare(`INSERT INTO telegram_pet_runtime_events (id, telegram_id, pet_id, event_key, action, payload_json) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (pet_id, event_key) WHERE pet_id IS NOT NULL DO NOTHING RETURNING id`).bind(claimId, id, petId, stableEventKey, plan.action, JSON.stringify(plan)),
     db.prepare(stateUpdate.sql).bind(...stateUpdate.bindings),
   ];
 

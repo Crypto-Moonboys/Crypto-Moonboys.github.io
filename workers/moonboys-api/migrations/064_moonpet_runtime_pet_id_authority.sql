@@ -111,6 +111,82 @@ CREATE TABLE telegram_pet_reward_authority (
 );
 CREATE INDEX idx_pet_reward_authority_owner ON telegram_pet_reward_authority(telegram_id, pet_id, created_at DESC);
 
+
+-- Phase 5 progression and live-system state were also account keyed. Rebuild the
+-- two tables whose legacy primary/unique keys would otherwise collapse distinct
+-- pets; retain all historical rows with NULL authority.
+ALTER TABLE telegram_pet_progression_state RENAME TO telegram_pet_progression_state_legacy_064;
+CREATE TABLE telegram_pet_progression_state (
+  telegram_id TEXT NOT NULL, pet_id TEXT, care_xp INTEGER NOT NULL DEFAULT 0, training_xp INTEGER NOT NULL DEFAULT 0,
+  adventure_xp INTEGER NOT NULL DEFAULT 0, arena_xp INTEGER NOT NULL DEFAULT 0, job_xp INTEGER NOT NULL DEFAULT 0, bond_xp INTEGER NOT NULL DEFAULT 0,
+  daily_key TEXT NOT NULL DEFAULT '', care_daily INTEGER NOT NULL DEFAULT 0, training_daily INTEGER NOT NULL DEFAULT 0,
+  adventure_daily INTEGER NOT NULL DEFAULT 0, arena_daily INTEGER NOT NULL DEFAULT 0, job_daily INTEGER NOT NULL DEFAULT 0, bond_daily INTEGER NOT NULL DEFAULT 0,
+  traits_json TEXT NOT NULL DEFAULT '{}', region_mastery_json TEXT NOT NULL DEFAULT '{}', completed_regions_json TEXT NOT NULL DEFAULT '[]',
+  event_chains_json TEXT NOT NULL DEFAULT '{}', prestige_count INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id)
+);
+INSERT INTO telegram_pet_progression_state(telegram_id,care_xp,training_xp,adventure_xp,arena_xp,job_xp,bond_xp,daily_key,care_daily,training_daily,adventure_daily,arena_daily,job_daily,bond_daily,traits_json,region_mastery_json,completed_regions_json,event_chains_json,prestige_count,created_at,updated_at)
+SELECT telegram_id,care_xp,training_xp,adventure_xp,arena_xp,job_xp,bond_xp,daily_key,care_daily,training_daily,adventure_daily,arena_daily,job_daily,bond_daily,traits_json,region_mastery_json,completed_regions_json,event_chains_json,prestige_count,created_at,updated_at FROM telegram_pet_progression_state_legacy_064;
+CREATE UNIQUE INDEX uq_pet_progression_authority ON telegram_pet_progression_state(pet_id) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_progression_owner ON telegram_pet_progression_state(telegram_id) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_progression_state_legacy_064;
+
+ALTER TABLE telegram_pet_runtime_events RENAME TO telegram_pet_runtime_events_legacy_064;
+CREATE TABLE telegram_pet_runtime_events (id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, pet_id TEXT, event_key TEXT NOT NULL, action TEXT NOT NULL, payload_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id));
+INSERT INTO telegram_pet_runtime_events(id,telegram_id,event_key,action,payload_json,created_at) SELECT id,telegram_id,event_key,action,payload_json,created_at FROM telegram_pet_runtime_events_legacy_064;
+CREATE UNIQUE INDEX uq_pet_runtime_event_authority ON telegram_pet_runtime_events(pet_id,event_key) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_runtime_event_owner ON telegram_pet_runtime_events(telegram_id,event_key) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_runtime_events_legacy_064;
+
+ALTER TABLE telegram_pet_system_events RENAME TO telegram_pet_system_events_legacy_064;
+CREATE TABLE telegram_pet_system_events (id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, pet_id TEXT, system_key TEXT NOT NULL, action_key TEXT NOT NULL, period_key TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','settling','completed','rejected')), payload_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id));
+INSERT INTO telegram_pet_system_events(id,telegram_id,system_key,action_key,period_key,status,payload_json,created_at,updated_at) SELECT id,telegram_id,system_key,action_key,period_key,status,payload_json,created_at,updated_at FROM telegram_pet_system_events_legacy_064;
+CREATE UNIQUE INDEX uq_pet_system_event_authority ON telegram_pet_system_events(pet_id,system_key,action_key,period_key) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_system_event_owner ON telegram_pet_system_events(telegram_id,system_key,action_key,period_key) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_system_events_legacy_064;
+
+ALTER TABLE telegram_pet_event_chain_progress RENAME TO telegram_pet_event_chain_progress_legacy_064;
+CREATE TABLE telegram_pet_event_chain_progress (telegram_id TEXT NOT NULL, pet_id TEXT, chain_key TEXT NOT NULL, step_index INTEGER NOT NULL DEFAULT 0, completed_cycles INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id));
+INSERT INTO telegram_pet_event_chain_progress(telegram_id,chain_key,step_index,completed_cycles,updated_at) SELECT telegram_id,chain_key,step_index,completed_cycles,updated_at FROM telegram_pet_event_chain_progress_legacy_064;
+CREATE UNIQUE INDEX uq_pet_event_chain_authority ON telegram_pet_event_chain_progress(pet_id,chain_key) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_event_chain_owner ON telegram_pet_event_chain_progress(telegram_id,chain_key) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_event_chain_progress_legacy_064;
+
+ALTER TABLE telegram_pet_seasonal_boss_progress RENAME TO telegram_pet_seasonal_boss_progress_legacy_064;
+CREATE TABLE telegram_pet_seasonal_boss_progress (telegram_id TEXT NOT NULL, pet_id TEXT, season_key TEXT NOT NULL, boss_key TEXT NOT NULL, damage INTEGER NOT NULL DEFAULT 0, defeated_at TEXT, reward_claimed_at TEXT, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id));
+INSERT INTO telegram_pet_seasonal_boss_progress(telegram_id,season_key,boss_key,damage,defeated_at,reward_claimed_at,updated_at) SELECT telegram_id,season_key,boss_key,damage,defeated_at,reward_claimed_at,updated_at FROM telegram_pet_seasonal_boss_progress_legacy_064;
+CREATE UNIQUE INDEX uq_pet_seasonal_boss_authority ON telegram_pet_seasonal_boss_progress(pet_id,season_key,boss_key) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_seasonal_boss_owner ON telegram_pet_seasonal_boss_progress(telegram_id,season_key,boss_key) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_seasonal_boss_progress_legacy_064;
+
+ALTER TABLE telegram_pet_cosmetic_unlocks RENAME TO telegram_pet_cosmetic_unlocks_legacy_064;
+CREATE TABLE telegram_pet_cosmetic_unlocks (telegram_id TEXT NOT NULL, pet_id TEXT, cosmetic_key TEXT NOT NULL, quantity INTEGER NOT NULL DEFAULT 1, unlocked_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id));
+INSERT INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity,unlocked_at,updated_at) SELECT telegram_id,cosmetic_key,quantity,unlocked_at,updated_at FROM telegram_pet_cosmetic_unlocks_legacy_064;
+CREATE UNIQUE INDEX uq_pet_cosmetic_authority ON telegram_pet_cosmetic_unlocks(pet_id,cosmetic_key) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_cosmetic_owner ON telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_cosmetic_unlocks_legacy_064;
+
+ALTER TABLE telegram_pet_equipment_events RENAME TO telegram_pet_equipment_events_legacy_064;
+ALTER TABLE telegram_pet_equipment_progression RENAME TO telegram_pet_equipment_progression_legacy_064;
+CREATE TABLE telegram_pet_equipment_progression (
+  telegram_id TEXT NOT NULL, pet_id TEXT, item_key TEXT NOT NULL, slot TEXT NOT NULL, item_level INTEGER NOT NULL DEFAULT 1 CHECK(item_level BETWEEN 1 AND 10),
+  item_xp INTEGER NOT NULL DEFAULT 0, mastery_xp INTEGER NOT NULL DEFAULT 0, mastery_tier INTEGER NOT NULL DEFAULT 0 CHECK(mastery_tier BETWEEN 0 AND 5),
+  unlocked_effects_json TEXT NOT NULL DEFAULT '{}', last_used_action TEXT, last_used_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id)
+);
+INSERT INTO telegram_pet_equipment_progression(telegram_id,item_key,slot,item_level,item_xp,mastery_xp,mastery_tier,unlocked_effects_json,last_used_action,last_used_at,created_at,updated_at)
+SELECT telegram_id,item_key,slot,item_level,item_xp,mastery_xp,mastery_tier,unlocked_effects_json,last_used_action,last_used_at,created_at,updated_at FROM telegram_pet_equipment_progression_legacy_064;
+CREATE UNIQUE INDEX uq_pet_equipment_authority ON telegram_pet_equipment_progression(pet_id,item_key) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_equipment_owner ON telegram_pet_equipment_progression(telegram_id,item_key) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_equipment_progression_legacy_064;
+CREATE TABLE telegram_pet_equipment_events (id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, pet_id TEXT, item_key TEXT NOT NULL, action TEXT NOT NULL, event_key TEXT NOT NULL, item_xp_awarded INTEGER NOT NULL DEFAULT 0, mastery_xp_awarded INTEGER NOT NULL DEFAULT 0, metadata_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id));
+INSERT INTO telegram_pet_equipment_events(id,telegram_id,item_key,action,event_key,item_xp_awarded,mastery_xp_awarded,metadata_json,created_at)
+SELECT id,telegram_id,item_key,action,event_key,item_xp_awarded,mastery_xp_awarded,metadata_json,created_at FROM telegram_pet_equipment_events_legacy_064;
+CREATE UNIQUE INDEX uq_pet_equipment_event_authority ON telegram_pet_equipment_events(pet_id,item_key,event_key) WHERE pet_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_legacy_equipment_event_owner ON telegram_pet_equipment_events(telegram_id,item_key,event_key) WHERE pet_id IS NULL;
+DROP TABLE telegram_pet_equipment_events_legacy_064;
+CREATE INDEX idx_pet_system_events_pet ON telegram_pet_system_events(pet_id,system_key,created_at DESC);
+
 -- D1 cannot add NOT NULL to an existing column without rebuilding and risking
 -- old data. These guards enforce the new-write contract while retaining rows
 -- that predate this migration.
@@ -138,3 +214,12 @@ CREATE TRIGGER require_run_room_pet_id BEFORE INSERT ON telegram_pet_run_rooms W
 CREATE TRIGGER require_run_analytics_pet_id BEFORE INSERT ON telegram_pet_run_analytics WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:run_analytics'); END;
 CREATE TRIGGER require_run_history_pet_id BEFORE INSERT ON telegram_pet_run_history WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:run_history'); END;
 CREATE TRIGGER require_daily_analytics_pet_id BEFORE INSERT ON telegram_pet_daily_analytics WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:daily_analytics'); END;
+
+CREATE TRIGGER require_progression_pet_id BEFORE INSERT ON telegram_pet_progression_state WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:progression'); END;
+CREATE TRIGGER require_runtime_event_pet_id BEFORE INSERT ON telegram_pet_runtime_events WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:runtime_event'); END;
+CREATE TRIGGER require_system_event_pet_id BEFORE INSERT ON telegram_pet_system_events WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:system_event'); END;
+CREATE TRIGGER require_event_chain_pet_id BEFORE INSERT ON telegram_pet_event_chain_progress WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:event_chain'); END;
+CREATE TRIGGER require_seasonal_boss_pet_id BEFORE INSERT ON telegram_pet_seasonal_boss_progress WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:seasonal_boss'); END;
+CREATE TRIGGER require_cosmetic_pet_id BEFORE INSERT ON telegram_pet_cosmetic_unlocks WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:cosmetic'); END;
+CREATE TRIGGER require_equipment_pet_id BEFORE INSERT ON telegram_pet_equipment_progression WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:equipment'); END;
+CREATE TRIGGER require_equipment_event_pet_id BEFORE INSERT ON telegram_pet_equipment_events WHEN NEW.pet_id IS NULL BEGIN SELECT RAISE(ABORT, 'pet_id_required:equipment_event'); END;
