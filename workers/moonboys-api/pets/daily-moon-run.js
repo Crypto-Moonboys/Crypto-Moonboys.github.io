@@ -257,15 +257,15 @@ export async function createDailyMoonRun(db, request = {}) {
   const modifierId = dailyModifierId(generated.run_seed);
   const writes = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_runs
-      (telegram_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
-      SELECT ?, ?, ?, run_id, CASE WHEN status = 'extractable' THEN 'active' ELSE status END, score, MAX(depth, current_room), 0
+      (telegram_id${authoritativeRun.pet_id ? ', pet_id' : ''}, utc_day, seed, run_id, status, score, depth, boss_defeated)
+      SELECT ?${authoritativeRun.pet_id ? ', pet_id' : ''}, ?, ?, run_id, CASE WHEN status = 'extractable' THEN 'active' ELSE status END, score, MAX(depth, current_room), 0
       FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
       .bind(telegramId, utcDay, generated.seed, telegramId, runId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
-      (analytics_id, telegram_id, utc_day, run_id, event_type, event_data)
-      SELECT ?, ?, ?, ?, 'run_created', ? WHERE EXISTS
+      (analytics_id, telegram_id${authoritativeRun.pet_id ? ', pet_id' : ''}, utc_day, run_id, event_type, event_data)
+      SELECT ?, ?${authoritativeRun.pet_id ? ', ?' : ''}, ?, ?, 'run_created', ? WHERE EXISTS
         (SELECT 1 FROM telegram_pet_daily_runs WHERE telegram_id = ? AND utc_day = ? AND run_id = ?)`)
-      .bind(`${runId}:daily:created`, telegramId, utcDay, runId,
+      .bind(`${runId}:daily:created`, telegramId, ...(authoritativeRun.pet_id ? [authoritativeRun.pet_id] : []), utcDay, runId,
         safeJson({ seed: generated.seed, run_seed: generated.run_seed, region: 'moon_alley', difficulty: region.difficulty, modifier_id: modifierId }),
         telegramId, utcDay, runId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_seasonal_achievements
@@ -280,7 +280,7 @@ export async function createDailyMoonRun(db, request = {}) {
     ? await createPetRunRoom(db, authoritativeRun)
     : null;
   await recordMoonpetMemory(db, {
-    telegram_id: telegramId,
+    telegram_id: telegramId, pet_id: authoritativeRun.pet_id,
     event_key: `daily:memory:first-run:${telegramId}`,
     memory_type: 'milestone',
     milestone: 'first_daily_moon_run',
@@ -453,6 +453,7 @@ async function recordChallengeEvidence(db, request) {
 
 export async function recordDailyCareChallenge(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
+  const petId = String(request.pet_id || '').trim();
   const eventKey = String(request.event_key || '').trim();
   const utcDay = utcDayFromNow(request.now);
   if (!telegramId || !eventKey) throw new Error('invalid_daily_care_evidence');
@@ -555,9 +556,9 @@ async function finalizeDailyRecords(db, daily, referenceDay) {
   ].filter(Boolean);
   const statements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
-      (analytics_id, telegram_id, utc_day, run_id, event_type, event_data)
-      VALUES (?, ?, ?, ?, 'run_terminal', ?)`)
-      .bind(analyticsId, daily.telegram_id, daily.utc_day, daily.run_id,
+      (analytics_id, telegram_id${daily.pet_id ? ', pet_id' : ''}, utc_day, run_id, event_type, event_data)
+      VALUES (?, ?${daily.pet_id ? ', ?' : ''}, ?, ?, 'run_terminal', ?)`)
+      .bind(analyticsId, daily.telegram_id, ...(daily.pet_id ? [daily.pet_id] : []), daily.utc_day, daily.run_id,
         safeJson({ status: daily.status, score: daily.score, depth: daily.depth, boss_defeated: Boolean(daily.boss_defeated), duration_seconds: durationSeconds })),
     db.prepare(`INSERT INTO telegram_pet_daily_leaderboard_records
       (telegram_id, highest_score, fastest_completion_seconds, deepest_run, boss_completions, extraction_successes, streak_length, longest_streak, runs_recorded)
@@ -608,7 +609,7 @@ async function finalizeDailyRecords(db, daily, referenceDay) {
     daily.boss_defeated ? ['daily_boss_victory', `daily:memory:boss-victory:${daily.telegram_id}`] : null,
   ].filter(Boolean);
   for (const [milestone, eventKey] of memories) await recordMoonpetMemory(db, {
-    telegram_id: daily.telegram_id, event_key: eventKey, memory_type: 'milestone', milestone,
+    telegram_id: daily.telegram_id, pet_id: daily.pet_id, event_key: eventKey, memory_type: 'milestone', milestone,
   });
   return { duplicate: false, duration_seconds: durationSeconds, streaks };
 }

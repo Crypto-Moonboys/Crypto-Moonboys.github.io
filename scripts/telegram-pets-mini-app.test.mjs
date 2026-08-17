@@ -987,7 +987,7 @@ assert.match(worker, /last_round: orientPetArenaLastRound/, 'Arena recaps must o
 assert.match(client, /CRT TELEGRAPH/, 'solo Arena must render the opponent telegraph');
 assert.match(client, /RIVAL INTENT \/\/ HIDDEN/, 'PvP Arena must explicitly preserve sealed intent');
 assert.match(client, /class="button-grid arena-decisions"/, 'Arena decisions need a readable tactical card grid');
-assert.match(worker, /player1_telegram_id, category_key, roll/, 'Kaiju category must be persisted when the match is created');
+assert.match(worker, /player1_telegram_id\$\{authority\?\.pet_id \? ', player1_pet_id' : ''\}, category_key, roll/, 'Kaiju category must be persisted when the match is created');
 assert.match(worker, /category_key: category\?\.key \|\| null/, 'Kaiju category must be visible before card lock');
 assert.match(worker, /serializePetKaijuCardPreview\(card, hydratedKaiju\?\.category_key\)/, 'Kaiju cards must include the hydrated active-category score');
 assert.match(client, /BATTLE CATEGORY/, 'Kaiju must state what the current duel values');

@@ -911,7 +911,7 @@ assert.ok(runStep.includes('recordPetRunBankedEvent'), 'boss step completion mus
 assertOrder(
   runStep,
   "const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`)",
-  'const pet = await getPetProfile(db, telegramId);',
+  "const pet = run.pet_id ? await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?')",
   'run steps must check duplicate event keys before loading and mutating the pet'
 );
 assertOrder(
@@ -923,7 +923,7 @@ assertOrder(
 assertOrder(
   runStep,
   "return { accepted: false, reason: 'stale_run_step'",
-  'const pet = await getPetProfile(db, telegramId);',
+  "const pet = run.pet_id ? await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?')",
   'stale run-step callbacks must not load or mutate pet stats'
 );
 assertOrder(
@@ -941,7 +941,7 @@ assertOrder(
 assertOrder(
   runStep,
   "const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`)",
-  'const pet = await getPetProfile(db, telegramId);',
+  "const pet = run.pet_id ? await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?')",
   'run steps must check step-level idempotency before mutating the pet'
 );
 assertOrder(
@@ -963,7 +963,7 @@ assertOrder(
   'applyPetRunStatRewards(pet, outcome.rewards);',
   'run stat rewards must only apply after the failure path has been handled'
 );
-assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await savePetProfile(db, pet);'),
+assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('savePersistedPetInstance(db, pet)'),
   'run stat rewards must be applied before saving the successful step pet');
 assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('RETURNING run_id'), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
 assert.ok(runStep.includes("if (!stepResults?.[1]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
@@ -2534,7 +2534,7 @@ assert.deepEqual({ ...kaijuCapTotals }, { pet_xp: 1200, community_xp: 250 }, 'Ka
 const repeatReservation = asyncBlock('reservePetRepeatRewardEvent');
 assert.ok(repeatReservation.includes('const results = await db.batch(statements)'), 'event reservation, slot claim, and Kaiju Energy payment must commit as one D1 batch');
 assert.ok(repeatReservation.includes('ON CONFLICT(telegram_id, day_key, mode) DO UPDATE SET') && repeatReservation.includes('claimed_count = claimed_count + 1') && repeatReservation.includes('RETURNING claimed_count'), 'Event and Kaiju slot claims must atomically increment and return the exact counter value');
-assert.match(repeatReservation, /SET energy = energy - \?, updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND energy >= \?/, 'Kaiju Energy must be claimed with one conditional update');
+assert.match(repeatReservation, /SET energy = energy - \?, updated_at = CURRENT_TIMESTAMP\s+WHERE \$\{statePredicate\} AND energy >= \?/, 'Kaiju Energy must be claimed with one conditional update');
 assert.ok(repeatReservation.match(/EXISTS \(SELECT 1 FROM telegram_pet_events WHERE id = \? AND status = 'pending'\)/g)?.length >= 2, 'Energy and slot claims must be gated by the newly inserted idempotency reservation');
 assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, status, reason'), 'the exact reward slot and paid Energy must be persisted for retry recovery');
 assert.ok(repeatReservation.includes('day_key, week_key, season_key'), 'pending reservations must load and return their stored accounting window');

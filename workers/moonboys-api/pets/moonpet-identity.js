@@ -106,6 +106,16 @@ export const MOONPET_PERSONALITY_TRAITS = deepFreeze({
 
 export async function recordMoonpetBehaviour(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
+  const petId = String(request.pet_id || '').trim();
+  const identityColumn = petId ? ', pet_id' : '';
+  const identityValue = petId ? ', ?' : '';
+  const identityArgs = petId ? [petId] : [];
+  const ownerPredicate = petId ? 'pet_id = ?' : 'telegram_id = ?';
+  const ownerValue = petId || telegramId;
+  const personalityConflict = petId ? 'ON CONFLICT(pet_id, trait_id) WHERE pet_id IS NOT NULL' : 'ON CONFLICT(telegram_id, trait_id)';
+  const memoryConflict = petId ? 'ON CONFLICT(pet_id) WHERE pet_id IS NOT NULL' : 'ON CONFLICT(telegram_id)';
+  const eventOwnerSql = petId ? 'AND pet_id = ?' : '';
+  const eventOwnerArgs = petId ? [petId] : [];
   const eventKey = String(request.event_key || '').trim().slice(0, 180);
   const behaviour = String(request.behaviour || '').trim().toLowerCase();
   const definition = MOONPET_PERSONALITY_TRAITS[behaviour];
@@ -115,58 +125,58 @@ export async function recordMoonpetBehaviour(db, request = {}) {
   if (!telegramId || !eventKey || !definition || amount < 1) throw new Error('invalid_moonpet_behaviour');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey) || !['combat', 'exploration', 'care', 'event', 'adventure'].includes(activity)) throw new Error('invalid_moonpet_behaviour');
   const eventId = crypto.randomUUID();
-  const analyticsId = `personality_unlock:${telegramId}:${definition.trait_id}`;
+  const analyticsId = `personality_unlock:${petId || telegramId}:${definition.trait_id}`;
   const results = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
-      (event_id, telegram_id, event_key, event_kind, payload, day_key, progress_delta)
-      SELECT ?, ?, ?, 'personality', ?, ?, MIN(?, MAX(0, ? - COALESCE((SELECT SUM(progress_delta)
-        FROM telegram_pet_identity_events WHERE telegram_id = ? AND event_kind = 'personality' AND day_key = ?
+      (event_id, telegram_id${identityColumn}, event_key, event_kind, payload, day_key, progress_delta)
+      SELECT ?, ?${identityValue}, ?, 'personality', ?, ?, MIN(?, MAX(0, ? - COALESCE((SELECT SUM(progress_delta)
+        FROM telegram_pet_identity_events WHERE ${ownerPredicate} AND event_kind = 'personality' AND day_key = ?
           AND json_extract(payload, '$.behaviour') = ?), 0)))
-      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
-      .bind(eventId, telegramId, eventKey, safeJson({ behaviour, requested_amount: amount, trait_id: definition.trait_id, activity }), dayKey,
-        amount, definition.daily_cap, telegramId, dayKey, behaviour, telegramId),
-    db.prepare(`INSERT INTO telegram_pet_personality_traits (telegram_id, trait_id, progress, unlocked_at)
-      SELECT ?, ?, progress_delta, CASE WHEN progress_delta >= ? THEN CURRENT_TIMESTAMP ELSE NULL END
+      WHERE EXISTS (SELECT 1 FROM ${petId ? 'telegram_pet_instances' : 'telegram_pet_profiles'} WHERE ${ownerPredicate})`)
+      .bind(eventId, telegramId, ...identityArgs, eventKey, safeJson({ behaviour, requested_amount: amount, trait_id: definition.trait_id, activity }), dayKey,
+        amount, definition.daily_cap, ownerValue, dayKey, behaviour, ownerValue),
+    db.prepare(`INSERT INTO telegram_pet_personality_traits (telegram_id${identityColumn}, trait_id, progress, unlocked_at)
+      SELECT ?${identityValue}, ?, progress_delta, CASE WHEN progress_delta >= ? THEN CURRENT_TIMESTAMP ELSE NULL END
       FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL AND progress_delta > 0
-      ON CONFLICT(telegram_id, trait_id) DO UPDATE SET
+      ${personalityConflict} DO UPDATE SET
         progress = MIN(?, telegram_pet_personality_traits.progress + excluded.progress),
         unlocked_at = COALESCE(telegram_pet_personality_traits.unlocked_at,
           CASE WHEN telegram_pet_personality_traits.progress + excluded.progress >= ? THEN CURRENT_TIMESTAMP ELSE NULL END),
         updated_at = CURRENT_TIMESTAMP`)
-      .bind(telegramId, definition.trait_id, definition.threshold, eventId, definition.threshold, definition.threshold),
+      .bind(telegramId, ...identityArgs, definition.trait_id, definition.threshold, eventId, definition.threshold, definition.threshold),
     db.prepare(`INSERT INTO telegram_pet_memories
-      (telegram_id, combat_actions, exploration_actions, care_actions, event_actions, adventure_actions)
-      SELECT ?, CASE WHEN ?='combat' THEN progress_delta ELSE 0 END, CASE WHEN ?='exploration' THEN progress_delta ELSE 0 END,
+      (telegram_id${identityColumn}, combat_actions, exploration_actions, care_actions, event_actions, adventure_actions)
+      SELECT ?${identityValue}, CASE WHEN ?='combat' THEN progress_delta ELSE 0 END, CASE WHEN ?='exploration' THEN progress_delta ELSE 0 END,
         CASE WHEN ?='care' THEN progress_delta ELSE 0 END, CASE WHEN ?='event' THEN progress_delta ELSE 0 END,
         CASE WHEN ?='adventure' THEN progress_delta ELSE 0 END
       FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL AND progress_delta > 0
-      ON CONFLICT(telegram_id) DO UPDATE SET
+      ${memoryConflict} DO UPDATE SET
         combat_actions = telegram_pet_memories.combat_actions + excluded.combat_actions,
         exploration_actions = telegram_pet_memories.exploration_actions + excluded.exploration_actions,
         care_actions = telegram_pet_memories.care_actions + excluded.care_actions,
         event_actions = telegram_pet_memories.event_actions + excluded.event_actions,
         adventure_actions = telegram_pet_memories.adventure_actions + excluded.adventure_actions,
         updated_at = CURRENT_TIMESTAMP`)
-      .bind(telegramId, activity, activity, activity, activity, activity, eventId),
+      .bind(telegramId, ...identityArgs, activity, activity, activity, activity, activity, eventId),
     db.prepare(`UPDATE telegram_pet_memories SET favourite_activity = CASE
       WHEN adventure_actions >= combat_actions AND adventure_actions >= exploration_actions AND adventure_actions >= care_actions AND adventure_actions >= event_actions AND adventure_actions > 0 THEN 'Adventure'
       WHEN exploration_actions >= combat_actions AND exploration_actions >= care_actions AND exploration_actions >= event_actions AND exploration_actions > 0 THEN 'Exploration'
       WHEN combat_actions >= care_actions AND combat_actions >= event_actions AND combat_actions > 0 THEN 'Combat'
       WHEN care_actions >= event_actions AND care_actions > 0 THEN 'Care'
       WHEN event_actions > 0 THEN 'Events' ELSE favourite_activity END
-      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL AND progress_delta > 0)`)
-      .bind(telegramId, eventId),
+      WHERE ${ownerPredicate} AND EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL AND progress_delta > 0)`)
+      .bind(ownerValue, eventId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
-      (analytics_id, telegram_id, event_type, trait_id, event_data)
-      SELECT ?, ?, 'personality_unlock', ?, ? FROM telegram_pet_personality_traits
-      WHERE telegram_id = ? AND trait_id = ? AND unlocked_at IS NOT NULL`)
-      .bind(analyticsId, telegramId, definition.trait_id, safeJson({ behaviour, threshold: definition.threshold }), telegramId, definition.trait_id),
+      (analytics_id, telegram_id${identityColumn}, event_type, trait_id, event_data)
+      SELECT ?, ?${identityValue}, 'personality_unlock', ?, ? FROM telegram_pet_personality_traits
+      WHERE ${ownerPredicate} AND trait_id = ? AND unlocked_at IS NOT NULL`)
+      .bind(analyticsId, telegramId, ...identityArgs, definition.trait_id, safeJson({ behaviour, threshold: definition.threshold }), ownerValue, definition.trait_id),
     db.prepare(`UPDATE telegram_pet_identity_events SET applied_at = CURRENT_TIMESTAMP
       WHERE event_id = ? AND applied_at IS NULL`).bind(eventId),
   ]);
   const identityEvent = await db.prepare(`SELECT progress_delta FROM telegram_pet_identity_events WHERE event_id = ?`).bind(eventId).first().catch(() => null);
   const trait = await db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits
-    WHERE telegram_id = ? AND trait_id = ?`).bind(telegramId, definition.trait_id).first().catch(() => null);
+    WHERE ${ownerPredicate} AND trait_id = ?`).bind(ownerValue, definition.trait_id).first().catch(() => null);
   return { accepted: Boolean(results?.[0]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes,
     unlocked: Boolean(results?.[4]?.meta?.changes), progress_applied: positiveInteger(identityEvent?.progress_delta),
     daily_capped: Boolean(results?.[0]?.meta?.changes) && positiveInteger(identityEvent?.progress_delta) === 0, trait };
@@ -192,6 +202,14 @@ function memoryValues(request) {
 
 export async function recordMoonpetMemory(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
+  const petId = String(request.pet_id || '').trim();
+  const identityColumn = petId ? ', pet_id' : '';
+  const identityValue = petId ? ', ?' : '';
+  const identityArgs = petId ? [petId] : [];
+  const ownerPredicate = petId ? 'pet_id = ?' : 'telegram_id = ?';
+  const ownerValue = petId || telegramId;
+  const memoryConflict = petId ? 'ON CONFLICT(pet_id) WHERE pet_id IS NOT NULL' : 'ON CONFLICT(telegram_id)';
+  const bossConflict = petId ? 'ON CONFLICT(pet_id, boss_id) WHERE pet_id IS NOT NULL' : 'ON CONFLICT(telegram_id, boss_id)';
   const eventKey = String(request.event_key || '').trim().slice(0, 180);
   const values = memoryValues(request);
   if (!telegramId || !eventKey || !['first_adoption', 'first_run', 'run_completed', 'extraction', 'boss_victory', 'milestone'].includes(values.type)) throw new Error('invalid_moonpet_memory');
@@ -201,16 +219,16 @@ export async function recordMoonpetMemory(db, request = {}) {
   const milestoneJson = safeJson(values.milestone ? [values.milestone] : []);
   const statements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
-      (event_id, telegram_id, event_key, event_kind, payload)
-      SELECT ?, ?, ?, 'memory', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
-      .bind(eventId, telegramId, eventKey, safeJson(values), telegramId),
+      (event_id, telegram_id${identityColumn}, event_key, event_kind, payload)
+      SELECT ?, ?${identityValue}, ?, 'memory', ? WHERE EXISTS (SELECT 1 FROM ${petId ? 'telegram_pet_instances' : 'telegram_pet_profiles'} WHERE ${ownerPredicate})`)
+      .bind(eventId, telegramId, ...identityArgs, eventKey, safeJson(values), ownerValue),
     db.prepare(`INSERT INTO telegram_pet_memories
-      (telegram_id, first_adoption_at, first_run_at, first_extraction_at, first_boss_victory_at, first_boss_id,
+      (telegram_id${identityColumn}, first_adoption_at, first_run_at, first_extraction_at, first_boss_victory_at, first_boss_id,
        biggest_reward_amount, biggest_reward_currency, total_runs, total_bosses_defeated, milestones)
-      SELECT ?, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END,
+      SELECT ?${identityValue}, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END,
         CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, NULLIF(?, ''), ?, ?, ?, ?, ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)
-      ON CONFLICT(telegram_id) DO UPDATE SET
+      ${memoryConflict} DO UPDATE SET
         first_adoption_at = COALESCE(telegram_pet_memories.first_adoption_at, excluded.first_adoption_at),
         first_run_at = COALESCE(telegram_pet_memories.first_run_at, excluded.first_run_at),
         first_extraction_at = COALESCE(telegram_pet_memories.first_extraction_at, excluded.first_extraction_at),
@@ -223,17 +241,17 @@ export async function recordMoonpetMemory(db, request = {}) {
         milestones = CASE WHEN json_array_length(excluded.milestones)=0 OR EXISTS (SELECT 1 FROM json_each(telegram_pet_memories.milestones) WHERE value=json_extract(excluded.milestones, '$[0]'))
           THEN telegram_pet_memories.milestones ELSE json_insert(telegram_pet_memories.milestones, '$[#]', json_extract(excluded.milestones, '$[0]')) END,
         updated_at = CURRENT_TIMESTAMP`)
-      .bind(telegramId, values.first_adoption, values.first_run, values.first_extraction, values.first_boss, values.boss_id,
+      .bind(telegramId, ...identityArgs, values.first_adoption, values.first_run, values.first_extraction, values.first_boss, values.boss_id,
         values.reward_amount, values.reward_currency, values.total_runs, values.total_bosses, milestoneJson, eventId),
   ];
-  if (values.boss_id) statements.push(db.prepare(`INSERT INTO telegram_pet_boss_victories (telegram_id, boss_id, victories)
-    SELECT ?, ?, 1 WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)
-    ON CONFLICT(telegram_id, boss_id) DO UPDATE SET victories = telegram_pet_boss_victories.victories + 1, updated_at = CURRENT_TIMESTAMP`)
-    .bind(telegramId, values.boss_id, eventId));
+  if (values.boss_id) statements.push(db.prepare(`INSERT INTO telegram_pet_boss_victories (telegram_id${identityColumn}, boss_id, victories)
+    SELECT ?${identityValue}, ?, 1 WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)
+    ${bossConflict} DO UPDATE SET victories = telegram_pet_boss_victories.victories + 1, updated_at = CURRENT_TIMESTAMP`)
+    .bind(telegramId, ...identityArgs, values.boss_id, eventId));
   if (values.milestone) statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
-    (analytics_id, telegram_id, event_type, milestone_id, event_data)
-    SELECT ?, ?, 'memory_milestone', ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)`)
-    .bind(`memory_milestone:${telegramId}:${values.milestone}`, telegramId, values.milestone, safeJson({ memory_type: values.type }), eventId));
+    (analytics_id, telegram_id${identityColumn}, event_type, milestone_id, event_data)
+    SELECT ?, ?${identityValue}, 'memory_milestone', ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND applied_at IS NULL)`)
+    .bind(`memory_milestone:${petId || telegramId}:${values.milestone}`, telegramId, ...identityArgs, values.milestone, safeJson({ memory_type: values.type }), eventId));
   statements.push(db.prepare(`UPDATE telegram_pet_identity_events SET applied_at = CURRENT_TIMESTAMP WHERE event_id = ? AND applied_at IS NULL`).bind(eventId));
   const results = await db.batch(statements);
   return { accepted: Boolean(results?.[0]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes };
@@ -241,15 +259,22 @@ export async function recordMoonpetMemory(db, request = {}) {
 
 export async function recordMoonpetBiggestReward(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
+  const petId = String(request.pet_id || '').trim();
   const amount = positiveInteger(request.reward_amount);
   const currency = String(request.reward_currency || 'moon_gold').trim().toLowerCase().slice(0, 40);
   if (!telegramId || amount < 1 || !ID_PATTERN.test(currency)) return { accepted: false, reason: 'invalid_moonpet_reward_memory' };
-  const result = await db.prepare(`INSERT INTO telegram_pet_memories (telegram_id, biggest_reward_amount, biggest_reward_currency)
-    SELECT ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)
-    ON CONFLICT(telegram_id) DO UPDATE SET
+  const identityColumn = petId ? ', pet_id' : '';
+  const identityValue = petId ? ', ?' : '';
+  const identityArgs = petId ? [petId] : [];
+  const ownerPredicate = petId ? 'pet_id = ?' : 'telegram_id = ?';
+  const ownerValue = petId || telegramId;
+  const conflict = petId ? 'ON CONFLICT(pet_id) WHERE pet_id IS NOT NULL' : 'ON CONFLICT(telegram_id)';
+  const result = await db.prepare(`INSERT INTO telegram_pet_memories (telegram_id${identityColumn}, biggest_reward_amount, biggest_reward_currency)
+    SELECT ?${identityValue}, ?, ? WHERE EXISTS (SELECT 1 FROM ${petId ? 'telegram_pet_instances' : 'telegram_pet_profiles'} WHERE ${ownerPredicate})
+    ${conflict} DO UPDATE SET
       biggest_reward_currency = CASE WHEN excluded.biggest_reward_amount > telegram_pet_memories.biggest_reward_amount THEN excluded.biggest_reward_currency ELSE telegram_pet_memories.biggest_reward_currency END,
       biggest_reward_amount = MAX(telegram_pet_memories.biggest_reward_amount, excluded.biggest_reward_amount),
-      updated_at = CURRENT_TIMESTAMP`).bind(telegramId, amount, currency, telegramId).run();
+      updated_at = CURRENT_TIMESTAMP`).bind(telegramId, ...identityArgs, amount, currency, ownerValue).run();
   return { accepted: Number(result?.meta?.changes || 0) > 0, amount, currency };
 }
 
@@ -343,6 +368,8 @@ export async function evolveMoonpet(db, request = {}) {
     return { accepted: false, duplicate: false, reason: 'evolution_authority_unavailable' };
   }
   const petId = scope?.pet_id || null;
+  let identityPetId = petId;
+  try { await db.prepare('SELECT pet_id FROM telegram_pet_memories LIMIT 1').first(); } catch { identityPetId = ''; }
   if (!petId || !scope?.season_key) return { accepted: false, duplicate: false, reason: 'evolution_authority_unavailable' };
   const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ?`)
     .bind(petId, evolutionId).first().catch(() => null);
@@ -370,27 +397,27 @@ export async function evolveMoonpet(db, request = {}) {
           .bind(quantity, telegramId, assetType, assetKey, quantity, petId, evolutionId));
     }
   }
-  statements.push(db.prepare(`INSERT INTO telegram_pet_memories (telegram_id, milestones)
-    SELECT ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id=? AND materials_consumed=0)
-    ON CONFLICT(telegram_id) DO UPDATE SET
+  statements.push(db.prepare(`INSERT INTO telegram_pet_memories (telegram_id${identityPetId ? ', pet_id' : ''}, milestones)
+    SELECT ?${identityPetId ? ', ?' : ''}, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id=? AND materials_consumed=0)
+    ${identityPetId ? 'ON CONFLICT(pet_id) WHERE pet_id IS NOT NULL' : 'ON CONFLICT(telegram_id)'} DO UPDATE SET
       milestones = CASE WHEN EXISTS (SELECT 1 FROM json_each(telegram_pet_memories.milestones) WHERE value = ?)
         THEN telegram_pet_memories.milestones ELSE json_insert(telegram_pet_memories.milestones, '$[#]', ?) END,
       updated_at = CURRENT_TIMESTAMP`)
-    .bind(telegramId, safeJson([evolutionMilestone]), petId, evolutionId, evolutionMilestone, evolutionMilestone));
+    .bind(telegramId, ...(identityPetId ? [identityPetId] : []), safeJson([evolutionMilestone]), petId, evolutionId, evolutionMilestone, evolutionMilestone));
   statements.push(db.prepare(`UPDATE telegram_pet_evolutions_by_pet SET materials_consumed = 1
     WHERE pet_id = ? AND evolution_id = ? AND materials_consumed = 0`).bind(petId, evolutionId));
   statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
-      (analytics_id, telegram_id, event_type, evolution_id, duration_seconds, event_data)
-      SELECT ?, ?, 'evolution_unlock', ?, MAX(0, CAST((julianday(CURRENT_TIMESTAMP) - julianday(COALESCE(m.first_adoption_at, e.unlocked_at))) * 86400 AS INTEGER)), ?
-      FROM telegram_pet_evolutions_by_pet e LEFT JOIN telegram_pet_memories m ON m.telegram_id = e.telegram_id
+      (analytics_id, telegram_id${identityPetId ? ', pet_id' : ''}, event_type, evolution_id, duration_seconds, event_data)
+      SELECT ?, ?${identityPetId ? ', ?' : ''}, 'evolution_unlock', ?, MAX(0, CAST((julianday(CURRENT_TIMESTAMP) - julianday(COALESCE(m.first_adoption_at, e.unlocked_at))) * 86400 AS INTEGER)), ?
+      FROM telegram_pet_evolutions_by_pet e LEFT JOIN telegram_pet_memories m ON ${identityPetId ? 'm.pet_id = e.pet_id' : 'm.telegram_id = e.telegram_id'}
       WHERE e.pet_id = ? AND e.evolution_id = ?`)
-      .bind(`evolution_unlock:${petId}:${evolutionId}`, telegramId, evolutionId,
+      .bind(`evolution_unlock:${petId}:${evolutionId}`, telegramId, ...(identityPetId ? [identityPetId] : []), evolutionId,
         safeJson({ pet_id: petId, stage: definition.stage, name: definition.name }), petId, evolutionId));
   statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
-      (analytics_id, telegram_id, event_type, milestone_id, event_data)
-      SELECT ?, ?, 'memory_milestone', ?, ? WHERE EXISTS
+      (analytics_id, telegram_id${identityPetId ? ', pet_id' : ''}, event_type, milestone_id, event_data)
+      SELECT ?, ?${identityPetId ? ', ?' : ''}, 'memory_milestone', ?, ? WHERE EXISTS
         (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ?)`)
-      .bind(`memory_milestone:${petId}:${evolutionMilestone}`, telegramId, evolutionMilestone,
+      .bind(`memory_milestone:${petId}:${evolutionMilestone}`, telegramId, ...(identityPetId ? [identityPetId] : []), evolutionMilestone,
         safeJson({ memory_type: 'milestone', evolution_id: evolutionId, pet_id: petId }), petId, evolutionId));
   const results = await db.batch(statements);
   if (!results?.[0]?.meta?.changes) {
@@ -405,6 +432,10 @@ export async function evolveMoonpet(db, request = {}) {
 export async function getMoonpetIdentitySummary(db, telegramIdRaw) {
   const telegramId = String(telegramIdRaw || '').trim();
   const scope = await readActivePetIdentityScope(db, telegramId);
+  let identityPetId = scope?.pet_id || '';
+  try { await db.prepare('SELECT pet_id FROM telegram_pet_memories LIMIT 1').first(); } catch { identityPetId = ''; }
+  const identityPredicate = identityPetId ? 'pet_id = ?' : 'telegram_id = ?';
+  const identityValue = identityPetId || telegramId;
   const evolution = scope?.pet_id
     ? await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? ORDER BY stage DESC LIMIT 1`)
       .bind(scope.pet_id).first().catch(() => null)
@@ -413,8 +444,8 @@ export async function getMoonpetIdentitySummary(db, telegramIdRaw) {
     (!evolution && (!scope?.pet_id || Number(scope?.slot_number || 1) <= 1 || scope?.acquisition_type === 'free'))
       ? db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? ORDER BY stage DESC LIMIT 1`).bind(telegramId).first().catch(() => null)
       : Promise.resolve(null),
-    db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits WHERE telegram_id = ? AND unlocked_at IS NOT NULL ORDER BY unlocked_at, trait_id LIMIT 4`).bind(telegramId).all().catch(() => ({ results: [] })),
-    db.prepare(`SELECT * FROM telegram_pet_memories WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
+    db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits WHERE ${identityPredicate} AND unlocked_at IS NOT NULL ORDER BY unlocked_at, trait_id LIMIT 4`).bind(identityValue).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT * FROM telegram_pet_memories WHERE ${identityPredicate}`).bind(identityValue).first().catch(() => null),
   ]);
   const currentEvolution = evolution || legacyEvolution;
   if (Number(scope?.slot_number || 1) > 1 && scope?.acquisition_type !== 'free') {

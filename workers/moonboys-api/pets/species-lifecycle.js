@@ -139,11 +139,15 @@ export async function ensureMoonpetLifecycle(db, telegramId) {
 async function rareProgress(db, telegramId, row) {
   if (!row || !['adult', 'rare'].includes(row.phase)) return { signal: 'dormant', ready: false, percent: 0 };
   if (row.phase === 'rare') return { signal: 'morphed', ready: false, percent: 100 };
+  let identityPetId = row.pet_id || '';
+  try { await db.prepare('SELECT pet_id FROM telegram_pet_memories LIMIT 1').first(); } catch { identityPetId = ''; }
+  const identityPredicate = identityPetId ? 'pet_id=?' : 'telegram_id=?';
+  const identityValue = identityPetId || telegramId;
   const route = RARE_ROUTES[Math.max(0, Number(row.rare_route_index || 0)) % RARE_ROUTES.length];
   const [memory, evolution, traitRows] = await Promise.all([
-    db.prepare('SELECT * FROM telegram_pet_memories WHERE telegram_id=?').bind(telegramId).first().catch(() => null),
+    db.prepare(`SELECT * FROM telegram_pet_memories WHERE ${identityPredicate}`).bind(identityValue).first().catch(() => null),
     db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').bind(row.pet_id).first().catch(() => null),
-    db.prepare('SELECT trait_id FROM telegram_pet_personality_traits WHERE telegram_id=? AND unlocked_at IS NOT NULL').bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT trait_id FROM telegram_pet_personality_traits WHERE ${identityPredicate} AND unlocked_at IS NOT NULL`).bind(identityValue).all().catch(() => ({ results: [] })),
   ]);
   const unlocked = new Set((traitRows.results || []).map((entry) => entry.trait_id));
   const traitDone = route.traits.filter((trait) => unlocked.has(trait)).length;
