@@ -124,10 +124,11 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   let weeklyCrestProgress = null;
   let ageProgress = null;
   if (next) {
-    const minAgeDays = integer(next.requirements.min_age_days);
+    const gatedEvolution = Number(next.stage) > 0;
+    const minAgeDays = gatedEvolution ? integer(next.requirements.min_age_days) : 0;
     const createdAt = Date.parse(pet.created_at || '');
     const currentTime = new Date(now).getTime();
-    const ageDays = Number.isFinite(createdAt) && Number.isFinite(currentTime)
+    const ageDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
       ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))
       : 0;
     ageProgress = { current: ageDays, required: minAgeDays, complete: ageDays >= minAgeDays };
@@ -143,14 +144,20 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     })));
     const [relics, marks, crests] = await Promise.all([
       db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id=?`).bind(pet.telegram_id).first(),
-      db.prepare(`SELECT COUNT(DISTINCT earned_day) AS earned FROM telegram_pet_growth_marks
-        WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first(),
-      db.prepare(`SELECT COUNT(DISTINCT qualification_week) AS earned FROM telegram_pet_weekly_crests
-        WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first(),
+      gatedEvolution
+        ? db.prepare(`SELECT COUNT(DISTINCT earned_day) AS earned FROM telegram_pet_growth_marks
+          WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first()
+        : Promise.resolve({ earned: 0 }),
+      gatedEvolution
+        ? db.prepare(`SELECT COUNT(DISTINCT qualification_week) AS earned FROM telegram_pet_weekly_crests
+          WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first()
+        : Promise.resolve({ earned: 0 }),
     ]);
     relicProgress = { current: integer(relics?.count), required: integer(next.requirements.relics_owned), complete: integer(relics?.count) >= integer(next.requirements.relics_owned) };
-    growthMarkProgress = { current: integer(marks?.earned), required: integer(next.requirements.growth_marks), complete: integer(marks?.earned) >= integer(next.requirements.growth_marks) };
-    weeklyCrestProgress = { current: integer(crests?.earned), required: integer(next.requirements.weekly_crests), complete: integer(crests?.earned) >= integer(next.requirements.weekly_crests) };
+    const requiredGrowthMarks = gatedEvolution ? integer(next.requirements.growth_marks) : 0;
+    const requiredWeeklyCrests = gatedEvolution ? integer(next.requirements.weekly_crests) : 0;
+    growthMarkProgress = { current: integer(marks?.earned), required: requiredGrowthMarks, complete: integer(marks?.earned) >= requiredGrowthMarks };
+    weeklyCrestProgress = { current: integer(crests?.earned), required: requiredWeeklyCrests, complete: integer(crests?.earned) >= requiredWeeklyCrests };
   }
   const levelProgress = next ? { current: level, required: next.requirements.pet_level, complete: level >= next.requirements.pet_level } : null;
   const evolutionReady = Boolean(next
