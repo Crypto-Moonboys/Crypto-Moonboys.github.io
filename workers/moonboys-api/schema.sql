@@ -575,6 +575,8 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_created
   ON telegram_pet_events(telegram_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_day
   ON telegram_pet_events(telegram_id, day_key, status);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_pet_day
+  ON telegram_pet_events(pet_id, day_key, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_week
   ON telegram_pet_events(telegram_id, week_key, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_season_xp
@@ -665,6 +667,8 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_reward_claims_source
   ON telegram_pet_reward_claims(source, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_reward_claims_user_day
   ON telegram_pet_reward_claims(telegram_id, day_key, source);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_reward_claims_pet
+  ON telegram_pet_reward_claims(pet_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_reward_assets (
   claim_id TEXT NOT NULL,

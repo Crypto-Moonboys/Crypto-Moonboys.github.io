@@ -5,7 +5,7 @@ import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/065_moonpet_reward_pet_id_authority.sql', import.meta.url), 'utf8');
-const { awardPetReward } = __petMediaTestHooks;
+const { awardPetReward, getPetProfile } = __petMediaTestHooks;
 
 assert.match(migration, /reward_claims ADD COLUMN pet_id/);
 assert.match(migration, /pet_events ADD COLUMN pet_id/);
@@ -54,6 +54,8 @@ seedPet('owner', 'pet-a', 1);
 seedPet('owner', 'pet-b', 2);
 seedPet('other', 'pet-other', 1);
 db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('owner','pet-a','pet-s2026-003')").run();
+db.database.prepare("UPDATE telegram_pet_profiles SET updated_at='2026-08-17 12:00:00' WHERE telegram_id='owner'").run();
+db.database.prepare("UPDATE telegram_pet_instances SET source_profile_updated_at='2026-08-17 12:00:00',updated_at='2026-08-17 12:00:00' WHERE pet_id='pet-a'").run();
 
 const request = { telegram_id: 'owner', pet_id: 'pet-a', source: 'pet_job', idempotency_key: 'immutable-claim', rewards: { pet_xp: 40, moon_gold: 7 }, now: '2026-08-17T12:00:00Z' };
 // Switching the compatibility selector before settlement cannot redirect it.
@@ -70,6 +72,16 @@ assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE
   'compatibility profile must remain read-only for pet-authority settlement');
 assert.deepEqual({ ...db.database.prepare("SELECT pet_id,status FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get() }, { pet_id: 'pet-a', status: 'awarded' });
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get().count, 1);
+const claimMetadata = JSON.parse(db.database.prepare("SELECT metadata FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get().metadata);
+assert.equal(claimMetadata.idempotency_key, 'immutable-claim', 'claims must retain the full settlement metadata');
+assert.deepEqual(claimMetadata.requested, { pet_xp: 40, community_xp: 0, moon_gold: 7, moon_crystals: 0, style_tokens: 0, materials: {}, items: {}, relics: {} });
+
+// Immediate compatibility reconciliation must see the direct instance write as
+// newer even when the pre-settlement profile/instance timestamps were equal.
+db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-a'").run();
+await getPetProfile(db, 'owner');
+assert.deepEqual({ ...db.database.prepare("SELECT pet_xp,moon_gold FROM telegram_pet_instances WHERE pet_id='pet-a'").get() },
+  { pet_xp: 40, moon_gold: 7 }, 'profile reconciliation must not overwrite an instance-authority reward');
 
 const wrongOwner = await awardPetReward(db, { ...request, pet_id: 'pet-other', idempotency_key: 'wrong-owner' });
 assert.equal(wrongOwner.accepted, false, 'a persisted pet owned by another player must fail closed');
@@ -79,5 +91,27 @@ const legacy = await awardPetReward(db, { telegram_id: 'legacy', source: 'pet_jo
 assert.equal(legacy.accepted, true, 'reward rows without pet_id retain legacy settlement');
 assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='legacy'").get().pet_xp, 11);
 assert.equal(db.database.prepare("SELECT pet_id FROM telegram_pet_reward_claims WHERE telegram_id='legacy'").get().pet_id, null);
+
+// A reservation event exists before its reward claim. Settlement must attach
+// the immutable pet and include that award in the same pet's daily cap.
+db.database.prepare('INSERT INTO telegram_users (telegram_id,xp,level) VALUES (?,0,1)').run('reserved');
+db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level) VALUES (?,0,1)').run('reserved');
+seedPet('reserved', 'pet-reserved', 1);
+db.database.prepare(`INSERT INTO telegram_pet_events
+  (id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason)
+  VALUES ('reservation-1','reserved','reserved_reward','reservation-1','pet-s2026-003','2026-08-17','2026-W34','pending','reserved')`).run();
+const reserved = await awardPetReward(db, {
+  telegram_id: 'reserved', pet_id: 'pet-reserved', source: 'pet_job', idempotency_key: 'reservation-claim',
+  reservation_id: 'reservation-1', day_key: '2026-08-17', week_key: '2026-W34', season_key: 'pet-s2026-003',
+  rewards: { pet_xp: 1190 }, now: '2026-08-17T12:00:00Z',
+});
+assert.equal(reserved.pet_xp_awarded, 1190);
+assert.equal(db.database.prepare("SELECT pet_id FROM telegram_pet_events WHERE id='reservation-1'").get().pet_id, 'pet-reserved');
+const capped = await awardPetReward(db, {
+  telegram_id: 'reserved', pet_id: 'pet-reserved', source: 'pet_job', idempotency_key: 'after-reservation',
+  rewards: { pet_xp: 20 }, now: '2026-08-17T12:01:00Z',
+});
+assert.equal(capped.pet_xp_awarded, 10, 'reservation settlement must count toward the immutable pet daily cap');
+assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-reserved'").get().pet_xp, 1200);
 
 console.log('Moonpet pet_id reward authority tests passed.');

@@ -3024,8 +3024,9 @@ async function getPetProfile(db, telegramId) {
     const profileUpdatedAt = petStateTimestamp(profile.updated_at);
     const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
     const instanceUpdatedAt = petStateTimestamp(instance.updated_at);
-    const profileIsNewer = profileUpdatedAt > instanceProfileVersion
-      || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion);
+    const hasInstanceAuthority = instance.source_profile_updated_at === PET_INSTANCE_AUTHORITY_VERSION;
+    const profileIsNewer = !hasInstanceAuthority && (profileUpdatedAt > instanceProfileVersion
+      || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion));
     if (profileIsNewer) {
       await writeActivePetInstance(db, telegramId, profile);
       return applyPetDecay({ ...instance, ...profile, pet_id: instance.pet_id });
@@ -3111,6 +3112,7 @@ const PET_INSTANCE_STATE_COLUMNS = Object.freeze([
   'equipped_armor', 'equipped_weapon', 'equipped_charm', 'last_active_day',
   'last_decay_at',
 ]);
+const PET_INSTANCE_AUTHORITY_VERSION = '0001-01-01 00:00:00';
 
 function isPetInstanceSchemaUnavailable(error) {
   return /no such table: telegram_pet_(instances|season_slots|active_slots)/i.test(String(error?.message || error));

@@ -29,6 +29,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '060_telegram_pet_sanctuary_indexes.sql',
   '063_arcade_xp_spendable_wallet.sql',
   '064_moonpet_beta_runtime_cutover.sql',
+  '065_moonpet_reward_pet_id_authority.sql',
 ]);
 
 function readJson(filePath, label) {

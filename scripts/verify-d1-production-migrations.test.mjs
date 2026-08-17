@@ -15,6 +15,7 @@ assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_indexes\.sql/, 'migration 060 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/063_arcade_xp_spendable_wallet\.sql/, 'migration 063 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/064_moonpet_beta_runtime_cutover\.sql/, 'migration 064 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/065_moonpet_reward_pet_id_authority\.sql/, 'migration 065 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -54,6 +55,7 @@ assert.match(remoteQueryStep, /059_telegram_pet_sanctuary\.sql/, 'the workflow_d
 assert.match(remoteQueryStep, /060_telegram_pet_sanctuary_indexes\.sql/, 'the workflow_dispatch D1 query must request migration 060 from production');
 assert.match(remoteQueryStep, /063_arcade_xp_spendable_wallet\.sql/, 'the workflow_dispatch D1 query must request migration 063 from production');
 assert.match(remoteQueryStep, /064_moonpet_beta_runtime_cutover\.sql/, 'the workflow_dispatch D1 query must request migration 064 from production');
+assert.match(remoteQueryStep, /065_moonpet_reward_pet_id_authority\.sql/, 'the workflow_dispatch D1 query must request migration 065 from production');
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),
@@ -218,6 +220,16 @@ assert.throws(
   () => validateRequest(withoutMoonpetBetaRuntimeCutover),
   /missing required migrations: 064_moonpet_beta_runtime_cutover\.sql/,
   'deployment verification must reject an evidence request that omits migration 064',
+);
+
+const withoutMoonpetRewardPetIdAuthority = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '065_moonpet_reward_pet_id_authority.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutMoonpetRewardPetIdAuthority),
+  /missing required migrations: 065_moonpet_reward_pet_id_authority\.sql/,
+  'deployment verification must reject an evidence request that omits migration 065',
 );
 
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
