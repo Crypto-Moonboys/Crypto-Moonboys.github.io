@@ -19,8 +19,8 @@ CREATE TABLE telegram_pet_memories(telegram_id TEXT PRIMARY KEY,milestones TEXT,
 CREATE TABLE telegram_pet_inventory(telegram_id TEXT,asset_type TEXT,asset_key TEXT,quantity INTEGER);
 CREATE TABLE telegram_pet_equipment_progression(telegram_id TEXT,item_key TEXT,slot TEXT,item_level INTEGER,mastery_tier INTEGER);
 CREATE TABLE telegram_pet_progression_state(telegram_id TEXT PRIMARY KEY,traits_json TEXT);
-CREATE TABLE telegram_pet_growth_marks(pet_id TEXT,telegram_id TEXT,season_key TEXT);
-CREATE TABLE telegram_pet_weekly_crests(pet_id TEXT,telegram_id TEXT,season_key TEXT,season_week INTEGER);
+CREATE TABLE telegram_pet_growth_marks(pet_id TEXT,telegram_id TEXT,season_key TEXT,earned_day TEXT);
+CREATE TABLE telegram_pet_weekly_crests(pet_id TEXT,telegram_id TEXT,season_key TEXT,season_week INTEGER,qualification_week INTEGER);
 CREATE TABLE telegram_pet_boss_victories(telegram_id TEXT,boss_id TEXT,victories INTEGER);
 CREATE TABLE telegram_pet_material_balances(telegram_id TEXT,material_key TEXT,quantity INTEGER);
 CREATE TABLE telegram_pet_relics(telegram_id TEXT,relic_id TEXT);
@@ -92,8 +92,8 @@ INSERT INTO telegram_pet_evolutions_by_pet VALUES
  ('auto','auto-owner','moon_guardian',4,'[]','[]','2026-01-05'),
  ('auto','auto-owner','legendary_moon_guardian',5,'[]','[]','2026-03-20');
 WITH RECURSIVE days(value) AS (SELECT 1 UNION ALL SELECT value+1 FROM days WHERE value<60)
-INSERT INTO telegram_pet_growth_marks SELECT 'auto','auto-owner','s2' FROM days;
-INSERT INTO telegram_pet_weekly_crests SELECT 'auto','auto-owner','s2',value FROM json_each('[1,2,3,4,5,6,7,8,9,10]');`);
+INSERT INTO telegram_pet_growth_marks SELECT 'auto','auto-owner','s2',date('2026-01-01','+' || (value-1) || ' days') FROM days;
+INSERT INTO telegram_pet_weekly_crests SELECT 'auto','auto-owner','s2',value,value FROM json_each('[1,2,3,4,5,6,7,8,9,10]');`);
 const autoState=await finalizePetSeasonCompletionIfEligible(db,'auto','s2',{telegram_id:'auto-owner',now:'2026-03-31T00:00:00Z'});
 assert.equal(autoState.season_complete,true);
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='auto'`).get().count,1,'authoritative completion enters Sanctuary without Mini App loading');

@@ -74,6 +74,16 @@ for (let week = 2; week < PET_SEASON_COMPLETION_CONFIG.required_weekly_crests; w
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-21'), { telegram_id: 'owner' });
 assert.equal(state.weekly_crests.earned, 9);
 assert.equal(state.season_complete, false, 'nine distinct qualifying weeks remain incomplete');
+sqlite.prepare(`INSERT INTO telegram_pet_growth_marks
+  (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day,earned_at)
+  VALUES ('historical-unqualified','pet-a','owner','s1','care_milestone','care:historical',NULL,'2025-01-01')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_weekly_crests
+  (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key,earned_at)
+  VALUES ('historical-crest','pet-a','owner','s1',10,NULL,'weekly_journey','weekly-journey:historical','2025-01-01')`).run();
+state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-21'), { telegram_id: 'owner' });
+assert.equal(state.growth_marks.earned, 60, 'unqualified historical duplicate Marks cannot bypass calendar pacing');
+assert.equal(state.weekly_crests.earned, 9, 'unqualified historical Crests cannot bypass calendar pacing');
+assert.equal(state.season_complete, false);
 await awardPetWeeklyCrest(db, { ...crest, season_week: 10, evidence_key: 'weekly-boss:s1:10' });
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-28'), { telegram_id: 'owner' });
 assert.equal(state.season_complete, true);

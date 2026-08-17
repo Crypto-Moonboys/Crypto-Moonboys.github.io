@@ -32,7 +32,7 @@ Pet XP, evolution records, Growth Marks, Weekly Crests, lifecycle events, cooldo
 
 ## Season 0 to Season 1 deployment
 
-1. Back up D1 and run migrations in numeric order. Migration 061 preserves every beta evidence row; it qualifies only the earliest historical row per pet/day and pet/week for the new caps.
+1. Back up D1 and run migrations in numeric order. Migration 061 preserves every beta evidence row and qualifies only the earliest historical row per pet/day and pet/week; migration 062 then rebuilds both evolution tables non-destructively so Legendary stage 5 can persist.
 2. Keep Season 0 pets and placeholder identity fields as historical records. Archive them through status/migration fields rather than deleting rows.
 3. Snapshot the Season 0 leaderboard, then start a new Season 1 leaderboard namespace/season key. Do not truncate shared history tables.
 4. Reconcile active slots into the Season 1 key, grant slot 1 through the existing free-season flow, and leave Sanctuary/completion snapshots immutable.

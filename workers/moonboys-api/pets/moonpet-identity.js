@@ -269,9 +269,9 @@ function evolutionRequirementSql(definition, telegramId, petId = null) {
     if (petId) {
       clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_season_slots s WHERE s.pet_id=? AND s.telegram_id=? AND datetime(s.created_at, '+' || ? || ' days') <= CURRENT_TIMESTAMP)`);
       args.push(petId, telegramId, positiveInteger(requirements.min_age_days));
-      clauses.push(`(SELECT COUNT(*) FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=?) >= ?`);
+      clauses.push(`(SELECT COUNT(DISTINCT earned_day) FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=? AND earned_day IS NOT NULL) >= ?`);
       args.push(petId, telegramId, positiveInteger(requirements.growth_marks));
-      clauses.push(`(SELECT COUNT(DISTINCT season_week) FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=?) >= ?`);
+      clauses.push(`(SELECT COUNT(DISTINCT qualification_week) FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND qualification_week IS NOT NULL) >= ?`);
       args.push(petId, telegramId, positiveInteger(requirements.weekly_crests));
     }
   }
@@ -293,6 +293,29 @@ function evolutionRequirementSql(definition, telegramId, petId = null) {
     }
   }
   return { sql: clauses.join(' AND '), args };
+}
+
+export async function evaluateMoonpetEvolutionRequirements(db, request = {}) {
+  const telegramId = String(request.telegram_id || '').trim();
+  const evolutionId = String(request.evolution_id || '').trim().toLowerCase();
+  const definition = MOONPET_EVOLUTIONS[evolutionId];
+  if (!telegramId || !definition) return { ready: false, reason: 'invalid_evolution', pet_id: null };
+  let scope = null;
+  try {
+    scope = await readActivePetIdentityScope(db, telegramId);
+  } catch {
+    return { ready: false, reason: 'evolution_authority_unavailable', pet_id: null };
+  }
+  const petId = scope?.pet_id || null;
+  const requirements = evolutionRequirementSql(definition, telegramId, petId);
+  let row = null;
+  try {
+    row = await db.prepare(`SELECT CASE WHEN ${requirements.sql} THEN 1 ELSE 0 END AS ready`)
+      .bind(...requirements.args).first().catch(() => null);
+  } catch {
+    row = null;
+  }
+  return { ready: Number(row?.ready || 0) === 1, reason: row ? null : 'evolution_authority_unavailable', pet_id: petId };
 }
 
 export async function evolveMoonpet(db, request = {}) {

@@ -1,3 +1,5 @@
+import { awardPetGrowthMark } from './season-completion.js';
+
 const CARE_TYPES = Object.freeze({
   warm: { progress: 2, affinity: 'bold' },
   talk: { progress: 2, affinity: 'social' },
@@ -146,14 +148,18 @@ async function rareProgress(db, telegramId, row) {
   const unlocked = new Set((traitRows.results || []).map((entry) => entry.trait_id));
   const traitDone = route.traits.filter((trait) => unlocked.has(trait)).length;
   const counterRatios = Object.entries(route.counters).map(([key, target]) => Math.min(1, Number(memory?.[key] || 0) / target));
-  const stageRatio = Math.min(1, Number(evolution?.stage || 0) / 4);
+  const evolutionStage = Number(evolution?.stage || 0);
+  const stageRatio = Math.min(1, evolutionStage / 5);
   const percent = Math.floor(((traitDone / route.traits.length) * 0.35 + (counterRatios.reduce((a, b) => a + b, 0) / counterRatios.length) * 0.45 + stageRatio * 0.2) * 100);
-  const ready = traitDone === route.traits.length && counterRatios.every((ratio) => ratio >= 1) && stageRatio >= 1;
+  const ready = traitDone === route.traits.length && counterRatios.every((ratio) => ratio >= 1) && evolutionStage >= 5;
   return { signal: ready ? 'ready' : percent >= 70 ? 'resonating' : percent >= 35 ? 'stirring' : 'dormant', ready, percent };
 }
 
-function incubationAgeDays(row, now = new Date()) {
-  const created = Date.parse(row?.created_at || '');
+export function incubationAgeDays(row, now = new Date()) {
+  const raw = String(row?.created_at || '').trim();
+  const utcTimestamp = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(raw)
+    ? `${raw.replace(' ', 'T')}Z` : raw;
+  const created = Date.parse(utcTimestamp);
   const current = new Date(now).getTime();
   return Number.isFinite(created) && Number.isFinite(current) ? Math.max(0, Math.floor((current - created) / 86400000)) : 0;
 }
@@ -221,7 +227,7 @@ export async function getMoonpetLifecycle(db, telegramId) {
   return publicLifecycle(row, await rareProgress(db, id, row));
 }
 
-export async function incubateMoonEgg(db, telegramId, careType, eventKey) {
+export async function incubateMoonEgg(db, telegramId, careType, eventKey, now = new Date()) {
   const id = cleanId(telegramId);
   const care = String(careType || '').trim().toLowerCase();
   const definition = CARE_TYPES[care];
@@ -230,7 +236,7 @@ export async function incubateMoonEgg(db, telegramId, careType, eventKey) {
   if (!row) return { accepted: false, reason: 'pet_not_adopted' };
   if (row.phase !== 'egg') return { accepted: false, reason: 'already_hatched' };
   const key = String(eventKey || crypto.randomUUID()).slice(0, 180);
-  const dayKey = new Date().toISOString().slice(0, 10);
+  const dayKey = new Date(now).toISOString().slice(0, 10);
   const existing = await db.prepare('SELECT event_id, applied_at FROM telegram_pet_lifecycle_events_by_pet WHERE pet_id=? AND event_key=?')
     .bind(row.pet_id, key).first().catch(() => null);
   if (existing?.applied_at) return { accepted: true, duplicate: true, reason: 'duplicate', lifecycle: await getMoonpetLifecycle(db, id) };
@@ -262,10 +268,20 @@ export async function incubateMoonEgg(db, telegramId, careType, eventKey) {
   const applied = Number(results?.[2]?.meta?.changes || 0) === 1;
   if (!inserted) return { accepted: false, reason: 'incubation_daily_cap', lifecycle: await getMoonpetLifecycle(db, id) };
   if (!progressed || !applied) return { accepted: false, reason: 'incubation_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
+  const active = await db.prepare(`SELECT season_key FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=?`)
+    .bind(id, row.pet_id).first().catch(() => null);
+  if (active?.season_key) await awardPetGrowthMark(db, {
+    pet_id: row.pet_id,
+    telegram_id: id,
+    season_key: active.season_key,
+    milestone: 'incubation',
+    evidence_key: `incubation:${key}`,
+    earned_at: new Date(now).toISOString(),
+  }).catch(() => null);
   return { accepted: true, reason: 'egg_signal_strengthened', care_type: care, lifecycle: await getMoonpetLifecycle(db, id) };
 }
 
-export async function hatchMoonpet(db, telegramId, eventKey) {
+export async function hatchMoonpet(db, telegramId, eventKey, now = new Date()) {
   const id = cleanId(telegramId);
   const key = String(eventKey || crypto.randomUUID()).slice(0, 180);
   const row = await ensureMoonpetLifecycle(db, id);
@@ -276,7 +292,7 @@ export async function hatchMoonpet(db, telegramId, eventKey) {
   if (existing) return { accepted: false, reason: 'hatch_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
   if (row.phase !== 'egg') return { accepted: false, reason: 'already_hatched', lifecycle: await getMoonpetLifecycle(db, id) };
   const incubation = safeJson(row.incubation_json);
-  const ageDays = incubationAgeDays(row);
+  const ageDays = incubationAgeDays(row, now);
   const engagementReady = Number(row.incubation_progress || 0) >= HATCH_PROGRESS
     && Object.keys(CARE_TYPES).filter((key) => Number(incubation[key] || 0) > 0).length >= 3;
   if (ageDays < GUARANTEED_HATCH_DAYS && (ageDays < EARLIEST_HATCH_DAYS || !engagementReady)) {

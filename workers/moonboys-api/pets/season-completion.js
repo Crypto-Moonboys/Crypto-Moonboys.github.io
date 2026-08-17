@@ -1,5 +1,6 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { movePetToSanctuaryIfEligible } from './sanctuary.js';
+import { evaluateMoonpetEvolutionRequirements } from './moonpet-identity.js';
 
 // Product balancing assumptions: five post-egg evolution milestones and ten
 // qualifying weeks. Named here so balancing never hides in route/UI code.
@@ -11,6 +12,7 @@ export const PET_SEASON_COMPLETION_CONFIG = Object.freeze({
 });
 
 export const PET_GROWTH_MILESTONES = Object.freeze({
+  incubation: Object.freeze({ type: 'incubation_care', evidence_prefix: 'incubation:' }),
   evolution: Object.freeze({ type: 'lifecycle_evolution', evidence_prefix: 'evolution:' }),
   care: Object.freeze({ type: 'care_milestone', evidence_prefix: 'care:' }),
   boss: Object.freeze({ type: 'boss_milestone', evidence_prefix: 'boss:' }),
@@ -125,7 +127,11 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey) {
     relicProgress = { current: integer(relics?.count), required: integer(next.requirements.relics_owned), complete: integer(relics?.count) >= integer(next.requirements.relics_owned) };
   }
   const levelProgress = next ? { current: level, required: next.requirements.pet_level, complete: level >= next.requirements.pet_level } : null;
-  const evolutionReady = Boolean(next && levelProgress.complete && relicProgress.complete && bossProgress.every((entry) => entry.complete) && itemProgress.every((entry) => entry.complete));
+  const authority = next ? await evaluateMoonpetEvolutionRequirements(db, {
+    telegram_id: pet.telegram_id,
+    evolution_id: next.evolution_id,
+  }) : { ready: false };
+  const evolutionReady = Boolean(next && authority.pet_id === petId && authority.ready);
   return {
     current_stage: stage + 1, total_stages: evolutions.length,
     current_evolution: current?.evolution_id || evolutions[0].evolution_id,
@@ -141,9 +147,9 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
   const seasonWeek = Math.min(13, Math.max(1, integer(options.season_week || 1)));
   const [legendary, growth, crests, currentCrest, existing, lifecycle] = await Promise.all([
     isPetLegendary(db, petId, seasonKey),
-    db.prepare(`SELECT COUNT(*) AS earned FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first(),
-    db.prepare(`SELECT COUNT(*) AS evidence_rows, COUNT(DISTINCT season_week) AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first(),
-    db.prepare(`SELECT 1 AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=? AND season_week=? LIMIT 1`).bind(petId, pet.telegram_id, seasonKey, seasonWeek).first(),
+    db.prepare(`SELECT COUNT(DISTINCT earned_day) AS earned FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first(),
+    db.prepare(`SELECT COUNT(*) AS evidence_rows, COUNT(DISTINCT qualification_week) AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first(),
+    db.prepare(`SELECT 1 AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? LIMIT 1`).bind(petId, pet.telegram_id, seasonKey, seasonWeek).first(),
     db.prepare(`SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first(),
     buildPetLifecycleProgress(db, petId, seasonKey),
   ]);

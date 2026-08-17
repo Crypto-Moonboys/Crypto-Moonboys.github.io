@@ -1103,7 +1103,7 @@ CREATE INDEX IF NOT EXISTS idx_pet_material_balances_owner
 CREATE TABLE IF NOT EXISTS telegram_pet_evolutions (
   telegram_id TEXT NOT NULL,
   evolution_id TEXT NOT NULL,
-  stage INTEGER NOT NULL CHECK (stage BETWEEN 0 AND 4),
+  stage INTEGER NOT NULL CHECK (stage BETWEEN 0 AND 5),
   unlock_event_key TEXT NOT NULL,
   cosmetic_unlocks TEXT NOT NULL DEFAULT '[]',
   achievement_unlocks TEXT NOT NULL DEFAULT '[]',
@@ -1119,7 +1119,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet (
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
   evolution_id TEXT NOT NULL,
-  stage INTEGER NOT NULL CHECK (stage BETWEEN 0 AND 4),
+  stage INTEGER NOT NULL CHECK (stage BETWEEN 0 AND 5),
   unlock_event_key TEXT NOT NULL,
   cosmetic_unlocks TEXT NOT NULL DEFAULT '[]',
   achievement_unlocks TEXT NOT NULL DEFAULT '[]',

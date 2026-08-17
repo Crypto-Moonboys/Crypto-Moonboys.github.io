@@ -12,7 +12,7 @@ import {
 } from './pets/daily-moon-run.js';
 import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
-  getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
+  evaluateMoonpetEvolutionRequirements, getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
   validateMoonpetEvolutionContent,
 } from './pets/moonpet-identity.js';
 import {
@@ -13113,7 +13113,7 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
   const currentStage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => Number(entry.stage) === currentStage + 1) || null;
   if (!next) return null;
-  const [inventory, materials, victories, relicCount] = await Promise.all([
+  const [inventory, materials, victories, relicCount, authority] = await Promise.all([
     db.prepare(`SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory WHERE telegram_id = ? AND quantity > 0`)
       .bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND quantity > 0`)
@@ -13122,6 +13122,7 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
       .bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = ?`)
       .bind(telegramId).first().catch(() => ({ count: 0 })),
+    evaluateMoonpetEvolutionRequirements(db, { telegram_id: telegramId, evolution_id: next.evolution_id }),
   ]);
   const inventoryCounts = new Map((inventory.results || []).map((row) => [`${row.asset_type}:${row.asset_key}`, Math.max(0, Number(row.quantity) || 0)]));
   for (const row of materials.results || []) inventoryCounts.set(`material:${row.material_key}`, Math.max(0, Number(row.quantity) || 0));
@@ -13159,7 +13160,8 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
     name: next.name,
     stage: next.stage,
     perk: getPetEvolutionPerk(next.stage).perk,
-    ready: missing.length === 0,
+    ready: authority.ready,
+    authority_reason: authority.reason,
     missing,
   };
 }
