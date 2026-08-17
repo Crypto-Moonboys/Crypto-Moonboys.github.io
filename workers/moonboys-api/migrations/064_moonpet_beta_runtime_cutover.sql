@@ -92,6 +92,33 @@ UPDATE telegram_pet_profiles SET
   last_decay_at = CURRENT_TIMESTAMP,
   updated_at = CURRENT_TIMESTAMP;
 
+-- Pet instance rows are retained as ownership/season-slot evidence, but the
+-- runtime fields copied during the beta mirror era must also be cleared. Without
+-- this, later active-slot switching or Sanctuary reconciliation can restore the
+-- unsafe beta balances/equipment back into the account profile.
+UPDATE telegram_pet_instances SET
+  pet_xp = 0,
+  level = 1,
+  hunger = 25,
+  happiness = 70,
+  cleanliness = 70,
+  energy = 70,
+  health = 75,
+  streak_days = 0,
+  moon_gold = 0,
+  moon_crystals = 0,
+  style_tokens = 0,
+  equipped_food = NULL,
+  equipped_toy = NULL,
+  equipped_outfit = NULL,
+  equipped_armor = NULL,
+  equipped_weapon = NULL,
+  equipped_charm = NULL,
+  last_active_day = NULL,
+  last_decay_at = CURRENT_TIMESTAMP,
+  source_profile_updated_at = CURRENT_TIMESTAMP,
+  updated_at = CURRENT_TIMESTAMP;
+
 INSERT OR IGNORE INTO telegram_pet_runtime_cutovers
   (cutover_key, policy_version, reason)
 VALUES
