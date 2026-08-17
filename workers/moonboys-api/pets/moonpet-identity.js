@@ -316,11 +316,11 @@ export async function evaluateMoonpetEvolutionRequirements(db, request = {}) {
     row = await db.prepare(`SELECT CASE WHEN ${requirements.sql} THEN 1 ELSE 0 END AS ready`)
       .bind(...requirements.args).first();
   } catch {
-    return { ready: false, reason: 'evolution_validation_failed', pet_id: petId };
+    return { ready: false, reason: 'evolution_authority_unavailable', pet_id: petId };
   }
   if (!row) return { ready: false, reason: 'evolution_authority_unavailable', pet_id: petId };
   const ready = Number(row.ready || 0) === 1;
-  return { ready, reason: ready ? null : 'evolution_not_qualified', pet_id: petId };
+  return { ready, reason: ready ? null : 'requirements_not_met', pet_id: petId };
 }
 
 export async function evolveMoonpet(db, request = {}) {
@@ -424,7 +424,7 @@ export async function evolveMoonpet(db, request = {}) {
       : await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ?`)
         .bind(telegramId, evolutionId).first().catch(() => null);
     if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: concurrent };
-    return { accepted: false, duplicate: false, reason: 'evolution_requirements_not_met' };
+    return { accepted: false, duplicate: false, reason: 'requirements_not_met' };
   }
   return { accepted: true, duplicate: false, reason: 'evolved', evolution: definition };
 }

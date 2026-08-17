@@ -2054,7 +2054,7 @@ const blockedCyberEvolution = await evolveMoonpet(legacyBossDb, {
   telegram_id: 'legacy-boss-gate', evolution_id: 'cyber_moonpet', event_key: 'legacy-boss-gate:evolve',
 });
 assert.equal(blockedCyberEvolution.accepted, false, 'legacy completion cannot unlock boss-gated evolution');
-assert.equal(blockedCyberEvolution.reason, 'evolution_requirements_not_met');
+assert.equal(blockedCyberEvolution.reason, 'requirements_not_met');
 
 async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
   const db = seedRepeatRewardPlayer(telegramId, 18);

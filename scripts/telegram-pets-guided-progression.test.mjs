@@ -81,16 +81,16 @@ db.exec(`
   CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY,telegram_id TEXT,season_key TEXT,slot_number INTEGER,status TEXT);
   CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY,pet_id TEXT,season_key TEXT);
   CREATE TABLE telegram_pet_evolutions_by_pet (pet_id TEXT,telegram_id TEXT,evolution_id TEXT,stage INTEGER);
-  CREATE TABLE telegram_pet_growth_marks (pet_id TEXT,telegram_id TEXT,earned_day TEXT);
-  CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT,telegram_id TEXT,qualification_week INTEGER);
+  CREATE TABLE telegram_pet_growth_marks (pet_id TEXT,telegram_id TEXT,season_key TEXT,earned_day TEXT);
+  CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT,telegram_id TEXT,season_key TEXT,qualification_week INTEGER);
   INSERT INTO telegram_pet_season_slots VALUES ('pet-1','player-1','s1',1,'free','active','2026-01-01',CURRENT_TIMESTAMP);
   INSERT INTO telegram_pet_instances VALUES ('pet-1','player-1','s1',1,'active');
   INSERT INTO telegram_pet_active_slots VALUES ('player-1','pet-1','s1');
   INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet-1','player-1','moon_egg',0);
   INSERT INTO telegram_pet_growth_marks VALUES
-    ('pet-1','player-1','2026-01-01'),('pet-1','player-1','2026-01-02'),('pet-1','player-1','2026-01-03'),
-    ('pet-1','player-1','2026-01-04'),('pet-1','player-1','2026-01-05'),('pet-1','player-1','2026-01-06'),('pet-1','player-1','2026-01-07');
-  INSERT INTO telegram_pet_weekly_crests VALUES ('pet-1','player-1',1);
+    ('pet-1','player-1','s1','2026-01-01'),('pet-1','player-1','s1','2026-01-02'),('pet-1','player-1','s1','2026-01-03'),
+    ('pet-1','player-1','s1','2026-01-04'),('pet-1','player-1','s1','2026-01-05'),('pet-1','player-1','s1','2026-01-06'),('pet-1','player-1','s1','2026-01-07');
+  INSERT INTO telegram_pet_weekly_crests VALUES ('pet-1','player-1','s1',1);
   INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity)
   VALUES ('player-1', 'scrap_metal', 3);
 `);
@@ -117,6 +117,12 @@ assert.deepEqual(blockedEvolution.missing.map(({ key, current, required }) => ({
 ]);
 db.prepare(`UPDATE telegram_pet_material_balances SET quantity = 5 WHERE telegram_id = 'player-1' AND material_key = 'scrap_metal'`).run();
 assert.equal((await hooks.getPetEvolutionGuidance(d1, 'player-1', { pet_xp: 4200 }, identity)).ready, true);
+db.prepare(`UPDATE telegram_pet_growth_marks SET season_key='season-0'`).run();
+const seasonBlocked = await hooks.getPetEvolutionGuidance(d1, 'player-1', { pet_xp: 4200 }, identity);
+assert.equal(seasonBlocked.ready, false, 'evidence from another season cannot make guidance ready');
+assert.equal(seasonBlocked.authority_reason, 'requirements_not_met');
+assert.match(seasonBlocked.missing[0].source, /active pet season/i, 'blocked guidance always explains the season-authority gate');
+db.prepare(`UPDATE telegram_pet_growth_marks SET season_key='s1'`).run();
 const oneTime = await hooks.persistPetGuidanceNotices(d1, 'player-1', [{
   key: 'evolution-ready:street_moonpet', type: 'evolution_ready', title: 'Street Moonpet evolution is ready', detail: 'Evolve now.', callback_data: 'pet:evolve',
 }]);

@@ -619,7 +619,7 @@
       '<div class="pet-instance-grid"><div><span>SPECIES</span><strong>' + escapeHtml(words(pet.species || 'forming')) + '</strong></div>' + variant +
       '<div><span>LIFECYCLE</span><strong>' + escapeHtml(words(pet.stage || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div>' +
       '<div><span>PET XP</span><strong>' + number(pet.pet_xp) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div>' +
-      '<div><span>STAGE</span><strong>' + number(lifecycle.current_stage || 1) + '/' + number(lifecycle.total_stages || 5) + '</strong></div><div><span>GROWTH</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
+      '<div><span>STAGE</span><strong>' + number(lifecycle.current_stage || 1) + '/' + number(lifecycle.total_stages || 6) + '</strong></div><div><span>GROWTH</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
       '<div><span>CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div><div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div><div><span>HUNGER</span><strong>' + number(pet.hunger) + '</strong></div>' +
       '<div><span>FUN</span><strong>' + number(pet.happiness) + '</strong></div><div><span>CLEAN</span><strong>' + number(pet.cleanliness) + '</strong></div></div>' + completion + '</div>';
   }
@@ -643,7 +643,7 @@
     var levelRequirement = journeyLifecycle.requirements && journeyLifecycle.requirements.pet_level || {};
     var journeyStatus = journey.season_complete ? 'SEASON COMPLETE // SANCTUARY ELIGIBLE'
       : journey.legendary ? 'LEGENDARY // SEASON JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
-    var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO') : 'FINAL FORM REACHED';
+    var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO // ' + words(journeyLifecycle.authority_reason || 'requirements not met')) : 'FINAL FORM REACHED';
     var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>SEASON JOURNEY // WEEK ' + number(summary.current_season_week) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
     var available = Number(summary.arcade_xp_available != null ? summary.arcade_xp_available : (provided[0] && provided[0].arcade_xp_available != null ? provided[0].arcade_xp_available : 0));
     var rows = [1, 2, 3].map(function (slotNumber) {

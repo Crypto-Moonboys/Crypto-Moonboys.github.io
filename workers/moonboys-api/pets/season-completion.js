@@ -145,6 +145,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey) {
     next_evolution: next ? { evolution_id: next.evolution_id, name: next.name } : null,
     requirements: next ? { pet_level: levelProgress, boss_victories: bossProgress, required_items: itemProgress, relics: relicProgress } : null,
     evolution_ready: evolutionReady,
+    authority_reason: next ? authority.reason : null,
   };
 }
 

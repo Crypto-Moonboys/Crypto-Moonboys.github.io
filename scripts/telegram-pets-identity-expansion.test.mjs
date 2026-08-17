@@ -189,7 +189,7 @@ for (const relicId of ['bitcoin_heart', 'cyber_collar']) evolutionDb.database.pr
 evolutionDb.database.prepare("INSERT INTO telegram_pet_boss_victories (telegram_id, boss_id, victories) VALUES ('identity-player', 'alley_king', 3)").run();
 await recordMoonpetMemory(evolutionDb, { telegram_id: 'identity-player', event_key: 'adoption', memory_type: 'first_adoption', milestone: 'first_adoption' });
 assert.equal((await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player', evolution_id: 'cyber_moonpet', event_key: 'skip' })).reason,
-  'evolution_requirements_not_met', 'evolution stages cannot be skipped');
+  'requirements_not_met', 'evolution stages cannot be skipped');
 assert.equal((await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player', evolution_id: 'moon_egg', event_key: 'egg' })).accepted, true);
 assert.equal((await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player', evolution_id: 'street_moonpet', event_key: 'street' })).accepted, true);
 const cyber = await evolveMoonpet(evolutionDb, { telegram_id: 'identity-player', evolution_id: 'cyber_moonpet', event_key: 'cyber' });
@@ -220,7 +220,7 @@ const previousSeasonAuthority = await evaluateMoonpetEvolutionRequirements(evolu
   telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian',
 });
 assert.equal(previousSeasonAuthority.ready, false, 'previous-season Marks and Crests cannot authorize the active season');
-assert.equal(previousSeasonAuthority.reason, 'evolution_not_qualified', 'successful authority checks explain unmet requirements');
+assert.equal(previousSeasonAuthority.reason, 'requirements_not_met', 'successful authority checks explain unmet requirements');
 evolutionDb.database.prepare(`UPDATE telegram_pet_growth_marks SET season_key=? WHERE pet_id=?`).run(TEST_SEASON_KEY, identityPetId);
 evolutionDb.database.prepare(`UPDATE telegram_pet_weekly_crests SET season_key=? WHERE pet_id=?`).run(TEST_SEASON_KEY, identityPetId);
 const legendaryAuthority = await evaluateMoonpetEvolutionRequirements(evolutionDb, {
@@ -238,7 +238,7 @@ const unavailableValidation = await evaluateMoonpetEvolutionRequirements({
     return evolutionDb.prepare(sql);
   },
 }, { telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian' });
-assert.equal(unavailableValidation.reason, 'evolution_validation_failed', 'requirement query errors are classified separately');
+assert.equal(unavailableValidation.reason, 'evolution_authority_unavailable', 'requirement query errors report unavailable authority');
 const legendaryGuidance = await workerHooks.getPetEvolutionGuidance(evolutionDb, 'identity-player', { pet_xp: 5000 }, { current_stage: { stage: 4 } });
 assert.equal(legendaryGuidance.ready, legendaryAuthority.ready, 'UI guidance uses the same authoritative validation as evolveMoonpet');
 const legendary = await evolveMoonpet(evolutionDb, {

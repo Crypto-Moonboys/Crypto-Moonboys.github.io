@@ -900,7 +900,7 @@ assert.equal(evolutionCeremony.primary, 'Cyber Moonpet');
 
 const rareState = {
   adopted: true,
-  pet: { species: 'neon_raccoon', evolution_stage: 4, stage: 'Legendary Moonpet' },
+  pet: { species: 'neon_raccoon', evolution_stage: 5, stage: 'Legendary Moon Guardian' },
   lifecycle: { ...adultState.lifecycle, phase: 'rare', rare: { name: 'Subway Phantom' } },
 };
 const rareCeremony = planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: true, rare_morph: 'Subway Phantom' });

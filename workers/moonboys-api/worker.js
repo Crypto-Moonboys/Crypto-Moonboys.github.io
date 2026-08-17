@@ -13155,6 +13155,16 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
       });
     }
   }
+  if (!authority.ready && missing.length === 0) missing.push({
+    key: `authority:${authority.reason || 'evolution_authority_unavailable'}`,
+    label: authority.reason === 'requirements_not_met' ? 'Season age, Growth Marks, or Weekly Crests' : 'Evolution authority',
+    current: 0,
+    required: 1,
+    source: authority.reason === 'requirements_not_met'
+      ? 'Continue qualified daily and weekly activity in the active pet season.'
+      : 'Server validation is temporarily unavailable; retry shortly.',
+    callback_data: 'pet:coach',
+  });
   return {
     evolution_id: next.evolution_id,
     name: next.name,
@@ -13830,7 +13840,7 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
   const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity.current_stage?.stage || 0) + 1);
   const requested = String(evolutionIdRaw || next?.evolution_id || '').trim().toLowerCase();
   if (!next) {
-    await sendTelegramMessage(tok, chatId, `<b>🧬 Legendary Moon Guardian</b>\nFinal evolution reached.\n${escapeHtml(getPetEvolutionPerk(4).perk)}`, { reply_markup: buildPetProgressMenuReplyMarkup() });
+    await sendTelegramMessage(tok, chatId, `<b>🧬 Legendary Moon Guardian</b>\nFinal evolution reached.\n${escapeHtml(getPetEvolutionPerk(5).perk)}`, { reply_markup: buildPetProgressMenuReplyMarkup() });
     return;
   }
   if (requested !== next.evolution_id) {
