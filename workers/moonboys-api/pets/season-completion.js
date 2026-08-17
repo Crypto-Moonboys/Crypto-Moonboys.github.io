@@ -123,6 +123,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   if (!pet) return null;
   const current = await db.prepare(`SELECT evolution_id, stage FROM telegram_pet_evolutions_by_pet
     WHERE pet_id=? AND telegram_id=? ORDER BY stage DESC LIMIT 1`).bind(petId, pet.telegram_id).first();
+  const currentEvolutionRecorded = Boolean(current?.evolution_id);
   const stage = integer(current?.stage);
   const currentDefinition = evolutions.find((entry) => Number(entry.stage) === stage) || null;
   const next = evolutions.find((entry) => Number(entry.stage) === stage + 1) || null;
@@ -132,6 +133,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   let bossProgress = [];
   let itemProgress = [];
   let relicProgress = { current: 0, required: integer(next?.requirements?.relics_owned), complete: !next?.requirements?.relics_owned };
+  let currentEvolutionProgress = null;
   let growthMarkProgress = null;
   let weeklyCrestProgress = null;
   let ageProgress = null;
@@ -145,6 +147,11 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
       ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))
       : null;
     const ageDays = computedAgeDays == null ? 0 : computedAgeDays;
+    currentEvolutionProgress = {
+      current: currentEvolutionRecorded ? current.evolution_id : null,
+      required: currentDefinition?.evolution_id || evolutions[0].evolution_id,
+      complete: currentEvolutionRecorded,
+    };
     ageProgress = { current: ageDays, required: minAgeDays, complete: ageDays >= minAgeDays };
     bossProgress = await Promise.all(Object.entries(next.requirements.boss_victories || {}).map(async ([bossId, required]) => {
       const row = await db.prepare(`SELECT victories FROM telegram_pet_boss_victories WHERE telegram_id=? AND boss_id=?`).bind(pet.telegram_id, bossId).first();
@@ -175,6 +182,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   }
   const levelProgress = next ? { current: level, required: next.requirements.pet_level, complete: level >= next.requirements.pet_level } : null;
   const evolutionReady = Boolean(next
+    && currentEvolutionProgress.complete
     && levelProgress.complete
     && ageProgress.complete
     && growthMarkProgress.complete
@@ -187,6 +195,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     current_evolution: current?.evolution_id || evolutions[0].evolution_id,
     next_evolution: next ? { evolution_id: next.evolution_id, name: next.name } : null,
     requirements: next ? {
+      current_evolution: currentEvolutionProgress,
       pet_level: levelProgress,
       min_age_days: ageProgress,
       growth_marks: growthMarkProgress,
