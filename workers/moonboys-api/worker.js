@@ -3233,6 +3233,7 @@ async function mirrorPetProfileToActiveInstance(db, telegramId) {
 }
 
 async function awardPetReward(db, options) {
+  if (String(options?.pet_id || '').trim()) return awardLegacyPetReward(db, options);
   await getPetProfile(db, options?.telegram_id);
   const result = await awardLegacyPetReward(db, options);
   await mirrorPetProfileToActiveInstance(db, options?.telegram_id);

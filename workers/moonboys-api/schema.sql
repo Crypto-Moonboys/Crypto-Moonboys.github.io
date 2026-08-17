@@ -554,6 +554,7 @@ CREATE INDEX IF NOT EXISTS idx_pet_arena_rounds_battle_status
 
 CREATE TABLE IF NOT EXISTS telegram_pet_events (
   id TEXT PRIMARY KEY,
+  pet_id TEXT,
   telegram_id TEXT NOT NULL,
   event_type TEXT NOT NULL,
   event_key TEXT NOT NULL,
@@ -646,6 +647,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_steps_run
 
 CREATE TABLE IF NOT EXISTS telegram_pet_reward_claims (
   claim_id TEXT PRIMARY KEY,
+  pet_id TEXT,
   telegram_id TEXT NOT NULL,
   source TEXT NOT NULL,
   idempotency_key TEXT NOT NULL,

@@ -75,6 +75,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-pets-runtime-unique-constraints.test.mjs'],
     ['node', 'scripts/telegram-pets-live-reward-settlement.test.mjs'],
     ['node', 'scripts/moonpet-beta-runtime-cutover.test.mjs'],
+    ['node', 'scripts/moonpet-reward-pet-id-authority.test.mjs'],
     ['node', 'scripts/verify-d1-production-migrations.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.mjs'],
