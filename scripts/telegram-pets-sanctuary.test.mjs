@@ -82,20 +82,22 @@ assert.doesNotMatch(
 );
 assert.match(completionSource, /sanctuary_transition:\s*'season_settlement'/, 'completion advertises season-settlement Sanctuary policy');
 
-sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name) VALUES('owner','Nova'),('attacker','Bad'),('auto-owner','Auto'),('reconcile-owner','Reconcile');
+sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name) VALUES('owner','Nova'),('attacker','Bad'),('auto-owner','Auto'),('reconcile-owner','Reconcile'),('year-end-owner','Year End');
 INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,created_at,updated_at) VALUES
  ('complete','owner','s1',1,'active','2026-01-01',NULL),('replacement','owner','s1',2,'active','2026-01-01',NULL),('legendary-only','owner','s1',3,'active','2026-01-01',NULL),
  ('auto','auto-owner','s2',1,'active','2026-01-01',NULL),('auto-b','auto-owner','s2',2,'active','2026-01-01',NULL),
- ('reconcile','reconcile-owner','s3',1,'active','2026-01-01',NULL),('reconcile-b','reconcile-owner','s3',2,'active','2026-01-01',NULL);
+ ('reconcile','reconcile-owner','s3',1,'active','2026-01-01',NULL),('reconcile-b','reconcile-owner','s3',2,'active','2026-01-01',NULL),
+ ('year-end','year-end-owner','pet-s2026-005',1,'active','2026-12-27',NULL);
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,species,stage,status,level,pet_xp,equipped_outfit,equipped_weapon) VALUES
  ('complete','owner','s1',1,'Nova','fox','legendary','active',50,5000,'crown','laser'),('replacement','owner','s1',2,'Other','fox','egg','active',1,0,NULL,NULL),('legendary-only','owner','s1',3,'Legend','fox','legendary','active',50,5000,NULL,NULL),
  ('auto','auto-owner','s2',1,'Auto','fox','legendary','active',50,5000,NULL,NULL),('auto-b','auto-owner','s2',2,'Auto B','fox','egg','active',1,0,NULL,NULL),
- ('reconcile','reconcile-owner','s3',1,'Reconcile','fox','legendary','active',50,5000,NULL,NULL),('reconcile-b','reconcile-owner','s3',2,'Reconcile B','fox','egg','active',1,0,NULL,NULL);
-INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('owner','complete','s1'),('auto-owner','auto','s2'),('reconcile-owner','reconcile','s3');
+ ('reconcile','reconcile-owner','s3',1,'Reconcile','fox','legendary','active',50,5000,NULL,NULL),('reconcile-b','reconcile-owner','s3',2,'Reconcile B','fox','egg','active',1,0,NULL,NULL),
+ ('year-end','year-end-owner','pet-s2026-005',1,'Year End','fox','legendary','active',50,5000,NULL,NULL);
+INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('owner','complete','s1'),('auto-owner','auto','s2'),('reconcile-owner','reconcile','s3'),('year-end-owner','year-end','pet-s2026-005');
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id,growth_marks_earned,weekly_crests_earned,authority_version) VALUES
- ('complete','owner','s1','2026-03-31','legendary_moon_guardian',60,10,2),('reconcile','reconcile-owner','s3','2026-06-30','legendary_moon_guardian',60,10,2);
+ ('complete','owner','s1','2026-03-31','legendary_moon_guardian',60,10,2),('reconcile','reconcile-owner','s3','2026-06-30','legendary_moon_guardian',60,10,2),('year-end','year-end-owner','pet-s2026-005','2026-12-31','legendary_moon_guardian',60,10,2);
 INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_id,rare_morph_id,created_at) VALUES
- ('complete','owner','lunar_fox','neon','neon_fox','2026-01-01'),('auto','auto-owner','lunar_fox','neon',NULL,'2026-01-01'),('reconcile','reconcile-owner','lunar_fox','neon',NULL,'2026-01-01');
+ ('complete','owner','lunar_fox','neon','neon_fox','2026-01-01'),('auto','auto-owner','lunar_fox','neon',NULL,'2026-01-01'),('reconcile','reconcile-owner','lunar_fox','neon',NULL,'2026-01-01'),('year-end','year-end-owner','lunar_fox','neon',NULL,'2026-12-27');
 INSERT INTO telegram_pet_evolutions_by_pet VALUES
  ('auto','auto-owner','moon_egg',0,'[]','[]','2026-01-01'),('auto','auto-owner','street_moonpet',1,'[]','[]','2026-01-02'),('auto','auto-owner','cyber_moonpet',2,'[]','[]','2026-01-03'),('auto','auto-owner','elite_moonpet',3,'[]','[]','2026-01-04'),('auto','auto-owner','moon_guardian',4,'[]','[]','2026-01-05'),('auto','auto-owner','legendary_moon_guardian',5,'[]','[]','2026-03-20');
 INSERT INTO telegram_pet_personality_traits VALUES('owner','brave',100,'2026-02-01');
@@ -141,7 +143,11 @@ await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { season_settleme
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'pending activity blocks season-settlement reconciliation');
 sqlite.prepare(`DELETE FROM telegram_pet_activity_sessions WHERE id='reconcile-activity'`).run();
 await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { now: '2026-08-17T00:00:00Z' });
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 1, 'ordinary Worker reconciliation can move completed past-season pets after season rollover');
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'ordinary Worker reconciliation skips the active 90-day current season');
+await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { now: '2026-10-01T00:00:00Z' });
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 1, 'ordinary Worker reconciliation can move completed past-season pets after 90-day rollover');
 assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='reconcile-owner'`).get().pet_id, 'reconcile-b', 'reconciliation assigns replacement pet');
+await reconcileCompletedPetsToSanctuary(db, 'year-end-owner', { now: '2026-12-31T00:00:00Z' });
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='year-end'`).get().count, 0, 'ordinary Worker reconciliation treats year-end pet-s2026-005 as the current 90-day season, not a past quarter season');
 
 console.log('telegram pets sanctuary tests passed');
