@@ -107,6 +107,16 @@ sqlite.prepare(`INSERT INTO telegram_pet_active_slots VALUES ('owner','pet-next'
 assert.equal((await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date(), { telegram_id: 'owner' })).sanctuary_eligible, true, 'rollover does not erase persisted completion eligibility');
 
 sqlite.prepare(`INSERT INTO telegram_pet_active_slots VALUES ('production-owner','production-pet','pet-s2026-001')`).run();
+for (let day = 0; day < 60; day += 1) {
+  const earnedAt = new Date(Date.UTC(2026, 0, 1 + day, 12));
+  const activityMark = await hooks.awardActivePetActivityGrowthMark(db, 'production-owner', `settled-activity-${day}`, earnedAt);
+  assert.equal(activityMark.accepted, true, `settled activity earns the qualified Growth Mark for day ${day + 1}`);
+  const duplicateActivity = await hooks.awardActivePetActivityGrowthMark(db, 'production-owner', `duplicate-activity-${day}`, earnedAt);
+  assert.equal(duplicateActivity.duplicate, true, 'a second settled activity cannot mint another Mark on the same UTC day');
+}
+assert.equal(sqlite.prepare(`SELECT COUNT(DISTINCT earned_day) count FROM telegram_pet_growth_marks
+  WHERE pet_id='production-pet' AND season_key='pet-s2026-001' AND earned_day IS NOT NULL`).get().count, 60,
+'normal post-hatch activity provides the full season Growth Mark path without client authority');
 const productionCrest = await hooks.recordWeeklyBossVictoryCrest(db, 'production-owner', '2026-W06', 'alley_king', 'persisted-boss-event', new Date('2026-02-05'));
 assert.equal(productionCrest.accepted || productionCrest.duplicate, true, 'the production weekly boss settlement hook awards an active-pet crest');
 sqlite.prepare(`UPDATE telegram_pet_active_slots SET pet_id='production-pet-b' WHERE telegram_id='production-owner'`).run();

@@ -27,7 +27,7 @@ import {
   validatePetRelicContent, validatePetRogueliteContent, validatePetRunModifier,
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
-import { awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
+import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
 import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
@@ -4766,6 +4766,8 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
       AND json_extract(metadata, '$.reward_idempotency_key') = ?
   `).bind(settledMetadata, session.id, telegramId, eventKey).run();
 
+  await awardActivePetActivityGrowthMark(db, telegramId, eventKey, rewardNow);
+
   await reconcileSanctuaryBestEffort(db, telegramId, 'activity_claim', { now: now.toISOString() });
 
   return {
@@ -4774,6 +4776,23 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     session: { ...session, status: 'completed', metadata: settledMetadata },
     computed: settledComputed,
   };
+}
+
+async function awardActivePetActivityGrowthMark(db, telegramId, settlementEventKey, settledAt = new Date()) {
+  try {
+    const active = await findActivePetSlot(db, telegramId);
+    if (!active) return { accepted: false, non_fatal: true, reason: 'active_pet_missing' };
+    return await awardPetGrowthMark(db, {
+      pet_id: active.pet_id,
+      telegram_id: active.telegram_id,
+      season_key: active.season_key,
+      milestone: 'care',
+      evidence_key: `care:activity:${settlementEventKey}`,
+      earned_at: settledAt instanceof Date ? settledAt.toISOString() : settledAt,
+    });
+  } catch {
+    return { accepted: false, non_fatal: true, reason: 'growth_mark_unavailable' };
+  }
 }
 
 async function cancelPetActivitySession(db, telegramId) {
@@ -12210,6 +12229,7 @@ export const __petMediaTestHooks = Object.freeze({
   getMoonpetLifecycle,
   hatchMoonpet,
   incubateMoonEgg,
+  awardActivePetActivityGrowthMark,
   morphMoonpetRare,
   syncMoonpetLifecycleStage,
   PET_ROGUELITE_BOSSES,
