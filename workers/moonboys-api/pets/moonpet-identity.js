@@ -306,6 +306,9 @@ export async function evaluateMoonpetEvolutionRequirements(db, request = {}) {
   try {
     const requestedPetId = String(request.pet_id || '').trim();
     const requestedSeasonKey = String(request.season_key || '').trim();
+    if (Boolean(requestedPetId) !== Boolean(requestedSeasonKey)) {
+      return { ready: false, reason: 'evolution_authority_unavailable', pet_id: requestedPetId || null };
+    }
     scope = requestedPetId && requestedSeasonKey
       ? await db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
           FROM telegram_pet_season_slots s JOIN telegram_pet_instances i

@@ -16,7 +16,7 @@ import {
 import { __rogueliteFoundationTestHooks } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { buildPetProgressSummary } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
 import { __petMediaTestHooks as workerHooks } from '../workers/moonboys-api/worker.js';
-import { awardPetGrowthMark } from '../workers/moonboys-api/pets/season-completion.js';
+import { awardPetGrowthMark, buildPetLifecycleProgress } from '../workers/moonboys-api/pets/season-completion.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql', import.meta.url), 'utf8');
@@ -252,6 +252,9 @@ const inactiveQualified = await evaluateMoonpetEvolutionRequirements(evolutionDb
   evolution_id: 'legendary_moon_guardian',
 });
 assert.equal(inactiveQualified.ready, true, 'an eligible inactive roster pet is evaluated using its own authority scope');
+const inactiveQualifiedLifecycle = await buildPetLifecycleProgress(evolutionDb, inactiveQualifiedPetId, TEST_SEASON_KEY);
+assert.equal(inactiveQualifiedLifecycle.evolution_ready, true,
+  'inactive roster lifecycle guidance reports ready for the specifically requested qualified pet');
 const inactiveBlockedPetId = seedPetSlot(evolutionDb, 'identity-player', 3, 'arcade_xp', false);
 evolutionDb.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
   (pet_id,telegram_id,evolution_id,stage,unlock_event_key,cosmetic_unlocks,achievement_unlocks,materials_consumed)
@@ -261,6 +264,16 @@ const inactiveBlocked = await evaluateMoonpetEvolutionRequirements(evolutionDb, 
   evolution_id: 'street_moonpet',
 });
 assert.equal(inactiveBlocked.reason, 'requirements_not_met', 'a blocked inactive roster pet reports its own missing qualification');
+const inactiveBlockedLifecycle = await buildPetLifecycleProgress(evolutionDb, inactiveBlockedPetId, TEST_SEASON_KEY);
+assert.equal(inactiveBlockedLifecycle.evolution_ready, false,
+  'inactive roster lifecycle guidance does not borrow the active pet readiness');
+assert.equal(inactiveBlockedLifecycle.authority_reason, 'requirements_not_met',
+  'inactive roster lifecycle guidance exposes the requested pet blocking reason');
+const partialScope = await evaluateMoonpetEvolutionRequirements(evolutionDb, {
+  telegram_id: 'identity-player', pet_id: inactiveQualifiedPetId, evolution_id: 'legendary_moon_guardian',
+});
+assert.equal(partialScope.reason, 'evolution_authority_unavailable',
+  'an incomplete explicit pet scope cannot silently fall back to the active pet');
 const failedValidation = await evaluateMoonpetEvolutionRequirements({
   prepare() { throw new Error('validation failed'); },
 }, { telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian' });

@@ -1,5 +1,6 @@
 -- Rebuild evolution tables so the new Legendary stage 5 can persist. D1 does
--- not support altering CHECK constraints in place. Copy every historical row.
+-- not support altering CHECK constraints in place. Promote beta Legendary
+-- stage-4 rows to the new final stage while copying all other history intact.
 CREATE TABLE telegram_pet_evolutions_stage5 (
   telegram_id TEXT NOT NULL,
   evolution_id TEXT NOT NULL,
