@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync('workers/moonboys-api/pets/season-completion.js', 'utf8');
+const sanctuarySource = readFileSync('workers/moonboys-api/pets/sanctuary.js', 'utf8');
 
 assert.match(
   source,
@@ -21,16 +22,40 @@ assert.match(
   'Lifecycle readiness must start from pet instance state, not the active account mirror.',
 );
 
+assert.doesNotMatch(
+  source,
+  /legacyAccountLevel|telegram_pet_profiles WHERE telegram_id/,
+  'Lifecycle readiness must not read the account profile mirror for pet level authority.',
+);
+
 assert.match(
   source,
   /petLifecycleCreatedAt/,
   'Lifecycle age checks must use the pet lifecycle table and not require season slot timestamp columns.',
 );
 
+assert.match(
+  source,
+  /const ageDays = computedAgeDays == null \? minAgeDays : computedAgeDays;/,
+  'Missing legacy age timestamps must not permanently block otherwise-qualified legacy pets.',
+);
+
 assert.doesNotMatch(
   source,
   /evaluateMoonpetEvolutionRequirements/,
   'Lifecycle readiness must not call the active-pet evolution validator for inactive pet progress cards.',
+);
+
+assert.match(
+  sanctuarySource,
+  /isSeasonSettlementReconciliation/,
+  'Sanctuary reconciliation must expose an explicit season-settlement gate.',
+);
+
+assert.match(
+  sanctuarySource,
+  /if \(!isSeasonSettlementReconciliation\(options\)\) return \[\];/,
+  'Generic completed-pet reconciliation must no-op unless season settlement is explicitly requested.',
 );
 
 for (const requiredField of ['min_age_days', 'growth_marks', 'weekly_crests']) {
