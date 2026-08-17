@@ -1666,6 +1666,9 @@ assert.equal(initialSeasonSlots.arcade_xp_spent, 0, 'slot payload must expose sp
 assert.equal(initialSeasonSlots.next_slot_cost, 500, 'slot payload must expose the next sequential cost');
 assert.equal(initialSeasonSlots.can_buy_next_slot, true, 'slot payload must expose wallet affordability');
 assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start locked');
+assert.equal(initialSeasonSlots.slots[2].purchase_enabled, false, 'slot 3 must remain disabled until slot 2 is owned');
+assert.equal(initialSeasonSlots.slots[2].purchase_disabled_reason, 'previous_pet_slot_required', 'slot 3 must advertise the sequential purchase requirement');
+assert.equal(initialSeasonSlots.slots[2].affordable, false, 'slot 3 must not be affordable before slot 2 is owned');
 const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
   action: 'season_slots',
   request_id: 'slot-summary',

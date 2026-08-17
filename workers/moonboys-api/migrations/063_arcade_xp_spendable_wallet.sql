@@ -1,7 +1,7 @@
 -- Spend authority is deliberately separate from arcade_xp_total, which remains
 -- the lifetime/leaderboard counter. Existing lifetime XP is not backfilled:
 -- only XP earned after this migration becomes spendable.
-CREATE TABLE IF NOT EXISTS arcade_xp_wallets (
+CREATE TABLE arcade_xp_wallets (
   telegram_id TEXT PRIMARY KEY,
   arcade_xp_earned INTEGER NOT NULL DEFAULT 0 CHECK (arcade_xp_earned >= 0),
   arcade_xp_spendable INTEGER NOT NULL DEFAULT 0 CHECK (arcade_xp_spendable >= 0),

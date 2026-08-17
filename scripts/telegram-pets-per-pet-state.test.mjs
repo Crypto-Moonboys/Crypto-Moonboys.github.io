@@ -352,9 +352,14 @@ assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE tele
 const preparedRolloverRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rolloverNow);
 assert.equal(preparedRolloverRoster.season.key, 'pet-s2026-003', 'the subsequent roster must describe the current season');
 assert.equal(preparedRolloverRoster.slots[0].unlocked, true, 'the subsequent roster must expose the bootstrapped starter');
+assert.equal(preparedRolloverRoster.slots[2].purchase_enabled, false, 'slot 3 must stay disabled until slot 2 is owned');
+assert.equal(preparedRolloverRoster.slots[2].purchase_disabled_reason, 'previous_pet_slot_required', 'slot 3 must explain the sequential purchase gate');
+assert.equal(preparedRolloverRoster.slots[2].affordable, false, 'slot 3 must not be marked affordable before slot 2 exists');
 const rolloverSeasonKey = preparedRolloverRoster.season.key;
 const boughtSecond = await buyPetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtSecond.accepted, true, 'slot 2 purchase must succeed with enough Arcade XP');
+assert.equal(boughtSecond.season_slots.slots[2].purchase_enabled, true, 'slot 3 must become purchasable immediately after slot 2 is owned');
+assert.equal(boughtSecond.season_slots.slots[2].purchase_disabled_reason, null, 'slot 3 purchase lock reason must clear once slot 2 is owned');
 assert.equal(db.prepare(`SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().phase, 'egg', 'a purchased pet must receive a fresh egg lifecycle');
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'purchase must not auto-switch');
 assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'a rollover starter must receive a fresh egg lifecycle');

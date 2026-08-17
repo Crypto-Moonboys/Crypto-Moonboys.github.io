@@ -1240,6 +1240,24 @@ async function creditArcadeXpWallet(db, telegramId, amount) {
       updated_at=CURRENT_TIMESTAMP`).bind(telegramId, credit, credit).run();
 }
 
+async function reconcileArcadeXpWalletFromEvents(db, telegramId) {
+  const totals = await db.prepare(`
+    SELECT COALESCE(SUM(xp_awarded), 0) AS earned_from_events
+    FROM arcade_progression_events
+    WHERE telegram_id = ? AND status = 'accepted'
+  `).bind(telegramId).first().catch(() => null);
+  const earnedFromEvents = Math.max(0, Math.floor(Number(totals?.earned_from_events) || 0));
+  if (!earnedFromEvents) return 0;
+  const wallet = await db.prepare(`
+    SELECT arcade_xp_earned FROM arcade_xp_wallets WHERE telegram_id = ? LIMIT 1
+  `).bind(telegramId).first().catch(() => null);
+  const walletEarned = Math.max(0, Math.floor(Number(wallet?.arcade_xp_earned) || 0));
+  const recoverableCredit = earnedFromEvents - walletEarned;
+  if (recoverableCredit <= 0) return 0;
+  await creditArcadeXpWallet(db, telegramId, recoverableCredit);
+  return recoverableCredit;
+}
+
 async function getOrCreateGameEnforcementState(db, telegramId, game) {
   await db.prepare(`
     INSERT INTO arcade_game_enforcement_state
@@ -3321,9 +3339,10 @@ const PET_SEASON_EXTRA_SLOT_COSTS = Object.freeze({
 });
 const PET_SEASON_MAX_SLOTS = 3;
 
-function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0) {
+function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0, previousSlotOwned = true) {
   const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
   const unlocked = Boolean(row);
+  const lockedByPrevious = !unlocked && slotNumber > 1 && !previousSlotOwned;
   return {
     slot_number: slotNumber,
     pet_id: row?.pet_id || null,
@@ -3335,9 +3354,9 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     unlocked,
     unlock_cost_arcade_xp: unlocked ? 0 : cost,
     arcade_xp_available: Math.max(0, Number(arcadeXpAvailable || 0)),
-    purchase_enabled: !unlocked && slotNumber > 1,
-    purchase_disabled_reason: null,
-    affordable: !unlocked && slotNumber > 1 && arcadeXpAvailable >= cost,
+    purchase_enabled: !unlocked && slotNumber > 1 && !lockedByPrevious,
+    purchase_disabled_reason: lockedByPrevious ? 'previous_pet_slot_required' : null,
+    affordable: !unlocked && slotNumber > 1 && !lockedByPrevious && arcadeXpAvailable >= cost,
     pet: unlocked ? {
       name: row?.pet_name || 'Moonpet',
       species: row?.lifecycle_species_id || row?.species || '',
@@ -3438,6 +3457,7 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     const arcadeXpSpent = Math.max(0, Number(wallet?.arcade_xp_spent || 0));
     const nextSlotNumber = Math.min(PET_SEASON_MAX_SLOTS + 1, rawRows.length + 1);
     const nextSlotCost = Number(PET_SEASON_EXTRA_SLOT_COSTS[nextSlotNumber] || 0);
+    const previousSlotOwned = nextSlotNumber <= 1 ? true : rawRowsBySlot.has(nextSlotNumber - 1);
     return {
       adopted: true,
       season,
@@ -3449,12 +3469,13 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       arcade_xp_spendable: arcadeXpAvailable,
       arcade_xp_spent: arcadeXpSpent,
       next_slot_cost: nextSlotCost,
-      can_buy_next_slot: nextSlotNumber <= PET_SEASON_MAX_SLOTS && arcadeXpAvailable >= nextSlotCost,
+      can_buy_next_slot: nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
       purchase_enabled: true,
       purchase_disabled_reason: null,
       slots: Array.from({ length: PET_SEASON_MAX_SLOTS }, (_, index) => {
         const slotNumber = index + 1;
-        return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable);
+        const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
+        return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned);
       }),
     };
   } catch (error) {
@@ -9693,11 +9714,12 @@ export default {
           verified.telegramId,
         ).run();
 
-        if (xpBatchAwarded > 0) {
-          await creditArcadeXpWallet(env.DB, verified.telegramId, xpBatchAwarded);
+        const walletRecoveredXp = await reconcileArcadeXpWalletFromEvents(env.DB, verified.telegramId);
+        if (xpBatchAwarded > 0 || walletRecoveredXp > 0) {
           await logTelegramActivity(env.DB, verified.telegramId, 'arcade_progress_sync', JSON.stringify({
             runs_synced: acceptedCount,
             xp_awarded: xpBatchAwarded,
+            wallet_recovered_xp: walletRecoveredXp,
             at: new Date(nowMs).toISOString(),
           }));
         }

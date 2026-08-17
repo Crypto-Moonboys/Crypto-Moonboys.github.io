@@ -28,6 +28,17 @@ assert.doesNotMatch(slotPurchaseSource, /UPDATE arcade_progression_state SET arc
   'Lifetime Arcade XP must never be direct spend authority for paid seasonal slots.');
 assert.match(walletMigration, /Existing lifetime XP is not backfilled/,
   'Wallet migration must not reinterpret deployed lifetime XP as spendable credit.');
+assert.doesNotMatch(walletMigration, /CREATE TABLE IF NOT EXISTS arcade_xp_wallets/,
+  'Wallet migration must fail loudly on drift instead of masking an unexpected pre-existing table.');
+
+const progressionSyncSource = workerSource.slice(
+  workerSource.indexOf("if (path === '/arcade/progression/sync'"),
+  workerSource.indexOf("if (path === '/faction/status'"),
+);
+assert.match(workerSource, /SELECT COALESCE\(SUM\(xp_awarded\), 0\) AS earned_from_events[\s\S]*FROM arcade_progression_events[\s\S]*status = 'accepted'/,
+  'Arcade progression wallet credits must be recoverable from accepted event ledger rows.');
+assert.match(progressionSyncSource, /const walletRecoveredXp = await reconcileArcadeXpWalletFromEvents\(env\.DB, verified\.telegramId\);/,
+  'Arcade progression sync must reconcile wallet credits from accepted runs before returning.');
 
 assert.match(
   source,
