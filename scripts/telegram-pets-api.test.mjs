@@ -911,7 +911,7 @@ assert.ok(runStep.includes('recordPetRunBankedEvent'), 'boss step completion mus
 assertOrder(
   runStep,
   "const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`)",
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);',
   'run steps must check duplicate event keys before loading and mutating the pet'
 );
 assertOrder(
@@ -923,7 +923,7 @@ assertOrder(
 assertOrder(
   runStep,
   "return { accepted: false, reason: 'stale_run_step'",
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);',
   'stale run-step callbacks must not load or mutate pet stats'
 );
 assertOrder(
@@ -941,7 +941,7 @@ assertOrder(
 assertOrder(
   runStep,
   "const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`)",
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);',
   'run steps must check step-level idempotency before mutating the pet'
 );
 assertOrder(
@@ -963,7 +963,7 @@ assertOrder(
   'applyPetRunStatRewards(pet, outcome.rewards);',
   'run stat rewards must only apply after the failure path has been handled'
 );
-assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await savePetProfile(db, pet);'),
+assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await saveRunPetInstance(db, run.pet_id, pet);'),
   'run stat rewards must be applied before saving the successful step pet');
 assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('RETURNING run_id'), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
 assert.ok(runStep.includes("if (!stepResults?.[1]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
@@ -2119,9 +2119,12 @@ assert.equal(tiredMoonAlleyDb.database.prepare("SELECT energy FROM telegram_pet_
   'a failed adventure and its retry must not consume Energy');
 
 const runChoiceItemDb = seedRepeatRewardPlayer('run-choice-item', 90);
+await ensurePetStarterSeasonSlot(runChoiceItemDb, 'run-choice-item', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(runChoiceItemDb, 'run-choice-item');
+const runChoicePet = runChoiceItemDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='run-choice-item'").get();
 runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_runs
-  (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
-  VALUES ('run-choice-item-row', 'run-choice-item', 'run-choice-item-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run();
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
+  VALUES ('run-choice-item-row', ?, 'run-choice-item', 'run-choice-item-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run(runChoicePet.pet_id);
 runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
   VALUES ('run-choice-item', 'item', 'lucky_charm', 1)`).run();
 const runChoiceRandom = Math.random;
@@ -2141,13 +2144,16 @@ assert.equal((await getPetInventory(runChoiceItemDb, 'run-choice-item')).find((i
   'run choices must consume one-use items from the authoritative inventory table');
 
 const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
+await ensurePetStarterSeasonSlot(terminalRaceDb, 'terminal-race', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(terminalRaceDb, 'terminal-race');
+const terminalRacePet = terminalRaceDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='terminal-race'").get();
 terminalRaceDb.database.prepare(`
   INSERT INTO telegram_pet_runs
-    (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
+    (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
       unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
-  VALUES ('terminal-race-row', 'terminal-race', 'terminal-race-run', 'pet-s2026-003', 'active', 4, 5, 1,
+  VALUES ('terminal-race-row', ?, 'terminal-race', 'terminal-race-run', 'pet-s2026-003', 'active', 4, 5, 1,
     30, 12, 1, 2, '{}')
-`).run();
+`).run(terminalRacePet.pet_id);
 const originalRandom = Math.random;
 Math.random = () => 0.99;
 let extractResult;
@@ -2176,7 +2182,7 @@ assert.equal(terminalRaceDb.database.prepare("SELECT COUNT(*) AS count FROM tele
 assert.equal(terminalRaceDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source = 'pet_run_legacy'").get().count, 1,
   'concurrent extract and room callbacks must produce exactly one terminal reward claim');
 assert.deepEqual(
-  { ...terminalRaceDb.database.prepare("SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'terminal-race'").get() },
+  { ...terminalRaceDb.database.prepare("SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_instances WHERE telegram_id = 'terminal-race'").get() },
   { pet_xp: 30, moon_gold: 12, moon_crystals: 1, style_tokens: 2 },
   'concurrent extract and room callbacks must award only the atomically claimed snapshot',
 );

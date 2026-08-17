@@ -30,6 +30,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '063_arcade_xp_spendable_wallet.sql',
   '064_moonpet_beta_runtime_cutover.sql',
   '065_moonpet_reward_pet_id_authority.sql',
+  '066_moonpet_run_pet_id_authority.sql',
 ]);
 
 function readJson(filePath, label) {

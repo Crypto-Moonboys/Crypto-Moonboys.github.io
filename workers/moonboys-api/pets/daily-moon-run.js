@@ -257,14 +257,14 @@ export async function createDailyMoonRun(db, request = {}) {
   const modifierId = dailyModifierId(generated.run_seed);
   const writes = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_runs
-      (telegram_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
-      SELECT ?, ?, ?, run_id, CASE WHEN status = 'extractable' THEN 'active' ELSE status END, score, MAX(depth, current_room), 0
+      (telegram_id, pet_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
+      SELECT ?, pet_id, ?, ?, run_id, CASE WHEN status = 'extractable' THEN 'active' ELSE status END, score, MAX(depth, current_room), 0
       FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
       .bind(telegramId, utcDay, generated.seed, telegramId, runId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
-      (analytics_id, telegram_id, utc_day, run_id, event_type, event_data)
-      SELECT ?, ?, ?, ?, 'run_created', ? WHERE EXISTS
-        (SELECT 1 FROM telegram_pet_daily_runs WHERE telegram_id = ? AND utc_day = ? AND run_id = ?)`)
+      (analytics_id, pet_id, telegram_id, utc_day, run_id, event_type, event_data)
+      SELECT ?, pet_id, ?, ?, ?, 'run_created', ? FROM telegram_pet_daily_runs
+        WHERE telegram_id = ? AND utc_day = ? AND run_id = ?`)
       .bind(`${runId}:daily:created`, telegramId, utcDay, runId,
         safeJson({ seed: generated.seed, run_seed: generated.run_seed, region: 'moon_alley', difficulty: region.difficulty, modifier_id: modifierId }),
         telegramId, utcDay, runId),
@@ -422,10 +422,10 @@ async function recordChallengeEvidence(db, request) {
           CASE WHEN ${nextProgressSql} >= ${challenge.target} THEN CURRENT_TIMESTAMP END)`)
       .bind(telegramId, utcDay, challenge.challenge_id, challenge.target, eventId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
-      (analytics_id, telegram_id, utc_day, event_type, event_data)
-      SELECT ?, ?, ?, 'challenge_completed', ? FROM telegram_pet_daily_challenge_progress
+      (analytics_id, pet_id, telegram_id, utc_day, event_type, event_data)
+      SELECT ?, (SELECT pet_id FROM telegram_pet_daily_runs WHERE telegram_id = ? AND utc_day = ?), ?, ?, 'challenge_completed', ? FROM telegram_pet_daily_challenge_progress
       WHERE telegram_id = ? AND utc_day = ? AND challenge_id = ? AND completed_at IS NOT NULL`)
-      .bind(analyticsId, telegramId, utcDay, safeJson({ challenge_id: challenge.challenge_id, category: challenge.category, target: challenge.target }),
+      .bind(analyticsId, telegramId, utcDay, telegramId, utcDay, safeJson({ challenge_id: challenge.challenge_id, category: challenge.category, target: challenge.target }),
         telegramId, utcDay, challenge.challenge_id),
     db.prepare(`INSERT INTO telegram_pet_seasonal_challenge_state
       (telegram_id, season_id, completed_daily_challenges)
@@ -555,9 +555,9 @@ async function finalizeDailyRecords(db, daily, referenceDay) {
   ].filter(Boolean);
   const statements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
-      (analytics_id, telegram_id, utc_day, run_id, event_type, event_data)
-      VALUES (?, ?, ?, ?, 'run_terminal', ?)`)
-      .bind(analyticsId, daily.telegram_id, daily.utc_day, daily.run_id,
+      (analytics_id, pet_id, telegram_id, utc_day, run_id, event_type, event_data)
+      VALUES (?, ?, ?, ?, ?, 'run_terminal', ?)`)
+      .bind(analyticsId, daily.pet_id, daily.telegram_id, daily.utc_day, daily.run_id,
         safeJson({ status: daily.status, score: daily.score, depth: daily.depth, boss_defeated: Boolean(daily.boss_defeated), duration_seconds: durationSeconds })),
     db.prepare(`INSERT INTO telegram_pet_daily_leaderboard_records
       (telegram_id, highest_score, fastest_completion_seconds, deepest_run, boss_completions, extraction_successes, streak_length, longest_streak, runs_recorded)

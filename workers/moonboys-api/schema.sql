@@ -584,6 +584,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_season_xp
 
 CREATE TABLE IF NOT EXISTS telegram_pet_runs (
   id TEXT PRIMARY KEY,
+  pet_id TEXT,
   telegram_id TEXT NOT NULL,
   run_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
@@ -623,6 +624,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_runs_user_status
 
 CREATE TABLE IF NOT EXISTS telegram_pet_run_steps (
   id TEXT PRIMARY KEY,
+  pet_id TEXT,
   telegram_id TEXT NOT NULL,
   run_id TEXT NOT NULL,
   step_index INTEGER NOT NULL CHECK (step_index >= 1),
@@ -723,6 +725,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_inventory_legacy_sync_042 (
 
 CREATE TABLE IF NOT EXISTS telegram_pet_run_rooms (
   room_id TEXT PRIMARY KEY,
+  pet_id TEXT,
   run_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
   room_number INTEGER NOT NULL CHECK (room_number >= 1),
@@ -740,6 +743,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_run_rooms (
 
 CREATE TABLE IF NOT EXISTS telegram_pet_run_modifiers (
   run_id TEXT NOT NULL,
+  pet_id TEXT,
   telegram_id TEXT NOT NULL,
   modifier_id TEXT NOT NULL,
   effects_json TEXT NOT NULL DEFAULT '{}',
@@ -761,6 +765,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_relics (
 
 CREATE TABLE IF NOT EXISTS telegram_pet_run_history (
   telegram_id TEXT PRIMARY KEY,
+  pet_id TEXT,
   runs_completed INTEGER NOT NULL DEFAULT 0 CHECK (runs_completed >= 0),
   bosses_defeated INTEGER NOT NULL DEFAULT 0 CHECK (bosses_defeated >= 0),
   highest_room_reached INTEGER NOT NULL DEFAULT 0 CHECK (highest_room_reached >= 0),
@@ -773,6 +778,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_run_history (
 
 CREATE TABLE IF NOT EXISTS telegram_pet_run_analytics (
   analytics_id TEXT PRIMARY KEY,
+  pet_id TEXT,
   run_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
   event_type TEXT NOT NULL CHECK (event_type IN ('run_start', 'room_generated', 'room_resolved', 'modifier_chosen', 'boss_fought', 'run_end')),
@@ -783,6 +789,10 @@ CREATE TABLE IF NOT EXISTS telegram_pet_run_analytics (
 );
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_analytics_run
   ON telegram_pet_run_analytics(run_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_runs_pet_status ON telegram_pet_runs(pet_id, status, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_steps_pet ON telegram_pet_run_steps(pet_id, run_id, step_index);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_rooms_pet ON telegram_pet_run_rooms(pet_id, run_id, room_number);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_run_analytics_pet ON telegram_pet_run_analytics(pet_id, run_id, created_at);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_kaiju_matches (
   id TEXT PRIMARY KEY,
@@ -1256,6 +1266,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_guidance_notices_unshown
 -- Crypto Moonboy Pets daily retention foundation.
 CREATE TABLE IF NOT EXISTS telegram_pet_daily_runs (
   telegram_id TEXT NOT NULL,
+  pet_id TEXT,
   utc_day TEXT NOT NULL CHECK (utc_day GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
   seed TEXT NOT NULL,
   run_id TEXT NOT NULL,
@@ -1333,6 +1344,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_seasonal_achievements (
 
 CREATE TABLE IF NOT EXISTS telegram_pet_daily_analytics (
   analytics_id TEXT PRIMARY KEY,
+  pet_id TEXT,
   telegram_id TEXT NOT NULL,
   utc_day TEXT NOT NULL,
   run_id TEXT,
@@ -1349,6 +1361,8 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_runs_status ON telegram_pet_da
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_challenges_day ON telegram_pet_daily_challenge_progress(utc_day, challenge_id, completed_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_challenge_events_owner ON telegram_pet_daily_challenge_events(telegram_id, utc_day, created_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_analytics_day ON telegram_pet_daily_analytics(utc_day, event_type, created_at);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_runs_pet_day ON telegram_pet_daily_runs(pet_id, utc_day);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_analytics_pet ON telegram_pet_daily_analytics(pet_id, utc_day, created_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_seasonal_state_season ON telegram_pet_seasonal_challenge_state(season_id, daily_streak DESC);
 
 -- Player-facing live systems (districts, story chains, raids, upgrades and style sinks).

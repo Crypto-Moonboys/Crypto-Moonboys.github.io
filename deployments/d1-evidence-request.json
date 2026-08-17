@@ -28,6 +28,7 @@
     "060_telegram_pet_sanctuary_indexes.sql",
     "063_arcade_xp_spendable_wallet.sql",
     "064_moonpet_beta_runtime_cutover.sql",
-    "065_moonpet_reward_pet_id_authority.sql"
+    "065_moonpet_reward_pet_id_authority.sql",
+    "066_moonpet_run_pet_id_authority.sql"
   ]
 }
