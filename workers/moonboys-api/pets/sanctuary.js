@@ -71,10 +71,8 @@ export const listSanctuaryPets = listSanctuaryPetsSummary;
 function currentSeasonKey(timestamp) {
   const parsed = new Date(timestamp);
   const date = Number.isFinite(parsed.getTime()) ? parsed : new Date();
-  const utcDay = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
-  const dayOfYear = Math.max(0, Math.floor((utcDay - yearStart) / 86400000));
-  return `pet-s${date.getUTCFullYear()}-${String(Math.floor(dayOfYear / 90) + 1).padStart(3, '0')}`;
+  const quarter = Math.floor(date.getUTCMonth() / 3);
+  return `pet-s${date.getUTCFullYear()}-${String(quarter + 1).padStart(3, '0')}`;
 }
 
 // This mutation is intentionally not exposed as a player action. Callers must
