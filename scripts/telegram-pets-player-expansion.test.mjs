@@ -16,7 +16,7 @@ import {
 } from '../workers/moonboys-api/pets/player-expansion.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
-assert.equal(Object.keys(PET_ACHIEVEMENTS).length, 13, 'expansion must cover every formal evolution, including Elite Moonpet');
+assert.equal(Object.keys(PET_ACHIEVEMENTS).length, 14, 'expansion must cover every formal evolution, including Moon Guardian');
 assert.ok(PET_ACHIEVEMENTS.moon_alley_elite, 'Elite Moonpet evolution must reference a registered achievement');
 assert.equal(PET_SEASON_REWARD_TIERS.length, 4, 'season track must ship four bounded claim tiers');
 assert.equal(PET_WEEKLY_BOSSES.length, 4, 'weekly rotation must include four bosses');
@@ -31,7 +31,7 @@ assert.match(getPetEvolutionPerk(4).perk, /guardian content/i);
 assert.ok(Object.keys(MOONPET_REACTION_LIBRARY.activities).length >= 25, 'reaction library must cover every major player activity');
 assert.deepEqual(Object.keys(MOONPET_REACTION_LIBRARY.traits).sort(), ['curious', 'explorer', 'loyal', 'street_fighter']);
 assert.equal(Object.keys(MOONPET_REACTION_LIBRARY.moods).length, 8, 'reaction library must cover eight meaningful stat-driven moods');
-assert.equal(Object.keys(MOONPET_REACTION_LIBRARY.evolutions).length, 5, 'every evolution stage must have its own reactions');
+assert.equal(Object.keys(MOONPET_REACTION_LIBRARY.evolutions).length, 6, 'every evolution stage must have its own reactions');
 assert.ok(Object.keys(MOONPET_REACTION_LIBRARY.milestones).length >= 14, 'stored milestones and aggregate memories must affect dialogue');
 const reactionCount = Object.values(MOONPET_REACTION_LIBRARY).flatMap((group) => Object.values(group)).reduce((total, pool) => total + pool.length, 0);
 assert.ok(reactionCount >= 225, `reaction expansion must contain at least 225 lines, received ${reactionCount}`);

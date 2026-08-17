@@ -24,6 +24,8 @@ const TEMPERAMENTS = Object.freeze(['bold', 'social', 'rhythmic', 'calm', 'curio
 const INNATE_TRAITS = Object.freeze(['night_owl', 'beat_seeker', 'snack_scout', 'alley_brave', 'soft_hearted', 'lucky_steps', 'collector', 'showboat']);
 const HATCH_PROGRESS = 12;
 const DAILY_INCUBATION_CAP = 8;
+const EARLIEST_HATCH_DAYS = 7;
+const GUARANTEED_HATCH_DAYS = 14;
 
 const RARE_ROUTES = Object.freeze([
   { id: 'celestial_serpent', name: 'Celestial Serpent', traits: ['explorer', 'curious'], counters: { exploration_actions: 30, total_runs: 10 } },
@@ -150,7 +152,13 @@ async function rareProgress(db, telegramId, row) {
   return { signal: ready ? 'ready' : percent >= 70 ? 'resonating' : percent >= 35 ? 'stirring' : 'dormant', ready, percent };
 }
 
-function publicLifecycle(row, rare) {
+function incubationAgeDays(row, now = new Date()) {
+  const created = Date.parse(row?.created_at || '');
+  const current = new Date(now).getTime();
+  return Number.isFinite(created) && Number.isFinite(current) ? Math.max(0, Math.floor((current - created) / 86400000)) : 0;
+}
+
+function publicLifecycle(row, rare, now = new Date()) {
   if (!row) return null;
   const incubation = safeJson(row.incubation_json);
   const revealed = row.phase !== 'egg';
@@ -160,6 +168,10 @@ function publicLifecycle(row, rare) {
     row.temperament === 'rhythmic' ? 'play' : row.temperament === 'bold' ? 'train' : row.temperament === 'calm' ? 'sleep' : row.temperament === 'social' ? 'care' : 'explore',
     innateTraits.includes('snack_scout') ? 'feed' : innateTraits.includes('beat_seeker') ? 'play' : innateTraits.includes('alley_brave') ? 'battle' : innateTraits.includes('collector') ? 'expedition' : innateTraits.includes('night_owl') ? 'adventure' : 'bond',
   ])] : [];
+  const ageDays = incubationAgeDays(row, now);
+  const engagementReady = Number(row.incubation_progress || 0) >= HATCH_PROGRESS
+    && Object.keys(CARE_TYPES).filter((key) => Number(incubation[key] || 0) > 0).length >= 3;
+  const hatchReady = ageDays >= GUARANTEED_HATCH_DAYS || (ageDays >= EARLIEST_HATCH_DAYS && engagementReady);
   return {
     version: Number(row.lifecycle_version || 1),
     phase: row.phase,
@@ -172,7 +184,10 @@ function publicLifecycle(row, rare) {
     incubation: {
       progress: Number(row.incubation_progress || 0),
       target: HATCH_PROGRESS,
-      ready: Number(row.incubation_progress || 0) >= HATCH_PROGRESS && Object.keys(CARE_TYPES).filter((key) => Number(incubation[key] || 0) > 0).length >= 3,
+      ready: hatchReady,
+      age_days: ageDays,
+      earliest_hatch_days: EARLIEST_HATCH_DAYS,
+      guaranteed_hatch_days: GUARANTEED_HATCH_DAYS,
       signals: Object.fromEntries(Object.keys(CARE_TYPES).map((key) => [key, Number(incubation[key] || 0)])),
       actions_today: Number(row.actions_today || 0),
       daily_cap: DAILY_INCUBATION_CAP,
@@ -261,7 +276,10 @@ export async function hatchMoonpet(db, telegramId, eventKey) {
   if (existing) return { accepted: false, reason: 'hatch_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
   if (row.phase !== 'egg') return { accepted: false, reason: 'already_hatched', lifecycle: await getMoonpetLifecycle(db, id) };
   const incubation = safeJson(row.incubation_json);
-  if (Number(row.incubation_progress || 0) < HATCH_PROGRESS || Object.keys(CARE_TYPES).filter((key) => Number(incubation[key] || 0) > 0).length < 3) {
+  const ageDays = incubationAgeDays(row);
+  const engagementReady = Number(row.incubation_progress || 0) >= HATCH_PROGRESS
+    && Object.keys(CARE_TYPES).filter((key) => Number(incubation[key] || 0) > 0).length >= 3;
+  if (ageDays < GUARANTEED_HATCH_DAYS && (ageDays < EARLIEST_HATCH_DAYS || !engagementReady)) {
     return { accepted: false, reason: 'egg_not_ready', lifecycle: await getMoonpetLifecycle(db, id) };
   }
   const identity = await deriveIdentity(row.identity_seed, incubation);

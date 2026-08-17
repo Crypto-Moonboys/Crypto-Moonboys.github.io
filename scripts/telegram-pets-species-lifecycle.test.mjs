@@ -74,7 +74,11 @@ for (const care of ['warm', 'talk', 'music', 'rest']) {
 assert.equal((await incubateMoonEgg(db, 'new-player', 'rest', 'cap:blocked')).reason, 'incubation_daily_cap');
 assert.equal((await incubateMoonEgg(db, 'new-player', 'music', 'care:0')).duplicate, true, 'request keys must be idempotent');
 lifecycle = await getMoonpetLifecycle(db, 'new-player');
-assert.equal(lifecycle.incubation.ready, true);
+assert.equal(lifecycle.incubation.ready, false, 'strong engagement cannot compress incubation below seven days');
+assert.equal((await hatchMoonpet(db, 'new-player', 'hatch:too-early')).reason, 'egg_not_ready');
+db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET created_at=datetime('now','-7 days') WHERE telegram_id=?`).run('new-player');
+lifecycle = await getMoonpetLifecycle(db, 'new-player');
+assert.equal(lifecycle.incubation.ready, true, 'strong engagement enables the earliest day-seven hatch');
 const hatched = await hatchMoonpet(db, 'new-player', 'hatch:1');
 assert.equal(hatched.accepted, true);
 assert.equal((await hatchMoonpet(db, 'new-player', 'hatch:1')).duplicate, true, 'hatching must be idempotent');
@@ -83,6 +87,14 @@ assert.ok(Object.hasOwn(MOONPET_SPECIES, hatched.lifecycle.species_id));
 assert.equal(hatched.lifecycle.innate_traits.length, 2);
 assert.ok(hatched.lifecycle.preferences.length >= 1, 'identity must expose stable behaviour preferences');
 assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, hatched.lifecycle.species_id);
+
+db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('guaranteed-player');
+db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES ('pet:guaranteed-player:test:1', 'guaranteed-player')`).run();
+db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES ('guaranteed-player', 'pet:guaranteed-player:test:1', 'test')`).run();
+db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').run('guaranteed-player');
+await createMoonEggLifecycle(db, 'guaranteed-player', 'adopt:guaranteed');
+db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET created_at=datetime('now','-14 days') WHERE telegram_id=?`).run('guaranteed-player');
+assert.equal((await hatchMoonpet(db, 'guaranteed-player', 'hatch:guaranteed')).accepted, true, 'day fourteen guarantees hatch without engagement acceleration');
 
 const pendingDb = new D1();
 pendingDb.database.exec(`

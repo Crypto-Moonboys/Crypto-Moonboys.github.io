@@ -32,16 +32,17 @@ INSERT INTO telegram_pet_profiles VALUES ('owner'), ('attacker'), ('production-o
 INSERT INTO telegram_pet_season_slots VALUES ('pet-a','owner','s1',1,'active','free'), ('pet-b','owner','s1',2,'active','arcade_xp'), ('forged','attacker','s1',1,'active','free'), ('production-pet','production-owner','pet-s2026-001',1,'active','free'), ('production-pet-b','production-owner','pet-s2026-001',2,'active','arcade_xp');
 INSERT INTO telegram_pet_instances VALUES ('pet-a','owner','s1',1,50,4900,'active'), ('pet-b','owner','s1',2,1,0,'active'), ('forged','attacker','s1',1,50,4900,'active'), ('production-pet','production-owner','pet-s2026-001',1,5,400,'active'), ('production-pet-b','production-owner','pet-s2026-001',2,5,400,'active');`);
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8'));
+sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8'));
 const db = new D1(sqlite);
 
 assert.equal(getPetSeasonWeek({ start_at: '2026-01-01T00:00:00Z' }, new Date('2026-01-08T00:00:00Z')), 2);
 assert.equal(await isPetLegendary(db, 'pet-a', 's1'), false, 'level alone is never Legendary authority');
-for (const [stage, evolution] of ['moon_egg', 'street_moonpet', 'cyber_moonpet', 'elite_moonpet', 'legendary_moon_guardian'].entries()) {
+for (const [stage, evolution] of ['moon_egg', 'street_moonpet', 'cyber_moonpet', 'elite_moonpet', 'moon_guardian', 'legendary_moon_guardian'].entries()) {
   sqlite.prepare('INSERT INTO telegram_pet_evolutions_by_pet VALUES (?,?,?,?,?,?)').run('pet-a', 'owner', evolution, stage, `unlock-${stage}`, `2026-01-0${stage + 1}T00:00:00Z`);
 }
 assert.equal(await isPetLegendary(db, 'pet-a', 's1'), true, 'the final persisted per-pet evolution is Legendary authority');
 assert.equal(await isPetLegendary(db, 'pet-b', 's1'), false, 'Pet A evolution must not advance Pet B');
-sqlite.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet-b','attacker','legendary_moon_guardian',4,'forged-owner','2026-01-01')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet-b','attacker','legendary_moon_guardian',5,'forged-owner','2026-01-01')`).run();
 assert.equal((await isPetLegendary(db, 'pet-b', 's1')), false, 'a mismatched evolution owner cannot grant Legendary state');
 await reconcileEvolutionGrowthMarks(db, 'pet-a', 's1');
 assert.equal((await hooks.getPetSeasonInfo(new Date('2026-12-31T23:59:59Z'))).key, 'pet-s2026-004');
@@ -60,17 +61,20 @@ assert.equal((await awardPetGrowthMark(db, { ...mark, pet_id: 'forged' })).accep
 const crest = { pet_id: 'pet-a', telegram_id: 'owner', season_key: 's1', season_week: 1, objective: 'weekly_boss', evidence_key: 'weekly-boss:s1:1' };
 assert.equal((await awardPetWeeklyCrest(db, crest)).accepted, true);
 assert.equal((await awardPetWeeklyCrest(db, { ...crest, evidence_key: 'weekly-boss:s1:1:replay' })).duplicate, true, 'weekly objective cannot award twice');
-assert.equal((await awardPetWeeklyCrest(db, { ...crest, objective: 'weekly_journey', evidence_key: 'weekly-journey:s1:1' })).accepted, true);
+assert.equal((await awardPetWeeklyCrest(db, { ...crest, objective: 'weekly_journey', evidence_key: 'weekly-journey:s1:1' })).duplicate, true, 'a pet earns at most one Crest in a week');
 
 let state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-01'), { telegram_id: 'owner' });
 assert.equal(state.legendary, true);
 assert.equal(state.season_complete, false, 'Legendary alone cannot bypass the season journey');
 assert.equal(state.weekly_crests.earned, 1, 'two objectives in week one count as one qualifying week');
+for (let day = 6; day <= PET_SEASON_COMPLETION_CONFIG.required_growth_marks; day += 1) await awardPetGrowthMark(db, {
+  ...mark, milestone: 'care', evidence_key: `care:day-${day}`, earned_at: new Date(Date.UTC(2026, 0, day, 12)).toISOString(),
+});
 for (let week = 2; week < PET_SEASON_COMPLETION_CONFIG.required_weekly_crests; week += 1) await awardPetWeeklyCrest(db, { ...crest, season_week: week, evidence_key: `weekly-boss:s1:${week}` });
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-21'), { telegram_id: 'owner' });
-assert.equal(state.weekly_crests.earned, 7);
-assert.equal(state.season_complete, false, 'seven distinct qualifying weeks remain incomplete');
-await awardPetWeeklyCrest(db, { ...crest, season_week: 8, evidence_key: 'weekly-boss:s1:8' });
+assert.equal(state.weekly_crests.earned, 9);
+assert.equal(state.season_complete, false, 'nine distinct qualifying weeks remain incomplete');
+await awardPetWeeklyCrest(db, { ...crest, season_week: 10, evidence_key: 'weekly-boss:s1:10' });
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-28'), { telegram_id: 'owner' });
 assert.equal(state.season_complete, true);
 assert.equal(state.sanctuary_eligible, true);
@@ -95,7 +99,9 @@ assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_weekly_cres
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_weekly_crests WHERE pet_id='production-pet-b'`).get().count, 0, 'active Pet B cannot steal Pet A victory crest');
 assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest({ prepare() { throw new Error('migration unavailable'); } }, 'production-owner', '2026-W06', 'alley_king')).non_fatal, true, 'crest storage failure cannot break boss settlement');
 
-assert.throws(() => sqlite.prepare(`INSERT INTO telegram_pet_growth_marks VALUES ('foreign','pet-a','attacker','s1','boss_milestone','boss:foreign',CURRENT_TIMESTAMP)`).run(), /FOREIGN KEY/);
+assert.throws(() => sqlite.prepare(`INSERT INTO telegram_pet_growth_marks
+  (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day,earned_at)
+  VALUES ('foreign','pet-a','attacker','s1','boss_milestone','boss:foreign','2025-08-17','2025-08-17')`).run(), /FOREIGN KEY/);
 sqlite.prepare(`DELETE FROM telegram_pet_instances WHERE pet_id='pet-a'`).run();
 for (const table of ['telegram_pet_growth_marks', 'telegram_pet_weekly_crests', 'telegram_pet_season_completions']) assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM ${table} WHERE pet_id='pet-a'`).get().count, 0, `${table} cascades on pet deletion`);
 await awardPetGrowthMark(db, { pet_id: 'pet-b', telegram_id: 'owner', season_key: 's1', milestone: 'care', evidence_key: 'care:profile-delete' });

@@ -3,40 +3,153 @@
     "evolution_id": "moon_egg",
     "name": "Moon Egg",
     "stage": 0,
-    "requirements": { "pet_level": 1, "boss_victories": {}, "relics_owned": 0, "inventory": {} },
-    "cosmetic_unlocks": ["moon_egg_identity"],
-    "achievement_unlocks": ["moonpet_beginning"]
+    "requirements": {
+      "pet_level": 1,
+      "boss_victories": {},
+      "relics_owned": 0,
+      "inventory": {}
+    },
+    "cosmetic_unlocks": [
+      "moon_egg_identity"
+    ],
+    "achievement_unlocks": [
+      "moonpet_beginning"
+    ]
   },
   {
     "evolution_id": "street_moonpet",
     "name": "Street Moonpet",
     "stage": 1,
-    "requirements": { "pet_level": 5, "boss_victories": {}, "relics_owned": 0, "inventory": { "material": { "scrap_metal": 5 } } },
-    "cosmetic_unlocks": ["street_moonpet_identity", "street_idle_animation"],
-    "achievement_unlocks": ["raised_in_moon_alley"]
+    "requirements": {
+      "pet_level": 5,
+      "boss_victories": {},
+      "relics_owned": 0,
+      "inventory": {
+        "material": {
+          "scrap_metal": 5
+        }
+      },
+      "min_age_days": 14,
+      "growth_marks": 7,
+      "weekly_crests": 1
+    },
+    "cosmetic_unlocks": [
+      "street_moonpet_identity",
+      "street_idle_animation"
+    ],
+    "achievement_unlocks": [
+      "raised_in_moon_alley"
+    ]
   },
   {
     "evolution_id": "cyber_moonpet",
     "name": "Cyber Moonpet",
     "stage": 2,
-    "requirements": { "pet_level": 20, "boss_victories": { "alley_king": 3 }, "relics_owned": 2, "inventory": { "material": { "scrap_metal": 10, "evolution_fragment": 3 } } },
-    "cosmetic_unlocks": ["cyber_moonpet_identity", "cyber_trail_animation"],
-    "achievement_unlocks": ["cyber_companion"]
+    "requirements": {
+      "pet_level": 20,
+      "boss_victories": {
+        "alley_king": 3
+      },
+      "relics_owned": 2,
+      "inventory": {
+        "material": {
+          "scrap_metal": 10,
+          "evolution_fragment": 3
+        }
+      },
+      "min_age_days": 28,
+      "growth_marks": 20,
+      "weekly_crests": 3
+    },
+    "cosmetic_unlocks": [
+      "cyber_moonpet_identity",
+      "cyber_trail_animation"
+    ],
+    "achievement_unlocks": [
+      "cyber_companion"
+    ]
   },
   {
     "evolution_id": "elite_moonpet",
     "name": "Elite Moonpet",
     "stage": 3,
-    "requirements": { "pet_level": 35, "boss_victories": { "alley_king": 8 }, "relics_owned": 5, "inventory": { "material": { "scrap_metal": 20, "evolution_fragment": 8 } } },
-    "cosmetic_unlocks": ["elite_moonpet_identity", "elite_victory_animation"],
-    "achievement_unlocks": ["moon_alley_elite"]
+    "requirements": {
+      "pet_level": 35,
+      "boss_victories": {
+        "alley_king": 8
+      },
+      "relics_owned": 5,
+      "inventory": {
+        "material": {
+          "scrap_metal": 20,
+          "evolution_fragment": 8
+        }
+      },
+      "min_age_days": 49,
+      "growth_marks": 35,
+      "weekly_crests": 6
+    },
+    "cosmetic_unlocks": [
+      "elite_moonpet_identity",
+      "elite_victory_animation"
+    ],
+    "achievement_unlocks": [
+      "moon_alley_elite"
+    ]
+  },
+  {
+    "evolution_id": "moon_guardian",
+    "name": "Moon Guardian",
+    "stage": 4,
+    "requirements": {
+      "pet_level": 45,
+      "min_age_days": 64,
+      "growth_marks": 48,
+      "weekly_crests": 8,
+      "boss_victories": {
+        "alley_king": 12
+      },
+      "relics_owned": 8,
+      "inventory": {
+        "material": {
+          "scrap_metal": 32,
+          "evolution_fragment": 12
+        }
+      }
+    },
+    "cosmetic_unlocks": [
+      "moon_guardian_identity"
+    ],
+    "achievement_unlocks": [
+      "moon_guardian"
+    ]
   },
   {
     "evolution_id": "legendary_moon_guardian",
     "name": "Legendary Moon Guardian",
-    "stage": 4,
-    "requirements": { "pet_level": 50, "boss_victories": { "alley_king": 15 }, "relics_owned": 10, "inventory": { "material": { "scrap_metal": 40, "evolution_fragment": 15 } } },
-    "cosmetic_unlocks": ["legendary_moon_guardian_identity", "guardian_aura_animation"],
-    "achievement_unlocks": ["legendary_moon_guardian"]
+    "stage": 5,
+    "requirements": {
+      "pet_level": 50,
+      "boss_victories": {
+        "alley_king": 15
+      },
+      "relics_owned": 10,
+      "inventory": {
+        "material": {
+          "scrap_metal": 40,
+          "evolution_fragment": 15
+        }
+      },
+      "min_age_days": 78,
+      "growth_marks": 60,
+      "weekly_crests": 10
+    },
+    "cosmetic_unlocks": [
+      "legendary_moon_guardian_identity",
+      "guardian_aura_animation"
+    ],
+    "achievement_unlocks": [
+      "legendary_moon_guardian"
+    ]
   }
 ]

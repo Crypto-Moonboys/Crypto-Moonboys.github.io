@@ -71,7 +71,7 @@ function rejectForbiddenEvolutionEffects(value) {
 }
 
 export function validateMoonpetEvolutionContent(content = evolutions) {
-  if (!Array.isArray(content) || content.length !== 5) throw new Error('invalid_evolution_content');
+  if (!Array.isArray(content) || content.length !== 6) throw new Error('invalid_evolution_content');
   const ids = new Set();
   for (const [index, evolution] of content.entries()) {
     if (!ID_PATTERN.test(String(evolution?.evolution_id || '')) || ids.has(evolution.evolution_id)) throw new Error('invalid_evolution_id');
@@ -84,6 +84,9 @@ export function validateMoonpetEvolutionContent(content = evolutions) {
     if (typeof victories !== 'object' || Array.isArray(victories)) throw new Error('invalid_evolution_requirements');
     for (const [bossId, count] of Object.entries(victories)) if (!ID_PATTERN.test(bossId) || positiveInteger(count) !== Number(count) || Number(count) < 1) throw new Error('invalid_evolution_requirements');
     validateInventoryRequirements(evolution.requirements.inventory);
+    for (const key of ['min_age_days', 'growth_marks', 'weekly_crests']) {
+      if (evolution.stage > 0 && positiveInteger(evolution.requirements[key], 1000) !== Number(evolution.requirements[key])) throw new Error('invalid_evolution_requirements');
+    }
     rejectForbiddenEvolutionEffects(evolution);
     ids.add(evolution.evolution_id);
   }
@@ -262,6 +265,14 @@ function evolutionRequirementSql(definition, telegramId, petId = null) {
     } else {
       clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ?)`);
       args.push(telegramId, previous.evolution_id);
+    }
+    if (petId) {
+      clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_season_slots s WHERE s.pet_id=? AND s.telegram_id=? AND datetime(s.created_at, '+' || ? || ' days') <= CURRENT_TIMESTAMP)`);
+      args.push(petId, telegramId, positiveInteger(requirements.min_age_days));
+      clauses.push(`(SELECT COUNT(*) FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=?) >= ?`);
+      args.push(petId, telegramId, positiveInteger(requirements.growth_marks));
+      clauses.push(`(SELECT COUNT(DISTINCT season_week) FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=?) >= ?`);
+      args.push(petId, telegramId, positiveInteger(requirements.weekly_crests));
     }
   }
   for (const [bossId, count] of Object.entries(requirements.boss_victories || {})) {

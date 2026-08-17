@@ -32,7 +32,12 @@ class Statement {
 }
 
 class D1 {
-  constructor() { this.database = new DatabaseSync(':memory:'); this.database.exec(schema); this.queue = Promise.resolve(); }
+  constructor() {
+    this.database = new DatabaseSync(':memory:'); this.database.exec(schema);
+    this.database.exec(`CREATE TABLE telegram_pet_growth_marks(pet_id TEXT,telegram_id TEXT,season_key TEXT,earned_day TEXT);
+      CREATE TABLE telegram_pet_weekly_crests(pet_id TEXT,telegram_id TEXT,season_key TEXT,season_week INTEGER);`);
+    this.queue = Promise.resolve();
+  }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
     const execute = () => {
@@ -66,10 +71,15 @@ function seedPetSlot(db, telegramId, slotNumber, acquisitionType = 'free') {
     (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`)
     .run(petId, telegramId, TEST_SEASON_KEY, slotNumber, acquisitionType, slotNumber > 1 ? `fixture:slot:${slotNumber}` : null, slotNumber > 1 ? 500 : 0);
+  db.database.prepare(`UPDATE telegram_pet_season_slots SET created_at='2026-01-01T00:00:00Z' WHERE pet_id=?`).run(petId);
   db.database.prepare(`INSERT INTO telegram_pet_instances
     (pet_id, telegram_id, season_key, slot_number, pet_name, source_profile_updated_at, status)
     VALUES (?, ?, ?, ?, 'Moonpet', '2026-08-16T00:00:00Z', 'active')`)
     .run(petId, telegramId, TEST_SEASON_KEY, slotNumber);
+  for (let day = 1; day <= 60; day += 1) db.database.prepare(`INSERT INTO telegram_pet_growth_marks VALUES (?,?,?,?)`)
+    .run(petId, telegramId, TEST_SEASON_KEY, new Date(Date.UTC(2026, 0, day)).toISOString().slice(0, 10));
+  for (let week = 1; week <= 10; week += 1) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests VALUES (?,?,?,?)`)
+    .run(petId, telegramId, TEST_SEASON_KEY, week);
   return petId;
 }
 
@@ -124,7 +134,7 @@ assert.deepEqual({ ...migrationDb.prepare("SELECT evolution_id, stage, materials
 assert.equal(migrationDb.prepare("SELECT first_adoption_at FROM telegram_pet_memories WHERE telegram_id='backfill-player'").get().first_adoption_at,
   '2026-01-02 03:04:05', 'migration 043 must preserve existing adoption history');
 assert.deepEqual(Object.values(MOONPET_EVOLUTIONS).map(({ name }) => name), [
-  'Moon Egg', 'Street Moonpet', 'Cyber Moonpet', 'Elite Moonpet', 'Legendary Moon Guardian',
+  'Moon Egg', 'Street Moonpet', 'Cyber Moonpet', 'Elite Moonpet', 'Moon Guardian', 'Legendary Moon Guardian',
 ]);
 assert.deepEqual(Object.values(MOONPET_PERSONALITY_TRAITS).map(({ name }) => name), ['Street Fighter', 'Explorer', 'Loyal', 'Curious']);
 assert.equal(validateMoonpetEvolutionContent(), true);

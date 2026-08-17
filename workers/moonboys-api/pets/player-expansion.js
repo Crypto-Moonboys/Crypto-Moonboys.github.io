@@ -19,7 +19,8 @@ export const PET_ACHIEVEMENTS = deepFreeze({
   raised_in_moon_alley: { title: 'Raised In Moon Alley', target: 1, source: 'evolution_stage', description: 'Reach Street Moonpet.' },
   cyber_companion: { title: 'Cyber Companion', target: 2, source: 'evolution_stage', description: 'Reach Cyber Moonpet.' },
   moon_alley_elite: { title: 'Moon Alley Elite', target: 3, source: 'evolution_stage', description: 'Reach Elite Moonpet.' },
-  legendary_moon_guardian: { title: 'Legendary Moon Guardian', target: 4, source: 'evolution_stage', description: 'Reach the final evolution.' },
+  moon_guardian: { title: 'Moon Guardian', target: 4, source: 'evolution_stage', description: 'Reach Moon Guardian.' },
+  legendary_moon_guardian: { title: 'Legendary Moon Guardian', target: 5, source: 'evolution_stage', description: 'Reach the final evolution.' },
 });
 
 export const PET_WEEKLY_BOSSES = deepFreeze([

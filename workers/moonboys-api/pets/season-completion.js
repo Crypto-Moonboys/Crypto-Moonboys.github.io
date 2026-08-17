@@ -1,12 +1,12 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { movePetToSanctuaryIfEligible } from './sanctuary.js';
 
-// Product balancing assumptions: four distinct post-egg evolution milestones and
-// eight qualifying weeks. Named here so balancing never hides in route/UI code.
+// Product balancing assumptions: five post-egg evolution milestones and ten
+// qualifying weeks. Named here so balancing never hides in route/UI code.
 export const PET_SEASON_COMPLETION_CONFIG = Object.freeze({
   authority_version: 1,
-  required_growth_marks: 4,
-  required_weekly_crests: 8,
+  required_growth_marks: 60,
+  required_weekly_crests: 10,
   season_days: 90,
 });
 
@@ -59,10 +59,11 @@ export async function awardPetGrowthMark(db, award) {
     ? await ownedPet(db, petId, seasonKey, award.telegram_id) : null;
   if (!pet) return { accepted: false, duplicate: false, reason: 'invalid_growth_mark_authority' };
   const markId = `growth:${petId}:${seasonKey}:${registry.type}:${evidenceKey}`;
+  const earnedDay = new Date(award.earned_at || Date.now()).toISOString().slice(0, 10);
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_growth_marks
-    (mark_id, pet_id, telegram_id, season_key, milestone_type, evidence_key, earned_at)
-    VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
-    .bind(markId, petId, pet.telegram_id, seasonKey, registry.type, evidenceKey, award.earned_at || null).run();
+    (mark_id, pet_id, telegram_id, season_key, milestone_type, evidence_key, earned_day, earned_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
+    .bind(markId, petId, pet.telegram_id, seasonKey, registry.type, evidenceKey, earnedDay, award.earned_at || null).run();
   const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, mark_id: markId };
   await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: award.earned_at });
   return response;
@@ -79,9 +80,9 @@ export async function awardPetWeeklyCrest(db, award) {
   if (!pet) return { accepted: false, duplicate: false, reason: 'invalid_weekly_crest_authority' };
   const crestId = `crest:${petId}:${seasonKey}:${week}:${objective.objective_id}`;
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_weekly_crests
-    (crest_id, pet_id, telegram_id, season_key, season_week, objective_id, evidence_key, earned_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
-    .bind(crestId, petId, pet.telegram_id, seasonKey, week, objective.objective_id, evidenceKey, award.earned_at || null).run();
+    (crest_id, pet_id, telegram_id, season_key, season_week, qualification_week, objective_id, evidence_key, earned_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
+    .bind(crestId, petId, pet.telegram_id, seasonKey, week, week, objective.objective_id, evidenceKey, award.earned_at || null).run();
   const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, crest_id: crestId };
   await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: award.earned_at });
   return response;
