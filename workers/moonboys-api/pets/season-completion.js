@@ -49,15 +49,6 @@ async function ownedPet(db, petId, seasonKey, telegramId = null) {
     WHERE s.pet_id=? AND s.season_key=?${ownerClause} LIMIT 1`).bind(...args).first();
 }
 
-async function petLifecycleCreatedAt(db, petId) {
-  try {
-    const row = await db.prepare(`SELECT created_at FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).bind(petId).first();
-    return row?.created_at || null;
-  } catch {
-    return null;
-  }
-}
-
 async function seasonSlotCreatedAt(db, petId, seasonKey) {
   try {
     const row = await db.prepare(`SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first();
@@ -133,10 +124,11 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   const current = await db.prepare(`SELECT evolution_id, stage FROM telegram_pet_evolutions_by_pet
     WHERE pet_id=? AND telegram_id=? ORDER BY stage DESC LIMIT 1`).bind(petId, pet.telegram_id).first();
   const stage = integer(current?.stage);
+  const currentDefinition = evolutions.find((entry) => Number(entry.stage) === stage) || null;
   const next = evolutions.find((entry) => Number(entry.stage) === stage + 1) || null;
   const instanceLevel = Math.max(1, integer(pet.level), integer(pet.pet_xp / 100) + 1);
   const migratedPetMissingCounters = stage > 0 && integer(pet.level) <= 1 && integer(pet.pet_xp) === 0;
-  const level = next && migratedPetMissingCounters ? Math.max(instanceLevel, integer(next.requirements.pet_level)) : instanceLevel;
+  const level = migratedPetMissingCounters ? Math.max(instanceLevel, integer(currentDefinition?.requirements?.pet_level)) : instanceLevel;
   let bossProgress = [];
   let itemProgress = [];
   let relicProgress = { current: 0, required: integer(next?.requirements?.relics_owned), complete: !next?.requirements?.relics_owned };
@@ -146,13 +138,13 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   if (next) {
     const gatedEvolution = Number(next.stage) > 0;
     const minAgeDays = gatedEvolution ? integer(next.requirements.min_age_days) : 0;
-    const createdAtSource = await petLifecycleCreatedAt(db, petId) || await seasonSlotCreatedAt(db, petId, seasonKey);
+    const createdAtSource = await seasonSlotCreatedAt(db, petId, seasonKey);
     const createdAt = Date.parse(createdAtSource || '');
     const currentTime = new Date(now).getTime();
     const computedAgeDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
       ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))
       : null;
-    const ageDays = computedAgeDays == null ? minAgeDays : computedAgeDays;
+    const ageDays = computedAgeDays == null ? 0 : computedAgeDays;
     ageProgress = { current: ageDays, required: minAgeDays, complete: ageDays >= minAgeDays };
     bossProgress = await Promise.all(Object.entries(next.requirements.boss_victories || {}).map(async ([bossId, required]) => {
       const row = await db.prepare(`SELECT victories FROM telegram_pet_boss_victories WHERE telegram_id=? AND boss_id=?`).bind(pet.telegram_id, bossId).first();
