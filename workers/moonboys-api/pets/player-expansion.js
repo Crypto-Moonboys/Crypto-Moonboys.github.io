@@ -42,11 +42,12 @@ export const PET_EVOLUTION_PERKS = deepFreeze([
   { stage: 1, title: 'Street Moonpet', perk: 'Unlocks street jobs, street encounters and +3 weekly boss power.', weekly_power: 3 },
   { stage: 2, title: 'Cyber Moonpet', perk: 'Unlocks cyber jobs, signal events and +7 weekly boss power.', weekly_power: 7 },
   { stage: 3, title: 'Elite Moonpet', perk: 'Unlocks elite jobs, high-risk events and +12 weekly boss power.', weekly_power: 12 },
-  { stage: 4, title: 'Legendary Moon Guardian', perk: 'Unlocks guardian content and +18 weekly boss power.', weekly_power: 18 },
+  { stage: 4, title: 'Moon Guardian', perk: 'Unlocks guardian content and +18 weekly boss power.', weekly_power: 18 },
+  { stage: 5, title: 'Legendary Moon Guardian', perk: 'Completes the evolution journey and grants +24 weekly boss power.', weekly_power: 24 },
 ]);
 
 export function getPetEvolutionPerk(stageRaw) {
-  const stage = Math.max(0, Math.min(4, Math.floor(Number(stageRaw) || 0)));
+  const stage = Math.max(0, Math.min(5, Math.floor(Number(stageRaw) || 0)));
   return PET_EVOLUTION_PERKS[stage];
 }
 
@@ -61,7 +62,7 @@ export function calculatePetWeeklyBossDamage(state = {}) {
   const action = ['strike', 'outsmart', 'endure'].includes(state.action) ? state.action : 'strike';
   const boss = state.boss || PET_WEEKLY_BOSSES[0];
   const level = Math.max(1, Math.min(1000, Math.floor(Number(state.level) || 1)));
-  const evolutionStage = Math.max(0, Math.min(4, Math.floor(Number(state.evolution_stage) || 0)));
+  const evolutionStage = Math.max(0, Math.min(5, Math.floor(Number(state.evolution_stage) || 0)));
   const condition = Math.max(0, Math.min(100, Math.floor((Number(state.health) + Number(state.energy)) / 2) || 0));
   const roll = Math.max(0, Math.min(12, Math.floor(Number(state.roll) || 0)));
   const weaknessBonus = action === boss.weakness ? 12 : 0;

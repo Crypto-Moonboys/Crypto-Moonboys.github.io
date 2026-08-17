@@ -32,7 +32,7 @@ function safeTelegramText(value, maximum = 80) {
 }
 
 async function readActivePetIdentityScope(db, telegramId) {
-  let scope = await db.prepare(`SELECT s.pet_id, s.slot_number, s.acquisition_type
+  let scope = await db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
     FROM telegram_pet_active_slots a
     JOIN telegram_pet_season_slots s
       ON s.pet_id = a.pet_id AND s.telegram_id = a.telegram_id AND s.season_key = a.season_key
@@ -41,7 +41,7 @@ async function readActivePetIdentityScope(db, telegramId) {
     WHERE a.telegram_id = ? AND s.status = 'active' AND i.status = 'active'
     LIMIT 1`).bind(telegramId).first().catch(() => null);
   if (scope) return scope;
-  return db.prepare(`SELECT s.pet_id, s.slot_number, s.acquisition_type
+  return db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
     FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i
       ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id AND i.season_key = s.season_key AND i.slot_number = s.slot_number
@@ -253,7 +253,7 @@ export async function recordMoonpetBiggestReward(db, request = {}) {
   return { accepted: Number(result?.meta?.changes || 0) > 0, amount, currency };
 }
 
-function evolutionRequirementSql(definition, telegramId, petId = null) {
+function evolutionRequirementSql(definition, telegramId, petId = null, seasonKey = null) {
   const requirements = definition.requirements;
   const clauses = [`EXISTS (SELECT 1 FROM telegram_pet_profiles p WHERE p.telegram_id = ? AND (CAST(p.pet_xp / 100 AS INTEGER) + 1) >= ?)`];
   const args = [telegramId, requirements.pet_level];
@@ -269,10 +269,12 @@ function evolutionRequirementSql(definition, telegramId, petId = null) {
     if (petId) {
       clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_season_slots s WHERE s.pet_id=? AND s.telegram_id=? AND datetime(s.created_at, '+' || ? || ' days') <= CURRENT_TIMESTAMP)`);
       args.push(petId, telegramId, positiveInteger(requirements.min_age_days));
-      clauses.push(`(SELECT COUNT(DISTINCT earned_day) FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=? AND earned_day IS NOT NULL) >= ?`);
-      args.push(petId, telegramId, positiveInteger(requirements.growth_marks));
-      clauses.push(`(SELECT COUNT(DISTINCT qualification_week) FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND qualification_week IS NOT NULL) >= ?`);
-      args.push(petId, telegramId, positiveInteger(requirements.weekly_crests));
+      clauses.push(`(SELECT COUNT(DISTINCT earned_day) FROM telegram_pet_growth_marks
+        WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day IS NOT NULL) >= ?`);
+      args.push(petId, telegramId, seasonKey, positiveInteger(requirements.growth_marks));
+      clauses.push(`(SELECT COUNT(DISTINCT qualification_week) FROM telegram_pet_weekly_crests
+        WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week IS NOT NULL) >= ?`);
+      args.push(petId, telegramId, seasonKey, positiveInteger(requirements.weekly_crests));
     }
   }
   for (const [bossId, count] of Object.entries(requirements.boss_victories || {})) {
@@ -307,15 +309,18 @@ export async function evaluateMoonpetEvolutionRequirements(db, request = {}) {
     return { ready: false, reason: 'evolution_authority_unavailable', pet_id: null };
   }
   const petId = scope?.pet_id || null;
-  const requirements = evolutionRequirementSql(definition, telegramId, petId);
+  if (!petId) return { ready: false, reason: 'evolution_authority_unavailable', pet_id: null };
+  const requirements = evolutionRequirementSql(definition, telegramId, petId, scope.season_key);
   let row = null;
   try {
     row = await db.prepare(`SELECT CASE WHEN ${requirements.sql} THEN 1 ELSE 0 END AS ready`)
-      .bind(...requirements.args).first().catch(() => null);
+      .bind(...requirements.args).first();
   } catch {
-    row = null;
+    return { ready: false, reason: 'evolution_validation_failed', pet_id: petId };
   }
-  return { ready: Number(row?.ready || 0) === 1, reason: row ? null : 'evolution_authority_unavailable', pet_id: petId };
+  if (!row) return { ready: false, reason: 'evolution_authority_unavailable', pet_id: petId };
+  const ready = Number(row.ready || 0) === 1;
+  return { ready, reason: ready ? null : 'evolution_not_qualified', pet_id: petId };
 }
 
 export async function evolveMoonpet(db, request = {}) {
@@ -333,7 +338,7 @@ export async function evolveMoonpet(db, request = {}) {
     : await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? AND evolution_id = ?`)
       .bind(telegramId, evolutionId).first().catch(() => null);
   if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };
-  const requirements = evolutionRequirementSql(definition, telegramId, petId);
+  const requirements = evolutionRequirementSql(definition, telegramId, petId, scope?.season_key || null);
   const evolutionMilestone = `evolution_${evolutionId}`;
   const statements = [petId
     ? db.prepare(`INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet

@@ -214,10 +214,31 @@ evolutionDb.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
   (pet_id,telegram_id,evolution_id,stage,unlock_event_key,cosmetic_unlocks,achievement_unlocks,materials_consumed)
   VALUES (?, 'identity-player','elite_moonpet',3,'fixture:elite','[]','[]',1),
          (?, 'identity-player','moon_guardian',4,'fixture:guardian','[]','[]',1)`).run(identityPetId, identityPetId);
+evolutionDb.database.prepare(`UPDATE telegram_pet_growth_marks SET season_key='previous-season' WHERE pet_id=?`).run(identityPetId);
+evolutionDb.database.prepare(`UPDATE telegram_pet_weekly_crests SET season_key='previous-season' WHERE pet_id=?`).run(identityPetId);
+const previousSeasonAuthority = await evaluateMoonpetEvolutionRequirements(evolutionDb, {
+  telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian',
+});
+assert.equal(previousSeasonAuthority.ready, false, 'previous-season Marks and Crests cannot authorize the active season');
+assert.equal(previousSeasonAuthority.reason, 'evolution_not_qualified', 'successful authority checks explain unmet requirements');
+evolutionDb.database.prepare(`UPDATE telegram_pet_growth_marks SET season_key=? WHERE pet_id=?`).run(TEST_SEASON_KEY, identityPetId);
+evolutionDb.database.prepare(`UPDATE telegram_pet_weekly_crests SET season_key=? WHERE pet_id=?`).run(TEST_SEASON_KEY, identityPetId);
 const legendaryAuthority = await evaluateMoonpetEvolutionRequirements(evolutionDb, {
   telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian',
 });
 assert.equal(legendaryAuthority.ready, true, 'qualified calendar evidence and gameplay requirements authorize Legendary');
+assert.equal(legendaryAuthority.reason, null);
+const failedValidation = await evaluateMoonpetEvolutionRequirements({
+  prepare() { throw new Error('validation failed'); },
+}, { telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian' });
+assert.equal(failedValidation.reason, 'evolution_authority_unavailable', 'scope lookup failures are classified as unavailable');
+const unavailableValidation = await evaluateMoonpetEvolutionRequirements({
+  prepare(sql) {
+    if (sql.startsWith('SELECT CASE WHEN')) throw new Error('requirement query failed');
+    return evolutionDb.prepare(sql);
+  },
+}, { telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian' });
+assert.equal(unavailableValidation.reason, 'evolution_validation_failed', 'requirement query errors are classified separately');
 const legendaryGuidance = await workerHooks.getPetEvolutionGuidance(evolutionDb, 'identity-player', { pet_xp: 5000 }, { current_stage: { stage: 4 } });
 assert.equal(legendaryGuidance.ready, legendaryAuthority.ready, 'UI guidance uses the same authoritative validation as evolveMoonpet');
 const legendary = await evolveMoonpet(evolutionDb, {

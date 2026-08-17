@@ -28,6 +28,9 @@ const baseDamage = calculatePetWeeklyBossDamage({ boss, action: 'strike', level:
 const evolvedDamage = calculatePetWeeklyBossDamage({ boss, action: boss.weakness, level: 20, evolution_stage: 4, health: 80, energy: 80, roll: 0 });
 assert.ok(evolvedDamage > baseDamage, 'evolution and exploiting a weakness must materially improve weekly boss power');
 assert.match(getPetEvolutionPerk(4).perk, /guardian content/i);
+assert.equal(getPetEvolutionPerk(4).title, 'Moon Guardian', 'stage 4 presentation is not Legendary');
+assert.equal(getPetEvolutionPerk(5).title, 'Legendary Moon Guardian', 'stage 5 remains the final presentation state');
+assert.equal(getPetEvolutionPerk(999).stage, 5, 'stage lookup clamps to the six-stage final state');
 assert.ok(Object.keys(MOONPET_REACTION_LIBRARY.activities).length >= 25, 'reaction library must cover every major player activity');
 assert.deepEqual(Object.keys(MOONPET_REACTION_LIBRARY.traits).sort(), ['curious', 'explorer', 'loyal', 'street_fighter']);
 assert.equal(Object.keys(MOONPET_REACTION_LIBRARY.moods).length, 8, 'reaction library must cover eight meaningful stat-driven moods');

@@ -468,7 +468,7 @@ assert.match(client, /var PET_APPEARANCE_PALETTES =/);
 assert.match(client, /var PET_SPECIES_PALETTES =/);
 assert.match(client, /var DEFAULT_PET_PALETTE = createPetPalette/);
 assert.match(client, /function petPalette/);
-assert.match(client, /return stage >= 4 \? selected\.legendary : selected\.normal/);
+assert.match(client, /return stage >= 5 \? selected\.legendary : selected\.normal/, 'only stage 5 receives the Legendary palette');
 const petPaletteSource = client.slice(client.indexOf('function petPalette'), client.indexOf('function petPose'));
 assert.doesNotMatch(petPaletteSource, /var palettes|var species|\[[^\]]*,[^\]]*,[^\]]*\]/, 'per-frame palette lookup must not allocate tables or colour arrays');
 assert.match(client, /function petPose/);

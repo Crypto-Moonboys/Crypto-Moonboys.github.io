@@ -1542,9 +1542,10 @@
   function petStage(pet) {
     if (!pet) return 0;
     var explicit = pet.evolution_stage == null ? NaN : Number(pet.evolution_stage);
-    if (Number.isFinite(explicit)) return Math.max(0, Math.min(4, explicit));
+    if (Number.isFinite(explicit)) return Math.max(0, Math.min(5, explicit));
     var label = String(pet.stage || '').toLowerCase();
-    if (label.includes('legend')) return 4;
+    if (label.includes('legend')) return 5;
+    if (label.includes('guardian')) return 4;
     if (label.includes('elite')) return 3;
     if (label.includes('cyber')) return 2;
     if (label.includes('street')) return 1;
@@ -1820,7 +1821,7 @@
     var selected = PET_APPEARANCE_PALETTES[lifecycle && lifecycle.appearance && lifecycle.appearance.palette]
       || PET_SPECIES_PALETTES[lifecycle && lifecycle.species_id]
       || DEFAULT_PET_PALETTE;
-    return stage >= 4 ? selected.legendary : selected.normal;
+    return stage >= 5 ? selected.legendary : selected.normal;
   }
 
   function petPose(time, active, mood, presence) {
@@ -1870,7 +1871,7 @@
   function petGrowthShape(phase, stage) {
     if (phase === 'young') return { scaleX: 0.9, scaleY: 0.76, offsetY: 12 };
     if (phase === 'rare') return { scaleX: 1.22, scaleY: 1.18, offsetY: -7 };
-    var adultScale = 1 + Math.min(4, stage) * 0.025;
+    var adultScale = 1 + Math.min(5, stage) * 0.025;
     return { scaleX: adultScale, scaleY: adultScale, offsetY: 0 };
   }
 
@@ -2035,7 +2036,7 @@
       drawPixelRect(-32, -14, 7, 16, palette.body); drawPixelRect(25, -14, 7, 16, palette.body);
       drawPixelRect(-20, -7, 40, 4, palette.accent);
     }
-    if (stage >= 4) {
+    if (stage >= 5) {
       drawPixelRect(-24, -70, 48, 6, '#f6a7ff'); drawPixelRect(-18, -79, 7, 9, '#f6a7ff');
       drawPixelRect(-4, -84, 8, 14, palette.accent); drawPixelRect(11, -79, 7, 9, '#f6a7ff');
     }

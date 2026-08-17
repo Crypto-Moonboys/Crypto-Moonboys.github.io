@@ -58,6 +58,12 @@ const mark = { pet_id: 'pet-a', telegram_id: 'owner', season_key: 's1', mileston
 assert.equal((await awardPetGrowthMark(db, mark)).accepted, true);
 assert.equal((await awardPetGrowthMark(db, mark)).duplicate, true, 'replayed growth evidence is idempotent');
 assert.equal((await awardPetGrowthMark(db, { ...mark, pet_id: 'forged' })).accepted, false, 'foreign pet IDs are rejected');
+const malformedTimestampMark = await awardPetGrowthMark(db, {
+  ...mark, pet_id: 'forged', telegram_id: 'attacker', milestone: 'evolution', evidence_key: 'evolution:street:malformed', earned_at: 'not-a-persisted-date',
+});
+assert.equal(malformedTimestampMark.accepted, true, 'malformed persisted evolution timestamps fall back safely during settlement');
+assert.match(sqlite.prepare(`SELECT earned_at FROM telegram_pet_growth_marks WHERE mark_id=?`).get(malformedTimestampMark.mark_id).earned_at,
+  /^\d{4}-\d{2}-\d{2}T/, 'timestamp fallback is a valid server ISO timestamp');
 const crest = { pet_id: 'pet-a', telegram_id: 'owner', season_key: 's1', season_week: 1, objective: 'weekly_boss', evidence_key: 'weekly-boss:s1:1' };
 assert.equal((await awardPetWeeklyCrest(db, crest)).accepted, true);
 assert.equal((await awardPetWeeklyCrest(db, { ...crest, evidence_key: 'weekly-boss:s1:1:replay' })).duplicate, true, 'weekly objective cannot award twice');

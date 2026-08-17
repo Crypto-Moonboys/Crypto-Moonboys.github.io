@@ -28,6 +28,12 @@ export const PET_WEEKLY_CREST_OBJECTIVES = Object.freeze({
 const FINAL_EVOLUTION = evolutions.reduce((latest, entry) => Number(entry.stage) > Number(latest.stage) ? entry : latest, evolutions[0]);
 const integer = (value) => Math.max(0, Math.floor(Number(value) || 0));
 
+function safeAwardTimestamp(value, fallback = new Date()) {
+  const parsed = value == null ? NaN : Date.parse(value);
+  const fallbackTime = new Date(fallback).getTime();
+  return new Date(Number.isFinite(parsed) ? parsed : (Number.isFinite(fallbackTime) ? fallbackTime : Date.now())).toISOString();
+}
+
 export function getPetSeasonWeek(season, now = new Date()) {
   const start = Date.parse(season?.start_at || season?.startAt || '');
   const current = new Date(now).getTime();
@@ -61,13 +67,14 @@ export async function awardPetGrowthMark(db, award) {
     ? await ownedPet(db, petId, seasonKey, award.telegram_id) : null;
   if (!pet) return { accepted: false, duplicate: false, reason: 'invalid_growth_mark_authority' };
   const markId = `growth:${petId}:${seasonKey}:${registry.type}:${evidenceKey}`;
-  const earnedDay = new Date(award.earned_at || Date.now()).toISOString().slice(0, 10);
+  const earnedAt = safeAwardTimestamp(award.earned_at);
+  const earnedDay = earnedAt.slice(0, 10);
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_growth_marks
     (mark_id, pet_id, telegram_id, season_key, milestone_type, evidence_key, earned_day, earned_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
-    .bind(markId, petId, pet.telegram_id, seasonKey, registry.type, evidenceKey, earnedDay, award.earned_at || null).run();
+    .bind(markId, petId, pet.telegram_id, seasonKey, registry.type, evidenceKey, earnedDay, earnedAt).run();
   const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, mark_id: markId };
-  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: award.earned_at });
+  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: earnedAt });
   return response;
 }
 
