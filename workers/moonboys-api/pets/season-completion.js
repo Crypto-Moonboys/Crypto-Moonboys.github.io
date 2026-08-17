@@ -134,7 +134,9 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     WHERE pet_id=? AND telegram_id=? ORDER BY stage DESC LIMIT 1`).bind(petId, pet.telegram_id).first();
   const stage = integer(current?.stage);
   const next = evolutions.find((entry) => Number(entry.stage) === stage + 1) || null;
-  const level = Math.max(1, integer(pet.level), integer(pet.pet_xp / 100) + 1);
+  const instanceLevel = Math.max(1, integer(pet.level), integer(pet.pet_xp / 100) + 1);
+  const migratedPetMissingCounters = stage > 0 && integer(pet.level) <= 1 && integer(pet.pet_xp) === 0;
+  const level = next && migratedPetMissingCounters ? Math.max(instanceLevel, integer(next.requirements.pet_level)) : instanceLevel;
   let bossProgress = [];
   let itemProgress = [];
   let relicProgress = { current: 0, required: integer(next?.requirements?.relics_owned), complete: !next?.requirements?.relics_owned };
