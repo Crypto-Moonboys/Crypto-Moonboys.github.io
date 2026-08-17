@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
 const sanctuarySource = readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
+const workerSource = readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 
 assert.match(
   source,
@@ -65,21 +66,21 @@ assert.match(
 );
 
 assert.match(
-  sanctuarySource,
-  /Date\.UTC\(date\.getUTCFullYear\(\), date\.getUTCMonth\(\), date\.getUTCDate\(\)\)/,
-  'Sanctuary current season key must use UTC calendar-day authority.',
+  workerSource,
+  /function getPetSeasonInfo[\s\S]*Math\.floor\(now\.getUTCMonth\(\) \/ 3\)/,
+  'Worker slot creation currently uses calendar-quarter pet season keys.',
 );
 
 assert.match(
   sanctuarySource,
-  /Math\.floor\(dayOfYear \/ 90\) \+ 1/,
-  'Sanctuary current season key must use the pets 90-day season model, including year-end segment 005.',
+  /Math\.floor\(date\.getUTCMonth\(\) \/ 3\)/,
+  'Sanctuary current season filtering must match the slot season authority used by worker getPetSeasonInfo.',
 );
 
 assert.doesNotMatch(
   sanctuarySource,
-  /getUTCMonth\(\) \/ 3/,
-  'Sanctuary current season filtering must not use calendar quarters.',
+  /dayOfYear|Math\.floor\(dayOfYear \/ 90\)/,
+  'Sanctuary current season filtering must not use an independent 90-day key while slot creation uses quarters.',
 );
 
 assert.match(
