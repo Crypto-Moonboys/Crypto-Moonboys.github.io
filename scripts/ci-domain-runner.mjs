@@ -57,6 +57,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-pets-season-progression-simulation.test.mjs'],
     ['node', 'scripts/telegram-pets-sanctuary.test.mjs'],
     ['node', 'scripts/telegram-pets-per-pet-state.test.mjs'],
+    ['node', 'scripts/telegram-pets-runtime-pet-id-authority.test.mjs'],
     ['node', 'scripts/telegram-pets-daily-moon-run.test.mjs'],
     ['node', 'scripts/telegram-pets-roguelite-migration-rehearsal.test.mjs'],
     ['node', 'scripts/telegram-pets-equipment-progression.test.mjs'],
