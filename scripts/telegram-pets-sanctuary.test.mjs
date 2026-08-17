@@ -140,10 +140,8 @@ sqlite.prepare(`INSERT INTO telegram_pet_activity_sessions(id,telegram_id,status
 await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { season_settlement: true });
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'pending activity blocks season-settlement reconciliation');
 sqlite.prepare(`DELETE FROM telegram_pet_activity_sessions WHERE id='reconcile-activity'`).run();
-await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner');
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'ordinary reconciliation is ignored before explicit season settlement');
-await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { season_settlement: true });
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 1, 'explicit season settlement reconciles completed pet into Sanctuary');
+await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { now: '2026-08-17T00:00:00Z' });
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 1, 'ordinary Worker reconciliation can move completed past-season pets after season rollover');
 assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='reconcile-owner'`).get().pet_id, 'reconcile-b', 'reconciliation assigns replacement pet');
 
 console.log('telegram pets sanctuary tests passed');
