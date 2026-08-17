@@ -58,6 +58,15 @@ async function petLifecycleCreatedAt(db, petId) {
   }
 }
 
+async function seasonSlotCreatedAt(db, petId, seasonKey) {
+  try {
+    const row = await db.prepare(`SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first();
+    return row?.created_at || null;
+  } catch {
+    return null;
+  }
+}
+
 async function legacyAccountLevel(db, telegramId) {
   try {
     const row = await db.prepare(`SELECT level, pet_xp FROM telegram_pet_profiles WHERE telegram_id=?`).bind(telegramId).first();
@@ -146,7 +155,8 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   if (next) {
     const gatedEvolution = Number(next.stage) > 0;
     const minAgeDays = gatedEvolution ? integer(next.requirements.min_age_days) : 0;
-    const createdAt = Date.parse(await petLifecycleCreatedAt(db, petId) || '');
+    const createdAtSource = await petLifecycleCreatedAt(db, petId) || await seasonSlotCreatedAt(db, petId, seasonKey);
+    const createdAt = Date.parse(createdAtSource || '');
     const currentTime = new Date(now).getTime();
     const ageDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
       ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))
