@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
 import {
+  listSanctuaryPetsPrivate,
   movePetToSanctuaryIfEligible,
   reconcileCompletedPetsToSanctuary,
 } from '../workers/moonboys-api/pets/sanctuary.js';
@@ -122,16 +123,27 @@ assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary W
 assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id='complete'`).get().status, 'archived', 'explicit move archives seasonal pet');
 assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='owner'`).get().pet_id, 'replacement', 'explicit move assigns another active seasonal pet');
 assert.equal(sqlite.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='owner'`).get().pet_name, 'Other', 'replacement instance is mirrored to the profile');
+
+const snapshotBefore = (await listSanctuaryPetsPrivate(db, 'owner'))[0];
+sqlite.prepare(`UPDATE telegram_pet_instances SET equipped_outfit='changed' WHERE pet_id='complete'`).run();
+assert.equal(
+  (await listSanctuaryPetsPrivate(db, 'owner'))[0].cosmetics.equipment.equipped_outfit,
+  snapshotBefore.cosmetics.equipment.equipped_outfit,
+  'Sanctuary snapshot is immutable when live state changes',
+);
+
 assert.equal((await movePetToSanctuaryIfEligible(db, input)).duplicate, true, 'duplicate retry succeeds idempotently');
 assert.deepEqual(await movePetToSanctuaryIfEligible(db, { ...input, operation: 'update' }), { accepted: false, reason: 'sanctuary_snapshot_is_immutable' }, 'Sanctuary updates are rejected');
 assert.deepEqual(await movePetToSanctuaryIfEligible(db, { ...input, operation: 'delete' }), { accepted: false, reason: 'sanctuary_history_is_append_only' }, 'Sanctuary deletes are rejected');
 
 sqlite.prepare(`INSERT INTO telegram_pet_activity_sessions(id,telegram_id,status) VALUES('reconcile-activity','reconcile-owner','active')`).run();
-await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner');
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'pending activity blocks reconciliation');
+await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { season_settlement: true });
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'pending activity blocks season-settlement reconciliation');
 sqlite.prepare(`DELETE FROM telegram_pet_activity_sessions WHERE id='reconcile-activity'`).run();
 await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner');
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 1, 'clearing pending work reconciles completed pet into Sanctuary');
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'ordinary reconciliation is ignored before explicit season settlement');
+await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { season_settlement: true });
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 1, 'explicit season settlement reconciles completed pet into Sanctuary');
 assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='reconcile-owner'`).get().pet_id, 'reconcile-b', 'reconciliation assigns replacement pet');
 
 console.log('telegram pets sanctuary tests passed');
