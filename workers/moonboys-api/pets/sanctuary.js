@@ -11,6 +11,12 @@ export const PET_RECOVERABLE_ACTIVITY_PREDICATE = `status = 'completed'
   AND json_valid(metadata) = 1
   AND json_extract(metadata, '$.claim_state') = 'claiming'`;
 
+export function isSeasonSettlementReconciliation(options = {}) {
+  return options?.season_settlement === true
+    || options?.seasonSettlement === true
+    || String(options?.context || options?.reason || '') === 'season_settlement';
+}
+
 async function hasPendingActivity(db, telegramId) {
   const checks = [
     [`SELECT id FROM telegram_pet_activity_sessions WHERE telegram_id=?
@@ -217,6 +223,7 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
 }
 
 export async function reconcileCompletedPetsToSanctuary(db, telegramId, options = {}) {
+  if (!isSeasonSettlementReconciliation(options)) return [];
   let result;
   try {
     result = await db.prepare(`SELECT c.pet_id, c.telegram_id, c.season_key
