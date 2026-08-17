@@ -14,7 +14,11 @@ CREATE TABLE telegram_pet_evolutions_stage5 (
   UNIQUE (telegram_id, unlock_event_key),
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
-INSERT INTO telegram_pet_evolutions_stage5 SELECT * FROM telegram_pet_evolutions;
+INSERT INTO telegram_pet_evolutions_stage5
+SELECT telegram_id, evolution_id,
+  CASE WHEN evolution_id = 'legendary_moon_guardian' AND stage = 4 THEN 5 ELSE stage END,
+  unlock_event_key, cosmetic_unlocks, achievement_unlocks, materials_consumed, unlocked_at
+FROM telegram_pet_evolutions;
 DROP TABLE telegram_pet_evolutions;
 ALTER TABLE telegram_pet_evolutions_stage5 RENAME TO telegram_pet_evolutions;
 
@@ -34,7 +38,11 @@ CREATE TABLE telegram_pet_evolutions_by_pet_stage5 (
   FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
-INSERT INTO telegram_pet_evolutions_by_pet_stage5 SELECT * FROM telegram_pet_evolutions_by_pet;
+INSERT INTO telegram_pet_evolutions_by_pet_stage5
+SELECT pet_id, telegram_id, evolution_id,
+  CASE WHEN evolution_id = 'legendary_moon_guardian' AND stage = 4 THEN 5 ELSE stage END,
+  unlock_event_key, cosmetic_unlocks, achievement_unlocks, materials_consumed, unlocked_at
+FROM telegram_pet_evolutions_by_pet;
 DROP TABLE telegram_pet_evolutions_by_pet;
 ALTER TABLE telegram_pet_evolutions_by_pet_stage5 RENAME TO telegram_pet_evolutions_by_pet;
 

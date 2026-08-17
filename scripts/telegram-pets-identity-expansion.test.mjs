@@ -106,14 +106,21 @@ function seedPlayer(telegramId = 'identity-player', seedCalendar = true) {
 }
 
 const stage5Db = seedPlayer('stage5-migration');
+const stage5PetId = `pet:stage5-migration:${TEST_SEASON_KEY}:1`;
 stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions
-  (telegram_id,evolution_id,stage,unlock_event_key) VALUES ('stage5-migration','moon_egg',0,'stage5:egg')`).run();
+  (telegram_id,evolution_id,stage,unlock_event_key) VALUES ('stage5-migration','legendary_moon_guardian',4,'legacy:legendary')`).run();
+stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+  (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,'stage5-migration','legendary_moon_guardian',4,'legacy:pet:legendary')`).run(stage5PetId);
 stage5Db.database.exec(stage5Migration);
 assert.equal(stage5Db.database.prepare('PRAGMA foreign_key_check').all().length, 0, 'stage 5 migration preserves evolution foreign-key integrity');
-stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions
-  (telegram_id,evolution_id,stage,unlock_event_key) VALUES ('stage5-migration','legendary_moon_guardian',5,'stage5:legendary')`).run();
 assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions WHERE evolution_id='legendary_moon_guardian'`).get().stage, 5,
-  'migration 062 expands persisted evolution constraints through stage 5');
+  'migration 062 promotes legacy account Legendary rows to stage 5');
+assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='legendary_moon_guardian'`).get(stage5PetId).stage, 5,
+  'migration 062 promotes legacy per-pet Legendary rows to the final stage');
+stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions
+  (telegram_id,evolution_id,stage,unlock_event_key) VALUES ('stage5-migration','moon_guardian',4,'stage5:guardian')`).run();
+assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions WHERE evolution_id='moon_guardian'`).get().stage, 4,
+  'stage 4 remains available for Moon Guardian after legacy promotion');
 
 const freshDb = seedPlayer('fresh-progression', false);
 freshDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=400,level=5 WHERE telegram_id='fresh-progression'`).run();
@@ -179,6 +186,12 @@ assert.throws(() => validateMoonpetEvolutionContent(Object.values(MOONPET_EVOLUT
 const invalidDb = seedPlayer('invalid-evolution');
 assert.deepEqual(await evolveMoonpet(invalidDb, { telegram_id: 'invalid-evolution', evolution_id: 'not_real', event_key: 'invalid' }),
   { accepted: false, duplicate: false, reason: 'invalid_evolution' });
+const missingScopeDb = seedPlayer('missing-scope');
+missingScopeDb.database.prepare(`DELETE FROM telegram_pet_active_slots WHERE telegram_id='missing-scope'`).run();
+missingScopeDb.database.prepare(`DELETE FROM telegram_pet_instances WHERE telegram_id='missing-scope'`).run();
+assert.deepEqual(await evolveMoonpet(missingScopeDb, { telegram_id: 'missing-scope', evolution_id: 'moon_egg', event_key: 'missing:scope' }),
+  { accepted: false, duplicate: false, reason: 'evolution_authority_unavailable' },
+  'missing authoritative pet scope fails closed instead of using account evolution state');
 
 const evolutionDb = seedPlayer();
 evolutionDb.database.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('identity-player', 'scrap_metal', 15)").run();
@@ -228,6 +241,26 @@ const legendaryAuthority = await evaluateMoonpetEvolutionRequirements(evolutionD
 });
 assert.equal(legendaryAuthority.ready, true, 'qualified calendar evidence and gameplay requirements authorize Legendary');
 assert.equal(legendaryAuthority.reason, null);
+const inactiveQualifiedPetId = seedPetSlot(evolutionDb, 'identity-player', 2, 'arcade_xp', true);
+for (const [stage, evolutionId] of ['moon_egg', 'street_moonpet', 'cyber_moonpet', 'elite_moonpet', 'moon_guardian'].entries()) {
+  evolutionDb.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+    (pet_id,telegram_id,evolution_id,stage,unlock_event_key,cosmetic_unlocks,achievement_unlocks,materials_consumed)
+    VALUES (?,'identity-player',?,?,?,'[]','[]',1)`).run(inactiveQualifiedPetId, evolutionId, stage, `inactive:${stage}`);
+}
+const inactiveQualified = await evaluateMoonpetEvolutionRequirements(evolutionDb, {
+  telegram_id: 'identity-player', pet_id: inactiveQualifiedPetId, season_key: TEST_SEASON_KEY,
+  evolution_id: 'legendary_moon_guardian',
+});
+assert.equal(inactiveQualified.ready, true, 'an eligible inactive roster pet is evaluated using its own authority scope');
+const inactiveBlockedPetId = seedPetSlot(evolutionDb, 'identity-player', 3, 'arcade_xp', false);
+evolutionDb.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+  (pet_id,telegram_id,evolution_id,stage,unlock_event_key,cosmetic_unlocks,achievement_unlocks,materials_consumed)
+  VALUES (?,'identity-player','moon_egg',0,'inactive:blocked:egg','[]','[]',1)`).run(inactiveBlockedPetId);
+const inactiveBlocked = await evaluateMoonpetEvolutionRequirements(evolutionDb, {
+  telegram_id: 'identity-player', pet_id: inactiveBlockedPetId, season_key: TEST_SEASON_KEY,
+  evolution_id: 'street_moonpet',
+});
+assert.equal(inactiveBlocked.reason, 'requirements_not_met', 'a blocked inactive roster pet reports its own missing qualification');
 const failedValidation = await evaluateMoonpetEvolutionRequirements({
   prepare() { throw new Error('validation failed'); },
 }, { telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian' });

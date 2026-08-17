@@ -88,12 +88,13 @@ export async function awardPetWeeklyCrest(db, award) {
     ? await ownedPet(db, petId, seasonKey, award.telegram_id) : null;
   if (!pet) return { accepted: false, duplicate: false, reason: 'invalid_weekly_crest_authority' };
   const crestId = `crest:${petId}:${seasonKey}:${week}:${objective.objective_id}`;
+  const earnedAt = safeAwardTimestamp(award.earned_at);
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_weekly_crests
     (crest_id, pet_id, telegram_id, season_key, season_week, qualification_week, objective_id, evidence_key, earned_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
-    .bind(crestId, petId, pet.telegram_id, seasonKey, week, week, objective.objective_id, evidenceKey, award.earned_at || null).run();
+    .bind(crestId, petId, pet.telegram_id, seasonKey, week, week, objective.objective_id, evidenceKey, earnedAt).run();
   const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, crest_id: crestId };
-  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: award.earned_at });
+  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: earnedAt });
   return response;
 }
 
@@ -136,6 +137,8 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey) {
   const levelProgress = next ? { current: level, required: next.requirements.pet_level, complete: level >= next.requirements.pet_level } : null;
   const authority = next ? await evaluateMoonpetEvolutionRequirements(db, {
     telegram_id: pet.telegram_id,
+    pet_id: petId,
+    season_key: seasonKey,
     evolution_id: next.evolution_id,
   }) : { ready: false };
   const evolutionReady = Boolean(next && authority.pet_id === petId && authority.ready);
