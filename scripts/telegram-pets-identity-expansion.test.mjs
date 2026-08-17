@@ -108,17 +108,45 @@ function seedPlayer(telegramId = 'identity-player', seedCalendar = true) {
 const stage5Db = seedPlayer('stage5-migration');
 const stage5PetId = `pet:stage5-migration:${TEST_SEASON_KEY}:1`;
 stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions
-  (telegram_id,evolution_id,stage,unlock_event_key) VALUES ('stage5-migration','legendary_moon_guardian',4,'legacy:legendary')`).run();
+  (telegram_id,evolution_id,stage,unlock_event_key,unlocked_at) VALUES ('stage5-migration','legendary_moon_guardian',4,'legacy:legendary','2026-01-04T05:06:07Z')`).run();
 stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
-  (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,'stage5-migration','legendary_moon_guardian',4,'legacy:pet:legendary')`).run(stage5PetId);
+  (pet_id,telegram_id,evolution_id,stage,unlock_event_key,unlocked_at) VALUES (?,'stage5-migration','legendary_moon_guardian',4,'legacy:pet:legendary','2026-01-08T09:10:11Z')`).run(stage5PetId);
 stage5Db.database.exec(stage5Migration);
 assert.equal(stage5Db.database.prepare('PRAGMA foreign_key_check').all().length, 0, 'stage 5 migration preserves evolution foreign-key integrity');
-assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions WHERE evolution_id='legendary_moon_guardian'`).get().stage, 5,
+assert.deepEqual({ ...stage5Db.database.prepare(`SELECT telegram_id, stage, unlock_event_key, unlocked_at FROM telegram_pet_evolutions WHERE evolution_id='legendary_moon_guardian'`).get() }, {
+  telegram_id: 'stage5-migration',
+  stage: 5,
+  unlock_event_key: 'legacy:legendary',
+  unlocked_at: '2026-01-04T05:06:07Z',
+},
   'migration 062 promotes legacy account Legendary rows to stage 5');
-assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='legendary_moon_guardian'`).get(stage5PetId).stage, 5,
+assert.deepEqual({ ...stage5Db.database.prepare(`SELECT pet_id, telegram_id, stage, unlock_event_key, unlocked_at
+  FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='legendary_moon_guardian'`).get(stage5PetId) }, {
+  pet_id: stage5PetId,
+  telegram_id: 'stage5-migration',
+  stage: 5,
+  unlock_event_key: 'legacy:pet:legendary',
+  unlocked_at: '2026-01-08T09:10:11Z',
+},
   'migration 062 promotes legacy per-pet Legendary rows to the final stage');
 assert.equal(await isPetLegendary(stage5Db, stage5PetId, TEST_SEASON_KEY), true,
   'a migrated beta Legendary remains final-evolution authority for season completion');
+const migratedLegendaryRetry = await evolveMoonpet(stage5Db, {
+  telegram_id: 'stage5-migration', evolution_id: 'legendary_moon_guardian', event_key: 'stage5:migrated:retry',
+});
+assert.deepEqual({
+  ...migratedLegendaryRetry,
+  evolution: { ...migratedLegendaryRetry.evolution },
+}, {
+  accepted: true,
+  duplicate: true,
+  reason: 'already_evolved',
+  evolution: {
+    evolution_id: 'legendary_moon_guardian',
+    stage: 5,
+    unlocked_at: '2026-01-08T09:10:11Z',
+  },
+}, 'a migrated Legendary pet stays in the valid final state and does not regress into a stage-4 gate');
 stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions
   (telegram_id,evolution_id,stage,unlock_event_key) VALUES ('stage5-migration','moon_guardian',4,'stage5:guardian')`).run();
 assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions WHERE evolution_id='moon_guardian'`).get().stage, 4,

@@ -1180,6 +1180,12 @@ function parseSqliteTs(value) {
   return Number.isFinite(ts) ? ts : null;
 }
 
+function normalizeServerTimestamp(value, fallback = new Date()) {
+  const parsed = value instanceof Date ? value.getTime() : parseSqliteTs(value);
+  const fallbackParsed = fallback instanceof Date ? fallback.getTime() : parseSqliteTs(fallback);
+  return new Date(parsed ?? fallbackParsed ?? Date.now()).toISOString();
+}
+
 async function getOrCreateArcadeProgressionState(db, telegramId, nowMs = Date.now()) {
   const dayKey = isoDayFromMs(nowMs);
   await db.prepare(`
@@ -13579,13 +13585,15 @@ async function awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId
       FROM telegram_pet_weekly_boss_victories_by_pet WHERE telegram_id=? AND week_key=? AND boss_id=? LIMIT 1`)
       .bind(telegramId, weekKey, bossId).first();
     if (!victory) return { accepted: false, non_fatal: true, reason: 'victorious_pet_evidence_missing' };
-    const defeatedAt = new Date(victory.defeated_at || now);
+    const defeatedAtIso = normalizeServerTimestamp(victory.defeated_at, now);
+    const defeatedAt = new Date(defeatedAtIso);
     const season = getPetSeasonInfo(defeatedAt);
     if (victory.season_key !== season.key) return { accepted: false, non_fatal: true, reason: 'victory_season_mismatch' };
     return await awardPetWeeklyCrest(db, {
       pet_id: victory.pet_id, telegram_id: victory.telegram_id, season_key: victory.season_key,
       season_week: getPetSeasonWeek(season, defeatedAt), objective: 'weekly_boss',
       evidence_key: `weekly-boss:${victory.victory_event_key}`,
+      earned_at: defeatedAtIso,
     });
   } catch (error) {
     return { accepted: false, non_fatal: true, reason: 'weekly_crest_unavailable' };
@@ -13596,14 +13604,15 @@ async function recordWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId, eve
   try {
     const active = victoriousPet || await findActivePetSlot(db, telegramId);
     if (!active || String(active.telegram_id) !== String(telegramId)) return { accepted: false, non_fatal: true, reason: 'victorious_pet_missing' };
-    const season = getPetSeasonInfo(new Date(defeatedAt));
+    const defeatedAtIso = normalizeServerTimestamp(defeatedAt);
+    const season = getPetSeasonInfo(new Date(defeatedAtIso));
     if (active.season_key !== season.key) return { accepted: false, non_fatal: true, reason: 'active_pet_previous_season' };
     await db.prepare(`INSERT OR IGNORE INTO telegram_pet_weekly_boss_victories_by_pet
       (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)`).bind(
-      telegramId, weekKey, bossId, active.pet_id, active.season_key, eventKey, new Date(defeatedAt).toISOString(),
+      telegramId, weekKey, bossId, active.pet_id, active.season_key, eventKey, defeatedAtIso,
     ).run();
-    return awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId, defeatedAt);
+    return awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, bossId, defeatedAtIso);
   } catch (error) {
     return { accepted: false, non_fatal: true, reason: 'weekly_crest_unavailable' };
   }

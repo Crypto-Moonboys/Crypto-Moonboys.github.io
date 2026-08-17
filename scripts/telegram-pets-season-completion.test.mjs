@@ -125,6 +125,13 @@ sqlite.prepare(`UPDATE telegram_pet_active_slots SET pet_id='production-pet-b' W
 assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest(db, 'production-owner', '2026-W06', 'alley_king', new Date('2026-02-05'))).duplicate, true);
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_weekly_crests WHERE pet_id='production-pet'`).get().count, 1, 'recovery remains owned by victorious Pet A');
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_weekly_crests WHERE pet_id='production-pet-b'`).get().count, 0, 'active Pet B cannot steal Pet A victory crest');
+sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
+  (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
+  VALUES ('production-owner','2026-W08','alley_king','production-pet','pet-s2026-001','persisted-boss-event:bad-row','not-a-persisted-date')`).run();
+const malformedStoredCrest = await hooks.awardStoredWeeklyBossVictoryCrest(db, 'production-owner', '2026-W08', 'alley_king', new Date('2026-02-12T12:00:00Z'));
+assert.equal(malformedStoredCrest.accepted, true, 'stored malformed crest timestamps cannot break recovery settlement');
+assert.match(sqlite.prepare(`SELECT earned_at FROM telegram_pet_weekly_crests WHERE crest_id='crest:production-pet:pet-s2026-001:7:weekly_boss'`).get().earned_at,
+  /^\d{4}-\d{2}-\d{2}T/, 'recovered crest settlement writes a valid server ISO timestamp');
 assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest({ prepare() { throw new Error('migration unavailable'); } }, 'production-owner', '2026-W06', 'alley_king')).non_fatal, true, 'crest storage failure cannot break boss settlement');
 
 assert.throws(() => sqlite.prepare(`INSERT INTO telegram_pet_growth_marks
