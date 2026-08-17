@@ -86,16 +86,16 @@ sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name) VALUES('own
 INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,created_at,updated_at) VALUES
  ('complete','owner','s1',1,'active','2026-01-01',NULL),('replacement','owner','s1',2,'active','2026-01-01',NULL),('legendary-only','owner','s1',3,'active','2026-01-01',NULL),
  ('auto','auto-owner','s2',1,'active','2026-01-01',NULL),('auto-b','auto-owner','s2',2,'active','2026-01-01',NULL),
- ('reconcile','reconcile-owner','s3',1,'active','2026-01-01',NULL),('reconcile-b','reconcile-owner','s3',2,'active','2026-01-01',NULL),
+ ('reconcile','reconcile-owner','pet-s2026-003',1,'active','2026-01-01',NULL),('reconcile-b','reconcile-owner','pet-s2026-003',2,'active','2026-01-01',NULL),
  ('year-end','year-end-owner','pet-s2026-005',1,'active','2026-12-27',NULL);
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,species,stage,status,level,pet_xp,equipped_outfit,equipped_weapon) VALUES
  ('complete','owner','s1',1,'Nova','fox','legendary','active',50,5000,'crown','laser'),('replacement','owner','s1',2,'Other','fox','egg','active',1,0,NULL,NULL),('legendary-only','owner','s1',3,'Legend','fox','legendary','active',50,5000,NULL,NULL),
  ('auto','auto-owner','s2',1,'Auto','fox','legendary','active',50,5000,NULL,NULL),('auto-b','auto-owner','s2',2,'Auto B','fox','egg','active',1,0,NULL,NULL),
- ('reconcile','reconcile-owner','s3',1,'Reconcile','fox','legendary','active',50,5000,NULL,NULL),('reconcile-b','reconcile-owner','s3',2,'Reconcile B','fox','egg','active',1,0,NULL,NULL),
+ ('reconcile','reconcile-owner','pet-s2026-003',1,'Reconcile','fox','legendary','active',50,5000,NULL,NULL),('reconcile-b','reconcile-owner','pet-s2026-003',2,'Reconcile B','fox','egg','active',1,0,NULL,NULL),
  ('year-end','year-end-owner','pet-s2026-005',1,'Year End','fox','legendary','active',50,5000,NULL,NULL);
-INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('owner','complete','s1'),('auto-owner','auto','s2'),('reconcile-owner','reconcile','s3'),('year-end-owner','year-end','pet-s2026-005');
+INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('owner','complete','s1'),('auto-owner','auto','s2'),('reconcile-owner','reconcile','pet-s2026-003'),('year-end-owner','year-end','pet-s2026-005');
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id,growth_marks_earned,weekly_crests_earned,authority_version) VALUES
- ('complete','owner','s1','2026-03-31','legendary_moon_guardian',60,10,2),('reconcile','reconcile-owner','s3','2026-06-30','legendary_moon_guardian',60,10,2),('year-end','year-end-owner','pet-s2026-005','2026-12-31','legendary_moon_guardian',60,10,2);
+ ('complete','owner','s1','2026-03-31','legendary_moon_guardian',60,10,2),('reconcile','reconcile-owner','pet-s2026-003','2026-06-30','legendary_moon_guardian',60,10,2),('year-end','year-end-owner','pet-s2026-005','2026-12-31','legendary_moon_guardian',60,10,2);
 INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_id,rare_morph_id,created_at) VALUES
  ('complete','owner','lunar_fox','neon','neon_fox','2026-01-01'),('auto','auto-owner','lunar_fox','neon',NULL,'2026-01-01'),('reconcile','reconcile-owner','lunar_fox','neon',NULL,'2026-01-01'),('year-end','year-end-owner','lunar_fox','neon',NULL,'2026-12-27');
 INSERT INTO telegram_pet_evolutions_by_pet VALUES
