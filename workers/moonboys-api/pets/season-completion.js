@@ -44,8 +44,9 @@ export function getPetSeasonWeek(season, now = new Date()) {
 async function ownedPet(db, petId, seasonKey, telegramId = null) {
   const ownerClause = telegramId == null ? '' : ' AND s.telegram_id=?';
   const args = telegramId == null ? [petId, seasonKey] : [petId, seasonKey, String(telegramId)];
-  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.created_at, i.level, i.pet_xp
+  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.created_at, i.level, i.pet_xp, p.level AS legacy_level, p.pet_xp AS legacy_pet_xp
     FROM telegram_pet_season_slots s JOIN telegram_pet_instances i ON i.pet_id=s.pet_id
+    LEFT JOIN telegram_pet_profiles p ON p.telegram_id=s.telegram_id
     WHERE s.pet_id=? AND s.season_key=?${ownerClause} LIMIT 1`).bind(...args).first();
 }
 
@@ -116,7 +117,9 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     WHERE pet_id=? AND telegram_id=? ORDER BY stage DESC LIMIT 1`).bind(petId, pet.telegram_id).first();
   const stage = integer(current?.stage);
   const next = evolutions.find((entry) => Number(entry.stage) === stage + 1) || null;
-  const level = Math.max(1, integer(pet.level || integer(pet.pet_xp / 100) + 1));
+  const instanceLevel = Math.max(1, integer(pet.level || integer(pet.pet_xp / 100) + 1));
+  const legacyLevel = Math.max(1, integer(pet.legacy_level || integer(pet.legacy_pet_xp / 100) + 1));
+  const level = stage > 0 ? Math.max(instanceLevel, legacyLevel) : instanceLevel;
   let bossProgress = [];
   let itemProgress = [];
   let relicProgress = { current: 0, required: integer(next?.requirements?.relics_owned), complete: !next?.requirements?.relics_owned };
