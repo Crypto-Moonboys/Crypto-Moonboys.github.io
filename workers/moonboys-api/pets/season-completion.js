@@ -1,14 +1,14 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
-import { movePetToSanctuaryIfEligible } from './sanctuary.js';
 import { evaluateMoonpetEvolutionRequirements } from './moonpet-identity.js';
 
 // Product balancing assumptions: five post-egg evolution milestones and ten
 // qualifying weeks. Named here so balancing never hides in route/UI code.
 export const PET_SEASON_COMPLETION_CONFIG = Object.freeze({
-  authority_version: 1,
+  authority_version: 2,
   required_growth_marks: 60,
   required_weekly_crests: 10,
   season_days: 90,
+  sanctuary_transition: 'season_settlement',
 });
 
 export const PET_GROWTH_MILESTONES = Object.freeze({
@@ -175,6 +175,7 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
     weekly_crests: { earned: crestEarned, required: PET_SEASON_COMPLETION_CONFIG.required_weekly_crests, weeks_completed: crestEarned, evidence_rows: integer(crests?.evidence_rows), current_season_week: seasonWeek, current_week_crest_earned: Boolean(currentCrest?.earned) },
     requirements_met: requirementsMet, season_complete: Boolean(completion), completed_at: completion?.completed_at || null,
     completion_season: completion ? seasonKey : null, sanctuary_eligible: Boolean(completion),
+    sanctuary_transition: PET_SEASON_COMPLETION_CONFIG.sanctuary_transition,
   };
 }
 
@@ -190,17 +191,9 @@ export async function finalizePetSeasonCompletionIfEligible(db, petId, seasonKey
     petId, pet.telegram_id, seasonKey, now.toISOString(), FINAL_EVOLUTION.evolution_id,
     state.growth_marks.earned, state.weekly_crests.earned, PET_SEASON_COMPLETION_CONFIG.authority_version,
   ).run();
-  try {
-    await movePetToSanctuaryIfEligible(db, {
-      pet_id: petId,
-      telegram_id: pet.telegram_id,
-      season_key: seasonKey,
-    }, { now: now.toISOString(), getPendingActivity: options.getPendingActivity });
-  } catch (error) {
-    // Completion migration 058 may briefly precede migration 059 during a
-    // rolling deploy. Do not lose completion authority; every later evaluator
-    // retries the idempotent, self-healing Sanctuary transition.
-    if (!String(error?.message || '').includes('no such table: telegram_pet_sanctuary')) throw error;
-  }
+  // Season completion is now only the authority marker. Moving the pet into
+  // Sanctuary is deliberately deferred until explicit season settlement so the
+  // current-season slot remains stable and a completed active pet does not lose
+  // its active pointer or collide with a same-season successor egg.
   return evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
 }
