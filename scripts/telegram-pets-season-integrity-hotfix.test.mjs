@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const source = readFileSync('workers/moonboys-api/pets/season-completion.js', 'utf8');
-const sanctuarySource = readFileSync('workers/moonboys-api/pets/sanctuary.js', 'utf8');
+const source = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
+const sanctuarySource = readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
 
 assert.match(
   source,
   /sanctuary_transition:\s*'season_settlement'/,
-  'Season completion must defer Sanctuary transition until explicit season settlement.',
+  'Season completion must defer Sanctuary transition until season settlement.',
 );
 
 assert.doesNotMatch(
@@ -30,14 +30,26 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /petLifecycleCreatedAt/,
-  'Lifecycle age checks must use the pet lifecycle table and not require season slot timestamp columns.',
+  /currentDefinition = evolutions\.find\(\(entry\) => Number\(entry\.stage\) === stage\)/,
+  'Migrated pet fallback level must infer only the current evolution already earned.',
 );
 
 assert.match(
   source,
-  /const ageDays = computedAgeDays == null \? minAgeDays : computedAgeDays;/,
-  'Missing legacy age timestamps must not permanently block otherwise-qualified legacy pets.',
+  /const level = migratedPetMissingCounters \? Math\.max\(instanceLevel, integer\(currentDefinition\?\.requirements\?\.pet_level\)\) : instanceLevel;/,
+  'Migrated pet fallback level must not borrow the next evolution requirement.',
+);
+
+assert.match(
+  source,
+  /const createdAtSource = await seasonSlotCreatedAt\(db, petId, seasonKey\);/,
+  'Lifecycle age readiness must use the same season-slot age authority as evolution mutation.',
+);
+
+assert.match(
+  source,
+  /const ageDays = computedAgeDays == null \? 0 : computedAgeDays;/,
+  'Unknown age authority must not advertise readiness that the evolution mutation will reject.',
 );
 
 assert.doesNotMatch(
@@ -54,8 +66,14 @@ assert.match(
 
 assert.match(
   sanctuarySource,
-  /if \(!isSeasonSettlementReconciliation\(options\)\) return \[\];/,
-  'Generic completed-pet reconciliation must no-op unless season settlement is explicitly requested.',
+  /const seasonFilter = explicitSettlement \? '' : ' AND c\.season_key<>\?';/,
+  'Default reconciliation must skip the current season while keeping completed past seasons reachable.',
+);
+
+assert.match(
+  sanctuarySource,
+  /WHERE c\.telegram_id=\? AND s\.pet_id IS NULL\$\{seasonFilter\}/,
+  'Completed-pet reconciliation must apply the season filter before moving pets to Sanctuary.',
 );
 
 for (const requiredField of ['min_age_days', 'growth_marks', 'weekly_crests']) {
