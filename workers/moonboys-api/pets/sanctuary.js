@@ -70,6 +70,9 @@ function currentSeasonKey(timestamp) {
 // This mutation is intentionally not exposed as a player action. Callers must
 // supply the authenticated owner and the existing pending-work authority.
 export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
+  const operation = String(input?.operation || 'archive').trim().toLowerCase();
+  if (operation === 'delete') return { accepted: false, reason: 'sanctuary_history_is_append_only' };
+  if (operation !== 'archive') return { accepted: false, reason: 'sanctuary_snapshot_is_immutable' };
   const petId = String(input?.pet_id || '').trim();
   const telegramId = String(input?.telegram_id || '').trim();
   const seasonKey = String(input?.season_key || '').trim();

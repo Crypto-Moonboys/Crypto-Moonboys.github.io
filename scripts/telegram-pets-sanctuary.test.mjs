@@ -59,7 +59,18 @@ INSERT INTO telegram_pet_memories VALUES('owner','["first_boss"]',NULL);
 INSERT INTO telegram_pet_inventory VALUES('owner','cosmetic','crown',1);
 INSERT INTO telegram_pet_equipment_progression VALUES('owner','laser','weapon',5,2);
 INSERT INTO telegram_pet_progression_state VALUES('owner','{"brave":100}');`);
-sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/059_telegram_pet_sanctuary.sql',import.meta.url),'utf8'));
+const sanctuaryMigration = await readFile(new URL('../workers/moonboys-api/migrations/059_telegram_pet_sanctuary.sql', import.meta.url), 'utf8');
+assert.doesNotMatch(sanctuaryMigration, /CREATE\s+TRIGGER|\bBEGIN\b|\bEND\b/i, 'D1 migration contains no trigger programs');
+assert.equal((sanctuaryMigration.match(/CREATE\s+TABLE/gi) || []).length, 1, 'migration 059 contains one table statement');
+assert.doesNotMatch(sanctuaryMigration, /CREATE\s+(?:UNIQUE\s+)?INDEX|\bCHECK\s*\(|\bFOREIGN\s+KEY\b/i, 'migration 059 contains only D1-safe basic table DDL');
+sqlite.exec(sanctuaryMigration);
+const sanctuaryIndexMigration = await readFile(new URL('../workers/moonboys-api/migrations/060_telegram_pet_sanctuary_indexes.sql', import.meta.url), 'utf8');
+assert.doesNotMatch(sanctuaryIndexMigration, /CREATE\s+TRIGGER|\bBEGIN\b|\bEND\b/i, 'index migration contains no compound statements');
+sqlite.exec(sanctuaryIndexMigration);
+const sanctuaryIndexes = sqlite.prepare(`PRAGMA index_list('telegram_pet_sanctuary')`).all();
+assert.ok(sanctuaryIndexes.some((index) => index.name === 'idx_pet_sanctuary_owner_completed'), 'owner/completion index is retained');
+assert.ok(sanctuaryIndexes.some((index) => index.name === 'idx_pet_sanctuary_completion_link'), 'completion linkage index is retained');
+assert.ok(sanctuaryIndexes.some((index) => index.name === 'idx_pet_sanctuary_pet' && index.unique === 1), 'pet uniqueness is retained');
 const db=new D1(sqlite); const input={pet_id:'complete',telegram_id:'owner',season_key:'s1'};
 const completionSource=await readFile(new URL('../workers/moonboys-api/pets/season-completion.js',import.meta.url),'utf8');
 assert.match(completionSource,/finalizePetSeasonCompletionIfEligible[\s\S]*movePetToSanctuaryIfEligible\(db,/,'authoritative completion automatically invokes Sanctuary transition');
@@ -140,8 +151,18 @@ assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_active_slots WHERE pet_id='complete'`).get().count,0);
 assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='owner'`).get().pet_id,'legendary-only','self-healing retry restores Pet B active pointer');
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='complete'`).get().count,1,'unique pet permits one resident only');
-assert.throws(() => sqlite.prepare(`UPDATE telegram_pet_sanctuary SET identity_snapshot_json='{}'`).run(), /sanctuary_snapshot_is_immutable/, 'historical snapshot columns are append-only');
-assert.throws(() => sqlite.prepare(`DELETE FROM telegram_pet_sanctuary`).run(), /sanctuary_history_is_append_only/, 'Sanctuary history cannot be deleted');
+assert.deepEqual(
+  await movePetToSanctuaryIfEligible(db, { ...input, operation: 'update' }),
+  { accepted: false, reason: 'sanctuary_snapshot_is_immutable' },
+  'Worker mutation authority rejects Sanctuary updates',
+);
+assert.deepEqual(
+  await movePetToSanctuaryIfEligible(db, { ...input, operation: 'delete' }),
+  { accepted: false, reason: 'sanctuary_history_is_append_only' },
+  'Worker mutation authority rejects Sanctuary deletes',
+);
+assert.equal(sqlite.prepare(`SELECT identity_snapshot_json FROM telegram_pet_sanctuary WHERE pet_id='complete'`).get().identity_snapshot_json.includes('Nova'),true,'rejected update leaves snapshot unchanged');
+assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='complete'`).get().count,1,'rejected delete leaves resident intact');
 sqlite.exec(`INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,updated_at) VALUES('rollback','owner','s1',3,'active',NULL);
 INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,pet_name,species,stage,equipped_food,equipped_toy,equipped_outfit,equipped_armor,equipped_weapon,equipped_charm,status,updated_at) VALUES('rollback','owner','s1','Rollback','fox','legendary',NULL,NULL,NULL,NULL,NULL,NULL,'active',NULL);
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id) VALUES('rollback','owner','s1','2026-03-31T00:00:00Z','legendary_moon_guardian');
