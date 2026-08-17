@@ -1,14 +1,13 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
-import { movePetToSanctuaryIfEligible } from './sanctuary.js';
-import { evaluateMoonpetEvolutionRequirements } from './moonpet-identity.js';
 
 // Product balancing assumptions: five post-egg evolution milestones and ten
 // qualifying weeks. Named here so balancing never hides in route/UI code.
 export const PET_SEASON_COMPLETION_CONFIG = Object.freeze({
-  authority_version: 1,
+  authority_version: 2,
   required_growth_marks: 60,
   required_weekly_crests: 10,
   season_days: 90,
+  sanctuary_transition: 'season_settlement',
 });
 
 export const PET_GROWTH_MILESTONES = Object.freeze({
@@ -27,6 +26,7 @@ export const PET_WEEKLY_CREST_OBJECTIVES = Object.freeze({
 
 const FINAL_EVOLUTION = evolutions.reduce((latest, entry) => Number(entry.stage) > Number(latest.stage) ? entry : latest, evolutions[0]);
 const integer = (value) => Math.max(0, Math.floor(Number(value) || 0));
+const allComplete = (items) => items.every((item) => item.complete);
 
 function safeAwardTimestamp(value, fallback = new Date()) {
   const parsed = value == null ? NaN : Date.parse(value);
@@ -47,6 +47,15 @@ async function ownedPet(db, petId, seasonKey, telegramId = null) {
   return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, i.level, i.pet_xp
     FROM telegram_pet_season_slots s JOIN telegram_pet_instances i ON i.pet_id=s.pet_id
     WHERE s.pet_id=? AND s.season_key=?${ownerClause} LIMIT 1`).bind(...args).first();
+}
+
+async function seasonSlotCreatedAt(db, petId, seasonKey) {
+  try {
+    const row = await db.prepare(`SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first();
+    return row?.created_at || null;
+  } catch {
+    return null;
+  }
 }
 
 export async function isPetLegendary(db, petId, seasonKey) {
@@ -109,18 +118,41 @@ export async function reconcileEvolutionGrowthMarks(db, petId, seasonKey) {
   });
 }
 
-export async function buildPetLifecycleProgress(db, petId, seasonKey) {
+export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new Date()) {
   const pet = await ownedPet(db, petId, seasonKey);
   if (!pet) return null;
   const current = await db.prepare(`SELECT evolution_id, stage FROM telegram_pet_evolutions_by_pet
     WHERE pet_id=? AND telegram_id=? ORDER BY stage DESC LIMIT 1`).bind(petId, pet.telegram_id).first();
+  const currentEvolutionRecorded = Boolean(current?.evolution_id);
   const stage = integer(current?.stage);
+  const currentDefinition = evolutions.find((entry) => Number(entry.stage) === stage) || null;
   const next = evolutions.find((entry) => Number(entry.stage) === stage + 1) || null;
-  const level = Math.max(1, integer(pet.level || integer(pet.pet_xp / 100) + 1));
+  const instanceLevel = Math.max(1, integer(pet.level), integer(pet.pet_xp / 100) + 1);
+  const migratedPetMissingCounters = stage > 0 && integer(pet.level) <= 1 && integer(pet.pet_xp) === 0;
+  const level = migratedPetMissingCounters ? Math.max(instanceLevel, integer(currentDefinition?.requirements?.pet_level)) : instanceLevel;
   let bossProgress = [];
   let itemProgress = [];
   let relicProgress = { current: 0, required: integer(next?.requirements?.relics_owned), complete: !next?.requirements?.relics_owned };
+  let currentEvolutionProgress = null;
+  let growthMarkProgress = null;
+  let weeklyCrestProgress = null;
+  let ageProgress = null;
   if (next) {
+    const gatedEvolution = Number(next.stage) > 0;
+    const minAgeDays = gatedEvolution ? integer(next.requirements.min_age_days) : 0;
+    const createdAtSource = await seasonSlotCreatedAt(db, petId, seasonKey);
+    const createdAt = Date.parse(createdAtSource || '');
+    const currentTime = new Date(now).getTime();
+    const computedAgeDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
+      ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))
+      : null;
+    const ageDays = computedAgeDays == null ? 0 : computedAgeDays;
+    currentEvolutionProgress = {
+      current: currentEvolutionRecorded ? current.evolution_id : null,
+      required: currentDefinition?.evolution_id || evolutions[0].evolution_id,
+      complete: currentEvolutionRecorded,
+    };
+    ageProgress = { current: ageDays, required: minAgeDays, complete: ageDays >= minAgeDays };
     bossProgress = await Promise.all(Object.entries(next.requirements.boss_victories || {}).map(async ([bossId, required]) => {
       const row = await db.prepare(`SELECT victories FROM telegram_pet_boss_victories WHERE telegram_id=? AND boss_id=?`).bind(pet.telegram_id, bossId).first();
       return { boss_id: bossId, current: integer(row?.victories), required: integer(required), complete: integer(row?.victories) >= integer(required) };
@@ -131,24 +163,49 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey) {
         : await db.prepare(`SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type=? AND asset_key=?`).bind(pet.telegram_id, assetType, assetKey).first();
       return { asset_type: assetType, asset_key: assetKey, current: integer(row?.quantity), required: integer(required), complete: integer(row?.quantity) >= integer(required) };
     })));
-    const relics = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id=?`).bind(pet.telegram_id).first();
+    const [relics, marks, crests] = await Promise.all([
+      db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id=?`).bind(pet.telegram_id).first(),
+      gatedEvolution
+        ? db.prepare(`SELECT COUNT(DISTINCT earned_day) AS earned FROM telegram_pet_growth_marks
+          WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first()
+        : Promise.resolve({ earned: 0 }),
+      gatedEvolution
+        ? db.prepare(`SELECT COUNT(DISTINCT qualification_week) AS earned FROM telegram_pet_weekly_crests
+          WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first()
+        : Promise.resolve({ earned: 0 }),
+    ]);
     relicProgress = { current: integer(relics?.count), required: integer(next.requirements.relics_owned), complete: integer(relics?.count) >= integer(next.requirements.relics_owned) };
+    const requiredGrowthMarks = gatedEvolution ? integer(next.requirements.growth_marks) : 0;
+    const requiredWeeklyCrests = gatedEvolution ? integer(next.requirements.weekly_crests) : 0;
+    growthMarkProgress = { current: integer(marks?.earned), required: requiredGrowthMarks, complete: integer(marks?.earned) >= requiredGrowthMarks };
+    weeklyCrestProgress = { current: integer(crests?.earned), required: requiredWeeklyCrests, complete: integer(crests?.earned) >= requiredWeeklyCrests };
   }
   const levelProgress = next ? { current: level, required: next.requirements.pet_level, complete: level >= next.requirements.pet_level } : null;
-  const authority = next ? await evaluateMoonpetEvolutionRequirements(db, {
-    telegram_id: pet.telegram_id,
-    pet_id: petId,
-    season_key: seasonKey,
-    evolution_id: next.evolution_id,
-  }) : { ready: false };
-  const evolutionReady = Boolean(next && authority.pet_id === petId && authority.ready);
+  const evolutionReady = Boolean(next
+    && currentEvolutionProgress.complete
+    && levelProgress.complete
+    && ageProgress.complete
+    && growthMarkProgress.complete
+    && weeklyCrestProgress.complete
+    && relicProgress.complete
+    && allComplete(bossProgress)
+    && allComplete(itemProgress));
   return {
     current_stage: stage + 1, total_stages: evolutions.length,
     current_evolution: current?.evolution_id || evolutions[0].evolution_id,
     next_evolution: next ? { evolution_id: next.evolution_id, name: next.name } : null,
-    requirements: next ? { pet_level: levelProgress, boss_victories: bossProgress, required_items: itemProgress, relics: relicProgress } : null,
+    requirements: next ? {
+      current_evolution: currentEvolutionProgress,
+      pet_level: levelProgress,
+      min_age_days: ageProgress,
+      growth_marks: growthMarkProgress,
+      weekly_crests: weeklyCrestProgress,
+      boss_victories: bossProgress,
+      required_items: itemProgress,
+      relics: relicProgress,
+    } : null,
     evolution_ready: evolutionReady,
-    authority_reason: next ? authority.reason : null,
+    authority_reason: next && !evolutionReady ? 'requirements_not_met' : null,
   };
 }
 
@@ -162,7 +219,7 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
     db.prepare(`SELECT COUNT(*) AS evidence_rows, COUNT(DISTINCT qualification_week) AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week IS NOT NULL`).bind(petId, pet.telegram_id, seasonKey).first(),
     db.prepare(`SELECT 1 AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? LIMIT 1`).bind(petId, pet.telegram_id, seasonKey, seasonWeek).first(),
     db.prepare(`SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=? AND telegram_id=? AND season_key=?`).bind(petId, pet.telegram_id, seasonKey).first(),
-    buildPetLifecycleProgress(db, petId, seasonKey),
+    buildPetLifecycleProgress(db, petId, seasonKey, now),
   ]);
   const growthEarned = integer(growth?.earned);
   const crestEarned = integer(crests?.earned);
@@ -175,6 +232,7 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
     weekly_crests: { earned: crestEarned, required: PET_SEASON_COMPLETION_CONFIG.required_weekly_crests, weeks_completed: crestEarned, evidence_rows: integer(crests?.evidence_rows), current_season_week: seasonWeek, current_week_crest_earned: Boolean(currentCrest?.earned) },
     requirements_met: requirementsMet, season_complete: Boolean(completion), completed_at: completion?.completed_at || null,
     completion_season: completion ? seasonKey : null, sanctuary_eligible: Boolean(completion),
+    sanctuary_transition: PET_SEASON_COMPLETION_CONFIG.sanctuary_transition,
   };
 }
 
@@ -190,17 +248,9 @@ export async function finalizePetSeasonCompletionIfEligible(db, petId, seasonKey
     petId, pet.telegram_id, seasonKey, now.toISOString(), FINAL_EVOLUTION.evolution_id,
     state.growth_marks.earned, state.weekly_crests.earned, PET_SEASON_COMPLETION_CONFIG.authority_version,
   ).run();
-  try {
-    await movePetToSanctuaryIfEligible(db, {
-      pet_id: petId,
-      telegram_id: pet.telegram_id,
-      season_key: seasonKey,
-    }, { now: now.toISOString(), getPendingActivity: options.getPendingActivity });
-  } catch (error) {
-    // Completion migration 058 may briefly precede migration 059 during a
-    // rolling deploy. Do not lose completion authority; every later evaluator
-    // retries the idempotent, self-healing Sanctuary transition.
-    if (!String(error?.message || '').includes('no such table: telegram_pet_sanctuary')) throw error;
-  }
+  // Season completion is now only the authority marker. Moving the pet into
+  // Sanctuary is deliberately deferred until explicit season settlement so the
+  // current-season slot remains stable and a completed active pet does not lose
+  // its active pointer or collide with a same-season successor egg.
   return evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
 }

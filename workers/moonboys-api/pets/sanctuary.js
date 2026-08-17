@@ -11,6 +11,12 @@ export const PET_RECOVERABLE_ACTIVITY_PREDICATE = `status = 'completed'
   AND json_valid(metadata) = 1
   AND json_extract(metadata, '$.claim_state') = 'claiming'`;
 
+export function isSeasonSettlementReconciliation(options = {}) {
+  return options?.season_settlement === true
+    || options?.seasonSettlement === true
+    || String(options?.context || options?.reason || '') === 'season_settlement';
+}
+
 async function hasPendingActivity(db, telegramId) {
   const checks = [
     [`SELECT id FROM telegram_pet_activity_sessions WHERE telegram_id=?
@@ -63,8 +69,10 @@ export async function listSanctuaryPetsPrivate(db, telegramId) {
 export const listSanctuaryPets = listSanctuaryPetsSummary;
 
 function currentSeasonKey(timestamp) {
-  const date = new Date(timestamp);
-  return `pet-s${date.getUTCFullYear()}-${String(Math.floor(date.getUTCMonth() / 3) + 1).padStart(3, '0')}`;
+  const parsed = new Date(timestamp);
+  const date = Number.isFinite(parsed.getTime()) ? parsed : new Date();
+  const quarter = Math.floor(date.getUTCMonth() / 3);
+  return `pet-s${date.getUTCFullYear()}-${String(quarter + 1).padStart(3, '0')}`;
 }
 
 // This mutation is intentionally not exposed as a player action. Callers must
@@ -217,12 +225,16 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
 }
 
 export async function reconcileCompletedPetsToSanctuary(db, telegramId, options = {}) {
+  const explicitSettlement = isSeasonSettlementReconciliation(options);
+  const currentKey = currentSeasonKey(options.now || new Date().toISOString());
+  const seasonFilter = explicitSettlement ? '' : ' AND c.season_key<>?';
+  const bindings = explicitSettlement ? [String(telegramId)] : [String(telegramId), currentKey];
   let result;
   try {
     result = await db.prepare(`SELECT c.pet_id, c.telegram_id, c.season_key
       FROM telegram_pet_season_completions c
       LEFT JOIN telegram_pet_sanctuary s ON s.pet_id=c.pet_id
-      WHERE c.telegram_id=? AND s.pet_id IS NULL ORDER BY c.completed_at`).bind(String(telegramId)).all();
+      WHERE c.telegram_id=? AND s.pet_id IS NULL${seasonFilter} ORDER BY c.completed_at`).bind(...bindings).all();
   } catch (error) {
     const message = String(error?.message || '');
     if (message.includes('no such table: telegram_pet_season_completions') || message.includes('no such table: telegram_pet_sanctuary')) return [];
