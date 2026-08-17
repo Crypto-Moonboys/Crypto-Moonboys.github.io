@@ -66,6 +66,24 @@ assert.match(
 
 assert.match(
   sanctuarySource,
+  /Date\.UTC\(date\.getUTCFullYear\(\), date\.getUTCMonth\(\), date\.getUTCDate\(\)\)/,
+  'Sanctuary current season key must use UTC calendar-day authority.',
+);
+
+assert.match(
+  sanctuarySource,
+  /Math\.floor\(dayOfYear \/ 90\) \+ 1/,
+  'Sanctuary current season key must use the pets 90-day season model, including year-end segment 005.',
+);
+
+assert.doesNotMatch(
+  sanctuarySource,
+  /getUTCMonth\(\) \/ 3/,
+  'Sanctuary current season filtering must not use calendar quarters.',
+);
+
+assert.match(
+  sanctuarySource,
   /const seasonFilter = explicitSettlement \? '' : ' AND c\.season_key<>\?';/,
   'Default reconciliation must skip the current season while keeping completed past seasons reachable.',
 );
@@ -76,7 +94,7 @@ assert.match(
   'Completed-pet reconciliation must apply the season filter before moving pets to Sanctuary.',
 );
 
-for (const requiredField of ['min_age_days', 'growth_marks', 'weekly_crests']) {
+for (const requiredField of ['current_evolution', 'min_age_days', 'growth_marks', 'weekly_crests']) {
   assert.match(
     source,
     new RegExp(`${requiredField}:\\s*[a-zA-Z]+Progress`),
