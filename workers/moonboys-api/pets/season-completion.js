@@ -44,9 +44,18 @@ export function getPetSeasonWeek(season, now = new Date()) {
 async function ownedPet(db, petId, seasonKey, telegramId = null) {
   const ownerClause = telegramId == null ? '' : ' AND s.telegram_id=?';
   const args = telegramId == null ? [petId, seasonKey] : [petId, seasonKey, String(telegramId)];
-  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.created_at, i.level, i.pet_xp
+  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, i.level, i.pet_xp
     FROM telegram_pet_season_slots s JOIN telegram_pet_instances i ON i.pet_id=s.pet_id
     WHERE s.pet_id=? AND s.season_key=?${ownerClause} LIMIT 1`).bind(...args).first();
+}
+
+async function petLifecycleCreatedAt(db, petId) {
+  try {
+    const row = await db.prepare(`SELECT created_at FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).bind(petId).first();
+    return row?.created_at || null;
+  } catch {
+    return null;
+  }
 }
 
 async function legacyAccountLevel(db, telegramId) {
@@ -137,7 +146,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
   if (next) {
     const gatedEvolution = Number(next.stage) > 0;
     const minAgeDays = gatedEvolution ? integer(next.requirements.min_age_days) : 0;
-    const createdAt = Date.parse(pet.created_at || '');
+    const createdAt = Date.parse(await petLifecycleCreatedAt(db, petId) || '');
     const currentTime = new Date(now).getTime();
     const ageDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
       ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))
