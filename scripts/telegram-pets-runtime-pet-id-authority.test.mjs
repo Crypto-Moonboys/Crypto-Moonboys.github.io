@@ -38,7 +38,9 @@ assert.match(live, /telegram_pet_event_chain_progress \(telegram_id, pet_id/);
 assert.match(live, /telegram_pet_seasonal_boss_progress \(telegram_id, pet_id/);
 assert.match(live, /telegram_pet_cosmetic_unlocks \(telegram_id, pet_id/);
 assert.match(phase5, /telegram_pet_equipment_progression \(telegram_id, pet_id/);
-assert.doesNotMatch(migration, /UPDATE\s+telegram_pet_\w+\s+SET\s+pet_id/i, 'legacy rows must never be assigned to today’s active selector');
+assert.match(migration, /DELETE FROM telegram_pet_runs;/, 'beta runtime cutover must reset ambiguous account-only runs');
+assert.match(migration, /DELETE FROM telegram_pet_progression_state;/, 'beta account progression must be reset rather than reassigned');
+assert.doesNotMatch(migration, /UPDATE\s+telegram_pet_\w+\s+SET\s+pet_id/i, 'beta rows must never be assigned to today’s active selector');
 
 const rewardWrapper = block(worker, 'async function awardPetReward');
 assert.doesNotMatch(rewardWrapper, /telegram_pet_profiles|findActivePetSlot|readActivePetInstance|getPetProfile|mirrorPetProfileToActiveInstance|source_profile_updated_at/,
@@ -95,6 +97,35 @@ console.log('Moonpet immutable pet_id authority checks passed.');
 // Runtime settlement regression: switching the selector before a duplicate retry
 // cannot mutate the selected pet or copy the compatibility profile.
 const { DatabaseSync } = await import('node:sqlite');
+
+// Migration 064 is an intentional beta-runtime reset, not an ownership guess.
+const cutover = new DatabaseSync(':memory:');
+cutover.exec('PRAGMA foreign_keys=OFF');
+cutover.exec(readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8'));
+cutover.exec(readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+cutover.prepare(`INSERT INTO telegram_users(telegram_id,username) VALUES('cutover-owner','cutover')`).run();
+cutover.prepare(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name) VALUES('cutover-owner','Permanent identity')`).run();
+cutover.prepare(`INSERT INTO telegram_pet_progression_state(telegram_id,care_xp) VALUES('cutover-owner',99)`).run();
+cutover.prepare(`INSERT INTO telegram_pet_runtime_events(id,telegram_id,event_key,action) VALUES('legacy-runtime','cutover-owner','legacy','feed')`).run();
+cutover.prepare(`INSERT INTO telegram_pet_identity_events(event_id,telegram_id,event_key,event_kind) VALUES('legacy-identity','cutover-owner','legacy','memory')`).run();
+cutover.exec(migration);
+assert.equal(cutover.prepare(`SELECT COUNT(*) count FROM telegram_pet_progression_state`).get().count, 0);
+assert.equal(cutover.prepare(`SELECT COUNT(*) count FROM telegram_pet_runtime_events`).get().count, 0);
+assert.equal(cutover.prepare(`SELECT COUNT(*) count FROM telegram_pet_identity_events`).get().count, 0);
+assert.equal(cutover.prepare(`SELECT COUNT(*) count FROM telegram_users WHERE telegram_id='cutover-owner'`).get().count, 1,
+  'runtime reset must preserve permanent Telegram identity');
+assert.equal(cutover.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='cutover-owner'`).get().pet_name, 'Permanent identity',
+  'runtime reset must preserve the permanent pet/account selector profile');
+cutover.prepare(`INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,status)
+  VALUES('cutover-pet','cutover-owner','s1',1,'free','cutover:seed','active')`).run();
+cutover.prepare(`INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,source_profile_updated_at)
+  VALUES('cutover-pet','cutover-owner','s1',1,'Canonical pet',CURRENT_TIMESTAMP)`).run();
+cutover.prepare(`INSERT INTO telegram_pet_progression_state(telegram_id,pet_id,care_xp) VALUES('cutover-owner','cutover-pet',1)`).run();
+cutover.prepare(`INSERT INTO telegram_pet_runtime_events(id,telegram_id,pet_id,event_key,action) VALUES('new-runtime','cutover-owner','cutover-pet','new','feed')`).run();
+assert.equal(cutover.prepare(`SELECT pet_id FROM telegram_pet_progression_state`).get().pet_id, 'cutover-pet');
+assert.equal(cutover.prepare(`SELECT pet_id FROM telegram_pet_runtime_events`).get().pet_id, 'cutover-pet');
+assert.throws(() => cutover.prepare(`INSERT INTO telegram_pet_runtime_events(id,telegram_id,event_key,action) VALUES('missing','cutover-owner','missing','feed')`).run(), /pet_id_required/);
+cutover.close();
 const { awardPetReward: settleReward } = await import('../workers/moonboys-api/pets/roguelite-foundation.js');
 class Statement {
   constructor(database, sql, args = []) { this.database = database; this.sql = sql; this.args = args; }

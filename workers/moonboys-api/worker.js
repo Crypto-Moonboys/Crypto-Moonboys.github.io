@@ -1979,7 +1979,7 @@ async function reservePetRepeatRewardEvent(db, details) {
   const statePredicate = petId ? 'pet_id = ? AND telegram_id = ?' : 'telegram_id = ?';
   const stateArgs = petId ? [petId, telegramId] : [telegramId];
   const existing = details.existing_event || await db.prepare(`
-    SELECT id, status, reason, day_key, week_key, season_key
+    SELECT id, pet_id, status, reason, day_key, week_key, season_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
   `).bind(telegramId, eventKey).first().catch(() => null);
   if (existing) return parsePetRepeatRewardReservation(existing, normalizedMode);
@@ -2926,14 +2926,17 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
   if (!choice) return { accepted: false, reason: 'invalid_event_choice', encounter, xp_awarded: 0, pet_xp_awarded: 0 };
   const eventKey = String(options.event_key || encounter.event_key || `${encounter.key}-${Date.now().toString(36)}`).slice(0, 120);
   const duplicate = await db.prepare(`
-    SELECT id, status, reason, day_key, week_key, season_key
+    SELECT id, pet_id, status, reason, day_key, week_key, season_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
   `).bind(telegramId, eventKey).first().catch(() => null);
   if (duplicate && duplicate.status !== 'pending') return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
-  const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);
+  const pet = duplicate?.pet_id
+    ? await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?').bind(duplicate.pet_id, telegramId).first()
+    : await getPetProfileWithAtomicDecay(db, telegramId, now);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const reservation = await reservePetRepeatRewardEvent(db, {
     telegram_id: telegramId,
+    ...(pet.pet_id ? { pet_id: pet.pet_id } : {}),
     event_type: 'random_event',
     event_key: eventKey,
     season_key: season.key,

@@ -814,7 +814,7 @@ assert.ok(randomEvent.includes('duplicate: true'), 'random event must short-circ
 assertOrder(
   randomEvent,
   'const duplicate = await db.prepare(`',
-  'const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);',
+  'const pet = duplicate?.pet_id',
   'random event must check duplicate event keys before loading the pet'
 );
 assertOrder(
