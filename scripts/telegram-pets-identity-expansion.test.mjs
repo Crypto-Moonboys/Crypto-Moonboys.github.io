@@ -286,8 +286,12 @@ const inactiveQualified = await evaluateMoonpetEvolutionRequirements(evolutionDb
 });
 assert.equal(inactiveQualified.ready, true, 'an eligible inactive roster pet is evaluated using its own authority scope');
 const inactiveQualifiedLifecycle = await buildPetLifecycleProgress(evolutionDb, inactiveQualifiedPetId, TEST_SEASON_KEY);
-assert.equal(inactiveQualifiedLifecycle.evolution_ready, true,
-  'inactive roster lifecycle guidance reports ready for the specifically requested qualified pet');
+assert.equal(inactiveQualifiedLifecycle.evolution_ready, false,
+  'inactive roster lifecycle guidance does not infer next Legendary level from migrated zero instance counters');
+assert.equal(inactiveQualifiedLifecycle.requirements.pet_level.current, 45,
+  'inactive roster lifecycle guidance only infers the current Moon Guardian level already earned');
+assert.equal(inactiveQualifiedLifecycle.requirements.pet_level.required, 50,
+  'inactive roster lifecycle guidance keeps the next Legendary level requirement visible');
 const inactiveBlockedPetId = seedPetSlot(evolutionDb, 'identity-player', 3, 'arcade_xp', false);
 evolutionDb.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
   (pet_id,telegram_id,evolution_id,stage,unlock_event_key,cosmetic_unlocks,achievement_unlocks,materials_consumed)
