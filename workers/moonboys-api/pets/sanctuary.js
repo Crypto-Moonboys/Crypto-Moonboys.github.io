@@ -223,13 +223,16 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
 }
 
 export async function reconcileCompletedPetsToSanctuary(db, telegramId, options = {}) {
-  if (!isSeasonSettlementReconciliation(options)) return [];
+  const explicitSettlement = isSeasonSettlementReconciliation(options);
+  const currentKey = currentSeasonKey(options.now || new Date().toISOString());
+  const seasonFilter = explicitSettlement ? '' : ' AND c.season_key<>?';
+  const bindings = explicitSettlement ? [String(telegramId)] : [String(telegramId), currentKey];
   let result;
   try {
     result = await db.prepare(`SELECT c.pet_id, c.telegram_id, c.season_key
       FROM telegram_pet_season_completions c
       LEFT JOIN telegram_pet_sanctuary s ON s.pet_id=c.pet_id
-      WHERE c.telegram_id=? AND s.pet_id IS NULL ORDER BY c.completed_at`).bind(String(telegramId)).all();
+      WHERE c.telegram_id=? AND s.pet_id IS NULL${seasonFilter} ORDER BY c.completed_at`).bind(...bindings).all();
   } catch (error) {
     const message = String(error?.message || '');
     if (message.includes('no such table: telegram_pet_season_completions') || message.includes('no such table: telegram_pet_sanctuary')) return [];
