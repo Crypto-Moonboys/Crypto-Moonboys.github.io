@@ -16,7 +16,7 @@ import {
 import { __rogueliteFoundationTestHooks } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { buildPetProgressSummary } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
 import { __petMediaTestHooks as workerHooks } from '../workers/moonboys-api/worker.js';
-import { awardPetGrowthMark, buildPetLifecycleProgress } from '../workers/moonboys-api/pets/season-completion.js';
+import { awardPetGrowthMark, buildPetLifecycleProgress, isPetLegendary } from '../workers/moonboys-api/pets/season-completion.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql', import.meta.url), 'utf8');
@@ -117,6 +117,8 @@ assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolution
   'migration 062 promotes legacy account Legendary rows to stage 5');
 assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='legendary_moon_guardian'`).get(stage5PetId).stage, 5,
   'migration 062 promotes legacy per-pet Legendary rows to the final stage');
+assert.equal(await isPetLegendary(stage5Db, stage5PetId, TEST_SEASON_KEY), true,
+  'a migrated beta Legendary remains final-evolution authority for season completion');
 stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions
   (telegram_id,evolution_id,stage,unlock_event_key) VALUES ('stage5-migration','moon_guardian',4,'stage5:guardian')`).run();
 assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolutions WHERE evolution_id='moon_guardian'`).get().stage, 4,
@@ -192,6 +194,9 @@ missingScopeDb.database.prepare(`DELETE FROM telegram_pet_instances WHERE telegr
 assert.deepEqual(await evolveMoonpet(missingScopeDb, { telegram_id: 'missing-scope', evolution_id: 'moon_egg', event_key: 'missing:scope' }),
   { accepted: false, duplicate: false, reason: 'evolution_authority_unavailable' },
   'missing authoritative pet scope fails closed instead of using account evolution state');
+const evolveSource = identitySource.slice(identitySource.indexOf('export async function evolveMoonpet'), identitySource.indexOf('export async function getMoonpetIdentitySummary'));
+assert.doesNotMatch(evolveSource, /\btelegram_pet_evolutions\b(?!_by_pet)/,
+  'the evolution mutation path contains no account-level evolution fallback');
 
 const evolutionDb = seedPlayer();
 evolutionDb.database.prepare("INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity) VALUES ('identity-player', 'scrap_metal', 15)").run();
