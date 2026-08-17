@@ -1228,6 +1228,18 @@ async function getOrCreateArcadeProgressionState(db, telegramId, nowMs = Date.no
   return row;
 }
 
+async function creditArcadeXpWallet(db, telegramId, amount) {
+  const credit = Math.max(0, Math.floor(Number(amount) || 0));
+  if (!credit) return;
+  await db.prepare(`INSERT INTO arcade_xp_wallets
+    (telegram_id, arcade_xp_earned, arcade_xp_spendable, arcade_xp_spent, updated_at)
+    VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP)
+    ON CONFLICT(telegram_id) DO UPDATE SET
+      arcade_xp_earned=arcade_xp_wallets.arcade_xp_earned+excluded.arcade_xp_earned,
+      arcade_xp_spendable=arcade_xp_wallets.arcade_xp_spendable+excluded.arcade_xp_spendable,
+      updated_at=CURRENT_TIMESTAMP`).bind(telegramId, credit, credit).run();
+}
+
 async function getOrCreateGameEnforcementState(db, telegramId, game) {
   await db.prepare(`
     INSERT INTO arcade_game_enforcement_state
@@ -3374,6 +3386,11 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       max_slots: PET_SEASON_MAX_SLOTS,
       active_pet_id: null,
       arcade_xp_available: 0,
+      arcade_xp_lifetime: 0,
+      arcade_xp_spendable: 0,
+      arcade_xp_spent: 0,
+      next_slot_cost: 0,
+      can_buy_next_slot: false,
       purchase_enabled: true,
       purchase_disabled_reason: null,
       slots: [],
@@ -3381,7 +3398,7 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   }
   const season = getPetSeasonInfo(now);
   try {
-    const [slotRows, activeSlot, arcade] = await Promise.all([
+    const [slotRows, activeSlot, arcade, wallet] = await Promise.all([
       db.prepare(`
         SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
@@ -3402,6 +3419,8 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       `).bind(normalizedTelegramId).first().catch(() => null),
       db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1`)
         .bind(normalizedTelegramId).first().catch(() => null),
+      db.prepare(`SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id = ? LIMIT 1`)
+        .bind(normalizedTelegramId).first().catch(() => null),
     ]);
     const rawRows = slotRows.results || [];
     const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
@@ -3414,7 +3433,11 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     })));
     const currentRows = progressionRows.map((row) => mergePetInstanceDisplayFields(row, applyPetDecay({ ...row }, now)));
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
-    const arcadeXpAvailable = Math.max(0, Number(arcade?.arcade_xp_total || 0));
+    const arcadeXpLifetime = Math.max(0, Number(arcade?.arcade_xp_total || 0));
+    const arcadeXpAvailable = Math.max(0, Number(wallet?.arcade_xp_spendable || 0));
+    const arcadeXpSpent = Math.max(0, Number(wallet?.arcade_xp_spent || 0));
+    const nextSlotNumber = Math.min(PET_SEASON_MAX_SLOTS + 1, rawRows.length + 1);
+    const nextSlotCost = Number(PET_SEASON_EXTRA_SLOT_COSTS[nextSlotNumber] || 0);
     return {
       adopted: true,
       season,
@@ -3422,6 +3445,11 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       max_slots: PET_SEASON_MAX_SLOTS,
       active_pet_id: activePetId,
       arcade_xp_available: arcadeXpAvailable,
+      arcade_xp_lifetime: arcadeXpLifetime,
+      arcade_xp_spendable: arcadeXpAvailable,
+      arcade_xp_spent: arcadeXpSpent,
+      next_slot_cost: nextSlotCost,
+      can_buy_next_slot: nextSlotNumber <= PET_SEASON_MAX_SLOTS && arcadeXpAvailable >= nextSlotCost,
       purchase_enabled: true,
       purchase_disabled_reason: null,
       slots: Array.from({ length: PET_SEASON_MAX_SLOTS }, (_, index) => {
@@ -3437,6 +3465,11 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
         max_slots: PET_SEASON_MAX_SLOTS,
         active_pet_id: null,
         arcade_xp_available: 0,
+        arcade_xp_lifetime: 0,
+        arcade_xp_spendable: 0,
+        arcade_xp_spent: 0,
+        next_slot_cost: 0,
+        can_buy_next_slot: false,
         purchase_enabled: false,
         purchase_disabled_reason: 'season_slots_unavailable',
         slots: [],
@@ -3464,12 +3497,17 @@ async function buyPetSeasonSlot(db, telegramId, requestedSlot, options = {}) {
     .bind(owner, season.key, slotNumber).first();
   if (existing) return { accepted: false, reason: 'pet_slot_already_owned', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
 
+  const previous = await db.prepare(`SELECT 1 AS owned FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=? AND slot_number=?`)
+    .bind(owner, season.key, slotNumber - 1).first();
+  if (!previous) return { accepted: false, reason: 'previous_pet_slot_required', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
+
   const eventKey = `pet_slot:${season.key}:${slotNumber}`;
   const statements = [
-    db.prepare(`UPDATE arcade_progression_state SET arcade_xp_total=arcade_xp_total-?, updated_at=CURRENT_TIMESTAMP
-      WHERE telegram_id=? AND arcade_xp_total>=? AND NOT EXISTS (
+    db.prepare(`UPDATE arcade_xp_wallets SET arcade_xp_spendable=arcade_xp_spendable-?,
+        arcade_xp_spent=arcade_xp_spent+?, updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND arcade_xp_spendable>=? AND NOT EXISTS (
         SELECT 1 FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=? AND slot_number=?)`)
-      .bind(cost, owner, cost, owner, season.key, slotNumber),
+      .bind(cost, cost, owner, cost, owner, season.key, slotNumber),
     db.prepare(`INSERT INTO telegram_pet_season_slots
       (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
       SELECT ?, ?, ?, ?, 'arcade_xp', ?, ?, 'active' WHERE changes()=1`)
@@ -3486,9 +3524,9 @@ async function buyPetSeasonSlot(db, telegramId, requestedSlot, options = {}) {
   await db.batch(statements);
   const created = await db.prepare(`SELECT pet_id FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? LIMIT 1`).bind(petId, owner).first();
   if (!created) {
-    const state = await getOrCreateArcadeProgressionState(db, owner);
+    const wallet = await db.prepare(`SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?`).bind(owner).first().catch(() => null);
     const duplicate = await db.prepare(`SELECT 1 AS owned FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=? AND slot_number=?`).bind(owner, season.key, slotNumber).first();
-    return { accepted: false, reason: duplicate ? 'pet_slot_creation_incomplete' : (Number(state.arcade_xp_total) < cost ? 'insufficient_arcade_xp' : 'pet_slot_purchase_conflict'), season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
+    return { accepted: false, reason: duplicate ? 'pet_slot_creation_incomplete' : (Number(wallet?.arcade_xp_spendable || 0) < cost ? 'insufficient_arcade_xp' : 'pet_slot_purchase_conflict'), season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   }
   if (options.switch_active) return switchActivePetSeasonSlot(db, owner, petId, { now: options.now });
   return { accepted: true, reason: 'pet_slot_purchased', pet: await getPetProfile(db, owner), season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
@@ -8071,6 +8109,7 @@ export default {
             arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
             updated_at = CURRENT_TIMESTAMP
         `).bind(telegramId, grantXp, currentArcadeDailyKey).run();
+        await creditArcadeXpWallet(env.DB, telegramId, grantXp);
 
         const rowAfter = await env.DB.prepare(`
           SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
@@ -9655,6 +9694,7 @@ export default {
         ).run();
 
         if (xpBatchAwarded > 0) {
+          await creditArcadeXpWallet(env.DB, verified.telegramId, xpBatchAwarded);
           await logTelegramActivity(env.DB, verified.telegramId, 'arcade_progress_sync', JSON.stringify({
             runs_synced: acceptedCount,
             xp_awarded: xpBatchAwarded,

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
 const sanctuarySource = readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
 const workerSource = readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const walletMigration = readFileSync(new URL('../workers/moonboys-api/migrations/063_arcade_xp_spendable_wallet.sql', import.meta.url), 'utf8');
 
 assert.match(
   source,
@@ -16,6 +17,17 @@ assert.doesNotMatch(
   /movePetToSanctuaryIfEligible/,
   'Finalizing a completed pet must not immediately archive it into Sanctuary.',
 );
+
+const slotPurchaseSource = workerSource.slice(
+  workerSource.indexOf('async function buyPetSeasonSlot'),
+  workerSource.indexOf('async function switchActivePetSeasonSlot'),
+);
+assert.match(slotPurchaseSource, /UPDATE arcade_xp_wallets SET arcade_xp_spendable=arcade_xp_spendable-\?/,
+  'Paid seasonal slots must debit the spendable Arcade XP wallet.');
+assert.doesNotMatch(slotPurchaseSource, /UPDATE arcade_progression_state SET arcade_xp_total=arcade_xp_total-\?/,
+  'Lifetime Arcade XP must never be direct spend authority for paid seasonal slots.');
+assert.match(walletMigration, /Existing lifetime XP is not backfilled/,
+  'Wallet migration must not reinterpret deployed lifetime XP as spendable credit.');
 
 assert.match(
   source,

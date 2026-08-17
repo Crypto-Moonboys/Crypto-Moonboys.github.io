@@ -88,6 +88,16 @@ class MockStatement {
       return { success: true, meta: { changes: 1 } };
     }
 
+    if (sql.startsWith('INSERT INTO arcade_xp_wallets')) {
+      const [telegramIdRaw, earned, spendable] = this.args;
+      const telegramId = String(telegramIdRaw);
+      const row = this.db.arcadeWallets.get(telegramId) || { arcade_xp_earned: 0, arcade_xp_spendable: 0 };
+      row.arcade_xp_earned += Number(earned) || 0;
+      row.arcade_xp_spendable += Number(spendable) || 0;
+      this.db.arcadeWallets.set(telegramId, row);
+      return { success: true, meta: { changes: 1 } };
+    }
+
     if (sql.startsWith('INSERT INTO blocktopia_progression_events')) {
       this.db.auditEvents.push({
         telegram_id: String(this.args[1]),
@@ -108,6 +118,7 @@ class MockD1 {
     this.linkConfirmed = new Map();
     this.blocktopiaProgression = new Map();
     this.arcadeProgression = new Map();
+    this.arcadeWallets = new Map();
     this.auditEvents = [];
   }
 
