@@ -267,11 +267,11 @@ assert.deepEqual(
 db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at='2026-08-16T03:00:00.500Z' WHERE telegram_id='state-player'`).run();
 db.prepare(`UPDATE telegram_pet_profiles SET energy=64, updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run();
 const profileMutationPet = await getPetProfile(d1, 'state-player');
-assert.equal(profileMutationPet.energy, 64, 'a newer profile-only gameplay mutation must not be overwritten by stale instance state');
+assert.equal(profileMutationPet.energy, 88, 'a profile-only mutation must not overwrite canonical instance state');
 assert.equal(
   db.prepare(`SELECT energy FROM telegram_pet_instances WHERE telegram_id='state-player'`).get().energy,
-  64,
-  'a same-second profile-only gameplay mutation must synchronize to the active instance before the read returns',
+  88,
+  'the canonical instance must remain unchanged by a profile-only mutation',
 );
 const syncedProfileUpdatedAt = db.prepare(`SELECT updated_at FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get().updated_at;
 await getPetProfile(d1, 'state-player');
@@ -329,8 +329,8 @@ assert.equal(await preparePetMiniAppState(d1, 'state-player', rolloverNow), true
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, moon_gold, health, equipped_weapon FROM telegram_pet_instances
     WHERE telegram_id='state-player' AND season_key='2026-q3' AND slot_number=1`).get() },
-  { pet_name: 'Outgoing Final', pet_xp: 7777, moon_gold: 654, health: 62, equipped_weapon: 'outgoing-final-weapon' },
-  'rollover preparation must reconcile the final legacy write onto the outgoing pet before moving the pointer',
+  { pet_name: 'Saved Nova', pet_xp: 5200, moon_gold: 901, health: 73, equipped_weapon: 'laser' },
+  'rollover preparation must preserve the canonical outgoing instance and ignore stale profile-only writes',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT season_key, slot_number, acquisition_type, status FROM telegram_pet_season_slots
@@ -399,8 +399,8 @@ assert.equal(db.prepare(`SELECT energy FROM telegram_pet_instances WHERE season_
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, moon_gold, equipped_weapon, health FROM telegram_pet_instances
     WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get() },
-  { pet_xp: 73, moon_gold: 81, equipped_weapon: 'paid-blaster', health: 63 },
-  'switching must reconcile a newer legacy gameplay write to the old active instance before moving the pointer',
+  { pet_xp: 0, moon_gold: 0, equipped_weapon: null, health: 64 },
+  'switching must not copy a profile-only write into the canonical outgoing instance',
 );
 const boughtThird = await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtThird.accepted, true, 'slot 3 purchase must succeed with enough Arcade XP');
@@ -537,8 +537,8 @@ assert.equal(await preparePetMiniAppState(d1, 'rollover-activity', rolloverNow),
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-activity'`).get().pet_id, `pet:rollover-activity:${rolloverSeasonKey}:1`, 'activity clearance must allow the current-season starter to become active');
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, moon_gold, health FROM telegram_pet_instances WHERE pet_id=?`).get(activityRolloverPet) },
-  { pet_xp: 333, moon_gold: 444, health: 61 },
-  'outgoing activity settlement must reconcile onto the previous-season pet before the rollover pointer moves',
+  { pet_xp: 150, moon_gold: 30, health: 72 },
+  'profile-only activity settlement must not overwrite the canonical previous-season pet',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, moon_gold, health FROM telegram_pet_instances WHERE telegram_id='rollover-activity' AND season_key=? AND slot_number=1`).get(rolloverSeasonKey) },

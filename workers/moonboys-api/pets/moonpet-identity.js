@@ -50,6 +50,15 @@ async function readActivePetIdentityScope(db, telegramId) {
     LIMIT 1`).bind(telegramId).first().catch(() => null);
 }
 
+async function readPetIdentityScope(db, telegramId, petId) {
+  if (!petId) return readActivePetIdentityScope(db, telegramId);
+  return db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+    WHERE s.telegram_id=? AND s.pet_id=? AND s.status='active' AND i.status='active' LIMIT 1`)
+    .bind(telegramId, petId).first().catch(() => null);
+}
+
 function validateInventoryRequirements(inventory) {
   if (inventory == null) return true;
   if (typeof inventory !== 'object' || Array.isArray(inventory)) throw new Error('invalid_evolution_inventory_requirements');
@@ -429,9 +438,9 @@ export async function evolveMoonpet(db, request = {}) {
   return { accepted: true, duplicate: false, reason: 'evolved', evolution: definition };
 }
 
-export async function getMoonpetIdentitySummary(db, telegramIdRaw) {
+export async function getMoonpetIdentitySummary(db, telegramIdRaw, petIdRaw = '') {
   const telegramId = String(telegramIdRaw || '').trim();
-  const scope = await readActivePetIdentityScope(db, telegramId);
+  const scope = await readPetIdentityScope(db, telegramId, String(petIdRaw || '').trim());
   let identityPetId = scope?.pet_id || '';
   try { await db.prepare('SELECT pet_id FROM telegram_pet_memories LIMIT 1').first(); } catch { identityPetId = ''; }
   const identityPredicate = identityPetId ? 'pet_id = ?' : 'telegram_id = ?';

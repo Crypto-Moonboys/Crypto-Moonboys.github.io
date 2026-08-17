@@ -3034,18 +3034,7 @@ async function getPetProfile(db, telegramId) {
   `).bind(telegramId).first().catch(() => null);
   if (!instance) return profile ? applyPetDecay(profile) : null;
 
-  if (profile && petStateColumnsDiffer(profile, instance)) {
-    const profileUpdatedAt = petStateTimestamp(profile.updated_at);
-    const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
-    const instanceUpdatedAt = petStateTimestamp(instance.updated_at);
-    const profileIsNewer = profileUpdatedAt > instanceProfileVersion
-      || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion);
-    if (profileIsNewer) {
-      await writeActivePetInstance(db, telegramId, profile);
-      return applyPetDecay({ ...instance, ...profile, pet_id: instance.pet_id });
-    }
-    await mirrorActivePetInstanceToProfile(db, instance);
-  }
+  if (profile && petStateColumnsDiffer(profile, instance)) await mirrorActivePetInstanceToProfile(db, instance);
   return applyPetDecay(instance);
 }
 
@@ -3241,14 +3230,17 @@ async function mirrorActivePetInstanceToProfile(db, pet) {
   return true;
 }
 
-async function mirrorPetProfileToActiveInstance(db, telegramId) {
-  const profile = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
-  return profile ? writeActivePetInstance(db, telegramId, profile) : false;
-}
-
 async function awardPetReward(db, options) {
   const petId = String(options?.pet_id || '').trim();
-  if (!petId) return awardLegacyPetReward(db, options); // Compatibility for pre-064 rows only.
+  if (!petId) {
+    // Narrow rolling-deploy bridge only: migration 064 wipes all in-flight beta
+    // rewards before adding this column, so a post-064 database always rejects.
+    let preCutoverSchema = false;
+    try { await db.prepare('SELECT pet_id FROM telegram_pet_reward_claims LIMIT 1').first(); }
+    catch { preCutoverSchema = true; }
+    if (preCutoverSchema) return awardLegacyPetReward(db, options);
+    throw new Error('persisted_pet_authority_required:reward');
+  }
   const result = await awardLegacyPetReward(db, options);
   if (!result?.accepted) return result;
   const claim = await db.prepare(`SELECT claim_id, pet_id, source, idempotency_key FROM telegram_pet_reward_claims
@@ -3895,9 +3887,9 @@ async function enqueuePetKaijuPlayer(db, chatId, telegramId, options = {}) {
   const authority = await captureGameplayAuthorityForTable(db, telegramId, 'telegram_pet_kaiju_queue');
   await db.prepare(`
     UPDATE telegram_pet_kaiju_queue
-    SET updated_at = CURRENT_TIMESTAMP
+    SET ${authority?.pet_id ? 'pet_id = ?, ' : ''}updated_at = CURRENT_TIMESTAMP
     WHERE chat_id = ? AND telegram_id = ? AND status = 'waiting'
-  `).bind(String(chatId), String(telegramId)).run().catch(() => {});
+  `).bind(...(authority?.pet_id ? [authority.pet_id] : []), String(chatId), String(telegramId)).run().catch(() => {});
   await db.prepare(`
     INSERT OR IGNORE INTO telegram_pet_kaiju_queue (id, chat_id, telegram_id${authority?.pet_id ? ', pet_id' : ''}, status)
     VALUES (?, ?, ?${authority?.pet_id ? ', ?' : ''}, 'waiting')
@@ -4286,7 +4278,7 @@ async function queuePetArenaMiniApp(db, telegramId, acceptAnyRank = false) {
     (id,chat_id,telegram_id${pet.pet_id ? ',pet_id' : ''},rank_bucket,pet_snapshot_json,status,accept_any_rank)
     VALUES (?,?,?${pet.pet_id ? ',?' : ''},?,?,'waiting',?)
     ON CONFLICT(chat_id,telegram_id) WHERE status='waiting' DO UPDATE SET
-      rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json,
+      ${pet.pet_id ? 'pet_id=excluded.pet_id, ' : ''}rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json,
       accept_any_rank=MAX(telegram_pet_arena_queue.accept_any_rank, excluded.accept_any_rank), updated_at=CURRENT_TIMESTAMP`)
     .bind(crypto.randomUUID(), PET_MINI_APP_ARENA_LOBBY, String(telegramId), ...(pet.pet_id ? [pet.pet_id] : []), bucket, JSON.stringify(buildPetArenaSnapshot(pet)), acceptAnyRank ? 1 : 0).run();
   const activeAfterQueue = await getPetArenaBattleForPlayer(db, PET_MINI_APP_ARENA_LOBBY, telegramId)
@@ -4504,7 +4496,7 @@ async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = 
   if (await hasActivePetArenaBattle(db, chatId, telegramId)) { await sendTelegramMessage(tok, chatId, 'Finish your current Pet Arena battle first.'); return; }
   if (arg === 'app' || chatType === 'private') { const appPet = { ...pet, telegram_id: 'app', pet_name: 'App Moonpet', pet_xp: Math.max(0, Number(pet.pet_xp || 0) + 80), energy: 82, health: 88, happiness: 80, cleanliness: 80 }; const battle = await createPetArenaBattle(db, chatId, pet, appPet, 'app'); await sendTelegramMessage(tok, chatId, formatPetArenaRoundPrompt(battle), { reply_markup: buildPetArenaMoveReplyMarkup(battle.battle_id, battle.current_round) }); return; }
   const acceptAnyRank = arg === 'any' ? 1 : 0;
-  const bucket = getPetArenaRankBucket(getPetLevel(pet.pet_xp)); await db.prepare(`INSERT INTO telegram_pet_arena_queue (id,chat_id,telegram_id${pet.pet_id ? ',pet_id' : ''},rank_bucket,pet_snapshot_json,status,accept_any_rank) VALUES (?,?,?${pet.pet_id ? ',?' : ''},?,?,'waiting',?) ON CONFLICT(chat_id,telegram_id) WHERE status='waiting' DO UPDATE SET rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json, accept_any_rank=MAX(telegram_pet_arena_queue.accept_any_rank, excluded.accept_any_rank), updated_at=CURRENT_TIMESTAMP`).bind(crypto.randomUUID(), String(chatId), telegramId, ...(pet.pet_id ? [pet.pet_id] : []), bucket, JSON.stringify(buildPetArenaSnapshot(pet)), acceptAnyRank).run();
+  const bucket = getPetArenaRankBucket(getPetLevel(pet.pet_xp)); await db.prepare(`INSERT INTO telegram_pet_arena_queue (id,chat_id,telegram_id${pet.pet_id ? ',pet_id' : ''},rank_bucket,pet_snapshot_json,status,accept_any_rank) VALUES (?,?,?${pet.pet_id ? ',?' : ''},?,?,'waiting',?) ON CONFLICT(chat_id,telegram_id) WHERE status='waiting' DO UPDATE SET ${pet.pet_id ? 'pet_id=excluded.pet_id, ' : ''}rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json, accept_any_rank=MAX(telegram_pet_arena_queue.accept_any_rank, excluded.accept_any_rank), updated_at=CURRENT_TIMESTAMP`).bind(crypto.randomUUID(), String(chatId), telegramId, ...(pet.pet_id ? [pet.pet_id] : []), bucket, JSON.stringify(buildPetArenaSnapshot(pet)), acceptAnyRank).run();
   const idx = PET_ARENA_BUCKET_ORDER.indexOf(bucket); const lower = PET_ARENA_BUCKET_ORDER[idx - 1] || ''; const upper = PET_ARENA_BUCKET_ORDER[idx + 1] || '';
   const rows = await db.prepare(`SELECT * FROM telegram_pet_arena_queue WHERE chat_id=? AND status='waiting' AND telegram_id<>? AND (rank_bucket=? OR rank_bucket IN (?,?) OR accept_any_rank=1 OR ?=1 OR updated_at < datetime('now', ?)) ORDER BY CASE WHEN rank_bucket=? THEN 0 WHEN rank_bucket IN (?,?) THEN 1 ELSE 2 END, created_at ASC LIMIT 6`).bind(String(chatId), telegramId, bucket, lower, upper, acceptAnyRank, `-${PET_ARENA_ANY_RANK_TIMEOUT_MINUTES} minutes`, bucket, lower, upper).all().catch(()=>({results:[]}));
   const opponent = (rows.results || []).find((row) => String(row.telegram_id) !== telegramId);
@@ -8243,7 +8235,6 @@ export default {
       try {
         await getPetProfile(env.DB, verified.telegramId);
         result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body, env.TELEGRAM_BOT_TOKEN);
-        await mirrorPetProfileToActiveInstance(env.DB, verified.telegramId);
       } catch (error) {
         logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
         return err('mini_app_action_failed', 500);
@@ -8551,7 +8542,6 @@ export default {
           source: 'telegram_pets_api',
         });
       }
-      await mirrorPetProfileToActiveInstance(env.DB, telegramId);
       if (result.pet) result.pet = await getPetProfile(env.DB, telegramId);
       const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
       return json({ ...result, pet: serializePet(result.pet, identity) }, result.accepted ? 200 : 409);
@@ -12202,7 +12192,6 @@ export const __petMediaTestHooks = Object.freeze({
   readActivePetInstance,
   writeActivePetInstance,
   mirrorActivePetInstanceToProfile,
-  mirrorPetProfileToActiveInstance,
   getPetProfile,
   savePetProfile,
   PET_ACHIEVEMENTS,
@@ -13018,10 +13007,11 @@ function formatPetStatus(pet, identity = null, activity = null, reaction = undef
   ].join('\n');
 }
 
-async function getMoonpetIdentityWithLifecycle(db, telegramId) {
+async function getMoonpetIdentityWithLifecycle(db, telegramId, petId = '') {
   const [identity, lifecycle] = await Promise.all([
-    getMoonpetIdentitySummary(db, telegramId).catch(() => null),
-    getExistingMoonpetLifecycle(db, telegramId).catch(() => null),
+    getMoonpetIdentitySummary(db, telegramId, petId).catch(() => null),
+    petId ? db.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').bind(petId).first().catch(() => null)
+      : getExistingMoonpetLifecycle(db, telegramId).catch(() => null),
   ]);
   if (identity) identity.lifecycle = lifecycle;
   return identity;
@@ -13668,7 +13658,7 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
   if (newlyDefeated) {
     reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress);
     await recordMoonpetMemory(db, { telegram_id: telegramId, pet_id: progress.pet_id, event_key: `${eventKey}:memory`, memory_type: 'boss_victory', boss_id: boss.boss_id, milestone: 'first_boss_victory' });
-    await applyPetRuntimeCommandAward(db, telegramId, `runtime:${eventKey}`, 'run_boss');
+    await applyPetRuntimeCommandAward(db, telegramId, `runtime:${eventKey}`, 'run_boss', { pet_id: progress.pet_id });
     await recordWeeklyBossVictoryCrest(db, telegramId, weekKey, boss.boss_id, `${weekKey}:${boss.boss_id}`, progress.defeated_at || now, victoriousPet);
   }
   return { accepted: true, duplicate: false, reason: newlyDefeated ? 'boss_defeated' : 'boss_damaged', boss, progress, damage, action, reward, week_key: weekKey, pet: await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').bind(bossPetId).first() };
@@ -13698,17 +13688,21 @@ async function claimPetSeasonReward(db, telegramId, tierIdRaw, eventKeyRaw = '')
   if (!tier) return { accepted: false, reason: 'no_season_reward_ready', state };
   if (state.season_xp < tier.required_xp) return { accepted: false, reason: 'season_tier_locked', tier, state };
   const eventKey = String(eventKeyRaw || `pet:season:${telegramId}:${state.season.key}:${tier.tier_id}`).slice(0, 180);
-  const rewards = { ...tier.reward, style_tokens: Math.max(0, Number(tier.reward.style_tokens || 0) + state.evolution_stage) };
-  const rewardKey = `season_reward:${telegramId}:${state.season.key}:${tier.tier_id}`;
   const persistedReward = await db.prepare(`SELECT pet_id FROM telegram_pet_reward_claims
-    WHERE telegram_id=? AND source='pet_season_reward' AND idempotency_key=? LIMIT 1`).bind(telegramId, rewardKey).first().catch(() => null);
-  const authority = persistedReward?.pet_id
-    ? requirePersistedGameplayAuthority({ telegram_id: telegramId, pet_id: persistedReward.pet_id, season_key: state.season.key }, telegramId)
+    WHERE telegram_id=? AND source='pet_season_reward' AND idempotency_key LIKE ? AND pet_id IS NOT NULL LIMIT 1`)
+    .bind(telegramId, `season_reward:${telegramId}:${state.season.key}:${tier.tier_id}:%`).first().catch(() => null);
+  const persistedPetId = tier.pet_id || persistedReward?.pet_id;
+  const authority = persistedPetId
+    ? requirePersistedGameplayAuthority({ telegram_id: telegramId, pet_id: persistedPetId, season_key: state.season.key }, telegramId)
     : await captureGameplayAuthority(db, telegramId);
+  const participatingIdentity = await getMoonpetIdentityWithLifecycle(db, telegramId, authority.pet_id);
+  const evolutionStage = Math.max(0, Number(participatingIdentity?.current_stage?.stage || 0));
+  const rewards = { ...tier.reward, style_tokens: Math.max(0, Number(tier.reward.style_tokens || 0) + evolutionStage) };
+  const rewardKey = `season_reward:${telegramId}:${state.season.key}:${tier.tier_id}:${authority.pet_id}`;
   const award = await awardPetReward(db, {
     telegram_id: telegramId, pet_id: authority.pet_id, source: 'pet_season_reward', idempotency_key: rewardKey, event_key: rewardKey,
     event_type: 'season_reward', reason: tier.tier_id, rewards, touch_streak: false,
-    context: { season_key: state.season.key, tier_id: tier.tier_id, evolution_stage: state.evolution_stage },
+    context: { season_key: state.season.key, tier_id: tier.tier_id, evolution_stage: evolutionStage },
   });
   const claim = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_reward_claims
     (telegram_id, pet_id, season_key, tier_id, event_key) VALUES (?, ?, ?, ?, ?)`)
@@ -13823,7 +13817,7 @@ async function cmdPetWeeklyBoss(db, tok, chatId, telegramId, action, eventKey = 
   const actionLine = result.damage ? `\nYou dealt <b>${result.damage}</b> damage with ${escapeHtml(result.action)}.` : '';
   const duplicateLine = result.duplicate ? '\nToday’s attempt is already spent. Return after the UTC reset.' : '';
   const rewardLine = progress.defeated_at ? `\nWeekly reward: ${Object.entries(boss.reward).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(', ')}.` : '';
-  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
+  const identity = await getMoonpetIdentityWithLifecycle(db, telegramId, progress.pet_id || result.pet?.pet_id);
   const reaction = await selectMoonpetReaction(db, telegramId, 'boss', identity || {}, { pet: result.pet, activity_label: `${boss.title} boss fight` }).catch(() => buildMoonpetReaction('boss', identity || {}));
   const bossText = `<b>👑 Weekly Boss: ${escapeHtml(boss.title)}</b>\nWeek ${escapeHtml(result.week_key || getPetWeekKey(new Date()))}\nWeakness: ${escapeHtml(boss.weakness)}\nStatus: <b>${escapeHtml(status)}</b>\nAttempts: ${Number(progress.attempts || 0)}/7${actionLine}${duplicateLine}${rewardLine}\n\n<i>${escapeHtml(reaction)}</i>`;
   const bossMarkup = { inline_keyboard: progress.defeated_at ? [[{ text: '⬅️ Adventure', callback_data: 'pet:menu:adventure' }]] : [

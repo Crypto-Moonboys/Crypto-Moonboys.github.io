@@ -180,8 +180,10 @@ export async function awardPetReward(db, request = {}) {
   const authorityColumn = petId ? ', pet_id' : '';
   const authorityValue = petId ? ', ?' : '';
   const authorityArgs = petId ? [petId] : [];
-  const eventOwnerPredicate = petId ? 'pet_id = ?' : 'telegram_id = ?';
-  const eventOwnerValue = petId || telegramId;
+  const petEventOwnerPredicate = petId ? 'pet_id = ?' : 'telegram_id = ?';
+  const petEventOwnerValue = petId || telegramId;
+  const stateOwnerPredicate = petId ? 'pet_id = ? AND telegram_id = ?' : 'telegram_id = ?';
+  const stateOwnerArgs = petId ? [petId, telegramId] : [telegramId];
   const source = String(request.source || '').trim().toLowerCase().slice(0, 80);
   const idempotencyKey = String(request.idempotency_key || '').trim().slice(0, 160);
   if (!telegramId || !PET_REWARD_SOURCES.includes(source) || !idempotencyKey) throw new Error('invalid_pet_reward_request');
@@ -227,10 +229,10 @@ export async function awardPetReward(db, request = {}) {
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
       (claim_id, telegram_id${authorityColumn}, source, idempotency_key, day_key, status, requested_rewards, metadata)
       SELECT ?, ?${authorityValue}, ?, ?, ?, 'pending', ?, ?
-      WHERE EXISTS (SELECT 1 FROM ${stateTable} WHERE ${stateKey} = ?
+      WHERE EXISTS (SELECT 1 FROM ${stateTable} WHERE ${stateOwnerPredicate}
         AND moon_gold >= ? AND moon_crystals >= ? AND style_tokens >= ?)
       ${authorization.sql} ${reservationGuard}`)
-      .bind(claimId, telegramId, ...authorityArgs, source, idempotencyKey, dayKey, safeJson(rewards), safeJson(request.context || {}), stateValue,
+      .bind(claimId, telegramId, ...authorityArgs, source, idempotencyKey, dayKey, safeJson(rewards), safeJson(request.context || {}), ...stateOwnerArgs,
         currencyCosts.moon_gold, currencyCosts.moon_crystals, currencyCosts.style_tokens,
         ...authorization.args, ...(reservationId ? [reservationId, telegramId] : [])),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
@@ -239,13 +241,13 @@ export async function awardPetReward(db, request = {}) {
       WHERE EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
       .bind(eventId, telegramId, ...authorityArgs, eventType, eventKey, seasonKey, dayKey, weekKey, metadata, claimId),
     db.prepare(`UPDATE telegram_pet_events
-      SET pet_xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(pet_xp_awarded), 0) FROM telegram_pet_events WHERE ${eventOwnerPredicate} AND day_key = ? AND status = 'accepted'))),
-          xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(xp_awarded), 0) FROM telegram_pet_events WHERE ${eventOwnerPredicate} AND day_key = ? AND status = 'accepted'))),
+      SET pet_xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(pet_xp_awarded), 0) FROM telegram_pet_events WHERE ${petEventOwnerPredicate} AND day_key = ? AND status = 'accepted'))),
+          xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(xp_awarded), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'))),
           status = 'accepted', reason = ?, metadata = ?
       WHERE id = ? AND status = 'pending'
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')
       RETURNING pet_xp_awarded, xp_awarded`)
-      .bind(rewards.pet_xp, DAILY_PET_XP_CAP, eventOwnerValue, dayKey, rewards.community_xp, DAILY_COMMUNITY_XP_CAP, eventOwnerValue, dayKey, reason, metadata, eventId, claimId),
+      .bind(rewards.pet_xp, DAILY_PET_XP_CAP, petEventOwnerValue, dayKey, rewards.community_xp, DAILY_COMMUNITY_XP_CAP, telegramId, dayKey, reason, metadata, eventId, claimId),
     db.prepare(`UPDATE ${stateTable} SET
         pet_xp = pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'), 0),
         moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)), moon_crystals = MIN(?, MAX(0, moon_crystals + ? - ?)), style_tokens = MIN(?, MAX(0, style_tokens + ? - ?)),
@@ -256,18 +258,18 @@ export async function awardPetReward(db, request = {}) {
         last_decay_at = CASE WHEN ? = 0 THEN last_decay_at ELSE ? END,
         level = CAST((pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'), 0)) / 100 AS INTEGER) + 1,
         updated_at = CURRENT_TIMESTAMP
-      WHERE ${stateKey} = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
+      WHERE ${stateOwnerPredicate} AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
       .bind(eventId, metadata, MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens,
         profileDeltas.health, profileDeltas.hunger, profileDeltas.cleanliness, profileDeltas.energy, profileDeltas.happiness,
         touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey, touchStreak, now.toISOString(),
-        eventId, metadata, stateValue, eventId, metadata),
+        eventId, metadata, ...stateOwnerArgs, eventId, metadata),
     db.prepare(`UPDATE ${stateTable} SET
         stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian'
           WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
         health = CASE WHEN ? <> 0 THEN health
           ELSE MIN(100, MAX(0, ROUND(((100 - hunger) + happiness + cleanliness + energy) / 4.0))) END
-      WHERE ${stateKey} = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
-      .bind(profileDeltas.health, stateValue, eventId, metadata),
+      WHERE ${stateOwnerPredicate} AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
+      .bind(profileDeltas.health, ...stateOwnerArgs, eventId, metadata),
     db.prepare(`INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
       SELECT ?, ?, xp_awarded, ? FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted' AND xp_awarded > 0`)
       .bind(telegramId, xpAction, eventKey, eventId, metadata),

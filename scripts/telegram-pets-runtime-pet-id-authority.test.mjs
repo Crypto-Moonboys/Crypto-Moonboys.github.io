@@ -30,12 +30,17 @@ assert.deepEqual(guards.sort(), [
   'require_memory_pet_id', 'require_progression_pet_id', 'require_personality_pet_id', 'require_reward_asset_pet_id', 'require_reward_claim_pet_id', 'require_run_analytics_pet_id', 'require_run_history_pet_id', 'require_run_pet_id', 'require_run_room_pet_id', 'require_run_step_pet_id', 'require_runtime_event_pet_id', 'require_season_reward_pet_id', 'require_seasonal_boss_pet_id', 'require_system_event_pet_id',
   'require_weekly_boss_event_pet_id', 'require_weekly_boss_progress_pet_id',
 ].sort(), 'every authoritative trigger must remain covered by this audit');
+for (const trigger of migration.matchAll(/CREATE TRIGGER require_[a-z_]+_pet_id BEFORE INSERT ON (telegram_pet_[a-z_]+)/g)) {
+  assert.match(migration, new RegExp(`DELETE FROM ${trigger[1]};`), `${trigger[1]} must be reset before its authority trigger activates`);
+}
+
 assert.match(runtime, /telegram_pet_progression_state \(telegram_id, pet_id, daily_key\)/);
 assert.match(runtime, /telegram_pet_runtime_events \(id, telegram_id, pet_id, event_key/);
 assert.doesNotMatch(live, /UPDATE telegram_pet_profiles/, 'live settlement must mutate persisted instances, never the selector mirror');
 assert.match(live, /telegram_pet_system_events[\s\S]*\(id, telegram_id, pet_id/);
 assert.match(live, /telegram_pet_event_chain_progress \(telegram_id, pet_id/);
 assert.match(live, /telegram_pet_seasonal_boss_progress \(telegram_id, pet_id/);
+assert.match(live, /idempotency_key: `seasonal:\$\{boss\.season_instance\}:\$\{pet\.pet_id\}`/, 'seasonal boss reward idempotency must be pet-specific');
 assert.match(live, /telegram_pet_cosmetic_unlocks \(telegram_id, pet_id/);
 assert.match(phase5, /telegram_pet_equipment_progression \(telegram_id, pet_id/);
 assert.match(migration, /DELETE FROM telegram_pet_runs;/, 'beta runtime cutover must reset ambiguous account-only runs');
@@ -47,8 +52,20 @@ assert.doesNotMatch(rewardWrapper, /telegram_pet_profiles|findActivePetSlot|read
   'delayed settlement must neither read nor copy the active compatibility profile');
 assert.match(rewards, /const stateTable = petId \? 'telegram_pet_instances' : 'telegram_pet_profiles'/,
   'pet-authoritative rewards must update the persisted instance directly');
-assert.match(rewards, /WHERE \$\{stateKey\} = \? AND EXISTS/, 'reward deltas must target the persisted state key');
+assert.match(rewards, /WHERE \$\{stateOwnerPredicate\} AND EXISTS/, 'reward deltas must target both persisted pet and account authority');
+assert.match(rewards, /WHERE telegram_id = \? AND day_key = \? AND status = 'accepted'/, 'community XP cap must remain account scoped');
 assert.match(rewardWrapper, /reward_pet_authority_mismatch/, 'duplicate settlement must reject a different participating pet');
+assert.doesNotMatch(worker, /mirrorPetProfileToActiveInstance/, 'action routes must never copy a stale profile over an instance');
+assert.doesNotMatch(block(worker, 'async function getPetProfile'), /writeActivePetInstance/, 'profile reads must never promote the compatibility mirror to authority');
+assert.match(rewardWrapper, /preCutoverSchema[\s\S]*persisted_pet_authority_required:reward/, 'only a schema-proven pre-064 reward may use the narrow rolling-deploy bridge');
+assert.match(rewards, /stateOwnerPredicate = petId \? 'pet_id = \? AND telegram_id = \?'/, 'instance settlement must assert account and pet ownership');
+assert.match(rewards, /xp_awarded = MIN[\s\S]*WHERE telegram_id = \? AND day_key = \?/, 'community XP must remain account scoped');
+assert.match(worker, /pet_id=excluded.pet_id,[^']*' : ''}rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json/, 'Arena refresh must replace authority and snapshot atomically');
+assert.match(worker, /UPDATE telegram_pet_kaiju_queue[\s\S]*'pet_id = \?, '[\s\S]*updated_at/, 'Kaiju refresh must replace queued authority');
+assert.match(block(worker, 'async function processPetWeeklyBoss'), /run_boss', \{ pet_id: progress\.pet_id \}/, 'weekly boss progression must accrue to the persisted boss pet');
+assert.match(block(worker, 'async function cmdPetWeeklyBoss'), /getMoonpetIdentityWithLifecycle\(db, telegramId, progress\.pet_id \|\| result\.pet\?\.pet_id\)/, 'weekly boss presentation must load the persisted boss pet identity');
+assert.match(block(worker, 'async function claimPetSeasonReward'), /rewardKey = `season_reward:[^`]*\$\{authority\.pet_id\}`/, 'season reward idempotency must be pet-specific');
+
 
 const runStart = block(rewards, 'export async function startPetRogueliteRun', '\nexport async function');
 assert.match(runStart, /captureGameplayAuthority/);
