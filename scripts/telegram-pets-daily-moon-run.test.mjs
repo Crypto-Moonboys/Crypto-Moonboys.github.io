@@ -120,6 +120,18 @@ function resolveDailyRun(db, telegramId, runId, { status = 'completed', score = 
     .run(`${runId}:boss:win`, runId, telegramId, JSON.stringify({ boss_id: 'alley_king', outcome: 'win' }));
 }
 
+async function recordFullJourneyObjective(db, { telegramId, petId, day, challengeId, eventKey = null }) {
+  return __dailyMoonRunTestHooks.recordChallengeEvidence(db, {
+    telegram_id: telegramId,
+    pet_id: petId,
+    utc_day: day,
+    challenge_id: challengeId,
+    event_key: eventKey || `test:${petId}:${day}:${challengeId}`,
+    progress_value: PET_DAILY_CHALLENGES[challengeId].target,
+    evidence: { authority: 'test_daily_journey_authority', pet_id: petId },
+  });
+}
+
 for (const table of [
   'telegram_pet_daily_runs',
   'telegram_pet_daily_challenge_progress',
@@ -409,6 +421,25 @@ const postBatchCareRecoveryRun = await createDailyMoonRun(postBatchCareRecoveryD
   telegram_id: postBatchCareRecoveryTelegramId,
   now: postBatchCareEventNow,
 });
+await recordFullJourneyObjective(postBatchCareRecoveryDb, {
+  telegramId: postBatchCareRecoveryTelegramId,
+  petId: postBatchCareRecoveryPetId,
+  day: postBatchCareEventDay,
+  challengeId: 'daily_combat',
+  eventKey: 'post-batch-rollover:combat',
+});
+await recordFullJourneyObjective(postBatchCareRecoveryDb, {
+  telegramId: postBatchCareRecoveryTelegramId,
+  petId: postBatchCareRecoveryPetId,
+  day: postBatchCareEventDay,
+  challengeId: 'daily_explorer',
+  eventKey: 'post-batch-rollover:explorer',
+});
+for (const action of ['play', 'clean']) {
+  const key = `callback:${action}:post-batch-recovery`;
+  insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, key, postBatchCareEventDay, action, postBatchCareRecoveryPetId);
+  await recordDailyCareChallenge(postBatchCareRecoveryDb, { telegram_id: postBatchCareRecoveryTelegramId, event_key: key, utc_day: postBatchCareEventDay, now: postBatchCareEventNow });
+}
 const originalPostBatch = postBatchCareRecoveryDb.batch.bind(postBatchCareRecoveryDb);
 let injectedPostBatchDuplicate = false;
 postBatchCareRecoveryDb.batch = async (statements) => {
@@ -435,22 +466,24 @@ assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count 
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
   WHERE telegram_id=? AND utc_day=? AND challenge_id='daily_care'`).get(postBatchCareRecoveryTelegramId, postBatchCareRetryDay).count, 0,
   'post-batch accepted care duplicate retry must not create objective evidence on the retry UTC day');
-for (const [index, action] of ['play', 'clean'].entries()) {
-  const key = `callback:${action}:post-batch-recovery`;
-  insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, key, postBatchCareEventDay, action, postBatchCareRecoveryPetId);
-  await recordDailyCareChallenge(postBatchCareRecoveryDb, { telegram_id: postBatchCareRecoveryTelegramId, event_key: key, utc_day: postBatchCareEventDay, now: postBatchCareEventNow });
-}
 resolveDailyRun(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, postBatchCareRecoveryRun.daily_run.run_id);
 const postBatchCareRecoverySync = await syncDailyMoonRun(postBatchCareRecoveryDb, {
   telegram_id: postBatchCareRecoveryTelegramId,
   utc_day: postBatchCareEventDay,
   now: postBatchCareRetryNow,
 });
-assert.equal(postBatchCareRecoverySync.challenge_results.some((result) => result.daily_journey?.accepted), true,
-  'post-batch recovered care evidence must allow Daily Journey Growth Mark qualification');
+assert.equal(postBatchCareRecoverySync.accepted, true,
+  'post-batch recovered care evidence remains compatible with later Daily Moon Run sync');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_receipts
+  WHERE telegram_id=? AND pet_id=? AND utc_day=? AND status='accepted'`)
+  .get(postBatchCareRecoveryTelegramId, postBatchCareRecoveryPetId, postBatchCareEventDay).count, 1,
+  'post-batch recovered care evidence must settle one accepted Daily Journey receipt');
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
   WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareEventDay).count, 1,
   'post-batch care recovery must award exactly one Growth Mark');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareRetryDay).count, 0,
+  'post-batch care recovery must not award a Growth Mark on the retry UTC day');
 const repeatedPostBatchCare = await __petMediaTestHooks.processPetAction(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'feed', {
   event_key: 'callback:feed:post-batch-recovery',
   source: 'telegram_callback',
@@ -468,6 +501,113 @@ assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count 
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
   WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareEventDay).count, 1,
   'additional post-batch care retries must not duplicate Growth Marks');
+
+const tripleRetryDb = new D1();
+const tripleRetryTelegramId = 'care-triple-retry';
+const tripleRetryDay = '2026-08-13';
+const tripleRetryNow = new Date(`${tripleRetryDay}T10:00:00.000Z`);
+seedPlayer(tripleRetryDb, tripleRetryTelegramId, getDailySeasonId(tripleRetryDay));
+await __petMediaTestHooks.ensureActivePetInstance(tripleRetryDb, tripleRetryTelegramId);
+const tripleRetryPetId = `pet-${tripleRetryTelegramId}`;
+for (const action of ['play', 'clean']) {
+  const key = `callback:${action}:triple-retry`;
+  insertCareEvent(tripleRetryDb, tripleRetryTelegramId, key, tripleRetryDay, action, tripleRetryPetId);
+  await recordDailyCareChallenge(tripleRetryDb, { telegram_id: tripleRetryTelegramId, event_key: key, utc_day: tripleRetryDay, now: tripleRetryNow });
+}
+insertCareEvent(tripleRetryDb, tripleRetryTelegramId, 'callback:feed:triple-retry', tripleRetryDay, 'feed', tripleRetryPetId);
+const recoveredTripleRetryCare = await __petMediaTestHooks.processPetAction(tripleRetryDb, tripleRetryTelegramId, 'feed', {
+  event_key: 'callback:feed:triple-retry',
+  source: 'telegram_callback',
+  now: tripleRetryNow,
+});
+assert.equal(recoveredTripleRetryCare.duplicate, true,
+  'triple retry: second attempt must recover from the persisted accepted care event');
+const repeatedTripleRetryCare = await __petMediaTestHooks.processPetAction(tripleRetryDb, tripleRetryTelegramId, 'feed', {
+  event_key: 'callback:feed:triple-retry',
+  source: 'telegram_callback',
+  now: tripleRetryNow,
+});
+assert.equal(repeatedTripleRetryCare.duplicate, true,
+  'triple retry: third attempt remains an idempotent duplicate success');
+assert.equal(tripleRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:triple-retry'`)
+  .get(tripleRetryTelegramId, tripleRetryPetId, tripleRetryDay).count, 1,
+  'triple retry: recovered care objective evidence is stored once only');
+assert.equal(tripleRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_receipts
+  WHERE telegram_id=? AND pet_id=? AND utc_day=?`).get(tripleRetryTelegramId, tripleRetryPetId, tripleRetryDay).count, 0,
+  'triple retry: care retries before qualification do not create receipts');
+assert.equal(tripleRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=? AND pet_id=? AND earned_day=?`).get(tripleRetryTelegramId, tripleRetryPetId, tripleRetryDay).count, 0,
+  'triple retry: care retries before qualification do not create Growth Marks');
+await recordFullJourneyObjective(tripleRetryDb, {
+  telegramId: tripleRetryTelegramId,
+  petId: tripleRetryPetId,
+  day: tripleRetryDay,
+  challengeId: 'daily_combat',
+  eventKey: 'triple-retry:combat',
+});
+await recordFullJourneyObjective(tripleRetryDb, {
+  telegramId: tripleRetryTelegramId,
+  petId: tripleRetryPetId,
+  day: tripleRetryDay,
+  challengeId: 'daily_explorer',
+  eventKey: 'triple-retry:explorer',
+});
+assert.equal(tripleRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_receipts
+  WHERE telegram_id=? AND pet_id=? AND utc_day=?`).get(tripleRetryTelegramId, tripleRetryPetId, tripleRetryDay).count, 1,
+  'triple retry: final qualification writes one receipt only');
+assert.equal(tripleRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=? AND pet_id=? AND earned_day=?`).get(tripleRetryTelegramId, tripleRetryPetId, tripleRetryDay).count, 1,
+  'triple retry: final qualification awards one Growth Mark only');
+
+const concurrentCareDb = new D1();
+const concurrentCareTelegramId = 'care-concurrent-duplicate';
+const concurrentCareDay = '2026-08-14';
+const concurrentCareNow = new Date(`${concurrentCareDay}T10:00:00.000Z`);
+seedPlayer(concurrentCareDb, concurrentCareTelegramId, getDailySeasonId(concurrentCareDay));
+await __petMediaTestHooks.ensureActivePetInstance(concurrentCareDb, concurrentCareTelegramId);
+const concurrentCarePetId = `pet-${concurrentCareTelegramId}`;
+await recordFullJourneyObjective(concurrentCareDb, {
+  telegramId: concurrentCareTelegramId,
+  petId: concurrentCarePetId,
+  day: concurrentCareDay,
+  challengeId: 'daily_combat',
+  eventKey: 'concurrent-care:combat',
+});
+await recordFullJourneyObjective(concurrentCareDb, {
+  telegramId: concurrentCareTelegramId,
+  petId: concurrentCarePetId,
+  day: concurrentCareDay,
+  challengeId: 'daily_explorer',
+  eventKey: 'concurrent-care:explorer',
+});
+for (const action of ['play', 'clean']) {
+  const key = `callback:${action}:concurrent-care`;
+  insertCareEvent(concurrentCareDb, concurrentCareTelegramId, key, concurrentCareDay, action, concurrentCarePetId);
+  await recordDailyCareChallenge(concurrentCareDb, { telegram_id: concurrentCareTelegramId, event_key: key, utc_day: concurrentCareDay, now: concurrentCareNow });
+}
+await Promise.all([
+  __petMediaTestHooks.processPetAction(concurrentCareDb, concurrentCareTelegramId, 'feed', {
+    event_key: 'callback:feed:concurrent-care',
+    source: 'telegram_callback',
+    now: concurrentCareNow,
+  }),
+  __petMediaTestHooks.processPetAction(concurrentCareDb, concurrentCareTelegramId, 'feed', {
+    event_key: 'callback:feed:concurrent-care',
+    source: 'telegram_callback',
+    now: concurrentCareNow,
+  }),
+]);
+assert.equal(concurrentCareDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key='callback:feed:concurrent-care' AND status='accepted'`).get(concurrentCareTelegramId).count, 1,
+  'concurrent duplicate care requests must persist one accepted event');
+assert.equal(concurrentCareDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:concurrent-care'`)
+  .get(concurrentCareTelegramId, concurrentCarePetId, concurrentCareDay).count, 1,
+  'concurrent duplicate care requests must persist one Daily Journey evidence record');
+assert.equal(concurrentCareDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=? AND pet_id=? AND earned_day=?`).get(concurrentCareTelegramId, concurrentCarePetId, concurrentCareDay).count, 1,
+  'concurrent duplicate care requests must award one Growth Mark only');
 
 const careDayRolloverDb = new D1();
 const careDayRolloverTelegramId = 'care-day-rollover-recovery';
@@ -496,6 +636,104 @@ assert.equal(careDayRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM t
 assert.equal(careDayRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
   WHERE telegram_id=? AND utc_day=? AND challenge_id='daily_care'`).get(careDayRolloverTelegramId, careRetryDay).count, 0,
   'care replay after UTC rollover must not create a Daily Journey objective on the retry UTC day');
+
+const perPetIsolationDb = new D1();
+const perPetIsolationTelegramId = 'care-per-pet-isolation';
+const perPetIsolationDay = '2026-08-15';
+const perPetIsolationNow = new Date(`${perPetIsolationDay}T10:00:00.000Z`);
+seedPlayer(perPetIsolationDb, perPetIsolationTelegramId, getDailySeasonId(perPetIsolationDay));
+seedAdditionalPet(perPetIsolationDb, perPetIsolationTelegramId, 'pet-care-per-pet-isolation-b', 2, getDailySeasonId(perPetIsolationDay));
+await __petMediaTestHooks.ensureActivePetInstance(perPetIsolationDb, perPetIsolationTelegramId);
+const perPetIsolationPetA = `pet-${perPetIsolationTelegramId}`;
+const perPetIsolationPetB = 'pet-care-per-pet-isolation-b';
+await recordFullJourneyObjective(perPetIsolationDb, {
+  telegramId: perPetIsolationTelegramId,
+  petId: perPetIsolationPetA,
+  day: perPetIsolationDay,
+  challengeId: 'daily_combat',
+  eventKey: 'per-pet-isolation:combat',
+});
+await recordFullJourneyObjective(perPetIsolationDb, {
+  telegramId: perPetIsolationTelegramId,
+  petId: perPetIsolationPetA,
+  day: perPetIsolationDay,
+  challengeId: 'daily_explorer',
+  eventKey: 'per-pet-isolation:explorer',
+});
+for (const action of ['play', 'clean']) {
+  const key = `callback:${action}:per-pet-isolation`;
+  insertCareEvent(perPetIsolationDb, perPetIsolationTelegramId, key, perPetIsolationDay, action, perPetIsolationPetA);
+  await recordDailyCareChallenge(perPetIsolationDb, { telegram_id: perPetIsolationTelegramId, event_key: key, utc_day: perPetIsolationDay, now: perPetIsolationNow });
+}
+insertCareEvent(perPetIsolationDb, perPetIsolationTelegramId, 'callback:feed:per-pet-isolation', perPetIsolationDay, 'feed', perPetIsolationPetA);
+perPetIsolationDb.database.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?, season_key=? WHERE telegram_id=?`)
+  .run(perPetIsolationPetB, getDailySeasonId(perPetIsolationDay), perPetIsolationTelegramId);
+const perPetIsolationRetry = await __petMediaTestHooks.processPetAction(perPetIsolationDb, perPetIsolationTelegramId, 'feed', {
+  event_key: 'callback:feed:per-pet-isolation',
+  source: 'telegram_callback',
+  now: perPetIsolationNow,
+});
+assert.equal(perPetIsolationRetry.duplicate, true,
+  'per-pet isolation: duplicate retry through Pet B must recover Pet A evidence');
+assert.equal(perPetIsolationDb.database.prepare(`SELECT COUNT(DISTINCT challenge_id) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=?`).get(perPetIsolationTelegramId, perPetIsolationPetA, perPetIsolationDay).count, 3,
+  'per-pet isolation: Pet A owns the recovered Daily Journey progression');
+assert.equal(perPetIsolationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=?`).get(perPetIsolationTelegramId, perPetIsolationPetB, perPetIsolationDay).count, 0,
+  'per-pet isolation: Pet B duplicate/retry activity does not receive Pet A objectives');
+assert.equal(perPetIsolationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=? AND pet_id=? AND earned_day=?`).get(perPetIsolationTelegramId, perPetIsolationPetA, perPetIsolationDay).count, 1,
+  'per-pet isolation: Pet A receives the Daily Journey Growth Mark');
+assert.equal(perPetIsolationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=? AND pet_id=?`).get(perPetIsolationTelegramId, perPetIsolationPetB).count, 0,
+  'per-pet isolation: Pet B remains unchanged by Pet A duplicate recovery');
+
+const seasonRolloverReplayDb = new D1();
+const seasonRolloverReplayTelegramId = 'care-season-rollover-replay';
+const oldSeasonDay = '2026-03-31';
+const newSeasonDay = '2026-04-01';
+const oldSeasonKey = getDailySeasonId(oldSeasonDay);
+const newSeasonKey = getDailySeasonId(newSeasonDay);
+seedPlayer(seasonRolloverReplayDb, seasonRolloverReplayTelegramId, oldSeasonKey);
+const seasonRolloverOldPetId = `pet-${seasonRolloverReplayTelegramId}`;
+const seasonRolloverNewPetId = 'pet-care-season-rollover-replay-new';
+seedAdditionalPet(seasonRolloverReplayDb, seasonRolloverReplayTelegramId, seasonRolloverNewPetId, 2, newSeasonKey);
+seasonRolloverReplayDb.database.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?, season_key=? WHERE telegram_id=?`)
+  .run(seasonRolloverNewPetId, newSeasonKey, seasonRolloverReplayTelegramId);
+await recordFullJourneyObjective(seasonRolloverReplayDb, {
+  telegramId: seasonRolloverReplayTelegramId,
+  petId: seasonRolloverNewPetId,
+  day: newSeasonDay,
+  challengeId: 'daily_combat',
+  eventKey: 'season-rollover-replay:new-season-combat',
+});
+await recordFullJourneyObjective(seasonRolloverReplayDb, {
+  telegramId: seasonRolloverReplayTelegramId,
+  petId: seasonRolloverNewPetId,
+  day: newSeasonDay,
+  challengeId: 'daily_explorer',
+  eventKey: 'season-rollover-replay:new-season-explorer',
+});
+insertCareEvent(seasonRolloverReplayDb, seasonRolloverReplayTelegramId, 'callback:feed:season-rollover-replay', oldSeasonDay, 'feed', seasonRolloverOldPetId);
+const seasonRolloverReplay = await __petMediaTestHooks.processPetAction(seasonRolloverReplayDb, seasonRolloverReplayTelegramId, 'feed', {
+  event_key: 'callback:feed:season-rollover-replay',
+  source: 'telegram_callback',
+  now: new Date(`${newSeasonDay}T00:01:00.000Z`),
+});
+assert.equal(seasonRolloverReplay.duplicate, true,
+  'season rollover replay: old accepted care event remains idempotent after the new season starts');
+assert.equal(seasonRolloverReplayDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND season_key=? AND utc_day=? AND challenge_id='daily_care'`)
+  .get(seasonRolloverReplayTelegramId, seasonRolloverNewPetId, newSeasonKey, newSeasonDay).count, 0,
+  'season rollover replay: old event must not become new-season Daily Journey care evidence');
+assert.equal(seasonRolloverReplayDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=? AND pet_id=? AND season_key=? AND earned_day=?`)
+  .get(seasonRolloverReplayTelegramId, seasonRolloverNewPetId, newSeasonKey, newSeasonDay).count, 0,
+  'season rollover replay: old event must not mint a cross-season Growth Mark');
+assert.equal(seasonRolloverReplayDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND season_key=? AND utc_day=? AND challenge_id='daily_care'`)
+  .get(seasonRolloverReplayTelegramId, seasonRolloverOldPetId, oldSeasonKey, oldSeasonDay).count, 1,
+  'season rollover replay: any recovery remains scoped to the original old-season event day');
 
 const runId = db.database.prepare("SELECT run_id FROM telegram_pet_daily_runs WHERE telegram_id='daily-player'").get().run_id;
 resolveDailyRun(db, 'daily-player', runId);
