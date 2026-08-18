@@ -2239,7 +2239,7 @@ function serializePetRun(run) {
   const depth = Math.max(0, Math.floor(Number(run.depth ?? run.current_room ?? 0)));
   const roomDefinition = getPetEndlessRoomDefinition({ ...run, depth });
   return {
-    id: run.id || null, telegram_id: String(run.telegram_id || ''), run_id: String(run.run_id || ''),
+    id: run.id || null, pet_id: String(run.pet_id || '').trim() || null, telegram_id: String(run.telegram_id || ''), run_id: String(run.run_id || ''),
     season_key: String(run.season_key || ''), status: String(run.status || 'active'), region: String(run.region || 'moon_alley'),
     difficulty: Math.max(1, Math.floor(Number(run.difficulty || 1)), Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1),
     seed: run.seed == null ? null : Number(run.seed), depth, current_room: depth,
@@ -2459,38 +2459,49 @@ async function getPetRunById(db, telegramId, runId) {
 }
 
 async function startOrResumePetRun(db, telegramId, options = {}) {
-  const pet = await getPetProfile(db, telegramId);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const requestedRunId = String(options.run_id || '').trim().slice(0, 80);
   if (requestedRunId) {
     const requestedRun = await getPetRunById(db, telegramId, requestedRunId);
     if (requestedRun && ['active', 'extractable'].includes(requestedRun.status)) {
+      if (!requestedRun.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
+      const pet = await getPetInstanceWithAtomicDecay(db, requestedRun.pet_id);
+      if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
       await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${requestedRun.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
-      return { accepted: true, reason: 'run_resumed', run: requestedRun, pet };
+      return { accepted: true, reason: 'run_resumed', pet_id: requestedRun.pet_id, run: requestedRun, pet };
     }
-    if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, pet, xp_awarded: 0, pet_xp_awarded: 0 };
-    return { accepted: false, reason: 'run_not_found', pet, xp_awarded: 0, pet_xp_awarded: 0 };
+    if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
+    return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
   }
   const active = await getActivePetRun(db, telegramId);
   if (active) {
+    if (!active.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run: active, xp_awarded: 0, pet_xp_awarded: 0 };
+    const pet = await getPetInstanceWithAtomicDecay(db, active.pet_id);
+    if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: active, xp_awarded: 0, pet_xp_awarded: 0 };
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${active.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
-    return { accepted: true, reason: 'run_resumed', run: active, pet };
+    return { accepted: true, reason: 'run_resumed', pet_id: active.pet_id, run: active, pet };
   }
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const petId = String(pet.pet_id || '').trim();
+  if (!petId) return { accepted: false, reason: 'active_pet_instance_required', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   if (clampPetStat(pet.energy) < 12) return { accepted: false, reason: 'pet_tired', pet };
   const now = new Date();
   const season = getPetSeasonInfo(now);
   const runId = `run-${crypto.randomUUID()}`.slice(0, 80);
   await db.prepare(`
     INSERT INTO telegram_pet_runs
-      (id, telegram_id, run_id, season_key, status, region, difficulty, seed, depth, current_room, max_depth, max_room, score, rooms_completed, risk_level, unbanked_items)
-    VALUES (?, ?, ?, ?, 'active', 'moon_alley', 1, ?, 0, 0, ?, ?, 0, 0, 1, '{}')
-  `).bind(crypto.randomUUID(), telegramId, runId, season.key, crypto.getRandomValues(new Uint32Array(1))[0], PET_RUN_MAX_DEPTH, PET_RUN_MAX_DEPTH).run();
+      (id, pet_id, telegram_id, run_id, season_key, status, region, difficulty, seed, depth, current_room, max_depth, max_room, score, rooms_completed, risk_level, unbanked_items)
+    VALUES (?, ?, ?, ?, ?, 'active', 'moon_alley', 1, ?, 0, 0, ?, ?, 0, 0, 1, '{}')
+  `).bind(crypto.randomUUID(), petId, telegramId, runId, season.key, crypto.getRandomValues(new Uint32Array(1))[0], PET_RUN_MAX_DEPTH, PET_RUN_MAX_DEPTH).run();
   await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
   const run = await getPetRunById(db, telegramId, runId);
-  return { accepted: true, reason: 'run_started', run, pet };
+  return { accepted: true, reason: 'run_started', pet_id: run?.pet_id || petId, run, pet };
 }
 
 async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
+  if (!String(run?.pet_id || '').trim()) {
+    return { accepted: false, reason: 'run_pet_authority_required', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   const now = new Date();
   const eventType = options.completed ? 'run_complete' : 'run_extract';
   const eventKey = String(options.completed ? (options.event_key || buildStablePetEventKey(['pet_run_complete', telegramId, run.run_id])) : buildPetRunExtractEventKey(telegramId, run.run_id)).slice(0, 120);
@@ -2507,7 +2518,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
   const requestedCommunityXpAuthority = Math.max(0, Math.min(80,
     Math.floor(Math.max(0, Number(rewardRun.unbanked_pet_xp || 0)) / 3) + Math.max(0, Number(rewardRun.depth || 0)) * 4));
   const awardedAuthority = await awardPetReward(db, {
-    telegram_id: telegramId, source: 'pet_run_legacy', idempotency_key: eventKey, event_key: eventKey,
+    telegram_id: telegramId, pet_id: rewardRun.pet_id, source: 'pet_run_legacy', idempotency_key: eventKey, event_key: eventKey,
     event_type: eventType, xp_action: `pet_${eventType}`, reason: options.completed ? 'run_completed' : 'run_extracted',
     rewards: { pet_xp: rewardRun.unbanked_pet_xp, community_xp: requestedCommunityXpAuthority,
       moon_gold: rewardRun.unbanked_moon_gold, moon_crystals: rewardRun.unbanked_moon_crystals,
@@ -2531,10 +2542,21 @@ async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {})
   const runId = String(runIdRaw || '').trim();
   const run = runId ? await getPetRunById(db, telegramId, runId) : await getActivePetRun(db, telegramId);
   if (!run) return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
-  const pet = await getPetProfile(db, telegramId);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted', run, xp_awarded: 0, pet_xp_awarded: 0 };
+  if (!run.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run, xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);
+  if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run, xp_awarded: 0, pet_xp_awarded: 0 };
   if (run.depth <= 0) return { accepted: false, reason: 'run_empty', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   return recordPetRunBankedEvent(db, telegramId, run, pet, { ...options, event_key: buildPetRunExtractEventKey(telegramId, run.run_id) });
+}
+
+async function saveRunPetInstance(db, petId, pet) {
+  const persistedAt = formatPetStateTimestamp();
+  pet.stage = getPetGrowthStage(pet.pet_xp);
+  pet.health = calculatePetHealth(pet);
+  const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
+  const values = PET_INSTANCE_STATE_COLUMNS.map((column) => column === 'level' ? getPetLevel(pet.pet_xp) : pet[column]);
+  await db.prepare(`UPDATE telegram_pet_instances SET ${assignments}, source_profile_updated_at = ?, updated_at = ?
+    WHERE pet_id = ? AND telegram_id = ?`).bind(...values, PET_INSTANCE_AUTHORITY_VERSION, persistedAt, petId, pet.telegram_id).run();
 }
 
 async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options = {}) {
@@ -2559,8 +2581,9 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
   const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`).bind(run.run_id, stepIndex).first().catch(() => null);
   if (existingStep) return { accepted: true, duplicate: true, reason: 'step_already_resolved', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
-  const pet = await getPetProfile(db, telegramId);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+  if (!run.pet_id) return { accepted: false, reason: 'legacy_run_pet_authority_missing', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);
+  if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
   if (clampPetStat(pet.energy) <= 0) return { accepted: false, reason: 'pet_tired', run, choice, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   const inventory = await getPetInventory(db, telegramId).catch(() => []);
   const outcome = buildPetRunStepOutcome(run, choice, pet, inventory);
@@ -2576,14 +2599,15 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const stepId = crypto.randomUUID();
   const stepInsertStatement = db.prepare(`
     INSERT OR IGNORE INTO telegram_pet_run_steps
-      (id, telegram_id, run_id, step_index, choice_key, choice_type, event_key, success, risk_roll, pet_xp_delta, moon_gold_delta, moon_crystals_delta, style_tokens_delta, item_key, metadata)
-    SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      (id, pet_id, telegram_id, run_id, step_index, choice_key, choice_type, event_key, success, risk_roll, pet_xp_delta, moon_gold_delta, moon_crystals_delta, style_tokens_delta, item_key, metadata)
+    SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
     WHERE EXISTS (SELECT 1 FROM telegram_pet_runs
       WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?)
       AND (? IS NULL OR EXISTS (SELECT 1 FROM telegram_pet_inventory
         WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0))
   `).bind(
     stepId,
+    run.pet_id,
     telegramId,
     run.run_id,
     stepIndex,
@@ -2632,10 +2656,10 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     : [];
 
   if (!outcome.success) {
-    const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+    const petXpToday = await getPetDayXpTotal(db, run.pet_id, dayKey);
     let consolationXp = Math.max(1, Math.min(12, 4 + Math.floor(Number(run.depth || 0) * 2)));
-    if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) consolationXp = 0;
-    else if (totals.day.pet_xp + consolationXp > PETS_DAILY_PET_XP_CAP) consolationXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+    if (petXpToday >= PETS_DAILY_PET_XP_CAP) consolationXp = 0;
+    else if (petXpToday + consolationXp > PETS_DAILY_PET_XP_CAP) consolationXp = Math.max(0, PETS_DAILY_PET_XP_CAP - petXpToday);
     pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + consolationXp));
     updatePetStreakForAction(pet, dayKey);
     pet.last_decay_at = new Date().toISOString();
@@ -2660,10 +2684,11 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     }
     await db.prepare(`
       INSERT INTO telegram_pet_events
-        (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-      VALUES (?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?)
+        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      VALUES (?, ?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?)
     `).bind(
       crypto.randomUUID(),
+      run.pet_id,
       telegramId,
       buildStablePetEventKey(['pet_run_fail', telegramId, run.run_id, stepIndex]),
       consolationXp,
@@ -2672,7 +2697,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
       weekKey,
       JSON.stringify({ source: options.source || 'telegram_command', run_id: run.run_id, failed_step: stepIndex, lost_unbanked: run }),
     ).run();
-    await savePetProfile(db, pet);
+    await saveRunPetInstance(db, run.pet_id, pet);
     await db.prepare(`
       INSERT INTO telegram_pet_season_state
         (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
@@ -2730,7 +2755,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   if (!stepResults?.[1]?.results?.[0]) {
     return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
-  await savePetProfile(db, pet);
+  await saveRunPetInstance(db, run.pet_id, pet);
   const updatedRun = await getPetRunById(db, telegramId, run.run_id);
   if (stepIndex >= PET_RUN_MAX_DEPTH) {
     return recordPetRunBankedEvent(db, telegramId, updatedRun, pet, {
@@ -3680,6 +3705,13 @@ async function getPetWindowTotals(db, telegramId, dayKey, weekKey) {
     day: { community_xp: Number(day?.community_xp || 0), pet_xp: Number(day?.pet_xp || 0) },
     week: { community_xp: Number(week?.community_xp || 0), pet_xp: Number(week?.pet_xp || 0) },
   };
+}
+
+async function getPetDayXpTotal(db, petId, dayKey) {
+  const row = await db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+    FROM telegram_pet_events WHERE pet_id = ? AND day_key = ? AND status = 'accepted'`)
+    .bind(String(petId || '').trim(), dayKey).first().catch(() => ({ pet_xp: 0 }));
+  return Math.max(0, Math.floor(Number(row?.pet_xp) || 0));
 }
 
 
@@ -12375,9 +12407,11 @@ export const __petMediaTestHooks = Object.freeze({
   expireOldPetActivitySessions,
   getPetInventory,
   processPetUseItem,
+  startOrResumePetRun,
   processPetRunExtract,
   recordPetRunBankedEvent,
   processPetRunStep,
+  serializePetRun,
   reservePetRepeatRewardEvent,
   scalePetRewards,
   buildPetKaijuCardReplyMarkup,

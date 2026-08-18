@@ -428,42 +428,72 @@ export function resolvePetRunRoom(room, outcome = {}) {
   return { ...room, status: outcome.success === false ? 'failed' : 'resolved', outcome: { success: outcome.success !== false, ...outcome } };
 }
 
+async function resolveActiveRunPetId(db, telegramId) {
+  const active = await db.prepare(`SELECT i.pet_id FROM telegram_pet_active_slots a
+    JOIN telegram_pet_instances i ON i.pet_id = a.pet_id AND i.telegram_id = a.telegram_id
+    WHERE a.telegram_id = ? AND i.status = 'active' LIMIT 1`).bind(telegramId).first().catch(() => null);
+  return String(active?.pet_id || '').trim() || null;
+}
+
+function requireRunPetId(run) {
+  const petId = String(run?.pet_id || '').trim();
+  if (!petId) throw new Error('run_pet_id_authority_missing');
+  return petId;
+}
+
 export async function startPetRogueliteRun(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const region = PET_ROGUELITE_REGIONS[String(request.region || 'moon_alley')];
   if (!telegramId || !region) throw new Error('invalid_pet_roguelite_run');
   const runId = String(request.run_id || `rogue-${crypto.randomUUID()}`).slice(0, 120);
+  const existingRun = await db.prepare(`SELECT run_id, pet_id, region, difficulty, seed, max_room
+    FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`)
+    .bind(runId, telegramId).first().catch(() => null);
+  if (existingRun) {
+    const existingPetId = String(existingRun.pet_id || '').trim();
+    return { accepted: false, duplicate: true, reason: existingPetId ? 'run_exists' : 'run_pet_authority_required',
+      run_id: existingRun.run_id, pet_id: existingPetId || null, region: String(existingRun.region || ''),
+      difficulty: Math.max(1, Math.floor(Number(existingRun.difficulty) || 1)), seed: Math.floor(Number(existingRun.seed) || 0),
+      max_room: Math.max(1, Math.floor(Number(existingRun.max_room) || 1)) };
+  }
+  const petId = await resolveActiveRunPetId(db, telegramId);
+  if (!petId) throw new Error('active_pet_instance_not_found');
   const seed = Math.floor(Number(request.seed) || 0);
   const maxRoom = Math.max(1, Math.min(100, Math.floor(Number(request.max_room) || region.max_rooms || 10)));
   const seasonKey = String(request.season_key || `pet-s${new Date().getUTCFullYear()}-001`);
   const analyticsId = `${runId}:start`;
   const results = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_runs
-      (id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room, depth, max_depth, risk_level)
-      SELECT ?, ?, ?, ?, ?, ?, ?, 'active', 0, ?, 0, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
-      .bind(crypto.randomUUID(), telegramId, runId, seasonKey, region.region_id, region.difficulty, seed, maxRoom, maxRoom, region.difficulty, telegramId),
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-      SELECT ?, ?, ?, 'run_start', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?)`)
-      .bind(analyticsId, runId, telegramId, safeJson({ region: region.region_id, difficulty: region.difficulty, seed }), runId, telegramId),
+      (id, pet_id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room, depth, max_depth, risk_level)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, 'active', 0, ?, 0, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
+      .bind(crypto.randomUUID(), petId, telegramId, runId, seasonKey, region.region_id, region.difficulty, seed, maxRoom, maxRoom, region.difficulty, telegramId),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+      SELECT ?, ?, ?, ?, 'run_start', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?)`)
+      .bind(analyticsId, petId, runId, telegramId, safeJson({ region: region.region_id, difficulty: region.difficulty, seed }), runId, telegramId),
   ]);
   const accepted = Boolean(results?.[0]?.meta?.changes);
-  const persistedRun = accepted || await db.prepare(`SELECT run_id FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`).bind(runId, telegramId).first().catch(() => null);
+  const persistedRun = await db.prepare(`SELECT run_id, pet_id FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`)
+    .bind(runId, telegramId).first().catch(() => null);
   if (persistedRun) await recordMoonpetMemory(db, {
     telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', milestone: 'first_run',
   });
-  return { accepted, duplicate: !accepted, run_id: runId, region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
+  if (!String(persistedRun?.pet_id || '').trim()) {
+    return { accepted: false, duplicate: !accepted, reason: 'run_pet_authority_required', run_id: runId, pet_id: null,
+      region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
+  }
+  return { accepted, duplicate: !accepted, run_id: runId, pet_id: persistedRun.pet_id, region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
 }
 
 export async function createPetRunRoom(db, run) {
   const room = generatePetRunRoom(run);
   const results = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_rooms
-      (room_id, run_id, telegram_id, room_number, room_type, status, generated_data)
-      VALUES (?, ?, ?, ?, ?, 'pending', ?)`)
-      .bind(room.room_id, run.run_id, run.telegram_id, room.room, room.room_type, safeJson(room)),
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-      SELECT ?, ?, ?, 'room_generated', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_run_rooms WHERE room_id = ?)`)
-      .bind(`${room.room_id}:generated`, run.run_id, run.telegram_id, safeJson(room), room.room_id),
+      (room_id, pet_id, run_id, telegram_id, room_number, room_type, status, generated_data)
+      VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`)
+      .bind(room.room_id, requireRunPetId(run), run.run_id, run.telegram_id, room.room, room.room_type, safeJson(room)),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+      SELECT ?, ?, ?, ?, 'room_generated', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_run_rooms WHERE room_id = ?)`)
+      .bind(`${room.room_id}:generated`, requireRunPetId(run), run.run_id, run.telegram_id, safeJson(room), room.room_id),
   ]);
   return { ...room, duplicate: !results?.[0]?.meta?.changes };
 }
@@ -473,8 +503,8 @@ export async function persistPetRunRoomOutcome(db, run, room, outcome = {}) {
   const result = await db.prepare(`UPDATE telegram_pet_run_rooms SET status = ?, outcome_data = ?, resolved_at = CURRENT_TIMESTAMP
     WHERE room_id = ? AND run_id = ? AND status = 'pending' RETURNING room_id`).bind(resolved.status, safeJson(resolved.outcome), room.room_id, run.run_id).first();
   if (!result) return { ...resolved, duplicate: true };
-  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-    VALUES (?, ?, ?, 'room_resolved', ?)`).bind(`${room.room_id}:resolved`, run.run_id, run.telegram_id, safeJson({ room: room.room, room_type: room.room_type, outcome: resolved.outcome })).run();
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+    VALUES (?, ?, ?, ?, 'room_resolved', ?)`).bind(`${room.room_id}:resolved`, requireRunPetId(run), run.run_id, run.telegram_id, safeJson({ room: room.room, room_type: room.room_type, outcome: resolved.outcome })).run();
   return resolved;
 }
 
@@ -483,12 +513,12 @@ export async function choosePetRunModifier(db, run, modifierId) {
   if (!modifier) throw new Error('unknown_pet_run_modifier');
   validatePetRunModifier(modifier);
   const results = await db.batch([
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_modifiers (run_id, telegram_id, modifier_id, effects_json)
-      SELECT ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable'))`)
-      .bind(run.run_id, run.telegram_id, modifier.modifier_id, safeJson(modifier.effects), run.run_id, run.telegram_id),
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-      SELECT ?, ?, ?, 'modifier_chosen', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_run_modifiers WHERE run_id = ? AND modifier_id = ?)`)
-      .bind(`${run.run_id}:modifier:${modifier.modifier_id}`, run.run_id, run.telegram_id, safeJson(modifier), run.run_id, modifier.modifier_id),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_modifiers (run_id, pet_id, telegram_id, modifier_id, effects_json)
+      SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable'))`)
+      .bind(run.run_id, requireRunPetId(run), run.telegram_id, modifier.modifier_id, safeJson(modifier.effects), run.run_id, run.telegram_id),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+      SELECT ?, ?, ?, ?, 'modifier_chosen', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_run_modifiers WHERE run_id = ? AND modifier_id = ?)`)
+      .bind(`${run.run_id}:modifier:${modifier.modifier_id}`, requireRunPetId(run), run.run_id, run.telegram_id, safeJson(modifier), run.run_id, modifier.modifier_id),
   ]);
   return { accepted: Boolean(results?.[0]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes, modifier };
 }
@@ -497,6 +527,7 @@ export async function rewardPetRunRoom(db, run, room, rewards = {}, costs = {}) 
   if (room?.status !== 'resolved') return { accepted: false, reason: 'room_not_resolved' };
   const awarded = await awardPetReward(db, {
     telegram_id: run.telegram_id,
+    pet_id: requireRunPetId(run),
     source: 'roguelite_room',
     idempotency_key: room.room_id,
     rewards,
@@ -526,12 +557,13 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
         WHERE run_id = ? AND telegram_id = ? AND room_type = 'boss' AND status = 'resolved' ORDER BY room_number DESC LIMIT 1`)
       .bind(run.run_id, run.telegram_id).first().catch(() => null);
   if (!persistedRoom?.room_id) return { accepted: false, reason: 'boss_room_not_resolved', pet_xp_awarded: 0, xp_awarded: 0 };
-  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-    VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:attempt`, run.run_id, run.telegram_id,
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+    VALUES (?, ?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:attempt`, requireRunPetId(run), run.run_id, run.telegram_id,
       safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, name: boss.name, difficulty: boss.difficulty, outcome: 'attempt' })).run();
   const rewards = buildPetBossRewards(boss, run, persistedRoom);
   const awarded = await awardPetReward(db, {
     telegram_id: run.telegram_id,
+    pet_id: requireRunPetId(run),
     source: 'roguelite_boss',
     idempotency_key: `${persistedRoom.room_id}:${bossId}`,
     rewards,
@@ -539,8 +571,8 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
     context: { run_id: run.run_id, room_id: persistedRoom.room_id, boss_id: bossId },
   });
   if (awarded.accepted && !awarded.duplicate) {
-    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-      VALUES (?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`, run.run_id, run.telegram_id,
+    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+      VALUES (?, ?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`, requireRunPetId(run), run.run_id, run.telegram_id,
         safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: awarded.rewards,
           relics_discovered: Object.keys(awarded.rewards?.relics || {}), achievement_id: boss.achievement_id || null })).run();
   }
@@ -589,9 +621,9 @@ export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
       .bind(run.telegram_id, ['completed', 'extracted'].includes(status) ? 1 : 0, ['completed', 'extracted'].includes(status) && analytics.boss_fought ? 1 : 0,
         roomsCompleted, positiveInteger(run.score), ['completed', 'extracted'].includes(status) ? durationSeconds : null,
         safeJson(analytics.rare_discoveries || []), run.run_id, run.telegram_id, status, finalizationId),
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, run_id, telegram_id, event_type, event_data)
-      SELECT ?, ?, ?, 'run_end', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = ?)`)
-      .bind(finalizationId, run.run_id, run.telegram_id, safeJson(terminalAnalytics), run.run_id, run.telegram_id, status),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+      SELECT ?, ?, ?, ?, 'run_end', ? WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = ?)`)
+      .bind(finalizationId, requireRunPetId(run), run.run_id, run.telegram_id, safeJson(terminalAnalytics), run.run_id, run.telegram_id, status),
   ]);
   const terminal = results?.[0]?.results?.[0];
   if (!terminal) {
@@ -620,10 +652,12 @@ export function advancePetRun(run, resolvedRoom) {
 }
 
 export async function completePetRun(db, run, completionRewards = {}, analytics = {}) {
+  if (!String(run?.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', status: run?.status || null, reward: null };
   const terminal = await finishPetRogueliteRun(db, run, 'completed', analytics);
   if (terminal.status !== 'completed') return { ...terminal, reward: null };
   const reward = await awardPetReward(db, {
     telegram_id: run.telegram_id,
+    pet_id: requireRunPetId(run),
     source: 'roguelite_completion',
     idempotency_key: run.run_id,
     rewards: completionRewards,
@@ -639,10 +673,12 @@ export async function completePetRun(db, run, completionRewards = {}, analytics 
   return { ...terminal, reward };
 }
 export async function extractPetRogueliteRun(db, run, extractionRewards = {}, analytics = {}) {
+  if (!String(run?.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', status: run?.status || null, reward: null };
   const terminal = await finishPetRogueliteRun(db, run, 'extracted', { ...analytics, extracted: true });
   if (terminal.status !== 'extracted') return { ...terminal, reward: null };
   const reward = await awardPetReward(db, {
     telegram_id: run.telegram_id,
+    pet_id: requireRunPetId(run),
     source: 'roguelite_completion',
     idempotency_key: `${run.run_id}:extract`,
     rewards: extractionRewards,

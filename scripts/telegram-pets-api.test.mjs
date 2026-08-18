@@ -42,9 +42,11 @@ const {
   expireOldPetActivitySessions,
   getPetInventory,
   processPetUseItem,
+  startOrResumePetRun,
   processPetRunExtract,
   recordPetRunBankedEvent,
   processPetRunStep,
+  serializePetRun,
   evolveMoonpet,
   reservePetRepeatRewardEvent,
   scalePetRewards,
@@ -907,11 +909,17 @@ assert.ok(runStep.includes('unbanked_pet_xp = 0'), 'failed runs must lose unbank
 assert.ok(runStep.includes("unbanked_items = '{}'"), 'failed runs must lose unbanked items');
 assert.ok(runStep.includes('PETS_DAILY_PET_XP_CAP'), 'failure consolation XP must respect pet XP cap');
 assert.ok(runStep.includes("'run_fail'"), 'failed runs must audit consolation XP as run_fail');
+assert.ok(runStep.includes('getPetDayXpTotal(db, run.pet_id, dayKey)'), 'failed-run consolation XP caps must use stored run pet authority');
+const startOrResumeRunSource = asyncBlock('startOrResumePetRun');
+assert.ok(startOrResumeRunSource.includes("const petId = String(pet.pet_id || '').trim()"), 'new run pet_id must be normalized once');
+assert.ok(startOrResumeRunSource.includes('.bind(crypto.randomUUID(), petId,'), 'new runs must persist the normalized pet_id');
+assert.equal(serializePetRun({ pet_id: '  pet-normalized  ', telegram_id: 'normalized-owner', run_id: 'normalized-run' }).pet_id, 'pet-normalized',
+  'serialized run authority must be normalized');
 assert.ok(runStep.includes('recordPetRunBankedEvent'), 'boss step completion must bank through the extract/completion helper');
 assertOrder(
   runStep,
   "const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`)",
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);',
   'run steps must check duplicate event keys before loading and mutating the pet'
 );
 assertOrder(
@@ -923,7 +931,7 @@ assertOrder(
 assertOrder(
   runStep,
   "return { accepted: false, reason: 'stale_run_step'",
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);',
   'stale run-step callbacks must not load or mutate pet stats'
 );
 assertOrder(
@@ -941,7 +949,7 @@ assertOrder(
 assertOrder(
   runStep,
   "const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`)",
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);',
   'run steps must check step-level idempotency before mutating the pet'
 );
 assertOrder(
@@ -963,7 +971,7 @@ assertOrder(
   'applyPetRunStatRewards(pet, outcome.rewards);',
   'run stat rewards must only apply after the failure path has been handled'
 );
-assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await savePetProfile(db, pet);'),
+assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await saveRunPetInstance(db, run.pet_id, pet);'),
   'run stat rewards must be applied before saving the successful step pet');
 assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('RETURNING run_id'), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
 assert.ok(runStep.includes("if (!stepResults?.[1]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
@@ -2017,9 +2025,12 @@ assert.equal((await getPetInventory(cutoverDb, 'inventory-cutover')).find((item)
   'new-authority consumption and duplicate callbacks must decrement exactly once');
 
 const bankedItemDb = seedRepeatRewardPlayer('banked-item', 70);
+await ensurePetStarterSeasonSlot(bankedItemDb, 'banked-item', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(bankedItemDb, 'banked-item');
+const bankedItemPet = bankedItemDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='banked-item'").get();
 bankedItemDb.database.prepare(`INSERT INTO telegram_pet_runs
-  (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
-  VALUES ('banked-item-row', 'banked-item', 'banked-item-run', 'pet-s2026-003', 'active', 1, 5, 1, '{"energy_drink":1}')`).run();
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
+  VALUES ('banked-item-row', ?, 'banked-item', 'banked-item-run', 'pet-s2026-003', 'active', 1, 5, 1, '{"energy_drink":1}')`).run(bankedItemPet.pet_id);
 const bankedItemResult = await processPetRunExtract(bankedItemDb, 'banked-item', 'banked-item-run', { source: 'inventory_authority_regression' });
 assert.equal(bankedItemResult.accepted, true, 'run extraction with an item must bank successfully');
 assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 1,
@@ -2045,7 +2056,7 @@ legacyBossDb.database.prepare(`INSERT INTO telegram_pet_material_balances (teleg
 legacyBossDb.database.prepare(`INSERT INTO telegram_pet_relics (telegram_id, relic_id, rarity) VALUES
   ('legacy-boss-gate', 'bitcoin_heart', 'legendary'),
   ('legacy-boss-gate', 'neon_boots', 'rare')`).run();
-for (let index = 1; index <= 3; index += 1) {
+for (let index = 1; index <= 1; index += 1) {
   const runId = `legacy-completion-${index}`;
   legacyBossDb.database.prepare(`INSERT INTO telegram_pet_runs
     (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
@@ -2055,12 +2066,13 @@ for (let index = 1; index <= 3; index += 1) {
   const completed = await recordPetRunBankedEvent(legacyBossDb, 'legacy-boss-gate', run, pet, {
     completed: true, event_key: `legacy-complete:${index}`, source: 'legacy_boss_gate_regression',
   });
-  assert.equal(completed.accepted, true, 'legacy completion must retain normal completion handling');
+  assert.equal(completed.accepted, false, 'pre-066 completion must fail closed without run pet authority');
+  assert.equal(completed.reason, 'run_pet_authority_required');
 }
 assert.equal(legacyBossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_boss_victories WHERE telegram_id='legacy-boss-gate'").get().count, 0,
   'legacy completions must not create Alley King victory rows');
-assert.equal(legacyBossDb.database.prepare("SELECT total_runs FROM telegram_pet_memories WHERE telegram_id='legacy-boss-gate'").get().total_runs, 3,
-  'legacy completions may retain bounded completion memories');
+assert.equal(legacyBossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE telegram_id='legacy-boss-gate'").get().count, 0,
+  'rejected pre-066 completions cannot create completion memories');
 const blockedCyberEvolution = await evolveMoonpet(legacyBossDb, {
   telegram_id: 'legacy-boss-gate', evolution_id: 'cyber_moonpet', event_key: 'legacy-boss-gate:evolve',
 });
@@ -2119,9 +2131,12 @@ assert.equal(tiredMoonAlleyDb.database.prepare("SELECT energy FROM telegram_pet_
   'a failed adventure and its retry must not consume Energy');
 
 const runChoiceItemDb = seedRepeatRewardPlayer('run-choice-item', 90);
+await ensurePetStarterSeasonSlot(runChoiceItemDb, 'run-choice-item', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(runChoiceItemDb, 'run-choice-item');
+const runChoicePet = runChoiceItemDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='run-choice-item'").get();
 runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_runs
-  (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
-  VALUES ('run-choice-item-row', 'run-choice-item', 'run-choice-item-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run();
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
+  VALUES ('run-choice-item-row', ?, 'run-choice-item', 'run-choice-item-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run(runChoicePet.pet_id);
 runChoiceItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
   VALUES ('run-choice-item', 'item', 'lucky_charm', 1)`).run();
 const runChoiceRandom = Math.random;
@@ -2140,14 +2155,45 @@ assert.equal(runChoiceItemResult.accepted, true, 'run choices must accept an ava
 assert.equal((await getPetInventory(runChoiceItemDb, 'run-choice-item')).find((item) => item.key === 'lucky_charm').count, 0,
   'run choices must consume one-use items from the authoritative inventory table');
 
+const failedStepEventDb = seedRepeatRewardPlayer('failed-step-event', 90);
+await ensurePetStarterSeasonSlot(failedStepEventDb, 'failed-step-event', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(failedStepEventDb, 'failed-step-event');
+const failedStepPet = failedStepEventDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='failed-step-event'").get();
+const failedStepDay = new Date().toISOString().slice(0, 10);
+failedStepEventDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, pet_xp_awarded, season_key, day_key, week_key, status)
+  VALUES ('other-pet-cap', 'another-pet-instance', 'failed-step-event', 'test', 'other-pet-cap', 1200, 'pet-s2026-003', ?, 'week', 'accepted')`).run(failedStepDay);
+failedStepEventDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
+  VALUES ('failed-step-row', ?, 'failed-step-event', 'failed-step-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run(failedStepPet.pet_id);
+const failedStepChoice = buildPetRunChoiceReplyMarkup({ run_id: 'failed-step-run', depth: 0, max_depth: 5, risk_level: 1, unbanked_items: '{}' })
+  .inline_keyboard[0][0].callback_data.split(':').at(-1);
+const failedStepRandom = Math.random;
+Math.random = () => 0;
+let failedStepResult;
+try {
+  failedStepResult = await processPetRunStep(failedStepEventDb, 'failed-step-event', 'failed-step-run', failedStepChoice,
+    { event_key: 'failed-step-event-key', expected_step_index: 1, source: 'pet_id_audit_regression' });
+} finally {
+  Math.random = failedStepRandom;
+}
+assert.equal(failedStepResult.reason, 'run_failed');
+const failedStepLedger = failedStepEventDb.database.prepare("SELECT pet_id, pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_fail'").get();
+assert.equal(failedStepLedger.pet_id, failedStepPet.pet_id, 'failed-step consolation XP must be visible in the run pet ledger');
+assert.equal(failedStepLedger.pet_xp_awarded, failedStepResult.pet_xp_awarded);
+assert.ok(failedStepLedger.pet_xp_awarded > 0, 'another pet consuming its cap cannot suppress this run pet consolation XP');
+
 const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
+await ensurePetStarterSeasonSlot(terminalRaceDb, 'terminal-race', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(terminalRaceDb, 'terminal-race');
+const terminalRacePet = terminalRaceDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='terminal-race'").get();
 terminalRaceDb.database.prepare(`
   INSERT INTO telegram_pet_runs
-    (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
+    (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
       unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
-  VALUES ('terminal-race-row', 'terminal-race', 'terminal-race-run', 'pet-s2026-003', 'active', 4, 5, 1,
+  VALUES ('terminal-race-row', ?, 'terminal-race', 'terminal-race-run', 'pet-s2026-003', 'active', 4, 5, 1,
     30, 12, 1, 2, '{}')
-`).run();
+`).run(terminalRacePet.pet_id);
 const originalRandom = Math.random;
 Math.random = () => 0.99;
 let extractResult;
@@ -2176,15 +2222,56 @@ assert.equal(terminalRaceDb.database.prepare("SELECT COUNT(*) AS count FROM tele
 assert.equal(terminalRaceDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source = 'pet_run_legacy'").get().count, 1,
   'concurrent extract and room callbacks must produce exactly one terminal reward claim');
 assert.deepEqual(
-  { ...terminalRaceDb.database.prepare("SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'terminal-race'").get() },
+  { ...terminalRaceDb.database.prepare("SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_instances WHERE pet_id = ?").get(terminalRacePet.pet_id) },
   { pet_xp: 30, moon_gold: 12, moon_crystals: 1, style_tokens: 2 },
   'concurrent extract and room callbacks must award only the atomically claimed snapshot',
 );
 
+
+const profileOnlyRunDb = seedRepeatRewardPlayer('profile-only-run', 90);
+const refusedProfileOnlyRun = await startOrResumePetRun(profileOnlyRunDb, 'profile-only-run');
+assert.equal(refusedProfileOnlyRun.accepted, false);
+assert.equal(refusedProfileOnlyRun.reason, 'active_pet_instance_required', 'new runs must reject profile-only authority');
+assert.equal(profileOnlyRunDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_runs WHERE telegram_id='profile-only-run'").get().count, 0);
+
+const legacyRunDb = seedRepeatRewardPlayer('legacy-run-owner', 90);
+await ensurePetStarterSeasonSlot(legacyRunDb, 'legacy-run-owner', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(legacyRunDb, 'legacy-run-owner');
+const legacyActivePet = legacyRunDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='legacy-run-owner'").get();
+legacyRunDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status, depth, max_depth, unbanked_pet_xp, unbanked_moon_gold)
+  VALUES ('legacy-run-row', 'legacy-run-owner', 'legacy-run', 'pet-s2026-003', 'active', 2, 5, 41, 13)`).run();
+const refusedLegacyExtraction = await processPetRunExtract(legacyRunDb, 'legacy-run-owner', 'legacy-run');
+assert.equal(refusedLegacyExtraction.accepted, false);
+assert.equal(refusedLegacyExtraction.reason, 'run_pet_authority_required', 'pre-066 extraction must fail closed without pet_id');
+assert.equal(legacyRunDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id='legacy-run'").get().status, 'active');
+assert.equal(legacyRunDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='legacy-run-owner'").get().count, 0);
+assert.equal(legacyRunDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?").get(legacyActivePet.pet_id).pet_xp, 0,
+  'missing run authority cannot fall back to the current active pet');
+
+const resumeAuthorityDb = seedRepeatRewardPlayer('resume-authority', 90);
+await ensurePetStarterSeasonSlot(resumeAuthorityDb, 'resume-authority', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(resumeAuthorityDb, 'resume-authority');
+const resumeOriginalPet = resumeAuthorityDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='resume-authority'").get();
+resumeAuthorityDb.database.prepare(`INSERT INTO telegram_pet_runs (id, pet_id, telegram_id, run_id, season_key, status)
+  VALUES ('resume-row', ?, 'resume-authority', 'resume-run', 'pet-s2026-003', 'active')`).run(resumeOriginalPet.pet_id);
+resumeAuthorityDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type) VALUES ('resume-second', 'resume-authority', 'pet-s2026-003', 2, 'free')`).run();
+resumeAuthorityDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_name, source_profile_updated_at)
+  VALUES ('resume-second', 'resume-authority', 'pet-s2026-003', 2, 'Second pet', CURRENT_TIMESTAMP)`).run();
+resumeAuthorityDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='resume-second' WHERE telegram_id='resume-authority'").run();
+const resumedAuthorityRun = await startOrResumePetRun(resumeAuthorityDb, 'resume-authority', { run_id: 'resume-run' });
+assert.equal(resumedAuthorityRun.accepted, true);
+assert.equal(resumedAuthorityRun.pet.pet_id, resumeOriginalPet.pet_id, 'resume must load the run pet rather than the active selector');
+
 const terminalRecoveryDb = seedRepeatRewardPlayer('terminal-recovery', 90);
+await ensurePetStarterSeasonSlot(terminalRecoveryDb, 'terminal-recovery', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(terminalRecoveryDb, 'terminal-recovery');
+const terminalRecoveryPet = terminalRecoveryDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='terminal-recovery'").get();
 terminalRecoveryDb.database.prepare(`INSERT INTO telegram_pet_runs
-  (id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_pet_xp, unbanked_moon_gold, unbanked_items)
-  VALUES ('terminal-recovery-row', 'terminal-recovery', 'terminal-recovery-run', 'pet-s2026-003', 'active', 2, 5, 1, 24, 9, '{}')`).run();
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_pet_xp, unbanked_moon_gold, unbanked_items)
+  VALUES ('terminal-recovery-row', ?, 'terminal-recovery', 'terminal-recovery-run', 'pet-s2026-003', 'active', 2, 5, 1, 24, 9, '{}')`).run(terminalRecoveryPet.pet_id);
 terminalRecoveryDb.failOnBatch(1);
 await assert.rejects(
   processPetRunExtract(terminalRecoveryDb, 'terminal-recovery', 'terminal-recovery-run'),
@@ -2201,7 +2288,7 @@ assert.equal(recoveredTerminal.duplicate, false, 'the first successful terminal 
 const duplicateTerminal = await processPetRunExtract(terminalRecoveryDb, 'terminal-recovery', 'terminal-recovery-run');
 assert.equal(duplicateTerminal.duplicate, true, 'a settled terminal callback must remain idempotent');
 assert.deepEqual(
-  { ...terminalRecoveryDb.database.prepare("SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'terminal-recovery'").get() },
+  { ...terminalRecoveryDb.database.prepare("SELECT pet_xp, moon_gold FROM telegram_pet_instances WHERE pet_id = ?").get(terminalRecoveryPet.pet_id) },
   { pet_xp: 24, moon_gold: 9 },
   'terminal reward recovery and duplicate callbacks must award the snapshot exactly once',
 );

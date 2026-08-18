@@ -70,6 +70,10 @@ class D1 {
 function seedPlayer(db, telegramId) {
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES (?, 0, 1)').run(telegramId);
+  const petId = `pet-${telegramId}`;
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type) VALUES (?, ?, 'pet-s2026-001', 1, 'free')`).run(petId, telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, 'pet-s2026-001')`).run(telegramId, petId);
+  db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at) VALUES (?, ?, 'pet-s2026-001', 1, CURRENT_TIMESTAMP)`).run(petId, telegramId);
 }
 
 function insertCareEvent(db, telegramId, eventKey, day, action = 'feed') {
@@ -167,6 +171,21 @@ assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_ide
 const freshExtractionDb = new D1();
 seedPlayer(freshExtractionDb, 'fresh-extraction-player');
 const freshExtractionRun = await createDailyMoonRun(freshExtractionDb, { telegram_id: 'fresh-extraction-player', now });
+assert.equal(freshExtractionRun.daily_run.pet_id, 'pet-fresh-extraction-player', 'Daily Moon Run creation must capture pet_id');
+freshExtractionDb.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type)
+  VALUES ('pet-fresh-extraction-player-second', 'fresh-extraction-player', 'pet-s2026-001', 2, 'free')`).run();
+freshExtractionDb.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
+  VALUES ('pet-fresh-extraction-player-second', 'fresh-extraction-player', 'pet-s2026-001', 2, CURRENT_TIMESTAMP)`).run();
+freshExtractionDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-fresh-extraction-player-second' WHERE telegram_id='fresh-extraction-player'").run();
+freshExtractionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=0, level=1, health=1, energy=1, happiness=1, cleanliness=1 WHERE telegram_id='fresh-extraction-player'").run();
+freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=900, level=10, health=99, energy=98, happiness=97, cleanliness=96 WHERE pet_id='pet-fresh-extraction-player'").run();
+freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=0, level=1, health=2, energy=2, happiness=2, cleanliness=2 WHERE pet_id='pet-fresh-extraction-player-second'").run();
+const storedPetOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(freshExtractionDb,
+  { ...freshExtractionRun.daily_run, telegram_id: 'fresh-extraction-player', seed: 7 },
+  { room: 1, content_id: 'authority-room', room_type: 'choice_event' }, 'safe');
+assert.deepEqual(storedPetOutcome.player_state, { level: 10, health: 99, energy: 98, happiness: 97, cleanliness: 96 },
+  'Daily outcome authority must use the stored run pet rather than stale profile or active-pet state');
+
 const freshExtraction = await extractDailyMoonRun(freshExtractionDb, {
   telegram_id: 'fresh-extraction-player', run_id: freshExtractionRun.daily_run.run_id, now,
 });
@@ -176,6 +195,24 @@ assert.equal(freshExtractionDb.database.prepare("SELECT status FROM telegram_pet
   'rejected zero-room extraction must leave the authoritative run active');
 assert.equal(freshExtractionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_daily_analytics WHERE telegram_id='fresh-extraction-player' AND event_type='run_terminal'").get().count, 0,
   'rejected zero-room extraction must not create terminal daily evidence');
+freshExtractionDb.database.prepare("UPDATE telegram_pet_runs SET depth=1, current_room=1 WHERE telegram_id='fresh-extraction-player'").run();
+const switchedExtraction = await extractDailyMoonRun(freshExtractionDb, {
+  telegram_id: 'fresh-extraction-player', run_id: freshExtractionRun.daily_run.run_id, now,
+});
+assert.equal(switchedExtraction.accepted, true);
+assert.equal(freshExtractionDb.database.prepare("SELECT pet_id FROM telegram_pet_reward_claims WHERE source='roguelite_completion'").get().pet_id,
+  'pet-fresh-extraction-player', 'Daily extraction after switching pets must settle to the stored daily-run pet');
+
+
+const legacyDailyDb = new D1();
+seedPlayer(legacyDailyDb, 'legacy-daily-player');
+legacyDailyDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status) VALUES ('legacy-daily-row', 'legacy-daily-player',
+  'daily:2026-08-11:legacy-daily-player', 'pet-s2026-003', 'active')`).run();
+const refusedLegacyDaily = await createDailyMoonRun(legacyDailyDb, { telegram_id: 'legacy-daily-player', now });
+assert.equal(refusedLegacyDaily.accepted, false);
+assert.equal(refusedLegacyDaily.reason, 'run_pet_authority_required', 'legacy Daily Moon Run backing rows must fail closed instead of throwing');
+assert.equal(legacyDailyDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_daily_runs WHERE telegram_id='legacy-daily-player'").get().count, 0);
 
 let forcedVictoryRegression = null;
 for (let day = 1; day <= 40 && !forcedVictoryRegression; day += 1) {
