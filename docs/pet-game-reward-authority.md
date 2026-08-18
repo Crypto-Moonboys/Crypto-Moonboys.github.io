@@ -7,12 +7,15 @@
 The Cloudflare Worker/server is authoritative. A client may request an eligible action and display the result, but it cannot self-award or finalize:
 
 - Pet XP or Arcade XP;
+- Moon Gold, Moon Crystals, Style Tokens, materials, inventory, or cosmetics;
 - Growth Marks or Weekly Crests;
 - Pet 2/Pet 3 slot unlocks;
 - Sanctuary or Legendary completion status; or
 - breeding/Fusion outcomes or rewards.
 
 The server must validate identity, the participating `pet_id`, eligibility, caps, balances, season windows, and idempotency before committing an important outcome. Client state, local storage, UI flags, or repeated callbacks are never proof of a reward.
+
+For Season 1 rewards, `pet_id` identifies the participating Moonpet and owns Pet XP/stat deltas only. Moon Gold, Moon Crystals, Style Tokens, materials, inventory, cosmetics, and spendable Arcade XP are account-owned. Until a dedicated wallet table is introduced, the `telegram_pet_profiles` compatibility row is the account wallet authority for Moon Gold, Moon Crystals, and Style Tokens; `telegram_pet_instances` wallet columns are not authoritative per-pet balances.
 
 ## D1 receipt history
 

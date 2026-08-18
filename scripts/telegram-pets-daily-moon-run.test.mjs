@@ -436,7 +436,7 @@ assert.equal(simulationDb.database.prepare("SELECT pet_xp FROM telegram_pet_prof
   'Pet XP must remain capped after 10,000 callbacks');
 assert.equal(simulationDb.database.prepare("SELECT xp FROM telegram_users WHERE telegram_id='simulation-player'").get().xp, 250,
   'Community XP must remain capped after 10,000 callbacks');
-assert.equal(simulationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='simulation-player'").get().count, 1,
+assert.equal(simulationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='simulation-player' AND source <> 'wallet_reconciliation'").get().count, 1,
   'reward claims cannot duplicate across 10,000 callbacks');
 assert.equal(simulationDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='simulation-player' AND material_key='scrap_metal'").get().quantity, 40,
   'materials must remain bounded after 10,000 callbacks');

@@ -102,12 +102,12 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
       ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=excluded.updated_at`).bind(timestamp, telegramId, petId, petId, telegramId, petId, seasonKey),
     db.prepare(`UPDATE telegram_pet_profiles SET
       (pet_name, species, stage, pet_xp, level, hunger, happiness, cleanliness, energy, health,
-       streak_days, moon_gold, moon_crystals, style_tokens, equipped_food, equipped_toy,
+       streak_days, equipped_food, equipped_toy,
        equipped_outfit, equipped_armor, equipped_weapon, equipped_charm, last_active_day,
        last_decay_at, updated_at) =
       (SELECT i.pet_name, i.species, i.stage, i.pet_xp, i.level, i.hunger, i.happiness,
-       i.cleanliness, i.energy, i.health, i.streak_days, i.moon_gold, i.moon_crystals,
-       i.style_tokens, i.equipped_food, i.equipped_toy, i.equipped_outfit, i.equipped_armor,
+       i.cleanliness, i.energy, i.health, i.streak_days,
+       i.equipped_food, i.equipped_toy, i.equipped_outfit, i.equipped_armor,
        i.equipped_weapon, i.equipped_charm, i.last_active_day, i.last_decay_at, ?
       FROM telegram_pet_instances i JOIN telegram_pet_active_slots a ON a.pet_id=i.pet_id
        WHERE a.telegram_id=? AND i.telegram_id=? LIMIT 1)

@@ -12,6 +12,13 @@ import {
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
+import {
+  PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
+  PET_INSTANCE_AUTHORITY_VERSION,
+  accountWalletRecoveryResolvedSql,
+  ensurePetAccountWalletReadyForMutation,
+  reconcilePetInstanceWalletToProfile,
+} from './wallet-reconciliation.js';
 
 export {
   PET_ROGUELITE_BOSSES,
@@ -32,7 +39,6 @@ const MAX_ROGUELITE_MOON_GOLD_PER_CLAIM = 100;
 const MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM = 5;
 const MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM = 5;
 const MAX_CURRENCY = 999999;
-const PET_INSTANCE_AUTHORITY_VERSION = '0001-01-01 00:00:00';
 
 export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 'abandoned', 'extracted']);
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
@@ -117,6 +123,10 @@ function normalizeCurrencyCosts(value = {}) {
   return Object.fromEntries(['moon_gold', 'moon_crystals', 'style_tokens'].map((key) => [key, positiveInteger(value?.[key])]));
 }
 
+function hasAccountWalletMovement(rewards = {}, costs = {}) {
+  return ['moon_gold', 'moon_crystals', 'style_tokens'].some((key) => positiveInteger(rewards?.[key]) || positiveInteger(costs?.[key]));
+}
+
 export function validatePetRunModifier(modifier) {
   return validatePetRunModifierContent(modifier);
 }
@@ -179,6 +189,7 @@ export async function awardPetReward(db, request = {}) {
   const idempotencyKey = String(request.idempotency_key || '').trim().slice(0, 160);
   if (!telegramId || !PET_REWARD_SOURCES.includes(source) || !idempotencyKey) throw new Error('invalid_pet_reward_request');
   await reconcileLegacyPetInventory(db, telegramId);
+  const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
   const reservationId = String(request.reservation_id || '').trim();
   let rewards = normalizePetReward(request.rewards);
   if (source.startsWith('roguelite_')) rewards = {
@@ -187,7 +198,6 @@ export async function awardPetReward(db, request = {}) {
     moon_crystals: Math.min(rewards.moon_crystals, MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM),
     style_tokens: Math.min(rewards.style_tokens, MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM),
   };
-  const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
   const dayKey = String((reservationId && request.day_key) || now.toISOString().slice(0, 10));
   const weekDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const weekDay = weekDate.getUTCDay() || 7;
@@ -206,6 +216,10 @@ export async function awardPetReward(db, request = {}) {
   const reason = String(request.reason || 'reward_awarded').trim().slice(0, 120);
   const profileDeltas = normalizeProfileDeltas(request.profile_deltas);
   const currencyCosts = normalizeCurrencyCosts(request.currency_costs);
+  if (hasAccountWalletMovement(rewards, currencyCosts) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId, now))) {
+    return { accepted: false, duplicate: false, reason: 'wallet_reconciliation_recovery_pending', pet_xp_awarded: 0, xp_awarded: 0, rewards: normalizePetReward() };
+  }
+  if (!hasAccountWalletMovement(rewards, currencyCosts)) await reconcilePetInstanceWalletToProfile(db, telegramId, now);
   const touchStreak = request.touch_streak === true ? 1 : 0;
   const previousDay = new Date(`${dayKey}T00:00:00.000Z`);
   previousDay.setUTCDate(previousDay.getUTCDate() - 1);
@@ -213,25 +227,26 @@ export async function awardPetReward(db, request = {}) {
   const reservationGuard = reservationId
     ? 'AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND telegram_id = ? AND status = \'pending\')'
     : '';
-  // A supplied pet_id is the immutable settlement target. It must resolve to a
-  // persisted instance owned by this player; it never falls back to a profile.
-  // Null remains the sole compatibility path for pre-cutover reward rows.
+  // A supplied pet_id is the immutable Pet XP/stat settlement target. Wallet
+  // currencies remain account-owned on the compatibility profile row until a
+  // dedicated account wallet table exists.
   const petAuthority = Boolean(petId);
-  const balanceAuthority = petAuthority
-    ? 'telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?'
-    : 'telegram_pet_profiles WHERE telegram_id = ?';
-  const balanceAuthorityArgs = petAuthority ? [petId, telegramId] : [telegramId];
+  const petOwnerGuard = petAuthority
+    ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?)'
+    : '';
   const petEventScope = petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL';
   const metadata = safeJson({ finalization_id: finalizationId, source, idempotency_key: idempotencyKey, requested: rewards, currency_costs: currencyCosts, profile_deltas: profileDeltas, context: request.context || {} });
   const statements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
       (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, metadata)
       SELECT ?, ?, ?, ?, ?, ?, 'pending', ?, ?
-      WHERE EXISTS (SELECT 1 FROM ${balanceAuthority}
-        AND moon_gold >= ? AND moon_crystals >= ? AND style_tokens >= ?)
-      ${authorization.sql} ${reservationGuard}`)
-      .bind(claimId, petId || null, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), metadata, ...balanceAuthorityArgs,
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?
+        AND moon_gold >= ? AND moon_crystals >= ? AND style_tokens >= ?
+        AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')})
+      ${petOwnerGuard} ${authorization.sql} ${reservationGuard}`)
+      .bind(claimId, petId || null, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), metadata, telegramId,
         currencyCosts.moon_gold, currencyCosts.moon_crystals, currencyCosts.style_tokens,
+        ...(petAuthority ? [petId, telegramId] : []),
         ...authorization.args, ...(reservationId ? [reservationId, telegramId] : [])),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
       (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
@@ -253,7 +268,7 @@ export async function awardPetReward(db, request = {}) {
       .bind(rewards.pet_xp, DAILY_PET_XP_CAP, telegramId, dayKey, ...(petAuthority ? [petId] : []), rewards.community_xp, DAILY_COMMUNITY_XP_CAP, telegramId, dayKey, reason, metadata, eventId, claimId, ...(petAuthority ? [petId] : [])),
     db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
         pet_xp = pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'), 0),
-        moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)), moon_crystals = MIN(?, MAX(0, moon_crystals + ? - ?)), style_tokens = MIN(?, MAX(0, style_tokens + ? - ?)),
+        ${petAuthority ? '' : 'moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)), moon_crystals = MIN(?, MAX(0, moon_crystals + ? - ?)), style_tokens = MIN(?, MAX(0, style_tokens + ? - ?)),'}
         health = MIN(100, MAX(0, health + ?)), hunger = MIN(100, MAX(0, hunger + ?)),
         cleanliness = MIN(100, MAX(0, cleanliness + ?)), energy = MIN(100, MAX(0, energy + ?)), happiness = MIN(100, MAX(0, happiness + ?)),
         streak_days = CASE WHEN ? = 0 THEN streak_days WHEN last_active_day > ? THEN streak_days WHEN last_active_day = ? THEN MAX(1, streak_days) WHEN last_active_day = ? THEN streak_days + 1 ELSE 1 END,
@@ -262,11 +277,25 @@ export async function awardPetReward(db, request = {}) {
         level = CAST((pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'), 0)) / 100 AS INTEGER) + 1,
         ${petAuthority ? `source_profile_updated_at = '${PET_INSTANCE_AUTHORITY_VERSION}',` : ''}
         updated_at = CURRENT_TIMESTAMP
-      WHERE ${petAuthority ? 'pet_id = ? AND telegram_id = ?' : 'telegram_id = ?'} AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
-      .bind(eventId, metadata, MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens,
+      WHERE ${petAuthority ? 'pet_id = ? AND telegram_id = ?' : `telegram_id = ? AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}`}
+        AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
+      .bind(eventId, metadata,
+        ...(petAuthority ? [] : [MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens]),
         profileDeltas.health, profileDeltas.hunger, profileDeltas.cleanliness, profileDeltas.energy, profileDeltas.happiness,
         touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey, touchStreak, now.toISOString(),
         eventId, metadata, ...(petAuthority ? [petId, telegramId] : [telegramId]), eventId, metadata),
+    petAuthority
+      ? db.prepare(`UPDATE telegram_pet_profiles SET
+          moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)),
+          moon_crystals = MIN(?, MAX(0, moon_crystals + ? - ?)),
+          style_tokens = MIN(?, MAX(0, style_tokens + ? - ?))
+        WHERE telegram_id = ?
+          AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}
+          AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
+        .bind(MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens,
+          telegramId, eventId, metadata)
+      : db.prepare(`SELECT 1 WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
+        .bind(eventId, metadata),
     db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
         stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian'
           WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
@@ -358,6 +387,10 @@ export async function awardPetReward(db, request = {}) {
     ? `SELECT * FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?`
     : `SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`)
     .bind(...(petAuthority ? [petId, telegramId] : [telegramId])).first().catch(() => null);
+  const wallet = petAuthority
+    ? await db.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?`)
+      .bind(telegramId).first().catch(() => null)
+    : null;
   return {
     accepted: true,
     duplicate: false,
@@ -367,7 +400,7 @@ export async function awardPetReward(db, request = {}) {
     rewards: { ...appliedRewards, pet_xp: positiveInteger(awarded.pet_xp_awarded), community_xp: positiveInteger(awarded.xp_awarded) },
     profile_deltas: profileDeltas,
     currency_costs: currencyCosts,
-    pet,
+    pet: wallet && pet ? { ...pet, moon_gold: wallet.moon_gold, moon_crystals: wallet.moon_crystals, style_tokens: wallet.style_tokens } : pet,
   };
 }
 

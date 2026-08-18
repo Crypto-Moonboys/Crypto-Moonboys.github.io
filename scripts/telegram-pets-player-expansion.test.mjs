@@ -82,6 +82,7 @@ const defeatedBossDb = {
   prepare(sql) {
     const query = String(sql);
     return {
+      sql: query,
       bind() { return this; },
       async first() {
         if (query.includes('FROM telegram_pet_profiles')) return {
@@ -98,7 +99,10 @@ const defeatedBossDb = {
       async run() { defeatedBossWriteCalls += 1; return { meta: { changes: 1 } }; },
     };
   },
-  async batch() {
+  async batch(statements) {
+    if (statements.some((statement) => String(statement.sql || '').includes('wallet_reconciliation'))) {
+      return [{ meta: { changes: 0 } }, { meta: { changes: 0 } }];
+    }
     defeatedBossBatchCalls += 1;
     throw new Error('a defeated weekly boss must never reserve another attack');
   },

@@ -36,6 +36,8 @@ const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
 const migration057 = await readFile(new URL('../workers/moonboys-api/migrations/057_telegram_pet_lifecycle_pet_id.sql', import.meta.url), 'utf8');
 const worker = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const rogueliteFoundation = await readFile(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
+const walletReconciliation = await readFile(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
 
 assert.doesNotMatch(migration056, /CREATE\s+TRIGGER/i, 'migration 056 must not rely on trigger DDL');
 assert.match(
@@ -43,6 +45,37 @@ assert.match(
   /CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_pet_owner_tuple\s+ON telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)/,
   'migration 056 must provide a unique parent key for the complete pet ownership tuple',
 );
+const atomicDecaySource = worker.slice(worker.indexOf('async function getPetProfileWithAtomicDecay'), worker.indexOf('async function getPetInstanceWithAtomicDecay'));
+assert.equal(
+  (atomicDecaySource.match(/reconcilePetInstanceWalletToProfile/g) || []).length,
+  0,
+  'getPetProfileWithAtomicDecay must rely on getPetProfile reconciliation and not repeat the wallet hot-path batch',
+);
+assert.equal((worker.match(/async function reconcilePetInstanceWalletToProfile/g) || []).length, 0,
+  'worker.js must import the shared wallet reconciliation helper instead of duplicating it');
+assert.equal((rogueliteFoundation.match(/async function reconcilePetInstanceWalletToProfile/g) || []).length, 0,
+  'roguelite-foundation.js must import the shared wallet reconciliation helper instead of duplicating it');
+assert.match(walletReconciliation, /source = \? AND idempotency_key = \?/,
+  'wallet reconciliation marker must stay in private reward claims, not public pet events');
+assert.doesNotMatch(walletReconciliation, /current_moon_gold|current_moon_crystals|current_style_tokens|replayMissingSnapshotRowsFromTerminal/i,
+  'wallet reconciliation must not infer capped wallet history from current terminal instance balances');
+assert.match(walletReconciliation, /wallet_reconciliation_recovery_required/,
+  'wallet reconciliation must privately mark unprovable legacy history as recovery-required without committing the success marker');
+assert.match(walletReconciliation, /WHERE e\.telegram_id = c\.telegram_id\s+AND e\.pet_id = c\.pet_id\s+AND e\.status = 'accepted'\s+AND e\.metadata = c\.metadata/,
+  'wallet reconciliation must prove historical pet-id wallet transitions from accepted event evidence');
+assert.match(walletReconciliation, /accepted_pet_id_reward_claim_ledger/,
+  'wallet reconciliation must remain ledger-derived, not profile-baseline-derived');
+assert.doesNotMatch(walletReconciliation, /i\.moon_gold - telegram_pet_profiles\.moon_gold|i\.moon_crystals - telegram_pet_profiles\.moon_crystals|i\.style_tokens - telegram_pet_profiles\.style_tokens/,
+  'wallet reconciliation must not derive deltas from current instance wallet minus current profile wallet');
+const savePetProfileSource = worker.slice(worker.indexOf('async function savePetProfile'), worker.indexOf('async function getPetWindowTotals'));
+assert.doesNotMatch(savePetProfileSource, /\bmoon_gold\s*=|\bmoon_crystals\s*=|\bstyle_tokens\s*=/,
+  'savePetProfile must not write account-wallet columns from stale whole-profile snapshots');
+assert.match(worker, /PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY[\s\S]*accountWalletRecoveryResolvedSql[\s\S]*reconcilePetInstanceWalletToProfile/,
+  'worker must import the shared wallet reconciliation event key and recovery predicate');
+assert.match(walletReconciliation, /export function accountWalletRecoveryResolvedSql[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY/,
+  'wallet module must own the shared recovery marker source/key SQL');
+assert.match(worker, /e\.event_key <> \?/,
+  'activity feed must bind the shared wallet reconciliation marker key instead of duplicating the literal');
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
 const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
 const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);
@@ -254,6 +287,23 @@ function seedPendingRolloverPlayer(id, overrides = {}) {
   return petId;
 }
 
+const missingWalletPetId = seedPendingRolloverPlayer('missing-wallet', { pet_name: 'No Wallet Overlay', pet_xp: 321, moon_gold: 17, energy: 66 });
+const missingProfileWalletD1 = {
+  prepare(sql) {
+    if (/SELECT \* FROM telegram_pet_profiles WHERE telegram_id = \?/i.test(sql)) {
+      return { bind: () => ({ first: async () => null }) };
+    }
+    return d1.prepare(sql);
+  },
+  batch(statements) { return d1.batch(statements); },
+};
+const missingWalletRead = await getPetProfile(missingProfileWalletD1, 'missing-wallet');
+assert.deepEqual(
+  { pet_id: missingWalletRead.pet_id, pet_name: missingWalletRead.pet_name, pet_xp: missingWalletRead.pet_xp, moon_gold: missingWalletRead.moon_gold, energy: missingWalletRead.energy },
+  { pet_id: missingWalletPetId, pet_name: 'No Wallet Overlay', pet_xp: 321, moon_gold: 17, energy: 66 },
+  'active pet reads must remain safe when the profile wallet projection is missing',
+);
+
 db.prepare(`UPDATE telegram_pet_instances SET pet_name='Instance Nova', pet_xp=5100, level=52,
   moon_gold=901, energy=88, last_decay_at=?, source_profile_updated_at='2026-08-16 02:59:59',
   updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run(new Date().toISOString());
@@ -262,13 +312,13 @@ db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Stale Profile', pet_xp=1,
 const runtimePet = await getPetProfile(d1, 'state-player');
 assert.deepEqual(
   { pet_name: runtimePet.pet_name, pet_xp: runtimePet.pet_xp, level: runtimePet.level, moon_gold: runtimePet.moon_gold, energy: runtimePet.energy },
-  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 901, energy: 88 },
-  'gameplay reads must use the active starter pet instance instead of stale profile state',
+  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 2, energy: 88 },
+  'gameplay reads must use the active starter pet instance while showing the account wallet from the profile authority',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, level, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
-  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 901, energy: 88 },
-  'instance reads must mirror the legacy profile payload fields',
+  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 2, energy: 88 },
+  'instance reads must mirror pet-owned legacy profile payload fields without overwriting the account wallet',
 );
 
 db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at='2026-08-16T03:00:00.500Z' WHERE telegram_id='state-player'`).run();
@@ -295,13 +345,13 @@ runtimePet.energy = 77;
 await savePetProfile(d1, runtimePet);
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, moon_crystals, energy FROM telegram_pet_instances WHERE telegram_id='state-player'`).get() },
-  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 55, energy: 77 },
-  'gameplay writes must update the active pet instance',
+  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 44, energy: 77 },
+  'gameplay writes must update pet-owned active instance fields without treating wallet crystals as per-pet',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, moon_crystals, energy FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
-  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 55, energy: 77 },
-  'gameplay writes must preserve the mirrored legacy profile',
+  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 44, energy: 77 },
+  'gameplay writes must preserve pet-owned profile fields without overwriting account-wallet authority',
 );
 
 db.prepare(`DELETE FROM telegram_pet_instances WHERE telegram_id='state-player'`).run();
@@ -336,8 +386,13 @@ assert.equal(await preparePetMiniAppState(d1, 'state-player', rolloverNow), true
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, moon_gold, health, equipped_weapon FROM telegram_pet_instances
     WHERE telegram_id='state-player' AND season_key='2026-q3' AND slot_number=1`).get() },
-  { pet_name: 'Outgoing Final', pet_xp: 7777, moon_gold: 654, health: 62, equipped_weapon: 'outgoing-final-weapon' },
-  'rollover preparation must reconcile the final legacy write onto the outgoing pet before moving the pointer',
+  { pet_name: 'Outgoing Final', pet_xp: 7777, moon_gold: 2, health: 62, equipped_weapon: 'outgoing-final-weapon' },
+  'rollover preparation must reconcile final pet-owned legacy writes onto the outgoing pet before moving the pointer',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
+  { moon_gold: 654 },
+  'rollover preparation must preserve Moon Gold on the account wallet authority',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT season_key, slot_number, acquisition_type, status FROM telegram_pet_season_slots
@@ -406,8 +461,13 @@ assert.equal(db.prepare(`SELECT energy FROM telegram_pet_instances WHERE season_
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, moon_gold, equipped_weapon, health FROM telegram_pet_instances
     WHERE season_key='pet-s2026-003' AND slot_number=2 AND telegram_id='state-player'`).get() },
-  { pet_xp: 73, moon_gold: 81, equipped_weapon: 'paid-blaster', health: 63 },
-  'switching must reconcile a newer legacy gameplay write to the old active instance before moving the pointer',
+  { pet_xp: 73, moon_gold: 0, equipped_weapon: 'paid-blaster', health: 63 },
+  'switching must reconcile newer legacy pet-owned writes to the old active instance before moving the pointer',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
+  { moon_gold: 81 },
+  'switching must keep newer Moon Gold on the account wallet authority',
 );
 const boughtThird = await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(boughtThird.accepted, true, 'slot 3 purchase must succeed with enough Arcade XP');
@@ -560,8 +620,13 @@ assert.equal(await preparePetMiniAppState(d1, 'rollover-activity', rolloverNow),
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-activity'`).get().pet_id, `pet:rollover-activity:${rolloverSeasonKey}:1`, 'activity clearance must allow the current-season starter to become active');
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, moon_gold, health FROM telegram_pet_instances WHERE pet_id=?`).get(activityRolloverPet) },
-  { pet_xp: 333, moon_gold: 444, health: 61 },
-  'outgoing activity settlement must reconcile onto the previous-season pet before the rollover pointer moves',
+  { pet_xp: 333, moon_gold: 30, health: 61 },
+  'outgoing activity settlement must reconcile pet-owned state onto the previous-season pet before the rollover pointer moves',
+);
+assert.deepEqual(
+  { ...db.prepare(`SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='rollover-activity'`).get() },
+  { moon_gold: 444 },
+  'outgoing activity settlement must keep Moon Gold on the account wallet authority',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_xp, moon_gold, health FROM telegram_pet_instances WHERE telegram_id='rollover-activity' AND season_key=? AND slot_number=1`).get(rolloverSeasonKey) },

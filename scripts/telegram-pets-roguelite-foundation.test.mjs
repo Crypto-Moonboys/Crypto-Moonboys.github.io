@@ -223,7 +223,7 @@ assert.equal(duplicateClaims.filter(({ duplicate }) => !duplicate).length, 1, 'c
 assert.equal(duplicateDb.database.prepare("SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'duplicate-player'").get().pet_xp, 50);
 assert.equal(duplicateDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'duplicate-player'").get().moon_gold, 25);
 assert.equal(duplicateDb.database.prepare("SELECT stage FROM telegram_pet_profiles WHERE telegram_id = 'duplicate-player'").get().stage, 'hatchling', 'unified rewards must preserve Pet stage progression');
-assert.equal(duplicateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_reward_claims').get().count, 1);
+assert.equal(duplicateDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='pet_job'").get().count, 1);
 
 assert.equal(validatePetRunModifier(PET_RUN_MODIFIERS.low_energy), true);
 assert.equal(validatePetRunModifier({ effects: { energy_cost_modifier: -5 } }), true, 'temporary energy cost modifiers are valid content');
@@ -338,7 +338,9 @@ const completions = await Promise.all(Array.from({ length: 8 }, () => completePe
 assert.equal(runDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source = 'roguelite_completion'").get().count, 1, 'duplicate completion callbacks cannot duplicate completion rewards');
 assert.equal(runDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id = 'pet-run-player'").get().pet_xp, 80);
 assert.deepEqual({ ...runDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_instances WHERE pet_id = 'pet-run-player'").get() },
-  { moon_gold: 40, moon_crystals: 3, style_tokens: 2 }, 'concurrent completion callbacks must award each currency exactly once');
+  { moon_gold: 0, moon_crystals: 0, style_tokens: 0 }, 'concurrent completion callbacks must not fragment wallet currencies onto the run pet');
+assert.deepEqual({ ...runDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'run-player'").get() },
+  { moon_gold: 40, moon_crystals: 3, style_tokens: 2 }, 'concurrent completion callbacks must award each currency to the account exactly once');
 assert.equal(runDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_modifiers WHERE run_id = 'run-foundation'").get().count, 0, 'temporary modifiers disappear when a run ends');
 assert.equal(completions.filter(({ duplicate }) => !duplicate).length, 1);
 
@@ -479,7 +481,9 @@ await Promise.all(Array.from({ length: 8 }, () => completePetRun(recoveryDb, rec
   { rooms_completed: 5, boss_fought: 'alley_king' })));
 assert.deepEqual({ ...recoveryDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id = 'pet-recovery-player'").get() }, { pet_xp: 30 });
 assert.deepEqual({ ...recoveryDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_instances WHERE pet_id = 'pet-recovery-player'").get() },
-  { moon_gold: 25, moon_crystals: 2, style_tokens: 1 }, 'retry after partial completion failure must award currencies exactly once');
+  { moon_gold: 0, moon_crystals: 0, style_tokens: 0 }, 'retry after partial completion failure must not fragment wallet currencies onto the run pet');
+assert.deepEqual({ ...recoveryDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'recovery-player'").get() },
+  { moon_gold: 25, moon_crystals: 2, style_tokens: 1 }, 'retry after partial completion failure must award currencies to the account exactly once');
 assert.equal(recoveryDb.database.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = 'recovery-player' AND material_key = 'dark_alloy'").get().quantity, 3);
 assert.equal(recoveryDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'recovery-player' AND asset_type = 'item'").get().quantity, 1);
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = 'recovery-player'").get().count, 1);
