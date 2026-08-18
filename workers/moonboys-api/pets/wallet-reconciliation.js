@@ -246,7 +246,7 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
 async function hasPetAccountWalletRecoveryRequiredMarker(db, owner) {
   const marker = await db.prepare(`
     SELECT claim_id FROM telegram_pet_reward_claims
-    WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'rejected'
+    WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'pending'
     LIMIT 1
   `).bind(owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY).first();
   return Boolean(marker);
@@ -266,11 +266,11 @@ async function markPetAccountWalletRecoveryRequired(db, owner, reason, now = new
   });
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
       (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata)
-    SELECT ?, NULL, ?, ?, ?, ?, 'rejected', '{}', '{}', ?
+    SELECT ?, NULL, ?, ?, ?, ?, 'pending', '{}', '{}', ?
     WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)
       AND NOT EXISTS (
         SELECT 1 FROM telegram_pet_reward_claims
-        WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'rejected'
+        WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'pending'
       )`)
     .bind(markerId, owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY,
       getPetDayKey(now), metadata, owner, owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY)
@@ -285,8 +285,9 @@ async function markPetAccountWalletRecoveryRequired(db, owner, reason, now = new
 // balance, current instance rows, current terminal instance wallet, and current
 // instance sentinel timestamps are never used as a baseline or eligibility
 // proof. If object-shaped JSON, durable claim ordering, or snapshots cannot
-// prove the exact clamped order, reconciliation fails closed before committing
-// the one-shot marker.
+// prove the exact clamped order, reconciliation records a private pending
+// recovery marker and freezes new account-wallet mutations until durable repair
+// evidence is backfilled and the retry can commit the success marker.
 export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
   const owner = String(telegramId || '').trim();
   if (!owner) return false;

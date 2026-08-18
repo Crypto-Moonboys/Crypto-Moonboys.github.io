@@ -1683,7 +1683,7 @@ function insertWalletRecoveryRequired(db, telegramId) {
   db.database.prepare(`
     INSERT INTO telegram_pet_reward_claims
       (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata)
-    VALUES (?, NULL, ?, 'wallet_reconciliation_recovery_required', 'moonpet_wallet_reconcile_recovery_required:v1', '2026-08-18', 'rejected', '{}', '{}', ?)
+    VALUES (?, NULL, ?, 'wallet_reconciliation_recovery_required', 'moonpet_wallet_reconcile_recovery_required:v1', '2026-08-18', 'pending', '{}', '{}', ?)
   `).run(`recovery-required:${telegramId}`, telegramId, JSON.stringify({ outcome: 'recovery_required', reason: 'missing_wallet_snapshot' }));
 }
 

@@ -134,7 +134,7 @@ function accountWalletRecoveryResolvedSql(ownerSql = 'telegram_pet_profiles.tele
     WHERE wallet_recovery.telegram_id = ${ownerSql}
       AND wallet_recovery.source = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE}'
       AND wallet_recovery.idempotency_key = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY}'
-      AND wallet_recovery.status = 'rejected'
+      AND wallet_recovery.status = 'pending'
       AND NOT EXISTS (
         SELECT 1 FROM telegram_pet_reward_claims wallet_reconciled
         WHERE wallet_reconciled.telegram_id = wallet_recovery.telegram_id
