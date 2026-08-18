@@ -63,6 +63,13 @@ assert.match(walletReconciliation, /accepted_pet_id_reward_claim_ledger/,
   'wallet reconciliation must remain ledger-derived, not profile-baseline-derived');
 assert.doesNotMatch(walletReconciliation, /i\.moon_gold - telegram_pet_profiles\.moon_gold|i\.moon_crystals - telegram_pet_profiles\.moon_crystals|i\.style_tokens - telegram_pet_profiles\.style_tokens/,
   'wallet reconciliation must not derive deltas from current instance wallet minus current profile wallet');
+const savePetProfileSource = worker.slice(worker.indexOf('async function savePetProfile'), worker.indexOf('async function getPetWindowTotals'));
+assert.doesNotMatch(savePetProfileSource, /\bmoon_gold\s*=|\bmoon_crystals\s*=|\bstyle_tokens\s*=/,
+  'savePetProfile must not write account-wallet columns from stale whole-profile snapshots');
+assert.match(worker, /import \{ PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, PET_INSTANCE_AUTHORITY_VERSION, reconcilePetInstanceWalletToProfile \}/,
+  'worker must import the shared wallet reconciliation marker key');
+assert.match(worker, /e\.event_key <> \?/,
+  'activity feed must bind the shared wallet reconciliation marker key instead of duplicating the literal');
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
 const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
 const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);
@@ -337,8 +344,8 @@ assert.deepEqual(
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, moon_crystals, energy FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
-  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 55, energy: 77 },
-  'gameplay writes must preserve the mirrored legacy profile',
+  { pet_name: 'Saved Nova', pet_xp: 5200, moon_crystals: 44, energy: 77 },
+  'gameplay writes must preserve pet-owned profile fields without overwriting account-wallet authority',
 );
 
 db.prepare(`DELETE FROM telegram_pet_instances WHERE telegram_id='state-player'`).run();

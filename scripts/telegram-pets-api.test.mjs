@@ -141,8 +141,8 @@ assert.ok(!worker.includes("path === '/telegram-pets/season/slots'"), '/telegram
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
 const activityRouteSource = worker.slice(worker.indexOf("path === '/telegram-pets/activity'"), worker.indexOf("path === '/telegram-pets/leaderboard'"));
-assert.ok(activityRouteSource.includes("e.event_type <> 'wallet_reconciliation'") && activityRouteSource.includes("e.event_key <> 'moonpet_wallet_reconcile:v1'"),
-  '/telegram-pets/activity must filter any legacy wallet reconciliation marker out of the public feed');
+assert.ok(activityRouteSource.includes("e.event_type <> 'wallet_reconciliation'") && activityRouteSource.includes('e.event_key <> ?') && activityRouteSource.includes('PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY'),
+  '/telegram-pets/activity must filter any legacy wallet reconciliation marker through the shared marker key');
 assert.ok(worker.includes("path === '/telegram-pets/shop'"), '/telegram-pets/shop route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/inventory'"), '/telegram-pets/inventory route must exist');
 assert.ok(worker.includes("body.action === 'trade'"), 'telegram pets action route must dispatch trade actions');

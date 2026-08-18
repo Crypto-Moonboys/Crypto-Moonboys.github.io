@@ -5,7 +5,7 @@ import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/065_moonpet_reward_pet_id_authority.sql', import.meta.url), 'utf8');
-const { awardPetReward, getPetProfile } = __petMediaTestHooks;
+const { awardPetReward, getPetProfile, savePetProfile } = __petMediaTestHooks;
 
 assert.match(migration, /reward_claims ADD COLUMN pet_id/);
 assert.match(migration, /pet_events ADD COLUMN pet_id/);
@@ -118,6 +118,38 @@ assert.deepEqual({ pet_id: petBView.pet_id, pet_xp: petBView.pet_xp, moon_gold: 
   'switching active pets cannot redirect Pet XP or hide the account-owned wallet');
 assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-b'").get().pet_xp, 0,
   'Pet B cannot mutate or inherit Pet A Pet XP');
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('stale-wallet-save',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('stale-wallet-save',0,1,100,10,20)").run();
+seedPet('stale-wallet-save', 'stale-wallet-save-a', 1);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('stale-wallet-save','stale-wallet-save-a','pet-s2026-003')").run();
+const staleWalletSnapshot = await getPetProfile(db, 'stale-wallet-save');
+const overlappingReward = await awardPetReward(db, {
+  telegram_id: 'stale-wallet-save', pet_id: 'stale-wallet-save-a', source: 'pet_job', idempotency_key: 'overlapping-wallet-reward',
+  rewards: { moon_gold: 7 }, now: '2026-08-17T12:00:00Z',
+});
+assert.equal(overlappingReward.accepted, true, 'overlapping pet_id wallet reward must settle');
+assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='stale-wallet-save'").get().moon_gold, 107,
+  'pet_id wallet reward should atomically add to the account wallet');
+await savePetProfile(db, staleWalletSnapshot);
+assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='stale-wallet-save'").get().moon_gold, 107,
+  'stale whole-profile save must not erase an overlapping wallet reward');
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('stale-wallet-spend',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('stale-wallet-spend',0,1,100,10,20)").run();
+seedPet('stale-wallet-spend', 'stale-wallet-spend-a', 1);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('stale-wallet-spend','stale-wallet-spend-a','pet-s2026-003')").run();
+const staleSpendSnapshot = await getPetProfile(db, 'stale-wallet-spend');
+const overlappingSpend = await awardPetReward(db, {
+  telegram_id: 'stale-wallet-spend', pet_id: 'stale-wallet-spend-a', source: 'pet_item_use', idempotency_key: 'overlapping-wallet-spend',
+  rewards: {}, currency_costs: { moon_gold: 15 }, now: '2026-08-17T12:00:00Z',
+});
+assert.equal(overlappingSpend.accepted, true, 'overlapping pet_id wallet spend must settle');
+assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='stale-wallet-spend'").get().moon_gold, 85,
+  'pet_id wallet spend should atomically debit the account wallet');
+await savePetProfile(db, staleSpendSnapshot);
+assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='stale-wallet-spend'").get().moon_gold, 85,
+  'stale whole-profile save must not undo an overlapping wallet spend');
 
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-bridge',0,1)").run();
 db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,updated_at) VALUES ('legacy-bridge',0,1,0,'2026-08-16 00:00:00')").run();

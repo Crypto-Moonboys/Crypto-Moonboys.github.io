@@ -30,7 +30,7 @@ import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
 import { getMoonpetSeasonInfo } from './pets/season-authority.js';
 import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
-import { PET_INSTANCE_AUTHORITY_VERSION, reconcilePetInstanceWalletToProfile } from './pets/wallet-reconciliation.js';
+import { PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, PET_INSTANCE_AUTHORITY_VERSION, reconcilePetInstanceWalletToProfile } from './pets/wallet-reconciliation.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
   getPetEvolutionPerk, getPetSeasonRewardTier, getPetWeeklyBoss,
@@ -2903,12 +2903,11 @@ async function processPetDailyChest(db, telegramId, options = {}) {
   if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
   else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + 40);
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + 2);
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
   await db.prepare(`INSERT INTO telegram_pet_events (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata) VALUES (?, ?, 'daily_chest', ?, 0, ?, ?, ?, ?, 'accepted', 'daily_chest', ?)`)
     .bind(crypto.randomUUID(), telegramId, eventKey, petXp, season.key, dayKey, weekKey, JSON.stringify({ source: options.source || 'telegram_bot' })).run();
+  Object.assign(pet, await applyPetAccountWalletDelta(db, telegramId, { moon_gold: 40, style_tokens: 2 }) || {});
   await savePetProfile(db, pet);
   return { accepted: true, reason: 'daily_chest', xp_awarded: 0, pet_xp_awarded: petXp, pet };
 }
@@ -3169,6 +3168,27 @@ async function readPetAccountWallet(db, telegramId) {
   const profile = await db.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?`)
     .bind(telegramId).first().catch(() => null);
   return profile ? pickPetAccountWallet(profile) : null;
+}
+
+async function applyPetAccountWalletDelta(db, telegramId, deltas = {}) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return null;
+  const moonGoldDelta = Math.trunc(Number(deltas.moon_gold ?? deltas.moonGoldDelta ?? 0) || 0);
+  const moonCrystalsDelta = Math.trunc(Number(deltas.moon_crystals ?? deltas.moonCrystalsDelta ?? 0) || 0);
+  const styleTokensDelta = Math.trunc(Number(deltas.style_tokens ?? deltas.styleTokensDelta ?? 0) || 0);
+  if (!moonGoldDelta && !moonCrystalsDelta && !styleTokensDelta) return readPetAccountWallet(db, owner);
+  const result = await db.prepare(`
+    UPDATE telegram_pet_profiles
+    SET moon_gold = MIN(999999, MAX(0, moon_gold + ?)),
+        moon_crystals = MIN(999999, MAX(0, moon_crystals + ?)),
+        style_tokens = MIN(999999, MAX(0, style_tokens + ?))
+    WHERE telegram_id = ?
+      AND moon_gold + ? >= 0
+      AND moon_crystals + ? >= 0
+      AND style_tokens + ? >= 0
+  `).bind(moonGoldDelta, moonCrystalsDelta, styleTokensDelta, owner, moonGoldDelta, moonCrystalsDelta, styleTokensDelta).run();
+  if (Number(result?.meta?.changes || 0) !== 1) return null;
+  return readPetAccountWallet(db, owner);
 }
 
 async function findActivePetSlot(db, telegramId) {
@@ -3667,8 +3687,7 @@ async function savePetProfile(db, pet) {
     UPDATE telegram_pet_profiles
     SET pet_name = ?, species = ?, stage = ?, pet_xp = ?, level = ?,
         hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?,
-        streak_days = ?, moon_gold = ?, moon_crystals = ?, style_tokens = ?,
-        equipped_food = ?, equipped_toy = ?, equipped_outfit = ?,
+        streak_days = ?, equipped_food = ?, equipped_toy = ?, equipped_outfit = ?,
         equipped_armor = ?, equipped_weapon = ?, equipped_charm = ?,
         last_active_day = ?, last_decay_at = ?, updated_at = ?
     WHERE telegram_id = ?
@@ -3684,9 +3703,6 @@ async function savePetProfile(db, pet) {
     clampPetStat(pet.energy),
     clampPetStat(pet.health),
     Math.max(0, Math.floor(Number(pet.streak_days) || 0)),
-    clampPetCurrency(pet.moon_gold),
-    clampPetCurrency(pet.moon_crystals),
-    clampPetCurrency(pet.style_tokens),
     pet.equipped_food || null,
     pet.equipped_toy || null,
     pet.equipped_outfit || null,
@@ -5047,9 +5063,6 @@ async function processPetAction(db, telegramId, action, options = {}) {
   pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + rule.cleanliness);
   pet.energy = clampPetStat(Number(pet.energy || 0) + rule.energy);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + tokenRewards.moon_gold);
-  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + tokenRewards.moon_crystals);
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) + tokenRewards.style_tokens);
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 
@@ -5075,6 +5088,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     await awardCommunityXp(db, telegramId, communityXp, `pet_${normalizedAction}`, eventKey);
   }
 
+  Object.assign(pet, await applyPetAccountWalletDelta(db, telegramId, tokenRewards) || {});
   await savePetProfile(db, pet);
   await db.prepare(`
     INSERT INTO telegram_pet_season_state
@@ -5114,9 +5128,13 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   if (!canAffordPetItem(pet, item)) return { accepted: false, reason: 'not_enough_pet_currency', item, pet };
 
   const cost = item.cost || {};
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) - (cost.moon_gold || 0));
-  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) - (cost.moon_crystals || 0));
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) - (cost.style_tokens || 0));
+  const wallet = await applyPetAccountWalletDelta(db, telegramId, {
+    moon_gold: -Math.max(0, Number(cost.moon_gold || 0)),
+    moon_crystals: -Math.max(0, Number(cost.moon_crystals || 0)),
+    style_tokens: -Math.max(0, Number(cost.style_tokens || 0)),
+  });
+  if (!wallet) return { accepted: false, reason: 'not_enough_pet_currency', item, pet };
+  Object.assign(pet, wallet);
   pet[`equipped_${item.slot}`] = item.key;
   pet.last_decay_at = now.toISOString();
 
@@ -5188,8 +5206,9 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   } else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) {
     petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
   }
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) + goldDelta);
-  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) + crystalDelta);
+  const wallet = await applyPetAccountWalletDelta(db, telegramId, { moon_gold: goldDelta, moon_crystals: crystalDelta });
+  if (!wallet) return { accepted: false, reason: 'not_enough_moon_gold', pet };
+  Object.assign(pet, wallet);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
@@ -8457,10 +8476,10 @@ export default {
         LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
         WHERE e.status = 'accepted'
           AND e.event_type <> 'wallet_reconciliation'
-          AND e.event_key <> 'moonpet_wallet_reconcile:v1'
+          AND e.event_key <> ?
         ORDER BY e.created_at DESC
         LIMIT ?
-      `).bind(limit).all().catch(() => ({ results: [] }));
+      `).bind(PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, limit).all().catch(() => ({ results: [] }));
       return json({ items: (rows.results || []).map((row) => ({
         text: `${displayNameFromRow(row)} ${row.event_type} ${row.pet_name || 'Moonpet'} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
         event_type: row.event_type,
