@@ -2552,6 +2552,46 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     run: rewardRun, banked_items: bankedItemsAuthority };
 }
 
+async function getPetRunTerminalRewardClaim(db, telegramId, runId, completed = true) {
+  const eventKey = completed ? buildStablePetEventKey(['pet_run_complete', telegramId, runId]) : buildPetRunExtractEventKey(telegramId, runId);
+  return db.prepare(`
+    SELECT claim_id, status, applied_rewards
+    FROM telegram_pet_reward_claims
+    WHERE telegram_id = ? AND source = 'pet_run_legacy' AND idempotency_key = ? AND status = 'awarded'
+    LIMIT 1
+  `).bind(telegramId, eventKey).first().catch(() => null);
+}
+
+async function retryUnsettledTerminalRunStep(db, telegramId, run, step, choice, options = {}) {
+  const currentRun = await getPetRunById(db, telegramId, run.run_id);
+  const stepIndex = Math.max(1, Math.floor(Number(step?.step_index || 0)));
+  const maxDepth = Math.max(1, Math.floor(Number(currentRun?.max_depth || run?.max_depth || PET_RUN_MAX_DEPTH)));
+  if (!currentRun || Number(step?.success || 0) !== 1 || stepIndex < maxDepth) return null;
+  const settledClaim = await getPetRunTerminalRewardClaim(db, telegramId, currentRun.run_id, true);
+  if (settledClaim) return null;
+  const pet = currentRun.pet_id ? await getPetInstanceWithAtomicDecay(db, currentRun.pet_id).catch(() => null) : null;
+  if (!pet || pet.telegram_id !== telegramId) {
+    return { accepted: false, reason: 'run_pet_not_found', run: currentRun, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const terminalWalletDeltas = {
+    moon_gold: clampPetCurrency(currentRun.unbanked_moon_gold),
+    moon_crystals: clampPetCurrency(currentRun.unbanked_moon_crystals),
+    style_tokens: clampPetCurrency(currentRun.unbanked_style_tokens),
+  };
+  if (hasPetAccountWalletDelta(terminalWalletDeltas) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', run: currentRun, choice, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const banked = await recordPetRunBankedEvent(db, telegramId, currentRun, pet, {
+    completed: true,
+    event_key: buildStablePetEventKey(['pet_run_complete', telegramId, currentRun.run_id]),
+    source: options.source || 'telegram_command',
+  });
+  const wallet = await readPetAccountWallet(db, telegramId);
+  const bankedPet = banked.pet || pet;
+  if (wallet) Object.assign(bankedPet, wallet);
+  return { ...banked, pet: bankedPet, choice, reason: banked.accepted ? (banked.duplicate ? 'duplicate' : 'run_completed') : banked.reason };
+}
+
 async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {}) {
   const runId = String(runIdRaw || '').trim();
   const run = runId ? await getPetRunById(db, telegramId, runId) : await getActivePetRun(db, telegramId);
@@ -2592,7 +2632,12 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const explicitEventKey = options.event_key ? String(options.event_key).slice(0, 120) : null;
   if (explicitEventKey) {
     const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, explicitEventKey).first().catch(() => null);
-    if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', run, choice: getPetRunChoice(run, choiceKeyRaw), xp_awarded: 0, pet_xp_awarded: 0 };
+    if (duplicate) {
+      const choice = getPetRunChoice(run, duplicate.choice_key || choiceKeyRaw);
+      const recovered = await retryUnsettledTerminalRunStep(db, telegramId, run, duplicate, choice, options);
+      if (recovered) return recovered;
+      return { accepted: true, duplicate: true, reason: 'duplicate', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+    }
   }
   if (!['active', 'extractable'].includes(run.status)) return { accepted: false, reason: 'run_closed', run, xp_awarded: 0, pet_xp_awarded: 0 };
   const choice = getPetRunChoice(run, choiceKeyRaw);
@@ -2600,13 +2645,21 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const eventKey = explicitEventKey || String(buildPetRunStepEventKey(telegramId, run.run_id, expectedStepIndex || stepIndex, choice.key)).slice(0, 120);
   if (!explicitEventKey) {
     const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
-    if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+    if (duplicate) {
+      const recovered = await retryUnsettledTerminalRunStep(db, telegramId, run, duplicate, choice, options);
+      if (recovered) return recovered;
+      return { accepted: true, duplicate: true, reason: 'duplicate', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+    }
   }
   if (expectedStepIndex !== null && expectedStepIndex !== stepIndex) {
     return { accepted: false, reason: 'stale_run_step', run, choice, expected_step_index: expectedStepIndex, current_step_index: stepIndex, xp_awarded: 0, pet_xp_awarded: 0 };
   }
   const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`).bind(run.run_id, stepIndex).first().catch(() => null);
-  if (existingStep) return { accepted: true, duplicate: true, reason: 'step_already_resolved', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+  if (existingStep) {
+    const recovered = await retryUnsettledTerminalRunStep(db, telegramId, run, existingStep, choice, options);
+    if (recovered) return recovered;
+    return { accepted: true, duplicate: true, reason: 'step_already_resolved', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   if (!run.pet_id) return { accepted: false, reason: 'legacy_run_pet_authority_missing', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
   const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);
   if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2616,6 +2669,16 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const walletCosts = getPetRunWalletCosts(outcome.costs);
   const walletCostDeltas = { moon_gold: -walletCosts.moon_gold, moon_crystals: -walletCosts.moon_crystals, style_tokens: -walletCosts.style_tokens };
   if (hasPetAccountWalletDelta(walletCostDeltas) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', run, choice, pet, outcome, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const terminalRewardDeltas = outcome.success && stepIndex >= PET_RUN_MAX_DEPTH
+    ? {
+      moon_gold: clampPetCurrency(run.unbanked_moon_gold) + clampPetCurrency(outcome.rewards.moon_gold),
+      moon_crystals: clampPetCurrency(run.unbanked_moon_crystals) + clampPetCurrency(outcome.rewards.moon_crystals),
+      style_tokens: clampPetCurrency(run.unbanked_style_tokens) + clampPetCurrency(outcome.rewards.style_tokens),
+    }
+    : {};
+  if (hasPetAccountWalletDelta(terminalRewardDeltas) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', run, choice, pet, outcome, xp_awarded: 0, pet_xp_awarded: 0 };
   }
   const accountWallet = await readPetAccountWallet(db, telegramId);

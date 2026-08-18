@@ -943,6 +943,15 @@ assert.ok(startOrResumeRunSource.includes('.bind(crypto.randomUUID(), petId,'), 
 assert.equal(serializePetRun({ pet_id: '  pet-normalized  ', telegram_id: 'normalized-owner', run_id: 'normalized-run' }).pet_id, 'pet-normalized',
   'serialized run authority must be normalized');
 assert.ok(runStep.includes('recordPetRunBankedEvent'), 'boss step completion must bank through the extract/completion helper');
+assert.ok(runStep.includes('retryUnsettledTerminalRunStep'), 'duplicate final run-step callbacks must retry unfinished terminal settlement');
+assert.ok(runStep.includes('const terminalRewardDeltas = outcome.success && stepIndex >= PET_RUN_MAX_DEPTH'),
+  'final run steps must check account-wallet recovery before an irreversible terminal reward transition');
+assertOrder(
+  runStep,
+  'const terminalRewardDeltas = outcome.success && stepIndex >= PET_RUN_MAX_DEPTH',
+  'INSERT OR IGNORE INTO telegram_pet_run_steps',
+  'terminal wallet recovery must be checked before writing the final step receipt'
+);
 assertOrder(
   runStep,
   "const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`)",
@@ -3085,6 +3094,121 @@ assert.deepEqual(
   'concurrent extract and room callbacks must award wallet currencies to the account authority',
 );
 
+const terminalStepRecoveryPendingDb = seedRepeatRewardPlayer('terminal-step-recovery-pending', 90);
+await ensurePetStarterSeasonSlot(terminalStepRecoveryPendingDb, 'terminal-step-recovery-pending', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(terminalStepRecoveryPendingDb, 'terminal-step-recovery-pending');
+const terminalStepRecoveryPendingPet = terminalStepRecoveryPendingDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='terminal-step-recovery-pending'").get();
+terminalStepRecoveryPendingDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('terminal-step-recovery-pending-row', ?, 'terminal-step-recovery-pending', 'terminal-step-recovery-pending-run', 'pet-s2026-003', 'active', 99, 100, 1, 22, 11, 1, 2, '{}')`)
+  .run(terminalStepRecoveryPendingPet.pet_id);
+const terminalStepRecoveryChoice = buildPetRunChoiceReplyMarkup({ run_id: 'terminal-step-recovery-pending-run', depth: 99, max_depth: 100, risk_level: 1, unbanked_items: '{}' })
+  .inline_keyboard[0][0].callback_data.split(':').at(-1);
+insertWalletRecoveryRequired(terminalStepRecoveryPendingDb, 'terminal-step-recovery-pending');
+const terminalStepPendingRandom = Math.random;
+Math.random = () => 0.99;
+let frozenTerminalStep;
+try {
+  frozenTerminalStep = await processPetRunStep(terminalStepRecoveryPendingDb, 'terminal-step-recovery-pending', 'terminal-step-recovery-pending-run', terminalStepRecoveryChoice, {
+    event_key: 'terminal-step-recovery-pending-step',
+    expected_step_index: 100,
+    source: 'terminal_step_recovery_regression',
+  });
+} finally {
+  Math.random = terminalStepPendingRandom;
+}
+assert.equal(frozenTerminalStep.accepted, false, 'pending wallet recovery must block final run-step reward settlement');
+assert.equal(frozenTerminalStep.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...terminalStepRecoveryPendingDb.database.prepare("SELECT status, depth, unbanked_moon_gold FROM telegram_pet_runs WHERE run_id='terminal-step-recovery-pending-run'").get() },
+  { status: 'active', depth: 99, unbanked_moon_gold: 11 },
+  'recovery-pending final step must leave the run recoverable before terminal completion',
+);
+assert.equal(terminalStepRecoveryPendingDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE run_id='terminal-step-recovery-pending-run'").get().count, 0,
+  'recovery-pending final step must not write a duplicate-blocking step receipt');
+assert.equal(terminalStepRecoveryPendingDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='terminal-step-recovery-pending' AND source='pet_run_legacy'").get().count, 0,
+  'recovery-pending final step must not strand a terminal reward claim');
+insertWalletReconciled(terminalStepRecoveryPendingDb, 'terminal-step-recovery-pending');
+const terminalStepRecoveredRandom = Math.random;
+Math.random = () => 0.99;
+let recoveredTerminalStep;
+try {
+  recoveredTerminalStep = await processPetRunStep(terminalStepRecoveryPendingDb, 'terminal-step-recovery-pending', 'terminal-step-recovery-pending-run', terminalStepRecoveryChoice, {
+    event_key: 'terminal-step-recovery-pending-step',
+    expected_step_index: 100,
+    source: 'terminal_step_recovery_regression',
+  });
+} finally {
+  Math.random = terminalStepRecoveredRandom;
+}
+assert.equal(recoveredTerminalStep.accepted, true, 'retry after wallet recovery must complete the final run step');
+assert.equal(recoveredTerminalStep.reason, 'run_completed');
+assert.equal(terminalStepRecoveryPendingDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id='terminal-step-recovery-pending-run'").get().status, 'completed',
+  'recovered final step must mark the run completed only after terminal settlement succeeds');
+assert.equal(terminalStepRecoveryPendingDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='terminal-step-recovery-pending' AND source='pet_run_legacy'").get().count, 1,
+  'recovered final step must create exactly one terminal reward claim');
+assert.ok(terminalStepRecoveryPendingDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='terminal-step-recovery-pending'").get().moon_gold >= 11,
+  'recovered final step must award the banked wallet reward to account authority');
+
+const terminalStepFailureDb = seedRepeatRewardPlayer('terminal-step-failure', 90);
+await ensurePetStarterSeasonSlot(terminalStepFailureDb, 'terminal-step-failure', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(terminalStepFailureDb, 'terminal-step-failure');
+const terminalStepFailurePet = terminalStepFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='terminal-step-failure'").get();
+terminalStepFailureDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('terminal-step-failure-row', ?, 'terminal-step-failure', 'terminal-step-failure-run', 'pet-s2026-003', 'active', 99, 100, 1, 18, 7, 0, 1, '{}')`)
+  .run(terminalStepFailurePet.pet_id);
+insertWalletReconciled(terminalStepFailureDb, 'terminal-step-failure');
+const terminalStepFailureChoice = buildPetRunChoiceReplyMarkup({ run_id: 'terminal-step-failure-run', depth: 99, max_depth: 100, risk_level: 1, unbanked_items: '{}' })
+  .inline_keyboard[0][0].callback_data.split(':').at(-1);
+terminalStepFailureDb.failBatchOnSql(/INSERT OR IGNORE INTO telegram_pet_reward_claims/);
+const terminalStepFailureRandom = Math.random;
+Math.random = () => 0.99;
+try {
+  await assert.rejects(
+    processPetRunStep(terminalStepFailureDb, 'terminal-step-failure', 'terminal-step-failure-run', terminalStepFailureChoice, {
+      event_key: 'terminal-step-failure-step',
+      expected_step_index: 100,
+      source: 'terminal_step_failure_regression',
+    }),
+    /simulated_d1_batch_failure/,
+    'terminal reward failure after a final step must surface for retry',
+  );
+} finally {
+  Math.random = terminalStepFailureRandom;
+}
+assert.equal(terminalStepFailureDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='terminal-step-failure' AND source='pet_run_legacy'").get().count, 0,
+  'failed terminal reward settlement must not leave an accepted or pending claim');
+assert.equal(terminalStepFailureDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='terminal-step-failure'").get().moon_gold, 0,
+  'failed terminal reward settlement must leave the account wallet unchanged');
+assert.equal(terminalStepFailureDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE run_id='terminal-step-failure-run'").get().count, 1,
+  'the final step receipt becomes the deterministic retry record after a post-step terminal failure');
+const retryTerminalStepFailureRandom = Math.random;
+Math.random = () => 0.99;
+let recoveredFailedTerminalStep;
+try {
+  recoveredFailedTerminalStep = await processPetRunStep(terminalStepFailureDb, 'terminal-step-failure', 'terminal-step-failure-run', terminalStepFailureChoice, {
+    event_key: 'terminal-step-failure-step',
+    expected_step_index: 100,
+    source: 'terminal_step_failure_regression',
+  });
+} finally {
+  Math.random = retryTerminalStepFailureRandom;
+}
+assert.equal(recoveredFailedTerminalStep.accepted, true, 'duplicate final callback must retry unfinished terminal settlement');
+assert.equal(recoveredFailedTerminalStep.reason, 'run_completed');
+assert.equal(terminalStepFailureDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id='terminal-step-failure-run'").get().status, 'completed',
+  'retried terminal final step must complete the run');
+assert.equal(terminalStepFailureDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='terminal-step-failure' AND source='pet_run_legacy'").get().count, 1,
+  'retried terminal final step must create exactly one reward claim');
+const duplicateRecoveredTerminalStep = await processPetRunStep(terminalStepFailureDb, 'terminal-step-failure', 'terminal-step-failure-run', terminalStepFailureChoice, {
+  event_key: 'terminal-step-failure-step',
+  expected_step_index: 100,
+  source: 'terminal_step_failure_regression',
+});
+assert.equal(duplicateRecoveredTerminalStep.duplicate, true, 'duplicate final callback after recovery must return the accepted settlement');
+assert.equal(terminalStepFailureDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='terminal-step-failure' AND source='pet_run_legacy'").get().count, 1,
+  'duplicate final callback after recovery must not duplicate terminal rewards');
 
 const profileOnlyRunDb = seedRepeatRewardPlayer('profile-only-run', 90);
 const refusedProfileOnlyRun = await startOrResumePetRun(profileOnlyRunDb, 'profile-only-run');
