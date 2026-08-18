@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
+const seasonAuthoritySource = readFileSync(new URL('../workers/moonboys-api/pets/season-authority.js', import.meta.url), 'utf8');
 const sanctuarySource = readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
 const workerSource = readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const walletMigration = readFileSync(new URL('../workers/moonboys-api/migrations/063_arcade_xp_spendable_wallet.sql', import.meta.url), 'utf8');
@@ -90,20 +91,26 @@ assert.match(
 
 assert.match(
   workerSource,
-  /function getPetSeasonInfo[\s\S]*Math\.floor\(now\.getUTCMonth\(\) \/ 3\)/,
-  'Worker slot creation currently uses calendar-quarter pet season keys.',
+  /function getPetSeasonInfo\(now = new Date\(\)\) \{\s+return getMoonpetSeasonInfo\(now\);\s+\}/,
+  'Worker slot creation must delegate to canonical Moonpet season authority.',
+);
+
+assert.match(
+  seasonAuthoritySource,
+  /Math\.floor\(date\.getUTCMonth\(\) \/ 3\)/,
+  'Canonical Moonpet season authority must use calendar-quarter pet season keys.',
 );
 
 assert.match(
   sanctuarySource,
-  /Math\.floor\(date\.getUTCMonth\(\) \/ 3\)/,
-  'Sanctuary current season filtering must match the slot season authority used by worker getPetSeasonInfo.',
+  /getMoonpetSeasonKey/,
+  'Sanctuary current season filtering must use the shared slot season authority.',
 );
 
 assert.doesNotMatch(
-  sanctuarySource,
+  `${seasonAuthoritySource}\n${sanctuarySource}`,
   /dayOfYear|Math\.floor\(dayOfYear \/ 90\)/,
-  'Sanctuary current season filtering must not use an independent 90-day key while slot creation uses quarters.',
+  'Moonpet season authority must not use an independent 90-day key while slot creation uses quarters.',
 );
 
 assert.match(

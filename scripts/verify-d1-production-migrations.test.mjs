@@ -13,6 +13,8 @@ const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_indexes\.sql/, 'migration 060 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/061_moonpet_season_economy_calibration\.sql/, 'migration 061 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/062_moonpet_evolution_stage_5\.sql/, 'migration 062 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/063_arcade_xp_spendable_wallet\.sql/, 'migration 063 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/064_moonpet_beta_runtime_cutover\.sql/, 'migration 064 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/065_moonpet_reward_pet_id_authority\.sql/, 'migration 065 changes must trigger production migration verification');
@@ -54,6 +56,8 @@ assert.match(
 );
 assert.match(remoteQueryStep, /059_telegram_pet_sanctuary\.sql/, 'the workflow_dispatch D1 query must request migration 059 from production');
 assert.match(remoteQueryStep, /060_telegram_pet_sanctuary_indexes\.sql/, 'the workflow_dispatch D1 query must request migration 060 from production');
+assert.match(remoteQueryStep, /061_moonpet_season_economy_calibration\.sql/, 'the workflow_dispatch D1 query must request migration 061 from production');
+assert.match(remoteQueryStep, /062_moonpet_evolution_stage_5\.sql/, 'the workflow_dispatch D1 query must request migration 062 from production');
 assert.match(remoteQueryStep, /063_arcade_xp_spendable_wallet\.sql/, 'the workflow_dispatch D1 query must request migration 063 from production');
 assert.match(remoteQueryStep, /064_moonpet_beta_runtime_cutover\.sql/, 'the workflow_dispatch D1 query must request migration 064 from production');
 assert.match(remoteQueryStep, /065_moonpet_reward_pet_id_authority\.sql/, 'the workflow_dispatch D1 query must request migration 065 from production');
@@ -208,6 +212,24 @@ const withoutArcadeXpSpendableWallet = {
   ...request,
   required_migrations: request.required_migrations.filter((name) => name !== '063_arcade_xp_spendable_wallet.sql'),
 };
+const withoutMoonpetSeasonEconomyCalibration = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '061_moonpet_season_economy_calibration.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutMoonpetSeasonEconomyCalibration),
+  /missing required migrations: 061_moonpet_season_economy_calibration\.sql/,
+  'deployment verification must reject an evidence request that omits migration 061',
+);
+const withoutMoonpetEvolutionStage5 = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '062_moonpet_evolution_stage_5.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutMoonpetEvolutionStage5),
+  /missing required migrations: 062_moonpet_evolution_stage_5\.sql/,
+  'deployment verification must reject an evidence request that omits migration 062',
+);
 assert.throws(
   () => validateRequest(withoutArcadeXpSpendableWallet),
   /missing required migrations: 063_arcade_xp_spendable_wallet\.sql/,
@@ -354,6 +376,24 @@ assert.throws(
   }], request),
   /missing migrations: 056_telegram_pet_instance_state\.sql/,
   'deployment verification must fail when production D1 has not applied migration 056',
+);
+
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '061_moonpet_season_economy_calibration.sql'),
+  }], request),
+  /missing migrations: 061_moonpet_season_economy_calibration\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 061',
+);
+
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '062_moonpet_evolution_stage_5.sql'),
+  }], request),
+  /missing migrations: 062_moonpet_evolution_stage_5\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 062',
 );
 
 assert.throws(

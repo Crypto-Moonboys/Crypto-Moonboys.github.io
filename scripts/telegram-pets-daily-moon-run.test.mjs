@@ -9,6 +9,7 @@ import {
   generateDailyMoonRunSeed,
   getDailyMoonRunAnalytics,
   getDailyMoonRunLeaderboard,
+  getDailySeasonId,
   processDailyMoonRunStep,
   recordDailyCareChallenge,
   syncDailyMoonRun,
@@ -24,6 +25,8 @@ import {
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql', import.meta.url), 'utf8');
 const dailySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/daily-moon-run.js', import.meta.url), 'utf8');
+const rogueliteSource = fs.readFileSync(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
+const seasonAuthoritySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/season-authority.js', import.meta.url), 'utf8');
 const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const challenges = JSON.parse(fs.readFileSync(new URL('../workers/moonboys-api/pets/content/daily-challenges.json', import.meta.url), 'utf8'));
 
@@ -117,6 +120,12 @@ assert.doesNotMatch(migration, /(?:pet_xp|community_xp|moon_gold|moon_crystals|s
 assert.doesNotMatch(dailySource, /UPDATE\s+telegram_pet_(?:profiles|inventory|evolutions|personality_traits|memories)/i,
   'daily retention code cannot write protected progression authorities directly');
 assert.doesNotMatch(dailySource, /awardPetReward\s*\(/, 'daily tracking cannot create a direct reward path');
+assert.match(dailySource, /getMoonpetSeasonKey/, 'Daily Moon Run must use the canonical Moonpet season key helper');
+assert.match(rogueliteSource, /getMoonpetSeasonKey\(now\)/, 'reward settlement fallback must use the canonical Moonpet season key helper');
+assert.doesNotMatch(`${dailySource}\n${rogueliteSource}`, /dayOfYear|Math\.floor\(dayOfYear \/ 90\)/,
+  'Moonpet runtime paths must not recreate independent 90-day season keys');
+assert.match(seasonAuthoritySource, /Math\.floor\(date\.getUTCMonth\(\) \/ 3\)/,
+  'canonical Moonpet season authority must remain UTC calendar-quarter based');
 const dailyStepRoute = workerSource.slice(workerSource.indexOf("body.action === 'run_step'"), workerSource.indexOf("body.action === 'run_extract'"));
 assert.match(dailyStepRoute, /getDailyMoonRunReservation/, 'run_step must identify daily reservations before choosing an engine');
 assert.match(dailyStepRoute, /processDailyMoonRunStep/, 'daily run_step must route through the roguelite room adapter');
@@ -147,6 +156,13 @@ assert.deepEqual(sameSeedA, sameSeedB, 'same UTC day must produce the same globa
 assert.notEqual(sameSeedA.seed, nextSeed.seed, 'different UTC days must produce new seeds');
 assert.match(sameSeedA.seed, /^2026-08-11-\d+$/);
 await assert.rejects(() => generateDailyMoonRunSeed('2026-02-31'), /invalid_daily_run_day/);
+assert.equal(getDailySeasonId('2026-03-31'), 'pet-s2026-001', 'Daily Moon Run must keep March 31 in Q1');
+assert.equal(getDailySeasonId('2026-04-01'), 'pet-s2026-002', 'Daily Moon Run must switch to Q2 on April 1 UTC');
+assert.equal(getDailySeasonId('2026-06-30'), 'pet-s2026-002', 'Daily Moon Run must keep June 30 in Q2');
+assert.equal(getDailySeasonId('2026-07-01'), 'pet-s2026-003', 'Daily Moon Run must switch to Q3 on July 1 UTC');
+assert.equal(getDailySeasonId('2026-09-30'), 'pet-s2026-003', 'Daily Moon Run must keep September 30 in Q3');
+assert.equal(getDailySeasonId('2026-10-01'), 'pet-s2026-004', 'Daily Moon Run must switch to Q4 on October 1 UTC');
+assert.equal(getDailySeasonId('2026-12-31'), 'pet-s2026-004', 'Daily Moon Run must never produce pet-sYYYY-005 at year end');
 
 const db = new D1();
 seedPlayer(db, 'daily-player');

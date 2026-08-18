@@ -11,6 +11,7 @@ import {
 } from './content/index.js';
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
+import { getMoonpetSeasonKey } from './season-authority.js';
 
 export {
   PET_ROGUELITE_BOSSES,
@@ -194,9 +195,7 @@ export async function awardPetReward(db, request = {}) {
   const weekYearStart = new Date(Date.UTC(weekDate.getUTCFullYear(), 0, 1));
   const week = Math.ceil((((weekDate - weekYearStart) / 86400000) + 1) / 7);
   const weekKey = String((reservationId && request.week_key) || `${weekDate.getUTCFullYear()}-W${String(week).padStart(2, '0')}`);
-  const yearStart = Date.UTC(now.getUTCFullYear(), 0, 1);
-  const dayOfYear = Math.floor((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - yearStart) / 86400000);
-  const seasonKey = String((reservationId && request.season_key) || `pet-s${now.getUTCFullYear()}-${String(Math.floor(dayOfYear / 90) + 1).padStart(3, '0')}`);
+  const seasonKey = String((reservationId && request.season_key) || getMoonpetSeasonKey(now));
   const authorization = getRewardAuthorization(source, telegramId, request.context);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();
