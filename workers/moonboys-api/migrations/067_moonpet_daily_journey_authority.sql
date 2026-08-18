@@ -46,3 +46,5 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_journey_objectives_pet_day
   ON telegram_pet_daily_journey_objectives(pet_id, season_key, utc_day, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_journey_receipts_pet_day
   ON telegram_pet_daily_journey_receipts(pet_id, season_key, utc_day, status);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_journey_receipts_event_status
+  ON telegram_pet_daily_journey_receipts(event_key, status);

@@ -1400,6 +1400,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_challenges_day ON telegram_pet
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_challenge_events_owner ON telegram_pet_daily_challenge_events(telegram_id, utc_day, created_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_journey_objectives_pet_day ON telegram_pet_daily_journey_objectives(pet_id, season_key, utc_day, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_journey_receipts_pet_day ON telegram_pet_daily_journey_receipts(pet_id, season_key, utc_day, status);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_journey_receipts_event_status ON telegram_pet_daily_journey_receipts(event_key, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_analytics_day ON telegram_pet_daily_analytics(utc_day, event_type, created_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_runs_pet_day ON telegram_pet_daily_runs(pet_id, utc_day);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_analytics_pet ON telegram_pet_daily_analytics(pet_id, utc_day, created_at);
