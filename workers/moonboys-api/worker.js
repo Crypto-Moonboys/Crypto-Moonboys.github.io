@@ -3034,21 +3034,23 @@ async function getPetProfile(db, telegramId) {
     SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
   `).bind(telegramId).first().catch(() => null);
   if (!instance) return profile ? applyPetDecay(profile) : null;
+  const wallet = profile ? pickPetAccountWallet(profile) : null;
 
   if (profile && petStateColumnsDiffer(profile, instance)) {
     const profileUpdatedAt = petStateTimestamp(profile.updated_at);
     const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
     const instanceUpdatedAt = petStateTimestamp(instance.updated_at);
     const hasInstanceAuthority = instance.source_profile_updated_at === PET_INSTANCE_AUTHORITY_VERSION;
+    if (hasInstanceAuthority) return applyPetDecay({ ...instance, ...wallet });
     const profileIsNewer = !hasInstanceAuthority && (profileUpdatedAt > instanceProfileVersion
       || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion));
     if (profileIsNewer) {
       await writeActivePetInstance(db, telegramId, profile);
-      return applyPetDecay({ ...instance, ...profile, pet_id: instance.pet_id });
+      return applyPetDecay({ ...instance, ...profile, ...wallet, pet_id: instance.pet_id });
     }
     await mirrorActivePetInstanceToProfile(db, instance);
   }
-  return applyPetDecay(instance);
+  return applyPetDecay({ ...instance, ...wallet });
 }
 
 async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
@@ -3058,7 +3060,8 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   if (instance) {
     const current = await getPetInstanceWithAtomicDecay(db, instance.pet_id, now);
     if (current) await mirrorActivePetInstanceToProfile(db, current);
-    return current;
+    const wallet = await readPetAccountWallet(db, telegramId);
+    return wallet && current ? { ...current, ...wallet } : current;
   }
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const stored = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
@@ -3122,11 +3125,11 @@ async function getPetInstanceWithAtomicDecay(db, petId, now = new Date()) {
 
 const PET_INSTANCE_STATE_COLUMNS = Object.freeze([
   'pet_name', 'species', 'stage', 'pet_xp', 'level', 'hunger', 'happiness',
-  'cleanliness', 'energy', 'health', 'streak_days', 'moon_gold', 'moon_crystals',
-  'style_tokens', 'equipped_food', 'equipped_toy', 'equipped_outfit',
+  'cleanliness', 'energy', 'health', 'streak_days', 'equipped_food', 'equipped_toy', 'equipped_outfit',
   'equipped_armor', 'equipped_weapon', 'equipped_charm', 'last_active_day',
   'last_decay_at',
 ]);
+const PET_ACCOUNT_WALLET_COLUMNS = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
 const PET_INSTANCE_AUTHORITY_VERSION = '0001-01-01 00:00:00';
 
 function isPetInstanceSchemaUnavailable(error) {
@@ -3152,6 +3155,16 @@ function formatPetStateTimestamp(value = new Date()) {
 
 function petStateColumnsDiffer(left, right) {
   return PET_INSTANCE_STATE_COLUMNS.some((column) => (left?.[column] ?? null) !== (right?.[column] ?? null));
+}
+
+function pickPetAccountWallet(row) {
+  return Object.fromEntries(PET_ACCOUNT_WALLET_COLUMNS.map((column) => [column, clampPetCurrency(row?.[column])]));
+}
+
+async function readPetAccountWallet(db, telegramId) {
+  const profile = await db.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?`)
+    .bind(telegramId).first().catch(() => null);
+  return profile ? pickPetAccountWallet(profile) : null;
 }
 
 async function findActivePetSlot(db, telegramId) {

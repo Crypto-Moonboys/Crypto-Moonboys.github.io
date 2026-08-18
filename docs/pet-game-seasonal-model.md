@@ -37,6 +37,8 @@ Higher costs such as 10,000 Arcade XP for Pet 2 and 25,000 Arcade XP for Pet 3 m
 
 This isolation does not make every progression system pet-owned. Seasonal XP, seasonal tiers, leaderboard progression, and other systems explicitly defined at account level remain shared account seasonal state. Implementations and public copy must distinguish pet-instance records from account seasonal records instead of implying that all XP, rewards, or progression are independent per pet.
 
+Season 1 ownership split: Pet XP, pet needs/stats, lifecycle, evolution, Growth Marks, Weekly Crests, and later pet memories/traits/history are pet-owned. Moon Gold, Moon Crystals, Style Tokens, materials, inventory ownership, cosmetics, and spendable Arcade XP are account-owned. Switching the active pet must not redirect Pet XP, and it must not fragment or hide account wallet balances.
+
 ## Legendary completion
 
 **IN DEVELOPMENT.** A seasonal Moonpet's Legendary target is:

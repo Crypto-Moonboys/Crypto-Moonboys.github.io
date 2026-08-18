@@ -57,31 +57,42 @@ db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,s
 db.database.prepare("UPDATE telegram_pet_profiles SET updated_at='2026-08-17 12:00:00' WHERE telegram_id='owner'").run();
 db.database.prepare("UPDATE telegram_pet_instances SET source_profile_updated_at='2026-08-17 12:00:00',updated_at='2026-08-17 12:00:00' WHERE pet_id='pet-a'").run();
 
-const request = { telegram_id: 'owner', pet_id: 'pet-a', source: 'pet_job', idempotency_key: 'immutable-claim', rewards: { pet_xp: 40, moon_gold: 7 }, now: '2026-08-17T12:00:00Z' };
+const request = { telegram_id: 'owner', pet_id: 'pet-a', source: 'pet_job', idempotency_key: 'immutable-claim', rewards: { pet_xp: 40, moon_gold: 7, moon_crystals: 2, style_tokens: 3 }, now: '2026-08-17T12:00:00Z' };
 // Switching the compatibility selector before settlement cannot redirect it.
 db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-b'").run();
 const first = await awardPetReward(db, request);
 const retry = await awardPetReward(db, request);
 assert.equal(first.accepted, true, 'pet-authority reward must settle');
 assert.equal(retry.duplicate, true, 'duplicate reward retry must be idempotent');
-assert.deepEqual(db.database.prepare("SELECT pet_id,pet_xp,moon_gold FROM telegram_pet_instances WHERE telegram_id='owner' ORDER BY pet_id").all().map((row) => ({ ...row })), [
-  { pet_id: 'pet-a', pet_xp: 40, moon_gold: 7 },
-  { pet_id: 'pet-b', pet_xp: 0, moon_gold: 0 },
+assert.deepEqual(db.database.prepare("SELECT pet_id,pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_instances WHERE telegram_id='owner' ORDER BY pet_id").all().map((row) => ({ ...row })), [
+  { pet_id: 'pet-a', pet_xp: 40, moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+  { pet_id: 'pet-b', pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
 ]);
-assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='owner'").get().pet_xp, 0,
-  'compatibility profile must remain read-only for pet-authority settlement');
+assert.deepEqual({ ...db.database.prepare("SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'").get() },
+  { pet_xp: 0, moon_gold: 7, moon_crystals: 2, style_tokens: 3 },
+  'compatibility profile is the account wallet authority; pet XP remains on the participating pet');
 assert.deepEqual({ ...db.database.prepare("SELECT pet_id,status FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get() }, { pet_id: 'pet-a', status: 'awarded' });
+assert.deepEqual({ ...db.database.prepare("SELECT pet_id,pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='owner'").get() },
+  { pet_id: 'pet-a', pet_xp_awarded: 40 },
+  'reward events keep the participating pet_id');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get().count, 1);
 const claimMetadata = JSON.parse(db.database.prepare("SELECT metadata FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get().metadata);
 assert.equal(claimMetadata.idempotency_key, 'immutable-claim', 'claims must retain the full settlement metadata');
-assert.deepEqual(claimMetadata.requested, { pet_xp: 40, community_xp: 0, moon_gold: 7, moon_crystals: 0, style_tokens: 0, materials: {}, items: {}, relics: {} });
+assert.deepEqual(claimMetadata.requested, { pet_xp: 40, community_xp: 0, moon_gold: 7, moon_crystals: 2, style_tokens: 3, materials: {}, items: {}, relics: {} });
 
 // Immediate compatibility reconciliation must see the direct instance write as
 // newer even when the pre-settlement profile/instance timestamps were equal.
 db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-a'").run();
 await getPetProfile(db, 'owner');
-assert.deepEqual({ ...db.database.prepare("SELECT pet_xp,moon_gold FROM telegram_pet_instances WHERE pet_id='pet-a'").get() },
-  { pet_xp: 40, moon_gold: 7 }, 'profile reconciliation must not overwrite an instance-authority reward');
+assert.deepEqual({ ...db.database.prepare("SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_instances WHERE pet_id='pet-a'").get() },
+  { pet_xp: 40, moon_gold: 0, moon_crystals: 0, style_tokens: 0 }, 'profile reconciliation must not overwrite an instance-authority reward or mirror wallet state into it');
+db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-b'").run();
+const petBView = await getPetProfile(db, 'owner');
+assert.deepEqual({ pet_id: petBView.pet_id, pet_xp: petBView.pet_xp, moon_gold: petBView.moon_gold, moon_crystals: petBView.moon_crystals, style_tokens: petBView.style_tokens },
+  { pet_id: 'pet-b', pet_xp: 0, moon_gold: 7, moon_crystals: 2, style_tokens: 3 },
+  'switching active pets cannot redirect Pet XP or hide the account-owned wallet');
+assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-b'").get().pet_xp, 0,
+  'Pet B cannot mutate or inherit Pet A Pet XP');
 
 const wrongOwner = await awardPetReward(db, { ...request, pet_id: 'pet-other', idempotency_key: 'wrong-owner' });
 assert.equal(wrongOwner.accepted, false, 'a persisted pet owned by another player must fail closed');

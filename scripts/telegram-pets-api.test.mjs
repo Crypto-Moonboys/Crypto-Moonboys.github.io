@@ -2223,8 +2223,13 @@ assert.equal(terminalRaceDb.database.prepare("SELECT COUNT(*) AS count FROM tele
   'concurrent extract and room callbacks must produce exactly one terminal reward claim');
 assert.deepEqual(
   { ...terminalRaceDb.database.prepare("SELECT pet_xp, moon_gold, moon_crystals, style_tokens FROM telegram_pet_instances WHERE pet_id = ?").get(terminalRacePet.pet_id) },
-  { pet_xp: 30, moon_gold: 12, moon_crystals: 1, style_tokens: 2 },
-  'concurrent extract and room callbacks must award only the atomically claimed snapshot',
+  { pet_xp: 30, moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+  'concurrent extract and room callbacks must award Pet XP only to the atomically claimed pet',
+);
+assert.deepEqual(
+  { ...terminalRaceDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = 'terminal-race'").get() },
+  { moon_gold: 12, moon_crystals: 1, style_tokens: 2 },
+  'concurrent extract and room callbacks must award wallet currencies to the account authority',
 );
 
 
@@ -2289,8 +2294,13 @@ const duplicateTerminal = await processPetRunExtract(terminalRecoveryDb, 'termin
 assert.equal(duplicateTerminal.duplicate, true, 'a settled terminal callback must remain idempotent');
 assert.deepEqual(
   { ...terminalRecoveryDb.database.prepare("SELECT pet_xp, moon_gold FROM telegram_pet_instances WHERE pet_id = ?").get(terminalRecoveryPet.pet_id) },
-  { pet_xp: 24, moon_gold: 9 },
-  'terminal reward recovery and duplicate callbacks must award the snapshot exactly once',
+  { pet_xp: 24, moon_gold: 0 },
+  'terminal reward recovery and duplicate callbacks must award Pet XP to the run pet exactly once',
+);
+assert.deepEqual(
+  { ...terminalRecoveryDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'terminal-recovery'").get() },
+  { moon_gold: 9 },
+  'terminal reward recovery and duplicate callbacks must award wallet currency to the account exactly once',
 );
 
 function repeatRewardSnapshot(db, telegramId, mode) {
