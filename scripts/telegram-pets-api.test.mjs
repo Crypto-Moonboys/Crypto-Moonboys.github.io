@@ -738,6 +738,11 @@ assert.ok(award.includes('INSERT INTO telegram_xp_log'), 'Community XP helper mu
 assert.ok(award.includes('UPDATE telegram_users'), 'Community XP helper must update telegram_users');
 assert.ok(award.includes('INSERT INTO telegram_leaderboard'), 'Community XP helper must upsert active leaderboard rows');
 assert.ok(award.includes('ON CONFLICT(telegram_id, season_id)'), 'leaderboard write must be idempotent per user/season');
+assert.ok(worker.includes('function accountWalletRecoveryResolvedSql'), 'account wallet writes must share the recovery-pending freeze predicate');
+assert.ok(worker.includes('PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE') && worker.includes('PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE'),
+  'account wallet recovery freeze must use shared reconciliation marker constants');
+assert.ok(worker.includes("reason: 'wallet_reconciliation_recovery_pending'"),
+  'wallet mutation paths must return a structured recovery-pending freeze reason');
 
 const petAction = asyncBlock('processPetAction');
 assert.ok(petAction.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'pet action must apply Community XP daily cap');
@@ -765,6 +770,7 @@ assert.ok(!shopPurchase.includes('awardCommunityXp'), 'shop purchases must not a
 assert.ok(shopPurchase.includes("duplicate: true"), 'shop purchases must short-circuit duplicate event keys');
 assert.ok(shopPurchase.includes("reason: 'already_equipped'"), 'shop purchases must not charge again for already equipped upgrades');
 assert.ok(shopPurchase.includes("reason: 'not_enough_pet_currency'"), 'shop purchases must reject unaffordable shop buttons');
+assert.ok(shopPurchase.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'shop purchases must freeze wallet spends while historical recovery is pending');
 assertOrder(
   shopPurchase,
   'const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);',
@@ -810,6 +816,7 @@ assert.ok(dailyChest.includes("daily_chest"), 'daily chest must write daily_ches
 assert.ok(dailyChest.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'daily chest pet XP must check existing daily totals before awarding');
 assert.ok(dailyChest.includes('totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP'), 'daily chest must award 0 pet XP when the daily cap is already reached');
 assert.ok(dailyChest.includes('totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP'), 'daily chest must clamp pet XP against prior daily pet XP');
+assert.ok(dailyChest.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'daily chest must freeze wallet credits while historical recovery is pending');
 assertOrder(
   dailyChest,
   'const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);',
@@ -846,6 +853,7 @@ assert.ok(goldTrade.includes('telegram_pet_season_state'), 'gold trades must upd
 assert.ok(goldTrade.includes("xp_awarded: 0"), 'gold trades must not award Community XP');
 assert.ok(!goldTrade.includes('awardCommunityXp'), 'gold trades must not call the shared Community XP helper');
 assert.ok(goldTrade.includes("duplicate: true"), 'gold trades must short-circuit duplicate event keys');
+assert.ok(goldTrade.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'gold trades must freeze wallet transitions while historical recovery is pending');
 assertOrder(
   goldTrade,
   'const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);',
@@ -908,6 +916,7 @@ assert.ok(runStep.includes('const accountWallet = await readPetAccountWallet(db,
 assert.ok(runStep.includes('getUnaffordablePetRunCosts(pet, outcome.costs, accountWallet)'), 'run steps must validate rolled wallet costs against the account wallet before applying rewards');
 assert.ok(runStep.includes("reason: 'insufficient_run_cost'"), 'unaffordable run steps must be rejected with a clear reason');
 assert.ok(runStep.includes('accountWalletDeltaStatement(db, telegramId, walletCostDeltas'), 'accepted run steps must debit wallet costs through account-wallet CAS');
+assert.ok(runStep.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'run-step wallet costs must freeze while historical recovery is pending');
 assert.ok(runStep.includes("'run_item_use'"), 'accepted run steps must record consumed one-use run items');
 assert.ok(runStep.includes('consumed_item_key: outcome.consumed_item_key'), 'run item consumption metadata must preserve the consumed item key');
 assert.ok(runStep.includes("SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?"), 'run steps must short-circuit duplicate callbacks by event key');
@@ -1670,6 +1679,22 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   return db;
 }
 
+function insertWalletRecoveryRequired(db, telegramId) {
+  db.database.prepare(`
+    INSERT INTO telegram_pet_reward_claims
+      (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata)
+    VALUES (?, NULL, ?, 'wallet_reconciliation_recovery_required', 'moonpet_wallet_reconcile_recovery_required:v1', '2026-08-18', 'rejected', '{}', '{}', ?)
+  `).run(`recovery-required:${telegramId}`, telegramId, JSON.stringify({ outcome: 'recovery_required', reason: 'missing_wallet_snapshot' }));
+}
+
+function insertWalletReconciled(db, telegramId) {
+  db.database.prepare(`
+    INSERT INTO telegram_pet_reward_claims
+      (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata, awarded_at)
+    VALUES (?, NULL, ?, 'wallet_reconciliation', 'moonpet_wallet_reconcile:v1', '2026-08-18', 'awarded', '{}', '{}', ?, CURRENT_TIMESTAMP)
+  `).run(`wallet-reconciled:${telegramId}`, telegramId, JSON.stringify({ outcome: 'reconciled' }));
+}
+
 const seasonSlotRuntimeDb = seedRepeatRewardPlayer('season-slot-runtime');
 await ensurePetStarterSeasonSlot(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
 await __petMediaTestHooks.ensureActivePetInstance(seasonSlotRuntimeDb, 'season-slot-runtime');
@@ -1792,6 +1817,30 @@ assert.equal(insufficientPurchaseDb.database.prepare("SELECT moon_gold FROM tele
 assert.equal(insufficientPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-insufficient' AND event_key = 'callback:buy:insufficient' AND status = 'accepted'").get().count, 0,
   'insufficient shop purchase must not create an accepted receipt');
 
+const recoveryFreezePurchaseDb = seedRepeatRewardPlayer('purchase-recovery-freeze', 70);
+recoveryFreezePurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-recovery-freeze'").run();
+await ensurePetStarterSeasonSlot(recoveryFreezePurchaseDb, 'purchase-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezePurchaseDb, 'purchase-recovery-freeze');
+insertWalletRecoveryRequired(recoveryFreezePurchaseDb, 'purchase-recovery-freeze');
+const frozenPurchase = await processPetShopPurchase(recoveryFreezePurchaseDb, 'purchase-recovery-freeze', 'moon_kibble', { event_key: 'callback:buy:recovery-freeze', source: 'telegram_callback' });
+assert.equal(frozenPurchase.accepted, false, 'pending historical recovery must freeze shop wallet spends');
+assert.equal(frozenPurchase.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezePurchaseDb.database.prepare("SELECT moon_gold, equipped_food FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery-freeze'").get() },
+  { moon_gold: 100, equipped_food: null },
+  'frozen shop spend must not mutate account wallet or equipment state',
+);
+assert.equal(
+  recoveryFreezePurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='purchase-recovery-freeze' AND event_key='callback:buy:recovery-freeze'").get().count,
+  0,
+  'frozen shop spend must not create a receipt before recovery completes',
+);
+insertWalletReconciled(recoveryFreezePurchaseDb, 'purchase-recovery-freeze');
+const thawedPurchase = await processPetShopPurchase(recoveryFreezePurchaseDb, 'purchase-recovery-freeze', 'moon_kibble', { event_key: 'callback:buy:recovery-freeze', source: 'telegram_callback' });
+assert.equal(thawedPurchase.accepted, true, 'completed wallet reconciliation marker must unfreeze shop wallet spends');
+assert.equal(recoveryFreezePurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery-freeze'").get().moon_gold, 55,
+  'unfrozen shop spend must debit account wallet exactly once');
+
 function installAcceptedEventInsertRace(db, {
   telegramId,
   eventKey,
@@ -1913,6 +1962,84 @@ assert.deepEqual(
   { moon_gold: 150, pet_xp: 1 },
   'gold trade duplicate race result must include the persisted account-wallet debit and pet state',
 );
+
+const recoveryFreezeDailyDb = seedRepeatRewardPlayer('daily-recovery-freeze', 70);
+await ensurePetStarterSeasonSlot(recoveryFreezeDailyDb, 'daily-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezeDailyDb, 'daily-recovery-freeze');
+insertWalletRecoveryRequired(recoveryFreezeDailyDb, 'daily-recovery-freeze');
+const frozenDaily = await processPetDailyChest(recoveryFreezeDailyDb, 'daily-recovery-freeze', { event_key: 'callback:daily:recovery-freeze', source: 'telegram_callback' });
+assert.equal(frozenDaily.accepted, false, 'pending historical recovery must freeze daily wallet credits');
+assert.equal(frozenDaily.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezeDailyDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-recovery-freeze'").get() },
+  { moon_gold: 0, style_tokens: 0, pet_xp: 0 },
+  'frozen daily chest must not mutate account wallet or Pet XP state',
+);
+assert.equal(
+  recoveryFreezeDailyDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='daily-recovery-freeze' AND event_key='callback:daily:recovery-freeze'").get().count,
+  0,
+  'frozen daily chest must not create a receipt before recovery completes',
+);
+
+const recoveryFreezeActionDb = seedRepeatRewardPlayer('action-recovery-freeze', 70);
+await ensurePetStarterSeasonSlot(recoveryFreezeActionDb, 'action-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezeActionDb, 'action-recovery-freeze');
+insertWalletRecoveryRequired(recoveryFreezeActionDb, 'action-recovery-freeze');
+const frozenAction = await processPetAction(recoveryFreezeActionDb, 'action-recovery-freeze', 'feed', { event_key: 'callback:feed:recovery-freeze', source: 'telegram_callback' });
+assert.equal(frozenAction.accepted, false, 'pending historical recovery must freeze pet-action wallet credits');
+assert.equal(frozenAction.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezeActionDb.database.prepare("SELECT moon_gold, pet_xp, hunger FROM telegram_pet_profiles WHERE telegram_id='action-recovery-freeze'").get() },
+  { moon_gold: 0, pet_xp: 0, hunger: 25 },
+  'frozen pet action must not mutate account wallet or pet-owned state',
+);
+assert.equal(
+  recoveryFreezeActionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='action-recovery-freeze' AND event_key='callback:feed:recovery-freeze'").get().count,
+  0,
+  'frozen pet action must not create a receipt before recovery completes',
+);
+
+const recoveryFreezeRewardDb = seedRepeatRewardPlayer('reward-recovery-freeze', 70);
+await ensurePetStarterSeasonSlot(recoveryFreezeRewardDb, 'reward-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezeRewardDb, 'reward-recovery-freeze');
+const recoveryFreezePetId = recoveryFreezeRewardDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='reward-recovery-freeze'").get().pet_id;
+insertWalletRecoveryRequired(recoveryFreezeRewardDb, 'reward-recovery-freeze');
+const frozenPetIdReward = await awardPetReward(recoveryFreezeRewardDb, {
+  telegram_id: 'reward-recovery-freeze',
+  pet_id: recoveryFreezePetId,
+  source: 'pet_action',
+  idempotency_key: 'reward-recovery-freeze',
+  event_key: 'reward-recovery-freeze',
+  event_type: 'feed',
+  rewards: { moon_gold: 7, pet_xp: 5 },
+});
+assert.equal(frozenPetIdReward.accepted, false, 'pending historical recovery must freeze pet_id account-wallet rewards');
+assert.equal(frozenPetIdReward.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezeRewardDb.database.prepare("SELECT moon_gold, pet_xp FROM telegram_pet_profiles WHERE telegram_id='reward-recovery-freeze'").get() },
+  { moon_gold: 0, pet_xp: 0 },
+  'frozen pet_id reward must not mutate account wallet or compatibility profile Pet XP',
+);
+assert.equal(
+  recoveryFreezeRewardDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id = ?').get(recoveryFreezePetId).pet_xp,
+  0,
+  'frozen pet_id reward must not mutate pet-owned Pet XP',
+);
+insertWalletReconciled(recoveryFreezeRewardDb, 'reward-recovery-freeze');
+const thawedPetIdReward = await awardPetReward(recoveryFreezeRewardDb, {
+  telegram_id: 'reward-recovery-freeze',
+  pet_id: recoveryFreezePetId,
+  source: 'pet_action',
+  idempotency_key: 'reward-recovery-freeze',
+  event_key: 'reward-recovery-freeze',
+  event_type: 'feed',
+  rewards: { moon_gold: 7, pet_xp: 5 },
+});
+assert.equal(thawedPetIdReward.accepted, true, 'completed wallet reconciliation marker must unfreeze pet_id account-wallet rewards');
+assert.equal(recoveryFreezeRewardDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='reward-recovery-freeze'").get().moon_gold, 7,
+  'unfrozen pet_id reward must apply the account wallet credit exactly once');
+assert.equal(recoveryFreezeRewardDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id = ?').get(recoveryFreezePetId).pet_xp, 5,
+  'unfrozen pet_id reward must still apply Pet XP to the pet-owned instance');
 
 const purchaseRecoveryDb = seedRepeatRewardPlayer('purchase-recovery', 70);
 purchaseRecoveryDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-recovery'").run();
@@ -2563,6 +2690,33 @@ assert.equal(insufficientRunCost.db.database.prepare("SELECT moon_gold FROM tele
   'failed run-step wallet trade must not debit the account wallet');
 assert.equal(insufficientRunCost.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE telegram_id = 'run-wallet-insufficient'").get().count, 0,
   'failed run-step wallet trade must not write an accepted step receipt');
+
+const recoveryFreezeRunCost = await seedWalletCostRun('run-wallet-recovery-freeze', 100, 0);
+insertWalletRecoveryRequired(recoveryFreezeRunCost.db, 'run-wallet-recovery-freeze');
+const recoveryFreezeRunRandom = Math.random;
+Math.random = () => 0.99;
+let frozenRunCost;
+try {
+  frozenRunCost = await processPetRunStep(recoveryFreezeRunCost.db, 'run-wallet-recovery-freeze', recoveryFreezeRunCost.runId, 'trade', {
+    event_key: 'run-wallet-recovery-freeze-step', expected_step_index: recoveryFreezeRunCost.expectedStepIndex, source: 'account_wallet_run_cost_regression',
+  });
+} finally {
+  Math.random = recoveryFreezeRunRandom;
+}
+assert.equal(frozenRunCost.accepted, false, 'pending historical recovery must freeze Moon Run wallet costs');
+assert.equal(frozenRunCost.reason, 'wallet_reconciliation_recovery_pending');
+assert.equal(recoveryFreezeRunCost.db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'run-wallet-recovery-freeze'").get().moon_gold, 100,
+  'frozen run-step wallet cost must not debit the account wallet');
+assert.deepEqual(
+  { ...recoveryFreezeRunCost.db.database.prepare("SELECT depth, status FROM telegram_pet_runs WHERE telegram_id = 'run-wallet-recovery-freeze'").get() },
+  { depth: recoveryFreezeRunCost.expectedStepIndex - 1, status: 'active' },
+  'frozen run-step wallet cost must not advance run state',
+);
+assert.equal(
+  recoveryFreezeRunCost.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE telegram_id = 'run-wallet-recovery-freeze'").get().count,
+  0,
+  'frozen run-step wallet cost must not create a step receipt',
+);
 
 const runAtomicPersistenceFailure = await seedWalletCostRun('run-wallet-atomic-failure', 100, 0);
 runAtomicPersistenceFailure.db.failBatchOnSql(/UPDATE telegram_pet_instances SET pet_name = \?/);

@@ -3,8 +3,8 @@ export const PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY = 'moonpet_wallet_recon
 export const PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE = 'wallet_reconciliation';
 
 const PET_ACCOUNT_WALLET_MAX = 999999;
-const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE = 'wallet_reconciliation_recovery_required';
-const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY = 'moonpet_wallet_reconcile_recovery_required:v1';
+export const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE = 'wallet_reconciliation_recovery_required';
+export const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY = 'moonpet_wallet_reconcile_recovery_required:v1';
 const PET_ACCOUNT_WALLET_CURRENCIES = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
 
 function getPetDayKey(now = new Date()) {
@@ -234,6 +234,15 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
   return Boolean(marker);
 }
 
+async function hasPetAccountWalletRecoveryRequiredMarker(db, owner) {
+  const marker = await db.prepare(`
+    SELECT claim_id FROM telegram_pet_reward_claims
+    WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'rejected'
+    LIMIT 1
+  `).bind(owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY).first();
+  return Boolean(marker);
+}
+
 async function markPetAccountWalletRecoveryRequired(db, owner, reason, now = new Date()) {
   const markerId = crypto.randomUUID();
   const metadata = JSON.stringify({
@@ -274,8 +283,10 @@ export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = 
   if (!owner) return false;
   try {
     if (await hasPetAccountWalletReconciliationMarker(db, owner)) return false;
+    const recoveryRequired = await hasPetAccountWalletRecoveryRequiredMarker(db, owner);
     await assertReconciliationLedgerIsSafe(db, owner);
     const historicalRows = await readHistoricalWalletRows(db, owner);
+    if (recoveryRequired && historicalRows.length === 0) return false;
     let walletDeltas;
     try {
       walletDeltas = replayHistoricalWalletDeltas(historicalRows);
