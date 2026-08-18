@@ -3042,7 +3042,10 @@ async function getPetProfile(db, telegramId) {
     const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
     const instanceUpdatedAt = petStateTimestamp(instance.updated_at);
     const hasInstanceAuthority = instance.source_profile_updated_at === PET_INSTANCE_AUTHORITY_VERSION;
-    if (hasInstanceAuthority) return applyPetDecay({ ...instance, ...walletFields });
+    if (hasInstanceAuthority) {
+      await mirrorActivePetOwnedStateToProfile(db, instance);
+      return applyPetDecay({ ...instance, ...walletFields });
+    }
     const profileIsNewer = !hasInstanceAuthority && (profileUpdatedAt > instanceProfileVersion
       || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion));
     if (profileIsNewer) {
@@ -3059,7 +3062,6 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   await getPetProfile(db, telegramId);
   const instance = await readActivePetInstance(db, telegramId);
   if (instance) {
-    await reconcilePetInstanceWalletToProfile(db, telegramId, now);
     const current = await getPetInstanceWithAtomicDecay(db, instance.pet_id, now);
     if (current) await mirrorActivePetInstanceToProfile(db, current);
     const wallet = await readPetAccountWallet(db, telegramId);
@@ -3199,8 +3201,7 @@ async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Dat
       db.prepare(`UPDATE telegram_pet_profiles SET
           moon_gold = MIN(?, moon_gold + COALESCE((SELECT SUM(MAX(0, i.moon_gold - telegram_pet_profiles.moon_gold)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
           moon_crystals = MIN(?, moon_crystals + COALESCE((SELECT SUM(MAX(0, i.moon_crystals - telegram_pet_profiles.moon_crystals)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
-          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(MAX(0, i.style_tokens - telegram_pet_profiles.style_tokens)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
-          updated_at = CURRENT_TIMESTAMP
+          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(MAX(0, i.style_tokens - telegram_pet_profiles.style_tokens)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0))
         WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND event_key = ?)`)
         .bind(PET_ACCOUNT_WALLET_MAX, owner, PET_INSTANCE_AUTHORITY_VERSION, PET_ACCOUNT_WALLET_MAX, owner, PET_INSTANCE_AUTHORITY_VERSION, PET_ACCOUNT_WALLET_MAX, owner, PET_INSTANCE_AUTHORITY_VERSION,
           owner, markerId, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY),
@@ -3299,6 +3300,19 @@ async function mirrorActivePetInstanceToProfile(db, pet) {
     .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), mirroredAt, pet.telegram_id).run();
   await db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at = ? WHERE pet_id = ?`)
     .bind(mirroredAt, pet.pet_id).run();
+  return true;
+}
+
+async function mirrorActivePetOwnedStateToProfile(db, pet) {
+  const profile = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(pet.telegram_id).first().catch(() => null);
+  if (!profile || !petStateColumnsDiffer(profile, pet)) return false;
+  const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
+  // This is only a compatibility mirror so profile-only reward code can start
+  // from the active sentinel pet state. Do not bump updated_at: that timestamp
+  // is used for profile-vs-instance freshness and would let one pet's mirror
+  // overwrite another active pet after a switch.
+  await db.prepare(`UPDATE telegram_pet_profiles SET ${assignments} WHERE telegram_id = ?`)
+    .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), pet.telegram_id).run();
   return true;
 }
 

@@ -71,6 +71,8 @@ assert.deepEqual(db.database.prepare("SELECT pet_id,pet_xp,moon_gold,moon_crysta
 assert.deepEqual({ ...db.database.prepare("SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'").get() },
   { pet_xp: 0, moon_gold: 7, moon_crystals: 2, style_tokens: 3 },
   'compatibility profile is the account wallet authority; pet XP remains on the participating pet');
+assert.equal(db.database.prepare("SELECT updated_at FROM telegram_pet_profiles WHERE telegram_id='owner'").get().updated_at, '2026-08-17 12:00:00',
+  'pet-authority wallet settlement must not bump compatibility profile updated_at for wallet-only changes');
 assert.deepEqual({ ...db.database.prepare("SELECT pet_id,status FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get() }, { pet_id: 'pet-a', status: 'awarded' });
 assert.deepEqual({ ...db.database.prepare("SELECT pet_id,pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='owner' AND event_key='pet_reward:pet_job:immutable-claim'").get() },
   { pet_id: 'pet-a', pet_xp_awarded: 40 },
@@ -86,6 +88,8 @@ db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-a'").run()
 await getPetProfile(db, 'owner');
 assert.deepEqual({ ...db.database.prepare("SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_instances WHERE pet_id='pet-a'").get() },
   { pet_xp: 40, moon_gold: 0, moon_crystals: 0, style_tokens: 0 }, 'profile reconciliation must not overwrite an instance-authority reward or mirror wallet state into it');
+assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='owner'").get().pet_xp, 40,
+  'sentinel pet-owned state must be mirrored into the compatibility profile before profile-only reward paths use it');
 db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-b'").run();
 const petBView = await getPetProfile(db, 'owner');
 assert.deepEqual({ pet_id: petBView.pet_id, pet_xp: petBView.pet_xp, moon_gold: petBView.moon_gold, moon_crystals: petBView.moon_crystals, style_tokens: petBView.style_tokens },
@@ -93,6 +97,35 @@ assert.deepEqual({ pet_id: petBView.pet_id, pet_xp: petBView.pet_xp, moon_gold: 
   'switching active pets cannot redirect Pet XP or hide the account-owned wallet');
 assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-b'").get().pet_xp, 0,
   'Pet B cannot mutate or inherit Pet A Pet XP');
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-bridge',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,updated_at) VALUES ('legacy-bridge',0,1,0,'2026-08-16 00:00:00')").run();
+seedPet('legacy-bridge', 'legacy-bridge-a', 1);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('legacy-bridge','legacy-bridge-a','pet-s2026-003')").run();
+db.database.prepare("UPDATE telegram_pet_instances SET pet_xp=40, level=1, source_profile_updated_at='0001-01-01 00:00:00', updated_at='2026-08-17 00:00:00' WHERE pet_id='legacy-bridge-a'").run();
+const legacyBridge = await awardPetReward(db, { telegram_id: 'legacy-bridge', source: 'pet_job', idempotency_key: 'legacy-bridge-reward', rewards: { pet_xp: 10 }, now: '2026-08-17T12:00:00Z' });
+assert.equal(legacyBridge.accepted, true, 'legacy/profile reward path must still settle');
+assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='legacy-bridge-a'").get().pet_xp, 50,
+  'sentinel instance Pet XP 40 plus legacy/profile reward 10 must mirror back as 50, not overwrite to 10');
+assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='legacy-bridge'").get().pet_xp, 50,
+  'compatibility profile must use the fresh sentinel pet-owned mirror as the legacy settlement base');
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('wallet-timestamp',0,1)").run();
+db.database.prepare(`INSERT INTO telegram_pet_profiles
+  (telegram_id,pet_name,species,stage,pet_xp,level,hunger,happiness,cleanliness,energy,health,streak_days,last_active_day,last_decay_at,moon_gold,moon_crystals,style_tokens,updated_at)
+  VALUES ('wallet-timestamp','Moonpet','', 'egg',0,1,25,70,70,70,75,0,NULL,CURRENT_TIMESTAMP,100,10,20,'2026-08-15 01:02:03')`).run();
+seedPet('wallet-timestamp', 'wallet-timestamp-a', 1);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('wallet-timestamp','wallet-timestamp-a','pet-s2026-003')").run();
+db.database.prepare(`UPDATE telegram_pet_instances SET
+  pet_name='Moonpet', species='', stage='egg', pet_xp=0, level=1, hunger=25, happiness=70, cleanliness=70, energy=70, health=75, streak_days=0,
+  moon_gold=107, moon_crystals=12, style_tokens=24, source_profile_updated_at='0001-01-01 00:00:00', updated_at='2026-08-17 00:00:00'
+  WHERE pet_id='wallet-timestamp-a'`).run();
+await getPetProfile(db, 'wallet-timestamp');
+assert.deepEqual(
+  { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens,updated_at FROM telegram_pet_profiles WHERE telegram_id='wallet-timestamp'").get() },
+  { moon_gold: 107, moon_crystals: 12, style_tokens: 24, updated_at: '2026-08-15 01:02:03' },
+  'wallet-only reconciliation must not change telegram_pet_profiles.updated_at',
+);
 
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-wallet',0,1)").run();
 db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-wallet',0,1,100,10,20)").run();
@@ -112,8 +145,8 @@ assert.deepEqual(
 );
 assert.deepEqual(
   { ...db.database.prepare("SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet'").get() },
-  { pet_xp: 0, moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
-  'wallet reconciliation must not move Pet XP into the account profile',
+  { pet_xp: 88, moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
+  'wallet reconciliation must not copy account wallet into the pet-owned instance while sentinel pet-owned fields mirror for compatibility',
 );
 await getPetProfile(db, 'legacy-wallet');
 assert.deepEqual(

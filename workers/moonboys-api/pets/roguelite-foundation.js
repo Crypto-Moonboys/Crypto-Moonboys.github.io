@@ -152,8 +152,7 @@ async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Dat
       db.prepare(`UPDATE telegram_pet_profiles SET
           moon_gold = MIN(?, moon_gold + COALESCE((SELECT SUM(MAX(0, i.moon_gold - telegram_pet_profiles.moon_gold)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
           moon_crystals = MIN(?, moon_crystals + COALESCE((SELECT SUM(MAX(0, i.moon_crystals - telegram_pet_profiles.moon_crystals)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
-          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(MAX(0, i.style_tokens - telegram_pet_profiles.style_tokens)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
-          updated_at = CURRENT_TIMESTAMP
+          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(MAX(0, i.style_tokens - telegram_pet_profiles.style_tokens)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0))
         WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND event_key = ?)`)
         .bind(MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION, MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION, MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION,
           owner, markerId, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY),
@@ -321,8 +320,7 @@ export async function awardPetReward(db, request = {}) {
       ? db.prepare(`UPDATE telegram_pet_profiles SET
           moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)),
           moon_crystals = MIN(?, MAX(0, moon_crystals + ? - ?)),
-          style_tokens = MIN(?, MAX(0, style_tokens + ? - ?)),
-          updated_at = CURRENT_TIMESTAMP
+          style_tokens = MIN(?, MAX(0, style_tokens + ? - ?))
         WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
         .bind(MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens,
           telegramId, eventId, metadata)

@@ -43,6 +43,12 @@ assert.match(
   /CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_pet_owner_tuple\s+ON telegram_pet_season_slots\(pet_id, telegram_id, season_key, slot_number\)/,
   'migration 056 must provide a unique parent key for the complete pet ownership tuple',
 );
+const atomicDecaySource = worker.slice(worker.indexOf('async function getPetProfileWithAtomicDecay'), worker.indexOf('async function getPetInstanceWithAtomicDecay'));
+assert.equal(
+  (atomicDecaySource.match(/reconcilePetInstanceWalletToProfile/g) || []).length,
+  0,
+  'getPetProfileWithAtomicDecay must rely on getPetProfile reconciliation and not repeat the wallet hot-path batch',
+);
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
 const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
 const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);
