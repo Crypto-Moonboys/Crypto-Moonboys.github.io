@@ -57,8 +57,8 @@ assert.equal((rogueliteFoundation.match(/async function reconcilePetInstanceWall
   'roguelite-foundation.js must import the shared wallet reconciliation helper instead of duplicating it');
 assert.match(walletReconciliation, /source = \? AND idempotency_key = \?/,
   'wallet reconciliation marker must stay in private reward claims, not public pet events');
-assert.doesNotMatch(walletReconciliation, /JOIN\s+telegram_pet_instances/i,
-  'wallet reconciliation eligibility must come from persisted claim/event ledger evidence, not current instance state');
+assert.match(walletReconciliation, /LEFT JOIN telegram_pet_instances/,
+  'wallet reconciliation may use current instance wallet only as an optional terminal balance for old claims without snapshots');
 assert.match(walletReconciliation, /WHERE e\.telegram_id = c\.telegram_id\s+AND e\.pet_id = c\.pet_id\s+AND e\.status = 'accepted'\s+AND e\.metadata = c\.metadata/,
   'wallet reconciliation must prove historical pet-id wallet transitions from accepted event evidence');
 assert.match(walletReconciliation, /accepted_pet_id_reward_claim_ledger/,

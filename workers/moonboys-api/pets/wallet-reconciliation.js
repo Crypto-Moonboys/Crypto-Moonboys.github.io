@@ -47,25 +47,38 @@ function nestedWalletValue(object, key, currency) {
   return value === undefined || value === null ? null : clampWallet(value);
 }
 
+function rowWalletSnapshotIfComplete(row) {
+  const metadata = parseJsonObject(row.metadata, 'metadata');
+  let present = false;
+  const before = {};
+  const after = {};
+  for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
+    const beforeValue = nestedWalletValue(metadata, 'wallet_before', currency);
+    const afterValue = nestedWalletValue(metadata, 'wallet_after', currency);
+    if (beforeValue !== null || afterValue !== null) present = true;
+    before[currency] = beforeValue;
+    after[currency] = afterValue;
+  }
+  if (!present) return null;
+  return { before, after };
+}
+
 function walletStateKey(state) {
   return PET_ACCOUNT_WALLET_CURRENCIES.map((currency) => clampWallet(state[currency])).join(':');
 }
 
 function rowWalletSnapshot(row) {
-  const metadata = parseJsonObject(row.metadata, 'metadata');
-  const before = {};
-  const after = {};
+  const snapshot = rowWalletSnapshotIfComplete(row);
+  if (!snapshot) throw new Error(`moonpet_wallet_reconciliation_missing_wallet_snapshot:${row.claim_id}`);
   for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
-    before[currency] = nestedWalletValue(metadata, 'wallet_before', currency);
-    after[currency] = nestedWalletValue(metadata, 'wallet_after', currency);
-    if (before[currency] === null || after[currency] === null) {
+    if (snapshot.before[currency] === null || snapshot.after[currency] === null) {
       throw new Error(`moonpet_wallet_reconciliation_missing_wallet_snapshot:${row.claim_id}`);
     }
-    if (after[currency] !== clampWallet(before[currency] + walletClaimDelta(row, currency))) {
+    if (snapshot.after[currency] !== clampWallet(snapshot.before[currency] + walletClaimDelta(row, currency))) {
       throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
     }
   }
-  return { before, after };
+  return snapshot;
 }
 
 function walletClaimDelta(row, currency) {
@@ -119,8 +132,15 @@ function orderRowsByWalletSnapshots(rows) {
 
 async function readHistoricalWalletRows(db, owner) {
   const statement = db.prepare(`
-    SELECT c.claim_id, c.pet_id, c.requested_rewards, c.applied_rewards, c.metadata, c.created_at, c.awarded_at
+    SELECT c.rowid AS settlement_sequence, c.claim_id, c.pet_id, c.requested_rewards, c.applied_rewards,
+           c.metadata, c.created_at, c.awarded_at,
+           i.moon_gold AS current_moon_gold, i.moon_crystals AS current_moon_crystals,
+           i.style_tokens AS current_style_tokens
     FROM telegram_pet_reward_claims c
+    LEFT JOIN telegram_pet_instances i
+      ON i.pet_id = c.pet_id
+     AND i.telegram_id = c.telegram_id
+     AND i.status IN ('active', 'retired', 'archived')
     WHERE c.telegram_id = ?
       AND c.pet_id IS NOT NULL
       AND c.status = 'awarded'
@@ -135,7 +155,7 @@ async function readHistoricalWalletRows(db, owner) {
           AND e.status = 'accepted'
           AND e.metadata = c.metadata
       )
-    ORDER BY c.pet_id, COALESCE(c.awarded_at, c.created_at), c.created_at
+    ORDER BY c.pet_id, c.rowid
   `).bind(owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE);
   if (typeof statement.all === 'function') {
     const rows = await statement.all();
@@ -178,24 +198,84 @@ async function assertReconciliationLedgerIsSafe(db, owner) {
   if (ambiguous) throw new Error('moonpet_wallet_reconciliation_ambiguous_ledger');
 }
 
+function currentWalletFromRow(row) {
+  const wallet = {};
+  for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
+    const value = row[`current_${currency}`];
+    if (value === undefined || value === null) return null;
+    wallet[currency] = clampWallet(value);
+  }
+  return wallet;
+}
+
+function replayMissingSnapshotRowsFromTerminal(rows, terminalWallet) {
+  if (!terminalWallet) throw new Error('moonpet_wallet_reconciliation_missing_wallet_snapshot');
+  const deltas = { moon_gold: 0, moon_crystals: 0, style_tokens: 0 };
+  let running = { ...terminalWallet };
+  for (const row of [...rows].reverse()) {
+    const snapshot = rowWalletSnapshotIfComplete(row);
+    if (snapshot) {
+      for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
+        if (snapshot.before[currency] === null || snapshot.after[currency] === null) {
+          throw new Error(`moonpet_wallet_reconciliation_missing_wallet_snapshot:${row.claim_id}`);
+        }
+        if (snapshot.after[currency] !== clampWallet(snapshot.before[currency] + walletClaimDelta(row, currency))) {
+          throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
+        }
+        if (running[currency] !== snapshot.after[currency]) {
+          throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
+        }
+        deltas[currency] += snapshot.after[currency] - snapshot.before[currency];
+        running[currency] = snapshot.before[currency];
+      }
+      continue;
+    }
+    for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
+      const delta = walletClaimDelta(row, currency);
+      if (delta > 0 && running[currency] === PET_ACCOUNT_WALLET_MAX) {
+        throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
+      }
+      if (delta < 0 && running[currency] === 0) {
+        throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
+      }
+      const before = running[currency] - delta;
+      if (before < 0 || before > PET_ACCOUNT_WALLET_MAX) {
+        throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
+      }
+      deltas[currency] += delta;
+      running[currency] = before;
+    }
+  }
+  return deltas;
+}
+
 function replayHistoricalWalletDeltas(rows) {
   const byPet = new Map();
   for (const row of rows) {
     const hasWalletDelta = PET_ACCOUNT_WALLET_CURRENCIES.some((currency) => walletClaimDelta(row, currency) !== 0);
     if (!hasWalletDelta) continue;
-    const snapshot = rowWalletSnapshot(row);
-    const hasAppliedWalletMovement = PET_ACCOUNT_WALLET_CURRENCIES.some((currency) => snapshot.before[currency] !== snapshot.after[currency]);
-    if (!hasAppliedWalletMovement) continue;
+    const snapshot = rowWalletSnapshotIfComplete(row);
+    if (snapshot) {
+      const hasAppliedWalletMovement = PET_ACCOUNT_WALLET_CURRENCIES.some((currency) => snapshot.before[currency] !== snapshot.after[currency]);
+      if (!hasAppliedWalletMovement) continue;
+    }
     if (!byPet.has(row.pet_id)) byPet.set(row.pet_id, []);
     byPet.get(row.pet_id).push(row);
   }
   const deltas = { moon_gold: 0, moon_crystals: 0, style_tokens: 0 };
   for (const petRows of byPet.values()) {
-    const orderedRows = orderRowsByWalletSnapshots(petRows);
-    for (const row of orderedRows) {
-      const snapshot = rowWalletSnapshot(row);
-      for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
-        deltas[currency] += snapshot.after[currency] - snapshot.before[currency];
+    petRows.sort((left, right) => Number(left.settlement_sequence || 0) - Number(right.settlement_sequence || 0));
+    const hasMissingSnapshot = petRows.some((row) => !rowWalletSnapshotIfComplete(row));
+    if (hasMissingSnapshot) {
+      const replayed = replayMissingSnapshotRowsFromTerminal(petRows, currentWalletFromRow(petRows[0]));
+      for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) deltas[currency] += replayed[currency];
+    } else {
+      const orderedRows = orderRowsByWalletSnapshots(petRows);
+      for (const row of orderedRows) {
+        const snapshot = rowWalletSnapshot(row);
+        for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
+          deltas[currency] += snapshot.after[currency] - snapshot.before[currency];
+        }
       }
     }
   }
@@ -214,12 +294,14 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
 // No migration is required for the PR #1224 -> #1228 wallet repair. The
 // existing reward-claim ledger is not used by the public activity feed, has a
 // unique owner/source/idempotency receipt, and lets us replay accepted
-// historical pet_id wallet credits and debits in settlement order. The current
-// profile balance, current instance rows, and current instance sentinel
-// timestamps are never used as a baseline or eligibility proof. If object-shaped
-// JSON metadata and before/after wallet snapshots cannot prove the exact
-// clamped order, reconciliation fails closed before committing the one-shot
-// marker.
+// historical pet_id wallet credits and debits in the durable claim row order.
+// Before/after wallet snapshots are used when present; older claims without
+// snapshots are replayed from the current terminal instance wallet only when
+// that proves no per-event cap/clamp ambiguity. The current profile balance,
+// current instance rows, and current instance sentinel timestamps are never used
+// as a baseline or eligibility proof. If object-shaped JSON, claim ordering,
+// snapshots, or terminal balances cannot prove the exact clamped order,
+// reconciliation fails closed before committing the one-shot marker.
 export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
   const owner = String(telegramId || '').trim();
   if (!owner) return false;
