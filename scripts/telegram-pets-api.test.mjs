@@ -2711,6 +2711,8 @@ assert.deepEqual(
 );
 assert.equal(concurrentSnackDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-concurrent-snack' AND event_type='use_item' AND status='accepted'").get().count, 2,
   'two concurrent moon snack uses must create two accepted receipts');
+assert.equal(concurrentSnackDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='use-item-concurrent-snack' AND source='pet_item_use' AND status='awarded'").get().count, 2,
+  'two concurrent moon snack uses must create two awarded reward-claim receipts');
 
 const concurrentMixedDb = seedRepeatRewardPlayer('use-item-concurrent-mixed', 70);
 await ensurePetStarterSeasonSlot(concurrentMixedDb, 'use-item-concurrent-mixed', new Date('2026-08-15T00:00:00Z'));
@@ -2740,6 +2742,10 @@ assert.deepEqual(
   { pet_xp: 110, hunger: 32, energy: 100 },
   'concurrent conflicting item uses must not lose XP or stat deltas',
 );
+assert.equal(concurrentMixedDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-concurrent-mixed' AND event_type='use_item' AND status='accepted'").get().count, 2,
+  'two concurrent conflicting item uses must create two accepted event receipts');
+assert.equal(concurrentMixedDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='use-item-concurrent-mixed' AND source='pet_item_use' AND status='awarded'").get().count, 2,
+  'two concurrent conflicting item uses must create two awarded reward-claim receipts');
 
 const switchItemDb = seedRepeatRewardPlayer('use-item-switch', 70);
 await ensurePetStarterSeasonSlot(switchItemDb, 'use-item-switch', new Date('2026-08-15T00:00:00Z'));
