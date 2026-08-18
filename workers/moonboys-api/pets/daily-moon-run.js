@@ -251,10 +251,6 @@ async function resolveDailyRunSeasonPet(db, telegramId, seasonKey) {
     ORDER BY CASE WHEN s.slot_number = 1 THEN 0 ELSE 1 END, s.slot_number, s.created_at LIMIT 1`)
     .bind(telegramId, seasonKey).first().catch(() => null);
   if (!currentSeasonPet) return { accepted: false, reason: 'daily_run_current_season_pet_required' };
-  await db.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
-    VALUES (?, ?, ?)
-    ON CONFLICT(telegram_id) DO UPDATE SET pet_id = excluded.pet_id, season_key = excluded.season_key, updated_at = CURRENT_TIMESTAMP`)
-    .bind(telegramId, currentSeasonPet.pet_id, seasonKey).run();
   return { accepted: true, pet_id: currentSeasonPet.pet_id, season_key: seasonKey, recovered: true };
 }
 
@@ -279,6 +275,7 @@ export async function createDailyMoonRun(db, request = {}) {
       seed: generated.run_seed,
       max_room: region.max_rooms,
       season_key: seasonId,
+      pet_id: seasonPet.pet_id,
     });
   }
   const authoritativeRun = await db.prepare(`SELECT * FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
@@ -634,13 +631,13 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
 export async function recordDailyCareChallenge(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const eventKey = String(request.event_key || '').trim();
-  const utcDay = String(request.utc_day || utcDayFromNow(request.now));
   if (!telegramId || !eventKey) throw new Error('invalid_daily_care_evidence');
-  if (!validUtcDay(utcDay)) throw new Error('invalid_daily_care_evidence');
   const evidence = await db.prepare(`SELECT pet_id, event_type, event_key, day_key FROM telegram_pet_events
-    WHERE telegram_id = ? AND event_key = ? AND day_key = ? AND status = 'accepted' LIMIT 1`)
-    .bind(telegramId, eventKey, utcDay).first().catch(() => null);
+    WHERE telegram_id = ? AND event_key = ? AND status = 'accepted' LIMIT 1`)
+    .bind(telegramId, eventKey).first().catch(() => null);
   if (!evidence || !CARE_ACTIONS.has(String(evidence.event_type))) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
+  const utcDay = String(evidence.day_key || '');
+  if (!validUtcDay(utcDay)) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
   return recordChallengeEvidence(db, {
     telegram_id: telegramId,
     pet_id: evidence.pet_id,

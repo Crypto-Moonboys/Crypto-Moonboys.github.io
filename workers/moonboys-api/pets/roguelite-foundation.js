@@ -467,6 +467,17 @@ async function resolveActiveRunPetId(db, telegramId) {
   return String(active?.pet_id || '').trim() || null;
 }
 
+async function resolveRequestedRunPetId(db, telegramId, petId, seasonKey) {
+  const requestedPetId = String(petId || '').trim();
+  if (!requestedPetId) return null;
+  const row = await db.prepare(`SELECT i.pet_id FROM telegram_pet_instances i
+    JOIN telegram_pet_season_slots s ON s.pet_id = i.pet_id AND s.telegram_id = i.telegram_id
+      AND s.season_key = i.season_key AND s.slot_number = i.slot_number
+    WHERE i.pet_id = ? AND i.telegram_id = ? AND i.season_key = ? AND i.status = 'active' AND s.status = 'active'
+    LIMIT 1`).bind(requestedPetId, telegramId, seasonKey).first().catch(() => null);
+  return String(row?.pet_id || '').trim() || null;
+}
+
 function requireRunPetId(run) {
   const petId = String(run?.pet_id || '').trim();
   if (!petId) throw new Error('run_pet_id_authority_missing');
@@ -488,11 +499,13 @@ export async function startPetRogueliteRun(db, request = {}) {
       difficulty: Math.max(1, Math.floor(Number(existingRun.difficulty) || 1)), seed: Math.floor(Number(existingRun.seed) || 0),
       max_room: Math.max(1, Math.floor(Number(existingRun.max_room) || 1)) };
   }
-  const petId = await resolveActiveRunPetId(db, telegramId);
-  if (!petId) throw new Error('active_pet_instance_not_found');
   const seed = Math.floor(Number(request.seed) || 0);
   const maxRoom = Math.max(1, Math.min(100, Math.floor(Number(request.max_room) || region.max_rooms || 10)));
   const seasonKey = String(request.season_key || `pet-s${new Date().getUTCFullYear()}-001`);
+  const petId = String(request.pet_id || '').trim()
+    ? await resolveRequestedRunPetId(db, telegramId, request.pet_id, seasonKey)
+    : await resolveActiveRunPetId(db, telegramId);
+  if (!petId) throw new Error('active_pet_instance_not_found');
   const analyticsId = `${runId}:start`;
   const results = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_runs

@@ -203,6 +203,9 @@ assert.equal(rolloverRun.daily_run.pet_id, rolloverCurrentPetId,
 assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_runs
   WHERE telegram_id=? AND season_key=? AND pet_id=?`).get(rolloverTelegramId, rolloverSeasonKey, rolloverOldPetId).count, 0,
   'season rollover must never persist a Daily Run with mismatched old-season pet_id and new season_key');
+assert.deepEqual({ ...rolloverDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_active_slots WHERE telegram_id=?`).get(rolloverTelegramId) },
+  { pet_id: rolloverOldPetId, season_key: previousSeasonKey },
+  'Daily Moon Run rollover must not bypass the state-safe active pet handoff by switching the active pointer directly');
 resolveDailyRun(rolloverDb, rolloverTelegramId, rolloverRun.daily_run.run_id);
 const rolloverSync = await syncDailyMoonRun(rolloverDb, {
   telegram_id: rolloverTelegramId,
