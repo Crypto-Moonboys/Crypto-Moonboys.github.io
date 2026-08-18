@@ -1,10 +1,10 @@
 export const PET_INSTANCE_AUTHORITY_VERSION = '0001-01-01 00:00:00';
 export const PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY = 'moonpet_wallet_reconcile:v1';
+export const PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE = 'wallet_reconciliation';
 
 const PET_ACCOUNT_WALLET_MAX = 999999;
-const PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE = 'wallet_reconciliation';
-const PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE = 'wallet_reconciliation_unrecoverable';
-const PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY = 'moonpet_wallet_reconcile_unrecoverable:v1';
+const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE = 'wallet_reconciliation_recovery_required';
+const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY = 'moonpet_wallet_reconcile_recovery_required:v1';
 const PET_ACCOUNT_WALLET_CURRENCIES = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
 
 function getPetDayKey(now = new Date()) {
@@ -234,22 +234,14 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
   return Boolean(marker);
 }
 
-async function hasPetAccountWalletUnrecoverableMarker(db, owner) {
-  const marker = await db.prepare(`
-    SELECT claim_id FROM telegram_pet_reward_claims
-    WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'rejected'
-    LIMIT 1
-  `).bind(owner, PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE, PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY).first();
-  return Boolean(marker);
-}
-
-async function markPetAccountWalletUnrecoverable(db, owner, reason, now = new Date()) {
+async function markPetAccountWalletRecoveryRequired(db, owner, reason, now = new Date()) {
   const markerId = crypto.randomUUID();
   const metadata = JSON.stringify({
     source: 'runtime_wallet_reconciliation',
     contract: 'account_wallet_profile_authority',
-    outcome: 'unrecoverable',
+    outcome: 'recovery_required',
     reason,
+    recovery_path: 'backfill durable wallet_before/wallet_after snapshots or another settlement proof, then retry runtime reconciliation',
     derived_from: 'accepted_pet_id_reward_claim_ledger',
     season_key: getMoonpetSeasonKey(now),
     week_key: getPetWeekKey(now),
@@ -262,8 +254,8 @@ async function markPetAccountWalletUnrecoverable(db, owner, reason, now = new Da
         SELECT 1 FROM telegram_pet_reward_claims
         WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'rejected'
       )`)
-    .bind(markerId, owner, PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE, PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY,
-      getPetDayKey(now), metadata, owner, owner, PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE, PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY)
+    .bind(markerId, owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY,
+      getPetDayKey(now), metadata, owner, owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY)
     .run();
 }
 
@@ -282,7 +274,6 @@ export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = 
   if (!owner) return false;
   try {
     if (await hasPetAccountWalletReconciliationMarker(db, owner)) return false;
-    if (await hasPetAccountWalletUnrecoverableMarker(db, owner)) return false;
     await assertReconciliationLedgerIsSafe(db, owner);
     const historicalRows = await readHistoricalWalletRows(db, owner);
     let walletDeltas;
@@ -290,7 +281,7 @@ export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = 
       walletDeltas = replayHistoricalWalletDeltas(historicalRows);
     } catch (error) {
       if (/moonpet_wallet_reconciliation_missing_wallet_snapshot/.test(String(error?.message || error))) {
-        await markPetAccountWalletUnrecoverable(db, owner, 'missing_wallet_snapshot', now);
+        await markPetAccountWalletRecoveryRequired(db, owner, 'missing_wallet_snapshot', now);
         return false;
       }
       throw error;

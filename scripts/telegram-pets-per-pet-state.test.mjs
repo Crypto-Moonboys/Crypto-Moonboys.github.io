@@ -59,8 +59,8 @@ assert.match(walletReconciliation, /source = \? AND idempotency_key = \?/,
   'wallet reconciliation marker must stay in private reward claims, not public pet events');
 assert.doesNotMatch(walletReconciliation, /current_moon_gold|current_moon_crystals|current_style_tokens|replayMissingSnapshotRowsFromTerminal/i,
   'wallet reconciliation must not infer capped wallet history from current terminal instance balances');
-assert.match(walletReconciliation, /wallet_reconciliation_unrecoverable/,
-  'wallet reconciliation must privately mark unprovable legacy history without committing the success marker');
+assert.match(walletReconciliation, /wallet_reconciliation_recovery_required/,
+  'wallet reconciliation must privately mark unprovable legacy history as recovery-required without committing the success marker');
 assert.match(walletReconciliation, /WHERE e\.telegram_id = c\.telegram_id\s+AND e\.pet_id = c\.pet_id\s+AND e\.status = 'accepted'\s+AND e\.metadata = c\.metadata/,
   'wallet reconciliation must prove historical pet-id wallet transitions from accepted event evidence');
 assert.match(walletReconciliation, /accepted_pet_id_reward_claim_ledger/,
@@ -70,8 +70,8 @@ assert.doesNotMatch(walletReconciliation, /i\.moon_gold - telegram_pet_profiles\
 const savePetProfileSource = worker.slice(worker.indexOf('async function savePetProfile'), worker.indexOf('async function getPetWindowTotals'));
 assert.doesNotMatch(savePetProfileSource, /\bmoon_gold\s*=|\bmoon_crystals\s*=|\bstyle_tokens\s*=/,
   'savePetProfile must not write account-wallet columns from stale whole-profile snapshots');
-assert.match(worker, /import \{ PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, PET_INSTANCE_AUTHORITY_VERSION, reconcilePetInstanceWalletToProfile \}/,
-  'worker must import the shared wallet reconciliation marker key');
+assert.match(worker, /PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE[\s\S]*reconcilePetInstanceWalletToProfile/,
+  'worker must import the shared wallet reconciliation marker source/key');
 assert.match(worker, /e\.event_key <> \?/,
   'activity feed must bind the shared wallet reconciliation marker key instead of duplicating the literal');
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');

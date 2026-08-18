@@ -82,17 +82,17 @@ assert.doesNotMatch(
 );
 assert.match(completionSource, /sanctuary_transition:\s*'season_settlement'/, 'completion advertises season-settlement Sanctuary policy');
 
-sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name) VALUES('owner','Nova'),('attacker','Bad'),('auto-owner','Auto'),('reconcile-owner','Reconcile'),('year-end-owner','Year End');
+sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name,moon_gold,moon_crystals,style_tokens) VALUES('owner','Nova',888,77,66),('attacker','Bad',0,0,0),('auto-owner','Auto',0,0,0),('reconcile-owner','Reconcile',0,0,0),('year-end-owner','Year End',0,0,0);
 INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,created_at,updated_at) VALUES
  ('complete','owner','s1',1,'active','2026-01-01',NULL),('replacement','owner','s1',2,'active','2026-01-01',NULL),('legendary-only','owner','s1',3,'active','2026-01-01',NULL),
  ('auto','auto-owner','s2',1,'active','2026-01-01',NULL),('auto-b','auto-owner','s2',2,'active','2026-01-01',NULL),
  ('reconcile','reconcile-owner','pet-s2026-003',1,'active','2026-01-01',NULL),('reconcile-b','reconcile-owner','pet-s2026-003',2,'active','2026-01-01',NULL),
  ('year-end','year-end-owner','pet-s2026-004',1,'active','2026-12-27',NULL);
-INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,species,stage,status,level,pet_xp,equipped_outfit,equipped_weapon) VALUES
- ('complete','owner','s1',1,'Nova','fox','legendary','active',50,5000,'crown','laser'),('replacement','owner','s1',2,'Other','fox','egg','active',1,0,NULL,NULL),('legendary-only','owner','s1',3,'Legend','fox','legendary','active',50,5000,NULL,NULL),
- ('auto','auto-owner','s2',1,'Auto','fox','legendary','active',50,5000,NULL,NULL),('auto-b','auto-owner','s2',2,'Auto B','fox','egg','active',1,0,NULL,NULL),
- ('reconcile','reconcile-owner','pet-s2026-003',1,'Reconcile','fox','legendary','active',50,5000,NULL,NULL),('reconcile-b','reconcile-owner','pet-s2026-003',2,'Reconcile B','fox','egg','active',1,0,NULL,NULL),
- ('year-end','year-end-owner','pet-s2026-004',1,'Year End','fox','legendary','active',50,5000,NULL,NULL);
+INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_name,species,stage,status,level,pet_xp,equipped_outfit,equipped_weapon,moon_gold,moon_crystals,style_tokens) VALUES
+ ('complete','owner','s1',1,'Nova','fox','legendary','active',50,5000,'crown','laser',111,11,1),('replacement','owner','s1',2,'Other','fox','egg','active',1,0,NULL,NULL,7,2,1),('legendary-only','owner','s1',3,'Legend','fox','legendary','active',50,5000,NULL,NULL,0,0,0),
+ ('auto','auto-owner','s2',1,'Auto','fox','legendary','active',50,5000,NULL,NULL,0,0,0),('auto-b','auto-owner','s2',2,'Auto B','fox','egg','active',1,0,NULL,NULL,0,0,0),
+ ('reconcile','reconcile-owner','pet-s2026-003',1,'Reconcile','fox','legendary','active',50,5000,NULL,NULL,0,0,0),('reconcile-b','reconcile-owner','pet-s2026-003',2,'Reconcile B','fox','egg','active',1,0,NULL,NULL,0,0,0),
+ ('year-end','year-end-owner','pet-s2026-004',1,'Year End','fox','legendary','active',50,5000,NULL,NULL,0,0,0);
 INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES('owner','complete','s1'),('auto-owner','auto','s2'),('reconcile-owner','reconcile','pet-s2026-003'),('year-end-owner','year-end','pet-s2026-004');
 INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,completed_at,legendary_evolution_id,growth_marks_earned,weekly_crests_earned,authority_version) VALUES
  ('complete','owner','s1','2026-03-31','legendary_moon_guardian',60,10,2),('reconcile','reconcile-owner','pet-s2026-003','2026-06-30','legendary_moon_guardian',60,10,2),('year-end','year-end-owner','pet-s2026-004','2026-12-31','legendary_moon_guardian',60,10,2);
@@ -125,6 +125,11 @@ assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary W
 assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id='complete'`).get().status, 'archived', 'explicit move archives seasonal pet');
 assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='owner'`).get().pet_id, 'replacement', 'explicit move assigns another active seasonal pet');
 assert.equal(sqlite.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='owner'`).get().pet_name, 'Other', 'replacement instance is mirrored to the profile');
+assert.deepEqual(
+  { ...sqlite.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'`).get() },
+  { moon_gold: 888, moon_crystals: 77, style_tokens: 66 },
+  'Sanctuary archival/replacement mirroring must preserve account wallet authority independently from pet instance wallet fields',
+);
 
 const snapshotBefore = (await listSanctuaryPetsPrivate(db, 'owner'))[0];
 sqlite.prepare(`UPDATE telegram_pet_instances SET equipped_outfit='changed' WHERE pet_id='complete'`).run();

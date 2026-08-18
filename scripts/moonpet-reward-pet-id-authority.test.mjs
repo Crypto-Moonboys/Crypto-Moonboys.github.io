@@ -18,8 +18,8 @@ assert.match(walletReconciliationSource, /c\.rowid AS settlement_sequence/,
   'wallet reconciliation must expose the persisted claim row order as the durable settlement sequence');
 assert.doesNotMatch(walletReconciliationSource, /current_moon_gold|current_moon_crystals|current_style_tokens|replayMissingSnapshotRowsFromTerminal/i,
   'wallet reconciliation must not infer capped wallet history from current terminal instance balances');
-assert.match(walletReconciliationSource, /wallet_reconciliation_unrecoverable/,
-  'wallet reconciliation must privately mark unprovable legacy history without committing the success marker');
+assert.match(walletReconciliationSource, /wallet_reconciliation_recovery_required/,
+  'wallet reconciliation must privately mark unprovable legacy history as recovery-required without committing the success marker');
 
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
@@ -413,16 +413,37 @@ db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=7, moon_crystal
 await getPetProfile(db, 'legacy-wallet-no-snapshot');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='legacy-wallet-no-snapshot' AND source='wallet_reconciliation' AND idempotency_key='moonpet_wallet_reconcile:v1'").get().count, 0,
   'older claims without wallet snapshots must fail closed instead of inferring capped history from terminal balances');
-assert.equal(db.database.prepare("SELECT status FROM telegram_pet_reward_claims WHERE telegram_id='legacy-wallet-no-snapshot' AND source='wallet_reconciliation_unrecoverable' AND idempotency_key='moonpet_wallet_reconcile_unrecoverable:v1'").get()?.status, 'rejected',
-  'older claims without wallet snapshots must be marked privately unrecoverable without committing the success marker');
+assert.equal(db.database.prepare("SELECT status FROM telegram_pet_reward_claims WHERE telegram_id='legacy-wallet-no-snapshot' AND source='wallet_reconciliation_recovery_required' AND idempotency_key='moonpet_wallet_reconcile_recovery_required:v1'").get()?.status, 'rejected',
+  'older claims without wallet snapshots must be marked privately recovery-required without committing the success marker');
 assert.deepEqual(
   { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet-no-snapshot'").get() },
   { moon_gold: 100, moon_crystals: 10, style_tokens: 20 },
   'no-snapshot historical rows must leave the account wallet unchanged when the final wallet state cannot be proven',
 );
 await getPetProfile(db, 'legacy-wallet-no-snapshot');
-assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='legacy-wallet-no-snapshot' AND source='wallet_reconciliation_unrecoverable' AND idempotency_key='moonpet_wallet_reconcile_unrecoverable:v1'").get().count, 1,
-  'unrecoverable no-snapshot history must not repeat-write private receipts on later reads');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='legacy-wallet-no-snapshot' AND source='wallet_reconciliation_recovery_required' AND idempotency_key='moonpet_wallet_reconcile_recovery_required:v1'").get().count, 1,
+  'recovery-required no-snapshot history must not repeat-write private receipts on later reads');
+const recoveredSnapshotMetadata = JSON.stringify({
+  finalization_id: 'historical-no-snapshot-credit',
+  source: 'pet_job',
+  idempotency_key: 'no-snapshot-credit',
+  requested: { pet_xp: 0, community_xp: 0, moon_gold: 7, moon_crystals: 2, style_tokens: 4, materials: {}, items: {}, relics: {} },
+  currency_costs: { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+  profile_deltas: {},
+  wallet_before: { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+  wallet_after: { moon_gold: 7, moon_crystals: 2, style_tokens: 4 },
+  context: { fixture: 'recovered_pre_pr_1228_instance_wallet_reward' },
+});
+db.database.prepare("UPDATE telegram_pet_reward_claims SET metadata=? WHERE telegram_id='legacy-wallet-no-snapshot' AND idempotency_key='no-snapshot-credit'").run(recoveredSnapshotMetadata);
+db.database.prepare("UPDATE telegram_pet_events SET metadata=? WHERE telegram_id='legacy-wallet-no-snapshot' AND event_key='pet_reward:pet_job:no-snapshot-credit'").run(recoveredSnapshotMetadata);
+await getPetProfile(db, 'legacy-wallet-no-snapshot');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='legacy-wallet-no-snapshot' AND source='wallet_reconciliation' AND idempotency_key='moonpet_wallet_reconcile:v1'").get().count, 1,
+  'backfilled snapshot evidence must allow recovery-required history to reconcile later');
+assert.deepEqual(
+  { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet-no-snapshot'").get() },
+  { moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
+  'snapshot recovery must apply the proven historical wallet transition exactly once',
+);
 
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-inactive-wallet',0,1)").run();
 db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-inactive-wallet',0,1,50,5,5)").run();
@@ -500,8 +521,8 @@ db.database.prepare(`INSERT INTO telegram_pet_events
 await getPetProfile(db, 'missing-snapshot-reconcile');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='missing-snapshot-reconcile' AND source='wallet_reconciliation' AND idempotency_key='moonpet_wallet_reconcile:v1'").get().count, 0,
   'missing historical wallet snapshots must fail closed without committing the reconciliation marker');
-assert.equal(db.database.prepare("SELECT status FROM telegram_pet_reward_claims WHERE telegram_id='missing-snapshot-reconcile' AND source='wallet_reconciliation_unrecoverable' AND idempotency_key='moonpet_wallet_reconcile_unrecoverable:v1'").get()?.status, 'rejected',
-  'missing historical wallet snapshots must be marked privately unrecoverable');
+assert.equal(db.database.prepare("SELECT status FROM telegram_pet_reward_claims WHERE telegram_id='missing-snapshot-reconcile' AND source='wallet_reconciliation_recovery_required' AND idempotency_key='moonpet_wallet_reconcile_recovery_required:v1'").get()?.status, 'rejected',
+  'missing historical wallet snapshots must be marked privately recovery-required');
 assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='missing-snapshot-reconcile'").get().moon_gold, 100,
   'missing-snapshot history must leave the account wallet unchanged');
 
@@ -514,8 +535,8 @@ db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=999999, source_
 await getPetProfile(db, 'missing-snapshot-capped');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='missing-snapshot-capped' AND source='wallet_reconciliation' AND idempotency_key='moonpet_wallet_reconcile:v1'").get().count, 0,
   'missing historical wallet snapshots at a cap boundary must fail closed without committing the reconciliation marker');
-assert.equal(db.database.prepare("SELECT status FROM telegram_pet_reward_claims WHERE telegram_id='missing-snapshot-capped' AND source='wallet_reconciliation_unrecoverable' AND idempotency_key='moonpet_wallet_reconcile_unrecoverable:v1'").get()?.status, 'rejected',
-  'missing historical wallet snapshots at a cap boundary must be marked privately unrecoverable');
+assert.equal(db.database.prepare("SELECT status FROM telegram_pet_reward_claims WHERE telegram_id='missing-snapshot-capped' AND source='wallet_reconciliation_recovery_required' AND idempotency_key='moonpet_wallet_reconcile_recovery_required:v1'").get()?.status, 'rejected',
+  'missing historical wallet snapshots at a cap boundary must be marked privately recovery-required');
 assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='missing-snapshot-capped'").get().moon_gold, 100,
   'ambiguous capped missing-snapshot history must leave the account wallet unchanged');
 
