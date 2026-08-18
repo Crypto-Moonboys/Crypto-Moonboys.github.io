@@ -255,6 +255,35 @@ assert.equal(rolloverDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM
   WHERE telegram_id=? AND run_id=? AND pet_id=? AND season_key=?`).get(rolloverDuplicateTelegramId, rolloverDuplicateRunId, rolloverDuplicateOldPetId, rolloverSeasonKey).count, 1,
   'mismatched deterministic run reuse must not overwrite or migrate the existing run');
 
+const staleReservationDb = new D1();
+const staleReservationTelegramId = 'stale-reservation-player';
+seedPlayer(staleReservationDb, staleReservationTelegramId, previousSeasonKey);
+const staleReservationOldPetId = `pet-${staleReservationTelegramId}`;
+const staleReservationCurrentPetId = 'pet-stale-reservation-player-current';
+seedAdditionalPet(staleReservationDb, staleReservationTelegramId, staleReservationCurrentPetId, 1, rolloverSeasonKey);
+const staleReservationRunId = `daily:2026-07-01:${staleReservationTelegramId}`;
+staleReservationDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room, depth, max_depth)
+  VALUES ('stale-reservation-run', ?, ?, ?, ?, 'moon_alley', 1, 12345, 'active', 0, 10, 0, 10)`)
+  .run(staleReservationOldPetId, staleReservationTelegramId, staleReservationRunId, rolloverSeasonKey);
+staleReservationDb.database.prepare(`INSERT INTO telegram_pet_daily_runs
+  (telegram_id, pet_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
+  VALUES (?, ?, '2026-07-01', '2026-07-01-12345', ?, 'active', 0, 0, 0)`)
+  .run(staleReservationTelegramId, staleReservationOldPetId, staleReservationRunId);
+const refusedStaleReservation = await createDailyMoonRun(staleReservationDb, { telegram_id: staleReservationTelegramId, now: rolloverNow });
+assert.equal(refusedStaleReservation.accepted, false,
+  'existing Daily Run reservations must be revalidated before reuse after season rollover');
+assert.equal(refusedStaleReservation.reason, 'daily_run_pet_authority_mismatch');
+assert.equal(staleReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_challenge_events
+  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(staleReservationTelegramId).count, 0,
+  'stale Daily Run reservation rejection must not record challenge evidence');
+assert.equal(staleReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(staleReservationTelegramId).count, 0,
+  'stale Daily Run reservation rejection must not record Daily Journey objectives');
+assert.equal(staleReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=?`).get(staleReservationTelegramId).count, 0,
+  'stale Daily Run reservation rejection must not award Growth Marks');
+
 const db = new D1();
 seedPlayer(db, 'daily-player');
 const now = new Date('2026-08-11T00:00:00.000Z');

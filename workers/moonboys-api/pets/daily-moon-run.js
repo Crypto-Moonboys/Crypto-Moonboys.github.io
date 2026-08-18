@@ -110,7 +110,7 @@ function dailyModifierId(runSeed) {
 }
 
 async function getDailyRunRow(db, telegramId, utcDay) {
-  return db.prepare(`SELECT d.*, r.status AS authoritative_status, r.region, r.difficulty, r.current_room, r.max_room, r.started_at, r.ended_at,
+  return db.prepare(`SELECT d.*, r.season_key, r.status AS authoritative_status, r.region, r.difficulty, r.current_room, r.max_room, r.started_at, r.ended_at,
       r.completed_at AS run_completed_at, r.rooms_completed, r.score AS authoritative_score, r.depth AS authoritative_depth
     FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r ON r.run_id = d.run_id AND r.telegram_id = d.telegram_id
     WHERE d.telegram_id = ? AND d.utc_day = ?`).bind(telegramId, utcDay).first().catch(() => null);
@@ -279,6 +279,22 @@ export async function createDailyMoonRun(db, request = {}) {
     });
     if (!started.accepted && !started.duplicate) {
       return { accepted: false, duplicate: false, reason: started.reason || 'daily_run_pet_authority_mismatch', utc_day: utcDay, run_id: runId, seed: generated.seed };
+    }
+  } else {
+    const seasonPet = await resolveDailyRunSeasonPet(db, telegramId, seasonId);
+    if (!seasonPet.accepted) {
+      return { accepted: false, duplicate: false, reason: seasonPet.reason, utc_day: utcDay, seed: generated.seed };
+    }
+    if (
+      String(existingDaily.pet_id || '') !== String(seasonPet.pet_id || '') ||
+      String(existingDaily.season_key || '') !== String(seasonId)
+    ) {
+      return {
+        accepted: false,
+        duplicate: false,
+        reason: 'daily_run_pet_authority_mismatch',
+        utc_day: utcDay,
+      };
     }
   }
   const authoritativeRun = await db.prepare(`SELECT * FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
