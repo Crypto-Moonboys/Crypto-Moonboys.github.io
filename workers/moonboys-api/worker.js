@@ -5547,7 +5547,12 @@ async function processPetAction(db, telegramId, action, options = {}) {
   ]);
   if (!actionResults?.[5]?.results?.[0]) {
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { action: normalizedAction, season });
-    if (acceptedDuplicate) return acceptedDuplicate;
+    if (acceptedDuplicate) {
+      if (['feed', 'play', 'clean', 'sleep'].includes(normalizedAction)) {
+        await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, now });
+      }
+      return acceptedDuplicate;
+    }
     return { accepted: false, reason: 'pet_action_not_persisted', action: normalizedAction, xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
 

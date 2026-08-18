@@ -396,6 +396,57 @@ assert.equal(careRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM tele
   WHERE pet_id=? AND earned_day=?`).get(careRecoveryPetId, careRecoveryDay).count, 1,
   'care objective recovery must not create duplicate Growth Marks');
 
+const postBatchCareRecoveryDb = new D1();
+const postBatchCareRecoveryTelegramId = 'care-post-batch-recovery';
+const postBatchCareRecoveryNow = new Date('2026-08-11T10:00:00.000Z');
+const postBatchCareRecoveryDay = postBatchCareRecoveryNow.toISOString().slice(0, 10);
+seedPlayer(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, getDailySeasonId(postBatchCareRecoveryDay));
+await __petMediaTestHooks.ensureActivePetInstance(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId);
+const postBatchCareRecoveryPetId = `pet-${postBatchCareRecoveryTelegramId}`;
+const postBatchCareRecoveryRun = await createDailyMoonRun(postBatchCareRecoveryDb, {
+  telegram_id: postBatchCareRecoveryTelegramId,
+  now: postBatchCareRecoveryNow,
+});
+const originalPostBatch = postBatchCareRecoveryDb.batch.bind(postBatchCareRecoveryDb);
+let injectedPostBatchDuplicate = false;
+postBatchCareRecoveryDb.batch = async (statements) => {
+  if (!injectedPostBatchDuplicate && statements.some((statement) => /INSERT OR IGNORE INTO telegram_pet_events/.test(statement.sql))) {
+    injectedPostBatchDuplicate = true;
+    insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'callback:feed:post-batch-recovery', postBatchCareRecoveryDay, 'feed', postBatchCareRecoveryPetId);
+  }
+  return originalPostBatch(statements);
+};
+const recoveredPostBatchCare = await __petMediaTestHooks.processPetAction(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'feed', {
+  event_key: 'callback:feed:post-batch-recovery',
+  source: 'telegram_callback',
+  now: postBatchCareRecoveryNow,
+});
+assert.equal(recoveredPostBatchCare.duplicate, true,
+  'post-batch accepted care duplicate must return idempotent duplicate success');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key='callback:feed:post-batch-recovery' AND status='accepted'`).get(postBatchCareRecoveryTelegramId).count, 1,
+  'post-batch accepted care duplicate recovery must not duplicate the care event');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:post-batch-recovery'`)
+  .get(postBatchCareRecoveryTelegramId, postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
+  'post-batch accepted care duplicate must recover missing Daily Journey objective evidence');
+for (const [index, action] of ['play', 'clean'].entries()) {
+  const key = `callback:${action}:post-batch-recovery`;
+  insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, key, postBatchCareRecoveryDay, action, postBatchCareRecoveryPetId);
+  await recordDailyCareChallenge(postBatchCareRecoveryDb, { telegram_id: postBatchCareRecoveryTelegramId, event_key: key, now: postBatchCareRecoveryNow });
+}
+resolveDailyRun(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, postBatchCareRecoveryRun.daily_run.run_id);
+const postBatchCareRecoverySync = await syncDailyMoonRun(postBatchCareRecoveryDb, {
+  telegram_id: postBatchCareRecoveryTelegramId,
+  utc_day: postBatchCareRecoveryDay,
+  now: postBatchCareRecoveryNow,
+});
+assert.equal(postBatchCareRecoverySync.challenge_results.some((result) => result.daily_journey?.accepted), true,
+  'post-batch recovered care evidence must allow Daily Journey Growth Mark qualification');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
+  'post-batch care recovery must award exactly one Growth Mark');
+
 const careDayRolloverDb = new D1();
 const careDayRolloverTelegramId = 'care-day-rollover-recovery';
 const careEventNow = new Date('2026-08-11T23:59:50.000Z');
