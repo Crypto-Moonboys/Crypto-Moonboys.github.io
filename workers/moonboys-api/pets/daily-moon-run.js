@@ -17,6 +17,7 @@ import {
   startPetRogueliteRun,
 } from './roguelite-foundation.js';
 import { recordMoonpetMemory } from './moonpet-identity.js';
+import { getMoonpetSeasonKey } from './season-authority.js';
 
 const UTC_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
@@ -92,9 +93,7 @@ export async function generateDailyMoonRunSeed(utcDayRaw) {
 export function getDailySeasonId(utcDayRaw) {
   const utcDay = String(utcDayRaw || '');
   if (!validUtcDay(utcDay)) throw new Error('invalid_daily_run_day');
-  const date = new Date(`${utcDay}T00:00:00.000Z`);
-  const dayOfYear = Math.floor((date.getTime() - Date.UTC(date.getUTCFullYear(), 0, 1)) / 86400000);
-  return `pet-s${date.getUTCFullYear()}-${String(Math.floor(dayOfYear / 90) + 1).padStart(3, '0')}`;
+  return getMoonpetSeasonKey(`${utcDay}T00:00:00.000Z`);
 }
 
 function dailyRunId(telegramId, utcDay) {

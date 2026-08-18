@@ -1,3 +1,5 @@
+import { getMoonpetSeasonKey } from './season-authority.js';
+
 const json = (value, fallback) => {
   try { return JSON.parse(value); } catch { return fallback; }
 };
@@ -68,13 +70,6 @@ export async function listSanctuaryPetsPrivate(db, telegramId) {
 
 export const listSanctuaryPets = listSanctuaryPetsSummary;
 
-function currentSeasonKey(timestamp) {
-  const parsed = new Date(timestamp);
-  const date = Number.isFinite(parsed.getTime()) ? parsed : new Date();
-  const quarter = Math.floor(date.getUTCMonth() / 3);
-  return `pet-s${date.getUTCFullYear()}-${String(quarter + 1).padStart(3, '0')}`;
-}
-
 // This mutation is intentionally not exposed as a player action. Callers must
 // supply the authenticated owner and the existing pending-work authority.
 export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
@@ -137,7 +132,7 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
     if (!replacement) {
       // Archived slots remain historical evidence. A successor starts a new
       // allocation namespace instead of consuming/reusing the completed season.
-      const successorSeasonKey = String(options.successor_season_key || currentSeasonKey(timestamp));
+      const successorSeasonKey = String(options.successor_season_key || getMoonpetSeasonKey(timestamp));
       const successorId = `${petId}:successor`;
       archiveStatements.unshift(
         db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_slots
@@ -226,7 +221,7 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
 
 export async function reconcileCompletedPetsToSanctuary(db, telegramId, options = {}) {
   const explicitSettlement = isSeasonSettlementReconciliation(options);
-  const currentKey = currentSeasonKey(options.now || new Date().toISOString());
+  const currentKey = getMoonpetSeasonKey(options.now || new Date().toISOString());
   const seasonFilter = explicitSettlement ? '' : ' AND c.season_key<>?';
   const bindings = explicitSettlement ? [String(telegramId)] : [String(telegramId), currentKey];
   let result;

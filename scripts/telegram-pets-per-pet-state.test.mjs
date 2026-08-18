@@ -69,10 +69,15 @@ assert.ok(
   'normal Mini App state flow must bootstrap the current season before building the read-only roster projection',
 );
 const prepareMiniAppStateSource = worker.slice(worker.indexOf('async function preparePetMiniAppState'), worker.indexOf('const PET_SEASON_EXTRA_SLOT_COSTS'));
+const pendingWorkSource = worker.slice(worker.indexOf('async function getPetActiveSlotPendingWork'), worker.indexOf('async function ensurePetStarterSeasonSlot'));
 const switchActivePetSource = worker.slice(worker.indexOf('async function switchActivePetSeasonSlot'), worker.indexOf('async function getOrCreatePetProfile'));
 assert.match(worker, /async function getPetActiveSlotPendingWork/, 'pending active-slot guard helper must exist');
 assert.match(prepareMiniAppStateSource, /await getPetActiveSlotPendingWork\(db, owner, now\)/, 'automatic season rollover must use the shared pending-work guard before advancing the active pointer');
 assert.match(switchActivePetSource, /await getPetActiveSlotPendingWork\(db, owner, options\.now \|\| new Date\(\)\)/, 'explicit pet switching must use the same pending-work guard helper');
+assert.match(pendingWorkSource, /telegram_pet_kaiju_matches WHERE \(player1_telegram_id=\? OR player2_telegram_id=\?\)/,
+  'active pet switching must guard Kaiju pending work through participant columns');
+assert.doesNotMatch(pendingWorkSource, /telegram_pet_kaiju_matches WHERE telegram_id=\?/,
+  'active pet switching must not query the nonexistent Kaiju telegram_id column');
 assert.match(
   migration057,
   /CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet/,
@@ -522,9 +527,25 @@ db.exec(`CREATE TABLE telegram_pet_arena_battles (
 )`);
 db.exec(`CREATE TABLE telegram_pet_kaiju_matches (
   match_id TEXT PRIMARY KEY,
-  telegram_id TEXT NOT NULL,
+  player1_telegram_id TEXT NOT NULL,
+  player2_telegram_id TEXT,
   status TEXT NOT NULL
 )`);
+
+db.prepare(`INSERT INTO telegram_pet_kaiju_matches (match_id, player1_telegram_id, player2_telegram_id, status)
+  VALUES ('kaiju-switch-p1', 'state-player', 'kaiju-rival', 'active')`).run();
+const kaijuPlayer1Blocked = await switchActivePetSeasonSlot(d1, 'state-player', 1, { now: rolloverNow });
+assert.equal(kaijuPlayer1Blocked.reason, 'pet_kaiju_active', 'active pet switching must be blocked while player1 has unfinished Kaiju work');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:2',
+  'a player1 Kaiju block must leave the active pet unchanged');
+db.prepare(`UPDATE telegram_pet_kaiju_matches SET status='completed' WHERE match_id='kaiju-switch-p1'`).run();
+db.prepare(`INSERT INTO telegram_pet_kaiju_matches (match_id, player1_telegram_id, player2_telegram_id, status)
+  VALUES ('kaiju-switch-p2', 'kaiju-rival', 'state-player', 'selecting')`).run();
+const kaijuPlayer2Blocked = await switchActivePetSeasonSlot(d1, 'state-player', 1, { now: rolloverNow });
+assert.equal(kaijuPlayer2Blocked.reason, 'pet_kaiju_active', 'active pet switching must be blocked while player2 has unfinished Kaiju work');
+assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:2',
+  'a player2 Kaiju block must leave the active pet unchanged');
+db.prepare(`UPDATE telegram_pet_kaiju_matches SET status='completed' WHERE match_id='kaiju-switch-p2'`).run();
 
 const activityRolloverPet = seedPendingRolloverPlayer('rollover-activity', { pet_name: 'Activity Prime', pet_xp: 150, moon_gold: 30, health: 72 });
 db.prepare(`INSERT INTO telegram_pet_activity_sessions (id, telegram_id, activity_type, started_at, ends_at, status)
@@ -566,8 +587,8 @@ assert.equal(await preparePetMiniAppState(d1, 'rollover-arena', rolloverNow), tr
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-arena'`).get().pet_id, `pet:rollover-arena:${rolloverSeasonKey}:1`, 'after arena clearance the current-season starter must become active');
 
 const kaijuRolloverPet = seedPendingRolloverPlayer('rollover-kaiju');
-db.prepare(`INSERT INTO telegram_pet_kaiju_matches (match_id, telegram_id, status)
-  VALUES ('kaiju-rollover-active', 'rollover-kaiju', 'active')`).run();
+db.prepare(`INSERT INTO telegram_pet_kaiju_matches (match_id, player1_telegram_id, player2_telegram_id, status)
+  VALUES ('kaiju-rollover-active', 'kaiju-rival', 'rollover-kaiju', 'active')`).run();
 assert.equal(await preparePetMiniAppState(d1, 'rollover-kaiju', rolloverNow), true, 'kaiju-gated rollover preparation must return successfully while deferring activation');
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-kaiju'`).get().pet_id, kaijuRolloverPet, 'a pending kaiju match must retain the previous-season active pointer');
 db.prepare(`UPDATE telegram_pet_kaiju_matches SET status='completed' WHERE match_id='kaiju-rollover-active'`).run();

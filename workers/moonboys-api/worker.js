@@ -28,6 +28,7 @@ import {
 } from './pets/roguelite-foundation.js';
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
+import { getMoonpetSeasonInfo } from './pets/season-authority.js';
 import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACHIEVEMENTS, PET_SEASON_REWARD_TIERS, buildMoonpetReaction, calculatePetWeeklyBossDamage,
@@ -1857,18 +1858,7 @@ function getPetWeekKey(now = new Date()) {
 }
 
 function getPetSeasonInfo(now = new Date()) {
-  const year = now.getUTCFullYear();
-  const quarter = Math.floor(now.getUTCMonth() / 3);
-  const seasonNumber = quarter + 1;
-  const start = new Date(Date.UTC(year, quarter * 3, 1));
-  const end = quarter === 3 ? new Date(Date.UTC(year + 1, 0, 1)) : new Date(Date.UTC(year, (quarter + 1) * 3, 1));
-  return {
-    key: `pet-s${year}-${String(seasonNumber).padStart(3, '0')}`,
-    season_number: seasonNumber,
-    start_at: start.toISOString(),
-    end_at: end.toISOString(),
-    current_at: now.toISOString(),
-  };
+  return getMoonpetSeasonInfo(now);
 }
 
 function calculatePetHealth(pet) {
@@ -3282,10 +3272,10 @@ async function getPetActiveSlotPendingWork(db, telegramId, now = new Date()) {
   const pendingSystems = [
     ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`],
     ['pet_arena_active', `SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
-    ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE telegram_id=? AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+    ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
   ];
   for (const [reason, sql] of pendingSystems) {
-    const bindings = reason === 'pet_arena_active' ? [owner, owner] : [owner];
+    const bindings = (reason === 'pet_arena_active' || reason === 'pet_kaiju_active') ? [owner, owner] : [owner];
     const pending = await db.prepare(sql).bind(...bindings).first().catch(() => null);
     if (pending) return { reason, pending };
   }
