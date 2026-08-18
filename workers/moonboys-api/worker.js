@@ -3030,27 +3030,28 @@ function verifyPetsBotSecret(request, env) {
 
 async function getPetProfile(db, telegramId) {
   const instance = await readActivePetInstance(db, telegramId);
+  if (instance) await reconcilePetInstanceWalletToProfile(db, telegramId);
   const profile = await db.prepare(`
     SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
   `).bind(telegramId).first().catch(() => null);
   if (!instance) return profile ? applyPetDecay(profile) : null;
-  const wallet = profile ? pickPetAccountWallet(profile) : null;
+  const walletFields = profile ? pickPetAccountWallet(profile) : {};
 
   if (profile && petStateColumnsDiffer(profile, instance)) {
     const profileUpdatedAt = petStateTimestamp(profile.updated_at);
     const instanceProfileVersion = petStateTimestamp(instance.source_profile_updated_at);
     const instanceUpdatedAt = petStateTimestamp(instance.updated_at);
     const hasInstanceAuthority = instance.source_profile_updated_at === PET_INSTANCE_AUTHORITY_VERSION;
-    if (hasInstanceAuthority) return applyPetDecay({ ...instance, ...wallet });
+    if (hasInstanceAuthority) return applyPetDecay({ ...instance, ...walletFields });
     const profileIsNewer = !hasInstanceAuthority && (profileUpdatedAt > instanceProfileVersion
       || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion));
     if (profileIsNewer) {
       await writeActivePetInstance(db, telegramId, profile);
-      return applyPetDecay({ ...instance, ...profile, ...wallet, pet_id: instance.pet_id });
+      return applyPetDecay({ ...instance, ...profile, ...walletFields, pet_id: instance.pet_id });
     }
     await mirrorActivePetInstanceToProfile(db, instance);
   }
-  return applyPetDecay({ ...instance, ...wallet });
+  return applyPetDecay({ ...instance, ...walletFields });
 }
 
 async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
@@ -3058,10 +3059,12 @@ async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
   await getPetProfile(db, telegramId);
   const instance = await readActivePetInstance(db, telegramId);
   if (instance) {
+    await reconcilePetInstanceWalletToProfile(db, telegramId, now);
     const current = await getPetInstanceWithAtomicDecay(db, instance.pet_id, now);
     if (current) await mirrorActivePetInstanceToProfile(db, current);
     const wallet = await readPetAccountWallet(db, telegramId);
-    return wallet && current ? { ...current, ...wallet } : current;
+    const walletFields = wallet || {};
+    return current ? { ...current, ...walletFields } : current;
   }
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const stored = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null);
@@ -3130,7 +3133,9 @@ const PET_INSTANCE_STATE_COLUMNS = Object.freeze([
   'last_decay_at',
 ]);
 const PET_ACCOUNT_WALLET_COLUMNS = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
+const PET_ACCOUNT_WALLET_MAX = 999999;
 const PET_INSTANCE_AUTHORITY_VERSION = '0001-01-01 00:00:00';
+const PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY = 'moonpet_wallet_reconcile:v1';
 
 function isPetInstanceSchemaUnavailable(error) {
   return /no such table: telegram_pet_(instances|season_slots|active_slots)/i.test(String(error?.message || error));
@@ -3165,6 +3170,46 @@ async function readPetAccountWallet(db, telegramId) {
   const profile = await db.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?`)
     .bind(telegramId).first().catch(() => null);
   return profile ? pickPetAccountWallet(profile) : null;
+}
+
+// No migration is required for the PR #1224 -> #1228 wallet repair. The
+// existing pet event ledger already has a unique owner/event_key receipt, so
+// this claims one reconciliation marker per owner and folds only sentinel-marked
+// pet-authority instance wallet balances into the account/profile wallet.
+// Repeated reads or spends hit the marker and cannot double-credit.
+async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return false;
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const seasonKey = getPetSeasonInfo(now).key;
+  const markerId = crypto.randomUUID();
+  const metadata = JSON.stringify({
+    source: 'runtime_wallet_reconciliation',
+    contract: 'account_wallet_profile_authority',
+    folded_from: 'pet_authority_instance_wallet_columns',
+  });
+  try {
+    const results = await db.batch([
+      db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+          (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+        SELECT ?, ?, 'wallet_reconciliation', ?, 0, 0, ?, ?, ?, 'accepted', 'account_wallet_reconciled', ?
+        WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
+        .bind(markerId, owner, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, seasonKey, dayKey, weekKey, metadata, owner),
+      db.prepare(`UPDATE telegram_pet_profiles SET
+          moon_gold = MIN(?, moon_gold + COALESCE((SELECT SUM(moon_gold) FROM telegram_pet_instances WHERE telegram_id = ? AND status = 'active' AND source_profile_updated_at = ?), 0)),
+          moon_crystals = MIN(?, moon_crystals + COALESCE((SELECT SUM(moon_crystals) FROM telegram_pet_instances WHERE telegram_id = ? AND status = 'active' AND source_profile_updated_at = ?), 0)),
+          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(style_tokens) FROM telegram_pet_instances WHERE telegram_id = ? AND status = 'active' AND source_profile_updated_at = ?), 0)),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND event_key = ?)`)
+        .bind(PET_ACCOUNT_WALLET_MAX, owner, PET_INSTANCE_AUTHORITY_VERSION, PET_ACCOUNT_WALLET_MAX, owner, PET_INSTANCE_AUTHORITY_VERSION, PET_ACCOUNT_WALLET_MAX, owner, PET_INSTANCE_AUTHORITY_VERSION,
+          owner, markerId, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY),
+    ]);
+    return Number(results?.[0]?.meta?.changes || 0) === 1;
+  } catch (error) {
+    if (/no such table: telegram_pet_(events|instances|profiles)/i.test(String(error?.message || error))) return false;
+    throw error;
+  }
 }
 
 async function findActivePetSlot(db, telegramId) {

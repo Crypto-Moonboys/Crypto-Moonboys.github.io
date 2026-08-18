@@ -254,6 +254,23 @@ function seedPendingRolloverPlayer(id, overrides = {}) {
   return petId;
 }
 
+const missingWalletPetId = seedPendingRolloverPlayer('missing-wallet', { pet_name: 'No Wallet Overlay', pet_xp: 321, moon_gold: 17, energy: 66 });
+const missingProfileWalletD1 = {
+  prepare(sql) {
+    if (/SELECT \* FROM telegram_pet_profiles WHERE telegram_id = \?/i.test(sql)) {
+      return { bind: () => ({ first: async () => null }) };
+    }
+    return d1.prepare(sql);
+  },
+  batch(statements) { return d1.batch(statements); },
+};
+const missingWalletRead = await getPetProfile(missingProfileWalletD1, 'missing-wallet');
+assert.deepEqual(
+  { pet_id: missingWalletRead.pet_id, pet_name: missingWalletRead.pet_name, pet_xp: missingWalletRead.pet_xp, moon_gold: missingWalletRead.moon_gold, energy: missingWalletRead.energy },
+  { pet_id: missingWalletPetId, pet_name: 'No Wallet Overlay', pet_xp: 321, moon_gold: 17, energy: 66 },
+  'active pet reads must remain safe when the profile wallet projection is missing',
+);
+
 db.prepare(`UPDATE telegram_pet_instances SET pet_name='Instance Nova', pet_xp=5100, level=52,
   moon_gold=901, energy=88, last_decay_at=?, source_profile_updated_at='2026-08-16 02:59:59',
   updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run(new Date().toISOString());
