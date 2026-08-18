@@ -3,6 +3,8 @@ export const PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY = 'moonpet_wallet_recon
 
 const PET_ACCOUNT_WALLET_MAX = 999999;
 const PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE = 'wallet_reconciliation';
+const PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE = 'wallet_reconciliation_unrecoverable';
+const PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY = 'moonpet_wallet_reconcile_unrecoverable:v1';
 const PET_ACCOUNT_WALLET_CURRENCIES = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
 
 function getPetDayKey(now = new Date()) {
@@ -232,6 +234,39 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
   return Boolean(marker);
 }
 
+async function hasPetAccountWalletUnrecoverableMarker(db, owner) {
+  const marker = await db.prepare(`
+    SELECT claim_id FROM telegram_pet_reward_claims
+    WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'rejected'
+    LIMIT 1
+  `).bind(owner, PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE, PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY).first();
+  return Boolean(marker);
+}
+
+async function markPetAccountWalletUnrecoverable(db, owner, reason, now = new Date()) {
+  const markerId = crypto.randomUUID();
+  const metadata = JSON.stringify({
+    source: 'runtime_wallet_reconciliation',
+    contract: 'account_wallet_profile_authority',
+    outcome: 'unrecoverable',
+    reason,
+    derived_from: 'accepted_pet_id_reward_claim_ledger',
+    season_key: getMoonpetSeasonKey(now),
+    week_key: getPetWeekKey(now),
+  });
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
+      (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata)
+    SELECT ?, NULL, ?, ?, ?, ?, 'rejected', '{}', '{}', ?
+    WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)
+      AND NOT EXISTS (
+        SELECT 1 FROM telegram_pet_reward_claims
+        WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'rejected'
+      )`)
+    .bind(markerId, owner, PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE, PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY,
+      getPetDayKey(now), metadata, owner, owner, PET_ACCOUNT_WALLET_UNRECOVERABLE_SOURCE, PET_ACCOUNT_WALLET_UNRECOVERABLE_EVENT_KEY)
+    .run();
+}
+
 // No migration is required for the PR #1224 -> #1228 wallet repair. The
 // existing reward-claim ledger is not used by the public activity feed, has a
 // unique owner/source/idempotency receipt, and lets us replay accepted
@@ -247,9 +282,19 @@ export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = 
   if (!owner) return false;
   try {
     if (await hasPetAccountWalletReconciliationMarker(db, owner)) return false;
+    if (await hasPetAccountWalletUnrecoverableMarker(db, owner)) return false;
     await assertReconciliationLedgerIsSafe(db, owner);
     const historicalRows = await readHistoricalWalletRows(db, owner);
-    const walletDeltas = replayHistoricalWalletDeltas(historicalRows);
+    let walletDeltas;
+    try {
+      walletDeltas = replayHistoricalWalletDeltas(historicalRows);
+    } catch (error) {
+      if (/moonpet_wallet_reconciliation_missing_wallet_snapshot/.test(String(error?.message || error))) {
+        await markPetAccountWalletUnrecoverable(db, owner, 'missing_wallet_snapshot', now);
+        return false;
+      }
+      throw error;
+    }
     const markerId = crypto.randomUUID();
     const dayKey = getPetDayKey(now);
     const metadata = JSON.stringify({
