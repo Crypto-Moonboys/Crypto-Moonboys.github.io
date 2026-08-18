@@ -946,6 +946,10 @@ assert.ok(runStep.includes('recordPetRunBankedEvent'), 'boss step completion mus
 assert.ok(runStep.includes('retryUnsettledTerminalRunStep'), 'duplicate final run-step callbacks must retry unfinished terminal settlement');
 assert.ok(runStep.includes('const terminalRewardDeltas = outcome.success && stepIndex >= PET_RUN_MAX_DEPTH'),
   'final run steps must check account-wallet recovery before an irreversible terminal reward transition');
+assert.ok(runStep.includes('const runStepHasWalletMutation = hasPetAccountWalletDelta(walletCostDeltas) || hasPetAccountWalletDelta(terminalRewardDeltas)'),
+  'run steps must only apply the recovery SQL predicate when account-wallet authority is involved');
+assert.ok(runStep.includes("${runStepHasWalletMutation ? `AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}` : ''}"),
+  'pet-only run steps must not be blocked by account-wallet recovery SQL');
 assertOrder(
   runStep,
   'const terminalRewardDeltas = outcome.success && stepIndex >= PET_RUN_MAX_DEPTH',
@@ -2865,6 +2869,92 @@ function seedWalletCostRun(telegramId, profileGold, instanceGold) {
   });
 }
 
+async function seedChoiceRun(telegramId, choiceKey, requestedDepth = null) {
+  const db = seedRepeatRewardPlayer(telegramId, 90);
+  await ensurePetStarterSeasonSlot(db, telegramId, new Date('2026-08-15T00:00:00Z'));
+  await __petMediaTestHooks.ensureActivePetInstance(db, telegramId);
+  const pet = db.database.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = ?').get(telegramId);
+  db.database.prepare('UPDATE telegram_pet_instances SET energy = 90, hunger = 25, happiness = 70, cleanliness = 70, source_profile_updated_at = ? WHERE pet_id = ?')
+    .run('0001-01-01 00:00:00', pet.pet_id);
+  let depth = requestedDepth;
+  if (depth === null || depth === undefined) {
+    for (let candidateDepth = 0; candidateDepth < 12; candidateDepth += 1) {
+      const callbacks = buildPetRunChoiceReplyMarkup({ run_id: `${telegramId}-run`, depth: candidateDepth, max_depth: 100, risk_level: 1, unbanked_items: '{}' })
+        .inline_keyboard.flat().map((button) => button.callback_data);
+      if (callbacks.some((callback) => callback.endsWith(`:${choiceKey}`))) {
+        depth = candidateDepth;
+        break;
+      }
+    }
+  }
+  assert.notEqual(depth, null, `test fixture must find a Moon Run ${choiceKey} step`);
+  db.database.prepare(`INSERT INTO telegram_pet_runs
+    (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
+    VALUES (?, ?, ?, ?, 'pet-s2026-003', 'active', ?, 100, 1, '{}')`)
+    .run(`${telegramId}-row`, pet.pet_id, telegramId, `${telegramId}-run`, depth);
+  const callbacks = buildPetRunChoiceReplyMarkup({ run_id: `${telegramId}-run`, depth, max_depth: 100, risk_level: 1, unbanked_items: '{}' })
+    .inline_keyboard.flat().map((button) => button.callback_data);
+  assert.ok(callbacks.some((callback) => callback.endsWith(`:${choiceKey}`)), `test fixture must offer ${choiceKey}`);
+  return { db, pet, runId: `${telegramId}-run`, expectedStepIndex: depth + 1, choiceKey };
+}
+
+const recoveryFightRun = await seedChoiceRun('run-recovery-fight', 'fight');
+insertWalletRecoveryRequired(recoveryFightRun.db, 'run-recovery-fight');
+const recoveryFightRandom = Math.random;
+Math.random = () => 0.99;
+let recoveryFight;
+try {
+  recoveryFight = await processPetRunStep(recoveryFightRun.db, 'run-recovery-fight', recoveryFightRun.runId, 'fight', {
+    event_key: 'run-recovery-fight-step',
+    expected_step_index: recoveryFightRun.expectedStepIndex,
+    source: 'recovery_pet_only_run_regression',
+  });
+} finally {
+  Math.random = recoveryFightRandom;
+}
+assert.equal(recoveryFight.accepted, true, 'recovery-pending fight must be allowed because it does not mutate the account wallet yet');
+assert.equal(recoveryFight.reason, 'run_step_complete');
+assert.deepEqual(
+  { ...recoveryFightRun.db.database.prepare("SELECT depth, status FROM telegram_pet_runs WHERE telegram_id='run-recovery-fight'").get() },
+  { depth: recoveryFightRun.expectedStepIndex, status: 'extractable' },
+  'recovery-pending fight must advance run state',
+);
+assert.deepEqual(
+  { ...recoveryFightRun.db.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='run-recovery-fight'").get() },
+  { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+  'recovery-pending fight must not mutate the account wallet before terminal settlement',
+);
+const duplicateRecoveryFight = await processPetRunStep(recoveryFightRun.db, 'run-recovery-fight', recoveryFightRun.runId, 'fight', {
+  event_key: 'run-recovery-fight-step',
+  expected_step_index: recoveryFightRun.expectedStepIndex,
+  source: 'recovery_pet_only_run_regression',
+});
+assert.equal(duplicateRecoveryFight.duplicate, true, 'duplicate recovery-pending fight callback must return the accepted step');
+
+const recoveryRestRun = await seedChoiceRun('run-recovery-rest', 'rest');
+insertWalletRecoveryRequired(recoveryRestRun.db, 'run-recovery-rest');
+const recoveryRestRandom = Math.random;
+Math.random = () => 0.99;
+let recoveryRest;
+try {
+  recoveryRest = await processPetRunStep(recoveryRestRun.db, 'run-recovery-rest', recoveryRestRun.runId, 'rest', {
+    event_key: 'run-recovery-rest-step',
+    expected_step_index: recoveryRestRun.expectedStepIndex,
+    source: 'recovery_pet_only_run_regression',
+  });
+} finally {
+  Math.random = recoveryRestRandom;
+}
+assert.equal(recoveryRest.accepted, true, 'recovery-pending rest must be allowed because it only changes pet/run state');
+assert.equal(recoveryRest.reason, 'run_step_complete');
+assert.deepEqual(
+  { ...recoveryRestRun.db.database.prepare("SELECT depth, status FROM telegram_pet_runs WHERE telegram_id='run-recovery-rest'").get() },
+  { depth: recoveryRestRun.expectedStepIndex, status: 'extractable' },
+  'recovery-pending rest must persist run progress',
+);
+assert.ok(recoveryRestRun.db.database.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id = ?').get(recoveryRestRun.pet.pet_id).energy >= 90,
+  'recovery-pending rest must persist pet-owned stat rewards');
+
 const accountRunCost = await seedWalletCostRun('run-wallet-cost', 100, 0);
 const runWalletRandom = Math.random;
 Math.random = () => 0.99;
@@ -3247,6 +3337,41 @@ const resumedAuthorityRun = await startOrResumePetRun(resumeAuthorityDb, 'resume
 assert.equal(resumedAuthorityRun.accepted, true);
 assert.equal(resumedAuthorityRun.pet.pet_id, resumeOriginalPet.pet_id, 'resume must load the run pet rather than the active selector');
 
+const extractRecoveryDb = seedRepeatRewardPlayer('extract-recovery-pending', 90);
+await ensurePetStarterSeasonSlot(extractRecoveryDb, 'extract-recovery-pending', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(extractRecoveryDb, 'extract-recovery-pending');
+const extractRecoveryPet = extractRecoveryDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='extract-recovery-pending'").get();
+extractRecoveryDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('extract-recovery-pending-row', ?, 'extract-recovery-pending', 'extract-recovery-pending-run', 'pet-s2026-003', 'extractable', 5, 100, 1, 15, 6, 1, 1, '{}')`)
+  .run(extractRecoveryPet.pet_id);
+insertWalletRecoveryRequired(extractRecoveryDb, 'extract-recovery-pending');
+const frozenExtraction = await processPetRunExtract(extractRecoveryDb, 'extract-recovery-pending', 'extract-recovery-pending-run');
+assert.equal(frozenExtraction.accepted, false, 'recovery-pending final extraction must block wallet settlement');
+assert.equal(frozenExtraction.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...extractRecoveryDb.database.prepare("SELECT status, depth FROM telegram_pet_runs WHERE run_id='extract-recovery-pending-run'").get() },
+  { status: 'extractable', depth: 5 },
+  'recovery-pending extraction must leave terminal state recoverable',
+);
+assert.equal(extractRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='extract-recovery-pending' AND source='pet_run_legacy'").get().count, 0,
+  'recovery-pending extraction must not create a stranded terminal claim');
+insertWalletReconciled(extractRecoveryDb, 'extract-recovery-pending');
+const recoveredExtraction = await processPetRunExtract(extractRecoveryDb, 'extract-recovery-pending', 'extract-recovery-pending-run');
+assert.equal(recoveredExtraction.accepted, true, 'extraction retry must settle after wallet recovery resolves');
+assert.equal(recoveredExtraction.reason, 'run_extracted');
+assert.equal(extractRecoveryDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id='extract-recovery-pending-run'").get().status, 'extracted',
+  'resolved extraction must close the run after terminal settlement');
+assert.deepEqual(
+  { ...extractRecoveryDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='extract-recovery-pending'").get() },
+  { moon_gold: 6, moon_crystals: 1, style_tokens: 1 },
+  'resolved extraction must award banked wallet rewards to account authority',
+);
+const duplicateRecoveredExtraction = await processPetRunExtract(extractRecoveryDb, 'extract-recovery-pending', 'extract-recovery-pending-run');
+assert.equal(duplicateRecoveredExtraction.duplicate, true, 'duplicate extraction after recovery must return accepted settlement');
+assert.equal(extractRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='extract-recovery-pending' AND source='pet_run_legacy'").get().count, 1,
+  'duplicate extraction after recovery must not duplicate terminal wallet rewards');
+
 const terminalRecoveryDb = seedRepeatRewardPlayer('terminal-recovery', 90);
 await ensurePetStarterSeasonSlot(terminalRecoveryDb, 'terminal-recovery', new Date('2026-08-15T00:00:00Z'));
 await __petMediaTestHooks.ensureActivePetInstance(terminalRecoveryDb, 'terminal-recovery');
@@ -3260,8 +3385,8 @@ await assert.rejects(
   /simulated_d1_batch_failure/,
   'reward failure after the terminal claim must surface for retry',
 );
-assert.equal(terminalRecoveryDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id = 'terminal-recovery-run'").get().status, 'extracted',
-  'the atomic terminal claim must remain closed while reward settlement is retried');
+assert.equal(terminalRecoveryDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id = 'terminal-recovery-run'").get().status, 'active',
+  'a pre-settlement terminal failure must leave the run recoverable for retry');
 assert.equal(terminalRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id = 'terminal-recovery'").get().count, 0,
   'a failed reward batch must not leave a partial claim');
 const recoveredTerminal = await processPetRunExtract(terminalRecoveryDb, 'terminal-recovery', 'terminal-recovery-run');

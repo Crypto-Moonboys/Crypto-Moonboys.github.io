@@ -2522,8 +2522,8 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
   const terminalStatus = options.completed ? 'completed' : 'extracted';
   const claimedRow = await db.prepare(`UPDATE telegram_pet_runs
     SET status = ?, completed_at = COALESCE(completed_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
-    WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable')
-    RETURNING *`).bind(terminalStatus, telegramId, run.run_id).first();
+    WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?
+    RETURNING *`).bind(terminalStatus, telegramId, run.run_id, Math.max(0, Math.floor(Number(run.depth || 0)))).first();
   const rewardRun = claimedRow ? serializePetRun(claimedRow) : await getPetRunById(db, telegramId, run.run_id);
   if (!rewardRun || rewardRun.status !== terminalStatus) {
     return { accepted: false, reason: 'run_closed', run: rewardRun || run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2600,6 +2600,14 @@ async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {})
   const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);
   if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run, xp_awarded: 0, pet_xp_awarded: 0 };
   if (run.depth <= 0) return { accepted: false, reason: 'run_empty', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  const extractWalletDeltas = {
+    moon_gold: clampPetCurrency(run.unbanked_moon_gold),
+    moon_crystals: clampPetCurrency(run.unbanked_moon_crystals),
+    style_tokens: clampPetCurrency(run.unbanked_style_tokens),
+  };
+  if (hasPetAccountWalletDelta(extractWalletDeltas) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   return recordPetRunBankedEvent(db, telegramId, run, pet, { ...options, event_key: buildPetRunExtractEventKey(telegramId, run.run_id) });
 }
 
@@ -2681,6 +2689,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   if (hasPetAccountWalletDelta(terminalRewardDeltas) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', run, choice, pet, outcome, xp_awarded: 0, pet_xp_awarded: 0 };
   }
+  const runStepHasWalletMutation = hasPetAccountWalletDelta(walletCostDeltas) || hasPetAccountWalletDelta(terminalRewardDeltas);
   const accountWallet = await readPetAccountWallet(db, telegramId);
   const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs, accountWallet);
   if (Object.keys(missingCosts).length) {
@@ -2699,7 +2708,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
       WHERE EXISTS (SELECT 1 FROM telegram_pet_runs
         WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?)
       AND EXISTS (SELECT 1 FROM telegram_pet_profiles
-        WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')})
+        WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} ${runStepHasWalletMutation ? `AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}` : ''})
       AND (? IS NULL OR EXISTS (SELECT 1 FROM telegram_pet_inventory
         WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0))
   `).bind(
