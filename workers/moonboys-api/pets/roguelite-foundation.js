@@ -446,13 +446,15 @@ export async function startPetRogueliteRun(db, request = {}) {
   const region = PET_ROGUELITE_REGIONS[String(request.region || 'moon_alley')];
   if (!telegramId || !region) throw new Error('invalid_pet_roguelite_run');
   const runId = String(request.run_id || `rogue-${crypto.randomUUID()}`).slice(0, 120);
-  const existingRun = await db.prepare(`SELECT run_id, pet_id FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`)
+  const existingRun = await db.prepare(`SELECT run_id, pet_id, region, difficulty, seed, max_room
+    FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`)
     .bind(runId, telegramId).first().catch(() => null);
   if (existingRun) {
     const existingPetId = String(existingRun.pet_id || '').trim();
     return { accepted: false, duplicate: true, reason: existingPetId ? 'run_exists' : 'run_pet_authority_required',
-      run_id: runId, pet_id: existingPetId || null, region: region.region_id, difficulty: region.difficulty,
-      seed: Math.floor(Number(request.seed) || 0), max_room: Math.max(1, Math.min(100, Math.floor(Number(request.max_room) || region.max_rooms || 10))) };
+      run_id: existingRun.run_id, pet_id: existingPetId || null, region: String(existingRun.region || ''),
+      difficulty: Math.max(1, Math.floor(Number(existingRun.difficulty) || 1)), seed: Math.floor(Number(existingRun.seed) || 0),
+      max_room: Math.max(1, Math.floor(Number(existingRun.max_room) || 1)) };
   }
   const petId = await resolveActiveRunPetId(db, telegramId);
   if (!petId) throw new Error('active_pet_instance_not_found');

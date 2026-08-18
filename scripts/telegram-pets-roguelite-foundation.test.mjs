@@ -259,9 +259,12 @@ startDb.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegra
 startDb.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
   VALUES ('pet-start-player-second', 'start-player', 'pet-s2026-001', 2, CURRENT_TIMESTAMP)`).run();
 startDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-start-player-second' WHERE telegram_id='start-player'").run();
-const duplicateStartAfterSwitch = await startPetRogueliteRun(startDb, { telegram_id: 'start-player', run_id: 'moon-alley-start', seed: 42 });
+const duplicateStartAfterSwitch = await startPetRogueliteRun(startDb, { telegram_id: 'start-player', run_id: 'moon-alley-start', seed: 999, max_room: 3 });
 assert.equal(duplicateStartAfterSwitch.duplicate, true);
 assert.equal(duplicateStartAfterSwitch.pet_id, 'pet-start-player', 'duplicate start must return persisted run authority, not the active selector');
+assert.deepEqual({ region: duplicateStartAfterSwitch.region, difficulty: duplicateStartAfterSwitch.difficulty,
+  seed: duplicateStartAfterSwitch.seed, max_room: duplicateStartAfterSwitch.max_room },
+{ region: 'moon_alley', difficulty: 1, seed: 42, max_room: 10 }, 'duplicate start must echo persisted run configuration, not retry defaults');
 assert.equal(startDb.database.prepare("SELECT pet_id FROM telegram_pet_run_modifiers WHERE run_id='moon-alley-start'").get().pet_id, 'pet-start-player');
 const switchedRun = { ...startedRow, current_room: 1, score: 10 };
 await completePetRun(startDb, switchedRun, { pet_xp: 17 }, { rooms_completed: 1 });

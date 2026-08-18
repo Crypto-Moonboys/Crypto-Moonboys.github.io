@@ -46,6 +46,7 @@ const {
   processPetRunExtract,
   recordPetRunBankedEvent,
   processPetRunStep,
+  serializePetRun,
   evolveMoonpet,
   reservePetRepeatRewardEvent,
   scalePetRewards,
@@ -908,6 +909,12 @@ assert.ok(runStep.includes('unbanked_pet_xp = 0'), 'failed runs must lose unbank
 assert.ok(runStep.includes("unbanked_items = '{}'"), 'failed runs must lose unbanked items');
 assert.ok(runStep.includes('PETS_DAILY_PET_XP_CAP'), 'failure consolation XP must respect pet XP cap');
 assert.ok(runStep.includes("'run_fail'"), 'failed runs must audit consolation XP as run_fail');
+assert.ok(runStep.includes('getPetDayXpTotal(db, run.pet_id, dayKey)'), 'failed-run consolation XP caps must use stored run pet authority');
+const startOrResumeRunSource = asyncBlock('startOrResumePetRun');
+assert.ok(startOrResumeRunSource.includes("const petId = String(pet.pet_id || '').trim()"), 'new run pet_id must be normalized once');
+assert.ok(startOrResumeRunSource.includes('.bind(crypto.randomUUID(), petId,'), 'new runs must persist the normalized pet_id');
+assert.equal(serializePetRun({ pet_id: '  pet-normalized  ', telegram_id: 'normalized-owner', run_id: 'normalized-run' }).pet_id, 'pet-normalized',
+  'serialized run authority must be normalized');
 assert.ok(runStep.includes('recordPetRunBankedEvent'), 'boss step completion must bank through the extract/completion helper');
 assertOrder(
   runStep,
@@ -2152,6 +2159,10 @@ const failedStepEventDb = seedRepeatRewardPlayer('failed-step-event', 90);
 await ensurePetStarterSeasonSlot(failedStepEventDb, 'failed-step-event', new Date('2026-08-15T00:00:00Z'));
 await __petMediaTestHooks.ensureActivePetInstance(failedStepEventDb, 'failed-step-event');
 const failedStepPet = failedStepEventDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='failed-step-event'").get();
+const failedStepDay = new Date().toISOString().slice(0, 10);
+failedStepEventDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, pet_xp_awarded, season_key, day_key, week_key, status)
+  VALUES ('other-pet-cap', 'another-pet-instance', 'failed-step-event', 'test', 'other-pet-cap', 1200, 'pet-s2026-003', ?, 'week', 'accepted')`).run(failedStepDay);
 failedStepEventDb.database.prepare(`INSERT INTO telegram_pet_runs
   (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
   VALUES ('failed-step-row', ?, 'failed-step-event', 'failed-step-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run(failedStepPet.pet_id);
@@ -2170,6 +2181,7 @@ assert.equal(failedStepResult.reason, 'run_failed');
 const failedStepLedger = failedStepEventDb.database.prepare("SELECT pet_id, pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_fail'").get();
 assert.equal(failedStepLedger.pet_id, failedStepPet.pet_id, 'failed-step consolation XP must be visible in the run pet ledger');
 assert.equal(failedStepLedger.pet_xp_awarded, failedStepResult.pet_xp_awarded);
+assert.ok(failedStepLedger.pet_xp_awarded > 0, 'another pet consuming its cap cannot suppress this run pet consolation XP');
 
 const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
 await ensurePetStarterSeasonSlot(terminalRaceDb, 'terminal-race', new Date('2026-08-15T00:00:00Z'));

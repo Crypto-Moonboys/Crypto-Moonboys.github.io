@@ -2239,7 +2239,7 @@ function serializePetRun(run) {
   const depth = Math.max(0, Math.floor(Number(run.depth ?? run.current_room ?? 0)));
   const roomDefinition = getPetEndlessRoomDefinition({ ...run, depth });
   return {
-    id: run.id || null, pet_id: String(run.pet_id || '') || null, telegram_id: String(run.telegram_id || ''), run_id: String(run.run_id || ''),
+    id: run.id || null, pet_id: String(run.pet_id || '').trim() || null, telegram_id: String(run.telegram_id || ''), run_id: String(run.run_id || ''),
     season_key: String(run.season_key || ''), status: String(run.status || 'active'), region: String(run.region || 'moon_alley'),
     difficulty: Math.max(1, Math.floor(Number(run.difficulty || 1)), Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1),
     seed: run.seed == null ? null : Number(run.seed), depth, current_room: depth,
@@ -2467,7 +2467,7 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
       const pet = await getPetInstanceWithAtomicDecay(db, requestedRun.pet_id);
       if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
       await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${requestedRun.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
-      return { accepted: true, reason: 'run_resumed', run: requestedRun, pet };
+      return { accepted: true, reason: 'run_resumed', pet_id: requestedRun.pet_id, run: requestedRun, pet };
     }
     if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
     return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2478,11 +2478,12 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
     const pet = await getPetInstanceWithAtomicDecay(db, active.pet_id);
     if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: active, xp_awarded: 0, pet_xp_awarded: 0 };
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${active.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
-    return { accepted: true, reason: 'run_resumed', run: active, pet };
+    return { accepted: true, reason: 'run_resumed', pet_id: active.pet_id, run: active, pet };
   }
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
-  if (!String(pet.pet_id || '').trim()) return { accepted: false, reason: 'active_pet_instance_required', pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  const petId = String(pet.pet_id || '').trim();
+  if (!petId) return { accepted: false, reason: 'active_pet_instance_required', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   if (clampPetStat(pet.energy) < 12) return { accepted: false, reason: 'pet_tired', pet };
   const now = new Date();
   const season = getPetSeasonInfo(now);
@@ -2491,10 +2492,10 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
     INSERT INTO telegram_pet_runs
       (id, pet_id, telegram_id, run_id, season_key, status, region, difficulty, seed, depth, current_room, max_depth, max_room, score, rooms_completed, risk_level, unbanked_items)
     VALUES (?, ?, ?, ?, ?, 'active', 'moon_alley', 1, ?, 0, 0, ?, ?, 0, 0, 1, '{}')
-  `).bind(crypto.randomUUID(), pet.pet_id, telegramId, runId, season.key, crypto.getRandomValues(new Uint32Array(1))[0], PET_RUN_MAX_DEPTH, PET_RUN_MAX_DEPTH).run();
+  `).bind(crypto.randomUUID(), petId, telegramId, runId, season.key, crypto.getRandomValues(new Uint32Array(1))[0], PET_RUN_MAX_DEPTH, PET_RUN_MAX_DEPTH).run();
   await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
   const run = await getPetRunById(db, telegramId, runId);
-  return { accepted: true, reason: 'run_started', run, pet };
+  return { accepted: true, reason: 'run_started', pet_id: run?.pet_id || petId, run, pet };
 }
 
 async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
@@ -2655,10 +2656,10 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     : [];
 
   if (!outcome.success) {
-    const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+    const petXpToday = await getPetDayXpTotal(db, run.pet_id, dayKey);
     let consolationXp = Math.max(1, Math.min(12, 4 + Math.floor(Number(run.depth || 0) * 2)));
-    if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) consolationXp = 0;
-    else if (totals.day.pet_xp + consolationXp > PETS_DAILY_PET_XP_CAP) consolationXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+    if (petXpToday >= PETS_DAILY_PET_XP_CAP) consolationXp = 0;
+    else if (petXpToday + consolationXp > PETS_DAILY_PET_XP_CAP) consolationXp = Math.max(0, PETS_DAILY_PET_XP_CAP - petXpToday);
     pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + consolationXp));
     updatePetStreakForAction(pet, dayKey);
     pet.last_decay_at = new Date().toISOString();
@@ -3704,6 +3705,13 @@ async function getPetWindowTotals(db, telegramId, dayKey, weekKey) {
     day: { community_xp: Number(day?.community_xp || 0), pet_xp: Number(day?.pet_xp || 0) },
     week: { community_xp: Number(week?.community_xp || 0), pet_xp: Number(week?.pet_xp || 0) },
   };
+}
+
+async function getPetDayXpTotal(db, petId, dayKey) {
+  const row = await db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+    FROM telegram_pet_events WHERE pet_id = ? AND day_key = ? AND status = 'accepted'`)
+    .bind(String(petId || '').trim(), dayKey).first().catch(() => ({ pet_xp: 0 }));
+  return Math.max(0, Math.floor(Number(row?.pet_xp) || 0));
 }
 
 
@@ -12403,6 +12411,7 @@ export const __petMediaTestHooks = Object.freeze({
   processPetRunExtract,
   recordPetRunBankedEvent,
   processPetRunStep,
+  serializePetRun,
   reservePetRepeatRewardEvent,
   scalePetRewards,
   buildPetKaijuCardReplyMarkup,
