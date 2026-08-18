@@ -430,6 +430,9 @@ assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_
 assert.equal(journeyDb.database.prepare(`SELECT status FROM telegram_pet_daily_journey_receipts
   WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='accepted'`).get().status, 'accepted',
   'Test 1: qualification receipt is accepted');
+assert.equal(journeyDb.database.prepare(`SELECT completed_objectives FROM telegram_pet_daily_journey_receipts
+  WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='accepted'`).get().completed_objectives, 3,
+  'Test 1: Growth Mark qualification counts completed objectives, not raw accepted events');
 await syncDailyMoonRun(journeyDb, { telegram_id: 'journey-player', utc_day: '2026-01-15', now: journeyNow });
 assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
   WHERE pet_id='pet-journey-player' AND season_key='pet-s2026-001' AND earned_day='2026-01-15'`).get().count, 1,
@@ -454,10 +457,15 @@ seedPlayer(twoObjectiveDb, 'two-objective-player', 'pet-s2026-001');
 const twoObjectiveNow = new Date('2026-01-16T10:00:00.000Z');
 const twoObjectiveRun = await createDailyMoonRun(twoObjectiveDb, { telegram_id: 'two-objective-player', now: twoObjectiveNow });
 resolveDailyRun(twoObjectiveDb, 'two-objective-player', twoObjectiveRun.daily_run.run_id, { status: 'completed', score: 700, boss: false });
+insertCareEvent(twoObjectiveDb, 'two-objective-player', 'partial-care-one', '2026-01-16', 'feed', 'pet-two-objective-player');
+insertCareEvent(twoObjectiveDb, 'two-objective-player', 'partial-care-two', '2026-01-16', 'play', 'pet-two-objective-player');
+await recordDailyCareChallenge(twoObjectiveDb, { telegram_id: 'two-objective-player', event_key: 'partial-care-one', now: twoObjectiveNow });
+const partialCare = await recordDailyCareChallenge(twoObjectiveDb, { telegram_id: 'two-objective-player', event_key: 'partial-care-two', now: twoObjectiveNow });
 await syncDailyMoonRun(twoObjectiveDb, { telegram_id: 'two-objective-player', utc_day: '2026-01-16', now: twoObjectiveNow });
+assert.equal(partialCare.daily_journey.completed_objectives, 0, 'Test 4: 2/3 accepted care events do not complete the care objective');
 assert.equal(twoObjectiveDb.database.prepare(`SELECT COUNT(DISTINCT challenge_id) AS count FROM telegram_pet_daily_journey_objectives
-  WHERE pet_id='pet-two-objective-player' AND utc_day='2026-01-16' AND status='accepted'`).get().count, 2,
-  'Test 4: only two objectives are recorded');
+  WHERE pet_id='pet-two-objective-player' AND utc_day='2026-01-16' AND status='accepted'`).get().count, 3,
+  'Test 4: partial accepted care evidence is present but must not count as a completed objective');
 assert.equal(twoObjectiveDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
   WHERE pet_id='pet-two-objective-player'`).get().count, 0,
   'Test 4: 2/5 objectives does not award a Growth Mark');

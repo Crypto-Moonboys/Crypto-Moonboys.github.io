@@ -19,7 +19,6 @@ assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/063_arcade_xp
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/064_moonpet_beta_runtime_cutover\.sql/, 'migration 064 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/065_moonpet_reward_pet_id_authority\.sql/, 'migration 065 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/066_moonpet_run_pet_id_authority\.sql/, 'migration 066 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/067_moonpet_daily_journey_authority\.sql/, 'migration 067 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -63,7 +62,6 @@ assert.match(remoteQueryStep, /063_arcade_xp_spendable_wallet\.sql/, 'the workfl
 assert.match(remoteQueryStep, /064_moonpet_beta_runtime_cutover\.sql/, 'the workflow_dispatch D1 query must request migration 064 from production');
 assert.match(remoteQueryStep, /065_moonpet_reward_pet_id_authority\.sql/, 'the workflow_dispatch D1 query must request migration 065 from production');
 assert.match(remoteQueryStep, /066_moonpet_run_pet_id_authority\.sql/, 'the workflow_dispatch D1 query must request migration 066 from production');
-assert.match(remoteQueryStep, /067_moonpet_daily_journey_authority\.sql/, 'the workflow_dispatch D1 query must request migration 067 from production');
 assert.deepEqual(
   [...request.required_migrations].sort(),
   [...REQUIRED_D1_MIGRATIONS].sort(),

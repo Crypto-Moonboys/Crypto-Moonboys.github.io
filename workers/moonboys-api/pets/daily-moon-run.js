@@ -82,6 +82,7 @@ export function validateDailyChallengeContent(content = dailyChallenges) {
 validateDailyChallengeContent();
 
 export const PET_DAILY_CHALLENGES = deepFreeze(Object.fromEntries(dailyChallenges.map((challenge) => [challenge.challenge_id, challenge])));
+const DAILY_JOURNEY_TOTAL_OBJECTIVES = Object.keys(PET_DAILY_CHALLENGES).length;
 
 export async function generateDailyMoonRunSeed(utcDayRaw) {
   const utcDay = String(utcDayRaw || '');
@@ -492,13 +493,29 @@ async function insertDailyJourneyReceipt(db, receipt) {
 }
 
 async function finalizeDailyJourneyGrowthMark(db, request) {
-  const completed = await db.prepare(`SELECT COUNT(DISTINCT challenge_id) AS count FROM telegram_pet_daily_journey_objectives
-    WHERE telegram_id = ? AND pet_id = ? AND season_key = ? AND utc_day = ? AND status = 'accepted'`)
-    .bind(request.telegram_id, request.pet_id, request.season_key, request.utc_day).first().catch(() => null);
-  const completedObjectives = positiveInteger(completed?.count, PET_DAILY_CHALLENGES.length);
+  const progressRows = await db.prepare(`SELECT challenge_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
+    FROM telegram_pet_daily_journey_objectives
+    WHERE telegram_id = ? AND pet_id = ? AND season_key = ? AND utc_day = ? AND status = 'accepted'
+    GROUP BY challenge_id`)
+    .bind(request.telegram_id, request.pet_id, request.season_key, request.utc_day).all().catch(() => ({ results: [] }));
+  const completedObjectives = (progressRows.results || []).reduce((count, row) => {
+    const challenge = PET_DAILY_CHALLENGES[String(row.challenge_id || '')];
+    if (!challenge) return count;
+    const progressMode = String(challenge.validation_rules?.progress_mode || 'add');
+    const progress = progressMode === 'max'
+      ? positiveInteger(row.max_progress, challenge.target)
+      : Math.min(challenge.target, positiveInteger(row.additive_progress, challenge.target));
+    return progress >= positiveInteger(challenge.target) ? count + 1 : count;
+  }, 0);
   const eventKey = `daily-journey:${request.pet_id}:${request.season_key}:${request.utc_day}:growth-mark`;
   if (completedObjectives < DAILY_JOURNEY_REQUIRED_OBJECTIVES) {
-    return { accepted: false, duplicate: false, completed_objectives: completedObjectives, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES };
+    return {
+      accepted: false,
+      duplicate: false,
+      completed_objectives: completedObjectives,
+      required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+      total_objectives: DAILY_JOURNEY_TOTAL_OBJECTIVES,
+    };
   }
   const existing = await db.prepare(`SELECT status, growth_mark_id FROM telegram_pet_daily_journey_receipts
     WHERE event_key = ? AND status = 'accepted' LIMIT 1`).bind(eventKey).first().catch(() => null);
@@ -521,6 +538,7 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
       reason: 'duplicate_daily_journey_growth_mark',
       completed_objectives: completedObjectives,
       required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+      total_objectives: DAILY_JOURNEY_TOTAL_OBJECTIVES,
       growth_mark_id: existing.growth_mark_id,
       event_key: eventKey,
     };
@@ -552,6 +570,7 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
     reason: accepted ? 'daily_journey_qualified' : (mark.reason || 'daily_journey_growth_mark_rejected'),
     completed_objectives: completedObjectives,
     required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+    total_objectives: DAILY_JOURNEY_TOTAL_OBJECTIVES,
     growth_mark_id: mark.mark_id,
     event_key: eventKey,
   };
