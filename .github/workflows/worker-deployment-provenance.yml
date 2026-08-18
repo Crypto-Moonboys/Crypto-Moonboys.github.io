@@ -9,7 +9,12 @@ on:
       - "scripts/telegram-pets*"
       - "scripts/moonpet*"
       - "scripts/verify-d1-production-migrations*"
+      - "scripts/production-deployment-truth-audit.mjs"
+      - "scripts/production-deployment-truth-audit.test.mjs"
       - "deployments/**"
+      - "docs/WORKER_DEPLOY_RUNBOOK.md"
+      - "docs/WORKER_DEPLOY_TRUTH_MAP.md"
+      - ".github/workflows/live-worker-provenance-verify.yml"
       - ".github/workflows/worker-deployment-provenance.yml"
   push:
     branches: [main]
@@ -20,7 +25,12 @@ on:
       - "scripts/telegram-pets*"
       - "scripts/moonpet*"
       - "scripts/verify-d1-production-migrations*"
+      - "scripts/production-deployment-truth-audit.mjs"
+      - "scripts/production-deployment-truth-audit.test.mjs"
       - "deployments/**"
+      - "docs/WORKER_DEPLOY_RUNBOOK.md"
+      - "docs/WORKER_DEPLOY_TRUTH_MAP.md"
+      - ".github/workflows/live-worker-provenance-verify.yml"
       - ".github/workflows/worker-deployment-provenance.yml"
   workflow_dispatch:
 

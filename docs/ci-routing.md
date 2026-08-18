@@ -8,8 +8,8 @@ GitHub Actions is path-aware so gameplay and infrastructure PRs run the checks f
 | --- | --- |
 | `workers/**`, Worker/API test scripts listed in `scripts/ci-domain-runner.mjs`, `scripts/telegram-pets/**`, `scripts/telegram-pets*`, `scripts/moonpet*`, `scripts/verify-d1-production-migrations*`, `deployments/**` | Worker/API CI, Moonpet tests, Worker provenance checks |
 | `workers/moonboys-api/migrations/**`, `scripts/verify-d1-production-migrations*`, `deployments/**` | D1 Production Migration Verify |
-| `js/**` except `js/arcade/**`, `css/**`, `*.html`, `wiki/**`, `img/**`, `assets/**`, `art/**`, `data/**` | Visual/static checks, wiki checks, graph publishing integrity |
-| `brand-canon/**` | Graph Publishing Integrity |
+| `js/**`, `css/**`, `**/*.html`, `wiki/**`, `img/**`, `assets/**`, `art/**`, `data/**` | Visual/static checks, wiki checks, graph publishing integrity |
+| `brand-canon/**` | Wiki/static checks, Graph Publishing Integrity, GitHub Pages deployment |
 | `arcade/**`, `games/**`, `js/arcade/**`, `server/block-topia/**`, `shared/block-topia/**`, `scripts/*arcade*`, `scripts/*btqm*`, `scripts/*invaders*` | Arcade CI |
 | `wax/**`, WAX test scripts listed in `scripts/ci-domain-runner.mjs`, WAX rarity/feed/update helpers, `scripts/generate-gkniftyheads-rarity.mjs`, `scripts/generate-gkniftyheads-category-pages.mjs`, `scripts/generate-noballgamess-rarity.mjs`, `scripts/*wax*` | WAX CI |
 
@@ -18,6 +18,8 @@ The main `CI` workflow keeps its existing job names and routes each job with an 
 Workflow YAML, `package.json`, `package-lock.json`, or `scripts/ci-domain-runner.mjs` changes run every `CI` domain because they can affect routing or command resolution.
 
 GitHub Pages deploys the repository root after pruning backend-only directories, so its push trigger includes published static roots such as `img/**`, `assets/**`, `art/**`, `data/**`, and `games/**`, plus generator scripts that can change the packaged site.
+
+GitHub Actions path filters in this repository use positive include patterns only. Nested HTML is matched with `**/*.html`.
 
 ## Manual full CI
 

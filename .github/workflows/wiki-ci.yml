@@ -4,10 +4,15 @@ on:
   pull_request:
     paths:
       - "wiki/**"
-      - "js/**"
-      - "!js/arcade/**"
+      - "js/site-shell.js"
+      - "js/wiki.js"
+      - "js/wiki-index.json"
+      - "js/wiki-search-synonyms.json"
+      - "js/wiki-publish-audit.json"
+      - "js/related-wiki-paths.json"
+      - "js/website-publish-payloads.json"
       - "css/**"
-      - "*.html"
+      - "**/*.html"
       - ".github/workflows/wiki-ci.yml"
       - "package.json"
       - "package-lock.json"

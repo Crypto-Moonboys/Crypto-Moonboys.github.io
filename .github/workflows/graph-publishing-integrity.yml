@@ -4,11 +4,12 @@ on:
   pull_request:
     paths:
       - "js/**"
-      - "!js/arcade/**"
       - "css/**"
-      - "*.html"
+      - "**/*.html"
       - "wiki/**"
       - "brand-canon/**"
+      - "package.json"
+      - "package-lock.json"
       - "scripts/generate-*.js"
       - "scripts/generate-publishing-surfaces.mjs"
       - "scripts/apply-wiki-search-synonyms.mjs"
@@ -18,11 +19,12 @@ on:
     branches: [main]
     paths:
       - "js/**"
-      - "!js/arcade/**"
       - "css/**"
-      - "*.html"
+      - "**/*.html"
       - "wiki/**"
       - "brand-canon/**"
+      - "package.json"
+      - "package-lock.json"
       - "scripts/generate-*.js"
       - "scripts/generate-publishing-surfaces.mjs"
       - "scripts/apply-wiki-search-synonyms.mjs"

@@ -5,10 +5,10 @@ on:
     branches: [main]
     paths:
       - "js/**"
-      - "!js/arcade/**"
       - "css/**"
-      - "*.html"
+      - "**/*.html"
       - "wiki/**"
+      - "brand-canon/**"
       - "img/**"
       - "assets/**"
       - "art/**"

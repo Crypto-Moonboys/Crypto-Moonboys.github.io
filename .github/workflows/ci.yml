@@ -69,6 +69,10 @@ jobs:
                 wax=true
                 visual=true
                 ;;
+              workers/moonboys-api/worker.js)
+                worker_api=true
+                arcade=true
+                ;;
               arcade/**|games/**|js/arcade/**|server/block-topia/**|shared/block-topia/**|scripts/*arcade*|scripts/*btqm*|scripts/*invaders*)
                 arcade=true
                 ;;
@@ -78,7 +82,7 @@ jobs:
               workers/**|scripts/module-type-boundaries.test.mjs|scripts/telegram-link-token-security.test.mjs|scripts/admin-grant-telegram-auth-security.test.mjs|scripts/telegram-daily-digest-and-missed-perks.test.mjs|scripts/telegram-daily-loop-commands.test.mjs|scripts/daily-loop-live-smoke.test.mjs|scripts/telegram-group-event-announcements.test.mjs|scripts/daily-wtf-timed-events.test.mjs|scripts/daily-loop-state-contract.test.mjs|scripts/daily-loop-frontend-state.test.mjs|scripts/scheduled-task-isolation.test.mjs|scripts/market-indexer-removal-guard.test.mjs|scripts/cors-origins.test.mjs|scripts/worker-rate-limit.test.mjs|scripts/leaderboard-hmac-test.mjs|scripts/leaderboard-worker-identity-filter.test.mjs|scripts/leaderboard-worker-p1-regression.test.mjs|scripts/npc-chat-bridge.test.mjs|scripts/sparky-telegram-gate.test.mjs|scripts/telegram-pets/**|scripts/telegram-pets*|scripts/moonpet*|scripts/verify-d1-production-migrations*|scripts/worker-deploy-readiness-audit.test.mjs|scripts/worker-deploy-readiness-audit.mjs|deployments/**)
                 worker_api=true
                 ;;
-              js/**|css/**|*.html|wiki/**|img/**|assets/**|art/**|data/**)
+              js/**|css/**|*.html|wiki/**|brand-canon/**|img/**|assets/**|art/**|data/**)
                 wiki=true
                 visual=true
                 ;;
