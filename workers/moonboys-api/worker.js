@@ -5571,7 +5571,15 @@ async function processPetAction(db, telegramId, action, options = {}) {
 
   const careBehaviour = ['feed', 'play', 'clean', 'sleep'].includes(normalizedAction) ? 'care' : 'combat';
   await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: careBehaviour, activity: careBehaviour });
-  if (careBehaviour === 'care') await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, now });
+  if (careBehaviour === 'care') {
+    const existingEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+    await recordDailyCareChallenge(db, {
+      telegram_id: telegramId,
+      event_key: eventKey,
+      utc_day: existingEvent?.day_key,
+      now,
+    });
+  }
 
   return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp, pet: persistedPet || pet, season };
 }
