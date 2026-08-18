@@ -2683,10 +2683,11 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     }
     await db.prepare(`
       INSERT INTO telegram_pet_events
-        (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-      VALUES (?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?)
+        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      VALUES (?, ?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?)
     `).bind(
       crypto.randomUUID(),
+      run.pet_id,
       telegramId,
       buildStablePetEventKey(['pet_run_fail', telegramId, run.run_id, stepIndex]),
       consolationXp,

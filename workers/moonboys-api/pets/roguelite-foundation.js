@@ -446,6 +446,14 @@ export async function startPetRogueliteRun(db, request = {}) {
   const region = PET_ROGUELITE_REGIONS[String(request.region || 'moon_alley')];
   if (!telegramId || !region) throw new Error('invalid_pet_roguelite_run');
   const runId = String(request.run_id || `rogue-${crypto.randomUUID()}`).slice(0, 120);
+  const existingRun = await db.prepare(`SELECT run_id, pet_id FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`)
+    .bind(runId, telegramId).first().catch(() => null);
+  if (existingRun) {
+    const existingPetId = String(existingRun.pet_id || '').trim();
+    return { accepted: false, duplicate: true, reason: existingPetId ? 'run_exists' : 'run_pet_authority_required',
+      run_id: runId, pet_id: existingPetId || null, region: region.region_id, difficulty: region.difficulty,
+      seed: Math.floor(Number(request.seed) || 0), max_room: Math.max(1, Math.min(100, Math.floor(Number(request.max_room) || region.max_rooms || 10))) };
+  }
   const petId = await resolveActiveRunPetId(db, telegramId);
   if (!petId) throw new Error('active_pet_instance_not_found');
   const seed = Math.floor(Number(request.seed) || 0);
@@ -462,11 +470,16 @@ export async function startPetRogueliteRun(db, request = {}) {
       .bind(analyticsId, petId, runId, telegramId, safeJson({ region: region.region_id, difficulty: region.difficulty, seed }), runId, telegramId),
   ]);
   const accepted = Boolean(results?.[0]?.meta?.changes);
-  const persistedRun = accepted || await db.prepare(`SELECT run_id FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`).bind(runId, telegramId).first().catch(() => null);
+  const persistedRun = await db.prepare(`SELECT run_id, pet_id FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ?`)
+    .bind(runId, telegramId).first().catch(() => null);
   if (persistedRun) await recordMoonpetMemory(db, {
     telegram_id: telegramId, event_key: `${runId}:memory:start`, memory_type: 'first_run', milestone: 'first_run',
   });
-  return { accepted, duplicate: !accepted, run_id: runId, pet_id: petId, region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
+  if (!String(persistedRun?.pet_id || '').trim()) {
+    return { accepted: false, duplicate: !accepted, reason: 'run_pet_authority_required', run_id: runId, pet_id: null,
+      region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
+  }
+  return { accepted, duplicate: !accepted, run_id: runId, pet_id: persistedRun.pet_id, region: region.region_id, difficulty: region.difficulty, seed, max_room: maxRoom };
 }
 
 export async function createPetRunRoom(db, run) {

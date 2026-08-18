@@ -157,14 +157,16 @@ function dailyRoomDifficulty(room) {
 }
 
 async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
-  const [profile, modifierRows] = await Promise.all([
+  const petId = String(run?.pet_id || '').trim();
+  if (!petId) throw new Error('run_pet_authority_required');
+  const [pet, modifierRows] = await Promise.all([
     db.prepare(`SELECT pet_xp, level, health, energy, happiness, cleanliness
-      FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1`).bind(run.telegram_id).first(),
+      FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? LIMIT 1`).bind(petId, run.telegram_id).first(),
     db.prepare(`SELECT modifier_id, effects_json FROM telegram_pet_run_modifiers
       WHERE run_id = ? AND telegram_id = ? ORDER BY modifier_id`).bind(run.run_id, run.telegram_id).all()
       .catch(() => ({ results: [] })),
   ]);
-  if (!profile) throw new Error('daily_run_player_not_found');
+  if (!pet) throw new Error('daily_run_pet_not_found');
   const modifiers = (modifierRows.results || []).map((row) => ({
     modifier_id: String(row.modifier_id || ''),
     effects: parseJsonObject(row.effects_json),
@@ -173,8 +175,8 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
   const roomType = String(room?.room_type || 'choice_event');
   const baseChance = ({ choice_event: 9000, loot: 9500, battle: 8200, elite: 7600, boss: 7000 })[roomType] || 8500;
   const stateAverage = ['health', 'energy', 'happiness', 'cleanliness']
-    .reduce((total, key) => total + Math.max(0, Math.min(100, Number(profile[key]) || 0)), 0) / 4;
-  const authoritativeLevel = Math.max(1, positiveInteger(profile.level, 100), Math.floor(positiveInteger(profile.pet_xp) / 100) + 1);
+    .reduce((total, key) => total + Math.max(0, Math.min(100, Number(pet[key]) || 0)), 0) / 4;
+  const authoritativeLevel = Math.max(1, positiveInteger(pet.level, 100), Math.floor(positiveInteger(pet.pet_xp) / 100) + 1);
   const playerAdjustment = Math.round((stateAverage - 50) * 25) + Math.min(1000, authoritativeLevel * 20);
   const modifierAdjustment = (Number(effects.event_outcome_pct) || 0) * 100
     + (Number(effects.damage_dealt_pct) || 0) * 15
@@ -198,10 +200,10 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
     modifier_ids: modifiers.map((modifier) => modifier.modifier_id),
     player_state: {
       level: authoritativeLevel,
-      health: positiveInteger(profile.health, 100),
-      energy: positiveInteger(profile.energy, 100),
-      happiness: positiveInteger(profile.happiness, 100),
-      cleanliness: positiveInteger(profile.cleanliness, 100),
+      health: positiveInteger(pet.health, 100),
+      energy: positiveInteger(pet.energy, 100),
+      happiness: positiveInteger(pet.happiness, 100),
+      cleanliness: positiveInteger(pet.cleanliness, 100),
     },
     authority: 'daily_moon_run_server_outcome_v1',
   };

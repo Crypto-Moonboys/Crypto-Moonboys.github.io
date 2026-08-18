@@ -2148,6 +2148,29 @@ assert.equal(runChoiceItemResult.accepted, true, 'run choices must accept an ava
 assert.equal((await getPetInventory(runChoiceItemDb, 'run-choice-item')).find((item) => item.key === 'lucky_charm').count, 0,
   'run choices must consume one-use items from the authoritative inventory table');
 
+const failedStepEventDb = seedRepeatRewardPlayer('failed-step-event', 90);
+await ensurePetStarterSeasonSlot(failedStepEventDb, 'failed-step-event', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(failedStepEventDb, 'failed-step-event');
+const failedStepPet = failedStepEventDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='failed-step-event'").get();
+failedStepEventDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
+  VALUES ('failed-step-row', ?, 'failed-step-event', 'failed-step-run', 'pet-s2026-003', 'active', 0, 5, 1)`).run(failedStepPet.pet_id);
+const failedStepChoice = buildPetRunChoiceReplyMarkup({ run_id: 'failed-step-run', depth: 0, max_depth: 5, risk_level: 1, unbanked_items: '{}' })
+  .inline_keyboard[0][0].callback_data.split(':').at(-1);
+const failedStepRandom = Math.random;
+Math.random = () => 0;
+let failedStepResult;
+try {
+  failedStepResult = await processPetRunStep(failedStepEventDb, 'failed-step-event', 'failed-step-run', failedStepChoice,
+    { event_key: 'failed-step-event-key', expected_step_index: 1, source: 'pet_id_audit_regression' });
+} finally {
+  Math.random = failedStepRandom;
+}
+assert.equal(failedStepResult.reason, 'run_failed');
+const failedStepLedger = failedStepEventDb.database.prepare("SELECT pet_id, pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_fail'").get();
+assert.equal(failedStepLedger.pet_id, failedStepPet.pet_id, 'failed-step consolation XP must be visible in the run pet ledger');
+assert.equal(failedStepLedger.pet_xp_awarded, failedStepResult.pet_xp_awarded);
+
 const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
 await ensurePetStarterSeasonSlot(terminalRaceDb, 'terminal-race', new Date('2026-08-15T00:00:00Z'));
 await __petMediaTestHooks.ensureActivePetInstance(terminalRaceDb, 'terminal-race');

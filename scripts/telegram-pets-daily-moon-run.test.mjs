@@ -177,6 +177,15 @@ freshExtractionDb.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_i
 freshExtractionDb.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
   VALUES ('pet-fresh-extraction-player-second', 'fresh-extraction-player', 'pet-s2026-001', 2, CURRENT_TIMESTAMP)`).run();
 freshExtractionDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-fresh-extraction-player-second' WHERE telegram_id='fresh-extraction-player'").run();
+freshExtractionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=0, level=1, health=1, energy=1, happiness=1, cleanliness=1 WHERE telegram_id='fresh-extraction-player'").run();
+freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=900, level=10, health=99, energy=98, happiness=97, cleanliness=96 WHERE pet_id='pet-fresh-extraction-player'").run();
+freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=0, level=1, health=2, energy=2, happiness=2, cleanliness=2 WHERE pet_id='pet-fresh-extraction-player-second'").run();
+const storedPetOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(freshExtractionDb,
+  { ...freshExtractionRun.daily_run, telegram_id: 'fresh-extraction-player', seed: 7 },
+  { room: 1, content_id: 'authority-room', room_type: 'choice_event' }, 'safe');
+assert.deepEqual(storedPetOutcome.player_state, { level: 10, health: 99, energy: 98, happiness: 97, cleanliness: 96 },
+  'Daily outcome authority must use the stored run pet rather than stale profile or active-pet state');
+
 const freshExtraction = await extractDailyMoonRun(freshExtractionDb, {
   telegram_id: 'fresh-extraction-player', run_id: freshExtractionRun.daily_run.run_id, now,
 });
