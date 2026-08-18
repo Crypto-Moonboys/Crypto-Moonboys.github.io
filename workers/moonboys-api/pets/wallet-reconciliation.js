@@ -7,6 +7,23 @@ export const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE = 'wallet_reconciliatio
 export const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY = 'moonpet_wallet_reconcile_recovery_required:v1';
 const PET_ACCOUNT_WALLET_CURRENCIES = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
 
+export function accountWalletRecoveryResolvedSql(ownerSql = 'telegram_pet_profiles.telegram_id') {
+  return `NOT EXISTS (
+    SELECT 1 FROM telegram_pet_reward_claims wallet_recovery
+    WHERE wallet_recovery.telegram_id = ${ownerSql}
+      AND wallet_recovery.source = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE}'
+      AND wallet_recovery.idempotency_key = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY}'
+      AND wallet_recovery.status = 'pending'
+      AND NOT EXISTS (
+        SELECT 1 FROM telegram_pet_reward_claims wallet_reconciled
+        WHERE wallet_reconciled.telegram_id = wallet_recovery.telegram_id
+          AND wallet_reconciled.source = '${PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE}'
+          AND wallet_reconciled.idempotency_key = '${PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY}'
+          AND wallet_reconciled.status = 'awarded'
+      )
+  )`;
+}
+
 function getPetDayKey(now = new Date()) {
   return now.toISOString().slice(0, 10);
 }

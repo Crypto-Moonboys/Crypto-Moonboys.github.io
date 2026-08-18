@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const walletReconciliation = fs.readFileSync(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/030_telegram_pets.sql', import.meta.url), 'utf8');
 const economyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/031_telegram_pets_economy.sql', import.meta.url), 'utf8');
@@ -144,8 +145,8 @@ assert.ok(!worker.includes("path === '/telegram-pets/season/slots'"), '/telegram
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
 const activityRouteSource = worker.slice(worker.indexOf("path === '/telegram-pets/activity'"), worker.indexOf("path === '/telegram-pets/leaderboard'"));
-assert.ok(activityRouteSource.includes('e.event_type <> ?') && activityRouteSource.includes('PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE') && activityRouteSource.includes('PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY'),
-  '/telegram-pets/activity must filter wallet reconciliation markers through shared constants');
+assert.ok(!activityRouteSource.includes('e.event_type <> ?') && activityRouteSource.includes('e.event_key <> ?') && activityRouteSource.includes('PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY'),
+  '/telegram-pets/activity must filter wallet reconciliation markers by the shared event-key constant only');
 assert.ok(worker.includes("path === '/telegram-pets/shop'"), '/telegram-pets/shop route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/inventory'"), '/telegram-pets/inventory route must exist');
 assert.ok(worker.includes("body.action === 'trade'"), 'telegram pets action route must dispatch trade actions');
@@ -738,9 +739,10 @@ assert.ok(award.includes('INSERT INTO telegram_xp_log'), 'Community XP helper mu
 assert.ok(award.includes('UPDATE telegram_users'), 'Community XP helper must update telegram_users');
 assert.ok(award.includes('INSERT INTO telegram_leaderboard'), 'Community XP helper must upsert active leaderboard rows');
 assert.ok(award.includes('ON CONFLICT(telegram_id, season_id)'), 'leaderboard write must be idempotent per user/season');
-assert.ok(worker.includes('function accountWalletRecoveryResolvedSql'), 'account wallet writes must share the recovery-pending freeze predicate');
-assert.ok(worker.includes('PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE') && worker.includes('PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE'),
-  'account wallet recovery freeze must use shared reconciliation marker constants');
+assert.ok(worker.includes('accountWalletRecoveryResolvedSql') && !worker.includes('function accountWalletRecoveryResolvedSql'),
+  'account wallet writes must import the shared recovery-pending freeze predicate');
+assert.ok(walletReconciliation.includes('export function accountWalletRecoveryResolvedSql') && walletReconciliation.includes('PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE') && walletReconciliation.includes('PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE'),
+  'account wallet recovery freeze must use shared reconciliation marker constants from the wallet module');
 assert.ok(worker.includes('ensurePetAccountWalletReadyForMutation'),
   'account wallet mutation paths must attempt reconciliation before trusting recovery state');
 assert.ok(worker.includes("reason: 'wallet_reconciliation_recovery_pending'"),

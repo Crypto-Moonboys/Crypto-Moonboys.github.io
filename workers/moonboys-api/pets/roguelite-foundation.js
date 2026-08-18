@@ -13,11 +13,9 @@ import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
 import {
-  PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY,
-  PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE,
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
-  PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE,
   PET_INSTANCE_AUTHORITY_VERSION,
+  accountWalletRecoveryResolvedSql,
   ensurePetAccountWalletReadyForMutation,
   reconcilePetInstanceWalletToProfile,
 } from './wallet-reconciliation.js';
@@ -127,23 +125,6 @@ function normalizeCurrencyCosts(value = {}) {
 
 function hasAccountWalletMovement(rewards = {}, costs = {}) {
   return ['moon_gold', 'moon_crystals', 'style_tokens'].some((key) => positiveInteger(rewards?.[key]) || positiveInteger(costs?.[key]));
-}
-
-function accountWalletRecoveryResolvedSql(ownerSql = 'telegram_pet_profiles.telegram_id') {
-  return `NOT EXISTS (
-    SELECT 1 FROM telegram_pet_reward_claims wallet_recovery
-    WHERE wallet_recovery.telegram_id = ${ownerSql}
-      AND wallet_recovery.source = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE}'
-      AND wallet_recovery.idempotency_key = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY}'
-      AND wallet_recovery.status = 'pending'
-      AND NOT EXISTS (
-        SELECT 1 FROM telegram_pet_reward_claims wallet_reconciled
-        WHERE wallet_reconciled.telegram_id = wallet_recovery.telegram_id
-          AND wallet_reconciled.source = '${PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE}'
-          AND wallet_reconciled.idempotency_key = '${PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY}'
-          AND wallet_reconciled.status = 'awarded'
-      )
-  )`;
 }
 
 export function validatePetRunModifier(modifier) {

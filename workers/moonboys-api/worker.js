@@ -31,11 +31,9 @@ import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, g
 import { getMoonpetSeasonInfo } from './pets/season-authority.js';
 import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
-  PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY,
-  PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE,
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
-  PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE,
   PET_INSTANCE_AUTHORITY_VERSION,
+  accountWalletRecoveryResolvedSql,
   ensurePetAccountWalletReadyForMutation,
   reconcilePetInstanceWalletToProfile,
 } from './pets/wallet-reconciliation.js';
@@ -3554,23 +3552,6 @@ function normalizePetAccountWalletDelta(deltas = {}) {
 
 function accountWalletAffordabilitySql() {
   return `moon_gold + ? >= 0 AND moon_crystals + ? >= 0 AND style_tokens + ? >= 0`;
-}
-
-function accountWalletRecoveryResolvedSql(ownerSql = 'telegram_pet_profiles.telegram_id') {
-  return `NOT EXISTS (
-    SELECT 1 FROM telegram_pet_reward_claims wallet_recovery
-    WHERE wallet_recovery.telegram_id = ${ownerSql}
-      AND wallet_recovery.source = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE}'
-      AND wallet_recovery.idempotency_key = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY}'
-      AND wallet_recovery.status = 'pending'
-      AND NOT EXISTS (
-        SELECT 1 FROM telegram_pet_reward_claims wallet_reconciled
-        WHERE wallet_reconciled.telegram_id = wallet_recovery.telegram_id
-          AND wallet_reconciled.source = '${PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE}'
-          AND wallet_reconciled.idempotency_key = '${PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY}'
-          AND wallet_reconciled.status = 'awarded'
-      )
-  )`;
 }
 
 function hasPetAccountWalletDelta(deltas = {}) {
@@ -8994,11 +8975,10 @@ export default {
         LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
         LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
         WHERE e.status = 'accepted'
-          AND e.event_type <> ?
           AND e.event_key <> ?
         ORDER BY e.created_at DESC
         LIMIT ?
-      `).bind(PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, limit).all().catch(() => ({ results: [] }));
+      `).bind(PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, limit).all().catch(() => ({ results: [] }));
       return json({ items: (rows.results || []).map((row) => ({
         text: `${displayNameFromRow(row)} ${row.event_type} ${row.pet_name || 'Moonpet'} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
         event_type: row.event_type,

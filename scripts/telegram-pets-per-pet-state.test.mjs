@@ -70,8 +70,10 @@ assert.doesNotMatch(walletReconciliation, /i\.moon_gold - telegram_pet_profiles\
 const savePetProfileSource = worker.slice(worker.indexOf('async function savePetProfile'), worker.indexOf('async function getPetWindowTotals'));
 assert.doesNotMatch(savePetProfileSource, /\bmoon_gold\s*=|\bmoon_crystals\s*=|\bstyle_tokens\s*=/,
   'savePetProfile must not write account-wallet columns from stale whole-profile snapshots');
-assert.match(worker, /PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE[\s\S]*reconcilePetInstanceWalletToProfile/,
-  'worker must import the shared wallet reconciliation marker source/key');
+assert.match(worker, /PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY[\s\S]*accountWalletRecoveryResolvedSql[\s\S]*reconcilePetInstanceWalletToProfile/,
+  'worker must import the shared wallet reconciliation event key and recovery predicate');
+assert.match(walletReconciliation, /export function accountWalletRecoveryResolvedSql[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY/,
+  'wallet module must own the shared recovery marker source/key SQL');
 assert.match(worker, /e\.event_key <> \?/,
   'activity feed must bind the shared wallet reconciliation marker key instead of duplicating the literal');
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
