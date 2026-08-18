@@ -2,6 +2,12 @@ import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOU
 import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
 import { normalizeFaction } from '../shared/faction-canon.js';
+import {
+  PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY,
+  PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE,
+  PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
+  PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE,
+} from './wallet-reconciliation.js';
 
 const integer = (value) => Math.max(0, Math.floor(Number(value) || 0));
 const parse = (value, fallback) => { try { return JSON.parse(value || ''); } catch { return fallback; } };
@@ -40,6 +46,31 @@ function stableLiveSystemRoll(...parts) {
 
 function words(value) {
   return String(value || '').replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function accountWalletRecoveryResolvedSql(ownerSql = 'telegram_pet_profiles.telegram_id') {
+  return `NOT EXISTS (
+    SELECT 1 FROM telegram_pet_reward_claims wallet_recovery
+    WHERE wallet_recovery.telegram_id = ${ownerSql}
+      AND wallet_recovery.source = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE}'
+      AND wallet_recovery.idempotency_key = '${PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY}'
+      AND wallet_recovery.status = 'pending'
+      AND NOT EXISTS (
+        SELECT 1 FROM telegram_pet_reward_claims wallet_reconciled
+        WHERE wallet_reconciled.telegram_id = wallet_recovery.telegram_id
+          AND wallet_reconciled.source = '${PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE}'
+          AND wallet_reconciled.idempotency_key = '${PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY}'
+          AND wallet_reconciled.status = 'awarded'
+      )
+  )`;
+}
+
+async function hasPendingAccountWalletRecovery(db, telegramId) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return false;
+  const pending = await db.prepare(`SELECT 1 AS pending WHERE NOT (${accountWalletRecoveryResolvedSql('?')})`)
+    .bind(owner).first().catch(() => null);
+  return Boolean(pending);
 }
 
 function getDistrictMission(telegramId, pet, region, today = dayKey()) {
@@ -395,6 +426,9 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
   const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
   const wallet = { moon_gold: integer(pet?.moon_gold), ...Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)])) };
   if (!Object.entries(cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'upgrade_cost_missing', cost };
+  if (integer(cost.moon_gold) > 0 && await hasPendingAccountWalletRecovery(db, telegramId)) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', cost };
+  }
   const period = String(requestKey || `level:${target}`);
   const reservation = await reserveSystemEvent(db, telegramId, 'equipment_upgrade', itemKey, period, { target, cost });
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'equipment_already_upgraded' };
@@ -430,12 +464,15 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
   const mats = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
   const wallet = { ...pet, ...Object.fromEntries((mats.results || []).map((row) => [row.material_key, row.quantity])) };
   if (!Object.entries(sink.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'cosmetic_cost_missing', cost: sink.cost };
-  const serial = sink.repeatable ? integer(owned?.quantity) + 1 : 1;
-  const reservation = await reserveSystemEvent(db, telegramId, 'cosmetic', cosmeticKey, String(requestKey || `unlock:${serial}`), { cost: sink.cost });
-  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'cosmetic_already_unlocked', cosmetic: { key: cosmeticKey, quantity: integer(owned?.quantity) } };
   const profileKeys = ['moon_gold', 'moon_crystals', 'style_tokens'];
   const profileCosts = Object.fromEntries(Object.entries(sink.cost).filter(([key]) => profileKeys.includes(key)));
   const materialCosts = Object.entries(sink.cost).filter(([key, amount]) => !profileKeys.includes(key) && integer(amount) > 0);
+  if (Object.values(profileCosts).some((amount) => integer(amount) > 0) && await hasPendingAccountWalletRecovery(db, telegramId)) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', cost: sink.cost };
+  }
+  const serial = sink.repeatable ? integer(owned?.quantity) + 1 : 1;
+  const reservation = await reserveSystemEvent(db, telegramId, 'cosmetic', cosmeticKey, String(requestKey || `unlock:${serial}`), { cost: sink.cost });
+  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'cosmetic_already_unlocked', cosmetic: { key: cosmeticKey, quantity: integer(owned?.quantity) } };
   const profileCheck = Object.entries(profileCosts).map(([key]) => `${key}>=?`).join(' AND ') || '1=1';
   const materialChecks = materialCosts.map(() => 'AND EXISTS (SELECT 1 FROM telegram_pet_material_balances WHERE telegram_id=? AND material_key=? AND quantity>=?)').join(' ');
   const results = await db.batch([
