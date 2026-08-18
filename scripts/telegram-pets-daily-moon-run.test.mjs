@@ -221,6 +221,28 @@ assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram
   WHERE pet_id=? AND earned_day='2026-07-01'`).get(rolloverOldPetId).count, 0,
   'rollover Daily Journey Growth Mark must not settle to the old-season pet');
 
+const rolloverDuplicateDb = new D1();
+const rolloverDuplicateTelegramId = 'rollover-duplicate-player';
+seedPlayer(rolloverDuplicateDb, rolloverDuplicateTelegramId, previousSeasonKey);
+const rolloverDuplicateOldPetId = `pet-${rolloverDuplicateTelegramId}`;
+const rolloverDuplicateCurrentPetId = 'pet-rollover-duplicate-player-current';
+seedAdditionalPet(rolloverDuplicateDb, rolloverDuplicateTelegramId, rolloverDuplicateCurrentPetId, 1, rolloverSeasonKey);
+const rolloverDuplicateRunId = `daily:2026-07-01:${rolloverDuplicateTelegramId}`;
+rolloverDuplicateDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room, depth, max_depth)
+  VALUES ('rollover-duplicate-run', ?, ?, ?, ?, 'moon_alley', 1, 12345, 'active', 0, 10, 0, 10)`)
+  .run(rolloverDuplicateOldPetId, rolloverDuplicateTelegramId, rolloverDuplicateRunId, rolloverSeasonKey);
+const refusedRolloverDuplicate = await createDailyMoonRun(rolloverDuplicateDb, { telegram_id: rolloverDuplicateTelegramId, now: rolloverNow });
+assert.equal(refusedRolloverDuplicate.accepted, false,
+  'Daily Moon Run must reject deterministic run reuse when existing pet authority mismatches the requested current-season pet');
+assert.equal(refusedRolloverDuplicate.reason, 'run_pet_authority_mismatch');
+assert.equal(rolloverDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_runs
+  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(rolloverDuplicateTelegramId).count, 0,
+  'mismatched deterministic run reuse must not create a Daily Run reservation');
+assert.equal(rolloverDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_runs
+  WHERE telegram_id=? AND run_id=? AND pet_id=? AND season_key=?`).get(rolloverDuplicateTelegramId, rolloverDuplicateRunId, rolloverDuplicateOldPetId, rolloverSeasonKey).count, 1,
+  'mismatched deterministic run reuse must not overwrite or migrate the existing run');
+
 const db = new D1();
 seedPlayer(db, 'daily-player');
 const now = new Date('2026-08-11T00:00:00.000Z');

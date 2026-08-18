@@ -268,7 +268,7 @@ export async function createDailyMoonRun(db, request = {}) {
     if (!seasonPet.accepted) {
       return { accepted: false, duplicate: false, reason: seasonPet.reason, utc_day: utcDay, seed: generated.seed };
     }
-    await startPetRogueliteRun(db, {
+    const started = await startPetRogueliteRun(db, {
       telegram_id: telegramId,
       run_id: runId,
       region: 'moon_alley',
@@ -277,6 +277,9 @@ export async function createDailyMoonRun(db, request = {}) {
       season_key: seasonId,
       pet_id: seasonPet.pet_id,
     });
+    if (!started.accepted && !started.duplicate) {
+      return { accepted: false, duplicate: false, reason: started.reason || 'daily_run_pet_authority_mismatch', utc_day: utcDay, run_id: runId, seed: generated.seed };
+    }
   }
   const authoritativeRun = await db.prepare(`SELECT * FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
     .bind(telegramId, runId).first().catch(() => null);
