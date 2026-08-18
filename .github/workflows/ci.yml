@@ -43,15 +43,15 @@ jobs:
           fi
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base="${{ github.event.pull_request.base.sha }}"
+            base_ref="${{ github.event.pull_request.base.sha }}"
             head="${{ github.event.pull_request.head.sha }}"
+            base="$(git merge-base "$base_ref" "$head")"
           else
             base="${{ github.event.before }}"
             head="${{ github.sha }}"
-          fi
-
-          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
-            base="$(git merge-base origin/main "$head")"
+            if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+              base="$(git merge-base origin/main "$head")"
+            fi
           fi
 
           wiki=false
@@ -62,14 +62,14 @@ jobs:
 
           while IFS= read -r path; do
             case "$path" in
-              .github/workflows/ci.yml|package.json|package-lock.json|scripts/ci-domain-runner.mjs)
+              .github/workflows/*|package.json|package-lock.json|scripts/ci-domain-runner.mjs)
                 wiki=true
                 worker_api=true
                 arcade=true
                 wax=true
                 visual=true
                 ;;
-              arcade/**|js/arcade/**|scripts/*arcade*|scripts/*btqm*|scripts/*invaders*)
+              arcade/**|games/**|js/arcade/**|scripts/*arcade*|scripts/*btqm*|scripts/*invaders*)
                 arcade=true
                 ;;
               wax/**|scripts/*wax*)
@@ -78,7 +78,7 @@ jobs:
               workers/**|scripts/*worker*|scripts/telegram-pets/**|scripts/telegram-pets*|scripts/moonpet*|scripts/verify-d1-production-migrations*|deployments/**)
                 worker_api=true
                 ;;
-              js/**|css/**|*.html|wiki/**)
+              js/**|css/**|*.html|wiki/**|img/**|assets/**|art/**|data/**)
                 wiki=true
                 visual=true
                 ;;

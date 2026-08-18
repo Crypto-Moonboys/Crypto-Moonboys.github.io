@@ -8,13 +8,15 @@ GitHub Actions is path-aware so gameplay and infrastructure PRs run the checks f
 | --- | --- |
 | `workers/**`, `scripts/*worker*`, `scripts/telegram-pets/**`, `scripts/telegram-pets*`, `scripts/moonpet*`, `scripts/verify-d1-production-migrations*`, `deployments/**` | Worker/API CI, Moonpet tests, Worker provenance checks |
 | `workers/moonboys-api/migrations/**`, `scripts/verify-d1-production-migrations*`, `deployments/**` | D1 Production Migration Verify |
-| `js/**` except `js/arcade/**`, `css/**`, `*.html`, `wiki/**` | Visual/static checks, wiki checks, graph publishing integrity |
-| `arcade/**`, `js/arcade/**`, `scripts/*arcade*`, `scripts/*btqm*`, `scripts/*invaders*` | Arcade CI |
+| `js/**` except `js/arcade/**`, `css/**`, `*.html`, `wiki/**`, `img/**`, `assets/**`, `art/**`, `data/**` | Visual/static checks, wiki checks, graph publishing integrity |
+| `arcade/**`, `games/**`, `js/arcade/**`, `scripts/*arcade*`, `scripts/*btqm*`, `scripts/*invaders*` | Arcade CI |
 | `wax/**`, `scripts/*wax*` | WAX CI |
 
 The main `CI` workflow keeps its existing job names and routes each job with an internal changed-path detector. Jobs outside the changed domain are skipped rather than renamed or removed, which keeps branch-protection check names stable.
 
 Workflow YAML, `package.json`, `package-lock.json`, or `scripts/ci-domain-runner.mjs` changes run every `CI` domain because they can affect routing or command resolution.
+
+GitHub Pages deploys the repository root after pruning backend-only directories, so its push trigger includes published static roots such as `img/**`, `assets/**`, `art/**`, `data/**`, and `games/**`, plus generator scripts that can change the packaged site.
 
 ## Manual full CI
 

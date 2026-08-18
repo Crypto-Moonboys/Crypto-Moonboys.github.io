@@ -9,6 +9,15 @@ on:
       - "css/**"
       - "*.html"
       - "wiki/**"
+      - "img/**"
+      - "assets/**"
+      - "art/**"
+      - "data/**"
+      - "games/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/generate-*.js"
+      - "scripts/*.mjs"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
