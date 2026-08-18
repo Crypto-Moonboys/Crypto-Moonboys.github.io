@@ -2398,12 +2398,29 @@ function buildPetRunStepOutcome(run, choice, pet, inventory = []) {
   };
 }
 
-function getUnaffordablePetRunCosts(pet, costs = {}) {
+function getPetRunWalletCosts(costs = {}) {
+  return {
+    moon_gold: Math.max(0, Math.floor(Number(costs.moon_gold || 0))),
+    moon_crystals: Math.max(0, Math.floor(Number(costs.moon_crystals || 0))),
+    style_tokens: Math.max(0, Math.floor(Number(costs.style_tokens || 0))),
+  };
+}
+
+function getPetRunStatCosts(costs = {}) {
+  return {
+    energy: Math.max(0, Number(costs.energy || 0)),
+    hunger: Math.max(0, Number(costs.hunger || 0)),
+    happiness: Math.max(0, Number(costs.happiness || 0)),
+    cleanliness: Math.max(0, Number(costs.cleanliness || 0)),
+  };
+}
+
+function getUnaffordablePetRunCosts(pet, costs = {}, wallet = null) {
   const missing = {};
   const currencyChecks = {
-    moon_gold: clampPetCurrency(pet?.moon_gold),
-    moon_crystals: clampPetCurrency(pet?.moon_crystals),
-    style_tokens: clampPetCurrency(pet?.style_tokens),
+    moon_gold: clampPetCurrency(wallet?.moon_gold),
+    moon_crystals: clampPetCurrency(wallet?.moon_crystals),
+    style_tokens: clampPetCurrency(wallet?.style_tokens),
   };
   for (const [key, balance] of Object.entries(currencyChecks)) {
     const cost = Math.max(0, Math.floor(Number(costs[key] || 0)));
@@ -2413,13 +2430,11 @@ function getUnaffordablePetRunCosts(pet, costs = {}) {
 }
 
 function applyPetRunCosts(pet, costs = {}) {
-  pet.energy = clampPetStat(Number(pet.energy || 0) - Math.max(0, Number(costs.energy || 0)));
-  pet.hunger = clampPetStat(Number(pet.hunger || 0) + Math.max(0, Number(costs.hunger || 0)));
-  pet.happiness = clampPetStat(Number(pet.happiness || 0) - Math.max(0, Number(costs.happiness || 0)));
-  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) - Math.max(0, Number(costs.cleanliness || 0)));
-  pet.moon_gold = clampPetCurrency(Number(pet.moon_gold || 0) - Math.max(0, Number(costs.moon_gold || 0)));
-  pet.moon_crystals = clampPetCurrency(Number(pet.moon_crystals || 0) - Math.max(0, Number(costs.moon_crystals || 0)));
-  pet.style_tokens = clampPetCurrency(Number(pet.style_tokens || 0) - Math.max(0, Number(costs.style_tokens || 0)));
+  const statCosts = getPetRunStatCosts(costs);
+  pet.energy = clampPetStat(Number(pet.energy || 0) - statCosts.energy);
+  pet.hunger = clampPetStat(Number(pet.hunger || 0) + statCosts.hunger);
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) - statCosts.happiness);
+  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) - statCosts.cleanliness);
 }
 
 function applyPetRunStatRewards(pet, rewards = {}) {
@@ -2578,7 +2593,10 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   if (clampPetStat(pet.energy) <= 0) return { accepted: false, reason: 'pet_tired', run, choice, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   const inventory = await getPetInventory(db, telegramId).catch(() => []);
   const outcome = buildPetRunStepOutcome(run, choice, pet, inventory);
-  const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs);
+  const accountWallet = await readPetAccountWallet(db, telegramId);
+  const walletCosts = getPetRunWalletCosts(outcome.costs);
+  const walletCostDeltas = { moon_gold: -walletCosts.moon_gold, moon_crystals: -walletCosts.moon_crystals, style_tokens: -walletCosts.style_tokens };
+  const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs, accountWallet);
   if (Object.keys(missingCosts).length) {
     return { accepted: false, reason: 'insufficient_run_cost', run, choice, pet, outcome, missing_costs: missingCosts, xp_awarded: 0, pet_xp_awarded: 0 };
   }
@@ -2592,8 +2610,10 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     INSERT OR IGNORE INTO telegram_pet_run_steps
       (id, pet_id, telegram_id, run_id, step_index, choice_key, choice_type, event_key, success, risk_roll, pet_xp_delta, moon_gold_delta, moon_crystals_delta, style_tokens_delta, item_key, metadata)
     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-    WHERE EXISTS (SELECT 1 FROM telegram_pet_runs
-      WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?)
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_runs
+        WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?)
+      AND EXISTS (SELECT 1 FROM telegram_pet_profiles
+        WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()})
       AND (? IS NULL OR EXISTS (SELECT 1 FROM telegram_pet_inventory
         WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0))
   `).bind(
@@ -2616,6 +2636,10 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     telegramId,
     run.run_id,
     stepIndex - 1,
+    telegramId,
+    walletCostDeltas.moon_gold,
+    walletCostDeltas.moon_crystals,
+    walletCostDeltas.style_tokens,
     outcome.consumed_item_key,
     telegramId,
     outcome.consumed_item_key,
@@ -2654,7 +2678,8 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + consolationXp));
     updatePetStreakForAction(pet, dayKey);
     pet.last_decay_at = new Date().toISOString();
-    const terminalStatements = [stepInsertStatement, db.prepare(`
+    const terminalStatements = [stepInsertStatement, accountWalletDeltaStatement(db, telegramId, walletCostDeltas,
+      'EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)', [stepId]), db.prepare(`
       UPDATE telegram_pet_runs
       SET status = 'failed',
           depth = ?,
@@ -2670,7 +2695,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
       RETURNING run_id
     `).bind(stepIndex, telegramId, run.run_id, stepIndex - 1, stepId), ...consumedItemStatements];
     const terminalResults = await db.batch(terminalStatements);
-    if (!terminalResults?.[1]?.results?.[0]) {
+    if (!terminalResults?.[2]?.results?.[0]) {
       return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
     }
     await db.prepare(`
@@ -2708,7 +2733,8 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   updatePetStreakForAction(pet, dayKey);
   applyPetRunStatRewards(pet, outcome.rewards);
   pet.last_decay_at = new Date().toISOString();
-  const stepStatements = [stepInsertStatement, db.prepare(`
+  const stepStatements = [stepInsertStatement, accountWalletDeltaStatement(db, telegramId, walletCostDeltas,
+    'EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)', [stepId]), db.prepare(`
     UPDATE telegram_pet_runs
     SET status = ?,
         depth = ?,
@@ -2743,7 +2769,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     stepId,
   ), ...consumedItemStatements];
   const stepResults = await db.batch(stepStatements);
-  if (!stepResults?.[1]?.results?.[0]) {
+  if (!stepResults?.[2]?.results?.[0]) {
     return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
   await saveRunPetInstance(db, run.pet_id, pet);
@@ -3170,23 +3196,36 @@ async function readPetAccountWallet(db, telegramId) {
   return profile ? pickPetAccountWallet(profile) : null;
 }
 
-async function applyPetAccountWalletDelta(db, telegramId, deltas = {}) {
-  const owner = String(telegramId || '').trim();
-  if (!owner) return null;
+function normalizePetAccountWalletDelta(deltas = {}) {
   const moonGoldDelta = Math.trunc(Number(deltas.moon_gold ?? deltas.moonGoldDelta ?? 0) || 0);
   const moonCrystalsDelta = Math.trunc(Number(deltas.moon_crystals ?? deltas.moonCrystalsDelta ?? 0) || 0);
   const styleTokensDelta = Math.trunc(Number(deltas.style_tokens ?? deltas.styleTokensDelta ?? 0) || 0);
-  if (!moonGoldDelta && !moonCrystalsDelta && !styleTokensDelta) return readPetAccountWallet(db, owner);
-  const result = await db.prepare(`
+  return { moonGoldDelta, moonCrystalsDelta, styleTokensDelta };
+}
+
+function accountWalletAffordabilitySql() {
+  return `moon_gold + ? >= 0 AND moon_crystals + ? >= 0 AND style_tokens + ? >= 0`;
+}
+
+function accountWalletDeltaStatement(db, telegramId, deltas = {}, receiptExistsSql = '1 = 1', receiptArgs = []) {
+  const { moonGoldDelta, moonCrystalsDelta, styleTokensDelta } = normalizePetAccountWalletDelta(deltas);
+  return db.prepare(`
     UPDATE telegram_pet_profiles
     SET moon_gold = MIN(999999, MAX(0, moon_gold + ?)),
         moon_crystals = MIN(999999, MAX(0, moon_crystals + ?)),
         style_tokens = MIN(999999, MAX(0, style_tokens + ?))
     WHERE telegram_id = ?
-      AND moon_gold + ? >= 0
-      AND moon_crystals + ? >= 0
-      AND style_tokens + ? >= 0
-  `).bind(moonGoldDelta, moonCrystalsDelta, styleTokensDelta, owner, moonGoldDelta, moonCrystalsDelta, styleTokensDelta).run();
+      AND ${accountWalletAffordabilitySql()}
+      AND ${receiptExistsSql}
+  `).bind(moonGoldDelta, moonCrystalsDelta, styleTokensDelta, telegramId, moonGoldDelta, moonCrystalsDelta, styleTokensDelta, ...receiptArgs);
+}
+
+async function applyPetAccountWalletDelta(db, telegramId, deltas = {}) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return null;
+  const { moonGoldDelta, moonCrystalsDelta, styleTokensDelta } = normalizePetAccountWalletDelta(deltas);
+  if (!moonGoldDelta && !moonCrystalsDelta && !styleTokensDelta) return readPetAccountWallet(db, owner);
+  const result = await accountWalletDeltaStatement(db, owner, deltas).run();
   if (Number(result?.meta?.changes || 0) !== 1) return null;
   return readPetAccountWallet(db, owner);
 }
@@ -5128,31 +5167,48 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   if (!canAffordPetItem(pet, item)) return { accepted: false, reason: 'not_enough_pet_currency', item, pet };
 
   const cost = item.cost || {};
-  const wallet = await applyPetAccountWalletDelta(db, telegramId, {
+  const walletDeltas = {
     moon_gold: -Math.max(0, Number(cost.moon_gold || 0)),
     moon_crystals: -Math.max(0, Number(cost.moon_crystals || 0)),
     style_tokens: -Math.max(0, Number(cost.style_tokens || 0)),
-  });
-  if (!wallet) return { accepted: false, reason: 'not_enough_pet_currency', item, pet };
-  Object.assign(pet, wallet);
+  };
+  const eventId = crypto.randomUUID();
+  const metadata = JSON.stringify({ source: options.source || 'telegram_bot', item_key: item.key, slot: item.slot, cost });
+  const purchasedAt = now.toISOString();
+  const purchaseResults = await db.batch([
+    db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_events
+        (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, 'buy', ?, 0, 0, ?, ?, ?, 'pending', 'shop_purchase_pending', ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()})
+      RETURNING id
+    `).bind(eventId, telegramId, eventKey, season.key, dayKey, weekKey, metadata, telegramId,
+      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens),
+    accountWalletDeltaStatement(db, telegramId, walletDeltas,
+      "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
+    db.prepare(`
+      UPDATE telegram_pet_profiles
+      SET equipped_${item.slot} = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+    `).bind(item.key, purchasedAt, telegramId, eventId),
+    db.prepare(`
+      UPDATE telegram_pet_instances
+      SET equipped_${item.slot} = ?, last_decay_at = ?, source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+    `).bind(item.key, purchasedAt, PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
+    db.prepare(`
+      UPDATE telegram_pet_events
+      SET status = 'accepted', reason = 'shop_purchase'
+      WHERE id = ? AND status = 'pending'
+        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND equipped_${item.slot} = ?)
+      RETURNING id
+    `).bind(eventId, telegramId, item.key),
+  ]);
+  if (!purchaseResults?.[4]?.results?.[0]) return { accepted: false, reason: 'not_enough_pet_currency', item, pet };
+  const wallet = await readPetAccountWallet(db, telegramId);
+  if (wallet) Object.assign(pet, wallet);
   pet[`equipped_${item.slot}`] = item.key;
-  pet.last_decay_at = now.toISOString();
-
-  await db.prepare(`
-    INSERT INTO telegram_pet_events
-      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-    VALUES (?, ?, 'buy', ?, 0, 0, ?, ?, ?, 'accepted', 'shop_purchase', ?)
-  `).bind(
-    crypto.randomUUID(),
-    telegramId,
-    eventKey,
-    season.key,
-    dayKey,
-    weekKey,
-    JSON.stringify({ source: options.source || 'telegram_bot', item_key: item.key, slot: item.slot, cost }),
-  ).run();
-
-  await savePetProfile(db, pet);
+  pet.last_decay_at = purchasedAt;
   return { accepted: true, reason: 'shop_purchase', item, pet, xp_awarded: 0, pet_xp_awarded: 0 };
 }
 
@@ -5206,42 +5262,57 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   } else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) {
     petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
   }
-  const wallet = await applyPetAccountWalletDelta(db, telegramId, { moon_gold: goldDelta, moon_crystals: crystalDelta });
-  if (!wallet) return { accepted: false, reason: 'not_enough_moon_gold', pet };
-  Object.assign(pet, wallet);
+  const walletDeltas = { moon_gold: goldDelta, moon_crystals: crystalDelta };
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
 
-  await db.prepare(`
-    INSERT INTO telegram_pet_events
-      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-    VALUES (?, ?, 'trade', ?, 0, ?, ?, ?, ?, 'accepted', ?, ?)
-  `).bind(
-    crypto.randomUUID(),
-    telegramId,
-    eventKey,
-    petXp,
-    season.key,
-    dayKey,
-    weekKey,
-    won ? 'trade_won' : 'trade_lost',
-    JSON.stringify({ source: options.source || 'telegram_bot', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, roll }),
-  ).run();
-
-  await savePetProfile(db, pet);
-  await db.prepare(`
-    INSERT INTO telegram_pet_season_state
-      (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(telegram_id, season_key) DO UPDATE SET
-      season_xp = season_xp + excluded.season_xp,
-      weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
-      daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
-      daily_key = excluded.daily_key,
-      weekly_key = excluded.weekly_key,
-      updated_at = CURRENT_TIMESTAMP
-  `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey).run();
+  const eventId = crypto.randomUUID();
+  const metadata = JSON.stringify({ source: options.source || 'telegram_bot', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, roll });
+  const tradeResults = await db.batch([
+    db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_events
+        (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, 'trade', ?, 0, ?, ?, ?, ?, 'pending', 'trade_pending', ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()})
+      RETURNING id
+    `).bind(eventId, telegramId, eventKey, petXp, season.key, dayKey, weekKey, metadata, telegramId,
+      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens || 0),
+    accountWalletDeltaStatement(db, telegramId, walletDeltas,
+      "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
+    db.prepare(`
+      UPDATE telegram_pet_profiles
+      SET pet_xp = ?, level = ?, stage = ?, streak_days = ?, last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+    `).bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.streak_days, pet.last_active_day, pet.last_decay_at, telegramId, eventId),
+    db.prepare(`
+      UPDATE telegram_pet_instances
+      SET pet_xp = ?, level = ?, stage = ?, streak_days = ?, last_active_day = ?, last_decay_at = ?, source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+    `).bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.streak_days, pet.last_active_day, pet.last_decay_at,
+      PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
+    db.prepare(`
+      INSERT INTO telegram_pet_season_state
+        (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
+      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+      ON CONFLICT(telegram_id, season_key) DO UPDATE SET
+        season_xp = season_xp + excluded.season_xp,
+        weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
+        daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
+        daily_key = excluded.daily_key,
+        weekly_key = excluded.weekly_key,
+        updated_at = CURRENT_TIMESTAMP
+    `).bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey, eventId),
+    db.prepare(`
+      UPDATE telegram_pet_events
+      SET status = 'accepted', reason = ?
+      WHERE id = ? AND status = 'pending'
+      RETURNING id
+    `).bind(won ? 'trade_won' : 'trade_lost', eventId),
+  ]);
+  if (!tradeResults?.[5]?.results?.[0]) return { accepted: false, reason: 'not_enough_moon_gold', pet };
+  const wallet = await readPetAccountWallet(db, telegramId);
+  if (wallet) Object.assign(pet, wallet);
 
   return { accepted: true, reason: won ? 'trade_won' : 'trade_lost', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, xp_awarded: 0, pet_xp_awarded: petXp, pet };
 }
@@ -12440,6 +12511,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetRepeatRewardMultiplier,
   parsePetRepeatRewardReservation,
   processPetJob,
+  processPetShopPurchase,
   processPetGoldTrade,
   processPetRandomEvent,
   processPetAdventure,

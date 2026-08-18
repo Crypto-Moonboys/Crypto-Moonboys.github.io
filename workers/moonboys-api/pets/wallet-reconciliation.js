@@ -28,7 +28,7 @@ function walletLedgerAmount(currency) {
   const path = `$.${currency}`;
   const requestedPath = `$.requested.${currency}`;
   const costPath = `$.currency_costs.${currency}`;
-  return `MAX(0,
+  return `(
     CAST(COALESCE(
       json_extract(NULLIF(c.applied_rewards, ''), '${path}'),
       json_extract(NULLIF(c.requested_rewards, ''), '${path}'),
@@ -41,7 +41,7 @@ function walletLedgerAmount(currency) {
 
 function ledgerBackedWalletSubquery(currency) {
   return `
-    SELECT SUM(MIN(ledger.wallet_amount, MAX(0, COALESCE(i.${currency}, 0))))
+    SELECT SUM(ledger.wallet_amount)
     FROM (
       SELECT c.pet_id, SUM(${walletLedgerAmount(currency)}) AS wallet_amount
       FROM telegram_pet_reward_claims c
@@ -63,7 +63,37 @@ function ledgerBackedWalletSubquery(currency) {
      AND i.telegram_id = ?
      AND i.status IN ('active', 'retired', 'archived')
      AND i.source_profile_updated_at = ?
-    WHERE ledger.wallet_amount > 0`;
+    WHERE ledger.wallet_amount <> 0`;
+}
+
+async function assertReconciliationLedgerIsSafe(db, owner) {
+  const ambiguous = await db.prepare(`
+    SELECT c.claim_id
+    FROM telegram_pet_reward_claims c
+    JOIN telegram_pet_instances i
+      ON i.pet_id = c.pet_id
+     AND i.telegram_id = c.telegram_id
+     AND i.status IN ('active', 'retired', 'archived')
+     AND i.source_profile_updated_at = ?
+    WHERE c.telegram_id = ?
+      AND c.pet_id IS NOT NULL
+      AND c.status = 'awarded'
+      AND c.source <> ?
+      AND (
+        NOT json_valid(COALESCE(NULLIF(c.applied_rewards, ''), '{}'))
+        OR NOT json_valid(COALESCE(NULLIF(c.requested_rewards, ''), '{}'))
+        OR NOT json_valid(COALESCE(NULLIF(c.metadata, ''), '{}'))
+        OR NOT EXISTS (
+          SELECT 1 FROM telegram_pet_events e
+          WHERE e.telegram_id = c.telegram_id
+            AND e.pet_id = c.pet_id
+            AND e.status = 'accepted'
+            AND e.metadata = c.metadata
+        )
+      )
+    LIMIT 1
+  `).bind(PET_INSTANCE_AUTHORITY_VERSION, owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE).first();
+  if (ambiguous) throw new Error('moonpet_wallet_reconciliation_ambiguous_ledger');
 }
 
 async function hasPetAccountWalletReconciliationMarker(db, owner) {
@@ -78,15 +108,16 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
 // No migration is required for the PR #1224 -> #1228 wallet repair. The
 // existing reward-claim ledger is not used by the public activity feed, has a
 // unique owner/source/idempotency receipt, and lets us reconstruct only
-// accepted historical pet_id wallet rewards. The current profile balance is
-// never used as a per-pet baseline: each ledger total is bounded by that pet's
-// sentinel instance wallet cache so post-fix account-settled claims cannot be
-// replayed into the account wallet.
+// accepted historical pet_id wallet credits and debits as signed net values.
+// The current profile balance is never used as a per-pet baseline, and the
+// signed ledger is only considered safe when every sentinel-backed claim has a
+// matching accepted event with parseable reward/cost metadata.
 export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
   const owner = String(telegramId || '').trim();
   if (!owner) return false;
   try {
     if (await hasPetAccountWalletReconciliationMarker(db, owner)) return false;
+    await assertReconciliationLedgerIsSafe(db, owner);
     const markerId = crypto.randomUUID();
     const dayKey = getPetDayKey(now);
     const metadata = JSON.stringify({
@@ -109,9 +140,9 @@ export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = 
         .bind(markerId, owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, dayKey, metadata,
           owner, owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY),
       db.prepare(`UPDATE telegram_pet_profiles SET
-          moon_gold = MIN(?, moon_gold + COALESCE((${ledgerBackedWalletSubquery('moon_gold')}), 0)),
-          moon_crystals = MIN(?, moon_crystals + COALESCE((${ledgerBackedWalletSubquery('moon_crystals')}), 0)),
-          style_tokens = MIN(?, style_tokens + COALESCE((${ledgerBackedWalletSubquery('style_tokens')}), 0))
+          moon_gold = MIN(?, MAX(0, moon_gold + COALESCE((${ledgerBackedWalletSubquery('moon_gold')}), 0))),
+          moon_crystals = MIN(?, MAX(0, moon_crystals + COALESCE((${ledgerBackedWalletSubquery('moon_crystals')}), 0))),
+          style_tokens = MIN(?, MAX(0, style_tokens + COALESCE((${ledgerBackedWalletSubquery('style_tokens')}), 0)))
         WHERE telegram_id = ? AND EXISTS (
           SELECT 1 FROM telegram_pet_reward_claims
           WHERE claim_id = ? AND source = ? AND idempotency_key = ? AND status = 'awarded'

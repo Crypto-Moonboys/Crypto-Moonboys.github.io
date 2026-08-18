@@ -35,6 +35,7 @@ const {
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
+  processPetShopPurchase,
   processPetGoldTrade,
   processPetAdventure,
   claimPetActivitySession,
@@ -901,8 +902,10 @@ assert.ok(runStep.includes('telegram_pet_run_steps'), 'run steps must persist st
 assert.ok(runStep.includes('telegram_pet_runs'), 'run steps must update persistent run state');
 assert.ok(runStep.includes('const suppliedExpectedStepIndex = options.expected_step_index'), 'run steps must accept an expected callback step index');
 assert.ok(runStep.includes("reason: 'stale_run_step'"), 'stale callback steps must be rejected with a clear reason');
-assert.ok(runStep.includes('getUnaffordablePetRunCosts(pet, outcome.costs)'), 'run steps must validate rolled currency costs before applying rewards');
+assert.ok(runStep.includes('const accountWallet = await readPetAccountWallet(db, telegramId)'), 'run steps must read account wallet authority before checking wallet costs');
+assert.ok(runStep.includes('getUnaffordablePetRunCosts(pet, outcome.costs, accountWallet)'), 'run steps must validate rolled wallet costs against the account wallet before applying rewards');
 assert.ok(runStep.includes("reason: 'insufficient_run_cost'"), 'unaffordable run steps must be rejected with a clear reason');
+assert.ok(runStep.includes('accountWalletDeltaStatement(db, telegramId, walletCostDeltas'), 'accepted run steps must debit wallet costs through account-wallet CAS');
 assert.ok(runStep.includes("'run_item_use'"), 'accepted run steps must record consumed one-use run items');
 assert.ok(runStep.includes('consumed_item_key: outcome.consumed_item_key'), 'run item consumption metadata must preserve the consumed item key');
 assert.ok(runStep.includes("SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?"), 'run steps must short-circuit duplicate callbacks by event key');
@@ -957,13 +960,13 @@ assertOrder(
 );
 assertOrder(
   runStep,
-  'const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs);',
+  'const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs, accountWallet);',
   'applyPetRunCosts(pet, outcome.costs);',
   'run step costs must be affordable before any costs are applied'
 );
 assertOrder(
   runStep,
-  'const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs);',
+  'const missingCosts = getUnaffordablePetRunCosts(pet, outcome.costs, accountWallet);',
   'INSERT OR IGNORE INTO telegram_pet_run_steps',
   'unaffordable run steps must be rejected before writing step rewards'
 );
@@ -977,7 +980,7 @@ assertOrder(
 assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await saveRunPetInstance(db, run.pet_id, pet);'),
   'run stat rewards must be applied before saving the successful step pet');
 assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('RETURNING run_id'), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
-assert.ok(runStep.includes("if (!stepResults?.[1]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
+assert.ok(runStep.includes("if (!stepResults?.[2]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
   'a run step that loses a terminal-state race must be rejected without applying pet changes');
 assert.ok(runStep.includes('inventory_authority: true'), 'authority-owned run item consumption must bypass the temporary legacy cutover bridge');
 
@@ -1038,14 +1041,14 @@ const actionRoute = routeBlock('/telegram-pets/action');
 assert.ok(actionRoute.includes('expected_step_index: body.expected_step_index'), '/telegram-pets/action run_step must carry expected callback step index');
 
 assert.deepEqual(
-  getUnaffordablePetRunCosts({ moon_gold: 3, moon_crystals: 1, style_tokens: 0 }, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }),
+  getUnaffordablePetRunCosts({}, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }, { moon_gold: 3, moon_crystals: 1, style_tokens: 0 }),
   { moon_gold: { required: 4, available: 3 }, style_tokens: { required: 2, available: 0 } },
-  'run cost validator must report missing currencies without clamping to zero'
+  'run cost validator must report missing account-wallet currencies without reading pet wallet fields'
 );
 assert.deepEqual(
-  getUnaffordablePetRunCosts({ moon_gold: 10, moon_crystals: 1, style_tokens: 2 }, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }),
+  getUnaffordablePetRunCosts({}, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }, { moon_gold: 10, moon_crystals: 1, style_tokens: 2 }),
   {},
-  'run cost validator must allow affordable currency costs'
+  'run cost validator must allow affordable account-wallet currency costs'
 );
 {
   const pet = { health: 98, hunger: 9, happiness: 94, cleanliness: 91, energy: 88 };
@@ -1736,6 +1739,33 @@ assert.ok(tradeCommand.includes('eventKey = null') && tradeCommand.includes('eve
 assert.ok(tradeCommand.includes('if (result.duplicate)') && !tradeCommand.includes('Trade lost: undefined gold'), 'duplicate trade callbacks must return safe copy without undefined losses');
 assert.ok(callbackBranch.includes('cmdPetTrade(db, tok, chatId, telegramId, wager, eventKey)'), 'trade callback router must pass callback_query identity into settlement');
 
+const repeatPurchaseDb = seedRepeatRewardPlayer('purchase-repeat', 70);
+repeatPurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-repeat'").run();
+await ensurePetStarterSeasonSlot(repeatPurchaseDb, 'purchase-repeat', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(repeatPurchaseDb, 'purchase-repeat');
+const firstPurchase = await processPetShopPurchase(repeatPurchaseDb, 'purchase-repeat', 'moon_kibble', { event_key: 'callback:buy:moon-kibble', source: 'telegram_callback' });
+assert.equal(firstPurchase.accepted, true, 'first shop purchase must execute');
+assert.equal(repeatPurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'purchase-repeat'").get().moon_gold, 55,
+  'shop purchase must debit account wallet authority once');
+const duplicatePurchase = await processPetShopPurchase(repeatPurchaseDb, 'purchase-repeat', 'moon_kibble', { event_key: 'callback:buy:moon-kibble', source: 'telegram_callback' });
+assert.equal(duplicatePurchase.duplicate, true, 'duplicate shop purchase event key must resolve as duplicate');
+assert.equal(repeatPurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'purchase-repeat'").get().moon_gold, 55,
+  'duplicate shop purchase event key must not double-debit the account wallet');
+assert.equal(repeatPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-repeat' AND event_type = 'buy' AND status = 'accepted'").get().count, 1,
+  'duplicate shop purchase event key must create exactly one accepted receipt');
+
+const insufficientPurchaseDb = seedRepeatRewardPlayer('purchase-insufficient', 70);
+insufficientPurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 40 WHERE telegram_id = 'purchase-insufficient'").run();
+await ensurePetStarterSeasonSlot(insufficientPurchaseDb, 'purchase-insufficient', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(insufficientPurchaseDb, 'purchase-insufficient');
+insufficientPurchaseDb.database.prepare("UPDATE telegram_pet_instances SET moon_gold = 999 WHERE telegram_id = 'purchase-insufficient'").run();
+const insufficientPurchase = await processPetShopPurchase(insufficientPurchaseDb, 'purchase-insufficient', 'moon_kibble', { event_key: 'callback:buy:insufficient', source: 'telegram_callback' });
+assert.equal(insufficientPurchase.accepted, false, 'insufficient account wallet must block shop purchase');
+assert.equal(insufficientPurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'purchase-insufficient'").get().moon_gold, 40,
+  'insufficient shop purchase must not debit the account wallet');
+assert.equal(insufficientPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-insufficient' AND event_key = 'callback:buy:insufficient' AND status = 'accepted'").get().count, 0,
+  'insufficient shop purchase must not create an accepted receipt');
+
 function seedPetActivitySession(telegramId, options = {}) {
   const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
   const elapsedSeconds = Number(options.elapsed_seconds || 1800);
@@ -2157,6 +2187,76 @@ try {
 assert.equal(runChoiceItemResult.accepted, true, 'run choices must accept an available authority-backed one-use item');
 assert.equal((await getPetInventory(runChoiceItemDb, 'run-choice-item')).find((item) => item.key === 'lucky_charm').count, 0,
   'run choices must consume one-use items from the authoritative inventory table');
+
+function seedWalletCostRun(telegramId, profileGold, instanceGold) {
+  const db = seedRepeatRewardPlayer(telegramId, 90);
+  db.database.prepare('UPDATE telegram_pet_profiles SET moon_gold = ? WHERE telegram_id = ?').run(profileGold, telegramId);
+  return ensurePetStarterSeasonSlot(db, telegramId, new Date('2026-08-15T00:00:00Z')).then(async () => {
+    await __petMediaTestHooks.ensureActivePetInstance(db, telegramId);
+    const pet = db.database.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = ?').get(telegramId);
+    db.database.prepare('UPDATE telegram_pet_instances SET moon_gold = ?, energy = 90, source_profile_updated_at = ? WHERE pet_id = ?')
+      .run(instanceGold, '0001-01-01 00:00:00', pet.pet_id);
+    let tradeDepth = null;
+    for (let depth = 0; depth < 8; depth += 1) {
+      const preview = { run_id: `${telegramId}-run`, depth, max_depth: 100, risk_level: 1, unbanked_items: '{}' };
+      const callbacks = buildPetRunChoiceReplyMarkup(preview).inline_keyboard.flat().map((button) => button.callback_data);
+      if (callbacks.some((callback) => callback.endsWith(':trade'))) {
+        tradeDepth = depth;
+        break;
+      }
+    }
+    assert.notEqual(tradeDepth, null, 'test fixture must find a Moon Run trade step');
+    db.database.prepare(`INSERT INTO telegram_pet_runs
+      (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level)
+      VALUES (?, ?, ?, ?, 'pet-s2026-003', 'active', ?, 100, 1)`)
+      .run(`${telegramId}-row`, pet.pet_id, telegramId, `${telegramId}-run`, tradeDepth);
+    return { db, pet, runId: `${telegramId}-run`, expectedStepIndex: tradeDepth + 1 };
+  });
+}
+
+const accountRunCost = await seedWalletCostRun('run-wallet-cost', 100, 0);
+const runWalletRandom = Math.random;
+Math.random = () => 0.99;
+let runWalletResult;
+try {
+  runWalletResult = await processPetRunStep(accountRunCost.db, 'run-wallet-cost', accountRunCost.runId, 'trade', {
+    event_key: 'run-wallet-cost-step', expected_step_index: accountRunCost.expectedStepIndex, source: 'account_wallet_run_cost_regression',
+  });
+} finally {
+  Math.random = runWalletRandom;
+}
+assert.equal(runWalletResult.accepted, true, 'run-step wallet trade with enough account Moon Gold must succeed');
+assert.equal(accountRunCost.db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'run-wallet-cost'").get().moon_gold, 88,
+  'run-step wallet trade must debit profile account wallet authority');
+assert.equal(accountRunCost.db.database.prepare('SELECT moon_gold FROM telegram_pet_instances WHERE pet_id = ?').get(accountRunCost.pet.pet_id).moon_gold, 0,
+  'run-step wallet trade must not depend on or mutate stale instance wallet columns');
+assert.equal(accountRunCost.db.database.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id = ?').get(accountRunCost.pet.pet_id).energy, 80,
+  'run-step pet-owned stat costs must still persist to the run pet instance');
+const duplicateRunWallet = await processPetRunStep(accountRunCost.db, 'run-wallet-cost', accountRunCost.runId, 'trade', {
+  event_key: 'run-wallet-cost-step', expected_step_index: accountRunCost.expectedStepIndex, source: 'account_wallet_run_cost_regression',
+});
+assert.notEqual(duplicateRunWallet.accepted, true,
+  'duplicate or stale run-step wallet trade callback must not settle a second time');
+assert.equal(accountRunCost.db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'run-wallet-cost'").get().moon_gold, 88,
+  'duplicate run-step wallet trade callback must not double-debit account Moon Gold');
+
+const insufficientRunCost = await seedWalletCostRun('run-wallet-insufficient', 3, 999);
+const insufficientRunRandom = Math.random;
+Math.random = () => 0.99;
+let insufficientRunResult;
+try {
+  insufficientRunResult = await processPetRunStep(insufficientRunCost.db, 'run-wallet-insufficient', insufficientRunCost.runId, 'trade', {
+    event_key: 'run-wallet-insufficient-step', expected_step_index: insufficientRunCost.expectedStepIndex, source: 'account_wallet_run_cost_regression',
+  });
+} finally {
+  Math.random = insufficientRunRandom;
+}
+assert.equal(insufficientRunResult.accepted, false, 'insufficient account wallet must block run-step wallet trades');
+assert.equal(insufficientRunResult.reason, 'insufficient_run_cost');
+assert.equal(insufficientRunCost.db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'run-wallet-insufficient'").get().moon_gold, 3,
+  'failed run-step wallet trade must not debit the account wallet');
+assert.equal(insufficientRunCost.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE telegram_id = 'run-wallet-insufficient'").get().count, 0,
+  'failed run-step wallet trade must not write an accepted step receipt');
 
 const failedStepEventDb = seedRepeatRewardPlayer('failed-step-event', 90);
 await ensurePetStarterSeasonSlot(failedStepEventDb, 'failed-step-event', new Date('2026-08-15T00:00:00Z'));
