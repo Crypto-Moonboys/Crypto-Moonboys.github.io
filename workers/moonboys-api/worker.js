@@ -2579,9 +2579,6 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const runId = String(runIdRaw || '').trim();
   const run = runId ? await getPetRunById(db, telegramId, runId) : await getActivePetRun(db, telegramId);
   if (!run) return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
-  if (!['active', 'extractable'].includes(run.status)) return { accepted: false, reason: 'run_closed', run, xp_awarded: 0, pet_xp_awarded: 0 };
-  const choice = getPetRunChoice(run, choiceKeyRaw);
-  if (!choice) return { accepted: false, reason: 'invalid_run_choice', run, xp_awarded: 0, pet_xp_awarded: 0 };
   const stepIndex = Math.max(1, Math.floor(Number(run.depth || 0) + 1));
   const suppliedExpectedStepIndex = options.expected_step_index === undefined || options.expected_step_index === null || options.expected_step_index === ''
     ? null
@@ -2589,12 +2586,22 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
   const expectedStepIndex = suppliedExpectedStepIndex === null
     ? null
     : Math.max(1, Math.floor(Number.isFinite(suppliedExpectedStepIndex) ? suppliedExpectedStepIndex : 0));
+  const explicitEventKey = options.event_key ? String(options.event_key).slice(0, 120) : null;
+  if (explicitEventKey) {
+    const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, explicitEventKey).first().catch(() => null);
+    if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', run, choice: getPetRunChoice(run, choiceKeyRaw), xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  if (!['active', 'extractable'].includes(run.status)) return { accepted: false, reason: 'run_closed', run, xp_awarded: 0, pet_xp_awarded: 0 };
+  const choice = getPetRunChoice(run, choiceKeyRaw);
+  if (!choice) return { accepted: false, reason: 'invalid_run_choice', run, xp_awarded: 0, pet_xp_awarded: 0 };
+  const eventKey = explicitEventKey || String(buildPetRunStepEventKey(telegramId, run.run_id, expectedStepIndex || stepIndex, choice.key)).slice(0, 120);
+  if (!explicitEventKey) {
+    const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+    if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   if (expectedStepIndex !== null && expectedStepIndex !== stepIndex) {
     return { accepted: false, reason: 'stale_run_step', run, choice, expected_step_index: expectedStepIndex, current_step_index: stepIndex, xp_awarded: 0, pet_xp_awarded: 0 };
   }
-  const eventKey = String(options.event_key || buildPetRunStepEventKey(telegramId, run.run_id, expectedStepIndex || stepIndex, choice.key)).slice(0, 120);
-  const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
-  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
   const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`).bind(run.run_id, stepIndex).first().catch(() => null);
   if (existingStep) return { accepted: true, duplicate: true, reason: 'step_already_resolved', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
   if (!run.pet_id) return { accepted: false, reason: 'legacy_run_pet_authority_missing', run, choice, xp_awarded: 0, pet_xp_awarded: 0 };
