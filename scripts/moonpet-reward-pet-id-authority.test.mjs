@@ -577,6 +577,32 @@ for (const [owner, column, value] of [
     `${column} ${value} must leave the account wallet unchanged`);
 }
 
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('invalid-snapshot-reconcile',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold) VALUES ('invalid-snapshot-reconcile',0,1,100)").run();
+seedPet('invalid-snapshot-reconcile', 'invalid-snapshot-reconcile-a', 1);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('invalid-snapshot-reconcile','invalid-snapshot-reconcile-a','pet-s2026-003')").run();
+const invalidSnapshotMetadata = JSON.stringify({
+  finalization_id: 'invalid-snapshot-reconcile',
+  source: 'pet_job',
+  idempotency_key: 'invalid-snapshot-reconcile-delta',
+  requested: { moon_gold: 7 },
+  currency_costs: {},
+  wallet_before: { moon_gold: 'bad', moon_crystals: 0, style_tokens: 0 },
+  wallet_after: { moon_gold: 7, moon_crystals: 0, style_tokens: 0 },
+});
+db.database.prepare(`INSERT INTO telegram_pet_reward_claims
+  (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata, awarded_at)
+  VALUES ('claim-invalid-snapshot-reconcile', 'invalid-snapshot-reconcile-a', 'invalid-snapshot-reconcile', 'pet_job', 'invalid-snapshot-reconcile-delta', '2026-08-16', 'awarded', '{"moon_gold":7}', '{"moon_gold":7}', ?, '2026-08-16 12:00:00')`).run(invalidSnapshotMetadata);
+db.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
+  VALUES ('event-invalid-snapshot-reconcile', 'invalid-snapshot-reconcile-a', 'invalid-snapshot-reconcile', 'unified_reward', 'pet_reward:pet_job:invalid-snapshot-reconcile-delta', 0, 0, 'pet-s2026-003', '2026-08-16', '2026-W33', 'accepted', 'historical_wallet_reward', ?, '2026-08-16 12:00:00')`).run(invalidSnapshotMetadata);
+await assert.rejects(() => getPetProfile(db, 'invalid-snapshot-reconcile'), /moonpet_wallet_reconciliation_invalid_wallet_snapshot/,
+  'non-numeric wallet snapshots must fail closed instead of coercing to zero');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='invalid-snapshot-reconcile' AND source='wallet_reconciliation' AND idempotency_key='moonpet_wallet_reconcile:v1'").get().count, 0,
+  'non-numeric wallet snapshots must not commit the reconciliation marker');
+assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='invalid-snapshot-reconcile'").get().moon_gold, 100,
+  'non-numeric wallet snapshots must leave the account wallet unchanged');
+
 const wrongOwner = await awardPetReward(db, { ...request, pet_id: 'pet-other', idempotency_key: 'wrong-owner' });
 assert.equal(wrongOwner.accepted, false, 'a persisted pet owned by another player must fail closed');
 assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-other'").get().pet_xp, 0);

@@ -44,9 +44,18 @@ function clampWallet(value) {
   return Math.max(0, Math.min(PET_ACCOUNT_WALLET_MAX, wholeNumber(value)));
 }
 
+function walletSnapshotValue(value, label) {
+  if (value === undefined || value === null) return null;
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue) || !Number.isInteger(numberValue) || numberValue < 0 || numberValue > PET_ACCOUNT_WALLET_MAX) {
+    throw new Error(`moonpet_wallet_reconciliation_invalid_wallet_snapshot:${label}`);
+  }
+  return numberValue;
+}
+
 function nestedWalletValue(object, key, currency) {
   const value = object?.[key]?.[currency] ?? object?.context?.[key]?.[currency];
-  return value === undefined || value === null ? null : clampWallet(value);
+  return walletSnapshotValue(value, `${key}.${currency}`);
 }
 
 function rowWalletSnapshotIfComplete(row) {
