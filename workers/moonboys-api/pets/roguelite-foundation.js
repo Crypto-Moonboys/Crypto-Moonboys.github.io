@@ -129,8 +129,8 @@ function getPetWeekKey(now = new Date()) {
 
 // No migration is required for the PR #1224 -> #1228 wallet repair. The
 // existing pet event ledger already has a unique owner/event_key receipt, so
-// this claims one reconciliation marker per owner and folds only sentinel-marked
-// pet-authority instance wallet balances into the account/profile wallet before
+// this claims one reconciliation marker per owner and folds only positive
+// sentinel-instance deltas over the profile/account wallet baseline before
 // reward cost checks. Repeated settlement attempts cannot double-credit.
 async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
   const owner = String(telegramId || '').trim();
@@ -150,9 +150,9 @@ async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Dat
         WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
         .bind(markerId, owner, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, getMoonpetSeasonKey(now), dayKey, getPetWeekKey(now), metadata, owner),
       db.prepare(`UPDATE telegram_pet_profiles SET
-          moon_gold = MIN(?, moon_gold + COALESCE((SELECT SUM(moon_gold) FROM telegram_pet_instances WHERE telegram_id = ? AND status = 'active' AND source_profile_updated_at = ?), 0)),
-          moon_crystals = MIN(?, moon_crystals + COALESCE((SELECT SUM(moon_crystals) FROM telegram_pet_instances WHERE telegram_id = ? AND status = 'active' AND source_profile_updated_at = ?), 0)),
-          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(style_tokens) FROM telegram_pet_instances WHERE telegram_id = ? AND status = 'active' AND source_profile_updated_at = ?), 0)),
+          moon_gold = MIN(?, moon_gold + COALESCE((SELECT SUM(MAX(0, i.moon_gold - telegram_pet_profiles.moon_gold)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
+          moon_crystals = MIN(?, moon_crystals + COALESCE((SELECT SUM(MAX(0, i.moon_crystals - telegram_pet_profiles.moon_crystals)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
+          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(MAX(0, i.style_tokens - telegram_pet_profiles.style_tokens)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
           updated_at = CURRENT_TIMESTAMP
         WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND event_key = ?)`)
         .bind(MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION, MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION, MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION,

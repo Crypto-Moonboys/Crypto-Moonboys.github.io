@@ -95,30 +95,30 @@ assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHER
   'Pet B cannot mutate or inherit Pet A Pet XP');
 
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-wallet',0,1)").run();
-db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-wallet',0,1,1,1,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-wallet',0,1,100,10,20)").run();
 seedPet('legacy-wallet', 'legacy-wallet-a', 1);
 seedPet('legacy-wallet', 'legacy-wallet-b', 2);
 db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('legacy-wallet','legacy-wallet-a','pet-s2026-003')").run();
-db.database.prepare(`UPDATE telegram_pet_instances SET pet_xp=88, moon_gold=10, moon_crystals=2, style_tokens=3, source_profile_updated_at='0001-01-01 00:00:00'
+db.database.prepare(`UPDATE telegram_pet_instances SET pet_xp=88, moon_gold=107, moon_crystals=12, style_tokens=24, source_profile_updated_at='0001-01-01 00:00:00'
   WHERE pet_id='legacy-wallet-a'`).run();
-db.database.prepare(`UPDATE telegram_pet_instances SET pet_xp=44, moon_gold=5, moon_crystals=4, style_tokens=1, source_profile_updated_at='0001-01-01 00:00:00'
+db.database.prepare(`UPDATE telegram_pet_instances SET pet_xp=44, moon_gold=95, moon_crystals=8, style_tokens=19, source_profile_updated_at='0001-01-01 00:00:00'
   WHERE pet_id='legacy-wallet-b'`).run();
 db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=999, moon_crystals=999, style_tokens=999, source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='pet-other'").run();
 const reconciledA = await getPetProfile(db, 'legacy-wallet');
 assert.deepEqual(
   { pet_id: reconciledA.pet_id, pet_xp: reconciledA.pet_xp, moon_gold: reconciledA.moon_gold, moon_crystals: reconciledA.moon_crystals, style_tokens: reconciledA.style_tokens },
-  { pet_id: 'legacy-wallet-a', pet_xp: 88, moon_gold: 16, moon_crystals: 7, style_tokens: 5 },
-  'pre-PR instance-only wallet balances must stay visible through the account wallet overlay',
+  { pet_id: 'legacy-wallet-a', pet_xp: 88, moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
+  'pre-PR instance-only wallet deltas must stay visible through the account wallet overlay without adding the full instance balance',
 );
 assert.deepEqual(
   { ...db.database.prepare("SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet'").get() },
-  { pet_xp: 0, moon_gold: 16, moon_crystals: 7, style_tokens: 5 },
+  { pet_xp: 0, moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
   'wallet reconciliation must not move Pet XP into the account profile',
 );
 await getPetProfile(db, 'legacy-wallet');
 assert.deepEqual(
   { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet'").get() },
-  { moon_gold: 16, moon_crystals: 7, style_tokens: 5 },
+  { moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
   'wallet reconciliation must be idempotent under repeated reads',
 );
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='legacy-wallet' AND event_key='moonpet_wallet_reconcile:v1'").get().count, 1,
@@ -127,7 +127,7 @@ db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='legacy-wallet-
 const reconciledB = await getPetProfile(db, 'legacy-wallet');
 assert.deepEqual(
   { pet_id: reconciledB.pet_id, pet_xp: reconciledB.pet_xp, moon_gold: reconciledB.moon_gold, moon_crystals: reconciledB.moon_crystals, style_tokens: reconciledB.style_tokens },
-  { pet_id: 'legacy-wallet-b', pet_xp: 44, moon_gold: 16, moon_crystals: 7, style_tokens: 5 },
+  { pet_id: 'legacy-wallet-b', pet_xp: 44, moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
   'switching active pets after reconciliation must not hide the account wallet balance',
 );
 assert.deepEqual(
@@ -135,6 +135,45 @@ assert.deepEqual(
   { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
   'wrong-owner pet rows must not fold into another owner wallet',
 );
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-inactive-wallet',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-inactive-wallet',0,1,50,5,5)").run();
+seedPet('legacy-inactive-wallet', 'legacy-inactive-a', 1);
+seedPet('legacy-inactive-wallet', 'legacy-inactive-b', 2);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('legacy-inactive-wallet','legacy-inactive-a','pet-s2026-003')").run();
+db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=54, moon_crystals=7, style_tokens=5, status='archived', source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='legacy-inactive-a'").run();
+db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=56, moon_crystals=5, style_tokens=8, status='retired', source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='legacy-inactive-b'").run();
+await getPetProfile(db, 'legacy-inactive-wallet');
+assert.deepEqual(
+  { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-inactive-wallet'").get() },
+  { moon_gold: 60, moon_crystals: 7, style_tokens: 8 },
+  'archived and retired sentinel instances must be included in one-shot wallet reconciliation',
+);
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('failed-reconcile',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold) VALUES ('failed-reconcile',0,1,100)").run();
+seedPet('failed-reconcile', 'failed-reconcile-a', 1);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('failed-reconcile','failed-reconcile-a','pet-s2026-003')").run();
+db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=107, source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='failed-reconcile-a'").run();
+const failingReconcileDb = {
+  database: db.database,
+  prepare(sql) { return db.prepare(sql); },
+  async batch(statements) {
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      await statements[0].run();
+      throw new Error('simulated_reconcile_failure');
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  },
+};
+await assert.rejects(() => getPetProfile(failingReconcileDb, 'failed-reconcile'), /simulated_reconcile_failure/);
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='failed-reconcile' AND event_key='moonpet_wallet_reconcile:v1'").get().count, 0,
+  'one-shot reconciliation marker must not commit when wallet reconciliation cannot safely complete');
+assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='failed-reconcile'").get().moon_gold, 100,
+  'failed reconciliation must leave the account wallet unchanged for retry');
 
 const wrongOwner = await awardPetReward(db, { ...request, pet_id: 'pet-other', idempotency_key: 'wrong-owner' });
 assert.equal(wrongOwner.accepted, false, 'a persisted pet owned by another player must fail closed');

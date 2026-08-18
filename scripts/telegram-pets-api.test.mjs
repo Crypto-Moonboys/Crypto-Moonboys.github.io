@@ -2312,7 +2312,7 @@ function repeatRewardSnapshot(db, telegramId, mode) {
   const eventRow = db.database.prepare(`
     SELECT status, reason, pet_xp_awarded, xp_awarded
     FROM telegram_pet_events
-    WHERE telegram_id = ? AND event_type <> 'cap_fixture'
+    WHERE telegram_id = ? AND event_type NOT IN ('cap_fixture', 'wallet_reconciliation')
     ORDER BY created_at DESC LIMIT 1
   `).get(telegramId) || null;
   const slotRow = db.database.prepare(`
@@ -2358,7 +2358,7 @@ const recoverySeasonAKey = 'pet-s2026-003';
 
 const eventRecoveryDb = seedRepeatRewardPlayer('event-recovery', 70, recoveryDayA.toISOString());
 seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey);
-eventRecoveryDb.failOnBatch(2);
+eventRecoveryDb.failOnBatch(3);
 await assert.rejects(
   processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
     event_key: 'event-recovery-callback',
@@ -2437,7 +2437,7 @@ kaijuRecoveryDb.database.prepare(`
 seedAcceptedDailyPetEvent(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju-recovery-day-a-cap', 1190, 245, recoveryDayAKey);
 const kaijuMatch = { match_id: 'kaiju-recovery-match', mode: 'solo' };
 const kaijuRewards = { pet_xp: 38, community_xp: 8, moon_gold: 18, style_tokens: 1, happiness: 5, energy_cost: 6 };
-kaijuRecoveryDb.failOnBatch(2);
+kaijuRecoveryDb.failOnBatch(3);
 await assert.rejects(
   awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayA }),
   /simulated_d1_batch_failure/,
@@ -2532,7 +2532,7 @@ function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
 
 const completedCallbackRecoveryDb = seedRepeatRewardPlayer('completed-callback-recovery', 50);
 const completedCallbackMatch = seedSelectableSoloKaijuMatch(completedCallbackRecoveryDb, 'completed-callback-recovery', 'completed-callback-match');
-completedCallbackRecoveryDb.failOnBatch(2);
+completedCallbackRecoveryDb.failOnBatch(3);
 await assert.rejects(
   finishPetKaijuMatch(completedCallbackRecoveryDb, completedCallbackMatch),
   /simulated_d1_batch_failure/,
