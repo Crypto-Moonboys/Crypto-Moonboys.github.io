@@ -2855,6 +2855,28 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const item = PET_INVENTORY_ITEMS[key];
+  const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (existing) {
+    let existingItemKey = null;
+    try { existingItemKey = JSON.parse(existing?.metadata || '{}').consumed_item_key || null; } catch {}
+    if (existing.event_type === 'use_item' && existingItemKey === key) {
+      const inventory = await getPetInventory(db, telegramId);
+      const updatedPet = await getPetProfile(db, telegramId);
+      return {
+        accepted: true,
+        duplicate: true,
+        reason: 'duplicate',
+        xp_awarded: Math.max(0, Math.floor(Number(existing.xp_awarded || 0))),
+        pet_xp_awarded: Math.max(0, Math.floor(Number(existing.pet_xp_awarded || 0))),
+        item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 },
+        pet: updatedPet,
+      };
+    }
+    return { accepted: false, reason: 'item_event_conflict', pet };
+  }
+  if (await hasPendingPetAccountWalletRecovery(db, telegramId)) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   const effects = {
     moon_snack: { hunger: -18, energy: 8, pet_xp: 4 },
     energy_drink: { energy: 22, pet_xp: 6 },
@@ -2863,46 +2885,140 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     style_patch: { style_tokens: 2, pet_xp: 5 },
     adventure_map: { energy: 6, pet_xp: 5 },
   }[key];
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  let petXp = Math.max(0, Math.floor(Number(effects.pet_xp || 0)));
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
+  else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+  pet.hunger = clampPetStat(Number(pet.hunger || 0) + (effects.hunger || 0));
+  pet.happiness = clampPetStat(Number(pet.happiness || 0) + (effects.happiness || 0));
+  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + (effects.cleanliness || 0));
+  pet.energy = clampPetStat(Number(pet.energy || 0) + (effects.energy || 0));
+  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  updatePetStreakForAction(pet, dayKey);
+  pet.last_decay_at = now.toISOString();
+  const walletRewards = { style_tokens: Math.max(0, Math.floor(Number(effects.style_tokens || 0))) };
   const consumeEventId = crypto.randomUUID();
-  const consumeMetadata = JSON.stringify({ source: options.source || 'telegram_bot', inventory_authority: true, consumed_item_key: key });
+  const claimId = crypto.randomUUID();
+  const rewardMetadata = JSON.stringify({
+    source: options.source || 'telegram_bot',
+    inventory_authority: true,
+    consumed_item_key: key,
+    rewards: { pet_xp: petXp, style_tokens: walletRewards.style_tokens },
+    profile_deltas: { hunger: effects.hunger || 0, energy: effects.energy || 0, cleanliness: effects.cleanliness || 0, happiness: effects.happiness || 0 },
+  });
+  const requestedRewards = JSON.stringify({ pet_xp: petXp, community_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: walletRewards.style_tokens, materials: {}, items: {}, relics: {} });
+  const appliedRewards = requestedRewards;
   const consumeResults = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
-      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-      SELECT ?, ?, 'use_item', ?, 0, 0, ?, ?, ?, 'accepted', 'item_used', ?
+      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, ?, 'use_item', ?, 0, ?, ?, ?, ?, 'pending', 'item_use_pending', ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_inventory
         WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0)
-      RETURNING id`).bind(consumeEventId, telegramId, eventKey, season.key, dayKey, weekKey, consumeMetadata, telegramId, key),
+        AND ${accountWalletRecoveryResolvedSql('?')}
+        AND (? = '' OR EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?))
+      RETURNING id`).bind(consumeEventId, pet.pet_id || null, telegramId, eventKey, petXp, season.key, dayKey, weekKey, rewardMetadata,
+        telegramId, key, telegramId, pet.pet_id || '', pet.pet_id || '', telegramId),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
+      (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata)
+      SELECT ?, ?, ?, 'pet_item_use', ?, ?, 'pending', ?, ?, ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')`)
+      .bind(claimId, pet.pet_id || null, telegramId, `item_use:${eventKey}`, dayKey, requestedRewards, appliedRewards, rewardMetadata, consumeEventId),
     db.prepare(`UPDATE telegram_pet_inventory
       SET quantity = quantity - 1, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0
-        AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted')`)
-      .bind(telegramId, key, consumeEventId),
+        AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+        AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
+      .bind(telegramId, key, consumeEventId, claimId),
+    accountWalletDeltaStatement(db, telegramId, walletRewards,
+      "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending') AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')",
+      [consumeEventId, claimId]),
+    db.prepare(`UPDATE telegram_pet_profiles SET
+        pet_xp = ?,
+        level = ?,
+        stage = ?,
+        hunger = ?,
+        happiness = ?,
+        cleanliness = ?,
+        energy = ?,
+        health = ?,
+        streak_days = ?,
+        last_active_day = ?,
+        last_decay_at = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+        AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
+      .bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.hunger, pet.happiness, pet.cleanliness, pet.energy, pet.health,
+        pet.streak_days, pet.last_active_day, pet.last_decay_at, telegramId, consumeEventId, claimId),
+    db.prepare(`UPDATE telegram_pet_instances SET
+        pet_xp = ?,
+        level = ?,
+        stage = ?,
+        hunger = ?,
+        happiness = ?,
+        cleanliness = ?,
+        energy = ?,
+        health = ?,
+        streak_days = ?,
+        last_active_day = ?,
+        last_decay_at = ?,
+        source_profile_updated_at = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+        AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
+      .bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.hunger, pet.happiness, pet.cleanliness, pet.energy, pet.health,
+        pet.streak_days, pet.last_active_day, pet.last_decay_at, PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', consumeEventId, claimId),
+    db.prepare(`INSERT INTO telegram_pet_season_state
+        (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
+      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+        AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')
+      ON CONFLICT(telegram_id, season_key) DO UPDATE SET
+        season_xp = season_xp + excluded.season_xp,
+        weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
+        daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
+        daily_key = excluded.daily_key,
+        weekly_key = excluded.weekly_key,
+        updated_at = CURRENT_TIMESTAMP`)
+      .bind(telegramId, season.key, petXp, petXp, petXp, dayKey, weekKey, consumeEventId, claimId),
+    db.prepare(`UPDATE telegram_pet_events
+      SET status = 'accepted', reason = 'item_used'
+      WHERE id = ? AND status = 'pending'
+        AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')
+        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND pet_xp = ?)
+        AND (
+          pet_id IS NULL OR EXISTS (
+            SELECT 1 FROM telegram_pet_instances WHERE pet_id = telegram_pet_events.pet_id AND telegram_id = ? AND pet_xp = ?
+          )
+        )
+      RETURNING id`)
+      .bind(consumeEventId, claimId, telegramId, pet.pet_xp, telegramId, pet.pet_xp),
+    db.prepare(`UPDATE telegram_pet_reward_claims
+      SET status = 'awarded', awarded_at = CURRENT_TIMESTAMP
+      WHERE claim_id = ? AND status = 'pending'
+        AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted')
+      RETURNING claim_id`)
+      .bind(claimId, consumeEventId),
   ]);
-  const consumed = Boolean(consumeResults?.[0]?.results?.[0]);
+  const consumed = Boolean(consumeResults?.[0]?.results?.[0] && consumeResults?.[7]?.results?.[0] && consumeResults?.[8]?.results?.[0]);
   if (!consumed) {
-    const existing = await db.prepare(`SELECT event_type, metadata FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`)
-      .bind(telegramId, eventKey).first().catch(() => null);
-    let existingItemKey = null;
-    try { existingItemKey = JSON.parse(existing?.metadata || '{}').consumed_item_key || null; } catch {}
-    if (existing?.event_type !== 'use_item' || existingItemKey !== key) return { accepted: false, reason: 'item_not_found', pet };
+    const acceptedDuplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+    if (acceptedDuplicate) {
+      const inventory = await getPetInventory(db, telegramId);
+      const updatedPet = await getPetProfile(db, telegramId);
+      return {
+        accepted: true,
+        duplicate: true,
+        reason: 'duplicate',
+        xp_awarded: Math.max(0, Math.floor(Number(acceptedDuplicate.xp_awarded || 0))),
+        pet_xp_awarded: Math.max(0, Math.floor(Number(acceptedDuplicate.pet_xp_awarded || 0))),
+        item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 },
+        pet: updatedPet,
+      };
+    }
+    return { accepted: false, reason: 'item_not_found', pet };
   }
-  const awarded = await awardPetReward(db, {
-    telegram_id: telegramId,
-    source: 'pet_item_use',
-    idempotency_key: `item_use:${eventKey}`,
-    event_key: `${eventKey}:reward`,
-    event_type: 'use_item_reward',
-    reason: 'item_used',
-    rewards: { pet_xp: effects.pet_xp || 0, style_tokens: effects.style_tokens || 0 },
-    profile_deltas: { hunger: effects.hunger || 0, energy: effects.energy || 0, cleanliness: effects.cleanliness || 0, happiness: effects.happiness || 0 },
-    touch_streak: true,
-    now,
-    context: { source: options.source || 'telegram_bot', consumed_item_key: key },
-  });
+  Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
   const inventory = await getPetInventory(db, telegramId);
-  const updatedPet = awarded.pet || await getPetProfile(db, telegramId);
-  const rewardSettled = awarded.accepted === true;
-  return { ...awarded, accepted: rewardSettled, duplicate: !consumed || awarded.duplicate, reason: rewardSettled ? (consumed ? 'item_used' : 'duplicate') : (awarded.reason || 'item_reward_pending'), item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 }, pet: updatedPet };
+  return { accepted: true, reason: 'item_used', xp_awarded: 0, pet_xp_awarded: petXp, item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 }, pet };
 }
 
 async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {

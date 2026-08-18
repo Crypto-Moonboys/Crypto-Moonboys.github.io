@@ -786,7 +786,13 @@ assertOrder(
 
 const useItem = asyncBlock('processPetUseItem');
 assert.ok(useItem.includes('duplicate'), 'use_item must short-circuit duplicate event keys');
-assert.ok(useItem.includes("source: 'pet_item_use'") && useItem.includes('awardPetReward(db'), 'use_item rewards must use the capped unified reward authority');
+assert.ok(useItem.includes("source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata")
+  && useItem.includes("'pet_item_use'") && useItem.includes("status = 'awarded'"),
+  'use_item rewards must settle through an atomic item-use reward claim');
+assert.ok(useItem.includes("status = 'pending'") && useItem.includes("status = 'accepted'"),
+  'use_item must only accept the item-use receipt after gated writes succeed');
+assert.ok(useItem.indexOf('hasPendingPetAccountWalletRecovery') < useItem.indexOf('UPDATE telegram_pet_inventory'),
+  'use_item must check wallet recovery before consuming inventory');
 assert.ok(useItem.includes('UPDATE telegram_pet_inventory'), 'use_item must consume from the authoritative inventory table');
 assert.ok(useItem.includes('inventory_authority: true'), 'authority-owned item consumption must bypass the temporary legacy cutover bridge');
 assert.ok(useItem.includes('telegram_pet_events'), 'use_item must audit accepted items');
@@ -2503,6 +2509,105 @@ const usedBankedItem = await processPetUseItem(bankedItemDb, 'banked-item', 'ene
 assert.equal(usedBankedItem.accepted, true, 'a banked run item must be usable');
 assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 0,
   'using a banked run item must consume its authoritative balance');
+
+const recoveryStylePatchDb = seedRepeatRewardPlayer('use-item-recovery-style', 70);
+await ensurePetStarterSeasonSlot(recoveryStylePatchDb, 'use-item-recovery-style', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryStylePatchDb, 'use-item-recovery-style');
+recoveryStylePatchDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-recovery-style', 'item', 'style_patch', 1)`).run();
+insertWalletRecoveryRequired(recoveryStylePatchDb, 'use-item-recovery-style');
+const frozenStylePatch = await processPetUseItem(recoveryStylePatchDb, 'use-item-recovery-style', 'style_patch', {
+  event_key: 'use-item-recovery-style', source: 'inventory_authority_regression',
+});
+assert.equal(frozenStylePatch.accepted, false, 'pending wallet recovery must block style_patch before item consumption');
+assert.equal(frozenStylePatch.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-style' AND asset_key='style_patch'").get() },
+  { quantity: 1 },
+  'recovery-pending style_patch must leave inventory untouched',
+);
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-style'").get() },
+  { style_tokens: 0, pet_xp: 0 },
+  'recovery-pending style_patch must not grant wallet or Pet XP rewards',
+);
+assert.equal(recoveryStylePatchDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-recovery-style'").get().count, 0,
+  'recovery-pending style_patch must not write settlement events');
+insertWalletReconciled(recoveryStylePatchDb, 'use-item-recovery-style');
+const recoveredStylePatch = await processPetUseItem(recoveryStylePatchDb, 'use-item-recovery-style', 'style_patch', {
+  event_key: 'use-item-recovery-style', source: 'inventory_authority_regression',
+});
+assert.equal(recoveredStylePatch.accepted, true, 'style_patch retry must succeed after wallet recovery completes');
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-style' AND asset_key='style_patch'").get() },
+  { quantity: 0 },
+  'recovered style_patch retry must consume the item exactly once',
+);
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-style'").get() },
+  { style_tokens: 2, pet_xp: 5 },
+  'recovered style_patch retry must grant wallet and Pet XP rewards once',
+);
+
+const recoveryOtherItemDb = seedRepeatRewardPlayer('use-item-recovery-other', 70);
+await ensurePetStarterSeasonSlot(recoveryOtherItemDb, 'use-item-recovery-other', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryOtherItemDb, 'use-item-recovery-other');
+recoveryOtherItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-recovery-other', 'item', 'energy_drink', 1)`).run();
+insertWalletRecoveryRequired(recoveryOtherItemDb, 'use-item-recovery-other');
+const frozenOtherItem = await processPetUseItem(recoveryOtherItemDb, 'use-item-recovery-other', 'energy_drink', {
+  event_key: 'use-item-recovery-other', source: 'inventory_authority_regression',
+});
+assert.equal(frozenOtherItem.accepted, false, 'pending wallet recovery must block other rewarded items before item consumption');
+assert.equal(frozenOtherItem.reason, 'wallet_reconciliation_recovery_pending');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-other' AND asset_key='energy_drink'").get().quantity, 1,
+  'recovery-pending non-wallet item must leave inventory untouched');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-other'").get().pet_xp, 0,
+  'recovery-pending non-wallet item must not partially grant Pet XP');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-recovery-other'").get().count, 0,
+  'recovery-pending non-wallet item must not write settlement events');
+
+const rollbackUseItemDb = seedRepeatRewardPlayer('use-item-rollback', 70);
+await ensurePetStarterSeasonSlot(rollbackUseItemDb, 'use-item-rollback', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(rollbackUseItemDb, 'use-item-rollback');
+rollbackUseItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-rollback', 'item', 'style_patch', 1)`).run();
+rollbackUseItemDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = \?/);
+await assert.rejects(
+  processPetUseItem(rollbackUseItemDb, 'use-item-rollback', 'style_patch', {
+    event_key: 'use-item-rollback', source: 'inventory_authority_regression',
+  }),
+  /simulated_d1_batch_failure/,
+  'item-use persistence failure must surface so the callback can retry',
+);
+assert.equal(rollbackUseItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-rollback' AND asset_key='style_patch'").get().quantity, 1,
+  'failed item-use batch must roll back inventory consumption');
+assert.deepEqual(
+  { ...rollbackUseItemDb.database.prepare("SELECT style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-rollback'").get() },
+  { style_tokens: 0, pet_xp: 0 },
+  'failed item-use batch must roll back wallet and Pet XP rewards');
+assert.equal(rollbackUseItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-rollback' AND status='accepted'").get().count, 0,
+  'failed item-use batch must not leave an accepted receipt');
+const recoveredRollbackUse = await processPetUseItem(rollbackUseItemDb, 'use-item-rollback', 'style_patch', {
+  event_key: 'use-item-rollback', source: 'inventory_authority_regression',
+});
+assert.equal(recoveredRollbackUse.accepted, true, 'item-use retry after rollback must succeed');
+const duplicateRecoveredUse = await processPetUseItem(rollbackUseItemDb, 'use-item-rollback', 'style_patch', {
+  event_key: 'use-item-rollback', source: 'inventory_authority_regression',
+});
+assert.equal(duplicateRecoveredUse.duplicate, true, 'duplicate item-use callback must return the accepted result');
+assert.deepEqual(
+  { ...rollbackUseItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-rollback' AND asset_key='style_patch'").get() },
+  { quantity: 0 },
+  'successful item-use plus duplicate retry must consume inventory exactly once',
+);
+assert.deepEqual(
+  { ...rollbackUseItemDb.database.prepare("SELECT style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-rollback'").get() },
+  { style_tokens: 2, pet_xp: 5 },
+  'successful item-use plus duplicate retry must grant rewards exactly once',
+);
+assert.equal(rollbackUseItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='use-item-rollback' AND source='pet_item_use' AND status='awarded'").get().count, 1,
+  'successful item-use must create exactly one awarded item-use reward claim');
 
 const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100);
 legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=5000, level=51, stage='street_moonpet'
