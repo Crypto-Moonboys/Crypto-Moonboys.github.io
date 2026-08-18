@@ -6,11 +6,12 @@ GitHub Actions is path-aware so gameplay and infrastructure PRs run the checks f
 
 | Changed paths | Workflows or jobs |
 | --- | --- |
-| `workers/**`, `scripts/*worker*`, `scripts/telegram-pets/**`, `scripts/telegram-pets*`, `scripts/moonpet*`, `scripts/verify-d1-production-migrations*`, `deployments/**` | Worker/API CI, Moonpet tests, Worker provenance checks |
+| `workers/**`, Worker/API test scripts listed in `scripts/ci-domain-runner.mjs`, `scripts/telegram-pets/**`, `scripts/telegram-pets*`, `scripts/moonpet*`, `scripts/verify-d1-production-migrations*`, `deployments/**` | Worker/API CI, Moonpet tests, Worker provenance checks |
 | `workers/moonboys-api/migrations/**`, `scripts/verify-d1-production-migrations*`, `deployments/**` | D1 Production Migration Verify |
 | `js/**` except `js/arcade/**`, `css/**`, `*.html`, `wiki/**`, `img/**`, `assets/**`, `art/**`, `data/**` | Visual/static checks, wiki checks, graph publishing integrity |
-| `arcade/**`, `games/**`, `js/arcade/**`, `scripts/*arcade*`, `scripts/*btqm*`, `scripts/*invaders*` | Arcade CI |
-| `wax/**`, `scripts/*wax*` | WAX CI |
+| `brand-canon/**` | Graph Publishing Integrity |
+| `arcade/**`, `games/**`, `js/arcade/**`, `server/block-topia/**`, `shared/block-topia/**`, `scripts/*arcade*`, `scripts/*btqm*`, `scripts/*invaders*` | Arcade CI |
+| `wax/**`, WAX test scripts listed in `scripts/ci-domain-runner.mjs`, WAX rarity/feed/update helpers, `scripts/generate-gkniftyheads-rarity.mjs`, `scripts/generate-gkniftyheads-category-pages.mjs`, `scripts/generate-noballgamess-rarity.mjs`, `scripts/*wax*` | WAX CI |
 
 The main `CI` workflow keeps its existing job names and routes each job with an internal changed-path detector. Jobs outside the changed domain are skipped rather than renamed or removed, which keeps branch-protection check names stable.
 
