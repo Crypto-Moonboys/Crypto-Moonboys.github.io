@@ -2,8 +2,27 @@ name: Worker Deployment Provenance
 
 on:
   pull_request:
+    paths:
+      - "workers/**"
+      - "scripts/*worker*"
+      - "scripts/telegram-pets/**"
+      - "scripts/telegram-pets*"
+      - "scripts/moonpet*"
+      - "scripts/verify-d1-production-migrations*"
+      - "deployments/**"
+      - ".github/workflows/worker-deployment-provenance.yml"
   push:
     branches: [main]
+    paths:
+      - "workers/**"
+      - "scripts/*worker*"
+      - "scripts/telegram-pets/**"
+      - "scripts/telegram-pets*"
+      - "scripts/moonpet*"
+      - "scripts/verify-d1-production-migrations*"
+      - "deployments/**"
+      - ".github/workflows/worker-deployment-provenance.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -2,8 +2,18 @@ name: Production Deployment Truth
 
 on:
   pull_request:
+    paths:
+      - "workers/**"
+      - "scripts/*worker*"
+      - "deployments/**"
+      - ".github/workflows/production-deployment-truth.yml"
   push:
     branches: [main]
+    paths:
+      - "workers/**"
+      - "scripts/*worker*"
+      - "deployments/**"
+      - ".github/workflows/production-deployment-truth.yml"
   workflow_dispatch:
 
 permissions:

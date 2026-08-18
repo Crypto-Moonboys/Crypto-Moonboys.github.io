@@ -4,9 +4,14 @@ on:
   pull_request:
     paths:
       - "wiki/**"
+      - "js/**"
+      - "!js/arcade/**"
+      - "css/**"
+      - "*.html"
       - ".github/workflows/wiki-ci.yml"
-      - "js/site-shell.js"
       - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
 
 permissions:
   contents: read

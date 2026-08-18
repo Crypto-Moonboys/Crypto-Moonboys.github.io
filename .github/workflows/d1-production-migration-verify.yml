@@ -3,7 +3,7 @@ name: D1 Production Migration Verify
 on:
   pull_request:
     paths:
-      - deployments/d1-evidence-request.json
+      - deployments/**
       - scripts/verify-d1-production-migrations.mjs
       - scripts/verify-d1-production-migrations.test.mjs
       - scripts/report-d1-query-failure.mjs

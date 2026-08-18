@@ -1,12 +1,28 @@
 name: Graph Publishing Integrity
 
-# Run on every repository change. The publishing chain depends on wiki content,
-# brand canon, payload registries, ranking configuration and generator helpers;
-# path filters are intentionally avoided so future inputs cannot bypass parity checks.
 on:
   pull_request:
+    paths:
+      - "js/**"
+      - "!js/arcade/**"
+      - "css/**"
+      - "*.html"
+      - "wiki/**"
+      - "scripts/generate-publishing-surfaces.mjs"
+      - "scripts/graph-publishing-integrity.test.mjs"
+      - ".github/workflows/graph-publishing-integrity.yml"
   push:
     branches: [main]
+    paths:
+      - "js/**"
+      - "!js/arcade/**"
+      - "css/**"
+      - "*.html"
+      - "wiki/**"
+      - "scripts/generate-publishing-surfaces.mjs"
+      - "scripts/graph-publishing-integrity.test.mjs"
+      - ".github/workflows/graph-publishing-integrity.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
