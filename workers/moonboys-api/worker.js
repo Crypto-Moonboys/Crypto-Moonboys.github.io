@@ -5395,6 +5395,9 @@ async function processPetAction(db, telegramId, action, options = {}) {
 
   const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (existing) {
+    if (['feed', 'play', 'clean', 'sleep'].includes(String(existing.event_type || normalizedAction))) {
+      await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, now });
+    }
     return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
 

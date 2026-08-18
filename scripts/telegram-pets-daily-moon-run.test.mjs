@@ -21,6 +21,7 @@ import {
   generatePetRunRoom,
   startPetRogueliteRun,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
+import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql', import.meta.url), 'utf8');
@@ -298,6 +299,46 @@ assert.equal(db.database.prepare("SELECT progress FROM telegram_pet_daily_challe
   'duplicate challenge claim cannot add progress after completion');
 assert.equal(db.database.prepare("SELECT completed_daily_challenges FROM telegram_pet_seasonal_challenge_state WHERE telegram_id='daily-player'").get().completed_daily_challenges, 1,
   'challenge completion must be counted atomically once');
+
+const careRecoveryDb = new D1();
+const careRecoveryTelegramId = 'care-objective-recovery';
+const careRecoveryNow = new Date();
+const careRecoveryDay = careRecoveryNow.toISOString().slice(0, 10);
+seedPlayer(careRecoveryDb, careRecoveryTelegramId, getDailySeasonId(careRecoveryDay));
+await __petMediaTestHooks.ensureActivePetInstance(careRecoveryDb, careRecoveryTelegramId);
+const careRecoveryPetId = `pet-${careRecoveryTelegramId}`;
+const careRecoveryRun = await createDailyMoonRun(careRecoveryDb, { telegram_id: careRecoveryTelegramId, now: careRecoveryNow });
+insertCareEvent(careRecoveryDb, careRecoveryTelegramId, 'callback:feed:recover-objective', careRecoveryDay, 'feed', careRecoveryPetId);
+careRecoveryDb.database.prepare(`DELETE FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND utc_day=? AND challenge_id='daily_care'`).run(careRecoveryTelegramId, careRecoveryDay);
+const recoveredCare = await __petMediaTestHooks.processPetAction(careRecoveryDb, careRecoveryTelegramId, 'feed', {
+  event_key: 'callback:feed:recover-objective',
+  source: 'telegram_callback',
+});
+assert.equal(recoveredCare.duplicate, true, 'accepted care action replay must remain an idempotent duplicate');
+assert.equal(careRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key='callback:feed:recover-objective' AND status='accepted'`).get(careRecoveryTelegramId).count, 1,
+  'care objective recovery must not duplicate the accepted care event');
+assert.equal(careRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:recover-objective'`)
+  .get(careRecoveryTelegramId, careRecoveryPetId, careRecoveryDay).count, 1,
+  'accepted care action replay must restore the missing Daily Journey objective');
+for (const [index, action] of ['play', 'clean'].entries()) {
+  const key = `callback:${action}:recover-objective`;
+  insertCareEvent(careRecoveryDb, careRecoveryTelegramId, key, careRecoveryDay, action, careRecoveryPetId);
+  await recordDailyCareChallenge(careRecoveryDb, { telegram_id: careRecoveryTelegramId, event_key: key, now: careRecoveryNow });
+}
+resolveDailyRun(careRecoveryDb, careRecoveryTelegramId, careRecoveryRun.daily_run.run_id);
+const careRecoverySync = await syncDailyMoonRun(careRecoveryDb, {
+  telegram_id: careRecoveryTelegramId,
+  utc_day: careRecoveryDay,
+  now: careRecoveryNow,
+});
+assert.equal(careRecoverySync.challenge_results.some((result) => result.daily_journey?.accepted), true,
+  'restored care objective must allow Daily Journey Growth Mark qualification to continue normally');
+assert.equal(careRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id=? AND earned_day=?`).get(careRecoveryPetId, careRecoveryDay).count, 1,
+  'care objective recovery must not create duplicate Growth Marks');
 
 const runId = db.database.prepare("SELECT run_id FROM telegram_pet_daily_runs WHERE telegram_id='daily-player'").get().run_id;
 resolveDailyRun(db, 'daily-player', runId);
