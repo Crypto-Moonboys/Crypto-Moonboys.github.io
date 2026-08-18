@@ -3,6 +3,9 @@ import { getMoonpetSeasonInfo, getMoonpetSeasonKey } from './season-authority.js
 
 const MS_PER_DAY = 86400000;
 
+// Weekly Journey is intentionally a 5/5 foundation authority for PR #1231.
+// Until a future player-facing caller is added, these helpers are exposed only
+// through test hooks so no live route can mint Weekly Journey Crests.
 export const WEEKLY_JOURNEY_REQUIRED_OBJECTIVES = 5;
 
 export const PET_WEEKLY_JOURNEY_OBJECTIVES = Object.freeze({
@@ -223,7 +226,9 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
   const crest = await readExistingWeeklyJourneyCrest(db, {
     telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: qualificationWeek,
   });
-  const accepted = Boolean(award.accepted && crest?.crest_id);
+  const recoveredMatchingCrest = Boolean(!award.accepted && award.duplicate
+    && crest?.objective_id === 'weekly_journey' && crest.evidence_key === evidenceKey);
+  const accepted = Boolean((award.accepted || recoveredMatchingCrest) && crest?.crest_id);
   const reason = accepted ? 'weekly_journey_qualified' : (award.duplicate ? 'weekly_journey_crest_duplicate' : (award.reason || 'weekly_journey_crest_rejected'));
   await insertWeeklyJourneyReceipt(db, {
     receipt_id: `${eventKey}:${accepted ? 'accepted' : 'rejected'}`,
@@ -240,6 +245,7 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
   return {
     accepted,
     duplicate: Boolean(award.duplicate),
+    recovered: recoveredMatchingCrest,
     reason,
     completed_objectives: completedObjectives,
     required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
