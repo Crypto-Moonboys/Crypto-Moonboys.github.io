@@ -82,7 +82,17 @@ export async function awardPetGrowthMark(db, award) {
     (mark_id, pet_id, telegram_id, season_key, milestone_type, evidence_key, earned_day, earned_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
     .bind(markId, petId, pet.telegram_id, seasonKey, registry.type, evidenceKey, earnedDay, earnedAt).run();
-  const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, mark_id: markId };
+  const accepted = Number(result?.meta?.changes || 0) === 1;
+  const existing = accepted ? null : await db.prepare(`SELECT mark_id FROM telegram_pet_growth_marks
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day=?
+    ORDER BY CASE WHEN mark_id=? THEN 0 ELSE 1 END, earned_at, mark_id LIMIT 1`)
+    .bind(petId, pet.telegram_id, seasonKey, earnedDay, markId).first().catch(() => null);
+  const response = {
+    accepted,
+    duplicate: !accepted,
+    mark_id: accepted ? markId : (existing?.mark_id || null),
+    reason: accepted ? undefined : 'duplicate_growth_mark',
+  };
   await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: earnedAt });
   return response;
 }

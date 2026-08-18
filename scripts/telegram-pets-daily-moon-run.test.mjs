@@ -441,6 +441,33 @@ assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_
   WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='rejected' AND reason='duplicate_daily_journey_growth_mark'`).get().count, 1,
   'Test 2: duplicate completion writes a rejected receipt');
 
+const preexistingMarkDb = new D1();
+seedPlayer(preexistingMarkDb, 'preexisting-mark-player', 'pet-s2026-001');
+preexistingMarkDb.database.prepare(`INSERT INTO telegram_pet_growth_marks
+  (mark_id, pet_id, telegram_id, season_key, milestone_type, evidence_key, earned_day, earned_at)
+  VALUES ('growth:preexisting-authority-row', 'pet-preexisting-mark-player', 'preexisting-mark-player',
+    'pet-s2026-001', 'care_milestone', 'care:already-earned', '2026-01-18', '2026-01-18T08:00:00.000Z')`).run();
+const preexistingRun = await createDailyMoonRun(preexistingMarkDb, { telegram_id: 'preexisting-mark-player', now: new Date('2026-01-18T10:00:00.000Z') });
+resolveDailyRun(preexistingMarkDb, 'preexisting-mark-player', preexistingRun.daily_run.run_id, { status: 'completed', score: 800, boss: true });
+const preexistingSync = await syncDailyMoonRun(preexistingMarkDb, {
+  telegram_id: 'preexisting-mark-player', utc_day: '2026-01-18', now: new Date('2026-01-18T10:05:00.000Z'),
+});
+assert.equal(preexistingSync.challenge_results.at(-1).daily_journey.reason, 'duplicate_daily_journey_growth_mark',
+  'same-day Growth Mark duplicates are rejected by Daily Journey receipts');
+assert.equal(preexistingMarkDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-preexisting-mark-player' AND earned_day='2026-01-18'`).get().count, 1,
+  'same-day Daily Journey duplicate does not insert a second Growth Mark');
+const preexistingReceipt = preexistingMarkDb.database.prepare(`SELECT status, reason, growth_mark_id FROM telegram_pet_daily_journey_receipts
+  WHERE pet_id='pet-preexisting-mark-player' AND utc_day='2026-01-18'`).get();
+assert.deepEqual({ ...preexistingReceipt }, {
+  status: 'rejected',
+  reason: 'duplicate_daily_journey_growth_mark',
+  growth_mark_id: 'growth:preexisting-authority-row',
+}, 'duplicate Daily Journey receipt references the existing authoritative Growth Mark');
+assert.equal(preexistingMarkDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE mark_id='growth:pet-preexisting-mark-player:pet-s2026-001:daily_moon_run_milestone:daily-run:2026-01-18:3-of-5'`).get().count, 0,
+  'duplicate Daily Journey receipt never references or creates the generated fake mark id');
+
 seedAdditionalPet(journeyDb, 'journey-player', 'pet-journey-player-b', 2, 'pet-s2026-001');
 seedAdditionalPet(journeyDb, 'journey-player', 'pet-journey-player-c', 3, 'pet-s2026-001');
 journeyDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-journey-player-b' WHERE telegram_id='journey-player'").run();

@@ -561,13 +561,13 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
     utc_day: request.utc_day,
     completed_objectives: completedObjectives,
     status: accepted ? 'accepted' : 'rejected',
-    reason: accepted ? 'daily_journey_qualified' : (mark.reason || 'daily_journey_growth_mark_rejected'),
+    reason: accepted ? 'daily_journey_qualified' : (mark.duplicate ? 'duplicate_daily_journey_growth_mark' : (mark.reason || 'daily_journey_growth_mark_rejected')),
     growth_mark_id: mark.mark_id || null,
   });
   return {
     accepted,
     duplicate: Boolean(mark.duplicate),
-    reason: accepted ? 'daily_journey_qualified' : (mark.reason || 'daily_journey_growth_mark_rejected'),
+    reason: accepted ? 'daily_journey_qualified' : (mark.duplicate ? 'duplicate_daily_journey_growth_mark' : (mark.reason || 'daily_journey_growth_mark_rejected')),
     completed_objectives: completedObjectives,
     required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
     total_objectives: DAILY_JOURNEY_TOTAL_OBJECTIVES,
