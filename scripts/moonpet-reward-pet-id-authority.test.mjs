@@ -59,17 +59,19 @@ function seedHistoricalPetIdWalletReward(owner, petId, idempotencyKey, rewards) 
     requested: { pet_xp: 0, community_xp: 0, moon_gold: rewards.moon_gold || 0, moon_crystals: rewards.moon_crystals || 0, style_tokens: rewards.style_tokens || 0, materials: {}, items: {}, relics: {} },
     currency_costs: { moon_gold: rewards.moon_gold_cost || 0, moon_crystals: rewards.moon_crystals_cost || 0, style_tokens: rewards.style_tokens_cost || 0 },
     profile_deltas: {},
+    ...(rewards.wallet_before ? { wallet_before: rewards.wallet_before } : {}),
+    ...(rewards.wallet_after ? { wallet_after: rewards.wallet_after } : {}),
     context: { fixture: 'pre_pr_1228_instance_wallet_reward' },
   });
   const applied = JSON.stringify({ pet_xp: 0, community_xp: 0, moon_gold: rewards.moon_gold || 0, moon_crystals: rewards.moon_crystals || 0, style_tokens: rewards.style_tokens || 0, materials: {}, items: {}, relics: {} });
   db.database.prepare(`INSERT INTO telegram_pet_reward_claims
     (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata, awarded_at)
-    VALUES (?, ?, ?, ?, ?, '2026-08-16', 'awarded', ?, ?, ?, '2026-08-16 12:00:00')`)
-    .run(`claim-${idempotencyKey}`, petId, owner, source, idempotencyKey, applied, applied, metadata);
+    VALUES (?, ?, ?, ?, ?, '2026-08-16', 'awarded', ?, ?, ?, ?)`)
+    .run(`claim-${idempotencyKey}`, petId, owner, source, idempotencyKey, applied, applied, metadata, rewards.awarded_at || '2026-08-16 12:00:00');
   db.database.prepare(`INSERT INTO telegram_pet_events
     (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
-    VALUES (?, ?, ?, 'unified_reward', ?, 0, 0, 'pet-s2026-003', '2026-08-16', '2026-W33', 'accepted', 'historical_wallet_reward', ?, '2026-08-16 12:00:00')`)
-    .run(`event-${idempotencyKey}`, petId, owner, `pet_reward:${source}:${idempotencyKey}`, metadata);
+    VALUES (?, ?, ?, 'unified_reward', ?, 0, 0, 'pet-s2026-003', '2026-08-16', '2026-W33', 'accepted', 'historical_wallet_reward', ?, ?)`)
+    .run(`event-${idempotencyKey}`, petId, owner, `pet_reward:${source}:${idempotencyKey}`, metadata, rewards.awarded_at || '2026-08-16 12:00:00');
 }
 seedPet('owner', 'pet-a', 1);
 seedPet('owner', 'pet-b', 2);
@@ -269,6 +271,30 @@ assert.deepEqual(
   { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet-mixed'").get() },
   { moon_gold: 102, moon_crystals: 11, style_tokens: 18 },
   'mixed historical wallet credits and debits must reconcile to the signed net amount',
+);
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-wallet-capped',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-wallet-capped',0,1,999990,10,20)").run();
+seedPet('legacy-wallet-capped', 'legacy-wallet-capped-a', 1);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('legacy-wallet-capped','legacy-wallet-capped-a','pet-s2026-003')").run();
+db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=999994, moon_crystals=10, style_tokens=20, source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='legacy-wallet-capped-a'").run();
+seedHistoricalPetIdWalletReward('legacy-wallet-capped', 'legacy-wallet-capped-a', 'legacy-wallet-capped-credit', {
+  moon_gold: 20,
+  wallet_before: { moon_gold: 999990, moon_crystals: 10, style_tokens: 20 },
+  wallet_after: { moon_gold: 999999, moon_crystals: 10, style_tokens: 20 },
+  awarded_at: '2026-08-16 12:00:00',
+});
+seedHistoricalPetIdWalletReward('legacy-wallet-capped', 'legacy-wallet-capped-a', 'legacy-wallet-capped-debit', {
+  moon_gold_cost: 5,
+  wallet_before: { moon_gold: 999999, moon_crystals: 10, style_tokens: 20 },
+  wallet_after: { moon_gold: 999994, moon_crystals: 10, style_tokens: 20 },
+  awarded_at: '2026-08-16 12:00:01',
+});
+await getPetProfile(db, 'legacy-wallet-capped');
+assert.deepEqual(
+  { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet-capped'").get() },
+  { moon_gold: 999994, moon_crystals: 10, style_tokens: 20 },
+  'capped historical wallet transitions must replay per event instead of using raw aggregate reward-minus-cost totals',
 );
 
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-inactive-wallet',0,1)").run();
