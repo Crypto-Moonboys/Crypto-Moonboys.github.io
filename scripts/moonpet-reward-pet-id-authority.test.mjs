@@ -14,6 +14,8 @@ assert.doesNotMatch(migration, /telegram_pet_profiles|CREATE\s+TRIGGER|DELETE|UP
   'the bounded migration must only extend reward ledgers');
 assert.doesNotMatch(walletReconciliationSource, /ORDER BY[^\n]*claim_id/,
   'wallet reconciliation must not use UUID claim_id as a same-timestamp replay ordering fallback');
+assert.doesNotMatch(walletReconciliationSource, /JOIN\s+telegram_pet_instances/i,
+  'wallet reconciliation eligibility must come from persisted claim/event ledger evidence, not current instance state');
 
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
@@ -358,6 +360,23 @@ assert.deepEqual(
   { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet-mirror-damaged'").get() },
   { moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
   'historical wallet reconciliation must recover from ledger snapshots even if an old mirror cleared the sentinel timestamp or instance wallet cache',
+);
+
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-wallet-instance-missing',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-wallet-instance-missing',0,1,100,10,20)").run();
+seedPet('legacy-wallet-instance-missing', 'legacy-wallet-instance-missing-active', 1);
+seedPet('legacy-wallet-instance-missing', 'legacy-wallet-instance-missing-old', 2);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('legacy-wallet-instance-missing','legacy-wallet-instance-missing-active','pet-s2026-003')").run();
+seedHistoricalPetIdWalletReward('legacy-wallet-instance-missing', 'legacy-wallet-instance-missing-old', 'instance-missing-delta', {
+  moon_gold: 7, moon_crystals: 2, style_tokens: 4,
+  wallet_start: { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+});
+db.database.prepare("DELETE FROM telegram_pet_instances WHERE pet_id='legacy-wallet-instance-missing-old'").run();
+await getPetProfile(db, 'legacy-wallet-instance-missing');
+assert.deepEqual(
+  { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-wallet-instance-missing'").get() },
+  { moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
+  'historical wallet reconciliation must use claim/event ledger snapshots even when current instance metadata is unavailable',
 );
 
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-inactive-wallet',0,1)").run();

@@ -119,13 +119,8 @@ function orderRowsByWalletSnapshots(rows) {
 
 async function readHistoricalWalletRows(db, owner) {
   const statement = db.prepare(`
-    SELECT c.claim_id, c.pet_id, c.requested_rewards, c.applied_rewards, c.metadata, c.created_at, c.awarded_at,
-           i.status AS instance_status
+    SELECT c.claim_id, c.pet_id, c.requested_rewards, c.applied_rewards, c.metadata, c.created_at, c.awarded_at
     FROM telegram_pet_reward_claims c
-    JOIN telegram_pet_instances i
-      ON i.pet_id = c.pet_id
-     AND i.telegram_id = c.telegram_id
-     AND i.status IN ('active', 'retired', 'archived')
     WHERE c.telegram_id = ?
       AND c.pet_id IS NOT NULL
       AND c.status = 'awarded'
@@ -156,10 +151,6 @@ async function assertReconciliationLedgerIsSafe(db, owner) {
   const ambiguous = await db.prepare(`
     SELECT c.claim_id
     FROM telegram_pet_reward_claims c
-    JOIN telegram_pet_instances i
-      ON i.pet_id = c.pet_id
-     AND i.telegram_id = c.telegram_id
-     AND i.status IN ('active', 'retired', 'archived')
     WHERE c.telegram_id = ?
       AND c.pet_id IS NOT NULL
       AND c.status = 'awarded'
@@ -187,7 +178,7 @@ async function assertReconciliationLedgerIsSafe(db, owner) {
   if (ambiguous) throw new Error('moonpet_wallet_reconciliation_ambiguous_ledger');
 }
 
-function calculateHistoricalWalletDeltas(rows) {
+function replayHistoricalWalletDeltas(rows) {
   const byPet = new Map();
   for (const row of rows) {
     const hasWalletDelta = PET_ACCOUNT_WALLET_CURRENCIES.some((currency) => walletClaimDelta(row, currency) !== 0);
@@ -201,10 +192,11 @@ function calculateHistoricalWalletDeltas(rows) {
   const deltas = { moon_gold: 0, moon_crystals: 0, style_tokens: 0 };
   for (const petRows of byPet.values()) {
     const orderedRows = orderRowsByWalletSnapshots(petRows);
-    const firstSnapshot = rowWalletSnapshot(orderedRows[0]);
-    const lastSnapshot = rowWalletSnapshot(orderedRows[orderedRows.length - 1]);
-    for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
-      deltas[currency] += lastSnapshot.after[currency] - firstSnapshot.before[currency];
+    for (const row of orderedRows) {
+      const snapshot = rowWalletSnapshot(row);
+      for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
+        deltas[currency] += snapshot.after[currency] - snapshot.before[currency];
+      }
     }
   }
   return deltas;
@@ -223,10 +215,11 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
 // existing reward-claim ledger is not used by the public activity feed, has a
 // unique owner/source/idempotency receipt, and lets us replay accepted
 // historical pet_id wallet credits and debits in settlement order. The current
-// profile balance and current instance sentinel timestamp are never used as a
-// baseline or eligibility proof. If object-shaped JSON metadata and before/after
-// wallet snapshots cannot prove the exact clamped order, reconciliation fails
-// closed before committing the one-shot marker.
+// profile balance, current instance rows, and current instance sentinel
+// timestamps are never used as a baseline or eligibility proof. If object-shaped
+// JSON metadata and before/after wallet snapshots cannot prove the exact
+// clamped order, reconciliation fails closed before committing the one-shot
+// marker.
 export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
   const owner = String(telegramId || '').trim();
   if (!owner) return false;
@@ -234,7 +227,7 @@ export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = 
     if (await hasPetAccountWalletReconciliationMarker(db, owner)) return false;
     await assertReconciliationLedgerIsSafe(db, owner);
     const historicalRows = await readHistoricalWalletRows(db, owner);
-    const walletDeltas = calculateHistoricalWalletDeltas(historicalRows);
+    const walletDeltas = replayHistoricalWalletDeltas(historicalRows);
     const markerId = crypto.randomUUID();
     const dayKey = getPetDayKey(now);
     const metadata = JSON.stringify({
