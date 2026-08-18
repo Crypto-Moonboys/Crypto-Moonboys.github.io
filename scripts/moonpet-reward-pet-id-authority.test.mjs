@@ -50,6 +50,27 @@ function seedPet(owner, petId, slot) {
   db.database.prepare("INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES (?,?,'pet-s2026-003',?,'free')").run(petId, owner, slot);
   db.database.prepare("INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,source_profile_updated_at) VALUES (?,?,'pet-s2026-003',?,CURRENT_TIMESTAMP)").run(petId, owner, slot);
 }
+function seedHistoricalPetIdWalletReward(owner, petId, idempotencyKey, rewards) {
+  const source = 'pet_job';
+  const metadata = JSON.stringify({
+    finalization_id: `historical-${idempotencyKey}`,
+    source,
+    idempotency_key: idempotencyKey,
+    requested: { pet_xp: 0, community_xp: 0, moon_gold: rewards.moon_gold || 0, moon_crystals: rewards.moon_crystals || 0, style_tokens: rewards.style_tokens || 0, materials: {}, items: {}, relics: {} },
+    currency_costs: { moon_gold: rewards.moon_gold_cost || 0, moon_crystals: rewards.moon_crystals_cost || 0, style_tokens: rewards.style_tokens_cost || 0 },
+    profile_deltas: {},
+    context: { fixture: 'pre_pr_1228_instance_wallet_reward' },
+  });
+  const applied = JSON.stringify({ pet_xp: 0, community_xp: 0, moon_gold: rewards.moon_gold || 0, moon_crystals: rewards.moon_crystals || 0, style_tokens: rewards.style_tokens || 0, materials: {}, items: {}, relics: {} });
+  db.database.prepare(`INSERT INTO telegram_pet_reward_claims
+    (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata, awarded_at)
+    VALUES (?, ?, ?, ?, ?, '2026-08-16', 'awarded', ?, ?, ?, '2026-08-16 12:00:00')`)
+    .run(`claim-${idempotencyKey}`, petId, owner, source, idempotencyKey, applied, applied, metadata);
+  db.database.prepare(`INSERT INTO telegram_pet_events
+    (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
+    VALUES (?, ?, ?, 'unified_reward', ?, 0, 0, 'pet-s2026-003', '2026-08-16', '2026-W33', 'accepted', 'historical_wallet_reward', ?, '2026-08-16 12:00:00')`)
+    .run(`event-${idempotencyKey}`, petId, owner, `pet_reward:${source}:${idempotencyKey}`, metadata);
+}
 seedPet('owner', 'pet-a', 1);
 seedPet('owner', 'pet-b', 2);
 seedPet('other', 'pet-other', 1);
@@ -73,12 +94,12 @@ assert.deepEqual({ ...db.database.prepare("SELECT pet_xp,moon_gold,moon_crystals
   'compatibility profile is the account wallet authority; pet XP remains on the participating pet');
 assert.equal(db.database.prepare("SELECT updated_at FROM telegram_pet_profiles WHERE telegram_id='owner'").get().updated_at, '2026-08-17 12:00:00',
   'pet-authority wallet settlement must not bump compatibility profile updated_at for wallet-only changes');
-assert.deepEqual({ ...db.database.prepare("SELECT pet_id,status FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get() }, { pet_id: 'pet-a', status: 'awarded' });
+assert.deepEqual({ ...db.database.prepare("SELECT pet_id,status FROM telegram_pet_reward_claims WHERE telegram_id='owner' AND source='pet_job'").get() }, { pet_id: 'pet-a', status: 'awarded' });
 assert.deepEqual({ ...db.database.prepare("SELECT pet_id,pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='owner' AND event_key='pet_reward:pet_job:immutable-claim'").get() },
   { pet_id: 'pet-a', pet_xp_awarded: 40 },
   'reward events keep the participating pet_id');
-assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get().count, 1);
-const claimMetadata = JSON.parse(db.database.prepare("SELECT metadata FROM telegram_pet_reward_claims WHERE telegram_id='owner'").get().metadata);
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='owner' AND source='pet_job'").get().count, 1);
+const claimMetadata = JSON.parse(db.database.prepare("SELECT metadata FROM telegram_pet_reward_claims WHERE telegram_id='owner' AND source='pet_job'").get().metadata);
 assert.equal(claimMetadata.idempotency_key, 'immutable-claim', 'claims must retain the full settlement metadata');
 assert.deepEqual(claimMetadata.requested, { pet_xp: 40, community_xp: 0, moon_gold: 7, moon_crystals: 2, style_tokens: 3, materials: {}, items: {}, relics: {} });
 
@@ -120,6 +141,7 @@ db.database.prepare(`UPDATE telegram_pet_instances SET
   pet_name='Moonpet', species='', stage='egg', pet_xp=0, level=1, hunger=25, happiness=70, cleanliness=70, energy=70, health=75, streak_days=0,
   moon_gold=107, moon_crystals=12, style_tokens=24, source_profile_updated_at='0001-01-01 00:00:00', updated_at='2026-08-17 00:00:00'
   WHERE pet_id='wallet-timestamp-a'`).run();
+seedHistoricalPetIdWalletReward('wallet-timestamp', 'wallet-timestamp-a', 'wallet-timestamp-delta', { moon_gold: 7, moon_crystals: 2, style_tokens: 4 });
 await getPetProfile(db, 'wallet-timestamp');
 assert.deepEqual(
   { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens,updated_at FROM telegram_pet_profiles WHERE telegram_id='wallet-timestamp'").get() },
@@ -137,6 +159,7 @@ db.database.prepare(`UPDATE telegram_pet_instances SET pet_xp=88, moon_gold=107,
 db.database.prepare(`UPDATE telegram_pet_instances SET pet_xp=44, moon_gold=95, moon_crystals=8, style_tokens=19, source_profile_updated_at='0001-01-01 00:00:00'
   WHERE pet_id='legacy-wallet-b'`).run();
 db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=999, moon_crystals=999, style_tokens=999, source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='pet-other'").run();
+seedHistoricalPetIdWalletReward('legacy-wallet', 'legacy-wallet-a', 'legacy-wallet-delta', { moon_gold: 7, moon_crystals: 2, style_tokens: 4 });
 const reconciledA = await getPetProfile(db, 'legacy-wallet');
 assert.deepEqual(
   { pet_id: reconciledA.pet_id, pet_xp: reconciledA.pet_xp, moon_gold: reconciledA.moon_gold, moon_crystals: reconciledA.moon_crystals, style_tokens: reconciledA.style_tokens },
@@ -154,8 +177,10 @@ assert.deepEqual(
   { moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
   'wallet reconciliation must be idempotent under repeated reads',
 );
-assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='legacy-wallet' AND event_key='moonpet_wallet_reconcile:v1'").get().count, 1,
-  'wallet reconciliation must have exactly one owner marker');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='legacy-wallet' AND event_key='moonpet_wallet_reconcile:v1'").get().count, 0,
+  'wallet reconciliation marker must not be written into the public pet event stream');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='legacy-wallet' AND source='wallet_reconciliation' AND idempotency_key='moonpet_wallet_reconcile:v1'").get().count, 1,
+  'wallet reconciliation must have exactly one private owner marker');
 db.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='legacy-wallet-b' WHERE telegram_id='legacy-wallet'").run();
 const reconciledB = await getPetProfile(db, 'legacy-wallet');
 assert.deepEqual(
@@ -169,6 +194,20 @@ assert.deepEqual(
   'wrong-owner pet rows must not fold into another owner wallet',
 );
 
+db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-slot-two-wallet',0,1)").run();
+db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-slot-two-wallet',0,1,100,10,20)").run();
+seedPet('legacy-slot-two-wallet', 'legacy-slot-two-a', 1);
+seedPet('legacy-slot-two-wallet', 'legacy-slot-two-b', 2);
+db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('legacy-slot-two-wallet','legacy-slot-two-b','pet-s2026-003')").run();
+db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=7, moon_crystals=2, style_tokens=4, source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='legacy-slot-two-b'").run();
+seedHistoricalPetIdWalletReward('legacy-slot-two-wallet', 'legacy-slot-two-b', 'legacy-slot-two-delta', { moon_gold: 7, moon_crystals: 2, style_tokens: 4 });
+await getPetProfile(db, 'legacy-slot-two-wallet');
+assert.deepEqual(
+  { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-slot-two-wallet'").get() },
+  { moon_gold: 107, moon_crystals: 12, style_tokens: 24 },
+  'slot-2 instance-held ledger wallet rewards must reconcile to 107/12/24 without using profile balance as a baseline',
+);
+
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('legacy-inactive-wallet',0,1)").run();
 db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold,moon_crystals,style_tokens) VALUES ('legacy-inactive-wallet',0,1,50,5,5)").run();
 seedPet('legacy-inactive-wallet', 'legacy-inactive-a', 1);
@@ -176,6 +215,8 @@ seedPet('legacy-inactive-wallet', 'legacy-inactive-b', 2);
 db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('legacy-inactive-wallet','legacy-inactive-a','pet-s2026-003')").run();
 db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=54, moon_crystals=7, style_tokens=5, status='archived', source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='legacy-inactive-a'").run();
 db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=56, moon_crystals=5, style_tokens=8, status='retired', source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='legacy-inactive-b'").run();
+seedHistoricalPetIdWalletReward('legacy-inactive-wallet', 'legacy-inactive-a', 'legacy-inactive-archived-delta', { moon_gold: 4, moon_crystals: 2, style_tokens: 0 });
+seedHistoricalPetIdWalletReward('legacy-inactive-wallet', 'legacy-inactive-b', 'legacy-inactive-retired-delta', { moon_gold: 6, moon_crystals: 0, style_tokens: 3 });
 await getPetProfile(db, 'legacy-inactive-wallet');
 assert.deepEqual(
   { ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='legacy-inactive-wallet'").get() },
@@ -188,6 +229,7 @@ db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level
 seedPet('failed-reconcile', 'failed-reconcile-a', 1);
 db.database.prepare("INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key) VALUES ('failed-reconcile','failed-reconcile-a','pet-s2026-003')").run();
 db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=107, source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='failed-reconcile-a'").run();
+seedHistoricalPetIdWalletReward('failed-reconcile', 'failed-reconcile-a', 'failed-reconcile-delta', { moon_gold: 7 });
 const failingReconcileDb = {
   database: db.database,
   prepare(sql) { return db.prepare(sql); },
@@ -204,7 +246,9 @@ const failingReconcileDb = {
 };
 await assert.rejects(() => getPetProfile(failingReconcileDb, 'failed-reconcile'), /simulated_reconcile_failure/);
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='failed-reconcile' AND event_key='moonpet_wallet_reconcile:v1'").get().count, 0,
-  'one-shot reconciliation marker must not commit when wallet reconciliation cannot safely complete');
+  'one-shot reconciliation marker must not commit to public events when wallet reconciliation cannot safely complete');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='failed-reconcile' AND source='wallet_reconciliation' AND idempotency_key='moonpet_wallet_reconcile:v1'").get().count, 0,
+  'one-shot private reconciliation marker must not commit when wallet reconciliation cannot safely complete');
 assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='failed-reconcile'").get().moon_gold, 100,
   'failed reconciliation must leave the account wallet unchanged for retry');
 
@@ -221,6 +265,7 @@ db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('
 db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold) VALUES ('legacy-spend',0,1,0)").run();
 seedPet('legacy-spend', 'legacy-spend-a', 1);
 db.database.prepare("UPDATE telegram_pet_instances SET moon_gold=20, source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id='legacy-spend-a'").run();
+seedHistoricalPetIdWalletReward('legacy-spend', 'legacy-spend-a', 'legacy-spend-delta', { moon_gold: 20 });
 const spendAfterReconcile = await awardPetReward(db, {
   telegram_id: 'legacy-spend', pet_id: 'legacy-spend-a', source: 'pet_item_use', idempotency_key: 'spend-reconciled-wallet',
   rewards: { pet_xp: 3 }, currency_costs: { moon_gold: 15 }, now: '2026-08-17T12:00:00Z',

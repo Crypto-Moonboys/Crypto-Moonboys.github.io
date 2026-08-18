@@ -150,7 +150,7 @@ for (const [jobKey, expectedPetXp] of Object.entries({ street_artist: 18, courie
   const retry = await processPetJob(db, telegramId, jobKey, { event_key: eventKey, source: 'regression' });
   assert.equal(retry.duplicate, true, `${result.job?.title || jobKey} callback retries must be idempotent`);
   assert.equal(scalar(db, 'SELECT pet_xp AS value FROM telegram_pet_profiles WHERE telegram_id = ?', telegramId), expectedPetXp);
-  assert.equal(scalar(db, 'SELECT COUNT(*) AS value FROM telegram_pet_reward_claims WHERE telegram_id = ?', telegramId), 1);
+  assert.equal(scalar(db, "SELECT COUNT(*) AS value FROM telegram_pet_reward_claims WHERE telegram_id = ? AND source = 'pet_job'", telegramId), 1);
 }
 
 for (const [index, choice] of ['fight_back', 'run_route', 'hide_out'].entries()) {
@@ -178,7 +178,7 @@ for (const [index, choice] of ['fight_back', 'run_route', 'hide_out'].entries())
     identityBeforeRetry,
     `Pet Event choice ${choice} must keep personality progress and memories idempotent`,
   );
-  assert.equal(scalar(db, 'SELECT COUNT(*) AS value FROM telegram_pet_reward_claims WHERE telegram_id = ?', telegramId), 1);
+  assert.equal(scalar(db, "SELECT COUNT(*) AS value FROM telegram_pet_reward_claims WHERE telegram_id = ? AND source <> 'wallet_reconciliation'", telegramId), 1);
 }
 
 // Keep reward authority coverage alongside the real Job/Event paths: caps,
@@ -216,7 +216,7 @@ for (const [index, choice] of ['fight_back', 'run_route', 'hide_out'].entries())
   assert.equal(scalar(db, 'SELECT xp AS value FROM telegram_leaderboard WHERE telegram_id = ?', telegramId), 5, 'leaderboard XP must apply exactly once');
   assert.equal(scalar(db, "SELECT quantity AS value FROM telegram_pet_inventory WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = 'moon_snack'", telegramId), 2, 'inventory must change exactly once');
   assert.equal(scalar(db, 'SELECT COUNT(*) AS value FROM telegram_xp_log WHERE telegram_id = ?', telegramId), 1, 'Community XP log must remain single-write');
-  assert.equal(scalar(db, 'SELECT COUNT(*) AS value FROM telegram_pet_reward_claims WHERE telegram_id = ?', telegramId), 1, 'reward authority must retain one claim per idempotency key');
+  assert.equal(scalar(db, "SELECT COUNT(*) AS value FROM telegram_pet_reward_claims WHERE telegram_id = ? AND source <> 'wallet_reconciliation'", telegramId), 1, 'reward authority must retain one gameplay claim per idempotency key');
 }
 
 assert.equal(db.database.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');

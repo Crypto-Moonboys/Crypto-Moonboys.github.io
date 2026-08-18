@@ -12,6 +12,7 @@ import {
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
+import { PET_INSTANCE_AUTHORITY_VERSION, reconcilePetInstanceWalletToProfile } from './wallet-reconciliation.js';
 
 export {
   PET_ROGUELITE_BOSSES,
@@ -32,8 +33,6 @@ const MAX_ROGUELITE_MOON_GOLD_PER_CLAIM = 100;
 const MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM = 5;
 const MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM = 5;
 const MAX_CURRENCY = 999999;
-const PET_INSTANCE_AUTHORITY_VERSION = '0001-01-01 00:00:00';
-const PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY = 'moonpet_wallet_reconcile:v1';
 
 export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 'abandoned', 'extracted']);
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
@@ -116,52 +115,6 @@ export function buildPetProfileDeltas(rewards = {}, costs = {}) {
 
 function normalizeCurrencyCosts(value = {}) {
   return Object.fromEntries(['moon_gold', 'moon_crystals', 'style_tokens'].map((key) => [key, positiveInteger(value?.[key])]));
-}
-
-function getPetWeekKey(now = new Date()) {
-  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
-}
-
-// No migration is required for the PR #1224 -> #1228 wallet repair. The
-// existing pet event ledger already has a unique owner/event_key receipt, so
-// this claims one reconciliation marker per owner and folds only positive
-// sentinel-instance deltas over the profile/account wallet baseline before
-// reward cost checks. Repeated settlement attempts cannot double-credit.
-async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
-  const owner = String(telegramId || '').trim();
-  if (!owner) return false;
-  const dayKey = now.toISOString().slice(0, 10);
-  const markerId = crypto.randomUUID();
-  const metadata = safeJson({
-    source: 'runtime_wallet_reconciliation',
-    contract: 'account_wallet_profile_authority',
-    folded_from: 'pet_authority_instance_wallet_columns',
-  });
-  try {
-    const results = await db.batch([
-      db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
-          (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-        SELECT ?, ?, 'wallet_reconciliation', ?, 0, 0, ?, ?, ?, 'accepted', 'account_wallet_reconciled', ?
-        WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)`)
-        .bind(markerId, owner, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, getMoonpetSeasonKey(now), dayKey, getPetWeekKey(now), metadata, owner),
-      db.prepare(`UPDATE telegram_pet_profiles SET
-          moon_gold = MIN(?, moon_gold + COALESCE((SELECT SUM(MAX(0, i.moon_gold - telegram_pet_profiles.moon_gold)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
-          moon_crystals = MIN(?, moon_crystals + COALESCE((SELECT SUM(MAX(0, i.moon_crystals - telegram_pet_profiles.moon_crystals)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0)),
-          style_tokens = MIN(?, style_tokens + COALESCE((SELECT SUM(MAX(0, i.style_tokens - telegram_pet_profiles.style_tokens)) FROM telegram_pet_instances i WHERE i.telegram_id = ? AND i.status IN ('active', 'retired', 'archived') AND i.source_profile_updated_at = ?), 0))
-        WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND event_key = ?)`)
-        .bind(MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION, MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION, MAX_CURRENCY, owner, PET_INSTANCE_AUTHORITY_VERSION,
-          owner, markerId, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY),
-    ]);
-    return Number(results?.[0]?.meta?.changes || 0) === 1;
-  } catch (error) {
-    if (/no such table: telegram_pet_(events|instances|profiles)/i.test(String(error?.message || error))) return false;
-    throw error;
-  }
 }
 
 export function validatePetRunModifier(modifier) {

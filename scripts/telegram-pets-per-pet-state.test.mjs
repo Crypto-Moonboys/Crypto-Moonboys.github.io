@@ -36,6 +36,8 @@ const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
 const migration057 = await readFile(new URL('../workers/moonboys-api/migrations/057_telegram_pet_lifecycle_pet_id.sql', import.meta.url), 'utf8');
 const worker = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const rogueliteFoundation = await readFile(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
+const walletReconciliation = await readFile(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
 
 assert.doesNotMatch(migration056, /CREATE\s+TRIGGER/i, 'migration 056 must not rely on trigger DDL');
 assert.match(
@@ -49,6 +51,18 @@ assert.equal(
   0,
   'getPetProfileWithAtomicDecay must rely on getPetProfile reconciliation and not repeat the wallet hot-path batch',
 );
+assert.equal((worker.match(/async function reconcilePetInstanceWalletToProfile/g) || []).length, 0,
+  'worker.js must import the shared wallet reconciliation helper instead of duplicating it');
+assert.equal((rogueliteFoundation.match(/async function reconcilePetInstanceWalletToProfile/g) || []).length, 0,
+  'roguelite-foundation.js must import the shared wallet reconciliation helper instead of duplicating it');
+assert.match(walletReconciliation, /source = \? AND idempotency_key = \?/,
+  'wallet reconciliation marker must stay in private reward claims, not public pet events');
+assert.match(walletReconciliation, /i\.status IN \('active', 'retired', 'archived'\)/,
+  'wallet reconciliation must continue to include active, retired, and archived sentinel instances');
+assert.match(walletReconciliation, /accepted_pet_id_reward_claim_ledger/,
+  'wallet reconciliation must remain ledger-derived, not profile-baseline-derived');
+assert.doesNotMatch(walletReconciliation, /i\.moon_gold - telegram_pet_profiles\.moon_gold|i\.moon_crystals - telegram_pet_profiles\.moon_crystals|i\.style_tokens - telegram_pet_profiles\.style_tokens/,
+  'wallet reconciliation must not derive deltas from current instance wallet minus current profile wallet');
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
 const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
 const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);

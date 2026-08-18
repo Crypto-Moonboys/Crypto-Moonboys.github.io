@@ -223,7 +223,7 @@ assert.equal(duplicateClaims.filter(({ duplicate }) => !duplicate).length, 1, 'c
 assert.equal(duplicateDb.database.prepare("SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'duplicate-player'").get().pet_xp, 50);
 assert.equal(duplicateDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'duplicate-player'").get().moon_gold, 25);
 assert.equal(duplicateDb.database.prepare("SELECT stage FROM telegram_pet_profiles WHERE telegram_id = 'duplicate-player'").get().stage, 'hatchling', 'unified rewards must preserve Pet stage progression');
-assert.equal(duplicateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_reward_claims').get().count, 1);
+assert.equal(duplicateDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='pet_job'").get().count, 1);
 
 assert.equal(validatePetRunModifier(PET_RUN_MODIFIERS.low_energy), true);
 assert.equal(validatePetRunModifier({ effects: { energy_cost_modifier: -5 } }), true, 'temporary energy cost modifiers are valid content');
