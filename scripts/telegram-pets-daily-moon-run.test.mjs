@@ -446,6 +446,20 @@ assert.equal(postBatchCareRecoverySync.challenge_results.some((result) => result
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
   WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
   'post-batch care recovery must award exactly one Growth Mark');
+const repeatedPostBatchCare = await __petMediaTestHooks.processPetAction(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'feed', {
+  event_key: 'callback:feed:post-batch-recovery',
+  source: 'telegram_callback',
+  now: postBatchCareRecoveryNow,
+});
+assert.equal(repeatedPostBatchCare.duplicate, true,
+  'additional post-batch care retries must remain idempotent duplicate successes');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:post-batch-recovery'`)
+  .get(postBatchCareRecoveryTelegramId, postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
+  'additional post-batch care retries must not duplicate Daily Journey objective evidence');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
+  'additional post-batch care retries must not duplicate Growth Marks');
 
 const careDayRolloverDb = new D1();
 const careDayRolloverTelegramId = 'care-day-rollover-recovery';
