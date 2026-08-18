@@ -133,14 +133,8 @@ function orderRowsByWalletSnapshots(rows) {
 async function readHistoricalWalletRows(db, owner) {
   const statement = db.prepare(`
     SELECT c.rowid AS settlement_sequence, c.claim_id, c.pet_id, c.requested_rewards, c.applied_rewards,
-           c.metadata, c.created_at, c.awarded_at,
-           i.moon_gold AS current_moon_gold, i.moon_crystals AS current_moon_crystals,
-           i.style_tokens AS current_style_tokens
+           c.metadata, c.created_at, c.awarded_at
     FROM telegram_pet_reward_claims c
-    LEFT JOIN telegram_pet_instances i
-      ON i.pet_id = c.pet_id
-     AND i.telegram_id = c.telegram_id
-     AND i.status IN ('active', 'retired', 'archived')
     WHERE c.telegram_id = ?
       AND c.pet_id IS NOT NULL
       AND c.status = 'awarded'
@@ -198,57 +192,6 @@ async function assertReconciliationLedgerIsSafe(db, owner) {
   if (ambiguous) throw new Error('moonpet_wallet_reconciliation_ambiguous_ledger');
 }
 
-function currentWalletFromRow(row) {
-  const wallet = {};
-  for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
-    const value = row[`current_${currency}`];
-    if (value === undefined || value === null) return null;
-    wallet[currency] = clampWallet(value);
-  }
-  return wallet;
-}
-
-function replayMissingSnapshotRowsFromTerminal(rows, terminalWallet) {
-  if (!terminalWallet) throw new Error('moonpet_wallet_reconciliation_missing_wallet_snapshot');
-  const deltas = { moon_gold: 0, moon_crystals: 0, style_tokens: 0 };
-  let running = { ...terminalWallet };
-  for (const row of [...rows].reverse()) {
-    const snapshot = rowWalletSnapshotIfComplete(row);
-    if (snapshot) {
-      for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
-        if (snapshot.before[currency] === null || snapshot.after[currency] === null) {
-          throw new Error(`moonpet_wallet_reconciliation_missing_wallet_snapshot:${row.claim_id}`);
-        }
-        if (snapshot.after[currency] !== clampWallet(snapshot.before[currency] + walletClaimDelta(row, currency))) {
-          throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
-        }
-        if (running[currency] !== snapshot.after[currency]) {
-          throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
-        }
-        deltas[currency] += snapshot.after[currency] - snapshot.before[currency];
-        running[currency] = snapshot.before[currency];
-      }
-      continue;
-    }
-    for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
-      const delta = walletClaimDelta(row, currency);
-      if (delta > 0 && running[currency] === PET_ACCOUNT_WALLET_MAX) {
-        throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
-      }
-      if (delta < 0 && running[currency] === 0) {
-        throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
-      }
-      const before = running[currency] - delta;
-      if (before < 0 || before > PET_ACCOUNT_WALLET_MAX) {
-        throw new Error(`moonpet_wallet_reconciliation_ambiguous_ledger:${row.claim_id}`);
-      }
-      deltas[currency] += delta;
-      running[currency] = before;
-    }
-  }
-  return deltas;
-}
-
 function replayHistoricalWalletDeltas(rows) {
   const byPet = new Map();
   for (const row of rows) {
@@ -267,15 +210,13 @@ function replayHistoricalWalletDeltas(rows) {
     petRows.sort((left, right) => Number(left.settlement_sequence || 0) - Number(right.settlement_sequence || 0));
     const hasMissingSnapshot = petRows.some((row) => !rowWalletSnapshotIfComplete(row));
     if (hasMissingSnapshot) {
-      const replayed = replayMissingSnapshotRowsFromTerminal(petRows, currentWalletFromRow(petRows[0]));
-      for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) deltas[currency] += replayed[currency];
-    } else {
-      const orderedRows = orderRowsByWalletSnapshots(petRows);
-      for (const row of orderedRows) {
-        const snapshot = rowWalletSnapshot(row);
-        for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
-          deltas[currency] += snapshot.after[currency] - snapshot.before[currency];
-        }
+      throw new Error('moonpet_wallet_reconciliation_missing_wallet_snapshot');
+    }
+    const orderedRows = orderRowsByWalletSnapshots(petRows);
+    for (const row of orderedRows) {
+      const snapshot = rowWalletSnapshot(row);
+      for (const currency of PET_ACCOUNT_WALLET_CURRENCIES) {
+        deltas[currency] += snapshot.after[currency] - snapshot.before[currency];
       }
     }
   }
@@ -294,14 +235,13 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
 // No migration is required for the PR #1224 -> #1228 wallet repair. The
 // existing reward-claim ledger is not used by the public activity feed, has a
 // unique owner/source/idempotency receipt, and lets us replay accepted
-// historical pet_id wallet credits and debits in the durable claim row order.
-// Before/after wallet snapshots are used when present; older claims without
-// snapshots are replayed from the current terminal instance wallet only when
-// that proves no per-event cap/clamp ambiguity. The current profile balance,
-// current instance rows, and current instance sentinel timestamps are never used
-// as a baseline or eligibility proof. If object-shaped JSON, claim ordering,
-// snapshots, or terminal balances cannot prove the exact clamped order,
-// reconciliation fails closed before committing the one-shot marker.
+// historical pet_id wallet credits and debits only when before/after wallet
+// snapshots prove the original clamped transition order. The current profile
+// balance, current instance rows, current terminal instance wallet, and current
+// instance sentinel timestamps are never used as a baseline or eligibility
+// proof. If object-shaped JSON, durable claim ordering, or snapshots cannot
+// prove the exact clamped order, reconciliation fails closed before committing
+// the one-shot marker.
 export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = new Date()) {
   const owner = String(telegramId || '').trim();
   if (!owner) return false;
