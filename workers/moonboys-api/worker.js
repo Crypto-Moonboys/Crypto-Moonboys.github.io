@@ -5549,7 +5549,13 @@ async function processPetAction(db, telegramId, action, options = {}) {
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { action: normalizedAction, season });
     if (acceptedDuplicate) {
       if (['feed', 'play', 'clean', 'sleep'].includes(normalizedAction)) {
-        await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, now });
+        const existingEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+        await recordDailyCareChallenge(db, {
+          telegram_id: telegramId,
+          event_key: eventKey,
+          utc_day: existingEvent?.day_key,
+          now,
+        });
       }
       return acceptedDuplicate;
     }

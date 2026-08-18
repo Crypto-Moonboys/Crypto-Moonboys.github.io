@@ -398,28 +398,30 @@ assert.equal(careRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM tele
 
 const postBatchCareRecoveryDb = new D1();
 const postBatchCareRecoveryTelegramId = 'care-post-batch-recovery';
-const postBatchCareRecoveryNow = new Date('2026-08-11T10:00:00.000Z');
-const postBatchCareRecoveryDay = postBatchCareRecoveryNow.toISOString().slice(0, 10);
-seedPlayer(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, getDailySeasonId(postBatchCareRecoveryDay));
+const postBatchCareEventNow = new Date('2026-08-11T23:59:50.000Z');
+const postBatchCareRetryNow = new Date('2026-08-12T00:01:00.000Z');
+const postBatchCareEventDay = postBatchCareEventNow.toISOString().slice(0, 10);
+const postBatchCareRetryDay = postBatchCareRetryNow.toISOString().slice(0, 10);
+seedPlayer(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, getDailySeasonId(postBatchCareEventDay));
 await __petMediaTestHooks.ensureActivePetInstance(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId);
 const postBatchCareRecoveryPetId = `pet-${postBatchCareRecoveryTelegramId}`;
 const postBatchCareRecoveryRun = await createDailyMoonRun(postBatchCareRecoveryDb, {
   telegram_id: postBatchCareRecoveryTelegramId,
-  now: postBatchCareRecoveryNow,
+  now: postBatchCareEventNow,
 });
 const originalPostBatch = postBatchCareRecoveryDb.batch.bind(postBatchCareRecoveryDb);
 let injectedPostBatchDuplicate = false;
 postBatchCareRecoveryDb.batch = async (statements) => {
   if (!injectedPostBatchDuplicate && statements.some((statement) => /INSERT OR IGNORE INTO telegram_pet_events/.test(statement.sql))) {
     injectedPostBatchDuplicate = true;
-    insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'callback:feed:post-batch-recovery', postBatchCareRecoveryDay, 'feed', postBatchCareRecoveryPetId);
+    insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'callback:feed:post-batch-recovery', postBatchCareEventDay, 'feed', postBatchCareRecoveryPetId);
   }
   return originalPostBatch(statements);
 };
 const recoveredPostBatchCare = await __petMediaTestHooks.processPetAction(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'feed', {
   event_key: 'callback:feed:post-batch-recovery',
   source: 'telegram_callback',
-  now: postBatchCareRecoveryNow,
+  now: postBatchCareRetryNow,
 });
 assert.equal(recoveredPostBatchCare.duplicate, true,
   'post-batch accepted care duplicate must return idempotent duplicate success');
@@ -428,37 +430,43 @@ assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count 
   'post-batch accepted care duplicate recovery must not duplicate the care event');
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:post-batch-recovery'`)
-  .get(postBatchCareRecoveryTelegramId, postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
-  'post-batch accepted care duplicate must recover missing Daily Journey objective evidence');
+  .get(postBatchCareRecoveryTelegramId, postBatchCareRecoveryPetId, postBatchCareEventDay).count, 1,
+  'post-batch accepted care duplicate must recover missing Daily Journey objective evidence on the original event UTC day');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND utc_day=? AND challenge_id='daily_care'`).get(postBatchCareRecoveryTelegramId, postBatchCareRetryDay).count, 0,
+  'post-batch accepted care duplicate retry must not create objective evidence on the retry UTC day');
 for (const [index, action] of ['play', 'clean'].entries()) {
   const key = `callback:${action}:post-batch-recovery`;
-  insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, key, postBatchCareRecoveryDay, action, postBatchCareRecoveryPetId);
-  await recordDailyCareChallenge(postBatchCareRecoveryDb, { telegram_id: postBatchCareRecoveryTelegramId, event_key: key, now: postBatchCareRecoveryNow });
+  insertCareEvent(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, key, postBatchCareEventDay, action, postBatchCareRecoveryPetId);
+  await recordDailyCareChallenge(postBatchCareRecoveryDb, { telegram_id: postBatchCareRecoveryTelegramId, event_key: key, utc_day: postBatchCareEventDay, now: postBatchCareEventNow });
 }
 resolveDailyRun(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, postBatchCareRecoveryRun.daily_run.run_id);
 const postBatchCareRecoverySync = await syncDailyMoonRun(postBatchCareRecoveryDb, {
   telegram_id: postBatchCareRecoveryTelegramId,
-  utc_day: postBatchCareRecoveryDay,
-  now: postBatchCareRecoveryNow,
+  utc_day: postBatchCareEventDay,
+  now: postBatchCareRetryNow,
 });
 assert.equal(postBatchCareRecoverySync.challenge_results.some((result) => result.daily_journey?.accepted), true,
   'post-batch recovered care evidence must allow Daily Journey Growth Mark qualification');
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
-  WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
+  WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareEventDay).count, 1,
   'post-batch care recovery must award exactly one Growth Mark');
 const repeatedPostBatchCare = await __petMediaTestHooks.processPetAction(postBatchCareRecoveryDb, postBatchCareRecoveryTelegramId, 'feed', {
   event_key: 'callback:feed:post-batch-recovery',
   source: 'telegram_callback',
-  now: postBatchCareRecoveryNow,
+  now: postBatchCareRetryNow,
 });
 assert.equal(repeatedPostBatchCare.duplicate, true,
   'additional post-batch care retries must remain idempotent duplicate successes');
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:post-batch-recovery'`)
-  .get(postBatchCareRecoveryTelegramId, postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
+  .get(postBatchCareRecoveryTelegramId, postBatchCareRecoveryPetId, postBatchCareEventDay).count, 1,
   'additional post-batch care retries must not duplicate Daily Journey objective evidence');
+assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND utc_day=? AND challenge_id='daily_care'`).get(postBatchCareRecoveryTelegramId, postBatchCareRetryDay).count, 0,
+  'additional post-batch care retries must still leave the retry UTC day empty');
 assert.equal(postBatchCareRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
-  WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareRecoveryDay).count, 1,
+  WHERE pet_id=? AND earned_day=?`).get(postBatchCareRecoveryPetId, postBatchCareEventDay).count, 1,
   'additional post-batch care retries must not duplicate Growth Marks');
 
 const careDayRolloverDb = new D1();
