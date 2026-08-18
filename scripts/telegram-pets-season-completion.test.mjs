@@ -54,9 +54,24 @@ for (const [before, after, beforeKey, afterKey] of [
 ]) assert.deepEqual([hooks.getPetSeasonInfo(new Date(before)).key, hooks.getPetSeasonInfo(new Date(after)).key], [beforeKey, afterKey]);
 assert.equal((Date.parse(hooks.getPetSeasonInfo(new Date('2024-02-29')).end_at) - Date.parse(hooks.getPetSeasonInfo(new Date('2024-02-29')).start_at)) / 86400000, 91, 'leap-year Q1 is a full quarter');
 
-const mark = { pet_id: 'pet-a', telegram_id: 'owner', season_key: 's1', milestone: 'boss', evidence_key: 'boss:first-clear' };
-assert.equal((await awardPetGrowthMark(db, mark)).accepted, true);
-assert.equal((await awardPetGrowthMark(db, mark)).duplicate, true, 'replayed growth evidence is idempotent');
+const mark = {
+  pet_id: 'pet-a',
+  telegram_id: 'owner',
+  season_key: 's1',
+  milestone: 'boss',
+  evidence_key: 'boss:first-clear',
+  earned_at: '2026-03-15T12:00:00.000Z',
+};
+const firstMark = await awardPetGrowthMark(db, mark);
+assert.equal(firstMark.accepted, true);
+const replayedMark = await awardPetGrowthMark(db, mark);
+assert.equal(replayedMark.duplicate, true, 'replayed growth evidence is idempotent');
+assert.equal(replayedMark.mark_id, firstMark.mark_id, 'duplicate growth evidence returns the existing authoritative mark_id');
+const sameDayDuplicateMark = await awardPetGrowthMark(db, {
+  ...mark, milestone: 'care', evidence_key: 'care:same-day-duplicate', earned_at: '2026-03-15T18:00:00.000Z',
+});
+assert.equal(sameDayDuplicateMark.duplicate, true, 'same-day Growth Marks are capped per pet');
+assert.equal(sameDayDuplicateMark.mark_id, firstMark.mark_id, 'same-day duplicate returns the existing authoritative mark_id, not a generated fake id');
 assert.equal((await awardPetGrowthMark(db, { ...mark, pet_id: 'forged' })).accepted, false, 'foreign pet IDs are rejected');
 const malformedTimestampMark = await awardPetGrowthMark(db, {
   ...mark, pet_id: 'forged', telegram_id: 'attacker', milestone: 'evolution', evidence_key: 'evolution:street:malformed', earned_at: 'not-a-persisted-date',
