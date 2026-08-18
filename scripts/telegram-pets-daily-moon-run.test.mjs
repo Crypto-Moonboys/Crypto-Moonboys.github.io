@@ -50,6 +50,7 @@ class D1 {
     this.database.exec(schema);
     this.database.exec(seasonCompletionMigration);
     this.database.exec(seasonEconomyMigration);
+    this.database.exec(journeyMigration);
     this.queue = Promise.resolve();
   }
   prepare(sql) { return new Statement(this, sql); }
@@ -438,8 +439,31 @@ assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_
   WHERE pet_id='pet-journey-player' AND season_key='pet-s2026-001' AND earned_day='2026-01-15'`).get().count, 1,
   'Test 2: repeated completion cannot mint a second Growth Mark');
 assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_receipts
-  WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='rejected' AND reason='duplicate_daily_journey_growth_mark'`).get().count, 1,
+  WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='rejected' AND reason='daily_journey_growth_mark_duplicate'`).get().count, 1,
   'Test 2: duplicate completion writes a rejected receipt');
+
+const recoveryDb = new D1();
+seedPlayer(recoveryDb, 'recovery-player', 'pet-s2026-001');
+recoveryDb.database.prepare(`INSERT INTO telegram_pet_growth_marks
+  (mark_id, pet_id, telegram_id, season_key, milestone_type, evidence_key, earned_day, earned_at)
+  VALUES ('growth:pet-recovery-player:pet-s2026-001:daily_moon_run_milestone:daily-run:2026-01-19:3-of-5',
+    'pet-recovery-player', 'recovery-player', 'pet-s2026-001', 'daily_moon_run_milestone',
+    'daily-run:2026-01-19:3-of-5', '2026-01-19', '2026-01-19T00:00:00.000Z')`).run();
+const recoveryRun = await createDailyMoonRun(recoveryDb, { telegram_id: 'recovery-player', now: new Date('2026-01-19T10:00:00.000Z') });
+resolveDailyRun(recoveryDb, 'recovery-player', recoveryRun.daily_run.run_id, { status: 'completed', score: 800, boss: true });
+const recoverySync = await syncDailyMoonRun(recoveryDb, {
+  telegram_id: 'recovery-player', utc_day: '2026-01-19', now: new Date('2026-01-19T10:05:00.000Z'),
+});
+assert.equal(recoverySync.challenge_results.at(-1).daily_journey.accepted, true,
+  'missing accepted receipt recovers when the exact Daily Journey Growth Mark already exists');
+assert.equal(recoverySync.challenge_results.at(-1).daily_journey.recovered, true,
+  'receipt recovery is explicit in the settlement result');
+assert.deepEqual({ ...recoveryDb.database.prepare(`SELECT status, reason, growth_mark_id FROM telegram_pet_daily_journey_receipts
+  WHERE pet_id='pet-recovery-player' AND utc_day='2026-01-19'`).get() }, {
+  status: 'accepted',
+  reason: 'daily_journey_qualified',
+  growth_mark_id: 'growth:pet-recovery-player:pet-s2026-001:daily_moon_run_milestone:daily-run:2026-01-19:3-of-5',
+}, 'recovered Daily Journey receipt is accepted and points at the real existing Growth Mark');
 
 const preexistingMarkDb = new D1();
 seedPlayer(preexistingMarkDb, 'preexisting-mark-player', 'pet-s2026-001');
@@ -452,7 +476,7 @@ resolveDailyRun(preexistingMarkDb, 'preexisting-mark-player', preexistingRun.dai
 const preexistingSync = await syncDailyMoonRun(preexistingMarkDb, {
   telegram_id: 'preexisting-mark-player', utc_day: '2026-01-18', now: new Date('2026-01-18T10:05:00.000Z'),
 });
-assert.equal(preexistingSync.challenge_results.at(-1).daily_journey.reason, 'duplicate_daily_journey_growth_mark',
+assert.equal(preexistingSync.challenge_results.at(-1).daily_journey.reason, 'daily_journey_growth_mark_duplicate',
   'same-day Growth Mark duplicates are rejected by Daily Journey receipts');
 assert.equal(preexistingMarkDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
   WHERE pet_id='pet-preexisting-mark-player' AND earned_day='2026-01-18'`).get().count, 1,
@@ -461,7 +485,7 @@ const preexistingReceipt = preexistingMarkDb.database.prepare(`SELECT status, re
   WHERE pet_id='pet-preexisting-mark-player' AND utc_day='2026-01-18'`).get();
 assert.deepEqual({ ...preexistingReceipt }, {
   status: 'rejected',
-  reason: 'duplicate_daily_journey_growth_mark',
+  reason: 'daily_journey_growth_mark_duplicate',
   growth_mark_id: 'growth:preexisting-authority-row',
 }, 'duplicate Daily Journey receipt references the existing authoritative Growth Mark');
 assert.equal(preexistingMarkDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks

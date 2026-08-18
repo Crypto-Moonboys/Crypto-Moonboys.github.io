@@ -470,8 +470,6 @@ async function recordChallengeEvidence(db, request) {
     pet_id: petId,
     season_key: seasonId,
     utc_day: utcDay,
-    challenge_id: challenge.challenge_id,
-    triggering_event_key: eventKey,
   }) : null;
   return {
     accepted: Boolean(results?.[legacyResultOffset]?.meta?.changes),
@@ -529,13 +527,13 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
       utc_day: request.utc_day,
       completed_objectives: completedObjectives,
       status: 'rejected',
-      reason: 'duplicate_daily_journey_growth_mark',
+      reason: 'daily_journey_growth_mark_duplicate',
       growth_mark_id: existing.growth_mark_id,
     });
     return {
       accepted: false,
       duplicate: true,
-      reason: 'duplicate_daily_journey_growth_mark',
+      reason: 'daily_journey_growth_mark_duplicate',
       completed_objectives: completedObjectives,
       required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
       total_objectives: DAILY_JOURNEY_TOTAL_OBJECTIVES,
@@ -543,15 +541,46 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
       event_key: eventKey,
     };
   }
+  const evidenceKey = `daily-run:${request.utc_day}:${DAILY_JOURNEY_REQUIRED_OBJECTIVES}-of-${DAILY_JOURNEY_TOTAL_OBJECTIVES}`;
+  const expectedMarkId = `growth:${request.pet_id}:${request.season_key}:daily_moon_run_milestone:${evidenceKey}`;
   const mark = await awardPetGrowthMark(db, {
     pet_id: request.pet_id,
     telegram_id: request.telegram_id,
     season_key: request.season_key,
     milestone: 'daily_run',
-    evidence_key: `daily-run:${request.utc_day}:3-of-5`,
+    evidence_key: evidenceKey,
     earned_at: `${request.utc_day}T00:00:00.000Z`,
   });
+  const authoritativeMark = mark.mark_id ? await db.prepare(`SELECT mark_id FROM telegram_pet_growth_marks
+    WHERE mark_id=? AND pet_id=? AND telegram_id=? AND season_key=? AND earned_day=? LIMIT 1`)
+    .bind(mark.mark_id, request.pet_id, request.telegram_id, request.season_key, request.utc_day).first().catch(() => null) : null;
+  if (!mark.accepted && mark.duplicate && authoritativeMark?.mark_id === expectedMarkId) {
+    await insertDailyJourneyReceipt(db, {
+      receipt_id: `${eventKey}:accepted`,
+      event_key: eventKey,
+      telegram_id: request.telegram_id,
+      pet_id: request.pet_id,
+      season_key: request.season_key,
+      utc_day: request.utc_day,
+      completed_objectives: completedObjectives,
+      status: 'accepted',
+      reason: 'daily_journey_qualified',
+      growth_mark_id: authoritativeMark.mark_id,
+    });
+    return {
+      accepted: true,
+      duplicate: false,
+      recovered: true,
+      reason: 'daily_journey_qualified',
+      completed_objectives: completedObjectives,
+      required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+      total_objectives: DAILY_JOURNEY_TOTAL_OBJECTIVES,
+      growth_mark_id: authoritativeMark.mark_id,
+      event_key: eventKey,
+    };
+  }
   const accepted = Boolean(mark.accepted);
+  const rejectionReason = mark.duplicate ? 'daily_journey_growth_mark_duplicate' : (mark.reason || 'daily_journey_growth_mark_rejected');
   await insertDailyJourneyReceipt(db, {
     receipt_id: `${eventKey}:${accepted ? 'accepted' : 'rejected'}`,
     event_key: eventKey,
@@ -561,17 +590,17 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
     utc_day: request.utc_day,
     completed_objectives: completedObjectives,
     status: accepted ? 'accepted' : 'rejected',
-    reason: accepted ? 'daily_journey_qualified' : (mark.duplicate ? 'duplicate_daily_journey_growth_mark' : (mark.reason || 'daily_journey_growth_mark_rejected')),
-    growth_mark_id: mark.mark_id || null,
+    reason: accepted ? 'daily_journey_qualified' : rejectionReason,
+    growth_mark_id: authoritativeMark?.mark_id || null,
   });
   return {
     accepted,
     duplicate: Boolean(mark.duplicate),
-    reason: accepted ? 'daily_journey_qualified' : (mark.duplicate ? 'duplicate_daily_journey_growth_mark' : (mark.reason || 'daily_journey_growth_mark_rejected')),
+    reason: accepted ? 'daily_journey_qualified' : rejectionReason,
     completed_objectives: completedObjectives,
     required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
     total_objectives: DAILY_JOURNEY_TOTAL_OBJECTIVES,
-    growth_mark_id: mark.mark_id,
+    growth_mark_id: authoritativeMark?.mark_id || null,
     event_key: eventKey,
   };
 }
