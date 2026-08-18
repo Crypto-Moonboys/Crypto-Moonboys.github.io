@@ -263,11 +263,13 @@ export async function createDailyMoonRun(db, request = {}) {
   const region = PET_ROGUELITE_REGIONS.moon_alley;
   const seasonId = getDailySeasonId(utcDay);
   const existingDaily = await getDailyRunRow(db, telegramId, utcDay);
+  let requestedSeasonPet = null;
   if (!existingDaily) {
     const seasonPet = await resolveDailyRunSeasonPet(db, telegramId, seasonId);
     if (!seasonPet.accepted) {
       return { accepted: false, duplicate: false, reason: seasonPet.reason, utc_day: utcDay, seed: generated.seed };
     }
+    requestedSeasonPet = seasonPet;
     const started = await startPetRogueliteRun(db, {
       telegram_id: telegramId,
       run_id: runId,
@@ -285,6 +287,7 @@ export async function createDailyMoonRun(db, request = {}) {
     if (!seasonPet.accepted) {
       return { accepted: false, duplicate: false, reason: seasonPet.reason, utc_day: utcDay, seed: generated.seed };
     }
+    requestedSeasonPet = seasonPet;
     if (
       String(existingDaily.pet_id || '') !== String(seasonPet.pet_id || '') ||
       String(existingDaily.season_key || '') !== String(seasonId)
@@ -304,12 +307,27 @@ export async function createDailyMoonRun(db, request = {}) {
     return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', utc_day: utcDay, run_id: runId, seed: generated.seed };
   }
   const modifierId = dailyModifierId(generated.run_seed);
-  const writes = await db.batch([
+  const reservationWrites = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_runs
       (telegram_id, pet_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
       SELECT ?, pet_id, ?, ?, run_id, CASE WHEN status = 'extractable' THEN 'active' ELSE status END, score, MAX(depth, current_room), 0
       FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
       .bind(telegramId, utcDay, generated.seed, telegramId, runId),
+  ]);
+  const daily = await getDailyRunRow(db, telegramId, utcDay);
+  if (
+    !daily ||
+    String(daily.pet_id || '') !== String(requestedSeasonPet?.pet_id || '') ||
+    String(daily.season_key || '') !== String(seasonId)
+  ) {
+    return {
+      accepted: false,
+      duplicate: false,
+      reason: 'daily_run_pet_authority_mismatch',
+      utc_day: utcDay,
+    };
+  }
+  await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
       (analytics_id, pet_id, telegram_id, utc_day, run_id, event_type, event_data)
       SELECT ?, pet_id, ?, ?, ?, 'run_created', ? FROM telegram_pet_daily_runs
@@ -334,11 +352,10 @@ export async function createDailyMoonRun(db, request = {}) {
     memory_type: 'milestone',
     milestone: 'first_daily_moon_run',
   });
-  const daily = await getDailyRunRow(db, telegramId, utcDay);
   return {
     accepted: true,
-    duplicate: !writes?.[0]?.meta?.changes,
-    reason: writes?.[0]?.meta?.changes ? 'daily_run_created' : 'daily_run_exists',
+    duplicate: !reservationWrites?.[0]?.meta?.changes,
+    reason: reservationWrites?.[0]?.meta?.changes ? 'daily_run_created' : 'daily_run_exists',
     daily_run: daily,
     challenge_seed: generated.seed,
     run_seed: generated.run_seed,

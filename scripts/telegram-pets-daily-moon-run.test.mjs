@@ -284,6 +284,44 @@ assert.equal(staleReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM 
   WHERE telegram_id=?`).get(staleReservationTelegramId).count, 0,
   'stale Daily Run reservation rejection must not award Growth Marks');
 
+const raceReservationDb = new D1();
+const raceReservationTelegramId = 'race-reservation-player';
+seedPlayer(raceReservationDb, raceReservationTelegramId, previousSeasonKey);
+const raceReservationOldPetId = `pet-${raceReservationTelegramId}`;
+const raceReservationCurrentPetId = 'pet-race-reservation-player-current';
+seedAdditionalPet(raceReservationDb, raceReservationTelegramId, raceReservationCurrentPetId, 1, rolloverSeasonKey);
+const raceReservationRunId = `daily:2026-07-01:${raceReservationTelegramId}`;
+const originalRaceReservationBatch = raceReservationDb.batch.bind(raceReservationDb);
+let injectedRaceReservation = false;
+raceReservationDb.batch = async (statements) => {
+  if (!injectedRaceReservation && statements.some((statement) => /INSERT OR IGNORE INTO telegram_pet_daily_runs/.test(statement.sql))) {
+    injectedRaceReservation = true;
+    raceReservationDb.database.prepare(`UPDATE telegram_pet_runs SET pet_id=?, season_key=? WHERE telegram_id=? AND run_id=?`)
+      .run(raceReservationOldPetId, previousSeasonKey, raceReservationTelegramId, raceReservationRunId);
+    raceReservationDb.database.prepare(`INSERT INTO telegram_pet_daily_runs
+      (telegram_id, pet_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
+      VALUES (?, ?, '2026-07-01', '2026-07-01-12345', ?, 'active', 0, 0, 0)`)
+      .run(raceReservationTelegramId, raceReservationOldPetId, raceReservationRunId);
+  }
+  return originalRaceReservationBatch(statements);
+};
+const refusedRaceReservation = await createDailyMoonRun(raceReservationDb, { telegram_id: raceReservationTelegramId, now: rolloverNow });
+assert.equal(refusedRaceReservation.accepted, false,
+  'losing a Daily Run reservation race must not return the persisted stale authority as valid');
+assert.equal(refusedRaceReservation.reason, 'daily_run_pet_authority_mismatch');
+assert.equal(raceReservationDb.database.prepare(`SELECT pet_id FROM telegram_pet_daily_runs
+  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(raceReservationTelegramId).pet_id, raceReservationOldPetId,
+  'race regression fixture must leave the wrong pet reservation persisted for validation');
+assert.equal(raceReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_analytics
+  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(raceReservationTelegramId).count, 0,
+  'losing a Daily Run reservation race must not record Daily Run analytics for stale authority');
+assert.equal(raceReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(raceReservationTelegramId).count, 0,
+  'losing a Daily Run reservation race must not record Daily Journey objectives');
+assert.equal(raceReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE telegram_id=?`).get(raceReservationTelegramId).count, 0,
+  'losing a Daily Run reservation race must not award Growth Marks');
+
 const db = new D1();
 seedPlayer(db, 'daily-player');
 const now = new Date('2026-08-11T00:00:00.000Z');
