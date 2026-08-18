@@ -2861,7 +2861,8 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     try { existingItemKey = JSON.parse(existing?.metadata || '{}').consumed_item_key || null; } catch {}
     if (existing.event_type === 'use_item' && existingItemKey === key) {
       const inventory = await getPetInventory(db, telegramId);
-      const updatedPet = await getPetProfile(db, telegramId);
+      const updatedPet = existing.pet_id ? await getPetInstanceWithAtomicDecay(db, existing.pet_id).catch(() => null) : await getPetProfile(db, telegramId);
+      if (updatedPet) Object.assign(updatedPet, await readPetAccountWallet(db, telegramId) || {});
       return {
         accepted: true,
         duplicate: true,
@@ -2889,14 +2890,52 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   let petXp = Math.max(0, Math.floor(Number(effects.pet_xp || 0)));
   if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
   else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
-  pet.hunger = clampPetStat(Number(pet.hunger || 0) + (effects.hunger || 0));
-  pet.happiness = clampPetStat(Number(pet.happiness || 0) + (effects.happiness || 0));
-  pet.cleanliness = clampPetStat(Number(pet.cleanliness || 0) + (effects.cleanliness || 0));
-  pet.energy = clampPetStat(Number(pet.energy || 0) + (effects.energy || 0));
-  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
+  const hungerDelta = Math.trunc(Number(effects.hunger || 0) || 0);
+  const happinessDelta = Math.trunc(Number(effects.happiness || 0) || 0);
+  const cleanlinessDelta = Math.trunc(Number(effects.cleanliness || 0) || 0);
+  const energyDelta = Math.trunc(Number(effects.energy || 0) || 0);
   updatePetStreakForAction(pet, dayKey);
-  pet.last_decay_at = now.toISOString();
+  const nextStreakDays = Math.max(0, Math.floor(Number(pet.streak_days || 0)));
+  const nextLastActiveDay = pet.last_active_day || dayKey;
+  const nextDecayAt = now.toISOString();
   const walletRewards = { style_tokens: Math.max(0, Math.floor(Number(effects.style_tokens || 0))) };
+  const petLevelSql = `MAX(1, CAST((MAX(0, pet_xp + ?) / 100) AS INTEGER) + 1)`;
+  const petStageSql = `CASE
+          WHEN MAX(0, pet_xp + ?) >= 1800 THEN 'legendary companion'
+          WHEN MAX(0, pet_xp + ?) >= 900 THEN 'moon guardian'
+          WHEN MAX(0, pet_xp + ?) >= 360 THEN 'street scout'
+          WHEN MAX(0, pet_xp + ?) >= 120 THEN 'runner'
+          WHEN MAX(0, pet_xp + ?) >= 25 THEN 'hatchling'
+          ELSE 'egg'
+        END`;
+  const itemUsePetDeltaSql = `pet_xp = MAX(0, pet_xp + ?),
+        level = ${petLevelSql},
+        stage = ${petStageSql},
+        hunger = MIN(100, MAX(0, hunger + ?)),
+        happiness = MIN(100, MAX(0, happiness + ?)),
+        cleanliness = MIN(100, MAX(0, cleanliness + ?)),
+        energy = MIN(100, MAX(0, energy + ?)),
+        health = MIN(100, MAX(0, ROUND(((100 - MIN(100, MAX(0, hunger + ?))) + MIN(100, MAX(0, happiness + ?)) + MIN(100, MAX(0, cleanliness + ?)) + MIN(100, MAX(0, energy + ?))) / 4.0))),
+        streak_days = MAX(streak_days, ?),
+        last_active_day = ?,
+        last_decay_at = ?,
+        updated_at = CURRENT_TIMESTAMP`;
+  const itemUsePetDeltaArgs = [
+    petXp,
+    petXp,
+    petXp, petXp, petXp, petXp, petXp,
+    hungerDelta,
+    happinessDelta,
+    cleanlinessDelta,
+    energyDelta,
+    hungerDelta,
+    happinessDelta,
+    cleanlinessDelta,
+    energyDelta,
+    nextStreakDays,
+    nextLastActiveDay,
+    nextDecayAt,
+  ];
   const consumeEventId = crypto.randomUUID();
   const claimId = crypto.randomUUID();
   const rewardMetadata = JSON.stringify({
@@ -2904,7 +2943,7 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     inventory_authority: true,
     consumed_item_key: key,
     rewards: { pet_xp: petXp, style_tokens: walletRewards.style_tokens },
-    profile_deltas: { hunger: effects.hunger || 0, energy: effects.energy || 0, cleanliness: effects.cleanliness || 0, happiness: effects.happiness || 0 },
+    profile_deltas: { hunger: hungerDelta, energy: energyDelta, cleanliness: cleanlinessDelta, happiness: happinessDelta },
   });
   const requestedRewards = JSON.stringify({ pet_xp: petXp, community_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: walletRewards.style_tokens, materials: {}, items: {}, relics: {} });
   const appliedRewards = requestedRewards;
@@ -2933,40 +2972,16 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
       "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending') AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')",
       [consumeEventId, claimId]),
     db.prepare(`UPDATE telegram_pet_profiles SET
-        pet_xp = ?,
-        level = ?,
-        stage = ?,
-        hunger = ?,
-        happiness = ?,
-        cleanliness = ?,
-        energy = ?,
-        health = ?,
-        streak_days = ?,
-        last_active_day = ?,
-        last_decay_at = ?,
-        updated_at = CURRENT_TIMESTAMP
+        ${itemUsePetDeltaSql}
       WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
-      .bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.hunger, pet.happiness, pet.cleanliness, pet.energy, pet.health,
-        pet.streak_days, pet.last_active_day, pet.last_decay_at, telegramId, consumeEventId, claimId),
+      .bind(...itemUsePetDeltaArgs, telegramId, consumeEventId, claimId),
     db.prepare(`UPDATE telegram_pet_instances SET
-        pet_xp = ?,
-        level = ?,
-        stage = ?,
-        hunger = ?,
-        happiness = ?,
-        cleanliness = ?,
-        energy = ?,
-        health = ?,
-        streak_days = ?,
-        last_active_day = ?,
-        last_decay_at = ?,
-        source_profile_updated_at = ?,
-        updated_at = CURRENT_TIMESTAMP
+        ${itemUsePetDeltaSql},
+        source_profile_updated_at = ?
       WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
-      .bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.hunger, pet.happiness, pet.cleanliness, pet.energy, pet.health,
-        pet.streak_days, pet.last_active_day, pet.last_decay_at, PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', consumeEventId, claimId),
+      .bind(...itemUsePetDeltaArgs, PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', consumeEventId, claimId),
     db.prepare(`INSERT INTO telegram_pet_season_state
         (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
       SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
@@ -2983,14 +2998,14 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
       SET status = 'accepted', reason = 'item_used'
       WHERE id = ? AND status = 'pending'
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')
-        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND pet_xp = ?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?)
         AND (
           pet_id IS NULL OR EXISTS (
-            SELECT 1 FROM telegram_pet_instances WHERE pet_id = telegram_pet_events.pet_id AND telegram_id = ? AND pet_xp = ?
+            SELECT 1 FROM telegram_pet_instances WHERE pet_id = telegram_pet_events.pet_id AND telegram_id = ?
           )
         )
       RETURNING id`)
-      .bind(consumeEventId, claimId, telegramId, pet.pet_xp, telegramId, pet.pet_xp),
+      .bind(consumeEventId, claimId, telegramId, telegramId),
     db.prepare(`UPDATE telegram_pet_reward_claims
       SET status = 'awarded', awarded_at = CURRENT_TIMESTAMP
       WHERE claim_id = ? AND status = 'pending'
@@ -3003,7 +3018,8 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     const acceptedDuplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
     if (acceptedDuplicate) {
       const inventory = await getPetInventory(db, telegramId);
-      const updatedPet = await getPetProfile(db, telegramId);
+      const updatedPet = acceptedDuplicate.pet_id ? await getPetInstanceWithAtomicDecay(db, acceptedDuplicate.pet_id).catch(() => null) : await getPetProfile(db, telegramId);
+      if (updatedPet) Object.assign(updatedPet, await readPetAccountWallet(db, telegramId) || {});
       return {
         accepted: true,
         duplicate: true,
@@ -3016,9 +3032,10 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     }
     return { accepted: false, reason: 'item_not_found', pet };
   }
-  Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
   const inventory = await getPetInventory(db, telegramId);
-  return { accepted: true, reason: 'item_used', xp_awarded: 0, pet_xp_awarded: petXp, item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 }, pet };
+  const updatedPet = pet.pet_id ? await getPetInstanceWithAtomicDecay(db, pet.pet_id).catch(() => null) : await getPetProfile(db, telegramId);
+  if (updatedPet) Object.assign(updatedPet, await readPetAccountWallet(db, telegramId) || {});
+  return { accepted: true, reason: 'item_used', xp_awarded: 0, pet_xp_awarded: petXp, item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 }, pet: updatedPet };
 }
 
 async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
@@ -3426,7 +3443,7 @@ async function readPetAccountWallet(db, telegramId) {
 
 async function readAcceptedPetEventByKey(db, telegramId, eventKey) {
   return db.prepare(`
-    SELECT id, event_type, event_key, status, reason, xp_awarded, pet_xp_awarded, metadata
+    SELECT id, pet_id, event_type, event_key, status, reason, xp_awarded, pet_xp_awarded, metadata
     FROM telegram_pet_events
     WHERE telegram_id = ? AND event_key = ? AND status = 'accepted'
     LIMIT 1

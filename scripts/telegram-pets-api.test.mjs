@@ -2572,7 +2572,7 @@ await ensurePetStarterSeasonSlot(rollbackUseItemDb, 'use-item-rollback', new Dat
 await __petMediaTestHooks.ensureActivePetInstance(rollbackUseItemDb, 'use-item-rollback');
 rollbackUseItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
   VALUES ('use-item-rollback', 'item', 'style_patch', 1)`).run();
-rollbackUseItemDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = \?/);
+rollbackUseItemDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = MAX/);
 await assert.rejects(
   processPetUseItem(rollbackUseItemDb, 'use-item-rollback', 'style_patch', {
     event_key: 'use-item-rollback', source: 'inventory_authority_regression',
@@ -2608,6 +2608,90 @@ assert.deepEqual(
 );
 assert.equal(rollbackUseItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='use-item-rollback' AND source='pet_item_use' AND status='awarded'").get().count, 1,
   'successful item-use must create exactly one awarded item-use reward claim');
+
+const concurrentSnackDb = seedRepeatRewardPlayer('use-item-concurrent-snack', 70);
+await ensurePetStarterSeasonSlot(concurrentSnackDb, 'use-item-concurrent-snack', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(concurrentSnackDb, 'use-item-concurrent-snack');
+concurrentSnackDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-snack'").run();
+concurrentSnackDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-snack'").run();
+concurrentSnackDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-concurrent-snack', 'item', 'moon_snack', 2)`).run();
+const [snackA, snackB] = await Promise.all([
+  processPetUseItem(concurrentSnackDb, 'use-item-concurrent-snack', 'moon_snack', {
+    event_key: 'use-item-concurrent-snack:a', source: 'inventory_concurrency_regression',
+  }),
+  processPetUseItem(concurrentSnackDb, 'use-item-concurrent-snack', 'moon_snack', {
+    event_key: 'use-item-concurrent-snack:b', source: 'inventory_concurrency_regression',
+  }),
+]);
+assert.equal(snackA.accepted, true, 'first concurrent moon snack use must settle');
+assert.equal(snackB.accepted, true, 'second concurrent moon snack use must settle');
+assert.equal(concurrentSnackDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-concurrent-snack' AND asset_key='moon_snack'").get().quantity, 0,
+  'two concurrent moon snack uses must consume exactly two items');
+assert.deepEqual(
+  { ...concurrentSnackDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_profiles WHERE telegram_id='use-item-concurrent-snack'").get() },
+  { pet_xp: 108, hunger: 14, energy: 86 },
+  'two concurrent moon snack uses must apply both XP and stat deltas to the profile',
+);
+assert.deepEqual(
+  { ...concurrentSnackDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_instances WHERE telegram_id='use-item-concurrent-snack'").get() },
+  { pet_xp: 108, hunger: 14, energy: 86 },
+  'two concurrent moon snack uses must apply both XP and stat deltas to the active instance',
+);
+assert.equal(concurrentSnackDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-concurrent-snack' AND event_type='use_item' AND status='accepted'").get().count, 2,
+  'two concurrent moon snack uses must create two accepted receipts');
+
+const concurrentMixedDb = seedRepeatRewardPlayer('use-item-concurrent-mixed', 70);
+await ensurePetStarterSeasonSlot(concurrentMixedDb, 'use-item-concurrent-mixed', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(concurrentMixedDb, 'use-item-concurrent-mixed');
+concurrentMixedDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-mixed'").run();
+concurrentMixedDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-mixed'").run();
+concurrentMixedDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES
+  ('use-item-concurrent-mixed', 'item', 'moon_snack', 1),
+  ('use-item-concurrent-mixed', 'item', 'energy_drink', 1)`).run();
+const [mixedSnack, mixedDrink] = await Promise.all([
+  processPetUseItem(concurrentMixedDb, 'use-item-concurrent-mixed', 'moon_snack', {
+    event_key: 'use-item-concurrent-mixed:snack', source: 'inventory_concurrency_regression',
+  }),
+  processPetUseItem(concurrentMixedDb, 'use-item-concurrent-mixed', 'energy_drink', {
+    event_key: 'use-item-concurrent-mixed:drink', source: 'inventory_concurrency_regression',
+  }),
+]);
+assert.equal(mixedSnack.accepted, true, 'concurrent moon snack use must settle');
+assert.equal(mixedDrink.accepted, true, 'concurrent energy drink use must settle');
+assert.deepEqual(
+  concurrentMixedDb.database.prepare("SELECT asset_key, quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-concurrent-mixed' ORDER BY asset_key").all().map((row) => ({ ...row })),
+  [{ asset_key: 'energy_drink', quantity: 0 }, { asset_key: 'moon_snack', quantity: 0 }],
+  'concurrent conflicting item uses must consume each item once without duplication',
+);
+assert.deepEqual(
+  { ...concurrentMixedDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_profiles WHERE telegram_id='use-item-concurrent-mixed'").get() },
+  { pet_xp: 110, hunger: 32, energy: 100 },
+  'concurrent conflicting item uses must not lose XP or stat deltas',
+);
+
+const switchItemDb = seedRepeatRewardPlayer('use-item-switch', 70);
+await ensurePetStarterSeasonSlot(switchItemDb, 'use-item-switch', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(switchItemDb, 'use-item-switch');
+const switchPetA = switchItemDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='use-item-switch'").get().pet_id;
+switchItemDb.database.prepare("INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES ('use-item-switch-b','use-item-switch','pet-s2026-003',2,'arcade_xp')").run();
+switchItemDb.database.prepare("INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,pet_xp,hunger,energy,health,source_profile_updated_at) VALUES ('use-item-switch-b','use-item-switch','pet-s2026-003',2,0,50,70,70,CURRENT_TIMESTAMP)").run();
+switchItemDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=100, hunger=50, energy=70, health=70 WHERE telegram_id='use-item-switch'").run();
+switchItemDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=100, hunger=50, energy=70, health=70 WHERE pet_id=?").run(switchPetA);
+switchItemDb.database.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('use-item-switch', 'item', 'moon_snack', 1)").run();
+switchItemDb.beforeBatchSql(/INSERT OR IGNORE INTO telegram_pet_events/, () => {
+  switchItemDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='use-item-switch-b' WHERE telegram_id='use-item-switch'").run();
+});
+const switchedUse = await processPetUseItem(switchItemDb, 'use-item-switch', 'moon_snack', {
+  event_key: 'use-item-switch:snack', source: 'inventory_concurrency_regression',
+});
+assert.equal(switchedUse.accepted, true, 'active pet switching during item use must not block the claimed pet authority');
+assert.equal(switchItemDb.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get('use-item-switch:snack').pet_id, switchPetA,
+  'item-use receipt must keep the pet_id read before active-pet switching');
+assert.equal(switchItemDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(switchPetA).pet_xp, 104,
+  'item-use reward must apply to the originally claimed active pet');
+assert.equal(switchItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='use-item-switch-b'").get().pet_xp, 0,
+  'active pet switching must not redirect item-use rewards to the new active pet');
 
 const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100);
 legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=5000, level=51, stage='street_moonpet'
