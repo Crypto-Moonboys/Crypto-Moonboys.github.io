@@ -2561,13 +2561,18 @@ async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {})
 }
 
 async function saveRunPetInstance(db, petId, pet) {
+  await runPetInstanceUpdateStatement(db, petId, pet).run();
+}
+
+function runPetInstanceUpdateStatement(db, petId, pet, persistenceGuardSql = '1 = 1', persistenceGuardArgs = []) {
   const persistedAt = formatPetStateTimestamp();
   pet.stage = getPetGrowthStage(pet.pet_xp);
   pet.health = calculatePetHealth(pet);
   const assignments = PET_INSTANCE_STATE_COLUMNS.map((column) => `${column} = ?`).join(', ');
   const values = PET_INSTANCE_STATE_COLUMNS.map((column) => column === 'level' ? getPetLevel(pet.pet_xp) : pet[column]);
-  await db.prepare(`UPDATE telegram_pet_instances SET ${assignments}, source_profile_updated_at = ?, updated_at = ?
-    WHERE pet_id = ? AND telegram_id = ?`).bind(...values, PET_INSTANCE_AUTHORITY_VERSION, persistedAt, petId, pet.telegram_id).run();
+  return db.prepare(`UPDATE telegram_pet_instances SET ${assignments}, source_profile_updated_at = ?, updated_at = ?
+    WHERE pet_id = ? AND telegram_id = ? AND ${persistenceGuardSql}`)
+    .bind(...values, PET_INSTANCE_AUTHORITY_VERSION, persistedAt, petId, pet.telegram_id, ...persistenceGuardArgs);
 }
 
 async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options = {}) {
@@ -2683,6 +2688,7 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + consolationXp));
     updatePetStreakForAction(pet, dayKey);
     pet.last_decay_at = new Date().toISOString();
+    const runFailEventId = crypto.randomUUID();
     const terminalStatements = [stepInsertStatement, accountWalletDeltaStatement(db, telegramId, walletCostDeltas,
       'EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)', [stepId]), db.prepare(`
       UPDATE telegram_pet_runs
@@ -2698,17 +2704,19 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
       WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?
         AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)
       RETURNING run_id
-    `).bind(stepIndex, telegramId, run.run_id, stepIndex - 1, stepId), ...consumedItemStatements];
-    const terminalResults = await db.batch(terminalStatements);
-    if (!terminalResults?.[2]?.results?.[0]) {
-      return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
-    }
-    await db.prepare(`
+    `).bind(stepIndex, telegramId, run.run_id, stepIndex - 1, stepId),
+    runPetInstanceUpdateStatement(db, run.pet_id, pet,
+      "EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?) AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ? AND depth = ? AND status = 'failed')",
+      [stepId, telegramId, run.run_id, stepIndex]),
+    db.prepare(`
       INSERT INTO telegram_pet_events
         (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-      VALUES (?, ?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?)
+      SELECT ?, ?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ? AND status = 'failed')
+        AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND pet_xp = ?)
     `).bind(
-      crypto.randomUUID(),
+      runFailEventId,
       run.pet_id,
       telegramId,
       buildStablePetEventKey(['pet_run_fail', telegramId, run.run_id, stepIndex]),
@@ -2717,12 +2725,17 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
       dayKey,
       weekKey,
       JSON.stringify({ source: options.source || 'telegram_command', run_id: run.run_id, failed_step: stepIndex, lost_unbanked: run }),
-    ).run();
-    await saveRunPetInstance(db, run.pet_id, pet);
-    await db.prepare(`
+      stepId,
+      telegramId,
+      run.run_id,
+      run.pet_id,
+      telegramId,
+      pet.pet_xp,
+    ),
+    db.prepare(`
       INSERT INTO telegram_pet_season_state
         (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted')
       ON CONFLICT(telegram_id, season_key) DO UPDATE SET
         season_xp = season_xp + excluded.season_xp,
         weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
@@ -2730,7 +2743,12 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
         daily_key = excluded.daily_key,
         weekly_key = excluded.weekly_key,
         updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, season.key, consolationXp, consolationXp, consolationXp, dayKey, weekKey).run();
+    `).bind(telegramId, season.key, consolationXp, consolationXp, consolationXp, dayKey, weekKey, runFailEventId),
+    ...consumedItemStatements];
+    const terminalResults = await db.batch(terminalStatements);
+    if (!terminalResults?.[2]?.results?.[0] || Number(terminalResults?.[3]?.meta?.changes || 0) !== 1 || Number(terminalResults?.[4]?.meta?.changes || 0) !== 1) {
+      return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+    }
     const failedRun = await getPetRunById(db, telegramId, run.run_id);
     Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
     return { accepted: true, reason: 'run_failed', run: failedRun, choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: consolationXp };
@@ -2773,12 +2791,15 @@ async function processPetRunStep(db, telegramId, runIdRaw, choiceKeyRaw, options
     run.run_id,
     stepIndex - 1,
     stepId,
-  ), ...consumedItemStatements];
+  ),
+  runPetInstanceUpdateStatement(db, run.pet_id, pet,
+    "EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?) AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ? AND depth = ? AND status = 'extractable')",
+    [stepId, telegramId, run.run_id, stepIndex]),
+  ...consumedItemStatements];
   const stepResults = await db.batch(stepStatements);
-  if (!stepResults?.[2]?.results?.[0]) {
+  if (!stepResults?.[2]?.results?.[0] || Number(stepResults?.[3]?.meta?.changes || 0) !== 1) {
     return { accepted: false, reason: 'run_closed', run: await getPetRunById(db, telegramId, run.run_id), choice, outcome, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
-  await saveRunPetInstance(db, run.pet_id, pet);
   const updatedRun = await getPetRunById(db, telegramId, run.run_id);
   Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
   if (stepIndex >= PET_RUN_MAX_DEPTH) {

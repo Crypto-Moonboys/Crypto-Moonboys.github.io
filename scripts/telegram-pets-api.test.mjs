@@ -979,11 +979,13 @@ assertOrder(
   'applyPetRunStatRewards(pet, outcome.rewards);',
   'run stat rewards must only apply after the failure path has been handled'
 );
-assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('await saveRunPetInstance(db, run.pet_id, pet);'),
-  'run stat rewards must be applied before saving the successful step pet');
-assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('RETURNING run_id'), 'run-step state and reward accumulation must be conditionally claimed in one atomic batch');
-assert.ok(runStep.includes("if (!stepResults?.[2]?.results?.[0])") && runStep.includes("reason: 'run_closed'"),
+assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < runStep.lastIndexOf('runPetInstanceUpdateStatement(db, run.pet_id, pet,'),
+  'run stat rewards must be applied before batching the successful step pet persistence');
+assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('runPetInstanceUpdateStatement(db, run.pet_id, pet,') && runStep.includes("status = 'extractable'") && runStep.includes('RETURNING run_id'), 'run-step receipt, wallet cost, run state, and pet state must be conditionally claimed in one atomic batch');
+assert.ok(runStep.includes("if (!stepResults?.[2]?.results?.[0] || Number(stepResults?.[3]?.meta?.changes || 0) !== 1)") && runStep.includes("reason: 'run_closed'"),
   'a run step that loses a terminal-state race must be rejected without applying pet changes');
+assert.ok(runStep.includes('runFailEventId') && runStep.includes("SELECT ?, ?, ?, 'run_fail'") && runStep.includes("WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted')"),
+  'failed run-step receipt, season state, wallet cost, run state, and pet state must be one atomic outcome');
 assert.ok(runStep.includes('inventory_authority: true'), 'authority-owned run item consumption must bypass the temporary legacy cutover bridge');
 
 const startRun = asyncBlock('startOrResumePetRun');
@@ -2483,6 +2485,44 @@ assert.equal(insufficientRunCost.db.database.prepare("SELECT moon_gold FROM tele
   'failed run-step wallet trade must not debit the account wallet');
 assert.equal(insufficientRunCost.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE telegram_id = 'run-wallet-insufficient'").get().count, 0,
   'failed run-step wallet trade must not write an accepted step receipt');
+
+const runAtomicPersistenceFailure = await seedWalletCostRun('run-wallet-atomic-failure', 100, 0);
+runAtomicPersistenceFailure.db.failBatchOnSql(/UPDATE telegram_pet_instances SET pet_name = \?/);
+const atomicFailureRandom = Math.random;
+Math.random = () => 0.99;
+try {
+  await assert.rejects(
+    processPetRunStep(runAtomicPersistenceFailure.db, 'run-wallet-atomic-failure', runAtomicPersistenceFailure.runId, 'trade', {
+      event_key: 'run-wallet-atomic-failure-step',
+      expected_step_index: runAtomicPersistenceFailure.expectedStepIndex,
+      source: 'account_wallet_run_cost_regression',
+    }),
+    /simulated_d1_batch_failure/,
+    'run-step pet persistence failure must surface so the callback can retry',
+  );
+} finally {
+  Math.random = atomicFailureRandom;
+}
+assert.deepEqual(
+  { ...runAtomicPersistenceFailure.db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'run-wallet-atomic-failure'").get() },
+  { moon_gold: 100 },
+  'failed run-step pet persistence must roll back the account-wallet debit',
+);
+assert.deepEqual(
+  { ...runAtomicPersistenceFailure.db.database.prepare("SELECT depth, status FROM telegram_pet_runs WHERE telegram_id = 'run-wallet-atomic-failure'").get() },
+  { depth: runAtomicPersistenceFailure.expectedStepIndex - 1, status: 'active' },
+  'failed run-step pet persistence must roll back the run state update',
+);
+assert.equal(
+  runAtomicPersistenceFailure.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_steps WHERE telegram_id = 'run-wallet-atomic-failure'").get().count,
+  0,
+  'failed run-step pet persistence must roll back the run-step receipt',
+);
+assert.equal(
+  runAtomicPersistenceFailure.db.database.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id = ?').get(runAtomicPersistenceFailure.pet.pet_id).energy,
+  90,
+  'failed run-step pet persistence must leave pet-owned state unchanged for retry',
+);
 
 const failedStepEventDb = seedRepeatRewardPlayer('failed-step-event', 90);
 await ensurePetStarterSeasonSlot(failedStepEventDb, 'failed-step-event', new Date('2026-08-15T00:00:00Z'));
