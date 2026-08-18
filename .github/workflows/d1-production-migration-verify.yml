@@ -3,11 +3,10 @@ name: D1 Production Migration Verify
 on:
   pull_request:
     paths:
-      - deployments/**
+      - deployments/d1-evidence-request.json
       - scripts/verify-d1-production-migrations.mjs
       - scripts/verify-d1-production-migrations.test.mjs
       - scripts/report-d1-query-failure.mjs
-      - workers/moonboys-api/migrations/**
       - workers/moonboys-api/migrations/041_telegram_pet_repeat_reward_slots.sql
       - workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql
       - workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql

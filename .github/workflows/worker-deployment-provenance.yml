@@ -2,37 +2,8 @@ name: Worker Deployment Provenance
 
 on:
   pull_request:
-    paths:
-      - "workers/**"
-      - "scripts/*worker*"
-      - "scripts/telegram-pets/**"
-      - "scripts/telegram-pets*"
-      - "scripts/moonpet*"
-      - "scripts/verify-d1-production-migrations*"
-      - "scripts/production-deployment-truth-audit.mjs"
-      - "scripts/production-deployment-truth-audit.test.mjs"
-      - "deployments/**"
-      - "docs/WORKER_DEPLOY_RUNBOOK.md"
-      - "docs/WORKER_DEPLOY_TRUTH_MAP.md"
-      - ".github/workflows/live-worker-provenance-verify.yml"
-      - ".github/workflows/worker-deployment-provenance.yml"
   push:
     branches: [main]
-    paths:
-      - "workers/**"
-      - "scripts/*worker*"
-      - "scripts/telegram-pets/**"
-      - "scripts/telegram-pets*"
-      - "scripts/moonpet*"
-      - "scripts/verify-d1-production-migrations*"
-      - "scripts/production-deployment-truth-audit.mjs"
-      - "scripts/production-deployment-truth-audit.test.mjs"
-      - "deployments/**"
-      - "docs/WORKER_DEPLOY_RUNBOOK.md"
-      - "docs/WORKER_DEPLOY_TRUTH_MAP.md"
-      - ".github/workflows/live-worker-provenance-verify.yml"
-      - ".github/workflows/worker-deployment-provenance.yml"
-  workflow_dispatch:
 
 permissions:
   contents: read

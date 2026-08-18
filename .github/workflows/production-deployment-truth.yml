@@ -2,22 +2,8 @@ name: Production Deployment Truth
 
 on:
   pull_request:
-    paths:
-      - "workers/**"
-      - "scripts/*worker*"
-      - "scripts/production-deployment-truth-audit.mjs"
-      - "scripts/production-deployment-truth-audit.test.mjs"
-      - "deployments/**"
-      - ".github/workflows/production-deployment-truth.yml"
   push:
     branches: [main]
-    paths:
-      - "workers/**"
-      - "scripts/*worker*"
-      - "scripts/production-deployment-truth-audit.mjs"
-      - "scripts/production-deployment-truth-audit.test.mjs"
-      - "deployments/**"
-      - ".github/workflows/production-deployment-truth.yml"
   workflow_dispatch:
 
 permissions:

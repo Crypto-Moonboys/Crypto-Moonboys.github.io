@@ -4,23 +4,9 @@ on:
   pull_request:
     paths:
       - "wiki/**"
-      - "js/site-shell.js"
-      - "js/wiki.js"
-      - "js/wiki-index.json"
-      - "js/wiki-search-synonyms.json"
-      - "js/wiki-publish-audit.json"
-      - "js/related-wiki-paths.json"
-      - "js/website-publish-payloads.json"
-      - "css/**"
-      - "**/*.html"
-      - "scripts/root-pages-config.js"
-      - "scripts/wiki-publish-gate.js"
-      - "scripts/wiki-aliases.js"
-      - "scripts/wiki-brand-taxonomy.js"
       - ".github/workflows/wiki-ci.yml"
+      - "js/site-shell.js"
       - "package.json"
-      - "package-lock.json"
-  workflow_dispatch:
 
 permissions:
   contents: read

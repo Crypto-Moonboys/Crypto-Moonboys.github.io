@@ -5,102 +5,12 @@ on:
     branches: [main]
   push:
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      wiki: ${{ steps.route.outputs.wiki }}
-      worker_api: ${{ steps.route.outputs.worker_api }}
-      arcade: ${{ steps.route.outputs.arcade }}
-      wax: ${{ steps.route.outputs.wax }}
-      visual: ${{ steps.route.outputs.visual }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Route changed paths
-        id: route
-        shell: bash
-        run: |
-          set -euo pipefail
-          shopt -s globstar
-
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            {
-              echo "wiki=true"
-              echo "worker_api=true"
-              echo "arcade=true"
-              echo "wax=true"
-              echo "visual=true"
-            } >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base_ref="${{ github.event.pull_request.base.sha }}"
-            head="${{ github.event.pull_request.head.sha }}"
-            base="$(git merge-base "$base_ref" "$head")"
-          else
-            base="${{ github.event.before }}"
-            head="${{ github.sha }}"
-            if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
-              base="$(git merge-base origin/main "$head")"
-            fi
-          fi
-
-          wiki=false
-          worker_api=false
-          arcade=false
-          wax=false
-          visual=false
-
-          while IFS= read -r path; do
-            case "$path" in
-              .github/workflows/*|package.json|package-lock.json|scripts/ci-domain-runner.mjs)
-                wiki=true
-                worker_api=true
-                arcade=true
-                wax=true
-                visual=true
-                ;;
-              workers/moonboys-api/worker.js)
-                worker_api=true
-                arcade=true
-                ;;
-              arcade/**|games/**|js/arcade/**|server/block-topia/**|shared/block-topia/**|scripts/*arcade*|scripts/*btqm*|scripts/*invaders*)
-                arcade=true
-                ;;
-              wax/**|data/feed-registry.json|data/feed-status.json|data/gkniftyheads/**|data/gkniftyheads_rarity/**|data/noballgamess/**|data/nft-collections/gkniftyheads/**|img/gkniftyheads/**|wiki/gkniftyheads*.html|wiki/noballgamess*.html|wiki/nfts.html|wiki/bitcoin-nfts.html|wiki/atomichub*.html|wiki/wax*.html|wiki/nfthive.html|categories/gkniftyheads.html|categories/nfts*.html|categories/wax-nfts.html|js/wax-api-client.js|js/wax-collection-renderer.js|js/wax-image-normalizer.js|js/gkniftyheads-rarity.js|js/site-feed-status.js|docs/nft-rarity-methodology.md|.github/workflows/update-site-feeds.yml|scripts/audit-nft-pages-and-feed-sync.mjs|scripts/audit-gkniftyheads-hub-links.mjs|scripts/gkniftyheads-live-supply-scoring.test.mjs|scripts/gkniftyheads-staged-rarity-pipeline.test.mjs|scripts/gkniftyheads-24h-truth-contract.test.mjs|scripts/nft-asset-version-ranking.test.mjs|scripts/gkniftyheads-rarity-ranking.test.mjs|scripts/gkniftyheads-collection-page-cleanup.test.mjs|scripts/noballgamess-rarity-tracker.test.mjs|scripts/noballgamess-asset-json-integrity.test.mjs|scripts/nft-rarity-methodology-doc.test.mjs|scripts/feed-updater-safety.test.mjs|scripts/site-feed-registry.test.mjs|scripts/nft-market-analytics-render.test.mjs|scripts/wax-api-route-normalization.test.mjs|scripts/wax-image-normalizer.test.mjs|scripts/wax-collection-page-fallback.test.mjs|scripts/generate-gkniftyheads-rarity.mjs|scripts/generate-gkniftyheads-category-pages.mjs|scripts/generate-noballgamess-rarity.mjs|scripts/nft-asset-version-ranking.mjs|scripts/nft-market-analytics.mjs|scripts/noballgamess-tracker-lib.mjs|scripts/site-feed-utils.mjs|scripts/update-site-feeds.mjs|scripts/update-gkniftyheads-rarity-feed.mjs|scripts/update-gkniftyheads-template-metadata-cache.mjs|scripts/update-gkniftyheads-live-supply-cache.mjs|scripts/update-gkniftyheads-asset-state-cache.mjs|scripts/update-noballgamess-rarity-feed.mjs|scripts/update-noballgamess-template-metadata-cache.mjs|scripts/update-noballgamess-live-supply-cache.mjs|scripts/update-noballgamess-asset-state-cache.mjs|scripts/retry-gkniftyheads-thumbnails.mjs|scripts/clean-gkniftyheads-collection-page.mjs|scripts/*wax*)
-                wax=true
-                ;;
-              workers/**|docs/LIVE_DAILY_LOOP_TRUTH_MAP.md|docs/WORKER_SPLIT_PLAN.md|scripts/module-type-boundaries.test.mjs|scripts/telegram-link-token-security.test.mjs|scripts/admin-grant-telegram-auth-security.test.mjs|scripts/telegram-daily-digest-and-missed-perks.test.mjs|scripts/telegram-daily-loop-commands.test.mjs|scripts/daily-loop-live-smoke.test.mjs|scripts/telegram-group-event-announcements.test.mjs|scripts/daily-wtf-timed-events.test.mjs|scripts/daily-loop-state-contract.test.mjs|scripts/daily-loop-frontend-state.test.mjs|scripts/scheduled-task-isolation.test.mjs|scripts/market-indexer-removal-guard.test.mjs|scripts/cors-origins.test.mjs|scripts/worker-rate-limit.test.mjs|scripts/leaderboard-hmac-test.mjs|scripts/leaderboard-worker-identity-filter.test.mjs|scripts/leaderboard-worker-p1-regression.test.mjs|scripts/npc-chat-bridge.test.mjs|scripts/sparky-telegram-gate.test.mjs|scripts/telegram-pets/**|scripts/telegram-pets*|scripts/moonpet*|scripts/verify-d1-production-migrations*|scripts/worker-deploy-readiness-audit.test.mjs|scripts/worker-deploy-readiness-audit.mjs|deployments/**)
-                worker_api=true
-                ;;
-              js/**|css/**|**/*.html|wiki/**|brand-canon/**|img/**|assets/**|art/**|data/**|scripts/root-pages-config.js|scripts/wiki-publish-gate.js|scripts/wiki-aliases.js|scripts/wiki-brand-taxonomy.js)
-                wiki=true
-                visual=true
-                ;;
-            esac
-          done < <(git diff --name-only "$base" "$head")
-
-          {
-            echo "wiki=$wiki"
-            echo "worker_api=$worker_api"
-            echo "arcade=$arcade"
-            echo "wax=$wax"
-            echo "visual=$visual"
-          } >> "$GITHUB_OUTPUT"
-
   ci-wiki:
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.wiki == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -123,8 +33,6 @@ jobs:
         run: npm run ci:wiki
 
   ci-worker-api:
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.worker_api == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -147,8 +55,6 @@ jobs:
         run: npm run ci:worker-api
 
   ci-arcade:
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.arcade == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -174,8 +80,6 @@ jobs:
         run: npm run ci:arcade
 
   ci-wax:
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.wax == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -198,8 +102,6 @@ jobs:
         run: npm run ci:wax
 
   ci-visual:
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.visual == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

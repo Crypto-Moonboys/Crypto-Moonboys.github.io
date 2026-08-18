@@ -3,22 +3,6 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
-      - "js/**"
-      - "css/**"
-      - "**/*.html"
-      - "wiki/**"
-      - "brand-canon/**"
-      - "img/**"
-      - "assets/**"
-      - "art/**"
-      - "data/**"
-      - "games/**"
-      - "package.json"
-      - "package-lock.json"
-      - "scripts/generate-*.js"
-      - "scripts/*.mjs"
-      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 # Required for OIDC-based Pages deployment
