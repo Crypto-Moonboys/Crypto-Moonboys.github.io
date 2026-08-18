@@ -236,6 +236,28 @@ async function persistDailyRunAdvance(db, run, advanced) {
     .bind(advanced.current_room, advanced.current_room, advanced.current_room, advanced.score, run.run_id, run.telegram_id).run();
 }
 
+async function resolveDailyRunSeasonPet(db, telegramId, seasonKey) {
+  const active = await db.prepare(`SELECT a.pet_id, a.season_key FROM telegram_pet_active_slots a
+    JOIN telegram_pet_season_slots s ON s.pet_id = a.pet_id AND s.telegram_id = a.telegram_id AND s.season_key = a.season_key
+    JOIN telegram_pet_instances i ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id
+      AND i.season_key = s.season_key AND i.slot_number = s.slot_number
+    WHERE a.telegram_id = ? AND s.status = 'active' AND i.status = 'active' LIMIT 1`)
+    .bind(telegramId).first().catch(() => null);
+  if (active?.season_key === seasonKey) return { accepted: true, pet_id: active.pet_id, season_key: seasonKey };
+  const currentSeasonPet = await db.prepare(`SELECT s.pet_id, s.season_key FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id
+      AND i.season_key = s.season_key AND i.slot_number = s.slot_number
+    WHERE s.telegram_id = ? AND s.season_key = ? AND s.status = 'active' AND i.status = 'active'
+    ORDER BY CASE WHEN s.slot_number = 1 THEN 0 ELSE 1 END, s.slot_number, s.created_at LIMIT 1`)
+    .bind(telegramId, seasonKey).first().catch(() => null);
+  if (!currentSeasonPet) return { accepted: false, reason: 'daily_run_current_season_pet_required' };
+  await db.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, ?)
+    ON CONFLICT(telegram_id) DO UPDATE SET pet_id = excluded.pet_id, season_key = excluded.season_key, updated_at = CURRENT_TIMESTAMP`)
+    .bind(telegramId, currentSeasonPet.pet_id, seasonKey).run();
+  return { accepted: true, pet_id: currentSeasonPet.pet_id, season_key: seasonKey, recovered: true };
+}
+
 export async function createDailyMoonRun(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   if (!telegramId) throw new Error('invalid_daily_run_player');
@@ -246,6 +268,10 @@ export async function createDailyMoonRun(db, request = {}) {
   const seasonId = getDailySeasonId(utcDay);
   const existingDaily = await getDailyRunRow(db, telegramId, utcDay);
   if (!existingDaily) {
+    const seasonPet = await resolveDailyRunSeasonPet(db, telegramId, seasonId);
+    if (!seasonPet.accepted) {
+      return { accepted: false, duplicate: false, reason: seasonPet.reason, utc_day: utcDay, seed: generated.seed };
+    }
     await startPetRogueliteRun(db, {
       telegram_id: telegramId,
       run_id: runId,

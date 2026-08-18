@@ -187,6 +187,37 @@ assert.equal(getDailySeasonId('2026-09-30'), 'pet-s2026-003', 'Daily Moon Run mu
 assert.equal(getDailySeasonId('2026-10-01'), 'pet-s2026-004', 'Daily Moon Run must switch to Q4 on October 1 UTC');
 assert.equal(getDailySeasonId('2026-12-31'), 'pet-s2026-004', 'Daily Moon Run must never produce pet-sYYYY-005 at year end');
 
+const rolloverDb = new D1();
+const rolloverTelegramId = 'rollover-player';
+const previousSeasonKey = getDailySeasonId('2026-06-30');
+const rolloverSeasonKey = getDailySeasonId('2026-07-01');
+const rolloverNow = new Date('2026-07-01T00:05:00.000Z');
+seedPlayer(rolloverDb, rolloverTelegramId, previousSeasonKey);
+const rolloverOldPetId = `pet-${rolloverTelegramId}`;
+const rolloverCurrentPetId = 'pet-rollover-player-current';
+seedAdditionalPet(rolloverDb, rolloverTelegramId, rolloverCurrentPetId, 1, rolloverSeasonKey);
+const rolloverRun = await createDailyMoonRun(rolloverDb, { telegram_id: rolloverTelegramId, now: rolloverNow });
+assert.equal(rolloverRun.accepted, true, 'season rollover should recover to an already-owned current-season pet');
+assert.equal(rolloverRun.daily_run.pet_id, rolloverCurrentPetId,
+  'Daily Moon Run must not reserve the previous-season active pet after UTC quarter rollover');
+assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_runs
+  WHERE telegram_id=? AND season_key=? AND pet_id=?`).get(rolloverTelegramId, rolloverSeasonKey, rolloverOldPetId).count, 0,
+  'season rollover must never persist a Daily Run with mismatched old-season pet_id and new season_key');
+resolveDailyRun(rolloverDb, rolloverTelegramId, rolloverRun.daily_run.run_id);
+const rolloverSync = await syncDailyMoonRun(rolloverDb, {
+  telegram_id: rolloverTelegramId,
+  utc_day: '2026-07-01',
+  now: rolloverNow,
+});
+assert.equal(rolloverSync.challenge_results.some((result) => result.daily_journey?.accepted), true,
+  'valid current-season Daily Run authority must preserve Daily Journey qualification after rollover');
+assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id=? AND season_key=? AND earned_day='2026-07-01'`).get(rolloverCurrentPetId, rolloverSeasonKey).count, 1,
+  'rollover Daily Journey Growth Mark must settle to the current-season pet');
+assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id=? AND earned_day='2026-07-01'`).get(rolloverOldPetId).count, 0,
+  'rollover Daily Journey Growth Mark must not settle to the old-season pet');
+
 const db = new D1();
 seedPlayer(db, 'daily-player');
 const now = new Date('2026-08-11T00:00:00.000Z');
