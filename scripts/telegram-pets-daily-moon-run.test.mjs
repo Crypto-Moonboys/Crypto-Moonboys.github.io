@@ -24,6 +24,9 @@ import {
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql', import.meta.url), 'utf8');
+const journeyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/067_moonpet_daily_journey_authority.sql', import.meta.url), 'utf8');
+const seasonCompletionMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8');
+const seasonEconomyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8');
 const dailySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/daily-moon-run.js', import.meta.url), 'utf8');
 const rogueliteSource = fs.readFileSync(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
 const seasonAuthoritySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/season-authority.js', import.meta.url), 'utf8');
@@ -42,7 +45,13 @@ class Statement {
 }
 
 class D1 {
-  constructor() { this.database = new DatabaseSync(':memory:'); this.database.exec(schema); this.queue = Promise.resolve(); }
+  constructor() {
+    this.database = new DatabaseSync(':memory:');
+    this.database.exec(schema);
+    this.database.exec(seasonCompletionMigration);
+    this.database.exec(seasonEconomyMigration);
+    this.queue = Promise.resolve();
+  }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
     const execute = () => {
@@ -70,19 +79,26 @@ class D1 {
   }
 }
 
-function seedPlayer(db, telegramId) {
+function seedPlayer(db, telegramId, seasonKey = 'pet-s2026-003') {
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES (?, 0, 1)').run(telegramId);
   const petId = `pet-${telegramId}`;
-  db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type) VALUES (?, ?, 'pet-s2026-001', 1, 'free')`).run(petId, telegramId);
-  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, 'pet-s2026-001')`).run(telegramId, petId);
-  db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at) VALUES (?, ?, 'pet-s2026-001', 1, CURRENT_TIMESTAMP)`).run(petId, telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type) VALUES (?, ?, ?, 1, 'free')`).run(petId, telegramId, seasonKey);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, ?)`).run(telegramId, petId, seasonKey);
+  db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey);
 }
 
-function insertCareEvent(db, telegramId, eventKey, day, action = 'feed') {
+function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'pet-s2026-003') {
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type)
+    VALUES (?, ?, ?, ?, 'free')`).run(petId, telegramId, seasonKey, slotNumber);
+  db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
+    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey, slotNumber);
+}
+
+function insertCareEvent(db, telegramId, eventKey, day, action = 'feed', petId = null) {
   db.database.prepare(`INSERT INTO telegram_pet_events
-    (id, telegram_id, event_type, event_key, season_key, day_key, week_key, status)
-    VALUES (?, ?, ?, ?, 'season', ?, 'week', 'accepted')`).run(`id:${eventKey}`, telegramId, action, eventKey, day);
+    (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status)
+    VALUES (?, ?, ?, ?, ?, 'season', ?, 'week', 'accepted')`).run(`id:${eventKey}`, petId, telegramId, action, eventKey, day);
 }
 
 function resolveDailyRun(db, telegramId, runId, { status = 'completed', score = 900, boss = true } = {}) {
@@ -114,7 +130,12 @@ for (const table of [
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must exist in canonical schema`);
   assert.ok(migration.includes(`CREATE TABLE ${table}`), `${table} must exist in migration 044`);
 }
+for (const table of ['telegram_pet_daily_journey_objectives', 'telegram_pet_daily_journey_receipts']) {
+  assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must exist in canonical schema`);
+  assert.ok(journeyMigration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must exist in migration 067`);
+}
 assert.doesNotMatch(migration, /\b(?:ALTER\s+TABLE|DROP\s+TABLE|DELETE\s+FROM|UPDATE\s+telegram_)\b/i, 'migration 044 must be additive only');
+assert.doesNotMatch(journeyMigration, /\b(?:ALTER\s+TABLE|DROP\s+TABLE|DELETE\s+FROM|UPDATE\s+telegram_)\b/i, 'migration 067 must be additive only');
 assert.doesNotMatch(migration, /(?:pet_xp|community_xp|moon_gold|moon_crystals|style_tokens|reward_multiplier|xp_multiplier)\s+(?:INTEGER|REAL)/i,
   'migration 044 cannot create another economy or progression track');
 assert.doesNotMatch(dailySource, /UPDATE\s+telegram_pet_(?:profiles|inventory|evolutions|personality_traits|memories)/i,
@@ -189,9 +210,9 @@ seedPlayer(freshExtractionDb, 'fresh-extraction-player');
 const freshExtractionRun = await createDailyMoonRun(freshExtractionDb, { telegram_id: 'fresh-extraction-player', now });
 assert.equal(freshExtractionRun.daily_run.pet_id, 'pet-fresh-extraction-player', 'Daily Moon Run creation must capture pet_id');
 freshExtractionDb.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type)
-  VALUES ('pet-fresh-extraction-player-second', 'fresh-extraction-player', 'pet-s2026-001', 2, 'free')`).run();
+  VALUES ('pet-fresh-extraction-player-second', 'fresh-extraction-player', 'pet-s2026-003', 2, 'free')`).run();
 freshExtractionDb.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
-  VALUES ('pet-fresh-extraction-player-second', 'fresh-extraction-player', 'pet-s2026-001', 2, CURRENT_TIMESTAMP)`).run();
+  VALUES ('pet-fresh-extraction-player-second', 'fresh-extraction-player', 'pet-s2026-003', 2, CURRENT_TIMESTAMP)`).run();
 freshExtractionDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-fresh-extraction-player-second' WHERE telegram_id='fresh-extraction-player'").run();
 freshExtractionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=0, level=1, health=1, energy=1, happiness=1, cleanliness=1 WHERE telegram_id='fresh-extraction-player'").run();
 freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=900, level=10, health=99, energy=98, happiness=97, cleanliness=96 WHERE pet_id='pet-fresh-extraction-player'").run();
@@ -392,6 +413,77 @@ assert.equal(analytics.completion_rate, 1);
 assert.equal(analytics.average_depth, 10);
 assert.equal(analytics.boss_win_percentage, 100);
 assert.equal(analytics.challenge_completion_percentage.length, 5, 'analytics must report every configured daily challenge, including zero-progress challenges');
+
+const journeyDb = new D1();
+seedPlayer(journeyDb, 'journey-player', 'pet-s2026-001');
+const journeyNow = new Date('2026-01-15T10:00:00.000Z');
+const journeyRun = await createDailyMoonRun(journeyDb, { telegram_id: 'journey-player', now: journeyNow });
+resolveDailyRun(journeyDb, 'journey-player', journeyRun.daily_run.run_id, { status: 'completed', score: 800, boss: true });
+const journeySync = await syncDailyMoonRun(journeyDb, { telegram_id: 'journey-player', utc_day: '2026-01-15', now: journeyNow });
+assert.equal(journeySync.accepted, true);
+assert.equal(journeyDb.database.prepare(`SELECT COUNT(DISTINCT challenge_id) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='accepted'`).get().count, 3,
+  'Test 1: Pet A completing 3/5 records three participating-pet objectives');
+assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-journey-player' AND season_key='pet-s2026-001' AND earned_day='2026-01-15'`).get().count, 1,
+  'Test 1: Pet A receives one Growth Mark');
+assert.equal(journeyDb.database.prepare(`SELECT status FROM telegram_pet_daily_journey_receipts
+  WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='accepted'`).get().status, 'accepted',
+  'Test 1: qualification receipt is accepted');
+await syncDailyMoonRun(journeyDb, { telegram_id: 'journey-player', utc_day: '2026-01-15', now: journeyNow });
+assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-journey-player' AND season_key='pet-s2026-001' AND earned_day='2026-01-15'`).get().count, 1,
+  'Test 2: repeated completion cannot mint a second Growth Mark');
+assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_receipts
+  WHERE pet_id='pet-journey-player' AND utc_day='2026-01-15' AND status='rejected' AND reason='duplicate_daily_journey_growth_mark'`).get().count, 1,
+  'Test 2: duplicate completion writes a rejected receipt');
+
+seedAdditionalPet(journeyDb, 'journey-player', 'pet-journey-player-b', 2, 'pet-s2026-001');
+seedAdditionalPet(journeyDb, 'journey-player', 'pet-journey-player-c', 3, 'pet-s2026-001');
+journeyDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='pet-journey-player-b' WHERE telegram_id='journey-player'").run();
+await syncDailyMoonRun(journeyDb, { telegram_id: 'journey-player', utc_day: '2026-01-15', now: journeyNow });
+assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-journey-player' AND earned_day='2026-01-15'`).get().count, 1,
+  'Test 3: retry after active-pet switch leaves the reward on original Pet A');
+assert.equal(journeyDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-journey-player-b'`).get().count, 0,
+  'Test 3: active Pet B cannot steal Pet A Daily Journey reward');
+
+const twoObjectiveDb = new D1();
+seedPlayer(twoObjectiveDb, 'two-objective-player', 'pet-s2026-001');
+const twoObjectiveNow = new Date('2026-01-16T10:00:00.000Z');
+const twoObjectiveRun = await createDailyMoonRun(twoObjectiveDb, { telegram_id: 'two-objective-player', now: twoObjectiveNow });
+resolveDailyRun(twoObjectiveDb, 'two-objective-player', twoObjectiveRun.daily_run.run_id, { status: 'completed', score: 700, boss: false });
+await syncDailyMoonRun(twoObjectiveDb, { telegram_id: 'two-objective-player', utc_day: '2026-01-16', now: twoObjectiveNow });
+assert.equal(twoObjectiveDb.database.prepare(`SELECT COUNT(DISTINCT challenge_id) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE pet_id='pet-two-objective-player' AND utc_day='2026-01-16' AND status='accepted'`).get().count, 2,
+  'Test 4: only two objectives are recorded');
+assert.equal(twoObjectiveDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-two-objective-player'`).get().count, 0,
+  'Test 4: 2/5 objectives does not award a Growth Mark');
+
+const multiPetDb = new D1();
+seedPlayer(multiPetDb, 'multi-pet-player', 'pet-s2026-001');
+seedAdditionalPet(multiPetDb, 'multi-pet-player', 'pet-multi-pet-player-b', 2, 'pet-s2026-001');
+const petAObjectiveIds = ['daily_combat', 'daily_explorer', 'daily_boss'];
+for (const challengeId of petAObjectiveIds) await __dailyMoonRunTestHooks.recordChallengeEvidence(multiPetDb, {
+  telegram_id: 'multi-pet-player', pet_id: 'pet-multi-pet-player', utc_day: '2026-01-17', challenge_id: challengeId,
+  event_key: `pet-a:${challengeId}`, progress_value: PET_DAILY_CHALLENGES[challengeId].target,
+  evidence: { authority: 'test_daily_journey_authority', pet_id: 'pet-multi-pet-player' },
+});
+const petBResults = [];
+for (const challengeId of petAObjectiveIds) petBResults.push(await __dailyMoonRunTestHooks.recordChallengeEvidence(multiPetDb, {
+  telegram_id: 'multi-pet-player', pet_id: 'pet-multi-pet-player-b', utc_day: '2026-01-17', challenge_id: challengeId,
+  event_key: `pet-b:${challengeId}`, progress_value: PET_DAILY_CHALLENGES[challengeId].target,
+  evidence: { authority: 'test_daily_journey_authority', pet_id: 'pet-multi-pet-player-b' },
+}));
+assert.equal(multiPetDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-multi-pet-player' AND earned_day='2026-01-17'`).get().count, 1,
+  "Test 5: Pet A gets today's Growth Mark");
+assert.equal(multiPetDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
+  WHERE pet_id='pet-multi-pet-player-b' AND earned_day='2026-01-17'`).get().count, 1,
+  'Test 5: Pet B independently qualifies on the same account');
+assert.equal(petBResults.at(-1).daily_journey.accepted, true, 'Test 5: Pet B qualification is accepted independently');
 
 // Mandatory 10,000-run economy and determinism simulation. Daily tracking adds
 // no reward source; existing authority is exercised with 10,000 duplicate
