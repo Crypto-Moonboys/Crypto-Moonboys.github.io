@@ -35,6 +35,8 @@ const {
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   processPetRandomEvent,
+  processPetAction,
+  processPetDailyChest,
   processPetShopPurchase,
   processPetGoldTrade,
   processPetAdventure,
@@ -1592,6 +1594,7 @@ class SqliteD1 {
     this.database.exec(schema);
     this.batchCount = 0;
     this.failBatchNumber = null;
+    this.failBatchSqlPattern = null;
     this.beforeRun = null;
   }
 
@@ -1601,6 +1604,10 @@ class SqliteD1 {
 
   failOnBatch(batchNumber) {
     this.failBatchNumber = batchNumber;
+  }
+
+  failBatchOnSql(pattern) {
+    this.failBatchSqlPattern = pattern;
   }
 
   async batch(statements) {
@@ -1613,6 +1620,10 @@ class SqliteD1 {
     try {
       const results = statements.map((statement) => {
         const prepared = this.database.prepare(statement.sql);
+        if (this.failBatchSqlPattern && this.failBatchSqlPattern.test(statement.sql)) {
+          this.failBatchSqlPattern = null;
+          throw new Error('simulated_d1_batch_failure');
+        }
         if (/\bRETURNING\b/i.test(statement.sql)) {
           const rows = prepared.all(...statement.args);
           return { results: rows, meta: { changes: rows.length } };
@@ -1765,6 +1776,84 @@ assert.equal(insufficientPurchaseDb.database.prepare("SELECT moon_gold FROM tele
   'insufficient shop purchase must not debit the account wallet');
 assert.equal(insufficientPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-insufficient' AND event_key = 'callback:buy:insufficient' AND status = 'accepted'").get().count, 0,
   'insufficient shop purchase must not create an accepted receipt');
+
+const dailyChestRecoveryDb = seedRepeatRewardPlayer('daily-chest-recovery', 70);
+await ensurePetStarterSeasonSlot(dailyChestRecoveryDb, 'daily-chest-recovery', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(dailyChestRecoveryDb, 'daily-chest-recovery');
+dailyChestRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = \?/);
+await assert.rejects(
+  processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' }),
+  /simulated_d1_batch_failure/,
+  'daily chest persistence failure must surface so the same receipt can retry',
+);
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-chest-recovery'").get() },
+  { moon_gold: 0, style_tokens: 0, pet_xp: 0 },
+  'failed daily chest batch must not leave wallet credits or profile Pet XP behind',
+);
+assert.equal(
+  dailyChestRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='daily-chest-recovery' AND event_type='daily_chest' AND status='accepted'").get().count,
+  0,
+  'daily chest must not commit an accepted receipt before wallet/profile persistence succeeds',
+);
+const recoveredDailyChest = await processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' });
+assert.equal(recoveredDailyChest.accepted, true, 'daily chest retry should settle after the failed batch rolls back');
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-chest-recovery'").get() },
+  { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
+  'retried daily chest must persist wallet credits and profile Pet XP exactly once',
+);
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='daily-chest-recovery' AND event_type='daily_chest'").get() },
+  { pet_id: 'pet:daily-chest-recovery:pet-s2026-003:1', status: 'accepted', pet_xp_awarded: 40 },
+  'daily chest accepted receipt must be tied to the active pet after persistence succeeds',
+);
+const duplicateDailyChest = await processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' });
+assert.equal(duplicateDailyChest.duplicate, true, 'daily chest duplicate callback must resolve from the accepted receipt');
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-chest-recovery'").get() },
+  { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
+  'duplicate daily chest callback must not reapply wallet or Pet XP rewards',
+);
+
+const actionRecoveryDb = seedRepeatRewardPlayer('pet-action-recovery', 70);
+await ensurePetStarterSeasonSlot(actionRecoveryDb, 'pet-action-recovery', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(actionRecoveryDb, 'pet-action-recovery');
+actionRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = \?/);
+await assert.rejects(
+  processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' }),
+  /simulated_d1_batch_failure/,
+  'pet action persistence failure must surface so the same receipt can retry',
+);
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='pet-action-recovery'").get() },
+  { moon_gold: 0, style_tokens: 0, pet_xp: 0 },
+  'failed pet action batch must not leave wallet credits or profile Pet XP behind',
+);
+assert.equal(
+  actionRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='pet-action-recovery' AND event_key='callback:feed:failure' AND status='accepted'").get().count,
+  0,
+  'pet actions must not commit accepted receipts before wallet/profile persistence succeeds',
+);
+const recoveredAction = await processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' });
+assert.equal(recoveredAction.accepted, true, 'pet action retry should settle after the failed batch rolls back');
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT moon_gold, pet_xp FROM telegram_pet_profiles WHERE telegram_id='pet-action-recovery'").get() },
+  { moon_gold: 5, pet_xp: 6 },
+  'retried pet action must persist wallet credits and profile Pet XP exactly once',
+);
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='pet-action-recovery' AND event_key='callback:feed:failure'").get() },
+  { pet_id: 'pet:pet-action-recovery:pet-s2026-003:1', status: 'accepted', pet_xp_awarded: 6 },
+  'pet action accepted receipt must be tied to the active pet after persistence succeeds',
+);
+const duplicateAction = await processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' });
+assert.equal(duplicateAction.duplicate, true, 'pet action duplicate callback must resolve from the accepted receipt');
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT moon_gold, pet_xp FROM telegram_pet_profiles WHERE telegram_id='pet-action-recovery'").get() },
+  { moon_gold: 5, pet_xp: 6 },
+  'duplicate pet action callback must not reapply wallet or Pet XP rewards',
+);
 
 function seedPetActivitySession(telegramId, options = {}) {
   const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
