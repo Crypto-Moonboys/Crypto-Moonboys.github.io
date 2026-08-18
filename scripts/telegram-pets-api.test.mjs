@@ -741,6 +741,8 @@ assert.ok(award.includes('ON CONFLICT(telegram_id, season_id)'), 'leaderboard wr
 assert.ok(worker.includes('function accountWalletRecoveryResolvedSql'), 'account wallet writes must share the recovery-pending freeze predicate');
 assert.ok(worker.includes('PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE') && worker.includes('PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE'),
   'account wallet recovery freeze must use shared reconciliation marker constants');
+assert.ok(worker.includes('ensurePetAccountWalletReadyForMutation'),
+  'account wallet mutation paths must attempt reconciliation before trusting recovery state');
 assert.ok(worker.includes("reason: 'wallet_reconciliation_recovery_pending'"),
   'wallet mutation paths must return a structured recovery-pending freeze reason');
 
@@ -791,8 +793,10 @@ assert.ok(useItem.includes("source, idempotency_key, day_key, status, requested_
   'use_item rewards must settle through an atomic item-use reward claim');
 assert.ok(useItem.includes("status = 'pending'") && useItem.includes("status = 'accepted'"),
   'use_item must only accept the item-use receipt after gated writes succeed');
-assert.ok(useItem.indexOf('hasPendingPetAccountWalletRecovery') < useItem.indexOf('UPDATE telegram_pet_inventory'),
-  'use_item must check wallet recovery before consuming inventory');
+assert.ok(useItem.includes('const itemHasWalletReward = hasPetAccountWalletDelta(walletRewards)'),
+  'use_item must only guard recovery for account-wallet item rewards');
+assert.ok(useItem.indexOf('itemHasWalletReward && !(await ensurePetAccountWalletReadyForMutation') < useItem.indexOf('UPDATE telegram_pet_inventory'),
+  'use_item wallet rewards must reconcile/check recovery before consuming inventory');
 assert.ok(useItem.includes('UPDATE telegram_pet_inventory'), 'use_item must consume from the authoritative inventory table');
 assert.ok(useItem.includes('inventory_authority: true'), 'authority-owned item consumption must bypass the temporary legacy cutover bridge');
 assert.ok(useItem.includes('telegram_pet_events'), 'use_item must audit accepted items');
@@ -2558,14 +2562,34 @@ insertWalletRecoveryRequired(recoveryOtherItemDb, 'use-item-recovery-other');
 const frozenOtherItem = await processPetUseItem(recoveryOtherItemDb, 'use-item-recovery-other', 'energy_drink', {
   event_key: 'use-item-recovery-other', source: 'inventory_authority_regression',
 });
-assert.equal(frozenOtherItem.accepted, false, 'pending wallet recovery must block other rewarded items before item consumption');
-assert.equal(frozenOtherItem.reason, 'wallet_reconciliation_recovery_pending');
-assert.equal(recoveryOtherItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-other' AND asset_key='energy_drink'").get().quantity, 1,
-  'recovery-pending non-wallet item must leave inventory untouched');
-assert.equal(recoveryOtherItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-other'").get().pet_xp, 0,
-  'recovery-pending non-wallet item must not partially grant Pet XP');
-assert.equal(recoveryOtherItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-recovery-other'").get().count, 0,
-  'recovery-pending non-wallet item must not write settlement events');
+assert.equal(frozenOtherItem.accepted, true, 'pending wallet recovery must allow pet-only energy_drink item use');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-other' AND asset_key='energy_drink'").get().quantity, 0,
+  'recovery-pending pet-only item must consume inventory when it settles');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-other'").get().pet_xp, 6,
+  'recovery-pending pet-only item must grant Pet XP');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-recovery-other' AND status='accepted'").get().count, 1,
+  'recovery-pending pet-only item must write its accepted settlement event');
+
+const recoverySnackItemDb = seedRepeatRewardPlayer('use-item-recovery-snack', 70);
+await ensurePetStarterSeasonSlot(recoverySnackItemDb, 'use-item-recovery-snack', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoverySnackItemDb, 'use-item-recovery-snack');
+recoverySnackItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-recovery-snack', 'item', 'moon_snack', 1)`).run();
+insertWalletRecoveryRequired(recoverySnackItemDb, 'use-item-recovery-snack');
+const recoverySnackItem = await processPetUseItem(recoverySnackItemDb, 'use-item-recovery-snack', 'moon_snack', {
+  event_key: 'use-item-recovery-snack', source: 'inventory_authority_regression',
+});
+assert.equal(recoverySnackItem.accepted, true, 'pending wallet recovery must allow pet-only moon_snack item use');
+assert.deepEqual(
+  { ...recoverySnackItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-snack' AND asset_key='moon_snack'").get() },
+  { quantity: 0 },
+  'recovery-pending moon_snack must consume inventory exactly once',
+);
+assert.deepEqual(
+  { ...recoverySnackItemDb.database.prepare("SELECT pet_xp, hunger, energy, style_tokens FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-snack'").get() },
+  { pet_xp: 4, hunger: 7, energy: 78, style_tokens: 0 },
+  'recovery-pending moon_snack must apply pet-only XP/stat effects without wallet drift',
+);
 
 const rollbackUseItemDb = seedRepeatRewardPlayer('use-item-rollback', 70);
 await ensurePetStarterSeasonSlot(rollbackUseItemDb, 'use-item-rollback', new Date('2026-08-15T00:00:00Z'));

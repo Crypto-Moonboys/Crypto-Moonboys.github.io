@@ -18,6 +18,7 @@ import {
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
   PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE,
   PET_INSTANCE_AUTHORITY_VERSION,
+  ensurePetAccountWalletReadyForMutation,
   reconcilePetInstanceWalletToProfile,
 } from './wallet-reconciliation.js';
 
@@ -145,14 +146,6 @@ function accountWalletRecoveryResolvedSql(ownerSql = 'telegram_pet_profiles.tele
   )`;
 }
 
-async function hasPendingAccountWalletRecovery(db, telegramId) {
-  const owner = String(telegramId || '').trim();
-  if (!owner) return false;
-  const pending = await db.prepare(`SELECT 1 AS pending WHERE NOT (${accountWalletRecoveryResolvedSql('?')})`)
-    .bind(owner).first().catch(() => null);
-  return Boolean(pending);
-}
-
 export function validatePetRunModifier(modifier) {
   return validatePetRunModifierContent(modifier);
 }
@@ -216,7 +209,6 @@ export async function awardPetReward(db, request = {}) {
   if (!telegramId || !PET_REWARD_SOURCES.includes(source) || !idempotencyKey) throw new Error('invalid_pet_reward_request');
   await reconcileLegacyPetInventory(db, telegramId);
   const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
-  await reconcilePetInstanceWalletToProfile(db, telegramId, now);
   const reservationId = String(request.reservation_id || '').trim();
   let rewards = normalizePetReward(request.rewards);
   if (source.startsWith('roguelite_')) rewards = {
@@ -243,9 +235,10 @@ export async function awardPetReward(db, request = {}) {
   const reason = String(request.reason || 'reward_awarded').trim().slice(0, 120);
   const profileDeltas = normalizeProfileDeltas(request.profile_deltas);
   const currencyCosts = normalizeCurrencyCosts(request.currency_costs);
-  if (hasAccountWalletMovement(rewards, currencyCosts) && await hasPendingAccountWalletRecovery(db, telegramId)) {
+  if (hasAccountWalletMovement(rewards, currencyCosts) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId, now))) {
     return { accepted: false, duplicate: false, reason: 'wallet_reconciliation_recovery_pending', pet_xp_awarded: 0, xp_awarded: 0, rewards: normalizePetReward() };
   }
+  if (!hasAccountWalletMovement(rewards, currencyCosts)) await reconcilePetInstanceWalletToProfile(db, telegramId, now);
   const touchStreak = request.touch_streak === true ? 1 : 0;
   const previousDay = new Date(`${dayKey}T00:00:00.000Z`);
   previousDay.setUTCDate(previousDay.getUTCDate() - 1);

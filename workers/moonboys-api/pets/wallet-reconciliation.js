@@ -252,6 +252,21 @@ async function hasPetAccountWalletRecoveryRequiredMarker(db, owner) {
   return Boolean(marker);
 }
 
+export async function hasPendingPetAccountWalletRecovery(db, telegramId) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return false;
+  const recoveryRequired = await hasPetAccountWalletRecoveryRequiredMarker(db, owner);
+  if (!recoveryRequired) return false;
+  return !(await hasPetAccountWalletReconciliationMarker(db, owner));
+}
+
+export async function ensurePetAccountWalletReadyForMutation(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return false;
+  await reconcilePetInstanceWalletToProfile(db, owner, now);
+  return !(await hasPendingPetAccountWalletRecovery(db, owner));
+}
+
 async function markPetAccountWalletRecoveryRequired(db, owner, reason, now = new Date()) {
   const markerId = crypto.randomUUID();
   const metadata = JSON.stringify({

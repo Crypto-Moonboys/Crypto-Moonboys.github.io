@@ -69,8 +69,8 @@ assert.match(workerSource, /processPetEquipmentUpgrade\(db, telegramId, body\.it
 assert.match(workerSource, /if \(!petRaw\) return \{ accepted: false, reason: 'pet_not_adopted' \}; const faction = await db\.prepare\('SELECT faction FROM blocktopia_progression/, 'event chains must reject users without a pet before inserting a system event');
 assert.match(workerSource, /destination: 'economy'/, 'recommendations must provide explicit destinations');
 assert.match(clientSource, /disabled: !item\.affordable \|\| item\.unlocked && !item\.repeatable/, 'Style Lab must disable unaffordable purchases');
-assert.match(normalizeSourceWhitespace(fs.readFileSync(new URL('workers/moonboys-api/pets/live-systems.js', root), 'utf8')), /PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE[\s\S]*wallet_reconciliation_recovery_pending/,
-  'live-system account-wallet sinks must use shared recovery constants and return the structured pending reason');
+assert.match(normalizeSourceWhitespace(fs.readFileSync(new URL('workers/moonboys-api/pets/live-systems.js', root), 'utf8')), /ensurePetAccountWalletReadyForMutation[\s\S]*wallet_reconciliation_recovery_pending/,
+  'live-system account-wallet sinks must use the shared reconcile-first guard and return the structured pending reason');
 for (const table of ['telegram_pet_system_events', 'telegram_pet_event_chain_progress', 'telegram_pet_seasonal_boss_progress', 'telegram_pet_cosmetic_unlocks']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`));
   assert.ok(migration.includes(`CREATE TABLE IF NOT EXISTS ${table}`));
@@ -149,6 +149,20 @@ function insertWalletReconciled(id) {
     VALUES (?, NULL, ?, ?, ?, '2026-08-18', 'awarded', '{}', '{}', ?, CURRENT_TIMESTAMP)
   `).run(`wallet-reconciled:${id}`, id, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
     JSON.stringify({ outcome: 'reconciled' }));
+}
+function seedUnprovableHistoricalWalletClaim(id) {
+  const metadata = '{}';
+  runtimeDb.prepare(`
+    INSERT INTO telegram_pet_reward_claims
+      (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata, awarded_at)
+    VALUES (?, ?, ?, 'pet_job', ?, '2026-08-10', 'awarded', ?, ?, ?, CURRENT_TIMESTAMP)
+  `).run(`legacy-wallet:${id}`, `legacy-pet:${id}`, id, `legacy-wallet:${id}`,
+    JSON.stringify({ moon_gold: 7 }), JSON.stringify({ moon_gold: 7 }), metadata);
+  runtimeDb.prepare(`
+    INSERT INTO telegram_pet_events
+      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+    VALUES (?, ?, ?, 'work', ?, 0, 0, 'pet-s2026-003', '2026-08-10', '2026-W33', 'accepted', 'legacy_wallet_reward', ?)
+  `).run(`legacy-wallet-event:${id}`, `legacy-pet:${id}`, id, `legacy-wallet:${id}`, metadata);
 }
 seedPlayer('live-1');
 seedMaterials('live-1');
@@ -238,6 +252,22 @@ assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'requ
 assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-1' AND item_key='hoverboard'").get().item_level, 2);
 assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1')).duplicate, true);
 assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().moon_gold, goldBeforeUpgrade - 80);
+
+seedPlayer('live-upgrade-first-recovery');
+seedMaterials('live-upgrade-first-recovery');
+runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-upgrade-first-recovery', 'hoverboard', 'toy')").run();
+seedUnprovableHistoricalWalletClaim('live-upgrade-first-recovery');
+const firstRecoveryUpgrade = await processPetEquipmentUpgrade(d1, 'live-upgrade-first-recovery', 'hoverboard', 'request-upgrade-first-recovery');
+assert.equal(firstRecoveryUpgrade.accepted, false, 'first wallet action after deployment must reconcile before spend');
+assert.equal(firstRecoveryUpgrade.reason, 'wallet_reconciliation_recovery_pending');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='live-upgrade-first-recovery' AND source=? AND idempotency_key=? AND status='pending'").get(PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY).count, 1,
+  'first wallet action must create the private retryable recovery-required marker when historical snapshots are missing');
+assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-upgrade-first-recovery'").get().moon_gold, 10000,
+  'first recovery-gated wallet action must not debit the account wallet');
+assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-upgrade-first-recovery' AND item_key='hoverboard'").get().item_level, 1,
+  'first recovery-gated wallet action must not mutate gear state');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='live-upgrade-first-recovery' AND action_key='hoverboard'").get().count, 0,
+  'first recovery-gated wallet action must not reserve a system event');
 
 seedPlayer('live-upgrade-recovery-freeze');
 seedMaterials('live-upgrade-recovery-freeze');
