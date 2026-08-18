@@ -634,8 +634,9 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
 export async function recordDailyCareChallenge(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const eventKey = String(request.event_key || '').trim();
-  const utcDay = utcDayFromNow(request.now);
+  const utcDay = String(request.utc_day || utcDayFromNow(request.now));
   if (!telegramId || !eventKey) throw new Error('invalid_daily_care_evidence');
+  if (!validUtcDay(utcDay)) throw new Error('invalid_daily_care_evidence');
   const evidence = await db.prepare(`SELECT pet_id, event_type, event_key, day_key FROM telegram_pet_events
     WHERE telegram_id = ? AND event_key = ? AND day_key = ? AND status = 'accepted' LIMIT 1`)
     .bind(telegramId, eventKey, utcDay).first().catch(() => null);

@@ -3518,7 +3518,7 @@ async function readPetAccountWallet(db, telegramId) {
 
 async function readAcceptedPetEventByKey(db, telegramId, eventKey) {
   return db.prepare(`
-    SELECT id, pet_id, event_type, event_key, status, reason, xp_awarded, pet_xp_awarded, metadata
+    SELECT id, pet_id, event_type, event_key, status, reason, xp_awarded, pet_xp_awarded, day_key, metadata
     FROM telegram_pet_events
     WHERE telegram_id = ? AND event_key = ? AND status = 'accepted'
     LIMIT 1
@@ -5353,7 +5353,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     return { accepted: false, reason: 'invalid_action', xp_awarded: 0, pet_xp_awarded: 0 };
   }
 
-  const now = new Date();
+  const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
   const season = getPetSeasonInfo(now);
@@ -5396,7 +5396,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
   const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (existing) {
     if (['feed', 'play', 'clean', 'sleep'].includes(String(existing.event_type || normalizedAction))) {
-      await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, now });
+      await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, utc_day: existing.day_key, now });
     }
     return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }

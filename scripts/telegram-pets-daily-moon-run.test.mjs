@@ -371,6 +371,34 @@ assert.equal(careRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM tele
   WHERE pet_id=? AND earned_day=?`).get(careRecoveryPetId, careRecoveryDay).count, 1,
   'care objective recovery must not create duplicate Growth Marks');
 
+const careDayRolloverDb = new D1();
+const careDayRolloverTelegramId = 'care-day-rollover-recovery';
+const careEventNow = new Date('2026-08-11T23:59:50.000Z');
+const careRetryNow = new Date('2026-08-12T00:01:00.000Z');
+const careEventDay = careEventNow.toISOString().slice(0, 10);
+const careRetryDay = careRetryNow.toISOString().slice(0, 10);
+seedPlayer(careDayRolloverDb, careDayRolloverTelegramId, getDailySeasonId(careEventDay));
+await __petMediaTestHooks.ensureActivePetInstance(careDayRolloverDb, careDayRolloverTelegramId);
+const careDayRolloverPetId = `pet-${careDayRolloverTelegramId}`;
+insertCareEvent(careDayRolloverDb, careDayRolloverTelegramId, 'callback:feed:day-rollover', careEventDay, 'feed', careDayRolloverPetId);
+const recoveredAfterUtcRollover = await __petMediaTestHooks.processPetAction(careDayRolloverDb, careDayRolloverTelegramId, 'feed', {
+  event_key: 'callback:feed:day-rollover',
+  source: 'telegram_callback',
+  now: careRetryNow,
+});
+assert.equal(recoveredAfterUtcRollover.duplicate, true,
+  'accepted care replay after UTC rollover must remain an idempotent duplicate');
+assert.equal(careDayRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key='callback:feed:day-rollover' AND status='accepted'`).get(careDayRolloverTelegramId).count, 1,
+  'care replay after UTC rollover must not duplicate the accepted care event');
+assert.equal(careDayRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND utc_day=? AND challenge_id='daily_care' AND event_key='care:callback:feed:day-rollover'`)
+  .get(careDayRolloverTelegramId, careDayRolloverPetId, careEventDay).count, 1,
+  'care replay after UTC rollover must restore the objective on the original event UTC day');
+assert.equal(careDayRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives
+  WHERE telegram_id=? AND utc_day=? AND challenge_id='daily_care'`).get(careDayRolloverTelegramId, careRetryDay).count, 0,
+  'care replay after UTC rollover must not create a Daily Journey objective on the retry UTC day');
+
 const runId = db.database.prepare("SELECT run_id FROM telegram_pet_daily_runs WHERE telegram_id='daily-player'").get().run_id;
 resolveDailyRun(db, 'daily-player', runId);
 const [syncA, syncB] = await Promise.all([
