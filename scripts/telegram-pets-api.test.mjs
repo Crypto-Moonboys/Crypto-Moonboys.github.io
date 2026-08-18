@@ -752,6 +752,12 @@ assert.ok(petAction.includes('PETS_DAILY_PET_XP_CAP'), 'pet action must apply pe
 assert.ok(petAction.includes('awardCommunityXp'), 'pet action must award through shared Community XP helper');
 assert.ok(petAction.includes("if (existing) {"), 'pet action must short-circuit duplicate event keys first');
 assert.ok(petAction.includes('updatePetStreakForAction(pet, dayKey)'), 'accepted pet actions must update streaks before saving the active day');
+assert.ok(petAction.includes('const actionHasWalletReward = hasPetAccountWalletDelta(tokenRewards)'),
+  'pet actions must detect wallet movement before applying recovery guards');
+assert.ok(petAction.includes("${actionHasWalletReward ? accountWalletRecoveryResolvedSql('?') : '1 = 1'}"),
+  'pet-only actions must not be blocked by account-wallet recovery SQL');
+assert.ok(petAction.includes('const persistedPet = await getPetProfile(db, telegramId)'),
+  'pet action success responses must reload persisted state');
 assert.ok(petAction.includes("if (action === 'adopt')"), 'adopt branch must be explicit');
 assert.ok(petAction.includes('const pet = await getOrCreatePetProfile(db, telegramId, options)'), 'adopt branch must create the pet profile');
 assert.ok(petAction.includes('let pet = await getPetProfile(db, telegramId)'), 'non-adopt actions must use read-only pet lookup first');
@@ -773,6 +779,8 @@ assert.ok(shopPurchase.includes("duplicate: true"), 'shop purchases must short-c
 assert.ok(shopPurchase.includes("reason: 'already_equipped'"), 'shop purchases must not charge again for already equipped upgrades');
 assert.ok(shopPurchase.includes("reason: 'not_enough_pet_currency'"), 'shop purchases must reject unaffordable shop buttons');
 assert.ok(shopPurchase.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'shop purchases must freeze wallet spends while historical recovery is pending');
+assert.ok(shopPurchase.includes('const persistedPet = await getPetProfile(db, telegramId)'),
+  'shop purchase success responses must reload persisted state');
 assertOrder(
   shopPurchase,
   'const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);',
@@ -827,6 +835,8 @@ assert.ok(dailyChest.includes('getPetWindowTotals(db, telegramId, dayKey, weekKe
 assert.ok(dailyChest.includes('totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP'), 'daily chest must award 0 pet XP when the daily cap is already reached');
 assert.ok(dailyChest.includes('totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP'), 'daily chest must clamp pet XP against prior daily pet XP');
 assert.ok(dailyChest.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'daily chest must freeze wallet credits while historical recovery is pending');
+assert.ok(dailyChest.includes('const persistedPet = await getPetProfile(db, telegramId)'),
+  'daily chest success responses must reload persisted state');
 assertOrder(
   dailyChest,
   'const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);',
@@ -864,6 +874,8 @@ assert.ok(goldTrade.includes("xp_awarded: 0"), 'gold trades must not award Commu
 assert.ok(!goldTrade.includes('awardCommunityXp'), 'gold trades must not call the shared Community XP helper');
 assert.ok(goldTrade.includes("duplicate: true"), 'gold trades must short-circuit duplicate event keys');
 assert.ok(goldTrade.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'gold trades must freeze wallet transitions while historical recovery is pending');
+assert.ok(goldTrade.includes('const persistedPet = await getPetProfile(db, telegramId)'),
+  'gold trade success responses must reload persisted state');
 assertOrder(
   goldTrade,
   'const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);',
@@ -950,6 +962,8 @@ assert.ok(runStep.includes('const runStepHasWalletMutation = hasPetAccountWallet
   'run steps must only apply the recovery SQL predicate when account-wallet authority is involved');
 assert.ok(runStep.includes("${runStepHasWalletMutation ? `AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}` : ''}"),
   'pet-only run steps must not be blocked by account-wallet recovery SQL');
+assert.ok(runStep.includes('const persistedPet = await getPetInstanceWithAtomicDecay(db, run.pet_id).catch(() => null)'),
+  'run-step success responses must reload persisted run-pet authority');
 assertOrder(
   runStep,
   'const terminalRewardDeltas = outcome.success && stepIndex >= PET_RUN_MAX_DEPTH',
@@ -1863,6 +1877,11 @@ const thawedPurchase = await processPetShopPurchase(recoveryFreezePurchaseDb, 'p
 assert.equal(thawedPurchase.accepted, true, 'completed wallet reconciliation marker must unfreeze shop wallet spends');
 assert.equal(recoveryFreezePurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery-freeze'").get().moon_gold, 55,
   'unfrozen shop spend must debit account wallet exactly once');
+assert.deepEqual(
+  { moon_gold: thawedPurchase.pet.moon_gold, equipped_food: thawedPurchase.pet.equipped_food },
+  { moon_gold: 55, equipped_food: 'moon_kibble' },
+  'unfrozen shop response must return persisted wallet and equipment state',
+);
 
 function installAcceptedEventInsertRace(db, {
   telegramId,
@@ -2129,6 +2148,11 @@ try {
     { moon_gold: 237, moon_crystals: 1, pet_xp: 6 },
     'retried gold trade must persist wallet credits and Pet XP exactly once',
   );
+  assert.deepEqual(
+    { moon_gold: recoveredTrade.pet.moon_gold, moon_crystals: recoveredTrade.pet.moon_crystals, pet_xp: recoveredTrade.pet.pet_xp },
+    { moon_gold: 237, moon_crystals: 1, pet_xp: 6 },
+    'retried gold trade response must return persisted wallet and pet state',
+  );
   const duplicateRecoveredTrade = await processPetGoldTrade(tradeRecoveryDb, 'trade-recovery', '50', { event_key: 'callback:trade:failure', source: 'telegram_callback' });
   assert.equal(duplicateRecoveredTrade.duplicate, true, 'gold trade duplicate after recovered failure must return the accepted receipt');
   assert.deepEqual(
@@ -2165,6 +2189,11 @@ assert.deepEqual(
   { ...dailyChestRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-chest-recovery'").get() },
   { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
   'retried daily chest must persist wallet credits and profile Pet XP exactly once',
+);
+assert.deepEqual(
+  { moon_gold: recoveredDailyChest.pet.moon_gold, style_tokens: recoveredDailyChest.pet.style_tokens, pet_xp: recoveredDailyChest.pet.pet_xp },
+  { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
+  'retried daily chest response must return persisted wallet and pet state',
 );
 assert.deepEqual(
   { ...dailyChestRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='daily-chest-recovery' AND event_type='daily_chest'").get() },
@@ -2204,6 +2233,11 @@ assert.deepEqual(
   { ...actionRecoveryDb.database.prepare("SELECT moon_gold, pet_xp FROM telegram_pet_profiles WHERE telegram_id='pet-action-recovery'").get() },
   { moon_gold: 5, pet_xp: 6 },
   'retried pet action must persist wallet credits and profile Pet XP exactly once',
+);
+assert.deepEqual(
+  { moon_gold: recoveredAction.pet.moon_gold, pet_xp: recoveredAction.pet.pet_xp },
+  { moon_gold: 5, pet_xp: 6 },
+  'retried pet action response must return persisted wallet and pet state',
 );
 assert.deepEqual(
   { ...actionRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='pet-action-recovery' AND event_key='callback:feed:failure'").get() },
