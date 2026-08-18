@@ -254,6 +254,9 @@ export async function createDailyMoonRun(db, request = {}) {
   const authoritativeRun = await db.prepare(`SELECT * FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
     .bind(telegramId, runId).first().catch(() => null);
   if (!authoritativeRun) return { accepted: false, duplicate: false, reason: 'active_run_exists', utc_day: utcDay, seed: generated.seed };
+  if (!String(authoritativeRun.pet_id || '').trim()) {
+    return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', utc_day: utcDay, run_id: runId, seed: generated.seed };
+  }
   const modifierId = dailyModifierId(generated.run_seed);
   const writes = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_runs
@@ -306,6 +309,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
   if (!telegramId || !runId || !choiceId) throw new Error('invalid_daily_run_step');
   const daily = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: runId });
   if (!daily) return { accepted: false, duplicate: false, reason: 'daily_run_not_found' };
+  if (!String(daily.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', daily_run: daily };
   if (!['active', 'extractable'].includes(String(daily.authoritative_status))) {
     return { accepted: false, duplicate: true, reason: 'daily_run_terminal', daily_run: daily };
   }
@@ -369,6 +373,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
 export async function extractDailyMoonRun(db, request = {}) {
   const daily = await getDailyMoonRunReservation(db, request);
   if (!daily) return { accepted: false, duplicate: false, reason: 'daily_run_not_found' };
+  if (!String(daily.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', daily_run: daily, extraction: null };
   const completedRoom = positiveInteger(daily.authoritative_depth) > 0
     ? { count: 1 }
     : await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_rooms

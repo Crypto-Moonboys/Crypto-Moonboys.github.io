@@ -5,7 +5,6 @@ ALTER TABLE telegram_pet_runs ADD COLUMN pet_id TEXT;
 ALTER TABLE telegram_pet_run_steps ADD COLUMN pet_id TEXT;
 ALTER TABLE telegram_pet_run_rooms ADD COLUMN pet_id TEXT;
 ALTER TABLE telegram_pet_run_modifiers ADD COLUMN pet_id TEXT;
-ALTER TABLE telegram_pet_run_history ADD COLUMN pet_id TEXT;
 ALTER TABLE telegram_pet_run_analytics ADD COLUMN pet_id TEXT;
 ALTER TABLE telegram_pet_daily_runs ADD COLUMN pet_id TEXT;
 ALTER TABLE telegram_pet_daily_analytics ADD COLUMN pet_id TEXT;

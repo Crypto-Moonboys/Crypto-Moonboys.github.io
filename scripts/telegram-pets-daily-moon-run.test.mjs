@@ -195,6 +195,16 @@ assert.equal(freshExtractionDb.database.prepare("SELECT pet_id FROM telegram_pet
   'pet-fresh-extraction-player', 'Daily extraction after switching pets must settle to the stored daily-run pet');
 
 
+const legacyDailyDb = new D1();
+seedPlayer(legacyDailyDb, 'legacy-daily-player');
+legacyDailyDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status) VALUES ('legacy-daily-row', 'legacy-daily-player',
+  'daily:2026-08-11:legacy-daily-player', 'pet-s2026-003', 'active')`).run();
+const refusedLegacyDaily = await createDailyMoonRun(legacyDailyDb, { telegram_id: 'legacy-daily-player', now });
+assert.equal(refusedLegacyDaily.accepted, false);
+assert.equal(refusedLegacyDaily.reason, 'run_pet_authority_required', 'legacy Daily Moon Run backing rows must fail closed instead of throwing');
+assert.equal(legacyDailyDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_daily_runs WHERE telegram_id='legacy-daily-player'").get().count, 0);
+
 let forcedVictoryRegression = null;
 for (let day = 1; day <= 40 && !forcedVictoryRegression; day += 1) {
   const forcedDb = new D1();

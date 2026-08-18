@@ -590,12 +590,11 @@ export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
       AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = ?)`)
       .bind(run.run_id, run.run_id, run.telegram_id, status),
     db.prepare(`INSERT INTO telegram_pet_run_history
-      (telegram_id, pet_id, runs_completed, bosses_defeated, highest_room_reached, best_score, fastest_completion_seconds, rare_discoveries)
-      SELECT ?, ?, ?, ?, ?, ?, ?, ?
+      (telegram_id, runs_completed, bosses_defeated, highest_room_reached, best_score, fastest_completion_seconds, rare_discoveries)
+      SELECT ?, ?, ?, ?, ?, ?, ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = ?)
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_run_analytics WHERE analytics_id = ?)
       ON CONFLICT(telegram_id) DO UPDATE SET
-        pet_id = excluded.pet_id,
         runs_completed = runs_completed + excluded.runs_completed,
         bosses_defeated = bosses_defeated + excluded.bosses_defeated,
         highest_room_reached = MAX(highest_room_reached, excluded.highest_room_reached),
@@ -604,7 +603,7 @@ export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
           WHEN fastest_completion_seconds IS NULL THEN excluded.fastest_completion_seconds ELSE MIN(fastest_completion_seconds, excluded.fastest_completion_seconds) END,
         rare_discoveries = CASE WHEN excluded.rare_discoveries = '[]' THEN rare_discoveries ELSE excluded.rare_discoveries END,
         updated_at = CURRENT_TIMESTAMP`)
-      .bind(run.telegram_id, requireRunPetId(run), ['completed', 'extracted'].includes(status) ? 1 : 0, ['completed', 'extracted'].includes(status) && analytics.boss_fought ? 1 : 0,
+      .bind(run.telegram_id, ['completed', 'extracted'].includes(status) ? 1 : 0, ['completed', 'extracted'].includes(status) && analytics.boss_fought ? 1 : 0,
         roomsCompleted, positiveInteger(run.score), ['completed', 'extracted'].includes(status) ? durationSeconds : null,
         safeJson(analytics.rare_discoveries || []), run.run_id, run.telegram_id, status, finalizationId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
@@ -638,6 +637,7 @@ export function advancePetRun(run, resolvedRoom) {
 }
 
 export async function completePetRun(db, run, completionRewards = {}, analytics = {}) {
+  if (!String(run?.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', status: run?.status || null, reward: null };
   const terminal = await finishPetRogueliteRun(db, run, 'completed', analytics);
   if (terminal.status !== 'completed') return { ...terminal, reward: null };
   const reward = await awardPetReward(db, {
@@ -658,6 +658,7 @@ export async function completePetRun(db, run, completionRewards = {}, analytics 
   return { ...terminal, reward };
 }
 export async function extractPetRogueliteRun(db, run, extractionRewards = {}, analytics = {}) {
+  if (!String(run?.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', status: run?.status || null, reward: null };
   const terminal = await finishPetRogueliteRun(db, run, 'extracted', { ...analytics, extracted: true });
   if (terminal.status !== 'extracted') return { ...terminal, reward: null };
   const reward = await awardPetReward(db, {

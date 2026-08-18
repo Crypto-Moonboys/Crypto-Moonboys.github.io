@@ -765,7 +765,6 @@ CREATE TABLE IF NOT EXISTS telegram_pet_relics (
 
 CREATE TABLE IF NOT EXISTS telegram_pet_run_history (
   telegram_id TEXT PRIMARY KEY,
-  pet_id TEXT,
   runs_completed INTEGER NOT NULL DEFAULT 0 CHECK (runs_completed >= 0),
   bosses_defeated INTEGER NOT NULL DEFAULT 0 CHECK (bosses_defeated >= 0),
   highest_room_reached INTEGER NOT NULL DEFAULT 0 CHECK (highest_room_reached >= 0),

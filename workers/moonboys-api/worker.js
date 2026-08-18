@@ -2459,23 +2459,30 @@ async function getPetRunById(db, telegramId, runId) {
 }
 
 async function startOrResumePetRun(db, telegramId, options = {}) {
-  const pet = await getPetProfile(db, telegramId);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const requestedRunId = String(options.run_id || '').trim().slice(0, 80);
   if (requestedRunId) {
     const requestedRun = await getPetRunById(db, telegramId, requestedRunId);
     if (requestedRun && ['active', 'extractable'].includes(requestedRun.status)) {
+      if (!requestedRun.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
+      const pet = await getPetInstanceWithAtomicDecay(db, requestedRun.pet_id);
+      if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
       await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${requestedRun.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
       return { accepted: true, reason: 'run_resumed', run: requestedRun, pet };
     }
-    if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, pet, xp_awarded: 0, pet_xp_awarded: 0 };
-    return { accepted: false, reason: 'run_not_found', pet, xp_awarded: 0, pet_xp_awarded: 0 };
+    if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
+    return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
   }
   const active = await getActivePetRun(db, telegramId);
   if (active) {
+    if (!active.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run: active, xp_awarded: 0, pet_xp_awarded: 0 };
+    const pet = await getPetInstanceWithAtomicDecay(db, active.pet_id);
+    if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: active, xp_awarded: 0, pet_xp_awarded: 0 };
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${active.run_id}:memory:start`, memory_type: 'first_run', milestone: 'first_run' });
     return { accepted: true, reason: 'run_resumed', run: active, pet };
   }
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (!String(pet.pet_id || '').trim()) return { accepted: false, reason: 'active_pet_instance_required', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   if (clampPetStat(pet.energy) < 12) return { accepted: false, reason: 'pet_tired', pet };
   const now = new Date();
   const season = getPetSeasonInfo(now);
@@ -2491,6 +2498,9 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
 }
 
 async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
+  if (!String(run?.pet_id || '').trim()) {
+    return { accepted: false, reason: 'run_pet_authority_required', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   const now = new Date();
   const eventType = options.completed ? 'run_complete' : 'run_extract';
   const eventKey = String(options.completed ? (options.event_key || buildStablePetEventKey(['pet_run_complete', telegramId, run.run_id])) : buildPetRunExtractEventKey(telegramId, run.run_id)).slice(0, 120);
@@ -2531,8 +2541,9 @@ async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {})
   const runId = String(runIdRaw || '').trim();
   const run = runId ? await getPetRunById(db, telegramId, runId) : await getActivePetRun(db, telegramId);
   if (!run) return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
-  const pet = await getPetProfile(db, telegramId);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted', run, xp_awarded: 0, pet_xp_awarded: 0 };
+  if (!run.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run, xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetInstanceWithAtomicDecay(db, run.pet_id);
+  if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run, xp_awarded: 0, pet_xp_awarded: 0 };
   if (run.depth <= 0) return { accepted: false, reason: 'run_empty', run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   return recordPetRunBankedEvent(db, telegramId, run, pet, { ...options, event_key: buildPetRunExtractEventKey(telegramId, run.run_id) });
 }
@@ -12387,6 +12398,7 @@ export const __petMediaTestHooks = Object.freeze({
   expireOldPetActivitySessions,
   getPetInventory,
   processPetUseItem,
+  startOrResumePetRun,
   processPetRunExtract,
   recordPetRunBankedEvent,
   processPetRunStep,

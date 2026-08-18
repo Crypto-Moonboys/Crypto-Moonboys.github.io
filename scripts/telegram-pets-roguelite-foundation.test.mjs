@@ -270,6 +270,15 @@ assert.equal(startDb.database.prepare("SELECT pet_id FROM telegram_pet_reward_cl
   'completion after an active-pet switch must settle to the run owner');
 assert.equal(startDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-start-player'").get().pet_xp, 17);
 assert.equal(startDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-start-player-second'").get().pet_xp, 0);
+const secondPetRun = await startPetRogueliteRun(startDb, { telegram_id: 'start-player', run_id: 'second-pet-run', seed: 43 });
+assert.equal(secondPetRun.pet_id, 'pet-start-player-second');
+const secondPetRunRow = startDb.database.prepare("SELECT * FROM telegram_pet_runs WHERE run_id='second-pet-run'").get();
+await completePetRun(startDb, { ...secondPetRunRow, current_room: 2, score: 20 }, { pet_xp: 5 }, { rooms_completed: 2 });
+assert.equal(startDb.database.prepare("SELECT runs_completed FROM telegram_pet_run_history WHERE telegram_id='start-player'").get().runs_completed, 2,
+  'account-scoped history may aggregate multiple pets only without attributing the row to one pet_id');
+assert.equal(startDb.database.prepare("SELECT COUNT(*) AS count FROM pragma_table_info('telegram_pet_run_history') WHERE name='pet_id'").get().count, 0,
+  'account-scoped run history must not label mixed aggregate counters with the latest pet_id');
+
 
 
 const roomConcurrencyDb = seedPlayer('room-concurrency-player');
@@ -299,6 +308,18 @@ await persistPetRunRoomOutcome(roomFailureDb, { run_id: 'room-failure-run', tele
   { room_id: 'room-failure-run:1', room: 1, room_type: 'battle', status: 'pending' }, { success: false, reason: 'defeated' });
 assert.equal(roomFailureDb.database.prepare("SELECT json_extract(event_data, '$.outcome.success') AS success FROM telegram_pet_run_analytics WHERE analytics_id = 'room-failure-run:1:resolved'").get().success, 0,
   'failed rooms must remain visible to backend analytics');
+
+const legacyAuthorityDb = seedPlayer('legacy-authority-player');
+legacyAuthorityDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, telegram_id, run_id, season_key, status, current_room, score)
+  VALUES ('legacy-authority-row', 'legacy-authority-player', 'legacy-authority-run', 'season', 'active', 2, 10)`).run();
+const refusedLegacyAuthority = await extractPetRogueliteRun(legacyAuthorityDb,
+  legacyAuthorityDb.database.prepare("SELECT * FROM telegram_pet_runs WHERE run_id='legacy-authority-run'").get(), { pet_xp: 50 }, { rooms_completed: 2 });
+assert.equal(refusedLegacyAuthority.accepted, false);
+assert.equal(refusedLegacyAuthority.reason, 'run_pet_authority_required');
+assert.equal(legacyAuthorityDb.database.prepare("SELECT status FROM telegram_pet_runs WHERE run_id='legacy-authority-run'").get().status, 'active',
+  'missing run pet_id must be rejected before terminal state is claimed');
+assert.equal(legacyAuthorityDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='legacy-authority-player'").get().count, 0);
 
 const runDb = seedPlayer('run-player');
 runDb.database.prepare(`INSERT INTO telegram_pet_runs
