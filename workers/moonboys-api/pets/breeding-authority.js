@@ -141,6 +141,16 @@ async function readReceipt(db, eventKey) {
     .bind(eventKey).first().catch(() => null);
 }
 
+async function readReceiptAuthorityConflict(db, context) {
+  if (!context.owner_id || !context.season_key || context.parent_pair.length !== 2 || !context.request_key) return null;
+  return db.prepare(`SELECT receipt_id FROM telegram_pet_breeding_receipts
+    WHERE season_key=? AND request_key=? AND parent_pet_a_id=? AND parent_pet_b_id=?
+      AND telegram_id<>?
+    LIMIT 1`)
+    .bind(context.season_key, context.request_key, context.parent_pair[0], context.parent_pair[1], context.owner_id)
+    .first().catch(() => null);
+}
+
 async function offspringExists(db, offspringPetId, ownerId) {
   const row = await db.prepare(`SELECT pet_id FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? LIMIT 1`)
     .bind(offspringPetId, ownerId).first().catch(() => null);
@@ -371,6 +381,11 @@ export async function requestMoonpetBreeding(db, request = {}) {
       cooldown_available_at: existing.cooldown_available_at,
       event_key: eventKey,
     };
+  }
+
+  const receiptAuthorityConflict = await readReceiptAuthorityConflict(db, requestContext);
+  if (receiptAuthorityConflict) {
+    return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_authority_mismatch', event_key: eventKey };
   }
 
   const authority = await validateParentAuthority(db, request);

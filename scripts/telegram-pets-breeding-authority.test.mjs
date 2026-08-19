@@ -231,7 +231,7 @@ const crossCallerRejected = await requestMoonpetBreeding(crossCallerDb, {
 });
 assert.equal(crossCallerAccepted.accepted, true, 'Test 2c: Player A can create the original breeding receipt');
 assert.equal(crossCallerRejected.accepted, false, 'Test 2c: Player B cannot reuse Player A parent context');
-assert.equal(crossCallerRejected.reason, 'breeding_parent_authority_mismatch');
+assert.equal(crossCallerRejected.reason, 'breeding_authority_mismatch');
 assert.equal(crossCallerRejected.offspring_pet_id, undefined, 'Test 2c: cross-caller rejection leaks no offspring id');
 assert.equal(crossCallerDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
   'Test 2c: cross-caller rejection creates no duplicate receipt');
