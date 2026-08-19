@@ -7,6 +7,7 @@ const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', imp
 const {
   processPetMiniAppAction,
   buildPetMiniAppJourneySummary,
+  buildPetMiniAppFutureSystemState,
   getPetMiniAppCombatEligibility,
   getPetGuidanceFeatures,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES,
@@ -266,6 +267,23 @@ assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'pet_are
   'guidance may show Arena only when shared combat authority is unlocked');
 assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'prestige')?.available, false,
   'guidance must keep Prestige unavailable even for combat-unlocked users');
+const lockedFutureSystems = buildPetMiniAppFutureSystemState(combatNewEligibility);
+assert.equal(lockedFutureSystems.find((system) => system.key === 'breeding')?.status, 'LOCKED',
+  'future system authority must lock completion-gated expansion systems before completed-season authority');
+assert.equal(lockedFutureSystems.find((system) => system.key === 'arena')?.status, 'LOCKED',
+  'future system authority must lock Arena before shared combat eligibility');
+const comingSoonFutureSystems = buildPetMiniAppFutureSystemState(combatEggEligibility);
+assert.equal(comingSoonFutureSystems.find((system) => system.key === 'breeding')?.status, 'COMING_SOON',
+  'completed-season users must see unavailable expansion systems as coming soon');
+assert.equal(comingSoonFutureSystems.find((system) => system.key === 'arena')?.status, 'LOCKED',
+  'completed-season users with an active egg must still see Arena locked');
+const availableFutureSystems = buildPetMiniAppFutureSystemState(combatAdultEligibility);
+assert.equal(availableFutureSystems.find((system) => system.key === 'arena')?.status, 'AVAILABLE',
+  'Arena future-system authority must reflect shared combat unlock');
+assert.equal(availableFutureSystems.find((system) => system.key === 'kaiju')?.status, 'AVAILABLE',
+  'Kaiju future-system authority must reflect shared combat unlock');
+assert.equal(availableFutureSystems.find((system) => system.key === 'prestige')?.status, 'COMING_SOON',
+  'Prestige must remain coming soon even when combat is available');
 
 const priorSeasonCombatDb = new D1();
 installSeasonCompletionMarkerTable(priorSeasonCombatDb);

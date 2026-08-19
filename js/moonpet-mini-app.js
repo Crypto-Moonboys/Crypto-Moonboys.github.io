@@ -1058,14 +1058,34 @@
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
-    var completedSeasonPet = hasCompletedSeasonPet();
-    var futureSystems = ['Breeding', 'Traits', 'Sanctuary', 'Lineage', 'Fusion', 'Arena', 'Kaiju'];
-    var futureSystemDetail = completedSeasonPet
-      ? 'Future expansion content. Not available yet.'
-      : 'Requires completed Season pet. Locked until you complete a Season pet.';
-    var futureSystemRows = futureSystems.map(function (systemName) {
-      return '<div class="line locked">[LOCKED] ' + escapeHtml(systemName) + '</div><div class="line muted">' + escapeHtml(futureSystemDetail) + '</div>';
+    var futureSystems = Array.isArray(state.future_systems) && state.future_systems.length
+      ? state.future_systems
+      : ['Breeding', 'Traits', 'Sanctuary', 'Lineage', 'Fusion', 'Arena', 'Kaiju', 'Prestige'].map(function (title) {
+        return {
+          title: title,
+          status: 'LOCKED',
+          detail: 'Requires completed Season pet. Locked until you complete a Season pet.',
+        };
+      });
+    var futureSystemRows = futureSystems.map(function (system) {
+      var status = String(system.status || 'LOCKED').toUpperCase();
+      var online = status === 'AVAILABLE';
+      var label = status === 'COMING_SOON' ? 'COMING SOON' : status;
+      return '<div class="line ' + (online ? 'complete' : 'locked') + '">[' + escapeHtml(label) + '] ' + escapeHtml(system.title || system.key || 'Future System') + '</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
     }).join('');
+    function futureSystemByKey(key, fallbackStatus) {
+      return futureSystems.find(function (system) { return system.key === key; }) || {
+        key: key,
+        status: fallbackStatus || 'LOCKED',
+        detail: fallbackStatus === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Requires completed Season pet. Locked until you complete a Season pet.',
+      };
+    }
+    function futureSystemPanelCopy(system) {
+      var status = String(system.status || 'LOCKED').toUpperCase();
+      if (status === 'COMING_SOON') return '<div class="line locked">FUTURE EXPANSION CONTENT.</div><div class="line muted">NOT AVAILABLE YET.</div>';
+      if (status === 'AVAILABLE') return '<div class="line complete">AVAILABLE.</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
+      return '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">' + escapeHtml(system.detail || 'Requires completed Season pet. Locked until you complete a Season pet.') + '</div>';
+    }
     var featureRows = (guidance.features || []).map(function (feature) {
       var available = feature.available === true;
       var detail = feature.detail || '';
@@ -1078,10 +1098,8 @@
         '<div class="line">FINAL EVOLUTION // ' + escapeHtml(words(pet.legendary_evolution_id || pet.stage)) + '</div>' +
         '<div class="line muted">COMPLETED ' + escapeHtml(words(pet.completed_season)) + ' // ' + escapeHtml(String(pet.completed_at || '').slice(0, 10)) + '</div>';
     }).join('');
-    var completedSeasonLockDetail = 'Requires completed Season pet. Locked until you complete a Season pet.';
-    var sanctuaryPanel = sanctuaryRows || (completedSeasonPet
-      ? '<div class="line locked">FUTURE EXPANSION CONTENT.</div><div class="line muted">NOT AVAILABLE YET.</div>'
-      : '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">' + completedSeasonLockDetail + '</div>');
+    var sanctuarySystem = futureSystemByKey('sanctuary');
+    var sanctuaryPanel = sanctuaryRows || futureSystemPanelCopy(sanctuarySystem);
     var lifecycle = state.lifecycle || {};
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
@@ -1092,10 +1110,8 @@
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('PRESTIGE', (completedSeasonPet
-        ? '<div class="line locked">FUTURE EXPANSION CONTENT.</div><div class="line muted">NOT AVAILABLE YET.</div>'
-        : '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">' + completedSeasonLockDetail + '</div>') +
-        '<div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: true, detail: completedSeasonPet ? 'NOT AVAILABLE YET' : 'REQUIRES COMPLETED SEASON PET' }) + '</div>', 'prestige') +
+      panel('PRESTIGE', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')) +
+        '<div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: true, detail: 'NOT AVAILABLE YET' }) + '</div>', 'prestige') +
       panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('LOCKED FUTURE SYSTEMS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 

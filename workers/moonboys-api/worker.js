@@ -7968,6 +7968,44 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
   };
 }
 
+const PET_MINI_APP_FUTURE_SYSTEM_STATUS = Object.freeze({
+  LOCKED: 'LOCKED',
+  COMING_SOON: 'COMING_SOON',
+  AVAILABLE: 'AVAILABLE',
+});
+
+function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
+  const completedSeasonPet = combatEligibility.has_completed_season_pet === true;
+  const combatUnlocked = combatEligibility.combat_unlocked === true;
+  const lockedDetail = 'Requires completed Season pet. Locked until you complete a Season pet.';
+  const comingSoonDetail = 'Future expansion content. Not available yet.';
+  const combatLockedDetail = combatEligibility.reason === 'moon_egg_must_hatch'
+    ? 'Requires a completed Season pet and a hatched active Moonpet.'
+    : combatEligibility.reason === 'pet_not_adopted'
+      ? 'Requires a completed Season pet and an active adult Moonpet.'
+      : combatEligibility.reason === 'moonpet_lifecycle_required'
+        ? 'Requires synced active Moonpet lifecycle authority before combat unlocks.'
+        : lockedDetail;
+  const futureStatus = completedSeasonPet
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  const futureDetail = completedSeasonPet ? comingSoonDetail : lockedDetail;
+  const combatStatus = combatUnlocked
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  const combatDetail = combatUnlocked ? 'Available from Explore.' : combatLockedDetail;
+  return [
+    { key: 'breeding', title: 'Breeding', status: futureStatus, detail: futureDetail },
+    { key: 'traits', title: 'Traits', status: futureStatus, detail: futureDetail },
+    { key: 'sanctuary', title: 'Sanctuary', status: futureStatus, detail: futureDetail },
+    { key: 'lineage', title: 'Lineage', status: futureStatus, detail: futureDetail },
+    { key: 'fusion', title: 'Fusion', status: futureStatus, detail: futureDetail },
+    { key: 'arena', title: 'Arena', status: combatStatus, detail: combatDetail },
+    { key: 'kaiju', title: 'Kaiju', status: combatStatus, detail: combatDetail },
+    { key: 'prestige', title: 'Prestige', status: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON, detail: comingSoonDetail },
+  ];
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
@@ -7985,6 +8023,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       season_slots: null,
       has_completed_season_pet: false,
       combat_unlocked: false,
+      future_systems: buildPetMiniAppFutureSystemState({ has_completed_season_pet: false, combat_unlocked: false, reason: 'completed_season_pet_required' }),
     };
   }
 
@@ -8119,6 +8158,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     has_completed_season_pet: combatEligibility.has_completed_season_pet,
     combat_unlocked: combatEligibility.combat_unlocked,
     combat_eligibility: combatEligibility,
+    future_systems: buildPetMiniAppFutureSystemState(combatEligibility),
     daily_journey: journeySummary?.daily || null,
     weekly_journey: journeySummary?.weekly || null,
     sanctuary,
@@ -13149,6 +13189,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetArenaBucketDistance,
   processPetMiniAppAction,
   buildPetMiniAppJourneySummary,
+  buildPetMiniAppFutureSystemState,
   buildPetMiniAppState,
   hasCompletedPetMiniAppSeasonPet,
   getPetMiniAppCombatEligibility,

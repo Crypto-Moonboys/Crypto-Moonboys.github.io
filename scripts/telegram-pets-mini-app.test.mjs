@@ -298,10 +298,11 @@ const kaijuQueueIndex = renderExploreSource.indexOf('var kaijuQueue = kaiju.queu
 assert.ok(kaijuStateIndex !== -1 && kaijuMatchIndex !== -1 && kaijuQueueIndex !== -1 && kaijuLockIndex !== -1, 'Kaiju lock and stale-state cleanup inputs must be explicit');
 assert.match(renderExploreSource, /if \(!hasCombatUnlocked\(\)\) \{[\s\S]*button\('CANCEL MATCH', 'kaiju_match_cancel'[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/, 'Kaiju queue, match, result, and entry controls must be behind combat-unlocked gating while stale cleanup remains available');
 assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
-assert.match(client, /var futureSystemDetail = completedSeasonPet[\s\S]*Future expansion content\. Not available yet\.[\s\S]*Requires completed Season pet\. Locked until you complete a Season pet\./, 'future-system directory copy must change after the completion requirement is met');
-assert.match(client, /escapeHtml\(futureSystemDetail\)/, 'future-system directory copy must render from the completion-aware detail');
-assert.match(client, /panel\('PRESTIGE'[\s\S]*completedSeasonPet[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*NOT AVAILABLE YET\.[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'Prestige copy must distinguish completed users from incomplete users');
-assert.match(client, /var sanctuaryPanel = sanctuaryRows \|\| \(completedSeasonPet[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*NOT AVAILABLE YET\.[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'Sanctuary copy must distinguish completed users from incomplete users');
+assert.match(client, /var futureSystems = Array\.isArray\(state\.future_systems\)[\s\S]*status: 'LOCKED'[\s\S]*Requires completed Season pet\. Locked until you complete a Season pet\./, 'future-system directory must consume worker-serialized state with a fail-closed fallback');
+assert.match(client, /var status = String\(system\.status \|\| 'LOCKED'\)\.toUpperCase\(\)[\s\S]*status === 'AVAILABLE'[\s\S]*status === 'COMING_SOON'/, 'future-system directory must render LOCKED, COMING_SOON, and AVAILABLE states from authority payloads');
+assert.match(client, /function futureSystemPanelCopy\(system\)[\s\S]*COMING_SOON[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*AVAILABLE[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'future-system panels must render from the shared LOCKED/COMING_SOON/AVAILABLE model');
+assert.match(client, /var sanctuarySystem = futureSystemByKey\('sanctuary'\)[\s\S]*var sanctuaryPanel = sanctuaryRows \|\| futureSystemPanelCopy\(sanctuarySystem\)/, 'Sanctuary panel must consume shared future-system state');
+assert.match(client, /panel\('PRESTIGE', futureSystemPanelCopy\(futureSystemByKey\('prestige', 'COMING_SOON'\)\)/, 'Prestige panel must consume shared future-system state');
 assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.map[\s\S]*var available = feature\.available === true/, 'Mini App feature directory must render worker-authoritative availability without duplicating combat logic');
 assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App feature directory must not re-derive future-system lock state in the frontend');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
@@ -309,6 +310,9 @@ assert.match(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state
 assert.match(worker, /has_completed_season_pet: combatEligibility\.has_completed_season_pet/, 'Mini App state must serialize completed-season authority from the worker');
 assert.match(worker, /combat_unlocked: combatEligibility\.combat_unlocked/, 'Mini App state must serialize combat eligibility authority from the worker');
 assert.match(worker, /async function getPetMiniAppCombatEligibility/, 'Mini App worker must centralize completed-season combat eligibility');
+assert.match(worker, /function buildPetMiniAppFutureSystemState\(combatEligibility = \{\}\)/, 'Mini App worker must centralize future-system display state');
+assert.match(worker, /future_systems: buildPetMiniAppFutureSystemState\(combatEligibility\)/, 'Mini App state must serialize future-system authority');
+assert.match(worker, /PET_MINI_APP_FUTURE_SYSTEM_STATUS[\s\S]*LOCKED[\s\S]*COMING_SOON[\s\S]*AVAILABLE/, 'future-system authority must use one LOCKED/COMING_SOON/AVAILABLE status model');
 assert.match(worker, /active_pet_lifecycle_known: Boolean\(activeLifecycle\)/, 'combat eligibility must expose missing lifecycle data');
 assert.match(worker, /!activeLifecycle \? 'moonpet_lifecycle_required'/, 'missing lifecycle data must fail closed for combat');
 assert.match(worker, /features: getPetGuidanceFeatures\(level, combatEligibility\)/, 'guidance feature availability must consume shared combat authority');
