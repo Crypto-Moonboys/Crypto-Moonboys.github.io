@@ -264,6 +264,12 @@ await staleRefresh;
 assert.equal(renderedState.revision, 'action-result', 'an older background refresh must not overwrite a newer action result');
 assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[\s\S]*stateRequestGate\.isCurrent\(requestGeneration\)/, 'all state snapshots must pass the request freshness gate');
 assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
+assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
+assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
+assert.match(client, /WEEKLY JOURNEY \/\/ WEEKLY CREST/, 'Weekly Journey Crest state must be visible');
+assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
+assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
+assert.match(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state must serialize Weekly Journey authority summaries');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);

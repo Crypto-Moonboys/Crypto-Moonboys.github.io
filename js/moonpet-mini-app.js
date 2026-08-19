@@ -517,6 +517,39 @@
     ].map(function (item) { return '<div class="hud-chip"><strong>' + item[0] + '</strong> ' + escapeHtml(item[1]) + '</div>'; }).join('');
   }
 
+  function activeSeasonSlot() {
+    var slots = state && state.season_slots && Array.isArray(state.season_slots.slots) ? state.season_slots.slots : [];
+    return slots.find(function (slot) { return slot.active; }) || {};
+  }
+
+  function activePetProgression() {
+    var slot = activeSeasonSlot();
+    return slot.pet && slot.pet.progression || {};
+  }
+
+  function hasCompletedSeasonPet() {
+    var slots = state && state.season_slots && Array.isArray(state.season_slots.slots) ? state.season_slots.slots : [];
+    return slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
+  }
+
+  function activePetSummary() {
+    if (!state || !state.pet) return '';
+    var pet = state.pet;
+    var summary = state.season_slots || {};
+    var slot = activeSeasonSlot();
+    var progression = activePetProgression();
+    var lifecycle = progression.lifecycle || {};
+    var growth = progression.growth_marks || {};
+    var crests = progression.weekly_crests || {};
+    var seasonKey = slot.season_key || summary.season && summary.season.key || 'CURRENT';
+    var status = progression.season_complete ? 'COMPLETED ADULT PET'
+      : lifecycle.evolution_ready ? 'ELIGIBLE TO EVOLVE' : 'KEEP DAILY AND WEEKLY ROUTINES MOVING';
+    return panel('ACTIVE PET // SLOT ' + number(slot.slot_number || 1),
+      '<div class="season-identity"><strong>' + escapeHtml(pet.pet_name || 'Moonpet') + '</strong><span>' + escapeHtml(seasonKey) + '</span></div>' +
+      '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(words(pet.stage || lifecycle.phase || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div><div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div></div>' +
+      '<div class="line complete">' + status + '</div><div class="line muted">Progress is per pet. Switching slots changes which Moonpet earns lifecycle, Daily Journey and Weekly Journey progress.</div>', 'active-pet');
+  }
+
   function renderHome() {
     if (!state.adopted) {
       return panel('DORMANT MOON EGG', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
@@ -538,6 +571,7 @@
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
     }).join('');
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(pet.pet_name || 'MOONPET') + ' // ' + escapeHtml(words(pet.stage)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
+      activePetSummary() +
       panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
@@ -689,7 +723,37 @@
     var achievementRows = achievements.map(function (entry) {
       return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
-    return panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
+    var progression = activePetProgression();
+    var lifecycle = progression.lifecycle || {};
+    var growth = progression.growth_marks || {};
+    var crests = progression.weekly_crests || {};
+    var dailyAuthority = state.daily_journey || {};
+    var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
+    var dailyRequired = dailyAuthority.required_objectives != null ? Number(dailyAuthority.required_objectives) : 3;
+    var dailyPercent = Math.round(Math.min(dailyRequired, dailyCompleted) / Math.max(1, dailyRequired) * 100);
+    var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY AWARDED'
+      : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
+        : dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
+    var dailyJourney = '<div class="line complete">DAILY JOURNEY // ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' OBJECTIVES</div>' +
+      '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
+      meter('GROWTH MARK', dailyPercent) +
+      '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
+      '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>';
+    var weeklyAuthority = state.weekly_journey || {};
+    var weeklyObjectiveCount = weeklyAuthority.required_objectives != null ? Number(weeklyAuthority.required_objectives) : 5;
+    var weeklyComplete = weeklyAuthority.completed_objectives != null ? Number(weeklyAuthority.completed_objectives) : 0;
+    var weeklyPercent = Math.round(Math.min(weeklyObjectiveCount, weeklyComplete) / Math.max(1, weeklyObjectiveCount) * 100);
+    var crestStatus = weeklyAuthority.weekly_crest_awarded || crests.current_week_crest_earned ? 'WEEKLY CREST ALREADY AWARDED'
+      : weeklyAuthority.duplicate_blocked ? 'DUPLICATE WEEKLY CREST BLOCKED' : 'FULL WEEKLY COMPLETION REQUIRED';
+    var weeklyJourney = '<div class="line complete">WEEKLY JOURNEY // WEEK ' + number(weeklyAuthority.qualification_week || (state.season_slots && state.season_slots.current_season_week) || crests.current_season_week || 1) + '</div>' +
+      '<div class="line muted">Weekly Crest requires all weekly objectives. Partial progress does not award a crest.</div>' +
+      meter('WEEKLY CREST', weeklyPercent) +
+      '<div class="line muted">AUTHORITY PROGRESS // ' + number(weeklyComplete) + '/' + number(weeklyObjectiveCount) + ' objectives // ' + crestStatus + ' // ' + escapeHtml(words(weeklyAuthority.reason || 'weekly journey in progress')) + '</div>' +
+      '<div class="line muted">Weekly Crests // ' + number(crests.earned) + '/' + number(crests.required) + ' earned by this pet. Duplicate crest receipts for the same week are blocked by authority.</div>';
+    return activePetSummary() +
+      panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
+      panel('WEEKLY JOURNEY // WEEKLY CREST', weeklyJourney, 'weekly-journey') +
+      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
@@ -757,7 +821,9 @@
         button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank }) + button('LEAVE QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
     } else {
       var arenaResult = state.arena_result;
-      arenaBody = (arenaResult ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(arenaResult.outcome || arenaResult.result)) + ' // ' + escapeHtml(arenaResult.opponent && arenaResult.opponent.pet_name || 'RIVAL') + '</div>' : '') + '<div class="line muted">RANKED PLAYER MATCHMAKING OR SOLO PRACTICE.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake') + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
+      arenaBody = hasCompletedSeasonPet()
+        ? (arenaResult ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(arenaResult.outcome || arenaResult.result)) + ' // ' + escapeHtml(arenaResult.opponent && arenaResult.opponent.pet_name || 'RIVAL') + '</div>' : '') + '<div class="line muted">RANKED PLAYER MATCHMAKING OR SOLO PRACTICE.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake') + button('ENTER SOLO ARENA', 'arena_start') + '</div>'
+        : '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">Requires a completed adult Moonpet. Arena is a future expansion system and is not available during early Season 1.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, { disabled: true, detail: 'REQUIRES COMPLETED SEASON PET' }) + button('ENTER SOLO ARENA', 'arena_start', {}, { disabled: true, detail: 'REQUIRES COMPLETED ADULT MOONPET' }) + '</div>';
     }
     var kaiju = state.kaiju || {};
     var kaijuMatch = kaiju.match;
@@ -770,7 +836,9 @@
       }).join('') + '</div>')
       : kaijuQueue
         ? '<div class="line">KAIJU MATCHMAKING // POSITION ' + number(kaijuQueue.position) + '</div><div class="button-grid one">' + button('LEAVE KAIJU QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) + '</div>'
-        : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
+        : hasCompletedSeasonPet()
+          ? (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>'
+          : '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">Requires a completed adult Moonpet. Kaiju Code Cards are a future expansion system and are not available during early Season 1.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, detail: 'REQUIRES COMPLETED SEASON PET' }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, detail: 'REQUIRES COMPLETED ADULT MOONPET' }) + '</div>';
     var regions = (state.regions || []).map(function (region) {
       var mission = region.mission || {};
       var opponent = mission.opponent || {};
@@ -944,8 +1012,16 @@
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
+    var completedSeasonPet = hasCompletedSeasonPet();
+    var futureSystems = ['Breeding', 'Traits', 'Sanctuary', 'Lineage', 'Fusion', 'Arena', 'Kaiju'];
+    var futureSystemRows = futureSystems.map(function (systemName) {
+      return '<div class="line locked">[LOCKED] ' + escapeHtml(systemName) + '</div><div class="line muted">Requires completed Season pet. Locked until you complete a Season pet.</div>';
+    }).join('');
     var featureRows = (guidance.features || []).map(function (feature) {
-      return '<div class="line ' + (feature.available ? 'complete' : 'locked') + '">' + (feature.available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(feature.detail || '') + '</div>';
+      var futureLocked = /kaiju|arena|prestige/i.test(String(feature.key || '') + ' ' + String(feature.title || '')) && !completedSeasonPet;
+      var available = feature.available && !futureLocked;
+      var detail = futureLocked ? 'Requires completed Season pet. Locked until you complete a Season pet.' : feature.detail || '';
+      return '<div class="line ' + (available ? 'complete' : 'locked') + '">' + (available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(detail) + '</div>';
     }).join('');
     var sanctuaryPets = state.sanctuary || [];
     var sanctuaryRows = sanctuaryPets.map(function (pet) {
@@ -954,18 +1030,19 @@
         '<div class="line">FINAL EVOLUTION // ' + escapeHtml(words(pet.legendary_evolution_id || pet.stage)) + '</div>' +
         '<div class="line muted">COMPLETED ' + escapeHtml(words(pet.completed_season)) + ' // ' + escapeHtml(String(pet.completed_at || '').slice(0, 10)) + '</div>';
     }).join('');
-    var sanctuaryPanel = sanctuaryRows || '<div class="line muted">No Sanctuary pets yet.</div><div class="line">Complete a Legendary Moonpet season to unlock Sanctuary.</div>';
+    var sanctuaryPanel = sanctuaryRows || '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">Requires completed Season pet. Sanctuary is future expansion content, not early Season 1 gameplay.</div>';
     var lifecycle = state.lifecycle || {};
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
     var rarePanel = '<div class="line ' + (rare.ready ? 'complete' : 'muted') + '">HIDDEN SIGNAL // ' + escapeHtml(words(rare.signal || 'dormant')) + ' // ' + number(rare.progress) + '%</div>' + (rare.name ? '<div class="line complete">REVEALED // ' + escapeHtml(rare.name) + '</div>' : '<div class="line muted">The route remains hidden until your evolution, traits and memories align.</div>') + (rare.ready ? '<div class="button-grid one">' + button('ANSWER RARE SIGNAL', 'rare_morph') + '</div>' : '');
-    return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">LEARNED PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
+    return activePetSummary() +
+      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">LEARNED PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Trait expansion remains locked until completed Season pets.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('LEARNED APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('PRESTIGE', '<div class="line">RANK ' + number(prestige.count) + ' // MASTERED GEAR ' + number(prestige.mastered_items) + '/3 // DISTRICTS ' + number(prestige.completed_regions) + '/4</div><div class="line muted">REQUIRES LEVEL 100 + 5,000 GOLD + 50 GEMS</div><div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: !prestige.ready }) + '</div>', 'prestige') +
-      panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
+      panel('PRESTIGE', '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">Prestige is future expansion content and remains unavailable during early Season 1.</div><div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: true, detail: 'REQUIRES COMPLETED SEASON PET' }) + '</div>', 'prestige') +
+      panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('LOCKED FUTURE SYSTEMS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
@@ -1043,6 +1120,17 @@
     if (result.damage) parts.push('DAMAGE ' + number(result.damage));
     if (result.pet_xp_awarded) parts.push('+' + number(result.pet_xp_awarded) + ' PET XP');
     if (gains.length) parts.push(gains.join(' // '));
+    if (result.daily_journey) {
+      parts.push(result.daily_journey.accepted
+        ? 'GROWTH MARK AWARDED'
+        : 'GROWTH MARK BLOCKED // ' + words(result.daily_journey.reason || 'not qualified'));
+    }
+    if (result.weekly_journey) {
+      parts.push(result.weekly_journey.accepted
+        ? 'WEEKLY CREST AWARDED'
+        : 'WEEKLY CREST BLOCKED // ' + words(result.weekly_journey.reason || 'not qualified'));
+    }
+    if (result.duplicate) parts.push('DUPLICATE BLOCKED BY AUTHORITY');
     if (result.reaction) parts.push('MOONPET: ' + String(result.reaction));
     return parts.join(' // ');
   }

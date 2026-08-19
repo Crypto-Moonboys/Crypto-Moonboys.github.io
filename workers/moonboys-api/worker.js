@@ -7867,6 +7867,58 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
   };
 }
 
+async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = new Date()) {
+  const activeSlot = (seasonSlots?.slots || []).find((slot) => slot.active) || null;
+  const petId = String(activeSlot?.pet_id || '');
+  const seasonKey = String(activeSlot?.season_key || seasonSlots?.season?.key || '');
+  const dayKey = getPetDayKey(now);
+  const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(seasonSlots?.season || getPetSeasonInfo(now), now)) || 1));
+  if (!petId || !seasonKey) {
+    return {
+      daily: { utc_day: dayKey, completed_objectives: 0, required_objectives: 3, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+      weekly: { qualification_week: week, completed_objectives: 0, required_objectives: 5, weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+    };
+  }
+  const [dailyObjectives, dailyReceipt, weeklyObjectives, weeklyReceipt] = await Promise.all([
+    db.prepare(`SELECT COUNT(DISTINCT challenge_id) AS completed_objectives
+      FROM telegram_pet_daily_journey_objectives
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted'`)
+      .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
+    db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
+      FROM telegram_pet_daily_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=?
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
+    db.prepare(`SELECT COUNT(DISTINCT objective_id) AS completed_objectives
+      FROM telegram_pet_weekly_journey_objectives
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'`)
+      .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
+    db.prepare(`SELECT status, reason, crest_id, completed_objectives
+      FROM telegram_pet_weekly_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=?
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
+  ]);
+  const dailyCompleted = Math.max(Number(dailyObjectives?.completed_objectives || 0), Number(dailyReceipt?.completed_objectives || 0));
+  const weeklyCompleted = Math.max(Number(weeklyObjectives?.completed_objectives || 0), Number(weeklyReceipt?.completed_objectives || 0));
+  return {
+    daily: {
+      pet_id: petId, season_key: seasonKey, utc_day: dayKey,
+      completed_objectives: dailyCompleted, required_objectives: 3,
+      growth_mark_awarded: Boolean(dailyReceipt?.status === 'accepted' && dailyReceipt?.growth_mark_id),
+      duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
+      reason: dailyReceipt?.reason || (dailyCompleted >= 3 ? 'daily_journey_ready' : 'daily_journey_in_progress'),
+    },
+    weekly: {
+      pet_id: petId, season_key: seasonKey, qualification_week: week,
+      completed_objectives: weeklyCompleted, required_objectives: 5,
+      weekly_crest_awarded: Boolean(weeklyReceipt?.status === 'accepted' && weeklyReceipt?.crest_id),
+      duplicate_blocked: weeklyReceipt?.reason === 'weekly_journey_crest_duplicate',
+      reason: weeklyReceipt?.reason || (weeklyCompleted >= 5 ? 'weekly_journey_ready' : 'weekly_journey_in_progress'),
+    },
+  };
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
@@ -7928,6 +7980,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     listSanctuaryPets(db, telegramId).catch(() => []),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
+  const journeySummary = await buildPetMiniAppJourneySummary(db, telegramId, seasonSlots).catch(() => null);
   const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const adventureBase = selectPetAdventureEncounter(petRaw);
@@ -8011,6 +8064,8 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     notices: guidanceNotices,
     progress: runtime,
     season_slots: seasonSlots,
+    daily_journey: journeySummary?.daily || null,
+    weekly_journey: journeySummary?.weekly || null,
     sanctuary,
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
