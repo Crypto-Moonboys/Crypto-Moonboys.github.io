@@ -27,9 +27,18 @@ class D1 {
     this.database = new DatabaseSync(':memory:');
     this.failNextOffspringPersistence = false;
     this.reserveSlotBeforeBatch = null;
+    this.archivePetBeforeBatch = null;
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
+    if (this.archivePetBeforeBatch) {
+      const archived = this.archivePetBeforeBatch;
+      this.archivePetBeforeBatch = null;
+      this.database.prepare(`UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=? AND telegram_id=?`)
+        .run(archived.petId, archived.telegramId);
+      this.database.prepare(`UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=? AND telegram_id=? AND season_key=?`)
+        .run(archived.petId, archived.telegramId, archived.seasonKey);
+    }
     if (this.reserveSlotBeforeBatch) {
       const reservation = this.reserveSlotBeforeBatch;
       this.reserveSlotBeforeBatch = null;
@@ -77,6 +86,8 @@ assert.match(breedingSource, /Cooldown authority is per parent pet/,
   'breeding source must document that cooldown belongs to each parent pet');
 assert.match(breedingSource, /db\.batch\(statements\)/,
   'breeding settlement must use D1 batch transaction authority');
+assert.match(breedingSource, /acquisition_type, source_event_key[\s\S]{0,140}'breeding'/,
+  'breeding offspring season slots must use the dedicated breeding acquisition type');
 assert.match(breedingSource, /PET_LIFECYCLE_SCHEMA_VERSION, receipt\.seed/,
   'breeding offspring lifecycle rows must use lifecycle schema version, not breeding authority version');
 assert.doesNotMatch(breedingSource, /lifecycle_version[\s\S]{0,220}PET_BREEDING_AUTHORITY_VERSION, receipt\.seed/,
@@ -85,6 +96,8 @@ assert.doesNotMatch(breedingSource, /normalizeTimestamp\(request\.now\)|request\
   'breeding authority must not trust caller-controlled request.now for clock decisions');
 assert.match(breedingMigration, /Cooldowns are per parent pet/,
   'migration 069 must document the per-parent cooldown authority model');
+assert.match(schema, /acquisition_type IN \('free', 'arcade_xp', 'breeding'\)/,
+  'canonical schema must allow the dedicated breeding acquisition type');
 assert.doesNotMatch(workerSource, /body\.action === 'breed'|processMoonpetBreeding|requestMoonpetBreeding/i,
   'breeding PR #1232 must remain foundation-only with no live player-facing route');
 
@@ -309,6 +322,14 @@ assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegra
   'Test 3: duplicate retries leave one receipt');
 assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(duplicateOne.offspring_pet_id).count, 1,
   'Test 3: duplicate retries leave one offspring instance');
+const bredSlot = duplicateDb.database.prepare(`SELECT acquisition_type, source_event_key FROM telegram_pet_season_slots WHERE pet_id=?`)
+  .get(duplicateOne.offspring_pet_id);
+const bredLifecycle = duplicateDb.database.prepare(`SELECT identity_seed, phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`)
+  .get(duplicateOne.offspring_pet_id);
+assert.equal(bredSlot.acquisition_type, 'breeding', 'Test 3: bred offspring uses dedicated breeding acquisition type');
+assert.equal(bredSlot.source_event_key, duplicateOne.event_key, 'Test 3: bred offspring slot is tied to the breeding receipt event');
+assert.equal(bredLifecycle.identity_seed, duplicateOne.seed, 'Test 3: bred offspring has independent deterministic lifecycle identity');
+assert.equal(bredLifecycle.phase, 'egg', 'Test 3: bred offspring starts from its own lifecycle state');
 duplicateDb.database.prepare(`DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).run(duplicateOne.offspring_pet_id);
 duplicateDb.database.prepare(`DELETE FROM telegram_pet_instances WHERE pet_id=?`).run(duplicateOne.offspring_pet_id);
 duplicateDb.database.prepare(`DELETE FROM telegram_pet_season_slots WHERE pet_id=?`).run(duplicateOne.offspring_pet_id);
@@ -523,6 +544,26 @@ assert.equal(slotRaceDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram
 assert.equal(slotRaceDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
   'Test 5c: slot race loser writes no cooldown');
 
+const parentAuthorityChangedDb = createDb();
+const parentAuthorityChangedPair = seedBreedingPair(parentAuthorityChangedDb, 'parent-authority-race-player');
+parentAuthorityChangedDb.archivePetBeforeBatch = {
+  telegramId: parentAuthorityChangedPair.owner,
+  seasonKey: 'pet-s2026-003',
+  petId: parentAuthorityChangedPair.parentA,
+};
+const parentAuthorityChanged = await requestMoonpetBreeding(
+  parentAuthorityChangedDb,
+  baseRequest(parentAuthorityChangedPair, 'parent-authority-changed'),
+);
+assert.equal(parentAuthorityChanged.accepted, false, 'Test 5d: parent archive before settlement rejects breeding');
+assert.equal(parentAuthorityChanged.reason, 'breeding_parent_authority_changed');
+assert.equal(parentAuthorityChangedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
+  'Test 5d: parent authority race writes no receipt');
+assert.equal(parentAuthorityChangedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
+  'Test 5d: parent authority race creates no offspring');
+assert.equal(parentAuthorityChangedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
+  'Test 5d: parent authority race writes no cooldown');
+
 const seasonClockDb = createDb();
 const seasonClockPair = seedBreedingPair(seasonClockDb, 'season-clock-player');
 const manipulatedFutureSeason = await requestMoonpetBreeding(seasonClockDb, {
@@ -530,10 +571,10 @@ const manipulatedFutureSeason = await requestMoonpetBreeding(seasonClockDb, {
   now: '2026-10-01T00:00:00.000Z',
 }, TEST_CLOCK);
 assert.equal(manipulatedFutureSeason.accepted, true,
-  'Test 5d: caller-controlled future request.now cannot move season authority out of server season');
+  'Test 5e: caller-controlled future request.now cannot move season authority out of server season');
 assert.equal(seasonClockDb.database.prepare(`SELECT created_at FROM telegram_pet_breeding_receipts WHERE receipt_id=?`).get(manipulatedFutureSeason.receipt_id).created_at,
   TEST_CLOCK.now,
-  'Test 5d: receipt timestamp uses server-authority clock, not request.now');
+  'Test 5e: receipt timestamp uses server-authority clock, not request.now');
 
 const seasonClockMismatchDb = createDb();
 const seasonClockMismatchPair = seedBreedingPair(seasonClockMismatchDb, 'season-clock-mismatch-player');
@@ -543,10 +584,10 @@ const manipulatedSeasonRejected = await requestMoonpetBreeding(seasonClockMismat
   now: '2026-10-01T00:00:00.000Z',
 }, TEST_CLOCK);
 assert.equal(manipulatedSeasonRejected.accepted, false,
-  'Test 5e: caller-controlled request.now cannot make a future season authoritative');
+  'Test 5f: caller-controlled request.now cannot make a future season authoritative');
 assert.equal(manipulatedSeasonRejected.reason, 'breeding_season_authority_mismatch');
 assert.equal(seasonClockMismatchDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
-  'Test 5e: manipulated season request writes no receipt');
+  'Test 5f: manipulated season request writes no receipt');
 
 const seasonDb = createDb();
 seedPlayer(seasonDb, 'season-player');

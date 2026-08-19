@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_season_slots (
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
   slot_number INTEGER NOT NULL CHECK (slot_number BETWEEN 1 AND 3),
-  acquisition_type TEXT NOT NULL CHECK (acquisition_type IN ('free', 'arcade_xp')),
+  acquisition_type TEXT NOT NULL CHECK (acquisition_type IN ('free', 'arcade_xp', 'breeding')),
   source_event_key TEXT,
   arcade_xp_spent INTEGER NOT NULL DEFAULT 0 CHECK (arcade_xp_spent >= 0),
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'retired', 'archived')),
