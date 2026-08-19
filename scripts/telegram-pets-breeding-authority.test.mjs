@@ -28,6 +28,18 @@ class D1 {
     this.failNextOffspringPersistence = false;
   }
   prepare(sql) { return new Statement(this, sql); }
+  async batch(statements) {
+    this.database.exec('BEGIN');
+    try {
+      const results = [];
+      for (const statement of statements) results.push(await statement.run());
+      this.database.exec('COMMIT');
+      return results;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
 }
 
 const schema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
@@ -54,6 +66,8 @@ assert.match(breedingSource, /telegram_pet_season_completions/,
   'breeding must require the completed-pet authority table');
 assert.match(breedingSource, /Cooldown authority is per parent pet/,
   'breeding source must document that cooldown belongs to each parent pet');
+assert.match(breedingSource, /db\.batch\(statements\)/,
+  'breeding settlement must use D1 batch transaction authority');
 assert.match(breedingMigration, /Cooldowns are per parent pet/,
   'migration 069 must document the per-parent cooldown authority model');
 assert.doesNotMatch(workerSource, /body\.action === 'breed'|processMoonpetBreeding|requestMoonpetBreeding/i,
@@ -197,6 +211,7 @@ const duplicateTwo = await requestMoonpetBreeding(duplicateDb, baseRequest(dupli
 assert.equal(duplicateOne.accepted, true, 'Test 3: first breeding request is accepted');
 assert.equal(duplicateTwo.accepted, true, 'Test 3: duplicate breeding request recovers the accepted receipt');
 assert.equal(duplicateTwo.duplicate, true, 'Test 3: second matching request is a duplicate recovery/no-op');
+assert.equal(duplicateTwo.recovered, false, 'Test 3: normal duplicate reports no authority recovery');
 assert.equal(duplicateOne.offspring_pet_id, duplicateTwo.offspring_pet_id, 'Test 3: duplicate request returns the same offspring');
 assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
   'Test 3: duplicate retries leave one receipt');
@@ -207,9 +222,27 @@ duplicateDb.database.prepare(`DELETE FROM telegram_pet_instances WHERE pet_id=?`
 duplicateDb.database.prepare(`DELETE FROM telegram_pet_season_slots WHERE pet_id=?`).run(duplicateOne.offspring_pet_id);
 const recoveredOffspring = await requestMoonpetBreeding(duplicateDb, baseRequest(duplicatePair, 'same-request'));
 assert.equal(recoveredOffspring.accepted, true, 'Test 3a: retry recovery accepts an existing receipt with missing offspring');
+assert.equal(recoveredOffspring.duplicate, false, 'Test 3a: missing offspring repair reports authority recovery, not a duplicate no-op');
+assert.equal(recoveredOffspring.recovered, true, 'Test 3a: missing offspring repair is marked recovered');
 assert.equal(recoveredOffspring.offspring_pet_id, duplicateOne.offspring_pet_id, 'Test 3a: recovery preserves the deterministic offspring id');
+assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
+  'Test 3a: receipt recovery keeps one breeding receipt');
 assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(duplicateOne.offspring_pet_id).count, 1,
   'Test 3a: receipt recovery rebuilds the missing offspring instance');
+assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).get(recoveredOffspring.receipt_id).count, 2,
+  'Test 3a: receipt recovery leaves the per-parent cooldown authority intact');
+
+duplicateDb.database.prepare(`DELETE FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).run(duplicateOne.receipt_id);
+const recoveredCooldown = await requestMoonpetBreeding(duplicateDb, baseRequest(duplicatePair, 'same-request'));
+assert.equal(recoveredCooldown.accepted, true, 'Test 3b: retry recovery accepts an existing receipt with missing cooldowns');
+assert.equal(recoveredCooldown.duplicate, false, 'Test 3b: missing cooldown repair reports authority recovery');
+assert.equal(recoveredCooldown.recovered, true, 'Test 3b: missing cooldown repair is marked recovered');
+assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
+  'Test 3b: cooldown recovery creates no duplicate receipt');
+assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(duplicateOne.offspring_pet_id).count, 1,
+  'Test 3b: cooldown recovery creates no duplicate offspring');
+assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).get(recoveredCooldown.receipt_id).count, 2,
+  'Test 3b: cooldown recovery restores one cooldown row per parent pet');
 
 const partialFailureDb = createDb();
 const partialFailurePair = seedBreedingPair(partialFailureDb, 'partial-failure-player');
@@ -217,29 +250,26 @@ partialFailureDb.failNextOffspringPersistence = true;
 await assert.rejects(
   requestMoonpetBreeding(partialFailureDb, baseRequest(partialFailurePair, 'partial-failure')),
   /simulated_offspring_persistence_failure/,
-  'Test 3b: simulated worker failure happens after receipt insert but before offspring persistence',
+  'Test 3c: simulated worker failure happens inside atomic settlement',
 );
-assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
-  'Test 3b: partial failure leaves exactly one accepted receipt');
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
+  'Test 3c: atomic partial failure rolls back the accepted receipt');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:partial-failure-player:pet-s2026-003:breed:%'`).get().count, 0,
-  'Test 3b: partial failure leaves no offspring before retry');
+  'Test 3c: atomic partial failure leaves no offspring before retry');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
-  'Test 3b: partial failure leaves no cooldown before retry');
-partialFailureDb.database.prepare(`UPDATE telegram_pet_instances SET status='archived'
-  WHERE pet_id IN (?, ?)`).run(partialFailurePair.parentA, partialFailurePair.parentB);
-partialFailureDb.database.prepare(`UPDATE telegram_pet_season_slots SET status='archived'
-  WHERE pet_id IN (?, ?)`).run(partialFailurePair.parentA, partialFailurePair.parentB);
+  'Test 3c: atomic partial failure leaves no cooldown before retry');
 const partialFailureRetry = await requestMoonpetBreeding(partialFailureDb, baseRequest(partialFailurePair, 'partial-failure'));
-assert.equal(partialFailureRetry.accepted, true, 'Test 3b: retry recovers the accepted receipt');
-assert.equal(partialFailureRetry.duplicate, true, 'Test 3b: retry is duplicate recovery, not a second breeding');
+assert.equal(partialFailureRetry.accepted, true, 'Test 3c: retry after rollback settles a fresh accepted request');
+assert.equal(partialFailureRetry.duplicate, false, 'Test 3c: retry after rollback is not a duplicate');
+assert.equal(partialFailureRetry.recovered, false, 'Test 3c: retry after rollback does not need authority recovery');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
-  'Test 3b: retry leaves one breeding receipt');
+  'Test 3c: retry leaves one breeding receipt');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(partialFailureRetry.offspring_pet_id).count, 1,
-  'Test 3b: retry creates one deterministic offspring');
+  'Test 3c: retry creates one deterministic offspring');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:partial-failure-player:pet-s2026-003:breed:%'`).get().count, 1,
-  'Test 3b: retry creates no duplicate offspring');
+  'Test 3c: retry creates no duplicate offspring');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).get(partialFailureRetry.receipt_id).count, 2,
-  'Test 3b: retry restores one cooldown row per parent pet');
+  'Test 3c: retry creates one cooldown row per parent pet');
 
 const deterministicSeedA = await generateBreedingSeed(baseRequest(duplicatePair, 'same-request'));
 const deterministicSeedB = await generateBreedingSeed({
