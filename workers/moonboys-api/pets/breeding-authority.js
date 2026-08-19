@@ -147,6 +147,15 @@ async function offspringExists(db, offspringPetId, ownerId) {
   return Boolean(row?.pet_id);
 }
 
+async function offspringStateExists(db, offspringPetId, ownerId) {
+  const row = await db.prepare(`SELECT i.pet_id AS instance_pet_id, l.pet_id AS lifecycle_pet_id
+    FROM telegram_pet_instances i
+    LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=i.pet_id AND l.telegram_id=i.telegram_id
+    WHERE i.pet_id=? AND i.telegram_id=? LIMIT 1`)
+    .bind(offspringPetId, ownerId).first().catch(() => null);
+  return Boolean(row?.instance_pet_id && row?.lifecycle_pet_id);
+}
+
 async function nextAvailableSlot(db, ownerId, seasonKey) {
   const rows = await db.prepare(`SELECT slot_number FROM telegram_pet_season_slots
     WHERE telegram_id=? AND season_key=? ORDER BY slot_number`)
@@ -154,6 +163,17 @@ async function nextAvailableSlot(db, ownerId, seasonKey) {
   const used = new Set((rows.results || []).map((row) => Number(row.slot_number)));
   for (const slot of [1, 2, 3]) if (!used.has(slot)) return slot;
   return 0;
+}
+
+async function recoverySlotNumber(db, ownerId, seasonKey, offspringPetId, storedSlotNumber) {
+  const stored = Number(storedSlotNumber || 0);
+  if (stored) {
+    const row = await db.prepare(`SELECT pet_id FROM telegram_pet_season_slots
+      WHERE telegram_id=? AND season_key=? AND slot_number=? LIMIT 1`)
+      .bind(ownerId, seasonKey, stored).first().catch(() => null);
+    if (!row?.pet_id || row.pet_id === offspringPetId) return stored;
+  }
+  return nextAvailableSlot(db, ownerId, seasonKey);
 }
 
 async function readCooldown(db, ownerId, seasonKey, parentIds, now) {
@@ -290,6 +310,17 @@ function isSlotAllocationConflict(error) {
   return message.includes('telegram_pet_season_slots') && message.includes('constraint');
 }
 
+async function verifyBreedingSettlement(db, receipt, parentIds) {
+  const [offspringReady, cooldowns] = await Promise.all([
+    offspringStateExists(db, receipt.offspring_pet_id, receipt.telegram_id),
+    readCooldowns(db, receipt.telegram_id, receipt.season_key, parentIds),
+  ]);
+  const receiptCooldowns = new Set(cooldowns
+    .filter((row) => row.receipt_id === receipt.receipt_id)
+    .map((row) => row.parent_pet_id));
+  return offspringReady && parentIds.every((petId) => receiptCooldowns.has(petId));
+}
+
 export async function requestMoonpetBreeding(db, request = {}) {
   const seedInfo = await generateBreedingSeed(request);
   const requestContext = requestAuthorityContext(request, seedInfo);
@@ -312,7 +343,7 @@ export async function requestMoonpetBreeding(db, request = {}) {
     const recoveryStatements = [];
     const exists = await offspringExists(db, existing.offspring_pet_id, existing.telegram_id);
     if (!exists) {
-      const slotNumber = Number(existing.offspring_slot_number || 0) || await nextAvailableSlot(db, authority.owner_id, authority.season_key);
+      const slotNumber = await recoverySlotNumber(db, authority.owner_id, authority.season_key, existing.offspring_pet_id, existing.offspring_slot_number);
       if (slotNumber) {
         recoveryStatements.push(...buildOffspringStatements(db, authority, existing, safeJson(existing.offspring_traits_json), slotNumber, { strictSlot: false }));
       }
@@ -324,6 +355,10 @@ export async function requestMoonpetBreeding(db, request = {}) {
       }
     }
     if (recoveryStatements.length) await runBreedingSettlement(db, recoveryStatements);
+    const verified = await verifyBreedingSettlement(db, existing, parentIds);
+    if (!verified) {
+      return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_recovery_failed', event_key: eventKey };
+    }
     return {
       accepted: true,
       duplicate: recoveryStatements.length === 0,

@@ -309,6 +309,37 @@ assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegra
 assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).get(recoveredCooldown.receipt_id).count, 2,
   'Test 3b: cooldown recovery restores one cooldown row per parent pet');
 
+const occupiedRecoveryDb = createDb();
+const occupiedRecoveryPair = seedBreedingPair(occupiedRecoveryDb, 'occupied-recovery-player');
+const occupiedRecoveryFirst = await requestMoonpetBreeding(occupiedRecoveryDb, baseRequest(occupiedRecoveryPair, 'occupied-recovery'));
+const occupiedOriginalSlot = occupiedRecoveryDb.database.prepare(`SELECT offspring_slot_number FROM telegram_pet_breeding_receipts WHERE receipt_id=?`)
+  .get(occupiedRecoveryFirst.receipt_id).offspring_slot_number;
+occupiedRecoveryDb.database.prepare(`DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).run(occupiedRecoveryFirst.offspring_pet_id);
+occupiedRecoveryDb.database.prepare(`DELETE FROM telegram_pet_instances WHERE pet_id=?`).run(occupiedRecoveryFirst.offspring_pet_id);
+occupiedRecoveryDb.database.prepare(`DELETE FROM telegram_pet_season_slots WHERE pet_id=?`).run(occupiedRecoveryFirst.offspring_pet_id);
+seedPet(occupiedRecoveryDb, {
+  telegramId: occupiedRecoveryPair.owner,
+  petId: 'pet:occupied-recovery-player:slot-stealer',
+  slotNumber: occupiedOriginalSlot,
+});
+const occupiedRecoveryRetry = await requestMoonpetBreeding(occupiedRecoveryDb, baseRequest(occupiedRecoveryPair, 'occupied-recovery'));
+if (occupiedRecoveryRetry.accepted) {
+  assert.equal(occupiedRecoveryRetry.recovered, true, 'Test 3d: occupied original slot recovery must be marked recovered');
+  assert.equal(occupiedRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(occupiedRecoveryFirst.offspring_pet_id).count, 1,
+    'Test 3d: occupied original slot recovery restores offspring before returning success');
+  assert.equal(occupiedRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).get(occupiedRecoveryFirst.offspring_pet_id).count, 1,
+    'Test 3d: occupied original slot recovery restores lifecycle before returning success');
+  assert.equal(occupiedRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).get(occupiedRecoveryFirst.receipt_id).count, 2,
+    'Test 3d: occupied original slot recovery has cooldowns before returning success');
+  assert.notEqual(occupiedRecoveryDb.database.prepare(`SELECT slot_number FROM telegram_pet_instances WHERE pet_id=?`).get(occupiedRecoveryFirst.offspring_pet_id).slot_number, occupiedOriginalSlot,
+    'Test 3d: recovery does not displace the pet that took the original slot');
+} else {
+  assert.equal(occupiedRecoveryRetry.reason, 'breeding_recovery_failed',
+    'Test 3d: occupied original slot recovery can fail, but must not claim false success');
+  assert.equal(occupiedRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(occupiedRecoveryFirst.offspring_pet_id).count, 0,
+    'Test 3d: failed recovery leaves no false-success offspring claim');
+}
+
 const partialFailureDb = createDb();
 const partialFailurePair = seedBreedingPair(partialFailureDb, 'partial-failure-player');
 partialFailureDb.failNextOffspringPersistence = true;
