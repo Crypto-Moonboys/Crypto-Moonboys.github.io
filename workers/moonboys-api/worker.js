@@ -8055,6 +8055,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     return {
       adopted: false,
       pet: null,
+      capabilities_version: 1,
       next: { key: 'adopt', title: 'Wake the Moon Egg', detail: 'Adopt your first Moonpet to begin.', action: 'adopt' },
       jobs: Object.values(PET_JOBS),
       shop_items: [],
@@ -8192,6 +8193,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     notices: guidanceNotices,
     progress: runtime,
     season_slots: seasonSlots,
+    capabilities_version: 1,
     capabilities: buildPetMiniAppCapabilities(combatEligibility),
     daily_journey: journeySummary?.daily || null,
     gear: gear.results || [],
@@ -8315,6 +8317,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
       return {
         accepted: false,
         reason: combatEligibility.reason,
+        capabilities_version: 1,
         capabilities: buildPetMiniAppCapabilities(combatEligibility),
       };
     }
@@ -8519,7 +8522,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots', 'capabilities']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -13760,7 +13763,7 @@ function petMiniAppFocusForCallback(data) {
   if (/^(leaderboard|score)/.test(payload)) return 'leaderboard';
   if (/^(notify)/.test(payload)) return 'alerts';
   if (/^(name)/.test(payload)) return 'callsign';
-  if (/^(prestige)/.test(payload)) return 'prestige';
+  if (/^(prestige)/.test(payload)) return 'tracks';
   if (/^(progress)/.test(payload)) return 'tracks';
   return '';
 }

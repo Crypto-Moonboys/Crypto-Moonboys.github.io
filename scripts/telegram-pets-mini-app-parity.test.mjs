@@ -6,6 +6,7 @@ import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const {
   processPetMiniAppAction,
+  buildPetMiniAppState,
   buildPetMiniAppJourneySummary,
   buildPetMiniAppFutureSystemState,
   buildPetMiniAppCapabilities,
@@ -233,6 +234,7 @@ const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat
 }, '123456:test-token');
 assert.equal(combatEggAction.accepted, false, 'completed users with an active egg must not enter Kaiju combat');
 assert.equal(combatEggAction.reason, 'moon_egg_must_hatch', 'API combat lock must match the active-egg UI reason');
+assert.equal(combatEggAction.capabilities_version, 1, 'stale-client combat rejection must expose the top-level capability contract version');
 assert.equal(combatEggAction.capabilities?.combat?.state, 'LOCKED', 'API must return the shared combat capability state for active-egg rejection');
 assert.equal(combatEggAction.capabilities?.combat?.unlocked, false, 'stale-client combat rejection must return nested combat capability authority');
 const combatAdultEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult');
@@ -254,6 +256,13 @@ assert.equal(combatAdultCapabilities.arena?.state, 'AVAILABLE', 'Arena display s
 assert.equal(combatAdultCapabilities.prestige?.state, 'COMING_SOON', 'Prestige must remain coming soon in the single capability object');
 assert.equal(combatAdultCapabilities.prestige?.active, false, 'Prestige must remain inactive even for combat-available users');
 assert.equal(combatAdultCapabilities.weekly_journey?.state, 'COMING_SOON', 'Weekly Journey must remain coming soon in the single capability object');
+const emptyStateDb = new D1();
+const emptyMiniAppState = await buildPetMiniAppState(emptyStateDb, 'empty-state-user', '123456:test-token');
+assert.equal(emptyMiniAppState.capabilities_version, 1, 'Mini App state must expose the top-level capability contract version');
+assert.equal(emptyMiniAppState.capabilities?.capabilities_version, 1, 'Mini App state keeps the nested capability object version for compatibility');
+assert.equal(emptyMiniAppState.capabilities?.combat?.active, false, 'unadopted Mini App state must fail combat closed through worker authority');
+assert.equal(Object.prototype.hasOwnProperty.call(emptyMiniAppState, 'combat_unlocked'), false,
+  'Mini App state must not serialize duplicate top-level combat availability');
 assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'has_completed_season_pet'), false,
   'capabilities must not serialize duplicate top-level completed-season authority');
 assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'combat_unlocked'), false,

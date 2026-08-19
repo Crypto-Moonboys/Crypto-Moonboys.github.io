@@ -374,7 +374,6 @@
     if (/cosmetic/.test(key)) return 'style-lab';
     if (/gear|upgrade/.test(key)) return 'equipment';
     if (/shop|buy/.test(key)) return 'shop';
-    if (/prestige/.test(key)) return 'prestige';
     return 'care';
   }
 
@@ -540,6 +539,8 @@
         active_pet_hatched: false,
       },
     };
+    var version = Number(source && (source.capabilities_version || source.capabilities && source.capabilities.capabilities_version) || 0);
+    if (version !== 1) return fallback;
     var combat = source && source.capabilities && source.capabilities.combat;
     var requirements = combat && combat.requirements;
     if (!combat || !requirements || typeof requirements !== 'object') return fallback;
@@ -650,7 +651,7 @@
     }
     var next = state.next || {};
     var nextKey = String(next.key || '') + ' ' + String(next.callback_data || '') + ' ' + String(next.title || '');
-    var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait|prestige/i.test(nextKey) ? 'profile' : 'home');
+    var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait/i.test(nextKey) ? 'profile' : 'home');
     var focus = recommendedFocus(next);
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
@@ -1151,8 +1152,7 @@
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('PRESTIGE', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')) +
-        '<div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: true, detail: 'NOT AVAILABLE YET' }) + '</div>', 'prestige') +
+      panel('PRESTIGE', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
       panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('LOCKED FUTURE SYSTEMS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 
