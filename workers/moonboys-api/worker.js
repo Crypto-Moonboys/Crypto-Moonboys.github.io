@@ -8,10 +8,10 @@ import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
   createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, processDailyMoonRunStep,
-  recordDailyCareChallenge, syncDailyMoonRun,
+  DAILY_JOURNEY_REQUIRED_OBJECTIVES, PET_DAILY_CHALLENGES, recordDailyCareChallenge, syncDailyMoonRun,
 } from './pets/daily-moon-run.js';
 import {
-  PET_WEEKLY_JOURNEY_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence,
+  PET_WEEKLY_JOURNEY_OBJECTIVES, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence,
 } from './pets/weekly-journey.js';
 import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
@@ -32,7 +32,7 @@ import {
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
 import { getMoonpetSeasonInfo } from './pets/season-authority.js';
-import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
+import { listSanctuaryPets, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
   PET_INSTANCE_AUTHORITY_VERSION,
@@ -57,7 +57,7 @@ import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
-  processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
+  processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss,
 } from './pets/live-systems.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
@@ -4432,6 +4432,16 @@ async function cancelPetKaijuMiniAppQueue(db, telegramId) {
   return { accepted: true, duplicate: Number(cancelled?.meta?.changes || 0) === 0, reason: 'kaiju_queue_cancelled' };
 }
 
+async function cancelPetKaijuMiniAppMatch(db, telegramId, matchId = '') {
+  const cancelled = await db.prepare(`UPDATE telegram_pet_kaiju_matches
+    SET status='cancelled', updated_at=CURRENT_TIMESTAMP
+    WHERE match_id=? AND chat_id LIKE 'mini:kaiju:%' AND mode='solo' AND status IN ('open','selecting')
+      AND player1_telegram_id=? AND player2_telegram_id IS NULL`)
+    .bind(String(matchId || ''), String(telegramId)).run();
+  if (Number(cancelled?.meta?.changes || 0) <= 0) return { accepted: false, reason: 'kaiju_match_not_found' };
+  return { accepted: true, reason: 'kaiju_match_cancelled', match: await getPetKaijuMatch(db, matchId) };
+}
+
 async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards = {}, options = {}) {
   if (match?.mode === 'pet_arena') {
     const now = options.now instanceof Date ? new Date(options.now.getTime()) : new Date();
@@ -7867,6 +7877,183 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
   };
 }
 
+const miniAppProgressInteger = (value, fallback = 0) => Math.max(0, Math.floor(Number(value ?? fallback) || 0));
+
+function countMiniAppCompletedJourneyObjectives(rows = [], definitions = {}) {
+  return rows.reduce((count, row) => {
+    const objective = definitions[String(row.challenge_id || row.objective_id || '')];
+    if (!objective) return count;
+    const target = miniAppProgressInteger(objective.target, 1);
+    const progressMode = String(objective.progress_mode || objective.validation_rules?.progress_mode || 'add');
+    const progress = progressMode === 'max'
+      ? miniAppProgressInteger(row.max_progress, target)
+      : Math.min(target, miniAppProgressInteger(row.additive_progress, target));
+    return progress >= target ? count + 1 : count;
+  }, 0);
+}
+
+async function countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey) {
+  const rows = await db.prepare(`SELECT challenge_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
+    FROM telegram_pet_daily_journey_objectives
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted'
+    GROUP BY challenge_id`)
+    .bind(petId, telegramId, seasonKey, dayKey).all().catch(() => ({ results: [] }));
+  return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_DAILY_CHALLENGES);
+}
+
+async function countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
+  const rows = await db.prepare(`SELECT objective_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
+    FROM telegram_pet_weekly_journey_objectives
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'
+    GROUP BY objective_id`)
+    .bind(petId, telegramId, seasonKey, week).all().catch(() => ({ results: [] }));
+  return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_WEEKLY_JOURNEY_OBJECTIVES);
+}
+
+async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = new Date()) {
+  const activeSlot = (seasonSlots?.slots || []).find((slot) => slot.active) || null;
+  const petId = String(activeSlot?.pet_id || '');
+  const seasonKey = String(activeSlot?.season_key || seasonSlots?.season?.key || '');
+  const dayKey = getPetDayKey(now);
+  const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(seasonSlots?.season || getPetSeasonInfo(now), now)) || 1));
+  if (!petId || !seasonKey) {
+    return {
+      daily: { utc_day: dayKey, completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+      weekly: { qualification_week: week, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+    };
+  }
+  const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt, weeklyObjectives, weeklyReceipt, weeklyAcceptedReceipt] = await Promise.all([
+    countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey),
+    db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
+      FROM telegram_pet_daily_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=?
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
+    db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
+      FROM telegram_pet_daily_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted' AND growth_mark_id IS NOT NULL
+      ORDER BY created_at ASC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
+    countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
+    db.prepare(`SELECT status, reason, crest_id, completed_objectives
+      FROM telegram_pet_weekly_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=?
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
+    db.prepare(`SELECT status, reason, crest_id, completed_objectives
+      FROM telegram_pet_weekly_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted' AND crest_id IS NOT NULL
+      ORDER BY created_at ASC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
+  ]);
+  const dailyCompleted = Math.max(Number(dailyObjectives || 0), Number(dailyReceipt?.completed_objectives || 0), Number(dailyAcceptedReceipt?.completed_objectives || 0));
+  const weeklyCompleted = Math.max(Number(weeklyObjectives || 0), Number(weeklyReceipt?.completed_objectives || 0), Number(weeklyAcceptedReceipt?.completed_objectives || 0));
+  return {
+    daily: {
+      pet_id: petId, season_key: seasonKey, utc_day: dayKey,
+      completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+      growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
+      duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
+      reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
+    },
+    weekly: {
+      pet_id: petId, season_key: seasonKey, qualification_week: week,
+      completed_objectives: weeklyCompleted, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+      weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
+      duplicate_blocked: weeklyReceipt?.reason === 'weekly_journey_crest_duplicate',
+      reason: weeklyReceipt?.reason || (weeklyCompleted >= WEEKLY_JOURNEY_REQUIRED_OBJECTIVES ? 'weekly_journey_ready' : 'weekly_journey_in_progress'),
+    },
+  };
+}
+
+const PET_MINI_APP_FUTURE_SYSTEM_STATUS = Object.freeze({
+  LOCKED: 'LOCKED',
+  COMING_SOON: 'COMING_SOON',
+  AVAILABLE: 'AVAILABLE',
+});
+
+function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
+  const completedSeasonPet = combatEligibility.has_completed_season_pet === true;
+  const combatUnlocked = combatEligibility.combat_unlocked === true;
+  const lockedDetail = 'Requires completed Season pet. Locked until you complete a Season pet.';
+  const comingSoonDetail = 'Future expansion content. Not available yet.';
+  const combatLockedDetail = combatEligibility.reason === 'moon_egg_must_hatch'
+    ? 'Requires a completed Season pet and a hatched active Moonpet.'
+    : combatEligibility.reason === 'pet_not_adopted'
+      ? 'Requires a completed Season pet and an active adult Moonpet.'
+      : combatEligibility.reason === 'moonpet_lifecycle_required'
+        ? 'Requires synced active Moonpet lifecycle authority before combat unlocks.'
+        : lockedDetail;
+  const futureStatus = completedSeasonPet
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  const futureDetail = completedSeasonPet ? comingSoonDetail : lockedDetail;
+  const combatStatus = combatUnlocked
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  const combatDetail = combatUnlocked ? 'Available from Explore.' : combatLockedDetail;
+  return [
+    { key: 'breeding', title: 'Breeding', status: futureStatus, detail: futureDetail },
+    { key: 'traits', title: 'Traits', status: futureStatus, detail: futureDetail },
+    { key: 'sanctuary', title: 'Sanctuary', status: futureStatus, detail: futureDetail },
+    { key: 'lineage', title: 'Lineage', status: futureStatus, detail: futureDetail },
+    { key: 'fusion', title: 'Fusion', status: futureStatus, detail: futureDetail },
+    { key: 'arena', title: 'Arena', status: combatStatus, detail: combatDetail },
+    { key: 'kaiju', title: 'Kaiju', status: combatStatus, detail: combatDetail },
+    { key: 'prestige', title: 'Prestige', status: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON, detail: comingSoonDetail },
+  ];
+}
+
+function buildPetMiniAppCapabilities(combatEligibility = {}) {
+  const futureSystems = buildPetMiniAppFutureSystemState(combatEligibility);
+  const systemByKey = Object.fromEntries(futureSystems.map((system) => [system.key, {
+    state: system.status,
+    unlocked: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    reason: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE ? 'available' : system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON ? 'feature_not_available' : (combatEligibility.reason || 'completed_season_pet_required'),
+    active: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    message: system.detail,
+  }]));
+  const weeklyJourneyCapability = {
+    state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON,
+    unlocked: false,
+    active: false,
+    reason: 'feature_not_available',
+    message: 'Gameplay integration not active yet.',
+  };
+  const systems = {
+    ...systemByKey,
+    weekly_journey: weeklyJourneyCapability,
+  };
+  return {
+    capabilities_version: 1,
+    systems,
+    combat: {
+      state: combatEligibility.combat_unlocked === true
+        ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+        : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
+      unlocked: combatEligibility.combat_unlocked === true,
+      active: combatEligibility.combat_unlocked === true,
+      reason: combatEligibility.reason || 'completed_season_pet_required',
+      requirements: {
+        completed_season_pet: combatEligibility.has_completed_season_pet === true,
+        active_pet_exists: combatEligibility.active_pet_exists === true,
+        active_pet_lifecycle_known: combatEligibility.active_pet_lifecycle_known === true,
+        active_pet_hatched: combatEligibility.active_pet_combat_eligible === true,
+      },
+    },
+    breeding: systemByKey.breeding,
+    traits: systemByKey.traits,
+    sanctuary: systemByKey.sanctuary,
+    lineage: systemByKey.lineage,
+    fusion: systemByKey.fusion,
+    arena: systemByKey.arena,
+    kaiju: systemByKey.kaiju,
+    prestige: systemByKey.prestige,
+    weekly_journey: weeklyJourneyCapability,
+    future_systems: futureSystems,
+  };
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
@@ -7876,18 +8063,20 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     return {
       adopted: false,
       pet: null,
+      capabilities_version: 1,
       next: { key: 'adopt', title: 'Wake the Moon Egg', detail: 'Adopt your first Moonpet to begin.', action: 'adopt' },
       jobs: Object.values(PET_JOBS),
       shop_items: [],
       inventory: [],
       missions: [],
       season_slots: null,
+      capabilities: buildPetMiniAppCapabilities({ has_completed_season_pet: false, combat_unlocked: false, reason: 'completed_season_pet_required' }),
     };
   }
 
   const pet = serializePet(petRaw);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, sanctuary] = await Promise.all([
+  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
@@ -7925,10 +8114,13 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
-    listSanctuaryPets(db, telegramId).catch(() => []),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
-  const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
+  const [journeySummary, hydratedKaiju] = await Promise.all([
+    buildPetMiniAppJourneySummary(db, telegramId, seasonSlots).catch(() => null),
+    ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju),
+  ]);
+  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const adventureBase = selectPetAdventureEncounter(petRaw);
   const adventure = adventureBase ? {
@@ -7950,9 +8142,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const availableDistrict = liveSystems.regions.find((region) => region.available && !region.completed);
   const affordableCosmetic = liveSystems.cosmetics.find((item) => item.affordable && (!item.unlocked || item.repeatable));
   const activeChain = liveSystems.chains.find((chain) => chain.available);
-  const liveNext = liveSystems.prestige.ready
-    ? { key: 'prestige', title: 'Ascend Prestige', detail: 'Requires Level 100, 3 mastered items and 4 completed districts. Cost: 5,000 Gold + 50 Gems. Reward: +1 Prestige rank and 3 Mastery Tokens.', action: 'prestige', destination: 'profile' }
-    : affordableUpgrade
+  const liveNext = affordableUpgrade
       ? { key: 'gear_upgrade', title: `Upgrade ${String(affordableUpgrade.item_key).replaceAll('_', ' ')}`, detail: `Cost: ${Object.entries(affordableUpgrade.cost).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(' + ')}. Reward: gear level ${affordableUpgrade.target_level}.`, action: 'gear_upgrade', destination: 'economy' }
       : liveSystems.seasonal_boss.available
         ? { key: 'seasonal_boss', title: `Raid ${liveSystems.seasonal_boss.title}`, detail: `Requires Level ${liveSystems.seasonal_boss.min_level}. Cost: 18 Energy. Defeat reward: 150 XP, 250 Gold, 8 Gems, 8 ${String(liveSystems.seasonal_boss.reward).replaceAll('_', ' ')} and 1 Mastery Token.`, action: 'seasonal_boss', destination: 'explore' }
@@ -8011,7 +8201,9 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     notices: guidanceNotices,
     progress: runtime,
     season_slots: seasonSlots,
-    sanctuary,
+    capabilities_version: 1,
+    capabilities: buildPetMiniAppCapabilities(combatEligibility),
+    daily_journey: journeySummary?.daily || null,
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
       key,
@@ -8073,6 +8265,43 @@ function petMiniAppEventKey(telegramId, action, requestId) {
   return buildStablePetEventKey(['mini', telegramId, action, suffix]);
 }
 
+const PET_MINI_APP_FUTURE_COMBAT_ACTIONS = new Set([
+  'arena_start', 'arena_matchmake', 'arena_ready', 'arena_move',
+  'kaiju_start', 'kaiju_matchmake', 'kaiju_card',
+]);
+const PET_MINI_APP_COMBAT_CLEANUP_ACTIONS = new Set([
+  'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel',
+]);
+
+async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {
+  const row = await db.prepare(`SELECT 1 AS completed
+    FROM telegram_pet_season_completions
+    WHERE telegram_id=?
+    LIMIT 1`)
+    .bind(String(telegramId)).first().catch(() => null);
+  return Boolean(row?.completed);
+}
+
+async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) {
+  const hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
+  const activePet = await db.prepare('SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
+    .bind(String(telegramId)).first().catch(() => null);
+  const activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId).catch(() => null);
+  const activePetExists = Boolean(activePet?.adopted);
+  const activePetCombatEligible = Boolean(activePetExists && activeLifecycle && activeLifecycle.phase !== 'egg');
+  return {
+    has_completed_season_pet: hasCompletedSeasonPet,
+    active_pet_exists: activePetExists,
+    active_pet_lifecycle_known: Boolean(activeLifecycle),
+    active_pet_combat_eligible: activePetCombatEligible,
+    combat_unlocked: Boolean(hasCompletedSeasonPet && activePetCombatEligible),
+    reason: !hasCompletedSeasonPet ? 'completed_season_pet_required'
+      : !activePetExists ? 'pet_not_adopted'
+        : !activeLifecycle ? 'moonpet_lifecycle_required'
+        : !activePetCombatEligible ? 'moon_egg_must_hatch' : 'combat_unlocked',
+  };
+}
+
 async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
@@ -8084,7 +8313,22 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
   const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
-    return { accepted: false, reason: 'moon_egg_must_hatch', lifecycle };
+    if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
+      // fall through; locked cleanup must remain available for stale combat state.
+    } else {
+      return { accepted: false, reason: 'moon_egg_must_hatch', lifecycle };
+    }
+  }
+  if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
+    const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
+    if (!combatEligibility.combat_unlocked) {
+      return {
+        accepted: false,
+        reason: combatEligibility.reason,
+        capabilities_version: 1,
+        capabilities: buildPetMiniAppCapabilities(combatEligibility),
+      };
+    }
   }
   if (action === 'season_slots') return { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
   if (action === 'buy_pet_slot') return buyPetSeasonSlot(db, telegramId, body.slot_number, { event_key: eventKey, switch_active: body.switch_active });
@@ -8184,18 +8428,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
   if (action === 'craft') return processPetCraftRecipe(db, telegramId, body.recipe_key, eventKey);
   if (action === 'cosmetic_unlock') return processPetCosmeticUnlock(db, telegramId, body.cosmetic_key, eventKey);
-  if (action === 'prestige') {
-    const petRaw = await getPetProfile(db, telegramId);
-    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
-    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
-    const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()));
-    const [gear, materials] = await Promise.all([
-      db.prepare('SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id=?').bind(telegramId).all(),
-      db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all(),
-    ]);
-    const live = await buildPetLiveSystemsState(db, telegramId, serializePet(petRaw, identity), runtime, gear.results || [], materials.results || []);
-    return processPetPrestige(db, telegramId, live, eventKey);
-  }
+  if (action === 'prestige') return { accepted: false, reason: 'feature_not_available' };
   if (action === 'weekly_boss') return processPetWeeklyBoss(db, telegramId, body.move, eventKey);
   if (action === 'season_claim') return claimPetSeasonReward(db, telegramId, body.tier_id, eventKey);
   if (action === 'evolve') {
@@ -8252,6 +8485,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'kaiju_matchmake') return matchmakePetKaijuMiniApp(db, telegramId);
   if (action === 'kaiju_queue_cancel') return cancelPetKaijuMiniAppQueue(db, telegramId);
+  if (action === 'kaiju_match_cancel') return cancelPetKaijuMiniAppMatch(db, telegramId, body.match_id);
   if (action === 'kaiju_card') {
     const fresh = await getFreshPetKaijuMatch(db, body.match_id);
     const match = fresh.match;
@@ -8296,7 +8530,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -8348,7 +8582,7 @@ function getPetMiniAppReactionContext(action, result = {}) {
 }
 
 async function attachPetMiniAppReaction(db, telegramId, action, result, state) {
-  if (!result?.accepted || result.duplicate || !state?.pet || ['guidance_ack', 'notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel'].includes(action)) return result;
+  if (!result?.accepted || result.duplicate || !state?.pet || ['guidance_ack', 'notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel', 'kaiju_match_cancel'].includes(action)) return result;
   const context = getPetMiniAppReactionContext(action, result);
   const activityLabel = result.job?.title || result.item?.title || result.encounter?.title || result.boss?.title
     || result.region?.title || result.tier?.title || String(action || '').replaceAll('_', ' ');
@@ -8890,10 +9124,16 @@ export default {
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       try {
-        return json({ pets: await listSanctuaryPetsPrivate(env.DB, verified.telegramId) });
+        const combatEligibility = await getPetMiniAppCombatEligibility(env.DB, verified.telegramId);
+        return json({
+          accepted: false,
+          reason: 'feature_not_available',
+          capabilities_version: 1,
+          capabilities: buildPetMiniAppCapabilities(combatEligibility),
+        });
       } catch (error) {
-        logApiFailure('pet_mini_app_sanctuary_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
-        return err('mini_app_sanctuary_failed', 500);
+        logApiFailure('pet_mini_app_sanctuary_capabilities_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return json({ accepted: false, reason: 'feature_not_available' });
       }
     }
 
@@ -12939,6 +13179,7 @@ export const __petMediaTestHooks = Object.freeze({
   processPetWeeklyBoss,
   awardStoredWeeklyBossVictoryCrest,
   recordWeeklyBossVictoryCrest,
+  PET_DAILY_CHALLENGES,
   PET_WEEKLY_JOURNEY_OBJECTIVES,
   finalizeWeeklyJourneyCrest,
   recordWeeklyJourneyObjectiveEvidence,
@@ -13000,6 +13241,15 @@ export const __petMediaTestHooks = Object.freeze({
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
   processPetMiniAppAction,
+  buildPetMiniAppJourneySummary,
+  buildPetMiniAppFutureSystemState,
+  buildPetMiniAppCapabilities,
+  buildPetMiniAppState,
+  hasCompletedPetMiniAppSeasonPet,
+  getPetMiniAppCombatEligibility,
+  getPetGuidanceFeatures,
+  DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+  WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
   buyPetSeasonSlot,
@@ -13527,7 +13777,7 @@ function petMiniAppFocusForCallback(data) {
   if (/^(leaderboard|score)/.test(payload)) return 'leaderboard';
   if (/^(notify)/.test(payload)) return 'alerts';
   if (/^(name)/.test(payload)) return 'callsign';
-  if (/^(prestige)/.test(payload)) return 'prestige';
+  if (/^(prestige)/.test(payload)) return 'tracks';
   if (/^(progress)/.test(payload)) return 'tracks';
   return '';
 }
@@ -13644,7 +13894,7 @@ async function cmdGkHelp(tok, chatId) {
     `/gkleaderboard — Leaderboard\n` +
     `/gkquests — Active missions\n` +
     `/pet — Open Moonpet OS\n` +
-    `• All pet care, progression, jobs, economy, runs, bosses, Arena, Kaiju, alerts and leaderboards now run inside Moonpet OS.\n` +
+    `• Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards run inside Moonpet OS. Arena and Kaiju unlock only after you complete a Season pet and your active Moonpet has hatched; locked players see future panels and stale-state cleanup only.\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
     `/daily — Claim daily XP\n` +
@@ -13872,19 +14122,27 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
   };
 }
 
-function getPetGuidanceFeatures(level) {
+function getPetGuidanceFeatures(level, combatEligibility = {}) {
+  const combatUnlocked = combatEligibility.combat_unlocked === true;
+  const combatLockDetail = combatEligibility.reason === 'combat_unlocked'
+    ? ''
+    : combatEligibility.reason === 'moon_egg_must_hatch'
+      ? 'Requires a completed Season pet and a hatched active Moonpet.'
+      : combatEligibility.reason === 'moonpet_lifecycle_required'
+        ? 'Requires a synced active Moonpet lifecycle before combat unlocks.'
+        : 'Requires completed Season pet. Locked until you complete a Season pet.';
   return [
     { key: 'care_console', title: 'Care Console', available: level >= 1, detail: 'Feed, play, clean, sleep and train from the Pet screen.', callback_data: 'pet:details' },
     { key: 'daily_missions', title: 'Daily Missions', available: level >= 1, detail: 'Seven tracked goals reset at 00:00 UTC.', callback_data: 'pet:missions' },
     { key: 'timed_activities', title: 'Timed Activities', available: level >= 1, detail: 'Sleep, train, work or explore while rewards build over time.', callback_data: 'pet:activity' },
     { key: 'moon_runs', title: 'Moon Runs', available: level >= 1, detail: 'Choose routes, risk unbanked rewards and extract before defeat.', callback_data: 'pet:run' },
     { key: 'street_events', title: 'Street Events', available: level >= 1, detail: 'Server-selected encounters change with your choices.', callback_data: 'pet:event' },
-    { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1, detail: 'Battle a CRT rival or match with another player.', callback_data: 'pet:kaiju' },
+    { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1 && combatUnlocked, detail: combatUnlocked ? 'Battle a CRT rival or match with another player.' : combatLockDetail, callback_data: 'pet:kaiju' },
     { key: 'weekly_boss', title: 'Weekly Boss', available: level >= 5, detail: 'One personal boss attack is available per UTC day.', callback_data: 'pet:boss' },
-    { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL, detail: `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.`, callback_data: 'pet:arena' },
+    { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL && combatUnlocked, detail: combatUnlocked ? `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.` : combatLockDetail, callback_data: 'pet:arena' },
     { key: 'moon_economy', title: 'Moon Economy', available: level >= 1, detail: 'Daily bounties, Crystal Expeditions and rotating Moon Market offers are now available.', callback_data: 'pet:economy' },
     { key: 'equipment_upgrades', title: 'Equipment Upgrades', available: level >= 15, detail: 'Owned equipment can now be upgraded through ten levels.', callback_data: 'pet:gear' },
-    { key: 'prestige', title: 'Prestige', available: level >= 100, detail: 'Prestige becomes possible after its gear, district and currency requirements are complete.', callback_data: 'pet:progress' },
+    { key: 'prestige', title: 'Prestige', available: false, detail: 'Future expansion content. Not available yet.', callback_data: 'pet:progress' },
   ];
 }
 
@@ -14011,6 +14269,14 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     getPetEvolutionGuidance(db, telegramId, pet, identity),
     getPetEconomyState(db, telegramId, pet, now),
   ]);
+  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, identity?.lifecycle).catch(() => ({
+    has_completed_season_pet: false,
+    active_pet_exists: true,
+    active_pet_lifecycle_known: false,
+    active_pet_combat_eligible: false,
+    combat_unlocked: false,
+    reason: 'moonpet_lifecycle_required',
+  }));
   const level = getPetLevel(pet.pet_xp);
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const elapsedSeconds = activity ? Math.max(0, Math.floor((now.getTime() - (parseSqliteTs(activity.started_at) ?? now.getTime())) / 1000)) : 0;
@@ -14051,7 +14317,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
       attempt_used: Boolean(weeklyAttempt),
       defeated: Boolean(weeklyProgress?.defeated_at),
     },
-    features: getPetGuidanceFeatures(level),
+    features: getPetGuidanceFeatures(level, combatEligibility),
     jobs: Object.values(PET_JOBS).map((job) => ({
       ...job,
       lore: PET_JOB_LORE[job.key] || '',
@@ -15155,7 +15421,7 @@ async function cmdPetEconomy(db, tok, chatId, telegramId) {
     `<b>💰 Moonpet Economy</b>\n` +
     `<i>Earn → spend → upgrade → unlock. Rewards are server-verified and daily routes are capped.</i>\n\n` +
     `<b>Wallet</b>\n🪙 ${formatPetDisplayNumber(p.moon_gold)} gold · 💎 ${formatPetDisplayNumber(p.moon_crystals)} crystals · 🎨 ${formatPetDisplayNumber(p.style_tokens)} style\n\n` +
-    `<b>Earn now</b>\n📜 ${complete} bounties ready to claim\n⛏️ ${state.expedition_attempts_left}/3 expedition attempts left\n💼 Jobs, Activities, Moon Runs, events, Arena and bosses remain active\n\n` +
+    `<b>Earn now</b>\n📜 ${complete} bounties ready to claim\n⛏️ ${state.expedition_attempts_left}/3 expedition attempts left\n💼 Jobs, Activities, Moon Runs, events and bosses remain active\n\n` +
     `<b>Spend and upgrade</b>\n🌙 ${state.market_offers.filter((offer) => !offer.purchased).length} rotating offers in stock\n🛒 Permanent equipment unlocks in Shop\n🧬 Materials, gear and XP feed evolution requirements\n\n` +
     `<b>Safeguards</b>\nBounties can only claim recorded actions. Expedition attempts and market stock reset at 00:00 UTC. Repeated buttons cannot pay twice.`,
     { reply_markup: buildPetEconomyMenuReplyMarkup() }, 'economy', { db, telegram_id: telegramId, pet: p });

@@ -374,7 +374,6 @@
     if (/cosmetic/.test(key)) return 'style-lab';
     if (/gear|upgrade/.test(key)) return 'equipment';
     if (/shop|buy/.test(key)) return 'shop';
-    if (/prestige/.test(key)) return 'prestige';
     return 'care';
   }
 
@@ -429,12 +428,15 @@
   }
 
   function guideMarkup() {
+    var combatGuideCopy = hasCombatUnlocked()
+      ? 'Arena and Kaiju are available for completed Season players with a hatched active Moonpet.'
+      : 'Arena and Kaiju remain locked future panels with stale-state cleanup only.';
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
       '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
       '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
-      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. Arena reveals attack odds, counters and solo CRT intent; Kaiju reveals the scoring category before card lock. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
-      '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards, prestige and hidden rare-morph signals.</div>' +
+      '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards and hidden rare-morph signals.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
@@ -517,6 +519,148 @@
     ].map(function (item) { return '<div class="hud-chip"><strong>' + item[0] + '</strong> ' + escapeHtml(item[1]) + '</div>'; }).join('');
   }
 
+  function activeSeasonSlot() {
+    var slots = state && state.season_slots && Array.isArray(state.season_slots.slots) ? state.season_slots.slots : [];
+    return slots.find(function (slot) { return slot.active; }) || {};
+  }
+
+  function activePetProgression() {
+    var slot = activeSeasonSlot();
+    return slot.pet && slot.pet.progression || {};
+  }
+
+  // TEST-EXPORT: capabilityCombatHelper:start
+  function combatCapability(source) {
+    var fallback = {
+      state: 'LOCKED',
+      unlocked: false,
+      reason: 'capability_unavailable',
+      requirements: {
+        completed_season_pet: false,
+        active_pet_exists: false,
+        active_pet_lifecycle_known: false,
+        active_pet_hatched: false,
+      },
+    };
+    var version = Number(source && (source.capabilities_version || source.capabilities && source.capabilities.capabilities_version) || 0);
+    if (version !== 1) return fallback;
+    var combat = source && source.capabilities && source.capabilities.combat;
+    var requirements = combat && combat.requirements;
+    if (!combat || !requirements || typeof requirements !== 'object') return fallback;
+    var completeRequirements = [
+      'completed_season_pet',
+      'active_pet_exists',
+      'active_pet_lifecycle_known',
+      'active_pet_hatched',
+    ].every(function (key) { return typeof requirements[key] === 'boolean'; });
+    if (!completeRequirements) return fallback;
+    var stateLabel = String(combat.state || '').toUpperCase();
+    var requirementReady = requirements.completed_season_pet === true
+      && requirements.active_pet_exists === true
+      && requirements.active_pet_lifecycle_known === true
+      && requirements.active_pet_hatched === true;
+    if (typeof combat.active !== 'boolean') return fallback;
+    if (stateLabel !== 'AVAILABLE' || combat.unlocked !== true || combat.active !== true || !requirementReady) {
+      return {
+        state: 'LOCKED',
+        unlocked: false,
+        active: false,
+        reason: combat.reason || 'capability_unavailable',
+        requirements: requirements,
+      };
+    }
+    return {
+      state: 'AVAILABLE',
+      unlocked: true,
+      active: combat.active === true,
+      reason: combat.reason || 'combat_unlocked',
+      requirements: requirements,
+    };
+  }
+
+  function hasCombatUnlocked() {
+    var combat = combatCapability(state);
+    return combat.state === 'AVAILABLE' && combat.unlocked === true;
+  }
+
+  function combatLockCopy() {
+    var reason = combatCapability(state).reason;
+    if (reason === 'moon_egg_must_hatch') {
+      return {
+        title: 'COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES.',
+        detail: 'Requires a completed Season pet and a hatched active Moonpet. This is future expansion content and is not available during early Season 1.',
+        entryDetail: 'REQUIRES HATCHED ACTIVE MOONPET',
+      };
+    }
+    if (reason === 'pet_not_adopted') {
+      return {
+        title: 'COMBAT LOCKED UNTIL YOU ADOPT A MOONPET.',
+        detail: 'Requires a completed Season pet and an active adult Moonpet. This is future expansion content and is not available during early Season 1.',
+        entryDetail: 'REQUIRES ACTIVE MOONPET',
+      };
+    }
+    if (reason === 'moonpet_lifecycle_required') {
+      return {
+        title: 'COMBAT LOCKED UNTIL YOUR MOONPET STATE SYNCS.',
+        detail: 'Requires synced lifecycle authority before future combat can unlock.',
+        entryDetail: 'REQUIRES SYNCED MOONPET',
+      };
+    }
+    if (reason === 'capability_unavailable') {
+      return {
+        title: 'COMBAT LOCKED UNTIL CAPABILITY STATE SYNCS.',
+        detail: 'Requires worker capability authority before future combat can unlock.',
+        entryDetail: 'REQUIRES CAPABILITY SYNC',
+      };
+    }
+    return {
+      title: 'LOCKED UNTIL YOU COMPLETE A SEASON PET.',
+      detail: 'Requires a completed adult Moonpet. This is future expansion content and is not available during early Season 1.',
+      entryDetail: 'REQUIRES COMPLETED SEASON PET',
+    };
+  }
+  // TEST-EXPORT: capabilityCombatHelper:end
+
+  // TEST-EXPORT: dailyJourneyMarkup:start
+  function dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth) {
+    dailyAuthority = dailyAuthority || {};
+    guidance = guidance || {};
+    growth = growth || {};
+    var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
+    var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
+    var dailyAuthorityReady = Number.isFinite(dailyRequired) && dailyRequired > 0;
+    var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
+    var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY AWARDED'
+      : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
+        : dailyRequired > 0 && dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
+    return dailyAuthorityReady
+      ? '<div class="line complete">DAILY JOURNEY // ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' OBJECTIVES</div>' +
+        '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
+        meter('GROWTH MARK', dailyPercent) +
+        '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
+        '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>'
+      : '<div class="line locked">DAILY JOURNEY // SYNCING</div><div class="line muted">Daily Journey authority is syncing. Progress display will refresh when server authority is available.</div>';
+  }
+  // TEST-EXPORT: dailyJourneyMarkup:end
+
+  function activePetSummary() {
+    if (!state || !state.pet) return '';
+    var pet = state.pet;
+    var summary = state.season_slots || {};
+    var slot = activeSeasonSlot();
+    var progression = activePetProgression();
+    var lifecycle = progression.lifecycle || {};
+    var growth = progression.growth_marks || {};
+    var crests = progression.weekly_crests || {};
+    var seasonKey = slot.season_key || summary.season && summary.season.key || 'CURRENT';
+    var status = progression.season_complete ? 'COMPLETED ADULT PET'
+      : lifecycle.evolution_ready ? 'ELIGIBLE TO EVOLVE' : 'KEEP DAILY AND WEEKLY ROUTINES MOVING';
+    return panel('ACTIVE PET // SLOT ' + number(slot.slot_number || 1),
+      '<div class="season-identity"><strong>' + escapeHtml(pet.pet_name || 'Moonpet') + '</strong><span>' + escapeHtml(seasonKey) + '</span></div>' +
+      '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(words(pet.stage || lifecycle.phase || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div><div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div></div>' +
+      '<div class="line complete">' + status + '</div><div class="line muted">Progress is per pet. Switching slots changes which Moonpet earns lifecycle, Daily Journey and Weekly Journey progress.</div>', 'active-pet');
+  }
+
   function renderHome() {
     if (!state.adopted) {
       return panel('DORMANT MOON EGG', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
@@ -532,12 +676,13 @@
     }
     var next = state.next || {};
     var nextKey = String(next.key || '') + ' ' + String(next.callback_data || '') + ' ' + String(next.title || '');
-    var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait|prestige/i.test(nextKey) ? 'profile' : 'home');
+    var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait/i.test(nextKey) ? 'profile' : 'home');
     var focus = recommendedFocus(next);
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
     }).join('');
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(pet.pet_name || 'MOONPET') + ' // ' + escapeHtml(words(pet.stage)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
+      activePetSummary() +
       panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
@@ -689,7 +834,19 @@
     var achievementRows = achievements.map(function (entry) {
       return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
-    return panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
+    var progression = activePetProgression();
+    var growth = progression.growth_marks || {};
+    var dailyAuthority = state.daily_journey || {};
+    var dailyJourney = dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth);
+    var weeklyCapability = state.capabilities && state.capabilities.weekly_journey || {};
+    var weeklyState = String(weeklyCapability.state || 'COMING_SOON').toUpperCase();
+    var weeklyTitle = weeklyState === 'AVAILABLE' ? 'WEEKLY JOURNEY // LIVE' : 'WEEKLY JOURNEY // PLANNED EXPANSION';
+    var weeklyJourney = '<div class="line ' + (weeklyState === 'AVAILABLE' ? 'complete' : 'locked') + '">' + weeklyTitle + '</div>' +
+      '<div class="line muted">' + escapeHtml(weeklyCapability.message || 'Gameplay integration not active yet.') + '</div>';
+    return activePetSummary() +
+      panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
+      panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
+      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
@@ -728,49 +885,72 @@
     }
     var arena = state.arena;
     var arenaQueue = state.arena_queue;
+    var arenaResult = state.arena_result;
     var arenaBody;
-    if (arena) {
-      var specialCost = number(arena.special_cost || 3);
-      var arenaHeader = '<div class="combat-intel"><div class="line complete">' + escapeHtml(arena.mode === 'multiplayer' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // ' + escapeHtml(arena.opponent && arena.opponent.pet_name || 'RIVAL') + '</div><div class="line">ROUND ' + number(arena.current_round) + '/' + number(arena.max_rounds) + ' // HP ' + number(arena.player_hp) + ' : ' + number(arena.opponent_hp) + '</div><div class="line signal">SPECIAL ' + number(arena.player_special) + '/' + specialCost + (number(arena.player_special) >= specialCost ? ' // READY' : ' // BUILD CHARGE') + '</div></div>';
-      var intent = arena.opponent_intent
-        ? '<div class="combat-intent"><strong>CRT TELEGRAPH // ' + escapeHtml(arena.opponent_intent.label) + '</strong><span>' + escapeHtml(arena.opponent_intent.detail) + '</span></div>'
-        : arena.mode === 'multiplayer' && arena.status === 'active'
-          ? '<div class="combat-intent is-hidden"><strong>RIVAL INTENT // HIDDEN</strong><span>PvP choices stay sealed until both players lock.</span></div>'
-          : '';
-      var recap = arena.last_round
-        ? '<div class="combat-recap"><strong>ROUND ' + number(arena.last_round.round) + ' RECAP</strong><span>YOU // ' + escapeHtml(arena.last_round.player_log || words(arena.last_round.player_move)) + '</span><span>RIVAL // ' + escapeHtml(arena.last_round.opponent_log || words(arena.last_round.opponent_move)) + '</span></div>'
-        : '';
-      var arenaMoves = (arena.moves || []).map(function (move) {
-        var stats = move.base_damage ? number(move.accuracy) + '% BASE ACC // ' + number(move.base_damage) + ' BASE DMG' : escapeHtml(words(move.role));
-        var counter = move.counter_label ? ' // COUNTER ' + escapeHtml(move.counter_label) : '';
-        var lock = move.available ? '' : ' // NEED ' + number(move.requirement) + ' CHARGE';
-        return button(move.label, 'arena_move', { battle_id: arena.battle_id, expected_round: arena.current_round, move: move.key }, {
-          disabled: !move.available,
-          detail: stats + counter + lock + ' // ' + move.detail,
-        });
-      }).join('');
-      arenaBody = arenaHeader + intent + recap + (arena.status === 'readying'
-        ? '<div class="line muted">' + (arena.ready ? 'YOU ARE READY. WAITING FOR RIVAL.' : 'MATCH FOUND. LOCK IN WHEN READY.') + '</div><div class="button-grid">' + button('READY', 'arena_ready', { battle_id: arena.battle_id }, { disabled: arena.ready }) + button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>'
-        : '<div class="button-grid arena-decisions">' + arenaMoves + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
-    } else if (arenaQueue) {
-      arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
-        button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank }) + button('LEAVE QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
+    if (!hasCombatUnlocked()) {
+      var arenaLock = combatLockCopy();
+      var arenaCleanup = arena
+        ? button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true })
+        : arenaQueue ? button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) : '';
+      arenaBody = '<div class="line locked">' + escapeHtml(arenaLock.title) + '</div><div class="line muted">' + escapeHtml(arenaLock.detail) + '</div>' +
+        (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
+        '<div class="button-grid">' + arenaCleanup + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, { disabled: true, detail: arenaLock.entryDetail }) + button('ENTER SOLO ARENA', 'arena_start', {}, { disabled: true, detail: arenaLock.entryDetail }) + '</div>';
     } else {
-      var arenaResult = state.arena_result;
-      arenaBody = (arenaResult ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(arenaResult.outcome || arenaResult.result)) + ' // ' + escapeHtml(arenaResult.opponent && arenaResult.opponent.pet_name || 'RIVAL') + '</div>' : '') + '<div class="line muted">RANKED PLAYER MATCHMAKING OR SOLO PRACTICE.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake') + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
+      if (arena) {
+        var specialCost = number(arena.special_cost || 3);
+        var arenaHeader = '<div class="combat-intel"><div class="line complete">' + escapeHtml(arena.mode === 'multiplayer' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // ' + escapeHtml(arena.opponent && arena.opponent.pet_name || 'RIVAL') + '</div><div class="line">ROUND ' + number(arena.current_round) + '/' + number(arena.max_rounds) + ' // HP ' + number(arena.player_hp) + ' : ' + number(arena.opponent_hp) + '</div><div class="line signal">SPECIAL ' + number(arena.player_special) + '/' + specialCost + (number(arena.player_special) >= specialCost ? ' // READY' : ' // BUILD CHARGE') + '</div></div>';
+        var intent = arena.opponent_intent
+          ? '<div class="combat-intent"><strong>CRT TELEGRAPH // ' + escapeHtml(arena.opponent_intent.label) + '</strong><span>' + escapeHtml(arena.opponent_intent.detail) + '</span></div>'
+          : arena.mode === 'multiplayer' && arena.status === 'active'
+            ? '<div class="combat-intent is-hidden"><strong>RIVAL INTENT // HIDDEN</strong><span>PvP choices stay sealed until both players lock.</span></div>'
+            : '';
+        var recap = arena.last_round
+          ? '<div class="combat-recap"><strong>ROUND ' + number(arena.last_round.round) + ' RECAP</strong><span>YOU // ' + escapeHtml(arena.last_round.player_log || words(arena.last_round.player_move)) + '</span><span>RIVAL // ' + escapeHtml(arena.last_round.opponent_log || words(arena.last_round.opponent_move)) + '</span></div>'
+          : '';
+        var arenaMoves = (arena.moves || []).map(function (move) {
+          var stats = move.base_damage ? number(move.accuracy) + '% BASE ACC // ' + number(move.base_damage) + ' BASE DMG' : escapeHtml(words(move.role));
+          var counter = move.counter_label ? ' // COUNTER ' + escapeHtml(move.counter_label) : '';
+          var lock = move.available ? '' : ' // NEED ' + number(move.requirement) + ' CHARGE';
+          return button(move.label, 'arena_move', { battle_id: arena.battle_id, expected_round: arena.current_round, move: move.key }, {
+            disabled: !move.available,
+            detail: stats + counter + lock + ' // ' + move.detail,
+          });
+        }).join('');
+        arenaBody = arenaHeader + intent + recap + (arena.status === 'readying'
+          ? '<div class="line muted">' + (arena.ready ? 'YOU ARE READY. WAITING FOR RIVAL.' : 'MATCH FOUND. LOCK IN WHEN READY.') + '</div><div class="button-grid">' + button('READY', 'arena_ready', { battle_id: arena.battle_id }, { disabled: arena.ready }) + button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>'
+          : '<div class="button-grid arena-decisions">' + arenaMoves + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
+      } else if (arenaQueue) {
+        arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
+          button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank }) + button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
+      } else {
+        arenaBody = (arenaResult ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(arenaResult.outcome || arenaResult.result)) + ' // ' + escapeHtml(arenaResult.opponent && arenaResult.opponent.pet_name || 'RIVAL') + '</div>' : '') + '<div class="line muted">RANKED PLAYER MATCHMAKING OR SOLO PRACTICE.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake') + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
+      }
     }
     var kaiju = state.kaiju || {};
     var kaijuMatch = kaiju.match;
     var kaijuQueue = kaiju.queue;
-    var kaijuBody = kaijuMatch
-      ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid kaiju-decisions">' + (kaiju.cards || []).map(function (card) {
-        var leaders = (card.strongest || []).map(function (entry) { return entry.label + ' ' + entry.value; }).join(' // ');
-        var active = card.active_stat ? card.active_stat + ' ' + number(card.active_value) : 'CATEGORY PENDING';
-        return button(card.name + (card.active_value != null ? ' // ' + number(card.active_value) : ''), 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: card.id }, { detail: 'ACTIVE ' + active + ' // BEST ' + leaders });
-      }).join('') + '</div>')
-      : kaijuQueue
-        ? '<div class="line">KAIJU MATCHMAKING // POSITION ' + number(kaijuQueue.position) + '</div><div class="button-grid one">' + button('LEAVE KAIJU QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) + '</div>'
-        : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
+    var kaijuBody;
+    if (!hasCombatUnlocked()) {
+      var kaijuLock = combatLockCopy();
+      var kaijuSoloCleanup = kaijuMatch && kaijuMatch.mode !== 'group' && !kaijuMatch.player2_telegram_id;
+      var kaijuCleanup = kaijuSoloCleanup
+        ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
+        : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
+      kaijuBody = '<div class="line locked">' + escapeHtml(kaijuLock.title) + '</div><div class="line muted">' + escapeHtml(kaijuLock.detail) + '</div>' +
+        (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
+        (kaijuMatch && !kaijuSoloCleanup ? '<div class="line muted">MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY / FORFEIT RESOLUTION.</div>' : '') +
+        '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, detail: kaijuLock.entryDetail }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, detail: kaijuLock.entryDetail }) + '</div>';
+    } else {
+      kaijuBody = kaijuMatch
+        ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid kaiju-decisions">' + (kaiju.cards || []).map(function (card) {
+          var leaders = (card.strongest || []).map(function (entry) { return entry.label + ' ' + entry.value; }).join(' // ');
+          var active = card.active_stat ? card.active_stat + ' ' + number(card.active_value) : 'CATEGORY PENDING';
+          return button(card.name + (card.active_value != null ? ' // ' + number(card.active_value) : ''), 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: card.id }, { detail: 'ACTIVE ' + active + ' // BEST ' + leaders });
+        }).join('') + '</div>')
+        : kaijuQueue
+          ? '<div class="line">KAIJU MATCHMAKING // POSITION ' + number(kaijuQueue.position) + '</div><div class="button-grid one">' + button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) + '</div>'
+          : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
+    }
     var regions = (state.regions || []).map(function (region) {
       var mission = region.mission || {};
       var opponent = mission.opponent || {};
@@ -929,7 +1109,6 @@
     var notifications = state.notifications || {};
     var live = state.live_systems || {};
     var faction = live.faction || {};
-    var prestige = live.prestige || {};
     var notificationPanel = '<div class="line ' + (notifications.enabled ? 'complete' : 'muted') + '">PROGRESSION ALERTS: ' + (notifications.enabled ? 'ONLINE' : 'OFFLINE') + '</div><div class="button-grid">' +
       button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled }) +
       button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, danger: true }) + '</div>';
@@ -944,28 +1123,69 @@
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
+    var futureSystemTitles = {
+      breeding: 'Breeding',
+      traits: 'Traits',
+      sanctuary: 'Sanctuary',
+      lineage: 'Lineage',
+      fusion: 'Fusion',
+      arena: 'Arena',
+      kaiju: 'Kaiju',
+      prestige: 'Prestige',
+      weekly_journey: 'Weekly Journey',
+    };
+    var capabilitySystems = state.capabilities_version === 1 && state.capabilities && state.capabilities.systems && typeof state.capabilities.systems === 'object'
+      ? state.capabilities.systems
+      : {};
+    var futureSystems = Object.keys(futureSystemTitles).map(function (key) {
+      var system = capabilitySystems[key] || {};
+      var status = String(system.state || 'LOCKED').toUpperCase();
+      var message = system.message || (status === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Requires completed Season pet. Locked until you complete a Season pet.');
+      return {
+        key: key,
+        title: futureSystemTitles[key],
+        status: ['LOCKED', 'COMING_SOON', 'AVAILABLE'].includes(status) ? status : 'LOCKED',
+        detail: message,
+      };
+    });
+    var futureSystemRows = futureSystems.map(function (system) {
+      var status = String(system.status || 'LOCKED').toUpperCase();
+      var online = status === 'AVAILABLE';
+      var label = status === 'COMING_SOON' ? 'PLANNED EXPANSION' : status;
+      return '<div class="line ' + (online ? 'complete' : 'locked') + '">[' + escapeHtml(label) + '] ' + escapeHtml(system.title || system.key || 'Future System') + '</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
+    }).join('');
+    function futureSystemByKey(key, fallbackStatus) {
+      return futureSystems.find(function (system) { return system.key === key; }) || {
+        key: key,
+        status: fallbackStatus || 'LOCKED',
+        detail: fallbackStatus === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Requires completed Season pet. Locked until you complete a Season pet.',
+      };
+    }
+    function futureSystemPanelCopy(system) {
+      var status = String(system.status || 'LOCKED').toUpperCase();
+      if (status === 'COMING_SOON') return '<div class="line locked">FUTURE EXPANSION CONTENT.</div><div class="line muted">NOT AVAILABLE YET.</div>';
+      if (status === 'AVAILABLE') return '<div class="line complete">AVAILABLE.</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
+      return '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">' + escapeHtml(system.detail || 'Requires completed Season pet. Locked until you complete a Season pet.') + '</div>';
+    }
     var featureRows = (guidance.features || []).map(function (feature) {
-      return '<div class="line ' + (feature.available ? 'complete' : 'locked') + '">' + (feature.available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(feature.detail || '') + '</div>';
+      var available = feature.available === true;
+      var detail = feature.detail || '';
+      return '<div class="line ' + (available ? 'complete' : 'locked') + '">' + (available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(detail) + '</div>';
     }).join('');
-    var sanctuaryPets = state.sanctuary || [];
-    var sanctuaryRows = sanctuaryPets.map(function (pet) {
-      var identityName = pet.name || pet.pet_id;
-      return '<div class="line complete">◆ ' + escapeHtml(identityName) + ' // ' + escapeHtml(words(pet.species)) + '</div>' +
-        '<div class="line">FINAL EVOLUTION // ' + escapeHtml(words(pet.legendary_evolution_id || pet.stage)) + '</div>' +
-        '<div class="line muted">COMPLETED ' + escapeHtml(words(pet.completed_season)) + ' // ' + escapeHtml(String(pet.completed_at || '').slice(0, 10)) + '</div>';
-    }).join('');
-    var sanctuaryPanel = sanctuaryRows || '<div class="line muted">No Sanctuary pets yet.</div><div class="line">Complete a Legendary Moonpet season to unlock Sanctuary.</div>';
+    var sanctuarySystem = futureSystemByKey('sanctuary');
+    var sanctuaryPanel = futureSystemPanelCopy(sanctuarySystem);
     var lifecycle = state.lifecycle || {};
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
     var rarePanel = '<div class="line ' + (rare.ready ? 'complete' : 'muted') + '">HIDDEN SIGNAL // ' + escapeHtml(words(rare.signal || 'dormant')) + ' // ' + number(rare.progress) + '%</div>' + (rare.name ? '<div class="line complete">REVEALED // ' + escapeHtml(rare.name) + '</div>' : '<div class="line muted">The route remains hidden until your evolution, traits and memories align.</div>') + (rare.ready ? '<div class="button-grid one">' + button('ANSWER RARE SIGNAL', 'rare_morph') + '</div>' : '');
-    return panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">LEARNED PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
+    return activePetSummary() +
+      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">LEARNED PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Trait expansion remains locked until completed Season pets.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('LEARNED APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('PRESTIGE', '<div class="line">RANK ' + number(prestige.count) + ' // MASTERED GEAR ' + number(prestige.mastered_items) + '/3 // DISTRICTS ' + number(prestige.completed_regions) + '/4</div><div class="line muted">REQUIRES LEVEL 100 + 5,000 GOLD + 50 GEMS</div><div class="button-grid one">' + button('ASCEND PRESTIGE', 'prestige', {}, { disabled: !prestige.ready }) + '</div>', 'prestige') +
-      panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
+      panel('PRESTIGE', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
+      panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('LOCKED FUTURE SYSTEMS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
@@ -1043,6 +1263,12 @@
     if (result.damage) parts.push('DAMAGE ' + number(result.damage));
     if (result.pet_xp_awarded) parts.push('+' + number(result.pet_xp_awarded) + ' PET XP');
     if (gains.length) parts.push(gains.join(' // '));
+    if (result.daily_journey) {
+      parts.push(result.daily_journey.accepted
+        ? 'GROWTH MARK AWARDED'
+        : 'GROWTH MARK BLOCKED // ' + words(result.daily_journey.reason || 'not qualified'));
+    }
+    if (result.duplicate) parts.push('DUPLICATE BLOCKED BY AUTHORITY');
     if (result.reaction) parts.push('MOONPET: ' + String(result.reaction));
     return parts.join(' // ');
   }
@@ -1676,6 +1902,11 @@
     return COMBAT_PRESENTATION_FRAME;
   }
 
+  function snapshotHasCombatUnlocked(snapshot) {
+    var combat = combatCapability(snapshot);
+    return combat.state === 'AVAILABLE' && combat.unlocked === true;
+  }
+
   function updateCombatPresentation(snapshot) {
     if (snapshot === combatSnapshot && activeScreen === combatScreen) return COMBAT_PRESENTATION_FRAME;
     combatSnapshot = snapshot;
@@ -1683,7 +1914,7 @@
     clearCombatPresentation();
     if (activeScreen !== 'explore' || !snapshot || !snapshot.adopted) return COMBAT_PRESENTATION_FRAME;
     var arena = snapshot.arena;
-    if (arena && arena.status !== 'completed' && !arena.outcome) {
+    if (arena && snapshotHasCombatUnlocked(snapshot) && arena.status !== 'completed' && !arena.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'arena';
       COMBAT_PRESENTATION_FRAME.title = arena.mode === 'multiplayer' ? 'PLAYER ARENA' : 'CRT ARENA';
@@ -1703,7 +1934,7 @@
       return COMBAT_PRESENTATION_FRAME;
     }
     var kaiju = snapshot.kaiju && snapshot.kaiju.match;
-    if (kaiju && kaiju.status !== 'completed' && !kaiju.outcome) {
+    if (kaiju && snapshotHasCombatUnlocked(snapshot) && kaiju.status !== 'completed' && !kaiju.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'kaiju';
       COMBAT_PRESENTATION_FRAME.title = kaiju.mode === 'group' ? 'PLAYER KAIJU DUEL' : 'CRT KAIJU DUEL';

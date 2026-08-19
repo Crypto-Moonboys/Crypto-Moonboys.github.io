@@ -61,6 +61,8 @@ assert.match(weeklyJourneySource, /exposed only\s+\/\/ through test hooks/,
   'weekly journey source must document the foundation-only production exposure decision');
 assert.doesNotMatch(workerSource, /body\.action === 'weekly_journey'|processWeeklyJourney|handleWeeklyJourney/i,
   'Weekly Journey PR #1231 must remain foundation-only with no live player-facing route');
+assert.equal((workerSource.match(/recordWeeklyJourneyObjectiveEvidence\(/g) || []).length, 0,
+  'Weekly Journey evidence must stay out of production worker call paths until the Mini App display is unlocked');
 assert.doesNotMatch(weeklyJourneyMigration, /\b(?:ALTER\s+TABLE|DROP\s+TABLE|DELETE\s+FROM|UPDATE\s+telegram_)\b/i,
   'migration 068 must be additive only');
 for (const indexName of [
