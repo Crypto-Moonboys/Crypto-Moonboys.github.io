@@ -237,6 +237,16 @@ assert.equal(combatEggCapabilities.weekly_journey.active, false, 'Weekly Journey
 assert.equal(combatEggCapabilities.systems.weekly_journey.active, false, 'central systems map must keep Weekly Journey inactive while coming soon');
 assert.equal(combatEggCapabilities.weekly_journey.message, 'Gameplay integration not active yet.',
   'Weekly Journey capability must explain that authority exists but gameplay integration is inactive');
+for (const key of ['weekly_journey', 'breeding', 'sanctuary', 'fusion', 'prestige']) {
+  const system = combatEggCapabilities.systems[key];
+  assert.equal(system.state, 'COMING_SOON', `${key} must be represented as coming soon when unavailable after completion`);
+  assert.equal(system.active, false, `${key} must remain inactive while unavailable`);
+  assert.equal(system.unlocked, false, `${key} must remain locked while unavailable`);
+  for (const field of ['progress', 'completion', 'completed', 'rewards', 'reward', 'readiness', 'eligible', 'weekly_crest_awarded', 'growth_mark_awarded']) {
+    assert.equal(Object.prototype.hasOwnProperty.call(system, field), false,
+      `${key} capability must not expose live-looking ${field} data while inactive`);
+  }
+}
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-egg:kaiju_matchmake',
@@ -339,6 +349,36 @@ assert.equal(availableFutureSystems.find((system) => system.key === 'kaiju')?.st
   'Kaiju future-system authority must reflect shared combat unlock');
 assert.equal(availableFutureSystems.find((system) => system.key === 'prestige')?.status, 'COMING_SOON',
   'Prestige must remain coming soon even when combat is available');
+
+const transitionDb = new D1();
+installSeasonCompletionMarkerTable(transitionDb);
+seedPlayer(transitionDb, 'combat-transition', 'Transition Cat', 1500);
+await setActivePetLifecyclePhase(transitionDb, 'combat-transition', 'adult');
+const transitionBeforeEligibility = await getPetMiniAppCombatEligibility(transitionDb, 'combat-transition');
+const transitionBeforeCapabilities = buildPetMiniAppCapabilities(transitionBeforeEligibility);
+assert.equal(transitionBeforeCapabilities.systems.arena.state, 'LOCKED', 'Arena must lock before completed-season authority exists');
+assert.equal(transitionBeforeCapabilities.systems.kaiju.state, 'LOCKED', 'Kaiju must lock before completed-season authority exists');
+assert.equal(getPetGuidanceFeatures(100, transitionBeforeEligibility).find((feature) => feature.key === 'pet_arena')?.available, false,
+  'guidance must not recommend Arena before the shared capability unlocks');
+const transitionBeforeAction = await processPetMiniAppAction(transitionDb, 'combat-transition', { id: 'combat-transition' }, {
+  action: 'arena_matchmake',
+  request_id: 'transition:before:arena_matchmake',
+}, '123456:test-token');
+assert.equal(transitionBeforeAction.accepted, false, 'API must reject combat before completed-season authority exists');
+assert.equal(transitionBeforeAction.reason, 'completed_season_pet_required');
+markSeasonComplete(transitionDb, 'combat-transition');
+const transitionAfterEligibility = await getPetMiniAppCombatEligibility(transitionDb, 'combat-transition');
+const transitionAfterCapabilities = buildPetMiniAppCapabilities(transitionAfterEligibility);
+assert.equal(transitionAfterCapabilities.systems.arena.state, 'AVAILABLE', 'Arena capability must update after completed-season authority exists');
+assert.equal(transitionAfterCapabilities.systems.kaiju.state, 'AVAILABLE', 'Kaiju capability must update after completed-season authority exists');
+assert.equal(getPetGuidanceFeatures(100, transitionAfterEligibility).find((feature) => feature.key === 'pet_arena')?.available, true,
+  'guidance may recommend Arena only after the shared capability unlocks');
+const transitionAfterAction = await processPetMiniAppAction(transitionDb, 'combat-transition', { id: 'combat-transition' }, {
+  action: 'arena_matchmake',
+  request_id: 'transition:after:arena_matchmake',
+}, '123456:test-token');
+assert.notEqual(transitionAfterAction.reason, 'completed_season_pet_required',
+  'API must follow the same completed-season capability transition as the UI and guidance surfaces');
 
 const priorSeasonCombatDb = new D1();
 installSeasonCompletionMarkerTable(priorSeasonCombatDb);
