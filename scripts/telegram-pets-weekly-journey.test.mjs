@@ -12,6 +12,8 @@ import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const {
   processPetWeeklyBoss,
+  processPetDailyChest,
+  processPetMiniAppAction,
   getPetSeasonInfo,
 } = __petMediaTestHooks;
 
@@ -156,6 +158,17 @@ function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'p
   db.database.prepare(`INSERT INTO telegram_pet_instances
     (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at)
     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey, slotNumber);
+}
+
+function seedTerminalDailyMoonRun(db, { telegramId, petId, seasonKey, day, runId, status = 'extracted' }) {
+  db.database.prepare(`INSERT INTO telegram_pet_runs
+    (id, pet_id, telegram_id, run_id, season_key, status, current_room, max_room, score, depth, rooms_completed, ended_at, completed_at)
+    VALUES (?, ?, ?, ?, ?, ?, 1, 5, 120, 1, 1, ?, ?)`)
+    .run(`run:${runId}`, petId, telegramId, runId, seasonKey, status, `${day}T12:00:00.000Z`, `${day}T12:00:00.000Z`);
+  db.database.prepare(`INSERT INTO telegram_pet_daily_runs
+    (telegram_id, pet_id, utc_day, seed, run_id, status, score, depth, completed_at)
+    VALUES (?, ?, ?, 'daily-test-seed', ?, ?, 120, 1, ?)`)
+    .run(telegramId, petId, day, runId, status, `${day}T12:00:00.000Z`);
 }
 
 function insertSourceEvent(db, {
@@ -551,6 +564,69 @@ assert.equal(sourceVariantDb.database.prepare(`SELECT COUNT(*) AS count FROM tel
   WHERE pet_id=? AND status='accepted'`).get(sourceVariantPet).count, 12,
   'Test 5f: all live source variants persist one accepted weekly objective evidence row');
 
+const dailyChestDuplicateDb = createDb();
+const dailyChestTelegramId = 'weekly-daily-chest-duplicate';
+const dailyChestSeasonKey = getPetSeasonInfo(new Date()).key;
+const dailyChestPet = seedPlayer(dailyChestDuplicateDb, dailyChestTelegramId, dailyChestSeasonKey);
+const dailyChestDay = new Date().toISOString().slice(0, 10);
+const dailyChestEventKey = 'weekly-daily-chest-source';
+insertSourceEvent(dailyChestDuplicateDb, {
+  telegramId: dailyChestTelegramId,
+  petId: dailyChestPet,
+  seasonKey: dailyChestSeasonKey,
+  day: dailyChestDay,
+  eventKey: dailyChestEventKey,
+  eventType: 'daily_chest',
+});
+const dailyChestReplay = await processPetDailyChest(dailyChestDuplicateDb, dailyChestTelegramId, { event_key: dailyChestEventKey });
+assert.equal(dailyChestReplay.duplicate, true, 'Test 5g: accepted Daily Chest duplicate path is replay-safe');
+assert.equal(dailyChestDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_check_in' AND status='accepted'`).get(dailyChestTelegramId, dailyChestPet).count, 1,
+  'Test 5g: Daily Chest duplicate retries missing Weekly Journey evidence');
+await processPetDailyChest(dailyChestDuplicateDb, dailyChestTelegramId, { event_key: dailyChestEventKey });
+assert.equal(dailyChestDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_check_in' AND status='accepted'`).get(dailyChestTelegramId, dailyChestPet).count, 1,
+  'Test 5g: repeated Daily Chest duplicate remains idempotent');
+
+const dailyMoonRunDb = createDb();
+const dailyMoonRunTelegramId = 'weekly-daily-moon-run';
+const dailyMoonRunSeasonKey = getPetSeasonInfo(new Date()).key;
+const dailyMoonRunPet = seedPlayer(dailyMoonRunDb, dailyMoonRunTelegramId, dailyMoonRunSeasonKey);
+const dailyMoonRunDay = new Date().toISOString().slice(0, 10);
+const dailyMoonRunId = 'daily-moon-run-weekly-terminal';
+seedTerminalDailyMoonRun(dailyMoonRunDb, {
+  telegramId: dailyMoonRunTelegramId,
+  petId: dailyMoonRunPet,
+  seasonKey: dailyMoonRunSeasonKey,
+  day: dailyMoonRunDay,
+  runId: dailyMoonRunId,
+  status: 'extracted',
+});
+const dailyMoonRunReplay = await processPetMiniAppAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
+  action: 'run_extract',
+  run_id: dailyMoonRunId,
+  request_id: 'daily-moon-run-retry-one',
+}, '123456:test-token');
+assert.equal(dailyMoonRunReplay.duplicate, true, 'Test 5h: Daily Moon Run terminal replay uses server duplicate path');
+assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='daily_moon_run' AND status='accepted'`).get(dailyMoonRunTelegramId).count, 1,
+  'Test 5h: Daily Moon Run terminal replay materializes one accepted source event');
+assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).count, 1,
+  'Test 5h: Daily Moon Run terminal replay counts once toward weekly_run');
+await processPetMiniAppAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
+  action: 'run_extract',
+  run_id: dailyMoonRunId,
+  request_id: 'daily-moon-run-retry-two',
+}, '123456:test-token');
+assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).count, 1,
+  'Test 5h: Daily Moon Run repeated terminal replay remains idempotent');
+assert.equal(dailyMoonRunDb.database.prepare(`SELECT source_event_key FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).source_event_key,
+  `daily-moon-run:${dailyMoonRunTelegramId}:${dailyMoonRunId}:extracted`,
+  'Test 5h: Daily Moon Run weekly evidence uses the persisted terminal source event key, not retry request ids');
+
 const bossDuplicateDb = createDb();
 const bossDuplicateTelegramId = 'weekly-boss-duplicate';
 const bossDuplicateSeasonKey = getPetSeasonInfo(new Date()).key;
@@ -571,6 +647,8 @@ bossDuplicateDb.database.prepare(`INSERT INTO telegram_pet_events
   VALUES ('!wrong-boss-source', ?, ?, 'weekly_boss', 'weekly-boss-wrong-key', 0, 0, ?, ?, ?, 'accepted', 'weekly_boss_attempt', ?)`)
   .run(bossDuplicatePet, bossDuplicateTelegramId, bossDuplicateSeasonKey, bossOriginalEvent.day_key, bossOriginalEvent.week_key,
     JSON.stringify({ source: 'pet_weekly_boss', boss_id: 'wrong-weekly-boss', action: 'strike', damage: 1 }));
+bossDuplicateDb.database.prepare(`DELETE FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key='weekly-boss-original-key' AND event_type='weekly_boss'`).run(bossDuplicateTelegramId);
 bossDuplicateDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).run(bossDuplicateTelegramId, bossDuplicatePet);
 const bossDuplicate = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-retry-different-key');
@@ -579,12 +657,47 @@ assert.equal(bossDuplicate.duplicate, true, 'Test 5g: duplicate weekly boss retr
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-retry-different-key' AND status='accepted'`).get(bossDuplicateTelegramId).count, 0,
   'Test 5g: duplicate retry with a new request key does not persist that retry key as a source event');
+assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-original-key' AND status='accepted'`).get(bossDuplicateTelegramId).count, 1,
+  'Test 5g: duplicate retry backfills the original persisted weekly boss attempt source event');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt' AND status='accepted'`).get(bossDuplicateTelegramId, bossDuplicatePet).count, 1,
   'Test 5g: duplicate retry reuses the original persisted weekly_boss source event and keeps exactly one objective row');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT source_event_key FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).get(bossDuplicateTelegramId, bossDuplicatePet).source_event_key, 'weekly-boss-original-key',
   'Test 5g: duplicate retry does not count the incoming retry event key');
+
+const bossDefeatedBackfillDb = createDb();
+const bossDefeatedTelegramId = 'weekly-boss-defeated-backfill';
+const bossDefeatedSeasonKey = getPetSeasonInfo(new Date()).key;
+const bossDefeatedPet = seedPlayer(bossDefeatedBackfillDb, bossDefeatedTelegramId, bossDefeatedSeasonKey);
+bossDefeatedBackfillDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
+  WHERE telegram_id=?`).run(bossDefeatedTelegramId);
+const bossDefeatedFirst = await processPetWeeklyBoss(bossDefeatedBackfillDb, bossDefeatedTelegramId, 'strike', 'weekly-boss-defeated-original-key');
+assert.equal(bossDefeatedFirst.accepted, true, 'Test 5i: defeated-boss backfill fixture creates a first accepted attempt');
+bossDefeatedBackfillDb.database.prepare(`UPDATE telegram_pet_weekly_boss_progress
+  SET defeated_at='2026-08-20T12:00:00.000Z', reward_claimed_at='2026-08-20T12:00:00.000Z'
+  WHERE telegram_id=?`).run(bossDefeatedTelegramId);
+bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss'`).run(bossDefeatedTelegramId);
+bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).run(bossDefeatedTelegramId, bossDefeatedPet);
+const bossDefeatedReplay = await processPetWeeklyBoss(bossDefeatedBackfillDb, bossDefeatedTelegramId, 'strike', 'weekly-boss-defeated-retry-key');
+assert.equal(bossDefeatedReplay.reason, 'boss_already_defeated', 'Test 5i: defeated-boss duplicate path is exercised');
+assert.equal(bossDefeatedBackfillDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-defeated-original-key' AND status='accepted'`).get(bossDefeatedTelegramId).count, 1,
+  'Test 5i: defeated-boss duplicate path backfills one accepted weekly_boss source event');
+assert.equal(bossDefeatedBackfillDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt' AND status='accepted'`).get(bossDefeatedTelegramId, bossDefeatedPet).count, 1,
+  'Test 5i: defeated-boss duplicate path records weekly_boss_attempt once');
+await processPetWeeklyBoss(bossDefeatedBackfillDb, bossDefeatedTelegramId, 'strike', 'weekly-boss-defeated-retry-key-two');
+assert.equal(bossDefeatedBackfillDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-defeated-original-key' AND status='accepted'`).get(bossDefeatedTelegramId).count, 1,
+  'Test 5i: defeated-boss repeated replay does not duplicate the backfilled source event');
+assert.equal(bossDefeatedBackfillDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt' AND status='accepted'`).get(bossDefeatedTelegramId, bossDefeatedPet).count, 1,
+  'Test 5i: defeated-boss repeated replay keeps one weekly objective row');
 
 const wrongPetDb = createDb();
 const wrongPetA = seedPlayer(wrongPetDb, 'weekly-wrong-pet');
