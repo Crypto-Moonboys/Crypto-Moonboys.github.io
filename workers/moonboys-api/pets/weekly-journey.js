@@ -176,6 +176,7 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
     return {
       accepted: true,
       duplicate: true,
+      recovered: false,
       reason: 'weekly_journey_qualified',
       completed_objectives: completedObjectives,
       required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
@@ -230,6 +231,7 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
     return {
       accepted: false,
       duplicate: true,
+      recovered: false,
       reason: 'weekly_journey_crest_duplicate',
       completed_objectives: completedObjectives,
       required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
@@ -270,7 +272,7 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
   });
   return {
     accepted,
-    duplicate: Boolean(award.duplicate),
+    duplicate: recoveredMatchingCrest ? false : Boolean(award.duplicate),
     recovered: recoveredMatchingCrest,
     reason,
     completed_objectives: completedObjectives,

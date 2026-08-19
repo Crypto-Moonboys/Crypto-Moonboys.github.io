@@ -10,11 +10,14 @@ import {
 } from '../workers/moonboys-api/pets/weekly-journey.js';
 
 class Statement {
-  constructor(db, sql, args = []) { this.db = db; this.sql = sql; this.args = args; }
-  bind(...args) { return new Statement(this.db, this.sql, args); }
+  constructor(d1, sql, args = []) { this.d1 = d1; this.db = d1.database; this.sql = sql; this.args = args; }
+  bind(...args) { return new Statement(this.d1, this.sql, args); }
   async first() { return this.db.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: this.db.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (/INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_weekly_crests/i.test(this.sql)) {
+      this.d1.beforeWeeklyCrestInsert?.(this.args);
+    }
     const result = this.db.prepare(this.sql).run(...this.args);
     return { meta: { changes: Number(result.changes || 0) } };
   }
@@ -23,8 +26,9 @@ class Statement {
 class D1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
+    this.beforeWeeklyCrestInsert = null;
   }
-  prepare(sql) { return new Statement(this.database, sql); }
+  prepare(sql) { return new Statement(this, sql); }
 }
 
 const schema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
@@ -238,10 +242,61 @@ const duplicateTwo = await finalizeWeeklyJourneyCrest(duplicateDb, {
   telegram_id: 'weekly-duplicate', pet_id: duplicatePet, season_key: 'pet-s2026-001', qualification_week: 1,
 });
 assert.equal(duplicateOne.crest_id, duplicateTwo.crest_id, 'Test 5: duplicate retries return the same authoritative Crest');
+assert.equal(duplicateTwo.duplicate, true, 'Test 5: normal duplicate retry reports duplicate=true');
+assert.equal(duplicateTwo.recovered, false, 'Test 5: normal duplicate retry is not receipt recovery');
 assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?`).get(duplicatePet).count, 1,
   'Test 5: duplicate retries do not award extra Crests');
 assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_receipts WHERE pet_id=?`).get(duplicatePet).count, 1,
   'Test 5: duplicate retries do not create duplicate receipts');
+
+const recoveryDb = createDb();
+const recoveryPet = seedPlayer(recoveryDb, 'weekly-recovery');
+const recoveryInsertObjective = recoveryDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
+  (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
+  VALUES (?, 'weekly-recovery', ?, 'pet-s2026-001', 1, ?, ?, ?, ?, 'accepted', '{}')`);
+for (const [objectiveId, objective] of Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES)) {
+  const count = objective.progress_mode === 'add' ? objective.target : 1;
+  for (let index = 0; index < count; index += 1) {
+    const sourceEventKey = `weekly-recovery:${objectiveId}:${index + 1}`;
+    recoveryInsertObjective.run(
+      `weekly-journey:objective:${recoveryPet}:pet-s2026-001:1:${objectiveId}:${sourceEventKey}`,
+      recoveryPet,
+      objectiveId,
+      sourceEventKey,
+      TEST_WEEKLY_SOURCE_TYPES[objectiveId],
+      objective.progress_mode === 'add' ? 1 : objective.target,
+    );
+  }
+}
+let simulatedDuplicateCrest = false;
+recoveryDb.beforeWeeklyCrestInsert = (args) => {
+  if (simulatedDuplicateCrest) return;
+  simulatedDuplicateCrest = true;
+  recoveryDb.beforeWeeklyCrestInsert = null;
+  recoveryDb.database.prepare(`INSERT INTO telegram_pet_weekly_crests
+    (crest_id, pet_id, telegram_id, season_key, season_week, qualification_week, objective_id, evidence_key, earned_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(...args);
+};
+const recoveredReceipt = await finalizeWeeklyJourneyCrest(recoveryDb, {
+  telegram_id: 'weekly-recovery',
+  pet_id: recoveryPet,
+  season_key: 'pet-s2026-001',
+  qualification_week: 1,
+  now: '2026-01-05T12:00:00.000Z',
+});
+assert.deepEqual({
+  accepted: recoveredReceipt.accepted,
+  duplicate: recoveredReceipt.duplicate,
+  recovered: recoveredReceipt.recovered,
+}, {
+  accepted: true,
+  duplicate: false,
+  recovered: true,
+}, 'Test 5a: missing receipt recovery from an authoritative duplicate Crest is recovered, not duplicate');
+assert.equal(recoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_receipts WHERE pet_id=?`).get(recoveryPet).count, 1,
+  'Test 5a: recovery rebuilds one Weekly Journey receipt');
+assert.equal(recoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?`).get(recoveryPet).count, 1,
+  'Test 5a: recovery does not duplicate Weekly Crests');
 
 const concurrentDb = createDb();
 const concurrentPet = seedPlayer(concurrentDb, 'weekly-concurrent');
