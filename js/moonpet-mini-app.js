@@ -837,9 +837,11 @@
     var kaijuQueue = kaiju.queue;
     var kaijuBody;
     if (!hasCompletedSeasonPet()) {
-      var kaijuCleanup = kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
+      var kaijuCleanup = kaijuMatch
+        ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
+        : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
       kaijuBody = '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">Requires a completed adult Moonpet. This is future expansion content and is not available during early Season 1.</div>' +
-        (kaijuCleanup ? '<div class="line muted">STALE KAIJU QUEUE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
+        (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
         '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, detail: 'REQUIRES COMPLETED SEASON PET' }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, detail: 'REQUIRES COMPLETED ADULT MOONPET' }) + '</div>';
     } else {
       kaijuBody = kaijuMatch

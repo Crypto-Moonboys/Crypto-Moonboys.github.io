@@ -100,9 +100,10 @@ const act = (telegramId, action, payload = {}) => processPetMiniAppAction(db, te
 const lockedCombatDb = new D1();
 installSeasonCompletionMarkerTable(lockedCombatDb);
 seedPlayer(lockedCombatDb, 'future-locked', 'Locked Cat', 1500);
-for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake']) {
+for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card']) {
   const result = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
     action,
+    match_id: 'locked-kaiju-match',
     request_id: `locked:${action}`,
   }, '123456:test-token');
   assert.equal(result.accepted, false, `${action} must reject early Season 1 users`);
@@ -118,6 +119,9 @@ lockedCombatDb.database.prepare(`INSERT INTO telegram_pet_arena_queue
 lockedCombatDb.database.prepare(`INSERT INTO telegram_pet_kaiju_queue
   (id, chat_id, telegram_id, status)
   VALUES ('locked-kaiju-queue', 'mini:kaiju:global', 'future-locked', 'waiting')`).run();
+lockedCombatDb.database.prepare(`INSERT INTO telegram_pet_kaiju_matches
+  (id, match_id, chat_id, mode, status, player1_telegram_id)
+  VALUES ('locked-kaiju-match-row', 'locked-kaiju-match', 'mini:kaiju:future-locked', 'solo', 'selecting', 'future-locked')`).run();
 const lockedArenaCancel = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
   action: 'arena_queue_cancel',
   request_id: 'locked:arena_queue_cancel',
@@ -128,21 +132,27 @@ const lockedKaijuCancel = await processPetMiniAppAction(lockedCombatDb, 'future-
   request_id: 'locked:kaiju_queue_cancel',
 }, '123456:test-token');
 assert.equal(lockedKaijuCancel.reason, 'kaiju_queue_cancelled', 'early Season 1 users must be able to cancel stale Kaiju queue state');
+const lockedKaijuMatchCancel = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+  action: 'kaiju_match_cancel',
+  match_id: 'locked-kaiju-match',
+  request_id: 'locked:kaiju_match_cancel',
+}, '123456:test-token');
+assert.equal(lockedKaijuMatchCancel.reason, 'kaiju_match_cancelled', 'early Season 1 users must be able to cancel stale owned Kaiju match state');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_queue WHERE telegram_id='future-locked' AND status='waiting'").get().count, 0,
   'locked Arena queue cleanup must clear waiting queue state');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_battles WHERE player1_telegram_id='future-locked' OR player2_telegram_id='future-locked'").get().count, 0,
   'locked Arena start must not create battle rows');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_queue WHERE telegram_id='future-locked' AND status='waiting'").get().count, 0,
   'locked Kaiju queue cleanup must clear waiting queue state');
-assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_matches WHERE player1_telegram_id='future-locked' OR player2_telegram_id='future-locked'").get().count, 0,
-  'locked Kaiju start must not create match rows');
+assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id='future-locked' OR player2_telegram_id='future-locked') AND status IN ('open','selecting')").get().count, 0,
+  'locked Kaiju cleanup must clear active stale match rows');
 const lockedPrestigeBefore = lockedCombatDb.database.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='future-locked'").get()?.prestige_count || 0;
 const lockedPrestigeResult = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
   action: 'prestige',
   request_id: 'locked:prestige',
 }, '123456:test-token');
 assert.equal(lockedPrestigeResult.accepted, false, 'early Season 1 users must not be able to prestige from crafted Mini App requests');
-assert.equal(lockedPrestigeResult.reason, 'completed_season_pet_required', 'locked Prestige must explain the completed-pet requirement');
+assert.equal(lockedPrestigeResult.reason, 'feature_not_available', 'locked Prestige must remain unavailable during early Season 1');
 assert.equal(lockedCombatDb.database.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='future-locked'").get()?.prestige_count || 0, lockedPrestigeBefore,
   'locked Prestige must not mutate progression state');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='future-locked' AND system_key='prestige'").get().count, 0,
@@ -152,6 +162,14 @@ const completedCombatDb = new D1();
 installSeasonCompletionMarkerTable(completedCombatDb);
 seedPlayer(completedCombatDb, 'future-complete', 'Complete Cat', 1500);
 markSeasonComplete(completedCombatDb, 'future-complete');
+const completedPrestigeResult = await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
+  action: 'prestige',
+  request_id: 'completed:prestige',
+}, '123456:test-token');
+assert.equal(completedPrestigeResult.accepted, false, 'completed Season users must still be blocked from unavailable Prestige');
+assert.equal(completedPrestigeResult.reason, 'feature_not_available', 'Prestige must use the future-feature lock even after completion eligibility');
+assert.equal(completedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='future-complete' AND system_key='prestige'").get().count, 0,
+  'completed-user locked Prestige must not reserve system events');
 assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'arena_matchmake',
   request_id: 'completed:arena_matchmake',
@@ -331,7 +349,7 @@ const appActions = [
   'trade', 'rename', 'buy', 'use_item', 'work', 'daily_chest', 'random_event', 'adventure', 'run_start',
   'run_step', 'run_extract', 'notification_set', 'bounty_claim', 'expedition', 'market_buy', 'weekly_boss',
   'season_claim', 'evolve', 'arena_start', 'arena_matchmake', 'arena_ready', 'arena_move', 'arena_forfeit',
-  'arena_queue_cancel', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card', 'kaiju_queue_cancel',
+  'arena_queue_cancel', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card', 'kaiju_queue_cancel', 'kaiju_match_cancel',
 ];
 for (const action of appActions) {
   assert.ok(clientSource.includes(`'${action}'`), `Mini App must expose ${action}`);

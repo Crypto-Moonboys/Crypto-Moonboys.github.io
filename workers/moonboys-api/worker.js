@@ -57,7 +57,7 @@ import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
-  processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
+  processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss,
 } from './pets/live-systems.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
@@ -4432,6 +4432,16 @@ async function cancelPetKaijuMiniAppQueue(db, telegramId) {
   return { accepted: true, duplicate: Number(cancelled?.meta?.changes || 0) === 0, reason: 'kaiju_queue_cancelled' };
 }
 
+async function cancelPetKaijuMiniAppMatch(db, telegramId, matchId = '') {
+  const cancelled = await db.prepare(`UPDATE telegram_pet_kaiju_matches
+    SET status='cancelled', updated_at=CURRENT_TIMESTAMP
+    WHERE match_id=? AND chat_id LIKE 'mini:kaiju:%' AND status IN ('open','selecting')
+      AND (player1_telegram_id=? OR player2_telegram_id=?)`)
+    .bind(String(matchId || ''), String(telegramId), String(telegramId)).run();
+  if (Number(cancelled?.meta?.changes || 0) <= 0) return { accepted: false, reason: 'kaiju_match_not_found' };
+  return { accepted: true, reason: 'kaiju_match_cancelled', match: await getPetKaijuMatch(db, matchId) };
+}
+
 async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards = {}, options = {}) {
   if (match?.mode === 'pet_arena') {
     const now = options.now instanceof Date ? new Date(options.now.getTime()) : new Date();
@@ -8295,19 +8305,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
   if (action === 'craft') return processPetCraftRecipe(db, telegramId, body.recipe_key, eventKey);
   if (action === 'cosmetic_unlock') return processPetCosmeticUnlock(db, telegramId, body.cosmetic_key, eventKey);
-  if (action === 'prestige') {
-    if (!await hasCompletedPetMiniAppSeasonPet(db, telegramId)) return { accepted: false, reason: 'completed_season_pet_required' };
-    const petRaw = await getPetProfile(db, telegramId);
-    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
-    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
-    const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()));
-    const [gear, materials] = await Promise.all([
-      db.prepare('SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id=?').bind(telegramId).all(),
-      db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all(),
-    ]);
-    const live = await buildPetLiveSystemsState(db, telegramId, serializePet(petRaw, identity), runtime, gear.results || [], materials.results || []);
-    return processPetPrestige(db, telegramId, live, eventKey);
-  }
+  if (action === 'prestige') return { accepted: false, reason: 'feature_not_available' };
   if (action === 'weekly_boss') return processPetWeeklyBoss(db, telegramId, body.move, eventKey);
   if (action === 'season_claim') return claimPetSeasonReward(db, telegramId, body.tier_id, eventKey);
   if (action === 'evolve') {
@@ -8364,6 +8362,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'kaiju_matchmake') return matchmakePetKaijuMiniApp(db, telegramId);
   if (action === 'kaiju_queue_cancel') return cancelPetKaijuMiniAppQueue(db, telegramId);
+  if (action === 'kaiju_match_cancel') return cancelPetKaijuMiniAppMatch(db, telegramId, body.match_id);
   if (action === 'kaiju_card') {
     const fresh = await getFreshPetKaijuMatch(db, body.match_id);
     const match = fresh.match;
