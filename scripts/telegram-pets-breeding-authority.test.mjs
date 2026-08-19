@@ -13,7 +13,7 @@ class Statement {
   async first() { return this.db.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: this.db.prepare(this.sql).all(...this.args) }; }
   async run() {
-    if (this.d1.failNextOffspringPersistence && /INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_season_slots/i.test(this.sql)) {
+    if (this.d1.failNextOffspringPersistence && /INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+telegram_pet_season_slots/i.test(this.sql)) {
       this.d1.failNextOffspringPersistence = false;
       throw new Error('simulated_offspring_persistence_failure');
     }
@@ -26,9 +26,18 @@ class D1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.failNextOffspringPersistence = false;
+    this.reserveSlotBeforeBatch = null;
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
+    if (this.reserveSlotBeforeBatch) {
+      const reservation = this.reserveSlotBeforeBatch;
+      this.reserveSlotBeforeBatch = null;
+      this.database.prepare(`INSERT INTO telegram_pet_season_slots
+        (pet_id, telegram_id, season_key, slot_number, acquisition_type, status)
+        VALUES (?, ?, ?, ?, 'free', 'active')`)
+        .run(reservation.petId, reservation.telegramId, reservation.seasonKey, reservation.slotNumber);
+    }
     this.database.exec('BEGIN');
     try {
       const results = [];
@@ -68,6 +77,8 @@ assert.match(breedingSource, /Cooldown authority is per parent pet/,
   'breeding source must document that cooldown belongs to each parent pet');
 assert.match(breedingSource, /db\.batch\(statements\)/,
   'breeding settlement must use D1 batch transaction authority');
+assert.match(breedingSource, /PET_LIFECYCLE_SCHEMA_VERSION, receipt\.seed/,
+  'breeding offspring lifecycle rows must use lifecycle schema version, not breeding authority version');
 assert.match(breedingMigration, /Cooldowns are per parent pet/,
   'migration 069 must document the per-parent cooldown authority model');
 assert.doesNotMatch(workerSource, /body\.action === 'breed'|processMoonpetBreeding|requestMoonpetBreeding/i,
@@ -195,7 +206,7 @@ assert.equal(incompleteParentBRejected.accepted, false, 'Test 2b: completed Pare
 assert.equal(incompleteParentBRejected.reason, 'breeding_parent_incomplete');
 assert.equal(incompleteParentBDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
   'Test 2b: incomplete Parent B writes no breeding receipt');
-assert.equal(incompleteParentBDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:incomplete-parent-b-player:pet-s2026-003:breed:%'`).get().count, 0,
+assert.equal(incompleteParentBDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
   'Test 2b: incomplete Parent B creates no offspring');
 
 const inactiveDb = createDb();
@@ -203,6 +214,58 @@ const inactivePair = seedBreedingPair(inactiveDb, 'inactive-player', { parentB: 
 const inactiveRejected = await requestMoonpetBreeding(inactiveDb, baseRequest(inactivePair, 'inactive'));
 assert.equal(inactiveRejected.accepted, false, 'Inactive parent cannot breed');
 assert.equal(inactiveRejected.reason, 'breeding_parent_inactive');
+
+const crossCallerDb = createDb();
+const crossCallerPair = seedBreedingPair(crossCallerDb, 'cross-owner-a');
+seedPlayer(crossCallerDb, 'cross-owner-b');
+const crossCallerAccepted = await requestMoonpetBreeding(crossCallerDb, baseRequest(crossCallerPair, 'shared-request'));
+const crossCallerRejected = await requestMoonpetBreeding(crossCallerDb, {
+  owner_id: 'cross-owner-b',
+  parent_pet_a_id: crossCallerPair.parentA,
+  parent_pet_b_id: crossCallerPair.parentB,
+  season_key: 'pet-s2026-003',
+  request_key: 'shared-request',
+  now: '2026-08-19T12:00:00.000Z',
+});
+assert.equal(crossCallerAccepted.accepted, true, 'Test 2c: Player A can create the original breeding receipt');
+assert.equal(crossCallerRejected.accepted, false, 'Test 2c: Player B cannot reuse Player A parent context');
+assert.equal(crossCallerRejected.reason, 'breeding_parent_authority_mismatch');
+assert.equal(crossCallerRejected.offspring_pet_id, undefined, 'Test 2c: cross-caller rejection leaks no offspring id');
+assert.equal(crossCallerDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
+  'Test 2c: cross-caller rejection creates no duplicate receipt');
+assert.equal(crossCallerDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 1,
+  'Test 2c: cross-caller rejection creates no offspring');
+assert.equal(crossCallerDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 2,
+  'Test 2c: cross-caller rejection performs no recovery cooldown writes');
+
+const receiptContextDb = createDb();
+const receiptContextPair = seedBreedingPair(receiptContextDb, 'receipt-owner-a');
+seedPlayer(receiptContextDb, 'receipt-owner-b');
+const forgedRequest = {
+  owner_id: 'receipt-owner-b',
+  parent_pet_a_id: receiptContextPair.parentA,
+  parent_pet_b_id: receiptContextPair.parentB,
+  season_key: 'pet-s2026-003',
+  request_key: 'shared-request',
+  now: '2026-08-19T12:00:00.000Z',
+};
+const forgedSeed = await generateBreedingSeed(forgedRequest);
+receiptContextDb.database.prepare(`INSERT INTO telegram_pet_breeding_receipts
+  (receipt_id, event_key, request_key, telegram_id, parent_pet_a_id, parent_pet_b_id, season_key,
+   seed, offspring_pet_id, offspring_slot_number, offspring_traits_json, status, reason, cooldown_available_at, created_at, updated_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 3, '{}', 'accepted', 'breeding_authorized', ?, ?, ?)`)
+  .run(`breeding-receipt:${forgedSeed.seed}`, `breeding:${forgedSeed.seed}`, forgedSeed.request_key,
+    receiptContextPair.owner, receiptContextPair.parentA, receiptContextPair.parentB, 'pet-s2026-003',
+    forgedSeed.seed, `pet:breed:${forgedSeed.seed}`, '2026-08-26T12:00:00.000Z',
+    '2026-08-19T12:00:00.000Z', '2026-08-19T12:00:00.000Z');
+const receiptContextRejected = await requestMoonpetBreeding(receiptContextDb, forgedRequest);
+assert.equal(receiptContextRejected.accepted, false, 'Test 2d: caller cannot recover another authority context receipt');
+assert.equal(receiptContextRejected.reason, 'breeding_receipt_authority_mismatch');
+assert.equal(receiptContextRejected.offspring_pet_id, undefined, 'Test 2d: rejected receipt context leaks no offspring id');
+assert.equal(receiptContextDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
+  'Test 2d: rejected receipt context performs no recovery writes');
+assert.equal(receiptContextDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
+  'Test 2d: rejected receipt context writes no cooldown');
 
 const duplicateDb = createDb();
 const duplicatePair = seedBreedingPair(duplicateDb, 'duplicate-player');
@@ -254,7 +317,7 @@ await assert.rejects(
 );
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
   'Test 3c: atomic partial failure rolls back the accepted receipt');
-assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:partial-failure-player:pet-s2026-003:breed:%'`).get().count, 0,
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
   'Test 3c: atomic partial failure leaves no offspring before retry');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
   'Test 3c: atomic partial failure leaves no cooldown before retry');
@@ -266,7 +329,7 @@ assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM te
   'Test 3c: retry leaves one breeding receipt');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(partialFailureRetry.offspring_pet_id).count, 1,
   'Test 3c: retry creates one deterministic offspring');
-assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:partial-failure-player:pet-s2026-003:breed:%'`).get().count, 1,
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 1,
   'Test 3c: retry creates no duplicate offspring');
 assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).get(partialFailureRetry.receipt_id).count, 2,
   'Test 3c: retry creates one cooldown row per parent pet');
@@ -278,6 +341,10 @@ const deterministicSeedB = await generateBreedingSeed({
   parent_pet_b_id: duplicatePair.parentA,
 });
 assert.equal(deterministicSeedA.seed, deterministicSeedB.seed, 'Test 4: parent order cannot change the deterministic seed');
+assert.equal(duplicateOne.receipt_id, `breeding-receipt:${deterministicSeedA.seed}`,
+  'Test 4: receipt identity uses the full deterministic breeding seed');
+assert.equal(duplicateOne.offspring_pet_id, `pet:breed:${deterministicSeedA.seed}`,
+  'Test 4: offspring identity uses the full deterministic breeding seed');
 const parentRows = duplicateDb.database.prepare(`SELECT l.*, i.species, i.stage, i.pet_xp, i.level
   FROM telegram_pet_lifecycle_by_pet l JOIN telegram_pet_instances i ON i.pet_id=l.pet_id
   WHERE l.pet_id IN (?, ?) ORDER BY l.pet_id`).all(duplicatePair.parentA, duplicatePair.parentB);
@@ -286,6 +353,24 @@ assert.deepEqual(
   generateOffspringTraits(deterministicSeedA.seed, parentRows[0], parentRows[1]),
   'Test 4: same parents and seed produce the same offspring traits',
 );
+assert.equal(duplicateDb.database.prepare(`SELECT lifecycle_version FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).get(duplicateOne.offspring_pet_id).lifecycle_version, 1,
+  'Test 4: newborn offspring use lifecycle schema version independent from breeding authority version');
+
+const canonicalForwardDb = createDb();
+const canonicalForwardPair = seedBreedingPair(canonicalForwardDb, 'canonical-player');
+const canonicalForward = await requestMoonpetBreeding(canonicalForwardDb, baseRequest(canonicalForwardPair, 'canonical-order'));
+const canonicalReverseDb = createDb();
+const canonicalReversePair = seedBreedingPair(canonicalReverseDb, 'canonical-player');
+const canonicalReverse = await requestMoonpetBreeding(canonicalReverseDb, {
+  ...baseRequest(canonicalReversePair, 'canonical-order'),
+  parent_pet_a_id: canonicalReversePair.parentB,
+  parent_pet_b_id: canonicalReversePair.parentA,
+});
+assert.equal(canonicalForward.seed, canonicalReverse.seed, 'Test 4a: reversed parent request keeps the same seed');
+assert.equal(canonicalForward.receipt_id, canonicalReverse.receipt_id, 'Test 4a: reversed parent request keeps the same receipt identity');
+assert.equal(canonicalForward.offspring_pet_id, canonicalReverse.offspring_pet_id, 'Test 4a: reversed parent request keeps the same offspring identity');
+assert.deepEqual(canonicalForward.offspring, canonicalReverse.offspring,
+  'Test 4a: reversed parent request produces identical canonical offspring traits');
 
 const cooldownDb = createDb();
 const cooldownPair = seedBreedingPair(cooldownDb, 'cooldown-player');
@@ -335,10 +420,28 @@ assert.equal(exhaustedRejected.accepted, false, 'Test 5b: full season roster rej
 assert.equal(exhaustedRejected.reason, 'breeding_offspring_slot_unavailable');
 assert.equal(exhaustedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
   'Test 5b: slot exhaustion writes no breeding receipt');
-assert.equal(exhaustedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:slot-exhausted-player:pet-s2026-003:breed:%'`).get().count, 0,
+assert.equal(exhaustedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
   'Test 5b: slot exhaustion creates no offspring');
 assert.equal(exhaustedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
   'Test 5b: slot exhaustion writes no cooldown');
+
+const slotRaceDb = createDb();
+const slotRacePair = seedBreedingPair(slotRaceDb, 'slot-race-player');
+slotRaceDb.reserveSlotBeforeBatch = {
+  telegramId: slotRacePair.owner,
+  seasonKey: 'pet-s2026-003',
+  slotNumber: 3,
+  petId: 'pet:slot-race-player:other-settlement',
+};
+const slotRaceRejected = await requestMoonpetBreeding(slotRaceDb, baseRequest(slotRacePair, 'slot-race'));
+assert.equal(slotRaceRejected.accepted, false, 'Test 5c: stale slot selection rejects when another settlement takes the slot');
+assert.equal(slotRaceRejected.reason, 'breeding_offspring_slot_unavailable');
+assert.equal(slotRaceDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
+  'Test 5c: slot race loser leaves no breeding receipt');
+assert.equal(slotRaceDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
+  'Test 5c: slot race loser leaves no offspring instance');
+assert.equal(slotRaceDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
+  'Test 5c: slot race loser writes no cooldown');
 
 const seasonDb = createDb();
 seedPlayer(seasonDb, 'season-player');

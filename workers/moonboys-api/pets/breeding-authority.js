@@ -5,6 +5,7 @@ export const PET_BREEDING_COOLDOWN_MS = 7 * 86400000;
 
 // Cooldown authority is per parent pet for this foundation layer.
 // If Parent A breeds with B, Parent A cannot immediately breed with C.
+const PET_LIFECYCLE_SCHEMA_VERSION = 1;
 const TEXT_LIMIT = 180;
 const BASE_PET_STATS = Object.freeze({
   hunger: 25,
@@ -42,6 +43,33 @@ function canonicalPair(parentAId, parentBId) {
   return [cleanText(parentAId), cleanText(parentBId)].sort();
 }
 
+function canonicalParents(parentA, parentB, parentPair) {
+  const byId = new Map([[parentA?.pet_id, parentA], [parentB?.pet_id, parentB]]);
+  return parentPair.map((petId) => byId.get(petId));
+}
+
+function requestAuthorityContext(request, seedInfo) {
+  const ownerId = cleanText(request.owner_id);
+  const telegramId = cleanText(request.telegram_id);
+  return {
+    owner_id: ownerId || telegramId,
+    telegram_id: telegramId,
+    season_key: cleanText(request.season_key, 80),
+    parent_pair: seedInfo.parent_pair,
+    request_key: seedInfo.request_key,
+    valid_identity: !ownerId || !telegramId || ownerId === telegramId,
+  };
+}
+
+function receiptMatchesRequestContext(receipt, context) {
+  const receiptPair = canonicalPair(receipt?.parent_pet_a_id, receipt?.parent_pet_b_id);
+  return cleanText(receipt?.telegram_id) === context.owner_id
+    && cleanText(receipt?.season_key, 80) === context.season_key
+    && cleanText(receipt?.request_key) === context.request_key
+    && receiptPair[0] === context.parent_pair[0]
+    && receiptPair[1] === context.parent_pair[1];
+}
+
 async function digestHex(value) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(value)));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -77,11 +105,14 @@ async function parentExistsForDifferentSeason(db, petId, ownerId, seasonKey) {
 }
 
 async function validateParentAuthority(db, request) {
-  const ownerId = cleanText(request.owner_id || request.telegram_id);
+  const requestOwnerId = cleanText(request.owner_id);
+  const requestTelegramId = cleanText(request.telegram_id);
+  const ownerId = requestOwnerId || requestTelegramId;
   const parentAId = cleanText(request.parent_pet_a_id);
   const parentBId = cleanText(request.parent_pet_b_id);
   const seasonKey = cleanText(request.season_key, 80);
   const now = normalizeTimestamp(request.now);
+  if (requestOwnerId && requestTelegramId && requestOwnerId !== requestTelegramId) return { accepted: false, reason: 'invalid_breeding_authority' };
   if (!ownerId || !parentAId || !parentBId || !seasonKey) return { accepted: false, reason: 'invalid_breeding_authority' };
   if (parentAId === parentBId) return { accepted: false, reason: 'duplicate_parent_pet' };
   if (getMoonpetSeasonKey(now) !== seasonKey) return { accepted: false, reason: 'breeding_season_authority_mismatch' };
@@ -197,9 +228,10 @@ export function generateOffspringTraits(seed, parentA, parentB) {
   };
 }
 
-function buildOffspringStatements(db, authority, receipt, offspringTraits, slotNumber) {
+function buildOffspringStatements(db, authority, receipt, offspringTraits, slotNumber, options = {}) {
+  const slotInsertVerb = options.strictSlot === false ? 'INSERT OR IGNORE' : 'INSERT';
   return [
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_slots
+    db.prepare(`${slotInsertVerb} INTO telegram_pet_season_slots
     (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
     VALUES (?, ?, ?, ?, 'free', ?, 0, 'active')`)
       .bind(receipt.offspring_pet_id, authority.owner_id, authority.season_key, slotNumber, receipt.event_key),
@@ -217,7 +249,7 @@ function buildOffspringStatements(db, authority, receipt, offspringTraits, slotN
      eye_style, temperament, innate_traits_json, incubation_progress, incubation_json, created_at, updated_at)
     SELECT ?, ?, ?, ?, 'egg', ?, ?, ?, ?, ?, ?, 0, '{}', ?, ?
     WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?)`)
-      .bind(receipt.offspring_pet_id, authority.owner_id, PET_BREEDING_AUTHORITY_VERSION, receipt.seed,
+      .bind(receipt.offspring_pet_id, authority.owner_id, PET_LIFECYCLE_SCHEMA_VERSION, receipt.seed,
         offspringTraits.inherited.species_id || null, offspringTraits.inherited.palette_id,
         offspringTraits.inherited.marking_id, offspringTraits.inherited.eye_style,
         offspringTraits.inherited.temperament, encodeJson(offspringTraits.innate_traits),
@@ -253,11 +285,23 @@ async function runBreedingSettlement(db, statements) {
   return db.batch(statements);
 }
 
+function isSlotAllocationConflict(error) {
+  const message = String(error?.message || error || '').toLowerCase();
+  return message.includes('telegram_pet_season_slots') && message.includes('constraint');
+}
+
 export async function requestMoonpetBreeding(db, request = {}) {
   const seedInfo = await generateBreedingSeed(request);
-  const eventKey = `breeding:${seedInfo.parent_pair[0]}:${seedInfo.parent_pair[1]}:${seedInfo.request_key}`.slice(0, 240);
+  const requestContext = requestAuthorityContext(request, seedInfo);
+  const eventKey = `breeding:${seedInfo.seed}`;
+  if (!requestContext.valid_identity) {
+    return { accepted: false, duplicate: false, recovered: false, reason: 'invalid_breeding_authority', event_key: eventKey };
+  }
   const existing = await readReceipt(db, eventKey);
   if (existing?.status === 'accepted') {
+    if (!receiptMatchesRequestContext(existing, requestContext)) {
+      return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_receipt_authority_mismatch', event_key: eventKey };
+    }
     const authority = {
       accepted: true,
       owner_id: existing.telegram_id,
@@ -270,7 +314,7 @@ export async function requestMoonpetBreeding(db, request = {}) {
     if (!exists) {
       const slotNumber = Number(existing.offspring_slot_number || 0) || await nextAvailableSlot(db, authority.owner_id, authority.season_key);
       if (slotNumber) {
-        recoveryStatements.push(...buildOffspringStatements(db, authority, existing, safeJson(existing.offspring_traits_json), slotNumber));
+        recoveryStatements.push(...buildOffspringStatements(db, authority, existing, safeJson(existing.offspring_traits_json), slotNumber, { strictSlot: false }));
       }
     }
     if (existing.cooldown_available_at) {
@@ -309,9 +353,10 @@ export async function requestMoonpetBreeding(db, request = {}) {
   const slotNumber = await nextAvailableSlot(db, authority.owner_id, authority.season_key);
   if (!slotNumber) return { accepted: false, duplicate: false, reason: 'breeding_offspring_slot_unavailable', event_key: eventKey };
 
-  const offspringTraits = generateOffspringTraits(seedInfo.seed, authority.parent_a, authority.parent_b);
-  const receiptId = `breeding-receipt:${seedInfo.short_seed}`;
-  const offspringPetId = `pet:${authority.owner_id}:${authority.season_key}:breed:${seedInfo.short_seed}`.slice(0, 120);
+  const [canonicalParentA, canonicalParentB] = canonicalParents(authority.parent_a, authority.parent_b, seedInfo.parent_pair);
+  const offspringTraits = generateOffspringTraits(seedInfo.seed, canonicalParentA, canonicalParentB);
+  const receiptId = `breeding-receipt:${seedInfo.seed}`;
+  const offspringPetId = `pet:breed:${seedInfo.seed}`;
   const cooldownAvailableAt = new Date(Date.parse(authority.now) + PET_BREEDING_COOLDOWN_MS).toISOString();
   const receipt = {
     receipt_id: receiptId,
@@ -330,7 +375,18 @@ export async function requestMoonpetBreeding(db, request = {}) {
     ...buildOffspringStatements(db, authority, receipt, offspringTraits, slotNumber),
     ...buildCooldownStatements(db, authority, seedInfo.parent_pair, cooldownAvailableAt, receiptId),
   ];
-  await runBreedingSettlement(db, settlementStatements);
+  try {
+    await runBreedingSettlement(db, settlementStatements);
+  } catch (error) {
+    if (isSlotAllocationConflict(error)) {
+      const racedReceipt = await readReceipt(db, eventKey);
+      if (racedReceipt?.status === 'accepted' && receiptMatchesRequestContext(racedReceipt, requestContext)) {
+        return requestMoonpetBreeding(db, request);
+      }
+      return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_offspring_slot_unavailable', event_key: eventKey };
+    }
+    throw error;
+  }
 
   const inserted = await readReceipt(db, eventKey);
   if (inserted?.receipt_id !== receiptId) {
