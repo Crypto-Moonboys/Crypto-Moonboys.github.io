@@ -8,6 +8,7 @@ const {
   processPetMiniAppAction,
   buildPetMiniAppJourneySummary,
   buildPetMiniAppFutureSystemState,
+  buildPetMiniAppPlayerCapabilities,
   getPetMiniAppCombatEligibility,
   getPetGuidanceFeatures,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES,
@@ -215,6 +216,10 @@ const combatEggEligibility = await getPetMiniAppCombatEligibility(combatAuthorit
 assert.equal(combatEggEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed egg users');
 assert.equal(combatEggEligibility.combat_unlocked, false, 'completed users with an active egg must not see combat as unlocked');
 assert.equal(combatEggEligibility.reason, 'moon_egg_must_hatch');
+const combatEggCapabilities = buildPetMiniAppPlayerCapabilities(combatEggEligibility);
+assert.equal(combatEggCapabilities.combat.unlocked, false, 'player capabilities must mirror locked combat authority for active eggs');
+assert.equal(combatEggCapabilities.combat.requirements.completed_season_pet, true, 'player capabilities must preserve completed-season authority');
+assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false, 'player capabilities must expose active egg requirement state');
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-egg:kaiju_matchmake',
@@ -222,9 +227,12 @@ const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat
 assert.equal(combatEggAction.accepted, false, 'completed users with an active egg must not enter Kaiju combat');
 assert.equal(combatEggAction.reason, 'moon_egg_must_hatch', 'API combat lock must match the active-egg UI reason');
 assert.equal(combatEggAction.combat_eligibility?.combat_unlocked, false, 'API must return the shared combat eligibility state for active-egg rejection');
+assert.equal(combatEggAction.player_capabilities?.combat?.unlocked, false, 'stale-client combat rejection must return nested combat capability authority');
 const combatAdultEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult');
 assert.equal(combatAdultEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed adult users');
 assert.equal(combatAdultEligibility.combat_unlocked, true, 'completed users with an eligible active pet must see combat unlocked');
+assert.equal(buildPetMiniAppPlayerCapabilities(combatAdultEligibility).combat.unlocked, true,
+  'player capabilities must mirror unlocked combat authority for completed adult users');
 const combatAdultAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-adult', { id: 'combat-adult' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-adult:kaiju_matchmake',
@@ -240,6 +248,8 @@ const combatNewAction = await processPetMiniAppAction(combatAuthorityDb, 'combat
 }, '123456:test-token');
 assert.equal(combatNewAction.reason, 'completed_season_pet_required', 'API combat lock must match the missing-completion UI reason');
 assert.equal(combatNewAction.combat_eligibility?.combat_unlocked, false, 'API must return the shared combat eligibility state for missing-completion rejection');
+assert.equal(combatNewAction.player_capabilities?.combat?.requirements?.completed_season_pet, false,
+  'stale-client combat rejection must expose unmet completed-season capability');
 assert.equal((await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult')).combat_unlocked, true,
   'shared combat eligibility helper must unlock only completed users with eligible active pets');
 seedPlayer(combatAuthorityDb, 'combat-missing-lifecycle', 'Missing Lifecycle Cat', 1500);
@@ -422,7 +432,10 @@ assert.equal(kaijuMatch.mode, 'group');
 assert.equal(serializePetMiniAppKaijuMatch(kaijuMatch, 'kaiju-two').role, 'player2');
 const participantCancel = await act('kaiju-two', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id });
 assert.equal(participantCancel.accepted, false, 'active multiplayer Kaiju participants must not use stale-match cancellation');
-assert.equal(participantCancel.reason, 'kaiju_match_cancel_unavailable');
+assert.equal(participantCancel.reason, 'kaiju_match_not_found');
+const hostCancel = await act('kaiju-one', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id });
+assert.equal(hostCancel.accepted, false, 'active multiplayer Kaiju hosts must not use stale-match cancellation');
+assert.equal(hostCancel.reason, 'kaiju_match_not_found');
 assert.equal((await getPetKaijuMatchForPlayer(db, 'kaiju-one'))?.status, 'selecting',
   'active multiplayer Kaiju match must remain active after participant cancel attempt');
 

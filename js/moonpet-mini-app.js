@@ -529,16 +529,16 @@
 
   // TEST-EXPORT: completedSeasonPetHelper:start
   function hasCompletedSeasonPet() {
-    return Boolean(state && state.has_completed_season_pet);
+    return Boolean(state && state.player_capabilities && state.player_capabilities.has_completed_season_pet);
   }
   // TEST-EXPORT: completedSeasonPetHelper:end
 
   function hasCombatUnlocked() {
-    return Boolean(state && state.combat_unlocked);
+    return Boolean(state && state.player_capabilities && state.player_capabilities.combat && state.player_capabilities.combat.unlocked);
   }
 
   function combatLockCopy() {
-    var reason = state && state.combat_eligibility && state.combat_eligibility.reason;
+    var reason = state && state.player_capabilities && state.player_capabilities.combat && state.player_capabilities.combat.reason;
     if (reason === 'moon_egg_must_hatch') {
       return {
         title: 'COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES.',
@@ -760,25 +760,20 @@
     }).join('');
     var progression = activePetProgression();
     var growth = progression.growth_marks || {};
-    var crests = progression.weekly_crests || {};
     var dailyAuthority = state.daily_journey || {};
     var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
-    var dailyRequired = dailyAuthority.required_objectives != null ? Number(dailyAuthority.required_objectives) : 3;
-    var dailyPercent = Math.round(Math.min(dailyRequired, dailyCompleted) / Math.max(1, dailyRequired) * 100);
+    var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
+    var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
     var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY AWARDED'
       : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
-        : dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
+        : dailyRequired > 0 && dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
     var dailyJourney = '<div class="line complete">DAILY JOURNEY // ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' OBJECTIVES</div>' +
       '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
       meter('GROWTH MARK', dailyPercent) +
       '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
       '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>';
-    var weeklyAuthority = state.weekly_journey || {};
-    var weeklyReceiptStatus = weeklyAuthority.weekly_crest_awarded || crests.current_week_crest_earned ? 'WEEKLY CREST ALREADY AWARDED'
-      : weeklyAuthority.duplicate_blocked ? 'DUPLICATE WEEKLY CREST BLOCKED' : 'FUTURE EXPANSION CONTENT';
     var weeklyJourney = '<div class="line locked">WEEKLY JOURNEY // COMING SOON</div>' +
-      '<div class="line muted">Weekly Journey authority prepared. Gameplay integration not active yet.</div>' +
-      '<div class="line muted">' + escapeHtml(weeklyReceiptStatus) + '.</div>';
+      '<div class="line muted">Authority prepared. Gameplay integration not active yet.</div>';
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel('WEEKLY JOURNEY // COMING SOON', weeklyJourney, 'weekly-journey') +
@@ -1835,11 +1830,11 @@
   }
 
   function snapshotHasCompletedSeasonPet(snapshot) {
-    return Boolean(snapshot && snapshot.has_completed_season_pet);
+    return Boolean(snapshot && snapshot.player_capabilities && snapshot.player_capabilities.has_completed_season_pet);
   }
 
   function snapshotHasCombatUnlocked(snapshot) {
-    return Boolean(snapshot && snapshot.combat_unlocked);
+    return Boolean(snapshot && snapshot.player_capabilities && snapshot.player_capabilities.combat && snapshot.player_capabilities.combat.unlocked);
   }
 
   function updateCombatPresentation(snapshot) {

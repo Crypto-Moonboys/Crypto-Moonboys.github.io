@@ -4433,8 +4433,6 @@ async function cancelPetKaijuMiniAppQueue(db, telegramId) {
 }
 
 async function cancelPetKaijuMiniAppMatch(db, telegramId, matchId = '') {
-  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId);
-  if (combatEligibility.combat_unlocked) return { accepted: false, reason: 'kaiju_match_cancel_unavailable' };
   const cancelled = await db.prepare(`UPDATE telegram_pet_kaiju_matches
     SET status='cancelled', updated_at=CURRENT_TIMESTAMP
     WHERE match_id=? AND chat_id LIKE 'mini:kaiju:%' AND mode='solo' AND status IN ('open','selecting')
@@ -8006,6 +8004,23 @@ function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
   ];
 }
 
+function buildPetMiniAppPlayerCapabilities(combatEligibility = {}) {
+  return {
+    has_completed_season_pet: combatEligibility.has_completed_season_pet === true,
+    combat_unlocked: combatEligibility.combat_unlocked === true,
+    combat: {
+      unlocked: combatEligibility.combat_unlocked === true,
+      reason: combatEligibility.reason || 'completed_season_pet_required',
+      requirements: {
+        completed_season_pet: combatEligibility.has_completed_season_pet === true,
+        active_pet_exists: combatEligibility.active_pet_exists === true,
+        active_pet_lifecycle_known: combatEligibility.active_pet_lifecycle_known === true,
+        active_pet_hatched: combatEligibility.active_pet_combat_eligible === true,
+      },
+    },
+  };
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
@@ -8023,6 +8038,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       season_slots: null,
       has_completed_season_pet: false,
       combat_unlocked: false,
+      player_capabilities: buildPetMiniAppPlayerCapabilities({ has_completed_season_pet: false, combat_unlocked: false, reason: 'completed_season_pet_required' }),
       future_systems: buildPetMiniAppFutureSystemState({ has_completed_season_pet: false, combat_unlocked: false, reason: 'completed_season_pet_required' }),
     };
   }
@@ -8158,6 +8174,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     has_completed_season_pet: combatEligibility.has_completed_season_pet,
     combat_unlocked: combatEligibility.combat_unlocked,
     combat_eligibility: combatEligibility,
+    player_capabilities: buildPetMiniAppPlayerCapabilities(combatEligibility),
     future_systems: buildPetMiniAppFutureSystemState(combatEligibility),
     daily_journey: journeySummary?.daily || null,
     weekly_journey: journeySummary?.weekly || null,
@@ -8280,7 +8297,12 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
     const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
     if (!combatEligibility.combat_unlocked) {
-      return { accepted: false, reason: combatEligibility.reason, combat_eligibility: combatEligibility };
+      return {
+        accepted: false,
+        reason: combatEligibility.reason,
+        combat_eligibility: combatEligibility,
+        player_capabilities: buildPetMiniAppPlayerCapabilities(combatEligibility),
+      };
     }
   }
   if (action === 'season_slots') return { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
@@ -8483,7 +8505,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots', 'combat_eligibility', 'player_capabilities']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -13190,6 +13212,7 @@ export const __petMediaTestHooks = Object.freeze({
   processPetMiniAppAction,
   buildPetMiniAppJourneySummary,
   buildPetMiniAppFutureSystemState,
+  buildPetMiniAppPlayerCapabilities,
   buildPetMiniAppState,
   hasCompletedPetMiniAppSeasonPet,
   getPetMiniAppCombatEligibility,

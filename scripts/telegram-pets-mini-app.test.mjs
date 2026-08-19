@@ -83,15 +83,15 @@ function extractTestExport(source, name) {
 
 const completedSeasonPetHelperSource = extractTestExport(client, 'completedSeasonPetHelper');
 assert.ok(completedSeasonPetHelperSource, 'completed-season client helper must be extractable for runtime coverage');
-assert.match(completedSeasonPetHelperSource, /state\.has_completed_season_pet/, 'completed-season helper must consume the worker-serialized completion authority');
+assert.match(completedSeasonPetHelperSource, /state\.player_capabilities[\s\S]*state\.player_capabilities\.has_completed_season_pet/, 'completed-season helper must consume worker player capability authority');
 assert.doesNotMatch(completedSeasonPetHelperSource, /season_slots|sanctuary|hasSlotCompletion|hasSanctuaryCompletion/, 'completed-season helper must not duplicate completion authority in the frontend');
-let completedSeasonHelperState = { has_completed_season_pet: false };
+let completedSeasonHelperState = { player_capabilities: { has_completed_season_pet: false } };
 const hasCompletedSeasonPetRuntime = new Function(
   'getState',
   completedSeasonPetHelperSource.replace(/\bstate\b/g, 'getState()') + '; return hasCompletedSeasonPet;',
 )(() => completedSeasonHelperState);
 assert.equal(hasCompletedSeasonPetRuntime(), false, 'client completed-season helper must reject missing worker completion authority');
-completedSeasonHelperState = { has_completed_season_pet: true };
+completedSeasonHelperState = { player_capabilities: { has_completed_season_pet: true } };
 assert.equal(hasCompletedSeasonPetRuntime(), true, 'client completed-season helper must accept worker completion authority');
 
 // Keep every executable client-source test on marker boundaries so merges and
@@ -280,10 +280,10 @@ assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateReq
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
 assert.match(client, /WEEKLY JOURNEY \/\/ COMING SOON/, 'Weekly Journey must not present live progress before production evidence callers exist');
-assert.match(client, /Weekly Journey authority prepared\. Gameplay integration not active yet\./, 'Weekly Journey coming-soon copy must explain that authority is prepared but inactive');
+assert.match(client, /Authority prepared\. Gameplay integration not active yet\./, 'Weekly Journey coming-soon copy must explain that authority is prepared but inactive');
 assert.doesNotMatch(client, /AUTHORITY PROGRESS \/\/ '\s*\+ number\(weeklyComplete\)/, 'Weekly Journey must not render unreachable production progress');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
-assert.match(client, /function combatLockCopy\(\)[\s\S]*state\.combat_eligibility[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
+assert.match(client, /function combatLockCopy\(\)[\s\S]*state\.player_capabilities[\s\S]*combat\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
 const arenaLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())');
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
@@ -307,8 +307,8 @@ assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.map[\s
 assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App feature directory must not re-derive future-system lock state in the frontend');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
 assert.match(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state must serialize Weekly Journey authority summaries');
-assert.match(worker, /has_completed_season_pet: combatEligibility\.has_completed_season_pet/, 'Mini App state must serialize completed-season authority from the worker');
-assert.match(worker, /combat_unlocked: combatEligibility\.combat_unlocked/, 'Mini App state must serialize combat eligibility authority from the worker');
+assert.match(worker, /player_capabilities: buildPetMiniAppPlayerCapabilities\(combatEligibility\)/, 'Mini App state must serialize player capability authority from the worker');
+assert.match(worker, /combat: \{[\s\S]*unlocked: combatEligibility\.combat_unlocked === true[\s\S]*requirements: \{[\s\S]*completed_season_pet:[\s\S]*active_pet_hatched:/, 'player capabilities must expose one nested combat authority object');
 assert.match(worker, /async function getPetMiniAppCombatEligibility/, 'Mini App worker must centralize completed-season combat eligibility');
 assert.match(worker, /function buildPetMiniAppFutureSystemState\(combatEligibility = \{\}\)/, 'Mini App worker must centralize future-system display state');
 assert.match(worker, /future_systems: buildPetMiniAppFutureSystemState\(combatEligibility\)/, 'Mini App state must serialize future-system authority');
@@ -322,6 +322,8 @@ assert.match(worker, /key: 'prestige'[\s\S]*available: false[\s\S]*Future expans
 assert.doesNotMatch(worker, /const liveNext = liveSystems\.prestige\.ready/, 'Mini App recommendations must not suggest Prestige while the feature is unavailable');
 assert.doesNotMatch(worker, /action: 'prestige', destination: 'profile'/, 'Mini App recommendations must not expose Prestige actions');
 assert.match(worker, /\['guidance_ack', 'notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel', 'kaiju_match_cancel'\]/, 'Kaiju stale match cleanup must not receive post-action reaction side effects');
+assert.doesNotMatch(client, /dailyRequired = [^;\n]+: 3/, 'Daily Journey UI must not hardcode fallback objective requirements');
+assert.doesNotMatch(client, /weekly_crest_awarded|current_week_crest_earned|DUPLICATE WEEKLY CREST BLOCKED/, 'Weekly Journey Coming Soon UI must not leak inactive reward state');
 assert.match(worker, /required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES/, 'Daily Journey Mini App summary must use the authority constant for required objectives');
 assert.match(worker, /dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES/, 'Daily Journey Mini App readiness must use the authority constant');
 assert.match(worker, /required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES/, 'Weekly Journey Mini App summary must use the authority constant for required objectives');
@@ -359,6 +361,9 @@ assert.doesNotMatch(miniAppActionSource, /processPetPrestige/, 'Mini App action 
 assert.match(miniAppActionSource, /if \(action === 'kaiju_match_cancel'\) return cancelPetKaijuMiniAppMatch\(db, telegramId, body\.match_id\)/, 'Mini App must expose owned stale Kaiju match cleanup');
 assert.match(worker, /WHERE match_id=\? AND chat_id LIKE 'mini:kaiju:%' AND mode='solo' AND status IN \('open','selecting'\)\s+AND player1_telegram_id=\? AND player2_telegram_id IS NULL/,
   'Kaiju stale match cleanup must not allow participants to cancel active multiplayer matches');
+const kaijuCancelSource = worker.slice(worker.indexOf('async function cancelPetKaijuMiniAppMatch'), worker.indexOf('async function awardPetKaijuPlayerResult'));
+assert.doesNotMatch(kaijuCancelSource, /getPetMiniAppCombatEligibility|combat_unlocked|kaiju_match_cancel_unavailable/,
+  'Kaiju stale match cleanup authority must depend on owned solo match state, not combat eligibility');
 assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.all\(\[[\s\S]*buildPetMiniAppJourneySummary[\s\S]*ensurePetKaijuMatchCategory/, 'Mini App state loading must hydrate journey summary and Kaiju category in parallel');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
@@ -814,10 +819,10 @@ assert.match(client, /function clearCombatPresentation\(\)/);
 assert.match(client, /function updateCombatPresentation\(snapshot\)/);
 assert.match(client, /function snapshotHasCompletedSeasonPet\(snapshot\)/);
 const snapshotCompletionHelperSource = client.slice(client.indexOf('function snapshotHasCompletedSeasonPet'), client.indexOf('function snapshotHasCombatUnlocked'));
-assert.match(snapshotCompletionHelperSource, /snapshot\.has_completed_season_pet/, 'combat snapshot completion helper must consume worker authority');
+assert.match(snapshotCompletionHelperSource, /snapshot\.player_capabilities[\s\S]*snapshot\.player_capabilities\.has_completed_season_pet/, 'combat snapshot completion helper must consume worker capability authority');
 assert.doesNotMatch(snapshotCompletionHelperSource, /Array\.isArray\(snapshot\.sanctuary\)|season_slots|hasSlotCompletion|hasSanctuaryCompletion/, 'combat snapshot completion helper must not duplicate Sanctuary/slot completion authority');
 const snapshotCombatHelperSource = client.slice(client.indexOf('function snapshotHasCombatUnlocked'), client.indexOf('function updateCombatPresentation'));
-assert.match(snapshotCombatHelperSource, /snapshot\.combat_unlocked/, 'combat snapshot helper must consume worker combat eligibility authority');
+assert.match(snapshotCombatHelperSource, /snapshot\.player_capabilities[\s\S]*snapshot\.player_capabilities\.combat[\s\S]*snapshot\.player_capabilities\.combat\.unlocked/, 'combat snapshot helper must consume nested worker combat authority');
 assert.match(client, /snapshot === combatSnapshot && activeScreen === combatScreen/);
 assert.match(client, /var arena = snapshot\.arena/);
 assert.match(client, /arena && snapshotHasCombatUnlocked\(snapshot\) && arena\.status !== 'completed'/, 'Arena combat presentation must respect combat eligibility gating');
@@ -878,15 +883,13 @@ assert.doesNotThrow(() => combatRuntime.update({
 assert.equal(runtimeCombatFrame.active, false, 'early Season 1 users must not see stale Arena or Kaiju combat presentation');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
-  has_completed_season_pet: true,
-  combat_unlocked: true,
+  player_capabilities: { has_completed_season_pet: true, combat: { unlocked: true } },
   arena: { status: 'active', player_hp: 74, opponent_hp: 38 },
 }), 'Phase 5 combat director must recognize worker combat authority');
 assert.equal(runtimeCombatFrame.mode, 'arena', 'worker combat authority must satisfy Arena combat presentation gating');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
-  has_completed_season_pet: true,
-  combat_unlocked: true,
+  player_capabilities: { has_completed_season_pet: true, combat: { unlocked: true } },
   arena: {
     status: 'active', mode: 'multiplayer', current_round: 3, max_rounds: 5,
     player_hp: 74, opponent_hp: 38, player_special: 2, opponent_special: 1,
@@ -904,8 +907,7 @@ assert.equal(runtimeCombatFrame.opponentSpecial, 1);
 assert.equal(runtimeCombatFrame.rivalColor, '#61f5ff');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
-  has_completed_season_pet: true,
-  combat_unlocked: true,
+  player_capabilities: { has_completed_season_pet: true, combat: { unlocked: true } },
   kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: true, opponent_card_locked: false, own_card_key: 'neon-claw' } },
 }), 'Phase 5 Kaiju director must execute from live card-lock state');
 assert.equal(runtimeCombatFrame.mode, 'kaiju');
