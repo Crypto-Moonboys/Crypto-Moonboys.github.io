@@ -11,6 +11,9 @@ import {
   recordDailyCareChallenge, syncDailyMoonRun,
 } from './pets/daily-moon-run.js';
 import {
+  PET_WEEKLY_JOURNEY_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence,
+} from './pets/weekly-journey.js';
+import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
   evaluateMoonpetEvolutionRequirements, getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
   validateMoonpetEvolutionContent,
@@ -12936,6 +12939,9 @@ export const __petMediaTestHooks = Object.freeze({
   processPetWeeklyBoss,
   awardStoredWeeklyBossVictoryCrest,
   recordWeeklyBossVictoryCrest,
+  PET_WEEKLY_JOURNEY_OBJECTIVES,
+  finalizeWeeklyJourneyCrest,
+  recordWeeklyJourneyObjectiveEvidence,
   getPetSeasonInfo,
   getPetSeasonRewardState,
   claimPetSeasonReward,
