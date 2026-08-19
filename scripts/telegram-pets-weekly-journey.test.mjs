@@ -33,6 +33,13 @@ const seasonEconomyMigration = await readFile(new URL('../workers/moonboys-api/m
 const weeklyJourneyMigration = await readFile(new URL('../workers/moonboys-api/migrations/068_moonpet_weekly_journey_authority.sql', import.meta.url), 'utf8');
 const workerSource = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const weeklyJourneySource = await readFile(new URL('../workers/moonboys-api/pets/weekly-journey.js', import.meta.url), 'utf8');
+const TEST_WEEKLY_SOURCE_TYPES = Object.freeze({
+  weekly_care: 'feed',
+  weekly_training: 'train',
+  weekly_run: 'run_complete',
+  weekly_boss_attempt: 'boss_fought',
+  weekly_check_in: 'check_in',
+});
 
 for (const table of ['telegram_pet_weekly_journey_objectives', 'telegram_pet_weekly_journey_receipts']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must exist in canonical schema`);
@@ -107,10 +114,10 @@ function insertSourceEvent(db, {
 
 async function completeObjective(db, {
   telegramId, petId, seasonKey = 'pet-s2026-001', qualificationWeek = 1, objectiveId, day = '2026-01-05', progressValue = null,
-  eventKey = null,
+  eventKey = null, eventType = null,
 }) {
   const sourceEventKey = eventKey || `${petId}:${seasonKey}:${qualificationWeek}:${objectiveId}:${day}`;
-  insertSourceEvent(db, { telegramId, petId, seasonKey, day, eventKey: sourceEventKey, eventType: objectiveId });
+  insertSourceEvent(db, { telegramId, petId, seasonKey, day, eventKey: sourceEventKey, eventType: eventType || TEST_WEEKLY_SOURCE_TYPES[objectiveId] });
   return recordWeeklyJourneyObjectiveEvidence(db, {
     telegram_id: telegramId,
     pet_id: petId,
@@ -241,7 +248,7 @@ insertSourceEvent(concurrentDb, {
   telegramId: 'weekly-concurrent',
   petId: concurrentPet,
   eventKey: raceEventKey,
-  eventType: raceObjectiveId,
+  eventType: TEST_WEEKLY_SOURCE_TYPES[raceObjectiveId],
 });
 const raceRequest = {
   telegram_id: 'weekly-concurrent',
@@ -275,6 +282,42 @@ assert.equal(concurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegr
   'Test 5b: post-race retries are no-op for receipts');
 assert.equal(concurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?`).get(concurrentPet).count, 1,
   'Test 5b: post-race retries are no-op for Weekly Crests');
+
+const sourceBindingDb = createDb();
+const sourceBindingPet = seedPlayer(sourceBindingDb, 'weekly-source-binding');
+insertSourceEvent(sourceBindingDb, {
+  telegramId: 'weekly-source-binding',
+  petId: sourceBindingPet,
+  eventKey: 'weekly-source-binding-feed',
+  eventType: 'feed',
+});
+const sourceBindingResults = [];
+for (const objectiveId of Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES)) {
+  sourceBindingResults.push([objectiveId, await recordWeeklyJourneyObjectiveEvidence(sourceBindingDb, {
+    telegram_id: 'weekly-source-binding',
+    pet_id: sourceBindingPet,
+    season_key: 'pet-s2026-001',
+    qualification_week: 1,
+    objective_id: objectiveId,
+    source_event_key: 'weekly-source-binding-feed',
+    progress_value: PET_WEEKLY_JOURNEY_OBJECTIVES[objectiveId].target,
+    evidence: { authority: 'test_weekly_journey_authority', source_binding: true },
+    now: '2026-01-05T12:00:00.000Z',
+  })]);
+}
+assert.equal(sourceBindingResults.find(([objectiveId]) => objectiveId === 'weekly_care')[1].accepted, true,
+  'Test 5c: feed source event is valid for weekly care');
+assert.deepEqual(sourceBindingResults.filter(([objectiveId]) => objectiveId !== 'weekly_care').map(([objectiveId, result]) => [objectiveId, result.reason]), [
+  ['weekly_training', 'weekly_journey_objective_source_mismatch'],
+  ['weekly_run', 'weekly_journey_objective_source_mismatch'],
+  ['weekly_boss_attempt', 'weekly_journey_objective_source_mismatch'],
+  ['weekly_check_in', 'weekly_journey_objective_source_mismatch'],
+], 'Test 5c: one feed event cannot satisfy unrelated weekly objectives');
+assert.equal(sourceBindingDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE pet_id=?`).get(sourceBindingPet).count, 1,
+  'Test 5c: source/objective mismatch writes only the valid objective row');
+assert.equal(sourceBindingDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?`).get(sourceBindingPet).count, 0,
+  'Test 5c: source/objective mismatch cannot manufacture a Weekly Crest');
 
 const seasonRolloverDb = createDb();
 const oldSeasonPet = seedPlayer(seasonRolloverDb, 'weekly-season-old', 'pet-s2026-001');
@@ -384,5 +427,46 @@ assert.equal(utcBoundaryDb.database.prepare(`SELECT COUNT(*) AS count FROM teleg
 assert.equal(utcBoundaryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests
   WHERE pet_id=? AND season_key='pet-s2026-001'`).get(utcBoundaryPet).count, 1,
   'Test 7: boundary retry does not duplicate Weekly Crests');
+
+const weekTailDb = createDb();
+const weekTailPet = seedPlayer(weekTailDb, 'weekly-tail', 'pet-s2026-003');
+const weekTailEvidence = await completeObjective(weekTailDb, {
+  telegramId: 'weekly-tail',
+  petId: weekTailPet,
+  seasonKey: 'pet-s2026-003',
+  qualificationWeek: 13,
+  objectiveId: 'weekly_care',
+  day: '2026-09-30',
+});
+assert.equal(weekTailEvidence.accepted, true,
+  'Test 8: final UTC day of a 92-day season is accepted as week 13 evidence');
+assert.equal(weekTailDb.database.prepare(`SELECT qualification_week FROM telegram_pet_weekly_journey_objectives
+  WHERE pet_id=? AND source_event_key=?`).get(weekTailPet, `${weekTailPet}:pet-s2026-003:13:weekly_care:2026-09-30`).qualification_week, 13,
+  'Test 8: week 13 tail evidence preserves qualification_week 13');
+
+const invalidDayDb = createDb();
+const invalidDayPet = seedPlayer(invalidDayDb, 'weekly-invalid-day');
+insertSourceEvent(invalidDayDb, {
+  telegramId: 'weekly-invalid-day',
+  petId: invalidDayPet,
+  eventKey: 'weekly-invalid-day-evidence',
+  eventType: 'feed',
+  day: '2026-02-30',
+});
+const invalidDayResult = await recordWeeklyJourneyObjectiveEvidence(invalidDayDb, {
+  telegram_id: 'weekly-invalid-day',
+  pet_id: invalidDayPet,
+  season_key: 'pet-s2026-001',
+  qualification_week: 9,
+  objective_id: 'weekly_care',
+  source_event_key: 'weekly-invalid-day-evidence',
+  progress_value: PET_WEEKLY_JOURNEY_OBJECTIVES.weekly_care.target,
+  now: '2026-02-28T12:00:00.000Z',
+});
+assert.equal(invalidDayResult.reason, 'weekly_journey_invalid_source_window',
+  'Test 9: malformed calendar days are rejected cleanly without crashing');
+assert.equal(invalidDayDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE pet_id=?`).get(invalidDayPet).count, 0,
+  'Test 9: invalid UTC day evidence writes no weekly objective row');
 
 console.log('telegram-pets-weekly-journey.test.mjs passed');

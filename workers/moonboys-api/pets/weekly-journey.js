@@ -16,6 +16,14 @@ export const PET_WEEKLY_JOURNEY_OBJECTIVES = Object.freeze({
   weekly_check_in: Object.freeze({ objective_id: 'weekly_check_in', target: 2, progress_mode: 'add' }),
 });
 
+const WEEKLY_JOURNEY_OBJECTIVE_SOURCE_TYPES = Object.freeze({
+  weekly_care: Object.freeze(new Set(['feed', 'play', 'clean', 'sleep'])),
+  weekly_training: Object.freeze(new Set(['train'])),
+  weekly_run: Object.freeze(new Set(['run', 'run_complete', 'run_extract', 'daily_run', 'daily_moon_run'])),
+  weekly_boss_attempt: Object.freeze(new Set(['boss_fought', 'weekly_boss', 'weekly_boss_reward'])),
+  weekly_check_in: Object.freeze(new Set(['check_in', 'daily_check_in', 'weekly_check_in'])),
+});
+
 export const WEEKLY_JOURNEY_TOTAL_OBJECTIVES = Object.freeze(Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).length);
 
 // Authority invariant: Weekly Crest difficulty is intentionally full completion.
@@ -49,7 +57,8 @@ function validQualificationWeek(value) {
 
 function validUtcDay(day) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(day || ''))) return false;
-  return new Date(`${day}T00:00:00.000Z`).toISOString().slice(0, 10) === day;
+  const parsed = new Date(`${day}T00:00:00.000Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === day;
 }
 
 function dayBelongsToQualificationWeek(day, season, qualificationWeek) {
@@ -59,8 +68,13 @@ function dayBelongsToQualificationWeek(day, season, qualificationWeek) {
   if (!Number.isFinite(eventTime) || !Number.isFinite(seasonStart) || !Number.isFinite(seasonEnd)) return false;
   if (eventTime < seasonStart || eventTime >= seasonEnd) return false;
   const weekStart = seasonStart + ((qualificationWeek - 1) * 7 * MS_PER_DAY);
-  const weekEnd = Math.min(seasonEnd, weekStart + (7 * MS_PER_DAY));
+  const weekEnd = qualificationWeek === 13 ? seasonEnd : Math.min(seasonEnd, weekStart + (7 * MS_PER_DAY));
   return eventTime >= weekStart && eventTime < weekEnd;
+}
+
+function sourceMatchesObjective(objectiveId, sourceEvent) {
+  const allowed = WEEKLY_JOURNEY_OBJECTIVE_SOURCE_TYPES[String(objectiveId || '')];
+  return Boolean(allowed?.has(String(sourceEvent?.event_type || '')));
 }
 
 async function ownedPet(db, petId, telegramId, seasonKey) {
@@ -93,6 +107,9 @@ async function validateWeeklyEvidenceAuthority(db, request) {
   const pet = await ownedPet(db, petId, telegramId, seasonKey).catch(() => null);
   if (!pet) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
   if (String(sourceEvent.pet_id || '') !== petId) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
+  if (!sourceMatchesObjective(request.objective_id, sourceEvent)) {
+    return { accepted: false, reason: 'weekly_journey_objective_source_mismatch' };
+  }
   const day = String(sourceEvent.day_key || '');
   if (!validUtcDay(day)) return { accepted: false, reason: 'weekly_journey_invalid_source_window' };
   if (getMoonpetSeasonKey(`${day}T00:00:00.000Z`) !== seasonKey) return { accepted: false, reason: 'weekly_journey_season_authority_mismatch' };
