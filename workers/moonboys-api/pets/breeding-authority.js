@@ -260,12 +260,13 @@ export function generateOffspringTraits(seed, parentA, parentB) {
 
 function buildOffspringStatements(db, authority, receipt, offspringTraits, slotNumber, options = {}) {
   const slotInsertVerb = options.strictSlot === false ? 'INSERT OR IGNORE' : 'INSERT';
+  const offspringInsertVerb = options.strictSlot === false ? 'INSERT OR IGNORE' : 'INSERT';
   return [
     db.prepare(`${slotInsertVerb} INTO telegram_pet_season_slots
     (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
     VALUES (?, ?, ?, ?, 'free', ?, 0, 'active')`)
       .bind(receipt.offspring_pet_id, authority.owner_id, authority.season_key, slotNumber, receipt.event_key),
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_instances
+    db.prepare(`${offspringInsertVerb} INTO telegram_pet_instances
     (pet_id, telegram_id, season_key, slot_number, pet_name, species, stage, pet_xp, level,
      hunger, happiness, cleanliness, energy, health, status, source_profile_updated_at, created_at, updated_at)
     SELECT ?, ?, ?, ?, 'Moonpet', ?, 'egg', 0, 1, ?, ?, ?, ?, ?, 'active', ?, ?, ?
@@ -274,7 +275,7 @@ function buildOffspringStatements(db, authority, receipt, offspringTraits, slotN
         offspringTraits.inherited.species_id || '', BASE_PET_STATS.hunger, BASE_PET_STATS.happiness,
         BASE_PET_STATS.cleanliness, BASE_PET_STATS.energy, BASE_PET_STATS.health,
         authority.now, authority.now, authority.now, receipt.offspring_pet_id, authority.owner_id, authority.season_key, slotNumber),
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
+    db.prepare(`${offspringInsertVerb} INTO telegram_pet_lifecycle_by_pet
     (pet_id, telegram_id, lifecycle_version, identity_seed, phase, species_id, palette_id, marking_id,
      eye_style, temperament, innate_traits_json, incubation_progress, incubation_json, created_at, updated_at)
     SELECT ?, ?, ?, ?, 'egg', ?, ?, ?, ?, ?, ?, 0, '{}', ?, ?
