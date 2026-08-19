@@ -7,7 +7,7 @@ Focused deployment checklist for the Moonpet Mini App after the Season 1 player-
 Run from the repository root:
 
 ```bat
-cd /d E:\GitHub\Crypto-Moonboys.github.io
+REM Run from repository root
 node scripts/telegram-pets-season-1-production-readiness.test.mjs
 node scripts/telegram-pets-mini-app.test.mjs
 node scripts/telegram-pets-mini-app-parity.test.mjs
@@ -25,13 +25,13 @@ git diff --check
 
 This readiness PR does not change runtime Worker code. The command below is the standard Season 1 production rollout command after merging runtime changes.
 
+Do not deploy `moonboys-api` with direct `wrangler deploy`. Use the provenance wrapper so deployed Worker metadata includes the commit tag required by `/deployment-info`.
+
 ```bat
-cd /d E:\GitHub\Crypto-Moonboys.github.io
+REM Run from repository root after pulling latest main
 git checkout main
 git pull origin main
-
-cd /d E:\GitHub\Crypto-Moonboys.github.io\workers\moonboys-api
-npx wrangler deploy
+node scripts/deploy-worker-with-provenance.mjs moonboys-api
 ```
 
 ## Health check command
@@ -44,6 +44,12 @@ Expected response:
 
 ```json
 {"ok":true}
+```
+
+## Provenance check command
+
+```bat
+curl --ssl-no-revoke https://moonboys-api.sercullen.workers.dev/deployment-info
 ```
 
 ## D1 migration status

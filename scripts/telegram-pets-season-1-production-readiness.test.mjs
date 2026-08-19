@@ -26,15 +26,7 @@ class Statement {
   async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
   async run() {
-    if (
-      this.adapter.blockLifecycleMaterializationForTelegramId
-      && /INSERT(?:\s+OR\s+IGNORE)?\s+INTO\s+telegram_pet_lifecycle_by_pet/i.test(this.sql)
-      && this.args.includes(this.adapter.blockLifecycleMaterializationForTelegramId)
-    ) {
-      throw new Error('simulated_missing_lifecycle_authority');
-    }
-    const result = this.adapter.database.prepare(this.sql).run(...this.args);
-    return { results: [], meta: { changes: Number(result.changes || 0) } };
+    return this.adapter.runStatement(this.sql, this.args);
   }
 }
 
@@ -46,13 +38,23 @@ class D1 {
     installSeasonCompletionMarkerTable(this);
   }
   prepare(sql) { return new Statement(this, sql); }
+  runStatement(sql, args = []) {
+    if (
+      this.blockLifecycleMaterializationForTelegramId
+      && /INSERT(?:\s+OR\s+IGNORE)?\s+INTO\s+telegram_pet_lifecycle_by_pet/i.test(sql)
+      && args.includes(this.blockLifecycleMaterializationForTelegramId)
+    ) {
+      throw new Error('simulated_missing_lifecycle_authority');
+    }
+    const result = this.database.prepare(sql).run(...args);
+    return { results: [], meta: { changes: Number(result.changes || 0) } };
+  }
   async batch(statements) {
     this.database.exec('BEGIN IMMEDIATE');
     try {
       const results = [];
       for (const statement of statements) {
-        const result = this.database.prepare(statement.sql).run(...statement.args);
-        results.push({ results: [], meta: { changes: Number(result.changes || 0) } });
+        results.push(this.runStatement(statement.sql, statement.args));
       }
       this.database.exec('COMMIT');
       return results;
@@ -87,12 +89,12 @@ function installSeasonCompletionMarkerTable(db) {
   )`);
 }
 
-function seedUser(db, telegramId, name = telegramId, xp = 1500) {
+function seedUser(db, telegramId, name = telegramId, petXp = 1500) {
   db.database.prepare('INSERT OR IGNORE INTO telegram_users (telegram_id, first_name, xp, level) VALUES (?, ?, 0, 1)')
     .run(telegramId, name);
   db.database.prepare(`INSERT OR IGNORE INTO telegram_pet_profiles
     (telegram_id, pet_name, pet_xp, level, health, energy, happiness, cleanliness, moon_gold)
-    VALUES (?, ?, ?, 20, 100, 100, 90, 90, 100)`).run(telegramId, name, xp);
+    VALUES (?, ?, ?, 20, 100, 100, 90, 90, 100)`).run(telegramId, name, petXp);
 }
 
 function markSeasonComplete(db, telegramId, seasonKey = getPetSeasonInfo(new Date()).key) {
