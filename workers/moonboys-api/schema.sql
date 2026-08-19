@@ -904,7 +904,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_season_slots (
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
   slot_number INTEGER NOT NULL CHECK (slot_number BETWEEN 1 AND 3),
-  acquisition_type TEXT NOT NULL CHECK (acquisition_type IN ('free', 'arcade_xp')),
+  acquisition_type TEXT NOT NULL CHECK (acquisition_type IN ('free', 'arcade_xp', 'breeding')),
   source_event_key TEXT,
   arcade_xp_spent INTEGER NOT NULL DEFAULT 0 CHECK (arcade_xp_spent >= 0),
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'retired', 'archived')),
@@ -1446,6 +1446,56 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_weekly_journey_objectives_source ON 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_weekly_journey_receipts_pet_week ON telegram_pet_weekly_journey_receipts(pet_id, season_key, qualification_week, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_weekly_journey_receipts_event_status ON telegram_pet_weekly_journey_receipts(event_key, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_weekly_journey_receipts_crest ON telegram_pet_weekly_journey_receipts(crest_id, pet_id, season_key, qualification_week);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_breeding_receipts (
+  receipt_id TEXT PRIMARY KEY,
+  event_key TEXT NOT NULL,
+  request_key TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  parent_pet_a_id TEXT NOT NULL,
+  parent_pet_b_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  seed TEXT NOT NULL,
+  offspring_pet_id TEXT NOT NULL,
+  offspring_slot_number INTEGER NOT NULL CHECK (offspring_slot_number BETWEEN 1 AND 3),
+  offspring_traits_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(offspring_traits_json)),
+  status TEXT NOT NULL CHECK (status IN ('accepted', 'rejected')),
+  reason TEXT NOT NULL,
+  cooldown_available_at DATETIME,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (event_key),
+  UNIQUE (telegram_id, season_key, parent_pet_a_id, parent_pet_b_id, request_key),
+  UNIQUE (offspring_pet_id),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (parent_pet_a_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE,
+  FOREIGN KEY (parent_pet_b_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_breeding_cooldowns (
+  parent_pet_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  available_at DATETIME NOT NULL,
+  last_receipt_id TEXT NOT NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (parent_pet_id, season_key),
+  FOREIGN KEY (parent_pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (last_receipt_id) REFERENCES telegram_pet_breeding_receipts(receipt_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_breeding_receipts_owner_season
+  ON telegram_pet_breeding_receipts(telegram_id, season_key, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_breeding_receipts_parent_pair
+  ON telegram_pet_breeding_receipts(parent_pet_a_id, parent_pet_b_id, season_key, status);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_breeding_receipts_offspring
+  ON telegram_pet_breeding_receipts(offspring_pet_id, status);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_breeding_cooldowns_owner
+  ON telegram_pet_breeding_cooldowns(telegram_id, season_key, available_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_analytics_day ON telegram_pet_daily_analytics(utc_day, event_type, created_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_runs_pet_day ON telegram_pet_daily_runs(pet_id, utc_day);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_daily_analytics_pet ON telegram_pet_daily_analytics(pet_id, utc_day, created_at);
