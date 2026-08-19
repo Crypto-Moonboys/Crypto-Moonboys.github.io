@@ -297,6 +297,15 @@ assert.equal(refusedSeasonReuse.reason, 'weekly_journey_season_authority_mismatc
 assert.equal(seasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE source_event_key='old-season-weekly-evidence'`).get().count, 0,
   'Test 6: rejected season mismatch does not write weekly objective evidence');
+assert.equal(seasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests
+  WHERE season_key='pet-s2026-002'`).get().count, 0,
+  'Test 6: rejected old evidence replay mints no new-season Weekly Crest');
+assert.equal(seasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_receipts
+  WHERE season_key='pet-s2026-002' AND status='accepted'`).get().count, 0,
+  'Test 6: rejected old evidence replay writes no successful receipt');
+assert.equal(seasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE season_key='pet-s2026-002'`).get().count, 0,
+  'Test 6: rejected old evidence replay creates no cross-season progression');
 
 const seasonMismatchDb = createDb();
 const oldProgressPet = seedPlayer(seasonMismatchDb, 'weekly-season-mismatch-old', 'pet-s2026-001');
@@ -350,6 +359,18 @@ const utcBoundaryRetry = await finalizeWeeklyJourneyCrest(utcBoundaryDb, {
 });
 assert.equal(utcBoundaryRetry.duplicate, true,
   'Test 7: retry after UTC week rollover returns the original week authority');
+const utcBoundaryEvidenceRetry = await recordWeeklyJourneyObjectiveEvidence(utcBoundaryDb, {
+  telegram_id: 'weekly-utc-boundary',
+  pet_id: utcBoundaryPet,
+  season_key: 'pet-s2026-001',
+  qualification_week: 1,
+  objective_id: 'weekly_care',
+  source_event_key: `${utcBoundaryPet}:pet-s2026-001:1:weekly_care:2026-01-07`,
+  progress_value: PET_WEEKLY_JOURNEY_OBJECTIVES.weekly_care.target,
+  now: '2026-01-08T00:00:02.000Z',
+});
+assert.equal(utcBoundaryEvidenceRetry.duplicate, true,
+  'Test 7: retrying the same evidence event after UTC week rollover is a no-op');
 assert.equal(utcBoundaryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE pet_id=? AND season_key='pet-s2026-001' AND qualification_week=1`).get(utcBoundaryPet).count, 5,
   'Test 7: boundary evidence remains attached to qualification week 1');
