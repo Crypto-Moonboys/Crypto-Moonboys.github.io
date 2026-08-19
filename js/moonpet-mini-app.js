@@ -434,7 +434,7 @@
       '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
       '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. Arena and Kaiju remain locked future panels with stale-state cleanup only. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
-      '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards, prestige and hidden rare-morph signals.</div>' +
+      '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards and hidden rare-morph signals.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
@@ -529,7 +529,7 @@
 
   // TEST-EXPORT: capabilityCombatHelper:start
   function combatCapability(source) {
-    return source && source.capabilities && source.capabilities.combat || {
+    var fallback = {
       state: 'LOCKED',
       unlocked: false,
       reason: 'capability_unavailable',
@@ -539,6 +539,38 @@
         active_pet_lifecycle_known: false,
         active_pet_hatched: false,
       },
+    };
+    var combat = source && source.capabilities && source.capabilities.combat;
+    var requirements = combat && combat.requirements;
+    if (!combat || !requirements || typeof requirements !== 'object') return fallback;
+    var completeRequirements = [
+      'completed_season_pet',
+      'active_pet_exists',
+      'active_pet_lifecycle_known',
+      'active_pet_hatched',
+    ].every(function (key) { return typeof requirements[key] === 'boolean'; });
+    if (!completeRequirements) return fallback;
+    var stateLabel = String(combat.state || '').toUpperCase();
+    var requirementReady = requirements.completed_season_pet === true
+      && requirements.active_pet_exists === true
+      && requirements.active_pet_lifecycle_known === true
+      && requirements.active_pet_hatched === true;
+    if (typeof combat.active !== 'boolean') return fallback;
+    if (stateLabel !== 'AVAILABLE' || combat.unlocked !== true || combat.active !== true || !requirementReady) {
+      return {
+        state: 'LOCKED',
+        unlocked: false,
+        active: false,
+        reason: combat.reason || 'capability_unavailable',
+        requirements: requirements,
+      };
+    }
+    return {
+      state: 'AVAILABLE',
+      unlocked: true,
+      active: combat.active === true,
+      reason: combat.reason || 'combat_unlocked',
+      requirements: requirements,
     };
   }
 
@@ -794,7 +826,7 @@
     var weeklyState = String(weeklyCapability.state || 'COMING_SOON').toUpperCase();
     var weeklyTitle = weeklyState === 'AVAILABLE' ? 'WEEKLY JOURNEY // LIVE' : 'WEEKLY JOURNEY // COMING SOON';
     var weeklyJourney = '<div class="line ' + (weeklyState === 'AVAILABLE' ? 'complete' : 'locked') + '">' + weeklyTitle + '</div>' +
-      '<div class="line muted">' + escapeHtml(weeklyCapability.message || 'Weekly Journey authority prepared. Gameplay integration not active yet.') + '</div>';
+      '<div class="line muted">' + escapeHtml(weeklyCapability.message || 'Gameplay integration not active yet.') + '</div>';
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +

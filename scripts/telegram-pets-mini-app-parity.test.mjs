@@ -225,7 +225,7 @@ assert.equal(combatEggCapabilities.combat.requirements.completed_season_pet, tru
 assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false, 'player capabilities must expose active egg requirement state');
 assert.equal(combatEggCapabilities.weekly_journey.state, 'COMING_SOON', 'Weekly Journey capability must stay coming soon until production evidence callers exist');
 assert.equal(combatEggCapabilities.weekly_journey.active, false, 'Weekly Journey capability must be inactive while coming soon');
-assert.equal(combatEggCapabilities.weekly_journey.message, 'Weekly Journey authority prepared. Gameplay integration not active yet.',
+assert.equal(combatEggCapabilities.weekly_journey.message, 'Gameplay integration not active yet.',
   'Weekly Journey capability must explain that authority exists but gameplay integration is inactive');
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
   action: 'kaiju_matchmake',

@@ -8040,7 +8040,7 @@ function buildPetMiniAppCapabilities(combatEligibility = {}) {
       state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON,
       unlocked: false,
       active: false,
-      message: 'Weekly Journey authority prepared. Gameplay integration not active yet.',
+      message: 'Gameplay integration not active yet.',
     },
     future_systems: futureSystems,
   };
