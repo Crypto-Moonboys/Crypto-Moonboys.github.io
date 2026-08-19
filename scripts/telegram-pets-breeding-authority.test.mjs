@@ -273,6 +273,29 @@ assert.equal(receiptContextDb.database.prepare(`SELECT COUNT(*) AS count FROM te
 assert.equal(receiptContextDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
   'Test 2d: rejected receipt context writes no cooldown');
 
+const rejectedReceiptDb = createDb();
+const rejectedReceiptPair = seedBreedingPair(rejectedReceiptDb, 'rejected-receipt-player');
+const rejectedReceiptRequest = baseRequest(rejectedReceiptPair, 'terminal-receipt');
+const rejectedReceiptSeed = await generateBreedingSeed(rejectedReceiptRequest);
+rejectedReceiptDb.database.prepare(`INSERT INTO telegram_pet_breeding_receipts
+  (receipt_id, event_key, request_key, telegram_id, parent_pet_a_id, parent_pet_b_id, season_key,
+   seed, offspring_pet_id, offspring_slot_number, offspring_traits_json, status, reason, cooldown_available_at, created_at, updated_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 3, '{}', 'rejected', 'breeding_rejected', ?, ?, ?)`)
+  .run(`breeding-receipt:${rejectedReceiptSeed.seed}`, `breeding:${rejectedReceiptSeed.seed}`, rejectedReceiptSeed.request_key,
+    rejectedReceiptPair.owner, rejectedReceiptSeed.parent_pair[0], rejectedReceiptSeed.parent_pair[1], 'pet-s2026-003',
+    rejectedReceiptSeed.seed, `pet:breed:${rejectedReceiptSeed.seed}`, '2026-08-26T12:00:00.000Z',
+    '2026-08-19T12:00:00.000Z', '2026-08-19T12:00:00.000Z');
+const rejectedReceiptRetry = await requestMoonpetBreeding(rejectedReceiptDb, rejectedReceiptRequest);
+assert.equal(rejectedReceiptRetry.accepted, false, 'Test 2e: existing rejected receipt returns deterministic terminal failure');
+assert.equal(rejectedReceiptRetry.reason, 'breeding_request_terminal');
+assert.equal(rejectedReceiptRetry.offspring_pet_id, undefined, 'Test 2e: terminal receipt response leaks no offspring id');
+assert.equal(rejectedReceiptDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
+  'Test 2e: terminal receipt retry creates no duplicate receipt');
+assert.equal(rejectedReceiptDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
+  'Test 2e: terminal receipt retry creates no offspring');
+assert.equal(rejectedReceiptDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
+  'Test 2e: terminal receipt retry writes no cooldown');
+
 const duplicateDb = createDb();
 const duplicatePair = seedBreedingPair(duplicateDb, 'duplicate-player');
 const duplicateOne = await requestMoonpetBreeding(duplicateDb, baseRequest(duplicatePair, 'same-request'));
@@ -343,6 +366,20 @@ if (occupiedRecoveryRetry.accepted) {
   assert.equal(occupiedRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(occupiedRecoveryFirst.offspring_pet_id).count, 0,
     'Test 3d: failed recovery leaves no false-success offspring claim');
 }
+
+const malformedTraitsDb = createDb();
+const malformedTraitsPair = seedBreedingPair(malformedTraitsDb, 'malformed-traits-player');
+const malformedTraitsFirst = await requestMoonpetBreeding(malformedTraitsDb, baseRequest(malformedTraitsPair, 'malformed-traits'));
+malformedTraitsDb.database.prepare(`UPDATE telegram_pet_breeding_receipts SET offspring_traits_json='{}' WHERE receipt_id=?`)
+  .run(malformedTraitsFirst.receipt_id);
+malformedTraitsDb.database.prepare(`DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).run(malformedTraitsFirst.offspring_pet_id);
+malformedTraitsDb.database.prepare(`DELETE FROM telegram_pet_instances WHERE pet_id=?`).run(malformedTraitsFirst.offspring_pet_id);
+malformedTraitsDb.database.prepare(`DELETE FROM telegram_pet_season_slots WHERE pet_id=?`).run(malformedTraitsFirst.offspring_pet_id);
+const malformedTraitsRetry = await requestMoonpetBreeding(malformedTraitsDb, baseRequest(malformedTraitsPair, 'malformed-traits'));
+assert.equal(malformedTraitsRetry.accepted, false, 'Test 3e: malformed stored traits fail recovery safely without throwing');
+assert.equal(malformedTraitsRetry.reason, 'breeding_recovery_failed');
+assert.equal(malformedTraitsDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(malformedTraitsFirst.offspring_pet_id).count, 0,
+  'Test 3e: malformed stored traits do not produce a false-success offspring');
 
 const partialFailureDb = createDb();
 const partialFailurePair = seedBreedingPair(partialFailureDb, 'partial-failure-player');

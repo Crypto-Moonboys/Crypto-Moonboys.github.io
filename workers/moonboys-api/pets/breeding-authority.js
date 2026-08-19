@@ -214,6 +214,17 @@ function parentTraits(parent) {
   };
 }
 
+function hasOwn(value, key) {
+  return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function validStoredOffspringTraits(value) {
+  if (!value || typeof value !== 'object' || !value.inherited || typeof value.inherited !== 'object') return false;
+  return ['species_id', 'palette_id', 'marking_id', 'eye_style', 'temperament']
+    .every((key) => hasOwn(value.inherited, key))
+    && Array.isArray(value.innate_traits);
+}
+
 export async function generateBreedingSeed(request = {}) {
   const ownerId = cleanText(request.owner_id || request.telegram_id);
   const seasonKey = cleanText(request.season_key, 80);
@@ -346,6 +357,12 @@ export async function requestMoonpetBreeding(db, request = {}, options = {}) {
     return { accepted: false, duplicate: false, recovered: false, reason: 'invalid_breeding_authority', event_key: eventKey };
   }
   const existing = await readReceipt(db, eventKey);
+  if (existing && existing.status !== 'accepted') {
+    if (!receiptMatchesRequestContext(existing, requestContext)) {
+      return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_authority_mismatch', event_key: eventKey };
+    }
+    return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_request_terminal', event_key: eventKey };
+  }
   if (existing?.status === 'accepted') {
     if (!receiptMatchesRequestContext(existing, requestContext)) {
       return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_authority_mismatch', event_key: eventKey };
@@ -360,9 +377,13 @@ export async function requestMoonpetBreeding(db, request = {}, options = {}) {
     const recoveryStatements = [];
     const exists = await offspringExists(db, existing.offspring_pet_id, existing.telegram_id);
     if (!exists) {
+      const offspringTraits = safeJson(existing.offspring_traits_json);
+      if (!validStoredOffspringTraits(offspringTraits)) {
+        return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_recovery_failed', event_key: eventKey };
+      }
       const slotNumber = await recoverySlotNumber(db, authority.owner_id, authority.season_key, existing.offspring_pet_id, existing.offspring_slot_number);
       if (slotNumber) {
-        recoveryStatements.push(...buildOffspringStatements(db, authority, existing, safeJson(existing.offspring_traits_json), slotNumber, { strictSlot: false }));
+        recoveryStatements.push(...buildOffspringStatements(db, authority, existing, offspringTraits, slotNumber, { strictSlot: false }));
       }
     }
     if (existing.cooldown_available_at) {
@@ -446,6 +467,9 @@ export async function requestMoonpetBreeding(db, request = {}, options = {}) {
   }
 
   const inserted = await readReceipt(db, eventKey);
+  if (inserted && inserted.status !== 'accepted') {
+    return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_request_terminal', event_key: eventKey };
+  }
   if (inserted?.receipt_id !== receiptId) {
     return requestMoonpetBreeding(db, request, options);
   }
