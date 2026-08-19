@@ -7912,12 +7912,17 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       weekly: { qualification_week: week, completed_objectives: 0, required_objectives: 5, weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
     };
   }
-  const [dailyObjectives, dailyReceipt, weeklyObjectives, weeklyReceipt] = await Promise.all([
+  const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt, weeklyObjectives, weeklyReceipt, weeklyAcceptedReceipt] = await Promise.all([
     countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey),
     db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
       FROM telegram_pet_daily_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=?
       ORDER BY created_at DESC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
+    db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
+      FROM telegram_pet_daily_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted' AND growth_mark_id IS NOT NULL
+      ORDER BY created_at ASC LIMIT 1`)
       .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
     countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
     db.prepare(`SELECT status, reason, crest_id, completed_objectives
@@ -7925,21 +7930,26 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=?
       ORDER BY created_at DESC LIMIT 1`)
       .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
+    db.prepare(`SELECT status, reason, crest_id, completed_objectives
+      FROM telegram_pet_weekly_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted' AND crest_id IS NOT NULL
+      ORDER BY created_at ASC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
   ]);
-  const dailyCompleted = Math.max(Number(dailyObjectives || 0), Number(dailyReceipt?.completed_objectives || 0));
-  const weeklyCompleted = Math.max(Number(weeklyObjectives || 0), Number(weeklyReceipt?.completed_objectives || 0));
+  const dailyCompleted = Math.max(Number(dailyObjectives || 0), Number(dailyReceipt?.completed_objectives || 0), Number(dailyAcceptedReceipt?.completed_objectives || 0));
+  const weeklyCompleted = Math.max(Number(weeklyObjectives || 0), Number(weeklyReceipt?.completed_objectives || 0), Number(weeklyAcceptedReceipt?.completed_objectives || 0));
   return {
     daily: {
       pet_id: petId, season_key: seasonKey, utc_day: dayKey,
       completed_objectives: dailyCompleted, required_objectives: 3,
-      growth_mark_awarded: Boolean(dailyReceipt?.status === 'accepted' && dailyReceipt?.growth_mark_id),
+      growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
       duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
       reason: dailyReceipt?.reason || (dailyCompleted >= 3 ? 'daily_journey_ready' : 'daily_journey_in_progress'),
     },
     weekly: {
       pet_id: petId, season_key: seasonKey, qualification_week: week,
       completed_objectives: weeklyCompleted, required_objectives: 5,
-      weekly_crest_awarded: Boolean(weeklyReceipt?.status === 'accepted' && weeklyReceipt?.crest_id),
+      weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
       duplicate_blocked: weeklyReceipt?.reason === 'weekly_journey_crest_duplicate',
       reason: weeklyReceipt?.reason || (weeklyCompleted >= 5 ? 'weekly_journey_ready' : 'weekly_journey_in_progress'),
     },
@@ -8286,6 +8296,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'craft') return processPetCraftRecipe(db, telegramId, body.recipe_key, eventKey);
   if (action === 'cosmetic_unlock') return processPetCosmeticUnlock(db, telegramId, body.cosmetic_key, eventKey);
   if (action === 'prestige') {
+    if (!await hasCompletedPetMiniAppSeasonPet(db, telegramId)) return { accepted: false, reason: 'completed_season_pet_required' };
     const petRaw = await getPetProfile(db, telegramId);
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);

@@ -136,6 +136,17 @@ assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM tele
   'locked Kaiju queue cleanup must clear waiting queue state');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_matches WHERE player1_telegram_id='future-locked' OR player2_telegram_id='future-locked'").get().count, 0,
   'locked Kaiju start must not create match rows');
+const lockedPrestigeBefore = lockedCombatDb.database.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='future-locked'").get()?.prestige_count || 0;
+const lockedPrestigeResult = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+  action: 'prestige',
+  request_id: 'locked:prestige',
+}, '123456:test-token');
+assert.equal(lockedPrestigeResult.accepted, false, 'early Season 1 users must not be able to prestige from crafted Mini App requests');
+assert.equal(lockedPrestigeResult.reason, 'completed_season_pet_required', 'locked Prestige must explain the completed-pet requirement');
+assert.equal(lockedCombatDb.database.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='future-locked'").get()?.prestige_count || 0, lockedPrestigeBefore,
+  'locked Prestige must not mutate progression state');
+assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='future-locked' AND system_key='prestige'").get().count, 0,
+  'locked Prestige must not reserve system events');
 
 const completedCombatDb = new D1();
 installSeasonCompletionMarkerTable(completedCombatDb);
@@ -205,6 +216,40 @@ assert.equal(journeySummary.weekly.completed_objectives, 0, 'Weekly Journey Mini
 assert.equal(journeySummary.weekly.completed_objectives < journeySummary.weekly.required_objectives, true);
 assert.equal(journeySummary.weekly.weekly_crest_awarded, false);
 assert.notEqual(journeySummary.weekly.reason, 'weekly_journey_ready');
+
+const receiptAuthorityDb = new D1();
+seedPlayer(receiptAuthorityDb, 'receipt-authority', 'Receipt Cat', 1200);
+const receiptDay = '2026-08-16';
+const receiptWeek = 5;
+await ensurePetStarterSeasonSlot(receiptAuthorityDb, 'receipt-authority', new Date(`${receiptDay}T12:00:00Z`));
+const receiptPet = await ensureActivePetInstance(receiptAuthorityDb, 'receipt-authority');
+receiptAuthorityDb.database.prepare(`INSERT INTO telegram_pet_daily_journey_receipts
+  (receipt_id, event_key, telegram_id, pet_id, season_key, utc_day, completed_objectives, status, reason, growth_mark_id, created_at)
+  VALUES ('daily-accepted', 'daily:accepted', 'receipt-authority', ?, ?, ?, 3, 'accepted', 'daily_journey_qualified', 'growth:accepted', '2026-08-16T09:00:00.000Z')`)
+  .run(receiptPet.pet_id, receiptPet.season_key, receiptDay);
+receiptAuthorityDb.database.prepare(`INSERT INTO telegram_pet_daily_journey_receipts
+  (receipt_id, event_key, telegram_id, pet_id, season_key, utc_day, completed_objectives, status, reason, growth_mark_id, created_at)
+  VALUES ('daily-duplicate', 'daily:duplicate', 'receipt-authority', ?, ?, ?, 3, 'rejected', 'daily_journey_growth_mark_duplicate', 'growth:accepted', '2026-08-16T10:00:00.000Z')`)
+  .run(receiptPet.pet_id, receiptPet.season_key, receiptDay);
+receiptAuthorityDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_receipts
+  (receipt_id, event_key, telegram_id, pet_id, season_key, qualification_week, completed_objectives, status, reason, crest_id, created_at)
+  VALUES ('weekly-accepted', 'weekly:accepted', 'receipt-authority', ?, ?, ?, 5, 'accepted', 'weekly_journey_qualified', 'crest:accepted', '2026-08-16T09:00:00.000Z')`)
+  .run(receiptPet.pet_id, receiptPet.season_key, receiptWeek);
+receiptAuthorityDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_receipts
+  (receipt_id, event_key, telegram_id, pet_id, season_key, qualification_week, completed_objectives, status, reason, crest_id, created_at)
+  VALUES ('weekly-duplicate', 'weekly:duplicate', 'receipt-authority', ?, ?, ?, 5, 'rejected', 'weekly_journey_crest_duplicate', 'crest:accepted', '2026-08-16T10:00:00.000Z')`)
+  .run(receiptPet.pet_id, receiptPet.season_key, receiptWeek);
+const receiptAuthoritySummary = await buildPetMiniAppJourneySummary(receiptAuthorityDb, 'receipt-authority', {
+  season: { key: receiptPet.season_key },
+  current_season_week: receiptWeek,
+  slots: [{ active: true, pet_id: receiptPet.pet_id, season_key: receiptPet.season_key }],
+}, new Date(`${receiptDay}T12:00:00Z`));
+assert.equal(receiptAuthoritySummary.daily.growth_mark_awarded, true, 'Daily Journey summary must keep Growth Mark awarded when a later duplicate receipt exists');
+assert.equal(receiptAuthoritySummary.daily.duplicate_blocked, true, 'Daily Journey summary must still surface duplicate-blocked state separately');
+assert.equal(receiptAuthoritySummary.daily.reason, 'daily_journey_growth_mark_duplicate');
+assert.equal(receiptAuthoritySummary.weekly.weekly_crest_awarded, true, 'Weekly Journey summary must keep Crest awarded when a later duplicate receipt exists');
+assert.equal(receiptAuthoritySummary.weekly.duplicate_blocked, true, 'Weekly Journey summary must still surface duplicate-blocked state separately');
+assert.equal(receiptAuthoritySummary.weekly.reason, 'weekly_journey_crest_duplicate');
 
 const soloArenaQueue = await act('arena-queued', 'arena_matchmake');
 assert.equal(soloArenaQueue.reason, 'arena_queued');

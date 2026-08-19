@@ -281,24 +281,27 @@ assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[
 assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
-assert.match(client, /WEEKLY JOURNEY \/\/ WEEKLY CREST/, 'Weekly Journey Crest state must be visible');
+assert.match(client, /WEEKLY JOURNEY \/\/ COMING SOON/, 'Weekly Journey must not present live progress before production evidence callers exist');
+assert.doesNotMatch(client, /AUTHORITY PROGRESS \/\/ '\s*\+ number\(weeklyComplete\)/, 'Weekly Journey must not render unreachable production progress');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
 const arenaLockIndex = renderExploreSource.indexOf('if (!hasCompletedSeasonPet())');
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
 const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');
 const arenaResultIndex = renderExploreSource.indexOf('var arenaResult = state.arena_result;');
-assert.ok(arenaLockIndex !== -1 && arenaLockIndex < arenaStateIndex && arenaLockIndex < arenaQueueIndex && arenaLockIndex < arenaResultIndex, 'Arena must render its completed-season lock before reading match, queue, or result state');
-assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*arena_matchmake'[\s\S]*disabled: true[\s\S]*arena_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*var arena = state\.arena;[\s\S]*var arenaQueue = state\.arena_queue;[\s\S]*var arenaResult = state\.arena_result;/, 'Arena queue, match, result, and action controls must be reachable only after completed-season gating');
+assert.ok(arenaStateIndex !== -1 && arenaQueueIndex !== -1 && arenaResultIndex !== -1 && arenaLockIndex !== -1, 'Arena lock and stale-state cleanup inputs must be explicit');
+assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*button\('FORFEIT MATCH', 'arena_forfeit'[\s\S]*button\('CANCEL QUEUE', 'arena_queue_cancel'[\s\S]*arena_matchmake'[\s\S]*disabled: true[\s\S]*arena_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*if \(arena\)[\s\S]*\} else if \(arenaQueue\)[\s\S]*arenaResult/, 'Arena queue, match, result, and entry controls must be behind completed-season gating while stale cleanup remains available');
 const kaijuLockIndex = renderExploreSource.indexOf('if (!hasCompletedSeasonPet())', arenaLockIndex + 1);
 const kaijuStateIndex = renderExploreSource.indexOf('var kaiju = state.kaiju || {};');
 const kaijuMatchIndex = renderExploreSource.indexOf('var kaijuMatch = kaiju.match;');
 const kaijuQueueIndex = renderExploreSource.indexOf('var kaijuQueue = kaiju.queue;');
-assert.ok(kaijuLockIndex !== -1 && kaijuLockIndex < kaijuStateIndex && kaijuLockIndex < kaijuMatchIndex && kaijuLockIndex < kaijuQueueIndex, 'Kaiju must render its completed-season lock before reading match, queue, or result state');
-assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*var kaiju = state\.kaiju \|\| \{\};[\s\S]*var kaijuMatch = kaiju\.match;[\s\S]*var kaijuQueue = kaiju\.queue;/, 'Kaiju queue, match, result, and action controls must be reachable only after completed-season gating');
+assert.ok(kaijuStateIndex !== -1 && kaijuMatchIndex !== -1 && kaijuQueueIndex !== -1 && kaijuLockIndex !== -1, 'Kaiju lock and stale-state cleanup inputs must be explicit');
+assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/, 'Kaiju queue, match, result, and entry controls must be behind completed-season gating while stale queue cleanup remains available');
 assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
 assert.match(client, /var futureSystemDetail = completedSeasonPet[\s\S]*Future expansion content\. Not available yet\.[\s\S]*Requires completed Season pet\. Locked until you complete a Season pet\./, 'future-system directory copy must change after the completion requirement is met');
 assert.match(client, /escapeHtml\(futureSystemDetail\)/, 'future-system directory copy must render from the completion-aware detail');
+assert.match(client, /panel\('PRESTIGE'[\s\S]*completedSeasonPet[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*NOT AVAILABLE YET\.[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'Prestige copy must distinguish completed users from incomplete users');
+assert.match(client, /var sanctuaryPanel = sanctuaryRows \|\| \(completedSeasonPet[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*NOT AVAILABLE YET\.[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'Sanctuary copy must distinguish completed users from incomplete users');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
 assert.match(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state must serialize Weekly Journey authority summaries');
 assert.match(worker, /countPetMiniAppCompletedDailyJourneyObjectives/, 'Mini App Daily Journey summary must use target-aware aggregation');
@@ -307,6 +310,10 @@ assert.doesNotMatch(worker, /COUNT\(DISTINCT challenge_id\) AS completed_objecti
 assert.match(worker, /countPetMiniAppCompletedWeeklyJourneyObjectives/, 'Mini App Weekly Journey summary must use target-aware aggregation');
 assert.match(worker, /SELECT objective_id, SUM\(progress_value\) AS additive_progress, MAX\(progress_value\) AS max_progress[\s\S]*GROUP BY objective_id/, 'Mini App Weekly Journey summary must aggregate progress by objective');
 assert.doesNotMatch(worker, /COUNT\(DISTINCT objective_id\) AS completed_objectives[\s\S]*telegram_pet_weekly_journey_objectives/, 'Mini App Weekly Journey summary must not count raw accepted evidence rows as completed objectives');
+assert.match(worker, /dailyAcceptedReceipt[\s\S]*status='accepted' AND growth_mark_id IS NOT NULL[\s\S]*growth_mark_awarded: Boolean\(dailyAcceptedReceipt\?\.growth_mark_id\)/, 'Daily Journey summary must derive awarded state from any accepted receipt');
+assert.match(worker, /weeklyAcceptedReceipt[\s\S]*status='accepted' AND crest_id IS NOT NULL[\s\S]*weekly_crest_awarded: Boolean\(weeklyAcceptedReceipt\?\.crest_id\)/, 'Weekly Journey summary must derive awarded state from any accepted receipt');
+assert.match(worker, /dailyReceipt\?\.reason === 'daily_journey_growth_mark_duplicate'/, 'Daily Journey summary must track duplicate state separately from awarded state');
+assert.match(worker, /weeklyReceipt\?\.reason === 'weekly_journey_crest_duplicate'/, 'Weekly Journey summary must track duplicate state separately from awarded state');
 const miniAppActionSource = worker.slice(worker.indexOf('async function processPetMiniAppAction'), worker.indexOf('function serializePetMiniAppActionResult'));
 const futureCombatGateIndex = miniAppActionSource.indexOf('PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)');
 assert.ok(futureCombatGateIndex !== -1, 'Mini App action handler must gate future combat actions server-side');
@@ -321,6 +328,10 @@ for (const cleanupAction of ['arena_queue_cancel', 'arena_forfeit', 'kaiju_queue
   assert.doesNotMatch(futureCombatGateSource, new RegExp(`'${cleanupAction}'`), `${cleanupAction} must remain outside the completed-season entry gate`);
 }
 assert.match(miniAppActionSource, /reason: 'completed_season_pet_required'/, 'server-side future combat lock must return the expected rejection reason');
+const prestigeGateIndex = miniAppActionSource.indexOf("if (action === 'prestige')");
+const prestigeProcessIndex = miniAppActionSource.indexOf('processPetPrestige');
+assert.ok(prestigeGateIndex !== -1 && prestigeProcessIndex !== -1 && prestigeGateIndex < prestigeProcessIndex, 'Mini App prestige action must check completed-season authority before processPetPrestige');
+assert.match(miniAppActionSource, /if \(action === 'prestige'\) \{[\s\S]*hasCompletedPetMiniAppSeasonPet\(db, telegramId\)[\s\S]*reason: 'completed_season_pet_required'[\s\S]*processPetPrestige/, 'locked Prestige must reject before mutation authority runs');
 assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.all\(\[[\s\S]*buildPetMiniAppJourneySummary[\s\S]*ensurePetKaijuMatchCategory/, 'Mini App state loading must hydrate journey summary and Kaiju category in parallel');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
