@@ -8007,8 +8007,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     listSanctuaryPets(db, telegramId).catch(() => []),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
-  const journeySummary = await buildPetMiniAppJourneySummary(db, telegramId, seasonSlots).catch(() => null);
-  const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju);
+  const [journeySummary, hydratedKaiju] = await Promise.all([
+    buildPetMiniAppJourneySummary(db, telegramId, seasonSlots).catch(() => null),
+    ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju),
+  ]);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const adventureBase = selectPetAdventureEncounter(petRaw);
   const adventure = adventureBase ? {
@@ -8156,8 +8158,8 @@ function petMiniAppEventKey(telegramId, action, requestId) {
 }
 
 const PET_MINI_APP_FUTURE_COMBAT_ACTIONS = new Set([
-  'arena_start', 'arena_matchmake', 'arena_queue_cancel', 'arena_ready', 'arena_move', 'arena_forfeit',
-  'kaiju_start', 'kaiju_matchmake', 'kaiju_queue_cancel', 'kaiju_card',
+  'arena_start', 'arena_matchmake', 'arena_ready', 'arena_move',
+  'kaiju_start', 'kaiju_matchmake', 'kaiju_card',
 ]);
 
 async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {

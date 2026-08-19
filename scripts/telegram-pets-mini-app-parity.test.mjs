@@ -110,10 +110,30 @@ for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_ma
 }
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_queue WHERE telegram_id='future-locked'").get().count, 0,
   'locked Arena matchmaking must not create queue rows');
-assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_battles WHERE player1_telegram_id='future-locked' OR player2_telegram_id='future-locked'").get().count, 0,
-  'locked Arena start must not create battle rows');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_queue WHERE telegram_id='future-locked'").get().count, 0,
   'locked Kaiju matchmaking must not create queue rows');
+lockedCombatDb.database.prepare(`INSERT INTO telegram_pet_arena_queue
+  (id, chat_id, telegram_id, rank_bucket, pet_snapshot_json, status)
+  VALUES ('locked-arena-queue', 'mini:arena:global', 'future-locked', 'silver', '{}', 'waiting')`).run();
+lockedCombatDb.database.prepare(`INSERT INTO telegram_pet_kaiju_queue
+  (id, chat_id, telegram_id, status)
+  VALUES ('locked-kaiju-queue', 'mini:kaiju:global', 'future-locked', 'waiting')`).run();
+const lockedArenaCancel = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+  action: 'arena_queue_cancel',
+  request_id: 'locked:arena_queue_cancel',
+}, '123456:test-token');
+assert.equal(lockedArenaCancel.reason, 'arena_queue_cancelled', 'early Season 1 users must be able to cancel stale Arena queue state');
+const lockedKaijuCancel = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+  action: 'kaiju_queue_cancel',
+  request_id: 'locked:kaiju_queue_cancel',
+}, '123456:test-token');
+assert.equal(lockedKaijuCancel.reason, 'kaiju_queue_cancelled', 'early Season 1 users must be able to cancel stale Kaiju queue state');
+assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_queue WHERE telegram_id='future-locked' AND status='waiting'").get().count, 0,
+  'locked Arena queue cleanup must clear waiting queue state');
+assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_battles WHERE player1_telegram_id='future-locked' OR player2_telegram_id='future-locked'").get().count, 0,
+  'locked Arena start must not create battle rows');
+assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_queue WHERE telegram_id='future-locked' AND status='waiting'").get().count, 0,
+  'locked Kaiju queue cleanup must clear waiting queue state');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_matches WHERE player1_telegram_id='future-locked' OR player2_telegram_id='future-locked'").get().count, 0,
   'locked Kaiju start must not create match rows');
 
