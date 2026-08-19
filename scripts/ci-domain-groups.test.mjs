@@ -57,6 +57,11 @@ assert.ok(
 );
 
 assert.ok(
+  runner.includes("['node', 'scripts/moonpet-runtime-audit-completion.test.mjs']"),
+  'worker-api CI must run moonpet-runtime-audit-completion.test.mjs',
+);
+
+assert.ok(
   runner.includes("['npm', 'run', 'test:avatar-builder']"),
   'visual CI must run the avatar builder asset and browser regression suite',
 );

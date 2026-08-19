@@ -11,7 +11,6 @@ const rogueliteFoundation = read('workers/moonboys-api/pets/roguelite-foundation
 const breedingAuthority = read('workers/moonboys-api/pets/breeding-authority.js');
 const sanctuary = read('workers/moonboys-api/pets/sanctuary.js');
 const worker = read('workers/moonboys-api/worker.js');
-const ciRunner = read('scripts/ci-domain-runner.mjs');
 
 assert.match(seasonCompletion, /required_growth_marks:\s*60/, 'Season completion must keep the 60 Growth Mark target.');
 assert.match(seasonCompletion, /required_weekly_crests:\s*10/, 'Season completion must keep the 10 Weekly Crest target.');
@@ -50,10 +49,16 @@ assert.match(weeklyJourney, /awardPetWeeklyCrest\(db, \{[\s\S]*objective: 'weekl
 
 assert.match(rogueliteFoundation, /const petOwnerGuard = petAuthority[\s\S]*EXISTS \(SELECT 1 FROM telegram_pet_instances WHERE pet_id = \? AND telegram_id = \?\)/,
   'Reward settlement must prove the requested pet_id belongs to the Telegram owner.');
+assert.match(rogueliteFoundation, /\$\{petOwnerGuard\}\s+\$\{authorization\.sql\}\s+\$\{reservationGuard\}/,
+  'Reward settlement SQL must inject the pet ownership guard into the claim reservation query.');
 assert.match(rogueliteFoundation, /source = \? AND idempotency_key = \?/,
   'Reward settlement retries must use the private source/idempotency ledger.');
-assert.match(rogueliteFoundation, /MAX_ROGUELITE_MOON_GOLD_PER_CLAIM[\s\S]*MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM[\s\S]*MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM/,
-  'Roguelite currency rewards must keep per-claim caps.');
+assert.match(rogueliteFoundation, /moon_gold:\s*Math\.min\(rewards\.moon_gold,\s*MAX_ROGUELITE_MOON_GOLD_PER_CLAIM\)/,
+  'Roguelite Moon Gold rewards must be clamped in the settlement path.');
+assert.match(rogueliteFoundation, /moon_crystals:\s*Math\.min\(rewards\.moon_crystals,\s*MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM\)/,
+  'Roguelite Moon Crystal rewards must be clamped in the settlement path.');
+assert.match(rogueliteFoundation, /style_tokens:\s*Math\.min\(rewards\.style_tokens,\s*MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM\)/,
+  'Roguelite Style rewards must be clamped in the settlement path.');
 assert.match(rogueliteFoundation, /requestedPetId && \(existingPetId !== petId \|\| existingSeasonKey !== seasonKey\)/,
   'Existing runs must reject stale pet or season authority reuse.');
 
@@ -63,12 +68,14 @@ assert.match(breedingAuthority, /breeding_season_authority_mismatch/,
   'Future parent systems must reject stale season authority.');
 assert.match(sanctuary, /isSeasonSettlementReconciliation/,
   'Sanctuary movement must remain behind explicit season settlement reconciliation.');
+assert.match(sanctuary, /const explicitSettlement = isSeasonSettlementReconciliation\(options\);[\s\S]*const seasonFilter = explicitSettlement \? '' : ' AND c\.season_key<>\?';/,
+  'Completed-pet reconciliation must use the explicit settlement helper to decide current-season filtering.');
+assert.match(sanctuary, /transitions\.push\(await movePetToSanctuaryIfEligible\(db, completion, options\)\);/,
+  'Completed-pet reconciliation must route eligible pets through the Sanctuary movement authority.');
 assert.doesNotMatch(seasonCompletion, /movePetToSanctuaryIfEligible/,
   'Adult/season completion must not immediately move active pets into later systems.');
 
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/,
   'API evolution handling must sync lifecycle only after a newly accepted unlock.');
-assert.match(ciRunner, /moonpet-runtime-audit-completion\.test\.mjs/,
-  'The Moonpet runtime audit completion guard must run in worker API CI.');
 
 console.log('moonpet-runtime-audit-completion.test.mjs passed');
