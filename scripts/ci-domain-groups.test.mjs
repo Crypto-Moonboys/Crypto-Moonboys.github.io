@@ -72,6 +72,26 @@ assert.ok(
 );
 
 assert.ok(
+  workflow.includes('No visual/runtime frontend files changed; skipping ci-visual.'),
+  'visual CI must clearly report when docs/test-only changes skip visual checks',
+);
+
+assert.ok(
+  workflow.includes('id: visual_changes'),
+  'visual CI must classify changed files before installing Playwright Chromium',
+);
+
+assert.ok(
+  workflow.includes("if: steps.visual_changes.outputs.should_run == 'true'"),
+  'visual CI install and test steps must be gated by relevant visual/runtime changes',
+);
+
+assert.ok(
+  !workflow.includes('"$file" == scripts/ci-domain-runner.mjs'),
+  'visual CI changed-file gate must not treat the shared domain runner as a visual/runtime trigger',
+);
+
+assert.ok(
   deployWorkflow.includes('npx playwright install --with-deps chromium'),
   'Pages deploy must install Chromium before running the visual CI domain',
 );
