@@ -7,6 +7,9 @@ const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', imp
 const {
   processPetMiniAppAction,
   buildPetMiniAppJourneySummary,
+  getPetMiniAppCombatEligibility,
+  DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+  WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
   ensurePetStarterSeasonSlot,
   ensureActivePetInstance,
   PET_DAILY_CHALLENGES,
@@ -77,6 +80,19 @@ function markSeasonComplete(db, telegramId, seasonKey = getPetSeasonInfo(new Dat
     (pet_id, telegram_id, season_key, completed_at, legendary_evolution_id, growth_marks_earned, weekly_crests_earned, authority_version)
     VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'lunar_legend', 90, 13, 1)`)
     .run(`pet:${telegramId}:${seasonKey}:1`, telegramId, seasonKey);
+}
+
+async function setActivePetLifecyclePhase(db, telegramId, phase) {
+  await ensurePetStarterSeasonSlot(db, telegramId);
+  const pet = await ensureActivePetInstance(db, telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+    (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
+    VALUES (?, ?, ?, ?, '{}', '[]')
+    ON CONFLICT(pet_id) DO UPDATE SET phase=excluded.phase, updated_at=CURRENT_TIMESTAMP`)
+    .run(pet.pet_id, telegramId, `test-seed:${telegramId}:${phase}`, phase);
+  db.database.prepare('UPDATE telegram_pet_instances SET stage=? WHERE pet_id=? AND telegram_id=?')
+    .run(phase, pet.pet_id, telegramId);
+  return pet;
 }
 
 const db = new D1();
@@ -179,6 +195,54 @@ assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-comple
   request_id: 'completed:kaiju_matchmake',
 }, '123456:test-token')).reason, 'completed_season_pet_required', 'completed Season pet must pass the Kaiju future-combat gate');
 
+const combatAuthorityDb = new D1();
+installSeasonCompletionMarkerTable(combatAuthorityDb);
+seedPlayer(combatAuthorityDb, 'combat-egg', 'Egg Cat', 1500);
+seedPlayer(combatAuthorityDb, 'combat-adult', 'Adult Cat', 1500);
+seedPlayer(combatAuthorityDb, 'combat-new', 'New Cat', 1500);
+markSeasonComplete(combatAuthorityDb, 'combat-egg');
+markSeasonComplete(combatAuthorityDb, 'combat-adult');
+markSeasonComplete(combatAuthorityDb, 'combat-no-pet');
+await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-egg', 'egg');
+await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-adult', 'adult');
+await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-new', 'adult');
+const combatEggEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-egg');
+assert.equal(combatEggEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed egg users');
+assert.equal(combatEggEligibility.combat_unlocked, false, 'completed users with an active egg must not see combat as unlocked');
+assert.equal(combatEggEligibility.reason, 'moon_egg_must_hatch');
+const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
+  action: 'kaiju_matchmake',
+  request_id: 'combat-egg:kaiju_matchmake',
+}, '123456:test-token');
+assert.equal(combatEggAction.accepted, false, 'completed users with an active egg must not enter Kaiju combat');
+assert.equal(combatEggAction.reason, 'moon_egg_must_hatch', 'API combat lock must match the active-egg UI reason');
+assert.equal(combatEggAction.combat_eligibility?.combat_unlocked, false, 'API must return the shared combat eligibility state for active-egg rejection');
+const combatAdultEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult');
+assert.equal(combatAdultEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed adult users');
+assert.equal(combatAdultEligibility.combat_unlocked, true, 'completed users with an eligible active pet must see combat unlocked');
+const combatAdultAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-adult', { id: 'combat-adult' }, {
+  action: 'kaiju_matchmake',
+  request_id: 'combat-adult:kaiju_matchmake',
+}, '123456:test-token');
+assert.notEqual(combatAdultAction.reason, 'completed_season_pet_required', 'completed adult users must pass the completed-season combat gate');
+assert.notEqual(combatAdultAction.reason, 'moon_egg_must_hatch', 'completed adult users must pass the active-pet combat gate');
+const combatNewEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-new');
+assert.equal(combatNewEligibility.has_completed_season_pet, false, 'combat authority must expose missing completion state for new users');
+assert.equal(combatNewEligibility.combat_unlocked, false, 'new users must not see combat as unlocked');
+const combatNewAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-new', { id: 'combat-new' }, {
+  action: 'kaiju_matchmake',
+  request_id: 'combat-new:kaiju_matchmake',
+}, '123456:test-token');
+assert.equal(combatNewAction.reason, 'completed_season_pet_required', 'API combat lock must match the missing-completion UI reason');
+assert.equal(combatNewAction.combat_eligibility?.combat_unlocked, false, 'API must return the shared combat eligibility state for missing-completion rejection');
+assert.equal((await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult')).combat_unlocked, true,
+  'shared combat eligibility helper must unlock only completed users with eligible active pets');
+const combatNoPetEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-no-pet');
+assert.equal(combatNoPetEligibility.has_completed_season_pet, true, 'combat authority must preserve completed-season state without an active pet');
+assert.equal(combatNoPetEligibility.active_pet_exists, false, 'combat authority must explicitly track active pet existence');
+assert.equal(combatNoPetEligibility.combat_unlocked, false, 'completed users without an active pet must not unlock combat');
+assert.equal(combatNoPetEligibility.reason, 'pet_not_adopted');
+
 const priorSeasonCombatDb = new D1();
 installSeasonCompletionMarkerTable(priorSeasonCombatDb);
 seedPlayer(priorSeasonCombatDb, 'prior-complete', 'Prior Cat', 1500);
@@ -216,6 +280,10 @@ const journeySummary = await buildPetMiniAppJourneySummary(journeySummaryDb, 'jo
   current_season_week: journeyWeek,
   slots: [{ active: true, pet_id: journeyPetId, season_key: journeySeasonKey }],
 }, new Date(`${journeyDay}T12:00:00Z`));
+assert.equal(journeySummary.daily.required_objectives, DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+  'Daily Journey Mini App summary must reflect the exported authority threshold');
+assert.equal(journeySummary.weekly.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+  'Weekly Journey Mini App summary must reflect the exported authority threshold');
 assert.equal(
   journeySummaryDb.database.prepare("SELECT COUNT(DISTINCT challenge_id) AS count FROM telegram_pet_daily_journey_objectives WHERE telegram_id='journey-summary' AND status='accepted'").get().count,
   Object.keys(PET_DAILY_CHALLENGES).length,
@@ -309,6 +377,11 @@ assert.equal(kaijuMatched.reason, 'kaiju_match_found');
 const kaijuMatch = await getPetKaijuMatchForPlayer(db, 'kaiju-one');
 assert.equal(kaijuMatch.mode, 'group');
 assert.equal(serializePetMiniAppKaijuMatch(kaijuMatch, 'kaiju-two').role, 'player2');
+const participantCancel = await act('kaiju-two', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id });
+assert.equal(participantCancel.accepted, false, 'active multiplayer Kaiju participants must not use stale-match cancellation');
+assert.equal(participantCancel.reason, 'kaiju_match_cancel_unavailable');
+assert.equal((await getPetKaijuMatchForPlayer(db, 'kaiju-one'))?.status, 'selecting',
+  'active multiplayer Kaiju match must remain active after participant cancel attempt');
 
 const firstCard = await act('kaiju-one', 'kaiju_card', { match_id: kaijuMatch.match_id, card_key: 'big-daddy-kong' });
 assert.equal(firstCard.reason, 'kaiju_card_waiting');

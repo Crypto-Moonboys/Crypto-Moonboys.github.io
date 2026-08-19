@@ -25,7 +25,7 @@ const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 const TERMINAL_DAILY_STATUSES = new Set(['completed', 'failed', 'abandoned', 'extracted']);
 const SUCCESSFUL_DAILY_STATUSES = new Set(['completed', 'extracted']);
 const CARE_ACTIONS = new Set(['feed', 'play', 'clean', 'sleep']);
-const DAILY_JOURNEY_REQUIRED_OBJECTIVES = 3;
+export const DAILY_JOURNEY_REQUIRED_OBJECTIVES = 3;
 
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;

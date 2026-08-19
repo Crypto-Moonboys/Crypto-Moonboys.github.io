@@ -529,13 +529,13 @@
 
   // TEST-EXPORT: completedSeasonPetHelper:start
   function hasCompletedSeasonPet() {
-    var slots = state && state.season_slots && Array.isArray(state.season_slots.slots) ? state.season_slots.slots : [];
-    var sanctuary = state && Array.isArray(state.sanctuary) ? state.sanctuary : [];
-    var hasSlotCompletion = slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
-    var hasSanctuaryCompletion = sanctuary.length > 0;
-    return hasSlotCompletion || hasSanctuaryCompletion;
+    return Boolean(state && state.has_completed_season_pet);
   }
   // TEST-EXPORT: completedSeasonPetHelper:end
+
+  function hasCombatUnlocked() {
+    return Boolean(state && state.combat_unlocked);
+  }
 
   function activePetSummary() {
     if (!state || !state.pet) return '';
@@ -793,7 +793,7 @@
     var arenaQueue = state.arena_queue;
     var arenaResult = state.arena_result;
     var arenaBody;
-    if (!hasCompletedSeasonPet()) {
+    if (!hasCombatUnlocked()) {
       var arenaCleanup = arena
         ? button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true })
         : arenaQueue ? button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) : '';
@@ -835,7 +835,7 @@
     var kaijuMatch = kaiju.match;
     var kaijuQueue = kaiju.queue;
     var kaijuBody;
-    if (!hasCompletedSeasonPet()) {
+    if (!hasCombatUnlocked()) {
       var kaijuCleanup = kaijuMatch
         ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
         : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
@@ -1788,11 +1788,11 @@
   }
 
   function snapshotHasCompletedSeasonPet(snapshot) {
-    var slots = snapshot && snapshot.season_slots && Array.isArray(snapshot.season_slots.slots) ? snapshot.season_slots.slots : [];
-    var sanctuary = snapshot && Array.isArray(snapshot.sanctuary) ? snapshot.sanctuary : [];
-    var hasSlotCompletion = slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
-    var hasSanctuaryCompletion = sanctuary.length > 0;
-    return hasSlotCompletion || hasSanctuaryCompletion;
+    return Boolean(snapshot && snapshot.has_completed_season_pet);
+  }
+
+  function snapshotHasCombatUnlocked(snapshot) {
+    return Boolean(snapshot && snapshot.combat_unlocked);
   }
 
   function updateCombatPresentation(snapshot) {
@@ -1802,7 +1802,7 @@
     clearCombatPresentation();
     if (activeScreen !== 'explore' || !snapshot || !snapshot.adopted) return COMBAT_PRESENTATION_FRAME;
     var arena = snapshot.arena;
-    if (arena && snapshotHasCompletedSeasonPet(snapshot) && arena.status !== 'completed' && !arena.outcome) {
+    if (arena && snapshotHasCombatUnlocked(snapshot) && arena.status !== 'completed' && !arena.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'arena';
       COMBAT_PRESENTATION_FRAME.title = arena.mode === 'multiplayer' ? 'PLAYER ARENA' : 'CRT ARENA';
@@ -1822,7 +1822,7 @@
       return COMBAT_PRESENTATION_FRAME;
     }
     var kaiju = snapshot.kaiju && snapshot.kaiju.match;
-    if (kaiju && snapshotHasCompletedSeasonPet(snapshot) && kaiju.status !== 'completed' && !kaiju.outcome) {
+    if (kaiju && snapshotHasCombatUnlocked(snapshot) && kaiju.status !== 'completed' && !kaiju.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'kaiju';
       COMBAT_PRESENTATION_FRAME.title = kaiju.mode === 'group' ? 'PLAYER KAIJU DUEL' : 'CRT KAIJU DUEL';
