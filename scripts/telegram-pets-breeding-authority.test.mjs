@@ -13,13 +13,20 @@ class Statement {
   async first() { return this.db.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: this.db.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (this.d1.failNextOffspringPersistence && /INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_season_slots/i.test(this.sql)) {
+      this.d1.failNextOffspringPersistence = false;
+      throw new Error('simulated_offspring_persistence_failure');
+    }
     const result = this.db.prepare(this.sql).run(...this.args);
     return { meta: { changes: Number(result.changes || 0) } };
   }
 }
 
 class D1 {
-  constructor() { this.database = new DatabaseSync(':memory:'); }
+  constructor() {
+    this.database = new DatabaseSync(':memory:');
+    this.failNextOffspringPersistence = false;
+  }
   prepare(sql) { return new Statement(this, sql); }
 }
 
@@ -45,6 +52,10 @@ assert.match(breedingSource, /getMoonpetSeasonKey\(now\) !== seasonKey/,
   'breeding must bind requests to the server season authority');
 assert.match(breedingSource, /telegram_pet_season_completions/,
   'breeding must require the completed-pet authority table');
+assert.match(breedingSource, /Cooldown authority is per parent pet/,
+  'breeding source must document that cooldown belongs to each parent pet');
+assert.match(breedingMigration, /Cooldowns are per parent pet/,
+  'migration 069 must document the per-parent cooldown authority model');
 assert.doesNotMatch(workerSource, /body\.action === 'breed'|processMoonpetBreeding|requestMoonpetBreeding/i,
   'breeding PR #1232 must remain foundation-only with no live player-facing route');
 
@@ -163,6 +174,16 @@ const incompleteRejected = await requestMoonpetBreeding(incompleteDb, baseReques
 assert.equal(incompleteRejected.accepted, false, 'Test 2: incomplete parent cannot breed');
 assert.equal(incompleteRejected.reason, 'breeding_parent_incomplete');
 
+const incompleteParentBDb = createDb();
+const incompleteParentBPair = seedBreedingPair(incompleteParentBDb, 'incomplete-parent-b-player', { parentB: { complete: false } });
+const incompleteParentBRejected = await requestMoonpetBreeding(incompleteParentBDb, baseRequest(incompleteParentBPair, 'incomplete-parent-b'));
+assert.equal(incompleteParentBRejected.accepted, false, 'Test 2b: completed Parent A plus incomplete Parent B cannot breed');
+assert.equal(incompleteParentBRejected.reason, 'breeding_parent_incomplete');
+assert.equal(incompleteParentBDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
+  'Test 2b: incomplete Parent B writes no breeding receipt');
+assert.equal(incompleteParentBDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:incomplete-parent-b-player:pet-s2026-003:breed:%'`).get().count, 0,
+  'Test 2b: incomplete Parent B creates no offspring');
+
 const inactiveDb = createDb();
 const inactivePair = seedBreedingPair(inactiveDb, 'inactive-player', { parentB: { active: false } });
 const inactiveRejected = await requestMoonpetBreeding(inactiveDb, baseRequest(inactivePair, 'inactive'));
@@ -190,6 +211,36 @@ assert.equal(recoveredOffspring.offspring_pet_id, duplicateOne.offspring_pet_id,
 assert.equal(duplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(duplicateOne.offspring_pet_id).count, 1,
   'Test 3a: receipt recovery rebuilds the missing offspring instance');
 
+const partialFailureDb = createDb();
+const partialFailurePair = seedBreedingPair(partialFailureDb, 'partial-failure-player');
+partialFailureDb.failNextOffspringPersistence = true;
+await assert.rejects(
+  requestMoonpetBreeding(partialFailureDb, baseRequest(partialFailurePair, 'partial-failure')),
+  /simulated_offspring_persistence_failure/,
+  'Test 3b: simulated worker failure happens after receipt insert but before offspring persistence',
+);
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
+  'Test 3b: partial failure leaves exactly one accepted receipt');
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:partial-failure-player:pet-s2026-003:breed:%'`).get().count, 0,
+  'Test 3b: partial failure leaves no offspring before retry');
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
+  'Test 3b: partial failure leaves no cooldown before retry');
+partialFailureDb.database.prepare(`UPDATE telegram_pet_instances SET status='archived'
+  WHERE pet_id IN (?, ?)`).run(partialFailurePair.parentA, partialFailurePair.parentB);
+partialFailureDb.database.prepare(`UPDATE telegram_pet_season_slots SET status='archived'
+  WHERE pet_id IN (?, ?)`).run(partialFailurePair.parentA, partialFailurePair.parentB);
+const partialFailureRetry = await requestMoonpetBreeding(partialFailureDb, baseRequest(partialFailurePair, 'partial-failure'));
+assert.equal(partialFailureRetry.accepted, true, 'Test 3b: retry recovers the accepted receipt');
+assert.equal(partialFailureRetry.duplicate, true, 'Test 3b: retry is duplicate recovery, not a second breeding');
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 1,
+  'Test 3b: retry leaves one breeding receipt');
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id=?`).get(partialFailureRetry.offspring_pet_id).count, 1,
+  'Test 3b: retry creates one deterministic offspring');
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:partial-failure-player:pet-s2026-003:breed:%'`).get().count, 1,
+  'Test 3b: retry creates no duplicate offspring');
+assert.equal(partialFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns WHERE last_receipt_id=?`).get(partialFailureRetry.receipt_id).count, 2,
+  'Test 3b: retry restores one cooldown row per parent pet');
+
 const deterministicSeedA = await generateBreedingSeed(baseRequest(duplicatePair, 'same-request'));
 const deterministicSeedB = await generateBreedingSeed({
   ...baseRequest(duplicatePair, 'same-request'),
@@ -215,6 +266,49 @@ assert.equal(cooldownSecond.accepted, false, 'Test 5: immediate new breeding req
 assert.equal(cooldownSecond.reason, 'breeding_parent_cooldown');
 assert.ok(cooldownSecond.cooldown_available_at > '2026-08-19T12:00:00.000Z',
   'Test 5: cooldown rejection returns a persisted UTC availability timestamp');
+assert.deepEqual(
+  cooldownDb.database.prepare(`SELECT parent_pet_id, last_receipt_id FROM telegram_pet_breeding_cooldowns ORDER BY parent_pet_id`).all()
+    .map((row) => ({ ...row })),
+  [
+    { parent_pet_id: cooldownPair.parentA, last_receipt_id: cooldownFirst.receipt_id },
+    { parent_pet_id: cooldownPair.parentB, last_receipt_id: cooldownFirst.receipt_id },
+  ],
+  'Test 5: cooldown authority is stored once per parent pet',
+);
+
+cooldownDb.database.prepare(`DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?`).run(cooldownFirst.offspring_pet_id);
+cooldownDb.database.prepare(`DELETE FROM telegram_pet_instances WHERE pet_id=?`).run(cooldownFirst.offspring_pet_id);
+cooldownDb.database.prepare(`DELETE FROM telegram_pet_season_slots WHERE pet_id=?`).run(cooldownFirst.offspring_pet_id);
+const parentC = 'pet:cooldown-player:c';
+seedPet(cooldownDb, {
+  telegramId: cooldownPair.owner,
+  petId: parentC,
+  slotNumber: 3,
+  species: 'comet_gecko',
+  palette: 'cobalt_lime',
+  marking: 'star_patch',
+});
+const parentACooldown = await requestMoonpetBreeding(cooldownDb, {
+  ...baseRequest(cooldownPair, 'cooldown-parent-a-c'),
+  parent_pet_b_id: parentC,
+});
+assert.equal(parentACooldown.accepted, false, 'Test 5a: Parent A cannot bypass cooldown by breeding with Parent C');
+assert.equal(parentACooldown.reason, 'breeding_parent_cooldown');
+assert.equal(parentACooldown.cooldown_parent_pet_id, cooldownPair.parentA,
+  'Test 5a: cooldown belongs to the parent pet, not only the original pair');
+
+const exhaustedDb = createDb();
+const exhaustedPair = seedBreedingPair(exhaustedDb, 'slot-exhausted-player');
+seedPet(exhaustedDb, { telegramId: exhaustedPair.owner, petId: 'pet:slot-exhausted-player:c', slotNumber: 3 });
+const exhaustedRejected = await requestMoonpetBreeding(exhaustedDb, baseRequest(exhaustedPair, 'slot-exhausted'));
+assert.equal(exhaustedRejected.accepted, false, 'Test 5b: full season roster rejects breeding before receipt creation');
+assert.equal(exhaustedRejected.reason, 'breeding_offspring_slot_unavailable');
+assert.equal(exhaustedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
+  'Test 5b: slot exhaustion writes no breeding receipt');
+assert.equal(exhaustedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:slot-exhausted-player:pet-s2026-003:breed:%'`).get().count, 0,
+  'Test 5b: slot exhaustion creates no offspring');
+assert.equal(exhaustedDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
+  'Test 5b: slot exhaustion writes no cooldown');
 
 const seasonDb = createDb();
 seedPlayer(seasonDb, 'season-player');

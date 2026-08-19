@@ -1,6 +1,8 @@
 -- Moonpet Breeding authority foundation.
 -- Additive only: completed parent authority, deterministic receipts,
 -- offspring recovery, and UTC cooldowns live on server-owned tables.
+-- Cooldowns are per parent pet: if Parent A breeds with B, Parent A is on
+-- cooldown for any later pairing until available_at.
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_completion_tuple
   ON telegram_pet_season_slots(pet_id, telegram_id, season_key);
@@ -15,6 +17,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_breeding_receipts (
   season_key TEXT NOT NULL,
   seed TEXT NOT NULL,
   offspring_pet_id TEXT NOT NULL,
+  offspring_slot_number INTEGER NOT NULL CHECK (offspring_slot_number BETWEEN 1 AND 3),
   offspring_traits_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(offspring_traits_json)),
   status TEXT NOT NULL CHECK (status IN ('accepted', 'rejected')),
   reason TEXT NOT NULL,

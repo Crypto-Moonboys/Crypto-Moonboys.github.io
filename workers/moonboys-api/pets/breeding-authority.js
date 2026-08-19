@@ -3,6 +3,8 @@ import { getMoonpetSeasonKey } from './season-authority.js';
 export const PET_BREEDING_AUTHORITY_VERSION = 1;
 export const PET_BREEDING_COOLDOWN_MS = 7 * 86400000;
 
+// Cooldown authority is per parent pet for this foundation layer.
+// If Parent A breeds with B, Parent A cannot immediately breed with C.
 const TEXT_LIMIT = 180;
 const BASE_PET_STATS = Object.freeze({
   hunger: 25,
@@ -221,6 +223,15 @@ async function persistOffspring(db, authority, receipt, offspringTraits, slotNum
       authority.now, authority.now, receipt.offspring_pet_id, authority.owner_id).run();
 }
 
+async function readCooldowns(db, ownerId, seasonKey, parentIds) {
+  const rows = await db.prepare(`SELECT parent_pet_id, available_at, last_receipt_id AS receipt_id
+    FROM telegram_pet_breeding_cooldowns
+    WHERE telegram_id=? AND season_key=? AND parent_pet_id IN (?, ?)
+    ORDER BY parent_pet_id`)
+    .bind(ownerId, seasonKey, parentIds[0], parentIds[1]).all().catch(() => ({ results: [] }));
+  return rows.results || [];
+}
+
 async function persistCooldowns(db, authority, parentIds, availableAt, receiptId) {
   for (const petId of parentIds) {
     await db.prepare(`INSERT INTO telegram_pet_breeding_cooldowns
@@ -240,23 +251,24 @@ export async function requestMoonpetBreeding(db, request = {}) {
   const eventKey = `breeding:${seedInfo.parent_pair[0]}:${seedInfo.parent_pair[1]}:${seedInfo.request_key}`.slice(0, 240);
   const existing = await readReceipt(db, eventKey);
   if (existing?.status === 'accepted') {
+    const authority = {
+      accepted: true,
+      owner_id: existing.telegram_id,
+      season_key: existing.season_key,
+      now: normalizeTimestamp(existing.created_at),
+    };
+    const parentIds = [existing.parent_pet_a_id, existing.parent_pet_b_id];
     const exists = await offspringExists(db, existing.offspring_pet_id, existing.telegram_id);
     if (!exists) {
-      const authority = await validateParentAuthority(db, {
-        owner_id: existing.telegram_id,
-        parent_pet_a_id: existing.parent_pet_a_id,
-        parent_pet_b_id: existing.parent_pet_b_id,
-        season_key: existing.season_key,
-        now: existing.created_at,
-      });
-      if (authority.accepted) {
-        const slotNumber = await nextAvailableSlot(db, authority.owner_id, authority.season_key);
-        if (slotNumber) {
-          await persistOffspring(db, authority, existing, safeJson(existing.offspring_traits_json), slotNumber);
-          if (existing.cooldown_available_at) {
-            await persistCooldowns(db, authority, [existing.parent_pet_a_id, existing.parent_pet_b_id], existing.cooldown_available_at, existing.receipt_id);
-          }
-        }
+      const slotNumber = Number(existing.offspring_slot_number || 0) || await nextAvailableSlot(db, authority.owner_id, authority.season_key);
+      if (slotNumber) {
+        await persistOffspring(db, authority, existing, safeJson(existing.offspring_traits_json), slotNumber);
+      }
+    }
+    if (existing.cooldown_available_at) {
+      const cooldowns = await readCooldowns(db, authority.owner_id, authority.season_key, parentIds);
+      if (cooldowns.length < parentIds.length) {
+        await persistCooldowns(db, authority, parentIds, existing.cooldown_available_at, existing.receipt_id);
       }
     }
     return {
@@ -300,10 +312,10 @@ export async function requestMoonpetBreeding(db, request = {}) {
   };
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_breeding_receipts
     (receipt_id, event_key, request_key, telegram_id, parent_pet_a_id, parent_pet_b_id, season_key,
-     seed, offspring_pet_id, offspring_traits_json, status, reason, cooldown_available_at, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 'breeding_authorized', ?, ?, ?)`)
+     seed, offspring_pet_id, offspring_slot_number, offspring_traits_json, status, reason, cooldown_available_at, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 'breeding_authorized', ?, ?, ?)`)
     .bind(receiptId, eventKey, seedInfo.request_key, authority.owner_id, seedInfo.parent_pair[0], seedInfo.parent_pair[1],
-      authority.season_key, seedInfo.seed, offspringPetId, encodeJson(offspringTraits), cooldownAvailableAt,
+      authority.season_key, seedInfo.seed, offspringPetId, slotNumber, encodeJson(offspringTraits), cooldownAvailableAt,
       authority.now, authority.now).run();
 
   const inserted = await readReceipt(db, eventKey);

@@ -1457,6 +1457,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_breeding_receipts (
   season_key TEXT NOT NULL,
   seed TEXT NOT NULL,
   offspring_pet_id TEXT NOT NULL,
+  offspring_slot_number INTEGER NOT NULL CHECK (offspring_slot_number BETWEEN 1 AND 3),
   offspring_traits_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(offspring_traits_json)),
   status TEXT NOT NULL CHECK (status IN ('accepted', 'rejected')),
   reason TEXT NOT NULL,
