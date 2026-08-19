@@ -18,6 +18,12 @@ export const PET_WEEKLY_JOURNEY_OBJECTIVES = Object.freeze({
 
 export const WEEKLY_JOURNEY_TOTAL_OBJECTIVES = Object.freeze(Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).length);
 
+// Authority invariant: Weekly Crest difficulty is intentionally full completion.
+// Any future objective count change must update this rule deliberately.
+if (WEEKLY_JOURNEY_REQUIRED_OBJECTIVES !== WEEKLY_JOURNEY_TOTAL_OBJECTIVES) {
+  throw new Error('weekly_journey_threshold_drift');
+}
+
 // Production exposure for this PR is deliberately narrow: this module supplies
 // authority primitives only. Future live callers must provide a persisted source
 // event, pet_id, season_key, and qualification_week before any Crest can settle.

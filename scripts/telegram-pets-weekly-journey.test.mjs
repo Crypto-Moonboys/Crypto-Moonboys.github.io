@@ -40,6 +40,10 @@ for (const table of ['telegram_pet_weekly_journey_objectives', 'telegram_pet_wee
 }
 assert.equal(WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, 5, 'Weekly Journey Crest qualification intentionally requires all 5 objectives');
 assert.equal(WEEKLY_JOURNEY_TOTAL_OBJECTIVES, 5, 'Weekly Journey has 5 objectives in PR #1231');
+assert.equal(WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, WEEKLY_JOURNEY_TOTAL_OBJECTIVES,
+  'Weekly Journey authority requires all configured objectives; objective count drift must force an intentional threshold decision');
+assert.match(weeklyJourneySource, /weekly_journey_threshold_drift/,
+  'weekly journey source must enforce the full-completion authority invariant');
 assert.match(weeklyJourneySource, /intentionally a 5\/5 foundation authority/,
   'weekly journey source must document that the threshold is intentionally 5/5');
 assert.match(weeklyJourneySource, /exposed only\s+\/\/ through test hooks/,
