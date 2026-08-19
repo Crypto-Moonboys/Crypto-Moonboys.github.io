@@ -81,6 +81,8 @@ assert.match(breedingSource, /PET_LIFECYCLE_SCHEMA_VERSION, receipt\.seed/,
   'breeding offspring lifecycle rows must use lifecycle schema version, not breeding authority version');
 assert.doesNotMatch(breedingSource, /lifecycle_version[\s\S]{0,220}PET_BREEDING_AUTHORITY_VERSION, receipt\.seed/,
   'breeding offspring lifecycle version must stay decoupled from breeding authority version changes');
+assert.doesNotMatch(breedingSource, /normalizeTimestamp\(request\.now\)|request\.now/,
+  'breeding authority must not trust caller-controlled request.now for clock decisions');
 assert.match(breedingMigration, /Cooldowns are per parent pet/,
   'migration 069 must document the per-parent cooldown authority model');
 assert.doesNotMatch(workerSource, /body\.action === 'breed'|processMoonpetBreeding|requestMoonpetBreeding/i,
@@ -178,6 +180,8 @@ function baseRequest(pair, requestKey = 'breed-1') {
     now: '2026-08-19T12:00:00.000Z',
   };
 }
+
+const TEST_CLOCK = Object.freeze({ now: '2026-08-19T12:00:00.000Z' });
 
 const ownershipDb = createDb();
 seedPlayer(ownershipDb, 'owner-a');
@@ -409,9 +413,15 @@ const cooldownDb = createDb();
 const cooldownPair = seedBreedingPair(cooldownDb, 'cooldown-player');
 const cooldownFirst = await requestMoonpetBreeding(cooldownDb, baseRequest(cooldownPair, 'cooldown-one'));
 const cooldownSecond = await requestMoonpetBreeding(cooldownDb, baseRequest(cooldownPair, 'cooldown-two'));
+const cooldownBypassAttempt = await requestMoonpetBreeding(cooldownDb, {
+  ...baseRequest(cooldownPair, 'cooldown-future-bypass'),
+  now: '2026-08-27T12:00:00.000Z',
+}, TEST_CLOCK);
 assert.equal(cooldownFirst.accepted, true, 'Test 5: initial breeding before cooldown is accepted');
 assert.equal(cooldownSecond.accepted, false, 'Test 5: immediate new breeding request is rejected');
 assert.equal(cooldownSecond.reason, 'breeding_parent_cooldown');
+assert.equal(cooldownBypassAttempt.accepted, false, 'Test 5: caller-controlled future request.now cannot bypass cooldown');
+assert.equal(cooldownBypassAttempt.reason, 'breeding_parent_cooldown');
 assert.ok(cooldownSecond.cooldown_available_at > '2026-08-19T12:00:00.000Z',
   'Test 5: cooldown rejection returns a persisted UTC availability timestamp');
 assert.deepEqual(
@@ -475,6 +485,31 @@ assert.equal(slotRaceDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram
   'Test 5c: slot race loser leaves no offspring instance');
 assert.equal(slotRaceDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_cooldowns`).get().count, 0,
   'Test 5c: slot race loser writes no cooldown');
+
+const seasonClockDb = createDb();
+const seasonClockPair = seedBreedingPair(seasonClockDb, 'season-clock-player');
+const manipulatedFutureSeason = await requestMoonpetBreeding(seasonClockDb, {
+  ...baseRequest(seasonClockPair, 'season-clock-future'),
+  now: '2026-10-01T00:00:00.000Z',
+}, TEST_CLOCK);
+assert.equal(manipulatedFutureSeason.accepted, true,
+  'Test 5d: caller-controlled future request.now cannot move season authority out of server season');
+assert.equal(seasonClockDb.database.prepare(`SELECT created_at FROM telegram_pet_breeding_receipts WHERE receipt_id=?`).get(manipulatedFutureSeason.receipt_id).created_at,
+  TEST_CLOCK.now,
+  'Test 5d: receipt timestamp uses server-authority clock, not request.now');
+
+const seasonClockMismatchDb = createDb();
+const seasonClockMismatchPair = seedBreedingPair(seasonClockMismatchDb, 'season-clock-mismatch-player');
+const manipulatedSeasonRejected = await requestMoonpetBreeding(seasonClockMismatchDb, {
+  ...baseRequest(seasonClockMismatchPair, 'season-clock-mismatch'),
+  season_key: 'pet-s2026-004',
+  now: '2026-10-01T00:00:00.000Z',
+}, TEST_CLOCK);
+assert.equal(manipulatedSeasonRejected.accepted, false,
+  'Test 5e: caller-controlled request.now cannot make a future season authoritative');
+assert.equal(manipulatedSeasonRejected.reason, 'breeding_season_authority_mismatch');
+assert.equal(seasonClockMismatchDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
+  'Test 5e: manipulated season request writes no receipt');
 
 const seasonDb = createDb();
 seedPlayer(seasonDb, 'season-player');
