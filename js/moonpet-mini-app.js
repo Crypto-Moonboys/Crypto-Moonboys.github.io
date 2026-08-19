@@ -872,7 +872,9 @@
     var weeklyCapability = state.capabilities && state.capabilities.weekly_journey || {};
     var weeklyAuthority = state.weekly_journey || {};
     var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
-    var weeklyTitle = weeklyState === 'AVAILABLE' ? 'WEEKLY JOURNEY // LIVE' : 'WEEKLY JOURNEY // PLANNED EXPANSION';
+    var weeklyTitle = weeklyState === 'AVAILABLE'
+      ? 'WEEKLY JOURNEY // LIVE'
+      : weeklyState === 'COMING_SOON' ? 'WEEKLY JOURNEY // PLANNED EXPANSION' : 'WEEKLY JOURNEY // SYNCING';
     var weeklyJourney = weeklyJourneyMarkup(weeklyAuthority, weeklyCapability);
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +

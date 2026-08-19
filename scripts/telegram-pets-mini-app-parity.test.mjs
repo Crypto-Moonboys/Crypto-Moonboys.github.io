@@ -496,6 +496,20 @@ assert.equal(zeroWeeklyState.capabilities.weekly_journey.state, 'AVAILABLE',
 assert.equal(zeroWeeklyState.capabilities.weekly_journey.active, true,
   'zero-progress Weekly Journey capability must be active');
 
+const unavailableWeeklyDb = new D1();
+seedPlayer(unavailableWeeklyDb, 'weekly-authority-unavailable', 'Syncing Weekly Cat', 1200);
+await ensurePetStarterSeasonSlot(unavailableWeeklyDb, 'weekly-authority-unavailable', new Date());
+unavailableWeeklyDb.database.exec('DROP TABLE telegram_pet_weekly_journey_objectives');
+const unavailableWeeklyState = await buildPetMiniAppState(unavailableWeeklyDb, 'weekly-authority-unavailable', '123456:test-token');
+assert.equal(unavailableWeeklyState.weekly_journey.state, 'LOCKED',
+  'weekly objective read failure must fail closed instead of fabricating zero progress');
+assert.equal(unavailableWeeklyState.weekly_journey.active, false,
+  'weekly objective read failure must keep Weekly Journey inactive');
+assert.equal(unavailableWeeklyState.weekly_journey.reason, 'weekly_journey_authority_syncing',
+  'weekly objective read failure must surface authority syncing');
+assert.equal(unavailableWeeklyState.capabilities.weekly_journey.state, 'LOCKED',
+  'weekly objective read failure must keep capability locked');
+
 const receiptAuthorityDb = new D1();
 seedPlayer(receiptAuthorityDb, 'receipt-authority', 'Receipt Cat', 1200);
 const receiptDay = '2026-08-16';

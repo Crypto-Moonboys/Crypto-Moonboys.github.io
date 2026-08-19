@@ -560,15 +560,25 @@ bossDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
   WHERE telegram_id=?`).run(bossDuplicateTelegramId);
 const bossFirst = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-original-key');
 assert.equal(bossFirst.accepted, true, 'Test 5g: first weekly boss attempt is accepted');
+const bossOriginalEvent = bossDuplicateDb.database.prepare(`SELECT day_key, week_key, metadata FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key='weekly-boss-original-key' AND event_type='weekly_boss' AND status='accepted'`).get(bossDuplicateTelegramId);
+assert.ok(bossOriginalEvent?.week_key, 'Test 5g: first weekly boss attempt stores week authority');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss' AND status='accepted'`).get(bossDuplicateTelegramId).count, 1,
   'Test 5g: first weekly boss attempt persists one accepted weekly_boss source event');
+bossDuplicateDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('!wrong-boss-source', ?, ?, 'weekly_boss', 'weekly-boss-wrong-key', 0, 0, ?, ?, ?, 'accepted', 'weekly_boss_attempt', ?)`)
+  .run(bossDuplicatePet, bossDuplicateTelegramId, bossDuplicateSeasonKey, bossOriginalEvent.day_key, bossOriginalEvent.week_key,
+    JSON.stringify({ source: 'pet_weekly_boss', boss_id: 'wrong-weekly-boss', action: 'strike', damage: 1 }));
+bossDuplicateDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).run(bossDuplicateTelegramId, bossDuplicatePet);
 const bossDuplicate = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-retry-different-key');
 assert.equal(bossDuplicate.accepted, true, 'Test 5g: duplicate weekly boss retry remains accepted as a duplicate path');
 assert.equal(bossDuplicate.duplicate, true, 'Test 5g: duplicate weekly boss retry is idempotent');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
-  WHERE telegram_id=? AND event_type='weekly_boss' AND status='accepted'`).get(bossDuplicateTelegramId).count, 1,
-  'Test 5g: duplicate retry with a new request key does not persist a second weekly_boss source event');
+  WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-retry-different-key' AND status='accepted'`).get(bossDuplicateTelegramId).count, 0,
+  'Test 5g: duplicate retry with a new request key does not persist that retry key as a source event');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt' AND status='accepted'`).get(bossDuplicateTelegramId, bossDuplicatePet).count, 1,
   'Test 5g: duplicate retry reuses the original persisted weekly_boss source event and keeps exactly one objective row');

@@ -3598,9 +3598,9 @@ async function readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, b
       AND week_key = ?
       AND event_type = 'weekly_boss'
       AND status = 'accepted'
-      AND (metadata LIKE ? OR reason = 'weekly_boss_attempt')
+      AND metadata LIKE ?
   `;
-  const bossPattern = `%"boss_id":"${boss}"%`;
+  const bossPattern = `%\"boss_id\":\"${boss}\"%`;
   const sameDayEvent = day ? await db.prepare(`${baseSql}
       AND day_key = ?
     ORDER BY id ASC
@@ -8000,7 +8000,7 @@ async function countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, p
     FROM telegram_pet_weekly_journey_objectives
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'
     GROUP BY objective_id`)
-    .bind(petId, telegramId, seasonKey, week).all().catch(() => ({ results: [] }));
+    .bind(petId, telegramId, seasonKey, week).all();
   return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_WEEKLY_JOURNEY_OBJECTIVES);
 }
 
@@ -8009,7 +8009,7 @@ async function listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seas
     FROM telegram_pet_weekly_journey_objectives
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'
     GROUP BY objective_id`)
-    .bind(petId, telegramId, seasonKey, week).all().catch(() => ({ results: [] }));
+    .bind(petId, telegramId, seasonKey, week).all();
   const rowByObjective = new Map((rows.results || []).map((row) => [String(row.objective_id || ''), row]));
   return Object.values(PET_WEEKLY_JOURNEY_OBJECTIVES).map((objective) => {
     const row = rowByObjective.get(objective.objective_id) || {};
@@ -8037,10 +8037,10 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
   if (!petId || !seasonKey) {
     return {
       daily: { utc_day: dayKey, completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
-      weekly: { qualification_week: week, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+      weekly: { qualification_week: week, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
     };
   }
-  const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt, weeklyObjectives, weeklyObjectiveList, weeklyReceipt, weeklyAcceptedReceipt] = await Promise.all([
+  const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt] = await Promise.all([
     countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey),
     db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
       FROM telegram_pet_daily_journey_receipts
@@ -8052,6 +8052,14 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted' AND growth_mark_id IS NOT NULL
       ORDER BY created_at ASC LIMIT 1`)
       .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
+  ]);
+  let weeklyObjectives = 0;
+  let weeklyObjectiveList = null;
+  let weeklyReceipt = null;
+  let weeklyAcceptedReceipt = null;
+  let weeklyAuthorityAvailable = true;
+  try {
+    [weeklyObjectives, weeklyObjectiveList, weeklyReceipt, weeklyAcceptedReceipt] = await Promise.all([
     countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
     listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
     db.prepare(`SELECT status, reason, crest_id, completed_objectives
@@ -8063,9 +8071,32 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       FROM telegram_pet_weekly_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted' AND crest_id IS NOT NULL
       ORDER BY created_at ASC LIMIT 1`)
-      .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
-  ]);
+      .bind(petId, telegramId, seasonKey, week).first(),
+    ]);
+  } catch {
+    weeklyAuthorityAvailable = false;
+  }
   const dailyCompleted = Math.max(Number(dailyObjectives || 0), Number(dailyReceipt?.completed_objectives || 0), Number(dailyAcceptedReceipt?.completed_objectives || 0));
+  if (!weeklyAuthorityAvailable) {
+    return {
+      daily: {
+        pet_id: petId, season_key: seasonKey, utc_day: dayKey,
+        completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+        growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
+        duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
+        reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
+      },
+      weekly: {
+        pet_id: null, season_key: seasonKey, qualification_week: week,
+        completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+        objectives: [],
+        weekly_crest_awarded: false,
+        duplicate_blocked: false,
+        reason: 'weekly_journey_authority_syncing',
+        authority_available: false,
+      },
+    };
+  }
   const weeklyCompleted = Math.max(Number(weeklyObjectives || 0), Number(weeklyReceipt?.completed_objectives || 0), Number(weeklyAcceptedReceipt?.completed_objectives || 0));
   return {
     daily: {
@@ -8082,6 +8113,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
       duplicate_blocked: weeklyReceipt?.reason === 'weekly_journey_crest_duplicate',
       reason: weeklyReceipt?.reason || (weeklyCompleted >= WEEKLY_JOURNEY_REQUIRED_OBJECTIVES ? 'weekly_journey_ready' : 'weekly_journey_in_progress'),
+      authority_available: true,
     },
   };
 }
@@ -8127,6 +8159,7 @@ function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
 function isPetMiniAppWeeklyJourneySummaryLive(weeklyJourneySummary = null) {
   return Boolean(
     weeklyJourneySummary
+    && weeklyJourneySummary.authority_available !== false
     && String(weeklyJourneySummary.pet_id || '').trim()
     && Number(weeklyJourneySummary.required_objectives || 0) > 0
     && Array.isArray(weeklyJourneySummary.objectives)
