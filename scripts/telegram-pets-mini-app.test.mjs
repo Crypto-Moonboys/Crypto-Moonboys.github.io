@@ -736,8 +736,10 @@ assert.match(client, /var COMBAT_ARENA_SPECIAL_MAX = 3;/);
 assert.match(worker, /const PET_ARENA_SPECIAL_COST = 3;/, 'Phase 5 special presentation must match the authoritative Arena charge cost');
 assert.match(client, /function clearCombatPresentation\(\)/);
 assert.match(client, /function updateCombatPresentation\(snapshot\)/);
+assert.match(client, /function snapshotHasCompletedSeasonPet\(snapshot\)/);
 assert.match(client, /snapshot === combatSnapshot && activeScreen === combatScreen/);
 assert.match(client, /var arena = snapshot\.arena/);
+assert.match(client, /arena && snapshotHasCompletedSeasonPet\(snapshot\) && arena\.status !== 'completed'/, 'Arena combat presentation must respect completed-season gating');
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'arena'/);
 assert.match(client, /arena\.player_hp/);
 assert.match(client, /arena\.opponent_hp/);
@@ -745,6 +747,7 @@ assert.match(client, /arena\.player_special/);
 assert.match(client, /arena\.opponent_special/);
 assert.match(client, /'ROUND ' \+ Number\(arena\.current_round \|\| 1\) \+ '\/' \+ Number\(arena\.max_rounds \|\| 5\) \+ ' LIVE'/);
 assert.match(client, /var kaiju = snapshot\.kaiju && snapshot\.kaiju\.match/);
+assert.match(client, /kaiju && snapshotHasCompletedSeasonPet\(snapshot\) && kaiju\.status !== 'completed'/, 'Kaiju combat presentation must respect completed-season gating');
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'kaiju'/);
 assert.match(client, /kaiju\.own_card_locked/);
 assert.match(client, /kaiju\.opponent_card_locked/);
@@ -788,6 +791,14 @@ const combatRuntime = new Function(
 );
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
+  arena: { status: 'active', player_hp: 74, opponent_hp: 38 },
+  kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: false, opponent_card_locked: false } },
+}), 'Phase 5 combat director must tolerate stale future-system state for early Season 1 users');
+assert.equal(runtimeCombatFrame.active, false, 'early Season 1 users must not see stale Arena or Kaiju combat presentation');
+const completedSeasonSlots = { slots: [{ active: true, pet: { progression: { season_complete: true } } }] };
+assert.doesNotThrow(() => combatRuntime.update({
+  adopted: true,
+  season_slots: completedSeasonSlots,
   arena: {
     status: 'active', mode: 'multiplayer', current_round: 3, max_rounds: 5,
     player_hp: 74, opponent_hp: 38, player_special: 2, opponent_special: 1,
@@ -805,6 +816,7 @@ assert.equal(runtimeCombatFrame.opponentSpecial, 1);
 assert.equal(runtimeCombatFrame.rivalColor, '#61f5ff');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
+  season_slots: completedSeasonSlots,
   kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: true, opponent_card_locked: false, own_card_key: 'neon-claw' } },
 }), 'Phase 5 Kaiju director must execute from live card-lock state');
 assert.equal(runtimeCombatFrame.mode, 'kaiju');

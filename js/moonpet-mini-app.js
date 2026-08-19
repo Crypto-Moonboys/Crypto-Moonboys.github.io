@@ -1769,6 +1769,11 @@
     return COMBAT_PRESENTATION_FRAME;
   }
 
+  function snapshotHasCompletedSeasonPet(snapshot) {
+    var slots = snapshot && snapshot.season_slots && Array.isArray(snapshot.season_slots.slots) ? snapshot.season_slots.slots : [];
+    return slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
+  }
+
   function updateCombatPresentation(snapshot) {
     if (snapshot === combatSnapshot && activeScreen === combatScreen) return COMBAT_PRESENTATION_FRAME;
     combatSnapshot = snapshot;
@@ -1776,7 +1781,7 @@
     clearCombatPresentation();
     if (activeScreen !== 'explore' || !snapshot || !snapshot.adopted) return COMBAT_PRESENTATION_FRAME;
     var arena = snapshot.arena;
-    if (arena && arena.status !== 'completed' && !arena.outcome) {
+    if (arena && snapshotHasCompletedSeasonPet(snapshot) && arena.status !== 'completed' && !arena.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'arena';
       COMBAT_PRESENTATION_FRAME.title = arena.mode === 'multiplayer' ? 'PLAYER ARENA' : 'CRT ARENA';
@@ -1796,7 +1801,7 @@
       return COMBAT_PRESENTATION_FRAME;
     }
     var kaiju = snapshot.kaiju && snapshot.kaiju.match;
-    if (kaiju && kaiju.status !== 'completed' && !kaiju.outcome) {
+    if (kaiju && snapshotHasCompletedSeasonPet(snapshot) && kaiju.status !== 'completed' && !kaiju.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'kaiju';
       COMBAT_PRESENTATION_FRAME.title = kaiju.mode === 'group' ? 'PLAYER KAIJU DUEL' : 'CRT KAIJU DUEL';
