@@ -682,6 +682,9 @@ assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHER
 db.database.prepare(`INSERT INTO telegram_pet_runs
   (id, pet_id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room, depth, max_depth, risk_level)
   VALUES ('roguelite-cap-row','pet-a','owner','roguelite-cap-run','pet-s2026-003','moon_alley',1,1,'completed',1,1,1,1,1)`).run();
+const walletBeforeRogueliteCap = db.database.prepare(
+  "SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'",
+).get();
 const rogueliteCapped = await awardRoguelitePetReward(db, {
   telegram_id: 'owner',
   pet_id: 'pet-a',
@@ -704,6 +707,22 @@ assert.deepEqual(
     style_tokens: __rogueliteFoundationTestHooks.MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM,
   },
   'oversized roguelite currency rewards must settle at the configured caps',
+);
+const walletAfterRogueliteCap = db.database.prepare(
+  "SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'",
+).get();
+assert.deepEqual(
+  {
+    moon_gold: walletAfterRogueliteCap.moon_gold - walletBeforeRogueliteCap.moon_gold,
+    moon_crystals: walletAfterRogueliteCap.moon_crystals - walletBeforeRogueliteCap.moon_crystals,
+    style_tokens: walletAfterRogueliteCap.style_tokens - walletBeforeRogueliteCap.style_tokens,
+  },
+  {
+    moon_gold: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_GOLD_PER_CLAIM,
+    moon_crystals: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM,
+    style_tokens: __rogueliteFoundationTestHooks.MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM,
+  },
+  'oversized roguelite currency rewards must increase the authoritative account wallet only by the configured caps',
 );
 const rogueliteClaim = JSON.parse(db.database.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE idempotency_key='roguelite-currency-cap'").get().applied_rewards);
 assert.deepEqual(
