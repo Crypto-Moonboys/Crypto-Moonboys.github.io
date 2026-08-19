@@ -8,7 +8,7 @@ import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
   createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, processDailyMoonRunStep,
-  recordDailyCareChallenge, syncDailyMoonRun,
+  PET_DAILY_CHALLENGES, recordDailyCareChallenge, syncDailyMoonRun,
 } from './pets/daily-moon-run.js';
 import {
   PET_WEEKLY_JOURNEY_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence,
@@ -7867,6 +7867,39 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
   };
 }
 
+const miniAppProgressInteger = (value, fallback = 0) => Math.max(0, Math.floor(Number(value ?? fallback) || 0));
+
+function countMiniAppCompletedJourneyObjectives(rows = [], definitions = {}) {
+  return rows.reduce((count, row) => {
+    const objective = definitions[String(row.challenge_id || row.objective_id || '')];
+    if (!objective) return count;
+    const target = miniAppProgressInteger(objective.target, 1);
+    const progressMode = String(objective.progress_mode || objective.validation_rules?.progress_mode || 'add');
+    const progress = progressMode === 'max'
+      ? miniAppProgressInteger(row.max_progress, target)
+      : Math.min(target, miniAppProgressInteger(row.additive_progress, target));
+    return progress >= target ? count + 1 : count;
+  }, 0);
+}
+
+async function countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey) {
+  const rows = await db.prepare(`SELECT challenge_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
+    FROM telegram_pet_daily_journey_objectives
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted'
+    GROUP BY challenge_id`)
+    .bind(petId, telegramId, seasonKey, dayKey).all().catch(() => ({ results: [] }));
+  return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_DAILY_CHALLENGES);
+}
+
+async function countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
+  const rows = await db.prepare(`SELECT objective_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
+    FROM telegram_pet_weekly_journey_objectives
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'
+    GROUP BY objective_id`)
+    .bind(petId, telegramId, seasonKey, week).all().catch(() => ({ results: [] }));
+  return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_WEEKLY_JOURNEY_OBJECTIVES);
+}
+
 async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = new Date()) {
   const activeSlot = (seasonSlots?.slots || []).find((slot) => slot.active) || null;
   const petId = String(activeSlot?.pet_id || '');
@@ -7880,27 +7913,21 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
     };
   }
   const [dailyObjectives, dailyReceipt, weeklyObjectives, weeklyReceipt] = await Promise.all([
-    db.prepare(`SELECT COUNT(DISTINCT challenge_id) AS completed_objectives
-      FROM telegram_pet_daily_journey_objectives
-      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted'`)
-      .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
+    countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey),
     db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
       FROM telegram_pet_daily_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=?
       ORDER BY created_at DESC LIMIT 1`)
       .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
-    db.prepare(`SELECT COUNT(DISTINCT objective_id) AS completed_objectives
-      FROM telegram_pet_weekly_journey_objectives
-      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'`)
-      .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
+    countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
     db.prepare(`SELECT status, reason, crest_id, completed_objectives
       FROM telegram_pet_weekly_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=?
       ORDER BY created_at DESC LIMIT 1`)
       .bind(petId, telegramId, seasonKey, week).first().catch(() => null),
   ]);
-  const dailyCompleted = Math.max(Number(dailyObjectives?.completed_objectives || 0), Number(dailyReceipt?.completed_objectives || 0));
-  const weeklyCompleted = Math.max(Number(weeklyObjectives?.completed_objectives || 0), Number(weeklyReceipt?.completed_objectives || 0));
+  const dailyCompleted = Math.max(Number(dailyObjectives || 0), Number(dailyReceipt?.completed_objectives || 0));
+  const weeklyCompleted = Math.max(Number(weeklyObjectives || 0), Number(weeklyReceipt?.completed_objectives || 0));
   return {
     daily: {
       pet_id: petId, season_key: seasonKey, utc_day: dayKey,
@@ -8128,6 +8155,21 @@ function petMiniAppEventKey(telegramId, action, requestId) {
   return buildStablePetEventKey(['mini', telegramId, action, suffix]);
 }
 
+const PET_MINI_APP_FUTURE_COMBAT_ACTIONS = new Set([
+  'arena_start', 'arena_matchmake', 'arena_queue_cancel', 'arena_ready', 'arena_move', 'arena_forfeit',
+  'kaiju_start', 'kaiju_matchmake', 'kaiju_queue_cancel', 'kaiju_card',
+]);
+
+async function hasCompletedPetMiniAppSeasonPet(db, telegramId, now = new Date()) {
+  const seasonKey = getPetSeasonInfo(now).key;
+  const row = await db.prepare(`SELECT 1 AS completed
+    FROM telegram_pet_season_completions
+    WHERE telegram_id=? AND season_key=?
+    LIMIT 1`)
+    .bind(String(telegramId), seasonKey).first().catch(() => null);
+  return Boolean(row?.completed);
+}
+
 async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
@@ -8140,6 +8182,9 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     return { accepted: false, reason: 'moon_egg_must_hatch', lifecycle };
+  }
+  if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action) && !await hasCompletedPetMiniAppSeasonPet(db, telegramId)) {
+    return { accepted: false, reason: 'completed_season_pet_required' };
   }
   if (action === 'season_slots') return { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
   if (action === 'buy_pet_slot') return buyPetSeasonSlot(db, telegramId, body.slot_number, { event_key: eventKey, switch_active: body.switch_active });
@@ -12994,6 +13039,7 @@ export const __petMediaTestHooks = Object.freeze({
   processPetWeeklyBoss,
   awardStoredWeeklyBossVictoryCrest,
   recordWeeklyBossVictoryCrest,
+  PET_DAILY_CHALLENGES,
   PET_WEEKLY_JOURNEY_OBJECTIVES,
   finalizeWeeklyJourneyCrest,
   recordWeeklyJourneyObjectiveEvidence,
@@ -13055,6 +13101,8 @@ export const __petMediaTestHooks = Object.freeze({
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
   processPetMiniAppAction,
+  buildPetMiniAppJourneySummary,
+  hasCompletedPetMiniAppSeasonPet,
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
   buyPetSeasonSlot,

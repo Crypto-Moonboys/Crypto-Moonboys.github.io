@@ -284,6 +284,20 @@ assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*ka
 assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
 assert.match(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state must serialize Weekly Journey authority summaries');
+assert.match(worker, /countPetMiniAppCompletedDailyJourneyObjectives/, 'Mini App Daily Journey summary must use target-aware aggregation');
+assert.match(worker, /SELECT challenge_id, SUM\(progress_value\) AS additive_progress, MAX\(progress_value\) AS max_progress[\s\S]*GROUP BY challenge_id/, 'Mini App Daily Journey summary must aggregate progress by objective');
+assert.doesNotMatch(worker, /COUNT\(DISTINCT challenge_id\) AS completed_objectives[\s\S]*telegram_pet_daily_journey_objectives/, 'Mini App Daily Journey summary must not count raw accepted evidence rows as completed objectives');
+assert.match(worker, /countPetMiniAppCompletedWeeklyJourneyObjectives/, 'Mini App Weekly Journey summary must use target-aware aggregation');
+assert.match(worker, /SELECT objective_id, SUM\(progress_value\) AS additive_progress, MAX\(progress_value\) AS max_progress[\s\S]*GROUP BY objective_id/, 'Mini App Weekly Journey summary must aggregate progress by objective');
+assert.doesNotMatch(worker, /COUNT\(DISTINCT objective_id\) AS completed_objectives[\s\S]*telegram_pet_weekly_journey_objectives/, 'Mini App Weekly Journey summary must not count raw accepted evidence rows as completed objectives');
+const miniAppActionSource = worker.slice(worker.indexOf('async function processPetMiniAppAction'), worker.indexOf('function serializePetMiniAppActionResult'));
+const futureCombatGateIndex = miniAppActionSource.indexOf('PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)');
+assert.ok(futureCombatGateIndex !== -1, 'Mini App action handler must gate future combat actions server-side');
+for (const action of ['arena_start', 'arena_matchmake', 'arena_queue_cancel', 'arena_ready', 'arena_move', 'arena_forfeit', 'kaiju_start', 'kaiju_matchmake', 'kaiju_queue_cancel', 'kaiju_card']) {
+  assert.ok(worker.includes(`'${action}'`), `future combat action gate must name ${action}`);
+  assert.ok(futureCombatGateIndex < miniAppActionSource.indexOf(`action === '${action}'`), `${action} must be locked before dispatch`);
+}
+assert.match(miniAppActionSource, /reason: 'completed_season_pet_required'/, 'server-side future combat lock must return the expected rejection reason');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
