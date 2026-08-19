@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import {
+  awardPetReward as awardRoguelitePetReward,
+  __rogueliteFoundationTestHooks,
+} from '../workers/moonboys-api/pets/roguelite-foundation.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/065_moonpet_reward_pet_id_authority.sql', import.meta.url), 'utf8');
@@ -625,6 +629,13 @@ assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WH
 const wrongOwner = await awardPetReward(db, { ...request, pet_id: 'pet-other', idempotency_key: 'wrong-owner' });
 assert.equal(wrongOwner.accepted, false, 'a persisted pet owned by another player must fail closed');
 assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-other'").get().pet_xp, 0);
+assert.deepEqual({ ...db.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='other'").get() },
+  { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+  'a wrong-owner reward attempt must not award account currencies');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE idempotency_key='wrong-owner'").get().count, 0,
+  'a wrong-owner reward attempt must not create a private reward claim');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE event_key='pet_reward:pet_job:wrong-owner'").get().count, 0,
+  'a wrong-owner reward attempt must not create a public reward event');
 
 const legacy = await awardPetReward(db, { telegram_id: 'legacy', source: 'pet_job', idempotency_key: 'pre-cutover', rewards: { pet_xp: 11 } });
 assert.equal(legacy.accepted, true, 'reward rows without pet_id retain legacy settlement');
@@ -667,5 +678,65 @@ const capped = await awardPetReward(db, {
 });
 assert.equal(capped.pet_xp_awarded, 10, 'reservation settlement must count toward the immutable pet daily cap');
 assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-reserved'").get().pet_xp, 1200);
+
+db.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, region, difficulty, seed, status, current_room, max_room, depth, max_depth, risk_level)
+  VALUES ('roguelite-cap-row','pet-a','owner','roguelite-cap-run','pet-s2026-003','moon_alley',1,1,'completed',1,1,1,1,1)`).run();
+const walletBeforeRogueliteCap = db.database.prepare(
+  "SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'",
+).get();
+const rogueliteCapped = await awardRoguelitePetReward(db, {
+  telegram_id: 'owner',
+  pet_id: 'pet-a',
+  source: 'roguelite_completion',
+  idempotency_key: 'roguelite-currency-cap',
+  rewards: { moon_gold: 9999, moon_crystals: 9999, style_tokens: 9999 },
+  context: { run_id: 'roguelite-cap-run' },
+  now: '2026-08-17T12:02:00Z',
+});
+assert.equal(rogueliteCapped.accepted, true, 'roguelite reward settlement must accept authorized completed runs');
+assert.deepEqual(
+  {
+    moon_gold: rogueliteCapped.rewards.moon_gold,
+    moon_crystals: rogueliteCapped.rewards.moon_crystals,
+    style_tokens: rogueliteCapped.rewards.style_tokens,
+  },
+  {
+    moon_gold: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_GOLD_PER_CLAIM,
+    moon_crystals: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM,
+    style_tokens: __rogueliteFoundationTestHooks.MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM,
+  },
+  'oversized roguelite currency rewards must settle at the configured caps',
+);
+const walletAfterRogueliteCap = db.database.prepare(
+  "SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'",
+).get();
+assert.deepEqual(
+  {
+    moon_gold: walletAfterRogueliteCap.moon_gold - walletBeforeRogueliteCap.moon_gold,
+    moon_crystals: walletAfterRogueliteCap.moon_crystals - walletBeforeRogueliteCap.moon_crystals,
+    style_tokens: walletAfterRogueliteCap.style_tokens - walletBeforeRogueliteCap.style_tokens,
+  },
+  {
+    moon_gold: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_GOLD_PER_CLAIM,
+    moon_crystals: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM,
+    style_tokens: __rogueliteFoundationTestHooks.MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM,
+  },
+  'oversized roguelite currency rewards must increase the authoritative account wallet only by the configured caps',
+);
+const rogueliteClaim = JSON.parse(db.database.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE idempotency_key='roguelite-currency-cap'").get().applied_rewards);
+assert.deepEqual(
+  {
+    moon_gold: rogueliteClaim.moon_gold,
+    moon_crystals: rogueliteClaim.moon_crystals,
+    style_tokens: rogueliteClaim.style_tokens,
+  },
+  {
+    moon_gold: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_GOLD_PER_CLAIM,
+    moon_crystals: __rogueliteFoundationTestHooks.MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM,
+    style_tokens: __rogueliteFoundationTestHooks.MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM,
+  },
+  'stored roguelite ledger rewards must persist the clamped values',
+);
 
 console.log('Moonpet pet_id reward authority tests passed.');
