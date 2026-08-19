@@ -111,10 +111,30 @@ capabilityHelperState = { capabilities_version: 1, capabilities: { combat: { sta
 assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasCombatUnlocked();')(capabilityHelperState), true,
   'available capability payload must unlock combat');
 
+const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
+assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
+const dailyJourneyRuntime = new Function(
+  'dailyAuthority',
+  'completedMissions',
+  'guidance',
+  'growth',
+  `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function escapeHtml(value) { return String(value == null ? '' : value); }
+function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
+function meter(label, percent) { return '<meter>' + label + ':' + percent + '</meter>'; }
+${dailyJourneyMarkupSource}; return dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth);`,
+);
+assert.match(dailyJourneyRuntime({}, 2, {}, {}), /DAILY JOURNEY \/\/ SYNCING/,
+  'missing Daily Journey authority must render a syncing state');
+assert.doesNotMatch(dailyJourneyRuntime({}, 2, {}, {}), /\d+\/0 OBJECTIVES/,
+  'missing Daily Journey authority must not render an X/0 objective counter');
+assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /DAILY JOURNEY \/\/ 2\/3 OBJECTIVES/,
+  'complete Daily Journey authority must still render objective progress');
+
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'dailyJourneyMarkup', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
@@ -296,7 +316,7 @@ assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[
 assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
-assert.match(client, /WEEKLY JOURNEY \/\/ COMING SOON/, 'Weekly Journey must not present live progress before production evidence callers exist');
+assert.match(client, /WEEKLY JOURNEY \/\/ PLANNED EXPANSION/, 'Weekly Journey must not present live progress before production evidence callers exist');
 assert.match(client, /Gameplay integration not active yet\./, 'Weekly Journey coming-soon copy must explain that gameplay integration is inactive');
 assert.doesNotMatch(client, /AUTHORITY PROGRESS \/\/ '\s*\+ number\(weeklyComplete\)/, 'Weekly Journey must not render unreachable production progress');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
@@ -313,11 +333,20 @@ const kaijuStateIndex = renderExploreSource.indexOf('var kaiju = state.kaiju || 
 const kaijuMatchIndex = renderExploreSource.indexOf('var kaijuMatch = kaiju.match;');
 const kaijuQueueIndex = renderExploreSource.indexOf('var kaijuQueue = kaiju.queue;');
 assert.ok(kaijuStateIndex !== -1 && kaijuMatchIndex !== -1 && kaijuQueueIndex !== -1 && kaijuLockIndex !== -1, 'Kaiju lock and stale-state cleanup inputs must be explicit');
-assert.match(renderExploreSource, /if \(!hasCombatUnlocked\(\)\) \{[\s\S]*button\('CANCEL MATCH', 'kaiju_match_cancel'[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/, 'Kaiju queue, match, result, and entry controls must be behind combat-unlocked gating while stale cleanup remains available');
+assert.match(renderExploreSource, /var kaijuSoloCleanup = kaijuMatch && kaijuMatch\.mode !== 'group' && !kaijuMatch\.player2_telegram_id/,
+  'locked Kaiju UI must expose match cleanup only for owned solo stale matches');
+assert.match(renderExploreSource, /kaijuSoloCleanup[\s\S]*button\('CANCEL MATCH', 'kaiju_match_cancel'/,
+  'locked Kaiju UI must show Cancel Match for solo stale cleanup');
+assert.match(renderExploreSource, /kaijuMatch && !kaijuSoloCleanup[\s\S]*MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY \/ FORFEIT RESOLUTION/,
+  'locked Kaiju UI must explain multiplayer cleanup instead of showing blind cancellation');
+assert.match(renderExploreSource, /button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/,
+  'Kaiju queue, match, result, and entry controls must be behind combat-unlocked gating while stale solo cleanup remains available');
 assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
 assert.match(client, /var capabilitySystems = state\.capabilities_version === 1 && state\.capabilities && state\.capabilities\.systems[\s\S]*: \{\}/, 'future-system directory must consume the versioned worker systems capability map');
 assert.match(client, /Object\.keys\(futureSystemTitles\)\.map[\s\S]*var system = capabilitySystems\[key\] \|\| \{\}[\s\S]*status: \['LOCKED', 'COMING_SOON', 'AVAILABLE'\]\.includes\(status\) \? status : 'LOCKED'/, 'future-system directory must fail closed from the systems capability map');
 assert.match(client, /var status = String\(system\.status \|\| 'LOCKED'\)\.toUpperCase\(\)[\s\S]*status === 'AVAILABLE'[\s\S]*status === 'COMING_SOON'/, 'future-system directory must render LOCKED, COMING_SOON, and AVAILABLE states from authority payloads');
+assert.match(client, /var label = status === 'COMING_SOON' \? 'PLANNED EXPANSION' : status/,
+  'future-system directory must avoid public coming-soon copy while preserving internal capability state');
 assert.match(client, /function futureSystemPanelCopy\(system\)[\s\S]*COMING_SOON[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*AVAILABLE[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'future-system panels must render from the shared LOCKED/COMING_SOON/AVAILABLE model');
 assert.match(client, /var sanctuarySystem = futureSystemByKey\('sanctuary'\)[\s\S]*var sanctuaryPanel = futureSystemPanelCopy\(sanctuarySystem\)/, 'Sanctuary panel must consume shared future-system status only');
 assert.match(client, /panel\('PRESTIGE', futureSystemPanelCopy\(futureSystemByKey\('prestige', 'COMING_SOON'\)\)/, 'Prestige panel must consume shared future-system state');
@@ -447,6 +476,8 @@ assert.match(html, /id="utility-layer"/);
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260816-legendary-season-completion/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
+assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Arena and Kaiju are available for completed Season players with a hatched active Moonpet[\s\S]*Arena and Kaiju remain locked future panels with stale-state cleanup only/,
+  'the in-app guide must describe Arena/Kaiju according to shared combat capability');
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
 assert.match(client, /data-utility="sync">REFRESH/);
 assert.match(client, /data-utility="audio" aria-pressed=/);

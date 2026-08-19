@@ -428,10 +428,13 @@
   }
 
   function guideMarkup() {
+    var combatGuideCopy = hasCombatUnlocked()
+      ? 'Arena and Kaiju are available for completed Season players with a hatched active Moonpet.'
+      : 'Arena and Kaiju remain locked future panels with stale-state cleanup only.';
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
       '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
       '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
-      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. Arena and Kaiju remain locked future panels with stale-state cleanup only. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
       '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards and hidden rare-morph signals.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
@@ -617,6 +620,28 @@
     };
   }
   // TEST-EXPORT: capabilityCombatHelper:end
+
+  // TEST-EXPORT: dailyJourneyMarkup:start
+  function dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth) {
+    dailyAuthority = dailyAuthority || {};
+    guidance = guidance || {};
+    growth = growth || {};
+    var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
+    var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
+    var dailyAuthorityReady = Number.isFinite(dailyRequired) && dailyRequired > 0;
+    var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
+    var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY AWARDED'
+      : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
+        : dailyRequired > 0 && dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
+    return dailyAuthorityReady
+      ? '<div class="line complete">DAILY JOURNEY // ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' OBJECTIVES</div>' +
+        '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
+        meter('GROWTH MARK', dailyPercent) +
+        '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
+        '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>'
+      : '<div class="line locked">DAILY JOURNEY // SYNCING</div><div class="line muted">Daily Journey authority is syncing. Progress display will refresh when server authority is available.</div>';
+  }
+  // TEST-EXPORT: dailyJourneyMarkup:end
 
   function activePetSummary() {
     if (!state || !state.pet) return '';
@@ -812,20 +837,10 @@
     var progression = activePetProgression();
     var growth = progression.growth_marks || {};
     var dailyAuthority = state.daily_journey || {};
-    var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
-    var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
-    var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
-    var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY AWARDED'
-      : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
-        : dailyRequired > 0 && dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
-    var dailyJourney = '<div class="line complete">DAILY JOURNEY // ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' OBJECTIVES</div>' +
-      '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
-      meter('GROWTH MARK', dailyPercent) +
-      '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
-      '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>';
+    var dailyJourney = dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth);
     var weeklyCapability = state.capabilities && state.capabilities.weekly_journey || {};
     var weeklyState = String(weeklyCapability.state || 'COMING_SOON').toUpperCase();
-    var weeklyTitle = weeklyState === 'AVAILABLE' ? 'WEEKLY JOURNEY // LIVE' : 'WEEKLY JOURNEY // COMING SOON';
+    var weeklyTitle = weeklyState === 'AVAILABLE' ? 'WEEKLY JOURNEY // LIVE' : 'WEEKLY JOURNEY // PLANNED EXPANSION';
     var weeklyJourney = '<div class="line ' + (weeklyState === 'AVAILABLE' ? 'complete' : 'locked') + '">' + weeklyTitle + '</div>' +
       '<div class="line muted">' + escapeHtml(weeklyCapability.message || 'Gameplay integration not active yet.') + '</div>';
     return activePetSummary() +
@@ -917,11 +932,13 @@
     var kaijuBody;
     if (!hasCombatUnlocked()) {
       var kaijuLock = combatLockCopy();
-      var kaijuCleanup = kaijuMatch
+      var kaijuSoloCleanup = kaijuMatch && kaijuMatch.mode !== 'group' && !kaijuMatch.player2_telegram_id;
+      var kaijuCleanup = kaijuSoloCleanup
         ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
         : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
       kaijuBody = '<div class="line locked">' + escapeHtml(kaijuLock.title) + '</div><div class="line muted">' + escapeHtml(kaijuLock.detail) + '</div>' +
         (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
+        (kaijuMatch && !kaijuSoloCleanup ? '<div class="line muted">MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY / FORFEIT RESOLUTION.</div>' : '') +
         '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, detail: kaijuLock.entryDetail }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, detail: kaijuLock.entryDetail }) + '</div>';
     } else {
       kaijuBody = kaijuMatch
@@ -1134,7 +1151,7 @@
     var futureSystemRows = futureSystems.map(function (system) {
       var status = String(system.status || 'LOCKED').toUpperCase();
       var online = status === 'AVAILABLE';
-      var label = status === 'COMING_SOON' ? 'COMING SOON' : status;
+      var label = status === 'COMING_SOON' ? 'PLANNED EXPANSION' : status;
       return '<div class="line ' + (online ? 'complete' : 'locked') + '">[' + escapeHtml(label) + '] ' + escapeHtml(system.title || system.key || 'Future System') + '</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
     }).join('');
     function futureSystemByKey(key, fallbackStatus) {
