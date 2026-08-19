@@ -8009,14 +8009,17 @@ function buildPetMiniAppCapabilities(combatEligibility = {}) {
   const systemByKey = Object.fromEntries(futureSystems.map((system) => [system.key, {
     state: system.status,
     unlocked: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    active: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
     message: system.detail,
   }]));
   return {
+    capabilities_version: 1,
     combat: {
       state: combatEligibility.combat_unlocked === true
         ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
         : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
       unlocked: combatEligibility.combat_unlocked === true,
+      active: combatEligibility.combat_unlocked === true,
       reason: combatEligibility.reason || 'completed_season_pet_required',
       requirements: {
         completed_season_pet: combatEligibility.has_completed_season_pet === true,
@@ -8036,6 +8039,7 @@ function buildPetMiniAppCapabilities(combatEligibility = {}) {
     weekly_journey: {
       state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON,
       unlocked: false,
+      active: false,
       message: 'Weekly Journey authority prepared. Gameplay integration not active yet.',
     },
     future_systems: futureSystems,
@@ -8063,7 +8067,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
 
   const pet = serializePet(petRaw);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, sanctuary] = await Promise.all([
+  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
@@ -8101,7 +8105,6 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       .all().catch(() => ({ results: [] })),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
-    listSanctuaryPets(db, telegramId).catch(() => []),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const [journeySummary, hydratedKaiju] = await Promise.all([
@@ -8191,7 +8194,6 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     season_slots: seasonSlots,
     capabilities: buildPetMiniAppCapabilities(combatEligibility),
     daily_journey: journeySummary?.daily || null,
-    sanctuary,
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
       key,

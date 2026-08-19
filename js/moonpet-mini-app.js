@@ -527,18 +527,28 @@
     return slot.pet && slot.pet.progression || {};
   }
 
-  // TEST-EXPORT: completedSeasonPetHelper:start
-  function hasCompletedSeasonPet() {
-    return Boolean(state && state.capabilities && state.capabilities.combat && state.capabilities.combat.requirements && state.capabilities.combat.requirements.completed_season_pet);
+  // TEST-EXPORT: capabilityCombatHelper:start
+  function combatCapability(source) {
+    return source && source.capabilities && source.capabilities.combat || {
+      state: 'LOCKED',
+      unlocked: false,
+      reason: 'capability_unavailable',
+      requirements: {
+        completed_season_pet: false,
+        active_pet_exists: false,
+        active_pet_lifecycle_known: false,
+        active_pet_hatched: false,
+      },
+    };
   }
-  // TEST-EXPORT: completedSeasonPetHelper:end
 
   function hasCombatUnlocked() {
-    return Boolean(state && state.capabilities && state.capabilities.combat && state.capabilities.combat.unlocked);
+    var combat = combatCapability(state);
+    return combat.state === 'AVAILABLE' && combat.unlocked === true;
   }
 
   function combatLockCopy() {
-    var reason = state && state.capabilities && state.capabilities.combat && state.capabilities.combat.reason;
+    var reason = combatCapability(state).reason;
     if (reason === 'moon_egg_must_hatch') {
       return {
         title: 'COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES.',
@@ -560,12 +570,20 @@
         entryDetail: 'REQUIRES SYNCED MOONPET',
       };
     }
+    if (reason === 'capability_unavailable') {
+      return {
+        title: 'COMBAT LOCKED UNTIL CAPABILITY STATE SYNCS.',
+        detail: 'Requires worker capability authority before future combat can unlock.',
+        entryDetail: 'REQUIRES CAPABILITY SYNC',
+      };
+    }
     return {
       title: 'LOCKED UNTIL YOU COMPLETE A SEASON PET.',
       detail: 'Requires a completed adult Moonpet. This is future expansion content and is not available during early Season 1.',
       entryDetail: 'REQUIRES COMPLETED SEASON PET',
     };
   }
+  // TEST-EXPORT: capabilityCombatHelper:end
 
   function activePetSummary() {
     if (!state || !state.pet) return '';
@@ -1089,15 +1107,8 @@
       var detail = feature.detail || '';
       return '<div class="line ' + (available ? 'complete' : 'locked') + '">' + (available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(detail) + '</div>';
     }).join('');
-    var sanctuaryPets = state.sanctuary || [];
-    var sanctuaryRows = sanctuaryPets.map(function (pet) {
-      var identityName = pet.name || pet.pet_id;
-      return '<div class="line complete">◆ ' + escapeHtml(identityName) + ' // ' + escapeHtml(words(pet.species)) + '</div>' +
-        '<div class="line">FINAL EVOLUTION // ' + escapeHtml(words(pet.legendary_evolution_id || pet.stage)) + '</div>' +
-        '<div class="line muted">COMPLETED ' + escapeHtml(words(pet.completed_season)) + ' // ' + escapeHtml(String(pet.completed_at || '').slice(0, 10)) + '</div>';
-    }).join('');
     var sanctuarySystem = futureSystemByKey('sanctuary');
-    var sanctuaryPanel = sanctuaryRows || futureSystemPanelCopy(sanctuarySystem);
+    var sanctuaryPanel = futureSystemPanelCopy(sanctuarySystem);
     var lifecycle = state.lifecycle || {};
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
@@ -1827,12 +1838,9 @@
     return COMBAT_PRESENTATION_FRAME;
   }
 
-  function snapshotHasCompletedSeasonPet(snapshot) {
-    return Boolean(snapshot && snapshot.capabilities && snapshot.capabilities.combat && snapshot.capabilities.combat.requirements && snapshot.capabilities.combat.requirements.completed_season_pet);
-  }
-
   function snapshotHasCombatUnlocked(snapshot) {
-    return Boolean(snapshot && snapshot.capabilities && snapshot.capabilities.combat && snapshot.capabilities.combat.unlocked);
+    var combat = combatCapability(snapshot);
+    return combat.state === 'AVAILABLE' && combat.unlocked === true;
   }
 
   function updateCombatPresentation(snapshot) {

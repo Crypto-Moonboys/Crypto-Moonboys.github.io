@@ -217,11 +217,14 @@ assert.equal(combatEggEligibility.has_completed_season_pet, true, 'combat author
 assert.equal(combatEggEligibility.combat_unlocked, false, 'completed users with an active egg must not see combat as unlocked');
 assert.equal(combatEggEligibility.reason, 'moon_egg_must_hatch');
 const combatEggCapabilities = buildPetMiniAppCapabilities(combatEggEligibility);
+assert.equal(combatEggCapabilities.capabilities_version, 1, 'capability authority must expose a stable contract version');
 assert.equal(combatEggCapabilities.combat.unlocked, false, 'player capabilities must mirror locked combat authority for active eggs');
 assert.equal(combatEggCapabilities.combat.state, 'LOCKED', 'combat capability state must lock active eggs');
+assert.equal(combatEggCapabilities.combat.active, false, 'locked combat capability must be inactive');
 assert.equal(combatEggCapabilities.combat.requirements.completed_season_pet, true, 'player capabilities must preserve completed-season authority');
 assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false, 'player capabilities must expose active egg requirement state');
 assert.equal(combatEggCapabilities.weekly_journey.state, 'COMING_SOON', 'Weekly Journey capability must stay coming soon until production evidence callers exist');
+assert.equal(combatEggCapabilities.weekly_journey.active, false, 'Weekly Journey capability must be inactive while coming soon');
 assert.equal(combatEggCapabilities.weekly_journey.message, 'Weekly Journey authority prepared. Gameplay integration not active yet.',
   'Weekly Journey capability must explain that authority exists but gameplay integration is inactive');
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
@@ -244,9 +247,12 @@ const combatAdultAction = await processPetMiniAppAction(combatAuthorityDb, 'comb
 assert.notEqual(combatAdultAction.reason, 'completed_season_pet_required', 'completed adult users must pass the completed-season combat gate');
 assert.notEqual(combatAdultAction.reason, 'moon_egg_must_hatch', 'completed adult users must pass the active-pet combat gate');
 const combatAdultCapabilities = buildPetMiniAppCapabilities(combatAdultEligibility);
+assert.equal(combatAdultCapabilities.capabilities_version, 1, 'available capability authority must preserve the contract version');
 assert.equal(combatAdultCapabilities.combat?.state, 'AVAILABLE', 'capabilities must expose combat through one nested object');
+assert.equal(combatAdultCapabilities.combat?.active, true, 'available combat capability must be active');
 assert.equal(combatAdultCapabilities.arena?.state, 'AVAILABLE', 'Arena display state must be serialized through capabilities');
 assert.equal(combatAdultCapabilities.prestige?.state, 'COMING_SOON', 'Prestige must remain coming soon in the single capability object');
+assert.equal(combatAdultCapabilities.prestige?.active, false, 'Prestige must remain inactive even for combat-available users');
 assert.equal(combatAdultCapabilities.weekly_journey?.state, 'COMING_SOON', 'Weekly Journey must remain coming soon in the single capability object');
 assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'has_completed_season_pet'), false,
   'capabilities must not serialize duplicate top-level completed-season authority');
