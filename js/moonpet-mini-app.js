@@ -729,7 +729,6 @@
       return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '[UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
     var progression = activePetProgression();
-    var lifecycle = progression.lifecycle || {};
     var growth = progression.growth_marks || {};
     var crests = progression.weekly_crests || {};
     var dailyAuthority = state.daily_journey || {};
