@@ -5,6 +5,8 @@ const MS_PER_DAY = 86400000;
 
 export const WEEKLY_JOURNEY_REQUIRED_OBJECTIVES = 5;
 
+// Weekly Journey is live only through server-accepted source events.
+// Client payloads never write objective progress directly.
 export const PET_WEEKLY_JOURNEY_OBJECTIVES = Object.freeze({
   weekly_care: Object.freeze({ objective_id: 'weekly_care', target: 5, progress_mode: 'add' }),
   weekly_training: Object.freeze({ objective_id: 'weekly_training', target: 3, progress_mode: 'add' }),

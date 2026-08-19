@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
+const playerExpansionMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
 const {
   processPetMiniAppAction,
   buildPetMiniAppState,
@@ -39,7 +40,11 @@ class Statement {
 }
 
 class D1 {
-  constructor() { this.database = new DatabaseSync(':memory:'); this.database.exec(schema); }
+  constructor() {
+    this.database = new DatabaseSync(':memory:');
+    this.database.exec(schema);
+    this.database.exec(playerExpansionMigration);
+  }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
     this.database.exec('BEGIN IMMEDIATE');
@@ -471,6 +476,25 @@ assert.equal(journeySummary.weekly.completed_objectives, 0, 'Weekly Journey Mini
 assert.equal(journeySummary.weekly.completed_objectives < journeySummary.weekly.required_objectives, true);
 assert.equal(journeySummary.weekly.weekly_crest_awarded, false);
 assert.notEqual(journeySummary.weekly.reason, 'weekly_journey_ready');
+
+const zeroWeeklyDb = new D1();
+seedPlayer(zeroWeeklyDb, 'weekly-zero-progress', 'Zero Weekly Cat', 1200);
+await ensurePetStarterSeasonSlot(zeroWeeklyDb, 'weekly-zero-progress', new Date());
+const zeroWeeklyState = await buildPetMiniAppState(zeroWeeklyDb, 'weekly-zero-progress', '123456:test-token');
+assert.equal(zeroWeeklyState.weekly_journey.state, 'AVAILABLE',
+  'active pet with zero weekly evidence must show live Weekly Journey as AVAILABLE');
+assert.equal(zeroWeeklyState.weekly_journey.active, true,
+  'active pet with zero weekly evidence must keep Weekly Journey active');
+assert.equal(zeroWeeklyState.weekly_journey.completed_objectives, 0,
+  'active pet with zero weekly evidence must expose zero completed objectives');
+assert.equal(zeroWeeklyState.weekly_journey.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+  'zero-progress Weekly Journey must expose the required objective threshold');
+assert.equal(zeroWeeklyState.weekly_journey.objectives.length, Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).length,
+  'zero-progress Weekly Journey must expose all configured objectives');
+assert.equal(zeroWeeklyState.capabilities.weekly_journey.state, 'AVAILABLE',
+  'zero-progress Weekly Journey capability must be AVAILABLE');
+assert.equal(zeroWeeklyState.capabilities.weekly_journey.active, true,
+  'zero-progress Weekly Journey capability must be active');
 
 const receiptAuthorityDb = new D1();
 seedPlayer(receiptAuthorityDb, 'receipt-authority', 'Receipt Cat', 1200);

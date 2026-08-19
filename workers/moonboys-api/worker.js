@@ -3584,6 +3584,41 @@ async function recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey,
   }).catch((error) => ({ accepted: false, reason: error?.message || 'weekly_journey_progress_unavailable' }));
 }
 
+async function readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, bossId) {
+  const owner = String(telegramId || '').trim();
+  const week = String(weekKey || '').trim();
+  const day = String(dayKey || '').trim();
+  const boss = String(bossId || '').trim();
+  if (!owner || !week || !boss) return null;
+  const baseSql = `
+    SELECT id, pet_id, telegram_id, event_type, event_key, status, reason,
+           xp_awarded, pet_xp_awarded, season_key, day_key, week_key, metadata
+    FROM telegram_pet_events
+    WHERE telegram_id = ?
+      AND week_key = ?
+      AND event_type = 'weekly_boss'
+      AND status = 'accepted'
+      AND (metadata LIKE ? OR reason = 'weekly_boss_attempt')
+  `;
+  const bossPattern = `%"boss_id":"${boss}"%`;
+  const sameDayEvent = day ? await db.prepare(`${baseSql}
+      AND day_key = ?
+    ORDER BY id ASC
+    LIMIT 1`).bind(owner, week, bossPattern, day).first().catch(() => null) : null;
+  if (sameDayEvent) return sameDayEvent;
+  return db.prepare(`${baseSql}
+    ORDER BY day_key ASC, id ASC
+    LIMIT 1`).bind(owner, week, bossPattern).first().catch(() => null);
+}
+
+async function recordWeeklyJourneyFromAcceptedWeeklyBossEvent(db, telegramId, weekKey, dayKey, bossId) {
+  const acceptedWeeklyBossEvent = await readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, bossId);
+  if (!acceptedWeeklyBossEvent) return { accepted: false, reason: 'weekly_journey_source_event_missing' };
+  return recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, acceptedWeeklyBossEvent.event_key, {
+    accepted_event: acceptedWeeklyBossEvent,
+  });
+}
+
 async function buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, extra = {}) {
   const acceptedEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (!acceptedEvent) return null;
@@ -14703,13 +14738,13 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
       ? null
       : await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progressBefore, { pet_id: victoriousPet?.pet_id || null });
     await awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, boss.boss_id, now);
-    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKeyRaw || `pet:weekly_boss:${telegramId}:${weekKey}:${dayKey}`);
+    await recordWeeklyJourneyFromAcceptedWeeklyBossEvent(db, telegramId, weekKey, dayKey, boss.boss_id);
     return { accepted: true, duplicate: true, reason: 'boss_already_defeated', boss, progress: progressBefore, reward, week_key: weekKey, pet };
   }
   if (existing) {
     const progress = progressBefore || await db.prepare(`SELECT * FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`).bind(telegramId, weekKey).first();
     const reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress, { pet_id: victoriousPet?.pet_id || null });
-    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKeyRaw || `pet:weekly_boss:${telegramId}:${weekKey}:${dayKey}`);
+    await recordWeeklyJourneyFromAcceptedWeeklyBossEvent(db, telegramId, weekKey, dayKey, boss.boss_id);
     return { accepted: true, duplicate: true, reason: 'daily_attempt_used', boss, progress, reward, week_key: weekKey, pet };
   }
   if (Number(pet.energy || 0) < 12) return { accepted: false, reason: 'pet_tired', boss, progress: progressBefore };

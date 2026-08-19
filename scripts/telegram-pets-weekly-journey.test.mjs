@@ -8,6 +8,12 @@ import {
   finalizeWeeklyJourneyCrest,
   recordWeeklyJourneyObjectiveEvidence,
 } from '../workers/moonboys-api/pets/weekly-journey.js';
+import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+
+const {
+  processPetWeeklyBoss,
+  getPetSeasonInfo,
+} = __petMediaTestHooks;
 
 class Statement {
   constructor(d1, sql, args = []) { this.d1 = d1; this.db = d1.database; this.sql = sql; this.args = args; }
@@ -29,9 +35,25 @@ class D1 {
     this.beforeWeeklyCrestInsert = null;
   }
   prepare(sql) { return new Statement(this, sql); }
+  async batch(statements) {
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const results = [];
+      for (const statement of statements) {
+        const result = this.database.prepare(statement.sql).run(...statement.args);
+        results.push({ results: [], meta: { changes: Number(result.changes || 0) } });
+      }
+      this.database.exec('COMMIT');
+      return results;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
 }
 
 const schema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
+const playerExpansionMigration = await readFile(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
 const seasonCompletionMigration = await readFile(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8');
 const seasonEconomyMigration = await readFile(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8');
 const weeklyJourneyMigration = await readFile(new URL('../workers/moonboys-api/migrations/068_moonpet_weekly_journey_authority.sql', import.meta.url), 'utf8');
@@ -103,6 +125,7 @@ function createDb() {
   const db = new D1();
   db.database.exec('PRAGMA foreign_keys=ON');
   db.database.exec(schema);
+  db.database.exec(playerExpansionMigration);
   db.database.exec(seasonCompletionMigration);
   db.database.exec(seasonEconomyMigration);
   db.database.exec(weeklyJourneyMigration);
@@ -527,6 +550,31 @@ for (const [eventType, objectiveId] of [
 assert.equal(sourceVariantDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE pet_id=? AND status='accepted'`).get(sourceVariantPet).count, 12,
   'Test 5f: all live source variants persist one accepted weekly objective evidence row');
+
+const bossDuplicateDb = createDb();
+const bossDuplicateTelegramId = 'weekly-boss-duplicate';
+const bossDuplicateSeasonKey = getPetSeasonInfo(new Date()).key;
+const bossDuplicatePet = seedPlayer(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicateSeasonKey);
+bossDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
+  WHERE telegram_id=?`).run(bossDuplicateTelegramId);
+const bossFirst = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-original-key');
+assert.equal(bossFirst.accepted, true, 'Test 5g: first weekly boss attempt is accepted');
+assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss' AND status='accepted'`).get(bossDuplicateTelegramId).count, 1,
+  'Test 5g: first weekly boss attempt persists one accepted weekly_boss source event');
+const bossDuplicate = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-retry-different-key');
+assert.equal(bossDuplicate.accepted, true, 'Test 5g: duplicate weekly boss retry remains accepted as a duplicate path');
+assert.equal(bossDuplicate.duplicate, true, 'Test 5g: duplicate weekly boss retry is idempotent');
+assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss' AND status='accepted'`).get(bossDuplicateTelegramId).count, 1,
+  'Test 5g: duplicate retry with a new request key does not persist a second weekly_boss source event');
+assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt' AND status='accepted'`).get(bossDuplicateTelegramId, bossDuplicatePet).count, 1,
+  'Test 5g: duplicate retry reuses the original persisted weekly_boss source event and keeps exactly one objective row');
+assert.equal(bossDuplicateDb.database.prepare(`SELECT source_event_key FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).get(bossDuplicateTelegramId, bossDuplicatePet).source_event_key, 'weekly-boss-original-key',
+  'Test 5g: duplicate retry does not count the incoming retry event key');
 
 const wrongPetDb = createDb();
 const wrongPetA = seedPlayer(wrongPetDb, 'weekly-wrong-pet');
