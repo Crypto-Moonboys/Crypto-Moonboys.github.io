@@ -315,7 +315,8 @@ const kaijuQueueIndex = renderExploreSource.indexOf('var kaijuQueue = kaiju.queu
 assert.ok(kaijuStateIndex !== -1 && kaijuMatchIndex !== -1 && kaijuQueueIndex !== -1 && kaijuLockIndex !== -1, 'Kaiju lock and stale-state cleanup inputs must be explicit');
 assert.match(renderExploreSource, /if \(!hasCombatUnlocked\(\)\) \{[\s\S]*button\('CANCEL MATCH', 'kaiju_match_cancel'[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/, 'Kaiju queue, match, result, and entry controls must be behind combat-unlocked gating while stale cleanup remains available');
 assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
-assert.match(client, /var futureSystems = state\.capabilities && Array\.isArray\(state\.capabilities\.future_systems\)[\s\S]*status: 'LOCKED'[\s\S]*Requires completed Season pet\. Locked until you complete a Season pet\./, 'future-system directory must consume worker capability state with a fail-closed fallback');
+assert.match(client, /var capabilitySystems = state\.capabilities_version === 1 && state\.capabilities && state\.capabilities\.systems[\s\S]*: \{\}/, 'future-system directory must consume the versioned worker systems capability map');
+assert.match(client, /Object\.keys\(futureSystemTitles\)\.map[\s\S]*var system = capabilitySystems\[key\] \|\| \{\}[\s\S]*status: \['LOCKED', 'COMING_SOON', 'AVAILABLE'\]\.includes\(status\) \? status : 'LOCKED'/, 'future-system directory must fail closed from the systems capability map');
 assert.match(client, /var status = String\(system\.status \|\| 'LOCKED'\)\.toUpperCase\(\)[\s\S]*status === 'AVAILABLE'[\s\S]*status === 'COMING_SOON'/, 'future-system directory must render LOCKED, COMING_SOON, and AVAILABLE states from authority payloads');
 assert.match(client, /function futureSystemPanelCopy\(system\)[\s\S]*COMING_SOON[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*AVAILABLE[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'future-system panels must render from the shared LOCKED/COMING_SOON/AVAILABLE model');
 assert.match(client, /var sanctuarySystem = futureSystemByKey\('sanctuary'\)[\s\S]*var sanctuaryPanel = futureSystemPanelCopy\(sanctuarySystem\)/, 'Sanctuary panel must consume shared future-system status only');
@@ -335,11 +336,17 @@ assert.doesNotMatch(worker, /\n\s+combat_unlocked: combatEligibility\.combat_unl
 assert.doesNotMatch(worker, /\n\s+combat_eligibility: combatEligibility,/, 'Mini App state must not serialize duplicate top-level combat eligibility authority');
 assert.doesNotMatch(worker, /\n\s+future_systems: buildPetMiniAppFutureSystemState\(combatEligibility\),/, 'Mini App state must keep future-system authority inside capabilities');
 assert.doesNotMatch(worker, /\n\s+sanctuary,/, 'Mini App state must not serialize inactive Sanctuary rows as live gameplay');
+assert.match(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*reason: 'feature_not_available'[\s\S]*capabilities_version: 1/, 'Mini App Sanctuary endpoint must remain status-only while Sanctuary is future content');
+assert.doesNotMatch(worker, /listSanctuaryPetsPrivate/, 'Mini App server must not expose private Sanctuary gameplay rows while Sanctuary is future content');
 assert.match(worker, /async function getPetMiniAppCombatEligibility/, 'Mini App worker must centralize completed-season combat eligibility');
 assert.match(worker, /function buildPetMiniAppFutureSystemState\(combatEligibility = \{\}\)/, 'Mini App worker must centralize future-system display state');
+assert.match(worker, /const systems = \{[\s\S]*\.\.\.systemByKey[\s\S]*weekly_journey: weeklyJourneyCapability[\s\S]*\}/, 'Mini App capability contract must expose all future systems through one systems map');
+for (const key of ['breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'arena', 'kaiju', 'prestige']) {
+  assert.match(worker, new RegExp(`${key}: systemByKey\\.${key}`), `${key} compatibility capability must come from the centralized system map`);
+}
 assert.match(worker, /future_systems: futureSystems/, 'Mini App capabilities must serialize future-system authority inside the single capability object');
 assert.match(worker, /active: system\.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS\.AVAILABLE/, 'future-system capabilities must expose inactive systems as status-only active=false');
-assert.match(worker, /weekly_journey: \{[\s\S]*state: PET_MINI_APP_FUTURE_SYSTEM_STATUS\.COMING_SOON[\s\S]*unlocked: false[\s\S]*active: false/, 'Weekly Journey capability must remain inactive and status-only');
+assert.match(worker, /const weeklyJourneyCapability = \{[\s\S]*state: PET_MINI_APP_FUTURE_SYSTEM_STATUS\.COMING_SOON[\s\S]*unlocked: false[\s\S]*active: false/, 'Weekly Journey capability must remain inactive and status-only');
 assert.match(worker, /PET_MINI_APP_FUTURE_SYSTEM_STATUS[\s\S]*LOCKED[\s\S]*COMING_SOON[\s\S]*AVAILABLE/, 'future-system authority must use one LOCKED/COMING_SOON/AVAILABLE status model');
 assert.match(worker, /active_pet_lifecycle_known: Boolean\(activeLifecycle\)/, 'combat eligibility must expose missing lifecycle data');
 assert.match(worker, /!activeLifecycle \? 'moonpet_lifecycle_required'/, 'missing lifecycle data must fail closed for combat');

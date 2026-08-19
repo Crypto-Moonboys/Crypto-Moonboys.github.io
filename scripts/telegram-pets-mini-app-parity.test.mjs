@@ -219,13 +219,22 @@ assert.equal(combatEggEligibility.combat_unlocked, false, 'completed users with 
 assert.equal(combatEggEligibility.reason, 'moon_egg_must_hatch');
 const combatEggCapabilities = buildPetMiniAppCapabilities(combatEggEligibility);
 assert.equal(combatEggCapabilities.capabilities_version, 1, 'capability authority must expose a stable contract version');
+for (const key of ['arena', 'kaiju', 'prestige', 'breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'weekly_journey']) {
+  assert.ok(combatEggCapabilities.systems?.[key], `${key} must be present in the central capability systems map`);
+  assert.equal(['LOCKED', 'COMING_SOON', 'AVAILABLE'].includes(combatEggCapabilities.systems[key].state), true,
+    `${key} must use a valid future-system state`);
+}
 assert.equal(combatEggCapabilities.combat.unlocked, false, 'player capabilities must mirror locked combat authority for active eggs');
 assert.equal(combatEggCapabilities.combat.state, 'LOCKED', 'combat capability state must lock active eggs');
 assert.equal(combatEggCapabilities.combat.active, false, 'locked combat capability must be inactive');
 assert.equal(combatEggCapabilities.combat.requirements.completed_season_pet, true, 'player capabilities must preserve completed-season authority');
 assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false, 'player capabilities must expose active egg requirement state');
+assert.equal(combatEggCapabilities.systems.arena.state, 'LOCKED', 'central systems map must lock Arena for active eggs');
+assert.equal(combatEggCapabilities.systems.kaiju.state, 'LOCKED', 'central systems map must lock Kaiju for active eggs');
+assert.equal(combatEggCapabilities.systems.prestige.state, 'COMING_SOON', 'central systems map must keep Prestige coming soon');
 assert.equal(combatEggCapabilities.weekly_journey.state, 'COMING_SOON', 'Weekly Journey capability must stay coming soon until production evidence callers exist');
 assert.equal(combatEggCapabilities.weekly_journey.active, false, 'Weekly Journey capability must be inactive while coming soon');
+assert.equal(combatEggCapabilities.systems.weekly_journey.active, false, 'central systems map must keep Weekly Journey inactive while coming soon');
 assert.equal(combatEggCapabilities.weekly_journey.message, 'Gameplay integration not active yet.',
   'Weekly Journey capability must explain that authority exists but gameplay integration is inactive');
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
@@ -252,7 +261,15 @@ const combatAdultCapabilities = buildPetMiniAppCapabilities(combatAdultEligibili
 assert.equal(combatAdultCapabilities.capabilities_version, 1, 'available capability authority must preserve the contract version');
 assert.equal(combatAdultCapabilities.combat?.state, 'AVAILABLE', 'capabilities must expose combat through one nested object');
 assert.equal(combatAdultCapabilities.combat?.active, true, 'available combat capability must be active');
+assert.equal(combatAdultCapabilities.systems?.arena?.state, 'AVAILABLE', 'central systems map must mark Arena available from combat authority');
+assert.equal(combatAdultCapabilities.systems?.kaiju?.state, 'AVAILABLE', 'central systems map must mark Kaiju available from combat authority');
 assert.equal(combatAdultCapabilities.arena?.state, 'AVAILABLE', 'Arena display state must be serialized through capabilities');
+assert.deepEqual(combatAdultCapabilities.arena, combatAdultCapabilities.systems.arena,
+  'Arena compatibility capability must mirror the central systems map');
+assert.deepEqual(combatAdultCapabilities.kaiju, combatAdultCapabilities.systems.kaiju,
+  'Kaiju compatibility capability must mirror the central systems map');
+assert.deepEqual(combatAdultCapabilities.prestige, combatAdultCapabilities.systems.prestige,
+  'Prestige compatibility capability must mirror the central systems map');
 assert.equal(combatAdultCapabilities.prestige?.state, 'COMING_SOON', 'Prestige must remain coming soon in the single capability object');
 assert.equal(combatAdultCapabilities.prestige?.active, false, 'Prestige must remain inactive even for combat-available users');
 assert.equal(combatAdultCapabilities.weekly_journey?.state, 'COMING_SOON', 'Weekly Journey must remain coming soon in the single capability object');

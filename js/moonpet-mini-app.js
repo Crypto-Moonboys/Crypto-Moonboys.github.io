@@ -1092,7 +1092,6 @@
     var notifications = state.notifications || {};
     var live = state.live_systems || {};
     var faction = live.faction || {};
-    var prestige = live.prestige || {};
     var notificationPanel = '<div class="line ' + (notifications.enabled ? 'complete' : 'muted') + '">PROGRESSION ALERTS: ' + (notifications.enabled ? 'ONLINE' : 'OFFLINE') + '</div><div class="button-grid">' +
       button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled }) +
       button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, danger: true }) + '</div>';
@@ -1107,15 +1106,31 @@
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
-    var futureSystems = state.capabilities && Array.isArray(state.capabilities.future_systems) && state.capabilities.future_systems.length
-      ? state.capabilities.future_systems
-      : ['Breeding', 'Traits', 'Sanctuary', 'Lineage', 'Fusion', 'Arena', 'Kaiju', 'Prestige'].map(function (title) {
-        return {
-          title: title,
-          status: 'LOCKED',
-          detail: 'Requires completed Season pet. Locked until you complete a Season pet.',
-        };
-      });
+    var futureSystemTitles = {
+      breeding: 'Breeding',
+      traits: 'Traits',
+      sanctuary: 'Sanctuary',
+      lineage: 'Lineage',
+      fusion: 'Fusion',
+      arena: 'Arena',
+      kaiju: 'Kaiju',
+      prestige: 'Prestige',
+      weekly_journey: 'Weekly Journey',
+    };
+    var capabilitySystems = state.capabilities_version === 1 && state.capabilities && state.capabilities.systems && typeof state.capabilities.systems === 'object'
+      ? state.capabilities.systems
+      : {};
+    var futureSystems = Object.keys(futureSystemTitles).map(function (key) {
+      var system = capabilitySystems[key] || {};
+      var status = String(system.state || 'LOCKED').toUpperCase();
+      var message = system.message || (status === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Requires completed Season pet. Locked until you complete a Season pet.');
+      return {
+        key: key,
+        title: futureSystemTitles[key],
+        status: ['LOCKED', 'COMING_SOON', 'AVAILABLE'].includes(status) ? status : 'LOCKED',
+        detail: message,
+      };
+    });
     var futureSystemRows = futureSystems.map(function (system) {
       var status = String(system.status || 'LOCKED').toUpperCase();
       var online = status === 'AVAILABLE';

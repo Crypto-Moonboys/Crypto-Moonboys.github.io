@@ -32,7 +32,7 @@ import {
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
 import { getMoonpetSeasonInfo } from './pets/season-authority.js';
-import { listSanctuaryPets, listSanctuaryPetsPrivate, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
+import { listSanctuaryPets, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
   PET_INSTANCE_AUTHORITY_VERSION,
@@ -8009,11 +8009,24 @@ function buildPetMiniAppCapabilities(combatEligibility = {}) {
   const systemByKey = Object.fromEntries(futureSystems.map((system) => [system.key, {
     state: system.status,
     unlocked: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    reason: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE ? 'available' : system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON ? 'feature_not_available' : (combatEligibility.reason || 'completed_season_pet_required'),
     active: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
     message: system.detail,
   }]));
+  const weeklyJourneyCapability = {
+    state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON,
+    unlocked: false,
+    active: false,
+    reason: 'feature_not_available',
+    message: 'Gameplay integration not active yet.',
+  };
+  const systems = {
+    ...systemByKey,
+    weekly_journey: weeklyJourneyCapability,
+  };
   return {
     capabilities_version: 1,
+    systems,
     combat: {
       state: combatEligibility.combat_unlocked === true
         ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
@@ -8036,12 +8049,7 @@ function buildPetMiniAppCapabilities(combatEligibility = {}) {
     arena: systemByKey.arena,
     kaiju: systemByKey.kaiju,
     prestige: systemByKey.prestige,
-    weekly_journey: {
-      state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON,
-      unlocked: false,
-      active: false,
-      message: 'Gameplay integration not active yet.',
-    },
+    weekly_journey: weeklyJourneyCapability,
     future_systems: futureSystems,
   };
 }
@@ -9115,12 +9123,12 @@ export default {
       const verified = await authenticatePetMiniApp(body, env);
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
-      try {
-        return json({ pets: await listSanctuaryPetsPrivate(env.DB, verified.telegramId) });
-      } catch (error) {
-        logApiFailure('pet_mini_app_sanctuary_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
-        return err('mini_app_sanctuary_failed', 500);
-      }
+      return json({
+        accepted: false,
+        reason: 'feature_not_available',
+        capabilities_version: 1,
+        capabilities: buildPetMiniAppCapabilities({ has_completed_season_pet: false, combat_unlocked: false, reason: 'feature_not_available' }),
+      });
     }
 
     if (path === '/telegram-pets/app/performance' && request.method === 'POST') {
