@@ -322,11 +322,22 @@ for (const duplicateField of ['has_completed_season_pet', 'combat_unlocked', 'co
 }
 
 const stateRoute = routeBlock('/telegram-pets/app/state');
-assert.match(stateRoute, /return json\(\{ ok: true, state \}\)/, '/telegram-pets/app/state must return the canonical Mini App state envelope');
+assert.match(
+  stateRoute,
+  /return\s+json\(\s*\{\s*ok\s*:\s*true\s*,\s*state\s*\}\s*\)/,
+  '/telegram-pets/app/state must return the canonical Mini App state envelope',
+);
 const actionRoute = routeBlock('/telegram-pets/app/action');
-assert.match(actionRoute, /serializePetMiniAppActionResult\(result, state\?\.guidance\?\.identity, verified\.telegramId\)/,
-  '/telegram-pets/app/action must serialize action rejections through the Mini App result contract');
-assert.match(actionRoute, /const state = await buildPetMiniAppState/, '/telegram-pets/app/action must refresh state after mutations/rejections');
+assert.match(
+  actionRoute,
+  /serializePetMiniAppActionResult\(\s*result\s*,\s*state\?\.guidance\?\.identity\s*,\s*verified\.telegramId\s*\)/,
+  '/telegram-pets/app/action must serialize action rejections through the Mini App result contract',
+);
+assert.match(
+  actionRoute,
+  /const\s+state\s*=\s*await\s+buildPetMiniAppState/,
+  '/telegram-pets/app/action must refresh state after mutations/rejections',
+);
 const sanctuaryRoute = routeBlock('/telegram-pets/app/sanctuary');
 assert.match(sanctuaryRoute, /reason: 'feature_not_available'/, '/telegram-pets/app/sanctuary must stay unavailable');
 assert.match(sanctuaryRoute, /capabilities_version: 1/, '/telegram-pets/app/sanctuary must include capability contract version');
