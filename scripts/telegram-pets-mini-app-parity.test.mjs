@@ -8,7 +8,7 @@ const {
   processPetMiniAppAction,
   buildPetMiniAppJourneySummary,
   buildPetMiniAppFutureSystemState,
-  buildPetMiniAppPlayerCapabilities,
+  buildPetMiniAppCapabilities,
   getPetMiniAppCombatEligibility,
   getPetGuidanceFeatures,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES,
@@ -216,22 +216,26 @@ const combatEggEligibility = await getPetMiniAppCombatEligibility(combatAuthorit
 assert.equal(combatEggEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed egg users');
 assert.equal(combatEggEligibility.combat_unlocked, false, 'completed users with an active egg must not see combat as unlocked');
 assert.equal(combatEggEligibility.reason, 'moon_egg_must_hatch');
-const combatEggCapabilities = buildPetMiniAppPlayerCapabilities(combatEggEligibility);
+const combatEggCapabilities = buildPetMiniAppCapabilities(combatEggEligibility);
 assert.equal(combatEggCapabilities.combat.unlocked, false, 'player capabilities must mirror locked combat authority for active eggs');
+assert.equal(combatEggCapabilities.combat.state, 'LOCKED', 'combat capability state must lock active eggs');
 assert.equal(combatEggCapabilities.combat.requirements.completed_season_pet, true, 'player capabilities must preserve completed-season authority');
 assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false, 'player capabilities must expose active egg requirement state');
+assert.equal(combatEggCapabilities.weekly_journey.state, 'COMING_SOON', 'Weekly Journey capability must stay coming soon until production evidence callers exist');
+assert.equal(combatEggCapabilities.weekly_journey.message, 'Weekly Journey authority prepared. Gameplay integration not active yet.',
+  'Weekly Journey capability must explain that authority exists but gameplay integration is inactive');
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-egg:kaiju_matchmake',
 }, '123456:test-token');
 assert.equal(combatEggAction.accepted, false, 'completed users with an active egg must not enter Kaiju combat');
 assert.equal(combatEggAction.reason, 'moon_egg_must_hatch', 'API combat lock must match the active-egg UI reason');
-assert.equal(combatEggAction.combat_eligibility?.combat_unlocked, false, 'API must return the shared combat eligibility state for active-egg rejection');
-assert.equal(combatEggAction.player_capabilities?.combat?.unlocked, false, 'stale-client combat rejection must return nested combat capability authority');
+assert.equal(combatEggAction.capabilities?.combat?.state, 'LOCKED', 'API must return the shared combat capability state for active-egg rejection');
+assert.equal(combatEggAction.capabilities?.combat?.unlocked, false, 'stale-client combat rejection must return nested combat capability authority');
 const combatAdultEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult');
 assert.equal(combatAdultEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed adult users');
 assert.equal(combatAdultEligibility.combat_unlocked, true, 'completed users with an eligible active pet must see combat unlocked');
-assert.equal(buildPetMiniAppPlayerCapabilities(combatAdultEligibility).combat.unlocked, true,
+assert.equal(buildPetMiniAppCapabilities(combatAdultEligibility).combat.unlocked, true,
   'player capabilities must mirror unlocked combat authority for completed adult users');
 const combatAdultAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-adult', { id: 'combat-adult' }, {
   action: 'kaiju_matchmake',
@@ -239,6 +243,15 @@ const combatAdultAction = await processPetMiniAppAction(combatAuthorityDb, 'comb
 }, '123456:test-token');
 assert.notEqual(combatAdultAction.reason, 'completed_season_pet_required', 'completed adult users must pass the completed-season combat gate');
 assert.notEqual(combatAdultAction.reason, 'moon_egg_must_hatch', 'completed adult users must pass the active-pet combat gate');
+const combatAdultCapabilities = buildPetMiniAppCapabilities(combatAdultEligibility);
+assert.equal(combatAdultCapabilities.combat?.state, 'AVAILABLE', 'capabilities must expose combat through one nested object');
+assert.equal(combatAdultCapabilities.arena?.state, 'AVAILABLE', 'Arena display state must be serialized through capabilities');
+assert.equal(combatAdultCapabilities.prestige?.state, 'COMING_SOON', 'Prestige must remain coming soon in the single capability object');
+assert.equal(combatAdultCapabilities.weekly_journey?.state, 'COMING_SOON', 'Weekly Journey must remain coming soon in the single capability object');
+assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'has_completed_season_pet'), false,
+  'capabilities must not serialize duplicate top-level completed-season authority');
+assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'combat_unlocked'), false,
+  'capabilities must not serialize duplicate top-level combat authority');
 const combatNewEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-new');
 assert.equal(combatNewEligibility.has_completed_season_pet, false, 'combat authority must expose missing completion state for new users');
 assert.equal(combatNewEligibility.combat_unlocked, false, 'new users must not see combat as unlocked');
@@ -247,8 +260,8 @@ const combatNewAction = await processPetMiniAppAction(combatAuthorityDb, 'combat
   request_id: 'combat-new:kaiju_matchmake',
 }, '123456:test-token');
 assert.equal(combatNewAction.reason, 'completed_season_pet_required', 'API combat lock must match the missing-completion UI reason');
-assert.equal(combatNewAction.combat_eligibility?.combat_unlocked, false, 'API must return the shared combat eligibility state for missing-completion rejection');
-assert.equal(combatNewAction.player_capabilities?.combat?.requirements?.completed_season_pet, false,
+assert.equal(combatNewAction.capabilities?.combat?.state, 'LOCKED', 'API must return the shared combat capability state for missing-completion rejection');
+assert.equal(combatNewAction.capabilities?.combat?.requirements?.completed_season_pet, false,
   'stale-client combat rejection must expose unmet completed-season capability');
 assert.equal((await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult')).combat_unlocked, true,
   'shared combat eligibility helper must unlock only completed users with eligible active pets');

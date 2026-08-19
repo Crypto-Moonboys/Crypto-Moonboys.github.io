@@ -529,16 +529,16 @@
 
   // TEST-EXPORT: completedSeasonPetHelper:start
   function hasCompletedSeasonPet() {
-    return Boolean(state && state.player_capabilities && state.player_capabilities.has_completed_season_pet);
+    return Boolean(state && state.capabilities && state.capabilities.combat && state.capabilities.combat.requirements && state.capabilities.combat.requirements.completed_season_pet);
   }
   // TEST-EXPORT: completedSeasonPetHelper:end
 
   function hasCombatUnlocked() {
-    return Boolean(state && state.player_capabilities && state.player_capabilities.combat && state.player_capabilities.combat.unlocked);
+    return Boolean(state && state.capabilities && state.capabilities.combat && state.capabilities.combat.unlocked);
   }
 
   function combatLockCopy() {
-    var reason = state && state.player_capabilities && state.player_capabilities.combat && state.player_capabilities.combat.reason;
+    var reason = state && state.capabilities && state.capabilities.combat && state.capabilities.combat.reason;
     if (reason === 'moon_egg_must_hatch') {
       return {
         title: 'COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES.',
@@ -772,11 +772,14 @@
       meter('GROWTH MARK', dailyPercent) +
       '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
       '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>';
-    var weeklyJourney = '<div class="line locked">WEEKLY JOURNEY // COMING SOON</div>' +
-      '<div class="line muted">Authority prepared. Gameplay integration not active yet.</div>';
+    var weeklyCapability = state.capabilities && state.capabilities.weekly_journey || {};
+    var weeklyState = String(weeklyCapability.state || 'COMING_SOON').toUpperCase();
+    var weeklyTitle = weeklyState === 'AVAILABLE' ? 'WEEKLY JOURNEY // LIVE' : 'WEEKLY JOURNEY // COMING SOON';
+    var weeklyJourney = '<div class="line ' + (weeklyState === 'AVAILABLE' ? 'complete' : 'locked') + '">' + weeklyTitle + '</div>' +
+      '<div class="line muted">' + escapeHtml(weeklyCapability.message || 'Weekly Journey authority prepared. Gameplay integration not active yet.') + '</div>';
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
-      panel('WEEKLY JOURNEY // COMING SOON', weeklyJourney, 'weekly-journey') +
+      panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
       panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
@@ -1053,8 +1056,8 @@
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
-    var futureSystems = Array.isArray(state.future_systems) && state.future_systems.length
-      ? state.future_systems
+    var futureSystems = state.capabilities && Array.isArray(state.capabilities.future_systems) && state.capabilities.future_systems.length
+      ? state.capabilities.future_systems
       : ['Breeding', 'Traits', 'Sanctuary', 'Lineage', 'Fusion', 'Arena', 'Kaiju', 'Prestige'].map(function (title) {
         return {
           title: title,
@@ -1189,11 +1192,6 @@
       parts.push(result.daily_journey.accepted
         ? 'GROWTH MARK AWARDED'
         : 'GROWTH MARK BLOCKED // ' + words(result.daily_journey.reason || 'not qualified'));
-    }
-    if (result.weekly_journey) {
-      parts.push(result.weekly_journey.accepted
-        ? 'WEEKLY CREST AWARDED'
-        : 'WEEKLY CREST BLOCKED // ' + words(result.weekly_journey.reason || 'not qualified'));
     }
     if (result.duplicate) parts.push('DUPLICATE BLOCKED BY AUTHORITY');
     if (result.reaction) parts.push('MOONPET: ' + String(result.reaction));
@@ -1830,11 +1828,11 @@
   }
 
   function snapshotHasCompletedSeasonPet(snapshot) {
-    return Boolean(snapshot && snapshot.player_capabilities && snapshot.player_capabilities.has_completed_season_pet);
+    return Boolean(snapshot && snapshot.capabilities && snapshot.capabilities.combat && snapshot.capabilities.combat.requirements && snapshot.capabilities.combat.requirements.completed_season_pet);
   }
 
   function snapshotHasCombatUnlocked(snapshot) {
-    return Boolean(snapshot && snapshot.player_capabilities && snapshot.player_capabilities.combat && snapshot.player_capabilities.combat.unlocked);
+    return Boolean(snapshot && snapshot.capabilities && snapshot.capabilities.combat && snapshot.capabilities.combat.unlocked);
   }
 
   function updateCombatPresentation(snapshot) {
