@@ -268,6 +268,20 @@ assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
 assert.match(client, /WEEKLY JOURNEY \/\/ WEEKLY CREST/, 'Weekly Journey Crest state must be visible');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
+const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
+const arenaLockIndex = renderExploreSource.indexOf('if (!hasCompletedSeasonPet())');
+const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
+const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');
+const arenaResultIndex = renderExploreSource.indexOf('var arenaResult = state.arena_result;');
+assert.ok(arenaLockIndex !== -1 && arenaLockIndex < arenaStateIndex && arenaLockIndex < arenaQueueIndex && arenaLockIndex < arenaResultIndex, 'Arena must render its completed-season lock before reading match, queue, or result state');
+assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*arena_matchmake'[\s\S]*disabled: true[\s\S]*arena_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*var arena = state\.arena;[\s\S]*var arenaQueue = state\.arena_queue;[\s\S]*var arenaResult = state\.arena_result;/, 'Arena queue, match, result, and action controls must be reachable only after completed-season gating');
+const kaijuLockIndex = renderExploreSource.indexOf('if (!hasCompletedSeasonPet())', arenaLockIndex + 1);
+const kaijuStateIndex = renderExploreSource.indexOf('var kaiju = state.kaiju || {};');
+const kaijuMatchIndex = renderExploreSource.indexOf('var kaijuMatch = kaiju.match;');
+const kaijuQueueIndex = renderExploreSource.indexOf('var kaijuQueue = kaiju.queue;');
+assert.ok(kaijuLockIndex !== -1 && kaijuLockIndex < kaijuStateIndex && kaijuLockIndex < kaijuMatchIndex && kaijuLockIndex < kaijuQueueIndex, 'Kaiju must render its completed-season lock before reading match, queue, or result state');
+assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*var kaiju = state\.kaiju \|\| \{\};[\s\S]*var kaijuMatch = kaiju\.match;[\s\S]*var kaijuQueue = kaiju\.queue;/, 'Kaiju queue, match, result, and action controls must be reachable only after completed-season gating');
+assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
 assert.match(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state must serialize Weekly Journey authority summaries');
 
