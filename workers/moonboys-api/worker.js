@@ -2542,6 +2542,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     context: { source: options.source || 'telegram_command', run_id: rewardRun.run_id, depth: rewardRun.depth, max_depth: rewardRun.max_depth },
   });
   if (!awardedAuthority.accepted) return { ...awardedAuthority, run: rewardRun, pet };
+  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
   await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:personality`, behaviour: 'exploration', activity: 'adventure', amount: 2 });
   await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:memory`,
     memory_type: options.completed ? 'run_completed' : 'extraction',
@@ -3253,11 +3254,15 @@ async function processPetDailyChest(db, telegramId, options = {}) {
   if (!chestResults?.[5]?.results?.[0]) {
     pet.pet_xp = startingPetXp;
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet);
-    if (acceptedDuplicate) return acceptedDuplicate;
+    if (acceptedDuplicate) {
+      await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
+      return acceptedDuplicate;
+    }
     return { accepted: false, reason: 'daily_claimed', pet };
   }
   const persistedPet = await getPetProfile(db, telegramId);
   if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
   return { accepted: true, reason: 'daily_chest', xp_awarded: 0, pet_xp_awarded: petXp, pet: persistedPet || pet };
 }
 
@@ -3521,11 +3526,62 @@ async function readPetAccountWallet(db, telegramId) {
 
 async function readAcceptedPetEventByKey(db, telegramId, eventKey) {
   return db.prepare(`
-    SELECT id, pet_id, event_type, event_key, status, reason, xp_awarded, pet_xp_awarded, day_key, metadata
+    SELECT id, pet_id, telegram_id, event_type, event_key, status, reason, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, metadata
     FROM telegram_pet_events
     WHERE telegram_id = ? AND event_key = ? AND status = 'accepted'
     LIMIT 1
   `).bind(telegramId, eventKey).first().catch(() => null);
+}
+
+const WEEKLY_JOURNEY_SOURCE_OBJECTIVES = Object.freeze({
+  feed: 'weekly_care',
+  play: 'weekly_care',
+  clean: 'weekly_care',
+  sleep: 'weekly_care',
+  train: 'weekly_training',
+  run: 'weekly_run',
+  run_complete: 'weekly_run',
+  run_extract: 'weekly_run',
+  daily_run: 'weekly_run',
+  daily_moon_run: 'weekly_run',
+  weekly_boss: 'weekly_boss_attempt',
+  boss_fought: 'weekly_boss_attempt',
+  weekly_boss_reward: 'weekly_boss_attempt',
+  check_in: 'weekly_check_in',
+  daily_check_in: 'weekly_check_in',
+  weekly_check_in: 'weekly_check_in',
+  daily_chest: 'weekly_check_in',
+});
+
+async function recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, options = {}) {
+  const acceptedEvent = options.accepted_event || await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  const eventType = String(acceptedEvent?.event_type || '');
+  const objectiveId = WEEKLY_JOURNEY_SOURCE_OBJECTIVES[eventType];
+  if (!acceptedEvent || !objectiveId) return { accepted: false, reason: acceptedEvent ? 'weekly_journey_source_unmapped' : 'weekly_journey_source_event_missing' };
+  const petId = String(acceptedEvent.pet_id || '').trim();
+  const seasonKey = String(acceptedEvent.season_key || '').trim();
+  const dayKey = String(acceptedEvent.day_key || '').trim();
+  if (!petId || !seasonKey || !/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return { accepted: false, reason: 'weekly_journey_source_incomplete' };
+  const season = getPetSeasonInfo(`${dayKey}T00:00:00.000Z`);
+  const qualificationWeek = getPetSeasonWeek(season, new Date(`${dayKey}T00:00:00.000Z`));
+  const objective = PET_WEEKLY_JOURNEY_OBJECTIVES[objectiveId];
+  if (!objective || qualificationWeek < 1 || qualificationWeek > 13) return { accepted: false, reason: 'weekly_journey_source_incomplete' };
+  return recordWeeklyJourneyObjectiveEvidence(db, {
+    telegram_id: String(acceptedEvent.telegram_id || telegramId),
+    pet_id: petId,
+    season_key: seasonKey,
+    qualification_week: qualificationWeek,
+    objective_id: objectiveId,
+    source_event_key: acceptedEvent.event_key,
+    progress_value: objective.target,
+    earned_at: `${dayKey}T00:00:00.000Z`,
+    evidence: {
+      authority: 'live_weekly_journey_source_event',
+      source_event_type: eventType,
+      source_event_key: acceptedEvent.event_key,
+      source_event_id: acceptedEvent.id || null,
+    },
+  }).catch((error) => ({ accepted: false, reason: error?.message || 'weekly_journey_progress_unavailable' }));
 }
 
 async function buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, extra = {}) {
@@ -5411,6 +5467,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     if (['feed', 'play', 'clean', 'sleep'].includes(String(existing.event_type || normalizedAction))) {
       await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, utc_day: existing.day_key, now });
     }
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: existing });
     return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
 
@@ -5561,8 +5618,8 @@ async function processPetAction(db, telegramId, action, options = {}) {
   if (!actionResults?.[5]?.results?.[0]) {
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { action: normalizedAction, season });
     if (acceptedDuplicate) {
+      const existingEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
       if (['feed', 'play', 'clean', 'sleep'].includes(normalizedAction)) {
-        const existingEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
         await recordDailyCareChallenge(db, {
           telegram_id: telegramId,
           event_key: eventKey,
@@ -5570,6 +5627,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
           now,
         });
       }
+      await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: existingEvent });
       return acceptedDuplicate;
     }
     return { accepted: false, reason: 'pet_action_not_persisted', action: normalizedAction, xp_awarded: 0, pet_xp_awarded: 0, pet };
@@ -5584,15 +5642,16 @@ async function processPetAction(db, telegramId, action, options = {}) {
 
   const careBehaviour = ['feed', 'play', 'clean', 'sleep'].includes(normalizedAction) ? 'care' : 'combat';
   await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: careBehaviour, activity: careBehaviour });
+  const acceptedSourceEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (careBehaviour === 'care') {
-    const existingEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
     await recordDailyCareChallenge(db, {
       telegram_id: telegramId,
       event_key: eventKey,
-      utc_day: existingEvent?.day_key,
+      utc_day: acceptedSourceEvent?.day_key,
       now,
     });
   }
+  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: acceptedSourceEvent });
 
   return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp, pet: persistedPet || pet, season };
 }
@@ -7910,6 +7969,30 @@ async function countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, p
   return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_WEEKLY_JOURNEY_OBJECTIVES);
 }
 
+async function listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
+  const rows = await db.prepare(`SELECT objective_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress, COUNT(*) AS source_event_count
+    FROM telegram_pet_weekly_journey_objectives
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'
+    GROUP BY objective_id`)
+    .bind(petId, telegramId, seasonKey, week).all().catch(() => ({ results: [] }));
+  const rowByObjective = new Map((rows.results || []).map((row) => [String(row.objective_id || ''), row]));
+  return Object.values(PET_WEEKLY_JOURNEY_OBJECTIVES).map((objective) => {
+    const row = rowByObjective.get(objective.objective_id) || {};
+    const target = miniAppProgressInteger(objective.target, 1);
+    const progress = objective.progress_mode === 'max'
+      ? Math.min(target, miniAppProgressInteger(row.max_progress, 0))
+      : Math.min(target, miniAppProgressInteger(row.additive_progress, 0));
+    return {
+      objective_id: objective.objective_id,
+      progress,
+      target,
+      completed: progress >= target,
+      progress_mode: objective.progress_mode,
+      source_event_count: miniAppProgressInteger(row.source_event_count, 0),
+    };
+  });
+}
+
 async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = new Date()) {
   const activeSlot = (seasonSlots?.slots || []).find((slot) => slot.active) || null;
   const petId = String(activeSlot?.pet_id || '');
@@ -7922,7 +8005,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       weekly: { qualification_week: week, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
     };
   }
-  const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt, weeklyObjectives, weeklyReceipt, weeklyAcceptedReceipt] = await Promise.all([
+  const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt, weeklyObjectives, weeklyObjectiveList, weeklyReceipt, weeklyAcceptedReceipt] = await Promise.all([
     countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey),
     db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
       FROM telegram_pet_daily_journey_receipts
@@ -7935,6 +8018,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       ORDER BY created_at ASC LIMIT 1`)
       .bind(petId, telegramId, seasonKey, dayKey).first().catch(() => null),
     countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
+    listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
     db.prepare(`SELECT status, reason, crest_id, completed_objectives
       FROM telegram_pet_weekly_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=?
@@ -7959,6 +8043,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
     weekly: {
       pet_id: petId, season_key: seasonKey, qualification_week: week,
       completed_objectives: weeklyCompleted, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+      objectives: weeklyObjectiveList || [],
       weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
       duplicate_blocked: weeklyReceipt?.reason === 'weekly_journey_crest_duplicate',
       reason: weeklyReceipt?.reason || (weeklyCompleted >= WEEKLY_JOURNEY_REQUIRED_OBJECTIVES ? 'weekly_journey_ready' : 'weekly_journey_in_progress'),
@@ -8004,7 +8089,16 @@ function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
   ];
 }
 
-function buildPetMiniAppCapabilities(combatEligibility = {}) {
+function isPetMiniAppWeeklyJourneySummaryLive(weeklyJourneySummary = null) {
+  return Boolean(
+    weeklyJourneySummary
+    && String(weeklyJourneySummary.pet_id || '').trim()
+    && Number(weeklyJourneySummary.required_objectives || 0) > 0
+    && Array.isArray(weeklyJourneySummary.objectives)
+  );
+}
+
+function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummary = null) {
   const futureSystems = buildPetMiniAppFutureSystemState(combatEligibility);
   const systemByKey = Object.fromEntries(futureSystems.map((system) => [system.key, {
     state: system.status,
@@ -8013,12 +8107,29 @@ function buildPetMiniAppCapabilities(combatEligibility = {}) {
     active: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
     message: system.detail,
   }]));
-  const weeklyJourneyCapability = {
-    state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON,
+  const weeklyJourneyLive = isPetMiniAppWeeklyJourneySummaryLive(weeklyJourneySummary);
+  const weeklyJourneyCapability = weeklyJourneyLive ? {
+    state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    unlocked: true,
+    active: true,
+    reason: weeklyJourneySummary.reason || 'weekly_journey_in_progress',
+    message: 'Weekly Journey live tracking is active.',
+    qualification_week: miniAppProgressInteger(weeklyJourneySummary.qualification_week, 1),
+    completed_objectives: miniAppProgressInteger(weeklyJourneySummary.completed_objectives, 0),
+    required_objectives: miniAppProgressInteger(weeklyJourneySummary.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES),
+    objectives: Array.isArray(weeklyJourneySummary.objectives) ? weeklyJourneySummary.objectives : [],
+    weekly_crest_awarded: Boolean(weeklyJourneySummary.weekly_crest_awarded),
+    duplicate_blocked: Boolean(weeklyJourneySummary.duplicate_blocked),
+  } : {
+    state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
     unlocked: false,
     active: false,
-    reason: 'feature_not_available',
-    message: 'Gameplay integration not active yet.',
+    reason: 'weekly_journey_authority_syncing',
+    message: 'Weekly Journey authority is syncing.',
+    qualification_week: null,
+    completed_objectives: 0,
+    required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+    objectives: [],
   };
   const systems = {
     ...systemByKey,
@@ -8202,8 +8313,21 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     progress: runtime,
     season_slots: seasonSlots,
     capabilities_version: 1,
-    capabilities: buildPetMiniAppCapabilities(combatEligibility),
+    capabilities: buildPetMiniAppCapabilities(combatEligibility, journeySummary?.weekly || null),
     daily_journey: journeySummary?.daily || null,
+    weekly_journey: isPetMiniAppWeeklyJourneySummaryLive(journeySummary?.weekly) ? {
+      state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+      active: true,
+      ...journeySummary.weekly,
+    } : {
+      state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
+      active: false,
+      qualification_week: null,
+      completed_objectives: 0,
+      required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+      objectives: [],
+      reason: 'weekly_journey_authority_syncing',
+    },
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
       key,
@@ -14500,17 +14624,18 @@ async function syncPetAchievements(db, telegramId) {
   return (rows.results || []).map((row) => ({ ...row, ...PET_ACHIEVEMENTS[row.achievement_id] }));
 }
 
-async function settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress) {
+async function settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress, options = {}) {
   if (!progress?.defeated_at) return null;
   const rewardKey = `weekly_boss:${telegramId}:${weekKey}:${boss.boss_id}`;
   const award = await awardPetReward(db, {
-    telegram_id: telegramId, source: 'pet_weekly_boss', idempotency_key: rewardKey, event_key: rewardKey,
+    telegram_id: telegramId, pet_id: options.pet_id || null, source: 'pet_weekly_boss', idempotency_key: rewardKey, event_key: rewardKey,
     event_type: 'weekly_boss_reward', reason: boss.boss_id, rewards: boss.reward, touch_streak: true,
     context: { week_key: weekKey, boss_id: boss.boss_id },
   });
   if (award.accepted || award.duplicate) {
     await db.prepare(`UPDATE telegram_pet_weekly_boss_progress SET reward_claimed_at = COALESCE(reward_claimed_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND week_key = ? AND defeated_at IS NOT NULL`).bind(telegramId, weekKey).run();
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, rewardKey);
   }
   return award;
 }
@@ -14559,6 +14684,7 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
   const now = new Date();
   const weekKey = getPetWeekKey(now);
   const dayKey = getPetDayKey(now);
+  const season = getPetSeasonInfo(now);
   const boss = getPetWeeklyBoss(weekKey);
   const [pet, identity, existing, victoriousPet] = await Promise.all([
     getPetProfileWithAtomicDecay(db, telegramId, now),
@@ -14575,13 +14701,15 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
   if (progressBefore?.defeated_at) {
     const reward = progressBefore.reward_claimed_at
       ? null
-      : await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progressBefore);
+      : await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progressBefore, { pet_id: victoriousPet?.pet_id || null });
     await awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, boss.boss_id, now);
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKeyRaw || `pet:weekly_boss:${telegramId}:${weekKey}:${dayKey}`);
     return { accepted: true, duplicate: true, reason: 'boss_already_defeated', boss, progress: progressBefore, reward, week_key: weekKey, pet };
   }
   if (existing) {
     const progress = progressBefore || await db.prepare(`SELECT * FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`).bind(telegramId, weekKey).first();
-    const reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress);
+    const reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress, { pet_id: victoriousPet?.pet_id || null });
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKeyRaw || `pet:weekly_boss:${telegramId}:${weekKey}:${dayKey}`);
     return { accepted: true, duplicate: true, reason: 'daily_attempt_used', boss, progress, reward, week_key: weekKey, pet };
   }
   if (Number(pet.energy || 0) < 12) return { accepted: false, reason: 'pet_tired', boss, progress: progressBefore };
@@ -14599,6 +14727,26 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
       SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS
         (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND energy >= 12)`)
       .bind(eventId, telegramId, weekKey, dayKey, boss.boss_id, eventKey, action, damage, telegramId),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, ?, 'weekly_boss', ?, 0, 0, ?, ?, ?, 'accepted', 'weekly_boss_attempt', ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_weekly_boss_events WHERE event_id = ?)
+        AND ? <> ''
+        AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?)`)
+      .bind(
+        `${eventId}:pet-event`,
+        victoriousPet?.pet_id || '',
+        telegramId,
+        eventKey,
+        victoriousPet?.season_key || season.key,
+        dayKey,
+        weekKey,
+        JSON.stringify({ source: 'pet_weekly_boss', boss_id: boss.boss_id, action, damage }),
+        eventId,
+        victoriousPet?.pet_id || '',
+        victoriousPet?.pet_id || '',
+        telegramId,
+      ),
     db.prepare(`UPDATE telegram_pet_profiles SET energy = energy - 12, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_weekly_boss_events WHERE event_id = ?)`)
       .bind(telegramId, eventId),
@@ -14613,11 +14761,12 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
       .bind(telegramId, weekKey, boss.boss_id, damage, damage, boss.hp, eventId, boss.hp),
   ]);
   if (!results?.[0]?.meta?.changes) return { accepted: false, reason: 'boss_attempt_not_reserved', boss, progress: progressBefore };
+  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
   const progress = await db.prepare(`SELECT * FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`).bind(telegramId, weekKey).first();
   const newlyDefeated = !progressBefore?.defeated_at && Boolean(progress?.defeated_at);
   let reward = null;
   if (newlyDefeated) {
-    reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress);
+    reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress, { pet_id: victoriousPet?.pet_id || null });
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'boss_victory', boss_id: boss.boss_id, milestone: 'first_boss_victory' });
     await applyPetRuntimeCommandAward(db, telegramId, `runtime:${eventKey}`, 'run_boss');
     await recordWeeklyBossVictoryCrest(db, telegramId, weekKey, boss.boss_id, `${weekKey}:${boss.boss_id}`, progress.defeated_at || now, victoriousPet);

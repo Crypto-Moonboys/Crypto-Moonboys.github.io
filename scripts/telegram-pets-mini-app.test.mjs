@@ -316,9 +316,11 @@ assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[
 assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
-assert.match(client, /WEEKLY JOURNEY \/\/ PLANNED EXPANSION/, 'Weekly Journey must not present live progress before production evidence callers exist');
-assert.match(client, /Gameplay integration not active yet\./, 'Weekly Journey coming-soon copy must explain that gameplay integration is inactive');
-assert.doesNotMatch(client, /AUTHORITY PROGRESS \/\/ '\s*\+ number\(weeklyComplete\)/, 'Weekly Journey must not render unreachable production progress');
+assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability\)/, 'Weekly Journey must render from server authority');
+assert.match(client, /WEEKLY JOURNEY \/\/ LIVE/, 'Weekly Journey must present live progress when authority is available');
+assert.match(client, /WEEKLY JOURNEY \/\/ SYNCING/, 'Weekly Journey must fail closed while authority is unavailable');
+assert.match(client, /WEEKLY CREST AWARDED|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST ELIGIBLE/, 'Weekly Journey live UI must surface Crest settlement states');
+assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
 assert.match(client, /function combatLockCopy\(\)[\s\S]*combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
@@ -355,10 +357,10 @@ assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App
 assert.doesNotMatch(client, /state\.player_capabilities|state\.has_completed_season_pet|state\.combat_unlocked|state\.combat_eligibility|state\.future_systems/, 'Mini App client must consume the single worker capabilities object');
 assert.doesNotMatch(client, /state\.sanctuary|sanctuaryRows/, 'Mini App client must not render inactive Sanctuary state as live gameplay');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
-assert.doesNotMatch(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state must not serialize inactive Weekly Journey progress as live gameplay');
-assert.match(worker, /capabilities: buildPetMiniAppCapabilities\(combatEligibility\)/, 'Mini App state must serialize capability authority from the worker');
+assert.match(worker, /weekly_journey: isPetMiniAppWeeklyJourneySummaryLive\(journeySummary\?\.weekly\) \? \{[\s\S]*state: PET_MINI_APP_FUTURE_SYSTEM_STATUS\.AVAILABLE[\s\S]*\.\.\.journeySummary\.weekly/, 'Mini App state must serialize live Weekly Journey authority summaries only when pet-bound authority exists');
+assert.match(worker, /capabilities: buildPetMiniAppCapabilities\(combatEligibility, journeySummary\?\.weekly \|\| null\)/, 'Mini App state must serialize capability authority from the worker');
 assert.match(worker, /pet: null,[\s\S]*capabilities_version: 1,[\s\S]*capabilities: buildPetMiniAppCapabilities/, 'unadopted Mini App state must serialize the top-level capability contract version');
-assert.match(worker, /season_slots: seasonSlots,[\s\S]*capabilities_version: 1,[\s\S]*capabilities: buildPetMiniAppCapabilities\(combatEligibility\)/, 'adopted Mini App state must serialize the top-level capability contract version');
+assert.match(worker, /season_slots: seasonSlots,[\s\S]*capabilities_version: 1,[\s\S]*capabilities: buildPetMiniAppCapabilities\(combatEligibility, journeySummary\?\.weekly \|\| null\)/, 'adopted Mini App state must serialize the top-level capability contract version');
 assert.match(worker, /combat: \{[\s\S]*state: combatEligibility\.combat_unlocked === true[\s\S]*unlocked: combatEligibility\.combat_unlocked === true[\s\S]*requirements: \{[\s\S]*completed_season_pet:[\s\S]*active_pet_hatched:/, 'capabilities must expose one nested combat authority object');
 assert.doesNotMatch(worker, /\n\s+has_completed_season_pet: combatEligibility\.has_completed_season_pet,/, 'Mini App state must not serialize duplicate top-level completed-season authority');
 assert.doesNotMatch(worker, /\n\s+combat_unlocked: combatEligibility\.combat_unlocked,/, 'Mini App state must not serialize duplicate top-level combat authority');
@@ -378,7 +380,8 @@ for (const key of ['breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'aren
 }
 assert.match(worker, /future_systems: futureSystems/, 'Mini App capabilities must serialize future-system authority inside the single capability object');
 assert.match(worker, /active: system\.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS\.AVAILABLE/, 'future-system capabilities must expose inactive systems as status-only active=false');
-assert.match(worker, /const weeklyJourneyCapability = \{[\s\S]*state: PET_MINI_APP_FUTURE_SYSTEM_STATUS\.COMING_SOON[\s\S]*unlocked: false[\s\S]*active: false/, 'Weekly Journey capability must remain inactive and status-only');
+assert.match(worker, /weeklyJourneyLive \? \{[\s\S]*state: PET_MINI_APP_FUTURE_SYSTEM_STATUS\.AVAILABLE[\s\S]*active: true/, 'Weekly Journey capability must become active when authority summary exists');
+assert.match(worker, /reason: 'weekly_journey_authority_syncing'[\s\S]*objectives: \[\]/, 'Weekly Journey capability must fail closed while authority is unavailable');
 assert.match(worker, /PET_MINI_APP_FUTURE_SYSTEM_STATUS[\s\S]*LOCKED[\s\S]*COMING_SOON[\s\S]*AVAILABLE/, 'future-system authority must use one LOCKED/COMING_SOON/AVAILABLE status model');
 assert.match(worker, /active_pet_lifecycle_known: Boolean\(activeLifecycle\)/, 'combat eligibility must expose missing lifecycle data');
 assert.match(worker, /!activeLifecycle \? 'moonpet_lifecycle_required'/, 'missing lifecycle data must fail closed for combat');
@@ -392,7 +395,9 @@ assert.doesNotMatch(client, /button\('ASCEND PRESTIGE'/, 'Prestige must render s
 assert.doesNotMatch(worker, /return 'prestige'/, 'Prestige must not be reachable as a recommended/deep-link focus while unavailable');
 assert.match(worker, /\['guidance_ack', 'notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel', 'kaiju_match_cancel'\]/, 'Kaiju stale match cleanup must not receive post-action reaction side effects');
 assert.doesNotMatch(client, /dailyRequired = [^;\n]+: 3/, 'Daily Journey UI must not hardcode fallback objective requirements');
-assert.doesNotMatch(client, /weekly_crest_awarded|current_week_crest_earned|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST AWARDED|WEEKLY CREST BLOCKED/, 'Weekly Journey Coming Soon UI must not leak inactive reward state');
+assert.match(client, /weekly_crest_awarded/, 'Weekly Journey live UI must read settled Crest state from authority');
+assert.match(client, /DUPLICATE WEEKLY CREST BLOCKED/, 'Weekly Journey live UI must expose duplicate Crest state from authority');
+assert.match(client, /WEEKLY CREST AWARDED/, 'Weekly Journey live UI must expose awarded Crest state from authority');
 assert.match(worker, /required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES/, 'Daily Journey Mini App summary must use the authority constant for required objectives');
 assert.match(worker, /dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES/, 'Daily Journey Mini App readiness must use the authority constant');
 assert.match(worker, /required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES/, 'Weekly Journey Mini App summary must use the authority constant for required objectives');

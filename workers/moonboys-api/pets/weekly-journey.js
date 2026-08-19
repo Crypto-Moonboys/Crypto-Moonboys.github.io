@@ -3,9 +3,6 @@ import { getMoonpetSeasonInfo, getMoonpetSeasonKey } from './season-authority.js
 
 const MS_PER_DAY = 86400000;
 
-// Weekly Journey is intentionally a 5/5 foundation authority for PR #1231.
-// Until a future player-facing caller is added, these helpers are exposed only
-// through test hooks so no live route can mint Weekly Journey Crests.
 export const WEEKLY_JOURNEY_REQUIRED_OBJECTIVES = 5;
 
 export const PET_WEEKLY_JOURNEY_OBJECTIVES = Object.freeze({
@@ -21,7 +18,7 @@ const WEEKLY_JOURNEY_OBJECTIVE_SOURCE_TYPES = Object.freeze({
   weekly_training: Object.freeze(new Set(['train'])),
   weekly_run: Object.freeze(new Set(['run', 'run_complete', 'run_extract', 'daily_run', 'daily_moon_run'])),
   weekly_boss_attempt: Object.freeze(new Set(['boss_fought', 'weekly_boss', 'weekly_boss_reward'])),
-  weekly_check_in: Object.freeze(new Set(['check_in', 'daily_check_in', 'weekly_check_in'])),
+  weekly_check_in: Object.freeze(new Set(['check_in', 'daily_check_in', 'weekly_check_in', 'daily_chest'])),
 });
 
 export const WEEKLY_JOURNEY_TOTAL_OBJECTIVES = Object.freeze(Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).length);
@@ -31,10 +28,6 @@ export const WEEKLY_JOURNEY_TOTAL_OBJECTIVES = Object.freeze(Object.keys(PET_WEE
 if (WEEKLY_JOURNEY_REQUIRED_OBJECTIVES !== WEEKLY_JOURNEY_TOTAL_OBJECTIVES) {
   throw new Error('weekly_journey_threshold_drift');
 }
-
-// Production exposure for this PR is deliberately narrow: this module supplies
-// authority primitives only. Future live callers must provide a persisted source
-// event, pet_id, season_key, and qualification_week before any Crest can settle.
 
 const integer = (value, fallback = 0) => Math.max(0, Math.floor(Number(value ?? fallback) || 0));
 const safeText = (value, max = 180) => String(value || '').trim().slice(0, max);

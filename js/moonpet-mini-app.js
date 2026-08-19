@@ -643,6 +643,37 @@
   }
   // TEST-EXPORT: dailyJourneyMarkup:end
 
+  function weeklyJourneyMarkup(weeklyAuthority, weeklyCapability) {
+    weeklyAuthority = weeklyAuthority || {};
+    weeklyCapability = weeklyCapability || {};
+    var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
+    var weeklyRequired = Math.max(0, Number(weeklyAuthority.required_objectives || weeklyCapability.required_objectives) || 0);
+    var weeklyCompleted = Math.max(0, Number(weeklyAuthority.completed_objectives || weeklyCapability.completed_objectives) || 0);
+    var weeklyReady = weeklyState === 'AVAILABLE' && weeklyRequired > 0;
+    if (!weeklyReady) {
+      return '<div class="line locked">WEEKLY JOURNEY // SYNCING</div>' +
+        '<div class="line muted">' + escapeHtml(weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.') + '</div>';
+    }
+    var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
+      : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
+    var weeklyPercent = Math.round(Math.min(weeklyRequired, weeklyCompleted) / weeklyRequired * 100);
+    var crestStatus = weeklyAuthority.weekly_crest_awarded || weeklyCapability.weekly_crest_awarded ? 'WEEKLY CREST AWARDED'
+      : weeklyAuthority.duplicate_blocked || weeklyCapability.duplicate_blocked ? 'DUPLICATE WEEKLY CREST BLOCKED'
+        : weeklyCompleted >= weeklyRequired ? 'WEEKLY CREST ELIGIBLE' : 'COMPLETE WEEKLY OBJECTIVES TO QUALIFY';
+    var objectiveRows = objectives.map(function (objective) {
+      var progress = Math.max(0, Number(objective.progress) || 0);
+      var target = Math.max(1, Number(objective.target) || 1);
+      var complete = objective.completed || progress >= target;
+      return '<div class="line ' + (complete ? 'complete' : '') + '">' + (complete ? '[OK] ' : '[  ] ') +
+        escapeHtml(words(objective.objective_id || 'weekly objective')) + ' ' + number(Math.min(progress, target)) + '/' + number(target) + '</div>';
+    }).join('') || '<div class="line muted">NO WEEKLY OBJECTIVE EVIDENCE YET.</div>';
+    return '<div class="line complete">WEEKLY JOURNEY // ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + ' OBJECTIVES</div>' +
+      '<div class="line muted">QUALIFICATION WEEK ' + number(weeklyAuthority.qualification_week || weeklyCapability.qualification_week || 1) + ' // Server-authoritative source events only.</div>' +
+      meter('WEEKLY CREST', weeklyPercent) +
+      '<div class="line muted">' + crestStatus + ' // ' + escapeHtml(words(weeklyAuthority.reason || weeklyCapability.reason || 'weekly journey in progress')) + '</div>' +
+      objectiveRows;
+  }
+
   function activePetSummary() {
     if (!state || !state.pet) return '';
     var pet = state.pet;
@@ -839,10 +870,10 @@
     var dailyAuthority = state.daily_journey || {};
     var dailyJourney = dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth);
     var weeklyCapability = state.capabilities && state.capabilities.weekly_journey || {};
-    var weeklyState = String(weeklyCapability.state || 'COMING_SOON').toUpperCase();
+    var weeklyAuthority = state.weekly_journey || {};
+    var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
     var weeklyTitle = weeklyState === 'AVAILABLE' ? 'WEEKLY JOURNEY // LIVE' : 'WEEKLY JOURNEY // PLANNED EXPANSION';
-    var weeklyJourney = '<div class="line ' + (weeklyState === 'AVAILABLE' ? 'complete' : 'locked') + '">' + weeklyTitle + '</div>' +
-      '<div class="line muted">' + escapeHtml(weeklyCapability.message || 'Gameplay integration not active yet.') + '</div>';
+    var weeklyJourney = weeklyJourneyMarkup(weeklyAuthority, weeklyCapability);
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +

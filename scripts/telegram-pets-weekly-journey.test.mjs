@@ -55,14 +55,40 @@ assert.equal(WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, WEEKLY_JOURNEY_TOTAL_OBJECTIVES
   'Weekly Journey authority requires all configured objectives; objective count drift must force an intentional threshold decision');
 assert.match(weeklyJourneySource, /weekly_journey_threshold_drift/,
   'weekly journey source must enforce the full-completion authority invariant');
-assert.match(weeklyJourneySource, /intentionally a 5\/5 foundation authority/,
-  'weekly journey source must document that the threshold is intentionally 5/5');
-assert.match(weeklyJourneySource, /exposed only\s+\/\/ through test hooks/,
-  'weekly journey source must document the foundation-only production exposure decision');
 assert.doesNotMatch(workerSource, /body\.action === 'weekly_journey'|processWeeklyJourney|handleWeeklyJourney/i,
-  'Weekly Journey PR #1231 must remain foundation-only with no live player-facing route');
-assert.equal((workerSource.match(/recordWeeklyJourneyObjectiveEvidence\(/g) || []).length, 0,
-  'Weekly Journey evidence must stay out of production worker call paths until the Mini App display is unlocked');
+  'Weekly Journey must not add a direct client-progress route');
+assert.match(workerSource, /recordWeeklyJourneyFromAcceptedPetEvent/,
+  'Weekly Journey live progress must be wired through accepted source events');
+assert.match(workerSource, /readAcceptedPetEventByKey\(db, telegramId, eventKey\)/,
+  'Weekly Journey live progress must read back accepted persisted pet events');
+assert.match(workerSource, /recordWeeklyJourneyObjectiveEvidence\(db, \{[\s\S]*source_event_key: acceptedEvent\.event_key/,
+  'Weekly Journey live progress must pass the persisted event key into authority');
+assert.match(workerSource, /progress_value: objective\.target/,
+  'Weekly Journey live adapter may request target progress only for max objectives; authority clamps additive objectives');
+for (const [eventType, objectiveId] of Object.entries({
+  feed: 'weekly_care',
+  play: 'weekly_care',
+  clean: 'weekly_care',
+  sleep: 'weekly_care',
+  train: 'weekly_training',
+  run: 'weekly_run',
+  run_complete: 'weekly_run',
+  run_extract: 'weekly_run',
+  daily_run: 'weekly_run',
+  daily_moon_run: 'weekly_run',
+  weekly_boss: 'weekly_boss_attempt',
+  boss_fought: 'weekly_boss_attempt',
+  weekly_boss_reward: 'weekly_boss_attempt',
+  check_in: 'weekly_check_in',
+  daily_check_in: 'weekly_check_in',
+  weekly_check_in: 'weekly_check_in',
+  daily_chest: 'weekly_check_in',
+})) {
+  assert.match(workerSource, new RegExp(`${eventType}: '${objectiveId}'`),
+    `${eventType} must map to ${objectiveId} for live Weekly Journey progression`);
+}
+assert.match(workerSource, /INSERT OR IGNORE INTO telegram_pet_events[\s\S]*'weekly_boss'[\s\S]*'accepted'[\s\S]*'weekly_boss_attempt'/,
+  'weekly boss attempts must persist an accepted pet event before Weekly Journey progress can count');
 assert.doesNotMatch(weeklyJourneyMigration, /\b(?:ALTER\s+TABLE|DROP\s+TABLE|DELETE\s+FROM|UPDATE\s+telegram_)\b/i,
   'migration 068 must be additive only');
 for (const indexName of [
@@ -461,6 +487,95 @@ assert.equal(sourceBindingDb.database.prepare(`SELECT COUNT(*) AS count FROM tel
   'Test 5e: source/objective mismatch writes only the valid objective row');
 assert.equal(sourceBindingDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?`).get(sourceBindingPet).count, 0,
   'Test 5e: source/objective mismatch cannot manufacture a Weekly Crest');
+
+const sourceVariantDb = createDb();
+const sourceVariantPet = seedPlayer(sourceVariantDb, 'weekly-source-variants');
+for (const [eventType, objectiveId] of [
+  ['feed', 'weekly_care'],
+  ['play', 'weekly_care'],
+  ['clean', 'weekly_care'],
+  ['sleep', 'weekly_care'],
+  ['train', 'weekly_training'],
+  ['run_extract', 'weekly_run'],
+  ['run_complete', 'weekly_run'],
+  ['weekly_boss', 'weekly_boss_attempt'],
+  ['boss_fought', 'weekly_boss_attempt'],
+  ['weekly_boss_reward', 'weekly_boss_attempt'],
+  ['daily_chest', 'weekly_check_in'],
+  ['daily_check_in', 'weekly_check_in'],
+]) {
+  const eventKey = `weekly-source-variant:${eventType}`;
+  insertSourceEvent(sourceVariantDb, {
+    telegramId: 'weekly-source-variants',
+    petId: sourceVariantPet,
+    eventKey,
+    eventType,
+  });
+  const result = await recordWeeklyJourneyObjectiveEvidence(sourceVariantDb, {
+    telegram_id: 'weekly-source-variants',
+    pet_id: sourceVariantPet,
+    season_key: 'pet-s2026-001',
+    qualification_week: 1,
+    objective_id: objectiveId,
+    source_event_key: eventKey,
+    progress_value: PET_WEEKLY_JOURNEY_OBJECTIVES[objectiveId].target,
+    evidence: { authority: 'test_weekly_journey_authority', source_variant: eventType },
+    now: '2026-01-05T12:00:00.000Z',
+  });
+  assert.equal(result.accepted, true, `Test 5f: ${eventType} must count toward ${objectiveId}`);
+}
+assert.equal(sourceVariantDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE pet_id=? AND status='accepted'`).get(sourceVariantPet).count, 12,
+  'Test 5f: all live source variants persist one accepted weekly objective evidence row');
+
+const wrongPetDb = createDb();
+const wrongPetA = seedPlayer(wrongPetDb, 'weekly-wrong-pet');
+const wrongPetB = 'pet-weekly-wrong-pet-b';
+seedAdditionalPet(wrongPetDb, 'weekly-wrong-pet', wrongPetB);
+insertSourceEvent(wrongPetDb, {
+  telegramId: 'weekly-wrong-pet',
+  petId: wrongPetA,
+  eventKey: 'weekly-wrong-pet-feed',
+  eventType: 'feed',
+});
+const wrongPetResult = await recordWeeklyJourneyObjectiveEvidence(wrongPetDb, {
+  telegram_id: 'weekly-wrong-pet',
+  pet_id: wrongPetB,
+  season_key: 'pet-s2026-001',
+  qualification_week: 1,
+  objective_id: 'weekly_care',
+  source_event_key: 'weekly-wrong-pet-feed',
+  progress_value: PET_WEEKLY_JOURNEY_OBJECTIVES.weekly_care.target,
+  now: '2026-01-05T12:00:00.000Z',
+});
+assert.equal(wrongPetResult.reason, 'weekly_journey_pet_authority_mismatch',
+  'Test 5g: source events for another pet cannot count');
+assert.equal(wrongPetDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives WHERE pet_id=?`).get(wrongPetB).count, 0,
+  'Test 5g: wrong-pet source event writes no weekly objective evidence');
+
+const wrongWeekDb = createDb();
+const wrongWeekPet = seedPlayer(wrongWeekDb, 'weekly-wrong-week');
+insertSourceEvent(wrongWeekDb, {
+  telegramId: 'weekly-wrong-week',
+  petId: wrongWeekPet,
+  eventKey: 'weekly-wrong-week-feed',
+  eventType: 'feed',
+  day: '2026-01-05',
+});
+const wrongWeekResult = await recordWeeklyJourneyObjectiveEvidence(wrongWeekDb, {
+  telegram_id: 'weekly-wrong-week',
+  pet_id: wrongWeekPet,
+  season_key: 'pet-s2026-001',
+  qualification_week: 2,
+  objective_id: 'weekly_care',
+  source_event_key: 'weekly-wrong-week-feed',
+  progress_value: PET_WEEKLY_JOURNEY_OBJECTIVES.weekly_care.target,
+  now: '2026-01-05T12:00:00.000Z',
+});
+assert.equal(wrongWeekResult.reason, 'weekly_journey_invalid_source_window',
+  'Test 5h: source events from the wrong qualification week cannot count');
+assert.equal(wrongWeekDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives WHERE pet_id=?`).get(wrongWeekPet).count, 0,
+  'Test 5h: wrong-week source event writes no weekly objective evidence');
 
 const seasonRolloverDb = createDb();
 const oldSeasonPet = seedPlayer(seasonRolloverDb, 'weekly-season-old', 'pet-s2026-001');
