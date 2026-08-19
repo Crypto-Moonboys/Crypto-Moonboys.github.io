@@ -8,6 +8,7 @@ const {
   processPetMiniAppAction,
   buildPetMiniAppJourneySummary,
   getPetMiniAppCombatEligibility,
+  getPetGuidanceFeatures,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES,
   WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
   ensurePetStarterSeasonSlot,
@@ -105,6 +106,7 @@ seedPlayer(db, 'arena-queued', 'Queue Cat', 1450);
 seedPlayer(db, 'kaiju-queued', 'Queue Kaiju', 1450);
 for (const telegramId of ['arena-one', 'arena-two', 'kaiju-one', 'kaiju-two', 'arena-queued', 'kaiju-queued']) {
   markSeasonComplete(db, telegramId);
+  await setActivePetLifecyclePhase(db, telegramId, 'adult');
 }
 
 const act = (telegramId, action, payload = {}) => processPetMiniAppAction(db, telegramId, { id: telegramId }, {
@@ -178,6 +180,7 @@ const completedCombatDb = new D1();
 installSeasonCompletionMarkerTable(completedCombatDb);
 seedPlayer(completedCombatDb, 'future-complete', 'Complete Cat', 1500);
 markSeasonComplete(completedCombatDb, 'future-complete');
+await setActivePetLifecyclePhase(completedCombatDb, 'future-complete', 'adult');
 const completedPrestigeResult = await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'prestige',
   request_id: 'completed:prestige',
@@ -202,6 +205,7 @@ seedPlayer(combatAuthorityDb, 'combat-adult', 'Adult Cat', 1500);
 seedPlayer(combatAuthorityDb, 'combat-new', 'New Cat', 1500);
 markSeasonComplete(combatAuthorityDb, 'combat-egg');
 markSeasonComplete(combatAuthorityDb, 'combat-adult');
+markSeasonComplete(combatAuthorityDb, 'combat-missing-lifecycle');
 markSeasonComplete(combatAuthorityDb, 'combat-no-pet');
 await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-egg', 'egg');
 await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-adult', 'adult');
@@ -237,16 +241,37 @@ assert.equal(combatNewAction.reason, 'completed_season_pet_required', 'API comba
 assert.equal(combatNewAction.combat_eligibility?.combat_unlocked, false, 'API must return the shared combat eligibility state for missing-completion rejection');
 assert.equal((await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult')).combat_unlocked, true,
   'shared combat eligibility helper must unlock only completed users with eligible active pets');
+seedPlayer(combatAuthorityDb, 'combat-missing-lifecycle', 'Missing Lifecycle Cat', 1500);
+const combatMissingLifecycleEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-missing-lifecycle');
+assert.equal(combatMissingLifecycleEligibility.has_completed_season_pet, true, 'combat authority must preserve completed-season state with missing lifecycle data');
+assert.equal(combatMissingLifecycleEligibility.active_pet_lifecycle_known, false, 'combat authority must expose missing lifecycle data');
+assert.equal(combatMissingLifecycleEligibility.combat_unlocked, false, 'missing lifecycle data must fail closed for combat');
+assert.equal(combatMissingLifecycleEligibility.reason, 'moonpet_lifecycle_required');
 const combatNoPetEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-no-pet');
 assert.equal(combatNoPetEligibility.has_completed_season_pet, true, 'combat authority must preserve completed-season state without an active pet');
 assert.equal(combatNoPetEligibility.active_pet_exists, false, 'combat authority must explicitly track active pet existence');
 assert.equal(combatNoPetEligibility.combat_unlocked, false, 'completed users without an active pet must not unlock combat');
 assert.equal(combatNoPetEligibility.reason, 'pet_not_adopted');
+const lockedGuidanceFeatures = getPetGuidanceFeatures(100, combatEggEligibility);
+assert.equal(lockedGuidanceFeatures.find((feature) => feature.key === 'kaiju_cards')?.available, false,
+  'guidance must not recommend Kaiju when combat authority is locked');
+assert.equal(lockedGuidanceFeatures.find((feature) => feature.key === 'pet_arena')?.available, false,
+  'guidance must not recommend Arena when combat authority is locked');
+assert.equal(lockedGuidanceFeatures.find((feature) => feature.key === 'prestige')?.available, false,
+  'guidance must not recommend Prestige while it is future content');
+const unlockedGuidanceFeatures = getPetGuidanceFeatures(100, combatAdultEligibility);
+assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'kaiju_cards')?.available, true,
+  'guidance may show Kaiju only when shared combat authority is unlocked');
+assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'pet_arena')?.available, true,
+  'guidance may show Arena only when shared combat authority is unlocked');
+assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'prestige')?.available, false,
+  'guidance must keep Prestige unavailable even for combat-unlocked users');
 
 const priorSeasonCombatDb = new D1();
 installSeasonCompletionMarkerTable(priorSeasonCombatDb);
 seedPlayer(priorSeasonCombatDb, 'prior-complete', 'Prior Cat', 1500);
 markSeasonComplete(priorSeasonCombatDb, 'prior-complete', 'pet-s2025-013');
+await setActivePetLifecyclePhase(priorSeasonCombatDb, 'prior-complete', 'adult');
 for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake']) {
   const result = await processPetMiniAppAction(priorSeasonCombatDb, 'prior-complete', { id: 'prior-complete' }, {
     action,

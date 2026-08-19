@@ -8057,9 +8057,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const availableDistrict = liveSystems.regions.find((region) => region.available && !region.completed);
   const affordableCosmetic = liveSystems.cosmetics.find((item) => item.affordable && (!item.unlocked || item.repeatable));
   const activeChain = liveSystems.chains.find((chain) => chain.available);
-  const liveNext = liveSystems.prestige.ready
-    ? { key: 'prestige', title: 'Ascend Prestige', detail: 'Requires Level 100, 3 mastered items and 4 completed districts. Cost: 5,000 Gold + 50 Gems. Reward: +1 Prestige rank and 3 Mastery Tokens.', action: 'prestige', destination: 'profile' }
-    : affordableUpgrade
+  const liveNext = affordableUpgrade
       ? { key: 'gear_upgrade', title: `Upgrade ${String(affordableUpgrade.item_key).replaceAll('_', ' ')}`, detail: `Cost: ${Object.entries(affordableUpgrade.cost).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(' + ')}. Reward: gear level ${affordableUpgrade.target_level}.`, action: 'gear_upgrade', destination: 'economy' }
       : liveSystems.seasonal_boss.available
         ? { key: 'seasonal_boss', title: `Raid ${liveSystems.seasonal_boss.title}`, detail: `Requires Level ${liveSystems.seasonal_boss.min_level}. Cost: 18 Energy. Defeat reward: 150 XP, 250 Gold, 8 Gems, 8 ${String(liveSystems.seasonal_boss.reward).replaceAll('_', ' ')} and 1 Mastery Token.`, action: 'seasonal_boss', destination: 'explore' }
@@ -8208,14 +8206,16 @@ async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) 
     .bind(String(telegramId)).first().catch(() => null);
   const activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId).catch(() => null);
   const activePetExists = Boolean(activePet?.adopted);
-  const activePetCombatEligible = Boolean(activePetExists && activeLifecycle?.phase !== 'egg');
+  const activePetCombatEligible = Boolean(activePetExists && activeLifecycle && activeLifecycle.phase !== 'egg');
   return {
     has_completed_season_pet: hasCompletedSeasonPet,
     active_pet_exists: activePetExists,
+    active_pet_lifecycle_known: Boolean(activeLifecycle),
     active_pet_combat_eligible: activePetCombatEligible,
     combat_unlocked: Boolean(hasCompletedSeasonPet && activePetCombatEligible),
     reason: !hasCompletedSeasonPet ? 'completed_season_pet_required'
       : !activePetExists ? 'pet_not_adopted'
+        : !activeLifecycle ? 'moonpet_lifecycle_required'
         : !activePetCombatEligible ? 'moon_egg_must_hatch' : 'combat_unlocked',
   };
 }
@@ -8495,7 +8495,7 @@ function getPetMiniAppReactionContext(action, result = {}) {
 }
 
 async function attachPetMiniAppReaction(db, telegramId, action, result, state) {
-  if (!result?.accepted || result.duplicate || !state?.pet || ['guidance_ack', 'notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel'].includes(action)) return result;
+  if (!result?.accepted || result.duplicate || !state?.pet || ['guidance_ack', 'notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel', 'kaiju_match_cancel'].includes(action)) return result;
   const context = getPetMiniAppReactionContext(action, result);
   const activityLabel = result.job?.title || result.item?.title || result.encounter?.title || result.boss?.title
     || result.region?.title || result.tier?.title || String(action || '').replaceAll('_', ' ');
@@ -13152,6 +13152,7 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetMiniAppState,
   hasCompletedPetMiniAppSeasonPet,
   getPetMiniAppCombatEligibility,
+  getPetGuidanceFeatures,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES,
   WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
   PET_SEASON_EXTRA_SLOT_COSTS,
@@ -13798,7 +13799,7 @@ async function cmdGkHelp(tok, chatId) {
     `/gkleaderboard — Leaderboard\n` +
     `/gkquests — Active missions\n` +
     `/pet — Open Moonpet OS\n` +
-    `• All pet care, progression, jobs, economy, runs, bosses, Arena, Kaiju, alerts and leaderboards now run inside Moonpet OS.\n` +
+    `• Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards now run inside Moonpet OS. Arena and Kaiju open locked future panels with stale-state cleanup only.\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
     `/daily — Claim daily XP\n` +
@@ -14026,19 +14027,27 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
   };
 }
 
-function getPetGuidanceFeatures(level) {
+function getPetGuidanceFeatures(level, combatEligibility = {}) {
+  const combatUnlocked = combatEligibility.combat_unlocked === true;
+  const combatLockDetail = combatEligibility.reason === 'combat_unlocked'
+    ? ''
+    : combatEligibility.reason === 'moon_egg_must_hatch'
+      ? 'Requires a completed Season pet and a hatched active Moonpet.'
+      : combatEligibility.reason === 'moonpet_lifecycle_required'
+        ? 'Requires a synced active Moonpet lifecycle before combat unlocks.'
+        : 'Requires completed Season pet. Locked until you complete a Season pet.';
   return [
     { key: 'care_console', title: 'Care Console', available: level >= 1, detail: 'Feed, play, clean, sleep and train from the Pet screen.', callback_data: 'pet:details' },
     { key: 'daily_missions', title: 'Daily Missions', available: level >= 1, detail: 'Seven tracked goals reset at 00:00 UTC.', callback_data: 'pet:missions' },
     { key: 'timed_activities', title: 'Timed Activities', available: level >= 1, detail: 'Sleep, train, work or explore while rewards build over time.', callback_data: 'pet:activity' },
     { key: 'moon_runs', title: 'Moon Runs', available: level >= 1, detail: 'Choose routes, risk unbanked rewards and extract before defeat.', callback_data: 'pet:run' },
     { key: 'street_events', title: 'Street Events', available: level >= 1, detail: 'Server-selected encounters change with your choices.', callback_data: 'pet:event' },
-    { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1, detail: 'Battle a CRT rival or match with another player.', callback_data: 'pet:kaiju' },
+    { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1 && combatUnlocked, detail: combatUnlocked ? 'Battle a CRT rival or match with another player.' : combatLockDetail, callback_data: 'pet:kaiju' },
     { key: 'weekly_boss', title: 'Weekly Boss', available: level >= 5, detail: 'One personal boss attack is available per UTC day.', callback_data: 'pet:boss' },
-    { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL, detail: `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.`, callback_data: 'pet:arena' },
+    { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL && combatUnlocked, detail: combatUnlocked ? `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.` : combatLockDetail, callback_data: 'pet:arena' },
     { key: 'moon_economy', title: 'Moon Economy', available: level >= 1, detail: 'Daily bounties, Crystal Expeditions and rotating Moon Market offers are now available.', callback_data: 'pet:economy' },
     { key: 'equipment_upgrades', title: 'Equipment Upgrades', available: level >= 15, detail: 'Owned equipment can now be upgraded through ten levels.', callback_data: 'pet:gear' },
-    { key: 'prestige', title: 'Prestige', available: level >= 100, detail: 'Prestige becomes possible after its gear, district and currency requirements are complete.', callback_data: 'pet:progress' },
+    { key: 'prestige', title: 'Prestige', available: false, detail: 'Future expansion content. Not available yet.', callback_data: 'pet:progress' },
   ];
 }
 
@@ -14165,6 +14174,14 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     getPetEvolutionGuidance(db, telegramId, pet, identity),
     getPetEconomyState(db, telegramId, pet, now),
   ]);
+  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, identity?.lifecycle).catch(() => ({
+    has_completed_season_pet: false,
+    active_pet_exists: true,
+    active_pet_lifecycle_known: false,
+    active_pet_combat_eligible: false,
+    combat_unlocked: false,
+    reason: 'moonpet_lifecycle_required',
+  }));
   const level = getPetLevel(pet.pet_xp);
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const elapsedSeconds = activity ? Math.max(0, Math.floor((now.getTime() - (parseSqliteTs(activity.started_at) ?? now.getTime())) / 1000)) : 0;
@@ -14205,7 +14222,8 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
       attempt_used: Boolean(weeklyAttempt),
       defeated: Boolean(weeklyProgress?.defeated_at),
     },
-    features: getPetGuidanceFeatures(level),
+    combat_eligibility: combatEligibility,
+    features: getPetGuidanceFeatures(level, combatEligibility),
     jobs: Object.values(PET_JOBS).map((job) => ({
       ...job,
       lore: PET_JOB_LORE[job.key] || '',
@@ -15309,7 +15327,7 @@ async function cmdPetEconomy(db, tok, chatId, telegramId) {
     `<b>💰 Moonpet Economy</b>\n` +
     `<i>Earn → spend → upgrade → unlock. Rewards are server-verified and daily routes are capped.</i>\n\n` +
     `<b>Wallet</b>\n🪙 ${formatPetDisplayNumber(p.moon_gold)} gold · 💎 ${formatPetDisplayNumber(p.moon_crystals)} crystals · 🎨 ${formatPetDisplayNumber(p.style_tokens)} style\n\n` +
-    `<b>Earn now</b>\n📜 ${complete} bounties ready to claim\n⛏️ ${state.expedition_attempts_left}/3 expedition attempts left\n💼 Jobs, Activities, Moon Runs, events, Arena and bosses remain active\n\n` +
+    `<b>Earn now</b>\n📜 ${complete} bounties ready to claim\n⛏️ ${state.expedition_attempts_left}/3 expedition attempts left\n💼 Jobs, Activities, Moon Runs, events and bosses remain active\n\n` +
     `<b>Spend and upgrade</b>\n🌙 ${state.market_offers.filter((offer) => !offer.purchased).length} rotating offers in stock\n🛒 Permanent equipment unlocks in Shop\n🧬 Materials, gear and XP feed evolution requirements\n\n` +
     `<b>Safeguards</b>\nBounties can only claim recorded actions. Expedition attempts and market stock reset at 00:00 UTC. Repeated buttons cannot pay twice.`,
     { reply_markup: buildPetEconomyMenuReplyMarkup() }, 'economy', { db, telegram_id: telegramId, pet: p });

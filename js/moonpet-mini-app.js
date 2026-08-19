@@ -432,7 +432,7 @@
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
       '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
       '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
-      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. Arena reveals attack odds, counters and solo CRT intent; Kaiju reveals the scoring category before card lock. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. Arena and Kaiju remain locked future panels with stale-state cleanup only. Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
       '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards, prestige and hidden rare-morph signals.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
@@ -535,6 +535,36 @@
 
   function hasCombatUnlocked() {
     return Boolean(state && state.combat_unlocked);
+  }
+
+  function combatLockCopy() {
+    var reason = state && state.combat_eligibility && state.combat_eligibility.reason;
+    if (reason === 'moon_egg_must_hatch') {
+      return {
+        title: 'COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES.',
+        detail: 'Requires a completed Season pet and a hatched active Moonpet. This is future expansion content and is not available during early Season 1.',
+        entryDetail: 'REQUIRES HATCHED ACTIVE MOONPET',
+      };
+    }
+    if (reason === 'pet_not_adopted') {
+      return {
+        title: 'COMBAT LOCKED UNTIL YOU ADOPT A MOONPET.',
+        detail: 'Requires a completed Season pet and an active adult Moonpet. This is future expansion content and is not available during early Season 1.',
+        entryDetail: 'REQUIRES ACTIVE MOONPET',
+      };
+    }
+    if (reason === 'moonpet_lifecycle_required') {
+      return {
+        title: 'COMBAT LOCKED UNTIL YOUR MOONPET STATE SYNCS.',
+        detail: 'Requires synced lifecycle authority before future combat can unlock.',
+        entryDetail: 'REQUIRES SYNCED MOONPET',
+      };
+    }
+    return {
+      title: 'LOCKED UNTIL YOU COMPLETE A SEASON PET.',
+      detail: 'Requires a completed adult Moonpet. This is future expansion content and is not available during early Season 1.',
+      entryDetail: 'REQUIRES COMPLETED SEASON PET',
+    };
   }
 
   function activePetSummary() {
@@ -794,12 +824,13 @@
     var arenaResult = state.arena_result;
     var arenaBody;
     if (!hasCombatUnlocked()) {
+      var arenaLock = combatLockCopy();
       var arenaCleanup = arena
         ? button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true })
         : arenaQueue ? button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) : '';
-      arenaBody = '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">Requires a completed adult Moonpet. This is future expansion content and is not available during early Season 1.</div>' +
+      arenaBody = '<div class="line locked">' + escapeHtml(arenaLock.title) + '</div><div class="line muted">' + escapeHtml(arenaLock.detail) + '</div>' +
         (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
-        '<div class="button-grid">' + arenaCleanup + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, { disabled: true, detail: 'REQUIRES COMPLETED SEASON PET' }) + button('ENTER SOLO ARENA', 'arena_start', {}, { disabled: true, detail: 'REQUIRES COMPLETED ADULT MOONPET' }) + '</div>';
+        '<div class="button-grid">' + arenaCleanup + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, { disabled: true, detail: arenaLock.entryDetail }) + button('ENTER SOLO ARENA', 'arena_start', {}, { disabled: true, detail: arenaLock.entryDetail }) + '</div>';
     } else {
       if (arena) {
         var specialCost = number(arena.special_cost || 3);
@@ -836,12 +867,13 @@
     var kaijuQueue = kaiju.queue;
     var kaijuBody;
     if (!hasCombatUnlocked()) {
+      var kaijuLock = combatLockCopy();
       var kaijuCleanup = kaijuMatch
         ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
         : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
-      kaijuBody = '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">Requires a completed adult Moonpet. This is future expansion content and is not available during early Season 1.</div>' +
+      kaijuBody = '<div class="line locked">' + escapeHtml(kaijuLock.title) + '</div><div class="line muted">' + escapeHtml(kaijuLock.detail) + '</div>' +
         (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
-        '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, detail: 'REQUIRES COMPLETED SEASON PET' }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, detail: 'REQUIRES COMPLETED ADULT MOONPET' }) + '</div>';
+        '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, detail: kaijuLock.entryDetail }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, detail: kaijuLock.entryDetail }) + '</div>';
     } else {
       kaijuBody = kaijuMatch
         ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid kaiju-decisions">' + (kaiju.cards || []).map(function (card) {
@@ -1035,9 +1067,8 @@
       return '<div class="line locked">[LOCKED] ' + escapeHtml(systemName) + '</div><div class="line muted">' + escapeHtml(futureSystemDetail) + '</div>';
     }).join('');
     var featureRows = (guidance.features || []).map(function (feature) {
-      var futureLocked = /kaiju|arena|prestige/i.test(String(feature.key || '') + ' ' + String(feature.title || '')) && !completedSeasonPet;
-      var available = feature.available && !futureLocked;
-      var detail = futureLocked ? 'Requires completed Season pet. Locked until you complete a Season pet.' : feature.detail || '';
+      var available = feature.available === true;
+      var detail = feature.detail || '';
       return '<div class="line ' + (available ? 'complete' : 'locked') + '">' + (available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(detail) + '</div>';
     }).join('');
     var sanctuaryPets = state.sanctuary || [];
