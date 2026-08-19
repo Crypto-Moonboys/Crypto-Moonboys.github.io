@@ -300,7 +300,7 @@ export async function requestMoonpetBreeding(db, request = {}) {
   const existing = await readReceipt(db, eventKey);
   if (existing?.status === 'accepted') {
     if (!receiptMatchesRequestContext(existing, requestContext)) {
-      return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_receipt_authority_mismatch', event_key: eventKey };
+      return { accepted: false, duplicate: false, recovered: false, reason: 'breeding_authority_mismatch', event_key: eventKey };
     }
     const authority = {
       accepted: true,

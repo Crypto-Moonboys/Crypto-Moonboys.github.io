@@ -79,6 +79,8 @@ assert.match(breedingSource, /db\.batch\(statements\)/,
   'breeding settlement must use D1 batch transaction authority');
 assert.match(breedingSource, /PET_LIFECYCLE_SCHEMA_VERSION, receipt\.seed/,
   'breeding offspring lifecycle rows must use lifecycle schema version, not breeding authority version');
+assert.doesNotMatch(breedingSource, /lifecycle_version[\s\S]{0,220}PET_BREEDING_AUTHORITY_VERSION, receipt\.seed/,
+  'breeding offspring lifecycle version must stay decoupled from breeding authority version changes');
 assert.match(breedingMigration, /Cooldowns are per parent pet/,
   'migration 069 must document the per-parent cooldown authority model');
 assert.doesNotMatch(workerSource, /body\.action === 'breed'|processMoonpetBreeding|requestMoonpetBreeding/i,
@@ -260,7 +262,7 @@ receiptContextDb.database.prepare(`INSERT INTO telegram_pet_breeding_receipts
     '2026-08-19T12:00:00.000Z', '2026-08-19T12:00:00.000Z');
 const receiptContextRejected = await requestMoonpetBreeding(receiptContextDb, forgedRequest);
 assert.equal(receiptContextRejected.accepted, false, 'Test 2d: caller cannot recover another authority context receipt');
-assert.equal(receiptContextRejected.reason, 'breeding_receipt_authority_mismatch');
+assert.equal(receiptContextRejected.reason, 'breeding_authority_mismatch');
 assert.equal(receiptContextRejected.offspring_pet_id, undefined, 'Test 2d: rejected receipt context leaks no offspring id');
 assert.equal(receiptContextDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_instances WHERE pet_id LIKE 'pet:breed:%'`).get().count, 0,
   'Test 2d: rejected receipt context performs no recovery writes');
