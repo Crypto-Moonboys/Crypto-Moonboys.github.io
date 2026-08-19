@@ -137,6 +137,12 @@ assert.equal(qualificationResults.at(-1).weekly_journey.required_objectives, 5, 
 assert.equal(qualificationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_receipts
   WHERE pet_id=? AND season_key='pet-s2026-001' AND qualification_week=1 AND status='accepted'`).get(qualificationPet).count, 1,
   'Test 1: one accepted Weekly Journey receipt is persisted');
+assert.deepEqual({ ...qualificationDb.database.prepare(`SELECT status, reason, completed_objectives FROM telegram_pet_weekly_journey_receipts
+  WHERE pet_id=? AND season_key='pet-s2026-001' AND qualification_week=1`).get(qualificationPet) }, {
+  status: 'accepted',
+  reason: 'weekly_journey_qualified',
+  completed_objectives: 5,
+}, 'Test 1: 5/5 persists one authoritative accepted receipt');
 assert.equal(qualificationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests
   WHERE pet_id=? AND season_key='pet-s2026-001' AND qualification_week=1`).get(qualificationPet).count, 1,
   'Test 1: one Weekly Crest is awarded');
@@ -172,6 +178,9 @@ assert.deepEqual({
 }, 'Test 2b: 4/5 is intentionally below the full weekly completion threshold');
 assert.equal(fourOfFiveDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?`).get(fourOfFivePet).count, 0,
   'Test 2b: 4/5 does not award a Weekly Crest');
+assert.equal(fourOfFiveDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_receipts
+  WHERE pet_id=? AND status='accepted'`).get(fourOfFivePet).count, 0,
+  'Test 2b: 4/5 does not create an accepted Crest receipt');
 
 const isolationDb = createDb();
 const petA = seedPlayer(isolationDb, 'weekly-isolation');
@@ -258,6 +267,10 @@ await recordWeeklyJourneyObjectiveEvidence(concurrentDb, raceRequest);
 assert.equal(concurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE pet_id=? AND objective_id=? AND source_event_key=?`).get(concurrentPet, raceObjectiveId, raceEventKey).count, 1,
   'Test 5b: post-race retries are no-op for objective evidence');
+assert.equal(concurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_receipts WHERE pet_id=?`).get(concurrentPet).count, 1,
+  'Test 5b: post-race retries are no-op for receipts');
+assert.equal(concurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?`).get(concurrentPet).count, 1,
+  'Test 5b: post-race retries are no-op for Weekly Crests');
 
 const seasonRolloverDb = createDb();
 const oldSeasonPet = seedPlayer(seasonRolloverDb, 'weekly-season-old', 'pet-s2026-001');
@@ -280,7 +293,7 @@ const refusedSeasonReuse = await recordWeeklyJourneyObjectiveEvidence(seasonRoll
   now: '2026-04-01T00:05:00.000Z',
 });
 assert.equal(refusedSeasonReuse.accepted, false, 'Test 6: old-season pet evidence cannot be replayed into the new season');
-assert.equal(refusedSeasonReuse.reason, 'weekly_journey_pet_authority_mismatch');
+assert.equal(refusedSeasonReuse.reason, 'weekly_journey_season_authority_mismatch');
 assert.equal(seasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE source_event_key='old-season-weekly-evidence'`).get().count, 0,
   'Test 6: rejected season mismatch does not write weekly objective evidence');

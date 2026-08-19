@@ -18,6 +18,10 @@ export const PET_WEEKLY_JOURNEY_OBJECTIVES = Object.freeze({
 
 export const WEEKLY_JOURNEY_TOTAL_OBJECTIVES = Object.freeze(Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).length);
 
+// Production exposure for this PR is deliberately narrow: this module supplies
+// authority primitives only. Future live callers must provide a persisted source
+// event, pet_id, season_key, and qualification_week before any Crest can settle.
+
 const integer = (value, fallback = 0) => Math.max(0, Math.floor(Number(value ?? fallback) || 0));
 const safeText = (value, max = 180) => String(value || '').trim().slice(0, max);
 
@@ -77,13 +81,12 @@ async function validateWeeklyEvidenceAuthority(db, request) {
     return { accepted: false, reason: 'invalid_weekly_journey_evidence' };
   }
 
-  const pet = await ownedPet(db, petId, telegramId, seasonKey).catch(() => null);
-  if (!pet) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
-
   const sourceEvent = await readSourceEvent(db, telegramId, sourceEventKey).catch(() => null);
   if (!sourceEvent) return { accepted: false, reason: 'weekly_journey_source_event_missing' };
-  if (String(sourceEvent.pet_id || '') !== petId) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
   if (String(sourceEvent.season_key || '') !== seasonKey) return { accepted: false, reason: 'weekly_journey_season_authority_mismatch' };
+  const pet = await ownedPet(db, petId, telegramId, seasonKey).catch(() => null);
+  if (!pet) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
+  if (String(sourceEvent.pet_id || '') !== petId) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
   const day = String(sourceEvent.day_key || '');
   if (!validUtcDay(day)) return { accepted: false, reason: 'weekly_journey_invalid_source_window' };
   if (getMoonpetSeasonKey(`${day}T00:00:00.000Z`) !== seasonKey) return { accepted: false, reason: 'weekly_journey_season_authority_mismatch' };
