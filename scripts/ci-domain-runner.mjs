@@ -71,6 +71,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-pets-economy-expansion.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app-parity.test.mjs'],
+    ['node', 'scripts/telegram-pets-season-1-production-readiness.test.mjs'],
     ['node', 'scripts/telegram-pets-content-reconciliation.test.mjs'],
     ['node', 'scripts/telegram-pets-live-systems.test.mjs'],
     ['node', 'scripts/telegram-pets-runtime-phase-5a.test.mjs'],
