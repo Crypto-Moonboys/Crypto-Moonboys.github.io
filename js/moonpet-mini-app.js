@@ -748,7 +748,7 @@
     var weeklyReceiptStatus = weeklyAuthority.weekly_crest_awarded || crests.current_week_crest_earned ? 'WEEKLY CREST ALREADY AWARDED'
       : weeklyAuthority.duplicate_blocked ? 'DUPLICATE WEEKLY CREST BLOCKED' : 'FUTURE EXPANSION CONTENT';
     var weeklyJourney = '<div class="line locked">WEEKLY JOURNEY // COMING SOON</div>' +
-      '<div class="line muted">Weekly Journey authority is prepared but not active yet.</div>' +
+      '<div class="line muted">Weekly Journey authority prepared. Gameplay integration not active yet.</div>' +
       '<div class="line muted">' + escapeHtml(weeklyReceiptStatus) + '.</div>';
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +

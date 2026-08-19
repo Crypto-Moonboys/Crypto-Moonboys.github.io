@@ -282,7 +282,7 @@ assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateReq
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
 assert.match(client, /WEEKLY JOURNEY \/\/ COMING SOON/, 'Weekly Journey must not present live progress before production evidence callers exist');
-assert.match(client, /Weekly Journey authority is prepared but not active yet\./, 'Weekly Journey coming-soon copy must explain that authority is prepared but inactive');
+assert.match(client, /Weekly Journey authority prepared\. Gameplay integration not active yet\./, 'Weekly Journey coming-soon copy must explain that authority is prepared but inactive');
 assert.doesNotMatch(client, /AUTHORITY PROGRESS \/\/ '\s*\+ number\(weeklyComplete\)/, 'Weekly Journey must not render unreachable production progress');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
