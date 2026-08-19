@@ -48,7 +48,7 @@ assert.match(finalWorker, /baseWorker\.scheduled/, 'the final entrypoint must pr
 assert.match(worker, /getPetDayKey\(new Date\(\)\)/, 'direct command awards must use the existing UTC pet day authority');
 assert.match(worker, /runtime_award_failed/, 'direct runtime failures must be logged without breaking existing pet rewards');
 assert.match(worker, /\/pet — Open Moonpet OS/, 'help must advertise the Mini App launch command');
-assert.match(worker, /Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards now run inside Moonpet OS\. Arena and Kaiju open locked future panels with stale-state cleanup only/, 'help must direct gameplay into the Mini App without advertising locked combat as active');
+assert.match(worker, /Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards run inside Moonpet OS\. Arena and Kaiju unlock only after you complete a Season pet and your active Moonpet has hatched; locked players see future panels and stale-state cleanup only/, 'help must direct gameplay into the Mini App without advertising locked combat as universally locked');
 assert.doesNotMatch(worker, /\/petprogress — View secondary XP, traits and prestige/, 'help must not advertise retired chat gameplay controls');
 assert.doesNotMatch(worker, /\/petgear — View equipment levels and mastery/, 'help must not advertise retired chat gameplay controls');
 

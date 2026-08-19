@@ -13894,7 +13894,7 @@ async function cmdGkHelp(tok, chatId) {
     `/gkleaderboard — Leaderboard\n` +
     `/gkquests — Active missions\n` +
     `/pet — Open Moonpet OS\n` +
-    `• Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards now run inside Moonpet OS. Arena and Kaiju open locked future panels with stale-state cleanup only.\n` +
+    `• Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards run inside Moonpet OS. Arena and Kaiju unlock only after you complete a Season pet and your active Moonpet has hatched; locked players see future panels and stale-state cleanup only.\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
     `/daily — Claim daily XP\n` +
