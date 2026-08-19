@@ -9123,12 +9123,18 @@ export default {
       const verified = await authenticatePetMiniApp(body, env);
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
-      return json({
-        accepted: false,
-        reason: 'feature_not_available',
-        capabilities_version: 1,
-        capabilities: buildPetMiniAppCapabilities({ has_completed_season_pet: false, combat_unlocked: false, reason: 'feature_not_available' }),
-      });
+      try {
+        const combatEligibility = await getPetMiniAppCombatEligibility(env.DB, verified.telegramId);
+        return json({
+          accepted: false,
+          reason: 'feature_not_available',
+          capabilities_version: 1,
+          capabilities: buildPetMiniAppCapabilities(combatEligibility),
+        });
+      } catch (error) {
+        logApiFailure('pet_mini_app_sanctuary_capabilities_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return json({ accepted: false, reason: 'feature_not_available' });
+      }
     }
 
     if (path === '/telegram-pets/app/performance' && request.method === 'POST') {

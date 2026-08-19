@@ -336,7 +336,10 @@ assert.doesNotMatch(worker, /\n\s+combat_unlocked: combatEligibility\.combat_unl
 assert.doesNotMatch(worker, /\n\s+combat_eligibility: combatEligibility,/, 'Mini App state must not serialize duplicate top-level combat eligibility authority');
 assert.doesNotMatch(worker, /\n\s+future_systems: buildPetMiniAppFutureSystemState\(combatEligibility\),/, 'Mini App state must keep future-system authority inside capabilities');
 assert.doesNotMatch(worker, /\n\s+sanctuary,/, 'Mini App state must not serialize inactive Sanctuary rows as live gameplay');
-assert.match(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*reason: 'feature_not_available'[\s\S]*capabilities_version: 1/, 'Mini App Sanctuary endpoint must remain status-only while Sanctuary is future content');
+assert.match(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*const combatEligibility = await getPetMiniAppCombatEligibility\(env\.DB, verified\.telegramId\)[\s\S]*reason: 'feature_not_available'[\s\S]*capabilities_version: 1[\s\S]*capabilities: buildPetMiniAppCapabilities\(combatEligibility\)/,
+  'Mini App Sanctuary endpoint must return unavailable with real worker capability authority');
+assert.doesNotMatch(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*buildPetMiniAppCapabilities\(\{ has_completed_season_pet: false, combat_unlocked: false, reason: 'feature_not_available' \}\)/,
+  'Mini App Sanctuary endpoint must not fabricate missing completed-season authority for unavailable responses');
 assert.doesNotMatch(worker, /listSanctuaryPetsPrivate/, 'Mini App server must not expose private Sanctuary gameplay rows while Sanctuary is future content');
 assert.match(worker, /async function getPetMiniAppCombatEligibility/, 'Mini App worker must centralize completed-season combat eligibility');
 assert.match(worker, /function buildPetMiniAppFutureSystemState\(combatEligibility = \{\}\)/, 'Mini App worker must centralize future-system display state');

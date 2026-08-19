@@ -192,6 +192,19 @@ assert.equal(completedPrestigeResult.accepted, false, 'completed Season users mu
 assert.equal(completedPrestigeResult.reason, 'feature_not_available', 'Prestige must use the future-feature lock even after completion eligibility');
 assert.equal(completedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='future-complete' AND system_key='prestige'").get().count, 0,
   'completed-user locked Prestige must not reserve system events');
+const completedSanctuaryEligibility = await getPetMiniAppCombatEligibility(completedCombatDb, 'future-complete');
+const completedSanctuaryUnavailable = {
+  accepted: false,
+  reason: 'feature_not_available',
+  capabilities_version: 1,
+  capabilities: buildPetMiniAppCapabilities(completedSanctuaryEligibility),
+};
+assert.equal(completedSanctuaryUnavailable.reason, 'feature_not_available',
+  'completed-user Sanctuary response must remain unavailable while Sanctuary is future content');
+assert.equal(completedSanctuaryUnavailable.capabilities?.combat?.requirements?.completed_season_pet, true,
+  'completed-user Sanctuary unavailable response must not lie about completed-season authority');
+assert.equal(completedSanctuaryUnavailable.capabilities?.systems?.sanctuary?.state, 'COMING_SOON',
+  'completed-user Sanctuary unavailable response must keep Sanctuary status-only');
 assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'arena_matchmake',
   request_id: 'completed:arena_matchmake',
