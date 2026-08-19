@@ -23,6 +23,8 @@ git diff --check
 
 ## Post-merge Worker deploy command
 
+This readiness PR does not change runtime Worker code. The command below is the standard Season 1 production rollout command after merging runtime changes.
+
 ```bat
 cd /d E:\GitHub\Crypto-Moonboys.github.io
 git checkout main

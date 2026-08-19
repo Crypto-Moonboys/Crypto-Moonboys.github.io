@@ -26,6 +26,13 @@ class Statement {
   async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (
+      this.adapter.blockLifecycleMaterializationForTelegramId
+      && /INSERT(?:\s+OR\s+IGNORE)?\s+INTO\s+telegram_pet_lifecycle_by_pet/i.test(this.sql)
+      && this.args.includes(this.adapter.blockLifecycleMaterializationForTelegramId)
+    ) {
+      throw new Error('simulated_missing_lifecycle_authority');
+    }
     const result = this.adapter.database.prepare(this.sql).run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
@@ -34,6 +41,7 @@ class Statement {
 class D1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
+    this.blockLifecycleMaterializationForTelegramId = null;
     this.database.exec(schema);
     installSeasonCompletionMarkerTable(this);
   }
@@ -230,19 +238,28 @@ await ensurePetStarterSeasonSlot(db, '100006');
 const missingLifecyclePet = await ensureActivePetInstance(db, '100006');
 db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?')
   .run(missingLifecyclePet.pet_id, '100006');
-assert.match(workerSource, /!activeLifecycle \? 'moonpet_lifecycle_required'/,
-  'combat authority must retain an explicit missing-lifecycle fail-closed branch');
-const missingLifecycleEligibility = buildPetMiniAppCapabilities({
-  has_completed_season_pet: true,
-  active_pet_exists: true,
-  active_pet_lifecycle_known: false,
-  active_pet_combat_eligible: false,
-  combat_unlocked: false,
-  reason: 'moonpet_lifecycle_required',
-}).combat;
-assert.equal(missingLifecycleEligibility.requirements.active_pet_lifecycle_known, false, 'missing lifecycle data must be explicit');
-assert.equal(missingLifecycleEligibility.unlocked, false, 'missing lifecycle data fails closed');
+db.blockLifecycleMaterializationForTelegramId = '100006';
+const missingLifecycleEligibility = await getPetMiniAppCombatEligibility(db, '100006');
+assert.equal(missingLifecycleEligibility.has_completed_season_pet, true, 'missing-lifecycle player keeps completed-season authority');
+assert.equal(missingLifecycleEligibility.active_pet_exists, true, 'missing-lifecycle player still has an active pet profile');
+assert.equal(missingLifecycleEligibility.active_pet_lifecycle_known, false, 'missing lifecycle data must be explicit');
+assert.equal(missingLifecycleEligibility.active_pet_combat_eligible, false, 'missing lifecycle data cannot be combat eligible');
+assert.equal(missingLifecycleEligibility.combat_unlocked, false, 'missing lifecycle data fails closed');
 assert.equal(missingLifecycleEligibility.reason, 'moonpet_lifecycle_required');
+const missingLifecycleCountsBefore = countCombatRows(db, '100006');
+const missingLifecycleAction = await act(db, '100006', 'arena_matchmake');
+assert.equal(missingLifecycleAction.accepted, false, 'missing lifecycle combat action must reject');
+assert.equal(missingLifecycleAction.reason, 'moonpet_lifecycle_required');
+assert.equal(missingLifecycleAction.capabilities_version, 1);
+assert.equal(missingLifecycleAction.capabilities?.combat?.state, 'LOCKED');
+assert.equal(missingLifecycleAction.capabilities?.combat?.unlocked, false);
+assert.equal(
+  missingLifecycleAction.capabilities?.combat?.requirements?.active_pet_lifecycle_known,
+  false,
+  'missing lifecycle combat action must expose failed lifecycle requirement',
+);
+assert.deepEqual(countCombatRows(db, '100006'), missingLifecycleCountsBefore, 'missing lifecycle combat action creates no queue, match, or battle writes');
+db.blockLifecycleMaterializationForTelegramId = null;
 
 const prestigeResult = await act(db, '100005', 'prestige');
 assert.equal(prestigeResult.accepted, false, 'Prestige cannot be invoked from crafted Mini App actions');
@@ -337,6 +354,22 @@ assert.equal(actionSmoke.status, 409, '/telegram-pets/app/action returns conflic
 assert.equal(actionSmoke.body.result.reason, 'moon_egg_must_hatch', 'route-level action rejection returns combat lock reason');
 assert.equal(actionSmoke.body.result.capabilities_version, 1, 'route-level action rejection includes capability contract version');
 assert.ok(actionSmoke.body.result.capabilities?.combat, 'route-level action rejection includes capability state');
+assert.equal(actionSmoke.body.state.capabilities_version, 1, 'route-level action refreshed state includes capability contract version');
+assert.equal(actionSmoke.body.state.capabilities?.combat?.state, 'LOCKED', 'route-level action refreshed state agrees combat is locked');
+assert.equal(actionSmoke.body.state.capabilities?.combat?.unlocked, false, 'route-level action refreshed state agrees combat is unavailable');
+assert.equal(actionSmoke.body.state.capabilities?.combat?.reason, 'moon_egg_must_hatch', 'route-level action refreshed state agrees on lock reason');
+assert.equal(
+  actionSmoke.body.state.capabilities?.combat?.requirements?.active_pet_hatched,
+  false,
+  'route-level action refreshed state preserves active egg requirement',
+);
+for (const duplicateField of ['has_completed_season_pet', 'combat_unlocked', 'combat_eligibility']) {
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(actionSmoke.body.state, duplicateField),
+    false,
+    `/telegram-pets/app/action refreshed state must not serialize duplicate ${duplicateField}`,
+  );
+}
 assert.deepEqual(countCombatRows(routeDb, '200004'), actionSmokeBefore, 'locked route-level combat action creates no queue/match/battle writes');
 
 console.log('telegram-pets-season-1-production-readiness.test.mjs passed');
