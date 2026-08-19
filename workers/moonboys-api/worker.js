@@ -8160,13 +8160,12 @@ const PET_MINI_APP_FUTURE_COMBAT_ACTIONS = new Set([
   'kaiju_start', 'kaiju_matchmake', 'kaiju_queue_cancel', 'kaiju_card',
 ]);
 
-async function hasCompletedPetMiniAppSeasonPet(db, telegramId, now = new Date()) {
-  const seasonKey = getPetSeasonInfo(now).key;
+async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {
   const row = await db.prepare(`SELECT 1 AS completed
     FROM telegram_pet_season_completions
-    WHERE telegram_id=? AND season_key=?
+    WHERE telegram_id=?
     LIMIT 1`)
-    .bind(String(telegramId), seasonKey).first().catch(() => null);
+    .bind(String(telegramId)).first().catch(() => null);
   return Boolean(row?.completed);
 }
 

@@ -81,10 +81,25 @@ function extractTestExport(source, name) {
   return source.slice(bodyStart + 1, end);
 }
 
+const completedSeasonPetHelperSource = extractTestExport(client, 'completedSeasonPetHelper');
+assert.ok(completedSeasonPetHelperSource, 'completed-season client helper must be extractable for runtime coverage');
+assert.match(completedSeasonPetHelperSource, /Array\.isArray\(state\.sanctuary\)/, 'completed-season helper must inspect Sanctuary completions');
+assert.match(completedSeasonPetHelperSource, /hasSlotCompletion \|\| hasSanctuaryCompletion/, 'completed-season helper must accept slot or Sanctuary completion');
+let completedSeasonHelperState = { season_slots: { slots: [] }, sanctuary: [] };
+const hasCompletedSeasonPetRuntime = new Function(
+  'getState',
+  completedSeasonPetHelperSource.replace(/\bstate\b/g, 'getState()') + '; return hasCompletedSeasonPet;',
+)(() => completedSeasonHelperState);
+assert.equal(hasCompletedSeasonPetRuntime(), false, 'client completed-season helper must reject players with no slot or Sanctuary completion');
+completedSeasonHelperState = { season_slots: { slots: [] }, sanctuary: [{ pet_id: 'completed-prior-pet' }] };
+assert.equal(hasCompletedSeasonPetRuntime(), true, 'client completed-season helper must accept Sanctuary completion');
+completedSeasonHelperState = { season_slots: { slots: [{ pet: { progression: { season_complete: true } } }] }, sanctuary: [] };
+assert.equal(hasCompletedSeasonPetRuntime(), true, 'client completed-season helper must still accept active slot completion');
+
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'completedSeasonPetHelper', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
@@ -282,6 +297,8 @@ const kaijuQueueIndex = renderExploreSource.indexOf('var kaijuQueue = kaiju.queu
 assert.ok(kaijuLockIndex !== -1 && kaijuLockIndex < kaijuStateIndex && kaijuLockIndex < kaijuMatchIndex && kaijuLockIndex < kaijuQueueIndex, 'Kaiju must render its completed-season lock before reading match, queue, or result state');
 assert.match(renderExploreSource, /if \(!hasCompletedSeasonPet\(\)\) \{[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*var kaiju = state\.kaiju \|\| \{\};[\s\S]*var kaijuMatch = kaiju\.match;[\s\S]*var kaijuQueue = kaiju\.queue;/, 'Kaiju queue, match, result, and action controls must be reachable only after completed-season gating');
 assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
+assert.match(client, /var futureSystemDetail = completedSeasonPet[\s\S]*Future expansion content\. Not available yet\.[\s\S]*Requires completed Season pet\. Locked until you complete a Season pet\./, 'future-system directory copy must change after the completion requirement is met');
+assert.match(client, /escapeHtml\(futureSystemDetail\)/, 'future-system directory copy must render from the completion-aware detail');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
 assert.match(worker, /weekly_journey: journeySummary\?\.weekly/, 'Mini App state must serialize Weekly Journey authority summaries');
 assert.match(worker, /countPetMiniAppCompletedDailyJourneyObjectives/, 'Mini App Daily Journey summary must use target-aware aggregation');
@@ -293,6 +310,8 @@ assert.doesNotMatch(worker, /COUNT\(DISTINCT objective_id\) AS completed_objecti
 const miniAppActionSource = worker.slice(worker.indexOf('async function processPetMiniAppAction'), worker.indexOf('function serializePetMiniAppActionResult'));
 const futureCombatGateIndex = miniAppActionSource.indexOf('PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)');
 assert.ok(futureCombatGateIndex !== -1, 'Mini App action handler must gate future combat actions server-side');
+assert.match(worker, /SELECT 1 AS completed\s+FROM telegram_pet_season_completions\s+WHERE telegram_id=\?\s+LIMIT 1/, 'server-side completed-season gate must accept any completion row for the user');
+assert.doesNotMatch(worker, /hasCompletedPetMiniAppSeasonPet[\s\S]{0,500}season_key=\?/, 'server-side completed-season gate must not restrict eligibility to the current season');
 for (const action of ['arena_start', 'arena_matchmake', 'arena_queue_cancel', 'arena_ready', 'arena_move', 'arena_forfeit', 'kaiju_start', 'kaiju_matchmake', 'kaiju_queue_cancel', 'kaiju_card']) {
   assert.ok(worker.includes(`'${action}'`), `future combat action gate must name ${action}`);
   assert.ok(futureCombatGateIndex < miniAppActionSource.indexOf(`action === '${action}'`), `${action} must be locked before dispatch`);
@@ -751,6 +770,8 @@ assert.match(worker, /const PET_ARENA_SPECIAL_COST = 3;/, 'Phase 5 special prese
 assert.match(client, /function clearCombatPresentation\(\)/);
 assert.match(client, /function updateCombatPresentation\(snapshot\)/);
 assert.match(client, /function snapshotHasCompletedSeasonPet\(snapshot\)/);
+assert.match(client, /function snapshotHasCompletedSeasonPet\(snapshot\)[\s\S]*Array\.isArray\(snapshot\.sanctuary\)/, 'combat snapshot helper must inspect Sanctuary completions');
+assert.match(client, /function snapshotHasCompletedSeasonPet\(snapshot\)[\s\S]*hasSlotCompletion \|\| hasSanctuaryCompletion/, 'combat snapshot helper must accept slot or Sanctuary completion');
 assert.match(client, /snapshot === combatSnapshot && activeScreen === combatScreen/);
 assert.match(client, /var arena = snapshot\.arena/);
 assert.match(client, /arena && snapshotHasCompletedSeasonPet\(snapshot\) && arena\.status !== 'completed'/, 'Arena combat presentation must respect completed-season gating');
@@ -809,6 +830,12 @@ assert.doesNotThrow(() => combatRuntime.update({
   kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: false, opponent_card_locked: false } },
 }), 'Phase 5 combat director must tolerate stale future-system state for early Season 1 users');
 assert.equal(runtimeCombatFrame.active, false, 'early Season 1 users must not see stale Arena or Kaiju combat presentation');
+assert.doesNotThrow(() => combatRuntime.update({
+  adopted: true,
+  sanctuary: [{ pet_id: 'prior-completed-pet' }],
+  arena: { status: 'active', player_hp: 74, opponent_hp: 38 },
+}), 'Phase 5 combat director must recognize Sanctuary completion for future-system eligibility');
+assert.equal(runtimeCombatFrame.mode, 'arena', 'Sanctuary completion must satisfy Arena combat presentation gating');
 const completedSeasonSlots = { slots: [{ active: true, pet: { progression: { season_complete: true } } }] };
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,

@@ -527,10 +527,15 @@
     return slot.pet && slot.pet.progression || {};
   }
 
+  // TEST-EXPORT: completedSeasonPetHelper:start
   function hasCompletedSeasonPet() {
     var slots = state && state.season_slots && Array.isArray(state.season_slots.slots) ? state.season_slots.slots : [];
-    return slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
+    var sanctuary = state && Array.isArray(state.sanctuary) ? state.sanctuary : [];
+    var hasSlotCompletion = slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
+    var hasSanctuaryCompletion = sanctuary.length > 0;
+    return hasSlotCompletion || hasSanctuaryCompletion;
   }
+  // TEST-EXPORT: completedSeasonPetHelper:end
 
   function activePetSummary() {
     if (!state || !state.pet) return '';
@@ -1019,8 +1024,11 @@
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
     var completedSeasonPet = hasCompletedSeasonPet();
     var futureSystems = ['Breeding', 'Traits', 'Sanctuary', 'Lineage', 'Fusion', 'Arena', 'Kaiju'];
+    var futureSystemDetail = completedSeasonPet
+      ? 'Future expansion content. Not available yet.'
+      : 'Requires completed Season pet. Locked until you complete a Season pet.';
     var futureSystemRows = futureSystems.map(function (systemName) {
-      return '<div class="line locked">[LOCKED] ' + escapeHtml(systemName) + '</div><div class="line muted">Requires completed Season pet. Locked until you complete a Season pet.</div>';
+      return '<div class="line locked">[LOCKED] ' + escapeHtml(systemName) + '</div><div class="line muted">' + escapeHtml(futureSystemDetail) + '</div>';
     }).join('');
     var featureRows = (guidance.features || []).map(function (feature) {
       var futureLocked = /kaiju|arena|prestige/i.test(String(feature.key || '') + ' ' + String(feature.title || '')) && !completedSeasonPet;
@@ -1771,7 +1779,10 @@
 
   function snapshotHasCompletedSeasonPet(snapshot) {
     var slots = snapshot && snapshot.season_slots && Array.isArray(snapshot.season_slots.slots) ? snapshot.season_slots.slots : [];
-    return slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
+    var sanctuary = snapshot && Array.isArray(snapshot.sanctuary) ? snapshot.sanctuary : [];
+    var hasSlotCompletion = slots.some(function (slot) { return slot.pet && slot.pet.progression && slot.pet.progression.season_complete; });
+    var hasSanctuaryCompletion = sanctuary.length > 0;
+    return hasSlotCompletion || hasSanctuaryCompletion;
   }
 
   function updateCombatPresentation(snapshot) {

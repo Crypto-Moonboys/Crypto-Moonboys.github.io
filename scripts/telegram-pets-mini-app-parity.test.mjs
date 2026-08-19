@@ -130,6 +130,18 @@ assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-comple
   request_id: 'completed:kaiju_matchmake',
 }, '123456:test-token')).reason, 'completed_season_pet_required', 'completed Season pet must pass the Kaiju future-combat gate');
 
+const priorSeasonCombatDb = new D1();
+installSeasonCompletionMarkerTable(priorSeasonCombatDb);
+seedPlayer(priorSeasonCombatDb, 'prior-complete', 'Prior Cat', 1500);
+markSeasonComplete(priorSeasonCombatDb, 'prior-complete', 'pet-s2025-013');
+for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake']) {
+  const result = await processPetMiniAppAction(priorSeasonCombatDb, 'prior-complete', { id: 'prior-complete' }, {
+    action,
+    request_id: `prior:${action}:${crypto.randomUUID()}`,
+  }, '123456:test-token');
+  assert.notEqual(result.reason, 'completed_season_pet_required', `${action} must accept a prior-season completed pet for the completed-season gate`);
+}
+
 const journeySummaryDb = new D1();
 seedPlayer(journeySummaryDb, 'journey-summary', 'Journey Cat', 1200);
 const journeyDay = '2026-08-15';
