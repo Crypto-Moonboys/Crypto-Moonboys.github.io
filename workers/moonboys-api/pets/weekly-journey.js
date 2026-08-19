@@ -286,9 +286,12 @@ export async function recordWeeklyJourneyObjectiveEvidence(db, request = {}) {
   if (!objective) throw new Error('invalid_weekly_journey_objective');
   const authority = await validateWeeklyEvidenceAuthority(db, request);
   if (!authority.accepted) return { accepted: false, duplicate: false, completed: false, reason: authority.reason };
-  const progressValue = Math.min(objective.target, integer(request.progress_value, objective.target));
+  // Additive objectives count one authoritative persisted source event as one
+  // unit. Future variable quantities must come from validated source metadata,
+  // never caller-supplied request payloads.
+  const progressValue = objective.progress_mode === 'add' ? 1 : Math.min(objective.target, integer(request.progress_value, objective.target));
   if (progressValue < 1) return { accepted: false, duplicate: false, completed: false, progress: 0 };
-  const eventId = `weekly-journey:objective:${request.pet_id}:${request.season_key}:${authority.qualification_week}:${objective.objective_id}:${safeText(request.source_event_key || request.event_key)}`;
+  const eventId = `weekly-journey:objective:${authority.pet.pet_id}:${authority.pet.season_key}:${authority.qualification_week}:${objective.objective_id}:${authority.source_event.event_key}`;
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_weekly_journey_objectives
     (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', ?)`)
