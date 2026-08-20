@@ -342,9 +342,49 @@
     output.textContent = String(message || 'READY.');
   }
 
+  // TEST-EXPORT: actionAvailability:start
+  function cooldownDisplay(source) {
+    if (!source) return 'Ready now';
+    var seconds = Number(source.retry_after_seconds != null ? source.retry_after_seconds : source.seconds);
+    if (Number.isFinite(seconds) && seconds > 0) {
+      if (seconds < 60) return 'Available in ' + number(seconds) + 's';
+      if (seconds < 86400) return 'Available in ' + number(Math.ceil(seconds / 60)) + 'm';
+      return 'Available tomorrow UTC';
+    }
+    var ms = Number(source.cooldown_ms_remaining != null ? source.cooldown_ms_remaining : source.ms_remaining);
+    if (Number.isFinite(ms) && ms > 0) return cooldownDisplay({ seconds: Math.ceil(ms / 1000) });
+    var until = Date.parse(source.cooldown_until || source.available_at || source.retry_at || '');
+    if (Number.isFinite(until)) {
+      var remaining = Math.ceil((until - Date.now()) / 1000);
+      if (remaining > 0) return cooldownDisplay({ seconds: remaining });
+    }
+    return 'Ready now';
+  }
+
+  function availabilityLabel(options) {
+    options = options || {};
+    if (options.futureExpansion) return 'FUTURE EXPANSION';
+    if (options.authoritySyncing) return 'AUTHORITY SYNCING';
+    if (options.activePetRequired) return 'ACTIVE PET REQUIRED';
+    if (options.eggRequired) return 'EGG / INCUBATION REQUIRED';
+    if (options.resourceRequired) return 'NOT ENOUGH RESOURCE';
+    if (options.cooldown) return cooldownDisplay(options.cooldown);
+    if (options.disabled) return 'LOCKED';
+    return 'Ready now';
+  }
+
+  function availabilityDetail(options) {
+    options = options || {};
+    var label = availabilityLabel(options);
+    var detail = options.detail ? String(options.detail) : '';
+    return detail ? label + ' // ' + detail : label;
+  }
+  // TEST-EXPORT: actionAvailability:end
+
   function button(label, action, payload, options) {
+    options = options || {};
     var disabled = options && options.disabled;
-    var detail = options && options.detail ? '<small>' + escapeHtml(options.detail) + '</small>' : '';
+    var detail = '<small>' + escapeHtml(availabilityDetail(options)) + '</small>';
     return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
   }
 
@@ -783,12 +823,43 @@
     return panel('ACTIVE PET // SLOT ' + number(slot.slot_number || 1),
       '<div class="season-identity"><strong>' + escapeHtml(pet.pet_name || 'Moonpet') + '</strong><span>' + escapeHtml(seasonKey) + '</span></div>' +
       '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(words(pet.stage || lifecycle.phase || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div><div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div></div>' +
-      '<div class="line complete">' + status + '</div><div class="line muted">Progress is per pet. Switching slots changes which Moonpet earns lifecycle, Daily Journey and Weekly Journey progress.</div>', 'active-pet');
+      '<div class="line complete">' + status + '</div><div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div><div class="line muted">Progress is per pet. Switching slots changes which Moonpet earns lifecycle, Daily Journey and Weekly Journey progress.</div>', 'active-pet');
+  }
+
+  function profileNextLine() {
+    var slot = activeSeasonSlot();
+    var progression = activePetProgression();
+    var lifecycle = progression.lifecycle || state && state.lifecycle || {};
+    if (!slot.pet_id) return 'Pick an active seasonal Moonpet before journey progress starts.';
+    if (String(lifecycle.phase || '').toLowerCase() === 'egg') return 'Hatch your Moon Egg by completing incubation signals.';
+    if (lifecycle.evolution_ready) return 'Evolve your active Moonpet when you are ready.';
+    return 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.';
+  }
+
+  function homeNextLine(next) {
+    var lifecycle = state && state.lifecycle || {};
+    var incubation = lifecycle.incubation || {};
+    if (!state || !state.adopted) return 'Initialise a Moon Egg to begin.';
+    if (lifecycle.phase === 'egg') {
+      return incubation.ready ? 'Hatch your Moonpet now.' : 'Hatch your Moon Egg by completing incubation signals.';
+    }
+    return next && next.title ? String(next.title) : 'Keep needs stable and follow the recommended route.';
+  }
+
+  function exploreNextLine() {
+    if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
+    var weekly = state && state.weekly_journey || {};
+    var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
+    var bossObjective = objectives.find(function (objective) { return String(objective.objective_id || '') === 'weekly_boss_attempt'; });
+    if (bossObjective && !bossObjective.completed && Number(bossObjective.progress || 0) < Number(bossObjective.target || 1)) {
+      return 'Complete Weekly boss attempt to progress Weekly Journey.';
+    }
+    return 'Start a Moon Run or pick an available Explore action.';
   }
 
   function renderHome() {
     if (!state.adopted) {
-      return panel('DORMANT MOON EGG', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
+      return panel('DORMANT MOON EGG', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
     }
     var pet = state.pet;
     var lifecycle = state.lifecycle || {};
@@ -796,7 +867,7 @@
     if (lifecycle.phase === 'egg') {
       var signals = incubation.signals || {};
       return '<div class="ticker"><span>MOON EGG // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
-        panel('INCUBATION CHAMBER', '<div class="line complete">THE EGG REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">Use at least three types of care. Your pattern shapes the hatch; no species odds are exposed.</div>' + meter('HATCH SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM EGG', 'incubate', { care_type: 'warm' }) + button('TALK TO EGG', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH MOONPET', 'hatch', {}, { disabled: !incubation.ready }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
+        panel('INCUBATION CHAMBER', '<div class="line complete">THE EGG REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the hatch; no species odds are exposed.</div>' + meter('HATCH SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM EGG', 'incubate', { care_type: 'warm' }) + button('TALK TO EGG', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH MOONPET', 'hatch', {}, { disabled: !incubation.ready, eggRequired: !incubation.ready }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         renderSeasonSlots();
     }
     var next = state.next || {};
@@ -808,7 +879,7 @@
     }).join('');
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(pet.pet_name || 'MOONPET') + ' // ' + escapeHtml(words(pet.stage)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
-      panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
+      panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine(next)) + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') + button('DAILY CACHE', 'daily_chest') + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
@@ -930,6 +1001,7 @@
         : owned ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber })
           : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
             disabled: !affordable,
+            resourceRequired: !affordable,
             detail: affordable ? 'SPEND ' + number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
           }) : '<div class="line muted">UNLOCK UNAVAILABLE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
       return '<article class="season-slot ' + (active ? 'is-active' : owned ? 'is-owned' : 'is-locked') + '" data-season-slot="' + slotNumber + '">' +
@@ -941,6 +1013,7 @@
     return panel('SEASON STATUS // LIVE',
       '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
       journeyPanel + '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>SEASON PROGRESSION</strong><span>' + number(accountSeason.xp) + ' seasonal XP // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // account leaderboard status</span></div></div>' +
+      '<div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div>' +
       '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
       '<div class="line muted">PET 1 IS FREE // PET 2 REQUIRES 500 XP // PET 3 REQUIRES 1,000 XP // EARNED COMMUNITY PROGRESSION</div><div class="season-slot-grid">' + rows + '</div>' +
       '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
@@ -973,7 +1046,7 @@
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
-      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
+      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div><div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
@@ -1021,7 +1094,7 @@
         : arenaQueue ? button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) : '';
       arenaBody = '<div class="line locked">' + escapeHtml(arenaLock.title) + '</div><div class="line muted">' + escapeHtml(arenaLock.detail) + '</div>' +
         (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
-        '<div class="button-grid">' + arenaCleanup + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, { disabled: true, detail: arenaLock.entryDetail }) + button('ENTER SOLO ARENA', 'arena_start', {}, { disabled: true, detail: arenaLock.entryDetail }) + '</div>';
+        '<div class="button-grid">' + arenaCleanup + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, { disabled: true, futureExpansion: true, eggRequired: arenaLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: arenaLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: arenaLock.entryDetail.indexOf('SYNC') >= 0, detail: arenaLock.entryDetail }) + button('ENTER SOLO ARENA', 'arena_start', {}, { disabled: true, futureExpansion: true, eggRequired: arenaLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: arenaLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: arenaLock.entryDetail.indexOf('SYNC') >= 0, detail: arenaLock.entryDetail }) + '</div>';
     } else {
       if (arena) {
         var specialCost = number(arena.special_cost || 3);
@@ -1066,7 +1139,7 @@
       kaijuBody = '<div class="line locked">' + escapeHtml(kaijuLock.title) + '</div><div class="line muted">' + escapeHtml(kaijuLock.detail) + '</div>' +
         (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
         (kaijuMatch && !kaijuSoloCleanup ? '<div class="line muted">MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY / FORFEIT RESOLUTION.</div>' : '') +
-        '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, detail: kaijuLock.entryDetail }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, detail: kaijuLock.entryDetail }) + '</div>';
+        '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, futureExpansion: true, eggRequired: kaijuLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: kaijuLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: kaijuLock.entryDetail.indexOf('SYNC') >= 0, detail: kaijuLock.entryDetail }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, futureExpansion: true, eggRequired: kaijuLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: kaijuLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: kaijuLock.entryDetail.indexOf('SYNC') >= 0, detail: kaijuLock.entryDetail }) + '</div>';
     } else {
       kaijuBody = kaijuMatch
         ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid kaiju-decisions">' + (kaiju.cards || []).map(function (card) {
@@ -1108,10 +1181,10 @@
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
       '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available }) + '</div>';
-    return panel('DISTRICT NETWORK', regions, 'districts') + panel('MOON RUN', runBody, 'moon-run') +
+    return panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>', 'street-event') +
-      panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), bossBody, 'weekly-boss') +
+      panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss') +
       panel('STREET STORY CHAINS', chains || '<div class="line muted">NO CHAIN SIGNAL.</div>', 'story-chains') + panel('SEASONAL RAID', seasonalBody, 'seasonal-boss') +
       panel('PET ARENA', arenaBody, 'arena') + panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
   }
@@ -1157,10 +1230,10 @@
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : '');
     }).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
-      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, detail: (offer.purchased ? 'SOLD // ' : '') + (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) });
+      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased, detail: (offer.purchased ? 'SOLD // ' : '') + (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) });
     }).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
-      return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || !item.affordable || item.equipped, detail: item.equipped ? 'EQUIPPED // ' + (item.description || '') : (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + ' // COST ' + costText(item.cost) });
+      return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || !item.affordable || item.equipped, resourceRequired: item.unlocked && !item.affordable && !item.equipped, detail: item.equipped ? 'EQUIPPED // ' + (item.description || '') : (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + ' // COST ' + costText(item.cost) });
     }).join('');
     var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
@@ -1173,13 +1246,13 @@
       var upgrade = upgrades.get(item.item_key) || {};
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
         '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' +
-        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key }, { disabled: !upgrade.affordable, detail: (upgrade.unlocked ? '' : 'REQUIRES LEVEL ' + number(upgrade.required_level) + ' // ') + costText(upgrade.cost) }) + '</div>');
+        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key }, { disabled: !upgrade.affordable, resourceRequired: upgrade.unlocked && !upgrade.affordable, detail: (upgrade.unlocked ? '' : 'REQUIRES LEVEL ' + number(upgrade.required_level) + ' // ') + costText(upgrade.cost) }) + '</div>');
     }).join('');
     var materials = (state.materials || []).map(function (item) {
       return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
     }).join('');
     var crafting = (live.crafting || []).map(function (recipe) {
-      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable, detail: (recipe.unlocked ? '' : 'REQUIRES LEVEL ' + number(recipe.min_level) + ' // ') + (recipe.detail || '') + ' // COST ' + costText(recipe.cost) + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
+      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable, resourceRequired: recipe.unlocked && !recipe.affordable, detail: (recipe.unlocked ? '' : 'REQUIRES LEVEL ' + number(recipe.min_level) + ' // ') + (recipe.detail || '') + ' // COST ' + costText(recipe.cost) + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
     }).join('');
     var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div>'; }).join('');
     var equipmentSets = (live.equipment_sets || []).map(function (set) {
@@ -1187,14 +1260,14 @@
       return '<div class="line ' + (set.pieces >= 2 ? 'complete' : '') + '">' + escapeHtml(words(set.key)) + ' // EQUIPPED ' + number(set.pieces) + '/' + number(set.total_pieces) + ' // OWNED ' + number(set.owned_pieces) + '</div>' +
         '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
     }).join('');
-    var cosmetics = (live.cosmetics || []).map(function (item) { return button(words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable || item.unlocked && !item.repeatable, detail: (item.unlocked ? 'OWNED x' + number(item.quantity) + ' // ' : '') + costText(item.cost) }); }).join('');
+    var cosmetics = (live.cosmetics || []).map(function (item) { return button(words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable || item.unlocked && !item.repeatable, resourceRequired: !item.affordable && !(item.unlocked && !item.repeatable), detail: (item.unlocked ? 'OWNED x' + number(item.quantity) + ' // ' : '') + costText(item.cost) }); }).join('');
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>', 'equipment') +
       panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('CRAFTING WORKSHOP', '<div class="button-grid">' + crafting + '</div>', 'crafting') +
       panel('RELIC VAULT', relics || '<div class="line muted">NO RELICS RECOVERED.</div>', 'relics') +
       panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>', 'bounties') +
-      panel('CRYSTAL EXPEDITION // ' + escapeHtml(expedition.title || 'LOCKED'), '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="line muted">POSSIBLE FINDS // ' + escapeHtml((expedition.rewards || []).map(valueText).join(' / ')) + '</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left || Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0) }) + '</div>', 'expedition') +
+      panel('CRYSTAL EXPEDITION // ' + escapeHtml(expedition.title || 'LOCKED'), '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="line muted">POSSIBLE FINDS // ' + escapeHtml((expedition.rewards || []).map(valueText).join(' / ')) + '</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left || Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0), resourceRequired: Boolean(economy.expedition_attempts_left) && Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0) }) + '</div>', 'expedition') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>', 'market') +
       panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB', '<div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
@@ -1368,6 +1441,7 @@
     if (reducedMotion) drawWorld(0);
   }
 
+  // TEST-EXPORT: actionResultFeedback:start
   function resultRewardMap(result) {
     var applied = result && result.applied;
     var reward = result && result.rewards
@@ -1458,9 +1532,14 @@
 
   function resultMessage(result, beforeState, afterState) {
     if (!result) return 'SYSTEM RESPONSE LOST.';
+    if (!result.accepted) {
+      var blockedParts = ['ACTION BLOCKED - ' + rejectionMessage(result.reason)];
+      if (result.duplicate) blockedParts.push('Duplicate blocked by authority.');
+      return blockedParts.join(' // ');
+    }
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
-    var parts = [result.accepted ? 'ACTION ACCEPTED' : 'ACTION BLOCKED', rejectionMessage(result.reason)];
+    var parts = ['ACTION ACCEPTED', rejectionMessage(result.reason)];
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
     if (terminalResult) parts.push('OUTCOME ' + words(terminalResult.replace('player1', 'you').replace('player2', 'opponent')));
     var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
@@ -1481,6 +1560,19 @@
 
   function rejectionMessage(reason) {
     var messages = {
+      active_pet_required: 'active seasonal Moonpet required.',
+      completed_season_pet_required: 'active seasonal Moonpet required.',
+      weekly_journey_authority_syncing: 'Daily Journey authority syncing.',
+      daily_journey_authority_syncing: 'Daily Journey authority syncing.',
+      cooldown: 'wait for cooldown.',
+      trade_cooldown: 'wait for cooldown.',
+      adventure_cooldown: 'wait for cooldown.',
+      moon_egg_must_hatch: 'hatch your Moonpet first.',
+      pet_not_adopted: 'hatch your Moonpet first.',
+      insufficient_gold: 'not enough Moon Gold.',
+      not_enough_pet_currency: 'not enough Moon Gold.',
+      insufficient_crystals: 'not enough Moon Crystals.',
+      insufficient_style: 'not enough Style Tokens.',
       insufficient_arcade_xp: 'NOT ENOUGH ARCADE XP FOR THIS SLOT',
       pet_slot_purchased: 'SEASONAL PET SLOT UNLOCKED',
       pet_slot_switched: 'ACTIVE MOONPET SWITCHED',
@@ -1506,6 +1598,11 @@
   function actionFeedback(result, beforeState, afterState) {
     if (!result) return { tone: 'danger', lines: ['SYSTEM RESPONSE LOST'], reaction: '' };
     var lines = [result.accepted ? 'ACTION COMPLETE' : 'ACTION BLOCKED'];
+    if (!result.accepted) {
+      lines.push(compactFeedback(rejectionMessage(result.reason), 34));
+      if (result.duplicate && lines.length < 3) lines.push('DUPLICATE BLOCKED');
+      return { tone: 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
+    }
     journeyActionProgressLines(beforeState, afterState, result).some(function (line) {
       if (lines.length >= 3) return true;
       lines.push(compactFeedback(line, 34));
@@ -1526,6 +1623,7 @@
     if (!result.accepted && lines.length < 3 && result.reason) lines.push(compactFeedback(rejectionMessage(result.reason), 34));
     return { tone: result.accepted ? 'success' : 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
   }
+  // TEST-EXPORT: actionResultFeedback:end
 
   function clearResultFeedback(redraw) {
     window.clearTimeout(feedbackRedrawTimer);

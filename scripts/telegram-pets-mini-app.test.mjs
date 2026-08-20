@@ -111,6 +111,32 @@ capabilityHelperState = { capabilities_version: 1, capabilities: { combat: { sta
 assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasCombatUnlocked();')(capabilityHelperState), true,
   'available capability payload must unlock combat');
 
+const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
+assert.ok(actionAvailabilitySource, 'action availability helper must be extractable for runtime coverage');
+const actionAvailabilityRuntime = new Function(
+  'option',
+  `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+${actionAvailabilitySource}; return { cooldownDisplay, availabilityLabel, availabilityDetail };`,
+)({});
+assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
+  'available action buttons must not show locked copy');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true }), 'LOCKED',
+  'disabled actions without richer authority metadata must show locked copy');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
+  'resource-gated buttons must distinguish not-enough-resource state');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+  'active-pet gates must distinguish active pet required state');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+  'egg/incubation gates must distinguish hatch/incubation state');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
+  'authority-syncing buttons must not fake availability');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true }), 'FUTURE EXPANSION',
+  'future expansion copy must not imply live gameplay');
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m',
+  'cooldown display must use existing retry_after_seconds safely');
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90000 }), 'Available tomorrow UTC',
+  'long cooldown display must use plain UTC copy');
+
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
 const dailyJourneyRuntime = new Function(
@@ -323,10 +349,48 @@ assert.deepEqual(journeyActionProgressRuntime({}, {
   weekly_journey: { state: 'LOCKED', reason: 'weekly_journey_authority_syncing', completed_objectives: 0, required_objectives: 5, objectives: [] },
 }, { accepted: true }), [], 'authority-unavailable state must not fake journey progress in action feedback');
 
+const actionResultFeedbackSource = extractTestExport(client, 'actionResultFeedback');
+assert.ok(actionResultFeedbackSource, 'action result feedback helper must be extractable for runtime coverage');
+const actionResultFeedbackRuntime = new Function(
+  'result',
+  'beforeState',
+  'afterState',
+  `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').replace(/\\b\\w/g, (letter) => letter.toUpperCase()); }
+${weeklyJourneyMarkupSource}
+${journeyActionProgressSource}
+${actionResultFeedbackSource}; return { resultMessage: resultMessage(result, beforeState, afterState), actionFeedback: actionFeedback(result, beforeState, afterState) };`,
+);
+const blockedResultFeedback = actionResultFeedbackRuntime({
+  accepted: false,
+  reason: 'moon_egg_must_hatch',
+  pet_xp_awarded: 99,
+  rewards: { moon_gold: 50 },
+  daily_journey: { accepted: true },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 2, required_objectives: 3 },
+});
+assert.match(blockedResultFeedback.resultMessage, /ACTION BLOCKED - hatch your Moonpet first\./,
+  'blocked action result must show useful reason copy');
+assert.doesNotMatch(blockedResultFeedback.resultMessage, /Daily Journey|GROWTH MARK|\+99|\+50/,
+  'rejected action result must not show journey progress or reward language');
+assert.deepEqual(blockedResultFeedback.actionFeedback.lines, ['ACTION BLOCKED', 'hatch your Moonpet first.'],
+  'blocked canvas feedback must keep reason-only copy');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'cooldown' }, {}, {}).resultMessage, /ACTION BLOCKED - wait for cooldown\./,
+  'cooldown rejection copy must be plain language');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_gold' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Gold\./,
+  'Moon Gold rejection copy must be plain language');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /ACTION BLOCKED - Daily Journey authority syncing\./,
+  'authority-syncing rejection copy must be plain language');
+
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'journeyActionProgress', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
