@@ -594,6 +594,37 @@ assert.equal(dailyChestDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FR
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_check_in' AND status='accepted'`).get(dailyChestTelegramId, dailyChestPet).count, 1,
   'Test 5g: repeated Daily Chest duplicate remains idempotent');
 
+const dailyChestFreshRetryDb = createDb();
+const dailyChestFreshTelegramId = 'weekly-daily-chest-fresh-retry';
+const dailyChestFreshSeasonKey = getPetSeasonInfo(new Date()).key;
+const dailyChestFreshPet = seedPlayer(dailyChestFreshRetryDb, dailyChestFreshTelegramId, dailyChestFreshSeasonKey);
+const dailyChestOriginal = await processPetDailyChest(dailyChestFreshRetryDb, dailyChestFreshTelegramId, {
+  event_key: 'weekly-daily-chest-original-key',
+});
+assert.equal(dailyChestOriginal.accepted, true, 'Test 5h: initial Daily Chest claim is accepted');
+dailyChestFreshRetryDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_check_in'`).run(dailyChestFreshTelegramId, dailyChestFreshPet);
+const dailyChestFreshRetry = await processPetDailyChest(dailyChestFreshRetryDb, dailyChestFreshTelegramId, {
+  event_key: 'weekly-daily-chest-fresh-retry-key',
+});
+assert.equal(dailyChestFreshRetry.reason, 'daily_claimed', 'Test 5h: fresh Daily Chest retry remains same-day claimed');
+assert.equal(dailyChestFreshRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='daily_chest' AND event_key='weekly-daily-chest-fresh-retry-key' AND status='accepted'`).get(dailyChestFreshTelegramId).count, 0,
+  'Test 5h: fresh Daily Chest retry does not persist the retry key as accepted source evidence');
+assert.equal(dailyChestFreshRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_check_in' AND status='accepted'`).get(dailyChestFreshTelegramId, dailyChestFreshPet).count, 1,
+  'Test 5h: fresh Daily Chest retry recovers missing Weekly Journey evidence from same-day accepted source event');
+assert.equal(dailyChestFreshRetryDb.database.prepare(`SELECT source_event_key FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_check_in'`).get(dailyChestFreshTelegramId, dailyChestFreshPet).source_event_key,
+  'weekly-daily-chest-original-key',
+  'Test 5h: fresh Daily Chest retry reuses original accepted same-day source event key');
+await processPetDailyChest(dailyChestFreshRetryDb, dailyChestFreshTelegramId, {
+  event_key: 'weekly-daily-chest-fresh-retry-key-two',
+});
+assert.equal(dailyChestFreshRetryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_check_in' AND status='accepted'`).get(dailyChestFreshTelegramId, dailyChestFreshPet).count, 1,
+  'Test 5h: repeated fresh Daily Chest retries keep one Weekly Journey objective row');
+
 const dailyMoonRunDb = createDb();
 const dailyMoonRunTelegramId = 'weekly-daily-moon-run';
 const dailyMoonRunSeasonKey = getPetSeasonInfo(new Date()).key;

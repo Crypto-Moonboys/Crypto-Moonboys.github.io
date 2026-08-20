@@ -319,8 +319,10 @@ assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mar
 assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability\)/, 'Weekly Journey must render from server authority');
 assert.match(client, /WEEKLY JOURNEY \/\/ LIVE/, 'Weekly Journey must present live progress when authority is available');
 assert.match(client, /WEEKLY JOURNEY \/\/ SYNCING/, 'Weekly Journey must fail closed while authority is unavailable');
-assert.match(client, /weeklyState === 'COMING_SOON' \? 'WEEKLY JOURNEY \/\/ PLANNED EXPANSION' : 'WEEKLY JOURNEY \/\/ SYNCING'/,
+assert.match(client, /var waitingTitle = weeklyState === 'COMING_SOON'[\s\S]*'WEEKLY JOURNEY \/\/ PLANNED EXPANSION'[\s\S]*'WEEKLY JOURNEY \/\/ SYNCING'/,
   'Weekly Journey panel title must show syncing for locked authority and planned expansion only for explicit COMING_SOON');
+assert.match(client, /var waitingCopy = weeklyState === 'COMING_SOON'[\s\S]*Weekly Journey is planned expansion\.[\s\S]*Weekly Journey authority is syncing\./,
+  'Weekly Journey panel body copy must keep COMING_SOON planned copy separate from syncing authority copy');
 assert.match(client, /WEEKLY CREST AWARDED|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST ELIGIBLE/, 'Weekly Journey live UI must surface Crest settlement states');
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');

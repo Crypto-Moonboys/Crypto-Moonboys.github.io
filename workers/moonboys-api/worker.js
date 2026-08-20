@@ -441,6 +441,10 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;');
 }
 
+function escapeSqlLikePattern(value) {
+  return String(value == null ? '' : value).replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
 const FACTION_SWITCH_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const FACTION_CONFIG = {
   // Canonical 9-faction keys — mirrors LIVE_FACTIONS in battle-chamber-factions.js
@@ -3181,7 +3185,13 @@ async function processPetDailyChest(db, telegramId, options = {}) {
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const claimed = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_type = 'daily_chest' AND day_key = ? AND status = 'accepted'`).bind(telegramId, dayKey).first().catch(() => null);
-  if (claimed) return { accepted: false, reason: 'daily_claimed', pet };
+  if (claimed) {
+    const acceptedDailyChestEvent = await readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey);
+    if (acceptedDailyChestEvent) {
+      await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, acceptedDailyChestEvent.event_key, { accepted_event: acceptedDailyChestEvent });
+    }
+    return { accepted: false, reason: 'daily_claimed', pet };
+  }
   const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
   let petXp = 40;
   if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) petXp = 0;
@@ -3261,6 +3271,10 @@ async function processPetDailyChest(db, telegramId, options = {}) {
       const acceptedEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
       await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, acceptedEvent ? { accepted_event: acceptedEvent } : {});
       return acceptedDuplicate;
+    }
+    const acceptedDailyChestEvent = await readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey);
+    if (acceptedDailyChestEvent) {
+      await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, acceptedDailyChestEvent.event_key, { accepted_event: acceptedDailyChestEvent });
     }
     return { accepted: false, reason: 'daily_claimed', pet };
   }
@@ -3537,6 +3551,23 @@ async function readAcceptedPetEventByKey(db, telegramId, eventKey) {
   `).bind(telegramId, eventKey).first().catch(() => null);
 }
 
+async function readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey) {
+  const owner = String(telegramId || '').trim();
+  const day = String(dayKey || '').trim();
+  if (!owner || !day) return null;
+  return db.prepare(`
+    SELECT id, pet_id, telegram_id, event_type, event_key, status, reason,
+           xp_awarded, pet_xp_awarded, season_key, day_key, week_key, metadata
+    FROM telegram_pet_events
+    WHERE telegram_id = ?
+      AND day_key = ?
+      AND event_type = 'daily_chest'
+      AND status = 'accepted'
+    ORDER BY id ASC
+    LIMIT 1
+  `).bind(owner, day).first().catch(() => null);
+}
+
 const WEEKLY_JOURNEY_SOURCE_OBJECTIVES = Object.freeze({
   feed: 'weekly_care',
   play: 'weekly_care',
@@ -3602,9 +3633,9 @@ async function readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, b
       AND week_key = ?
       AND event_type = 'weekly_boss'
       AND status = 'accepted'
-      AND metadata LIKE ?
+      AND metadata LIKE ? ESCAPE '\\'
   `;
-  const bossPattern = `%\"boss_id\":\"${boss}\"%`;
+  const bossPattern = `%\"boss_id\":\"${escapeSqlLikePattern(boss)}\"%`;
   const sameDayEvent = day ? await db.prepare(`${baseSql}
       AND day_key = ?
     ORDER BY id ASC

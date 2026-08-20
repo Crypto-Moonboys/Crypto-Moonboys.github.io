@@ -651,8 +651,14 @@
     var weeklyCompleted = Math.max(0, Number(weeklyAuthority.completed_objectives || weeklyCapability.completed_objectives) || 0);
     var weeklyReady = weeklyState === 'AVAILABLE' && weeklyRequired > 0;
     if (!weeklyReady) {
-      return '<div class="line locked">WEEKLY JOURNEY // SYNCING</div>' +
-        '<div class="line muted">' + escapeHtml(weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.') + '</div>';
+      var waitingTitle = weeklyState === 'COMING_SOON'
+        ? 'WEEKLY JOURNEY // PLANNED EXPANSION'
+        : 'WEEKLY JOURNEY // SYNCING';
+      var waitingCopy = weeklyState === 'COMING_SOON'
+        ? (weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey is planned expansion.')
+        : (weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.');
+      return '<div class="line locked">' + waitingTitle + '</div>' +
+        '<div class="line muted">' + escapeHtml(waitingCopy) + '</div>';
     }
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
