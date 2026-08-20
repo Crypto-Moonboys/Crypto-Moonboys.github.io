@@ -410,7 +410,8 @@
   function activityClaimButtonOptions(activity) {
     activity = activity || {};
     var cooldown = !activity.ready ? cooldownMetadata(activity) : null;
-    return { disabled: !activity.ready, cooldown: cooldown };
+    var waitingDetail = !activity.ready && !cooldown && activity.detail ? String(activity.detail) : '';
+    return { disabled: !activity.ready, cooldown: cooldown, statusLabel: waitingDetail ? 'WAITING' : '', detail: waitingDetail };
   }
   // TEST-EXPORT: actionAvailability:end
 
@@ -901,6 +902,7 @@
 
   function exploreNextLine() {
     if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
+    if (!state || !state.adopted || !state.pet) return 'Initialise a Moon Egg to begin.';
     var boss = state && state.guidance && state.guidance.weekly_boss || {};
     var weekly = state && state.weekly_journey || {};
     var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
@@ -1179,7 +1181,7 @@
           : '<div class="button-grid arena-decisions">' + arenaMoves + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
       } else if (arenaQueue) {
         arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
-          button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank }) + button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
+          button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank, statusLabel: arenaQueue.accept_any_rank ? 'CURRENT' : '' }) + button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
       } else {
         arenaBody = (arenaResult ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(arenaResult.outcome || arenaResult.result)) + ' // ' + escapeHtml(arenaResult.opponent && arenaResult.opponent.pet_name || 'RIVAL') + '</div>' : '') + '<div class="line muted">RANKED PLAYER MATCHMAKING OR SOLO PRACTICE.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake') + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
       }
@@ -1234,7 +1236,7 @@
       return '<div class="story-scene"><div class="line signal"><strong>' + escapeHtml(chain.title || words(chain.key)) + '</strong> // STEP ' + number(chain.step_index + 1) + '/' + number(chain.steps.length) + '</div><div class="line"><strong>' + escapeHtml(scene.title || words(chain.current_step)) + '</strong></div><div class="line">' + escapeHtml(scene.intro || '') + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(scene.objective || '') + '</div>' + (chain.used_today ? '<div class="line complete">STORY CHOICE LOCKED IN TODAY</div>' : '<div class="button-grid story-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
     var seasonal = live.seasonal_boss || {};
-    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY', 'seasonal_boss', {}, { disabled: !seasonal.available }) + '</div>';
+    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY', 'seasonal_boss', {}, { disabled: !seasonal.available, statusLabel: seasonal.attempted_today ? 'USED TODAY' : '' }) + '</div>';
     var bossReward = valueText(boss.reward);
     var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +

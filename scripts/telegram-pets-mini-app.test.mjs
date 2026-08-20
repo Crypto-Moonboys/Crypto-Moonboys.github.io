@@ -189,10 +189,29 @@ assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90
   'long cooldown display must use plain UTC copy');
 assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 720 })), /Available in 12m/,
   'real timed-activity claim button options must render existing-state cooldown metadata');
+const productionActivityClaim = actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, detail: 'Claim ready in 11m.' }));
+assert.match(productionActivityClaim, /WAITING/,
+  'production-shaped timed-activity claim buttons must show waiting status from detail when no cooldown field is serialized');
+assert.match(productionActivityClaim, /Claim ready in 11m\./,
+  'production-shaped timed-activity claim buttons must preserve server detail copy');
+assert.doesNotMatch(productionActivityClaim, /LOCKED/,
+  'production-shaped timed-activity claim buttons must not degrade in-progress activity to locked copy');
+assert.doesNotMatch(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: true, detail: 'Claim ready now.' })), /WAITING|IN PROGRESS|disabled/,
+  'ready timed-activity claim buttons must not render disabled waiting labels');
 assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false })), /LOCKED/,
   'timed-activity claim buttons without cooldown metadata must not fake availability');
 assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 0 })), /LOCKED/,
   'timed-activity claim buttons must ignore cooldown metadata that resolves to Ready now');
+const acceptAnyRankCurrent = actionAvailabilityRuntime.button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: true, statusLabel: 'CURRENT' });
+assert.match(acceptAnyRankCurrent, /CURRENT/,
+  'ACCEPT ANY RANK current state must show current status');
+assert.doesNotMatch(acceptAnyRankCurrent, /LOCKED/,
+  'ACCEPT ANY RANK current state must not render locked copy');
+const seasonalUsedToday = actionAvailabilityRuntime.button('ATTACK USED TODAY', 'seasonal_boss', {}, { disabled: true, statusLabel: 'USED TODAY' });
+assert.match(seasonalUsedToday, /USED TODAY/,
+  'seasonal attack used-today state must show used-today status');
+assert.doesNotMatch(seasonalUsedToday, /LOCKED/,
+  'seasonal attack used-today state must not render locked copy');
 
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
@@ -382,21 +401,33 @@ assert.equal(nextGuidanceRuntime({
 }).profileNextLine(), 'Hatch your Moon Egg by completing incubation signals.',
   'authoritative state lifecycle phase must keep egg guidance even when progression lifecycle lacks phase');
 assert.equal(nextGuidanceRuntime({
+  adopted: false,
+  pet: null,
+  weekly_journey: { objectives: [] },
+}).exploreNextLine(), 'Initialise a Moon Egg to begin.',
+  'unadopted players with no pet must be guided to initialise before energy recovery');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
   guidance: { weekly_boss: { available: true } },
+  pet: { energy: 12 },
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
 }).exploreNextLine(), 'Complete Weekly boss attempt to progress Weekly Journey.',
   'available incomplete Weekly boss objective must recommend the boss attempt');
 assert.equal(nextGuidanceRuntime({
+  adopted: true,
   guidance: { weekly_boss: { available: false } },
+  pet: { energy: 12 },
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
 }).exploreNextLine(), 'Build level and energy before the Weekly boss attempt.',
   'unavailable incomplete Weekly boss objective must not recommend a blocked boss attempt');
 assert.equal(nextGuidanceRuntime({
+  adopted: true,
   pet: { energy: 12 },
   weekly_journey: { objectives: [] },
 }).exploreNextLine(), 'Start a Moon Run or pick an available Explore action.',
   'sufficient energy with no active run may recommend a Moon Run');
 assert.equal(nextGuidanceRuntime({
+  adopted: true,
   pet: { energy: 3 },
   weekly_journey: { objectives: [] },
 }).exploreNextLine(), 'Restore energy before starting a Moon Run.',
@@ -743,6 +774,10 @@ assert.match(client, /function combatLockCopy\(\)[\s\S]*combatCapability\(state\
 assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*disabled: true[\s\S]*futureExpansion: true[\s\S]*eggRequired: entryDetail\.indexOf\('HATCHED'\) >= 0[\s\S]*activePetRequired: entryDetail\.indexOf\('ACTIVE'\) >= 0[\s\S]*authoritySyncing: entryDetail\.indexOf\('SYNC'\) >= 0/,
   'Arena and Kaiju locked buttons must share the same future-expansion availability options');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
+assert.match(renderExploreSource, /button\('ACCEPT ANY RANK'[\s\S]*statusLabel: arenaQueue\.accept_any_rank \? 'CURRENT' : ''/,
+  'ACCEPT ANY RANK current queue state must use an explicit CURRENT status label');
+assert.match(renderExploreSource, /button\(seasonal\.attempted_today \? 'ATTACK USED TODAY'[\s\S]*statusLabel: seasonal\.attempted_today \? 'USED TODAY' : ''/,
+  'seasonal attack used-today button must use an explicit USED TODAY status label');
 const arenaLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())');
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
 const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');
