@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
 const deployWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/deploy-pages.yml'), 'utf8');
+const graphWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/graph-publishing-integrity.yml'), 'utf8');
+const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-pages-artifact.mjs'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
 
@@ -94,6 +96,45 @@ assert.ok(
 assert.ok(
   !deployWorkflow.includes('npx playwright install --with-deps chromium'),
   'Pages deploy must not install Chromium; browser checks belong in CI only',
+);
+
+assert.ok(
+  deployWorkflow.includes('path: public-site'),
+  'Pages deploy must upload the curated public-site artifact instead of the repository root',
+);
+
+assert.ok(
+  !deployWorkflow.includes('deployments/**'),
+  'Pages deploy must not trigger on deployments/** unless that directory is copied into the artifact',
+);
+
+for (const rootPublicPattern of ['"*.png"', '"*.jpg"', '"*.jpeg"', '"*.webp"', '"*.gif"', '"*.svg"', '"*.xml"', '"*.txt"']) {
+  assert.ok(
+    deployWorkflow.includes(rootPublicPattern),
+    `Pages deploy must trigger on root public asset pattern ${rootPublicPattern}`,
+  );
+}
+
+assert.ok(
+  preparePagesArtifact.includes("'sam-memory.json'"),
+  'Pages artifact preparation must include sam-memory.json as a committed public root asset',
+);
+
+assert.ok(
+  preparePagesArtifact.includes('Refusing to use unsafe Pages artifact path'),
+  'Pages artifact preparation must reject destructive artifact output paths',
+);
+
+for (const graphPath of ['"categories/**"', '"about.html"', '"hubs.html"', '"sam.html"', '"scripts/**"']) {
+  assert.ok(
+    graphWorkflow.includes(graphPath),
+    `graph publishing integrity workflow must run for ${graphPath}`,
+  );
+}
+
+assert.ok(
+  graphWorkflow.includes('git diff --exit-code --') && graphWorkflow.includes('sam-memory.json'),
+  'graph publishing integrity workflow must fail when regenerated publishing surfaces drift from committed files',
 );
 
 console.log('CI domain grouping tests PASSED.');

@@ -5,13 +5,15 @@ on:
     paths:
       - "wiki/**"
       - "brand-canon/**"
+      - "categories/**"
       - "data/**"
       - "js/**"
       - "assets/**"
       - "og-templates/**"
-      - "scripts/generate-publishing-surfaces.mjs"
-      - "scripts/graph-publishing-integrity.test.mjs"
-      - "scripts/ci-domain-runner.mjs"
+      - "about.html"
+      - "hubs.html"
+      - "sam.html"
+      - "scripts/**"
       - ".github/workflows/graph-publishing-integrity.yml"
       - "package.json"
       - "package-lock.json"
@@ -20,13 +22,15 @@ on:
     paths:
       - "wiki/**"
       - "brand-canon/**"
+      - "categories/**"
       - "data/**"
       - "js/**"
       - "assets/**"
       - "og-templates/**"
-      - "scripts/generate-publishing-surfaces.mjs"
-      - "scripts/graph-publishing-integrity.test.mjs"
-      - "scripts/ci-domain-runner.mjs"
+      - "about.html"
+      - "hubs.html"
+      - "sam.html"
+      - "scripts/**"
       - ".github/workflows/graph-publishing-integrity.yml"
       - "package.json"
       - "package-lock.json"
@@ -64,6 +68,25 @@ jobs:
 
       - name: Validate regenerated wiki surfaces
         run: npm run ci:wiki
+
+      - name: Fail on stale generated publishing surfaces
+        run: |
+          if ! git diff --exit-code -- \
+            js/wiki-index.json \
+            js/link-map.json \
+            js/link-graph.json \
+            js/entity-map.json \
+            js/entity-graph.json \
+            js/graph-data.json \
+            js/entity-graph-lite.json \
+            sitemap.xml \
+            index_stats.json \
+            sam-memory.json \
+            data/site-stats.json; then
+            echo "Publishing surfaces are stale. Run node scripts/generate-publishing-surfaces.mjs and commit the generated outputs."
+            git diff --stat
+            exit 1
+          fi
 
       - name: Show generated surface changes
         if: always()
