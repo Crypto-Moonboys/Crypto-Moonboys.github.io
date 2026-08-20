@@ -649,8 +649,16 @@
     weeklyCapability = weeklyCapability || {};
     var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
     var weeklyReason = String(weeklyAuthority.reason || weeklyCapability.reason || '').toLowerCase();
-    var weeklyRequired = Math.max(0, Number(weeklyAuthority.required_objectives || weeklyCapability.required_objectives) || 0);
-    var weeklyCompleted = Math.max(0, Number(weeklyAuthority.completed_objectives || weeklyCapability.completed_objectives) || 0);
+    var weeklyRequired = Math.max(0, Number(
+      weeklyAuthority.required_objectives != null
+        ? weeklyAuthority.required_objectives
+        : weeklyCapability.required_objectives
+    ) || 0);
+    var weeklyCompleted = Math.max(0, Number(
+      weeklyAuthority.completed_objectives != null
+        ? weeklyAuthority.completed_objectives
+        : weeklyCapability.completed_objectives
+    ) || 0);
     var weeklyReady = weeklyState === 'AVAILABLE' && weeklyRequired > 0;
     if (!weeklyReady) {
       var waitingTitle = weeklyState === 'COMING_SOON'

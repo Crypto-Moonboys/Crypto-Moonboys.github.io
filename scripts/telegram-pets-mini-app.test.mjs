@@ -160,6 +160,13 @@ const zeroWeeklyMarkup = weeklyJourneyRuntime({
 assert.match(zeroWeeklyMarkup, /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/, 'Weekly Journey must render 0/5 when live authority is available');
 assert.match(zeroWeeklyMarkup, /Weekly care actions \/\/ 0\/5 \/\/ INCOMPLETE/, 'Weekly Journey must show clear objective names and incomplete state');
 assert.match(zeroWeeklyMarkup, /RESET 2026-08-24T00:00:00.000Z/, 'Weekly Journey must render reset timing when authority provides it');
+assert.match(weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  completed_objectives: 0,
+  required_objectives: 5,
+  objectives: [],
+}, { completed_objectives: 4, required_objectives: 5 }), /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/,
+  'Weekly Journey must preserve authoritative zero completed objectives over nonzero capability fallback');
 const partialWeeklyMarkup = weeklyJourneyRuntime({
   state: 'AVAILABLE',
   qualification_week: 2,
