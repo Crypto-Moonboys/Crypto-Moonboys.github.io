@@ -678,8 +678,14 @@
     var weeklyPercent = Math.round(Math.min(weeklyRequired, weeklyCompleted) / weeklyRequired * 100);
     var resetAt = weeklyAuthority.week_reset_at || weeklyCapability.week_reset_at || '';
     var resetCopy = resetAt ? ' // RESET ' + escapeHtml(resetAt) : '';
-    var crestStatus = weeklyAuthority.weekly_crest_awarded || weeklyCapability.weekly_crest_awarded ? 'WEEKLY CREST ALREADY SETTLED'
-      : weeklyAuthority.duplicate_blocked || weeklyCapability.duplicate_blocked ? 'DUPLICATE WEEKLY CREST BLOCKED'
+    var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
+      ? Boolean(weeklyAuthority.weekly_crest_awarded)
+      : Boolean(weeklyCapability.weekly_crest_awarded);
+    var weeklyDuplicateBlocked = weeklyAuthority.duplicate_blocked != null
+      ? Boolean(weeklyAuthority.duplicate_blocked)
+      : Boolean(weeklyCapability.duplicate_blocked);
+    var crestStatus = weeklyCrestAwarded ? 'WEEKLY CREST ALREADY SETTLED'
+      : weeklyDuplicateBlocked ? 'DUPLICATE WEEKLY CREST BLOCKED'
         : weeklyCompleted >= weeklyRequired ? 'WEEKLY CREST READY FOR SERVER SETTLEMENT' : 'COMPLETE WEEKLY OBJECTIVES TO QUALIFY';
     var objectiveRows = objectives.map(function (objective) {
       var progress = Math.max(0, Number(objective.progress) || 0);

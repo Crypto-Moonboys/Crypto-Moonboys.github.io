@@ -498,6 +498,22 @@ assert.equal(zeroWeeklyState.capabilities.weekly_journey.active, true,
 assert.ok(zeroWeeklyState.weekly_journey.week_reset_at,
   'zero-progress Weekly Journey must expose server-derived reset timing when season timing is available');
 
+const weekThirteenSeason = {
+  key: 'season-92-day-week-13',
+  start_at: '2026-01-01T00:00:00.000Z',
+  end_at: '2026-04-03T00:00:00.000Z',
+};
+const weekThirteenResetDb = new D1();
+seedPlayer(weekThirteenResetDb, 'weekly-week-13-reset', 'Reset Cat', 1200);
+await ensurePetStarterSeasonSlot(weekThirteenResetDb, 'weekly-week-13-reset', new Date('2026-03-31T12:00:00.000Z'));
+const weekThirteenSummary = await buildPetMiniAppJourneySummary(weekThirteenResetDb, 'weekly-week-13-reset', {
+  season: weekThirteenSeason,
+  current_season_week: 13,
+  slots: [{ active: true, pet_id: 'pet:weekly-week-13-reset:season-92-day-week-13:1', season_key: weekThirteenSeason.key }],
+}, new Date('2026-04-02T12:00:00.000Z'));
+assert.equal(weekThirteenSummary.weekly.week_reset_at, weekThirteenSeason.end_at,
+  'Week 13 Weekly Journey reset must stay at season end for a 92-day season');
+
 const postActionWeeklyDb = new D1();
 seedPlayer(postActionWeeklyDb, 'weekly-post-action', 'Refresh Cat', 1200);
 await ensurePetStarterSeasonSlot(postActionWeeklyDb, 'weekly-post-action', new Date());

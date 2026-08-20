@@ -192,6 +192,18 @@ const completeWeeklyMarkup = weeklyJourneyRuntime({
 }, {});
 assert.match(completeWeeklyMarkup, /WEEKLY JOURNEY \/\/ 5\/5 OBJECTIVES/, 'Weekly Journey must render complete progress');
 assert.match(completeWeeklyMarkup, /WEEKLY CREST READY FOR SERVER SETTLEMENT/, 'complete but unsettled Weekly Journey must not fake an awarded Crest');
+const authoritativeFalseCrestMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  completed_objectives: 5,
+  required_objectives: 5,
+  weekly_crest_awarded: false,
+  duplicate_blocked: false,
+  objectives: [],
+}, { weekly_crest_awarded: true, duplicate_blocked: true });
+assert.match(authoritativeFalseCrestMarkup, /WEEKLY CREST READY FOR SERVER SETTLEMENT/,
+  'Weekly Journey must preserve authoritative false Crest booleans over stale capability true values');
+assert.doesNotMatch(authoritativeFalseCrestMarkup, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKED/,
+  'stale capability Crest booleans must not override explicit authority false values');
 const settledWeeklyMarkup = weeklyJourneyRuntime({
   state: 'AVAILABLE',
   qualification_week: 2,

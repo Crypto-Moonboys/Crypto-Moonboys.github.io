@@ -8263,6 +8263,9 @@ function getPetMiniAppWeekResetAt(seasonSlots = {}, now = new Date()) {
   const endMs = Date.parse(season?.end_at || '');
   const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(season, now)) || 1));
   if (!Number.isFinite(startMs)) return null;
+  if (week >= 13 && Number.isFinite(endMs)) {
+    return new Date(endMs).toISOString();
+  }
   const resetMs = Math.min(
     Number.isFinite(endMs) ? endMs : startMs + (week * 7 * 86400000),
     startMs + (week * 7 * 86400000),
