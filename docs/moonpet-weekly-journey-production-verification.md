@@ -64,10 +64,22 @@ Each response must be `200`.
 8. Run the manual production smoke script.
 
 ```bash
+node scripts/moonpet-production-smoke.mjs <merged-main-commit>
+```
+
+Or, when running from a clean checkout at the deployed `main` commit:
+
+```bash
 node scripts/moonpet-production-smoke.mjs
 ```
 
-The script fails if Worker health is not `ok`, `/deployment-info` has no full commit SHA, or any Moonpet static URL is not `200`.
+You can also supply the expected deployed commit with `MOONPET_EXPECTED_COMMIT`.
+
+```bash
+MOONPET_EXPECTED_COMMIT=<merged-main-commit> node scripts/moonpet-production-smoke.mjs
+```
+
+The script fails if Worker health is not `ok`, `/deployment-info` has no full commit SHA, `/deployment-info.commit` does not match the expected commit, or any Moonpet static URL is not `200`.
 
 9. Open the Mini App.
 
