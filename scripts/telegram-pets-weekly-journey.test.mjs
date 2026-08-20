@@ -14,6 +14,7 @@ const {
   processPetWeeklyBoss,
   processPetDailyChest,
   processPetMiniAppAction,
+  processPetAction,
   getPetSeasonInfo,
 } = __petMediaTestHooks;
 
@@ -46,8 +47,14 @@ class D1 {
     try {
       const results = [];
       for (const statement of statements) {
-        const result = this.database.prepare(statement.sql).run(...statement.args);
-        results.push({ results: [], meta: { changes: Number(result.changes || 0) } });
+        const prepared = this.database.prepare(statement.sql);
+        if (/\bRETURNING\b/i.test(statement.sql)) {
+          const rows = prepared.all(...statement.args);
+          results.push({ results: rows, meta: { changes: rows.length } });
+        } else {
+          const result = prepared.run(...statement.args);
+          results.push({ results: [], meta: { changes: Number(result.changes || 0) } });
+        }
       }
       this.database.exec('COMMIT');
       return results;
@@ -93,6 +100,16 @@ assert.match(workerSource, /recordWeeklyJourneyObjectiveEvidence\(db, \{[\s\S]*s
   'Weekly Journey live progress must pass the persisted event key into authority');
 assert.match(workerSource, /progress_value: objective\.target/,
   'Weekly Journey live adapter may request target progress only for max objectives; authority clamps additive objectives');
+assert.ok(workerSource.includes(".replace(/\\\\/g, '\\\\\\\\')"),
+  'LIKE helper must escape literal backslashes explicitly before wildcard characters');
+assert.ok(workerSource.includes(".replace(/%/g, '\\\\%')"),
+  'LIKE helper must escape literal percent signs for SQLite LIKE');
+assert.ok(workerSource.includes(".replace(/_/g, '\\\\_')"),
+  'LIKE helper must escape literal underscores for SQLite LIKE');
+assert.ok(workerSource.includes("metadata LIKE ? ESCAPE '\\\\'"),
+  'weekly boss recovery must bind escaped metadata patterns with SQLite LIKE ESCAPE');
+assert.doesNotMatch(workerSource, /OR\s+reason\s*=\s*['"]weekly_boss_attempt['"]/,
+  'weekly boss recovery must not broaden accepted source matching by reason');
 for (const [eventType, objectiveId] of Object.entries({
   feed: 'weekly_care',
   play: 'weekly_care',
@@ -573,6 +590,58 @@ for (const [eventType, objectiveId] of [
 assert.equal(sourceVariantDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE pet_id=? AND status='accepted'`).get(sourceVariantPet).count, 12,
   'Test 5f: all live source variants persist one accepted weekly objective evidence row');
+
+async function assertDirectActionPreparesCurrentSeason({ action, objectiveId, telegramId }) {
+  const db = createDb();
+  const now = new Date();
+  const currentSeasonKey = getPetSeasonInfo(now).key;
+  const oldSeasonKey = `${currentSeasonKey}:previous`;
+  const oldPet = seedPlayer(db, telegramId, oldSeasonKey);
+  const eventKey = `weekly-rollover-direct:${telegramId}:${action}`;
+  const result = await processPetAction(db, telegramId, action, {
+    event_key: eventKey,
+    source: 'telegram_bot',
+    now,
+  });
+  assert.equal(result.accepted, true, `Test 5g: ${action} direct action is accepted after season rollover without Mini App state load`);
+  const event = db.database.prepare(`SELECT pet_id, season_key, event_key, event_type, status FROM telegram_pet_events
+    WHERE telegram_id=? AND event_key=? AND status='accepted'`).get(telegramId, eventKey);
+  assert.equal(event?.season_key, currentSeasonKey, `Test 5g: ${action} source event uses the current season key`);
+  assert.notEqual(event?.pet_id, oldPet, `Test 5g: ${action} source event does not use the previous-season active pet`);
+  assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots
+    WHERE telegram_id=? AND pet_id=? AND season_key=?`).get(telegramId, event.pet_id, currentSeasonKey).count, 1,
+    `Test 5g: ${action} source event pet belongs to the current season slot`);
+  assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+    WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='accepted'`).get(telegramId, oldPet, currentSeasonKey).count, 0,
+    `Test 5g: ${action} writes no old-pet/new-season mismatched accepted event`);
+  assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+    WHERE telegram_id=? AND pet_id=? AND season_key=? AND objective_id=? AND source_event_key=? AND status='accepted'`)
+    .get(telegramId, event.pet_id, currentSeasonKey, objectiveId, eventKey).count, 1,
+    `Test 5g: ${action} records current-season Weekly Journey evidence`);
+  const replay = await processPetAction(db, telegramId, action, {
+    event_key: eventKey,
+    source: 'telegram_bot',
+    now,
+  });
+  assert.equal(replay.duplicate, true, `Test 5g: ${action} direct action replay is idempotent`);
+  assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+    WHERE telegram_id=? AND event_key=? AND status='accepted'`).get(telegramId, eventKey).count, 1,
+    `Test 5g: ${action} replay keeps one accepted source event`);
+  assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+    WHERE telegram_id=? AND objective_id=? AND source_event_key=? AND status='accepted'`).get(telegramId, objectiveId, eventKey).count, 1,
+    `Test 5g: ${action} replay keeps one Weekly Journey objective row`);
+}
+
+await assertDirectActionPreparesCurrentSeason({
+  action: 'feed',
+  objectiveId: 'weekly_care',
+  telegramId: 'weekly-rollover-direct-feed',
+});
+await assertDirectActionPreparesCurrentSeason({
+  action: 'train',
+  objectiveId: 'weekly_training',
+  telegramId: 'weekly-rollover-direct-train',
+});
 
 const dailyChestDuplicateDb = createDb();
 const dailyChestTelegramId = 'weekly-daily-chest-duplicate';

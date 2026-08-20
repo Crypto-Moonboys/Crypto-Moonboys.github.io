@@ -442,7 +442,10 @@ function escapeHtml(str) {
 }
 
 function escapeSqlLikePattern(value) {
-  return String(value == null ? '' : value).replace(/[\\%_]/g, (char) => `\\${char}`);
+  return String(value == null ? '' : value)
+    .replace(/\\/g, '\\\\')
+    .replace(/%/g, '\\%')
+    .replace(/_/g, '\\_');
 }
 
 const FACTION_SWITCH_COOLDOWN_MS = 24 * 60 * 60 * 1000;
@@ -3588,6 +3591,12 @@ const WEEKLY_JOURNEY_SOURCE_OBJECTIVES = Object.freeze({
   daily_chest: 'weekly_check_in',
 });
 
+const WEEKLY_JOURNEY_DIRECT_ACTION_PREP_ACTIONS = Object.freeze(['feed', 'play', 'clean', 'sleep', 'train']);
+
+function requiresWeeklyJourneyDirectActionPetPreparation(action) {
+  return WEEKLY_JOURNEY_DIRECT_ACTION_PREP_ACTIONS.includes(String(action || ''));
+}
+
 async function recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, options = {}) {
   const acceptedEvent = options.accepted_event || await readAcceptedPetEventByKey(db, telegramId, eventKey);
   const eventType = String(acceptedEvent?.event_type || '');
@@ -5692,6 +5701,20 @@ async function processPetAction(db, telegramId, action, options = {}) {
     pet.pet_name = petName;
     await savePetProfile(db, pet);
     return { accepted: true, reason: 'renamed', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  if (requiresWeeklyJourneyDirectActionPetPreparation(normalizedAction)) {
+    const prepared = await preparePetMiniAppState(db, telegramId, now);
+    if (!prepared) {
+      return { accepted: false, reason: 'pet_current_season_unavailable', xp_awarded: 0, pet_xp_awarded: 0, pet };
+    }
+    pet = await getPetProfile(db, telegramId);
+    if (!pet) {
+      return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+    }
+    if (String(pet.season_key || '') !== String(season.key || '')) {
+      return { accepted: false, reason: 'pet_current_season_unavailable', xp_awarded: 0, pet_xp_awarded: 0, pet };
+    }
   }
 
   const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
