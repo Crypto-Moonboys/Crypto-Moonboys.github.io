@@ -65,13 +65,15 @@ function preserveGeneratedAtIfStable(nodes, edges) {
     const maxAgeMs = Number.isFinite(MAX_PRESERVED_GENERATED_AT_HOURS) && MAX_PRESERVED_GENERATED_AT_HOURS > 0
       ? MAX_PRESERVED_GENERATED_AT_HOURS * 60 * 60 * 1000
       : 6 * 60 * 60 * 1000;
+    const ageMs = now - existingGeneratedAt;
 
     if (
       existingStable === nextStable &&
       typeof existing.generated_at === 'string' &&
       existing.generated_at.trim() &&
       Number.isFinite(existingGeneratedAt) &&
-      now - existingGeneratedAt <= maxAgeMs
+      ageMs >= 0 &&
+      ageMs <= maxAgeMs
     ) {
       return existing.generated_at;
     }

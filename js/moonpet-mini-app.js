@@ -675,6 +675,18 @@
       entryDetail: 'REQUIRES COMPLETED SEASON PET',
     };
   }
+
+  function combatLockedButtonOptions(entryDetail) {
+    entryDetail = String(entryDetail || '');
+    return {
+      disabled: true,
+      futureExpansion: true,
+      eggRequired: entryDetail.indexOf('HATCHED') >= 0,
+      activePetRequired: entryDetail.indexOf('ACTIVE') >= 0,
+      authoritySyncing: entryDetail.indexOf('SYNC') >= 0,
+      detail: entryDetail,
+    };
+  }
   // TEST-EXPORT: capabilityCombatHelper:end
 
   // TEST-EXPORT: dailyJourneyMarkup:start
@@ -1105,12 +1117,13 @@
     var arenaBody;
     if (!hasCombatUnlocked()) {
       var arenaLock = combatLockCopy();
+      var arenaEntryOptions = combatLockedButtonOptions(arenaLock.entryDetail);
       var arenaCleanup = arena
         ? button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true })
         : arenaQueue ? button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) : '';
       arenaBody = '<div class="line locked">' + escapeHtml(arenaLock.title) + '</div><div class="line muted">' + escapeHtml(arenaLock.detail) + '</div>' +
         (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
-        '<div class="button-grid">' + arenaCleanup + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, { disabled: true, futureExpansion: true, eggRequired: arenaLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: arenaLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: arenaLock.entryDetail.indexOf('SYNC') >= 0, detail: arenaLock.entryDetail }) + button('ENTER SOLO ARENA', 'arena_start', {}, { disabled: true, futureExpansion: true, eggRequired: arenaLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: arenaLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: arenaLock.entryDetail.indexOf('SYNC') >= 0, detail: arenaLock.entryDetail }) + '</div>';
+        '<div class="button-grid">' + arenaCleanup + button('FIND PLAYER BATTLE', 'arena_matchmake', {}, arenaEntryOptions) + button('ENTER SOLO ARENA', 'arena_start', {}, arenaEntryOptions) + '</div>';
     } else {
       if (arena) {
         var specialCost = number(arena.special_cost || 3);
@@ -1148,6 +1161,7 @@
     var kaijuBody;
     if (!hasCombatUnlocked()) {
       var kaijuLock = combatLockCopy();
+      var kaijuEntryOptions = combatLockedButtonOptions(kaijuLock.entryDetail);
       var kaijuSoloCleanup = kaijuMatch && kaijuMatch.mode !== 'group' && !kaijuMatch.player2_telegram_id;
       var kaijuCleanup = kaijuSoloCleanup
         ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
@@ -1155,7 +1169,7 @@
       kaijuBody = '<div class="line locked">' + escapeHtml(kaijuLock.title) + '</div><div class="line muted">' + escapeHtml(kaijuLock.detail) + '</div>' +
         (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div>' : '') +
         (kaijuMatch && !kaijuSoloCleanup ? '<div class="line muted">MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY / FORFEIT RESOLUTION.</div>' : '') +
-        '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, { disabled: true, futureExpansion: true, eggRequired: kaijuLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: kaijuLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: kaijuLock.entryDetail.indexOf('SYNC') >= 0, detail: kaijuLock.entryDetail }) + button('START SOLO KAIJU', 'kaiju_start', {}, { disabled: true, futureExpansion: true, eggRequired: kaijuLock.entryDetail.indexOf('HATCHED') >= 0, activePetRequired: kaijuLock.entryDetail.indexOf('ACTIVE') >= 0, authoritySyncing: kaijuLock.entryDetail.indexOf('SYNC') >= 0, detail: kaijuLock.entryDetail }) + '</div>';
+        '<div class="button-grid">' + kaijuCleanup + button('FIND KAIJU PLAYER', 'kaiju_matchmake', {}, kaijuEntryOptions) + button('START SOLO KAIJU', 'kaiju_start', {}, kaijuEntryOptions) + '</div>';
     } else {
       kaijuBody = kaijuMatch
         ? '<div class="combat-intel"><div class="line">' + escapeHtml(kaijuMatch.mode === 'group' ? 'PLAYER VS PLAYER' : 'PLAYER VS CRT') + ' // TABLE ' + escapeHtml(kaijuMatch.match_id) + '</div><div class="line signal">BATTLE CATEGORY // ' + escapeHtml(kaijuMatch.category ? kaijuMatch.category.name + ' [' + kaijuMatch.category.label + ']' : 'ARMING') + '</div><div class="line muted">PICK THE CARD WITH THE STRONGEST ACTIVE CATEGORY. THE RIVAL CARD STAYS SEALED.</div></div><div class="line muted">' + (kaijuMatch.own_card_locked ? 'YOUR CARD LOCKED. ' : 'SELECT A CODE CARD. ') + (kaijuMatch.opponent_card_locked ? 'RIVAL LOCKED.' : 'WAITING ON RIVAL.') + '</div>' + (kaijuMatch.own_card_locked ? '' : '<div class="button-grid kaiju-decisions">' + (kaiju.cards || []).map(function (card) {
@@ -1577,7 +1591,7 @@
   function rejectionMessage(reason) {
     var messages = {
       active_pet_required: 'active seasonal Moonpet required.',
-      completed_season_pet_required: 'active seasonal Moonpet required.',
+      completed_season_pet_required: 'completed Season pet required.',
       weekly_journey_authority_syncing: 'Weekly Journey authority syncing.',
       daily_journey_authority_syncing: 'Daily Journey authority syncing.',
       cooldown: 'wait for cooldown.',
@@ -1636,8 +1650,7 @@
     });
     var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
     if (lines.length < 3 && resultCopy) lines.push(compactFeedback(resultCopy, 34));
-    if (!result.accepted && lines.length < 3 && result.reason) lines.push(compactFeedback(rejectionMessage(result.reason), 34));
-    return { tone: result.accepted ? 'success' : 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
+    return { tone: 'success', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
   }
   // TEST-EXPORT: actionResultFeedback:end
 
