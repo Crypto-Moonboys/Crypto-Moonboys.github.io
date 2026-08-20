@@ -688,9 +688,16 @@
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
     if (weeklyReason === 'active_pet_required') return 'No active seasonal Moonpet - pick or hatch one before journey progress starts.';
+    if (weeklyState === 'COMING_SOON') return 'Weekly Journey is planned expansion.';
     if (weeklyState !== 'AVAILABLE' || weeklyRequired <= 0) return 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.';
-    if (weeklyAuthority.weekly_crest_awarded || weeklyCapability.weekly_crest_awarded && weeklyAuthority.weekly_crest_awarded == null) return 'Weekly Crest already settled - keep daily routines moving until next reset.';
-    if (weeklyAuthority.duplicate_blocked || weeklyCapability.duplicate_blocked && weeklyAuthority.duplicate_blocked == null) return 'Weekly Crest duplicate blocked for this week.';
+    var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
+      ? Boolean(weeklyAuthority.weekly_crest_awarded)
+      : Boolean(weeklyCapability.weekly_crest_awarded);
+    var weeklyDuplicateBlocked = weeklyAuthority.duplicate_blocked != null
+      ? Boolean(weeklyAuthority.duplicate_blocked)
+      : Boolean(weeklyCapability.duplicate_blocked);
+    if (weeklyCrestAwarded) return 'Weekly Crest already settled - keep daily routines moving until next reset.';
+    if (weeklyDuplicateBlocked) return 'Weekly Crest duplicate blocked for this week.';
     if (weeklyCompleted >= weeklyRequired) return 'Weekly Journey complete - Weekly Crest is ready for server settlement.';
     var remaining = weeklyRemainingLabels(objectives);
     return 'Weekly Journey: ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + ' complete - remaining: ' + (remaining.length ? remaining.join(', ') : 'server-confirmed objectives') + '.';
@@ -724,7 +731,7 @@
       return '<div class="line locked">' + waitingTitle + '</div>' +
         '<div class="line muted">' + escapeHtml(waitingCopy) + '</div>' +
         '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability)) + '</div>' +
-        '<div class="line muted">Complete objectives to qualify for server settlement once authority returns objective evidence.</div>';
+        '<div class="line muted">' + (weeklyState === 'COMING_SOON' ? 'Weekly Journey objectives will appear when this system is available.' : 'Complete objectives to qualify for server settlement once authority returns objective evidence.') + '</div>';
     }
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
@@ -749,12 +756,14 @@
         escapeHtml(label) + ' // ' + number(Math.min(progress, target)) + '/' + number(target) + ' // ' + (complete ? 'COMPLETE' : 'INCOMPLETE') + '</div>';
     }).join('') || '<div class="line muted">NO WEEKLY OBJECTIVE EVIDENCE YET.</div>';
     var remaining = weeklyRemainingLabels(objectives);
+    var remainingCopy = remaining.length ? remaining.join(', ')
+      : weeklyCompleted >= weeklyRequired ? 'No remaining weekly objectives.' : 'Waiting for server-confirmed objectives.';
     return '<div class="line complete">WEEKLY JOURNEY // ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + ' OBJECTIVES</div>' +
       '<div class="line muted">QUALIFICATION WEEK ' + number(weeklyAuthority.qualification_week || weeklyCapability.qualification_week || 1) + resetCopy + ' // Server-authoritative source events only.</div>' +
       meter('WEEKLY CREST', weeklyPercent) +
       '<div class="line muted">' + crestStatus + ' // ' + escapeHtml(words(weeklyAuthority.reason || weeklyCapability.reason || 'weekly journey in progress')) + '</div>' +
       '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability)) + '</div>' +
-      '<div class="line muted">REMAINING // ' + escapeHtml(remaining.length ? remaining.join(', ') : 'No remaining weekly objectives.') + '</div>' +
+      '<div class="line muted">REMAINING // ' + escapeHtml(remainingCopy) + '</div>' +
       objectiveRows;
   }
   // TEST-EXPORT: weeklyJourneyMarkup:end
@@ -1377,46 +1386,71 @@
     };
   }
 
+  function activeJourneyPetId(snapshot) {
+    var activeSlot = (snapshot && snapshot.season_slots && Array.isArray(snapshot.season_slots.slots)
+      ? snapshot.season_slots.slots.find(function (slot) { return slot && slot.active; }) : null) || {};
+    return String(snapshot && snapshot.pet && (snapshot.pet.pet_id || snapshot.pet.id)
+      || activeSlot.pet_id
+      || '');
+  }
+
+  function journeyPeriodMatches(left, right, keys) {
+    return keys.every(function (key) {
+      var leftValue = String(left && left[key] != null ? left[key] : '');
+      var rightValue = String(right && right[key] != null ? right[key] : '');
+      return !leftValue || !rightValue || leftValue === rightValue;
+    });
+  }
+
   function journeyActionProgressLines(beforeState, afterState, result) {
     if (!result || !result.accepted || !afterState) return [];
+    var beforePetId = activeJourneyPetId(beforeState);
+    var afterPetId = activeJourneyPetId(afterState);
+    if (!beforePetId || !afterPetId || beforePetId !== afterPetId) return [];
     var before = journeyProgressSnapshot(beforeState);
     var after = journeyProgressSnapshot(afterState);
     var lines = [];
     var daily = after.daily || {};
     var beforeDaily = before.daily || {};
     var dailyRequired = Math.max(0, Number(daily.required_objectives) || 0);
-    var dailyCompleted = Math.max(0, Number(daily.completed_objectives) || 0);
-    var beforeDailyCompleted = Math.max(0, Number(beforeDaily.completed_objectives) || 0);
-    if (dailyRequired > 0 && dailyCompleted > beforeDailyCompleted) {
-      lines.push('Daily Journey +' + number(dailyCompleted - beforeDailyCompleted) + ' objective (' + number(dailyCompleted) + '/' + number(dailyRequired) + ').');
-    } else if (daily.growth_mark_awarded && !beforeDaily.growth_mark_awarded) {
-      lines.push('Growth Mark already settled for today.');
+    var beforeDailyRequired = Math.max(0, Number(beforeDaily.required_objectives) || 0);
+    if (dailyRequired > 0 && beforeDailyRequired > 0 && journeyPeriodMatches(daily, beforeDaily, ['pet_id', 'season_key', 'utc_day'])) {
+      var dailyCompleted = Math.max(0, Number(daily.completed_objectives) || 0);
+      var beforeDailyCompleted = Math.max(0, Number(beforeDaily.completed_objectives) || 0);
+      if (dailyCompleted > beforeDailyCompleted) {
+        lines.push('Daily Journey +' + number(dailyCompleted - beforeDailyCompleted) + ' objective (' + number(dailyCompleted) + '/' + number(dailyRequired) + ').');
+      } else if (daily.growth_mark_awarded && !beforeDaily.growth_mark_awarded) {
+        lines.push('Growth Mark already settled for today.');
+      }
     }
     var weekly = after.weekly || {};
     var beforeWeekly = before.weekly || {};
     var weeklyRequired = Math.max(0, Number(weekly.required_objectives) || 0);
-    var weeklyCompleted = Math.max(0, Number(weekly.completed_objectives) || 0);
-    var beforeWeeklyCompleted = Math.max(0, Number(beforeWeekly.completed_objectives) || 0);
-    var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
-    var beforeObjectives = Array.isArray(beforeWeekly.objectives) ? beforeWeekly.objectives : [];
-    var beforeById = {};
-    beforeObjectives.forEach(function (objective) { beforeById[String(objective.objective_id || '')] = objective; });
-    objectives.some(function (objective) {
-      var id = String(objective.objective_id || '');
-      var beforeObjective = beforeById[id] || {};
-      var progress = Math.max(0, Number(objective.progress) || 0);
-      var target = Math.max(1, Number(objective.target) || 1);
-      var beforeProgress = Math.max(0, Number(beforeObjective.progress) || 0);
-      if (progress > beforeProgress) {
-        lines.push(weeklyObjectiveLabel(objective) + ' ' + number(Math.min(progress, target)) + '/' + number(target) + '.');
+    var beforeWeeklyRequired = Math.max(0, Number(beforeWeekly.required_objectives) || 0);
+    if (weeklyRequired > 0 && beforeWeeklyRequired > 0 && journeyPeriodMatches(weekly, beforeWeekly, ['pet_id', 'season_key', 'qualification_week'])) {
+      var weeklyCompleted = Math.max(0, Number(weekly.completed_objectives) || 0);
+      var beforeWeeklyCompleted = Math.max(0, Number(beforeWeekly.completed_objectives) || 0);
+      var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
+      var beforeObjectives = Array.isArray(beforeWeekly.objectives) ? beforeWeekly.objectives : [];
+      var beforeById = {};
+      beforeObjectives.forEach(function (objective) { beforeById[String(objective.objective_id || '')] = objective; });
+      objectives.some(function (objective) {
+        var id = String(objective.objective_id || '');
+        var beforeObjective = beforeById[id] || {};
+        var progress = Math.max(0, Number(objective.progress) || 0);
+        var target = Math.max(1, Number(objective.target) || 1);
+        var beforeProgress = Math.max(0, Number(beforeObjective.progress) || 0);
+        if (progress > beforeProgress) {
+          lines.push(weeklyObjectiveLabel(objective) + ' ' + number(Math.min(progress, target)) + '/' + number(target) + '.');
+        }
+        return lines.length >= 2;
+      });
+      if (weeklyCompleted > beforeWeeklyCompleted && !lines.some(function (line) { return /Weekly|Daily Moon Runs|Daily chest/i.test(line); })) {
+        lines.push('Weekly Journey ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + '.');
       }
-      return lines.length >= 2;
-    });
-    if (weeklyRequired > 0 && weeklyCompleted > beforeWeeklyCompleted && !lines.some(function (line) { return /Weekly|Daily Moon Runs|Daily chest/i.test(line); })) {
-      lines.push('Weekly Journey ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + '.');
-    }
-    if (weekly.weekly_crest_awarded && !beforeWeekly.weekly_crest_awarded) {
-      lines.push('Weekly Crest already settled for this week.');
+      if (weekly.weekly_crest_awarded && !beforeWeekly.weekly_crest_awarded) {
+        lines.push('Weekly Crest already settled for this week.');
+      }
     }
     return lines.slice(0, 2);
   }

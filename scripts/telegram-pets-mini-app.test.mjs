@@ -173,6 +173,16 @@ assert.match(weeklyJourneyRuntime({
   objectives: [],
 }, { completed_objectives: 4, required_objectives: 5 }), /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/,
   'Weekly Journey must preserve authoritative zero completed objectives over nonzero capability fallback');
+const emptyObjectiveWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  completed_objectives: 0,
+  required_objectives: 5,
+  objectives: [],
+}, {});
+assert.match(emptyObjectiveWeeklyMarkup, /REMAINING \/\/ Waiting for server-confirmed objectives/,
+  'incomplete Weekly Journey with no objective list must wait for server-confirmed objectives');
+assert.doesNotMatch(emptyObjectiveWeeklyMarkup, /REMAINING \/\/ No remaining weekly objectives/,
+  'incomplete Weekly Journey with no objective list must not look complete');
 const partialWeeklyMarkup = weeklyJourneyRuntime({
   state: 'AVAILABLE',
   qualification_week: 2,
@@ -245,6 +255,19 @@ const noActivePetWeeklyMarkup = weeklyJourneyRuntime({
 assert.match(noActivePetWeeklyMarkup, /WEEKLY JOURNEY \/\/ ACTIVE PET REQUIRED/, 'no active pet state must be clear and safe');
 assert.match(noActivePetWeeklyMarkup, /No active seasonal Moonpet - pick or hatch one before journey progress starts/,
   'Weekly Journey must guide players without an active seasonal pet');
+const comingSoonWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'COMING_SOON',
+  completed_objectives: 0,
+  required_objectives: 5,
+}, {});
+assert.match(comingSoonWeeklyMarkup, /WEEKLY JOURNEY \/\/ PLANNED EXPANSION/,
+  'COMING_SOON Weekly Journey must render planned expansion title');
+assert.match(comingSoonWeeklyMarkup, /NEXT \/\/ Weekly Journey is planned expansion\./,
+  'COMING_SOON Weekly Journey guidance must use planned expansion copy');
+assert.doesNotMatch(comingSoonWeeklyMarkup, /authority is syncing/i,
+  'COMING_SOON Weekly Journey must not say authority is syncing');
+assert.doesNotMatch(comingSoonWeeklyMarkup, /Complete objectives to qualify/,
+  'COMING_SOON Weekly Journey must not ask players to complete objectives');
 
 const journeyActionProgressSource = extractTestExport(client, 'journeyActionProgress');
 assert.ok(journeyActionProgressSource, 'Journey action progress helper must be extractable for runtime coverage');
@@ -258,22 +281,44 @@ ${weeklyJourneyMarkupSource}
 ${journeyActionProgressSource}; return journeyActionProgressLines(beforeState, afterState, result);`,
 );
 assert.deepEqual(journeyActionProgressRuntime({
-  daily_journey: { completed_objectives: 1, required_objectives: 3 },
-  weekly_journey: { completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
 }, {
-  daily_journey: { completed_objectives: 2, required_objectives: 3 },
-  weekly_journey: { completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 2, target: 5 }] },
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 2, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 2, target: 5 }] },
 }, { accepted: true }), [
   'Daily Journey +1 objective (2/3).',
   'Weekly care actions 2/5.',
 ], 'accepted action feedback must display server-confirmed journey progress context');
 assert.deepEqual(journeyActionProgressRuntime({
-  daily_journey: { completed_objectives: 1, required_objectives: 3 },
-  weekly_journey: { completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
 }, {
-  daily_journey: { completed_objectives: 2, required_objectives: 3 },
-  weekly_journey: { completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 2, target: 5 }] },
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 2, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 2, target: 5 }] },
 }, { accepted: false }), [], 'rejected actions must not display journey success or progress context');
+assert.deepEqual(journeyActionProgressRuntime({
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+}, {
+  pet: { pet_id: 'pet-b' },
+  daily_journey: { pet_id: 'pet-b', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 3, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-b', season_key: 's1', qualification_week: 2, completed_objectives: 4, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 5, target: 5 }] },
+}, { accepted: true }), [], 'switching active pets must not report the newly active pet existing journey counters as progress');
+assert.deepEqual(journeyActionProgressRuntime({
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-19', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 1, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 3, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 4, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 5, target: 5 }] },
+}, { accepted: true }), [], 'changed Daily or Weekly journey periods must not report carried-over counters as new progress');
 assert.deepEqual(journeyActionProgressRuntime({}, {
   weekly_journey: { state: 'LOCKED', reason: 'weekly_journey_authority_syncing', completed_objectives: 0, required_objectives: 5, objectives: [] },
 }, { accepted: true }), [], 'authority-unavailable state must not fake journey progress in action feedback');
