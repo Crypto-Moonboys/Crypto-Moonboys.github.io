@@ -606,6 +606,14 @@
     return slot.pet && slot.pet.progression || {};
   }
 
+  function firstSessionPhase() {
+    var lifecycle = state && state.lifecycle || {};
+    var phase = String(lifecycle.phase || '').toLowerCase();
+    if (!state || !state.adopted || !state.pet) return 'unadopted';
+    if (phase === 'egg') return 'egg';
+    return '';
+  }
+
   // TEST-EXPORT: capabilityCombatHelper:start
   function combatCapability(source) {
     var fallback = {
@@ -717,7 +725,7 @@
     var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
     var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
     var reason = String(dailyAuthority.reason || '').toLowerCase();
-    if (reason === 'active_pet_required') return 'No active seasonal Moonpet - pick or hatch one before journey progress starts.';
+    if (reason === 'active_pet_required') return 'Journey progress starts after you have a hatched active Moonpet.';
     if (dailyRequired <= 0) return 'Daily Journey authority is syncing. Progress display will refresh when server authority is available.';
     if (dailyAuthority.growth_mark_awarded) return 'Growth Mark already settled for today.';
     if (dailyAuthority.duplicate_blocked) return 'Growth Mark duplicate blocked for today.';
@@ -733,6 +741,12 @@
     var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
     var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
     var dailyAuthorityReady = Number.isFinite(dailyRequired) && dailyRequired > 0;
+    var dailyReason = String(dailyAuthority.reason || '').toLowerCase();
+    if (dailyReason === 'active_pet_required') {
+      return '<div class="line locked">DAILY JOURNEY // ACTIVE PET REQUIRED</div>' +
+        '<div class="line muted">Journey progress starts after you have a hatched active Moonpet.</div>' +
+        '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div>';
+    }
     var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
     var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY SETTLED'
       : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
@@ -776,7 +790,7 @@
     var weeklyCompleted = Math.max(0, Number(weeklyAuthority.completed_objectives != null ? weeklyAuthority.completed_objectives : weeklyCapability.completed_objectives) || 0);
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
-    if (weeklyReason === 'active_pet_required') return 'No active seasonal Moonpet - pick or hatch one before journey progress starts.';
+    if (weeklyReason === 'active_pet_required') return 'Journey progress starts after you have a hatched active Moonpet.';
     if (weeklyState === 'COMING_SOON') return 'Weekly Journey is planned expansion.';
     if (weeklyState !== 'AVAILABLE' || weeklyRequired <= 0) return 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.';
     var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
@@ -815,12 +829,17 @@
       var waitingCopy = weeklyState === 'COMING_SOON'
         ? (weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey is planned expansion.')
         : weeklyReason === 'active_pet_required'
-          ? 'Pick or hatch an active seasonal Moonpet before Weekly Journey progress can be shown.'
+          ? 'Journey progress starts after you have a hatched active Moonpet.'
           : (weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.');
+      var waitingDetail = weeklyState === 'COMING_SOON'
+        ? 'Weekly Journey objectives will appear when this system is available.'
+        : weeklyReason === 'active_pet_required'
+          ? 'No Daily or Weekly objective progress is shown until a pet exists and has hatched.'
+          : 'Complete objectives to qualify for server settlement once authority returns objective evidence.';
       return '<div class="line locked">' + waitingTitle + '</div>' +
         '<div class="line muted">' + escapeHtml(waitingCopy) + '</div>' +
         '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability)) + '</div>' +
-        '<div class="line muted">' + (weeklyState === 'COMING_SOON' ? 'Weekly Journey objectives will appear when this system is available.' : 'Complete objectives to qualify for server settlement once authority returns objective evidence.') + '</div>';
+        '<div class="line muted">' + waitingDetail + '</div>';
     }
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
@@ -883,11 +902,12 @@
     var progressionLifecycle = progression.lifecycle || {};
     var phase = String(authoritativeLifecycle.phase || progressionLifecycle.phase || '').toLowerCase();
     var evolutionReady = Boolean(authoritativeLifecycle.evolution_ready || progressionLifecycle.evolution_ready);
+    if (!state || !state.adopted || !state.pet) return 'Initialise a Moon Egg to begin.';
+    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'HATCH MOONPET to wake your first companion.' : 'Incubate your Moon Egg until the hatch signal is ready.';
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active seasonal Moonpet before journey progress starts.';
-    if (phase === 'egg') return 'Hatch your Moon Egg by completing incubation signals.';
     if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
-    return 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.';
+    return 'Start with first care, then follow the first server-authoritative Journey objective when it appears.';
   }
 
   function homeNextLine(next) {
@@ -895,14 +915,16 @@
     var incubation = lifecycle.incubation || {};
     if (!state || !state.adopted) return 'Initialise a Moon Egg to begin.';
     if (lifecycle.phase === 'egg') {
-      return incubation.ready ? 'Hatch your Moonpet now.' : 'Hatch your Moon Egg by completing incubation signals.';
+      return incubation.ready ? 'HATCH MOONPET to wake your first companion.' : 'Incubate with care signals until the hatch signal is ready.';
     }
     return next && next.title ? String(next.title) : 'Keep needs stable and follow the recommended route.';
   }
 
   function exploreNextLine() {
+    var firstSession = firstSessionPhase();
+    if (firstSession === 'unadopted') return 'Initialise a Moon Egg to begin.';
+    if (firstSession === 'egg') return 'Incubate or HATCH MOONPET before Explore actions open.';
     if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
-    if (!state || !state.adopted || !state.pet) return 'Initialise a Moon Egg to begin.';
     var boss = state && state.guidance && state.guidance.weekly_boss || {};
     var weekly = state && state.weekly_journey || {};
     var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
@@ -913,6 +935,30 @@
     var energy = Number(state && state.pet && state.pet.energy);
     if (Number.isFinite(energy) && energy < 12) return 'Restore energy before starting a Moon Run.';
     return 'Start a Moon Run or pick an available Explore action.';
+  }
+
+  function firstSessionExploreMarkup() {
+    var phase = firstSessionPhase();
+    if (!phase) return '';
+    var nextLine = exploreNextLine();
+    var copy = phase === 'unadopted'
+      ? {
+        district: 'Initialise a Moon Egg before district routes, bosses, Arena, Kaiju, or pet work open.',
+        run: 'Moon Run opens after you have a hatched active Moonpet.',
+        journey: 'Journey progress starts after you have a hatched active Moonpet.',
+      }
+      : {
+        district: 'Your Moon Egg is still forming. Incubate it before district routes, bosses, Arena, Kaiju, or pet work open.',
+        run: 'Moon Run opens after HATCH MOONPET creates an active companion.',
+        journey: 'Journey progress starts after hatching, when server authority can bind objectives to the active pet.',
+      };
+    return panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(nextLine) + '</div><div class="line muted">' + escapeHtml(copy.district) + '</div>', 'districts') +
+      panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(nextLine) + '</div><div class="line muted">' + escapeHtml(copy.run) + '</div>', 'moon-run') +
+      panel('PET ADVENTURE', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'adventure') +
+      panel('STREET EVENT', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'street-event') +
+      panel('WEEKLY BOSS // LOCKED', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'weekly-boss') +
+      panel('PET ARENA', '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>', 'arena') +
+      panel('KAIJU CODE CARDS', '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>', 'kaiju');
   }
   // TEST-EXPORT: nextGuidance:end
 
@@ -1110,6 +1156,8 @@
   }
 
   function renderExplore() {
+    var firstSessionExplore = firstSessionExploreMarkup();
+    if (firstSessionExplore) return firstSessionExplore;
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {

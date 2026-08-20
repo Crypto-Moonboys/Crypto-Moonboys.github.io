@@ -236,7 +236,7 @@ assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives:
   'incomplete Daily Journey must guide the next eligible objective count from authority');
 assert.match(dailyJourneyRuntime({ completed_objectives: 3, required_objectives: 3, growth_mark_awarded: true, reason: 'daily_journey_qualified' }, 0, {}, {}), /GROWTH MARK ALREADY SETTLED/,
   'settled Daily Journey Growth Mark state must use settled copy');
-assert.match(dailyJourneyRuntime({ reason: 'active_pet_required', required_objectives: 0, completed_objectives: 0 }, 0, {}, {}), /No active seasonal Moonpet - pick or hatch one before journey progress starts/,
+assert.match(dailyJourneyRuntime({ reason: 'active_pet_required', required_objectives: 0, completed_objectives: 0 }, 0, {}, {}), /Journey progress starts after you have a hatched active Moonpet/,
   'Daily Journey must guide players without an active seasonal pet');
 
 const weeklyJourneyMarkupSource = extractTestExport(client, 'weeklyJourneyMarkup');
@@ -355,7 +355,7 @@ const noActivePetWeeklyMarkup = weeklyJourneyRuntime({
   required_objectives: 5,
 }, {});
 assert.match(noActivePetWeeklyMarkup, /WEEKLY JOURNEY \/\/ ACTIVE PET REQUIRED/, 'no active pet state must be clear and safe');
-assert.match(noActivePetWeeklyMarkup, /No active seasonal Moonpet - pick or hatch one before journey progress starts/,
+assert.match(noActivePetWeeklyMarkup, /Journey progress starts after you have a hatched active Moonpet/,
   'Weekly Journey must guide players without an active seasonal pet');
 const comingSoonWeeklyMarkup = weeklyJourneyRuntime({
   state: 'COMING_SOON',
@@ -381,10 +381,32 @@ function escapeHtml(value) { return String(value == null ? '' : value); }
 function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
 function meter(label, percent) { return '<meter>' + label + ':' + percent + '</meter>'; }
 function panel(title, body) { return '<section><h2>' + title + '</h2>' + body + '</section>'; }
-${nextGuidanceSource}; return { profileNextLine, exploreNextLine };`,
+${nextGuidanceSource}; return { homeNextLine, profileNextLine, exploreNextLine, firstSessionExploreMarkup };`,
   )(stateValue);
 }
+assert.equal(nextGuidanceRuntime({
+  adopted: false,
+  pet: null,
+}).homeNextLine(), 'Initialise a Moon Egg to begin.',
+  'unadopted Home guidance must point to Moon Egg initialisation');
+assert.equal(nextGuidanceRuntime({
+  adopted: false,
+  pet: null,
+}).profileNextLine(), 'Initialise a Moon Egg to begin.',
+  'unadopted Profile guidance must say initialise first instead of missing progression');
+const unadoptedExploreMarkup = nextGuidanceRuntime({
+  adopted: false,
+  pet: null,
+  weekly_journey: { objectives: [] },
+}).firstSessionExploreMarkup();
+assert.match(unadoptedExploreMarkup, /Initialise a Moon Egg before district routes, bosses, Arena, Kaiju, or pet work open/,
+  'unadopted Explore guidance must explain initialisation before active pet work');
+assert.doesNotMatch(unadoptedExploreMarkup, /START MOON RUN|DAILY RUN|Complete Weekly boss attempt|Restore energy|Start a Moon Run/,
+  'unadopted Explore guidance must not recommend Moon Run, energy restore, boss, Arena, Kaiju, or active pet work');
+assert.doesNotMatch(unadoptedExploreMarkup, /Growth Mark|Weekly Crest|Daily Journey:|Weekly Journey:|0\/[35] OBJECTIVES/,
+  'unadopted first-session Explore guidance must not fake Daily or Weekly progress');
 const unavailableSlotGuidance = nextGuidanceRuntime({
+  adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Luna' },
   season_slots: { unavailable: true, slots: [] },
   lifecycle: { phase: 'adult' },
@@ -394,12 +416,47 @@ assert.equal(unavailableSlotGuidance, 'Season slot authority is syncing. Active 
 assert.notEqual(unavailableSlotGuidance, 'Pick an active seasonal Moonpet before journey progress starts.',
   'unavailable season-slot authority must not be confused with a genuinely empty active slot');
 assert.equal(nextGuidanceRuntime({
+  adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Luna' },
   season_slots: { slots: [{ pet_id: 'pet-a', active: true }] },
   lifecycle: { phase: 'egg' },
   active_pet_progression: { lifecycle: { evolution_ready: false } },
-}).profileNextLine(), 'Hatch your Moon Egg by completing incubation signals.',
+}).profileNextLine(), 'Incubate your Moon Egg until the hatch signal is ready.',
   'authoritative state lifecycle phase must keep egg guidance even when progression lifecycle lacks phase');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
+  lifecycle: { phase: 'egg', incubation: { ready: false, progress: 4, target: 12 } },
+}).homeNextLine(), 'Incubate with care signals until the hatch signal is ready.',
+  'egg Home guidance must explain incubation signals');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
+  lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
+}).homeNextLine(), 'HATCH MOONPET to wake your first companion.',
+  'hatch-ready Home guidance must point directly to HATCH MOONPET');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
+  lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
+}).profileNextLine(), 'HATCH MOONPET to wake your first companion.',
+  'hatch-ready Profile NEXT guidance must point directly to HATCH MOONPET');
+const eggExploreRuntime = nextGuidanceRuntime({
+  adopted: true,
+  pet: { pet_id: 'pet-a', energy: 12 },
+  lifecycle: { phase: 'egg', incubation: { ready: false, progress: 5, target: 12 } },
+  weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
+  guidance: { weekly_boss: { available: true } },
+});
+assert.equal(eggExploreRuntime.exploreNextLine(), 'Incubate or HATCH MOONPET before Explore actions open.',
+  'egg Explore NEXT guidance must prefer hatch/incubation over combat or Moon Run');
+const eggExploreMarkup = eggExploreRuntime.firstSessionExploreMarkup();
+assert.match(eggExploreMarkup, /Journey progress starts after hatching, when server authority can bind objectives to the active pet/,
+  'egg Explore guidance must explain Journey progress starts after hatching');
+assert.doesNotMatch(eggExploreMarkup, /START MOON RUN|DAILY RUN|Complete Weekly boss attempt|Restore energy|Start a Moon Run/,
+  'egg Explore guidance must not recommend Moon Run, boss, or energy actions');
+assert.doesNotMatch(eggExploreMarkup, /Growth Mark|Weekly Crest|Daily Journey:|Weekly Journey:|0\/[35] OBJECTIVES/,
+  'egg first-session Explore guidance must not fake Daily or Weekly progress');
 assert.equal(nextGuidanceRuntime({
   adopted: false,
   pet: null,
@@ -408,6 +465,7 @@ assert.equal(nextGuidanceRuntime({
   'unadopted players with no pet must be guided to initialise before energy recovery');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
+  lifecycle: { phase: 'young' },
   guidance: { weekly_boss: { available: true } },
   pet: { energy: 12 },
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
@@ -415,6 +473,7 @@ assert.equal(nextGuidanceRuntime({
   'available incomplete Weekly boss objective must recommend the boss attempt');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
+  lifecycle: { phase: 'young' },
   guidance: { weekly_boss: { available: false } },
   pet: { energy: 12 },
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
@@ -422,16 +481,25 @@ assert.equal(nextGuidanceRuntime({
   'unavailable incomplete Weekly boss objective must not recommend a blocked boss attempt');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
+  lifecycle: { phase: 'young' },
   pet: { energy: 12 },
   weekly_journey: { objectives: [] },
 }).exploreNextLine(), 'Start a Moon Run or pick an available Explore action.',
   'sufficient energy with no active run may recommend a Moon Run');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
+  lifecycle: { phase: 'young' },
   pet: { energy: 3 },
   weekly_journey: { objectives: [] },
 }).exploreNextLine(), 'Restore energy before starting a Moon Run.',
   'low energy with no active run must not recommend a Moon Run');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  pet: { pet_id: 'pet-a', energy: 20 },
+  lifecycle: { phase: 'young' },
+  season_slots: { slots: [{ pet_id: 'pet-a', active: true, pet: { progression: { lifecycle: { evolution_ready: false } } } }] },
+}).profileNextLine(), 'Start with first care, then follow the first server-authoritative Journey objective when it appears.',
+  'newly hatched Profile guidance must move into first care and authority-backed Journey action');
 
 const journeyActionProgressSource = extractTestExport(client, 'journeyActionProgress');
 assert.ok(journeyActionProgressSource, 'Journey action progress helper must be extractable for runtime coverage');
@@ -996,7 +1064,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-action-guidance-polish/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-first-session-onboarding/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1578,7 +1646,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260820-action-guidance-polish/);
+assert.match(html, /20260820-first-session-onboarding/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
