@@ -42,6 +42,8 @@ const OUTPUT_PATH       = path.join(ROOT, 'js', 'graph-data.json');
 const TOP_EDGES_PER_NODE = 5;
 // Minimum relationship score to include an edge
 const MIN_EDGE_SCORE = 40;
+const MAX_PRESERVED_GENERATED_AT_HOURS = Number(process.env.GRAPH_MAX_AGE_HOURS || 6);
+const PRESERVE_SAFETY_MARGIN_MS = Number(process.env.GRAPH_PRESERVE_SAFETY_MARGIN_MINUTES || 10) * 60 * 1000;
 
 function compareStrings(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
@@ -52,17 +54,31 @@ function readJson(file) {
 }
 
 function preserveGeneratedAtIfStable(nodes, edges) {
-  if (!fs.existsSync(OUTPUT_PATH)) return new Date().toISOString();
+  const now = Date.now();
+  if (!fs.existsSync(OUTPUT_PATH)) return new Date(now).toISOString();
 
   try {
     const existing = readJson(OUTPUT_PATH);
     const existingStable = JSON.stringify({ nodes: existing.nodes, edges: existing.edges });
     const nextStable = JSON.stringify({ nodes, edges });
+    const existingGeneratedAt = Date.parse(existing.generated_at);
+    const maxAgeMs = Number.isFinite(MAX_PRESERVED_GENERATED_AT_HOURS) && MAX_PRESERVED_GENERATED_AT_HOURS > 0
+      ? MAX_PRESERVED_GENERATED_AT_HOURS * 60 * 60 * 1000
+      : 6 * 60 * 60 * 1000;
+    const preserveCutoffMs = Math.max(0, maxAgeMs - (
+      Number.isFinite(PRESERVE_SAFETY_MARGIN_MS) && PRESERVE_SAFETY_MARGIN_MS > 0
+        ? PRESERVE_SAFETY_MARGIN_MS
+        : 10 * 60 * 1000
+    ));
+    const ageMs = now - existingGeneratedAt;
 
     if (
       existingStable === nextStable &&
       typeof existing.generated_at === 'string' &&
-      existing.generated_at.trim()
+      existing.generated_at.trim() &&
+      Number.isFinite(existingGeneratedAt) &&
+      ageMs >= 0 &&
+      ageMs <= preserveCutoffMs
     ) {
       return existing.generated_at;
     }
@@ -70,7 +86,7 @@ function preserveGeneratedAtIfStable(nodes, edges) {
     // Ignore parse errors and use a fresh timestamp.
   }
 
-  return new Date().toISOString();
+  return new Date(now).toISOString();
 }
 
 function main() {

@@ -111,6 +111,108 @@ capabilityHelperState = { capabilities_version: 1, capabilities: { combat: { sta
 assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasCombatUnlocked();')(capabilityHelperState), true,
   'available capability payload must unlock combat');
 
+const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
+assert.ok(actionAvailabilitySource, 'action availability helper must be extractable for runtime coverage');
+const actionAvailabilityRuntime = new Function(
+  'option',
+  `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function escapeHtml(value) { return String(value == null ? '' : value); }
+${actionAvailabilitySource}
+function button(label, action, payload, options) {
+  options = options || {};
+  var disabled = options && options.disabled;
+  var detail = shouldShowAvailability(options)
+    ? '<small>' + escapeHtml(availabilityDetail(options)) + '</small>'
+    : '';
+  return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
+}
+return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button };`,
+)({});
+assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
+  'available action buttons must not show locked copy');
+assert.doesNotMatch(actionAvailabilityRuntime.button('FEED', 'feed'), /Ready now|<small>/,
+  'ordinary enabled buttons with no detail must not render noisy Ready now copy');
+assert.match(actionAvailabilityRuntime.button('BUY', 'buy', {}, { disabled: true, resourceRequired: true }), /NOT ENOUGH RESOURCE/,
+  'resource-gated buttons must keep explicit not-enough-resource copy');
+assert.match(actionAvailabilityRuntime.button('WAIT', 'wait', {}, { cooldown: { retry_after_seconds: 720 } }), /Available in 12m/,
+  'cooldown buttons must keep existing-state cooldown copy');
+assert.match(actionAvailabilityRuntime.button('ARENA', 'arena_start', {}, { disabled: true, futureExpansion: true }), /FUTURE EXPANSION/,
+  'future expansion buttons must keep future expansion copy');
+assert.match(actionAvailabilityRuntime.button('LOCKED ACTION', 'locked', {}, { disabled: true }), /LOCKED/,
+  'generic disabled buttons must keep locked copy');
+const soldButton = actionAvailabilityRuntime.button('BUY', 'buy', {}, { disabled: true, statusLabel: 'SOLD', detail: 'Offer closed' });
+assert.match(soldButton, /SOLD/,
+  'sold buttons must show the already-complete status label');
+assert.doesNotMatch(soldButton, /LOCKED/,
+  'sold buttons must not fall back to locked copy');
+const equippedButton = actionAvailabilityRuntime.button('EQUIP', 'buy', {}, { disabled: true, statusLabel: 'EQUIPPED', detail: 'Power suit' });
+assert.match(equippedButton, /EQUIPPED/,
+  'equipped buttons must show the already-current status label');
+assert.doesNotMatch(equippedButton, /LOCKED/,
+  'equipped buttons must not fall back to locked copy');
+const ownedButton = actionAvailabilityRuntime.button('STYLE', 'cosmetic_unlock', {}, { disabled: true, statusLabel: 'OWNED', detail: 'x1 // 100 MOON GOLD' });
+assert.match(ownedButton, /OWNED/,
+  'owned buttons must show the already-owned status label');
+assert.doesNotMatch(ownedButton, /LOCKED/,
+  'owned buttons must not fall back to locked copy');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true }), 'LOCKED',
+  'disabled actions without richer authority metadata must show locked copy');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, statusLabel: 'SOLD' }), 'SOLD',
+  'status labels must override generic disabled copy');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
+  'resource-gated buttons must distinguish not-enough-resource state');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+  'active-pet gates must distinguish active pet required state');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+  'egg/incubation gates must distinguish hatch/incubation state');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
+  'authority-syncing buttons must not fake availability');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
+  'authority-syncing labels must outrank future-expansion labels when both apply');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+  'active-pet gates must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+  'egg/incubation gates must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+  'egg/incubation gates must outrank active-pet gates when both apply');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+  'active-pet gates must remain explicit without egg/incubation gating');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
+  'resource gates must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m',
+  'cooldown labels must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true }), 'FUTURE EXPANSION',
+  'future expansion copy must not imply live gameplay');
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m',
+  'cooldown display must use existing retry_after_seconds safely');
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90000 }), 'Available tomorrow UTC',
+  'long cooldown display must use plain UTC copy');
+assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 720 })), /Available in 12m/,
+  'real timed-activity claim button options must render existing-state cooldown metadata');
+const productionActivityClaim = actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, detail: 'Claim ready in 11m.' }));
+assert.match(productionActivityClaim, /WAITING/,
+  'production-shaped timed-activity claim buttons must show waiting status from detail when no cooldown field is serialized');
+assert.match(productionActivityClaim, /Claim ready in 11m\./,
+  'production-shaped timed-activity claim buttons must preserve server detail copy');
+assert.doesNotMatch(productionActivityClaim, /LOCKED/,
+  'production-shaped timed-activity claim buttons must not degrade in-progress activity to locked copy');
+assert.doesNotMatch(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: true, detail: 'Claim ready now.' })), /WAITING|IN PROGRESS|disabled/,
+  'ready timed-activity claim buttons must not render disabled waiting labels');
+assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false })), /LOCKED/,
+  'timed-activity claim buttons without cooldown metadata must not fake availability');
+assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 0 })), /LOCKED/,
+  'timed-activity claim buttons must ignore cooldown metadata that resolves to Ready now');
+const acceptAnyRankCurrent = actionAvailabilityRuntime.button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: true, statusLabel: 'CURRENT' });
+assert.match(acceptAnyRankCurrent, /CURRENT/,
+  'ACCEPT ANY RANK current state must show current status');
+assert.doesNotMatch(acceptAnyRankCurrent, /LOCKED/,
+  'ACCEPT ANY RANK current state must not render locked copy');
+const seasonalUsedToday = actionAvailabilityRuntime.button('ATTACK USED TODAY', 'seasonal_boss', {}, { disabled: true, statusLabel: 'USED TODAY' });
+assert.match(seasonalUsedToday, /USED TODAY/,
+  'seasonal attack used-today state must show used-today status');
+assert.doesNotMatch(seasonalUsedToday, /LOCKED/,
+  'seasonal attack used-today state must not render locked copy');
+
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
 const dailyJourneyRuntime = new Function(
@@ -269,6 +371,68 @@ assert.doesNotMatch(comingSoonWeeklyMarkup, /authority is syncing/i,
 assert.doesNotMatch(comingSoonWeeklyMarkup, /Complete objectives to qualify/,
   'COMING_SOON Weekly Journey must not ask players to complete objectives');
 
+const nextGuidanceSource = extractTestExport(client, 'nextGuidance');
+assert.ok(nextGuidanceSource, 'NEXT guidance helpers must be extractable for runtime coverage');
+function nextGuidanceRuntime(stateValue) {
+  return new Function(
+    'state',
+    `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function escapeHtml(value) { return String(value == null ? '' : value); }
+function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
+function meter(label, percent) { return '<meter>' + label + ':' + percent + '</meter>'; }
+function panel(title, body) { return '<section><h2>' + title + '</h2>' + body + '</section>'; }
+${nextGuidanceSource}; return { profileNextLine, exploreNextLine };`,
+  )(stateValue);
+}
+const unavailableSlotGuidance = nextGuidanceRuntime({
+  pet: { pet_id: 'pet-a', pet_name: 'Luna' },
+  season_slots: { unavailable: true, slots: [] },
+  lifecycle: { phase: 'adult' },
+}).profileNextLine();
+assert.equal(unavailableSlotGuidance, 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.',
+  'adopted state with unavailable season-slot authority must show syncing guidance');
+assert.notEqual(unavailableSlotGuidance, 'Pick an active seasonal Moonpet before journey progress starts.',
+  'unavailable season-slot authority must not be confused with a genuinely empty active slot');
+assert.equal(nextGuidanceRuntime({
+  pet: { pet_id: 'pet-a', pet_name: 'Luna' },
+  season_slots: { slots: [{ pet_id: 'pet-a', active: true }] },
+  lifecycle: { phase: 'egg' },
+  active_pet_progression: { lifecycle: { evolution_ready: false } },
+}).profileNextLine(), 'Hatch your Moon Egg by completing incubation signals.',
+  'authoritative state lifecycle phase must keep egg guidance even when progression lifecycle lacks phase');
+assert.equal(nextGuidanceRuntime({
+  adopted: false,
+  pet: null,
+  weekly_journey: { objectives: [] },
+}).exploreNextLine(), 'Initialise a Moon Egg to begin.',
+  'unadopted players with no pet must be guided to initialise before energy recovery');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  guidance: { weekly_boss: { available: true } },
+  pet: { energy: 12 },
+  weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
+}).exploreNextLine(), 'Complete Weekly boss attempt to progress Weekly Journey.',
+  'available incomplete Weekly boss objective must recommend the boss attempt');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  guidance: { weekly_boss: { available: false } },
+  pet: { energy: 12 },
+  weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
+}).exploreNextLine(), 'Build level and energy before the Weekly boss attempt.',
+  'unavailable incomplete Weekly boss objective must not recommend a blocked boss attempt');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  pet: { energy: 12 },
+  weekly_journey: { objectives: [] },
+}).exploreNextLine(), 'Start a Moon Run or pick an available Explore action.',
+  'sufficient energy with no active run may recommend a Moon Run');
+assert.equal(nextGuidanceRuntime({
+  adopted: true,
+  pet: { energy: 3 },
+  weekly_journey: { objectives: [] },
+}).exploreNextLine(), 'Restore energy before starting a Moon Run.',
+  'low energy with no active run must not recommend a Moon Run');
+
 const journeyActionProgressSource = extractTestExport(client, 'journeyActionProgress');
 assert.ok(journeyActionProgressSource, 'Journey action progress helper must be extractable for runtime coverage');
 const journeyActionProgressRuntime = new Function(
@@ -323,10 +487,90 @@ assert.deepEqual(journeyActionProgressRuntime({}, {
   weekly_journey: { state: 'LOCKED', reason: 'weekly_journey_authority_syncing', completed_objectives: 0, required_objectives: 5, objectives: [] },
 }, { accepted: true }), [], 'authority-unavailable state must not fake journey progress in action feedback');
 
+const actionResultFeedbackSource = extractTestExport(client, 'actionResultFeedback');
+assert.ok(actionResultFeedbackSource, 'action result feedback helper must be extractable for runtime coverage');
+const actionResultFeedbackRuntime = new Function(
+  'result',
+  'beforeState',
+  'afterState',
+  `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').replace(/\\b\\w/g, (letter) => letter.toUpperCase()); }
+${weeklyJourneyMarkupSource}
+${journeyActionProgressSource}
+${actionResultFeedbackSource}; return { resultMessage: resultMessage(result, beforeState, afterState), actionFeedback: actionFeedback(result, beforeState, afterState) };`,
+);
+const blockedResultFeedback = actionResultFeedbackRuntime({
+  accepted: false,
+  reason: 'moon_egg_must_hatch',
+  pet_xp_awarded: 99,
+  rewards: { moon_gold: 50 },
+  daily_journey: { accepted: true },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 2, required_objectives: 3 },
+});
+assert.match(blockedResultFeedback.resultMessage, /ACTION BLOCKED - hatch your Moonpet first\./,
+  'blocked action result must show useful reason copy');
+assert.doesNotMatch(blockedResultFeedback.resultMessage, /Daily Journey|GROWTH MARK|\+99|\+50/,
+  'rejected action result must not show journey progress or reward language');
+assert.deepEqual(blockedResultFeedback.actionFeedback.lines, ['ACTION BLOCKED', 'hatch your Moonpet first.'],
+  'blocked canvas feedback must keep reason-only copy');
+const blockedWithoutReason = actionResultFeedbackRuntime({ accepted: false }, {}, {});
+assert.equal(blockedWithoutReason.resultMessage, 'ACTION BLOCKED',
+  'rejected action without reason must not render a dangling hyphen');
+assert.deepEqual(blockedWithoutReason.actionFeedback.lines, ['ACTION BLOCKED'],
+  'rejected action without reason must not add a blank canvas feedback line');
+const duplicateWithoutReason = actionResultFeedbackRuntime({ accepted: false, duplicate: true }, {}, {});
+assert.equal(duplicateWithoutReason.resultMessage, 'ACTION BLOCKED // Duplicate blocked by authority.',
+  'rejected duplicate without reason must still show duplicate terminal copy');
+assert.deepEqual(duplicateWithoutReason.actionFeedback.lines, ['ACTION BLOCKED', 'DUPLICATE BLOCKED'],
+  'rejected duplicate without reason must still show duplicate canvas copy');
+const acceptedWithoutReason = actionResultFeedbackRuntime({
+  accepted: true,
+  result_copy: 'Moonpet settled in.',
+  rewards: { moon_gold: 25 },
+}, {}, {}).resultMessage;
+assert.match(acceptedWithoutReason, /ACTION ACCEPTED/,
+  'accepted action result must keep accepted copy');
+assert.match(acceptedWithoutReason, /Moonpet settled in\./,
+  'accepted action result without reason must keep result copy');
+assert.match(acceptedWithoutReason, /\+25 Moon Gold/,
+  'accepted action result without reason must keep reward copy');
+assert.doesNotMatch(acceptedWithoutReason, /ACTION ACCEPTED \/\/\s*\/\//,
+  'accepted action result without reason must not render an empty reason separator');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'cooldown' }, {}, {}).resultMessage, /ACTION BLOCKED - wait for cooldown\./,
+  'cooldown rejection copy must be plain language');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_gold' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Gold\./,
+  'Moon Gold rejection copy must be plain language');
+const petCurrencyBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'not_enough_pet_currency' }, {}, {}).resultMessage;
+assert.match(petCurrencyBlock, /ACTION BLOCKED - not enough required currency\./,
+  'generic pet-currency rejection copy must be currency-neutral');
+assert.doesNotMatch(petCurrencyBlock, /Moon Gold/,
+  'generic pet-currency rejection copy must not mention Moon Gold');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_crystals' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Crystals\./,
+  'Moon Crystal rejection copy must remain specific');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_style' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Style Tokens\./,
+  'Style Token rejection copy must remain specific');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /ACTION BLOCKED - Weekly Journey authority syncing\./,
+  'authority-syncing rejection copy must be plain language');
+const unadoptedBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'pet_not_adopted' }, {}, {}).resultMessage;
+assert.match(unadoptedBlock, /ACTION BLOCKED - initialise your Moonpet first\./,
+  'unadopted rejection copy must tell players to initialise first');
+assert.doesNotMatch(unadoptedBlock, /hatch your Moonpet first/,
+  'unadopted rejection copy must not tell players to hatch before they have a Moonpet');
+const completedSeasonBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'completed_season_pet_required' }, {}, {}).resultMessage;
+assert.match(completedSeasonBlock, /ACTION BLOCKED - completed Season pet required\./,
+  'completed-season rejection copy must name the completed pet requirement');
+assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
+  'completed-season rejection copy must not be confused with active-pet gating');
+
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'journeyActionProgress', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
@@ -527,13 +771,19 @@ assert.doesNotMatch(client, /Growth Mark[^'\n]*(?:claim|claimable)|Weekly Crest[
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
 assert.match(client, /function combatLockCopy\(\)[\s\S]*combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
+assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*disabled: true[\s\S]*futureExpansion: true[\s\S]*eggRequired: entryDetail\.indexOf\('HATCHED'\) >= 0[\s\S]*activePetRequired: entryDetail\.indexOf\('ACTIVE'\) >= 0[\s\S]*authoritySyncing: entryDetail\.indexOf\('SYNC'\) >= 0/,
+  'Arena and Kaiju locked buttons must share the same future-expansion availability options');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
+assert.match(renderExploreSource, /button\('ACCEPT ANY RANK'[\s\S]*statusLabel: arenaQueue\.accept_any_rank \? 'CURRENT' : ''/,
+  'ACCEPT ANY RANK current queue state must use an explicit CURRENT status label');
+assert.match(renderExploreSource, /button\(seasonal\.attempted_today \? 'ATTACK USED TODAY'[\s\S]*statusLabel: seasonal\.attempted_today \? 'USED TODAY' : ''/,
+  'seasonal attack used-today button must use an explicit USED TODAY status label');
 const arenaLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())');
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
 const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');
 const arenaResultIndex = renderExploreSource.indexOf('var arenaResult = state.arena_result;');
 assert.ok(arenaStateIndex !== -1 && arenaQueueIndex !== -1 && arenaResultIndex !== -1 && arenaLockIndex !== -1, 'Arena lock and stale-state cleanup inputs must be explicit');
-assert.match(renderExploreSource, /if \(!hasCombatUnlocked\(\)\) \{[\s\S]*button\('FORFEIT MATCH', 'arena_forfeit'[\s\S]*button\('CANCEL QUEUE', 'arena_queue_cancel'[\s\S]*arena_matchmake'[\s\S]*disabled: true[\s\S]*arena_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*if \(arena\)[\s\S]*\} else if \(arenaQueue\)[\s\S]*arenaResult/, 'Arena queue, match, result, and entry controls must be behind combat-unlocked gating while stale cleanup remains available');
+assert.match(renderExploreSource, /if \(!hasCombatUnlocked\(\)\) \{[\s\S]*var arenaEntryOptions = combatLockedButtonOptions\(arenaLock\.entryDetail\)[\s\S]*button\('FORFEIT MATCH', 'arena_forfeit'[\s\S]*button\('CANCEL QUEUE', 'arena_queue_cancel'[\s\S]*arena_matchmake'[\s\S]*arenaEntryOptions[\s\S]*arena_start'[\s\S]*arenaEntryOptions[\s\S]*\} else \{[\s\S]*if \(arena\)[\s\S]*\} else if \(arenaQueue\)[\s\S]*arenaResult/, 'Arena queue, match, result, and entry controls must be behind combat-unlocked gating while stale cleanup remains available');
 const kaijuLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())', arenaLockIndex + 1);
 const kaijuStateIndex = renderExploreSource.indexOf('var kaiju = state.kaiju || {};');
 const kaijuMatchIndex = renderExploreSource.indexOf('var kaijuMatch = kaiju.match;');
@@ -545,7 +795,7 @@ assert.match(renderExploreSource, /kaijuSoloCleanup[\s\S]*button\('CANCEL MATCH'
   'locked Kaiju UI must show Cancel Match for solo stale cleanup');
 assert.match(renderExploreSource, /kaijuMatch && !kaijuSoloCleanup[\s\S]*MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY \/ FORFEIT RESOLUTION/,
   'locked Kaiju UI must explain multiplayer cleanup instead of showing blind cancellation');
-assert.match(renderExploreSource, /button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*disabled: true[\s\S]*kaiju_start'[\s\S]*disabled: true[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/,
+assert.match(renderExploreSource, /var kaijuEntryOptions = combatLockedButtonOptions\(kaijuLock\.entryDetail\)[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*kaijuEntryOptions[\s\S]*kaiju_start'[\s\S]*kaijuEntryOptions[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/,
   'Kaiju queue, match, result, and entry controls must be behind combat-unlocked gating while stale solo cleanup remains available');
 assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
 assert.match(client, /var capabilitySystems = state\.capabilities_version === 1 && state\.capabilities && state\.capabilities\.systems[\s\S]*: \{\}/, 'future-system directory must consume the versioned worker systems capability map');
@@ -682,7 +932,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-journey-reward-ux/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-action-guidance-polish/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Arena and Kaiju are available for completed Season players with a hatched active Moonpet[\s\S]*Arena and Kaiju remain locked future panels with stale-state cleanup only/,
@@ -746,7 +996,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-journey-reward-ux/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-action-guidance-polish/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1328,7 +1578,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260820-journey-reward-ux/);
+assert.match(html, /20260820-action-guidance-polish/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
