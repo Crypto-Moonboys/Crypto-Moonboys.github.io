@@ -43,8 +43,34 @@ const TOP_EDGES_PER_NODE = 5;
 // Minimum relationship score to include an edge
 const MIN_EDGE_SCORE = 40;
 
+function compareStrings(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function preserveGeneratedAtIfStable(nodes, edges) {
+  if (!fs.existsSync(OUTPUT_PATH)) return new Date().toISOString();
+
+  try {
+    const existing = readJson(OUTPUT_PATH);
+    const existingStable = JSON.stringify({ nodes: existing.nodes, edges: existing.edges });
+    const nextStable = JSON.stringify({ nodes, edges });
+
+    if (
+      existingStable === nextStable &&
+      typeof existing.generated_at === 'string' &&
+      existing.generated_at.trim()
+    ) {
+      return existing.generated_at;
+    }
+  } catch (err) {
+    // Ignore parse errors and use a fresh timestamp.
+  }
+
+  return new Date().toISOString();
 }
 
 function main() {
@@ -68,7 +94,7 @@ function main() {
       rank_score:      entry.rank_score || 0,
       authority_score: (entry.rank_signals && entry.rank_signals.authority_score) || 0,
     }))
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => compareStrings(a.id, b.id));
 
   // Set of known node ids for fast lookup
   const nodeIds = new Set(nodes.map(n => n.id));
@@ -80,7 +106,7 @@ function main() {
   const edges   = [];
 
   // Process in deterministic order (sorted by source url)
-  const sortedSourceUrls = Object.keys(entityGraph).sort();
+  const sortedSourceUrls = Object.keys(entityGraph).sort(compareStrings);
 
   for (const sourceUrl of sortedSourceUrls) {
     if (!nodeIds.has(sourceUrl)) continue;
@@ -88,7 +114,7 @@ function main() {
     const relatedPages = entityGraph[sourceUrl].related_pages || [];
     const topPages = relatedPages
       .filter(rp => rp.final_score >= MIN_EDGE_SCORE && nodeIds.has(rp.target_url))
-      .sort((a, b) => b.final_score - a.final_score || a.target_url.localeCompare(b.target_url))
+      .sort((a, b) => b.final_score - a.final_score || compareStrings(a.target_url, b.target_url))
       .slice(0, TOP_EDGES_PER_NODE);
 
     for (const rp of topPages) {
@@ -110,11 +136,11 @@ function main() {
 
   // Sort edges deterministically: source asc, then score desc
   edges.sort((a, b) =>
-    a.source.localeCompare(b.source) || b.score - a.score
+    compareStrings(a.source, b.source) || b.score - a.score || compareStrings(a.target, b.target)
   );
 
   const output = {
-    generated_at: new Date().toISOString(),
+    generated_at: preserveGeneratedAtIfStable(nodes, edges),
     nodes,
     edges,
   };

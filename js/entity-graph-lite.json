@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T02:50:24.788Z",
+  "generated_at": "2026-08-20T02:54:28.845Z",
   "lite": true,
   "nodes": [
     {
@@ -15,7 +15,7 @@
       "title": "Crypto Moonboys — The Original Graffiti Kings Web3 Universe",
       "url": "/wiki/crypto-moonboys.html",
       "category": "characters",
-      "rank_score": 966,
+      "rank_score": 969,
       "authority_score": 25
     },
     {
@@ -111,7 +111,7 @@
       "title": "MiDEViL PUNKS",
       "url": "/wiki/midevilpunks.html",
       "category": "factions",
-      "rank_score": 403,
+      "rank_score": 406,
       "authority_score": 21
     },
     {
@@ -139,20 +139,20 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS",
+      "url": "/wiki/the-nice-easy-bois.html",
+      "category": "factions",
+      "rank_score": 378,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/bitcoin-kids.html",
       "title": "Bitcoin Kids",
       "url": "/wiki/bitcoin-kids.html",
       "category": "characters",
       "rank_score": 375,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/the-nice-easy-bois.html",
-      "title": "The NICE &amp; EASY BOIS",
-      "url": "/wiki/the-nice-easy-bois.html",
-      "category": "factions",
-      "rank_score": 375,
-      "authority_score": 21
     },
     {
       "id": "/wiki/sneakar.html",
@@ -199,7 +199,7 @@
       "title": "The Princess",
       "url": "/wiki/the-princess.html",
       "category": "characters",
-      "rank_score": 359,
+      "rank_score": 362,
       "authority_score": 21
     },
     {
@@ -207,7 +207,7 @@
       "title": "The Whitewasher",
       "url": "/wiki/the-whitewasher.html",
       "category": "characters",
-      "rank_score": 358,
+      "rank_score": 361,
       "authority_score": 21
     },
     {
@@ -215,7 +215,7 @@
       "title": "The CHAIN SCRIBES",
       "url": "/wiki/the-chain-scribes.html",
       "category": "factions",
-      "rank_score": 355,
+      "rank_score": 358,
       "authority_score": 21
     },
     {
@@ -247,8 +247,16 @@
       "title": "The Finance Guild",
       "url": "/wiki/the-finance-guild.html",
       "category": "factions",
-      "rank_score": 341,
+      "rank_score": 344,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/staking.html",
+      "title": "Crypto Staking",
+      "url": "/wiki/staking.html",
+      "category": "characters",
+      "rank_score": 334,
+      "authority_score": 17
     },
     {
       "id": "/wiki/hodl-warriors.html",
@@ -257,14 +265,6 @@
       "category": "characters",
       "rank_score": 333,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/staking.html",
-      "title": "Crypto Staking",
-      "url": "/wiki/staking.html",
-      "category": "characters",
-      "rank_score": 331,
-      "authority_score": 17
     },
     {
       "id": "/wiki/waxp.html",
@@ -303,7 +303,7 @@
       "title": "The High Hats",
       "url": "/wiki/the-high-hats.html",
       "category": "factions",
-      "rank_score": 312,
+      "rank_score": 315,
       "authority_score": 17
     },
     {
@@ -339,6 +339,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/sacred-chain.html",
+      "title": "The Sacred Chain",
+      "url": "/wiki/sacred-chain.html",
+      "category": "factions",
+      "rank_score": 302,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/web3.html",
       "title": "Web3",
       "url": "/wiki/web3.html",
@@ -355,17 +363,17 @@
       "authority_score": 21
     },
     {
-      "id": "/wiki/sacred-chain.html",
-      "title": "The Sacred Chain",
-      "url": "/wiki/sacred-chain.html",
-      "category": "factions",
-      "rank_score": 299,
-      "authority_score": 21
-    },
-    {
       "id": "/wiki/dream-sovereign.html",
       "title": "dream sovereign",
       "url": "/wiki/dream-sovereign.html",
+      "category": "factions",
+      "rank_score": 298,
+      "authority_score": 21
+    },
+    {
+      "id": "/wiki/the-hard-fork-rockers.html",
+      "title": "The HARD FORK ROCKERS",
+      "url": "/wiki/the-hard-fork-rockers.html",
       "category": "factions",
       "rank_score": 298,
       "authority_score": 21
@@ -419,18 +427,18 @@
       "authority_score": 21
     },
     {
-      "id": "/wiki/the-hard-fork-rockers.html",
-      "title": "The HARD FORK ROCKERS",
-      "url": "/wiki/the-hard-fork-rockers.html",
-      "category": "factions",
-      "rank_score": 295,
-      "authority_score": 21
-    },
-    {
       "id": "/wiki/quell.html",
       "title": "Quell",
       "url": "/wiki/quell.html",
       "category": "characters",
+      "rank_score": 294,
+      "authority_score": 21
+    },
+    {
+      "id": "/wiki/the-ducky-boys.html",
+      "title": "The DUCKY BOYS",
+      "url": "/wiki/the-ducky-boys.html",
+      "category": "factions",
       "rank_score": 294,
       "authority_score": 21
     },
@@ -443,6 +451,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/the-rugpull-miners.html",
+      "title": "The RUGPULL MINERS",
+      "url": "/wiki/the-rugpull-miners.html",
+      "category": "factions",
+      "rank_score": 293,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/wallets.html",
       "title": "Crypto Wallets",
       "url": "/wiki/wallets.html",
@@ -451,9 +467,41 @@
       "authority_score": 27
     },
     {
+      "id": "/wiki/darren-cullen.html",
+      "title": "Darren Cullen (SER)",
+      "url": "/wiki/darren-cullen.html",
+      "category": "characters",
+      "rank_score": 292,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/the-bitcoin-kid-army.html",
       "title": "The Bitcoin Kid Army",
       "url": "/wiki/the-bitcoin-kid-army.html",
+      "category": "factions",
+      "rank_score": 292,
+      "authority_score": 21
+    },
+    {
+      "id": "/wiki/the-moonlords.html",
+      "title": "The MOONLORDS",
+      "url": "/wiki/the-moonlords.html",
+      "category": "factions",
+      "rank_score": 292,
+      "authority_score": 21
+    },
+    {
+      "id": "/wiki/the-nomad-bears.html",
+      "title": "The Nomad Bears",
+      "url": "/wiki/the-nomad-bears.html",
+      "category": "factions",
+      "rank_score": 292,
+      "authority_score": 21
+    },
+    {
+      "id": "/wiki/the-og-pixel-saints.html",
+      "title": "The OG PIXEL SAINTS",
+      "url": "/wiki/the-og-pixel-saints.html",
       "category": "factions",
       "rank_score": 292,
       "authority_score": 21
@@ -483,14 +531,6 @@
       "authority_score": 27
     },
     {
-      "id": "/wiki/the-ducky-boys.html",
-      "title": "The DUCKY BOYS",
-      "url": "/wiki/the-ducky-boys.html",
-      "category": "factions",
-      "rank_score": 291,
-      "authority_score": 21
-    },
-    {
       "id": "/wiki/nbg.html",
       "title": "$NBG — NoBallGames Token | Crypto Moonboys Wiki",
       "url": "/wiki/nbg.html",
@@ -507,41 +547,17 @@
       "authority_score": 21
     },
     {
-      "id": "/wiki/the-rugpull-miners.html",
-      "title": "The RUGPULL MINERS",
-      "url": "/wiki/the-rugpull-miners.html",
+      "id": "/wiki/the-evm-punks.html",
+      "title": "The EVM PUNKS",
+      "url": "/wiki/the-evm-punks.html",
       "category": "factions",
       "rank_score": 290,
       "authority_score": 21
     },
     {
-      "id": "/wiki/darren-cullen.html",
-      "title": "Darren Cullen (SER)",
-      "url": "/wiki/darren-cullen.html",
-      "category": "characters",
-      "rank_score": 289,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-moonlords.html",
-      "title": "The MOONLORDS",
-      "url": "/wiki/the-moonlords.html",
-      "category": "factions",
-      "rank_score": 289,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-nomad-bears.html",
-      "title": "The Nomad Bears",
-      "url": "/wiki/the-nomad-bears.html",
-      "category": "factions",
-      "rank_score": 289,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-og-pixel-saints.html",
-      "title": "The OG PIXEL SAINTS",
-      "url": "/wiki/the-og-pixel-saints.html",
+      "id": "/wiki/the-shard-mothers-of-manhattan.html",
+      "title": "The SHARD MOTHERS of MANHATTAN",
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
       "category": "factions",
       "rank_score": 289,
       "authority_score": 21
@@ -563,14 +579,6 @@
       "authority_score": 23
     },
     {
-      "id": "/wiki/the-evm-punks.html",
-      "title": "The EVM PUNKS",
-      "url": "/wiki/the-evm-punks.html",
-      "category": "factions",
-      "rank_score": 287,
-      "authority_score": 21
-    },
-    {
       "id": "/wiki/forkborn-collective.html",
       "title": "Forkborn Collective",
       "url": "/wiki/forkborn-collective.html",
@@ -579,17 +587,9 @@
       "authority_score": 21
     },
     {
-      "id": "/wiki/hodl-x-warriors.html",
-      "title": "HODL X Warriors",
-      "url": "/wiki/hodl-x-warriors.html",
-      "category": "characters",
-      "rank_score": 286,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-shard-mothers-of-manhattan.html",
-      "title": "The SHARD MOTHERS of MANHATTAN",
-      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "id": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS",
+      "url": "/wiki/the-salvagers.html",
       "category": "factions",
       "rank_score": 286,
       "authority_score": 21
@@ -607,68 +607,56 @@
     {
       "source": "/wiki/nbgx-token.html",
       "target": "/wiki/nbg-token.html",
-      "score": 109,
+      "score": 116,
       "weight": 1
     },
     {
       "source": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
       "target": "/wiki/gkniftyheads-nft-collection.html",
-      "score": 105,
+      "score": 111,
       "weight": 1
     },
     {
       "source": "/wiki/nbg-token.html",
       "target": "/wiki/nbgx-token.html",
-      "score": 104,
+      "score": 111,
       "weight": 1
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 103,
+      "score": 105,
       "weight": 1
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 98,
-      "weight": 0.98
+      "score": 102,
+      "weight": 1
     },
     {
       "source": "/wiki/exchanges.html",
       "target": "/wiki/tokenomics.html",
-      "score": 97,
-      "weight": 0.97
-    },
-    {
-      "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/graffpunks-24-7-radio.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/tokenomics.html",
       "target": "/wiki/exchanges.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 95,
+      "weight": 0.95
     },
     {
-      "source": "/wiki/hodl-warriors.html",
+      "source": "/wiki/darren-cullen.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 96,
-      "weight": 0.96
-    },
-    {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 95,
+      "weight": 0.95
     },
     {
       "source": "/wiki/dream-sovereign.html",
@@ -678,75 +666,51 @@
     },
     {
       "source": "/wiki/exchanges.html",
-      "target": "/wiki/web3.html",
+      "target": "/wiki/pmsl.html",
       "score": 95,
       "weight": 0.95
     },
     {
-      "source": "/wiki/solana.html",
-      "target": "/wiki/web3.html",
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/pmsl.html",
+      "score": 95,
+      "weight": 0.95
+    },
+    {
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 95,
       "weight": 0.95
     },
     {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/graffpunks.html",
-      "score": 94,
-      "weight": 0.94
-    },
-    {
-      "source": "/wiki/sneakar.html",
-      "target": "/wiki/pmsl.html",
-      "score": 94,
-      "weight": 0.94
-    },
-    {
-      "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/the-princess.html",
       "score": 93,
       "weight": 0.93
     },
     {
-      "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "source": "/wiki/midevilpunks.html",
+      "target": "/wiki/graffpunks-24-7-radio.html",
       "score": 93,
       "weight": 0.93
     },
     {
-      "source": "/wiki/ethereum.html",
-      "target": "/wiki/web3.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/pmsl.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/the-nomad-bears.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 92,
-      "weight": 0.92
-    },
-    {
-      "source": "/wiki/alien-worlds-tlm.html",
+      "source": "/wiki/patchwork.html",
       "target": "/wiki/graffpunks.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 93,
+      "weight": 0.93
+    },
+    {
+      "source": "/wiki/pyralith.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 93,
+      "weight": 0.93
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/gkniftyheads-nft-collection.html",
@@ -755,46 +719,10 @@
       "weight": 0.91
     },
     {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 90,
-      "weight": 0.9
-    },
-    {
-      "source": "/wiki/the-princess.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 90,
-      "weight": 0.9
-    },
-    {
-      "source": "/wiki/the-princess.html",
-      "target": "/wiki/thorne-the-architect.html",
-      "score": 90,
-      "weight": 0.9
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
-      "source": "/wiki/hard-fork-games.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 88,
-      "weight": 0.88
+      "source": "/wiki/solana.html",
+      "target": "/wiki/web3.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/memecoins.html",
@@ -803,26 +731,86 @@
       "weight": 0.88
     },
     {
-      "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/sneakar.html",
+      "source": "/wiki/dream-sovereign.html",
       "target": "/wiki/games4punks-telegram.html",
       "score": 87,
       "weight": 0.87
     },
     {
-      "source": "/wiki/sacred-chain.html",
-      "target": "/wiki/stikfamwars.html",
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/hard-fork-games.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/memecoins.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/midevilpunks.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-princess.html",
+      "target": "/wiki/the-whitewasher.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-whitewasher.html",
+      "target": "/wiki/the-princess.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-whitewasher.html",
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/web3.html",
+      "target": "/wiki/solana.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/ethereum.html",
+      "target": "/wiki/web3.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/hard-fork-games.html",
       "score": 86,
       "weight": 0.86
     },
@@ -833,46 +821,28 @@
       "weight": 0.86
     },
     {
-      "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 85,
-      "weight": 0.85
+      "source": "/wiki/the-princess.html",
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
-      "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/null-the-prophet.html",
+      "source": "/wiki/xrp-kids.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/gkniftyheads.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 83,
+      "weight": 0.83
     },
     {
-      "source": "/wiki/ethereum.html",
-      "target": "/wiki/solana.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-nomad-bears.html",
-      "target": "/wiki/the-rugpull-miners.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-nomad-bears.html",
-      "score": 84,
-      "weight": 0.84
+      "source": "/wiki/sacred-chain.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-high-hats.html",
@@ -887,142 +857,160 @@
       "weight": 0.83
     },
     {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/sneakar.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/metropolis.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/nfts.html",
-      "target": "/wiki/wallets.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/wallets.html",
-      "target": "/wiki/nfts.html",
-      "score": 82,
-      "weight": 0.82
-    },
-    {
-      "source": "/wiki/gang-signs.html",
-      "target": "/wiki/null-the-prophet.html",
+      "source": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/bitcoin-x-kids.html",
       "score": 81,
       "weight": 0.81
     },
     {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/pyralith.html",
+      "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-nomad-bears.html",
       "score": 81,
       "weight": 0.81
     },
     {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/quell.html",
+      "source": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-rugpull-miners.html",
       "score": 81,
       "weight": 0.81
     },
     {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/satorebel.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/quell.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/satorebel.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/quell.html",
-      "target": "/wiki/satorebel.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-moonlords.html",
-      "target": "/wiki/the-ducky-boys.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-ducky-boys.html",
+      "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-salvagers.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 80,
       "weight": 0.8
     },
     {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-finance-guild.html",
+      "source": "/wiki/sacred-chain.html",
+      "target": "/wiki/the-high-hats.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/metropolis.html",
+      "target": "/wiki/stikfamwars.html",
       "score": 79,
       "weight": 0.79
     },
     {
-      "source": "/wiki/the-nice-easy-bois.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/gang-signs.html",
-      "target": "/wiki/xrp-kids.html",
+      "source": "/wiki/dream-sovereign.html",
+      "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
     },
     {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-nice-easy-bois.html",
+      "source": "/wiki/nfts.html",
+      "target": "/wiki/wallets.html",
       "score": 78,
       "weight": 0.78
     },
     {
-      "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-nice-easy-bois.html",
+      "source": "/wiki/patchwork.html",
+      "target": "/wiki/pyralith.html",
       "score": 78,
       "weight": 0.78
     },
     {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/punk-token.html",
+      "source": "/wiki/patchwork.html",
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/pyralith.html",
+      "target": "/wiki/quell.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/wallets.html",
+      "target": "/wiki/nfts.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/wuffi.html",
+      "target": "/wiki/sneakar.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/alien-worlds-tlm.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/defi.html",
+      "target": "/wiki/ethereum.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/nfts.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/rune-tag.html",
+      "target": "/wiki/gang-signs.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/metropolis.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/nifty-crowns.html",
+      "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
     },
     {
+      "source": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
       "source": "/wiki/nbg.html",
       "target": "/wiki/block-topia.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/crypto-moonboy-pets.html",
@@ -1035,6 +1023,12 @@
       "target": "/wiki/crypto-moonboy-pets.html",
       "score": 55,
       "weight": 0.55
+    },
+    {
+      "source": "/wiki/bitcoin.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "score": 53,
+      "weight": 0.53
     }
   ]
 }

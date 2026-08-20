@@ -20,6 +20,10 @@ const OUTPUT = path.join(__dirname, '..', 'js', 'entity-graph-lite.json');
 const TOP_N_NODES         = 75;
 const MAX_EDGES_PER_NODE  = 3;
 
+function compareStrings(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 function main() {
   if (!fs.existsSync(INPUT)) {
     console.error(`Missing input: ${INPUT}`);
@@ -32,7 +36,7 @@ function main() {
   const topNodes = [...data.nodes]
     .sort((a, b) => {
       const diff = (b.rank_score || 0) - (a.rank_score || 0);
-      return diff !== 0 ? diff : a.id.localeCompare(b.id);
+      return diff !== 0 ? diff : compareStrings(a.id, b.id);
     })
     .slice(0, TOP_N_NODES);
 
@@ -47,7 +51,9 @@ function main() {
       if (scoreDiff !== 0) return scoreDiff;
       const weightDiff = (b.weight || 0) - (a.weight || 0);
       if (weightDiff !== 0) return weightDiff;
-      return a.source.localeCompare(b.source);
+      const sourceDiff = compareStrings(a.source, b.source);
+      if (sourceDiff !== 0) return sourceDiff;
+      return compareStrings(a.target, b.target);
     });
 
   // ── Cap to MAX_EDGES_PER_NODE per endpoint ─────────────────────────────────

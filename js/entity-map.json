@@ -680,7 +680,8 @@
     "canonical_url": "/wiki/crypto-moonboys.html",
     "category": "characters",
     "aliases": [
-      "crypto moonboys wiki"
+      "crypto moonboys wiki",
+      "crypto moonboys"
     ],
     "tags": [
       "crypto",
@@ -690,10 +691,7 @@
     "source_urls": [
       "/wiki/crypto-moonboys.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "crypto moonboys"
-    ]
+    "brand": null
   },
   {
     "entity_id": "darren_cullen",
@@ -701,7 +699,8 @@
     "canonical_url": "/wiki/darren-cullen.html",
     "category": "characters",
     "aliases": [
-      "darren cullen crypto moonboys wiki"
+      "darren cullen crypto moonboys wiki",
+      "darren cullen"
     ],
     "tags": [
       "darren",
@@ -713,10 +712,7 @@
     "source_urls": [
       "/wiki/darren-cullen.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "darren cullen"
-    ]
+    "brand": null
   },
   {
     "entity_id": "defi",
@@ -4944,7 +4940,8 @@
     "category": "factions",
     "aliases": [
       "midevilpunks crypto moonboys wiki",
-      "Midevil Hero Arena"
+      "Midevil Hero Arena",
+      "midevilpunks"
     ],
     "tags": [
       "midevilpunks",
@@ -4961,10 +4958,7 @@
       "canonical_concept_id": "graffpunks:game",
       "canonical_slug": "midevilpunks",
       "parent_concept": "graffpunks"
-    },
-    "alias_candidates": [
-      "midevilpunks"
-    ]
+    }
   },
   {
     "entity_id": "moon_mission",
@@ -5191,7 +5185,9 @@
     "canonical_title": "NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki",
     "canonical_url": "/wiki/noballgamess-nft-collection.html",
     "category": "core",
-    "aliases": [],
+    "aliases": [
+      "noballgamess nft collection"
+    ],
     "tags": [
       "noballgames",
       "nft",
@@ -5204,10 +5200,7 @@
     "source_urls": [
       "/wiki/noballgamess-nft-collection.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "noballgamess nft collection"
-    ]
+    "brand": null
   },
   {
     "entity_id": "null_the_prophet",
@@ -5553,7 +5546,8 @@
     "canonical_url": "/wiki/sacred-chain.html",
     "category": "factions",
     "aliases": [
-      "sacred chain crypto moonboys wiki"
+      "sacred chain crypto moonboys wiki",
+      "Sacred Chain"
     ],
     "tags": [
       "sacred",
@@ -5565,11 +5559,7 @@
     "source_urls": [
       "/wiki/sacred-chain.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "Sacred Chain",
-      "sacred chain"
-    ]
+    "brand": null
   },
   {
     "entity_id": "samaelexe",
@@ -5804,7 +5794,8 @@
     "canonical_url": "/wiki/staking.html",
     "category": "characters",
     "aliases": [
-      "staking crypto moonboys wiki"
+      "staking crypto moonboys wiki",
+      "staking"
     ],
     "tags": [
       "staking",
@@ -5815,10 +5806,7 @@
     "source_urls": [
       "/wiki/staking.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "staking"
-    ]
+    "brand": null
   },
   {
     "entity_id": "stikfamwars",
@@ -5923,7 +5911,8 @@
     "canonical_url": "/wiki/the-allcity-bulls.html",
     "category": "factions",
     "aliases": [
-      "AllCity Bulls — Crypto Moonboys Wiki"
+      "AllCity Bulls — Crypto Moonboys Wiki",
+      "AllCity Bulls"
     ],
     "tags": [
       "allcity",
@@ -5937,7 +5926,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "AllCity Bulls",
       "allcity bulls crypto moonboys wiki"
     ]
   },
@@ -5947,7 +5935,8 @@
     "canonical_url": "/wiki/the-aztec-raiders.html",
     "category": "factions",
     "aliases": [
-      "AZTEC RAIDERS — Crypto Moonboys Wiki"
+      "AZTEC RAIDERS — Crypto Moonboys Wiki",
+      "AZTEC RAIDERS"
     ],
     "tags": [
       "aztec",
@@ -5961,7 +5950,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "AZTEC RAIDERS",
       "aztec raiders crypto moonboys wiki"
     ]
   },
@@ -5971,7 +5959,8 @@
     "canonical_url": "/wiki/the-bally-boys.html",
     "category": "factions",
     "aliases": [
-      "BALLY BOYS — Crypto Moonboys Wiki"
+      "BALLY BOYS — Crypto Moonboys Wiki",
+      "BALLY BOYS"
     ],
     "tags": [
       "bally",
@@ -5985,7 +5974,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "BALLY BOYS",
       "bally boys crypto moonboys wiki"
     ]
   },
@@ -6014,7 +6002,8 @@
     "canonical_url": "/wiki/the-blockchain-furies.html",
     "category": "factions",
     "aliases": [
-      "BLOCKCHAIN FURIES — Crypto Moonboys Wiki"
+      "BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
+      "BLOCKCHAIN FURIES"
     ],
     "tags": [
       "blockchain",
@@ -6028,7 +6017,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "BLOCKCHAIN FURIES",
       "blockchain furies crypto moonboys wiki"
     ]
   },
@@ -6038,7 +6026,8 @@
     "canonical_url": "/wiki/the-blockstars.html",
     "category": "factions",
     "aliases": [
-      "BLOCKSTARS — Crypto Moonboys Wiki"
+      "BLOCKSTARS — Crypto Moonboys Wiki",
+      "BLOCKSTARS"
     ],
     "tags": [
       "blockstars",
@@ -6051,7 +6040,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "BLOCKSTARS",
       "blockstars crypto moonboys wiki"
     ]
   },
@@ -6061,7 +6049,8 @@
     "canonical_url": "/wiki/the-chain-scribes.html",
     "category": "factions",
     "aliases": [
-      "CHAIN SCRIBES — Crypto Moonboys Wiki"
+      "CHAIN SCRIBES — Crypto Moonboys Wiki",
+      "CHAIN SCRIBES"
     ],
     "tags": [
       "chain",
@@ -6075,7 +6064,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "CHAIN SCRIBES",
       "chain scribes crypto moonboys wiki"
     ]
   },
@@ -6085,7 +6073,8 @@
     "canonical_url": "/wiki/the-cleanupcentr.html",
     "category": "factions",
     "aliases": [
-      "CleanupCentr — Crypto Moonboys Wiki"
+      "CleanupCentr — Crypto Moonboys Wiki",
+      "CleanupCentr"
     ],
     "tags": [
       "cleanupcentr",
@@ -6098,7 +6087,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "CleanupCentr",
       "cleanupcentr crypto moonboys wiki"
     ]
   },
@@ -6108,7 +6096,8 @@
     "canonical_url": "/wiki/the-code-alchemists.html",
     "category": "factions",
     "aliases": [
-      "CODE ALCHEMISTS — Crypto Moonboys Wiki"
+      "CODE ALCHEMISTS — Crypto Moonboys Wiki",
+      "CODE ALCHEMISTS"
     ],
     "tags": [
       "code",
@@ -6122,7 +6111,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "CODE ALCHEMISTS",
       "code alchemists crypto moonboys wiki"
     ]
   },
@@ -6133,7 +6121,8 @@
     "category": "factions",
     "aliases": [
       "CRYPTO STONED BOYS — Crypto Moonboys Wiki",
-      "crypto stoned boys moonboys wiki"
+      "crypto stoned boys moonboys wiki",
+      "CRYPTO STONED BOYS"
     ],
     "tags": [
       "crypto",
@@ -6145,10 +6134,7 @@
     "source_urls": [
       "/wiki/the-crypto-stoned-boys.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "CRYPTO STONED BOYS"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_ducky_boys",
@@ -6156,7 +6142,8 @@
     "canonical_url": "/wiki/the-ducky-boys.html",
     "category": "factions",
     "aliases": [
-      "DUCKY BOYS — Crypto Moonboys Wiki"
+      "DUCKY BOYS — Crypto Moonboys Wiki",
+      "DUCKY BOYS"
     ],
     "tags": [
       "ducky",
@@ -6170,7 +6157,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "DUCKY BOYS",
       "ducky boys crypto moonboys wiki"
     ]
   },
@@ -6180,7 +6166,8 @@
     "canonical_url": "/wiki/the-evm-punks.html",
     "category": "factions",
     "aliases": [
-      "EVM PUNKS — Crypto Moonboys Wiki"
+      "EVM PUNKS — Crypto Moonboys Wiki",
+      "EVM PUNKS"
     ],
     "tags": [
       "evm",
@@ -6194,7 +6181,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "EVM PUNKS",
       "evm punks crypto moonboys wiki"
     ]
   },
@@ -6204,7 +6190,8 @@
     "canonical_url": "/wiki/the-finance-guild.html",
     "category": "factions",
     "aliases": [
-      "FINANCE GUILD — Crypto Moonboys Wiki"
+      "FINANCE GUILD — Crypto Moonboys Wiki",
+      "Finance Guild"
     ],
     "tags": [
       "finance",
@@ -6218,7 +6205,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "Finance Guild",
       "finance guild crypto moonboys wiki"
     ]
   },
@@ -6228,7 +6214,8 @@
     "canonical_url": "/wiki/the-gasless-ghosts.html",
     "category": "factions",
     "aliases": [
-      "GASLESS GHOSTS — Crypto Moonboys Wiki"
+      "GASLESS GHOSTS — Crypto Moonboys Wiki",
+      "GASLESS GHOSTS"
     ],
     "tags": [
       "gasless",
@@ -6242,7 +6229,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "GASLESS GHOSTS",
       "gasless ghosts crypto moonboys wiki"
     ]
   },
@@ -6252,7 +6238,8 @@
     "canonical_url": "/wiki/the-great-dip.html",
     "category": "factions",
     "aliases": [
-      "Great Dip — Crypto Moonboys Wiki"
+      "Great Dip — Crypto Moonboys Wiki",
+      "Great Dip"
     ],
     "tags": [
       "great",
@@ -6266,7 +6253,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "Great Dip",
       "great dip crypto moonboys wiki"
     ]
   },
@@ -6276,7 +6262,8 @@
     "canonical_url": "/wiki/the-hard-fork-rockers.html",
     "category": "factions",
     "aliases": [
-      "HARD FORK ROCKERS — Crypto Moonboys Wiki"
+      "HARD FORK ROCKERS — Crypto Moonboys Wiki",
+      "HARD FORK ROCKERS"
     ],
     "tags": [
       "hard",
@@ -6289,10 +6276,7 @@
     "source_urls": [
       "/wiki/the-hard-fork-rockers.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "HARD FORK ROCKERS"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_high_hats",
@@ -6300,7 +6284,8 @@
     "canonical_url": "/wiki/the-high-hats.html",
     "category": "factions",
     "aliases": [
-      "High Hats — Crypto Moonboys Wiki"
+      "High Hats — Crypto Moonboys Wiki",
+      "High Hats"
     ],
     "tags": [
       "high",
@@ -6314,7 +6299,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "High Hats",
       "high hats crypto moonboys wiki"
     ]
   },
@@ -6324,7 +6308,8 @@
     "canonical_url": "/wiki/the-information-mercenaries.html",
     "category": "factions",
     "aliases": [
-      "INFORMATION MERCENARIES — Crypto Moonboys Wiki"
+      "INFORMATION MERCENARIES — Crypto Moonboys Wiki",
+      "INFORMATION MERCENARIES"
     ],
     "tags": [
       "information",
@@ -6338,7 +6323,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "INFORMATION MERCENARIES",
       "information mercenaries crypto moonboys wiki"
     ]
   },
@@ -6348,7 +6332,8 @@
     "canonical_url": "/wiki/the-moonlords.html",
     "category": "factions",
     "aliases": [
-      "MOONLORDS — Crypto Moonboys Wiki"
+      "MOONLORDS — Crypto Moonboys Wiki",
+      "MOONLORDS"
     ],
     "tags": [
       "moonlords",
@@ -6361,7 +6346,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "MOONLORDS",
       "moonlords crypto moonboys wiki"
     ]
   },
@@ -6372,7 +6356,8 @@
     "category": "factions",
     "aliases": [
       "NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
-      "the nice easy bois"
+      "the nice easy bois",
+      "NICE &amp; EASY BOIS"
     ],
     "tags": [
       "nice",
@@ -6386,10 +6371,7 @@
     "source_urls": [
       "/wiki/the-nice-easy-bois.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "NICE &amp; EASY BOIS"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_nomad_bears",
@@ -6397,7 +6379,8 @@
     "canonical_url": "/wiki/the-nomad-bears.html",
     "category": "factions",
     "aliases": [
-      "Nomad Bears — Crypto Moonboys Wiki"
+      "Nomad Bears — Crypto Moonboys Wiki",
+      "Nomad Bears"
     ],
     "tags": [
       "nomad",
@@ -6411,7 +6394,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "Nomad Bears",
       "nomad bears crypto moonboys wiki"
     ]
   },
@@ -6421,7 +6403,8 @@
     "canonical_url": "/wiki/the-og-pixel-saints.html",
     "category": "factions",
     "aliases": [
-      "OG PIXEL SAINTS — Crypto Moonboys Wiki"
+      "OG PIXEL SAINTS — Crypto Moonboys Wiki",
+      "OG PIXEL SAINTS"
     ],
     "tags": [
       "og",
@@ -6434,10 +6417,7 @@
     "source_urls": [
       "/wiki/the-og-pixel-saints.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "OG PIXEL SAINTS"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_princess",
@@ -6445,7 +6425,8 @@
     "canonical_url": "/wiki/the-princess.html",
     "category": "characters",
     "aliases": [
-      "Princess — Crypto Moonboys Wiki"
+      "Princess — Crypto Moonboys Wiki",
+      "Princess"
     ],
     "tags": [
       "princess",
@@ -6458,7 +6439,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "Princess",
       "princess crypto moonboys wiki"
     ]
   },
@@ -6468,7 +6448,8 @@
     "canonical_url": "/wiki/the-rugpull-miners.html",
     "category": "factions",
     "aliases": [
-      "RUGPULL MINERS — Crypto Moonboys Wiki"
+      "RUGPULL MINERS — Crypto Moonboys Wiki",
+      "RUGPULL MINERS"
     ],
     "tags": [
       "rugpull",
@@ -6482,7 +6463,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "RUGPULL MINERS",
       "rugpull miners crypto moonboys wiki"
     ]
   },
@@ -6492,7 +6472,8 @@
     "canonical_url": "/wiki/the-salvagers.html",
     "category": "factions",
     "aliases": [
-      "SALVAGERS — Crypto Moonboys Wiki"
+      "SALVAGERS — Crypto Moonboys Wiki",
+      "SALVAGERS"
     ],
     "tags": [
       "salvagers",
@@ -6505,7 +6486,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "SALVAGERS",
       "salvagers crypto moonboys wiki"
     ]
   },
@@ -6515,7 +6495,8 @@
     "canonical_url": "/wiki/the-shard-mothers-of-manhattan.html",
     "category": "factions",
     "aliases": [
-      "SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki"
+      "SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
+      "SHARD MOTHERS of MANHATTAN"
     ],
     "tags": [
       "shard",
@@ -6528,10 +6509,7 @@
     "source_urls": [
       "/wiki/the-shard-mothers-of-manhattan.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "SHARD MOTHERS of MANHATTAN"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_squeaky_pinks",
@@ -6539,7 +6517,8 @@
     "canonical_url": "/wiki/the-squeaky-pinks.html",
     "category": "factions",
     "aliases": [
-      "Squeaky Pinks — Crypto Moonboys Wiki"
+      "Squeaky Pinks — Crypto Moonboys Wiki",
+      "Squeaky Pinks"
     ],
     "tags": [
       "squeaky",
@@ -6553,7 +6532,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "Squeaky Pinks",
       "squeaky pinks crypto moonboys wiki"
     ]
   },
@@ -6563,7 +6541,8 @@
     "canonical_url": "/wiki/the-tuskon-ogs.html",
     "category": "factions",
     "aliases": [
-      "TUSKON OGS — Crypto Moonboys Wiki"
+      "TUSKON OGS — Crypto Moonboys Wiki",
+      "TUSKON OGS"
     ],
     "tags": [
       "tuskon",
@@ -6577,7 +6556,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "TUSKON OGS",
       "tuskon ogs crypto moonboys wiki"
     ]
   },
@@ -6587,7 +6565,8 @@
     "canonical_url": "/wiki/the-whitewasher.html",
     "category": "characters",
     "aliases": [
-      "Whitewasher — Crypto Moonboys Wiki"
+      "Whitewasher — Crypto Moonboys Wiki",
+      "Whitewasher"
     ],
     "tags": [
       "whitewasher",
@@ -6600,7 +6579,6 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "Whitewasher",
       "whitewasher crypto moonboys wiki"
     ]
   },
