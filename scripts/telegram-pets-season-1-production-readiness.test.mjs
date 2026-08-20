@@ -267,8 +267,8 @@ const prestigeResult = await act(db, '100005', 'prestige');
 assert.equal(prestigeResult.accepted, false, 'Prestige cannot be invoked from crafted Mini App actions');
 assert.equal(prestigeResult.reason, 'feature_not_available', 'Prestige always returns feature_not_available');
 const weeklyJourney = buildPetMiniAppCapabilities(completedAdultEligibility).weekly_journey;
-assert.equal(weeklyJourney.reason, 'feature_not_available', 'Weekly Journey remains planned expansion');
-assert.equal(weeklyJourney.active, false, 'Weekly Journey remains inactive');
+assert.equal(weeklyJourney.reason, 'weekly_journey_authority_syncing', 'Weekly Journey fails closed until authority summary is present');
+assert.equal(weeklyJourney.active, false, 'Weekly Journey remains inactive without authority data');
 
 const lockedCountsBefore = countCombatRows(db, '100004');
 for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card']) {

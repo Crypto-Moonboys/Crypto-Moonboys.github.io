@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
+const playerExpansionMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
 const {
   processPetMiniAppAction,
   buildPetMiniAppState,
@@ -39,7 +40,11 @@ class Statement {
 }
 
 class D1 {
-  constructor() { this.database = new DatabaseSync(':memory:'); this.database.exec(schema); }
+  constructor() {
+    this.database = new DatabaseSync(':memory:');
+    this.database.exec(schema);
+    this.database.exec(playerExpansionMigration);
+  }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
     this.database.exec('BEGIN IMMEDIATE');
@@ -245,12 +250,12 @@ assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false
 assert.equal(combatEggCapabilities.systems.arena.state, 'LOCKED', 'central systems map must lock Arena for active eggs');
 assert.equal(combatEggCapabilities.systems.kaiju.state, 'LOCKED', 'central systems map must lock Kaiju for active eggs');
 assert.equal(combatEggCapabilities.systems.prestige.state, 'COMING_SOON', 'central systems map must keep Prestige coming soon');
-assert.equal(combatEggCapabilities.weekly_journey.state, 'COMING_SOON', 'Weekly Journey capability must stay coming soon until production evidence callers exist');
-assert.equal(combatEggCapabilities.weekly_journey.active, false, 'Weekly Journey capability must be inactive while coming soon');
-assert.equal(combatEggCapabilities.systems.weekly_journey.active, false, 'central systems map must keep Weekly Journey inactive while coming soon');
-assert.equal(combatEggCapabilities.weekly_journey.message, 'Gameplay integration not active yet.',
-  'Weekly Journey capability must explain that authority exists but gameplay integration is inactive');
-for (const key of ['weekly_journey', 'breeding', 'sanctuary', 'fusion', 'prestige']) {
+assert.equal(combatEggCapabilities.weekly_journey.state, 'LOCKED', 'Weekly Journey capability must fail closed until authority summary exists');
+assert.equal(combatEggCapabilities.weekly_journey.active, false, 'Weekly Journey capability must be inactive while authority is syncing');
+assert.equal(combatEggCapabilities.systems.weekly_journey.active, false, 'central systems map must keep Weekly Journey inactive while syncing');
+assert.equal(combatEggCapabilities.weekly_journey.message, 'Weekly Journey authority is syncing.',
+  'Weekly Journey capability must explain missing authority state');
+for (const key of ['breeding', 'sanctuary', 'fusion', 'prestige']) {
   const system = combatEggCapabilities.systems[key];
   assert.equal(system.state, 'COMING_SOON', `${key} must be represented as coming soon when unavailable after completion`);
   assert.equal(system.active, false, `${key} must remain inactive while unavailable`);
@@ -260,6 +265,10 @@ for (const key of ['weekly_journey', 'breeding', 'sanctuary', 'fusion', 'prestig
       `${key} capability must not expose live-looking ${field} data while inactive`);
   }
 }
+assert.equal(combatEggCapabilities.systems.weekly_journey.state, 'LOCKED',
+  'Weekly Journey must not be represented as coming soon once live tracking exists');
+assert.equal(combatEggCapabilities.systems.weekly_journey.reason, 'weekly_journey_authority_syncing',
+  'Weekly Journey missing authority must fail closed as syncing');
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-egg:kaiju_matchmake',
@@ -295,7 +304,21 @@ assert.deepEqual(combatAdultCapabilities.prestige, combatAdultCapabilities.syste
   'Prestige compatibility capability must mirror the central systems map');
 assert.equal(combatAdultCapabilities.prestige?.state, 'COMING_SOON', 'Prestige must remain coming soon in the single capability object');
 assert.equal(combatAdultCapabilities.prestige?.active, false, 'Prestige must remain inactive even for combat-available users');
-assert.equal(combatAdultCapabilities.weekly_journey?.state, 'COMING_SOON', 'Weekly Journey must remain coming soon in the single capability object');
+assert.equal(combatAdultCapabilities.weekly_journey?.state, 'LOCKED', 'Weekly Journey must fail closed without an authority summary in the single capability object');
+const weeklyLiveCapabilities = buildPetMiniAppCapabilities(combatAdultEligibility, {
+  pet_id: 'pet-combat-adult',
+  qualification_week: 1,
+  completed_objectives: 0,
+  required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+  objectives: [],
+  weekly_crest_awarded: false,
+  duplicate_blocked: false,
+  reason: 'weekly_journey_in_progress',
+});
+assert.equal(weeklyLiveCapabilities.weekly_journey?.state, 'AVAILABLE', 'Weekly Journey capability must be available when authority summary exists');
+assert.equal(weeklyLiveCapabilities.weekly_journey?.active, true, 'Weekly Journey capability must be active when authority summary exists');
+assert.equal(weeklyLiveCapabilities.weekly_journey?.qualification_week, 1, 'Weekly Journey live capability must expose qualification week');
+assert.equal(weeklyLiveCapabilities.weekly_journey?.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, 'Weekly Journey live capability must expose required objective threshold');
 const emptyStateDb = new D1();
 const emptyMiniAppState = await buildPetMiniAppState(emptyStateDb, 'empty-state-user', '123456:test-token');
 assert.equal(emptyMiniAppState.capabilities_version, 1, 'Mini App state must expose the top-level capability contract version');
@@ -453,6 +476,39 @@ assert.equal(journeySummary.weekly.completed_objectives, 0, 'Weekly Journey Mini
 assert.equal(journeySummary.weekly.completed_objectives < journeySummary.weekly.required_objectives, true);
 assert.equal(journeySummary.weekly.weekly_crest_awarded, false);
 assert.notEqual(journeySummary.weekly.reason, 'weekly_journey_ready');
+
+const zeroWeeklyDb = new D1();
+seedPlayer(zeroWeeklyDb, 'weekly-zero-progress', 'Zero Weekly Cat', 1200);
+await ensurePetStarterSeasonSlot(zeroWeeklyDb, 'weekly-zero-progress', new Date());
+const zeroWeeklyState = await buildPetMiniAppState(zeroWeeklyDb, 'weekly-zero-progress', '123456:test-token');
+assert.equal(zeroWeeklyState.weekly_journey.state, 'AVAILABLE',
+  'active pet with zero weekly evidence must show live Weekly Journey as AVAILABLE');
+assert.equal(zeroWeeklyState.weekly_journey.active, true,
+  'active pet with zero weekly evidence must keep Weekly Journey active');
+assert.equal(zeroWeeklyState.weekly_journey.completed_objectives, 0,
+  'active pet with zero weekly evidence must expose zero completed objectives');
+assert.equal(zeroWeeklyState.weekly_journey.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+  'zero-progress Weekly Journey must expose the required objective threshold');
+assert.equal(zeroWeeklyState.weekly_journey.objectives.length, Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).length,
+  'zero-progress Weekly Journey must expose all configured objectives');
+assert.equal(zeroWeeklyState.capabilities.weekly_journey.state, 'AVAILABLE',
+  'zero-progress Weekly Journey capability must be AVAILABLE');
+assert.equal(zeroWeeklyState.capabilities.weekly_journey.active, true,
+  'zero-progress Weekly Journey capability must be active');
+
+const unavailableWeeklyDb = new D1();
+seedPlayer(unavailableWeeklyDb, 'weekly-authority-unavailable', 'Syncing Weekly Cat', 1200);
+await ensurePetStarterSeasonSlot(unavailableWeeklyDb, 'weekly-authority-unavailable', new Date());
+unavailableWeeklyDb.database.exec('DROP TABLE telegram_pet_weekly_journey_objectives');
+const unavailableWeeklyState = await buildPetMiniAppState(unavailableWeeklyDb, 'weekly-authority-unavailable', '123456:test-token');
+assert.equal(unavailableWeeklyState.weekly_journey.state, 'LOCKED',
+  'weekly objective read failure must fail closed instead of fabricating zero progress');
+assert.equal(unavailableWeeklyState.weekly_journey.active, false,
+  'weekly objective read failure must keep Weekly Journey inactive');
+assert.equal(unavailableWeeklyState.weekly_journey.reason, 'weekly_journey_authority_syncing',
+  'weekly objective read failure must surface authority syncing');
+assert.equal(unavailableWeeklyState.capabilities.weekly_journey.state, 'LOCKED',
+  'weekly objective read failure must keep capability locked');
 
 const receiptAuthorityDb = new D1();
 seedPlayer(receiptAuthorityDb, 'receipt-authority', 'Receipt Cat', 1200);
