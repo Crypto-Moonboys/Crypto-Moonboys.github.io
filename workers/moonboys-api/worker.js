@@ -3563,7 +3563,7 @@ async function readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey) {
       AND day_key = ?
       AND event_type = 'daily_chest'
       AND status = 'accepted'
-    ORDER BY id ASC
+    ORDER BY created_at ASC, id ASC
     LIMIT 1
   `).bind(owner, day).first().catch(() => null);
 }
@@ -3638,11 +3638,11 @@ async function readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, b
   const bossPattern = `%\"boss_id\":\"${escapeSqlLikePattern(boss)}\"%`;
   const sameDayEvent = day ? await db.prepare(`${baseSql}
       AND day_key = ?
-    ORDER BY id ASC
+    ORDER BY created_at ASC, id ASC
     LIMIT 1`).bind(owner, week, bossPattern, day).first().catch(() => null) : null;
   if (sameDayEvent) return sameDayEvent;
   return db.prepare(`${baseSql}
-    ORDER BY day_key ASC, id ASC
+    ORDER BY day_key ASC, created_at ASC, id ASC
     LIMIT 1`).bind(owner, week, bossPattern).first().catch(() => null);
 }
 
@@ -3775,9 +3775,17 @@ async function ensureAcceptedDailyMoonRunTerminalEvent(db, telegramId, runId, te
 }
 
 async function recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, runId, terminalType) {
-  const acceptedEvent = await ensureAcceptedDailyMoonRunTerminalEvent(db, telegramId, runId, terminalType);
-  if (!acceptedEvent) return { accepted: false, reason: 'weekly_journey_source_event_missing' };
-  return recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, acceptedEvent.event_key, { accepted_event: acceptedEvent });
+  try {
+    const acceptedEvent = await ensureAcceptedDailyMoonRunTerminalEvent(db, telegramId, runId, terminalType);
+    if (!acceptedEvent) return { accepted: false, reason: 'daily_moon_run_source_event_missing' };
+    return await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, acceptedEvent.event_key, { accepted_event: acceptedEvent });
+  } catch (error) {
+    return {
+      accepted: false,
+      reason: 'daily_moon_run_weekly_journey_unavailable',
+      error_message: String(error?.message || error || '').slice(0, 180),
+    };
+  }
 }
 
 async function processDailyMoonRunStepWithWeeklyJourney(db, request = {}) {

@@ -26,6 +26,9 @@ class Statement {
     if (/INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_weekly_crests/i.test(this.sql)) {
       this.d1.beforeWeeklyCrestInsert?.(this.args);
     }
+    if (/INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_events/i.test(this.sql) && /'daily_moon_run'/i.test(this.sql)) {
+      this.d1.beforeDailyMoonRunEventInsert?.(this.args);
+    }
     const result = this.db.prepare(this.sql).run(...this.args);
     return { meta: { changes: Number(result.changes || 0) } };
   }
@@ -35,6 +38,7 @@ class D1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.beforeWeeklyCrestInsert = null;
+    this.beforeDailyMoonRunEventInsert = null;
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
@@ -663,6 +667,58 @@ assert.equal(dailyMoonRunDb.database.prepare(`SELECT source_event_key FROM teleg
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).source_event_key,
   `daily-moon-run:${dailyMoonRunTelegramId}:${dailyMoonRunId}:extracted`,
   'Test 5h: Daily Moon Run weekly evidence uses the persisted terminal source event key, not retry request ids');
+
+const dailyMoonRunFailureDb = createDb();
+const dailyMoonRunFailureTelegramId = 'weekly-daily-moon-run-best-effort';
+const dailyMoonRunFailureSeasonKey = getPetSeasonInfo(new Date()).key;
+const dailyMoonRunFailurePet = seedPlayer(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, dailyMoonRunFailureSeasonKey);
+const dailyMoonRunFailureDay = new Date().toISOString().slice(0, 10);
+const dailyMoonRunFailureId = 'daily-moon-run-weekly-best-effort';
+seedTerminalDailyMoonRun(dailyMoonRunFailureDb, {
+  telegramId: dailyMoonRunFailureTelegramId,
+  petId: dailyMoonRunFailurePet,
+  seasonKey: dailyMoonRunFailureSeasonKey,
+  day: dailyMoonRunFailureDay,
+  runId: dailyMoonRunFailureId,
+  status: 'extracted',
+});
+dailyMoonRunFailureDb.beforeDailyMoonRunEventInsert = () => {
+  throw new Error('injected daily moon run weekly journey failure');
+};
+const dailyMoonRunFailureResult = await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+  action: 'run_extract',
+  run_id: dailyMoonRunFailureId,
+  request_id: 'daily-moon-run-best-effort-one',
+}, '123456:test-token');
+assert.equal(dailyMoonRunFailureResult.accepted, true, 'Test 5i: Daily Moon Run terminal result remains accepted when Weekly Journey bookkeeping fails');
+assert.equal(dailyMoonRunFailureResult.duplicate, true, 'Test 5i: Daily Moon Run terminal result returns normally with no uncaught Weekly Journey exception');
+assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='daily_moon_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId).count, 0,
+  'Test 5i: failed auxiliary bookkeeping does not partially materialize a daily_moon_run source event');
+assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 0,
+  'Test 5i: failed auxiliary bookkeeping writes no Weekly Journey objective');
+dailyMoonRunFailureDb.beforeDailyMoonRunEventInsert = null;
+const dailyMoonRunFailureRetry = await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+  action: 'run_extract',
+  run_id: dailyMoonRunFailureId,
+  request_id: 'daily-moon-run-best-effort-two',
+}, '123456:test-token');
+assert.equal(dailyMoonRunFailureRetry.accepted, true, 'Test 5i: Daily Moon Run terminal retry remains accepted after auxiliary failure clears');
+assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='daily_moon_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId).count, 1,
+  'Test 5i: retry materializes one accepted daily_moon_run source event');
+assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 1,
+  'Test 5i: retry records weekly_run exactly once');
+await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+  action: 'run_extract',
+  run_id: dailyMoonRunFailureId,
+  request_id: 'daily-moon-run-best-effort-three',
+}, '123456:test-token');
+assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 1,
+  'Test 5i: recovered Daily Moon Run Weekly Journey evidence stays idempotent');
 
 const bossDuplicateDb = createDb();
 const bossDuplicateTelegramId = 'weekly-boss-duplicate';
