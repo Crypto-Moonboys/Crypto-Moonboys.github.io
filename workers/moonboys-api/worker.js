@@ -8257,16 +8257,30 @@ async function listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seas
   });
 }
 
+function getPetMiniAppWeekResetAt(seasonSlots = {}, now = new Date()) {
+  const season = seasonSlots?.season || getPetSeasonInfo(now);
+  const startMs = Date.parse(season?.start_at || '');
+  const endMs = Date.parse(season?.end_at || '');
+  const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(season, now)) || 1));
+  if (!Number.isFinite(startMs)) return null;
+  const resetMs = Math.min(
+    Number.isFinite(endMs) ? endMs : startMs + (week * 7 * 86400000),
+    startMs + (week * 7 * 86400000),
+  );
+  return Number.isFinite(resetMs) ? new Date(resetMs).toISOString() : null;
+}
+
 async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = new Date()) {
   const activeSlot = (seasonSlots?.slots || []).find((slot) => slot.active) || null;
   const petId = String(activeSlot?.pet_id || '');
   const seasonKey = String(activeSlot?.season_key || seasonSlots?.season?.key || '');
   const dayKey = getPetDayKey(now);
   const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(seasonSlots?.season || getPetSeasonInfo(now), now)) || 1));
+  const week_reset_at = getPetMiniAppWeekResetAt(seasonSlots, now);
   if (!petId || !seasonKey) {
     return {
       daily: { utc_day: dayKey, completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
-      weekly: { qualification_week: week, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
+      weekly: { qualification_week: week, week_reset_at, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
     };
   }
   const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt] = await Promise.all([
@@ -8316,7 +8330,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
         reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
       },
       weekly: {
-        pet_id: null, season_key: seasonKey, qualification_week: week,
+        pet_id: null, season_key: seasonKey, qualification_week: week, week_reset_at,
         completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
         objectives: [],
         weekly_crest_awarded: false,
@@ -8336,7 +8350,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
     },
     weekly: {
-      pet_id: petId, season_key: seasonKey, qualification_week: week,
+      pet_id: petId, season_key: seasonKey, qualification_week: week, week_reset_at,
       completed_objectives: weeklyCompleted, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
       objectives: weeklyObjectiveList || [],
       weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
@@ -8412,6 +8426,7 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
     reason: weeklyJourneySummary.reason || 'weekly_journey_in_progress',
     message: 'Weekly Journey live tracking is active.',
     qualification_week: miniAppProgressInteger(weeklyJourneySummary.qualification_week, 1),
+    week_reset_at: weeklyJourneySummary.week_reset_at || null,
     completed_objectives: miniAppProgressInteger(weeklyJourneySummary.completed_objectives, 0),
     required_objectives: miniAppProgressInteger(weeklyJourneySummary.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES),
     objectives: Array.isArray(weeklyJourneySummary.objectives) ? weeklyJourneySummary.objectives : [],
@@ -8421,9 +8436,12 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
     state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
     unlocked: false,
     active: false,
-    reason: 'weekly_journey_authority_syncing',
-    message: 'Weekly Journey authority is syncing.',
+    reason: weeklyJourneySummary?.reason || 'weekly_journey_authority_syncing',
+    message: weeklyJourneySummary?.reason === 'active_pet_required'
+      ? 'Pick an active seasonal Moonpet before Weekly Journey tracking can start.'
+      : 'Weekly Journey authority is syncing.',
     qualification_week: null,
+    week_reset_at: weeklyJourneySummary?.week_reset_at || null,
     completed_objectives: 0,
     required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
     objectives: [],
@@ -8620,10 +8638,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
       active: false,
       qualification_week: null,
+      week_reset_at: journeySummary?.weekly?.week_reset_at || null,
       completed_objectives: 0,
       required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
       objectives: [],
-      reason: 'weekly_journey_authority_syncing',
+      reason: journeySummary?.weekly?.reason || 'weekly_journey_authority_syncing',
     },
     gear: gear.results || [],
     materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({

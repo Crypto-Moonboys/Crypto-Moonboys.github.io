@@ -131,10 +131,90 @@ assert.doesNotMatch(dailyJourneyRuntime({}, 2, {}, {}), /\d+\/0 OBJECTIVES/,
 assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /DAILY JOURNEY \/\/ 2\/3 OBJECTIVES/,
   'complete Daily Journey authority must still render objective progress');
 
+const weeklyJourneyMarkupSource = extractTestExport(client, 'weeklyJourneyMarkup');
+assert.ok(weeklyJourneyMarkupSource, 'Weekly Journey markup helper must be extractable for runtime coverage');
+const weeklyJourneyRuntime = new Function(
+  'weeklyAuthority',
+  'weeklyCapability',
+  `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function escapeHtml(value) { return String(value == null ? '' : value); }
+function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
+function meter(label, percent) { return '<meter>' + label + ':' + percent + '</meter>'; }
+${weeklyJourneyMarkupSource}; return weeklyJourneyMarkup(weeklyAuthority, weeklyCapability);`,
+);
+const zeroWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  qualification_week: 2,
+  week_reset_at: '2026-08-24T00:00:00.000Z',
+  completed_objectives: 0,
+  required_objectives: 5,
+  reason: 'weekly_journey_in_progress',
+  objectives: [
+    { objective_id: 'weekly_care', progress: 0, target: 5, completed: false },
+    { objective_id: 'weekly_training', progress: 0, target: 3, completed: false },
+    { objective_id: 'weekly_run', progress: 0, target: 3, completed: false },
+    { objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false },
+    { objective_id: 'weekly_check_in', progress: 0, target: 2, completed: false },
+  ],
+}, {});
+assert.match(zeroWeeklyMarkup, /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/, 'Weekly Journey must render 0/5 when live authority is available');
+assert.match(zeroWeeklyMarkup, /Weekly care actions \/\/ 0\/5 \/\/ INCOMPLETE/, 'Weekly Journey must show clear objective names and incomplete state');
+assert.match(zeroWeeklyMarkup, /RESET 2026-08-24T00:00:00.000Z/, 'Weekly Journey must render reset timing when authority provides it');
+const partialWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  qualification_week: 2,
+  completed_objectives: 2,
+  required_objectives: 5,
+  reason: 'weekly_journey_in_progress',
+  objectives: [
+    { objective_id: 'weekly_care', progress: 5, target: 5, completed: true },
+    { objective_id: 'weekly_training', progress: 1, target: 3, completed: false },
+    { objective_id: 'weekly_run', progress: 3, target: 3, completed: true },
+  ],
+}, {});
+assert.match(partialWeeklyMarkup, /WEEKLY JOURNEY \/\/ 2\/5 OBJECTIVES/, 'Weekly Journey must render partial progress');
+assert.match(partialWeeklyMarkup, /Weekly training sessions \/\/ 1\/3 \/\/ INCOMPLETE/, 'Weekly Journey must keep incomplete partial objectives visible');
+const completeWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  qualification_week: 2,
+  completed_objectives: 5,
+  required_objectives: 5,
+  reason: 'weekly_journey_ready',
+  weekly_crest_awarded: false,
+  objectives: [],
+}, {});
+assert.match(completeWeeklyMarkup, /WEEKLY JOURNEY \/\/ 5\/5 OBJECTIVES/, 'Weekly Journey must render complete progress');
+assert.match(completeWeeklyMarkup, /WEEKLY CREST READY FOR SERVER SETTLEMENT/, 'complete but unsettled Weekly Journey must not fake an awarded Crest');
+const settledWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  qualification_week: 2,
+  completed_objectives: 5,
+  required_objectives: 5,
+  reason: 'weekly_journey_qualified',
+  weekly_crest_awarded: true,
+  objectives: [],
+}, {});
+assert.match(settledWeeklyMarkup, /WEEKLY CREST ALREADY SETTLED/, 'already-settled Weekly Crest must not appear claimable again');
+const failedWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'LOCKED',
+  reason: 'weekly_journey_authority_syncing',
+  completed_objectives: 0,
+  required_objectives: 5,
+}, {});
+assert.match(failedWeeklyMarkup, /WEEKLY JOURNEY \/\/ SYNCING/, 'authority failure must render syncing copy');
+assert.doesNotMatch(failedWeeklyMarkup, /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/, 'authority failure must not show fake available 0/5 progress');
+const noActivePetWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'LOCKED',
+  reason: 'active_pet_required',
+  completed_objectives: 0,
+  required_objectives: 5,
+}, {});
+assert.match(noActivePetWeeklyMarkup, /WEEKLY JOURNEY \/\/ ACTIVE PET REQUIRED/, 'no active pet state must be clear and safe');
+
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'dailyJourneyMarkup', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
@@ -323,7 +403,7 @@ assert.match(client, /var waitingTitle = weeklyState === 'COMING_SOON'[\s\S]*'WE
   'Weekly Journey panel title must show syncing for locked authority and planned expansion only for explicit COMING_SOON');
 assert.match(client, /var waitingCopy = weeklyState === 'COMING_SOON'[\s\S]*Weekly Journey is planned expansion\.[\s\S]*Weekly Journey authority is syncing\./,
   'Weekly Journey panel body copy must keep COMING_SOON planned copy separate from syncing authority copy');
-assert.match(client, /WEEKLY CREST AWARDED|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST ELIGIBLE/, 'Weekly Journey live UI must surface Crest settlement states');
+assert.match(client, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST READY FOR SERVER SETTLEMENT/, 'Weekly Journey live UI must surface Crest settlement states');
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
 assert.match(client, /function combatLockCopy\(\)[\s\S]*combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
@@ -401,7 +481,7 @@ assert.match(worker, /\['guidance_ack', 'notification_set', 'arena_queue_cancel'
 assert.doesNotMatch(client, /dailyRequired = [^;\n]+: 3/, 'Daily Journey UI must not hardcode fallback objective requirements');
 assert.match(client, /weekly_crest_awarded/, 'Weekly Journey live UI must read settled Crest state from authority');
 assert.match(client, /DUPLICATE WEEKLY CREST BLOCKED/, 'Weekly Journey live UI must expose duplicate Crest state from authority');
-assert.match(client, /WEEKLY CREST AWARDED/, 'Weekly Journey live UI must expose awarded Crest state from authority');
+assert.match(client, /WEEKLY CREST ALREADY SETTLED/, 'Weekly Journey live UI must expose settled Crest state from authority');
 assert.match(worker, /required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES/, 'Daily Journey Mini App summary must use the authority constant for required objectives');
 assert.match(worker, /dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES/, 'Daily Journey Mini App readiness must use the authority constant');
 assert.match(worker, /required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES/, 'Weekly Journey Mini App summary must use the authority constant for required objectives');
@@ -482,7 +562,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260816-legendary-season-completion/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-weekly-journey-live-polish/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Arena and Kaiju are available for completed Season players with a hatched active Moonpet[\s\S]*Arena and Kaiju remain locked future panels with stale-state cleanup only/,
@@ -546,7 +626,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260816-legendary-season-completion/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-weekly-journey-live-polish/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1128,7 +1208,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260816-legendary-season-completion/);
+assert.match(html, /20260820-weekly-journey-live-polish/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

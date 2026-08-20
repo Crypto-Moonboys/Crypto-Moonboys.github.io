@@ -495,6 +495,65 @@ assert.equal(zeroWeeklyState.capabilities.weekly_journey.state, 'AVAILABLE',
   'zero-progress Weekly Journey capability must be AVAILABLE');
 assert.equal(zeroWeeklyState.capabilities.weekly_journey.active, true,
   'zero-progress Weekly Journey capability must be active');
+assert.ok(zeroWeeklyState.weekly_journey.week_reset_at,
+  'zero-progress Weekly Journey must expose server-derived reset timing when season timing is available');
+
+const postActionWeeklyDb = new D1();
+seedPlayer(postActionWeeklyDb, 'weekly-post-action', 'Refresh Cat', 1200);
+await ensurePetStarterSeasonSlot(postActionWeeklyDb, 'weekly-post-action', new Date());
+await processPetMiniAppAction(postActionWeeklyDb, 'weekly-post-action', { id: 'weekly-post-action' }, {
+  action: 'feed',
+  request_id: 'weekly-post-action:feed',
+}, '123456:test-token');
+const postActionWeeklyState = await buildPetMiniAppState(postActionWeeklyDb, 'weekly-post-action', '123456:test-token');
+const postActionCareObjective = postActionWeeklyState.weekly_journey.objectives.find((objective) => objective.objective_id === 'weekly_care');
+assert.equal(postActionCareObjective?.progress, 1,
+  'post-action state refresh must update Weekly Journey objective progress from accepted care evidence');
+assert.equal(postActionCareObjective?.completed, false,
+  'one accepted care action must not fake completion of the weekly care objective');
+
+const partialWeeklyDb = new D1();
+seedPlayer(partialWeeklyDb, 'weekly-partial-progress', 'Partial Cat', 1200);
+await ensurePetStarterSeasonSlot(partialWeeklyDb, 'weekly-partial-progress', new Date());
+const partialWeeklyPet = await ensureActivePetInstance(partialWeeklyDb, 'weekly-partial-progress');
+const partialWeeklyWeek = 1;
+partialWeeklyDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
+  (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
+  VALUES (?, 'weekly-partial-progress', ?, ?, ?, 'weekly_care', ?, 'feed', 5, 'accepted', '{}')`)
+  .run('weekly-partial:care', partialWeeklyPet.pet_id, partialWeeklyPet.season_key, partialWeeklyWeek, 'weekly-partial:care:event');
+partialWeeklyDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
+  (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
+  VALUES (?, 'weekly-partial-progress', ?, ?, ?, 'weekly_training', ?, 'train', 1, 'accepted', '{}')`)
+  .run('weekly-partial:training', partialWeeklyPet.pet_id, partialWeeklyPet.season_key, partialWeeklyWeek, 'weekly-partial:training:event');
+const partialWeeklySummary = await buildPetMiniAppJourneySummary(partialWeeklyDb, 'weekly-partial-progress', {
+  season: getPetSeasonInfo(new Date()),
+  current_season_week: partialWeeklyWeek,
+  slots: [{ active: true, pet_id: partialWeeklyPet.pet_id, season_key: partialWeeklyPet.season_key }],
+});
+assert.equal(partialWeeklySummary.weekly.completed_objectives, 1,
+  'partial Weekly Journey evidence must count only target-complete objectives');
+assert.equal(partialWeeklySummary.weekly.objectives.find((objective) => objective.objective_id === 'weekly_training')?.completed, false,
+  'partial Weekly Journey payload must preserve incomplete objective state');
+
+const completeWeeklyDb = new D1();
+seedPlayer(completeWeeklyDb, 'weekly-complete-progress', 'Complete Weekly Cat', 1200);
+await ensurePetStarterSeasonSlot(completeWeeklyDb, 'weekly-complete-progress', new Date());
+const completeWeeklyPet = await ensureActivePetInstance(completeWeeklyDb, 'weekly-complete-progress');
+for (const [objectiveId, objective] of Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES)) {
+  completeWeeklyDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
+    (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
+    VALUES (?, 'weekly-complete-progress', ?, ?, 1, ?, ?, 'weekly_journey_test', ?, 'accepted', '{}')`)
+    .run(`weekly-complete:${objectiveId}`, completeWeeklyPet.pet_id, completeWeeklyPet.season_key, objectiveId, `weekly-complete:${objectiveId}:event`, Number(objective.target || 1));
+}
+const completeWeeklySummary = await buildPetMiniAppJourneySummary(completeWeeklyDb, 'weekly-complete-progress', {
+  season: getPetSeasonInfo(new Date()),
+  current_season_week: 1,
+  slots: [{ active: true, pet_id: completeWeeklyPet.pet_id, season_key: completeWeeklyPet.season_key }],
+});
+assert.equal(completeWeeklySummary.weekly.completed_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+  '5/5 Weekly Journey evidence must render complete authority state');
+assert.equal(completeWeeklySummary.weekly.weekly_crest_awarded, false,
+  '5/5 Weekly Journey evidence must not appear settled without an accepted Crest receipt');
 
 const unavailableWeeklyDb = new D1();
 seedPlayer(unavailableWeeklyDb, 'weekly-authority-unavailable', 'Syncing Weekly Cat', 1200);
@@ -509,6 +568,18 @@ assert.equal(unavailableWeeklyState.weekly_journey.reason, 'weekly_journey_autho
   'weekly objective read failure must surface authority syncing');
 assert.equal(unavailableWeeklyState.capabilities.weekly_journey.state, 'LOCKED',
   'weekly objective read failure must keep capability locked');
+
+const noActiveWeeklySummary = await buildPetMiniAppJourneySummary(new D1(), 'weekly-no-active-pet', {
+  season: getPetSeasonInfo(new Date()),
+  current_season_week: 1,
+  slots: [],
+});
+assert.equal(noActiveWeeklySummary.weekly.reason, 'active_pet_required',
+  'no active pet Weekly Journey authority must be explicit');
+assert.equal(noActiveWeeklySummary.weekly.authority_available, false,
+  'no active pet Weekly Journey authority must fail closed');
+assert.equal(noActiveWeeklySummary.weekly.objectives.length, 0,
+  'no active pet Weekly Journey authority must not fabricate objectives');
 
 const receiptAuthorityDb = new D1();
 seedPlayer(receiptAuthorityDb, 'receipt-authority', 'Receipt Cat', 1200);
