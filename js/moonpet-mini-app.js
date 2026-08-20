@@ -907,7 +907,26 @@
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active seasonal Moonpet before journey progress starts.';
     if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
-    return 'Start with first care, then follow the first server-authoritative Journey objective when it appears.';
+    if (isNewlyHatchedFirstSessionPet(phase, progression)) return 'Start with first care, then follow the first server-authoritative Journey objective when it appears.';
+    return 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.';
+  }
+
+  function isNewlyHatchedFirstSessionPet(phase, progression) {
+    var pet = state && state.pet || {};
+    var lifecyclePhase = String(phase || pet.stage || '').toLowerCase();
+    if (lifecyclePhase !== 'young') return false;
+    var level = Math.max(0, Number(pet.level) || 0);
+    var petXp = Math.max(0, Number(pet.pet_xp) || 0);
+    if (level > 1 || petXp > 0) return false;
+    progression = progression || {};
+    var growth = progression.growth_marks || {};
+    var crests = progression.weekly_crests || {};
+    var daily = state && state.daily_journey || {};
+    var weekly = state && state.weekly_journey || {};
+    return Math.max(0, Number(growth.earned) || 0) === 0
+      && Math.max(0, Number(crests.earned) || 0) === 0
+      && Math.max(0, Number(daily.completed_objectives) || 0) === 0
+      && Math.max(0, Number(weekly.completed_objectives) || 0) === 0;
   }
 
   function homeNextLine(next) {
@@ -941,6 +960,18 @@
     var phase = firstSessionPhase();
     if (!phase) return '';
     var nextLine = exploreNextLine();
+    var arena = state && state.arena;
+    var arenaQueue = state && state.arena_queue;
+    var kaiju = state && state.kaiju || {};
+    var kaijuMatch = kaiju.match;
+    var kaijuQueue = kaiju.queue;
+    var arenaCleanup = arena
+      ? button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true })
+      : arenaQueue ? button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) : '';
+    var kaijuSoloCleanup = kaijuMatch && kaijuMatch.mode !== 'group' && !kaijuMatch.player2_telegram_id;
+    var kaijuCleanup = kaijuSoloCleanup
+      ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
+      : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
     var copy = phase === 'unadopted'
       ? {
         district: 'Initialise a Moon Egg before district routes, bosses, Arena, Kaiju, or pet work open.',
@@ -952,13 +983,20 @@
         run: 'Moon Run opens after HATCH MOONPET creates an active companion.',
         journey: 'Journey progress starts after hatching, when server authority can bind objectives to the active pet.',
       };
+    var arenaBody = '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>' +
+      (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div><div class="button-grid one">' + arenaCleanup + '</div>' : '');
+    var kaijuBody = '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>' +
+      (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div><div class="button-grid one">' + kaijuCleanup + '</div>' : '') +
+      (kaijuMatch && !kaijuSoloCleanup ? '<div class="line muted">MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY / FORFEIT RESOLUTION.</div>' : '');
     return panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(nextLine) + '</div><div class="line muted">' + escapeHtml(copy.district) + '</div>', 'districts') +
       panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(nextLine) + '</div><div class="line muted">' + escapeHtml(copy.run) + '</div>', 'moon-run') +
       panel('PET ADVENTURE', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'adventure') +
       panel('STREET EVENT', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'street-event') +
       panel('WEEKLY BOSS // LOCKED', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'weekly-boss') +
-      panel('PET ARENA', '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>', 'arena') +
-      panel('KAIJU CODE CARDS', '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>', 'kaiju');
+      panel('STREET STORY CHAINS', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'story-chains') +
+      panel('SEASONAL RAID', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'seasonal-boss') +
+      panel('PET ARENA', arenaBody, 'arena') +
+      panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
   }
   // TEST-EXPORT: nextGuidance:end
 
