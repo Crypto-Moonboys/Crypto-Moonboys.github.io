@@ -363,8 +363,8 @@
 
   function availabilityLabel(options) {
     options = options || {};
-    if (options.futureExpansion) return 'FUTURE EXPANSION';
     if (options.authoritySyncing) return 'AUTHORITY SYNCING';
+    if (options.futureExpansion) return 'FUTURE EXPANSION';
     if (options.activePetRequired) return 'ACTIVE PET REQUIRED';
     if (options.eggRequired) return 'EGG / INCUBATION REQUIRED';
     if (options.resourceRequired) return 'NOT ENOUGH RESOURCE';
@@ -575,6 +575,7 @@
     ].map(function (item) { return '<div class="hud-chip"><strong>' + item[0] + '</strong> ' + escapeHtml(item[1]) + '</div>'; }).join('');
   }
 
+  // TEST-EXPORT: nextGuidance:start
   function activeSeasonSlot() {
     var slots = state && state.season_slots && Array.isArray(state.season_slots.slots) ? state.season_slots.slots : [];
     return slots.find(function (slot) { return slot.active; }) || {};
@@ -855,9 +856,11 @@
   }
 
   function profileNextLine() {
+    var seasonSlots = state && state.season_slots || {};
     var slot = activeSeasonSlot();
     var progression = activePetProgression();
     var lifecycle = progression.lifecycle || state && state.lifecycle || {};
+    if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active seasonal Moonpet before journey progress starts.';
     if (String(lifecycle.phase || '').toLowerCase() === 'egg') return 'Hatch your Moon Egg by completing incubation signals.';
     if (lifecycle.evolution_ready) return 'Evolve your active Moonpet when you are ready.';
@@ -876,14 +879,16 @@
 
   function exploreNextLine() {
     if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
+    var boss = state && state.guidance && state.guidance.weekly_boss || {};
     var weekly = state && state.weekly_journey || {};
     var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
     var bossObjective = objectives.find(function (objective) { return String(objective.objective_id || '') === 'weekly_boss_attempt'; });
     if (bossObjective && !bossObjective.completed && Number(bossObjective.progress || 0) < Number(bossObjective.target || 1)) {
-      return 'Complete Weekly boss attempt to progress Weekly Journey.';
+      return boss.available ? 'Complete Weekly boss attempt to progress Weekly Journey.' : 'Build level and energy before the Weekly boss attempt.';
     }
     return 'Start a Moon Run or pick an available Explore action.';
   }
+  // TEST-EXPORT: nextGuidance:end
 
   function renderHome() {
     if (!state.adopted) {

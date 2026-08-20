@@ -150,6 +150,8 @@ assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, eggRe
   'egg/incubation gates must distinguish hatch/incubation state');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
   'authority-syncing buttons must not fake availability');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
+  'authority-syncing labels must outrank future-expansion labels when both apply');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true }), 'FUTURE EXPANSION',
   'future expansion copy must not imply live gameplay');
 assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m',
@@ -315,6 +317,39 @@ assert.doesNotMatch(comingSoonWeeklyMarkup, /authority is syncing/i,
 assert.doesNotMatch(comingSoonWeeklyMarkup, /Complete objectives to qualify/,
   'COMING_SOON Weekly Journey must not ask players to complete objectives');
 
+const nextGuidanceSource = extractTestExport(client, 'nextGuidance');
+assert.ok(nextGuidanceSource, 'NEXT guidance helpers must be extractable for runtime coverage');
+function nextGuidanceRuntime(stateValue) {
+  return new Function(
+    'state',
+    `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function escapeHtml(value) { return String(value == null ? '' : value); }
+function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
+function meter(label, percent) { return '<meter>' + label + ':' + percent + '</meter>'; }
+function panel(title, body) { return '<section><h2>' + title + '</h2>' + body + '</section>'; }
+${nextGuidanceSource}; return { profileNextLine, exploreNextLine };`,
+  )(stateValue);
+}
+const unavailableSlotGuidance = nextGuidanceRuntime({
+  pet: { pet_id: 'pet-a', pet_name: 'Luna' },
+  season_slots: { unavailable: true, slots: [] },
+  lifecycle: { phase: 'adult' },
+}).profileNextLine();
+assert.equal(unavailableSlotGuidance, 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.',
+  'adopted state with unavailable season-slot authority must show syncing guidance');
+assert.notEqual(unavailableSlotGuidance, 'Pick an active seasonal Moonpet before journey progress starts.',
+  'unavailable season-slot authority must not be confused with a genuinely empty active slot');
+assert.equal(nextGuidanceRuntime({
+  guidance: { weekly_boss: { available: true } },
+  weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
+}).exploreNextLine(), 'Complete Weekly boss attempt to progress Weekly Journey.',
+  'available incomplete Weekly boss objective must recommend the boss attempt');
+assert.equal(nextGuidanceRuntime({
+  guidance: { weekly_boss: { available: false } },
+  weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
+}).exploreNextLine(), 'Build level and energy before the Weekly boss attempt.',
+  'unavailable incomplete Weekly boss objective must not recommend a blocked boss attempt');
+
 const journeyActionProgressSource = extractTestExport(client, 'journeyActionProgress');
 assert.ok(journeyActionProgressSource, 'Journey action progress helper must be extractable for runtime coverage');
 const journeyActionProgressRuntime = new Function(
@@ -415,7 +450,7 @@ assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
