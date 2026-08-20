@@ -1,7 +1,7 @@
 [
   {
     "entity_id": "1m_free_nfts_program",
-    "canonical_title": "1m_free_nfts_program — Crypto Moonboys Wiki",
+    "canonical_title": "1m free nfts program",
     "canonical_url": "/wiki/1m-free-nfts-program.html",
     "category": "factions",
     "aliases": [
@@ -26,14 +26,11 @@
       "canonical_concept_id": "one-million-free-nfts:program",
       "canonical_slug": "1m-free-nfts-program",
       "parent_concept": null
-    },
-    "alias_candidates": [
-      "1m free nfts program"
-    ]
+    }
   },
   {
     "entity_id": "2025_metaverse_launch_party",
-    "canonical_title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
+    "canonical_title": "2025 Metaverse Launch Party",
     "canonical_url": "/wiki/2025-metaverse-launch-party.html",
     "category": "factions",
     "aliases": [],
@@ -49,14 +46,11 @@
     "source_urls": [
       "/wiki/2025-metaverse-launch-party.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "2025 metaverse launch party"
-    ]
+    "brand": null
   },
   {
     "entity_id": "589_xrpl",
-    "canonical_title": "589 on XRPL — Crypto Moonboys Wiki",
+    "canonical_title": "589 on XRPL",
     "canonical_url": "/wiki/589-xrpl.html",
     "category": "tokens",
     "aliases": [
@@ -77,7 +71,7 @@
   },
   {
     "entity_id": "666_xrpl",
-    "canonical_title": "666 on XRPL — Crypto Moonboys Wiki",
+    "canonical_title": "666 on XRPL",
     "canonical_url": "/wiki/666-xrpl.html",
     "category": "tokens",
     "aliases": [
@@ -98,7 +92,7 @@
   },
   {
     "entity_id": "alcor_exchange",
-    "canonical_title": "Alcor Exchange — Crypto Moonboys Wiki",
+    "canonical_title": "Alcor Exchange",
     "canonical_url": "/wiki/alcor-exchange.html",
     "category": "factions",
     "aliases": [
@@ -114,14 +108,11 @@
     "source_urls": [
       "/wiki/alcor-exchange.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "alcor exchange"
-    ]
+    "brand": null
   },
   {
     "entity_id": "aleema_child_of_the_shard",
-    "canonical_title": "Aleema (Child of the Shard) — Crypto Moonboys Wiki",
+    "canonical_title": "Aleema (Child of the Shard)",
     "canonical_url": "/wiki/aleema-child-of-the-shard.html",
     "category": "characters",
     "aliases": [],
@@ -143,7 +134,7 @@
   },
   {
     "entity_id": "alfie_bitcoin_kid_blaze",
-    "canonical_title": "Alfie 'Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+    "canonical_title": "Alfie 'Bitcoin Kid' Blaze",
     "canonical_url": "/wiki/alfie-bitcoin-kid-blaze.html",
     "category": "factions",
     "aliases": [],
@@ -166,7 +157,7 @@
   },
   {
     "entity_id": "alien_worlds_tlm",
-    "canonical_title": "Alien Worlds / TLM — Crypto Moonboys Wiki",
+    "canonical_title": "Alien Worlds / TLM",
     "canonical_url": "/wiki/alien-worlds-tlm.html",
     "category": "characters",
     "aliases": [],
@@ -188,7 +179,7 @@
   },
   {
     "entity_id": "altcoins",
-    "canonical_title": "Altcoins — Crypto Moonboys Wiki",
+    "canonical_title": "Altcoins",
     "canonical_url": "/wiki/altcoins.html",
     "category": "tokens",
     "aliases": [
@@ -203,14 +194,11 @@
     "source_urls": [
       "/wiki/altcoins.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "altcoins"
-    ]
+    "brand": null
   },
   {
     "entity_id": "atomicassets",
-    "canonical_title": "AtomicAssets — Crypto Moonboys Wiki",
+    "canonical_title": "AtomicAssets",
     "canonical_url": "/wiki/atomicassets.html",
     "category": "characters",
     "aliases": [
@@ -225,14 +213,11 @@
     "source_urls": [
       "/wiki/atomicassets.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "atomicassets"
-    ]
+    "brand": null
   },
   {
     "entity_id": "atomichub",
-    "canonical_title": "AtomicHub — Crypto Moonboys Wiki",
+    "canonical_title": "AtomicHub",
     "canonical_url": "/wiki/atomichub.html",
     "category": "factions",
     "aliases": [
@@ -247,14 +232,11 @@
     "source_urls": [
       "/wiki/atomichub.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "atomichub"
-    ]
+    "brand": null
   },
   {
     "entity_id": "atomichub_graffpunks_collection",
-    "canonical_title": "AtomicHub Graffpunks Collection — Crypto Moonboys Wiki",
+    "canonical_title": "AtomicHub Graffpunks Collection",
     "canonical_url": "/wiki/atomichub-graffpunks-collection.html",
     "category": "factions",
     "aliases": [],
@@ -269,14 +251,11 @@
     "source_urls": [
       "/wiki/atomichub-graffpunks-collection.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "atomichub graffpunks collection"
-    ]
+    "brand": null
   },
   {
     "entity_id": "ava_chen",
-    "canonical_title": "Ava Chen — Crypto Moonboys Wiki",
+    "canonical_title": "Ava Chen",
     "canonical_url": "/wiki/ava-chen.html",
     "category": "characters",
     "aliases": [
@@ -292,14 +271,11 @@
     "source_urls": [
       "/wiki/ava-chen.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "ava chen"
-    ]
+    "brand": null
   },
   {
     "entity_id": "battlemech_blast",
-    "canonical_title": "battlemech_blast — Crypto Moonboys Wiki",
+    "canonical_title": "battlemech blast",
     "canonical_url": "/wiki/battlemech-blast.html",
     "category": "factions",
     "aliases": [
@@ -315,14 +291,11 @@
     "source_urls": [
       "/wiki/battlemech-blast.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "battlemech blast"
-    ]
+    "brand": null
   },
   {
     "entity_id": "bear_market_siege",
-    "canonical_title": "The Bear Market Siege — Crypto Moonboys Wiki",
+    "canonical_title": "The Bear Market Siege",
     "canonical_url": "/wiki/bear-market-siege.html",
     "category": "characters",
     "aliases": [
@@ -344,7 +317,7 @@
   },
   {
     "entity_id": "bear_xrpl",
-    "canonical_title": "BEAR on XRPL — Crypto Moonboys Wiki",
+    "canonical_title": "BEAR on XRPL",
     "canonical_url": "/wiki/bear-xrpl.html",
     "category": "tokens",
     "aliases": [
@@ -365,7 +338,7 @@
   },
   {
     "entity_id": "billy_the_goat_kid",
-    "canonical_title": "Billy the Goat Kid — Crypto Moonboys Wiki",
+    "canonical_title": "Billy the Goat Kid",
     "canonical_url": "/wiki/billy-the-goat-kid.html",
     "category": "characters",
     "aliases": [],
@@ -380,14 +353,11 @@
     "source_urls": [
       "/wiki/billy-the-goat-kid.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "billy the goat kid"
-    ]
+    "brand": null
   },
   {
     "entity_id": "bit_cap_5000",
-    "canonical_title": "Bit-Cap 5000 — Crypto Moonboys Wiki",
+    "canonical_title": "Bit-Cap 5000",
     "canonical_url": "/wiki/bit-cap-5000.html",
     "category": "characters",
     "aliases": [],
@@ -409,7 +379,7 @@
   },
   {
     "entity_id": "bitcoin",
-    "canonical_title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+    "canonical_title": "Bitcoin (BTC)",
     "canonical_url": "/wiki/bitcoin.html",
     "category": "tokens",
     "aliases": [
@@ -430,7 +400,7 @@
   },
   {
     "entity_id": "bitcoin_btc",
-    "canonical_title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+    "canonical_title": "Bitcoin (BTC)",
     "canonical_url": "/wiki/bitcoin-btc.html",
     "category": "tokens",
     "aliases": [
@@ -454,7 +424,7 @@
   },
   {
     "entity_id": "bitcoin_kid_army",
-    "canonical_title": "Bitcoin Kid Army — Crypto Moonboys Wiki",
+    "canonical_title": "Bitcoin Kid Army",
     "canonical_url": "/wiki/bitcoin-kid-army.html",
     "category": "factions",
     "aliases": [],
@@ -469,14 +439,11 @@
     "source_urls": [
       "/wiki/bitcoin-kid-army.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bitcoin kid army"
-    ]
+    "brand": null
   },
   {
     "entity_id": "bitcoin_kids",
-    "canonical_title": "bitcoin_kids — Crypto Moonboys Wiki",
+    "canonical_title": "Bitcoin Kids",
     "canonical_url": "/wiki/bitcoin-kids.html",
     "category": "characters",
     "aliases": [
@@ -492,14 +459,11 @@
     "source_urls": [
       "/wiki/bitcoin-kids.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bitcoin kids"
-    ]
+    "brand": null
   },
   {
     "entity_id": "bitcoin_x_kids",
-    "canonical_title": "bitcoin_x_kids — Crypto Moonboys Wiki",
+    "canonical_title": "Bitcoin X Kids",
     "canonical_url": "/wiki/bitcoin-x-kids.html",
     "category": "characters",
     "aliases": [
@@ -515,14 +479,11 @@
     "source_urls": [
       "/wiki/bitcoin-x-kids.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bitcoin x kids"
-    ]
+    "brand": null
   },
   {
     "entity_id": "block_node_defenders",
-    "canonical_title": "Block Node Defenders — Crypto Moonboys Wiki",
+    "canonical_title": "Block Node Defenders",
     "canonical_url": "/wiki/block-node-defenders.html",
     "category": "factions",
     "aliases": [],
@@ -537,14 +498,11 @@
     "source_urls": [
       "/wiki/block-node-defenders.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "block node defenders"
-    ]
+    "brand": null
   },
   {
     "entity_id": "block_topia",
-    "canonical_title": "block_topia — Crypto Moonboys Wiki",
+    "canonical_title": "Block Topia",
     "canonical_url": "/wiki/block-topia.html",
     "category": "characters",
     "aliases": [
@@ -560,14 +518,11 @@
     "source_urls": [
       "/wiki/block-topia.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "block topia"
-    ]
+    "brand": null
   },
   {
     "entity_id": "blockchain",
-    "canonical_title": "Blockchain Technology — Crypto Moonboys Wiki",
+    "canonical_title": "Blockchain Technology",
     "canonical_url": "/wiki/blockchain.html",
     "category": "factions",
     "aliases": [
@@ -588,7 +543,7 @@
   },
   {
     "entity_id": "bone_idol_ink",
-    "canonical_title": "Bone Idol Ink — Crypto Moonboys Wiki",
+    "canonical_title": "Bone Idol Ink",
     "canonical_url": "/wiki/bone-idol-ink.html",
     "category": "factions",
     "aliases": [],
@@ -603,14 +558,11 @@
     "source_urls": [
       "/wiki/bone-idol-ink.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bone idol ink"
-    ]
+    "brand": null
   },
   {
     "entity_id": "burn_to_earn",
-    "canonical_title": "burn_to_earn — Crypto Moonboys Wiki",
+    "canonical_title": "Burn-to-Earn",
     "canonical_url": "/wiki/burn-to-earn.html",
     "category": "characters",
     "aliases": [
@@ -633,7 +585,7 @@
   },
   {
     "entity_id": "canvas_clash",
-    "canonical_title": "canvas_clash — Crypto Moonboys Wiki",
+    "canonical_title": "canvas clash",
     "canonical_url": "/wiki/canvas-clash.html",
     "category": "factions",
     "aliases": [
@@ -649,14 +601,11 @@
     "source_urls": [
       "/wiki/canvas-clash.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "canvas clash"
-    ]
+    "brand": null
   },
   {
     "entity_id": "charlie_buster",
-    "canonical_title": "charlie-buster — Crypto Moonboys Wiki",
+    "canonical_title": "charlie-buster",
     "canonical_url": "/wiki/charlie-buster.html",
     "category": "characters",
     "aliases": [
@@ -679,7 +628,7 @@
   },
   {
     "entity_id": "croydon_tower_blocks",
-    "canonical_title": "Croydon Tower Blocks — Crypto Moonboys Wiki",
+    "canonical_title": "Croydon Tower Blocks",
     "canonical_url": "/wiki/croydon-tower-blocks.html",
     "category": "factions",
     "aliases": [],
@@ -694,18 +643,45 @@
     "source_urls": [
       "/wiki/croydon-tower-blocks.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "croydon tower blocks"
-    ]
+    "brand": null
+  },
+  {
+    "entity_id": "crypto_moonboy_pets",
+    "canonical_title": "Crypto Moonboy Pets",
+    "canonical_url": "/wiki/crypto-moonboy-pets.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "Crypto Moonboy Pets",
+      "Telegram pet RPG",
+      "Moonpet",
+      "pet game",
+      "roguelite",
+      "Pet Arena",
+      "Kaiju Sticker Battle",
+      "pet progression",
+      "Pet XP",
+      "Community XP",
+      "pet gear",
+      "timed activities",
+      "pet jobs",
+      "crafting materials",
+      "relics",
+      "run modifiers"
+    ],
+    "source_urls": [
+      "/wiki/crypto-moonboy-pets.html"
+    ],
+    "brand": null
   },
   {
     "entity_id": "crypto_moonboys",
-    "canonical_title": "crypto_moonboys — Crypto Moonboys Wiki",
+    "canonical_title": "Crypto Moonboys — The Original Graffiti Kings Web3 Universe",
     "canonical_url": "/wiki/crypto-moonboys.html",
     "category": "characters",
     "aliases": [
-      "crypto moonboys wiki"
+      "crypto moonboys wiki",
+      "crypto moonboys"
     ],
     "tags": [
       "crypto",
@@ -715,18 +691,16 @@
     "source_urls": [
       "/wiki/crypto-moonboys.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "crypto moonboys"
-    ]
+    "brand": null
   },
   {
     "entity_id": "darren_cullen",
-    "canonical_title": "Darren Cullen — Crypto Moonboys Wiki",
+    "canonical_title": "Darren Cullen (SER)",
     "canonical_url": "/wiki/darren-cullen.html",
     "category": "characters",
     "aliases": [
-      "darren cullen crypto moonboys wiki"
+      "darren cullen crypto moonboys wiki",
+      "darren cullen"
     ],
     "tags": [
       "darren",
@@ -738,14 +712,11 @@
     "source_urls": [
       "/wiki/darren-cullen.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "darren cullen"
-    ]
+    "brand": null
   },
   {
     "entity_id": "defi",
-    "canonical_title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
+    "canonical_title": "DeFi (Decentralised Finance)",
     "canonical_url": "/wiki/defi.html",
     "category": "factions",
     "aliases": [
@@ -766,7 +737,7 @@
   },
   {
     "entity_id": "defi_mining",
-    "canonical_title": "DeFi Mining — Crypto Moonboys Wiki",
+    "canonical_title": "DeFi Mining",
     "canonical_url": "/wiki/defi-mining.html",
     "category": "factions",
     "aliases": [
@@ -782,14 +753,11 @@
     "source_urls": [
       "/wiki/defi-mining.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "defi mining"
-    ]
+    "brand": null
   },
   {
     "entity_id": "delicious_again_pete",
-    "canonical_title": "Delicious Again Pete — Crypto Moonboys Wiki",
+    "canonical_title": "Delicious Again Pete",
     "canonical_url": "/wiki/delicious-again-pete.html",
     "category": "factions",
     "aliases": [],
@@ -804,14 +772,11 @@
     "source_urls": [
       "/wiki/delicious-again-pete.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "delicious again pete"
-    ]
+    "brand": null
   },
   {
     "entity_id": "diamond_hands",
-    "canonical_title": "Diamond Hands — Crypto Moonboys Wiki",
+    "canonical_title": "Diamond Hands",
     "canonical_url": "/wiki/diamond-hands.html",
     "category": "characters",
     "aliases": [
@@ -827,14 +792,11 @@
     "source_urls": [
       "/wiki/diamond-hands.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "diamond hands"
-    ]
+    "brand": null
   },
   {
     "entity_id": "dragan_volkov",
-    "canonical_title": "Dragan Volkov — Crypto Moonboys Wiki",
+    "canonical_title": "Dragan Volkov",
     "canonical_url": "/wiki/dragan-volkov.html",
     "category": "characters",
     "aliases": [
@@ -850,14 +812,11 @@
     "source_urls": [
       "/wiki/dragan-volkov.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "dragan volkov"
-    ]
+    "brand": null
   },
   {
     "entity_id": "dream_sovereign",
-    "canonical_title": "dream_sovereign — Crypto Moonboys Wiki",
+    "canonical_title": "dream sovereign",
     "canonical_url": "/wiki/dream-sovereign.html",
     "category": "factions",
     "aliases": [
@@ -873,14 +832,11 @@
     "source_urls": [
       "/wiki/dream-sovereign.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "dream sovereign"
-    ]
+    "brand": null
   },
   {
     "entity_id": "elder_codex_7",
-    "canonical_title": "Elder Codex-7 — Crypto Moonboys Wiki",
+    "canonical_title": "Elder Codex-7",
     "canonical_url": "/wiki/elder-codex-7.html",
     "category": "characters",
     "aliases": [
@@ -903,7 +859,7 @@
   },
   {
     "entity_id": "ethereum",
-    "canonical_title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+    "canonical_title": "Ethereum (ETH)",
     "canonical_url": "/wiki/ethereum.html",
     "category": "factions",
     "aliases": [
@@ -924,7 +880,7 @@
   },
   {
     "entity_id": "ethereum_ecosystem",
-    "canonical_title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
+    "canonical_title": "Ethereum (ETH) Ecosystem",
     "canonical_url": "/wiki/ethereum-ecosystem.html",
     "category": "factions",
     "aliases": [
@@ -945,7 +901,7 @@
   },
   {
     "entity_id": "exchanges",
-    "canonical_title": "Crypto Exchanges — Crypto Moonboys Wiki",
+    "canonical_title": "Crypto Exchanges",
     "canonical_url": "/wiki/exchanges.html",
     "category": "factions",
     "aliases": [
@@ -965,7 +921,7 @@
   },
   {
     "entity_id": "exyboy",
-    "canonical_title": "EXYBOY — Crypto Moonboys Wiki",
+    "canonical_title": "EXYBOY",
     "canonical_url": "/wiki/exyboy.html",
     "category": "factions",
     "aliases": [
@@ -980,14 +936,11 @@
     "source_urls": [
       "/wiki/exyboy.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "exyboy"
-    ]
+    "brand": null
   },
   {
     "entity_id": "fgl_token",
-    "canonical_title": "FGL Token — Crypto Moonboys Wiki",
+    "canonical_title": "FGL Token",
     "canonical_url": "/wiki/fgl-token.html",
     "category": "factions",
     "aliases": [
@@ -1003,14 +956,11 @@
     "source_urls": [
       "/wiki/fgl-token.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "fgl token"
-    ]
+    "brand": null
   },
   {
     "entity_id": "fomo_plague",
-    "canonical_title": "The FOMO Plague — Crypto Moonboys Wiki",
+    "canonical_title": "The FOMO Plague",
     "canonical_url": "/wiki/fomo-plague.html",
     "category": "factions",
     "aliases": [
@@ -1034,7 +984,7 @@
   },
   {
     "entity_id": "forkborn_collective",
-    "canonical_title": "Forkborn Collective — Crypto Moonboys Wiki",
+    "canonical_title": "Forkborn Collective",
     "canonical_url": "/wiki/forkborn-collective.html",
     "category": "factions",
     "aliases": [
@@ -1050,14 +1000,11 @@
     "source_urls": [
       "/wiki/forkborn-collective.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "forkborn collective"
-    ]
+    "brand": null
   },
   {
     "entity_id": "forklord_you",
-    "canonical_title": "Forklord You — Crypto Moonboys Wiki",
+    "canonical_title": "Forklord You",
     "canonical_url": "/wiki/forklord-you.html",
     "category": "characters",
     "aliases": [
@@ -1073,14 +1020,11 @@
     "source_urls": [
       "/wiki/forklord-you.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "forklord you"
-    ]
+    "brand": null
   },
   {
     "entity_id": "forksplit",
-    "canonical_title": "Forksplit — Crypto Moonboys Wiki",
+    "canonical_title": "Forksplit",
     "canonical_url": "/wiki/forksplit.html",
     "category": "characters",
     "aliases": [
@@ -1095,14 +1039,11 @@
     "source_urls": [
       "/wiki/forksplit.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "forksplit"
-    ]
+    "brand": null
   },
   {
     "entity_id": "games4punks_telegram",
-    "canonical_title": "games4punks_telegram — Crypto Moonboys Wiki",
+    "canonical_title": "games4punks telegram",
     "canonical_url": "/wiki/games4punks-telegram.html",
     "category": "factions",
     "aliases": [
@@ -1118,14 +1059,11 @@
     "source_urls": [
       "/wiki/games4punks-telegram.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "games4punks telegram"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gang_signs",
-    "canonical_title": "gang_signs — Crypto Moonboys Wiki",
+    "canonical_title": "gang signs",
     "canonical_url": "/wiki/gang-signs.html",
     "category": "characters",
     "aliases": [
@@ -1141,14 +1079,11 @@
     "source_urls": [
       "/wiki/gang-signs.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "gang signs"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gang_signs_card_game",
-    "canonical_title": "Gang Signs (Card Game) — Crypto Moonboys Wiki",
+    "canonical_title": "Gang Signs (Card Game)",
     "canonical_url": "/wiki/gang-signs-card-game.html",
     "category": "factions",
     "aliases": [],
@@ -1171,7 +1106,7 @@
   },
   {
     "entity_id": "genesis_kernel",
-    "canonical_title": "genesis_kernel — Crypto Moonboys Wiki",
+    "canonical_title": "genesis kernel",
     "canonical_url": "/wiki/genesis-kernel.html",
     "category": "characters",
     "aliases": [
@@ -1187,14 +1122,11 @@
     "source_urls": [
       "/wiki/genesis-kernel.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "genesis kernel"
-    ]
+    "brand": null
   },
   {
     "entity_id": "genesis_spray",
-    "canonical_title": "genesis_spray — Crypto Moonboys Wiki",
+    "canonical_title": "Genesis Spray",
     "canonical_url": "/wiki/genesis-spray.html",
     "category": "factions",
     "aliases": [
@@ -1210,14 +1142,11 @@
     "source_urls": [
       "/wiki/genesis-spray.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "genesis spray"
-    ]
+    "brand": null
   },
   {
     "entity_id": "genesis_spray_drop",
-    "canonical_title": "genesis_spray_drop — Crypto Moonboys Wiki",
+    "canonical_title": "genesis spray drop",
     "canonical_url": "/wiki/genesis-spray-drop.html",
     "category": "characters",
     "aliases": [],
@@ -1232,14 +1161,11 @@
     "source_urls": [
       "/wiki/genesis-spray-drop.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "genesis spray drop"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gk",
-    "canonical_title": "$GK — Crypto Moonboys Wiki",
+    "canonical_title": "$GK",
     "canonical_url": "/wiki/gk.html",
     "category": "factions",
     "aliases": [
@@ -1258,7 +1184,7 @@
   },
   {
     "entity_id": "gkniftyheads",
-    "canonical_title": "gkniftyheads — Crypto Moonboys Wiki",
+    "canonical_title": "GKniftyHEADS",
     "canonical_url": "/wiki/gkniftyheads.html",
     "category": "characters",
     "aliases": [
@@ -1273,14 +1199,11 @@
     "source_urls": [
       "/wiki/gkniftyheads.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "gkniftyheads"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_alessandro_anonymity_advocate_amato_783445",
-    "canonical_title": "🤘 Alessandro &quot;Anonymity Advocate&quot; Amato 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Alessandro &quot;Anonymity Advocate&quot; Amato 👑",
     "canonical_url": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1303,7 +1226,7 @@
   },
   {
     "entity_id": "gkniftyheads_alessandro_satoshi_samurai_ferrari_783442",
-    "canonical_title": "🤘 Alessandro &quot;Satoshi Samurai&quot; Ferrari 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Alessandro &quot;Satoshi Samurai&quot; Ferrari 👑",
     "canonical_url": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1326,7 +1249,7 @@
   },
   {
     "entity_id": "gkniftyheads_alessandro_token_titan_marini_783461",
-    "canonical_title": "🤘 Alessandro &quot;Token Titan&quot; Marini 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Alessandro &quot;Token Titan&quot; Marini 👑",
     "canonical_url": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1349,11 +1272,12 @@
   },
   {
     "entity_id": "gkniftyheads_altcoin_avenger_783406",
-    "canonical_title": "🍒 Altcoin Avenger 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Altcoin Avenger 💋",
     "canonical_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads altcoin avenger 783406"
+      "gkniftyheads altcoin avenger 783406",
+      "altcoin avenger crypto moonboys wiki"
     ],
     "tags": [
       "altcoin",
@@ -1365,14 +1289,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-altcoin-avenger-783406.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "altcoin avenger crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_andrea_blockchain_buccaneer_moretti_783455",
-    "canonical_title": "🤘 Andrea &quot;Blockchain Buccaneer&quot; Moretti 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Andrea &quot;Blockchain Buccaneer&quot; Moretti 👑",
     "canonical_url": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1395,7 +1316,7 @@
   },
   {
     "entity_id": "gkniftyheads_antonio_ether_emperor_costa_783448",
-    "canonical_title": "🤘 Antonio &quot;Ether Emperor&quot; Costa 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Antonio &quot;Ether Emperor&quot; Costa 👑",
     "canonical_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1418,11 +1339,12 @@
   },
   {
     "entity_id": "gkniftyheads_binary_blitzer_784277",
-    "canonical_title": "⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬",
     "canonical_url": "/wiki/gkniftyheads-binary-blitzer-784277.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads binary blitzer 784277"
+      "gkniftyheads binary blitzer 784277",
+      "binary blitzer crypto moonboys wiki"
     ],
     "tags": [
       "binary",
@@ -1434,18 +1356,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-binary-blitzer-784277.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "binary blitzer crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_bit_boss_783395",
-    "canonical_title": "🍒 Bit Boss 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Bit Boss 💋",
     "canonical_url": "/wiki/gkniftyheads-bit-boss-783395.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads bit boss 783395"
+      "gkniftyheads bit boss 783395",
+      "bit boss crypto moonboys wiki"
     ],
     "tags": [
       "bit",
@@ -1457,14 +1377,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-bit-boss-783395.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bit boss crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_bit_brawler_the_byte_battler_783415",
-    "canonical_title": "🍒 Bit Brawler, the Byte Battler 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Bit Brawler, the Byte Battler 💋",
     "canonical_url": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1486,11 +1403,12 @@
   },
   {
     "entity_id": "gkniftyheads_bit_skull_784280",
-    "canonical_title": "⚡️⚡️⚡️ Bit-Skull ☠️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Bit-Skull ☠️",
     "canonical_url": "/wiki/gkniftyheads-bit-skull-784280.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads bit skull 784280"
+      "gkniftyheads bit skull 784280",
+      "bit skull crypto moonboys wiki"
     ],
     "tags": [
       "bit",
@@ -1502,18 +1420,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-bit-skull-784280.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bit skull crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_bitcoin_barbarian_784284",
-    "canonical_title": "⚡️⚡️⚡️ Bitcoin Barbarian ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Bitcoin Barbarian ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads bitcoin barbarian 784284"
+      "gkniftyheads bitcoin barbarian 784284",
+      "bitcoin barbarian crypto moonboys wiki"
     ],
     "tags": [
       "bitcoin",
@@ -1525,14 +1441,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bitcoin barbarian crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_infinite_776002",
-    "canonical_title": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1553,7 +1466,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_infinite_776003",
-    "canonical_title": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1574,7 +1487,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_infinite_776005",
-    "canonical_title": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1595,7 +1508,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_infinite_776056",
-    "canonical_title": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1616,7 +1529,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_infinite_776058",
-    "canonical_title": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1637,7 +1550,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_infinite_776059",
-    "canonical_title": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1658,7 +1571,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_royale_776145",
-    "canonical_title": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1679,7 +1592,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_tv_heads_100_776074",
-    "canonical_title": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1702,7 +1615,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_x_sarah_pfly_infinite_776004",
-    "canonical_title": "💊 BITCOIN KiD x SARAH PFLY INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "💊 BITCOIN KiD x SARAH PFLY INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1725,7 +1638,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitcoin_kid_x_sarahpfly_773225",
-    "canonical_title": "BITCOIN KiD x SARAHPFLY - Crypto Moonboys Wiki",
+    "canonical_title": "BITCOIN KiD x SARAHPFLY",
     "canonical_url": "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1746,7 +1659,7 @@
   },
   {
     "entity_id": "gkniftyheads_bitforce_bitcoin_battler_784332",
-    "canonical_title": "⚡️⚡️⚡️ Bitforce Bitcoin Battler ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Bitforce Bitcoin Battler ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1767,11 +1680,12 @@
   },
   {
     "entity_id": "gkniftyheads_bitman_784220",
-    "canonical_title": "⚡️⚡️⚡️ Bitman 🦇 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Bitman 🦇",
     "canonical_url": "/wiki/gkniftyheads-bitman-784220.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads bitman 784220"
+      "gkniftyheads bitman 784220",
+      "bitman crypto moonboys wiki"
     ],
     "tags": [
       "bitman",
@@ -1782,18 +1696,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-bitman-784220.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bitman crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_bitman_784229",
-    "canonical_title": "⚡️⚡️⚡️ Bitman 🦇 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Bitman 🦇",
     "canonical_url": "/wiki/gkniftyheads-bitman-784229.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads bitman 784229"
+      "gkniftyheads bitman 784229",
+      "bitman crypto moonboys wiki"
     ],
     "tags": [
       "bitman",
@@ -1804,18 +1716,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-bitman-784229.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "bitman crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_blockchain_belle_783392",
-    "canonical_title": "🍒 Blockchain Belle 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Blockchain Belle 💋",
     "canonical_url": "/wiki/gkniftyheads-blockchain-belle-783392.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads blockchain belle 783392"
+      "gkniftyheads blockchain belle 783392",
+      "blockchain belle crypto moonboys wiki"
     ],
     "tags": [
       "blockchain",
@@ -1827,18 +1737,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-blockchain-belle-783392.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "blockchain belle crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_blockchain_bombshell_783407",
-    "canonical_title": "🍒 Blockchain Bombshell 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Blockchain Bombshell 💋",
     "canonical_url": "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads blockchain bombshell 783407"
+      "gkniftyheads blockchain bombshell 783407",
+      "blockchain bombshell crypto moonboys wiki"
     ],
     "tags": [
       "blockchain",
@@ -1850,14 +1758,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "blockchain bombshell crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_blockchain_furie_infinite_776007",
-    "canonical_title": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1878,7 +1783,7 @@
   },
   {
     "entity_id": "gkniftyheads_blockchain_furie_infinite_776055",
-    "canonical_title": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1899,7 +1804,7 @@
   },
   {
     "entity_id": "gkniftyheads_blockchain_furie_infinite_776057",
-    "canonical_title": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1920,11 +1825,12 @@
   },
   {
     "entity_id": "gkniftyheads_brick_burner_783282",
-    "canonical_title": "Brick Burner 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Brick Burner 👑👈",
     "canonical_url": "/wiki/gkniftyheads-brick-burner-783282.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads brick burner 783282"
+      "gkniftyheads brick burner 783282",
+      "brick burner crypto moonboys wiki"
     ],
     "tags": [
       "brick",
@@ -1936,14 +1842,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-brick-burner-783282.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "brick burner crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_carmine_the_conductor_cimino_783380",
-    "canonical_title": "👑 Carmine &quot;The Conductor&quot; Cimino⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👑 Carmine &quot;The Conductor&quot; Cimino⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -1965,11 +1868,12 @@
   },
   {
     "entity_id": "gkniftyheads_chroma_kid_783237",
-    "canonical_title": "Chroma KiD 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Chroma KiD 👑👈",
     "canonical_url": "/wiki/gkniftyheads-chroma-kid-783237.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads chroma kid 783237"
+      "gkniftyheads chroma kid 783237",
+      "chroma kid crypto moonboys wiki"
     ],
     "tags": [
       "chroma",
@@ -1981,18 +1885,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-chroma-kid-783237.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "chroma kid crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_chroma_kid_783247",
-    "canonical_title": "Chroma KiD 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Chroma KiD 👑👈",
     "canonical_url": "/wiki/gkniftyheads-chroma-kid-783247.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads chroma kid 783247"
+      "gkniftyheads chroma kid 783247",
+      "chroma kid crypto moonboys wiki"
     ],
     "tags": [
       "chroma",
@@ -2004,18 +1906,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-chroma-kid-783247.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "chroma kid crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_chromatic_crusader_783301",
-    "canonical_title": "Chromatic Crusader 🌎💥💥💥🚀 - Crypto Moonboys Wiki",
+    "canonical_title": "Chromatic Crusader 🌎💥💥💥🚀",
     "canonical_url": "/wiki/gkniftyheads-chromatic-crusader-783301.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads chromatic crusader 783301"
+      "gkniftyheads chromatic crusader 783301",
+      "chromatic crusader crypto moonboys wiki"
     ],
     "tags": [
       "chromatic",
@@ -2027,18 +1927,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-chromatic-crusader-783301.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "chromatic crusader crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_cipher_seraph_783413",
-    "canonical_title": "🍒 Cipher Seraph 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Cipher Seraph 💋",
     "canonical_url": "/wiki/gkniftyheads-cipher-seraph-783413.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads cipher seraph 783413"
+      "gkniftyheads cipher seraph 783413",
+      "cipher seraph crypto moonboys wiki"
     ],
     "tags": [
       "cipher",
@@ -2050,18 +1948,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-cipher-seraph-783413.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "cipher seraph crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_cipherella_783408",
-    "canonical_title": "🍒 Cipherella 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Cipherella 💋",
     "canonical_url": "/wiki/gkniftyheads-cipherella-783408.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads cipherella 783408"
+      "gkniftyheads cipherella 783408",
+      "cipherella crypto moonboys wiki"
     ],
     "tags": [
       "cipherella",
@@ -2072,18 +1968,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-cipherella-783408.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "cipherella crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_coin_conqueress_783412",
-    "canonical_title": "🍒 Coin Conqueress 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Coin Conqueress 💋",
     "canonical_url": "/wiki/gkniftyheads-coin-conqueress-783412.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads coin conqueress 783412"
+      "gkniftyheads coin conqueress 783412",
+      "coin conqueress crypto moonboys wiki"
     ],
     "tags": [
       "coin",
@@ -2095,14 +1989,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-coin-conqueress-783412.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "coin conqueress crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_crypto_charmcaster_783411",
-    "canonical_title": "🍒 Crypto Charmcaster 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Crypto Charmcaster 💋",
     "canonical_url": "/wiki/gkniftyheads-crypto-charmcaster-783411.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2122,11 +2013,12 @@
   },
   {
     "entity_id": "gkniftyheads_cryptofrank_784266",
-    "canonical_title": "⚡️⚡️⚡️ CryptoFrank ☠️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ CryptoFrank ☠️",
     "canonical_url": "/wiki/gkniftyheads-cryptofrank-784266.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads cryptofrank 784266"
+      "gkniftyheads cryptofrank 784266",
+      "cryptofrank crypto moonboys wiki"
     ],
     "tags": [
       "cryptofrank",
@@ -2137,14 +2029,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-cryptofrank-784266.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "cryptofrank crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_cyber_shinobi_shroud_783468",
-    "canonical_title": "⚡️⚡️⚡️ Cyber Shinobi Shroud 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Cyber Shinobi Shroud 🤖",
     "canonical_url": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2165,7 +2054,7 @@
   },
   {
     "entity_id": "gkniftyheads_cyber_shinobi_strike_783757",
-    "canonical_title": "⚡️⚡️⚡️ Cyber Shinobi Strike 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Cyber Shinobi Strike 🤖",
     "canonical_url": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2186,7 +2075,7 @@
   },
   {
     "entity_id": "gkniftyheads_czen_zone_zero_zealot_783755",
-    "canonical_title": "⚡️⚡️⚡️ CZen Zone Zero Zealot 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ CZen Zone Zero Zealot 🤖",
     "canonical_url": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2208,11 +2097,12 @@
   },
   {
     "entity_id": "gkniftyheads_daring_doodle_783300",
-    "canonical_title": "Daring Doodle 🐸🐸🐸 - Crypto Moonboys Wiki",
+    "canonical_title": "Daring Doodle 🐸🐸🐸",
     "canonical_url": "/wiki/gkniftyheads-daring-doodle-783300.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads daring doodle 783300"
+      "gkniftyheads daring doodle 783300",
+      "daring doodle crypto moonboys wiki"
     ],
     "tags": [
       "daring",
@@ -2224,18 +2114,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-daring-doodle-783300.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "daring doodle crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_darknet_lord_784276",
-    "canonical_title": "⚡️⚡️⚡️ Darknet Lord ☠️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Darknet Lord ☠️",
     "canonical_url": "/wiki/gkniftyheads-darknet-lord-784276.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads darknet lord 784276"
+      "gkniftyheads darknet lord 784276",
+      "darknet lord crypto moonboys wiki"
     ],
     "tags": [
       "darknet",
@@ -2247,14 +2135,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-darknet-lord-784276.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "darknet lord crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_davide_altcoin_alchemist_marino_783454",
-    "canonical_title": "🤘 Davide &quot;Altcoin Alchemist&quot; Marino 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Davide &quot;Altcoin Alchemist&quot; Marino 👑",
     "canonical_url": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2277,11 +2162,12 @@
   },
   {
     "entity_id": "gkniftyheads_decentralized_duchess_783399",
-    "canonical_title": "🍒 Decentralized Duchess 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Decentralized Duchess 💋",
     "canonical_url": "/wiki/gkniftyheads-decentralized-duchess-783399.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads decentralized duchess 783399"
+      "gkniftyheads decentralized duchess 783399",
+      "decentralized duchess crypto moonboys wiki"
     ],
     "tags": [
       "decentralized",
@@ -2293,18 +2179,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-decentralized-duchess-783399.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "decentralized duchess crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_defi_dame_783400",
-    "canonical_title": "🍒 DeFi Dame 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 DeFi Dame 💋",
     "canonical_url": "/wiki/gkniftyheads-defi-dame-783400.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads defi dame 783400"
+      "gkniftyheads defi dame 783400",
+      "defi dame crypto moonboys wiki"
     ],
     "tags": [
       "defi",
@@ -2316,18 +2200,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-defi-dame-783400.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "defi dame crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_defi_dame_788015",
-    "canonical_title": "🍒 DeFi Dame 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 DeFi Dame 💋",
     "canonical_url": "/wiki/gkniftyheads-defi-dame-788015.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads defi dame 788015"
+      "gkniftyheads defi dame 788015",
+      "defi dame crypto moonboys wiki"
     ],
     "tags": [
       "defi",
@@ -2339,18 +2221,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-defi-dame-788015.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "defi dame crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_deko_904071",
-    "canonical_title": "DEKO - Crypto Moonboys Wiki",
+    "canonical_title": "DEKO",
     "canonical_url": "/wiki/gkniftyheads-deko-904071.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads deko 904071"
+      "gkniftyheads deko 904071",
+      "deko crypto moonboys wiki"
     ],
     "tags": [
       "deko",
@@ -2361,18 +2241,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-deko-904071.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "deko crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_digital_diva_783394",
-    "canonical_title": "🍒 Digital Diva 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Digital Diva 💋",
     "canonical_url": "/wiki/gkniftyheads-digital-diva-783394.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads digital diva 783394"
+      "gkniftyheads digital diva 783394",
+      "digital diva crypto moonboys wiki"
     ],
     "tags": [
       "digital",
@@ -2384,18 +2262,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-digital-diva-783394.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "digital diva crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_digital_duchess_783404",
-    "canonical_title": "🍒 Digital Duchess 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Digital Duchess 💋",
     "canonical_url": "/wiki/gkniftyheads-digital-duchess-783404.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads digital duchess 783404"
+      "gkniftyheads digital duchess 783404",
+      "digital duchess crypto moonboys wiki"
     ],
     "tags": [
       "digital",
@@ -2407,18 +2283,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-digital-duchess-783404.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "digital duchess crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_dizzy_drip_783255",
-    "canonical_title": "Dizzy Drip 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Dizzy Drip 👑👈",
     "canonical_url": "/wiki/gkniftyheads-dizzy-drip-783255.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads dizzy drip 783255"
+      "gkniftyheads dizzy drip 783255",
+      "dizzy drip crypto moonboys wiki"
     ],
     "tags": [
       "dizzy",
@@ -2430,14 +2304,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-dizzy-drip-783255.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "dizzy drip crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_doughnut_ninja_nova_783764",
-    "canonical_title": "⚡️⚡️⚡️ Doughnut 🍩 Ninja Nova 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Doughnut 🍩 Ninja Nova 🤖",
     "canonical_url": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2458,11 +2329,12 @@
   },
   {
     "entity_id": "gkniftyheads_drift_doodle_783252",
-    "canonical_title": "Drift Doodle 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Drift Doodle 👑👈",
     "canonical_url": "/wiki/gkniftyheads-drift-doodle-783252.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads drift doodle 783252"
+      "gkniftyheads drift doodle 783252",
+      "drift doodle crypto moonboys wiki"
     ],
     "tags": [
       "drift",
@@ -2474,14 +2346,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-drift-doodle-783252.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "drift doodle crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_follow_darren_cullen_776123",
-    "canonical_title": "👉 FOLLOW DARREN CULLEN ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 FOLLOW DARREN CULLEN ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-follow-darren-cullen-776123.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2502,7 +2371,7 @@
   },
   {
     "entity_id": "gkniftyheads_forever_darren_cullen_776124",
-    "canonical_title": "👉 FOREVER DARREN CULLEN ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 FOREVER DARREN CULLEN ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-forever-darren-cullen-776124.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2523,7 +2392,7 @@
   },
   {
     "entity_id": "gkniftyheads_frankie_the_phoenix_piccioli_783374",
-    "canonical_title": "🌈 Frankie &quot;The Phoenix&quot; Piccioli ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "🌈 Frankie &quot;The Phoenix&quot; Piccioli ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2545,11 +2414,12 @@
   },
   {
     "entity_id": "gkniftyheads_freddie_cryptocrusader_784269",
-    "canonical_title": "⚡️⚡️⚡️ Freddie CryptoCrusader ☠️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Freddie CryptoCrusader ☠️",
     "canonical_url": "/wiki/gkniftyheads-freddie-cryptocrusader-784269.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads freddie cryptocrusader 784269"
+      "gkniftyheads freddie cryptocrusader 784269",
+      "freddie cryptocrusader crypto moonboys wiki"
     ],
     "tags": [
       "freddie",
@@ -2561,14 +2431,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-freddie-cryptocrusader-784269.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "freddie cryptocrusader crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_free_minds_gk_beats_genesis_776049",
-    "canonical_title": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS",
     "canonical_url": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2591,11 +2458,12 @@
   },
   {
     "entity_id": "gkniftyheads_fume_fury_783298",
-    "canonical_title": "Fume Fury ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "Fume Fury ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-fume-fury-783298.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads fume fury 783298"
+      "gkniftyheads fume fury 783298",
+      "fume fury crypto moonboys wiki"
     ],
     "tags": [
       "fume",
@@ -2607,14 +2475,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-fume-fury-783298.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "fume fury crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_giorgio_cryptochieftain_bianco_783453",
-    "canonical_title": "🤘 Giorgio &quot;CryptoChieftain&quot; Bianco 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Giorgio &quot;CryptoChieftain&quot; Bianco 👑",
     "canonical_url": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2636,7 +2501,7 @@
   },
   {
     "entity_id": "gkniftyheads_giovanni_cryptocartel_ricci_783451",
-    "canonical_title": "🤘 Giovanni &quot;CryptoCartel&quot; Ricci 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Giovanni &quot;CryptoCartel&quot; Ricci 👑",
     "canonical_url": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2658,7 +2523,7 @@
   },
   {
     "entity_id": "gkniftyheads_giovanni_gas_guzzler_giordano_783433",
-    "canonical_title": "🤘 Giovanni &quot;Gas Guzzler&quot; Giordano 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Giovanni &quot;Gas Guzzler&quot; Giordano 👑",
     "canonical_url": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2681,7 +2546,7 @@
   },
   {
     "entity_id": "gkniftyheads_giulia_satoshi_sorceress_espositooo_783463",
-    "canonical_title": "🤘 Giulia &quot;Satoshi Sorceress&quot; Espositooo 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Giulia &quot;Satoshi Sorceress&quot; Espositooo 👑",
     "canonical_url": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2704,7 +2569,7 @@
   },
   {
     "entity_id": "gkniftyheads_gkniftyheads_fun_coupon_782888",
-    "canonical_title": "👉 GKniftyHEADS FUN COUPON ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 GKniftyHEADS FUN COUPON ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2725,11 +2590,12 @@
   },
   {
     "entity_id": "gkniftyheads_graphite_ghost_783307",
-    "canonical_title": "Graphite Ghost 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Graphite Ghost 👑👈",
     "canonical_url": "/wiki/gkniftyheads-graphite-ghost-783307.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads graphite ghost 783307"
+      "gkniftyheads graphite ghost 783307",
+      "graphite ghost crypto moonboys wiki"
     ],
     "tags": [
       "graphite",
@@ -2741,18 +2607,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-graphite-ghost-783307.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "graphite ghost crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_inked_fury_783258",
-    "canonical_title": "Inked Fury 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Inked Fury 👑👈",
     "canonical_url": "/wiki/gkniftyheads-inked-fury-783258.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads inked fury 783258"
+      "gkniftyheads inked fury 783258",
+      "inked fury crypto moonboys wiki"
     ],
     "tags": [
       "inked",
@@ -2764,14 +2628,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-inked-fury-783258.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "inked fury crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_joey_the_juggernaut_jablonski_783383",
-    "canonical_title": "💋 Joey &quot;The Juggernaut&quot; Jablonski ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "💋 Joey &quot;The Juggernaut&quot; Jablonski ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2793,7 +2654,7 @@
   },
   {
     "entity_id": "gkniftyheads_joey_the_oracle_olivieri_783373",
-    "canonical_title": "👉 Joey &quot;The Oracle&quot; Olivieri ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 Joey &quot;The Oracle&quot; Olivieri ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2815,7 +2676,7 @@
   },
   {
     "entity_id": "gkniftyheads_johnny_the_jetstream_jankovic_783384",
-    "canonical_title": "🌈 Johnny &quot;The Jetstream&quot; Jankovic ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "🌈 Johnny &quot;The Jetstream&quot; Jankovic ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2837,7 +2698,7 @@
   },
   {
     "entity_id": "gkniftyheads_lotus_luminary_charlie_buster_lancer_783470",
-    "canonical_title": "⚡️⚡️⚡️ Lotus Luminary &quot;CHARLIE BUSTER&quot; Lancer 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Lotus Luminary &quot;CHARLIE BUSTER&quot; Lancer 🤖",
     "canonical_url": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2861,7 +2722,7 @@
   },
   {
     "entity_id": "gkniftyheads_louie_hay_you_guys_lupo_783389",
-    "canonical_title": "👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2885,7 +2746,7 @@
   },
   {
     "entity_id": "gkniftyheads_luca_altcoin_assassin_bianchi_783444",
-    "canonical_title": "🤘 Luca &quot;Altcoin Assassin&quot; Bianchi 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Luca &quot;Altcoin Assassin&quot; Bianchi 👑",
     "canonical_url": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2908,7 +2769,7 @@
   },
   {
     "entity_id": "gkniftyheads_marco_coin_conqueror_moretti_783464",
-    "canonical_title": "🤘 Marco &quot;Coin Conqueror&quot; Moretti 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Marco &quot;Coin Conqueror&quot; Moretti 👑",
     "canonical_url": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2931,7 +2792,7 @@
   },
   {
     "entity_id": "gkniftyheads_marco_crypto_maestro_rossi_783432",
-    "canonical_title": "🤘 Marco &quot;Crypto Maestro&quot; Rossi 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Marco &quot;Crypto Maestro&quot; Rossi 👑",
     "canonical_url": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2953,7 +2814,7 @@
   },
   {
     "entity_id": "gkniftyheads_marco_the_maestro_mancini_783378",
-    "canonical_title": "🍄 Marco &quot;The Maestro&quot; Mancini ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "🍄 Marco &quot;The Maestro&quot; Mancini ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -2975,11 +2836,12 @@
   },
   {
     "entity_id": "gkniftyheads_marker_maven_783253",
-    "canonical_title": "Marker Maven 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Marker Maven 👑👈",
     "canonical_url": "/wiki/gkniftyheads-marker-maven-783253.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads marker maven 783253"
+      "gkniftyheads marker maven 783253",
+      "marker maven crypto moonboys wiki"
     ],
     "tags": [
       "marker",
@@ -2991,14 +2853,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-marker-maven-783253.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "marker maven crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_martina_cryptocurrency_crusader_lombardi_783466",
-    "canonical_title": "🤘 Martina &quot;Cryptocurrency Crusader&quot; Lombardi 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Martina &quot;Cryptocurrency Crusader&quot; Lombardi 👑",
     "canonical_url": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3021,7 +2880,7 @@
   },
   {
     "entity_id": "gkniftyheads_matteo_bitcoin_bandit_gallo_783447",
-    "canonical_title": "🤘 Matteo &quot;Bitcoin Bandit&quot; Gallo 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Matteo &quot;Bitcoin Bandit&quot; Gallo 👑",
     "canonical_url": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3044,7 +2903,7 @@
   },
   {
     "entity_id": "gkniftyheads_matteo_cryptocurrency_connoisseur_de_angelis_783457",
-    "canonical_title": "🤘 Matteo &quot;Cryptocurrency Connoisseur&quot; De Angelis 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Matteo &quot;Cryptocurrency Connoisseur&quot; De Angelis 👑",
     "canonical_url": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3068,7 +2927,7 @@
   },
   {
     "entity_id": "gkniftyheads_matteo_token_tactician_romano_783462",
-    "canonical_title": "🤘 Matteo &quot;Token Tactician&quot; Romano 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Matteo &quot;Token Tactician&quot; Romano 👑",
     "canonical_url": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3091,7 +2950,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_boom_head_776121",
-    "canonical_title": "👉 MR CHEO BOOM HEAD ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO BOOM HEAD ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3113,7 +2972,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_bristol_776100",
-    "canonical_title": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-bristol-776100.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3134,7 +2993,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_bristol_776109",
-    "canonical_title": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-bristol-776109.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3155,7 +3014,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_lap_head_776102",
-    "canonical_title": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-lap-head-776102.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3177,7 +3036,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_lap_head_776114",
-    "canonical_title": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3199,7 +3058,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_pill_head_776118",
-    "canonical_title": "👉 MR CHEO PILL HEAD ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO PILL HEAD ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3221,7 +3080,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_pinky_stains_776119",
-    "canonical_title": "👉 MR CHEO PINKY STAINS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO PINKY STAINS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-pinky-stains-776119.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3243,7 +3102,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_purple_pains_776101",
-    "canonical_title": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-purple-pains-776101.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3265,7 +3124,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_purple_pains_776110",
-    "canonical_title": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3287,7 +3146,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_spit_head_776103",
-    "canonical_title": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-spit-head-776103.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3309,7 +3168,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_spit_head_776117",
-    "canonical_title": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3331,7 +3190,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_tab_head_776120",
-    "canonical_title": "👉 MR CHEO TAB HEAD ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO TAB HEAD ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-tab-head-776120.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3353,7 +3212,7 @@
   },
   {
     "entity_id": "gkniftyheads_mr_cheo_test_press_776099",
-    "canonical_title": "👉 MR CHEO TEST PRESS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 MR CHEO TEST PRESS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3375,11 +3234,12 @@
   },
   {
     "entity_id": "gkniftyheads_myerscoin13_784272",
-    "canonical_title": "⚡️⚡️⚡️ MyersCoin13 ☠️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ MyersCoin13 ☠️",
     "canonical_url": "/wiki/gkniftyheads-myerscoin13-784272.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads myerscoin13 784272"
+      "gkniftyheads myerscoin13 784272",
+      "myerscoin13 crypto moonboys wiki"
     ],
     "tags": [
       "myerscoin13",
@@ -3390,14 +3250,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-myerscoin13-784272.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "myerscoin13 crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_neon_nova_knightmare_784413",
-    "canonical_title": "👉 Neon Nova Knightmare 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "👉 Neon Nova Knightmare 👑👈",
     "canonical_url": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3418,12 +3275,10 @@
   },
   {
     "entity_id": "gkniftyheads_nft_collection",
-    "canonical_title": "gkniftyheads NFT Collection - Crypto Moonboys Wiki",
+    "canonical_title": "GKniftyHEADS NFT Collection",
     "canonical_url": "/wiki/gkniftyheads-nft-collection.html",
     "category": "nfts-digital-art",
-    "aliases": [
-      "gkniftyheads nft collection"
-    ],
+    "aliases": [],
     "tags": [
       "gkniftyheads",
       "nft",
@@ -3439,7 +3294,7 @@
   },
   {
     "entity_id": "gkniftyheads_nicky_the_ninja_napolitano_783385",
-    "canonical_title": "👉 Nicky &quot;The Ninja&quot; Napolitano ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 Nicky &quot;The Ninja&quot; Napolitano ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3461,7 +3316,7 @@
   },
   {
     "entity_id": "gkniftyheads_nova_shadow_shredder_784419",
-    "canonical_title": "👉 Nova Shadow Shredder 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "👉 Nova Shadow Shredder 👑👈",
     "canonical_url": "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3482,11 +3337,12 @@
   },
   {
     "entity_id": "gkniftyheads_paint_patriot_783295",
-    "canonical_title": "Paint Patriot 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Paint Patriot 👑👈",
     "canonical_url": "/wiki/gkniftyheads-paint-patriot-783295.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads paint patriot 783295"
+      "gkniftyheads paint patriot 783295",
+      "paint patriot crypto moonboys wiki"
     ],
     "tags": [
       "paint",
@@ -3498,18 +3354,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-paint-patriot-783295.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "paint patriot crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_raze_rebel_783250",
-    "canonical_title": "Raze Rebel 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Raze Rebel 👑👈",
     "canonical_url": "/wiki/gkniftyheads-raze-rebel-783250.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads raze rebel 783250"
+      "gkniftyheads raze rebel 783250",
+      "raze rebel crypto moonboys wiki"
     ],
     "tags": [
       "raze",
@@ -3521,18 +3375,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-raze-rebel-783250.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "raze rebel crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_rebel_riff_783269",
-    "canonical_title": "Rebel Riff 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Rebel Riff 👑👈",
     "canonical_url": "/wiki/gkniftyheads-rebel-riff-783269.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads rebel riff 783269"
+      "gkniftyheads rebel riff 783269",
+      "rebel riff crypto moonboys wiki"
     ],
     "tags": [
       "rebel",
@@ -3544,14 +3396,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-rebel-riff-783269.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "rebel riff crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_richie_the_ricochet_ricci_783377",
-    "canonical_title": "🌈 Richie &quot;The Ricochet&quot; Ricci⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "🌈 Richie &quot;The Ricochet&quot; Ricci⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3573,7 +3422,7 @@
   },
   {
     "entity_id": "gkniftyheads_robin_ronin_rampage_783747",
-    "canonical_title": "⚡️⚡️⚡️ Robin-Ronin Rampage 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Robin-Ronin Rampage 🤖",
     "canonical_url": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3594,7 +3443,7 @@
   },
   {
     "entity_id": "gkniftyheads_rocco_the_rocket_radic_783379",
-    "canonical_title": "🌈 Rocco &quot;The Rocket&quot; Radic 👀 - Crypto Moonboys Wiki",
+    "canonical_title": "🌈 Rocco &quot;The Rocket&quot; Radic 👀",
     "canonical_url": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3616,11 +3465,12 @@
   },
   {
     "entity_id": "gkniftyheads_sarah_p2fly_784350",
-    "canonical_title": "💋 SARAH P2FLY 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "💋 SARAH P2FLY 💋",
     "canonical_url": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads sarah p2fly 784350"
+      "gkniftyheads sarah p2fly 784350",
+      "sarah p2fly crypto moonboys wiki"
     ],
     "tags": [
       "sarah",
@@ -3632,18 +3482,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-sarah-p2fly-784350.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "sarah p2fly crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_sarah_pfly_784349",
-    "canonical_title": "💋 SARAH PFLY 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "💋 SARAH PFLY 💋",
     "canonical_url": "/wiki/gkniftyheads-sarah-pfly-784349.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads sarah pfly 784349"
+      "gkniftyheads sarah pfly 784349",
+      "sarah pfly crypto moonboys wiki"
     ],
     "tags": [
       "sarah",
@@ -3655,18 +3503,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-sarah-pfly-784349.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "sarah pfly crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_satoshi_knight_784264",
-    "canonical_title": "⚡️⚡️⚡️ Satoshi Knight 🦇 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Satoshi Knight 🦇",
     "canonical_url": "/wiki/gkniftyheads-satoshi-knight-784264.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads satoshi knight 784264"
+      "gkniftyheads satoshi knight 784264",
+      "satoshi knight crypto moonboys wiki"
     ],
     "tags": [
       "satoshi",
@@ -3678,18 +3524,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-satoshi-knight-784264.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "satoshi knight crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_scribe_serpent_783260",
-    "canonical_title": "Scribe Serpent 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Scribe Serpent 👑👈",
     "canonical_url": "/wiki/gkniftyheads-scribe-serpent-783260.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads scribe serpent 783260"
+      "gkniftyheads scribe serpent 783260",
+      "scribe serpent crypto moonboys wiki"
     ],
     "tags": [
       "scribe",
@@ -3701,18 +3545,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-scribe-serpent-783260.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "scribe serpent crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_shadow_streak_783245",
-    "canonical_title": "Shadow Streak 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Shadow Streak 👑👈",
     "canonical_url": "/wiki/gkniftyheads-shadow-streak-783245.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads shadow streak 783245"
+      "gkniftyheads shadow streak 783245",
+      "shadow streak crypto moonboys wiki"
     ],
     "tags": [
       "shadow",
@@ -3724,18 +3566,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-shadow-streak-783245.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "shadow streak crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_slickshot_783235",
-    "canonical_title": "Slickshot 👑🕹️💲 - Crypto Moonboys Wiki",
+    "canonical_title": "Slickshot 👑🕹️💲",
     "canonical_url": "/wiki/gkniftyheads-slickshot-783235.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads slickshot 783235"
+      "gkniftyheads slickshot 783235",
+      "slickshot crypto moonboys wiki"
     ],
     "tags": [
       "slickshot",
@@ -3746,18 +3586,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-slickshot-783235.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "slickshot crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_stencil_siren_783296",
-    "canonical_title": "Stencil Siren 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Stencil Siren 👑👈",
     "canonical_url": "/wiki/gkniftyheads-stencil-siren-783296.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads stencil siren 783296"
+      "gkniftyheads stencil siren 783296",
+      "stencil siren crypto moonboys wiki"
     ],
     "tags": [
       "stencil",
@@ -3769,18 +3607,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-stencil-siren-783296.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "stencil siren crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_stencil_storm_783291",
-    "canonical_title": "Stencil Storm 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Stencil Storm 👑👈",
     "canonical_url": "/wiki/gkniftyheads-stencil-storm-783291.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads stencil storm 783291"
+      "gkniftyheads stencil storm 783291",
+      "stencil storm crypto moonboys wiki"
     ],
     "tags": [
       "stencil",
@@ -3792,18 +3628,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-stencil-storm-783291.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "stencil storm crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_tagger_tempest_783263",
-    "canonical_title": "Tagger Tempest 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Tagger Tempest 👑👈",
     "canonical_url": "/wiki/gkniftyheads-tagger-tempest-783263.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads tagger tempest 783263"
+      "gkniftyheads tagger tempest 783263",
+      "tagger tempest crypto moonboys wiki"
     ],
     "tags": [
       "tagger",
@@ -3815,18 +3649,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-tagger-tempest-783263.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "tagger tempest crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_token_temptress_783401",
-    "canonical_title": "🍒 Token Temptress 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Token Temptress 💋",
     "canonical_url": "/wiki/gkniftyheads-token-temptress-783401.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads token temptress 783401"
+      "gkniftyheads token temptress 783401",
+      "token temptress crypto moonboys wiki"
     ],
     "tags": [
       "token",
@@ -3838,18 +3670,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-token-temptress-783401.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "token temptress crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_token_tycooness_783405",
-    "canonical_title": "🍒 Token Tycooness 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Token Tycooness 💋",
     "canonical_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads token tycooness 783405"
+      "gkniftyheads token tycooness 783405",
+      "token tycooness crypto moonboys wiki"
     ],
     "tags": [
       "token",
@@ -3861,14 +3691,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-token-tycooness-783405.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "token tycooness crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_tommy_the_titan_tucci_783369",
-    "canonical_title": "Tommy &quot;The Titan&quot; Tucci ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "Tommy &quot;The Titan&quot; Tucci ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3890,7 +3717,7 @@
   },
   {
     "entity_id": "gkniftyheads_tommy_the_titan_tucci_783372",
-    "canonical_title": "Tommy &quot;The Titan&quot; Tucci ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "Tommy &quot;The Titan&quot; Tucci ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3912,7 +3739,7 @@
   },
   {
     "entity_id": "gkniftyheads_tony_the_technician_toscano_783376",
-    "canonical_title": "🐸 Tony &quot;The Technician&quot; Toscano⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "🐸 Tony &quot;The Technician&quot; Toscano⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3934,7 +3761,7 @@
   },
   {
     "entity_id": "gkniftyheads_tsunami_btc_titan_783760",
-    "canonical_title": "⚡️⚡️⚡️ Tsunami BTC Titan 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Tsunami BTC Titan 🤖",
     "canonical_url": "/wiki/gkniftyheads-tsunami-btc-titan-783760.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -3955,11 +3782,12 @@
   },
   {
     "entity_id": "gkniftyheads_urban_oracle_783306",
-    "canonical_title": "Urban Oracle 👑👈 - Crypto Moonboys Wiki",
+    "canonical_title": "Urban Oracle 👑👈",
     "canonical_url": "/wiki/gkniftyheads-urban-oracle-783306.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads urban oracle 783306"
+      "gkniftyheads urban oracle 783306",
+      "urban oracle crypto moonboys wiki"
     ],
     "tags": [
       "urban",
@@ -3971,18 +3799,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-urban-oracle-783306.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "urban oracle crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_vandal_776147",
-    "canonical_title": "VANDAL ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "VANDAL ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-vandal-776147.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads vandal 776147"
+      "gkniftyheads vandal 776147",
+      "vandal crypto moonboys wiki"
     ],
     "tags": [
       "vandal",
@@ -3993,14 +3819,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-vandal-776147.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "vandal crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_vgiovanni_nft_ninja_rossi_783459",
-    "canonical_title": "🤘 VGiovanni &quot;NFT Ninja&quot; Rossi👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 VGiovanni &quot;NFT Ninja&quot; Rossi👑",
     "canonical_url": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4023,7 +3846,7 @@
   },
   {
     "entity_id": "gkniftyheads_vin_the_vanguard_ventura_783370",
-    "canonical_title": "Vin &quot;The Vanguard&quot; Ventura⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "Vin &quot;The Vanguard&quot; Ventura⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4045,7 +3868,7 @@
   },
   {
     "entity_id": "gkniftyheads_vin_the_vanguard_ventura_783371",
-    "canonical_title": "Vin &quot;The Vanguard&quot; Ventura ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "Vin &quot;The Vanguard&quot; Ventura ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4067,7 +3890,7 @@
   },
   {
     "entity_id": "gkniftyheads_vincenzo_il_criptografo_russo_783431",
-    "canonical_title": "🤘 Vincenzo &quot;Il Criptografo&quot; Russo 👑 - Crypto Moonboys Wiki",
+    "canonical_title": "🤘 Vincenzo &quot;Il Criptografo&quot; Russo 👑",
     "canonical_url": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4090,7 +3913,7 @@
   },
   {
     "entity_id": "gkniftyheads_vinny_the_visionary_valenti_783375",
-    "canonical_title": "🎯 Vinny &quot;The Visionary&quot; Valenti ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "🎯 Vinny &quot;The Visionary&quot; Valenti ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4112,11 +3935,12 @@
   },
   {
     "entity_id": "gkniftyheads_virtual_valkyrie_783403",
-    "canonical_title": "🍒 Virtual Valkyrie 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Virtual Valkyrie 💋",
     "canonical_url": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads virtual valkyrie 783403"
+      "gkniftyheads virtual valkyrie 783403",
+      "virtual valkyrie crypto moonboys wiki"
     ],
     "tags": [
       "virtual",
@@ -4128,18 +3952,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-virtual-valkyrie-783403.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "virtual valkyrie crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_virtual_vixen_783398",
-    "canonical_title": "🍒 Virtual Vixen 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 Virtual Vixen 💋",
     "canonical_url": "/wiki/gkniftyheads-virtual-vixen-783398.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads virtual vixen 783398"
+      "gkniftyheads virtual vixen 783398",
+      "virtual vixen crypto moonboys wiki"
     ],
     "tags": [
       "virtual",
@@ -4151,18 +3973,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-virtual-vixen-783398.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "virtual vixen crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_waxp_banshee_783409",
-    "canonical_title": "🍒 WAXP Banshee 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 WAXP Banshee 💋",
     "canonical_url": "/wiki/gkniftyheads-waxp-banshee-783409.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads waxp banshee 783409"
+      "gkniftyheads waxp banshee 783409",
+      "waxp banshee crypto moonboys wiki"
     ],
     "tags": [
       "waxp",
@@ -4174,18 +3994,16 @@
     "source_urls": [
       "/wiki/gkniftyheads-waxp-banshee-783409.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "waxp banshee crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_waxp_banshee_783410",
-    "canonical_title": "🍒 WAXP Banshee 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 WAXP Banshee 💋",
     "canonical_url": "/wiki/gkniftyheads-waxp-banshee-783410.html",
     "category": "nfts-digital-art",
     "aliases": [
-      "gkniftyheads waxp banshee 783410"
+      "gkniftyheads waxp banshee 783410",
+      "waxp banshee crypto moonboys wiki"
     ],
     "tags": [
       "waxp",
@@ -4197,14 +4015,11 @@
     "source_urls": [
       "/wiki/gkniftyheads-waxp-banshee-783410.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "waxp banshee crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "gkniftyheads_waxp_bobby_torm_784340",
-    "canonical_title": "⚡️⚡️⚡️ WAXP BOBBY $TORM 👀 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ WAXP BOBBY $TORM 👀",
     "canonical_url": "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4225,7 +4040,7 @@
   },
   {
     "entity_id": "gkniftyheads_waxp_femme_fatale_the_token_temptress_783414",
-    "canonical_title": "🍒 WAXP Femme Fatale, the Token Temptress 💋 - Crypto Moonboys Wiki",
+    "canonical_title": "🍒 WAXP Femme Fatale, the Token Temptress 💋",
     "canonical_url": "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4248,7 +4063,7 @@
   },
   {
     "entity_id": "gkniftyheads_waxp_joke_ter_784344",
-    "canonical_title": "⚡️⚡️⚡️ WAXP JOKE$TER ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ WAXP JOKE$TER ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4269,7 +4084,7 @@
   },
   {
     "entity_id": "gkniftyheads_waxp_sentinel_solar_savior_784274",
-    "canonical_title": "⚡️⚡️⚡️ WAXP Sentinel Solar Savior ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ WAXP Sentinel Solar Savior ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4291,7 +4106,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_776146",
-    "canonical_title": "👉 WE ARE VANDALS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 WE ARE VANDALS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-776146.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4312,7 +4127,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_not_vanduls_775997",
-    "canonical_title": "WE ARE VANDALS NOT VANDULS - Crypto Moonboys Wiki",
+    "canonical_title": "WE ARE VANDALS NOT VANDULS",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775997.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4334,7 +4149,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_not_vanduls_775999",
-    "canonical_title": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4356,7 +4171,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_not_vanduls_776000",
-    "canonical_title": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4378,7 +4193,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_not_vanduls_776001",
-    "canonical_title": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4400,7 +4215,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_not_vanduls_776063",
-    "canonical_title": "WE ARE VANDALS NOT VANDULS - Crypto Moonboys Wiki",
+    "canonical_title": "WE ARE VANDALS NOT VANDULS",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4422,7 +4237,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_not_vanduls_776065",
-    "canonical_title": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4444,7 +4259,7 @@
   },
   {
     "entity_id": "gkniftyheads_we_are_vandals_not_vanduls_776066",
-    "canonical_title": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️ - Crypto Moonboys Wiki",
+    "canonical_title": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
     "canonical_url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4466,7 +4281,7 @@
   },
   {
     "entity_id": "gkniftyheads_zenith_zephyr_zealot_783759",
-    "canonical_title": "⚡️⚡️⚡️ Zenith Zephyr Zealot 🤖 - Crypto Moonboys Wiki",
+    "canonical_title": "⚡️⚡️⚡️ Zenith Zephyr Zealot 🤖",
     "canonical_url": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
     "category": "nfts-digital-art",
     "aliases": [
@@ -4487,7 +4302,7 @@
   },
   {
     "entity_id": "graffiti_kings",
-    "canonical_title": "Graffiti Kings — Crypto Moonboys Wiki",
+    "canonical_title": "Graffiti Kings",
     "canonical_url": "/wiki/graffiti-kings.html",
     "category": "factions",
     "aliases": [
@@ -4503,14 +4318,11 @@
     "source_urls": [
       "/wiki/graffiti-kings.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "graffiti kings"
-    ]
+    "brand": null
   },
   {
     "entity_id": "graffiti_nexus",
-    "canonical_title": "graffiti_nexus — Crypto Moonboys Wiki",
+    "canonical_title": "graffiti nexus",
     "canonical_url": "/wiki/graffiti-nexus.html",
     "category": "characters",
     "aliases": [
@@ -4526,14 +4338,11 @@
     "source_urls": [
       "/wiki/graffiti-nexus.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "graffiti nexus"
-    ]
+    "brand": null
   },
   {
     "entity_id": "graffiti_queens_in_decentraland",
-    "canonical_title": "Graffiti Queens in Decentraland — Crypto Moonboys Wiki",
+    "canonical_title": "Graffiti Queens in Decentraland",
     "canonical_url": "/wiki/graffiti-queens-in-decentraland.html",
     "category": "factions",
     "aliases": [],
@@ -4548,14 +4357,11 @@
     "source_urls": [
       "/wiki/graffiti-queens-in-decentraland.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "graffiti queens in decentraland"
-    ]
+    "brand": null
   },
   {
     "entity_id": "graffpunks",
-    "canonical_title": "graffpunks — Crypto Moonboys Wiki",
+    "canonical_title": "GraffPUNKS",
     "canonical_url": "/wiki/graffpunks.html",
     "category": "characters",
     "aliases": [
@@ -4578,14 +4384,11 @@
       "canonical_concept_id": "graffpunks:faction",
       "canonical_slug": "graffpunks",
       "parent_concept": "gkniftyheads"
-    },
-    "alias_candidates": [
-      "graffpunks"
-    ]
+    }
   },
   {
     "entity_id": "graffpunks_24_7_radio",
-    "canonical_title": "graffpunks_24_7_radio — Crypto Moonboys Wiki",
+    "canonical_title": "GraffPUNKS 24/7 Radio",
     "canonical_url": "/wiki/graffpunks-24-7-radio.html",
     "category": "factions",
     "aliases": [
@@ -4618,7 +4421,7 @@
   },
   {
     "entity_id": "graffpunks_collection",
-    "canonical_title": "GraffPUNKS Collection — Crypto Moonboys Wiki",
+    "canonical_title": "GraffPUNKS Collection",
     "canonical_url": "/wiki/graffpunks-collection.html",
     "category": "factions",
     "aliases": [
@@ -4640,14 +4443,11 @@
       "canonical_concept_id": "graffpunks:collection",
       "canonical_slug": "graffpunks-collection",
       "parent_concept": "graffpunks"
-    },
-    "alias_candidates": [
-      "graffpunks collection"
-    ]
+    }
   },
   {
     "entity_id": "graffpunks_ecosystem",
-    "canonical_title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
+    "canonical_title": "GraffPUNKS Ecosystem",
     "canonical_url": "/wiki/graffpunks-ecosystem.html",
     "category": "characters",
     "aliases": [
@@ -4669,14 +4469,11 @@
       "canonical_concept_id": "graffpunks:ecosystem",
       "canonical_slug": "graffpunks-ecosystem",
       "parent_concept": "graffpunks"
-    },
-    "alias_candidates": [
-      "graffpunks ecosystem"
-    ]
+    }
   },
   {
     "entity_id": "grit",
-    "canonical_title": "GRIT — Crypto Moonboys Wiki",
+    "canonical_title": "GRIT",
     "canonical_url": "/wiki/grit.html",
     "category": "characters",
     "aliases": [
@@ -4691,14 +4488,11 @@
     "source_urls": [
       "/wiki/grit.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "grit"
-    ]
+    "brand": null
   },
   {
     "entity_id": "grit42",
-    "canonical_title": "Grit42 — Crypto Moonboys Wiki",
+    "canonical_title": "Grit42",
     "canonical_url": "/wiki/grit42.html",
     "category": "characters",
     "aliases": [
@@ -4713,14 +4507,11 @@
     "source_urls": [
       "/wiki/grit42.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "grit42"
-    ]
+    "brand": null
   },
   {
     "entity_id": "hard_fork_games",
-    "canonical_title": "hard_fork_games — Crypto Moonboys Wiki",
+    "canonical_title": "Hard Fork Games",
     "canonical_url": "/wiki/hard-fork-games.html",
     "category": "factions",
     "aliases": [],
@@ -4735,14 +4526,11 @@
     "source_urls": [
       "/wiki/hard-fork-games.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "hard fork games"
-    ]
+    "brand": null
   },
   {
     "entity_id": "harrison_rift",
-    "canonical_title": "harrison_rift — Crypto Moonboys Wiki",
+    "canonical_title": "harrison rift",
     "canonical_url": "/wiki/harrison-rift.html",
     "category": "factions",
     "aliases": [
@@ -4758,14 +4546,11 @@
     "source_urls": [
       "/wiki/harrison-rift.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "harrison rift"
-    ]
+    "brand": null
   },
   {
     "entity_id": "head_tags",
-    "canonical_title": "head_tags — Crypto Moonboys Wiki",
+    "canonical_title": "head tags",
     "canonical_url": "/wiki/head-tags.html",
     "category": "factions",
     "aliases": [
@@ -4781,14 +4566,11 @@
     "source_urls": [
       "/wiki/head-tags.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "head tags"
-    ]
+    "brand": null
   },
   {
     "entity_id": "hex_tagger_prime",
-    "canonical_title": "HEX-TAGGER PRIME — Crypto Moonboys Wiki",
+    "canonical_title": "HEX-TAGGER PRIME",
     "canonical_url": "/wiki/hex-tagger-prime.html",
     "category": "characters",
     "aliases": [],
@@ -4810,7 +4592,7 @@
   },
   {
     "entity_id": "hodl_warriors",
-    "canonical_title": "hodl_warriors — Crypto Moonboys Wiki",
+    "canonical_title": "HODL Warriors",
     "canonical_url": "/wiki/hodl-warriors.html",
     "category": "characters",
     "aliases": [
@@ -4833,14 +4615,11 @@
       "canonical_concept_id": "hodl:faction",
       "canonical_slug": "hodl-warriors",
       "parent_concept": null
-    },
-    "alias_candidates": [
-      "hodl warriors"
-    ]
+    }
   },
   {
     "entity_id": "hodl_wars",
-    "canonical_title": "hodl_wars — Crypto Moonboys Wiki",
+    "canonical_title": "HODL WARS",
     "canonical_url": "/wiki/hodl-wars.html",
     "category": "factions",
     "aliases": [
@@ -4863,19 +4642,15 @@
       "canonical_concept_id": "hodl:game",
       "canonical_slug": "hodl-wars",
       "parent_concept": null
-    },
-    "alias_candidates": [
-      "hodl wars"
-    ]
+    }
   },
   {
     "entity_id": "hodl_x_warriors",
-    "canonical_title": "hodl_warriors — Crypto Moonboys Wiki",
+    "canonical_title": "HODL X Warriors",
     "canonical_url": "/wiki/hodl-x-warriors.html",
     "category": "characters",
     "aliases": [
-      "hodl warriors crypto moonboys wiki",
-      "Hodl X Warriors"
+      "hodl warriors crypto moonboys wiki"
     ],
     "tags": [
       "hodl",
@@ -4891,7 +4666,7 @@
   },
   {
     "entity_id": "ian_harrison",
-    "canonical_title": "Ian Harrison — Crypto Moonboys Wiki",
+    "canonical_title": "Ian Harrison",
     "canonical_url": "/wiki/ian-harrison.html",
     "category": "characters",
     "aliases": [
@@ -4907,14 +4682,11 @@
     "source_urls": [
       "/wiki/ian-harrison.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "ian harrison"
-    ]
+    "brand": null
   },
   {
     "entity_id": "iris_7",
-    "canonical_title": "Iris-7 — Crypto Moonboys Wiki",
+    "canonical_title": "Iris-7",
     "canonical_url": "/wiki/iris-7.html",
     "category": "characters",
     "aliases": [
@@ -4936,7 +4708,7 @@
   },
   {
     "entity_id": "jillian_godsil",
-    "canonical_title": "Jillian Godsil — Crypto Moonboys Wiki",
+    "canonical_title": "Jillian Godsil",
     "canonical_url": "/wiki/jillian-godsil.html",
     "category": "factions",
     "aliases": [
@@ -4952,14 +4724,11 @@
     "source_urls": [
       "/wiki/jillian-godsil.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "jillian godsil"
-    ]
+    "brand": null
   },
   {
     "entity_id": "jodie_zoom_2000",
-    "canonical_title": "Jodie ZOOM 2000 — Crypto Moonboys Wiki",
+    "canonical_title": "Jodie ZOOM 2000",
     "canonical_url": "/wiki/jodie-zoom-2000.html",
     "category": "characters",
     "aliases": [],
@@ -4974,14 +4743,11 @@
     "source_urls": [
       "/wiki/jodie-zoom-2000.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "jodie zoom 2000"
-    ]
+    "brand": null
   },
   {
     "entity_id": "jonny_laurence_nelson_tag_records",
-    "canonical_title": "Jonny &amp; Laurence Nelson (TAG Records) — Crypto Moonboys Wiki",
+    "canonical_title": "Jonny &amp; Laurence Nelson (TAG Records)",
     "canonical_url": "/wiki/jonny-laurence-nelson-tag-records.html",
     "category": "factions",
     "aliases": [
@@ -5005,7 +4771,7 @@
   },
   {
     "entity_id": "lady_ink",
-    "canonical_title": "Lady-INK — Crypto Moonboys Wiki",
+    "canonical_title": "Lady-INK",
     "canonical_url": "/wiki/lady-ink.html",
     "category": "characters",
     "aliases": [
@@ -5028,7 +4794,7 @@
   },
   {
     "entity_id": "lfgk",
-    "canonical_title": "$LFGK — Crypto Moonboys Wiki",
+    "canonical_title": "$LFGK",
     "canonical_url": "/wiki/lfgk.html",
     "category": "factions",
     "aliases": [
@@ -5050,7 +4816,7 @@
   },
   {
     "entity_id": "loopfiend",
-    "canonical_title": "Loopfiend — Crypto Moonboys Wiki",
+    "canonical_title": "Loopfiend",
     "canonical_url": "/wiki/loopfiend.html",
     "category": "characters",
     "aliases": [
@@ -5065,14 +4831,11 @@
     "source_urls": [
       "/wiki/loopfiend.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "loopfiend"
-    ]
+    "brand": null
   },
   {
     "entity_id": "m1ntr_k1ll",
-    "canonical_title": "M1nTr K1ll — Crypto Moonboys Wiki",
+    "canonical_title": "M1nTr K1ll",
     "canonical_url": "/wiki/m1ntr-k1ll.html",
     "category": "characters",
     "aliases": [
@@ -5088,14 +4851,11 @@
     "source_urls": [
       "/wiki/m1ntr-k1ll.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "m1ntr k1ll"
-    ]
+    "brand": null
   },
   {
     "entity_id": "maidstone_base",
-    "canonical_title": "Maidstone Base — Crypto Moonboys Wiki",
+    "canonical_title": "Maidstone Base",
     "canonical_url": "/wiki/maidstone-base.html",
     "category": "factions",
     "aliases": [
@@ -5111,14 +4871,11 @@
     "source_urls": [
       "/wiki/maidstone-base.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "maidstone base"
-    ]
+    "brand": null
   },
   {
     "entity_id": "memecoins",
-    "canonical_title": "Meme Coins — Crypto Moonboys Wiki",
+    "canonical_title": "Meme Coins",
     "canonical_url": "/wiki/memecoins.html",
     "category": "factions",
     "aliases": [
@@ -5139,7 +4896,7 @@
   },
   {
     "entity_id": "metaverse_battles",
-    "canonical_title": "Metaverse Battles — Crypto Moonboys Wiki",
+    "canonical_title": "Metaverse Battles",
     "canonical_url": "/wiki/metaverse-battles.html",
     "category": "factions",
     "aliases": [
@@ -5155,14 +4912,11 @@
     "source_urls": [
       "/wiki/metaverse-battles.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "metaverse battles"
-    ]
+    "brand": null
   },
   {
     "entity_id": "metropolis",
-    "canonical_title": "metropolis — Crypto Moonboys Wiki",
+    "canonical_title": "Metropolis",
     "canonical_url": "/wiki/metropolis.html",
     "category": "factions",
     "aliases": [
@@ -5177,19 +4931,17 @@
     "source_urls": [
       "/wiki/metropolis.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "metropolis"
-    ]
+    "brand": null
   },
   {
     "entity_id": "midevilpunks",
-    "canonical_title": "midevilpunks — Crypto Moonboys Wiki",
+    "canonical_title": "MiDEViL PUNKS",
     "canonical_url": "/wiki/midevilpunks.html",
     "category": "factions",
     "aliases": [
       "midevilpunks crypto moonboys wiki",
-      "Midevil Hero Arena"
+      "Midevil Hero Arena",
+      "midevilpunks"
     ],
     "tags": [
       "midevilpunks",
@@ -5206,14 +4958,11 @@
       "canonical_concept_id": "graffpunks:game",
       "canonical_slug": "midevilpunks",
       "parent_concept": "graffpunks"
-    },
-    "alias_candidates": [
-      "midevilpunks"
-    ]
+    }
   },
   {
     "entity_id": "moon_mission",
-    "canonical_title": "Moon Mission — Crypto Moonboys Wiki",
+    "canonical_title": "Moon Mission",
     "canonical_url": "/wiki/moon-mission.html",
     "category": "factions",
     "aliases": [
@@ -5229,14 +4978,11 @@
     "source_urls": [
       "/wiki/moon-mission.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "moon mission"
-    ]
+    "brand": null
   },
   {
     "entity_id": "nbg",
-    "canonical_title": "nbg — Crypto Moonboys Wiki",
+    "canonical_title": "$NBG — NoBallGames Token | Crypto Moonboys Wiki",
     "canonical_url": "/wiki/nbg.html",
     "category": "characters",
     "aliases": [
@@ -5262,7 +5008,7 @@
   },
   {
     "entity_id": "nbg_token",
-    "canonical_title": "nbg_token — Crypto Moonboys Wiki",
+    "canonical_title": "nbg token",
     "canonical_url": "/wiki/nbg-token.html",
     "category": "factions",
     "aliases": [
@@ -5288,11 +5034,12 @@
   },
   {
     "entity_id": "nbgx_token",
-    "canonical_title": "NBGX Token — Crypto Moonboys Wiki",
+    "canonical_title": "NBGX Token",
     "canonical_url": "/wiki/nbgx-token.html",
     "category": "factions",
     "aliases": [
-      "nbgx token crypto moonboys wiki"
+      "nbgx token crypto moonboys wiki",
+      "Nbgx"
     ],
     "tags": [
       "nbgx",
@@ -5302,16 +5049,20 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/nbgx-token.html"
+      "/wiki/nbgx-token.html",
+      "/wiki/nbgx.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "nbgx token"
-    ]
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "mechanic",
+      "canonical_concept_id": "nbg:mechanic",
+      "canonical_slug": "nbgx-token",
+      "parent_concept": null
+    }
   },
   {
     "entity_id": "neftyblocks",
-    "canonical_title": "NeftyBlocks — Crypto Moonboys Wiki",
+    "canonical_title": "NeftyBlocks",
     "canonical_url": "/wiki/neftyblocks.html",
     "category": "factions",
     "aliases": [
@@ -5326,14 +5077,11 @@
     "source_urls": [
       "/wiki/neftyblocks.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "neftyblocks"
-    ]
+    "brand": null
   },
   {
     "entity_id": "nfthive",
-    "canonical_title": "NFTHive — Crypto Moonboys Wiki",
+    "canonical_title": "NFTHive",
     "canonical_url": "/wiki/nfthive.html",
     "category": "factions",
     "aliases": [
@@ -5348,14 +5096,11 @@
     "source_urls": [
       "/wiki/nfthive.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "nfthive"
-    ]
+    "brand": null
   },
   {
     "entity_id": "nfts",
-    "canonical_title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+    "canonical_title": "NFTs (Non-Fungible Tokens)",
     "canonical_url": "/wiki/nfts.html",
     "category": "characters",
     "aliases": [
@@ -5377,7 +5122,7 @@
   },
   {
     "entity_id": "ngmi_chronicles",
-    "canonical_title": "NGMI Chronicles — Crypto Moonboys Wiki",
+    "canonical_title": "NGMI Chronicles",
     "canonical_url": "/wiki/ngmi-chronicles.html",
     "category": "factions",
     "aliases": [
@@ -5393,14 +5138,11 @@
     "source_urls": [
       "/wiki/ngmi-chronicles.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "ngmi chronicles"
-    ]
+    "brand": null
   },
   {
     "entity_id": "nifty_crowns",
-    "canonical_title": "nifty_crowns — Crypto Moonboys Wiki",
+    "canonical_title": "nifty crowns",
     "canonical_url": "/wiki/nifty-crowns.html",
     "category": "factions",
     "aliases": [
@@ -5416,14 +5158,11 @@
     "source_urls": [
       "/wiki/nifty-crowns.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "nifty crowns"
-    ]
+    "brand": null
   },
   {
     "entity_id": "nifty_wizards",
-    "canonical_title": "Nifty Wizards — Crypto Moonboys Wiki",
+    "canonical_title": "Nifty Wizards",
     "canonical_url": "/wiki/nifty-wizards.html",
     "category": "factions",
     "aliases": [
@@ -5439,14 +5178,33 @@
     "source_urls": [
       "/wiki/nifty-wizards.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "nifty wizards"
-    ]
+    "brand": null
+  },
+  {
+    "entity_id": "noballgamess_nft_collection",
+    "canonical_title": "NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/noballgamess-nft-collection.html",
+    "category": "core",
+    "aliases": [
+      "noballgamess nft collection"
+    ],
+    "tags": [
+      "noballgames",
+      "nft",
+      "collection",
+      "tracker",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/noballgamess-nft-collection.html"
+    ],
+    "brand": null
   },
   {
     "entity_id": "null_the_prophet",
-    "canonical_title": "null_the_prophet — Crypto Moonboys Wiki",
+    "canonical_title": "NULL THE PROPHET",
     "canonical_url": "/wiki/null-the-prophet.html",
     "category": "characters",
     "aliases": [
@@ -5462,14 +5220,11 @@
     "source_urls": [
       "/wiki/null-the-prophet.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "null the prophet"
-    ]
+    "brand": null
   },
   {
     "entity_id": "paper_hands",
-    "canonical_title": "Paper Hands — Crypto Moonboys Wiki",
+    "canonical_title": "Paper Hands",
     "canonical_url": "/wiki/paper-hands.html",
     "category": "factions",
     "aliases": [
@@ -5485,14 +5240,11 @@
     "source_urls": [
       "/wiki/paper-hands.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "paper hands"
-    ]
+    "brand": null
   },
   {
     "entity_id": "patchwork",
-    "canonical_title": "Patchwork — Crypto Moonboys Wiki",
+    "canonical_title": "Patchwork",
     "canonical_url": "/wiki/patchwork.html",
     "category": "characters",
     "aliases": [
@@ -5507,14 +5259,11 @@
     "source_urls": [
       "/wiki/patchwork.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "patchwork"
-    ]
+    "brand": null
   },
   {
     "entity_id": "phygital_prints",
-    "canonical_title": "Phygital Prints — Crypto Moonboys Wiki",
+    "canonical_title": "Phygital Prints",
     "canonical_url": "/wiki/phygital-prints.html",
     "category": "factions",
     "aliases": [
@@ -5530,14 +5279,11 @@
     "source_urls": [
       "/wiki/phygital-prints.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "phygital prints"
-    ]
+    "brand": null
   },
   {
     "entity_id": "pixel_journey",
-    "canonical_title": "Pixel Journey — Crypto Moonboys Wiki",
+    "canonical_title": "Pixel Journey",
     "canonical_url": "/wiki/pixel-journey.html",
     "category": "factions",
     "aliases": [
@@ -5553,14 +5299,11 @@
     "source_urls": [
       "/wiki/pixel-journey.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "pixel journey"
-    ]
+    "brand": null
   },
   {
     "entity_id": "pixil_mini",
-    "canonical_title": "Pixil Mini — Crypto Moonboys Wiki",
+    "canonical_title": "Pixil Mini",
     "canonical_url": "/wiki/pixil-mini.html",
     "category": "characters",
     "aliases": [
@@ -5576,14 +5319,11 @@
     "source_urls": [
       "/wiki/pixil-mini.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "pixil mini"
-    ]
+    "brand": null
   },
   {
     "entity_id": "playable_nft_murals",
-    "canonical_title": "Playable NFT Murals — Crypto Moonboys Wiki",
+    "canonical_title": "Playable NFT Murals",
     "canonical_url": "/wiki/playable-nft-murals.html",
     "category": "factions",
     "aliases": [],
@@ -5598,14 +5338,11 @@
     "source_urls": [
       "/wiki/playable-nft-murals.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "playable nft murals"
-    ]
+    "brand": null
   },
   {
     "entity_id": "pmsl",
-    "canonical_title": "pmsl — Crypto Moonboys Wiki",
+    "canonical_title": "pmsl",
     "canonical_url": "/wiki/pmsl.html",
     "category": "factions",
     "aliases": [
@@ -5620,14 +5357,11 @@
     "source_urls": [
       "/wiki/pmsl.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "pmsl"
-    ]
+    "brand": null
   },
   {
     "entity_id": "pmsl_token",
-    "canonical_title": "PMSL Token — Crypto Moonboys Wiki",
+    "canonical_title": "PMSL Token",
     "canonical_url": "/wiki/pmsl-token.html",
     "category": "factions",
     "aliases": [
@@ -5643,14 +5377,11 @@
     "source_urls": [
       "/wiki/pmsl-token.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "pmsl token"
-    ]
+    "brand": null
   },
   {
     "entity_id": "punk_token",
-    "canonical_title": "punk_token — Crypto Moonboys Wiki",
+    "canonical_title": "$PUNK Token",
     "canonical_url": "/wiki/punk-token.html",
     "category": "characters",
     "aliases": [
@@ -5673,7 +5404,7 @@
   },
   {
     "entity_id": "pyralith",
-    "canonical_title": "PYRALITH — Crypto Moonboys Wiki",
+    "canonical_title": "PYRALITH",
     "canonical_url": "/wiki/pyralith.html",
     "category": "characters",
     "aliases": [
@@ -5688,14 +5419,11 @@
     "source_urls": [
       "/wiki/pyralith.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "pyralith"
-    ]
+    "brand": null
   },
   {
     "entity_id": "queen_sarah_p_fly",
-    "canonical_title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
+    "canonical_title": "Queen Sarah P-fly",
     "canonical_url": "/wiki/queen-sarah-p-fly.html",
     "category": "factions",
     "aliases": [],
@@ -5717,7 +5445,7 @@
   },
   {
     "entity_id": "quell",
-    "canonical_title": "Quell — Crypto Moonboys Wiki",
+    "canonical_title": "Quell",
     "canonical_url": "/wiki/quell.html",
     "category": "characters",
     "aliases": [
@@ -5732,14 +5460,11 @@
     "source_urls": [
       "/wiki/quell.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "quell"
-    ]
+    "brand": null
   },
   {
     "entity_id": "rave_relics",
-    "canonical_title": "rave_relics — Crypto Moonboys Wiki",
+    "canonical_title": "Rave Relics",
     "canonical_url": "/wiki/rave-relics.html",
     "category": "factions",
     "aliases": [
@@ -5755,14 +5480,11 @@
     "source_urls": [
       "/wiki/rave-relics.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "rave relics"
-    ]
+    "brand": null
   },
   {
     "entity_id": "rug_pull_wars",
-    "canonical_title": "Rug Pull Wars — Crypto Moonboys Wiki",
+    "canonical_title": "Rug Pull Wars",
     "canonical_url": "/wiki/rug-pull-wars.html",
     "category": "factions",
     "aliases": [],
@@ -5777,14 +5499,11 @@
     "source_urls": [
       "/wiki/rug-pull-wars.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "rug pull wars"
-    ]
+    "brand": null
   },
   {
     "entity_id": "rune_tag",
-    "canonical_title": "Rune Tag — Crypto Moonboys Wiki",
+    "canonical_title": "Rune Tag",
     "canonical_url": "/wiki/rune-tag.html",
     "category": "characters",
     "aliases": [
@@ -5800,14 +5519,11 @@
     "source_urls": [
       "/wiki/rune-tag.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "rune tag"
-    ]
+    "brand": null
   },
   {
     "entity_id": "rust2riches",
-    "canonical_title": "Rust2Riches — Crypto Moonboys Wiki",
+    "canonical_title": "Rust2Riches",
     "canonical_url": "/wiki/rust2riches.html",
     "category": "factions",
     "aliases": [
@@ -5822,18 +5538,16 @@
     "source_urls": [
       "/wiki/rust2riches.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "rust2riches"
-    ]
+    "brand": null
   },
   {
     "entity_id": "sacred_chain",
-    "canonical_title": "sacred_chain — Crypto Moonboys Wiki",
+    "canonical_title": "The Sacred Chain",
     "canonical_url": "/wiki/sacred-chain.html",
     "category": "factions",
     "aliases": [
-      "sacred chain crypto moonboys wiki"
+      "sacred chain crypto moonboys wiki",
+      "Sacred Chain"
     ],
     "tags": [
       "sacred",
@@ -5845,14 +5559,11 @@
     "source_urls": [
       "/wiki/sacred-chain.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "sacred chain"
-    ]
+    "brand": null
   },
   {
     "entity_id": "samaelexe",
-    "canonical_title": "Samael.exe — Crypto Moonboys Wiki",
+    "canonical_title": "Samael.exe",
     "canonical_url": "/wiki/samaelexe.html",
     "category": "characters",
     "aliases": [
@@ -5873,7 +5584,7 @@
   },
   {
     "entity_id": "satorebel",
-    "canonical_title": "SatoRebel — Crypto Moonboys Wiki",
+    "canonical_title": "SatoRebel",
     "canonical_url": "/wiki/satorebel.html",
     "category": "characters",
     "aliases": [
@@ -5888,14 +5599,11 @@
     "source_urls": [
       "/wiki/satorebel.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "satorebel"
-    ]
+    "brand": null
   },
   {
     "entity_id": "satoshi_scroll",
-    "canonical_title": "The Satoshi Scroll — Crypto Moonboys Wiki",
+    "canonical_title": "The Satoshi Scroll",
     "canonical_url": "/wiki/satoshi-scroll.html",
     "category": "factions",
     "aliases": [
@@ -5919,7 +5627,7 @@
   },
   {
     "entity_id": "seeding_rights",
-    "canonical_title": "Seeding Rights — Crypto Moonboys Wiki",
+    "canonical_title": "Seeding Rights",
     "canonical_url": "/wiki/seeding-rights.html",
     "category": "factions",
     "aliases": [
@@ -5935,14 +5643,11 @@
     "source_urls": [
       "/wiki/seeding-rights.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "seeding rights"
-    ]
+    "brand": null
   },
   {
     "entity_id": "sister_halcyon",
-    "canonical_title": "Sister Halcyon — Crypto Moonboys Wiki",
+    "canonical_title": "Sister Halcyon",
     "canonical_url": "/wiki/sister-halcyon.html",
     "category": "characters",
     "aliases": [
@@ -5958,14 +5663,11 @@
     "source_urls": [
       "/wiki/sister-halcyon.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "sister halcyon"
-    ]
+    "brand": null
   },
   {
     "entity_id": "sneakar",
-    "canonical_title": "sneakar — Crypto Moonboys Wiki",
+    "canonical_title": "sneakar",
     "canonical_url": "/wiki/sneakar.html",
     "category": "factions",
     "aliases": [
@@ -5980,14 +5682,11 @@
     "source_urls": [
       "/wiki/sneakar.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "sneakar"
-    ]
+    "brand": null
   },
   {
     "entity_id": "snipey_d_man_sirus",
-    "canonical_title": "Snipey 'D-Man' Sirus — Crypto Moonboys Wiki",
+    "canonical_title": "Snipey 'D-Man' Sirus",
     "canonical_url": "/wiki/snipey-d-man-sirus.html",
     "category": "characters",
     "aliases": [],
@@ -6009,7 +5708,7 @@
   },
   {
     "entity_id": "solana",
-    "canonical_title": "Solana (SOL) — Crypto Moonboys Wiki",
+    "canonical_title": "Solana (SOL)",
     "canonical_url": "/wiki/solana.html",
     "category": "factions",
     "aliases": [
@@ -6030,7 +5729,7 @@
   },
   {
     "entity_id": "spirit_borns",
-    "canonical_title": "Spirit Borns — Crypto Moonboys Wiki",
+    "canonical_title": "Spirit Borns",
     "canonical_url": "/wiki/spirit-borns.html",
     "category": "factions",
     "aliases": [
@@ -6046,14 +5745,11 @@
     "source_urls": [
       "/wiki/spirit-borns.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "spirit borns"
-    ]
+    "brand": null
   },
   {
     "entity_id": "spraycode_writcode_mechanics",
-    "canonical_title": "Spraycode &amp; Writcode Mechanics — Crypto Moonboys Wiki",
+    "canonical_title": "Spraycode &amp; Writcode Mechanics",
     "canonical_url": "/wiki/spraycode-writcode-mechanics.html",
     "category": "factions",
     "aliases": [
@@ -6075,7 +5771,7 @@
   },
   {
     "entity_id": "squeaky_pinks_enforcers",
-    "canonical_title": "Squeaky Pinks Enforcers — Crypto Moonboys Wiki",
+    "canonical_title": "Squeaky Pinks Enforcers",
     "canonical_url": "/wiki/squeaky-pinks-enforcers.html",
     "category": "factions",
     "aliases": [],
@@ -6090,18 +5786,16 @@
     "source_urls": [
       "/wiki/squeaky-pinks-enforcers.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "squeaky pinks enforcers"
-    ]
+    "brand": null
   },
   {
     "entity_id": "staking",
-    "canonical_title": "staking — Crypto Moonboys Wiki",
+    "canonical_title": "Crypto Staking",
     "canonical_url": "/wiki/staking.html",
     "category": "characters",
     "aliases": [
-      "staking crypto moonboys wiki"
+      "staking crypto moonboys wiki",
+      "staking"
     ],
     "tags": [
       "staking",
@@ -6112,14 +5806,11 @@
     "source_urls": [
       "/wiki/staking.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "staking"
-    ]
+    "brand": null
   },
   {
     "entity_id": "stikfamwars",
-    "canonical_title": "stikfamwars — Crypto Moonboys Wiki",
+    "canonical_title": "STIKFAMWARS",
     "canonical_url": "/wiki/stikfamwars.html",
     "category": "factions",
     "aliases": [
@@ -6134,14 +5825,11 @@
     "source_urls": [
       "/wiki/stikfamwars.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "stikfamwars"
-    ]
+    "brand": null
   },
   {
     "entity_id": "storm_struggle",
-    "canonical_title": "Storm Struggle — Crypto Moonboys Wiki",
+    "canonical_title": "Storm Struggle",
     "canonical_url": "/wiki/storm-struggle.html",
     "category": "factions",
     "aliases": [
@@ -6157,14 +5845,11 @@
     "source_urls": [
       "/wiki/storm-struggle.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "storm struggle"
-    ]
+    "brand": null
   },
   {
     "entity_id": "street_kingdoms",
-    "canonical_title": "Street Kingdoms — Crypto Moonboys Wiki",
+    "canonical_title": "Street Kingdoms",
     "canonical_url": "/wiki/street-kingdoms.html",
     "category": "factions",
     "aliases": [
@@ -6180,14 +5865,11 @@
     "source_urls": [
       "/wiki/street-kingdoms.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "street kingdoms"
-    ]
+    "brand": null
   },
   {
     "entity_id": "tacoswap",
-    "canonical_title": "TacoSwap — Crypto Moonboys Wiki",
+    "canonical_title": "TacoSwap",
     "canonical_url": "/wiki/tacoswap.html",
     "category": "factions",
     "aliases": [
@@ -6202,14 +5884,11 @@
     "source_urls": [
       "/wiki/tacoswap.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "tacoswap"
-    ]
+    "brand": null
   },
   {
     "entity_id": "tagzcoin",
-    "canonical_title": "TAGZcoin — Crypto Moonboys Wiki",
+    "canonical_title": "TAGZcoin",
     "canonical_url": "/wiki/tagzcoin.html",
     "category": "factions",
     "aliases": [
@@ -6224,18 +5903,16 @@
     "source_urls": [
       "/wiki/tagzcoin.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "tagzcoin"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_allcity_bulls",
-    "canonical_title": "The AllCity Bulls — Crypto Moonboys Wiki",
+    "canonical_title": "The AllCity Bulls",
     "canonical_url": "/wiki/the-allcity-bulls.html",
     "category": "factions",
     "aliases": [
-      "AllCity Bulls — Crypto Moonboys Wiki"
+      "AllCity Bulls — Crypto Moonboys Wiki",
+      "AllCity Bulls"
     ],
     "tags": [
       "allcity",
@@ -6249,17 +5926,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "allcity bulls crypto moonboys wiki",
-      "the allcity bulls"
+      "allcity bulls crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_aztec_raiders",
-    "canonical_title": "The AZTEC RAIDERS — Crypto Moonboys Wiki",
+    "canonical_title": "The AZTEC RAIDERS",
     "canonical_url": "/wiki/the-aztec-raiders.html",
     "category": "factions",
     "aliases": [
-      "AZTEC RAIDERS — Crypto Moonboys Wiki"
+      "AZTEC RAIDERS — Crypto Moonboys Wiki",
+      "AZTEC RAIDERS"
     ],
     "tags": [
       "aztec",
@@ -6273,17 +5950,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "aztec raiders crypto moonboys wiki",
-      "the aztec raiders"
+      "aztec raiders crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_bally_boys",
-    "canonical_title": "The BALLY BOYS — Crypto Moonboys Wiki",
+    "canonical_title": "The BALLY BOYS",
     "canonical_url": "/wiki/the-bally-boys.html",
     "category": "factions",
     "aliases": [
-      "BALLY BOYS — Crypto Moonboys Wiki"
+      "BALLY BOYS — Crypto Moonboys Wiki",
+      "BALLY BOYS"
     ],
     "tags": [
       "bally",
@@ -6297,13 +5974,12 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "bally boys crypto moonboys wiki",
-      "the bally boys"
+      "bally boys crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_bitcoin_kid_army",
-    "canonical_title": "The Bitcoin Kid Army — Crypto Moonboys Wiki",
+    "canonical_title": "The Bitcoin Kid Army",
     "canonical_url": "/wiki/the-bitcoin-kid-army.html",
     "category": "factions",
     "aliases": [],
@@ -6318,18 +5994,16 @@
     "source_urls": [
       "/wiki/the-bitcoin-kid-army.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "the bitcoin kid army"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_blockchain_furies",
-    "canonical_title": "The BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
+    "canonical_title": "The BLOCKCHAIN FURIES",
     "canonical_url": "/wiki/the-blockchain-furies.html",
     "category": "factions",
     "aliases": [
-      "BLOCKCHAIN FURIES — Crypto Moonboys Wiki"
+      "BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
+      "BLOCKCHAIN FURIES"
     ],
     "tags": [
       "blockchain",
@@ -6343,17 +6017,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "blockchain furies crypto moonboys wiki",
-      "the blockchain furies"
+      "blockchain furies crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_blockstars",
-    "canonical_title": "The BLOCKSTARS — Crypto Moonboys Wiki",
+    "canonical_title": "The BLOCKSTARS",
     "canonical_url": "/wiki/the-blockstars.html",
     "category": "factions",
     "aliases": [
-      "BLOCKSTARS — Crypto Moonboys Wiki"
+      "BLOCKSTARS — Crypto Moonboys Wiki",
+      "BLOCKSTARS"
     ],
     "tags": [
       "blockstars",
@@ -6366,17 +6040,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "blockstars crypto moonboys wiki",
-      "the blockstars"
+      "blockstars crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_chain_scribes",
-    "canonical_title": "The CHAIN SCRIBES — Crypto Moonboys Wiki",
+    "canonical_title": "The CHAIN SCRIBES",
     "canonical_url": "/wiki/the-chain-scribes.html",
     "category": "factions",
     "aliases": [
-      "CHAIN SCRIBES — Crypto Moonboys Wiki"
+      "CHAIN SCRIBES — Crypto Moonboys Wiki",
+      "CHAIN SCRIBES"
     ],
     "tags": [
       "chain",
@@ -6390,17 +6064,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "chain scribes crypto moonboys wiki",
-      "the chain scribes"
+      "chain scribes crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_cleanupcentr",
-    "canonical_title": "The CleanupCentr — Crypto Moonboys Wiki",
+    "canonical_title": "The CleanupCentr",
     "canonical_url": "/wiki/the-cleanupcentr.html",
     "category": "factions",
     "aliases": [
-      "CleanupCentr — Crypto Moonboys Wiki"
+      "CleanupCentr — Crypto Moonboys Wiki",
+      "CleanupCentr"
     ],
     "tags": [
       "cleanupcentr",
@@ -6413,17 +6087,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "cleanupcentr crypto moonboys wiki",
-      "the cleanupcentr"
+      "cleanupcentr crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_code_alchemists",
-    "canonical_title": "The CODE ALCHEMISTS — Crypto Moonboys Wiki",
+    "canonical_title": "The CODE ALCHEMISTS",
     "canonical_url": "/wiki/the-code-alchemists.html",
     "category": "factions",
     "aliases": [
-      "CODE ALCHEMISTS — Crypto Moonboys Wiki"
+      "CODE ALCHEMISTS — Crypto Moonboys Wiki",
+      "CODE ALCHEMISTS"
     ],
     "tags": [
       "code",
@@ -6437,18 +6111,18 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "code alchemists crypto moonboys wiki",
-      "the code alchemists"
+      "code alchemists crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_crypto_stoned_boys",
-    "canonical_title": "The CRYPTO STONED BOYS — Crypto Moonboys Wiki",
+    "canonical_title": "The CRYPTO STONED BOYS",
     "canonical_url": "/wiki/the-crypto-stoned-boys.html",
     "category": "factions",
     "aliases": [
       "CRYPTO STONED BOYS — Crypto Moonboys Wiki",
-      "crypto stoned boys moonboys wiki"
+      "crypto stoned boys moonboys wiki",
+      "CRYPTO STONED BOYS"
     ],
     "tags": [
       "crypto",
@@ -6460,18 +6134,16 @@
     "source_urls": [
       "/wiki/the-crypto-stoned-boys.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "the crypto stoned boys"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_ducky_boys",
-    "canonical_title": "The DUCKY BOYS — Crypto Moonboys Wiki",
+    "canonical_title": "The DUCKY BOYS",
     "canonical_url": "/wiki/the-ducky-boys.html",
     "category": "factions",
     "aliases": [
-      "DUCKY BOYS — Crypto Moonboys Wiki"
+      "DUCKY BOYS — Crypto Moonboys Wiki",
+      "DUCKY BOYS"
     ],
     "tags": [
       "ducky",
@@ -6485,17 +6157,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "ducky boys crypto moonboys wiki",
-      "the ducky boys"
+      "ducky boys crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_evm_punks",
-    "canonical_title": "The EVM PUNKS — Crypto Moonboys Wiki",
+    "canonical_title": "The EVM PUNKS",
     "canonical_url": "/wiki/the-evm-punks.html",
     "category": "factions",
     "aliases": [
-      "EVM PUNKS — Crypto Moonboys Wiki"
+      "EVM PUNKS — Crypto Moonboys Wiki",
+      "EVM PUNKS"
     ],
     "tags": [
       "evm",
@@ -6509,17 +6181,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "evm punks crypto moonboys wiki",
-      "the evm punks"
+      "evm punks crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_finance_guild",
-    "canonical_title": "The FINANCE GUILD — Crypto Moonboys Wiki",
+    "canonical_title": "The Finance Guild",
     "canonical_url": "/wiki/the-finance-guild.html",
     "category": "factions",
     "aliases": [
-      "FINANCE GUILD — Crypto Moonboys Wiki"
+      "FINANCE GUILD — Crypto Moonboys Wiki",
+      "Finance Guild"
     ],
     "tags": [
       "finance",
@@ -6533,17 +6205,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "finance guild crypto moonboys wiki",
-      "the finance guild"
+      "finance guild crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_gasless_ghosts",
-    "canonical_title": "The GASLESS GHOSTS — Crypto Moonboys Wiki",
+    "canonical_title": "The GASLESS GHOSTS",
     "canonical_url": "/wiki/the-gasless-ghosts.html",
     "category": "factions",
     "aliases": [
-      "GASLESS GHOSTS — Crypto Moonboys Wiki"
+      "GASLESS GHOSTS — Crypto Moonboys Wiki",
+      "GASLESS GHOSTS"
     ],
     "tags": [
       "gasless",
@@ -6557,17 +6229,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "gasless ghosts crypto moonboys wiki",
-      "the gasless ghosts"
+      "gasless ghosts crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_great_dip",
-    "canonical_title": "The Great Dip — Crypto Moonboys Wiki",
+    "canonical_title": "The Great Dip",
     "canonical_url": "/wiki/the-great-dip.html",
     "category": "factions",
     "aliases": [
-      "Great Dip — Crypto Moonboys Wiki"
+      "Great Dip — Crypto Moonboys Wiki",
+      "Great Dip"
     ],
     "tags": [
       "great",
@@ -6581,17 +6253,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "great dip crypto moonboys wiki",
-      "the great dip"
+      "great dip crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_hard_fork_rockers",
-    "canonical_title": "The HARD FORK ROCKERS — Crypto Moonboys Wiki",
+    "canonical_title": "The HARD FORK ROCKERS",
     "canonical_url": "/wiki/the-hard-fork-rockers.html",
     "category": "factions",
     "aliases": [
-      "HARD FORK ROCKERS — Crypto Moonboys Wiki"
+      "HARD FORK ROCKERS — Crypto Moonboys Wiki",
+      "HARD FORK ROCKERS"
     ],
     "tags": [
       "hard",
@@ -6604,18 +6276,16 @@
     "source_urls": [
       "/wiki/the-hard-fork-rockers.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "the hard fork rockers"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_high_hats",
-    "canonical_title": "The High Hats — Crypto Moonboys Wiki",
+    "canonical_title": "The High Hats",
     "canonical_url": "/wiki/the-high-hats.html",
     "category": "factions",
     "aliases": [
-      "High Hats — Crypto Moonboys Wiki"
+      "High Hats — Crypto Moonboys Wiki",
+      "High Hats"
     ],
     "tags": [
       "high",
@@ -6629,17 +6299,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "high hats crypto moonboys wiki",
-      "the high hats"
+      "high hats crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_information_mercenaries",
-    "canonical_title": "The INFORMATION MERCENARIES — Crypto Moonboys Wiki",
+    "canonical_title": "The INFORMATION MERCENARIES",
     "canonical_url": "/wiki/the-information-mercenaries.html",
     "category": "factions",
     "aliases": [
-      "INFORMATION MERCENARIES — Crypto Moonboys Wiki"
+      "INFORMATION MERCENARIES — Crypto Moonboys Wiki",
+      "INFORMATION MERCENARIES"
     ],
     "tags": [
       "information",
@@ -6653,17 +6323,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "information mercenaries crypto moonboys wiki",
-      "the information mercenaries"
+      "information mercenaries crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_moonlords",
-    "canonical_title": "The MOONLORDS — Crypto Moonboys Wiki",
+    "canonical_title": "The MOONLORDS",
     "canonical_url": "/wiki/the-moonlords.html",
     "category": "factions",
     "aliases": [
-      "MOONLORDS — Crypto Moonboys Wiki"
+      "MOONLORDS — Crypto Moonboys Wiki",
+      "MOONLORDS"
     ],
     "tags": [
       "moonlords",
@@ -6676,18 +6346,18 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "moonlords crypto moonboys wiki",
-      "the moonlords"
+      "moonlords crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_nice_easy_bois",
-    "canonical_title": "The NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
+    "canonical_title": "The NICE &amp; EASY BOIS",
     "canonical_url": "/wiki/the-nice-easy-bois.html",
     "category": "factions",
     "aliases": [
       "NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
-      "the nice easy bois"
+      "the nice easy bois",
+      "NICE &amp; EASY BOIS"
     ],
     "tags": [
       "nice",
@@ -6705,11 +6375,12 @@
   },
   {
     "entity_id": "the_nomad_bears",
-    "canonical_title": "The Nomad Bears — Crypto Moonboys Wiki",
+    "canonical_title": "The Nomad Bears",
     "canonical_url": "/wiki/the-nomad-bears.html",
     "category": "factions",
     "aliases": [
-      "Nomad Bears — Crypto Moonboys Wiki"
+      "Nomad Bears — Crypto Moonboys Wiki",
+      "Nomad Bears"
     ],
     "tags": [
       "nomad",
@@ -6723,17 +6394,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "nomad bears crypto moonboys wiki",
-      "the nomad bears"
+      "nomad bears crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_og_pixel_saints",
-    "canonical_title": "The OG PIXEL SAINTS — Crypto Moonboys Wiki",
+    "canonical_title": "The OG PIXEL SAINTS",
     "canonical_url": "/wiki/the-og-pixel-saints.html",
     "category": "factions",
     "aliases": [
-      "OG PIXEL SAINTS — Crypto Moonboys Wiki"
+      "OG PIXEL SAINTS — Crypto Moonboys Wiki",
+      "OG PIXEL SAINTS"
     ],
     "tags": [
       "og",
@@ -6746,18 +6417,16 @@
     "source_urls": [
       "/wiki/the-og-pixel-saints.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "the og pixel saints"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_princess",
-    "canonical_title": "The Princess — Crypto Moonboys Wiki",
+    "canonical_title": "The Princess",
     "canonical_url": "/wiki/the-princess.html",
     "category": "characters",
     "aliases": [
-      "Princess — Crypto Moonboys Wiki"
+      "Princess — Crypto Moonboys Wiki",
+      "Princess"
     ],
     "tags": [
       "princess",
@@ -6770,17 +6439,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "princess crypto moonboys wiki",
-      "the princess"
+      "princess crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_rugpull_miners",
-    "canonical_title": "The RUGPULL MINERS — Crypto Moonboys Wiki",
+    "canonical_title": "The RUGPULL MINERS",
     "canonical_url": "/wiki/the-rugpull-miners.html",
     "category": "factions",
     "aliases": [
-      "RUGPULL MINERS — Crypto Moonboys Wiki"
+      "RUGPULL MINERS — Crypto Moonboys Wiki",
+      "RUGPULL MINERS"
     ],
     "tags": [
       "rugpull",
@@ -6794,17 +6463,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "rugpull miners crypto moonboys wiki",
-      "the rugpull miners"
+      "rugpull miners crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_salvagers",
-    "canonical_title": "The SALVAGERS — Crypto Moonboys Wiki",
+    "canonical_title": "The SALVAGERS",
     "canonical_url": "/wiki/the-salvagers.html",
     "category": "factions",
     "aliases": [
-      "SALVAGERS — Crypto Moonboys Wiki"
+      "SALVAGERS — Crypto Moonboys Wiki",
+      "SALVAGERS"
     ],
     "tags": [
       "salvagers",
@@ -6817,17 +6486,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "salvagers crypto moonboys wiki",
-      "the salvagers"
+      "salvagers crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_shard_mothers_of_manhattan",
-    "canonical_title": "The SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
+    "canonical_title": "The SHARD MOTHERS of MANHATTAN",
     "canonical_url": "/wiki/the-shard-mothers-of-manhattan.html",
     "category": "factions",
     "aliases": [
-      "SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki"
+      "SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
+      "SHARD MOTHERS of MANHATTAN"
     ],
     "tags": [
       "shard",
@@ -6840,18 +6509,16 @@
     "source_urls": [
       "/wiki/the-shard-mothers-of-manhattan.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "the shard mothers of manhattan"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_squeaky_pinks",
-    "canonical_title": "The Squeaky Pinks — Crypto Moonboys Wiki",
+    "canonical_title": "The Squeaky Pinks",
     "canonical_url": "/wiki/the-squeaky-pinks.html",
     "category": "factions",
     "aliases": [
-      "Squeaky Pinks — Crypto Moonboys Wiki"
+      "Squeaky Pinks — Crypto Moonboys Wiki",
+      "Squeaky Pinks"
     ],
     "tags": [
       "squeaky",
@@ -6865,17 +6532,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "squeaky pinks crypto moonboys wiki",
-      "the squeaky pinks"
+      "squeaky pinks crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_tuskon_ogs",
-    "canonical_title": "The TUSKON OGS — Crypto Moonboys Wiki",
+    "canonical_title": "The TUSKON OGS",
     "canonical_url": "/wiki/the-tuskon-ogs.html",
     "category": "factions",
     "aliases": [
-      "TUSKON OGS — Crypto Moonboys Wiki"
+      "TUSKON OGS — Crypto Moonboys Wiki",
+      "TUSKON OGS"
     ],
     "tags": [
       "tuskon",
@@ -6889,17 +6556,17 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "the tuskon ogs",
       "tuskon ogs crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "the_whitewasher",
-    "canonical_title": "The Whitewasher — Crypto Moonboys Wiki",
+    "canonical_title": "The Whitewasher",
     "canonical_url": "/wiki/the-whitewasher.html",
     "category": "characters",
     "aliases": [
-      "Whitewasher — Crypto Moonboys Wiki"
+      "Whitewasher — Crypto Moonboys Wiki",
+      "Whitewasher"
     ],
     "tags": [
       "whitewasher",
@@ -6912,13 +6579,12 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "the whitewasher",
       "whitewasher crypto moonboys wiki"
     ]
   },
   {
     "entity_id": "thera_9",
-    "canonical_title": "Thera-9 — Crypto Moonboys Wiki",
+    "canonical_title": "Thera-9",
     "canonical_url": "/wiki/thera-9.html",
     "category": "characters",
     "aliases": [
@@ -6940,7 +6606,7 @@
   },
   {
     "entity_id": "thorne_the_architect",
-    "canonical_title": "Thorne The Architect — Crypto Moonboys Wiki",
+    "canonical_title": "Thorne The Architect",
     "canonical_url": "/wiki/thorne-the-architect.html",
     "category": "characters",
     "aliases": [
@@ -6956,14 +6622,11 @@
     "source_urls": [
       "/wiki/thorne-the-architect.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "thorne the architect"
-    ]
+    "brand": null
   },
   {
     "entity_id": "tokenomics",
-    "canonical_title": "Tokenomics — Crypto Moonboys Wiki",
+    "canonical_title": "Tokenomics",
     "canonical_url": "/wiki/tokenomics.html",
     "category": "factions",
     "aliases": [
@@ -6978,14 +6641,11 @@
     "source_urls": [
       "/wiki/tokenomics.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "tokenomics"
-    ]
+    "brand": null
   },
   {
     "entity_id": "trevor_fung",
-    "canonical_title": "Trevor Fung — Crypto Moonboys Wiki",
+    "canonical_title": "Trevor Fung",
     "canonical_url": "/wiki/trevor-fung.html",
     "category": "factions",
     "aliases": [
@@ -7001,14 +6661,11 @@
     "source_urls": [
       "/wiki/trevor-fung.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "trevor fung"
-    ]
+    "brand": null
   },
   {
     "entity_id": "triple_fork_event",
-    "canonical_title": "Triple Fork Event — Crypto Moonboys Wiki",
+    "canonical_title": "Triple Fork Event",
     "canonical_url": "/wiki/triple-fork-event.html",
     "category": "factions",
     "aliases": [],
@@ -7023,14 +6680,11 @@
     "source_urls": [
       "/wiki/triple-fork-event.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "triple fork event"
-    ]
+    "brand": null
   },
   {
     "entity_id": "wagmi_prophecy",
-    "canonical_title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
+    "canonical_title": "The WAGMI Prophecy",
     "canonical_url": "/wiki/wagmi-prophecy.html",
     "category": "characters",
     "aliases": [
@@ -7054,7 +6708,7 @@
   },
   {
     "entity_id": "wallets",
-    "canonical_title": "Crypto Wallets — Crypto Moonboys Wiki",
+    "canonical_title": "Crypto Wallets",
     "canonical_url": "/wiki/wallets.html",
     "category": "characters",
     "aliases": [
@@ -7074,7 +6728,7 @@
   },
   {
     "entity_id": "wax_blockchain",
-    "canonical_title": "WAX Blockchain — Crypto Moonboys Wiki",
+    "canonical_title": "WAX Blockchain",
     "canonical_url": "/wiki/wax-blockchain.html",
     "category": "factions",
     "aliases": [
@@ -7090,14 +6744,11 @@
     "source_urls": [
       "/wiki/wax-blockchain.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "wax blockchain"
-    ]
+    "brand": null
   },
   {
     "entity_id": "wax_dexs_defi",
-    "canonical_title": "WAX DEXs & DeFi — Crypto Moonboys Wiki",
+    "canonical_title": "WAX DEXs & DeFi",
     "canonical_url": "/wiki/wax-dexs-defi.html",
     "category": "factions",
     "aliases": [
@@ -7118,7 +6769,7 @@
   },
   {
     "entity_id": "wax_nft_marketplaces",
-    "canonical_title": "WAX NFT Marketplaces — Crypto Moonboys Wiki",
+    "canonical_title": "WAX NFT Marketplaces",
     "canonical_url": "/wiki/wax-nft-marketplaces.html",
     "category": "factions",
     "aliases": [],
@@ -7133,14 +6784,11 @@
     "source_urls": [
       "/wiki/wax-nft-marketplaces.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "wax nft marketplaces"
-    ]
+    "brand": null
   },
   {
     "entity_id": "wax_pepe",
-    "canonical_title": "WAX PEPE — Crypto Moonboys Wiki",
+    "canonical_title": "WAX PEPE",
     "canonical_url": "/wiki/wax-pepe.html",
     "category": "factions",
     "aliases": [
@@ -7156,14 +6804,11 @@
     "source_urls": [
       "/wiki/wax-pepe.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "wax pepe"
-    ]
+    "brand": null
   },
   {
     "entity_id": "waxp",
-    "canonical_title": "$WAXP — Crypto Moonboys Wiki",
+    "canonical_title": "$WAXP",
     "canonical_url": "/wiki/waxp.html",
     "category": "factions",
     "aliases": [
@@ -7185,7 +6830,7 @@
   },
   {
     "entity_id": "waxp_exchange",
-    "canonical_title": "WAXP Exchange — Crypto Moonboys Wiki",
+    "canonical_title": "WAXP Exchange",
     "canonical_url": "/wiki/waxp-exchange.html",
     "category": "factions",
     "aliases": [
@@ -7201,14 +6846,11 @@
     "source_urls": [
       "/wiki/waxp-exchange.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "waxp exchange"
-    ]
+    "brand": null
   },
   {
     "entity_id": "web3",
-    "canonical_title": "Web3 — Crypto Moonboys Wiki",
+    "canonical_title": "Web3",
     "canonical_url": "/wiki/web3.html",
     "category": "factions",
     "aliases": [
@@ -7223,14 +6865,11 @@
     "source_urls": [
       "/wiki/web3.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "web3"
-    ]
+    "brand": null
   },
   {
     "entity_id": "whale_lords",
-    "canonical_title": "The Whale Lords — Crypto Moonboys Wiki",
+    "canonical_title": "The Whale Lords",
     "canonical_url": "/wiki/whale-lords.html",
     "category": "factions",
     "aliases": [
@@ -7254,7 +6893,7 @@
   },
   {
     "entity_id": "wuffi",
-    "canonical_title": "WUFFI / $WUF — Crypto Moonboys Wiki",
+    "canonical_title": "WUFFI / $WUF",
     "canonical_url": "/wiki/wuffi.html",
     "category": "factions",
     "aliases": [
@@ -7275,7 +6914,7 @@
   },
   {
     "entity_id": "xrp_kids",
-    "canonical_title": "xrp_kids — Crypto Moonboys Wiki",
+    "canonical_title": "xrp kids",
     "canonical_url": "/wiki/xrp-kids.html",
     "category": "characters",
     "aliases": [
@@ -7291,14 +6930,11 @@
     "source_urls": [
       "/wiki/xrp-kids.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "xrp kids"
-    ]
+    "brand": null
   },
   {
     "entity_id": "xrp_ledger",
-    "canonical_title": "XRP Ledger — Crypto Moonboys Wiki",
+    "canonical_title": "XRP Ledger",
     "canonical_url": "/wiki/xrp-ledger.html",
     "category": "factions",
     "aliases": [
@@ -7314,9 +6950,6 @@
     "source_urls": [
       "/wiki/xrp-ledger.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "xrp ledger"
-    ]
+    "brand": null
   }
 ]

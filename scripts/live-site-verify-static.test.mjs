@@ -116,7 +116,7 @@ const btqmBlock = source.match(/BTQM_LIVE_ASSET_CHECKS\s*=\s*\[[\s\S]*?\];/);
 assert.ok(btqmBlock, 'BTQM_LIVE_ASSET_CHECKS constant must be present');
 assert.ok(
   !btqmBlock[0].includes('.png.base64'),
-  'BTQM live asset checks must not reference .png.base64 paths (Pages hydrates to .png)',
+  'BTQM live asset checks must not reference .png.base64 paths (Pages publishes committed .png assets)',
 );
 // All BTQM path entries must end with .png
 const btqmPaths = [...btqmBlock[0].matchAll(/path:\s*'([^']+)'/g)].map(m => m[1]);

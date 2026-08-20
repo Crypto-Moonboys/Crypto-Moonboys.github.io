@@ -126,15 +126,15 @@ assert.equal(
   'node scripts/hydrate-btqm-generated-assets.mjs',
   'package.json must expose a local BTQM asset hydration command',
 );
-assert.match(
+assert.doesNotMatch(
   deployPagesWorkflow,
-  /node scripts\/hydrate-btqm-generated-assets\.mjs --clean-base64/,
-  'Pages deploy must hydrate BTQM PNGs through the shared script and clean encoded payloads from the artifact',
+  /hydrate-btqm-generated-assets|hydrate-invaders-player-ship|playwright install|ci:visual|ci:wiki|generate-publishing-surfaces|graph-publishing-integrity/u,
+  'Pages deploy must package committed static assets without hydration, Playwright, or anti-drift checks',
 );
-assert.match(
+assert.doesNotMatch(
   gitignore,
-  /art\/btqm\/generated\/\*\*\/\*\.png/,
-  'locally hydrated BTQM generated PNG files must be ignored',
+  /art\/btqm\/generated\/\*\*\/\*\.png|games\/invaders-3008\/assets\/ships\/player-ship\.png/u,
+  'runtime-required generated PNG files must not be ignored because Pages deploy no longer hydrates them',
 );
 assert.match(hydrateScript, /--clean-base64/, 'hydration script must support deploy cleanup mode');
 assert.match(hydrateScript, /endsWith\(['"]\.png\.base64['"]\)/, 'hydration script must walk encoded PNG payloads');
@@ -145,8 +145,6 @@ const trackedGeneratedFiles = execFileSync('git', ['ls-files', generatedAssetRoo
   .split('\n')
   .filter(Boolean);
 const committedBinaryAssets = trackedGeneratedFiles.filter((file) => binaryAssetExtensions.has(extensionForAssetCheck(file)));
-assert.deepEqual(committedBinaryAssets, [], 'BTQM generated assets must be text-reviewable; do not commit binary image/audio files under art/btqm/generated');
-
 
 const generatedTilesetAssets = manifest.assets.filter((asset) => asset.status === 'generated' && asset.category === 'tilesets');
 assert.equal(generatedTilesetAssets.length, 6, 'all generated tileset assets should be present');
@@ -160,6 +158,13 @@ for (const asset of generatedTilesetAssets) {
 }
 
 const generatedManifestAssets = manifest.assets.filter((asset) => asset.status === 'generated');
+const expectedCommittedRuntimePngs = generatedManifestAssets.map((asset) => asset.output).sort();
+assert.deepEqual(
+  committedBinaryAssets.sort(),
+  expectedCommittedRuntimePngs,
+  'BTQM runtime PNG assets must be committed because Pages deploy no longer hydrates them',
+);
+
 const shaByCategory = new Map();
 for (const asset of generatedManifestAssets) {
   assert.ok(asset.encodedOutput, `${asset.id} generated record must include encodedOutput`);
@@ -169,6 +174,7 @@ for (const asset of generatedManifestAssets) {
     `${asset.id} encodedOutput must hydrate to asset.output`,
   );
   assert.ok(existsSync(asset.encodedOutput), `${asset.id} encodedOutput must exist: ${asset.encodedOutput}`);
+  assert.ok(existsSync(asset.output), `${asset.id} runtime PNG must be committed for Pages deploy: ${asset.output}`);
 
   const decoded = Buffer.from(readFileSync(asset.encodedOutput, 'utf8').replace(/\s+/gu, ''), 'base64');
   assert.ok(decoded.subarray(0, pngMagic.length).equals(pngMagic), `${asset.id} encodedOutput must decode to PNG bytes`);

@@ -5,19 +5,19 @@
   "nft_collection_pages": 1,
   "indexed_pages": 325,
   "search_index_pages": 325,
-  "graph_nodes": 323,
+  "graph_nodes": 325,
   "sitemap_wiki_urls": 325,
   "total_categories": 19,
   "article_count": 331,
   "totalArticles": 331,
-  "entity_count": 323,
-  "totalEntities": 323,
+  "entity_count": 325,
+  "totalEntities": 325,
   "category_count": 19,
   "totalCategories": 19,
-  "total_entities": 323,
+  "total_entities": 325,
   "canonical_hub": "/search.html",
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-07-27T19:38:14.000Z"
+  "last_updated": "2026-08-20T02:50:25.178Z"
 }

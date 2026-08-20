@@ -1,12 +1,45 @@
 name: Graph Publishing Integrity
 
-# Run on every repository change. The publishing chain depends on wiki content,
-# brand canon, payload registries, ranking configuration and generator helpers;
-# path filters are intentionally avoided so future inputs cannot bypass parity checks.
 on:
   pull_request:
+    paths:
+      - "wiki/**"
+      - "brand-canon/**"
+      - "categories/**"
+      - "data/**"
+      - "js/**"
+      - "assets/**"
+      - "og-templates/**"
+      - "about.html"
+      - "hubs.html"
+      - "sam.html"
+      - "sitemap.xml"
+      - "index_stats.json"
+      - "sam-memory.json"
+      - "scripts/**"
+      - ".github/workflows/graph-publishing-integrity.yml"
+      - "package.json"
+      - "package-lock.json"
   push:
     branches: [main]
+    paths:
+      - "wiki/**"
+      - "brand-canon/**"
+      - "categories/**"
+      - "data/**"
+      - "js/**"
+      - "assets/**"
+      - "og-templates/**"
+      - "about.html"
+      - "hubs.html"
+      - "sam.html"
+      - "sitemap.xml"
+      - "index_stats.json"
+      - "sam-memory.json"
+      - "scripts/**"
+      - ".github/workflows/graph-publishing-integrity.yml"
+      - "package.json"
+      - "package-lock.json"
 
 permissions:
   contents: read
@@ -28,6 +61,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Regenerate public publishing surfaces
         env:
           NODE_OPTIONS: --max-old-space-size=4096
@@ -38,6 +74,25 @@ jobs:
 
       - name: Validate regenerated wiki surfaces
         run: npm run ci:wiki
+
+      - name: Fail on stale generated publishing surfaces
+        run: |
+          if ! git diff --exit-code -- \
+            js/wiki-index.json \
+            js/link-map.json \
+            js/link-graph.json \
+            js/entity-map.json \
+            js/entity-graph.json \
+            js/graph-data.json \
+            js/entity-graph-lite.json \
+            js/site-stats.json \
+            sitemap.xml \
+            index_stats.json \
+            sam-memory.json; then
+            echo "Publishing surfaces are stale. Run node scripts/generate-publishing-surfaces.mjs and commit the generated outputs."
+            git diff --stat
+            exit 1
+          fi
 
       - name: Show generated surface changes
         if: always()

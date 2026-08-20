@@ -23,6 +23,10 @@ const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
 const ENTITY_MAP_PATH = path.join(ROOT, 'js', 'entity-map.json');
 const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
 
+function compareStrings(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 const LEGACY_EXCLUDED_URLS = new Set([
   '/wiki/index.html'
 ]);
@@ -174,13 +178,13 @@ function generateAliasCandidates(entry) {
   return [...candidates]
     .filter(c => isValidAliasCandidate(c, entry.canonical_title))
     .filter(c => !approvedLower.has(c.toLowerCase()))
-    .sort();
+    .sort(compareStrings);
 }
 
 function deterministicReplacer(key, val) {
   if (val && typeof val === 'object' && !Array.isArray(val)) {
     return Object.fromEntries(
-      Object.entries(val).sort(([a], [b]) => a.localeCompare(b))
+      Object.entries(val).sort(([a], [b]) => compareStrings(a, b))
     );
   }
   return val;
@@ -253,12 +257,12 @@ for (const entry of filteredIndex) {
     category: entry.category || 'Lore',
     aliases: approvedAliases,
     tags,
-    source_urls: sourceUrls.sort(),
+    source_urls: sourceUrls.sort(compareStrings),
     brand: entry.brand || null
   });
 }
 
-entityRecords.sort((a, b) => a.entity_id.localeCompare(b.entity_id));
+entityRecords.sort((a, b) => compareStrings(a.entity_id, b.entity_id));
 
 const allCanonicalTitlesLower = new Set(
   entityRecords.map(r => r.canonical_title.toLowerCase())

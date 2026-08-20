@@ -6,11 +6,20 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
 const deployWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/deploy-pages.yml'), 'utf8');
+const graphWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/graph-publishing-integrity.yml'), 'utf8');
+const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-pages-artifact.mjs'), 'utf8');
+const changeScope = await fs.readFile(path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
 
 const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'];
 const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:visual'];
+
+function getScopeBlock(scope) {
+  const match = changeScope.match(new RegExp(`\\b${scope}: \\[([\\s\\S]*?)\\n  \\]`, 'u'));
+  assert.ok(match, `ci-change-scope must define ${scope} scope`);
+  return match[1];
+}
 
 for (const job of expectedJobs) {
   assert.ok(workflow.includes(`  ${job}:`), `workflow must define ${job}`);
@@ -32,9 +41,9 @@ const ciRunLines = workflow
 const domainRunLines = ciRunLines.filter((line) => line.startsWith('run: npm run ci:'));
 assert.equal(domainRunLines.length, expectedScripts.length, 'workflow must run one grouped command per CI domain job');
 assert.equal(
-  ciRunLines.some((line) => /^run:\s+(node scripts\/|npm run test:)/.test(line)),
+  ciRunLines.some((line) => /^run:\s+npm run test:/.test(line) || /^run:\s+node scripts\/(?!ci-change-scope\.mjs\b)/.test(line)),
   false,
-  'workflow must not inline individual test scripts in domain jobs',
+  'workflow must not inline individual test scripts in domain jobs, except shared path-scope classification',
 );
 
 for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
@@ -72,8 +81,8 @@ assert.ok(
 );
 
 assert.ok(
-  workflow.includes('No visual/runtime frontend files changed; skipping ci-visual.'),
-  'visual CI must clearly report when docs/test-only changes skip visual checks',
+  workflow.includes('node scripts/ci-change-scope.mjs visual'),
+  'visual CI must call the shared change-scope classifier before gated visual checks',
 );
 
 assert.ok(
@@ -87,13 +96,117 @@ assert.ok(
 );
 
 assert.ok(
-  !workflow.includes('"$file" == scripts/ci-domain-runner.mjs'),
-  'visual CI changed-file gate must not treat the shared domain runner as a visual/runtime trigger',
+  !deployWorkflow.includes('npx playwright install --with-deps chromium'),
+  'Pages deploy must not install Chromium; browser checks belong in CI only',
 );
 
 assert.ok(
-  deployWorkflow.includes('npx playwright install --with-deps chromium'),
-  'Pages deploy must install Chromium before running the visual CI domain',
+  deployWorkflow.includes('path: public-site'),
+  'Pages deploy must upload the curated public-site artifact instead of the repository root',
 );
+
+assert.ok(
+  !deployWorkflow.includes('deployments/**'),
+  'Pages deploy must not trigger on deployments/** unless that directory is copied into the artifact',
+);
+
+for (const rootPublicPattern of ['"*.png"', '"*.jpg"', '"*.jpeg"', '"*.webp"', '"*.gif"', '"*.svg"', '"*.xml"', '"*.txt"']) {
+  assert.ok(
+    deployWorkflow.includes(rootPublicPattern),
+    `Pages deploy must trigger on root public asset pattern ${rootPublicPattern}`,
+  );
+}
+
+assert.ok(
+  preparePagesArtifact.includes("'sam-memory.json'"),
+  'Pages artifact preparation must include sam-memory.json as a committed public root asset',
+);
+
+assert.ok(
+  deployWorkflow.includes('"sam-memory.json"'),
+  'Pages deploy must trigger when the committed sam-memory.json public asset changes',
+);
+
+assert.ok(
+  preparePagesArtifact.includes('Refusing to use unsafe Pages artifact path'),
+  'Pages artifact preparation must reject destructive artifact output paths',
+);
+
+assert.ok(
+  preparePagesArtifact.includes("'.git'") && preparePagesArtifact.includes("'.github'") && preparePagesArtifact.includes('isPathInside'),
+  'Pages artifact preparation must reject protected repository paths before deleting the artifact target',
+);
+
+for (const graphPath of [
+  '"categories/**"',
+  '"about.html"',
+  '"hubs.html"',
+  '"sam.html"',
+  '"sitemap.xml"',
+  '"index_stats.json"',
+  '"sam-memory.json"',
+  '"scripts/**"',
+]) {
+  assert.ok(
+    graphWorkflow.includes(graphPath),
+    `graph publishing integrity workflow must run for ${graphPath}`,
+  );
+}
+
+assert.ok(
+  graphWorkflow.includes('git diff --exit-code --') && graphWorkflow.includes('sam-memory.json'),
+  'graph publishing integrity workflow must fail when regenerated publishing surfaces drift from committed files',
+);
+
+assert.ok(
+  graphWorkflow.includes('js/site-stats.json') && !graphWorkflow.includes('data/site-stats.json'),
+  'graph publishing integrity workflow must check the generated js/site-stats.json output, not data/site-stats.json',
+);
+
+for (const arcadeWorkerInput of [
+  "'workers/leaderboard-worker.js'",
+  "'workers/moonboys-api/worker.js'",
+  "'workers/moonboys-api/migrations/017_faction_season_lock.sql'",
+  "'workers/moonboys-api/blocktopia/routes.js'",
+  "'workers/moonboys-api/shared/faction-canon.js'",
+]) {
+  assert.ok(
+    changeScope.includes(arcadeWorkerInput),
+    `arcade CI scope must include Worker input ${arcadeWorkerInput}`,
+  );
+}
+
+for (const visualWorkerInput of [
+  "'workers/moonboys-api/worker.js'",
+  "'workers/moonboys-api/routes/daily-digest.js'",
+]) {
+  assert.ok(
+    changeScope.includes(visualWorkerInput),
+    `visual CI scope must include Worker input ${visualWorkerInput}`,
+  );
+}
+
+for (const graphGeneratedSurface of [
+  "'sitemap.xml'",
+  "'index_stats.json'",
+  "'sam-memory.json'",
+]) {
+  assert.ok(
+    changeScope.includes(graphGeneratedSurface),
+    `graph CI scope must include generated root surface ${graphGeneratedSurface}`,
+  );
+}
+
+assert.ok(
+  changeScope.includes('if (outputPath)') && !changeScope.includes('existsSync(outputPath)'),
+  'CI change-scope must write GITHUB_OUTPUT whenever GitHub provides an output path',
+);
+
+for (const scope of ['wiki', 'arcade', 'wax', 'visual', 'graph']) {
+  assert.ok(
+    getScopeBlock(scope).includes("'scripts/ci-domain-runner.mjs'"),
+    `${scope} CI scope must run when the shared CI domain runner changes`,
+  );
+}
 
 console.log('CI domain grouping tests PASSED.');

@@ -3,6 +3,43 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+    paths:
+      - "**/*.html"
+      - ".github/workflows/deploy-pages.yml"
+      - ".nojekyll"
+      - "CNAME"
+      - "*.png"
+      - "*.jpg"
+      - "*.jpeg"
+      - "*.webp"
+      - "*.gif"
+      - "*.svg"
+      - "*.xml"
+      - "*.txt"
+      - "about/**"
+      - "api/**"
+      - "art/**"
+      - "assets/**"
+      - "battle-chamber/**"
+      - "brand-canon/**"
+      - "categories/**"
+      - "css/**"
+      - "data/**"
+      - "docs/**"
+      - "games/**"
+      - "img/**"
+      - "js/**"
+      - "lib/**"
+      - "og-templates/**"
+      - "shared/**"
+      - "snapshots/**"
+      - "wiki/**"
+      - "favicon.png"
+      - "robots.txt"
+      - "scripts/prepare-pages-artifact.mjs"
+      - "sitemap.xml"
+      - "index_stats.json"
+      - "sam-memory.json"
   workflow_dispatch:
 
 # Required for OIDC-based Pages deployment
@@ -31,43 +68,13 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Generate current publishing surfaces
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
-        run: node scripts/generate-publishing-surfaces.mjs
-
-      - name: Verify graph and index parity
-        run: node scripts/graph-publishing-integrity.test.mjs
-
-      - name: Hydrate Invaders player-ship PNG asset
-        # Must run before visual/static checks and before packaging the site.
-        run: node scripts/hydrate-invaders-player-ship.mjs
-
-      - name: Run static site checks
-        # GitHub Pages serves the static site only. Worker/API tests run in the
-        # separate CI workflow and must not block publishing unrelated HTML copy.
-        run: npm run ci:wiki && npm run ci:visual
-
-      - name: Hydrate generated BTQM PNG assets
-        run: node scripts/hydrate-btqm-generated-assets.mjs --clean-base64
-
-      - name: Prune non-static backend directories
-        # server/ and workers/ contain backend source code that is not served
-        # by GitHub Pages. Remove them before packaging the artifact so the
-        # upload is smaller and deployment is faster.
-        run: |
-          rm -rf server/ workers/ scripts/ patches/
+      - name: Prepare Pages artifact
+        run: node scripts/prepare-pages-artifact.mjs public-site
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: public-site
 
   deploy:
     needs: build

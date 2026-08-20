@@ -83,6 +83,11 @@ const LINK_MAP_PATH   = path.join(ROOT, 'js', 'link-map.json');
 const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 const OUTPUT_PATH     = path.join(ROOT, 'js', 'entity-graph.json');
 const PRIOR_GRAPH_PATH = OUTPUT_PATH; // read existing output as reinforcement input
+const USE_PRIOR_GRAPH_REINFORCEMENT = process.env.USE_PRIOR_ENTITY_GRAPH_REINFORCEMENT === '1';
+
+function compareStrings(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
 
 // ---------------------------------------------------------------------------
 // Tag classification
@@ -526,9 +531,9 @@ function main() {
   // priorRelInbound[url]  = Set of pages whose top-N related_pages include url
   // priorRelatedSets[url] = Set of the top-N target urls from url's related_pages
   //
-  // Both are built from the current entity-graph.json before we overwrite it,
-  // forming a controlled single-step feedback loop.
-  if (fs.existsSync(PRIOR_GRAPH_PATH)) {
+  // Prior-output reinforcement is opt-in so normal publishing-surface
+  // regeneration is stable on fresh CI checkouts and repeated runs.
+  if (USE_PRIOR_GRAPH_REINFORCEMENT && fs.existsSync(PRIOR_GRAPH_PATH)) {
     const priorGraph = JSON.parse(fs.readFileSync(PRIOR_GRAPH_PATH, 'utf8'));
     for (const [srcUrl, data] of Object.entries(priorGraph)) {
       // Skip prior-graph entries for non-approved URLs so stale blocked/review
@@ -540,7 +545,7 @@ function main() {
         const bBase = b.base_score !== undefined ? b.base_score : b.score;
         const aBase = a.base_score !== undefined ? a.base_score : a.score;
         if (bBase !== aBase) return bBase - aBase;
-        return a.target_url.localeCompare(b.target_url);
+        return compareStrings(a.target_url, b.target_url);
       });
       const topRel = sorted.slice(0, PRIOR_GRAPH_TOP_N);
       // Filter out non-approved target URLs from reinforcement sets.
@@ -632,7 +637,7 @@ function main() {
     ...Object.keys(wikiByUrl),
   ]);
 
-  const sortedUrls = [...allUrls].sort();
+  const sortedUrls = [...allUrls].sort(compareStrings);
 
   const graph = {};
 
@@ -710,7 +715,7 @@ function main() {
     // Sort: highest final_score first, then target_url alphabetically for determinism
     relatedPages.sort((a, b) => {
       if (b.final_score !== a.final_score) return b.final_score - a.final_score;
-      return a.target_url.localeCompare(b.target_url);
+      return compareStrings(a.target_url, b.target_url);
     });
 
     graph[srcUrl] = { related_pages: relatedPages.slice(0, MAX_OUTPUT_RELATED_PER_PAGE) };
@@ -718,7 +723,7 @@ function main() {
 
   // Sort output keys alphabetically for determinism
   const sortedGraph = {};
-  for (const k of Object.keys(graph).sort()) {
+  for (const k of Object.keys(graph).sort(compareStrings)) {
     sortedGraph[k] = graph[k];
   }
 
