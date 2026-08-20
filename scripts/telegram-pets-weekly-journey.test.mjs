@@ -16,6 +16,7 @@ const {
   processPetMiniAppAction,
   processPetAction,
   getPetSeasonInfo,
+  recordPetRunBankedEvent,
 } = __petMediaTestHooks;
 
 class Statement {
@@ -643,6 +644,46 @@ await assertDirectActionPreparesCurrentSeason({
   telegramId: 'weekly-rollover-direct-train',
 });
 
+const dailyChestRolloverDb = createDb();
+const dailyChestRolloverTelegramId = 'weekly-rollover-daily-chest';
+const dailyChestRolloverSeasonKey = getPetSeasonInfo(new Date()).key;
+const dailyChestRolloverOldPet = seedPlayer(dailyChestRolloverDb, dailyChestRolloverTelegramId, `${dailyChestRolloverSeasonKey}:previous`);
+const dailyChestRolloverEventKey = 'weekly-rollover-daily-chest-source';
+const dailyChestRollover = await processPetDailyChest(dailyChestRolloverDb, dailyChestRolloverTelegramId, {
+  event_key: dailyChestRolloverEventKey,
+  source: 'telegram_command',
+});
+assert.equal(dailyChestRollover.accepted, true,
+  'Test 5g2: Daily Chest is accepted after season rollover without Mini App state load');
+const dailyChestRolloverEvent = dailyChestRolloverDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key=? AND event_type='daily_chest' AND status='accepted'`)
+  .get(dailyChestRolloverTelegramId, dailyChestRolloverEventKey);
+assert.equal(dailyChestRolloverEvent?.season_key, dailyChestRolloverSeasonKey,
+  'Test 5g2: Daily Chest source event uses the current season key');
+assert.notEqual(dailyChestRolloverEvent?.pet_id, dailyChestRolloverOldPet,
+  'Test 5g2: Daily Chest source event does not use the previous-season active pet');
+assert.equal(dailyChestRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots
+  WHERE telegram_id=? AND pet_id=? AND season_key=?`).get(dailyChestRolloverTelegramId, dailyChestRolloverEvent.pet_id, dailyChestRolloverSeasonKey).count, 1,
+  'Test 5g2: Daily Chest source event pet belongs to the current season slot');
+assert.equal(dailyChestRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND pet_id=? AND season_key=? AND event_type='daily_chest' AND status='accepted'`)
+  .get(dailyChestRolloverTelegramId, dailyChestRolloverOldPet, dailyChestRolloverSeasonKey).count, 0,
+  'Test 5g2: Daily Chest writes no old-pet/new-season mismatched accepted event');
+assert.equal(dailyChestRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND season_key=? AND objective_id='weekly_check_in' AND source_event_key=? AND status='accepted'`)
+  .get(dailyChestRolloverTelegramId, dailyChestRolloverEvent.pet_id, dailyChestRolloverSeasonKey, dailyChestRolloverEventKey).count, 1,
+  'Test 5g2: Daily Chest records current-season weekly_check_in evidence');
+const dailyChestRolloverReplay = await processPetDailyChest(dailyChestRolloverDb, dailyChestRolloverTelegramId, {
+  event_key: dailyChestRolloverEventKey,
+  source: 'telegram_command',
+});
+assert.equal(dailyChestRolloverReplay.duplicate, true,
+  'Test 5g2: Daily Chest rollover replay is idempotent');
+assert.equal(dailyChestRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND objective_id='weekly_check_in' AND source_event_key=? AND status='accepted'`)
+  .get(dailyChestRolloverTelegramId, dailyChestRolloverEventKey).count, 1,
+  'Test 5g2: Daily Chest rollover replay keeps one Weekly Journey objective row');
+
 const dailyChestDuplicateDb = createDb();
 const dailyChestTelegramId = 'weekly-daily-chest-duplicate';
 const dailyChestSeasonKey = getPetSeasonInfo(new Date()).key;
@@ -788,6 +829,51 @@ await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegram
 assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 1,
   'Test 5i: recovered Daily Moon Run Weekly Journey evidence stays idempotent');
+
+const runDuplicateRecoveryDb = createDb();
+const runDuplicateRecoveryTelegramId = 'weekly-run-duplicate-recovery';
+const runDuplicateRecoverySeasonKey = getPetSeasonInfo(new Date()).key;
+const runDuplicateRecoveryPet = seedPlayer(runDuplicateRecoveryDb, runDuplicateRecoveryTelegramId, runDuplicateRecoverySeasonKey);
+const runDuplicateRecoveryRunId = 'weekly-run-duplicate-recovery-run';
+runDuplicateRecoveryDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, current_room, max_room, depth, max_depth, score,
+   unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items, rooms_completed)
+  VALUES (?, ?, ?, ?, ?, 'extractable', 1, 5, 1, 5, 20, 18, 12, 0, 1, '{}', 1)`)
+  .run(`run:${runDuplicateRecoveryRunId}`, runDuplicateRecoveryPet, runDuplicateRecoveryTelegramId, runDuplicateRecoveryRunId, runDuplicateRecoverySeasonKey);
+const runDuplicateRecoveryRow = runDuplicateRecoveryDb.database.prepare(`SELECT * FROM telegram_pet_runs
+  WHERE telegram_id=? AND run_id=?`).get(runDuplicateRecoveryTelegramId, runDuplicateRecoveryRunId);
+const runDuplicateFirst = await recordPetRunBankedEvent(runDuplicateRecoveryDb, runDuplicateRecoveryTelegramId, runDuplicateRecoveryRow, {
+  pet_id: runDuplicateRecoveryPet,
+  telegram_id: runDuplicateRecoveryTelegramId,
+}, { source: 'telegram_command' });
+assert.equal(runDuplicateFirst.accepted, true,
+  'Test 5j: first legacy run extraction reward is accepted');
+assert.equal(runDuplicateRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`)
+  .get(runDuplicateRecoveryTelegramId, runDuplicateRecoveryPet).count, 1,
+  'Test 5j: first legacy run extraction records weekly_run evidence');
+runDuplicateRecoveryDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run'`).run(runDuplicateRecoveryTelegramId, runDuplicateRecoveryPet);
+const runDuplicateSettledRow = runDuplicateRecoveryDb.database.prepare(`SELECT * FROM telegram_pet_runs
+  WHERE telegram_id=? AND run_id=?`).get(runDuplicateRecoveryTelegramId, runDuplicateRecoveryRunId);
+const runDuplicateReplay = await recordPetRunBankedEvent(runDuplicateRecoveryDb, runDuplicateRecoveryTelegramId, runDuplicateSettledRow, {
+  pet_id: runDuplicateRecoveryPet,
+  telegram_id: runDuplicateRecoveryTelegramId,
+}, { source: 'telegram_command' });
+assert.equal(runDuplicateReplay.duplicate, true,
+  'Test 5j: duplicate legacy run extraction reward returns duplicate authority');
+assert.equal(runDuplicateRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`)
+  .get(runDuplicateRecoveryTelegramId, runDuplicateRecoveryPet).count, 1,
+  'Test 5j: duplicate legacy run extraction recovers exactly one weekly_run evidence row');
+await recordPetRunBankedEvent(runDuplicateRecoveryDb, runDuplicateRecoveryTelegramId, runDuplicateSettledRow, {
+  pet_id: runDuplicateRecoveryPet,
+  telegram_id: runDuplicateRecoveryTelegramId,
+}, { source: 'telegram_command' });
+assert.equal(runDuplicateRecoveryDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`)
+  .get(runDuplicateRecoveryTelegramId, runDuplicateRecoveryPet).count, 1,
+  'Test 5j: repeated duplicate legacy run extraction recovery remains idempotent');
 
 const bossDuplicateDb = createDb();
 const bossDuplicateTelegramId = 'weekly-boss-duplicate';

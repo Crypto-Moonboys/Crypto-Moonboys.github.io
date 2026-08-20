@@ -2548,8 +2548,10 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     touch_streak: true, now,
     context: { source: options.source || 'telegram_command', run_id: rewardRun.run_id, depth: rewardRun.depth, max_depth: rewardRun.max_depth },
   });
+  if (awardedAuthority.accepted || awardedAuthority.duplicate) {
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
+  }
   if (!awardedAuthority.accepted) return { ...awardedAuthority, run: rewardRun, pet };
-  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
   await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:personality`, behaviour: 'exploration', activity: 'adventure', amount: 2 });
   await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:memory`,
     memory_type: options.completed ? 'run_completed' : 'extraction',
@@ -3185,8 +3187,11 @@ async function processPetDailyChest(db, telegramId, options = {}) {
     await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: duplicate });
     return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
   }
-  const pet = await getPetProfile(db, telegramId);
+  let pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const preparedPet = await prepareCurrentSeasonActivePetForWeeklyJourneySource(db, telegramId, now);
+  if (!preparedPet) return { accepted: false, reason: 'current_season_pet_required', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  pet = preparedPet;
   const claimed = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_type = 'daily_chest' AND day_key = ? AND status = 'accepted'`).bind(telegramId, dayKey).first().catch(() => null);
   if (claimed) {
     const acceptedDailyChestEvent = await readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey);
@@ -3595,6 +3600,18 @@ const WEEKLY_JOURNEY_DIRECT_ACTION_PREP_ACTIONS = Object.freeze(['feed', 'play',
 
 function requiresWeeklyJourneyDirectActionPetPreparation(action) {
   return WEEKLY_JOURNEY_DIRECT_ACTION_PREP_ACTIONS.includes(String(action || ''));
+}
+
+async function prepareCurrentSeasonActivePetForWeeklyJourneySource(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return null;
+  const prepared = await preparePetMiniAppState(db, owner, now);
+  if (!prepared) return null;
+  const pet = await getPetProfile(db, owner);
+  const season = getPetSeasonInfo(now);
+  if (!String(pet?.pet_id || '').trim()) return null;
+  if (String(pet.season_key || '') !== String(season.key || '')) return null;
+  return pet;
 }
 
 async function recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, options = {}) {
@@ -5704,17 +5721,9 @@ async function processPetAction(db, telegramId, action, options = {}) {
   }
 
   if (requiresWeeklyJourneyDirectActionPetPreparation(normalizedAction)) {
-    const prepared = await preparePetMiniAppState(db, telegramId, now);
-    if (!prepared) {
-      return { accepted: false, reason: 'pet_current_season_unavailable', xp_awarded: 0, pet_xp_awarded: 0, pet };
-    }
-    pet = await getPetProfile(db, telegramId);
-    if (!pet) {
-      return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
-    }
-    if (String(pet.season_key || '') !== String(season.key || '')) {
-      return { accepted: false, reason: 'pet_current_season_unavailable', xp_awarded: 0, pet_xp_awarded: 0, pet };
-    }
+    const preparedPet = await prepareCurrentSeasonActivePetForWeeklyJourneySource(db, telegramId, now);
+    if (!preparedPet) return { accepted: false, reason: 'pet_current_season_unavailable', xp_awarded: 0, pet_xp_awarded: 0, pet };
+    pet = preparedPet;
   }
 
   const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
