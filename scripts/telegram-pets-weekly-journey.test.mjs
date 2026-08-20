@@ -160,6 +160,12 @@ function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'p
     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey, slotNumber);
 }
 
+function switchActivePet(db, telegramId, petId, seasonKey) {
+  db.database.prepare(`UPDATE telegram_pet_active_slots
+    SET pet_id=?, season_key=?
+    WHERE telegram_id=?`).run(petId, seasonKey, telegramId);
+}
+
 function seedTerminalDailyMoonRun(db, { telegramId, petId, seasonKey, day, runId, status = 'extracted' }) {
   db.database.prepare(`INSERT INTO telegram_pet_runs
     (id, pet_id, telegram_id, run_id, season_key, status, current_room, max_room, score, depth, rooms_completed, ended_at, completed_at)
@@ -631,6 +637,8 @@ const bossDuplicateDb = createDb();
 const bossDuplicateTelegramId = 'weekly-boss-duplicate';
 const bossDuplicateSeasonKey = getPetSeasonInfo(new Date()).key;
 const bossDuplicatePet = seedPlayer(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicateSeasonKey);
+const bossDuplicatePetB = 'pet-weekly-boss-duplicate-b';
+seedAdditionalPet(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicatePetB, 2, bossDuplicateSeasonKey);
 bossDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
   SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
   WHERE telegram_id=?`).run(bossDuplicateTelegramId);
@@ -639,6 +647,7 @@ assert.equal(bossFirst.accepted, true, 'Test 5g: first weekly boss attempt is ac
 const bossOriginalEvent = bossDuplicateDb.database.prepare(`SELECT day_key, week_key, metadata FROM telegram_pet_events
   WHERE telegram_id=? AND event_key='weekly-boss-original-key' AND event_type='weekly_boss' AND status='accepted'`).get(bossDuplicateTelegramId);
 assert.ok(bossOriginalEvent?.week_key, 'Test 5g: first weekly boss attempt stores week authority');
+const bossOriginalMetadata = JSON.parse(bossOriginalEvent.metadata);
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss' AND status='accepted'`).get(bossDuplicateTelegramId).count, 1,
   'Test 5g: first weekly boss attempt persists one accepted weekly_boss source event');
@@ -651,21 +660,68 @@ bossDuplicateDb.database.prepare(`DELETE FROM telegram_pet_events
   WHERE telegram_id=? AND event_key='weekly-boss-original-key' AND event_type='weekly_boss'`).run(bossDuplicateTelegramId);
 bossDuplicateDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).run(bossDuplicateTelegramId, bossDuplicatePet);
+bossDuplicateDb.database.prepare(`UPDATE telegram_pet_weekly_boss_progress
+  SET defeated_at='2026-08-20T12:00:00.000Z', reward_claimed_at='2026-08-20T12:00:00.000Z'
+  WHERE telegram_id=?`).run(bossDuplicateTelegramId);
+bossDuplicateDb.database.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
+  (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
+  VALUES (?, ?, ?, ?, ?, ?, '2026-08-20T12:00:00.000Z')`)
+  .run(bossDuplicateTelegramId, bossOriginalEvent.week_key, bossOriginalMetadata.boss_id, bossDuplicatePet, bossDuplicateSeasonKey,
+    `${bossOriginalEvent.week_key}:${bossOriginalMetadata.boss_id}`);
+switchActivePet(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicatePetB, bossDuplicateSeasonKey);
 const bossDuplicate = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-retry-different-key');
 assert.equal(bossDuplicate.accepted, true, 'Test 5g: duplicate weekly boss retry remains accepted as a duplicate path');
 assert.equal(bossDuplicate.duplicate, true, 'Test 5g: duplicate weekly boss retry is idempotent');
+assert.equal(bossDuplicate.reason, 'boss_already_defeated', 'Test 5g: defeated duplicate recovery path is exercised');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-retry-different-key' AND status='accepted'`).get(bossDuplicateTelegramId).count, 0,
   'Test 5g: duplicate retry with a new request key does not persist that retry key as a source event');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-original-key' AND status='accepted'`).get(bossDuplicateTelegramId).count, 1,
   'Test 5g: duplicate retry backfills the original persisted weekly boss attempt source event');
+assert.equal(bossDuplicateDb.database.prepare(`SELECT pet_id FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-original-key' AND status='accepted'`).get(bossDuplicateTelegramId).pet_id,
+  bossDuplicatePet,
+  'Test 5g: historical defeated retry backfills the persisted victory pet, not the current active pet');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt' AND status='accepted'`).get(bossDuplicateTelegramId, bossDuplicatePet).count, 1,
-  'Test 5g: duplicate retry reuses the original persisted weekly_boss source event and keeps exactly one objective row');
+  'Test 5g: duplicate retry records weekly_boss_attempt for the persisted victory pet');
+assert.equal(bossDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt' AND status='accepted'`).get(bossDuplicateTelegramId, bossDuplicatePetB).count, 0,
+  'Test 5g: current active pet receives no historical boss objective evidence');
 assert.equal(bossDuplicateDb.database.prepare(`SELECT source_event_key FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).get(bossDuplicateTelegramId, bossDuplicatePet).source_event_key, 'weekly-boss-original-key',
   'Test 5g: duplicate retry does not count the incoming retry event key');
+
+const bossUnattributedDuplicateDb = createDb();
+const bossUnattributedTelegramId = 'weekly-boss-unattributed-duplicate';
+const bossUnattributedSeasonKey = getPetSeasonInfo(new Date()).key;
+const bossUnattributedPet = seedPlayer(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedSeasonKey);
+const bossUnattributedPetB = 'pet-weekly-boss-unattributed-b';
+seedAdditionalPet(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedPetB, 2, bossUnattributedSeasonKey);
+bossUnattributedDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
+  WHERE telegram_id=?`).run(bossUnattributedTelegramId);
+const bossUnattributedFirst = await processPetWeeklyBoss(bossUnattributedDuplicateDb, bossUnattributedTelegramId, 'strike', 'weekly-boss-unattributed-original-key');
+assert.equal(bossUnattributedFirst.accepted, true, 'Test 5h: unattributed weekly boss fixture creates an accepted attempt');
+bossUnattributedDuplicateDb.database.prepare(`UPDATE telegram_pet_weekly_boss_progress
+  SET defeated_at=NULL, reward_claimed_at=NULL
+  WHERE telegram_id=?`).run(bossUnattributedTelegramId);
+bossUnattributedDuplicateDb.database.prepare(`DELETE FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss'`).run(bossUnattributedTelegramId);
+bossUnattributedDuplicateDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND objective_id='weekly_boss_attempt'`).run(bossUnattributedTelegramId);
+switchActivePet(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedPetB, bossUnattributedSeasonKey);
+const bossUnattributedReplay = await processPetWeeklyBoss(bossUnattributedDuplicateDb, bossUnattributedTelegramId, 'strike', 'weekly-boss-unattributed-retry-key');
+assert.equal(bossUnattributedReplay.accepted, true, 'Test 5h: unattributed duplicate remains accepted/idempotent');
+assert.equal(bossUnattributedReplay.duplicate, true, 'Test 5h: unattributed duplicate uses duplicate path');
+assert.equal(bossUnattributedReplay.reason, 'daily_attempt_used', 'Test 5h: unattributed non-victory duplicate path is exercised');
+assert.equal(bossUnattributedDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss' AND status='accepted'`).get(bossUnattributedTelegramId).count, 0,
+  'Test 5h: historical non-victory duplicate without pet attribution does not backfill a weekly_boss source event');
+assert.equal(bossUnattributedDuplicateDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
+  WHERE telegram_id=? AND objective_id='weekly_boss_attempt'`).get(bossUnattributedTelegramId).count, 0,
+  'Test 5h: historical non-victory duplicate without pet attribution does not write Weekly Journey evidence');
 
 const bossDefeatedBackfillDb = createDb();
 const bossDefeatedTelegramId = 'weekly-boss-defeated-backfill';
@@ -676,9 +732,17 @@ bossDefeatedBackfillDb.database.prepare(`UPDATE telegram_pet_profiles
   WHERE telegram_id=?`).run(bossDefeatedTelegramId);
 const bossDefeatedFirst = await processPetWeeklyBoss(bossDefeatedBackfillDb, bossDefeatedTelegramId, 'strike', 'weekly-boss-defeated-original-key');
 assert.equal(bossDefeatedFirst.accepted, true, 'Test 5i: defeated-boss backfill fixture creates a first accepted attempt');
+const bossDefeatedOriginalEvent = bossDefeatedBackfillDb.database.prepare(`SELECT day_key, week_key, metadata FROM telegram_pet_events
+  WHERE telegram_id=? AND event_key='weekly-boss-defeated-original-key' AND event_type='weekly_boss' AND status='accepted'`).get(bossDefeatedTelegramId);
+const bossDefeatedMetadata = JSON.parse(bossDefeatedOriginalEvent.metadata);
 bossDefeatedBackfillDb.database.prepare(`UPDATE telegram_pet_weekly_boss_progress
   SET defeated_at='2026-08-20T12:00:00.000Z', reward_claimed_at='2026-08-20T12:00:00.000Z'
   WHERE telegram_id=?`).run(bossDefeatedTelegramId);
+bossDefeatedBackfillDb.database.prepare(`INSERT OR IGNORE INTO telegram_pet_weekly_boss_victories_by_pet
+  (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
+  VALUES (?, ?, ?, ?, ?, ?, '2026-08-20T12:00:00.000Z')`)
+  .run(bossDefeatedTelegramId, bossDefeatedOriginalEvent.week_key, bossDefeatedMetadata.boss_id, bossDefeatedPet, bossDefeatedSeasonKey,
+    `${bossDefeatedOriginalEvent.week_key}:${bossDefeatedMetadata.boss_id}`);
 bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss'`).run(bossDefeatedTelegramId);
 bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives

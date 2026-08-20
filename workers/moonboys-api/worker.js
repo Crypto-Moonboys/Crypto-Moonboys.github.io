@@ -3615,12 +3615,25 @@ async function readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, b
     LIMIT 1`).bind(owner, week, bossPattern).first().catch(() => null);
 }
 
-async function ensureAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, boss, attemptRow, victoriousPet, season) {
+async function readWeeklyBossVictoryPetAttribution(db, telegramId, weekKey, bossId) {
+  const owner = String(telegramId || '').trim();
+  const week = String(weekKey || '').trim();
+  const boss = String(bossId || '').trim();
+  if (!owner || !week || !boss) return null;
+  return db.prepare(`SELECT pet_id, season_key
+    FROM telegram_pet_weekly_boss_victories_by_pet
+    WHERE telegram_id = ? AND week_key = ? AND boss_id = ?
+    ORDER BY defeated_at ASC
+    LIMIT 1`).bind(owner, week, boss).first().catch(() => null);
+}
+
+async function ensureAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, boss, attemptRow, season) {
   const bossId = String(boss?.boss_id || boss || '').trim();
   const existing = await readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, bossId);
   if (existing) return existing;
   if (!attemptRow) return null;
-  const petId = String(victoriousPet?.pet_id || '').trim();
+  const victoryPet = await readWeeklyBossVictoryPetAttribution(db, telegramId, weekKey, bossId);
+  const petId = String(victoryPet?.pet_id || '').trim();
   if (!petId) return null;
   const attemptDay = String(attemptRow.day_key || dayKey || '').trim();
   const eventKey = String(attemptRow.event_key || `pet:weekly_boss:${telegramId}:${weekKey}:${attemptDay}:${bossId}`).slice(0, 180);
@@ -3635,7 +3648,7 @@ async function ensureAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey,
       petId,
       telegramId,
       eventKey,
-      victoriousPet?.season_key || season?.key || getPetSeasonInfo(new Date()).key,
+      victoryPet?.season_key || season?.key || getPetSeasonInfo(new Date()).key,
       attemptDay,
       weekKey,
       JSON.stringify({
@@ -3668,7 +3681,7 @@ async function readWeeklyBossAttemptRow(db, telegramId, weekKey, dayKey, bossId)
 }
 
 async function recordWeeklyJourneyFromAcceptedWeeklyBossEvent(db, telegramId, weekKey, dayKey, boss, attemptRow, victoriousPet, season) {
-  const acceptedWeeklyBossEvent = await ensureAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, boss, attemptRow, victoriousPet, season);
+  const acceptedWeeklyBossEvent = await ensureAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, boss, attemptRow, season);
   if (!acceptedWeeklyBossEvent) return { accepted: false, reason: 'weekly_journey_source_event_missing' };
   return recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, acceptedWeeklyBossEvent.event_key, {
     accepted_event: acceptedWeeklyBossEvent,
