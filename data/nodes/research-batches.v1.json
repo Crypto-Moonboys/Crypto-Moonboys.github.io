@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "policy": "Discovery candidates remain needs_review until authoritative sources and operator process are verified.",
+  "batches": [
+    {"id":"pow-long-tail","target":40,"scope":"Smaller active PoW, merge-mined and useful-work networks","state":"queued"},
+    {"id":"pos-l1-l0","target":35,"scope":"PoS L1/L0 validators, block producers and bakers not yet in v1","state":"queued"},
+    {"id":"cosmos-ibc","target":45,"scope":"Cosmos SDK chains, validators and IBC relayer ecosystems","state":"queued"},
+    {"id":"substrate-polkadot","target":25,"scope":"Substrate/Polkadot parachain and validator/collator systems","state":"queued"},
+    {"id":"storage-compute","target":25,"scope":"Decentralized storage, compute, cloud and edge providers","state":"queued"},
+    {"id":"depin","target":30,"scope":"Wireless, IoT, sensor, mapping, bandwidth and dVPN systems","state":"queued"},
+    {"id":"ai-gpu-subnets","target":30,"scope":"AI/GPU/render workers including subnet-style systems","state":"queued"},
+    {"id":"rpc-oracle-indexer","target":25,"scope":"RPC, indexing, oracle, data publisher, relayer and keeper systems","state":"queued"},
+    {"id":"restaking-provers","target":20,"scope":"Restaking operators, AVSs, distributed validators and ZK provers","state":"queued"},
+    {"id":"mining-toolchain","target":30,"scope":"Mining pools, platforms, software, firmware and hardware families","state":"queued"},
+    {"id":"historical-migrations","target":25,"scope":"Historical, deprecated, migrated and rebranded node/mining systems","state":"queued"}
+  ],
+  "planned_additional_records": 330,
+  "bootstrap_records": 144,
+  "planned_minimum_after_batches": 474
+}

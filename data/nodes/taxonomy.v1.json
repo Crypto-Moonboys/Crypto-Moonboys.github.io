@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "locked_on": "2026-08-20",
+  "operator_roles": [
+    "full_node","archive_node","light_node","rpc_node","miner","cpu_miner","gpu_miner","asic_miner","disk_miner",
+    "validator","block_producer","baker","masternode","service_node","lightning_node","payment_router","storage_provider",
+    "compute_provider","gpu_provider","ai_worker","bandwidth_provider","vpn_node","mix_node","wireless_node","iot_node",
+    "map_node","sensor_node","oracle_node","data_publisher","indexer","relayer","bridge_operator","keeper","prover",
+    "zk_prover","restaking_operator","avs_operator","mining_pool","mining_platform","mining_software","miner_firmware","mining_hardware"
+  ],
+  "reward_types": [
+    "none","block_reward","transaction_fee","pool_payout","validator_reward","staking_reward","routing_fee","storage_payment",
+    "compute_payment","gpu_payment","bandwidth_payment","data_payment","oracle_payment","service_reward","prover_reward",
+    "marketplace_payment","token_incentive","other","unknown"
+  ],
+  "hardware_classes": [
+    "normal_pc","windows_pc","linux_server","macos","raspberry_pi","mini_pc","cpu","nvidia_gpu","amd_gpu","intel_gpu",
+    "asic","hdd","ssd","high_storage","high_bandwidth","low_power","mobile","dedicated_server","vps","datacenter","stake_required","no_capital_required"
+  ],
+  "status": ["active","needs_review","review_due","source_changed","inactive","deprecated","historical","unknown"],
+  "source_tiers": {
+    "1": ["official_website","official_docs","official_github","official_whitepaper","official_roadmap","official_foundation"],
+    "2": ["market_data_provider","major_exchange_docs","reputable_research","major_pool_docs"],
+    "3": ["community_forum","reddit","blog","youtube","directory"]
+  },
+  "rules": {
+    "technical_claims_require_tier_1_when_available": true,
+    "market_data_must_not_be_hardcoded_into_articles": true,
+    "ticker_is_not_a_unique_asset_identifier": true,
+    "dead_projects_are_preserved_as_historical_records": true,
+    "automated_checks_detect_changes_but_do_not_rewrite_technical_claims": true,
+    "liquidity_proxy": "24h_volume_usd",
+    "main_exchange_definition": "largest_tracked_spot_market_by_24h_volume"
+  }
+}

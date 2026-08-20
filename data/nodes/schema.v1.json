@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cryptomoonboys.com/data/nodes/schema.v1.json",
+  "title": "Crypto Moonboys Node Catalogue v1",
+  "type": "object",
+  "required": ["schema_version", "records"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "generated_on": { "type": "string", "format": "date" },
+    "records": { "type": "array", "items": { "$ref": "#/$defs/record" } }
+  },
+  "$defs": {
+    "nullableUrl": { "type": ["string", "null"], "format": "uri" },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "token", "market", "classification", "technical", "links", "status", "verification", "wiki_url"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "token": {
+          "type": "object",
+          "required": ["name", "ticker"],
+          "properties": { "name": { "type": ["string", "null"] }, "ticker": { "type": "string", "minLength": 1 } }
+        },
+        "market": {
+          "type": "object",
+          "required": ["mode", "provider", "provider_id"],
+          "properties": {
+            "mode": { "enum": ["live_resolver", "unmapped_or_not_applicable", "not_applicable_or_platform"] },
+            "provider": { "type": ["string", "null"] },
+            "provider_id": { "type": ["string", "null"] }
+          }
+        },
+        "classification": {
+          "type": "object",
+          "required": ["category", "node_type"],
+          "properties": { "category": { "type": "string" }, "node_type": { "type": "string" } }
+        },
+        "technical": {
+          "type": "object",
+          "required": ["hardware", "reward_type", "process"],
+          "properties": { "hardware": { "type": "string" }, "reward_type": { "type": "string" }, "process": { "type": "string" } }
+        },
+        "links": {
+          "type": "object",
+          "required": ["website", "whitepaper", "roadmap", "docs", "github"],
+          "properties": {
+            "website": { "$ref": "#/$defs/nullableUrl" }, "whitepaper": { "$ref": "#/$defs/nullableUrl" },
+            "roadmap": { "$ref": "#/$defs/nullableUrl" }, "docs": { "$ref": "#/$defs/nullableUrl" }, "github": { "$ref": "#/$defs/nullableUrl" }
+          }
+        },
+        "status": { "enum": ["active", "needs_review", "review_due", "source_changed", "inactive", "deprecated", "historical", "unknown"] },
+        "verification": {
+          "type": "object",
+          "required": ["last_verified", "quality", "sources_required"],
+          "properties": {
+            "last_verified": { "type": "string", "format": "date" },
+            "quality": { "enum": ["seeded", "partial", "verified"] },
+            "sources_required": { "type": "boolean" }
+          }
+        },
+        "wiki_url": { "type": "string", "pattern": "^/wiki/nodes/[a-z0-9-]+\\.html$" }
+      }
+    }
+  }
+}

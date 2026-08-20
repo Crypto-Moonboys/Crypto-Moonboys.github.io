@@ -37,18 +37,17 @@ on:
       - "favicon.png"
       - "robots.txt"
       - "scripts/prepare-pages-artifact.mjs"
+      - "scripts/generate-node-wiki-pages.mjs"
       - "sitemap.xml"
       - "index_stats.json"
       - "sam-memory.json"
   workflow_dispatch:
 
-# Required for OIDC-based Pages deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Prevent concurrent deployments; do not cancel an in-progress deploy
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -67,6 +66,12 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
+      - name: Generate Crypto Nodes Wiki pages
+        run: node scripts/generate-node-wiki-pages.mjs
+
+      - name: Verify Crypto Nodes Wiki catalogue
+        run: node scripts/nodes-wiki.test.mjs
 
       - name: Prepare Pages artifact
         run: node scripts/prepare-pages-artifact.mjs public-site

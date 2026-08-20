@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crypto Moonboys directory of cryptocurrency nodes, miners, validators, storage, compute and decentralized infrastructure systems.">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/wiki/components/header.css">
+  <link rel="stylesheet" href="/css/nodes-directory.css">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <title>Crypto Nodes & Mining Directory | Crypto Moonboys Wiki</title>
+</head>
+<body class="page-wiki page-standard-shell nodes-directory-page" data-wiki-shell="locked">
+  <!-- WIKI_SHARED_HEADER: /wiki/components/header.html -->
+  <main id="content" role="main" class="nodes-page">
+    <section class="nodes-hero">
+      <p class="nodes-kicker">CRYPTO MOONBOYS WIKI</p>
+      <h1>Crypto Nodes & Mining Directory</h1>
+      <p>Find software and infrastructure you can actually run: full nodes, miners, validators, storage providers, compute workers, DePIN, RPC, oracle and routing systems.</p>
+      <div class="nodes-stats" id="nodes-stats" aria-live="polite">
+        <span><strong id="nodes-total">—</strong> systems</span>
+        <span><strong id="nodes-market-fresh">—</strong> live markets</span>
+        <span><strong id="nodes-review-count">—</strong> review items</span>
+      </div>
+    </section>
+
+    <section class="nodes-controls" aria-label="Node filters">
+      <label class="nodes-search">
+        <span>Search</span>
+        <input id="nodes-search" type="search" placeholder="Bitcoin, GPU, validator, storage…" autocomplete="off">
+      </label>
+      <label>
+        <span>Category</span>
+        <select id="nodes-category"><option value="">All categories</option></select>
+      </label>
+      <label>
+        <span>Status</span>
+        <select id="nodes-status">
+          <option value="">All statuses</option>
+          <option value="active">Verified active</option>
+          <option value="needs_review">Needs review</option>
+          <option value="review_due">Review due</option>
+          <option value="deprecated">Deprecated</option>
+          <option value="historical">Historical</option>
+        </select>
+      </label>
+      <label>
+        <span>Hardware</span>
+        <input id="nodes-hardware" type="search" placeholder="CPU, GPU, ASIC, SSD…">
+      </label>
+      <button id="nodes-reset" type="button">Reset</button>
+    </section>
+
+    <p class="nodes-data-note">Market price, market cap and 24-hour volume are live fields. Technical and operator information is curated and source-verified separately.</p>
+    <div id="nodes-error" class="nodes-error" hidden></div>
+    <section id="nodes-grid" class="nodes-grid" aria-live="polite"></section>
+    <div class="nodes-more"><button id="nodes-more" type="button" hidden>Load more</button></div>
+  </main>
+
+  <script data-cfasync="false" src="/js/api-config.js"></script>
+  <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+  <script data-cfasync="false" src="/js/identity-gate.js"></script>
+  <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+  <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+  <script data-cfasync="false" src="/js/site-shell.js"></script>
+  <script data-cfasync="false" src="/js/wiki.js"></script>
+  <script data-cfasync="false" src="/js/nodes-directory.js"></script>
+</body>
+</html>
