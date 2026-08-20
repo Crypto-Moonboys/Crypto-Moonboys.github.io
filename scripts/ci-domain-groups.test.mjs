@@ -15,6 +15,12 @@ const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs')
 const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'];
 const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:visual'];
 
+function getScopeBlock(scope) {
+  const match = changeScope.match(new RegExp(`\\b${scope}: \\[([\\s\\S]*?)\\n  \\]`, 'u'));
+  assert.ok(match, `ci-change-scope must define ${scope} scope`);
+  return match[1];
+}
+
 for (const job of expectedJobs) {
   assert.ok(workflow.includes(`  ${job}:`), `workflow must define ${job}`);
 }
@@ -76,7 +82,7 @@ assert.ok(
 
 assert.ok(
   workflow.includes('node scripts/ci-change-scope.mjs visual'),
-  'visual CI must clearly report when docs/test-only changes skip visual checks',
+  'visual CI must call the shared change-scope classifier before gated visual checks',
 );
 
 assert.ok(
@@ -87,11 +93,6 @@ assert.ok(
 assert.ok(
   workflow.includes("if: steps.visual_changes.outputs.should_run == 'true'"),
   'visual CI install and test steps must be gated by relevant visual/runtime changes',
-);
-
-assert.ok(
-  !workflow.includes('"$file" == scripts/ci-domain-runner.mjs'),
-  'visual CI changed-file gate must not treat the shared domain runner as a visual/runtime trigger',
 );
 
 assert.ok(
@@ -200,5 +201,12 @@ assert.ok(
   changeScope.includes('if (outputPath)') && !changeScope.includes('existsSync(outputPath)'),
   'CI change-scope must write GITHUB_OUTPUT whenever GitHub provides an output path',
 );
+
+for (const scope of ['wiki', 'arcade', 'wax', 'visual', 'graph']) {
+  assert.ok(
+    getScopeBlock(scope).includes("'scripts/ci-domain-runner.mjs'"),
+    `${scope} CI scope must run when the shared CI domain runner changes`,
+  );
+}
 
 console.log('CI domain grouping tests PASSED.');
