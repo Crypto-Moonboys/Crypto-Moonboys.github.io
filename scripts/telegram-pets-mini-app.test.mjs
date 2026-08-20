@@ -238,6 +238,11 @@ assert.match(dailyJourneyRuntime({ completed_objectives: 3, required_objectives:
   'settled Daily Journey Growth Mark state must use settled copy');
 assert.match(dailyJourneyRuntime({ reason: 'active_pet_required', required_objectives: 0, completed_objectives: 0 }, 0, {}, {}), /Journey progress starts after you have a hatched active Moonpet/,
   'Daily Journey must guide players without an active seasonal pet');
+const noActivePetDailyMarkup = dailyJourneyRuntime({ reason: 'active_pet_required', required_objectives: 0, completed_objectives: 0 }, 0, {}, {});
+assert.match(noActivePetDailyMarkup, /NEXT \/\/ Initialise, incubate, or hatch your Moonpet before Daily Journey progress starts\./,
+  'Daily Journey active-pet-required NEXT copy must be distinct and actionable');
+assert.equal((noActivePetDailyMarkup.match(/Journey progress starts after you have a hatched active Moonpet/g) || []).length, 1,
+  'Daily Journey active-pet-required markup must not duplicate the same guidance sentence');
 
 const weeklyJourneyMarkupSource = extractTestExport(client, 'weeklyJourneyMarkup');
 assert.ok(weeklyJourneyMarkupSource, 'Weekly Journey markup helper must be extractable for runtime coverage');
@@ -357,6 +362,8 @@ const noActivePetWeeklyMarkup = weeklyJourneyRuntime({
 assert.match(noActivePetWeeklyMarkup, /WEEKLY JOURNEY \/\/ ACTIVE PET REQUIRED/, 'no active pet state must be clear and safe');
 assert.match(noActivePetWeeklyMarkup, /Journey progress starts after you have a hatched active Moonpet/,
   'Weekly Journey must guide players without an active seasonal pet');
+assert.match(noActivePetWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet\./,
+  'Weekly Journey active-pet-required detail must name the active hatched seasonal Moonpet requirement');
 const comingSoonWeeklyMarkup = weeklyJourneyRuntime({
   state: 'COMING_SOON',
   completed_objectives: 0,

@@ -745,7 +745,7 @@
     if (dailyReason === 'active_pet_required') {
       return '<div class="line locked">DAILY JOURNEY // ACTIVE PET REQUIRED</div>' +
         '<div class="line muted">Journey progress starts after you have a hatched active Moonpet.</div>' +
-        '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div>';
+        '<div class="line muted">NEXT // Initialise, incubate, or hatch your Moonpet before Daily Journey progress starts.</div>';
     }
     var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
     var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY SETTLED'
@@ -834,7 +834,7 @@
       var waitingDetail = weeklyState === 'COMING_SOON'
         ? 'Weekly Journey objectives will appear when this system is available.'
         : weeklyReason === 'active_pet_required'
-          ? 'No Daily or Weekly objective progress is shown until a pet exists and has hatched.'
+          ? 'No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet.'
           : 'Complete objectives to qualify for server settlement once authority returns objective evidence.';
       return '<div class="line locked">' + waitingTitle + '</div>' +
         '<div class="line muted">' + escapeHtml(waitingCopy) + '</div>' +
