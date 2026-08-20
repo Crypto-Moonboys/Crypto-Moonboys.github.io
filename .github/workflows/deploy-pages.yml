@@ -39,6 +39,7 @@ on:
       - "scripts/prepare-pages-artifact.mjs"
       - "sitemap.xml"
       - "index_stats.json"
+      - "sam-memory.json"
   workflow_dispatch:
 
 # Required for OIDC-based Pages deployment

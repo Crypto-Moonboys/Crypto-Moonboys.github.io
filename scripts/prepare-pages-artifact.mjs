@@ -6,6 +6,12 @@ const artifactDir = process.argv[2] || 'public-site';
 const repoRoot = path.resolve('.');
 const resolvedArtifactDir = path.resolve(artifactDir);
 const filesystemRoot = path.parse(resolvedArtifactDir).root;
+const PROTECTED_REPO_PATHS = ['.git', '.github'];
+
+function isPathInside(parent, child) {
+  const relative = path.relative(parent, child);
+  return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+}
 
 if (resolvedArtifactDir === repoRoot || resolvedArtifactDir === filesystemRoot) {
   throw new Error(`Refusing to use unsafe Pages artifact path: ${artifactDir}`);
@@ -13,6 +19,13 @@ if (resolvedArtifactDir === repoRoot || resolvedArtifactDir === filesystemRoot) 
 
 if (!resolvedArtifactDir.startsWith(repoRoot + path.sep)) {
   throw new Error(`Refusing to use Pages artifact path outside repository: ${artifactDir}`);
+}
+
+for (const protectedPath of PROTECTED_REPO_PATHS) {
+  const resolvedProtectedPath = path.join(repoRoot, protectedPath);
+  if (isPathInside(resolvedProtectedPath, resolvedArtifactDir)) {
+    throw new Error(`Refusing to use unsafe Pages artifact path: ${artifactDir}`);
+  }
 }
 
 const ROOT_FILES = [

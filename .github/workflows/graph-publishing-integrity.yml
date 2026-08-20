@@ -79,10 +79,10 @@ jobs:
             js/entity-graph.json \
             js/graph-data.json \
             js/entity-graph-lite.json \
+            js/site-stats.json \
             sitemap.xml \
             index_stats.json \
-            sam-memory.json \
-            data/site-stats.json; then
+            sam-memory.json; then
             echo "Publishing surfaces are stale. Run node scripts/generate-publishing-surfaces.mjs and commit the generated outputs."
             git diff --stat
             exit 1

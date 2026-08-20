@@ -8,6 +8,7 @@ const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 
 const deployWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/deploy-pages.yml'), 'utf8');
 const graphWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/graph-publishing-integrity.yml'), 'utf8');
 const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-pages-artifact.mjs'), 'utf8');
+const changeScope = await fs.readFile(path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
 
@@ -121,8 +122,18 @@ assert.ok(
 );
 
 assert.ok(
+  deployWorkflow.includes('"sam-memory.json"'),
+  'Pages deploy must trigger when the committed sam-memory.json public asset changes',
+);
+
+assert.ok(
   preparePagesArtifact.includes('Refusing to use unsafe Pages artifact path'),
   'Pages artifact preparation must reject destructive artifact output paths',
+);
+
+assert.ok(
+  preparePagesArtifact.includes("'.git'") && preparePagesArtifact.includes("'.github'") && preparePagesArtifact.includes('isPathInside'),
+  'Pages artifact preparation must reject protected repository paths before deleting the artifact target',
 );
 
 for (const graphPath of ['"categories/**"', '"about.html"', '"hubs.html"', '"sam.html"', '"scripts/**"']) {
@@ -136,5 +147,21 @@ assert.ok(
   graphWorkflow.includes('git diff --exit-code --') && graphWorkflow.includes('sam-memory.json'),
   'graph publishing integrity workflow must fail when regenerated publishing surfaces drift from committed files',
 );
+
+assert.ok(
+  graphWorkflow.includes('js/site-stats.json') && !graphWorkflow.includes('data/site-stats.json'),
+  'graph publishing integrity workflow must check the generated js/site-stats.json output, not data/site-stats.json',
+);
+
+for (const arcadeWorkerInput of [
+  "'workers/leaderboard-worker.js'",
+  "'workers/moonboys-api/worker.js'",
+  "'workers/moonboys-api/shared/faction-canon.js'",
+]) {
+  assert.ok(
+    changeScope.includes(arcadeWorkerInput),
+    `arcade CI scope must include Worker input ${arcadeWorkerInput}`,
+  );
+}
 
 console.log('CI domain grouping tests PASSED.');
