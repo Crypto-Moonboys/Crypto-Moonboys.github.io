@@ -140,8 +140,25 @@ assert.match(actionAvailabilityRuntime.button('ARENA', 'arena_start', {}, { disa
   'future expansion buttons must keep future expansion copy');
 assert.match(actionAvailabilityRuntime.button('LOCKED ACTION', 'locked', {}, { disabled: true }), /LOCKED/,
   'generic disabled buttons must keep locked copy');
+const soldButton = actionAvailabilityRuntime.button('BUY', 'buy', {}, { disabled: true, statusLabel: 'SOLD', detail: 'Offer closed' });
+assert.match(soldButton, /SOLD/,
+  'sold buttons must show the already-complete status label');
+assert.doesNotMatch(soldButton, /LOCKED/,
+  'sold buttons must not fall back to locked copy');
+const equippedButton = actionAvailabilityRuntime.button('EQUIP', 'buy', {}, { disabled: true, statusLabel: 'EQUIPPED', detail: 'Power suit' });
+assert.match(equippedButton, /EQUIPPED/,
+  'equipped buttons must show the already-current status label');
+assert.doesNotMatch(equippedButton, /LOCKED/,
+  'equipped buttons must not fall back to locked copy');
+const ownedButton = actionAvailabilityRuntime.button('STYLE', 'cosmetic_unlock', {}, { disabled: true, statusLabel: 'OWNED', detail: 'x1 // 100 MOON GOLD' });
+assert.match(ownedButton, /OWNED/,
+  'owned buttons must show the already-owned status label');
+assert.doesNotMatch(ownedButton, /LOCKED/,
+  'owned buttons must not fall back to locked copy');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true }), 'LOCKED',
   'disabled actions without richer authority metadata must show locked copy');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, statusLabel: 'SOLD' }), 'SOLD',
+  'status labels must override generic disabled copy');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
   'resource-gated buttons must distinguish not-enough-resource state');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
@@ -152,6 +169,14 @@ assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, autho
   'authority-syncing buttons must not fake availability');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
   'authority-syncing labels must outrank future-expansion labels when both apply');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+  'active-pet gates must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+  'egg/incubation gates must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
+  'resource gates must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m',
+  'cooldown labels must outrank future-expansion labels');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true }), 'FUTURE EXPANSION',
   'future expansion copy must not imply live gameplay');
 assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m',

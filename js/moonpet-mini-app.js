@@ -363,12 +363,13 @@
 
   function availabilityLabel(options) {
     options = options || {};
+    if (options.statusLabel) return String(options.statusLabel);
     if (options.authoritySyncing) return 'AUTHORITY SYNCING';
-    if (options.futureExpansion) return 'FUTURE EXPANSION';
     if (options.activePetRequired) return 'ACTIVE PET REQUIRED';
     if (options.eggRequired) return 'EGG / INCUBATION REQUIRED';
     if (options.resourceRequired) return 'NOT ENOUGH RESOURCE';
     if (options.cooldown) return cooldownDisplay(options.cooldown);
+    if (options.futureExpansion) return 'FUTURE EXPANSION';
     if (options.disabled) return 'LOCKED';
     return 'Ready now';
   }
@@ -1151,7 +1152,7 @@
           });
         }).join('');
         arenaBody = arenaHeader + intent + recap + (arena.status === 'readying'
-          ? '<div class="line muted">' + (arena.ready ? 'YOU ARE READY. WAITING FOR RIVAL.' : 'MATCH FOUND. LOCK IN WHEN READY.') + '</div><div class="button-grid">' + button('READY', 'arena_ready', { battle_id: arena.battle_id }, { disabled: arena.ready }) + button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>'
+          ? '<div class="line muted">' + (arena.ready ? 'YOU ARE READY. WAITING FOR RIVAL.' : 'MATCH FOUND. LOCK IN WHEN READY.') + '</div><div class="button-grid">' + button('READY', 'arena_ready', { battle_id: arena.battle_id }, { disabled: arena.ready, statusLabel: arena.ready ? 'READY' : '' }) + button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>'
           : '<div class="button-grid arena-decisions">' + arenaMoves + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
       } else if (arenaQueue) {
         arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
@@ -1265,10 +1266,10 @@
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : '');
     }).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
-      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased, detail: (offer.purchased ? 'SOLD // ' : '') + (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) });
+      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, statusLabel: offer.purchased ? 'SOLD' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) });
     }).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
-      return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || !item.affordable || item.equipped, resourceRequired: item.unlocked && !item.affordable && !item.equipped, detail: item.equipped ? 'EQUIPPED // ' + (item.description || '') : (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + ' // COST ' + costText(item.cost) });
+      return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || !item.affordable || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : '', resourceRequired: item.unlocked && !item.affordable && !item.equipped, detail: item.equipped ? (item.description || '') : (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + ' // COST ' + costText(item.cost) });
     }).join('');
     var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
@@ -1295,7 +1296,7 @@
       return '<div class="line ' + (set.pieces >= 2 ? 'complete' : '') + '">' + escapeHtml(words(set.key)) + ' // EQUIPPED ' + number(set.pieces) + '/' + number(set.total_pieces) + ' // OWNED ' + number(set.owned_pieces) + '</div>' +
         '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
     }).join('');
-    var cosmetics = (live.cosmetics || []).map(function (item) { return button(words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable || item.unlocked && !item.repeatable, resourceRequired: !item.affordable && !(item.unlocked && !item.repeatable), detail: (item.unlocked ? 'OWNED x' + number(item.quantity) + ' // ' : '') + costText(item.cost) }); }).join('');
+    var cosmetics = (live.cosmetics || []).map(function (item) { return button(words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable || item.unlocked && !item.repeatable, statusLabel: item.unlocked && !item.repeatable ? 'OWNED' : '', resourceRequired: !item.affordable && !(item.unlocked && !item.repeatable), detail: (item.unlocked ? 'x' + number(item.quantity) + ' // ' : '') + costText(item.cost) }); }).join('');
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>', 'equipment') +
       panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
@@ -1345,8 +1346,8 @@
     var live = state.live_systems || {};
     var faction = live.faction || {};
     var notificationPanel = '<div class="line ' + (notifications.enabled ? 'complete' : 'muted') + '">PROGRESSION ALERTS: ' + (notifications.enabled ? 'ONLINE' : 'OFFLINE') + '</div><div class="button-grid">' +
-      button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled }) +
-      button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, danger: true }) + '</div>';
+      button('ENABLE ALERTS', 'notification_set', { enabled: true }, { disabled: notifications.enabled, statusLabel: notifications.enabled ? 'CURRENT' : '' }) +
+      button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, statusLabel: !notifications.enabled ? 'CURRENT' : '', danger: true }) + '</div>';
     var aptitudeRows = ['brave', 'loyal', 'clever', 'stylish', 'tough', 'lucky'].map(function (key) { return '<div class="line">' + key.toUpperCase() + ' ' + number(learnedTraits[key]) + '</div>'; }).join('');
     var memory = identity.memories || {};
     var memoryRows = [
