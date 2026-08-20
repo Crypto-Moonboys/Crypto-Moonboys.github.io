@@ -441,6 +441,11 @@ assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficien
   'Moon Gold rejection copy must be plain language');
 assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /ACTION BLOCKED - Weekly Journey authority syncing\./,
   'authority-syncing rejection copy must be plain language');
+const unadoptedBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'pet_not_adopted' }, {}, {}).resultMessage;
+assert.match(unadoptedBlock, /ACTION BLOCKED - initialise your Moonpet first\./,
+  'unadopted rejection copy must tell players to initialise first');
+assert.doesNotMatch(unadoptedBlock, /hatch your Moonpet first/,
+  'unadopted rejection copy must not tell players to hatch before they have a Moonpet');
 const completedSeasonBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'completed_season_pet_required' }, {}, {}).resultMessage;
 assert.match(completedSeasonBlock, /ACTION BLOCKED - completed Season pet required\./,
   'completed-season rejection copy must name the completed pet requirement');

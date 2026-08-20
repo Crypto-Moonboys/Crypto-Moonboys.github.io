@@ -43,6 +43,7 @@ const TOP_EDGES_PER_NODE = 5;
 // Minimum relationship score to include an edge
 const MIN_EDGE_SCORE = 40;
 const MAX_PRESERVED_GENERATED_AT_HOURS = Number(process.env.GRAPH_MAX_AGE_HOURS || 6);
+const PRESERVE_SAFETY_MARGIN_MS = Number(process.env.GRAPH_PRESERVE_SAFETY_MARGIN_MINUTES || 10) * 60 * 1000;
 
 function compareStrings(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
@@ -64,6 +65,11 @@ function preserveGeneratedAtIfStable(nodes, edges) {
     const maxAgeMs = Number.isFinite(MAX_PRESERVED_GENERATED_AT_HOURS) && MAX_PRESERVED_GENERATED_AT_HOURS > 0
       ? MAX_PRESERVED_GENERATED_AT_HOURS * 60 * 60 * 1000
       : 6 * 60 * 60 * 1000;
+    const preserveCutoffMs = Math.max(0, maxAgeMs - (
+      Number.isFinite(PRESERVE_SAFETY_MARGIN_MS) && PRESERVE_SAFETY_MARGIN_MS > 0
+        ? PRESERVE_SAFETY_MARGIN_MS
+        : 10 * 60 * 1000
+    ));
     const ageMs = now - existingGeneratedAt;
 
     if (
@@ -72,7 +78,7 @@ function preserveGeneratedAtIfStable(nodes, edges) {
       existing.generated_at.trim() &&
       Number.isFinite(existingGeneratedAt) &&
       ageMs >= 0 &&
-      ageMs <= maxAgeMs
+      ageMs <= preserveCutoffMs
     ) {
       return existing.generated_at;
     }

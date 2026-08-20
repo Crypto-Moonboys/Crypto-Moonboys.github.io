@@ -1603,7 +1603,7 @@
       trade_cooldown: 'wait for cooldown.',
       adventure_cooldown: 'wait for cooldown.',
       moon_egg_must_hatch: 'hatch your Moonpet first.',
-      pet_not_adopted: 'hatch your Moonpet first.',
+      pet_not_adopted: 'initialise your Moonpet first.',
       insufficient_gold: 'not enough Moon Gold.',
       not_enough_pet_currency: 'not enough Moon Gold.',
       insufficient_crystals: 'not enough Moon Crystals.',
