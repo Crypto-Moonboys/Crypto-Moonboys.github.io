@@ -1562,7 +1562,7 @@
     var messages = {
       active_pet_required: 'active seasonal Moonpet required.',
       completed_season_pet_required: 'active seasonal Moonpet required.',
-      weekly_journey_authority_syncing: 'Daily Journey authority syncing.',
+      weekly_journey_authority_syncing: 'Weekly Journey authority syncing.',
       daily_journey_authority_syncing: 'Daily Journey authority syncing.',
       cooldown: 'wait for cooldown.',
       trade_cooldown: 'wait for cooldown.',

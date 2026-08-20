@@ -384,7 +384,7 @@ assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'cooldown' }
   'cooldown rejection copy must be plain language');
 assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_gold' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Gold\./,
   'Moon Gold rejection copy must be plain language');
-assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /ACTION BLOCKED - Daily Journey authority syncing\./,
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /ACTION BLOCKED - Weekly Journey authority syncing\./,
   'authority-syncing rejection copy must be plain language');
 
 // Keep every executable client-source test on marker boundaries so merges and
@@ -746,7 +746,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-journey-reward-ux/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-action-guidance-polish/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Arena and Kaiju are available for completed Season players with a hatched active Moonpet[\s\S]*Arena and Kaiju remain locked future panels with stale-state cleanup only/,
@@ -810,7 +810,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-journey-reward-ux/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-action-guidance-polish/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1392,7 +1392,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260820-journey-reward-ux/);
+assert.match(html, /20260820-action-guidance-polish/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
