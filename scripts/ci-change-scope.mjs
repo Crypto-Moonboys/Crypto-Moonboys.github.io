@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 
 const SCOPES = {
   wiki: [
@@ -41,6 +41,8 @@ const SCOPES = {
     'how-to-play*.html',
     'workers/leaderboard-worker.js',
     'workers/moonboys-api/worker.js',
+    'workers/moonboys-api/migrations/017_faction_season_lock.sql',
+    'workers/moonboys-api/blocktopia/routes.js',
     'workers/moonboys-api/shared/faction-canon.js',
     'scripts/*arcade*',
     'scripts/*btqm*',
@@ -92,6 +94,8 @@ const SCOPES = {
     'og-templates/**',
     'snapshots/**',
     'wiki/**',
+    'workers/moonboys-api/worker.js',
+    'workers/moonboys-api/routes/daily-digest.js',
     'scripts/*visual*',
     'scripts/avatar-builder-*',
     'scripts/portal-artwork.test.mjs',
@@ -115,6 +119,9 @@ const SCOPES = {
     'js/**',
     'assets/**',
     'og-templates/**',
+    'sitemap.xml',
+    'index_stats.json',
+    'sam-memory.json',
     'scripts/generate-publishing-surfaces.mjs',
     'scripts/graph-publishing-integrity.test.mjs',
     'scripts/ci-domain-runner.mjs',
@@ -202,8 +209,7 @@ if (files === null) {
 }
 
 const outputPath = process.env.GITHUB_OUTPUT;
-if (outputPath && existsSync(outputPath)) {
-  const { appendFileSync } = await import('node:fs');
+if (outputPath) {
   appendFileSync(outputPath, `should_run=${shouldRun ? 'true' : 'false'}\n`);
 }
 

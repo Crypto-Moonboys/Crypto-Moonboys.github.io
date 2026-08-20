@@ -136,7 +136,16 @@ assert.ok(
   'Pages artifact preparation must reject protected repository paths before deleting the artifact target',
 );
 
-for (const graphPath of ['"categories/**"', '"about.html"', '"hubs.html"', '"sam.html"', '"scripts/**"']) {
+for (const graphPath of [
+  '"categories/**"',
+  '"about.html"',
+  '"hubs.html"',
+  '"sam.html"',
+  '"sitemap.xml"',
+  '"index_stats.json"',
+  '"sam-memory.json"',
+  '"scripts/**"',
+]) {
   assert.ok(
     graphWorkflow.includes(graphPath),
     `graph publishing integrity workflow must run for ${graphPath}`,
@@ -156,6 +165,8 @@ assert.ok(
 for (const arcadeWorkerInput of [
   "'workers/leaderboard-worker.js'",
   "'workers/moonboys-api/worker.js'",
+  "'workers/moonboys-api/migrations/017_faction_season_lock.sql'",
+  "'workers/moonboys-api/blocktopia/routes.js'",
   "'workers/moonboys-api/shared/faction-canon.js'",
 ]) {
   assert.ok(
@@ -163,5 +174,31 @@ for (const arcadeWorkerInput of [
     `arcade CI scope must include Worker input ${arcadeWorkerInput}`,
   );
 }
+
+for (const visualWorkerInput of [
+  "'workers/moonboys-api/worker.js'",
+  "'workers/moonboys-api/routes/daily-digest.js'",
+]) {
+  assert.ok(
+    changeScope.includes(visualWorkerInput),
+    `visual CI scope must include Worker input ${visualWorkerInput}`,
+  );
+}
+
+for (const graphGeneratedSurface of [
+  "'sitemap.xml'",
+  "'index_stats.json'",
+  "'sam-memory.json'",
+]) {
+  assert.ok(
+    changeScope.includes(graphGeneratedSurface),
+    `graph CI scope must include generated root surface ${graphGeneratedSurface}`,
+  );
+}
+
+assert.ok(
+  changeScope.includes('if (outputPath)') && !changeScope.includes('existsSync(outputPath)'),
+  'CI change-scope must write GITHUB_OUTPUT whenever GitHub provides an output path',
+);
 
 console.log('CI domain grouping tests PASSED.');
