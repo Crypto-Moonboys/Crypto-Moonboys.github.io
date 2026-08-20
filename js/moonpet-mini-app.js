@@ -1575,7 +1575,9 @@
     }
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
-    var parts = ['ACTION ACCEPTED', rejectionMessage(result.reason)];
+    var parts = ['ACTION ACCEPTED'];
+    var reasonCopy = rejectionMessage(result.reason);
+    if (reasonCopy) parts.push(reasonCopy);
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
     if (terminalResult) parts.push('OUTCOME ' + words(terminalResult.replace('player1', 'you').replace('player2', 'opponent')));
     var resultCopy = result.result_copy || result.outcome && result.outcome.copy;

@@ -460,6 +460,19 @@ assert.doesNotMatch(blockedResultFeedback.resultMessage, /Daily Journey|GROWTH M
   'rejected action result must not show journey progress or reward language');
 assert.deepEqual(blockedResultFeedback.actionFeedback.lines, ['ACTION BLOCKED', 'hatch your Moonpet first.'],
   'blocked canvas feedback must keep reason-only copy');
+const acceptedWithoutReason = actionResultFeedbackRuntime({
+  accepted: true,
+  result_copy: 'Moonpet settled in.',
+  rewards: { moon_gold: 25 },
+}, {}, {}).resultMessage;
+assert.match(acceptedWithoutReason, /ACTION ACCEPTED/,
+  'accepted action result must keep accepted copy');
+assert.match(acceptedWithoutReason, /Moonpet settled in\./,
+  'accepted action result without reason must keep result copy');
+assert.match(acceptedWithoutReason, /\+25 Moon Gold/,
+  'accepted action result without reason must keep reward copy');
+assert.doesNotMatch(acceptedWithoutReason, /ACTION ACCEPTED \/\/\s*\/\//,
+  'accepted action result without reason must not render an empty reason separator');
 assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'cooldown' }, {}, {}).resultMessage, /ACTION BLOCKED - wait for cooldown\./,
   'cooldown rejection copy must be plain language');
 assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_gold' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Gold\./,
