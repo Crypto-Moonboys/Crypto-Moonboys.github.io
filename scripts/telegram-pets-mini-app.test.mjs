@@ -116,10 +116,30 @@ assert.ok(actionAvailabilitySource, 'action availability helper must be extracta
 const actionAvailabilityRuntime = new Function(
   'option',
   `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
-${actionAvailabilitySource}; return { cooldownDisplay, availabilityLabel, availabilityDetail };`,
+function escapeHtml(value) { return String(value == null ? '' : value); }
+${actionAvailabilitySource}
+function button(label, action, payload, options) {
+  options = options || {};
+  var disabled = options && options.disabled;
+  var detail = shouldShowAvailability(options)
+    ? '<small>' + escapeHtml(availabilityDetail(options)) + '</small>'
+    : '';
+  return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
+}
+return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, button };`,
 )({});
 assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
   'available action buttons must not show locked copy');
+assert.doesNotMatch(actionAvailabilityRuntime.button('FEED', 'feed'), /Ready now|<small>/,
+  'ordinary enabled buttons with no detail must not render noisy Ready now copy');
+assert.match(actionAvailabilityRuntime.button('BUY', 'buy', {}, { disabled: true, resourceRequired: true }), /NOT ENOUGH RESOURCE/,
+  'resource-gated buttons must keep explicit not-enough-resource copy');
+assert.match(actionAvailabilityRuntime.button('WAIT', 'wait', {}, { cooldown: { retry_after_seconds: 720 } }), /Available in 12m/,
+  'cooldown buttons must keep existing-state cooldown copy');
+assert.match(actionAvailabilityRuntime.button('ARENA', 'arena_start', {}, { disabled: true, futureExpansion: true }), /FUTURE EXPANSION/,
+  'future expansion buttons must keep future expansion copy');
+assert.match(actionAvailabilityRuntime.button('LOCKED ACTION', 'locked', {}, { disabled: true }), /LOCKED/,
+  'generic disabled buttons must keep locked copy');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true }), 'LOCKED',
   'disabled actions without richer authority metadata must show locked copy');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',

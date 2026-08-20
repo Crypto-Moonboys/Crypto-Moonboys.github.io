@@ -379,12 +379,28 @@
     var detail = options.detail ? String(options.detail) : '';
     return detail ? label + ' // ' + detail : label;
   }
+
+  function shouldShowAvailability(options) {
+    options = options || {};
+    return Boolean(
+      options.detail
+      || options.disabled
+      || options.futureExpansion
+      || options.authoritySyncing
+      || options.activePetRequired
+      || options.eggRequired
+      || options.resourceRequired
+      || options.cooldown
+    );
+  }
   // TEST-EXPORT: actionAvailability:end
 
   function button(label, action, payload, options) {
     options = options || {};
     var disabled = options && options.disabled;
-    var detail = '<small>' + escapeHtml(availabilityDetail(options)) + '</small>';
+    var detail = shouldShowAvailability(options)
+      ? '<small>' + escapeHtml(availabilityDetail(options)) + '</small>'
+      : '';
     return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
   }
 
