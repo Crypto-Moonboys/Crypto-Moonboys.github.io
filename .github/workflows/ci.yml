@@ -18,18 +18,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Check wiki/static changes
         id: wiki_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs wiki
-
-      - name: Setup Node.js
-        if: steps.wiki_changes.outputs.should_run == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
 
       - name: Install dependencies
         if: steps.wiki_changes.outputs.should_run == 'true'
@@ -74,18 +73,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Check arcade/frontend changes
         id: arcade_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs arcade
-
-      - name: Setup Node.js
-        if: steps.arcade_changes.outputs.should_run == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
 
       - name: Install dependencies
         if: steps.arcade_changes.outputs.should_run == 'true'
@@ -112,18 +110,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Check WAX/static changes
         id: wax_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs wax
-
-      - name: Setup Node.js
-        if: steps.wax_changes.outputs.should_run == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
 
       - name: Install dependencies
         if: steps.wax_changes.outputs.should_run == 'true'
@@ -147,18 +144,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Check visual/runtime frontend changes
         id: visual_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci-change-scope.mjs visual
-
-      - name: Setup Node.js
-        if: steps.visual_changes.outputs.should_run == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
 
       - name: Install dependencies
         if: steps.visual_changes.outputs.should_run == 'true'

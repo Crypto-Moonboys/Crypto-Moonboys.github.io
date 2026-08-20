@@ -29,6 +29,7 @@ on:
       - "wiki/**"
       - "favicon.png"
       - "robots.txt"
+      - "scripts/prepare-pages-artifact.mjs"
       - "sitemap.xml"
       - "index_stats.json"
   workflow_dispatch:
@@ -59,10 +60,13 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare Pages artifact
+        run: node scripts/prepare-pages-artifact.mjs public-site
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: public-site
 
   deploy:
     needs: build
