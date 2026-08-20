@@ -1589,10 +1589,12 @@
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
-      if (actionRefreshesWeeklyJourney(action)) tell('WEEKLY JOURNEY AUTHORITY REFRESHED.');
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
       var message = resultMessage(data.result);
+      if (actionRefreshesWeeklyJourney(action) && data.result && data.result.accepted) {
+        message += ' Weekly Journey authority refreshed.';
+      }
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
       render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });

@@ -394,6 +394,9 @@ await staleRefresh;
 assert.equal(renderedState.revision, 'action-result', 'an older background refresh must not overwrite a newer action result');
 assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[\s\S]*stateRequestGate\.isCurrent\(requestGeneration\)/, 'all state snapshots must pass the request freshness gate');
 assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
+assert.doesNotMatch(client, /tell\('WEEKLY JOURNEY AUTHORITY REFRESHED\.'\)/, 'Weekly Journey refresh copy must not be emitted as a dead toast before result copy');
+assert.match(client, /var message = resultMessage\(data\.result\);\s*if \(actionRefreshesWeeklyJourney\(action\) && data\.result && data\.result\.accepted\) \{\s*message \+= ' Weekly Journey authority refreshed\.';\s*\}\s*tell\(message, data\.result && data\.result\.accepted \? '' : 'danger'\);/,
+  'Weekly Journey refresh copy must be appended only to accepted action result messages');
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
 assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability\)/, 'Weekly Journey must render from server authority');
