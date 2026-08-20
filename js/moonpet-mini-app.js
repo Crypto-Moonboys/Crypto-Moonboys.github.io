@@ -1592,7 +1592,9 @@
   function resultMessage(result, beforeState, afterState) {
     if (!result) return 'SYSTEM RESPONSE LOST.';
     if (!result.accepted) {
-      var blockedParts = ['ACTION BLOCKED - ' + rejectionMessage(result.reason)];
+      var blockedParts = ['ACTION BLOCKED'];
+      var blockedReasonCopy = rejectionMessage(result.reason);
+      if (blockedReasonCopy) blockedParts[0] += ' - ' + blockedReasonCopy;
       if (result.duplicate) blockedParts.push('Duplicate blocked by authority.');
       return blockedParts.join(' // ');
     }
@@ -1660,7 +1662,8 @@
     if (!result) return { tone: 'danger', lines: ['SYSTEM RESPONSE LOST'], reaction: '' };
     var lines = [result.accepted ? 'ACTION COMPLETE' : 'ACTION BLOCKED'];
     if (!result.accepted) {
-      lines.push(compactFeedback(rejectionMessage(result.reason), 34));
+      var feedbackReasonCopy = rejectionMessage(result.reason);
+      if (feedbackReasonCopy) lines.push(compactFeedback(feedbackReasonCopy, 34));
       if (result.duplicate && lines.length < 3) lines.push('DUPLICATE BLOCKED');
       return { tone: 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
     }

@@ -487,6 +487,16 @@ assert.doesNotMatch(blockedResultFeedback.resultMessage, /Daily Journey|GROWTH M
   'rejected action result must not show journey progress or reward language');
 assert.deepEqual(blockedResultFeedback.actionFeedback.lines, ['ACTION BLOCKED', 'hatch your Moonpet first.'],
   'blocked canvas feedback must keep reason-only copy');
+const blockedWithoutReason = actionResultFeedbackRuntime({ accepted: false }, {}, {});
+assert.equal(blockedWithoutReason.resultMessage, 'ACTION BLOCKED',
+  'rejected action without reason must not render a dangling hyphen');
+assert.deepEqual(blockedWithoutReason.actionFeedback.lines, ['ACTION BLOCKED'],
+  'rejected action without reason must not add a blank canvas feedback line');
+const duplicateWithoutReason = actionResultFeedbackRuntime({ accepted: false, duplicate: true }, {}, {});
+assert.equal(duplicateWithoutReason.resultMessage, 'ACTION BLOCKED // Duplicate blocked by authority.',
+  'rejected duplicate without reason must still show duplicate terminal copy');
+assert.deepEqual(duplicateWithoutReason.actionFeedback.lines, ['ACTION BLOCKED', 'DUPLICATE BLOCKED'],
+  'rejected duplicate without reason must still show duplicate canvas copy');
 const acceptedWithoutReason = actionResultFeedbackRuntime({
   accepted: true,
   result_copy: 'Moonpet settled in.',
