@@ -365,8 +365,8 @@
     options = options || {};
     if (options.statusLabel) return String(options.statusLabel);
     if (options.authoritySyncing) return 'AUTHORITY SYNCING';
-    if (options.activePetRequired) return 'ACTIVE PET REQUIRED';
     if (options.eggRequired) return 'EGG / INCUBATION REQUIRED';
+    if (options.activePetRequired) return 'ACTIVE PET REQUIRED';
     if (options.resourceRequired) return 'NOT ENOUGH RESOURCE';
     if (options.cooldown) return cooldownDisplay(options.cooldown);
     if (options.futureExpansion) return 'FUTURE EXPANSION';
@@ -393,6 +393,24 @@
       || options.resourceRequired
       || options.cooldown
     );
+  }
+
+  function cooldownMetadata(source) {
+    source = source || {};
+    var hasCooldownField = source.retry_after_seconds != null
+      || source.seconds != null
+      || source.cooldown_ms_remaining != null
+      || source.ms_remaining != null
+      || source.cooldown_until
+      || source.available_at
+      || source.retry_at;
+    return hasCooldownField && cooldownDisplay(source) !== 'Ready now' ? source : null;
+  }
+
+  function activityClaimButtonOptions(activity) {
+    activity = activity || {};
+    var cooldown = !activity.ready ? cooldownMetadata(activity) : null;
+    return { disabled: !activity.ready, cooldown: cooldown };
   }
   // TEST-EXPORT: actionAvailability:end
 
@@ -860,11 +878,14 @@
     var seasonSlots = state && state.season_slots || {};
     var slot = activeSeasonSlot();
     var progression = activePetProgression();
-    var lifecycle = progression.lifecycle || state && state.lifecycle || {};
+    var authoritativeLifecycle = state && state.lifecycle || {};
+    var progressionLifecycle = progression.lifecycle || {};
+    var phase = String(authoritativeLifecycle.phase || progressionLifecycle.phase || '').toLowerCase();
+    var evolutionReady = Boolean(authoritativeLifecycle.evolution_ready || progressionLifecycle.evolution_ready);
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active seasonal Moonpet before journey progress starts.';
-    if (String(lifecycle.phase || '').toLowerCase() === 'egg') return 'Hatch your Moon Egg by completing incubation signals.';
-    if (lifecycle.evolution_ready) return 'Evolve your active Moonpet when you are ready.';
+    if (phase === 'egg') return 'Hatch your Moon Egg by completing incubation signals.';
+    if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
     return 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.';
   }
 
@@ -887,6 +908,8 @@
     if (bossObjective && !bossObjective.completed && Number(bossObjective.progress || 0) < Number(bossObjective.target || 1)) {
       return boss.available ? 'Complete Weekly boss attempt to progress Weekly Journey.' : 'Build level and energy before the Weekly boss attempt.';
     }
+    var energy = Number(state && state.pet && state.pet.energy);
+    if (Number.isFinite(energy) && energy < 12) return 'Restore energy before starting a Moon Run.';
     return 'Start a Moon Run or pick an available Explore action.';
   }
   // TEST-EXPORT: nextGuidance:end
@@ -1235,7 +1258,7 @@
     }).join('');
     var activity = guidance.activity;
     var activityHtml = activity
-      ? '<div class="line">ACTIVE: ' + escapeHtml(words(activity.activity_type)) + ' // ' + escapeHtml(activity.detail) + '</div><div class="button-grid">' + button('CLAIM', 'activity_claim', {}, { disabled: !activity.ready }) + button('CANCEL', 'activity_cancel', {}, { danger: true }) + '</div>'
+      ? '<div class="line">ACTIVE: ' + escapeHtml(words(activity.activity_type)) + ' // ' + escapeHtml(activity.detail) + '</div><div class="button-grid">' + button('CLAIM', 'activity_claim', {}, activityClaimButtonOptions(activity)) + button('CANCEL', 'activity_cancel', {}, { danger: true }) + '</div>'
       : '<div class="button-grid">' + ['sleep', 'train', 'work', 'explore'].map(function (kind) { return button(kind, 'activity_start', { activity_type: kind }); }).join('') + '</div>';
     return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs');
   }
@@ -1608,7 +1631,7 @@
       moon_egg_must_hatch: 'hatch your Moonpet first.',
       pet_not_adopted: 'initialise your Moonpet first.',
       insufficient_gold: 'not enough Moon Gold.',
-      not_enough_pet_currency: 'not enough Moon Gold.',
+      not_enough_pet_currency: 'not enough required currency.',
       insufficient_crystals: 'not enough Moon Crystals.',
       insufficient_style: 'not enough Style Tokens.',
       insufficient_arcade_xp: 'NOT ENOUGH ARCADE XP FOR THIS SLOT',

@@ -126,7 +126,7 @@ function button(label, action, payload, options) {
     : '';
   return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
 }
-return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, button };`,
+return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button };`,
 )({});
 assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
   'available action buttons must not show locked copy');
@@ -173,6 +173,10 @@ assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futur
   'active-pet gates must outrank future-expansion labels');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
   'egg/incubation gates must outrank future-expansion labels');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+  'egg/incubation gates must outrank active-pet gates when both apply');
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+  'active-pet gates must remain explicit without egg/incubation gating');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
   'resource gates must outrank future-expansion labels');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m',
@@ -183,6 +187,12 @@ assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 72
   'cooldown display must use existing retry_after_seconds safely');
 assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90000 }), 'Available tomorrow UTC',
   'long cooldown display must use plain UTC copy');
+assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 720 })), /Available in 12m/,
+  'real timed-activity claim button options must render existing-state cooldown metadata');
+assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false })), /LOCKED/,
+  'timed-activity claim buttons without cooldown metadata must not fake availability');
+assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 0 })), /LOCKED/,
+  'timed-activity claim buttons must ignore cooldown metadata that resolves to Ready now');
 
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
@@ -365,6 +375,13 @@ assert.equal(unavailableSlotGuidance, 'Season slot authority is syncing. Active 
 assert.notEqual(unavailableSlotGuidance, 'Pick an active seasonal Moonpet before journey progress starts.',
   'unavailable season-slot authority must not be confused with a genuinely empty active slot');
 assert.equal(nextGuidanceRuntime({
+  pet: { pet_id: 'pet-a', pet_name: 'Luna' },
+  season_slots: { slots: [{ pet_id: 'pet-a', active: true }] },
+  lifecycle: { phase: 'egg' },
+  active_pet_progression: { lifecycle: { evolution_ready: false } },
+}).profileNextLine(), 'Hatch your Moon Egg by completing incubation signals.',
+  'authoritative state lifecycle phase must keep egg guidance even when progression lifecycle lacks phase');
+assert.equal(nextGuidanceRuntime({
   guidance: { weekly_boss: { available: true } },
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
 }).exploreNextLine(), 'Complete Weekly boss attempt to progress Weekly Journey.',
@@ -374,6 +391,16 @@ assert.equal(nextGuidanceRuntime({
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
 }).exploreNextLine(), 'Build level and energy before the Weekly boss attempt.',
   'unavailable incomplete Weekly boss objective must not recommend a blocked boss attempt');
+assert.equal(nextGuidanceRuntime({
+  pet: { energy: 12 },
+  weekly_journey: { objectives: [] },
+}).exploreNextLine(), 'Start a Moon Run or pick an available Explore action.',
+  'sufficient energy with no active run may recommend a Moon Run');
+assert.equal(nextGuidanceRuntime({
+  pet: { energy: 3 },
+  weekly_journey: { objectives: [] },
+}).exploreNextLine(), 'Restore energy before starting a Moon Run.',
+  'low energy with no active run must not recommend a Moon Run');
 
 const journeyActionProgressSource = extractTestExport(client, 'journeyActionProgress');
 assert.ok(journeyActionProgressSource, 'Journey action progress helper must be extractable for runtime coverage');
@@ -477,6 +504,15 @@ assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'cooldown' }
   'cooldown rejection copy must be plain language');
 assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_gold' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Gold\./,
   'Moon Gold rejection copy must be plain language');
+const petCurrencyBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'not_enough_pet_currency' }, {}, {}).resultMessage;
+assert.match(petCurrencyBlock, /ACTION BLOCKED - not enough required currency\./,
+  'generic pet-currency rejection copy must be currency-neutral');
+assert.doesNotMatch(petCurrencyBlock, /Moon Gold/,
+  'generic pet-currency rejection copy must not mention Moon Gold');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_crystals' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Crystals\./,
+  'Moon Crystal rejection copy must remain specific');
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_style' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Style Tokens\./,
+  'Style Token rejection copy must remain specific');
 assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /ACTION BLOCKED - Weekly Journey authority syncing\./,
   'authority-syncing rejection copy must be plain language');
 const unadoptedBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'pet_not_adopted' }, {}, {}).resultMessage;
