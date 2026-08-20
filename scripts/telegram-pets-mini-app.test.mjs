@@ -130,6 +130,12 @@ assert.doesNotMatch(dailyJourneyRuntime({}, 2, {}, {}), /\d+\/0 OBJECTIVES/,
   'missing Daily Journey authority must not render an X/0 objective counter');
 assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /DAILY JOURNEY \/\/ 2\/3 OBJECTIVES/,
   'complete Daily Journey authority must still render objective progress');
+assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /NEXT \/\/ Daily Journey: 2\/3 complete - finish 1 more daily objective for Growth Mark eligibility/,
+  'incomplete Daily Journey must guide the next eligible objective count from authority');
+assert.match(dailyJourneyRuntime({ completed_objectives: 3, required_objectives: 3, growth_mark_awarded: true, reason: 'daily_journey_qualified' }, 0, {}, {}), /GROWTH MARK ALREADY SETTLED/,
+  'settled Daily Journey Growth Mark state must use settled copy');
+assert.match(dailyJourneyRuntime({ reason: 'active_pet_required', required_objectives: 0, completed_objectives: 0 }, 0, {}, {}), /No active seasonal Moonpet - pick or hatch one before journey progress starts/,
+  'Daily Journey must guide players without an active seasonal pet');
 
 const weeklyJourneyMarkupSource = extractTestExport(client, 'weeklyJourneyMarkup');
 assert.ok(weeklyJourneyMarkupSource, 'Weekly Journey markup helper must be extractable for runtime coverage');
@@ -167,6 +173,16 @@ assert.match(weeklyJourneyRuntime({
   objectives: [],
 }, { completed_objectives: 4, required_objectives: 5 }), /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/,
   'Weekly Journey must preserve authoritative zero completed objectives over nonzero capability fallback');
+const emptyObjectiveWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  completed_objectives: 0,
+  required_objectives: 5,
+  objectives: [],
+}, {});
+assert.match(emptyObjectiveWeeklyMarkup, /REMAINING \/\/ Waiting for server-confirmed objectives/,
+  'incomplete Weekly Journey with no objective list must wait for server-confirmed objectives');
+assert.doesNotMatch(emptyObjectiveWeeklyMarkup, /REMAINING \/\/ No remaining weekly objectives/,
+  'incomplete Weekly Journey with no objective list must not look complete');
 const partialWeeklyMarkup = weeklyJourneyRuntime({
   state: 'AVAILABLE',
   qualification_week: 2,
@@ -181,6 +197,10 @@ const partialWeeklyMarkup = weeklyJourneyRuntime({
 }, {});
 assert.match(partialWeeklyMarkup, /WEEKLY JOURNEY \/\/ 2\/5 OBJECTIVES/, 'Weekly Journey must render partial progress');
 assert.match(partialWeeklyMarkup, /Weekly training sessions \/\/ 1\/3 \/\/ INCOMPLETE/, 'Weekly Journey must keep incomplete partial objectives visible');
+assert.match(partialWeeklyMarkup, /NEXT \/\/ Weekly Journey: 2\/5 complete - remaining: Weekly training sessions/,
+  'Weekly Journey must show next-action guidance from remaining authoritative objectives');
+assert.match(partialWeeklyMarkup, /REMAINING \/\/ Weekly training sessions/,
+  'Weekly Journey must clearly list remaining objectives');
 const completeWeeklyMarkup = weeklyJourneyRuntime({
   state: 'AVAILABLE',
   qualification_week: 2,
@@ -192,6 +212,8 @@ const completeWeeklyMarkup = weeklyJourneyRuntime({
 }, {});
 assert.match(completeWeeklyMarkup, /WEEKLY JOURNEY \/\/ 5\/5 OBJECTIVES/, 'Weekly Journey must render complete progress');
 assert.match(completeWeeklyMarkup, /WEEKLY CREST READY FOR SERVER SETTLEMENT/, 'complete but unsettled Weekly Journey must not fake an awarded Crest');
+assert.match(completeWeeklyMarkup, /Weekly Journey complete - Weekly Crest is ready for server settlement/,
+  'complete but unsettled Weekly Journey must guide server settlement without claim language');
 const authoritativeFalseCrestMarkup = weeklyJourneyRuntime({
   state: 'AVAILABLE',
   completed_objectives: 5,
@@ -214,6 +236,8 @@ const settledWeeklyMarkup = weeklyJourneyRuntime({
   objectives: [],
 }, {});
 assert.match(settledWeeklyMarkup, /WEEKLY CREST ALREADY SETTLED/, 'already-settled Weekly Crest must not appear claimable again');
+assert.match(settledWeeklyMarkup, /Weekly Crest already settled - keep daily routines moving until next reset/,
+  'settled Weekly Crest state must guide routine play until reset');
 const failedWeeklyMarkup = weeklyJourneyRuntime({
   state: 'LOCKED',
   reason: 'weekly_journey_authority_syncing',
@@ -229,11 +253,80 @@ const noActivePetWeeklyMarkup = weeklyJourneyRuntime({
   required_objectives: 5,
 }, {});
 assert.match(noActivePetWeeklyMarkup, /WEEKLY JOURNEY \/\/ ACTIVE PET REQUIRED/, 'no active pet state must be clear and safe');
+assert.match(noActivePetWeeklyMarkup, /No active seasonal Moonpet - pick or hatch one before journey progress starts/,
+  'Weekly Journey must guide players without an active seasonal pet');
+const comingSoonWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'COMING_SOON',
+  completed_objectives: 0,
+  required_objectives: 5,
+}, {});
+assert.match(comingSoonWeeklyMarkup, /WEEKLY JOURNEY \/\/ PLANNED EXPANSION/,
+  'COMING_SOON Weekly Journey must render planned expansion title');
+assert.match(comingSoonWeeklyMarkup, /NEXT \/\/ Weekly Journey is planned expansion\./,
+  'COMING_SOON Weekly Journey guidance must use planned expansion copy');
+assert.doesNotMatch(comingSoonWeeklyMarkup, /authority is syncing/i,
+  'COMING_SOON Weekly Journey must not say authority is syncing');
+assert.doesNotMatch(comingSoonWeeklyMarkup, /Complete objectives to qualify/,
+  'COMING_SOON Weekly Journey must not ask players to complete objectives');
+
+const journeyActionProgressSource = extractTestExport(client, 'journeyActionProgress');
+assert.ok(journeyActionProgressSource, 'Journey action progress helper must be extractable for runtime coverage');
+const journeyActionProgressRuntime = new Function(
+  'beforeState',
+  'afterState',
+  'result',
+  `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
+function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
+${weeklyJourneyMarkupSource}
+${journeyActionProgressSource}; return journeyActionProgressLines(beforeState, afterState, result);`,
+);
+assert.deepEqual(journeyActionProgressRuntime({
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 2, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 2, target: 5 }] },
+}, { accepted: true }), [
+  'Daily Journey +1 objective (2/3).',
+  'Weekly care actions 2/5.',
+], 'accepted action feedback must display server-confirmed journey progress context');
+assert.deepEqual(journeyActionProgressRuntime({
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 2, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 2, target: 5 }] },
+}, { accepted: false }), [], 'rejected actions must not display journey success or progress context');
+assert.deepEqual(journeyActionProgressRuntime({
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+}, {
+  pet: { pet_id: 'pet-b' },
+  daily_journey: { pet_id: 'pet-b', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 3, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-b', season_key: 's1', qualification_week: 2, completed_objectives: 4, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 5, target: 5 }] },
+}, { accepted: true }), [], 'switching active pets must not report the newly active pet existing journey counters as progress');
+assert.deepEqual(journeyActionProgressRuntime({
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-19', completed_objectives: 1, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 1, completed_objectives: 1, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 1, target: 5 }] },
+}, {
+  pet: { pet_id: 'pet-a' },
+  daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 3, required_objectives: 3 },
+  weekly_journey: { pet_id: 'pet-a', season_key: 's1', qualification_week: 2, completed_objectives: 4, required_objectives: 5, objectives: [{ objective_id: 'weekly_care', progress: 5, target: 5 }] },
+}, { accepted: true }), [], 'changed Daily or Weekly journey periods must not report carried-over counters as new progress');
+assert.deepEqual(journeyActionProgressRuntime({}, {
+  weekly_journey: { state: 'LOCKED', reason: 'weekly_journey_authority_syncing', completed_objectives: 0, required_objectives: 5, objectives: [] },
+}, { accepted: true }), [], 'authority-unavailable state must not fake journey progress in action feedback');
 
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'journeyActionProgress', 'stateRequestGate', 'phase4PresenceDirector',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
@@ -414,8 +507,11 @@ assert.equal(renderedState.revision, 'action-result', 'an older background refre
 assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[\s\S]*stateRequestGate\.isCurrent\(requestGeneration\)/, 'all state snapshots must pass the request freshness gate');
 assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
 assert.doesNotMatch(client, /tell\('WEEKLY JOURNEY AUTHORITY REFRESHED\.'\)/, 'Weekly Journey refresh copy must not be emitted as a dead toast before result copy');
-assert.match(client, /var message = resultMessage\(data\.result\);\s*if \(actionRefreshesWeeklyJourney\(action\) && data\.result && data\.result\.accepted\) \{\s*message \+= ' Weekly Journey authority refreshed\.';\s*\}\s*tell\(message, data\.result && data\.result\.accepted \? '' : 'danger'\);/,
-  'Weekly Journey refresh copy must be appended only to accepted action result messages');
+assert.doesNotMatch(client, /Weekly Journey authority refreshed/, 'action feedback must describe confirmed journey progress instead of generic refresh state');
+assert.match(client, /var message = resultMessage\(data\.result, stateBeforeAction, nextState\);\s*tell\(message, data\.result && data\.result\.accepted \? '' : 'danger'\);/,
+  'action result messages must receive before and after authoritative state snapshots');
+assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/,
+  'canvas result feedback must receive before and after authoritative state snapshots');
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
 assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability\)/, 'Weekly Journey must render from server authority');
@@ -426,6 +522,8 @@ assert.match(client, /var waitingTitle = weeklyState === 'COMING_SOON'[\s\S]*'WE
 assert.match(client, /var waitingCopy = weeklyState === 'COMING_SOON'[\s\S]*Weekly Journey is planned expansion\.[\s\S]*Weekly Journey authority is syncing\./,
   'Weekly Journey panel body copy must keep COMING_SOON planned copy separate from syncing authority copy');
 assert.match(client, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST READY FOR SERVER SETTLEMENT/, 'Weekly Journey live UI must surface Crest settlement states');
+assert.doesNotMatch(client, /Growth Mark[^'\n]*(?:claim|claimable)|Weekly Crest[^'\n]*(?:claim|claimable)/i,
+  'Journey reward copy must avoid claim language when no claim action exists');
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
 assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
 assert.match(client, /function combatLockCopy\(\)[\s\S]*combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
@@ -584,7 +682,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-weekly-journey-live-polish/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-journey-reward-ux/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Arena and Kaiju are available for completed Season players with a hatched active Moonpet[\s\S]*Arena and Kaiju remain locked future panels with stale-state cleanup only/,
@@ -648,7 +746,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-weekly-journey-live-polish/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260820-journey-reward-ux/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -878,14 +976,14 @@ assert.match(client, /function updateCameraFrame\(time\)/);
 assert.match(client, /if \(reducedMotion \|\| cameraImpactUntil <= time/);
 assert.match(client, /function drawActionFlash\(time, scene\)/);
 assert.match(client, /if \(reducedMotion \|\| actionStartedAt <= 0 \|\| time < actionStartedAt/);
-assert.match(client, /function actionFeedback\(result\)/);
+assert.match(client, /function actionFeedback\(result, beforeState, afterState\)/);
 assert.match(client, /function resultRewardMap\(result\)/);
 assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards_applied\)/);
 assert.match(client, /var reward = resultRewardMap\(result\)/);
 assert.equal([...client.matchAll(/var reward = resultRewardMap\(result\)/g)].length, 2, 'terminal and canvas feedback must share reward normalization');
-assert.match(client, /presentResultFeedback\(data\.result\)/);
-assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result\)/s);
-assert.doesNotMatch(client, /presentResultFeedback\(data\.result\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
+assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/);
+assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/s);
+assert.doesNotMatch(client, /presentResultFeedback\(data\.result(?:, stateBeforeAction, nextState)?\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
 assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 2, 'only the helper and real server-result call may present reward feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
 assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
@@ -1141,7 +1239,7 @@ assert.match(client, /var burst = reducedMotion \? 38/);
 assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
 assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
 assert.match(client, /drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);/s);
-assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result\);/);
+assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
 assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
 assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
 assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
@@ -1230,7 +1328,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260820-weekly-journey-live-polish/);
+assert.match(html, /20260820-journey-reward-ux/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

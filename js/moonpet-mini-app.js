@@ -622,6 +622,21 @@
   // TEST-EXPORT: capabilityCombatHelper:end
 
   // TEST-EXPORT: dailyJourneyMarkup:start
+  function dailyJourneyNextAction(dailyAuthority, completedMissions, guidance) {
+    dailyAuthority = dailyAuthority || {};
+    guidance = guidance || {};
+    var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
+    var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
+    var reason = String(dailyAuthority.reason || '').toLowerCase();
+    if (reason === 'active_pet_required') return 'No active seasonal Moonpet - pick or hatch one before journey progress starts.';
+    if (dailyRequired <= 0) return 'Daily Journey authority is syncing. Progress display will refresh when server authority is available.';
+    if (dailyAuthority.growth_mark_awarded) return 'Growth Mark already settled for today.';
+    if (dailyAuthority.duplicate_blocked) return 'Growth Mark duplicate blocked for today.';
+    if (dailyCompleted >= dailyRequired) return 'Daily Journey complete - Growth Mark eligibility is ready for server settlement.';
+    var remaining = Math.max(0, dailyRequired - dailyCompleted);
+    return 'Daily Journey: ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' complete - finish ' + number(remaining) + ' more daily objective' + (remaining === 1 ? '' : 's') + ' for Growth Mark eligibility.';
+  }
+
   function dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth) {
     dailyAuthority = dailyAuthority || {};
     guidance = guidance || {};
@@ -630,7 +645,7 @@
     var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
     var dailyAuthorityReady = Number.isFinite(dailyRequired) && dailyRequired > 0;
     var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
-    var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY AWARDED'
+    var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY SETTLED'
       : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
         : dailyRequired > 0 && dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
     return dailyAuthorityReady
@@ -638,12 +653,56 @@
         '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
         meter('GROWTH MARK', dailyPercent) +
         '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
+        '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div>' +
         '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>'
-      : '<div class="line locked">DAILY JOURNEY // SYNCING</div><div class="line muted">Daily Journey authority is syncing. Progress display will refresh when server authority is available.</div>';
+      : '<div class="line locked">DAILY JOURNEY // SYNCING</div><div class="line muted">' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div>';
   }
   // TEST-EXPORT: dailyJourneyMarkup:end
 
   // TEST-EXPORT: weeklyJourneyMarkup:start
+  function weeklyObjectiveLabel(objective) {
+    return objective.name || objective.title || ({
+      weekly_care: 'Weekly care actions',
+      weekly_training: 'Weekly training sessions',
+      weekly_run: 'Daily Moon Runs',
+      weekly_boss_attempt: 'Weekly boss attempt',
+      weekly_check_in: 'Daily chest check-ins',
+    })[String(objective.objective_id || '')] || words(objective.objective_id || 'weekly objective');
+  }
+
+  function weeklyRemainingLabels(objectives) {
+    return (objectives || []).filter(function (objective) {
+      var progress = Math.max(0, Number(objective.progress) || 0);
+      var target = Math.max(1, Number(objective.target) || 1);
+      return !(objective.completed || progress >= target);
+    }).map(weeklyObjectiveLabel);
+  }
+
+  function weeklyJourneyNextAction(weeklyAuthority, weeklyCapability) {
+    weeklyAuthority = weeklyAuthority || {};
+    weeklyCapability = weeklyCapability || {};
+    var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
+    var weeklyReason = String(weeklyAuthority.reason || weeklyCapability.reason || '').toLowerCase();
+    var weeklyRequired = Math.max(0, Number(weeklyAuthority.required_objectives != null ? weeklyAuthority.required_objectives : weeklyCapability.required_objectives) || 0);
+    var weeklyCompleted = Math.max(0, Number(weeklyAuthority.completed_objectives != null ? weeklyAuthority.completed_objectives : weeklyCapability.completed_objectives) || 0);
+    var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
+      : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
+    if (weeklyReason === 'active_pet_required') return 'No active seasonal Moonpet - pick or hatch one before journey progress starts.';
+    if (weeklyState === 'COMING_SOON') return 'Weekly Journey is planned expansion.';
+    if (weeklyState !== 'AVAILABLE' || weeklyRequired <= 0) return 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.';
+    var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
+      ? Boolean(weeklyAuthority.weekly_crest_awarded)
+      : Boolean(weeklyCapability.weekly_crest_awarded);
+    var weeklyDuplicateBlocked = weeklyAuthority.duplicate_blocked != null
+      ? Boolean(weeklyAuthority.duplicate_blocked)
+      : Boolean(weeklyCapability.duplicate_blocked);
+    if (weeklyCrestAwarded) return 'Weekly Crest already settled - keep daily routines moving until next reset.';
+    if (weeklyDuplicateBlocked) return 'Weekly Crest duplicate blocked for this week.';
+    if (weeklyCompleted >= weeklyRequired) return 'Weekly Journey complete - Weekly Crest is ready for server settlement.';
+    var remaining = weeklyRemainingLabels(objectives);
+    return 'Weekly Journey: ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + ' complete - remaining: ' + (remaining.length ? remaining.join(', ') : 'server-confirmed objectives') + '.';
+  }
+
   function weeklyJourneyMarkup(weeklyAuthority, weeklyCapability) {
     weeklyAuthority = weeklyAuthority || {};
     weeklyCapability = weeklyCapability || {};
@@ -671,7 +730,8 @@
           : (weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.');
       return '<div class="line locked">' + waitingTitle + '</div>' +
         '<div class="line muted">' + escapeHtml(waitingCopy) + '</div>' +
-        '<div class="line muted">No Weekly Crest can be shown as claimable until server authority returns objective evidence.</div>';
+        '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability)) + '</div>' +
+        '<div class="line muted">' + (weeklyState === 'COMING_SOON' ? 'Weekly Journey objectives will appear when this system is available.' : 'Complete objectives to qualify for server settlement once authority returns objective evidence.') + '</div>';
     }
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
@@ -691,27 +751,22 @@
       var progress = Math.max(0, Number(objective.progress) || 0);
       var target = Math.max(1, Number(objective.target) || 1);
       var complete = objective.completed || progress >= target;
-      var label = objective.name || objective.title || ({
-        weekly_care: 'Weekly care actions',
-        weekly_training: 'Weekly training sessions',
-        weekly_run: 'Daily Moon Runs',
-        weekly_boss_attempt: 'Weekly boss attempt',
-        weekly_check_in: 'Daily chest check-ins',
-      })[String(objective.objective_id || '')] || words(objective.objective_id || 'weekly objective');
+      var label = weeklyObjectiveLabel(objective);
       return '<div class="line ' + (complete ? 'complete' : '') + '">' + (complete ? '[OK] ' : '[  ] ') +
         escapeHtml(label) + ' // ' + number(Math.min(progress, target)) + '/' + number(target) + ' // ' + (complete ? 'COMPLETE' : 'INCOMPLETE') + '</div>';
     }).join('') || '<div class="line muted">NO WEEKLY OBJECTIVE EVIDENCE YET.</div>';
+    var remaining = weeklyRemainingLabels(objectives);
+    var remainingCopy = remaining.length ? remaining.join(', ')
+      : weeklyCompleted >= weeklyRequired ? 'No remaining weekly objectives.' : 'Waiting for server-confirmed objectives.';
     return '<div class="line complete">WEEKLY JOURNEY // ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + ' OBJECTIVES</div>' +
       '<div class="line muted">QUALIFICATION WEEK ' + number(weeklyAuthority.qualification_week || weeklyCapability.qualification_week || 1) + resetCopy + ' // Server-authoritative source events only.</div>' +
       meter('WEEKLY CREST', weeklyPercent) +
       '<div class="line muted">' + crestStatus + ' // ' + escapeHtml(words(weeklyAuthority.reason || weeklyCapability.reason || 'weekly journey in progress')) + '</div>' +
+      '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability)) + '</div>' +
+      '<div class="line muted">REMAINING // ' + escapeHtml(remainingCopy) + '</div>' +
       objectiveRows;
   }
   // TEST-EXPORT: weeklyJourneyMarkup:end
-
-  function actionRefreshesWeeklyJourney(action) {
-    return ['feed', 'play', 'clean', 'sleep', 'train', 'daily_chest', 'daily_run_start', 'run_step', 'run_extract', 'weekly_boss'].includes(String(action || ''));
-  }
 
   function activePetSummary() {
     if (!state || !state.pet) return '';
@@ -1323,7 +1378,85 @@
     return reward && typeof reward === 'object' && !Array.isArray(reward) ? reward : {};
   }
 
-  function resultMessage(result) {
+  // TEST-EXPORT: journeyActionProgress:start
+  function journeyProgressSnapshot(snapshot) {
+    return {
+      daily: snapshot && snapshot.daily_journey || null,
+      weekly: snapshot && snapshot.weekly_journey || null,
+    };
+  }
+
+  function activeJourneyPetId(snapshot) {
+    var activeSlot = (snapshot && snapshot.season_slots && Array.isArray(snapshot.season_slots.slots)
+      ? snapshot.season_slots.slots.find(function (slot) { return slot && slot.active; }) : null) || {};
+    return String(snapshot && snapshot.pet && (snapshot.pet.pet_id || snapshot.pet.id)
+      || activeSlot.pet_id
+      || '');
+  }
+
+  function journeyPeriodMatches(left, right, keys) {
+    return keys.every(function (key) {
+      var leftValue = String(left && left[key] != null ? left[key] : '');
+      var rightValue = String(right && right[key] != null ? right[key] : '');
+      return !leftValue || !rightValue || leftValue === rightValue;
+    });
+  }
+
+  function journeyActionProgressLines(beforeState, afterState, result) {
+    if (!result || !result.accepted || !afterState) return [];
+    var beforePetId = activeJourneyPetId(beforeState);
+    var afterPetId = activeJourneyPetId(afterState);
+    if (!beforePetId || !afterPetId || beforePetId !== afterPetId) return [];
+    var before = journeyProgressSnapshot(beforeState);
+    var after = journeyProgressSnapshot(afterState);
+    var lines = [];
+    var daily = after.daily || {};
+    var beforeDaily = before.daily || {};
+    var dailyRequired = Math.max(0, Number(daily.required_objectives) || 0);
+    var beforeDailyRequired = Math.max(0, Number(beforeDaily.required_objectives) || 0);
+    if (dailyRequired > 0 && beforeDailyRequired > 0 && journeyPeriodMatches(daily, beforeDaily, ['pet_id', 'season_key', 'utc_day'])) {
+      var dailyCompleted = Math.max(0, Number(daily.completed_objectives) || 0);
+      var beforeDailyCompleted = Math.max(0, Number(beforeDaily.completed_objectives) || 0);
+      if (dailyCompleted > beforeDailyCompleted) {
+        lines.push('Daily Journey +' + number(dailyCompleted - beforeDailyCompleted) + ' objective (' + number(dailyCompleted) + '/' + number(dailyRequired) + ').');
+      } else if (daily.growth_mark_awarded && !beforeDaily.growth_mark_awarded) {
+        lines.push('Growth Mark already settled for today.');
+      }
+    }
+    var weekly = after.weekly || {};
+    var beforeWeekly = before.weekly || {};
+    var weeklyRequired = Math.max(0, Number(weekly.required_objectives) || 0);
+    var beforeWeeklyRequired = Math.max(0, Number(beforeWeekly.required_objectives) || 0);
+    if (weeklyRequired > 0 && beforeWeeklyRequired > 0 && journeyPeriodMatches(weekly, beforeWeekly, ['pet_id', 'season_key', 'qualification_week'])) {
+      var weeklyCompleted = Math.max(0, Number(weekly.completed_objectives) || 0);
+      var beforeWeeklyCompleted = Math.max(0, Number(beforeWeekly.completed_objectives) || 0);
+      var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
+      var beforeObjectives = Array.isArray(beforeWeekly.objectives) ? beforeWeekly.objectives : [];
+      var beforeById = {};
+      beforeObjectives.forEach(function (objective) { beforeById[String(objective.objective_id || '')] = objective; });
+      objectives.some(function (objective) {
+        var id = String(objective.objective_id || '');
+        var beforeObjective = beforeById[id] || {};
+        var progress = Math.max(0, Number(objective.progress) || 0);
+        var target = Math.max(1, Number(objective.target) || 1);
+        var beforeProgress = Math.max(0, Number(beforeObjective.progress) || 0);
+        if (progress > beforeProgress) {
+          lines.push(weeklyObjectiveLabel(objective) + ' ' + number(Math.min(progress, target)) + '/' + number(target) + '.');
+        }
+        return lines.length >= 2;
+      });
+      if (weeklyCompleted > beforeWeeklyCompleted && !lines.some(function (line) { return /Weekly|Daily Moon Runs|Daily chest/i.test(line); })) {
+        lines.push('Weekly Journey ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + '.');
+      }
+      if (weekly.weekly_crest_awarded && !beforeWeekly.weekly_crest_awarded) {
+        lines.push('Weekly Crest already settled for this week.');
+      }
+    }
+    return lines.slice(0, 2);
+  }
+  // TEST-EXPORT: journeyActionProgress:end
+
+  function resultMessage(result, beforeState, afterState) {
     if (!result) return 'SYSTEM RESPONSE LOST.';
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
@@ -1341,6 +1474,7 @@
         : 'GROWTH MARK BLOCKED // ' + words(result.daily_journey.reason || 'not qualified'));
     }
     if (result.duplicate) parts.push('DUPLICATE BLOCKED BY AUTHORITY');
+    journeyActionProgressLines(beforeState, afterState, result).forEach(function (line) { parts.push(line); });
     if (result.reaction) parts.push('MOONPET: ' + String(result.reaction));
     return parts.join(' // ');
   }
@@ -1369,9 +1503,14 @@
     return text.length > limit ? text.slice(0, Math.max(0, limit - 3)).trim() + '...' : text;
   }
 
-  function actionFeedback(result) {
+  function actionFeedback(result, beforeState, afterState) {
     if (!result) return { tone: 'danger', lines: ['SYSTEM RESPONSE LOST'], reaction: '' };
     var lines = [result.accepted ? 'ACTION COMPLETE' : 'ACTION BLOCKED'];
+    journeyActionProgressLines(beforeState, afterState, result).some(function (line) {
+      if (lines.length >= 3) return true;
+      lines.push(compactFeedback(line, 34));
+      return lines.length >= 3;
+    });
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
     if (terminalResult) lines.push('OUTCOME ' + words(String(terminalResult).replace('player1', 'you').replace('player2', 'opponent')));
     if (result.damage) lines.push('DAMAGE ' + number(result.damage));
@@ -1397,8 +1536,8 @@
     if (redraw && reducedMotion) drawWorld(performance.now());
   }
 
-  function presentResultFeedback(result) {
-    var feedback = actionFeedback(result);
+  function presentResultFeedback(result, beforeState, afterState) {
+    var feedback = actionFeedback(result, beforeState, afterState);
     var feedbackDuration = Math.max(5200, actionResultHoldMs + 1600);
     window.clearTimeout(feedbackRedrawTimer);
     feedbackTone = feedback.tone;
@@ -1605,17 +1744,14 @@
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
-      var message = resultMessage(data.result);
-      if (actionRefreshesWeeklyJourney(action) && data.result && data.result.accepted) {
-        message += ' Weekly Journey authority refreshed.';
-      }
+      var message = resultMessage(data.result, stateBeforeAction, nextState);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
       render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
       animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
-      if (!startLifecycleCeremony(plannedCeremony)) presentResultFeedback(data.result);
+      if (!startLifecycleCeremony(plannedCeremony)) presentResultFeedback(data.result, stateBeforeAction, nextState);
     } catch (error) {
       animateAction('blocked', false, 2800);
       tell(error.message || 'CONNECTION FAILED', 'danger');
