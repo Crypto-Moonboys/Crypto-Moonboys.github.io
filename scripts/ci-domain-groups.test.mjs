@@ -32,9 +32,9 @@ const ciRunLines = workflow
 const domainRunLines = ciRunLines.filter((line) => line.startsWith('run: npm run ci:'));
 assert.equal(domainRunLines.length, expectedScripts.length, 'workflow must run one grouped command per CI domain job');
 assert.equal(
-  ciRunLines.some((line) => /^run:\s+(node scripts\/|npm run test:)/.test(line)),
+  ciRunLines.some((line) => /^run:\s+npm run test:/.test(line) || /^run:\s+node scripts\/(?!ci-change-scope\.mjs\b)/.test(line)),
   false,
-  'workflow must not inline individual test scripts in domain jobs',
+  'workflow must not inline individual test scripts in domain jobs, except shared path-scope classification',
 );
 
 for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
@@ -72,7 +72,7 @@ assert.ok(
 );
 
 assert.ok(
-  workflow.includes('No visual/runtime frontend files changed; skipping ci-visual.'),
+  workflow.includes('node scripts/ci-change-scope.mjs visual'),
   'visual CI must clearly report when docs/test-only changes skip visual checks',
 );
 
@@ -92,8 +92,8 @@ assert.ok(
 );
 
 assert.ok(
-  deployWorkflow.includes('npx playwright install --with-deps chromium'),
-  'Pages deploy must install Chromium before running the visual CI domain',
+  !deployWorkflow.includes('npx playwright install --with-deps chromium'),
+  'Pages deploy must not install Chromium; browser checks belong in CI only',
 );
 
 console.log('CI domain grouping tests PASSED.');

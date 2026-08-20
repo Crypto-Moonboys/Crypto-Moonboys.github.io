@@ -1,12 +1,35 @@
 name: Graph Publishing Integrity
 
-# Run on every repository change. The publishing chain depends on wiki content,
-# brand canon, payload registries, ranking configuration and generator helpers;
-# path filters are intentionally avoided so future inputs cannot bypass parity checks.
 on:
   pull_request:
+    paths:
+      - "wiki/**"
+      - "brand-canon/**"
+      - "data/**"
+      - "js/**"
+      - "assets/**"
+      - "og-templates/**"
+      - "scripts/generate-publishing-surfaces.mjs"
+      - "scripts/graph-publishing-integrity.test.mjs"
+      - "scripts/ci-domain-runner.mjs"
+      - ".github/workflows/graph-publishing-integrity.yml"
+      - "package.json"
+      - "package-lock.json"
   push:
     branches: [main]
+    paths:
+      - "wiki/**"
+      - "brand-canon/**"
+      - "data/**"
+      - "js/**"
+      - "assets/**"
+      - "og-templates/**"
+      - "scripts/generate-publishing-surfaces.mjs"
+      - "scripts/graph-publishing-integrity.test.mjs"
+      - "scripts/ci-domain-runner.mjs"
+      - ".github/workflows/graph-publishing-integrity.yml"
+      - "package.json"
+      - "package-lock.json"
 
 permissions:
   contents: read
@@ -27,6 +50,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Regenerate public publishing surfaces
         env:
