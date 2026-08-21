@@ -37,9 +37,7 @@ function sourceEventTypes(value) {
 }
 
 function sourceEventKeyFor(request = {}) {
-  const sourceEventKey = String(request.source_event_key || '').trim().slice(0, 180);
-  if (sourceEventKey) return sourceEventKey;
-  return '';
+  return String(request.source_event_key || '').trim();
 }
 
 export async function readActivePetIdentityScope(db, telegramId) {

@@ -539,6 +539,26 @@ assert.equal(isolationDb.database.prepare('SELECT biggest_reward_amount FROM tel
   'source-event-key-only biggest reward writes to the accepted source-event pet');
 assert.equal(isolationDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(petB).count, 0,
   'source-event-key-only biggest reward does not create memory for the current active pet');
+const longSourceEventKey = `source:long-key:${'x'.repeat(220)}`;
+isolationDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('identity-source-long-key-a', ?, 'isolation-player', 'random_event', ?, ?, '2026-08-01', '2026-W31', 'accepted', 'random:choice:reward', ?)` )
+  .run(petA, longSourceEventKey, TEST_SEASON_KEY, JSON.stringify({ source: 'telegram_bot' }));
+const longKeyBehaviour = await recordMoonpetBehaviour(isolationDb, {
+  telegram_id: 'isolation-player', event_key: 'source:long-key:personality', source_event_key: longSourceEventKey, source_event_type: 'random_event',
+  behaviour: 'event', activity: 'event',
+});
+assert.equal(longKeyBehaviour.accepted, true, 'source-event lookup uses the full accepted event_key instead of a truncated key');
+await recordMoonpetMemory(isolationDb, {
+  telegram_id: 'isolation-player', event_key: 'source:long-key:memory', source_event_key: longSourceEventKey, source_event_type: 'random_event',
+  memory_type: 'milestone', milestone: 'highest_daily_score',
+});
+assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='curious'").get(petA).progress, 2,
+  'long source-event-key behaviour lands on the accepted source-event pet');
+assert.ok(JSON.parse(isolationDb.database.prepare('SELECT milestones FROM telegram_pet_memories WHERE pet_id=?').get(petA).milestones).includes('highest_daily_score'),
+  'long source-event-key memory lands on the accepted source-event pet');
+assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='curious'").get(petB).count, 0,
+  'long source-event-key behaviour does not fall back to the active pet');
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events
   (id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
   VALUES ('legacy-action-without-pet', 'isolation-player', 'feed', 'source:legacy-action:no-pet', ?, '2026-08-01', '2026-W31', 'accepted', 'accepted', ?)` )
@@ -547,10 +567,13 @@ setActivePetSlot(isolationDb, 'isolation-player', petA);
 const legacyActionDuplicate = await workerHooks.processPetAction(isolationDb, 'isolation-player', 'feed', {
   event_key: 'source:legacy-action:no-pet',
   source: 'telegram_bot',
+  now: '2026-08-02T12:00:00Z',
 });
 assert.equal(legacyActionDuplicate.duplicate, true, 'legacy accepted action callbacks remain idempotent');
 assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA).progress, 1,
   'legacy accepted actions without pet_id explicitly use active pet authority for personality progress');
+assert.equal(isolationDb.database.prepare("SELECT day_key FROM telegram_pet_identity_events WHERE event_key='source:legacy-action:no-pet:personality'").get().day_key, '2026-08-01',
+  'legacy accepted action replay preserves the original accepted action day');
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events
   (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
   VALUES ('pet-action-source-a', ?, 'isolation-player', 'feed', 'source:pet-action:a', ?, '2026-08-01', '2026-W31', 'accepted', 'accepted', ?)` )
@@ -559,10 +582,16 @@ setActivePetSlot(isolationDb, 'isolation-player', petB);
 const petOwnedActionDuplicate = await workerHooks.processPetAction(isolationDb, 'isolation-player', 'feed', {
   event_key: 'source:pet-action:a',
   source: 'telegram_bot',
+  now: '2026-08-02T12:00:00Z',
 });
 assert.equal(petOwnedActionDuplicate.duplicate, true, 'pet-owned accepted action callbacks remain idempotent after active switch');
 assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA).progress, 2,
   'pet-owned action duplicate uses source-event authority instead of the active pet');
+assert.equal(isolationDb.database.prepare("SELECT day_key FROM telegram_pet_identity_events WHERE event_key='source:pet-action:a:personality'").get().day_key, '2026-08-01',
+  'pet-owned accepted action replay preserves the original accepted action day');
+assert.equal(isolationDb.database.prepare(`SELECT COALESCE(SUM(progress_delta), 0) AS progress FROM telegram_pet_identity_events
+  WHERE pet_id=? AND event_kind='personality' AND day_key='2026-08-02' AND json_extract(payload, '$.behaviour')='care'`).get(petA).progress, 0,
+  'retry-day personality caps stay untouched when replaying accepted Day 1 actions on Day 2');
 assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(petB).count, 0,
   'pet-owned action duplicate does not write personality progress to the active Pet B');
 const mismatchedPetOwnedAction = await recordMoonpetBehaviour(isolationDb, {

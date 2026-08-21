@@ -4160,6 +4160,7 @@ async function recordPetActionBehaviourFromAcceptedEvent(db, {
       source_event_type: String(accepted.event_type || action || ''),
       behaviour,
       activity,
+      day_key: accepted.day_key,
     });
   }
   const legacyAuthority = activePetRewardAuthority(pet);
@@ -4171,6 +4172,7 @@ async function recordPetActionBehaviourFromAcceptedEvent(db, {
     event_key: `${eventKey}:personality`,
     behaviour,
     activity,
+    day_key: accepted.day_key,
   });
 }
 
