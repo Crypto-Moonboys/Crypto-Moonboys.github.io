@@ -954,18 +954,17 @@ await recordMoonpetMemory(corruptMemoryDb, {
 corruptMemoryDb.database.exec('PRAGMA foreign_keys=OFF');
 corruptMemoryDb.database.prepare("UPDATE telegram_pet_memories SET telegram_id='corrupt-owner' WHERE pet_id=?").run(corruptMemoryPet);
 corruptMemoryDb.database.exec('PRAGMA foreign_keys=ON');
-const rejectedCorruptMemory = await recordMoonpetMemory(corruptMemoryDb, {
+await assert.rejects(() => recordMoonpetMemory(corruptMemoryDb, {
   telegram_id: 'corrupt-memory-authority',
   pet_id: corruptMemoryPet,
   season_key: TEST_SEASON_KEY,
   event_key: 'corrupt-memory:run',
   memory_type: 'run_completed',
-});
-assert.equal(rejectedCorruptMemory.accepted, false, 'memory upsert rejects an existing corrupted authority tuple');
+}), /NOT NULL|authority/i, 'memory upsert rejects and rolls back an existing corrupted authority tuple');
 assert.equal(corruptMemoryDb.database.prepare("SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?").get(corruptMemoryPet).total_runs, 0,
   'memory conflict update does not mutate a corrupted authority tuple');
-assert.equal(corruptMemoryDb.database.prepare("SELECT applied_at FROM telegram_pet_identity_events WHERE event_key='corrupt-memory:run'").get().applied_at, null,
-  'memory event remains unapplied when the ledger tuple is corrupted');
+assert.equal(corruptMemoryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='corrupt-memory:run'").get().count, 0,
+  'memory event is rolled back when the ledger tuple is corrupted');
 
 const corruptPersonalityDb = seedPlayer('corrupt-personality-authority', false);
 const corruptPersonalityPet = `pet:corrupt-personality-authority:${TEST_SEASON_KEY}:1`;
@@ -980,19 +979,18 @@ await recordMoonpetBehaviour(corruptPersonalityDb, {
 corruptPersonalityDb.database.exec('PRAGMA foreign_keys=OFF');
 corruptPersonalityDb.database.prepare("UPDATE telegram_pet_personality_traits SET season_key='wrong-season' WHERE pet_id=? AND trait_id='loyal'").run(corruptPersonalityPet);
 corruptPersonalityDb.database.exec('PRAGMA foreign_keys=ON');
-const rejectedCorruptPersonality = await recordMoonpetBehaviour(corruptPersonalityDb, {
+await assert.rejects(() => recordMoonpetBehaviour(corruptPersonalityDb, {
   telegram_id: 'corrupt-personality-authority',
   pet_id: corruptPersonalityPet,
   season_key: TEST_SEASON_KEY,
   event_key: 'corrupt-personality:second',
   behaviour: 'care',
   activity: 'care',
-});
-assert.equal(rejectedCorruptPersonality.accepted, false, 'personality upsert rejects an existing corrupted authority tuple');
+}), /NOT NULL|authority/i, 'personality upsert rejects and rolls back an existing corrupted authority tuple');
 assert.equal(corruptPersonalityDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(corruptPersonalityPet).progress, 1,
   'personality conflict update does not mutate a corrupted authority tuple');
-assert.equal(corruptPersonalityDb.database.prepare("SELECT applied_at FROM telegram_pet_identity_events WHERE event_key='corrupt-personality:second'").get().applied_at, null,
-  'personality event remains unapplied when paired ledgers are corrupted');
+assert.equal(corruptPersonalityDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='corrupt-personality:second'").get().count, 0,
+  'personality event is rolled back when paired ledgers are corrupted');
 
 const corruptBossDb = seedPlayer('corrupt-boss-authority', false);
 const corruptBossPet = `pet:corrupt-boss-authority:${TEST_SEASON_KEY}:1`;
@@ -1008,19 +1006,18 @@ await recordMoonpetMemory(corruptBossDb, {
 corruptBossDb.database.exec('PRAGMA foreign_keys=OFF');
 corruptBossDb.database.prepare("UPDATE telegram_pet_boss_victories SET telegram_id='corrupt-owner' WHERE pet_id=? AND boss_id='alley_king'").run(corruptBossPet);
 corruptBossDb.database.exec('PRAGMA foreign_keys=ON');
-const rejectedCorruptBoss = await recordMoonpetMemory(corruptBossDb, {
+await assert.rejects(() => recordMoonpetMemory(corruptBossDb, {
   telegram_id: 'corrupt-boss-authority',
   pet_id: corruptBossPet,
   season_key: TEST_SEASON_KEY,
   event_key: 'corrupt-boss:second',
   memory_type: 'boss_victory',
   boss_id: 'alley_king',
-});
-assert.equal(rejectedCorruptBoss.accepted, false, 'boss victory upsert rejects an existing corrupted authority tuple');
+}), /NOT NULL|authority/i, 'boss victory upsert rejects and rolls back an existing corrupted authority tuple');
 assert.equal(corruptBossDb.database.prepare("SELECT total_bosses_defeated FROM telegram_pet_memories WHERE pet_id=?").get(corruptBossPet).total_bosses_defeated, 1,
   'boss memory counters do not advance when the boss victory tuple is corrupted');
-assert.equal(corruptBossDb.database.prepare("SELECT applied_at FROM telegram_pet_identity_events WHERE event_key='corrupt-boss:second'").get().applied_at, null,
-  'boss victory event remains unapplied when the ledger tuple is corrupted');
+assert.equal(corruptBossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='corrupt-boss:second'").get().count, 0,
+  'boss victory event is rolled back when the ledger tuple is corrupted');
 
 const corruptAchievementDb = seedPlayer('corrupt-achievement-authority', false);
 const corruptAchievementPet = `pet:corrupt-achievement-authority:${TEST_SEASON_KEY}:1`;
@@ -1032,11 +1029,28 @@ corruptAchievementDb.database.exec('PRAGMA foreign_keys=OFF');
 corruptAchievementDb.database.prepare("UPDATE telegram_pet_achievements SET season_key='wrong-season' WHERE pet_id=? AND achievement_id='boss_breaker'").run(corruptAchievementPet);
 corruptAchievementDb.database.exec('PRAGMA foreign_keys=ON');
 corruptAchievementDb.database.prepare('UPDATE telegram_pet_memories SET total_bosses_defeated=5 WHERE pet_id=?').run(corruptAchievementPet);
-await workerHooks.syncPetAchievementsForPet(corruptAchievementDb, 'corrupt-achievement-authority', corruptAchievementPet, TEST_SEASON_KEY);
+await assert.rejects(
+  () => workerHooks.syncPetAchievementsForPet(corruptAchievementDb, 'corrupt-achievement-authority', corruptAchievementPet, TEST_SEASON_KEY),
+  /authority/i,
+  'achievement sync rejects an existing corrupted authority tuple',
+);
 assert.equal(corruptAchievementDb.database.prepare("SELECT progress FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='boss_breaker'").get(corruptAchievementPet).progress, 4,
   'achievement conflict update does not mutate a corrupted authority tuple');
 assert.equal(corruptAchievementDb.database.prepare("SELECT unlocked_at FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='boss_breaker'").get(corruptAchievementPet).unlocked_at, null,
   'achievement conflict update cannot unlock a corrupted authority tuple');
+
+const mismatchAchievementDb = seedPlayer('mismatch-achievement-authority', false);
+const mismatchAchievementPet = `pet:mismatch-achievement-authority:${TEST_SEASON_KEY}:1`;
+mismatchAchievementDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, total_bosses_defeated)
+  VALUES (?, 'mismatch-achievement-authority', ?, 5)`).run(mismatchAchievementPet, TEST_SEASON_KEY);
+mismatchAchievementDb.database.exec('PRAGMA foreign_keys=OFF');
+mismatchAchievementDb.database.prepare('UPDATE telegram_pet_instances SET slot_number=2 WHERE pet_id=?').run(mismatchAchievementPet);
+mismatchAchievementDb.database.exec('PRAGMA foreign_keys=ON');
+const mismatchAchievementRows = await workerHooks.syncPetAchievementsForPet(mismatchAchievementDb, 'mismatch-achievement-authority', mismatchAchievementPet, TEST_SEASON_KEY);
+assert.deepEqual(mismatchAchievementRows, [], 'achievement sync rejects a pet whose season slot and instance tuple disagree');
+assert.equal(mismatchAchievementDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=?').get(mismatchAchievementPet).count, 0,
+  'achievement sync writes no achievements without the canonical pet/telegram/season/slot tuple');
 
 setActivePetSlot(isolationDb, 'isolation-player', petC);
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events

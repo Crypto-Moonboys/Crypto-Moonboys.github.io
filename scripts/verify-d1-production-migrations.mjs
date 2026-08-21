@@ -86,6 +86,9 @@ export function validateRequest(request) {
 }
 
 export function normalizeD1StatementResult(payload) {
+  if (payload && typeof payload === 'object' && !Array.isArray(payload) && payload.success === false) {
+    throw new Error('Wrangler D1 query did not report success');
+  }
   let statements;
   if (Array.isArray(payload)) statements = payload;
   else if (payload && typeof payload === 'object' && Array.isArray(payload.result)) statements = payload.result;

@@ -191,10 +191,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: d1-identity-authority-audit-failure-diagnostics
-          path: |
-            d1-identity-authority-audit-failure.txt
-            d1-identity-authority-audit.json
-            d1-identity-authority-audit.stderr
+          path: d1-identity-authority-audit-failure.txt
           if-no-files-found: error
           retention-days: 30
       - name: Upload sanitised evidence
@@ -204,7 +201,6 @@ jobs:
           name: d1-production-migration-evidence
           path: |
             d1-production-migration-evidence.json
-            d1-identity-authority-audit.json
             d1-identity-authority-audit-result.txt
           if-no-files-found: error
           retention-days: 90

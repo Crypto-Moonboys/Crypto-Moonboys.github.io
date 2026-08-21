@@ -1029,7 +1029,15 @@ async function resolveMoonpetAuditIdentityScope(db, telegramId, request = {}) {
 
 async function allMoonpetAuditRows(statementPromise) {
   const rows = await statementPromise;
-  return Array.isArray(rows?.results) ? rows.results : [];
+  if (rows?.success === false) throw new Error('identity_authority_audit_query_failed');
+  if (!rows || !Array.isArray(rows.results)) throw new Error('identity_authority_audit_query_failed');
+  return rows.results;
+}
+
+async function firstMoonpetAuditRow(statementPromise) {
+  const row = await statementPromise;
+  if (row?.success === false) throw new Error('identity_authority_audit_query_failed');
+  return row || null;
 }
 
 function redactMoonpetInvalidAuthorityRow(row) {
@@ -1044,11 +1052,11 @@ async function buildMoonpetIdentityAuthorityAudit(db, telegramId, request = {}) 
   const scope = await resolveMoonpetAuditIdentityScope(db, telegramId, request);
   if (!scope) return null;
   const bindAuthority = (sql) => db.prepare(sql).bind(scope.pet_id, scope.telegram_id, scope.season_key);
-  const memories = await bindAuthority(`
+  const memories = await firstMoonpetAuditRow(bindAuthority(`
     SELECT COUNT(*) AS count
     FROM telegram_pet_memories
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
-  `).first();
+  `).first());
   const personalityTraits = await allMoonpetAuditRows(bindAuthority(`
     SELECT trait_id, progress, unlocked_at, updated_at
     FROM telegram_pet_personality_traits
@@ -15280,10 +15288,22 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
   const petId = String(petIdRaw || '').trim();
   const seasonKey = String(seasonKeyRaw || '').trim();
   if (!telegramId || !petId || !seasonKey) return [];
-  const scope = await db.prepare(`SELECT pet_id, season_key FROM telegram_pet_season_slots
-    WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active' LIMIT 1`)
+  const scope = await db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i
+      ON i.pet_id = s.pet_id
+     AND i.telegram_id = s.telegram_id
+     AND i.season_key = s.season_key
+     AND i.slot_number = s.slot_number
+    WHERE s.pet_id = ? AND s.telegram_id = ? AND s.season_key = ?
+      AND s.status = 'active' AND i.status = 'active'
+    LIMIT 1`)
     .bind(petId, telegramId, seasonKey).first().catch(() => null);
   if (!scope) return [];
+  const corruptExisting = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_achievements
+    WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+    .bind(petId, telegramId, seasonKey).first().catch(() => null);
+  if (corruptExisting) throw new Error('moonpet_achievement_authority_tuple_mismatch');
   const [profile, events, memory, personalities, evolution] = await Promise.all([
     db.prepare(`SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT
@@ -15325,6 +15345,12 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
         AND telegram_pet_achievements.season_key = excluded.season_key`)
       .bind(petId, telegramId, seasonKey, achievementId, progress, definition.target, progress, definition.target);
   });
+  statements.push(db.prepare(`INSERT INTO telegram_pet_achievements
+    (pet_id, telegram_id, season_key, achievement_id, progress, target)
+    SELECT ?, NULL, ?, ?, 0, 1
+    WHERE EXISTS (SELECT 1 FROM telegram_pet_achievements
+      WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?))`)
+    .bind(petId, seasonKey, `authority_assertion:${petId}`, petId, telegramId, seasonKey));
   await db.batch(statements);
   const rows = await db.prepare(`SELECT achievement_id, progress, target, unlocked_at FROM telegram_pet_achievements
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?

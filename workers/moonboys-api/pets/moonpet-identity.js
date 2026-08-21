@@ -271,6 +271,13 @@ export async function recordMoonpetBehaviour(db, request = {}) {
           EXISTS (SELECT 1 FROM telegram_pet_personality_traits WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND trait_id = ?)
           AND EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)
         ))`).bind(eventId, petId, telegramId, seasonKey, petId, telegramId, seasonKey, definition.trait_id, petId, telegramId, seasonKey),
+    db.prepare(`INSERT INTO telegram_pet_identity_events
+      (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
+      SELECT ?, ?, NULL, ?, ?, 'personality_authority_assertion', '{}'
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events
+        WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?
+          AND applied_at IS NULL AND progress_delta > 0)`)
+      .bind(`authority_assertion:${eventId}`, petId, seasonKey, `${eventKey}:authority_assertion`, eventId, petId, telegramId, seasonKey),
   ]);
   const identityEvent = await db.prepare(`SELECT progress_delta FROM telegram_pet_identity_events
     WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(eventId, petId, telegramId, seasonKey).first().catch(() => null);
@@ -326,8 +333,8 @@ export async function recordMoonpetMemory(db, request = {}) {
       SELECT ?, ?, ?, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END,
         CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, NULLIF(?, ''), ?, ?, ?, ?, ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ? AND applied_at IS NULL)
-        AND (? = '' OR NOT EXISTS (SELECT 1 FROM telegram_pet_boss_victories WHERE pet_id = ? AND boss_id = ?)
-          OR EXISTS (SELECT 1 FROM telegram_pet_boss_victories WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND boss_id = ?))
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_boss_victories
+          WHERE pet_id = ? AND boss_id = ? AND NOT (telegram_id = ? AND season_key = ?))
       ON CONFLICT(pet_id) DO UPDATE SET
         first_adoption_at = COALESCE(telegram_pet_memories.first_adoption_at, excluded.first_adoption_at),
         first_run_at = COALESCE(telegram_pet_memories.first_run_at, excluded.first_run_at),
@@ -346,17 +353,17 @@ export async function recordMoonpetMemory(db, request = {}) {
         AND telegram_pet_memories.season_key = excluded.season_key`)
       .bind(petId, telegramId, seasonKey, values.first_adoption, values.first_run, values.first_extraction, values.first_boss, values.boss_id,
         values.reward_amount, values.reward_currency, values.total_runs, values.total_bosses, milestoneJson, eventId, petId, telegramId, seasonKey,
-        values.boss_id, petId, values.boss_id, petId, telegramId, seasonKey, values.boss_id),
+        petId, values.boss_id, telegramId, seasonKey),
   ];
   if (values.boss_id) statements.push(db.prepare(`INSERT INTO telegram_pet_boss_victories (pet_id, telegram_id, season_key, boss_id, victories)
     SELECT ?, ?, ?, ?, 1 WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ? AND applied_at IS NULL)
-      AND (NOT EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ?)
-        OR EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?))
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_memories
+        WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?))
     ON CONFLICT(pet_id, boss_id) DO UPDATE SET victories = telegram_pet_boss_victories.victories + 1, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_pet_boss_victories.pet_id = excluded.pet_id
         AND telegram_pet_boss_victories.telegram_id = excluded.telegram_id
         AND telegram_pet_boss_victories.season_key = excluded.season_key`)
-    .bind(petId, telegramId, seasonKey, values.boss_id, eventId, petId, telegramId, seasonKey, petId, petId, telegramId, seasonKey));
+    .bind(petId, telegramId, seasonKey, values.boss_id, eventId, petId, telegramId, seasonKey, petId, telegramId, seasonKey));
   if (values.milestone) statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
     (analytics_id, pet_id, telegram_id, season_key, event_type, milestone_id, event_data)
     SELECT ?, ?, ?, ?, 'memory_milestone', ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ? AND applied_at IS NULL)`)
@@ -366,8 +373,15 @@ export async function recordMoonpetMemory(db, request = {}) {
       AND EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)
       AND (? = '' OR EXISTS (SELECT 1 FROM telegram_pet_boss_victories WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND boss_id = ?))`)
     .bind(eventId, petId, telegramId, seasonKey, petId, telegramId, seasonKey, values.boss_id, petId, telegramId, seasonKey, values.boss_id));
+  statements.push(db.prepare(`INSERT INTO telegram_pet_identity_events
+    (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
+    SELECT ?, ?, NULL, ?, ?, 'memory_authority_assertion', '{}'
+    WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events
+      WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?
+        AND applied_at IS NULL)`)
+    .bind(`authority_assertion:${eventId}`, petId, seasonKey, `${eventKey}:authority_assertion`, eventId, petId, telegramId, seasonKey));
   const results = await db.batch(statements);
-  return { accepted: Boolean(results?.[results.length - 1]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes };
+  return { accepted: Boolean(results?.[results.length - 2]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes };
 }
 
 export async function recordMoonpetBiggestReward(db, request = {}) {
@@ -378,6 +392,10 @@ export async function recordMoonpetBiggestReward(db, request = {}) {
   const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, request.source_event_types || request.source_event_type || []);
   if (!authority.ok) return { accepted: false, reason: authority.reason || 'invalid_moonpet_reward_memory', source_event_key: authority.source_event_key };
   const scope = authority.scope;
+  const corruptExisting = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
+    WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+    .bind(scope.pet_id, telegramId, scope.season_key).first();
+  if (corruptExisting) throw new Error('moonpet_identity_authority_tuple_mismatch');
   const result = await db.prepare(`INSERT INTO telegram_pet_memories (pet_id, telegram_id, season_key, biggest_reward_amount, biggest_reward_currency)
     SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active')
     ON CONFLICT(pet_id) DO UPDATE SET
@@ -491,9 +509,11 @@ export async function evolveMoonpet(db, request = {}) {
       SELECT ?, ?, ?, ?, ?, ?, ?, 0
       WHERE EXISTS (SELECT 1 FROM telegram_pet_instances
         WHERE pet_id=? AND telegram_id=? AND season_key=? AND status='active')
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_memories
+          WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?))
         AND ${requirements.sql}`)
       .bind(petId, telegramId, evolutionId, definition.stage, eventKey, safeJson(definition.cosmetic_unlocks),
-        safeJson(definition.achievement_unlocks), petId, telegramId, scope.season_key, ...requirements.args)];
+        safeJson(definition.achievement_unlocks), petId, telegramId, scope.season_key, petId, telegramId, scope.season_key, ...requirements.args)];
   for (const [assetType, assets] of Object.entries(definition.requirements.inventory || {})) for (const [assetKey, quantity] of Object.entries(assets)) {
     if (assetType === 'material') {
       statements.push(db.prepare(`UPDATE telegram_pet_material_balances SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
@@ -519,7 +539,9 @@ export async function evolveMoonpet(db, request = {}) {
       AND telegram_pet_memories.season_key = excluded.season_key`)
     .bind(petId, telegramId, scope.season_key, safeJson([evolutionMilestone]), petId, telegramId, evolutionId, evolutionMilestone, evolutionMilestone));
   statements.push(db.prepare(`UPDATE telegram_pet_evolutions_by_pet SET materials_consumed = 1
-    WHERE pet_id = ? AND evolution_id = ? AND materials_consumed = 0`).bind(petId, evolutionId));
+    WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ? AND materials_consumed = 0
+      AND EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)`)
+    .bind(petId, telegramId, evolutionId, petId, telegramId, scope.season_key));
   statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_analytics
       (analytics_id, pet_id, telegram_id, season_key, event_type, evolution_id, duration_seconds, event_data)
       SELECT ?, ?, ?, ?, 'evolution_unlock', ?, MAX(0, CAST((julianday(CURRENT_TIMESTAMP) - julianday(COALESCE(m.first_adoption_at, e.unlocked_at))) * 86400 AS INTEGER)), ?
@@ -534,6 +556,12 @@ export async function evolveMoonpet(db, request = {}) {
         (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?)`)
       .bind(`memory_milestone:${petId}:${evolutionMilestone}`, petId, telegramId, scope.season_key, evolutionMilestone,
         safeJson({ memory_type: 'milestone', evolution_id: evolutionId, pet_id: petId }), petId, telegramId, evolutionId));
+  statements.push(db.prepare(`INSERT INTO telegram_pet_identity_events
+      (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
+      SELECT ?, ?, NULL, ?, ?, 'evolution_authority_assertion', '{}'
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet
+        WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
+      .bind(`authority_assertion:evolution:${petId}:${evolutionId}`, petId, scope.season_key, `${eventKey}:authority_assertion`, petId, telegramId, evolutionId));
   const results = await db.batch(statements);
   if (!results?.[0]?.meta?.changes) {
     const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ?`)

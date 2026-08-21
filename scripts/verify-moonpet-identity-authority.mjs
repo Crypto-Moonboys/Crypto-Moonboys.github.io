@@ -38,33 +38,47 @@ function hasBoundAuthorityPredicate(sql, column) {
   return new RegExp(`(?:\\b[a-z_][a-z0-9_]*\\s*\\.\\s*)?\\b${column}\\s*=\\s*\\?`, 'i').test(sql);
 }
 
+function stripSqlStringLiterals(sql) {
+  return String(sql || '').replace(/'([^']|'')*'/g, "''").replace(/"([^"]|"")*"/g, '""');
+}
+
+function hasTopLevelOr(sql) {
+  const text = stripSqlStringLiterals(sql);
+  let depth = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === '(') depth += 1;
+    else if (char === ')' && depth > 0) depth -= 1;
+    else if (depth === 0 && /\s/i.test(text[index - 1] || ' ') && /^OR\b/i.test(text.slice(index))) return true;
+  }
+  return false;
+}
+
 function hasCompleteAuthorityWhereClause(whereClause) {
-  const predicate = (column) => `(?:\\b[a-z_][a-z0-9_]*\\s*\\.\\s*)?\\b${column}\\s*=\\s*\\?`;
+  if (hasTopLevelOr(whereClause)) return false;
   const columns = ['pet_id', 'telegram_id', 'season_key'];
-  const permutations = [
-    ['pet_id', 'telegram_id', 'season_key'],
-    ['pet_id', 'season_key', 'telegram_id'],
-    ['telegram_id', 'pet_id', 'season_key'],
-    ['telegram_id', 'season_key', 'pet_id'],
-    ['season_key', 'pet_id', 'telegram_id'],
-    ['season_key', 'telegram_id', 'pet_id'],
-  ];
-  return columns.every((column) => hasBoundAuthorityPredicate(whereClause, column)) &&
-    permutations.some((order) => new RegExp(order.map(predicate).join('\\s+AND\\s+'), 'i').test(whereClause));
+  const normalized = stripSqlStringLiterals(whereClause);
+  return columns.every((column) => hasBoundAuthorityPredicate(normalized, column));
 }
 
 function hasAnyBoundAuthorityPredicate(whereClause) {
   return ['pet_id', 'telegram_id', 'season_key'].some((column) => hasBoundAuthorityPredicate(whereClause, column));
 }
 
+function extractPreparedSql(source) {
+  return [...String(source || '').matchAll(/db\.prepare\(\s*([`'"])([\s\S]*?)\1/g)]
+    .map((match) => match[2]);
+}
+
 export function auditRuntimeIdentityQueries({ root = workerRoot } = {}) {
   const violations = [];
   for (const file of walkJavaScriptFiles(root)) {
     const source = fs.readFileSync(file, 'utf8');
+    const sqlStatements = extractPreparedSql(source);
     const relative = path.relative(repoRoot, file).replaceAll(path.sep, '/');
     for (const table of IDENTITY_AUTHORITY_TABLES) {
-      const statementPattern = new RegExp(`(?:FROM|UPDATE|DELETE\\s+FROM)\\s+${table}\\b[\\s\\S]{0,900}?WHERE\\s+([\\s\\S]{0,500}?)(?:\`|;|\\n\\s*\\)|ORDER\\s+BY|GROUP\\s+BY|LIMIT\\s+)`, 'gi');
-      for (const match of source.matchAll(statementPattern)) {
+      const statementPattern = new RegExp(`(?:FROM|UPDATE|DELETE\\s+FROM)\\s+${table}\\b[\\s\\S]{0,900}?WHERE\\s+([\\s\\S]{0,500}?)(?:;|\\n\\s*\\)|ORDER\\s+BY|GROUP\\s+BY|LIMIT\\s+|$)`, 'gi');
+      for (const sql of sqlStatements) for (const match of sql.matchAll(statementPattern)) {
         const statement = match[0];
         const whereClause = match[1] || '';
         if (hasAnyBoundAuthorityPredicate(whereClause) && !hasCompleteAuthorityWhereClause(whereClause)) {
@@ -77,7 +91,7 @@ export function auditRuntimeIdentityQueries({ root = workerRoot } = {}) {
         }
       }
       const insertPattern = new RegExp(`INSERT\\s+(?:OR\\s+IGNORE\\s+)?INTO\\s+${table}\\s*\\(([^)]*)\\)`, 'gi');
-      for (const match of source.matchAll(insertPattern)) {
+      for (const sql of sqlStatements) for (const match of sql.matchAll(insertPattern)) {
         const columns = match[1];
         for (const required of ['pet_id', 'telegram_id', 'season_key']) {
           if (!hasColumnReference(columns, required)) {
@@ -343,9 +357,9 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
   try {
     if (!sqlitePath) {
       applyMigrationChain(db);
-      assertRequiredTablesAndIndexes(db);
       seedValidIdentityRows(db);
     }
+    assertRequiredTablesAndIndexes(db);
     const foreignKeyViolations = db.prepare('PRAGMA foreign_key_check').all();
     if (foreignKeyViolations.length) {
       return {

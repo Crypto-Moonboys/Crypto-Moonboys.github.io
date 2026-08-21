@@ -90,6 +90,12 @@ assert.match(workflow, /d1-identity-authority-audit-failure-diagnostics/,
   'workflow_dispatch must upload identity audit failure diagnostics separately');
 assert.match(workflow, /d1-identity-authority-audit-result\.txt/,
   'workflow_dispatch must upload successful identity audit evidence');
+assert.doesNotMatch(workflow, /path:\s*\|\s*d1-identity-authority-audit-failure\.txt\s*d1-identity-authority-audit\.json/s,
+  'identity audit failure artifacts must not upload raw Wrangler JSON');
+assert.doesNotMatch(workflow, /path:\s*\|\s*d1-identity-authority-audit-failure\.txt[\s\S]*d1-identity-authority-audit\.stderr[\s\S]*retention-days: 30/s,
+  'identity audit failure artifacts must not upload raw Wrangler stderr');
+assert.doesNotMatch(workflow, /path:\s*\|\s*d1-production-migration-evidence\.json\s*d1-identity-authority-audit\.json/s,
+  'successful evidence artifacts must not upload raw Wrangler identity audit JSON');
 assert.ok(
   REQUIRED_D1_MIGRATIONS.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be detected by the production migration verification script',
@@ -134,6 +140,8 @@ assert.doesNotThrow(() => normalizeD1StatementResult({ result: [{ success: true,
 assert.doesNotThrow(() => normalizeD1StatementResult({ success: true, results: [] }), 'normaliser accepts results[] object responses');
 assert.throws(() => normalizeD1StatementResult([{ success: false, results: [] }]), /did not report success/,
   'normaliser requires success === true');
+assert.throws(() => normalizeD1StatementResult({ success: false, result: [{ success: true, results: [] }] }), /did not report success/,
+  'normaliser rejects top-level success:false before result unwrapping');
 for (const payload of [
   [{ success: true, results: [{ invalid_identity_authority_rows: 0 }] }],
   { result: [{ success: true, results: [{ invalid_identity_authority_rows: '0' }] }] },

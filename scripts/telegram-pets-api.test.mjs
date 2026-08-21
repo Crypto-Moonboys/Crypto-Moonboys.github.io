@@ -1658,10 +1658,18 @@ class SqliteD1Statement {
   }
 
   async first() {
+    if (this.adapter.failReadSqlPattern && this.adapter.failReadSqlPattern.test(this.sql)) {
+      this.adapter.failReadSqlPattern = null;
+      return { success: false, error: 'simulated_d1_read_failure' };
+    }
     return this.adapter.database.prepare(this.sql).get(...this.args) || null;
   }
 
   async all() {
+    if (this.adapter.failReadSqlPattern && this.adapter.failReadSqlPattern.test(this.sql)) {
+      this.adapter.failReadSqlPattern = null;
+      return { success: false, error: 'simulated_d1_read_failure' };
+    }
     return { results: this.adapter.database.prepare(this.sql).all(...this.args) };
   }
 
@@ -1685,6 +1693,7 @@ class SqliteD1 {
     this.beforeBatchSqlPattern = null;
     this.beforeBatchSqlCallback = null;
     this.beforeRun = null;
+    this.failReadSqlPattern = null;
   }
 
   prepare(sql) {
@@ -1702,6 +1711,10 @@ class SqliteD1 {
   beforeBatchSql(pattern, callback) {
     this.beforeBatchSqlPattern = pattern;
     this.beforeBatchSqlCallback = callback;
+  }
+
+  failReadOnSql(pattern) {
+    this.failReadSqlPattern = pattern;
   }
 
   async batch(statements) {
@@ -1941,6 +1954,17 @@ const brokenAuditResponse = await moonboysApiWorker.fetch(new Request(
 ), { DB: brokenAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
 assert.equal(brokenAuditResponse.status, 500, 'identity audit endpoint must fail closed when verifier view is unavailable');
 assert.equal((await brokenAuditResponse.json()).error, 'identity_authority_audit_failed');
+
+const failedReadAuditDb = new SqliteD1();
+const failedReadAuditPet = seedIdentityAuditPet(failedReadAuditDb, '9005005', 1);
+failedReadAuditDb.failReadOnSql(/FROM telegram_pet_identity_analytics/i);
+const failedReadAuditAuth = JSON.stringify(buildSignedTelegramAuth('9005005'));
+const failedReadAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(failedReadAuditPet)}&season_key=pet-s2026-003`,
+  { headers: { Authorization: `Bearer ${failedReadAuditAuth}` } },
+), { DB: failedReadAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
+assert.equal(failedReadAuditResponse.status, 500, 'identity audit endpoint must reject D1 success:false reads');
+assert.equal((await failedReadAuditResponse.json()).error, 'identity_authority_audit_failed');
 
 function insertWalletRecoveryRequired(db, telegramId) {
   db.database.prepare(`

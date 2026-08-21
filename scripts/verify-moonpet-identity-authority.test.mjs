@@ -62,6 +62,26 @@ try {
   assert.equal(auditRuntimeIdentityQueries({ root: orRuntimeRoot }).length, 1,
     'verifier rejects OR-conjoined authority predicates');
 
+  const topLevelOrRoot = path.join(tmpRoot, 'top-level-or');
+  fs.mkdirSync(topLevelOrRoot);
+  fs.writeFileSync(path.join(topLevelOrRoot, 'top-level-or.js'), `
+    export async function bad(db, petId, telegramId, seasonKey) {
+      return db.prepare(\`SELECT * FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ? OR telegram_id = ?\`).bind(petId, telegramId, seasonKey, telegramId).first();
+    }
+  `);
+  assert.equal(auditRuntimeIdentityQueries({ root: topLevelOrRoot }).length, 1,
+    'verifier rejects top-level OR bypasses after a complete tuple');
+
+  const singleQuotedRoot = path.join(tmpRoot, 'single-quoted');
+  fs.mkdirSync(singleQuotedRoot);
+  fs.writeFileSync(path.join(singleQuotedRoot, 'single-quoted.js'), `
+    export async function bad(db, telegramId) {
+      return db.prepare('SELECT pet_id, season_key FROM telegram_pet_memories WHERE telegram_id = ?').bind(telegramId).first();
+    }
+  `);
+  assert.equal(auditRuntimeIdentityQueries({ root: singleQuotedRoot }).length, 1,
+    'verifier audits single-quoted SQL strings');
+
   const goodRuntimeRoot = path.join(tmpRoot, 'good');
   fs.mkdirSync(goodRuntimeRoot);
   fs.writeFileSync(path.join(goodRuntimeRoot, 'good.js'), `
@@ -99,6 +119,35 @@ const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-
 });
 assert.notEqual(cliResult.status, 0, '--sqlite without a path must fail');
 assert.match(`${cliResult.stderr}\n${cliResult.stdout}`, /--sqlite requires a path/);
+
+const externalDbPath = path.join(os.tmpdir(), `moonpet-authority-external-${process.pid}.sqlite`);
+const externalDb = new DatabaseSync(externalDbPath);
+try {
+  externalDb.exec(`
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_memories (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_personality_traits (pet_id TEXT, telegram_id TEXT, season_key TEXT, trait_id TEXT);
+    CREATE TABLE telegram_pet_boss_victories (pet_id TEXT, telegram_id TEXT, season_key TEXT, boss_id TEXT);
+    CREATE TABLE telegram_pet_identity_events (event_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_identity_analytics (analytics_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_achievements (pet_id TEXT, telegram_id TEXT, season_key TEXT, achievement_id TEXT);
+    CREATE VIEW moonpet_invalid_identity_authority_rows AS
+      SELECT 'telegram_pet_memories' AS table_name, NULL AS pet_id, NULL AS telegram_id, NULL AS season_key, NULL AS row_key, 'empty' AS reason WHERE 1 = 0;
+  `);
+} finally {
+  externalDb.close();
+}
+const externalCliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite', externalDbPath], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+});
+try {
+  assert.notEqual(externalCliResult.status, 0, '--sqlite external DB must run schema/index validation');
+  assert.match(`${externalCliResult.stderr}\n${externalCliResult.stdout}`, /missing identity authority index/);
+} finally {
+  fs.rmSync(externalDbPath, { force: true });
+}
 
 assert.deepEqual(IDENTITY_AUTHORITY_TABLES, [
   'telegram_pet_memories',
