@@ -50,6 +50,8 @@ for (const [sourceName, source] of identityRuntimeSources) {
     assert.doesNotMatch(source, accountOnlyWrite, `${sourceName} must not write ${table} with telegram_id-only authority`);
   }
 }
+assert.doesNotMatch(identitySource, /authority_assertion|personality_authority_assertion|memory_authority_assertion|evolution_authority_assertion/,
+  'identity writes must not use sentinel rows or intentional schema violations for rollback');
 
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }

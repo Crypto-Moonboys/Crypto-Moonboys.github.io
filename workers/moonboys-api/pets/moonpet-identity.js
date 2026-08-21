@@ -207,6 +207,13 @@ export async function recordMoonpetBehaviour(db, request = {}) {
   const sourceEventKey = authority.source.source_event_key;
   const eventId = crypto.randomUUID();
   const analyticsId = `personality_unlock:${petId}:${definition.trait_id}`;
+  const corruptTrait = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_personality_traits
+    WHERE pet_id = ? AND trait_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+    .bind(petId, definition.trait_id, telegramId, seasonKey).first();
+  const corruptMemory = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
+    WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+    .bind(petId, telegramId, seasonKey).first();
+  if (corruptTrait || corruptMemory) throw new Error('moonpet_identity_authority_tuple_mismatch');
   const results = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
       (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload, day_key, progress_delta)
@@ -271,13 +278,6 @@ export async function recordMoonpetBehaviour(db, request = {}) {
           EXISTS (SELECT 1 FROM telegram_pet_personality_traits WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND trait_id = ?)
           AND EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)
         ))`).bind(eventId, petId, telegramId, seasonKey, petId, telegramId, seasonKey, definition.trait_id, petId, telegramId, seasonKey),
-    db.prepare(`INSERT INTO telegram_pet_identity_events
-      (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
-      SELECT ?, ?, NULL, ?, ?, 'personality_authority_assertion', '{}'
-      WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events
-        WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?
-          AND applied_at IS NULL AND progress_delta > 0)`)
-      .bind(`authority_assertion:${eventId}`, petId, seasonKey, `${eventKey}:authority_assertion`, eventId, petId, telegramId, seasonKey),
   ]);
   const identityEvent = await db.prepare(`SELECT progress_delta FROM telegram_pet_identity_events
     WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(eventId, petId, telegramId, seasonKey).first().catch(() => null);
@@ -321,6 +321,15 @@ export async function recordMoonpetMemory(db, request = {}) {
   const sourceEventKey = authority.source.source_event_key;
   const eventId = crypto.randomUUID();
   const milestoneJson = safeJson(values.milestone ? [values.milestone] : []);
+  const corruptMemory = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
+    WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+    .bind(petId, telegramId, seasonKey).first();
+  const corruptBoss = values.boss_id
+    ? await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_boss_victories
+        WHERE pet_id = ? AND boss_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+      .bind(petId, values.boss_id, telegramId, seasonKey).first()
+    : null;
+  if (corruptMemory || corruptBoss) throw new Error('moonpet_identity_authority_tuple_mismatch');
   const statements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
       (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
@@ -373,15 +382,8 @@ export async function recordMoonpetMemory(db, request = {}) {
       AND EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)
       AND (? = '' OR EXISTS (SELECT 1 FROM telegram_pet_boss_victories WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND boss_id = ?))`)
     .bind(eventId, petId, telegramId, seasonKey, petId, telegramId, seasonKey, values.boss_id, petId, telegramId, seasonKey, values.boss_id));
-  statements.push(db.prepare(`INSERT INTO telegram_pet_identity_events
-    (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
-    SELECT ?, ?, NULL, ?, ?, 'memory_authority_assertion', '{}'
-    WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events
-      WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?
-        AND applied_at IS NULL)`)
-    .bind(`authority_assertion:${eventId}`, petId, seasonKey, `${eventKey}:authority_assertion`, eventId, petId, telegramId, seasonKey));
   const results = await db.batch(statements);
-  return { accepted: Boolean(results?.[results.length - 2]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes };
+  return { accepted: Boolean(results?.[results.length - 1]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes };
 }
 
 export async function recordMoonpetBiggestReward(db, request = {}) {
@@ -504,6 +506,10 @@ export async function evolveMoonpet(db, request = {}) {
   if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };
   const requirements = evolutionRequirementSql(definition, telegramId, petId, scope.season_key);
   const evolutionMilestone = `evolution_${evolutionId}`;
+  const corruptMemory = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
+    WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+    .bind(petId, telegramId, scope.season_key).first();
+  if (corruptMemory) throw new Error('moonpet_identity_authority_tuple_mismatch');
   const statements = [db.prepare(`INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet
       (pet_id, telegram_id, evolution_id, stage, unlock_event_key, cosmetic_unlocks, achievement_unlocks, materials_consumed)
       SELECT ?, ?, ?, ?, ?, ?, ?, 0
@@ -556,12 +562,6 @@ export async function evolveMoonpet(db, request = {}) {
         (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?)`)
       .bind(`memory_milestone:${petId}:${evolutionMilestone}`, petId, telegramId, scope.season_key, evolutionMilestone,
         safeJson({ memory_type: 'milestone', evolution_id: evolutionId, pet_id: petId }), petId, telegramId, evolutionId));
-  statements.push(db.prepare(`INSERT INTO telegram_pet_identity_events
-      (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
-      SELECT ?, ?, NULL, ?, ?, 'evolution_authority_assertion', '{}'
-      WHERE EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet
-        WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
-      .bind(`authority_assertion:evolution:${petId}:${evolutionId}`, petId, scope.season_key, `${eventKey}:authority_assertion`, petId, telegramId, evolutionId));
   const results = await db.batch(statements);
   if (!results?.[0]?.meta?.changes) {
     const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ?`)

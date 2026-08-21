@@ -9983,14 +9983,20 @@ export default {
     }
 
     if (path === '/api/telegram/pets/identity/audit' && request.method === 'GET') {
-      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit:preauth', null, corsHeaders, { includeIp: true }); if (limited) return limited; }
-      if (url.searchParams.has('telegram_auth') || url.searchParams.has('auth_evidence')) return err('telegram_auth_url_credentials_rejected', 400);
+      const auditHeaders = { ...corsHeaders, 'Cache-Control': 'no-store' };
+      const auditJson = (data, status = 200) => new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json', ...auditHeaders },
+      });
+      const auditErr = (message, status = 400) => auditJson({ error: message }, status);
+      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit:preauth', null, auditHeaders, { includeIp: true }); if (limited) return limited; }
+      if (url.searchParams.has('telegram_auth') || url.searchParams.has('auth_evidence')) return auditErr('telegram_auth_url_credentials_rejected', 400);
       const rawAuth = readTelegramAuthEvidenceFromAuthorization(request);
-      if (!rawAuth) return err('authorization required', 401);
+      if (!rawAuth) return auditErr('authorization required', 401);
       const body = { telegram_auth: parseTelegramAuthEvidence(rawAuth) };
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
-      if (verified?.error || !verified?.telegramId) return err(verified?.error || 'telegram_auth invalid', verified?.status || 401);
-      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      if (verified?.error || !verified?.telegramId) return auditErr(verified?.error || 'telegram_auth invalid', verified?.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit', null, auditHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       let audit;
       try {
         audit = await buildMoonpetIdentityAuthorityAudit(env.DB, verified.telegramId, {
@@ -10002,14 +10008,14 @@ export default {
           telegramId: verified.telegramId,
           message: error?.message || String(error),
         });
-        return err('identity_authority_audit_failed', 500);
+        return auditErr('identity_authority_audit_failed', 500);
       }
       if (!audit) {
         const requestedPetId = String(url.searchParams.get('pet_id') || '').trim();
         const requestedSeasonKey = String(url.searchParams.get('season_key') || '').trim();
-        return err('identity_authority_scope_not_found', requestedPetId && requestedSeasonKey ? 403 : 404);
+        return auditErr('identity_authority_scope_not_found', requestedPetId && requestedSeasonKey ? 403 : 404);
       }
-      return json(audit);
+      return auditJson(audit);
     }
 
     if (path === '/telegram-pets/state' && request.method === 'GET') {
@@ -15345,12 +15351,6 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
         AND telegram_pet_achievements.season_key = excluded.season_key`)
       .bind(petId, telegramId, seasonKey, achievementId, progress, definition.target, progress, definition.target);
   });
-  statements.push(db.prepare(`INSERT INTO telegram_pet_achievements
-    (pet_id, telegram_id, season_key, achievement_id, progress, target)
-    SELECT ?, NULL, ?, ?, 0, 1
-    WHERE EXISTS (SELECT 1 FROM telegram_pet_achievements
-      WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?))`)
-    .bind(petId, seasonKey, `authority_assertion:${petId}`, petId, telegramId, seasonKey));
   await db.batch(statements);
   const rows = await db.prepare(`SELECT achievement_id, progress, target, unlocked_at FROM telegram_pet_achievements
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?

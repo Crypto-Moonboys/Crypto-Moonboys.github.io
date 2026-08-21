@@ -156,6 +156,8 @@ assert.ok(identityAuditRouteSource.includes('buildMoonpetIdentityAuthorityAudit(
   'identity authority audit endpoint must read through pet-authorized audit helper');
 assert.ok(identityAuditRouteSource.includes('identity_authority_audit_failed'),
   'identity authority audit endpoint must return an explicit failure when diagnostics cannot be read');
+assert.ok(identityAuditRouteSource.includes("'Cache-Control': 'no-store'"),
+  'identity authority audit endpoint must mark all responses no-store');
 assert.doesNotMatch(identityAuditRouteSource, /\b(?:INSERT|UPDATE|DELETE|DROP|ALTER)\b/i,
   'identity authority audit endpoint must remain read only');
 assert.ok(!worker.includes("path === '/telegram-pets/season/slots'"), '/telegram-pets/season/slots must not expose owner-specific slot data without auth');
@@ -1875,6 +1877,7 @@ const identityAuditResponse = await moonboysApiWorker.fetch(new Request(
   { headers: identityAuditAuthorization },
 ), identityAuditEnv);
 assert.equal(identityAuditResponse.status, 200, 'identity audit endpoint accepts an authenticated owner pet request');
+assert.equal(identityAuditResponse.headers.get('Cache-Control'), 'no-store', 'identity audit endpoint must not cache diagnostics');
 const identityAuditPayload = await identityAuditResponse.json();
 assert.equal(identityAuditPayload.pet_id, identityAuditPet, 'identity audit endpoint returns the requested owned pet');
 assert.equal(identityAuditPayload.telegram_id, '9001001', 'identity audit endpoint is scoped to the authenticated Telegram owner');
@@ -1953,6 +1956,7 @@ const brokenAuditResponse = await moonboysApiWorker.fetch(new Request(
   { headers: { Authorization: `Bearer ${brokenAuditAuth}` } },
 ), { DB: brokenAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
 assert.equal(brokenAuditResponse.status, 500, 'identity audit endpoint must fail closed when verifier view is unavailable');
+assert.equal(brokenAuditResponse.headers.get('Cache-Control'), 'no-store', 'failed identity audit diagnostics must not be cached');
 assert.equal((await brokenAuditResponse.json()).error, 'identity_authority_audit_failed');
 
 const failedReadAuditDb = new SqliteD1();
