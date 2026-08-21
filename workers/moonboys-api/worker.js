@@ -783,6 +783,12 @@ function parseTelegramAuthEvidence(rawValue) {
   return null;
 }
 
+function readTelegramAuthEvidenceFromAuthorization(request) {
+  const authorization = String(request?.headers?.get?.('Authorization') || '').trim();
+  const match = authorization.match(/^(?:Bearer|Telegram)\s+(.+)$/i);
+  return match ? match[1].trim() : '';
+}
+
 async function verifyTelegramAuthEvidenceForRestore(body, env) {
   const tg = parseTelegramAuthEvidence(body?.telegram_auth || body?.auth_evidence || body);
   if (!tg || typeof tg !== 'object') return null;
@@ -1026,6 +1032,14 @@ async function allMoonpetAuditRows(statementPromise) {
   return Array.isArray(rows?.results) ? rows.results : [];
 }
 
+function redactMoonpetInvalidAuthorityRow(row) {
+  return {
+    table_name: String(row?.table_name || ''),
+    row_key: row?.row_key == null ? null : String(row.row_key),
+    reason: String(row?.reason || 'invalid_authority'),
+  };
+}
+
 async function buildMoonpetIdentityAuthorityAudit(db, telegramId, request = {}) {
   const scope = await resolveMoonpetAuditIdentityScope(db, telegramId, request);
   if (!scope) return null;
@@ -1077,6 +1091,7 @@ async function buildMoonpetIdentityAuthorityAudit(db, telegramId, request = {}) 
     ORDER BY table_name, row_key
     LIMIT 100
   `).bind(scope.pet_id).all());
+  const safeInvalidAuthorityRows = invalidAuthorityRows.map(redactMoonpetInvalidAuthorityRow);
   return {
     pet_id: scope.pet_id,
     telegram_id: scope.telegram_id,
@@ -1087,8 +1102,8 @@ async function buildMoonpetIdentityAuthorityAudit(db, telegramId, request = {}) 
     boss_victories: bossVictories,
     identity_events: identityEvents,
     identity_analytics: identityAnalytics,
-    orphans: invalidAuthorityRows,
-    invalid_authority_rows: invalidAuthorityRows,
+    orphans: safeInvalidAuthorityRows,
+    invalid_authority_rows: safeInvalidAuthorityRows,
   };
 }
 
@@ -9961,8 +9976,9 @@ export default {
 
     if (path === '/api/telegram/pets/identity/audit' && request.method === 'GET') {
       { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit:preauth', null, corsHeaders, { includeIp: true }); if (limited) return limited; }
-      const rawAuth = url.searchParams.get('telegram_auth') || url.searchParams.get('auth_evidence') || '';
-      if (!rawAuth) return err('telegram_auth required', 401);
+      if (url.searchParams.has('telegram_auth') || url.searchParams.has('auth_evidence')) return err('telegram_auth_url_credentials_rejected', 400);
+      const rawAuth = readTelegramAuthEvidenceFromAuthorization(request);
+      if (!rawAuth) return err('authorization required', 401);
       const body = { telegram_auth: parseTelegramAuthEvidence(rawAuth) };
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified?.error || !verified?.telegramId) return err(verified?.error || 'telegram_auth invalid', verified?.status || 401);

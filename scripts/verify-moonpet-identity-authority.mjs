@@ -38,6 +38,14 @@ function hasBoundAuthorityPredicate(sql, column) {
   return new RegExp(`\\b${column}\\s*=\\s*\\?`, 'i').test(sql);
 }
 
+function hasCompleteAuthorityWhereClause(whereClause) {
+  return ['pet_id', 'telegram_id', 'season_key'].every((column) => hasBoundAuthorityPredicate(whereClause, column));
+}
+
+function hasAnyBoundAuthorityPredicate(whereClause) {
+  return ['pet_id', 'telegram_id', 'season_key'].some((column) => hasBoundAuthorityPredicate(whereClause, column));
+}
+
 export function auditRuntimeIdentityQueries({ root = workerRoot } = {}) {
   const violations = [];
   for (const file of walkJavaScriptFiles(root)) {
@@ -47,8 +55,8 @@ export function auditRuntimeIdentityQueries({ root = workerRoot } = {}) {
       const statementPattern = new RegExp(`(?:FROM|UPDATE|DELETE\\s+FROM)\\s+${table}\\b[\\s\\S]{0,900}?WHERE\\s+([\\s\\S]{0,500}?)(?:\`|;|\\n\\s*\\)|ORDER\\s+BY|GROUP\\s+BY|LIMIT\\s+)`, 'gi');
       for (const match of source.matchAll(statementPattern)) {
         const statement = match[0];
-        if (!/\btelegram_id\s*=\s*\?/i.test(statement)) continue;
-        if (!hasBoundAuthorityPredicate(statement, 'pet_id') || !hasBoundAuthorityPredicate(statement, 'season_key')) {
+        const whereClause = match[1] || '';
+        if (hasAnyBoundAuthorityPredicate(whereClause) && !hasCompleteAuthorityWhereClause(whereClause)) {
           violations.push({
             type: 'runtime_identity_query_missing_pet_authority',
             file: relative,
@@ -261,6 +269,7 @@ function assertRequiredTablesAndIndexes(db) {
   for (const index of [
     'idx_telegram_pet_identity_events_owner',
     'idx_telegram_pet_identity_events_pet_kind_day',
+    'idx_telegram_pet_identity_analytics_owner',
     'idx_telegram_pet_achievements_owner',
   ]) {
     const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?").get(index);
@@ -336,7 +345,10 @@ function parseArgs(argv) {
   const args = { sqlitePath: null };
   for (let index = 0; index < argv.length; index += 1) {
     if (argv[index] === '--sqlite') {
-      args.sqlitePath = argv[index + 1] ? path.resolve(argv[index + 1]) : null;
+      if (!argv[index + 1] || String(argv[index + 1]).startsWith('--')) {
+        throw new Error('--sqlite requires a path');
+      }
+      args.sqlitePath = path.resolve(argv[index + 1]);
       index += 1;
     }
   }

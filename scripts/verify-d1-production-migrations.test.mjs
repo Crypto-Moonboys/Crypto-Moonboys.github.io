@@ -79,8 +79,12 @@ assert.match(remoteIdentityAuditStep, /SELECT COUNT\(\*\) AS invalid_identity_au
   'workflow_dispatch must query the production identity authority verification view');
 assert.match(remoteIdentityAuditStep, /count > 0/,
   'workflow_dispatch must fail when production has invalid identity authority rows');
-assert.match(remoteIdentityAuditStep, /!Number\.isFinite\(count\)/,
+assert.match(remoteIdentityAuditStep, /Number\.isSafeInteger\(count\)/,
   'workflow_dispatch must fail closed when production identity authority audit output is malformed');
+assert.match(remoteIdentityAuditStep, /\^\[0-9\]\+\$/,
+  'workflow_dispatch must reject empty, decimal, or negative string counts');
+assert.match(remoteIdentityAuditStep, /count<0/,
+  'workflow_dispatch must reject negative production identity authority counts');
 assert.match(remoteIdentityAuditStep, /0 invalid identity authority rows/,
   'workflow_dispatch must report the expected zero-invalid-row audit result');
 assert.ok(

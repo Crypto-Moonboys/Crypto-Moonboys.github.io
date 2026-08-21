@@ -69,38 +69,74 @@ async function deriveIdentity(seed, incubation = {}) {
   };
 }
 
-async function readLifecycle(db, telegramId) {
-  return db.prepare(`SELECT l.*, a.season_key FROM telegram_pet_active_slots a
-    JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=a.pet_id AND l.telegram_id=a.telegram_id
-    WHERE a.telegram_id=? LIMIT 1`).bind(telegramId).first().catch(() => null);
+async function activePetAuthority(db, telegramId) {
+  let row = await db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number
+    FROM telegram_pet_active_slots a
+    JOIN telegram_pet_season_slots s
+      ON s.pet_id=a.pet_id
+     AND s.telegram_id=a.telegram_id
+     AND s.season_key=a.season_key
+    JOIN telegram_pet_instances i
+      ON i.pet_id=s.pet_id
+     AND i.telegram_id=s.telegram_id
+     AND i.season_key=s.season_key
+     AND i.slot_number=s.slot_number
+    WHERE a.telegram_id=?
+      AND s.status='active'
+      AND i.status='active'
+    LIMIT 1`).bind(telegramId).first().catch(() => null);
+  if (!row) row = await db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i
+      ON i.pet_id=s.pet_id
+     AND i.telegram_id=s.telegram_id
+     AND i.season_key=s.season_key
+     AND i.slot_number=s.slot_number
+    WHERE s.telegram_id=?
+      AND s.slot_number=1
+      AND s.status='active'
+      AND i.status='active'
+    ORDER BY s.updated_at DESC
+    LIMIT 1`).bind(telegramId).first().catch(() => null);
+  return row?.pet_id && row?.season_key ? row : null;
 }
 
-async function activePetId(db, telegramId) {
-  let row = await db.prepare(`SELECT i.pet_id FROM telegram_pet_active_slots a
-    JOIN telegram_pet_instances i ON i.pet_id=a.pet_id AND i.telegram_id=a.telegram_id
-    WHERE a.telegram_id=? AND i.status='active' LIMIT 1`).bind(telegramId).first().catch(() => null);
-  if (!row) row = await db.prepare(`SELECT i.pet_id FROM telegram_pet_season_slots s
-    JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
-    WHERE s.telegram_id=? AND s.slot_number=1 AND s.status='active' AND i.status='active'
-    ORDER BY s.updated_at DESC LIMIT 1`).bind(telegramId).first().catch(() => null);
-  return row?.pet_id || null;
+async function readLifecycle(db, telegramId) {
+  return db.prepare(`SELECT l.*, s.season_key
+    FROM telegram_pet_active_slots a
+    JOIN telegram_pet_season_slots s
+      ON s.pet_id=a.pet_id
+     AND s.telegram_id=a.telegram_id
+     AND s.season_key=a.season_key
+    JOIN telegram_pet_instances i
+      ON i.pet_id=s.pet_id
+     AND i.telegram_id=s.telegram_id
+     AND i.season_key=s.season_key
+     AND i.slot_number=s.slot_number
+    JOIN telegram_pet_lifecycle_by_pet l
+      ON l.pet_id=s.pet_id
+     AND l.telegram_id=s.telegram_id
+    WHERE a.telegram_id=?
+      AND s.status='active'
+      AND i.status='active'
+    LIMIT 1`).bind(telegramId).first().catch(() => null);
 }
 
 export async function createMoonEggLifecycle(db, telegramId, eventKey = '') {
   const id = cleanId(telegramId);
   if (!id) throw new Error('invalid_moonpet_lifecycle_owner');
-  const petId = await activePetId(db, id);
-  if (!petId) throw new Error('invalid_moonpet_lifecycle_pet');
+  const authority = await activePetAuthority(db, id);
+  if (!authority?.pet_id) throw new Error('invalid_moonpet_lifecycle_pet');
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
     (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
     SELECT ?, ?, ?, 'egg', '{}', '[]' WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=?)`)
-    .bind(petId, id, crypto.randomUUID(), id).run();
+    .bind(authority.pet_id, id, crypto.randomUUID(), id).run();
   if (eventKey) {
     await db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_events_by_pet
       (event_id, pet_id, telegram_id, event_key, action, payload_json, progress_delta, applied_at)
       SELECT ?, ?, ?, ?, 'egg_created', '{}', 0, CURRENT_TIMESTAMP
       WHERE EXISTS (SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?)`)
-      .bind(crypto.randomUUID(), petId, id, String(eventKey).slice(0, 180), petId).run();
+      .bind(crypto.randomUUID(), authority.pet_id, id, String(eventKey).slice(0, 180), authority.pet_id).run();
   }
   const row = await readLifecycle(db, id);
   return publicLifecycle(row, { signal: 'dormant', ready: false, percent: 0 });
@@ -111,13 +147,13 @@ export async function ensureMoonpetLifecycle(db, telegramId) {
   if (!id) return null;
   let row = await readLifecycle(db, id);
   if (!row) {
-    const petId = await activePetId(db, id);
-    if (!petId) return null;
+    const authority = await activePetAuthority(db, id);
+    if (!authority?.pet_id) return null;
     await db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
       (pet_id, telegram_id, identity_seed, phase, incubation_progress, incubation_json, innate_traits_json, hatched_at, adult_at)
       SELECT ?, ?, ?, 'adult', ?, '{}', '[]', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
       WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=?)`)
-      .bind(petId, id, crypto.randomUUID(), HATCH_PROGRESS, id).run();
+      .bind(authority.pet_id, id, crypto.randomUUID(), HATCH_PROGRESS, id).run();
     row = await readLifecycle(db, id);
   }
   if (row && row.phase !== 'egg' && !row.species_id) {
@@ -269,12 +305,11 @@ export async function incubateMoonEgg(db, telegramId, careType, eventKey, now = 
   const applied = Number(results?.[2]?.meta?.changes || 0) === 1;
   if (!inserted) return { accepted: false, reason: 'incubation_daily_cap', lifecycle: await getMoonpetLifecycle(db, id) };
   if (!progressed || !applied) return { accepted: false, reason: 'incubation_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
-  const active = await db.prepare(`SELECT season_key FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=?`)
-    .bind(id, row.pet_id).first().catch(() => null);
-  if (active?.season_key) await awardPetGrowthMark(db, {
+  const authority = await activePetAuthority(db, id);
+  if (authority?.pet_id === row.pet_id && authority?.season_key) await awardPetGrowthMark(db, {
     pet_id: row.pet_id,
     telegram_id: id,
-    season_key: active.season_key,
+    season_key: authority.season_key,
     milestone: 'incubation',
     evidence_key: `incubation:${key}`,
     earned_at: new Date(now).toISOString(),

@@ -139,6 +139,8 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_events_owner
   ON telegram_pet_identity_events(telegram_id, pet_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_events_pet_kind_day
   ON telegram_pet_identity_events(pet_id, event_kind, day_key);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_analytics_owner
+  ON telegram_pet_identity_analytics(pet_id, telegram_id, season_key, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_analytics_type
   ON telegram_pet_identity_analytics(event_type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_analytics_evolution
