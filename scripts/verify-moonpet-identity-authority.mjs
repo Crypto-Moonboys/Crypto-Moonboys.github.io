@@ -42,6 +42,37 @@ function stripSqlStringLiterals(sql) {
   return String(sql || '').replace(/'([^']|'')*'/g, "''").replace(/"([^"]|"")*"/g, '""');
 }
 
+function flattenSql(sql) {
+  const text = stripSqlStringLiterals(sql);
+  let result = '';
+  let depth = 0;
+  const selectDepths = [];
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    if (char === '(') {
+      depth += 1;
+      const inner = text.slice(i + 1).trimStart();
+      if (/^SELECT\b/i.test(inner)) {
+        selectDepths.push(depth);
+        if (selectDepths.length === 1) result += '(';
+      } else if (selectDepths.length === 0) {
+        result += '(';
+      }
+    } else if (char === ')') {
+      if (selectDepths.length > 0 && selectDepths[selectDepths.length - 1] === depth) {
+        selectDepths.pop();
+        if (selectDepths.length === 0) result += ')';
+      } else if (selectDepths.length === 0) {
+        result += ')';
+      }
+      if (depth > 0) depth -= 1;
+    } else if (selectDepths.length === 0) {
+      result += char;
+    }
+  }
+  return result;
+}
+
 function hasTopLevelOr(sql) {
   const text = stripSqlStringLiterals(sql);
   let depth = 0;
@@ -78,7 +109,7 @@ export function auditRuntimeIdentityQueries({ root = workerRoot } = {}) {
     const relative = path.relative(repoRoot, file).replaceAll(path.sep, '/');
     for (const table of IDENTITY_AUTHORITY_TABLES) {
       const statementPattern = new RegExp(`(?:FROM|UPDATE|DELETE\\s+FROM)\\s+${table}\\b[\\s\\S]{0,900}?WHERE\\s+([\\s\\S]{0,500}?)(?:;|\\n\\s*\\)|ORDER\\s+BY|GROUP\\s+BY|LIMIT\\s+|$)`, 'gi');
-      for (const sql of sqlStatements) for (const match of sql.matchAll(statementPattern)) {
+      for (const sql of sqlStatements) for (const match of flattenSql(sql).matchAll(statementPattern)) {
         const statement = match[0];
         const whereClause = match[1] || '';
         if (hasAnyBoundAuthorityPredicate(whereClause) && !hasCompleteAuthorityWhereClause(whereClause)) {

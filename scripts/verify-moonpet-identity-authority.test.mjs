@@ -91,6 +91,21 @@ try {
   `);
   assert.equal(auditRuntimeIdentityQueries({ root: goodRuntimeRoot }).length, 0,
     'verifier accepts the full authority tuple in WHERE');
+
+  const guardSubqueryRoot = path.join(tmpRoot, 'guard-subquery');
+  fs.mkdirSync(guardSubqueryRoot);
+  fs.writeFileSync(path.join(guardSubqueryRoot, 'guard-subquery.js'), `
+    export async function guarded(db, petId, telegramId, seasonKey, traitId) {
+      return db.prepare(\`
+        SELECT pet_id, telegram_id, season_key FROM telegram_pet_identity_events
+        WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND applied_at IS NULL
+          AND (NOT EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ?)
+            OR EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?))
+      \`).bind(petId, telegramId, seasonKey, petId, petId, telegramId, seasonKey).all();
+    }
+  `);
+  assert.equal(auditRuntimeIdentityQueries({ root: guardSubqueryRoot }).length, 0,
+    'verifier does not false-positive on NOT EXISTS guard subqueries with partial tuple');
 } finally {
   fs.rmSync(tmpRoot, { recursive: true, force: true });
 }

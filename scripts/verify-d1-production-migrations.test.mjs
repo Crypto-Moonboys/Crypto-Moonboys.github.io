@@ -142,6 +142,10 @@ assert.throws(() => normalizeD1StatementResult([{ success: false, results: [] }]
   'normaliser requires success === true');
 assert.throws(() => normalizeD1StatementResult({ success: false, result: [{ success: true, results: [] }] }), /did not report success/,
   'normaliser rejects top-level success:false before result unwrapping');
+assert.throws(() => normalizeD1StatementResult({ success: 0, result: [{ success: true, results: [] }] }), /did not report success/,
+  'normaliser rejects top-level success:0 before result unwrapping');
+assert.throws(() => normalizeD1StatementResult({ success: null, result: [{ success: true, results: [] }] }), /did not report success/,
+  'normaliser rejects top-level success:null before result unwrapping');
 for (const payload of [
   [{ success: true, results: [{ invalid_identity_authority_rows: 0 }] }],
   { result: [{ success: true, results: [{ invalid_identity_authority_rows: '0' }] }] },
