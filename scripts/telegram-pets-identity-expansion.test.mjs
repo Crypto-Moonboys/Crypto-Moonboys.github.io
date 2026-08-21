@@ -623,6 +623,72 @@ function switchAwayAfterSource(db, telegramId, targetPetId) {
   return async () => { setActivePetSlot(db, telegramId, targetPetId); };
 }
 
+function markArenaCombatReady(db, telegramId, petId, seasonKey = TEST_SEASON_KEY) {
+  db.database.prepare(`INSERT OR IGNORE INTO telegram_pet_season_completions
+    (pet_id, telegram_id, season_key, completed_at, legendary_evolution_id, growth_marks_earned, weekly_crests_earned, authority_version)
+    VALUES (?, ?, ?, '2026-08-01T00:00:00Z', 'lunar_legend', 90, 13, 1)`)
+    .run(petId, telegramId, seasonKey);
+  db.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+    (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
+    VALUES (?, ?, ?, 'adult', '{}', '[]')
+    ON CONFLICT(pet_id) DO UPDATE SET phase='adult', updated_at=CURRENT_TIMESTAMP`)
+    .run(petId, telegramId, `arena-ready:${telegramId}:${seasonKey}`);
+  db.database.prepare("UPDATE telegram_pet_instances SET stage='adult' WHERE pet_id=? AND telegram_id=?").run(petId, telegramId);
+}
+
+function seedArenaPlayer(telegramId, seasonKey = TEST_SEASON_KEY) {
+  const db = new D1();
+  const petId = `pet:${telegramId}:${seasonKey}:1`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_profiles
+    (telegram_id, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, moon_gold, moon_crystals, style_tokens)
+    VALUES (?, 'Arena Cat', 5200, 52, 100, 0, 90, 90, 100, 1000, 100, 100)`).run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, ?, 1, 'free', 'profile_insert', 0, 'active')`).run(petId, telegramId, seasonKey);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, ?)
+    ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=CURRENT_TIMESTAMP`)
+    .run(telegramId, petId, seasonKey);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, stage, source_profile_updated_at, status)
+    VALUES (?, ?, ?, 1, 'Arena Cat', 5200, 52, 100, 0, 90, 90, 100, 'adult', '2026-08-16T00:00:00Z', 'active')`)
+    .run(petId, telegramId, seasonKey);
+  markArenaCombatReady(db, telegramId, petId, seasonKey);
+  return { db, petId };
+}
+
+function copyArenaPlayerInto(db, telegramId, seasonKey = TEST_SEASON_KEY) {
+  const seeded = seedArenaPlayer(telegramId, seasonKey);
+  for (const row of seeded.db.database.prepare('SELECT * FROM telegram_users').all()) {
+    db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, ?, ?)').run(row.telegram_id, row.xp, row.level);
+  }
+  for (const row of seeded.db.database.prepare('SELECT * FROM telegram_pet_profiles').all()) {
+    db.database.prepare(`INSERT INTO telegram_pet_profiles
+      (telegram_id, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, moon_gold, moon_crystals, style_tokens)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(row.telegram_id, row.pet_name, row.pet_xp, row.level, row.energy, row.hunger, row.happiness, row.cleanliness, row.health, row.moon_gold, row.moon_crystals, row.style_tokens);
+  }
+  for (const row of seeded.db.database.prepare('SELECT * FROM telegram_pet_season_slots').all()) {
+    db.database.prepare(`INSERT INTO telegram_pet_season_slots
+      (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(row.pet_id, row.telegram_id, row.season_key, row.slot_number, row.acquisition_type, row.source_event_key, row.arcade_xp_spent, row.status);
+  }
+  for (const row of seeded.db.database.prepare('SELECT * FROM telegram_pet_active_slots').all()) {
+    db.database.prepare('INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, ?)')
+      .run(row.telegram_id, row.pet_id, row.season_key);
+  }
+  for (const row of seeded.db.database.prepare('SELECT * FROM telegram_pet_instances').all()) {
+    db.database.prepare(`INSERT INTO telegram_pet_instances
+      (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, stage, source_profile_updated_at, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(row.pet_id, row.telegram_id, row.season_key, row.slot_number, row.pet_name, row.pet_xp, row.level, row.energy, row.hunger, row.happiness, row.cleanliness, row.health, row.stage, row.source_profile_updated_at, row.status);
+  }
+  markArenaCombatReady(db, telegramId, seeded.petId, seasonKey);
+  return seeded.petId;
+}
+
 const randomProducer = seedProducerAuthorityPlayer('producer-random-player');
 const randomEventKey = 'moon_crate_found-producer-random';
 const randomResult = await workerHooks.processPetRandomEvent(randomProducer.db, 'producer-random-player', 'flip_it_fast', {
@@ -662,6 +728,8 @@ const arenaEventKey = 'pet_arena:producer-arena-1:producer-arena-player';
 const arenaResult = await workerHooks.awardPetKaijuPlayerResult(arenaProducer.db, 'producer-arena-player', {
   match_id: 'producer-arena-1',
   mode: 'pet_arena',
+  pet_id: arenaProducer.firstPet,
+  season_key: TEST_SEASON_KEY,
 }, 'arena_win', { pet_xp: 24, moon_gold: 30, happiness: 5 }, {
   before_identity_write: switchAwayAfterSource(arenaProducer.db, 'producer-arena-player', arenaProducer.secondPet),
 });
@@ -674,6 +742,62 @@ assert.equal(arenaProducer.db.database.prepare('SELECT COUNT(*) AS count FROM te
   'pet arena does not create personality rows on Pet B');
 assert.equal(arenaProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(arenaProducer.secondPet).count, 0,
   'pet arena does not create memory rows on Pet B');
+
+const queuedArena = seedArenaPlayer('arena-queue-authority');
+const queuedArenaPetB = seedPetSlot(queuedArena.db, 'arena-queue-authority', 2, 'arcade_xp', false);
+copyArenaPlayerInto(queuedArena.db, 'arena-queue-opponent');
+const queueAct = (telegramId, action, payload = {}) => workerHooks.processPetMiniAppAction(queuedArena.db, telegramId, { id: telegramId }, {
+  action,
+  request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
+  ...payload,
+}, '123456:test-token');
+const queuedBeforeXp = queuedArena.db.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(queuedArena.petId).pet_xp;
+const petBBeforeXp = queuedArena.db.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(queuedArenaPetB).pet_xp;
+assert.equal((await queueAct('arena-queue-authority', 'arena_matchmake')).reason, 'arena_queued');
+const queuedRow = queuedArena.db.database.prepare("SELECT pet_id, season_key FROM telegram_pet_arena_queue WHERE telegram_id='arena-queue-authority' AND status='waiting'").get();
+assert.deepEqual({ ...queuedRow }, { pet_id: queuedArena.petId, season_key: TEST_SEASON_KEY },
+  'Pet Arena queue stores the active pet authority at queue time');
+setActivePetSlot(queuedArena.db, 'arena-queue-authority', queuedArenaPetB);
+const queuedMatch = await queueAct('arena-queue-opponent', 'arena_matchmake');
+assert.equal(queuedMatch.reason, 'arena_match_found', 'opponent queue creates a Pet Arena match');
+const queuedBattle = queuedArena.db.database.prepare("SELECT * FROM telegram_pet_arena_battles WHERE player1_telegram_id='arena-queue-opponent' OR player2_telegram_id='arena-queue-opponent' ORDER BY created_at DESC LIMIT 1").get();
+assert.equal(queuedBattle.player2_pet_id, queuedArena.petId, 'Pet Arena match carries queued Pet A authority into battle rows');
+const queuedSettlement = await queueAct('arena-queue-opponent', 'arena_forfeit', { battle_id: queuedBattle.battle_id });
+assert.equal(queuedSettlement.reason, 'arena_completed', 'Pet Arena settlement completes after active pet switch');
+const queuedEventKey = `pet_arena:${queuedBattle.battle_id}:arena-queue-authority`;
+const queuedEvent = queuedArena.db.database.prepare('SELECT pet_id, season_key, pet_xp_awarded FROM telegram_pet_events WHERE event_key=?').get(queuedEventKey);
+assert.equal(queuedEvent.pet_id, queuedArena.petId, 'Pet Arena source event belongs to queued Pet A after active switch');
+assert.equal(queuedEvent.season_key, TEST_SEASON_KEY, 'Pet Arena source event uses queued season authority');
+assert.ok(queuedArena.db.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(queuedArena.petId).pet_xp > queuedBeforeXp,
+  'queued Pet A receives Pet Arena reward XP');
+assert.equal(queuedArena.db.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(queuedArenaPetB).pet_xp, petBBeforeXp,
+  'active Pet B receives no Pet Arena reward XP from Pet A queue');
+assert.equal(queuedArena.db.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='street_fighter'").get(queuedArena.petId).progress, 1,
+  'queued Pet A receives Pet Arena personality progress after active switch');
+assert.ok(queuedArena.db.database.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(queuedArena.petId).biggest_reward_amount > 0,
+  'queued Pet A receives Pet Arena memory after active switch');
+assert.equal(queuedArena.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?').get(queuedArenaPetB).count, 0,
+  'active Pet B receives no Pet Arena personality rows from Pet A queue');
+assert.equal(queuedArena.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(queuedArenaPetB).count, 0,
+  'active Pet B receives no Pet Arena memories from Pet A queue');
+
+const rolloverArena = seedArenaPlayer('arena-rollover-authority', 'pet-s2026-002');
+copyArenaPlayerInto(rolloverArena.db, 'arena-rollover-opponent', 'pet-s2026-002');
+const rolloverAct = (telegramId, action, payload = {}) => workerHooks.processPetMiniAppAction(rolloverArena.db, telegramId, { id: telegramId }, {
+  action,
+  request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
+  ...payload,
+}, '123456:test-token');
+assert.equal((await rolloverAct('arena-rollover-authority', 'arena_matchmake')).reason, 'arena_queued');
+const rolloverMatch = await rolloverAct('arena-rollover-opponent', 'arena_matchmake');
+assert.equal(rolloverMatch.reason, 'arena_match_found');
+const rolloverBattle = rolloverArena.db.database.prepare("SELECT * FROM telegram_pet_arena_battles WHERE player1_telegram_id='arena-rollover-opponent' OR player2_telegram_id='arena-rollover-opponent' ORDER BY created_at DESC LIMIT 1").get();
+assert.equal(rolloverBattle.player2_season_key, 'pet-s2026-002', 'Pet Arena battle preserves queued Season A authority');
+await rolloverAct('arena-rollover-opponent', 'arena_forfeit', { battle_id: rolloverBattle.battle_id });
+const rolloverEvent = rolloverArena.db.database.prepare('SELECT pet_id, season_key FROM telegram_pet_events WHERE event_key=?')
+  .get(`pet_arena:${rolloverBattle.battle_id}:arena-rollover-authority`);
+assert.deepEqual({ ...rolloverEvent }, { pet_id: rolloverArena.petId, season_key: 'pet-s2026-002' },
+  'Pet Arena settlement does not stamp queued Season A rewards with the current calendar season');
 
 const jobProducer = seedProducerAuthorityPlayer('producer-job-player');
 const jobEventKey = 'producer-job-street-artist';
