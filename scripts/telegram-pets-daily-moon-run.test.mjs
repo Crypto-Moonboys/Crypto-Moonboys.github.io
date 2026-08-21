@@ -829,6 +829,30 @@ assert.equal(db.database.prepare("SELECT runs_recorded FROM telegram_pet_daily_l
 assert.ok(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE telegram_id='daily-player' AND event_kind='memory'").get().count <= 6,
   'daily record memories must remain bounded under retries');
 
+const dailyIdentityDb = new D1();
+const dailyIdentityTelegramId = 'daily-identity-switch';
+const dailyIdentityNow = new Date('2026-08-12T09:00:00.000Z');
+seedPlayer(dailyIdentityDb, dailyIdentityTelegramId);
+const dailyIdentityPetA = `pet-${dailyIdentityTelegramId}`;
+const dailyIdentityPetB = 'pet-daily-identity-switch-b';
+seedAdditionalPet(dailyIdentityDb, dailyIdentityTelegramId, dailyIdentityPetB, 2, getDailySeasonId('2026-08-12'));
+const dailyIdentityRun = await createDailyMoonRun(dailyIdentityDb, { telegram_id: dailyIdentityTelegramId, now: dailyIdentityNow });
+dailyIdentityDb.database.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?, season_key=? WHERE telegram_id=?`)
+  .run(dailyIdentityPetB, getDailySeasonId('2026-08-12'), dailyIdentityTelegramId);
+resolveDailyRun(dailyIdentityDb, dailyIdentityTelegramId, dailyIdentityRun.daily_run.run_id, { status: 'completed', score: 1200, boss: true });
+const dailyIdentitySync = await syncDailyMoonRun(dailyIdentityDb, {
+  telegram_id: dailyIdentityTelegramId,
+  utc_day: '2026-08-12',
+  now: dailyIdentityNow,
+});
+assert.equal(dailyIdentitySync.reason, 'daily_run_synchronized', 'daily identity switch fixture reaches terminal sync');
+assert.equal(dailyIdentityDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE pet_id=? AND event_kind='memory'`).get(dailyIdentityPetA).count > 0, true,
+  'Daily Moon Run terminal memories stay on the stored daily run pet after active switch');
+assert.equal(dailyIdentityDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?`).get(dailyIdentityPetB).count, 0,
+  'Daily Moon Run active-pet switch cannot create Pet B memories from Pet A daily run');
+assert.equal(dailyIdentityDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE pet_id=?`).get(dailyIdentityPetB).count, 0,
+  'Daily Moon Run active-pet switch cannot create Pet B identity events from Pet A daily run');
+
 const engineDb = new D1();
 for (const telegramId of ['engine-player-a', 'engine-player-b']) seedPlayer(engineDb, telegramId);
 const engineDay = new Date('2026-09-01T08:00:00.000Z');

@@ -1494,6 +1494,7 @@ class RepeatReservationDb {
           const row = this.events.get(`${args[0]}:${args[1]}`);
           return row ? {
             id: row.id,
+            pet_id: row.pet_id,
             status: row.status,
             reason: row.reason,
             day_key: row.day_key,
@@ -1511,13 +1512,14 @@ class RepeatReservationDb {
       for (const statement of statements) {
         const { sql, args } = statement;
         if (sql.includes('INSERT OR IGNORE INTO telegram_pet_events')) {
-          const [id, telegramId, , eventKey, seasonKey, dayKey, weekKey] = args;
+          const [id, petId, telegramId, , eventKey, seasonKey, dayKey, weekKey] = args;
           const eventMapKey = `${telegramId}:${eventKey}`;
           const kaiju = sql.includes('WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles');
-          const energyCost = kaiju ? Number(args[9]) : 0;
+          const energyCost = kaiju ? Number(args[10]) : 0;
           if (!this.events.has(eventMapKey) && (!kaiju || Number(this.energy.get(String(telegramId)) || 0) >= energyCost)) {
             this.events.set(eventMapKey, {
               id,
+              pet_id: String(petId || '') || null,
               telegram_id: String(telegramId),
               status: 'pending',
               reason: 'repeat_reward_pending',
@@ -1558,6 +1560,7 @@ class RepeatReservationDb {
               meta: { changes: 1 },
               results: [{
                 id: event.id,
+                pet_id: event.pet_id,
                 status: event.status,
                 reason: event.reason,
                 day_key: event.day_key,
@@ -1581,6 +1584,7 @@ class RepeatReservationDb {
 function reserveFixture(db, player, mode, eventKey, energyCost = 0) {
   return reservePetRepeatRewardEvent(db, {
     telegram_id: player,
+    pet_id: mode === 'event' ? `pet:${player}:season:1` : undefined,
     event_type: mode === 'kaiju' ? 'kaiju_battle' : 'random_event',
     event_key: eventKey,
     season_key: 'season',
@@ -1594,6 +1598,19 @@ function reserveFixture(db, player, mode, eventKey, energyCost = 0) {
 const eventReservationDb = new RepeatReservationDb();
 const concurrentEventReservations = await Promise.all(Array.from({ length: 12 }, (_, index) => reserveFixture(eventReservationDb, 'event-player', 'event', `event-${index}`)));
 assert.deepEqual(concurrentEventReservations.map((claim) => claim.claimed_slot).sort((a, b) => a - b), Array.from({ length: 12 }, (_, index) => index + 1), 'concurrent Event reservations must receive unique atomic slots');
+await assert.rejects(
+  reservePetRepeatRewardEvent(new RepeatReservationDb(), {
+    telegram_id: 'missing-authority',
+    event_type: 'random_event',
+    event_key: 'missing-authority-event',
+    season_key: 'season',
+    day_key: '2026-08-10',
+    week_key: '2026-W33',
+    mode: 'event',
+  }),
+  /pet_repeat_reward_authority_required/,
+  'new Event reservations must not be created without pet authority',
+);
 
 const kaijuReservationDb = new RepeatReservationDb({ 'kaiju-player': 20 });
 const concurrentKaijuReservations = await Promise.all(Array.from({ length: 12 }, (_, index) => reserveFixture(kaijuReservationDb, 'kaiju-player', 'kaiju', `kaiju-${index}`, 1)));
@@ -1642,6 +1659,9 @@ class SqliteD1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.database.exec(schema);
+    this.database.exec(`CREATE TABLE IF NOT EXISTS telegram_pet_growth_marks(mark_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,milestone_type TEXT,evidence_key TEXT,earned_day TEXT,earned_at TEXT,UNIQUE(pet_id,season_key,earned_day));
+      CREATE TABLE IF NOT EXISTS telegram_pet_weekly_crests(crest_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,season_week INTEGER,qualification_week INTEGER,objective_id TEXT,evidence_key TEXT,earned_at TEXT);
+      CREATE TABLE IF NOT EXISTS telegram_pet_season_completions(pet_id TEXT,telegram_id TEXT,season_key TEXT,completed_at TEXT,legendary_evolution_id TEXT,growth_marks_earned INTEGER,weekly_crests_earned INTEGER,authority_version INTEGER);`);
     this.batchCount = 0;
     this.failBatchNumber = null;
     this.failBatchSqlPattern = null;
@@ -1703,8 +1723,9 @@ class SqliteD1 {
   }
 }
 
-function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date().toISOString()) {
+function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date().toISOString(), options = {}) {
   const db = new SqliteD1();
+  const petId = `pet:${telegramId}:pet-s2026-003:1`;
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare(`
     INSERT INTO telegram_pet_profiles
@@ -1715,7 +1736,32 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
     INSERT INTO telegram_seasons (name, start_date, end_date, is_active)
     VALUES ('Repeat recovery test', '2026-01-01T00:00:00.000Z', '2027-01-01T00:00:00.000Z', 1)
   `).run();
+  if (options.seedAuthority !== false) {
+    db.database.prepare(`INSERT INTO telegram_pet_season_slots
+      (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+      VALUES (?, ?, 'pet-s2026-003', 1, 'free', 'profile_insert', 0, 'active')`).run(petId, telegramId);
+    db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+      VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+    db.database.prepare(`INSERT INTO telegram_pet_instances
+      (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, last_decay_at, source_profile_updated_at, status)
+      VALUES (?, ?, 'pet-s2026-003', 1, 0, 1, 70, ?, ?, 'fixture', 'active')`).run(petId, telegramId, energy, lastDecayAt);
+  }
   return db;
+}
+
+function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 70) {
+  const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'arcade_xp', ?, 500, 'active')`).run(petId, telegramId, slotNumber, `fixture:slot:${slotNumber}`);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, last_decay_at, source_profile_updated_at, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 0, 1, 70, ?, CURRENT_TIMESTAMP, 'fixture', 'active')`).run(petId, telegramId, slotNumber, energy);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, 'pet-s2026-003')
+    ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=CURRENT_TIMESTAMP`)
+    .run(telegramId, petId);
+  return petId;
 }
 
 function insertWalletRecoveryRequired(db, telegramId) {
@@ -2772,7 +2818,7 @@ assert.equal(switchItemDb.database.prepare('SELECT pet_xp FROM telegram_pet_inst
 assert.equal(switchItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='use-item-switch-b'").get().pet_xp, 0,
   'active pet switching must not redirect item-use rewards to the new active pet');
 
-const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100);
+const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100, new Date().toISOString(), { seedAuthority: false });
 legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=5000, level=51, stage='street_moonpet'
   WHERE telegram_id='legacy-boss-gate'`).run();
 for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1]]) {
@@ -2810,6 +2856,58 @@ assert.equal(blockedCyberEvolution.accepted, false, 'legacy completion cannot un
 assert.equal(blockedCyberEvolution.reason, 'evolution_authority_unavailable',
   'legacy account-only state cannot bypass missing pet and season authority');
 
+const runSeasonRolloverDb = seedRepeatRewardPlayer('run-season-rollover', 100);
+const runSeasonRolloverPet = 'pet-run-season-rollover-a';
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type)
+  VALUES (?, 'run-season-rollover', 'pet-s2026-001', 1, 'free')`).run(runSeasonRolloverPet);
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, source_profile_updated_at, status)
+  VALUES (?, 'run-season-rollover', 'pet-s2026-001', 1, 0, 1, 70, 100, CURRENT_TIMESTAMP, 'active')`).run(runSeasonRolloverPet);
+runSeasonRolloverDb.database.prepare(`UPDATE telegram_pet_active_slots
+  SET pet_id=?, season_key='pet-s2026-001'
+  WHERE telegram_id='run-season-rollover'`).run(runSeasonRolloverPet);
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
+   unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('run-season-rollover-row', ?, 'run-season-rollover', 'run-season-rollover-run',
+    'pet-s2026-001', 'active', 5, 5, 1, 24, 19, 0, 0, '{}')`).run(runSeasonRolloverPet);
+const runSeasonRolloverRun = runSeasonRolloverDb.database.prepare("SELECT * FROM telegram_pet_runs WHERE run_id='run-season-rollover-run'").get();
+const runSeasonRolloverResult = await recordPetRunBankedEvent(runSeasonRolloverDb, 'run-season-rollover', runSeasonRolloverRun, {
+  pet_id: runSeasonRolloverPet,
+  telegram_id: 'run-season-rollover',
+}, { completed: true, event_key: 'run-season-rollover-complete', source: 'season_rollover_regression' });
+assert.equal(runSeasonRolloverResult.accepted, true, 'run completion after season rollover must still settle');
+assert.deepEqual(
+  { ...runSeasonRolloverDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events
+    WHERE telegram_id='run-season-rollover' AND event_key='run-season-rollover-complete'`).get() },
+  { pet_id: runSeasonRolloverPet, season_key: 'pet-s2026-001' },
+  'run-derived reward source events must use the persisted run season authority, not the current calendar season',
+);
+assert.equal(runSeasonRolloverDb.database.prepare(`SELECT total_runs FROM telegram_pet_memories
+  WHERE pet_id=? AND season_key='pet-s2026-001'`).get(runSeasonRolloverPet).total_runs, 1,
+  'run completion memory must remain attached to the Season A run pet authority');
+assert.equal(runSeasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits
+  WHERE pet_id=? AND season_key='pet-s2026-001'`).get(runSeasonRolloverPet).count > 0, true,
+  'run completion personality progress must remain attached to the Season A run pet authority');
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
+   unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('run-season-rollover-extract-row', ?, 'run-season-rollover', 'run-season-rollover-extract-run',
+    'pet-s2026-001', 'active', 3, 5, 1, 12, 7, 0, 0, '{}')`).run(runSeasonRolloverPet);
+const runSeasonRolloverExtractRun = runSeasonRolloverDb.database.prepare("SELECT * FROM telegram_pet_runs WHERE run_id='run-season-rollover-extract-run'").get();
+const runSeasonRolloverExtract = await recordPetRunBankedEvent(runSeasonRolloverDb, 'run-season-rollover', runSeasonRolloverExtractRun, {
+  pet_id: runSeasonRolloverPet,
+  telegram_id: 'run-season-rollover',
+}, { event_key: 'run-season-rollover-extract', source: 'season_rollover_regression' });
+assert.equal(runSeasonRolloverExtract.accepted, true, 'run extraction after season rollover must still settle');
+assert.deepEqual(
+  { ...runSeasonRolloverDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events
+    WHERE telegram_id='run-season-rollover' AND event_key=?`).get(buildPetRunExtractEventKey('run-season-rollover', 'run-season-rollover-extract-run')) },
+  { pet_id: runSeasonRolloverPet, season_key: 'pet-s2026-001' },
+  'run-derived extraction source events must also use the persisted run season authority',
+);
+
 async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
   const db = seedRepeatRewardPlayer(telegramId, 18);
   const originalRandom = Math.random;
@@ -2828,25 +2926,25 @@ async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
 const moonAlleySuccess = await runMoonAlleyEnergyFixture('adventure-energy-success', 0.99, 'adventure-energy-success');
 assert.equal(moonAlleySuccess.result.accepted, true, 'Moon Alley must accept a pet with exactly its required 18 Energy');
 assert.equal(moonAlleySuccess.result.applied.costsApplied.energy, 16, 'the deterministic success fixture must roll the expected Energy cost');
-assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
+assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
   'an accepted Moon Alley adventure must deduct its rolled Energy cost exactly once without extra drain');
 const duplicateMoonAlleySuccess = await processPetAdventure(moonAlleySuccess.db, 'adventure-energy-success', 'push_forward', {
   encounter_key: 'moon_alley', event_key: 'adventure-energy-success', source: 'adventure_energy_regression',
 });
 assert.equal(duplicateMoonAlleySuccess.duplicate, true, 'a duplicate successful adventure callback must be idempotent');
-assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
+assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
   'a duplicate successful adventure callback must not charge Energy again');
 
 const moonAlleyRisk = await runMoonAlleyEnergyFixture('adventure-energy-risk', 0, 'adventure-energy-risk');
 assert.equal(moonAlleyRisk.result.accepted, true, 'a Moon Alley risk outcome must settle through the reward authority');
 assert.equal(moonAlleyRisk.result.applied.costsApplied.energy, 13, 'the deterministic risk fixture must roll the expected Energy cost');
-assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
+assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
   'a failed adventure outcome must consume only its rolled Energy cost and never drain below zero');
 const duplicateMoonAlleyRisk = await processPetAdventure(moonAlleyRisk.db, 'adventure-energy-risk', 'push_forward', {
   encounter_key: 'moon_alley', event_key: 'adventure-energy-risk', source: 'adventure_energy_regression',
 });
 assert.equal(duplicateMoonAlleyRisk.duplicate, true, 'a duplicate failed adventure callback must be idempotent');
-assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
+assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
   'a duplicate failed adventure callback must not consume Energy twice');
 
 const tiredMoonAlleyDb = seedRepeatRewardPlayer('adventure-energy-tired', 17);
@@ -3342,7 +3440,7 @@ assert.equal(duplicateRecoveredTerminalStep.duplicate, true, 'duplicate final ca
 assert.equal(terminalStepFailureDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='terminal-step-failure' AND source='pet_run_legacy'").get().count, 1,
   'duplicate final callback after recovery must not duplicate terminal rewards');
 
-const profileOnlyRunDb = seedRepeatRewardPlayer('profile-only-run', 90);
+const profileOnlyRunDb = seedRepeatRewardPlayer('profile-only-run', 90, new Date().toISOString(), { seedAuthority: false });
 const refusedProfileOnlyRun = await startOrResumePetRun(profileOnlyRunDb, 'profile-only-run');
 assert.equal(refusedProfileOnlyRun.accepted, false);
 assert.equal(refusedProfileOnlyRun.reason, 'active_pet_instance_required', 'new runs must reject profile-only authority');
@@ -3452,6 +3550,13 @@ function repeatRewardSnapshot(db, telegramId, mode) {
     SELECT pet_xp, moon_gold, moon_crystals, style_tokens, energy, happiness
     FROM telegram_pet_profiles WHERE telegram_id = ?
   `).get(telegramId);
+  const instanceRow = db.database.prepare(`
+    SELECT i.pet_xp, i.energy, i.happiness
+    FROM telegram_pet_active_slots a
+    JOIN telegram_pet_instances i ON i.pet_id = a.pet_id AND i.telegram_id = a.telegram_id AND i.season_key = a.season_key
+    WHERE a.telegram_id = ?
+    LIMIT 1
+  `).get(telegramId);
   const userRow = db.database.prepare('SELECT xp, level FROM telegram_users WHERE telegram_id = ?').get(telegramId);
   const eventRow = db.database.prepare(`
     SELECT status, reason, pet_xp_awarded, xp_awarded
@@ -3475,7 +3580,12 @@ function repeatRewardSnapshot(db, telegramId, mode) {
     SELECT COUNT(*) AS rows, COALESCE(SUM(xp), 0) AS total
     FROM telegram_leaderboard WHERE telegram_id = ?
   `).get(telegramId);
-  const profile = { ...profileRow };
+  const profile = {
+    ...profileRow,
+    pet_xp: instanceRow?.pet_xp ?? profileRow.pet_xp,
+    energy: instanceRow?.energy ?? profileRow.energy,
+    happiness: instanceRow?.happiness ?? profileRow.happiness,
+  };
   const user = { ...userRow };
   const event = eventRow ? { ...eventRow } : null;
   const slot = slotRow ? { ...slotRow } : null;
@@ -3485,12 +3595,15 @@ function repeatRewardSnapshot(db, telegramId, mode) {
   return { profile, user, event, slot, xpLog, season, leaderboard };
 }
 
-function seedAcceptedDailyPetEvent(db, telegramId, eventKey, petXp, communityXp = 0, dayKey = new Date().toISOString().slice(0, 10)) {
+function seedAcceptedDailyPetEvent(db, telegramId, eventKey, petXp, communityXp = 0, dayKey = new Date().toISOString().slice(0, 10), options = {}) {
+  const activePet = options.petScoped
+    ? db.database.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = ?').get(telegramId)
+    : null;
   db.database.prepare(`
     INSERT INTO telegram_pet_events
-      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status)
-    VALUES (?, ?, 'cap_fixture', ?, ?, ?, 'cap-fixture', ?, 'cap-fixture', 'accepted')
-  `).run(`fixture-${eventKey}`, telegramId, eventKey, communityXp, petXp, dayKey);
+      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status)
+    VALUES (?, ?, ?, 'cap_fixture', ?, ?, ?, 'cap-fixture', ?, 'cap-fixture', 'accepted')
+  `).run(`fixture-${eventKey}`, activePet?.pet_id || null, telegramId, eventKey, communityXp, petXp, dayKey);
 }
 
 const recoveryDayA = new Date('2026-09-27T23:50:00.000Z');
@@ -3501,7 +3614,7 @@ const recoveryWeekAKey = '2026-W39';
 const recoverySeasonAKey = 'pet-s2026-003';
 
 const eventRecoveryDb = seedRepeatRewardPlayer('event-recovery', 70, recoveryDayA.toISOString());
-seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey);
+seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey, { petScoped: true });
 eventRecoveryDb.failOnBatch(3);
 await assert.rejects(
   processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
@@ -3564,6 +3677,82 @@ const duplicateEvent = await processPetRandomEvent(eventRecoveryDb, 'event-recov
 });
 assert.equal(duplicateEvent.duplicate, true, 'a completed Event callback retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(eventRecoveryDb, 'event-recovery', 'event'), eventAfterRecovery, 'duplicate Event callback must not change XP, currencies, Energy, or its slot');
+
+const eventPetSwitchDb = seedRepeatRewardPlayer('event-retry-switch', 70, recoveryDayA.toISOString());
+const eventRetryPetA = eventPetSwitchDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='event-retry-switch'").get().pet_id;
+eventPetSwitchDb.failOnBatch(3);
+await assert.rejects(
+  processPetRandomEvent(eventPetSwitchDb, 'event-retry-switch', 'flip_it_fast', {
+    event_key: 'moon_crate_found-retry-switch',
+    encounter: PET_RANDOM_EVENTS.moon_crate_found,
+    now: recoveryDayA,
+  }),
+  /simulated_d1_batch_failure/,
+  'first Event settlement can fail after creating a pet-owned pending source row',
+);
+const eventRetryPetB = seedAndSwitchRepeatRewardPet(eventPetSwitchDb, 'event-retry-switch', 2, 70);
+const switchedRetry = await processPetRandomEvent(eventPetSwitchDb, 'event-retry-switch', 'flip_it_fast', {
+  event_key: 'moon_crate_found-retry-switch',
+  encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
+});
+assert.equal(switchedRetry.accepted, true, 'retry after active-pet switching must settle the pending Event');
+assert.equal(eventPetSwitchDb.database.prepare("SELECT pet_id FROM telegram_pet_events WHERE event_key='moon_crate_found-retry-switch'").get().pet_id, eventRetryPetA,
+  'retry keeps the original Pet A source-event authority');
+assert.ok(eventPetSwitchDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(eventRetryPetA).pet_xp > 0,
+  'retry rewards Pet A after the active pet switches');
+assert.equal(eventPetSwitchDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(eventRetryPetB).pet_xp, 0,
+  'retry does not reward active Pet B');
+assert.equal(eventPetSwitchDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='curious'").get(eventRetryPetA).count, 1,
+  'retry identity writes land on Pet A');
+assert.equal(eventPetSwitchDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(eventRetryPetB).count, 0,
+  'retry identity writes do not land on Pet B');
+
+const legacyPendingEventDb = seedRepeatRewardPlayer('event-legacy-pending', 70, recoveryDayA.toISOString());
+const legacyPendingPetB = seedAndSwitchRepeatRewardPet(legacyPendingEventDb, 'event-legacy-pending', 2, 70);
+legacyPendingEventDb.database.prepare(`
+  INSERT INTO telegram_pet_events
+    (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('legacy-pending-random-event', NULL, 'event-legacy-pending', 'random_event', 'moon_crate_found-legacy-pending', 0, 0, ?, ?, ?, 'pending', 'repeat_reward_slot:1', '{}')
+`).run(recoverySeasonAKey, recoveryDayAKey, recoveryWeekAKey);
+legacyPendingEventDb.database.prepare(`
+  INSERT INTO telegram_pet_repeat_reward_slots (telegram_id, day_key, mode, claimed_count)
+  VALUES ('event-legacy-pending', ?, 'event', 1)
+`).run(recoveryDayAKey);
+const legacyPendingRetry = await processPetRandomEvent(legacyPendingEventDb, 'event-legacy-pending', 'flip_it_fast', {
+  event_key: 'moon_crate_found-legacy-pending',
+  encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
+});
+assert.equal(legacyPendingRetry.accepted, false, 'legacy pending Event reservations without pet authority must not settle against the active pet');
+assert.equal(legacyPendingRetry.reason, 'legacy_repeat_reward_missing_pet_authority', 'legacy pending Event reservations must resolve with an explicit compatibility reason');
+assert.equal(legacyPendingRetry.cancelled, true, 'legacy pending Event reservations must be cancelled instead of staying pending forever');
+assert.equal(legacyPendingRetry.released_slot, true, 'legacy pending Event reservations must release their consumed repeat slot');
+assert.deepEqual(
+  { ...legacyPendingEventDb.database.prepare("SELECT status, reason, pet_id FROM telegram_pet_events WHERE event_key='moon_crate_found-legacy-pending'").get() },
+  { status: 'cancelled', reason: 'legacy_repeat_reward_missing_pet_authority', pet_id: null },
+  'legacy pending Event rows must be visibly cancelled without inventing pet authority',
+);
+assert.equal(legacyPendingEventDb.database.prepare(`
+  SELECT claimed_count FROM telegram_pet_repeat_reward_slots
+  WHERE telegram_id = 'event-legacy-pending' AND day_key = ? AND mode = 'event'
+`).get(recoveryDayAKey).claimed_count, 0, 'legacy pending Event cancellation must release the consumed reward slot');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='event-legacy-pending' AND idempotency_key='moon_crate_found-legacy-pending'").get().count, 0,
+  'legacy pending Event cancellation must not create a reward claim');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(legacyPendingPetB).count, 0,
+  'legacy pending Event cancellation must not write identity rows to the active Pet B');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE telegram_id='event-legacy-pending'").get().count, 0,
+  'legacy pending Event cancellation must not write personality progress without source-event pet authority');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE telegram_id='event-legacy-pending'").get().count, 0,
+  'legacy pending Event cancellation must not write memories without source-event pet authority');
+const legacyPendingSecondRetry = await processPetRandomEvent(legacyPendingEventDb, 'event-legacy-pending', 'flip_it_fast', {
+  event_key: 'moon_crate_found-legacy-pending',
+  encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
+});
+assert.equal(legacyPendingSecondRetry.accepted, false, 'cancelled legacy pending Event retries must remain non-accepted');
+assert.equal(legacyPendingSecondRetry.duplicate, true, 'cancelled legacy pending Event retries must be idempotent');
+assert.equal(legacyPendingSecondRetry.reason, 'legacy_repeat_reward_missing_pet_authority', 'cancelled legacy pending Event retries must keep the compatibility reason');
 
 const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
 kaijuRecoveryDb.database.exec('DELETE FROM telegram_seasons');
@@ -3744,7 +3933,7 @@ assert.deepEqual(
 );
 
 const eventCapDb = seedRepeatRewardPlayer('event-cap');
-seedAcceptedDailyPetEvent(eventCapDb, 'event-cap', 'prior-event-cap', 1199);
+seedAcceptedDailyPetEvent(eventCapDb, 'event-cap', 'prior-event-cap', 1199, 0, new Date().toISOString().slice(0, 10), { petScoped: true });
 const cappedEvent = await processPetRandomEvent(eventCapDb, 'event-cap', 'leave_it', {
   event_key: 'event-cap-callback',
   encounter: PET_RANDOM_EVENTS.moon_crate_found,
@@ -3777,8 +3966,8 @@ assert.ok(repeatReservation.includes('const results = await db.batch(statements)
 assert.ok(repeatReservation.includes('ON CONFLICT(telegram_id, day_key, mode) DO UPDATE SET') && repeatReservation.includes('claimed_count = claimed_count + 1') && repeatReservation.includes('RETURNING claimed_count'), 'Event and Kaiju slot claims must atomically increment and return the exact counter value');
 assert.match(repeatReservation, /SET energy = energy - \?, updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND energy >= \?/, 'Kaiju Energy must be claimed with one conditional update');
 assert.ok(repeatReservation.match(/EXISTS \(SELECT 1 FROM telegram_pet_events WHERE id = \? AND status = 'pending'\)/g)?.length >= 2, 'Energy and slot claims must be gated by the newly inserted idempotency reservation');
-assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, status, reason'), 'the exact reward slot and paid Energy must be persisted for retry recovery');
-assert.ok(repeatReservation.includes('day_key, week_key, season_key'), 'pending reservations must load and return their stored accounting window');
+assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, pet_id, status, reason'), 'the exact reward slot, pet authority, and paid Energy must be persisted for retry recovery');
+assert.ok(repeatReservation.includes('pet_id, status, reason, day_key, week_key, season_key'), 'pending reservations must load and return their stored pet and accounting authority');
 assert.ok(repeatReservation.includes("Number(results[1]?.meta?.changes || 0) !== 1"), 'Kaiju reward authorization must require exactly one changed Energy row');
 assert.ok(worker.includes("match(/^repeat_reward_slot:") && worker.includes('resumed: true'), 'pending repeat rewards must resume their original slot without another counter increment or Energy charge');
 

@@ -484,6 +484,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_arena_queue (
   id TEXT PRIMARY KEY,
   chat_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
+  pet_id TEXT,
+  season_key TEXT,
   rank_bucket TEXT NOT NULL,
   pet_snapshot_json TEXT NOT NULL DEFAULT '{}',
   status TEXT NOT NULL DEFAULT 'waiting',
@@ -504,6 +506,10 @@ CREATE TABLE IF NOT EXISTS telegram_pet_arena_battles (
   chat_id TEXT NOT NULL,
   player1_telegram_id TEXT NOT NULL,
   player2_telegram_id TEXT,
+  player1_pet_id TEXT,
+  player1_season_key TEXT,
+  player2_pet_id TEXT,
+  player2_season_key TEXT,
   player1_pet_snapshot_json TEXT NOT NULL,
   player2_pet_snapshot_json TEXT NOT NULL,
   player1_power INTEGER NOT NULL DEFAULT 0,
@@ -1161,17 +1167,24 @@ CREATE TABLE IF NOT EXISTS telegram_pet_evolutions_by_pet (
 );
 
 CREATE TABLE IF NOT EXISTS telegram_pet_personality_traits (
+  pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
   trait_id TEXT NOT NULL,
   progress INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0),
   unlocked_at DATETIME,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (telegram_id, trait_id),
-  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+  PRIMARY KEY (pet_id, trait_id),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS telegram_pet_memories (
-  telegram_id TEXT PRIMARY KEY,
+  pet_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
   first_adoption_at DATETIME,
   first_run_at DATETIME,
   first_extraction_at DATETIME,
@@ -1190,21 +1203,31 @@ CREATE TABLE IF NOT EXISTS telegram_pet_memories (
   adventure_actions INTEGER NOT NULL DEFAULT 0 CHECK (adventure_actions >= 0),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS telegram_pet_boss_victories (
+  pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
   boss_id TEXT NOT NULL,
   victories INTEGER NOT NULL DEFAULT 0 CHECK (victories >= 0),
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (telegram_id, boss_id),
-  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+  PRIMARY KEY (pet_id, boss_id),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS telegram_pet_identity_events (
   event_id TEXT PRIMARY KEY,
+  pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
   event_key TEXT NOT NULL,
   event_kind TEXT NOT NULL CHECK (event_kind IN ('personality', 'memory')),
   payload TEXT NOT NULL DEFAULT '{}',
@@ -1212,13 +1235,18 @@ CREATE TABLE IF NOT EXISTS telegram_pet_identity_events (
   progress_delta INTEGER NOT NULL DEFAULT 0 CHECK (progress_delta >= 0),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   applied_at DATETIME,
-  UNIQUE (telegram_id, event_key, event_kind),
-  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+  UNIQUE (pet_id, event_key, event_kind),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS telegram_pet_identity_analytics (
   analytics_id TEXT PRIMARY KEY,
+  pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
   event_type TEXT NOT NULL CHECK (event_type IN ('evolution_unlock', 'personality_unlock', 'memory_milestone')),
   evolution_id TEXT,
   trait_id TEXT,
@@ -1226,12 +1254,37 @@ CREATE TABLE IF NOT EXISTS telegram_pet_identity_analytics (
   duration_seconds INTEGER CHECK (duration_seconds IS NULL OR duration_seconds >= 0),
   event_data TEXT NOT NULL DEFAULT '{}',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_events_owner ON telegram_pet_identity_events(telegram_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_events_owner ON telegram_pet_identity_events(telegram_id, pet_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_events_pet_kind_day ON telegram_pet_identity_events(pet_id, event_kind, day_key);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_analytics_type ON telegram_pet_identity_analytics(event_type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_identity_analytics_evolution ON telegram_pet_identity_analytics(evolution_id, duration_seconds);
+
+CREATE TABLE IF NOT EXISTS telegram_pet_achievements (
+  pet_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  achievement_id TEXT NOT NULL,
+  progress INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0),
+  target INTEGER NOT NULL CHECK (target > 0),
+  unlocked_at DATETIME,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (pet_id, achievement_id),
+  FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id, telegram_id, season_key)
+    REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_achievements_unlocked
+  ON telegram_pet_achievements(achievement_id, unlocked_at);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_achievements_owner
+  ON telegram_pet_achievements(telegram_id, pet_id, unlocked_at);
 
 -- Recent player-facing dialogue. Runtime writes retain only the latest 40 rows
 -- per Moonpet; the table exists solely for reaction de-duplication.

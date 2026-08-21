@@ -116,7 +116,7 @@ assert.equal(defeatedBossWriteCalls, 0, 'post-defeat attacks must not consume en
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
 const dialogueMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/049_telegram_pet_dialogue_history.sql', import.meta.url), 'utf8');
 for (const table of ['telegram_pet_achievements', 'telegram_pet_weekly_boss_progress', 'telegram_pet_weekly_boss_events', 'telegram_pet_season_reward_claims']) {
-  assert.match(migration, new RegExp(`CREATE TABLE ${table}`), `${table} must be created by migration 048`);
+  assert.match(migration, new RegExp(`CREATE TABLE(?: IF NOT EXISTS)? ${table}`), `${table} must be created by migration 048`);
 }
 assert.match(migration, /UNIQUE \(telegram_id, week_key, day_key\)/, 'weekly bosses must enforce one attempt per player per UTC day at D1 level');
 assert.match(migration, /PRIMARY KEY \(telegram_id, season_key, tier_id\)/, 'season tier claims must be unique in D1');

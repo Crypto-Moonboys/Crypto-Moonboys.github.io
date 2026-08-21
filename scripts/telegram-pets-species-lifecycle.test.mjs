@@ -57,10 +57,10 @@ const db = new D1();
 db.database.exec(`
   CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT NOT NULL DEFAULT '', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
   CREATE TABLE telegram_pet_evolutions (telegram_id TEXT, stage INTEGER);
-  CREATE TABLE telegram_pet_memories (telegram_id TEXT PRIMARY KEY, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
+  CREATE TABLE telegram_pet_memories (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
     combat_actions INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0,
     adventure_actions INTEGER DEFAULT 0);
-  CREATE TABLE telegram_pet_personality_traits (telegram_id TEXT, trait_id TEXT, unlocked_at TEXT);
+  CREATE TABLE telegram_pet_personality_traits (pet_id TEXT, telegram_id TEXT, season_key TEXT, trait_id TEXT, unlocked_at TEXT);
   CREATE TABLE telegram_pet_evolutions_by_pet (pet_id TEXT, telegram_id TEXT, evolution_id TEXT, stage INTEGER);
 `);
 db.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
@@ -103,13 +103,23 @@ assert.equal(hatched.lifecycle.innate_traits.length, 2);
 assert.ok(hatched.lifecycle.preferences.length >= 1, 'identity must expose stable behaviour preferences');
 assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, hatched.lifecycle.species_id);
 db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult' WHERE telegram_id='new-player'`).run();
-db.database.prepare(`INSERT OR REPLACE INTO telegram_pet_memories VALUES ('new-player',100,100,100,100,100,100,100)`).run();
+db.database.prepare(`INSERT OR REPLACE INTO telegram_pet_memories VALUES ('pet:new-player:test:1','new-player','test',100,100,100,100,100,100,100)`).run();
 for (const trait of ['explorer', 'curious', 'street_fighter', 'loyal']) db.database.prepare(
-  `INSERT INTO telegram_pet_personality_traits VALUES ('new-player',?,CURRENT_TIMESTAMP)`,
+  `INSERT INTO telegram_pet_personality_traits VALUES ('pet:new-player:test:1','new-player','test',?,CURRENT_TIMESTAMP)`,
 ).run(trait);
 db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','moon_guardian',4)`).run();
 assert.equal((await morphMoonpetRare(db, 'new-player', 'rare:before-legendary')).reason, 'rare_signal_not_ready',
   'rare morph cannot trigger at the former final stage before Legendary stage 5');
+db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES ('pet:new-player:test:2', 'new-player')`).run();
+db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key) VALUES ('pet:new-player:test:2', 'new-player', 'test')`).run();
+db.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+  (pet_id, telegram_id, identity_seed, phase, species_id, rare_route_index)
+  VALUES ('pet:new-player:test:2', 'new-player', 'pet-b-seed', 'adult', 'lunar_fox', 0)`).run();
+db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:2','new-player','legendary_moon_guardian',5)`).run();
+db.database.prepare(`UPDATE telegram_pet_active_slots SET pet_id='pet:new-player:test:2' WHERE telegram_id='new-player'`).run();
+const petBRareAttempt = await morphMoonpetRare(db, 'new-player', 'rare:pet-b-no-identity');
+assert.equal(petBRareAttempt.reason, 'rare_signal_not_ready',
+  'rare morph readiness for Pet B must not use Pet A memories or personality traits');
 
 db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('guaranteed-player');
 db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES ('pet:guaranteed-player:test:1', 'guaranteed-player')`).run();
@@ -123,10 +133,10 @@ const pendingDb = new D1();
 pendingDb.database.exec(`
   CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT NOT NULL DEFAULT '', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
   CREATE TABLE telegram_pet_evolutions (telegram_id TEXT, stage INTEGER);
-  CREATE TABLE telegram_pet_memories (telegram_id TEXT PRIMARY KEY, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
+  CREATE TABLE telegram_pet_memories (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
     combat_actions INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0,
     adventure_actions INTEGER DEFAULT 0);
-  CREATE TABLE telegram_pet_personality_traits (telegram_id TEXT, trait_id TEXT, unlocked_at TEXT);
+  CREATE TABLE telegram_pet_personality_traits (pet_id TEXT, telegram_id TEXT, season_key TEXT, trait_id TEXT, unlocked_at TEXT);
 `);
 pendingDb.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
 pendingDb.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('pending-player');
