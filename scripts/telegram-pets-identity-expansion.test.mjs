@@ -861,6 +861,69 @@ assert.equal(jobProducer.db.database.prepare("SELECT progress FROM telegram_pet_
 assert.equal(jobProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=?').get(jobProducer.secondPet).count, 0,
   'job achievement sync does not create Pet B progress from Pet A source events');
 
+const activeSwitchDb = seedPlayer('active-switch-authority', false);
+const activeSwitchPetA = `pet:active-switch-authority:${TEST_SEASON_KEY}:1`;
+const activeSwitchPetB = seedPetSlot(activeSwitchDb, 'active-switch-authority', 2, 'arcade_xp', false);
+setActivePetSlot(activeSwitchDb, 'active-switch-authority', activeSwitchPetA);
+activeSwitchDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('active-switch-memory-source', ?, 'active-switch-authority', 'weekly_boss', 'active-switch:boss:a', ?, '2026-08-01', '2026-W31', 'accepted', 'weekly_boss_attempt', ?)` )
+  .run(activeSwitchPetA, TEST_SEASON_KEY, JSON.stringify({ source: 'pet_weekly_boss' }));
+setActivePetSlot(activeSwitchDb, 'active-switch-authority', activeSwitchPetB);
+await recordMoonpetMemory(activeSwitchDb, {
+  telegram_id: 'active-switch-authority',
+  event_key: 'active-switch:boss:a',
+  source_event_key: 'active-switch:boss:a',
+  source_event_type: 'weekly_boss',
+  source_event_reason: 'weekly_boss_attempt',
+  source_event_category: 'pet_weekly_boss',
+  memory_type: 'boss_victory',
+  boss_id: 'alley_king',
+  milestone: 'first_boss_victory',
+});
+activeSwitchDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('active-switch-personality-source', ?, 'active-switch-authority', 'pet_arena', 'active-switch:arena:a', ?, '2026-08-01', '2026-W31', 'accepted', 'arena_win', ?)` )
+  .run(activeSwitchPetA, TEST_SEASON_KEY, JSON.stringify({ source: 'pet_arena' }));
+await recordMoonpetBehaviour(activeSwitchDb, {
+  telegram_id: 'active-switch-authority',
+  event_key: 'active-switch:arena:a:personality',
+  source_event_key: 'active-switch:arena:a',
+  source_event_type: 'pet_arena',
+  behaviour: 'combat',
+  activity: 'combat',
+  amount: 20,
+});
+await workerHooks.syncPetAchievementsForPet(activeSwitchDb, 'active-switch-authority', activeSwitchPetA, TEST_SEASON_KEY);
+for (const table of IDENTITY_AUTHORITY_TABLES) {
+  assert.equal(activeSwitchDb.database.prepare(`SELECT COUNT(*) AS count FROM ${table} WHERE pet_id=?`).get(activeSwitchPetB).count, 0,
+    `${table} must not write to the active Pet B after Pet A source authority is established`);
+}
+assert.equal(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count, 1,
+  'Pet A receives the memory row after active pet switch');
+assert.equal(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_boss_victories WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count, 1,
+  'Pet A receives boss victory authority after active pet switch');
+assert.equal(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count, 1,
+  'Pet A receives personality authority after active pet switch');
+assert.ok(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count > 0,
+  'Pet A receives achievement authority after active pet switch');
+assert.ok(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count >= 2,
+  'Pet A receives identity events after active pet switch');
+const activeSwitchAudit = await workerHooks.buildMoonpetIdentityAuthorityAudit(activeSwitchDb, 'active-switch-authority', {
+  pet_id: activeSwitchPetA,
+  season_key: TEST_SEASON_KEY,
+});
+assert.equal(activeSwitchAudit.pet_id, activeSwitchPetA, 'production audit helper can inspect an owned non-active pet by canonical authority');
+assert.equal(activeSwitchAudit.telegram_id, 'active-switch-authority');
+assert.equal(activeSwitchAudit.season_key, TEST_SEASON_KEY);
+assert.equal(activeSwitchAudit.memories_count, 1);
+assert.equal(activeSwitchAudit.invalid_authority_rows.length, 0, 'production audit helper reports zero invalid Pet A identity rows');
+
 setActivePetSlot(isolationDb, 'isolation-player', petC);
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events
   (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)

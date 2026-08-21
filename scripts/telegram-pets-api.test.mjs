@@ -141,6 +141,14 @@ assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');
 assert.ok(worker.includes("path === '/telegram-pets/action'"), '/telegram-pets/action route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/leaderboard'"), '/telegram-pets/leaderboard route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/state'"), '/telegram-pets/state route must exist');
+assert.ok(worker.includes("path === '/api/telegram/pets/identity/audit'"), 'production identity authority audit endpoint must exist');
+const identityAuditRouteSource = routeBlock('/api/telegram/pets/identity/audit');
+assert.ok(identityAuditRouteSource.includes('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)'),
+  'identity authority audit endpoint must require valid Telegram authentication');
+assert.ok(identityAuditRouteSource.includes('buildMoonpetIdentityAuthorityAudit(env.DB, verified.telegramId'),
+  'identity authority audit endpoint must read through pet-authorized audit helper');
+assert.doesNotMatch(identityAuditRouteSource, /\b(?:INSERT|UPDATE|DELETE|DROP|ALTER)\b/i,
+  'identity authority audit endpoint must remain read only');
 assert.ok(!worker.includes("path === '/telegram-pets/season/slots'"), '/telegram-pets/season/slots must not expose owner-specific slot data without auth');
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
