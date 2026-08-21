@@ -74,8 +74,17 @@ class D1 {
 }
 
 function seedPlayer(db, telegramId) {
+  const petId = `pet:${telegramId}:pet-s2026-003:1`;
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES (?, 0, 1)').run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, 'pet-s2026-003', 1, 'free', 'profile_insert', 0, 'active')`).run(petId, telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_xp, level, source_profile_updated_at, status)
+    VALUES (?, ?, 'pet-s2026-003', 1, 0, 1, 'fixture', 'active')`).run(petId, telegramId);
 }
 
 function seedSeason(db) {
@@ -149,7 +158,7 @@ for (const [jobKey, expectedPetXp] of Object.entries({ street_artist: 18, courie
   assert.equal(result.pet_xp_awarded, expectedPetXp, `${result.job?.title || jobKey} must award its configured Pet XP`);
   const retry = await processPetJob(db, telegramId, jobKey, { event_key: eventKey, source: 'regression' });
   assert.equal(retry.duplicate, true, `${result.job?.title || jobKey} callback retries must be idempotent`);
-  assert.equal(scalar(db, 'SELECT pet_xp AS value FROM telegram_pet_profiles WHERE telegram_id = ?', telegramId), expectedPetXp);
+  assert.equal(scalar(db, 'SELECT pet_xp AS value FROM telegram_pet_instances WHERE telegram_id = ?', telegramId), expectedPetXp);
   assert.equal(scalar(db, "SELECT COUNT(*) AS value FROM telegram_pet_reward_claims WHERE telegram_id = ? AND source = 'pet_job'", telegramId), 1);
 }
 

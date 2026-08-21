@@ -1494,6 +1494,7 @@ class RepeatReservationDb {
           const row = this.events.get(`${args[0]}:${args[1]}`);
           return row ? {
             id: row.id,
+            pet_id: row.pet_id,
             status: row.status,
             reason: row.reason,
             day_key: row.day_key,
@@ -1511,13 +1512,14 @@ class RepeatReservationDb {
       for (const statement of statements) {
         const { sql, args } = statement;
         if (sql.includes('INSERT OR IGNORE INTO telegram_pet_events')) {
-          const [id, telegramId, , eventKey, seasonKey, dayKey, weekKey] = args;
+          const [id, petId, telegramId, , eventKey, seasonKey, dayKey, weekKey] = args;
           const eventMapKey = `${telegramId}:${eventKey}`;
           const kaiju = sql.includes('WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles');
-          const energyCost = kaiju ? Number(args[9]) : 0;
+          const energyCost = kaiju ? Number(args[10]) : 0;
           if (!this.events.has(eventMapKey) && (!kaiju || Number(this.energy.get(String(telegramId)) || 0) >= energyCost)) {
             this.events.set(eventMapKey, {
               id,
+              pet_id: String(petId || '') || null,
               telegram_id: String(telegramId),
               status: 'pending',
               reason: 'repeat_reward_pending',
@@ -1642,6 +1644,9 @@ class SqliteD1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.database.exec(schema);
+    this.database.exec(`CREATE TABLE IF NOT EXISTS telegram_pet_growth_marks(mark_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,milestone_type TEXT,evidence_key TEXT,earned_day TEXT,earned_at TEXT,UNIQUE(pet_id,season_key,earned_day));
+      CREATE TABLE IF NOT EXISTS telegram_pet_weekly_crests(crest_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,season_week INTEGER,qualification_week INTEGER,objective_id TEXT,evidence_key TEXT,earned_at TEXT);
+      CREATE TABLE IF NOT EXISTS telegram_pet_season_completions(pet_id TEXT,telegram_id TEXT,season_key TEXT,completed_at TEXT,legendary_evolution_id TEXT,growth_marks_earned INTEGER,weekly_crests_earned INTEGER,authority_version INTEGER);`);
     this.batchCount = 0;
     this.failBatchNumber = null;
     this.failBatchSqlPattern = null;
@@ -1703,8 +1708,9 @@ class SqliteD1 {
   }
 }
 
-function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date().toISOString()) {
+function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date().toISOString(), options = {}) {
   const db = new SqliteD1();
+  const petId = `pet:${telegramId}:pet-s2026-003:1`;
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare(`
     INSERT INTO telegram_pet_profiles
@@ -1715,6 +1721,16 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
     INSERT INTO telegram_seasons (name, start_date, end_date, is_active)
     VALUES ('Repeat recovery test', '2026-01-01T00:00:00.000Z', '2027-01-01T00:00:00.000Z', 1)
   `).run();
+  if (options.seedAuthority !== false) {
+    db.database.prepare(`INSERT INTO telegram_pet_season_slots
+      (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+      VALUES (?, ?, 'pet-s2026-003', 1, 'free', 'profile_insert', 0, 'active')`).run(petId, telegramId);
+    db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+      VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+    db.database.prepare(`INSERT INTO telegram_pet_instances
+      (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, last_decay_at, source_profile_updated_at, status)
+      VALUES (?, ?, 'pet-s2026-003', 1, 0, 1, 70, ?, ?, 'fixture', 'active')`).run(petId, telegramId, energy, lastDecayAt);
+  }
   return db;
 }
 
@@ -2772,7 +2788,7 @@ assert.equal(switchItemDb.database.prepare('SELECT pet_xp FROM telegram_pet_inst
 assert.equal(switchItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='use-item-switch-b'").get().pet_xp, 0,
   'active pet switching must not redirect item-use rewards to the new active pet');
 
-const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100);
+const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100, new Date().toISOString(), { seedAuthority: false });
 legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=5000, level=51, stage='street_moonpet'
   WHERE telegram_id='legacy-boss-gate'`).run();
 for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1]]) {
@@ -2828,25 +2844,25 @@ async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
 const moonAlleySuccess = await runMoonAlleyEnergyFixture('adventure-energy-success', 0.99, 'adventure-energy-success');
 assert.equal(moonAlleySuccess.result.accepted, true, 'Moon Alley must accept a pet with exactly its required 18 Energy');
 assert.equal(moonAlleySuccess.result.applied.costsApplied.energy, 16, 'the deterministic success fixture must roll the expected Energy cost');
-assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
+assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
   'an accepted Moon Alley adventure must deduct its rolled Energy cost exactly once without extra drain');
 const duplicateMoonAlleySuccess = await processPetAdventure(moonAlleySuccess.db, 'adventure-energy-success', 'push_forward', {
   encounter_key: 'moon_alley', event_key: 'adventure-energy-success', source: 'adventure_energy_regression',
 });
 assert.equal(duplicateMoonAlleySuccess.duplicate, true, 'a duplicate successful adventure callback must be idempotent');
-assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
+assert.equal(moonAlleySuccess.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-success'").get().energy, 2,
   'a duplicate successful adventure callback must not charge Energy again');
 
 const moonAlleyRisk = await runMoonAlleyEnergyFixture('adventure-energy-risk', 0, 'adventure-energy-risk');
 assert.equal(moonAlleyRisk.result.accepted, true, 'a Moon Alley risk outcome must settle through the reward authority');
 assert.equal(moonAlleyRisk.result.applied.costsApplied.energy, 13, 'the deterministic risk fixture must roll the expected Energy cost');
-assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
+assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
   'a failed adventure outcome must consume only its rolled Energy cost and never drain below zero');
 const duplicateMoonAlleyRisk = await processPetAdventure(moonAlleyRisk.db, 'adventure-energy-risk', 'push_forward', {
   encounter_key: 'moon_alley', event_key: 'adventure-energy-risk', source: 'adventure_energy_regression',
 });
 assert.equal(duplicateMoonAlleyRisk.duplicate, true, 'a duplicate failed adventure callback must be idempotent');
-assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
+assert.equal(moonAlleyRisk.db.database.prepare("SELECT energy FROM telegram_pet_instances WHERE telegram_id = 'adventure-energy-risk'").get().energy, 5,
   'a duplicate failed adventure callback must not consume Energy twice');
 
 const tiredMoonAlleyDb = seedRepeatRewardPlayer('adventure-energy-tired', 17);
@@ -3342,7 +3358,7 @@ assert.equal(duplicateRecoveredTerminalStep.duplicate, true, 'duplicate final ca
 assert.equal(terminalStepFailureDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='terminal-step-failure' AND source='pet_run_legacy'").get().count, 1,
   'duplicate final callback after recovery must not duplicate terminal rewards');
 
-const profileOnlyRunDb = seedRepeatRewardPlayer('profile-only-run', 90);
+const profileOnlyRunDb = seedRepeatRewardPlayer('profile-only-run', 90, new Date().toISOString(), { seedAuthority: false });
 const refusedProfileOnlyRun = await startOrResumePetRun(profileOnlyRunDb, 'profile-only-run');
 assert.equal(refusedProfileOnlyRun.accepted, false);
 assert.equal(refusedProfileOnlyRun.reason, 'active_pet_instance_required', 'new runs must reject profile-only authority');
@@ -3452,6 +3468,13 @@ function repeatRewardSnapshot(db, telegramId, mode) {
     SELECT pet_xp, moon_gold, moon_crystals, style_tokens, energy, happiness
     FROM telegram_pet_profiles WHERE telegram_id = ?
   `).get(telegramId);
+  const instanceRow = db.database.prepare(`
+    SELECT i.pet_xp, i.energy, i.happiness
+    FROM telegram_pet_active_slots a
+    JOIN telegram_pet_instances i ON i.pet_id = a.pet_id AND i.telegram_id = a.telegram_id AND i.season_key = a.season_key
+    WHERE a.telegram_id = ?
+    LIMIT 1
+  `).get(telegramId);
   const userRow = db.database.prepare('SELECT xp, level FROM telegram_users WHERE telegram_id = ?').get(telegramId);
   const eventRow = db.database.prepare(`
     SELECT status, reason, pet_xp_awarded, xp_awarded
@@ -3475,7 +3498,12 @@ function repeatRewardSnapshot(db, telegramId, mode) {
     SELECT COUNT(*) AS rows, COALESCE(SUM(xp), 0) AS total
     FROM telegram_leaderboard WHERE telegram_id = ?
   `).get(telegramId);
-  const profile = { ...profileRow };
+  const profile = {
+    ...profileRow,
+    pet_xp: instanceRow?.pet_xp ?? profileRow.pet_xp,
+    energy: instanceRow?.energy ?? profileRow.energy,
+    happiness: instanceRow?.happiness ?? profileRow.happiness,
+  };
   const user = { ...userRow };
   const event = eventRow ? { ...eventRow } : null;
   const slot = slotRow ? { ...slotRow } : null;
@@ -3485,12 +3513,15 @@ function repeatRewardSnapshot(db, telegramId, mode) {
   return { profile, user, event, slot, xpLog, season, leaderboard };
 }
 
-function seedAcceptedDailyPetEvent(db, telegramId, eventKey, petXp, communityXp = 0, dayKey = new Date().toISOString().slice(0, 10)) {
+function seedAcceptedDailyPetEvent(db, telegramId, eventKey, petXp, communityXp = 0, dayKey = new Date().toISOString().slice(0, 10), options = {}) {
+  const activePet = options.petScoped
+    ? db.database.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = ?').get(telegramId)
+    : null;
   db.database.prepare(`
     INSERT INTO telegram_pet_events
-      (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status)
-    VALUES (?, ?, 'cap_fixture', ?, ?, ?, 'cap-fixture', ?, 'cap-fixture', 'accepted')
-  `).run(`fixture-${eventKey}`, telegramId, eventKey, communityXp, petXp, dayKey);
+      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status)
+    VALUES (?, ?, ?, 'cap_fixture', ?, ?, ?, 'cap-fixture', ?, 'cap-fixture', 'accepted')
+  `).run(`fixture-${eventKey}`, activePet?.pet_id || null, telegramId, eventKey, communityXp, petXp, dayKey);
 }
 
 const recoveryDayA = new Date('2026-09-27T23:50:00.000Z');
@@ -3501,7 +3532,7 @@ const recoveryWeekAKey = '2026-W39';
 const recoverySeasonAKey = 'pet-s2026-003';
 
 const eventRecoveryDb = seedRepeatRewardPlayer('event-recovery', 70, recoveryDayA.toISOString());
-seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey);
+seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey, { petScoped: true });
 eventRecoveryDb.failOnBatch(3);
 await assert.rejects(
   processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
@@ -3744,7 +3775,7 @@ assert.deepEqual(
 );
 
 const eventCapDb = seedRepeatRewardPlayer('event-cap');
-seedAcceptedDailyPetEvent(eventCapDb, 'event-cap', 'prior-event-cap', 1199);
+seedAcceptedDailyPetEvent(eventCapDb, 'event-cap', 'prior-event-cap', 1199, 0, new Date().toISOString().slice(0, 10), { petScoped: true });
 const cappedEvent = await processPetRandomEvent(eventCapDb, 'event-cap', 'leave_it', {
   event_key: 'event-cap-callback',
   encounter: PET_RANDOM_EVENTS.moon_crate_found,

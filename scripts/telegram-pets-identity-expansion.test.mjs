@@ -530,6 +530,96 @@ assert.equal(isolationDb.database.prepare('SELECT biggest_reward_amount FROM tel
   'source-event-key-only biggest reward writes to the accepted source-event pet');
 assert.equal(isolationDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(petB).count, 0,
   'source-event-key-only biggest reward does not create memory for the current active pet');
+
+function seedProducerAuthorityPlayer(telegramId) {
+  const db = seedPlayer(telegramId, false);
+  const firstPet = `pet:${telegramId}:${TEST_SEASON_KEY}:1`;
+  const secondPet = seedPetSlot(db, telegramId, 2, 'arcade_xp', false);
+  db.database.prepare(`UPDATE telegram_pet_profiles
+    SET pet_xp=5200, level=52, energy=100, hunger=0, happiness=90, cleanliness=90, health=100,
+      moon_gold=1000, moon_crystals=100, style_tokens=100
+    WHERE telegram_id=?`).run(telegramId);
+  db.database.prepare(`UPDATE telegram_pet_instances
+    SET pet_xp=5200, level=52, energy=100, hunger=0, happiness=90, cleanliness=90, health=100
+    WHERE pet_id=?`).run(firstPet);
+  db.database.prepare(`UPDATE telegram_pet_instances
+    SET pet_xp=10, level=1, energy=70, hunger=0, happiness=70, cleanliness=70, health=75
+    WHERE pet_id=?`).run(secondPet);
+  return { db, firstPet, secondPet };
+}
+
+function switchAwayAfterSource(db, telegramId, targetPetId) {
+  return async () => { setActivePetSlot(db, telegramId, targetPetId); };
+}
+
+const randomProducer = seedProducerAuthorityPlayer('producer-random-player');
+const randomEventKey = 'moon_crate_found-producer-random';
+const randomResult = await workerHooks.processPetRandomEvent(randomProducer.db, 'producer-random-player', 'flip_it_fast', {
+  event_key: randomEventKey,
+  before_identity_write: switchAwayAfterSource(randomProducer.db, 'producer-random-player', randomProducer.secondPet),
+});
+assert.equal(randomResult.accepted, true, 'random event producer accepts under Pet A authority');
+assert.equal(randomProducer.db.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get(randomEventKey).pet_id, randomProducer.firstPet,
+  'random event source row stores Pet A authority before identity writes');
+assert.equal(randomProducer.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='curious'").get(randomProducer.firstPet).count, 1,
+  'random event personality lands on Pet A after the active pet switches');
+assert.ok(randomProducer.db.database.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(randomProducer.firstPet).biggest_reward_amount > 0,
+  'random event biggest reward lands on Pet A after the active pet switches');
+assert.equal(randomProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?').get(randomProducer.secondPet).count, 0,
+  'random event does not create personality rows on Pet B');
+assert.equal(randomProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(randomProducer.secondPet).count, 0,
+  'random event does not create memory rows on Pet B');
+
+const adventureProducer = seedProducerAuthorityPlayer('producer-adventure-player');
+const adventureEventKey = 'moon_alley-producer-adventure';
+const adventureResult = await workerHooks.processPetAdventure(adventureProducer.db, 'producer-adventure-player', 'cash_out', {
+  event_key: adventureEventKey,
+  before_identity_write: switchAwayAfterSource(adventureProducer.db, 'producer-adventure-player', adventureProducer.secondPet),
+});
+assert.equal(adventureResult.accepted, true, 'adventure producer accepts under Pet A authority');
+assert.equal(adventureProducer.db.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get(adventureEventKey).pet_id, adventureProducer.firstPet,
+  'adventure source row stores Pet A authority before identity writes');
+assert.equal(adventureProducer.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='explorer'").get(adventureProducer.firstPet).count, 1,
+  'adventure personality lands on Pet A after the active pet switches');
+assert.equal(adventureProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?').get(adventureProducer.secondPet).count, 0,
+  'adventure does not create personality rows on Pet B');
+assert.equal(adventureProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(adventureProducer.secondPet).count, 0,
+  'adventure does not create memory rows on Pet B');
+
+const arenaProducer = seedProducerAuthorityPlayer('producer-arena-player');
+const arenaEventKey = 'pet_arena:producer-arena-1:producer-arena-player';
+const arenaResult = await workerHooks.awardPetKaijuPlayerResult(arenaProducer.db, 'producer-arena-player', {
+  match_id: 'producer-arena-1',
+  mode: 'pet_arena',
+}, 'arena_win', { pet_xp: 24, moon_gold: 30, happiness: 5 }, {
+  before_identity_write: switchAwayAfterSource(arenaProducer.db, 'producer-arena-player', arenaProducer.secondPet),
+});
+assert.equal(arenaResult.accepted, true, 'pet arena producer accepts under Pet A authority');
+assert.equal(arenaProducer.db.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get(arenaEventKey).pet_id, arenaProducer.firstPet,
+  'pet arena source row stores Pet A authority before identity writes');
+assert.equal(arenaProducer.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='street_fighter'").get(arenaProducer.firstPet).count, 1,
+  'pet arena personality lands on Pet A after the active pet switches');
+assert.equal(arenaProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?').get(arenaProducer.secondPet).count, 0,
+  'pet arena does not create personality rows on Pet B');
+assert.equal(arenaProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(arenaProducer.secondPet).count, 0,
+  'pet arena does not create memory rows on Pet B');
+
+const jobProducer = seedProducerAuthorityPlayer('producer-job-player');
+const jobEventKey = 'producer-job-street-artist';
+const jobResult = await workerHooks.processPetJob(jobProducer.db, 'producer-job-player', 'street_artist', {
+  event_key: jobEventKey,
+  before_identity_write: switchAwayAfterSource(jobProducer.db, 'producer-job-player', jobProducer.secondPet),
+});
+assert.equal(jobResult.accepted, true, 'job producer accepts under Pet A authority');
+assert.equal(jobProducer.db.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get(jobEventKey).pet_id, jobProducer.firstPet,
+  'job source row stores Pet A authority before achievement sync');
+assert.equal(jobProducer.db.database.prepare("SELECT progress FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='honest_hustle'").get(jobProducer.firstPet).progress, 1,
+  'syncPetAchievementsForPet counts job_actions for Pet A');
+assert.equal(jobProducer.db.database.prepare("SELECT progress FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='job_hopper'").get(jobProducer.firstPet).progress, 1,
+  'syncPetAchievementsForPet counts distinct_jobs for Pet A');
+assert.equal(jobProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=?').get(jobProducer.secondPet).count, 0,
+  'job achievement sync does not create Pet B progress from Pet A source events');
+
 setActivePetSlot(isolationDb, 'isolation-player', petC);
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events
   (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
