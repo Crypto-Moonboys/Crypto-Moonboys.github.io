@@ -34,6 +34,10 @@ function hasColumnReference(sql, column) {
   return new RegExp(`\\b${column}\\b`, 'i').test(sql);
 }
 
+function hasBoundAuthorityPredicate(sql, column) {
+  return new RegExp(`\\b${column}\\s*=\\s*\\?`, 'i').test(sql);
+}
+
 export function auditRuntimeIdentityQueries({ root = workerRoot } = {}) {
   const violations = [];
   for (const file of walkJavaScriptFiles(root)) {
@@ -44,7 +48,7 @@ export function auditRuntimeIdentityQueries({ root = workerRoot } = {}) {
       for (const match of source.matchAll(statementPattern)) {
         const statement = match[0];
         if (!/\btelegram_id\s*=\s*\?/i.test(statement)) continue;
-        if (!hasColumnReference(statement, 'pet_id') || !hasColumnReference(statement, 'season_key')) {
+        if (!hasBoundAuthorityPredicate(statement, 'pet_id') || !hasBoundAuthorityPredicate(statement, 'season_key')) {
           violations.push({
             type: 'runtime_identity_query_missing_pet_authority',
             file: relative,
@@ -92,8 +96,9 @@ function identityAuthorityViolationSql() {
              WHEN r.pet_id IS NULL OR r.pet_id = '' THEN 'pet_id_missing'
              WHEN r.telegram_id IS NULL OR r.telegram_id = '' THEN 'telegram_id_missing'
              WHEN r.season_key IS NULL OR r.season_key = '' THEN 'season_key_missing'
-             WHEN s.pet_id IS NULL THEN 'ownership_mismatch'
-             WHEN i.pet_id IS NULL THEN 'identity_pet_instance_missing'
+             WHEN s.pet_id IS NULL THEN 'season_slot_tuple_missing'
+             WHEN i.pet_id IS NULL THEN 'pet_instance_tuple_missing'
+             WHEN s.slot_number <> i.slot_number THEN 'authority_tuple_mismatch'
              ELSE 'invalid_relationship'
            END AS reason
     FROM ${table} r
@@ -113,7 +118,34 @@ function identityAuthorityViolationSql() {
        OR r.season_key = ''
        OR s.pet_id IS NULL
        OR i.pet_id IS NULL
+       OR s.slot_number <> i.slot_number
   `).join('\nUNION ALL\n');
+}
+
+function comparableViolation(row) {
+  return {
+    table_name: String(row.table_name || ''),
+    pet_id: row.pet_id == null ? null : String(row.pet_id),
+    telegram_id: row.telegram_id == null ? null : String(row.telegram_id),
+    season_key: row.season_key == null ? null : String(row.season_key),
+    row_key: row.row_key == null ? null : String(row.row_key),
+    reason: String(row.reason || ''),
+  };
+}
+
+function compareViolationRows(expectedRows, viewRows) {
+  const expected = expectedRows.map(comparableViolation)
+    .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  const actual = viewRows.map(comparableViolation)
+    .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  if (JSON.stringify(expected) === JSON.stringify(actual)) return [];
+  return [{
+    table_name: 'moonpet_invalid_identity_authority_rows',
+    row_key: 'verification_view',
+    reason: 'view_rows_mismatch',
+    expected_rows: expected,
+    actual_rows: actual,
+  }];
 }
 
 export function auditIdentityAuthorityDb(db) {
@@ -123,14 +155,9 @@ export function auditIdentityAuthorityDb(db) {
   ]));
   const checkedRows = Object.values(tableCounts).reduce((sum, count) => sum + count, 0);
   const violations = db.prepare(identityAuthorityViolationSql()).all();
-  const viewCount = db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count;
-  if (Number(viewCount) !== Number(violations.length)) {
-    violations.push({
-      table_name: 'moonpet_invalid_identity_authority_rows',
-      row_key: 'verification_view',
-      reason: `view_count_mismatch:${viewCount}:${violations.length}`,
-    });
-  }
+  const viewRows = db.prepare(`SELECT table_name, pet_id, telegram_id, season_key, row_key, reason
+    FROM moonpet_invalid_identity_authority_rows`).all();
+  violations.push(...compareViolationRows(violations, viewRows));
   return { checkedRows, tableCounts, violations };
 }
 

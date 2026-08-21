@@ -306,9 +306,26 @@ migration070Db.prepare(`INSERT INTO telegram_pet_achievements
   (pet_id, telegram_id, season_key, achievement_id, progress, target) VALUES ('invalid-pet', 'old-owner', 'wrong-season', 'boss_breaker', 1, 5)`).run();
 assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 6,
   'the identity authority verifier catches every invalid identity table row');
+assert.deepEqual(
+  migration070Db.prepare(`SELECT DISTINCT reason FROM moonpet_invalid_identity_authority_rows ORDER BY reason`).all().map((row) => row.reason),
+  ['season_slot_tuple_missing'],
+  'invalid identity rows report the missing authority tuple reason',
+);
 for (const table of IDENTITY_AUTHORITY_TABLES) migration070Db.prepare(`DELETE FROM ${table} WHERE pet_id='invalid-pet'`).run();
 assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 0,
   'after invalid fixtures are removed the verifier returns to zero invalid rows');
+migration070Db.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, status)
+  VALUES ('pet:slot-only:season:1', 'old-owner', 'season', 2, 'active')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at) VALUES ('pet:slot-only:season:1', 'old-owner', 'season', '2026-08-21T00:00:00Z')`).run();
+assert.deepEqual(
+  { ...migration070Db.prepare("SELECT table_name, reason FROM moonpet_invalid_identity_authority_rows WHERE pet_id='pet:slot-only:season:1'").get() },
+  { table_name: 'telegram_pet_memories', reason: 'pet_instance_tuple_missing' },
+  'migration 072 validates telegram_pet_instances in addition to season slot authority',
+);
+migration070Db.prepare("DELETE FROM telegram_pet_memories WHERE pet_id='pet:slot-only:season:1'").run();
+migration070Db.prepare("DELETE FROM telegram_pet_season_slots WHERE pet_id='pet:slot-only:season:1'").run();
 const canonical070Db = new DatabaseSync(':memory:');
 canonical070Db.exec(schema);
 canonical070Db.exec(petIdentityAuthorityMigration);

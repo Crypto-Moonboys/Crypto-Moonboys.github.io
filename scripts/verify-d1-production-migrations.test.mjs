@@ -77,8 +77,10 @@ assert.match(remoteQueryStep, /071_moonpet_arena_pet_authority\.sql/, 'the workf
 assert.match(remoteQueryStep, /072_moonpet_identity_authority_verification\.sql/, 'the workflow_dispatch D1 query must request migration 072 from production');
 assert.match(remoteIdentityAuditStep, /SELECT COUNT\(\*\) AS invalid_identity_authority_rows FROM moonpet_invalid_identity_authority_rows/,
   'workflow_dispatch must query the production identity authority verification view');
-assert.match(remoteIdentityAuditStep, /count !== 0/,
+assert.match(remoteIdentityAuditStep, /count > 0/,
   'workflow_dispatch must fail when production has invalid identity authority rows');
+assert.match(remoteIdentityAuditStep, /!Number\.isFinite\(count\)/,
+  'workflow_dispatch must fail closed when production identity authority audit output is malformed');
 assert.match(remoteIdentityAuditStep, /0 invalid identity authority rows/,
   'workflow_dispatch must report the expected zero-invalid-row audit result');
 assert.ok(

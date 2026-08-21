@@ -170,7 +170,7 @@ jobs:
               d1-identity-authority-audit-failure.txt
             exit "${{ steps.d1-identity-audit.outputs.status }}"
           fi
-          node -e "const fs=require('fs'); const payload=JSON.parse(fs.readFileSync('d1-identity-authority-audit.json','utf8')); const rows=Array.isArray(payload) ? (payload[0]?.results || []) : (payload.results || []); const count=Number(rows[0]?.invalid_identity_authority_rows ?? rows[0]?.count ?? NaN); if(count !== 0){ console.error('Expected 0 invalid identity authority rows, got '+count); process.exit(1); } console.log('0 invalid identity authority rows');"
+          node -e "const fs=require('fs'); const payload=JSON.parse(fs.readFileSync('d1-identity-authority-audit.json','utf8')); const rows=Array.isArray(payload) ? (payload[0]?.results || []) : (payload.results || []); const count=Number(rows[0]?.invalid_identity_authority_rows ?? rows[0]?.count); if(!Number.isFinite(count)){ console.error('Invalid identity authority audit output'); process.exit(1); } if(count > 0){ console.error('Expected 0 invalid identity authority rows, got '+count); process.exit(1); } console.log('0 invalid identity authority rows');"
       - name: Upload sanitised evidence
         if: steps.d1-query.outputs.status == '0'
         uses: actions/upload-artifact@v4
