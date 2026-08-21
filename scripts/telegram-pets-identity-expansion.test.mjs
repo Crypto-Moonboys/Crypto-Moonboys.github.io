@@ -21,6 +21,7 @@ import { awardPetGrowthMark, buildPetLifecycleProgress, isPetLegendary } from '.
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql', import.meta.url), 'utf8');
 const stage5Migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/062_moonpet_evolution_stage_5.sql', import.meta.url), 'utf8');
+const petIdentityAuthorityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/070_moonpet_pet_identity_achievement_authority.sql', import.meta.url), 'utf8');
 const identitySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/moonpet-identity.js', import.meta.url), 'utf8');
 const TEST_SEASON_KEY = 'pet-s2026-003';
 
@@ -204,6 +205,62 @@ assert.deepEqual({ ...migrationDb.prepare("SELECT evolution_id, stage, materials
   { evolution_id: 'moon_egg', stage: 0, materials_consumed: 1 }, 'migration 043 must give existing Moonpets their permanent starting identity');
 assert.equal(migrationDb.prepare("SELECT first_adoption_at FROM telegram_pet_memories WHERE telegram_id='backfill-player'").get().first_adoption_at,
   '2026-01-02 03:04:05', 'migration 043 must preserve existing adoption history');
+
+const migration070Db = new DatabaseSync(':memory:');
+migration070Db.exec(`
+  PRAGMA foreign_keys = ON;
+  CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY, xp INTEGER, level INTEGER);
+  CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, pet_xp INTEGER DEFAULT 0, level INTEGER DEFAULT 1, moon_gold INTEGER DEFAULT 0);
+  CREATE TABLE telegram_pet_season_slots (
+    pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL, season_key TEXT NOT NULL, slot_number INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active', UNIQUE(pet_id, telegram_id, season_key)
+  );
+  CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, season_key TEXT NOT NULL, slot_number INTEGER, status TEXT NOT NULL DEFAULT 'active');
+  CREATE TABLE telegram_pet_material_balances (telegram_id TEXT, material_key TEXT, quantity INTEGER);
+  CREATE TABLE telegram_pet_personality_traits (telegram_id TEXT NOT NULL, trait_id TEXT NOT NULL, progress INTEGER DEFAULT 0, unlocked_at TEXT, updated_at TEXT, PRIMARY KEY(telegram_id, trait_id));
+  CREATE TABLE telegram_pet_memories (telegram_id TEXT PRIMARY KEY, first_adoption_at TEXT, first_run_at TEXT, first_extraction_at TEXT, first_boss_victory_at TEXT, first_boss_id TEXT, biggest_reward_amount INTEGER DEFAULT 0, biggest_reward_currency TEXT, favourite_activity TEXT, total_runs INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, milestones TEXT DEFAULT '[]', combat_actions INTEGER DEFAULT 0, exploration_actions INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0, adventure_actions INTEGER DEFAULT 0, created_at TEXT, updated_at TEXT);
+  CREATE TABLE telegram_pet_boss_victories (telegram_id TEXT NOT NULL, boss_id TEXT NOT NULL, victories INTEGER DEFAULT 0, updated_at TEXT, PRIMARY KEY(telegram_id, boss_id));
+  CREATE TABLE telegram_pet_identity_events (event_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, event_key TEXT NOT NULL, event_kind TEXT NOT NULL, payload TEXT DEFAULT '{}', day_key TEXT DEFAULT '2026-08-01', progress_delta INTEGER DEFAULT 0, created_at TEXT, applied_at TEXT, UNIQUE(telegram_id,event_key,event_kind));
+  CREATE TABLE telegram_pet_identity_analytics (analytics_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, event_type TEXT NOT NULL, evolution_id TEXT, trait_id TEXT, milestone_id TEXT, duration_seconds INTEGER, event_data TEXT DEFAULT '{}', created_at TEXT);
+  CREATE TABLE telegram_pet_achievements (telegram_id TEXT NOT NULL, achievement_id TEXT NOT NULL, progress INTEGER DEFAULT 0, target INTEGER, unlocked_at TEXT, updated_at TEXT, PRIMARY KEY(telegram_id,achievement_id));
+`);
+migration070Db.prepare("INSERT INTO telegram_users VALUES ('old-owner', 777, 8)").run();
+migration070Db.prepare("INSERT INTO telegram_pet_profiles VALUES ('old-owner', 1234, 12, 999)").run();
+migration070Db.prepare("INSERT INTO telegram_pet_season_slots VALUES ('pet:old-owner:season:1', 'old-owner', 'season', 1, 'active')").run();
+migration070Db.prepare("INSERT INTO telegram_pet_instances VALUES ('pet:old-owner:season:1', 'old-owner', 'season', 1, 'active')").run();
+migration070Db.prepare("INSERT INTO telegram_pet_material_balances VALUES ('old-owner', 'scrap_metal', 42)").run();
+migration070Db.prepare("INSERT INTO telegram_pet_memories (telegram_id, first_boss_id, total_bosses_defeated) VALUES ('old-owner', 'wrong_pet_boss', 99)").run();
+migration070Db.prepare("INSERT INTO telegram_pet_personality_traits VALUES ('old-owner', 'street_fighter', 20, '2026-08-01', '2026-08-01')").run();
+migration070Db.prepare("INSERT INTO telegram_pet_boss_victories VALUES ('old-owner', 'alley_king', 99, '2026-08-01')").run();
+migration070Db.prepare("INSERT INTO telegram_pet_identity_events (event_id, telegram_id, event_key, event_kind) VALUES ('contaminated-event', 'old-owner', 'source', 'memory')").run();
+migration070Db.prepare("INSERT INTO telegram_pet_identity_analytics (analytics_id, telegram_id, event_type) VALUES ('contaminated-analytics', 'old-owner', 'memory_milestone')").run();
+migration070Db.prepare("INSERT INTO telegram_pet_achievements VALUES ('old-owner', 'boss_breaker', 5, 5, '2026-08-01', '2026-08-01')").run();
+migration070Db.exec(petIdentityAuthorityMigration);
+assert.equal(migration070Db.prepare("SELECT COUNT(*) AS count FROM telegram_pet_memories").get().count, 0,
+  'migration 070 resets contaminated account-scoped memories');
+assert.equal(migration070Db.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits").get().count, 0,
+  'migration 070 resets contaminated account-scoped personality traits');
+assert.equal(migration070Db.prepare("SELECT COUNT(*) AS count FROM telegram_pet_achievements").get().count, 0,
+  'migration 070 resets contaminated account-scoped achievements');
+assert.deepEqual({ ...migration070Db.prepare("SELECT xp, level FROM telegram_users WHERE telegram_id='old-owner'").get() }, { xp: 777, level: 8 },
+  'migration 070 preserves Telegram user authority');
+assert.deepEqual({ ...migration070Db.prepare("SELECT pet_xp, level, moon_gold FROM telegram_pet_profiles WHERE telegram_id='old-owner'").get() }, { pet_xp: 1234, level: 12, moon_gold: 999 },
+  'migration 070 preserves profile wallet/progression authority');
+assert.equal(migration070Db.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='old-owner' AND material_key='scrap_metal'").get().quantity, 42,
+  'migration 070 preserves account-owned material authority');
+assert.equal(migration070Db.prepare("SELECT cutover_key FROM moonpet_identity_authority_cutovers").get().cutover_key, 'pet_identity_achievement_authority_v1',
+  'migration 070 writes a cutover marker');
+migration070Db.exec(petIdentityAuthorityMigration);
+assert.equal(migration070Db.prepare('PRAGMA foreign_key_check').all().length, 0, 'migration 070 retry remains schema-valid');
+assert.equal(migration070Db.prepare("SELECT COUNT(*) AS count FROM moonpet_identity_authority_cutovers").get().count, 1,
+  'migration 070 retry keeps a single cutover marker');
+const canonical070Db = new DatabaseSync(':memory:');
+canonical070Db.exec(schema);
+canonical070Db.exec(petIdentityAuthorityMigration);
+canonical070Db.exec(petIdentityAuthorityMigration);
+assert.equal(canonical070Db.prepare('PRAGMA foreign_key_check').all().length, 0,
+  'migration 070 can replay against canonical schema fixtures');
+
 assert.deepEqual(Object.values(MOONPET_EVOLUTIONS).map(({ name }) => name), [
   'Moon Egg', 'Street Moonpet', 'Cyber Moonpet', 'Elite Moonpet', 'Moon Guardian', 'Legendary Moon Guardian',
 ]);
@@ -409,9 +466,14 @@ await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petA, season_key: TEST_SEASON_KEY,
   event_key: 'source:first-run:a', memory_type: 'first_run', milestone: 'first_run',
 });
+isolationDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('identity-source-boss-a', ?, 'isolation-player', 'weekly_boss', 'source:boss:a', ?, '2026-08-01', '2026-W31', 'accepted', 'weekly_boss_attempt', ?)`)
+  .run(petA, TEST_SEASON_KEY, JSON.stringify({ source: 'pet_weekly_boss' }));
 await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petA, season_key: TEST_SEASON_KEY,
-  event_key: 'source:boss:a', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
+  event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
+  source_event_category: 'pet_weekly_boss', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
 });
 for (let day = 1; day <= 5; day += 1) for (let index = 0; index < 4; index += 1) await recordMoonpetBehaviour(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petA, season_key: TEST_SEASON_KEY,
@@ -431,19 +493,29 @@ assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegra
   'Pet A personality progress does not unlock traits for Pet B or Pet C');
 const retry = await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petA, season_key: TEST_SEASON_KEY,
-  event_key: 'source:boss:a', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
+  event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
+  source_event_category: 'pet_weekly_boss', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
 });
 assert.equal(retry.duplicate, true, 'duplicate source events are idempotent per pet_id');
-await recordMoonpetMemory(isolationDb, {
+const crossPetSourceReplay = await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petB, season_key: TEST_SEASON_KEY,
-  event_key: 'source:boss:a', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
+  event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
+  source_event_category: 'pet_weekly_boss', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
 });
-assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='source:boss:a'").get().count, 2,
-  'the same source event key can be retried independently for a different pet');
+assert.equal(crossPetSourceReplay.accepted, false, 'the same accepted source event cannot be used for another pet');
+assert.equal(crossPetSourceReplay.reason, 'source_event_pet_mismatch');
+assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='source:boss:a'").get().count, 1,
+  'accepted source-event idempotency is scoped to the participating pet only');
 setActivePetSlot(isolationDb, 'isolation-player', petC);
+isolationDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('identity-source-before-switch', ?, 'isolation-player', 'daily_moon_run', 'accepted-before-switch-source', ?, '2026-08-01', '2026-W31', 'accepted', 'daily_moon_run_terminal', ?)`)
+  .run(petB, TEST_SEASON_KEY, JSON.stringify({ source: 'daily_moon_run' }));
 await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petB, season_key: TEST_SEASON_KEY,
-  event_key: 'accepted-before-switch', memory_type: 'milestone', milestone: 'first_extraction',
+  event_key: 'accepted-before-switch', source_event_key: 'accepted-before-switch-source', source_event_type: 'daily_moon_run',
+  source_event_reason: 'daily_moon_run_terminal', source_event_category: 'daily_moon_run',
+  memory_type: 'milestone', milestone: 'first_extraction',
 });
 assert.ok(JSON.parse(isolationDb.database.prepare('SELECT milestones FROM telegram_pet_memories WHERE pet_id=?').get(petB).milestones).includes('first_extraction'),
   'active-pet switching cannot redirect an accepted source event with pet_id');
@@ -463,7 +535,7 @@ assert.equal(isolationDb.database.prepare("SELECT unlocked_at FROM telegram_pet_
   'Pet A achievement progress does not unlock Pet B achievement');
 const isolatedSummary = await getMoonpetIdentitySummary(isolationDb, 'isolation-player');
 assert.equal(isolatedSummary.scope.pet_id, petB, 'identity summary reads the active pet scope');
-assert.equal(isolatedSummary.memories.first_boss_id, 'alley_king', 'identity summary reads active pet memory, not account-wide mixed memory');
+assert.equal(isolatedSummary.memories.first_boss_id, null, 'identity summary does not inherit another pet source event memory');
 assert.equal(isolationDb.database.prepare("SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='isolation-player'").get().moon_gold, 0,
   'account-owned economy remains unchanged by identity authority writes');
 

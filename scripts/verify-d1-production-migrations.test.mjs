@@ -22,6 +22,7 @@ assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/066_moonpet_r
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/067_moonpet_daily_journey_authority\.sql/, 'migration 067 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/068_moonpet_weekly_journey_authority\.sql/, 'migration 068 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/069_moonpet_breeding_authority\.sql/, 'migration 069 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/070_moonpet_pet_identity_achievement_authority\.sql/, 'migration 070 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -68,13 +69,22 @@ assert.match(remoteQueryStep, /066_moonpet_run_pet_id_authority\.sql/, 'the work
 assert.match(remoteQueryStep, /067_moonpet_daily_journey_authority\.sql/, 'the workflow_dispatch D1 query must request migration 067 from production');
 assert.match(remoteQueryStep, /068_moonpet_weekly_journey_authority\.sql/, 'the workflow_dispatch D1 query must request migration 068 from production');
 assert.match(remoteQueryStep, /069_moonpet_breeding_authority\.sql/, 'the workflow_dispatch D1 query must request migration 069 from production');
+assert.match(remoteQueryStep, /070_moonpet_pet_identity_achievement_authority\.sql/, 'the workflow_dispatch D1 query must request migration 070 from production');
 assert.ok(
   REQUIRED_D1_MIGRATIONS.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be detected by the production migration verification script',
 );
 assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('070_moonpet_pet_identity_achievement_authority.sql'),
+  'migration 070 must be detected by the production migration verification script',
+);
+assert.ok(
   request.required_migrations.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
+  request.required_migrations.includes('070_moonpet_pet_identity_achievement_authority.sql'),
+  'migration 070 must be included in the checked-in D1 evidence request',
 );
 assert.deepEqual(
   [...request.required_migrations].sort(),
@@ -300,6 +310,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 069',
 );
 
+const withoutMoonpetPetIdentityAchievementAuthority = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '070_moonpet_pet_identity_achievement_authority.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutMoonpetPetIdentityAchievementAuthority),
+  /missing required migrations: 070_moonpet_pet_identity_achievement_authority\.sql/,
+  'deployment verification must reject an evidence request that omits migration 070',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -474,6 +494,15 @@ assert.throws(
   }], request),
   /missing migrations: 069_moonpet_breeding_authority\.sql/,
   'deployment verification must fail when production D1 has not applied migration 069',
+);
+
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '070_moonpet_pet_identity_achievement_authority.sql'),
+  }], request),
+  /missing migrations: 070_moonpet_pet_identity_achievement_authority\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 070',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');

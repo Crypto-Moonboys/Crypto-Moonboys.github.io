@@ -3,15 +3,24 @@
 -- across three-pet rosters, so this migration resets only those identity and
 -- achievement ledgers while preserving account, slot, lifecycle, wallet,
 -- inventory, material, run, and economy authority tables.
+-- The marker records that this beta reset happened; DROP IF EXISTS plus
+-- CREATE IF NOT EXISTS makes local rehearsal/canonical replay retry-safe.
 
-ALTER TABLE telegram_pet_personality_traits RENAME TO telegram_pet_personality_traits_account_beta;
-ALTER TABLE telegram_pet_memories RENAME TO telegram_pet_memories_account_beta;
-ALTER TABLE telegram_pet_boss_victories RENAME TO telegram_pet_boss_victories_account_beta;
-ALTER TABLE telegram_pet_identity_events RENAME TO telegram_pet_identity_events_account_beta;
-ALTER TABLE telegram_pet_identity_analytics RENAME TO telegram_pet_identity_analytics_account_beta;
-ALTER TABLE telegram_pet_achievements RENAME TO telegram_pet_achievements_account_beta;
+CREATE TABLE IF NOT EXISTS moonpet_identity_authority_cutovers (
+  cutover_key TEXT PRIMARY KEY,
+  migration_name TEXT NOT NULL,
+  reset_beta_identity_rows INTEGER NOT NULL DEFAULT 1 CHECK (reset_beta_identity_rows IN (0, 1)),
+  applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TABLE telegram_pet_personality_traits (
+DROP TABLE IF EXISTS telegram_pet_personality_traits;
+DROP TABLE IF EXISTS telegram_pet_memories;
+DROP TABLE IF EXISTS telegram_pet_boss_victories;
+DROP TABLE IF EXISTS telegram_pet_identity_events;
+DROP TABLE IF EXISTS telegram_pet_identity_analytics;
+DROP TABLE IF EXISTS telegram_pet_achievements;
+
+CREATE TABLE IF NOT EXISTS telegram_pet_personality_traits (
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
@@ -26,7 +35,7 @@ CREATE TABLE telegram_pet_personality_traits (
     REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
-CREATE TABLE telegram_pet_memories (
+CREATE TABLE IF NOT EXISTS telegram_pet_memories (
   pet_id TEXT PRIMARY KEY,
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
@@ -54,7 +63,7 @@ CREATE TABLE telegram_pet_memories (
     REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
-CREATE TABLE telegram_pet_boss_victories (
+CREATE TABLE IF NOT EXISTS telegram_pet_boss_victories (
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
@@ -68,7 +77,7 @@ CREATE TABLE telegram_pet_boss_victories (
     REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
-CREATE TABLE telegram_pet_identity_events (
+CREATE TABLE IF NOT EXISTS telegram_pet_identity_events (
   event_id TEXT PRIMARY KEY,
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
@@ -87,7 +96,7 @@ CREATE TABLE telegram_pet_identity_events (
     REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
-CREATE TABLE telegram_pet_identity_analytics (
+CREATE TABLE IF NOT EXISTS telegram_pet_identity_analytics (
   analytics_id TEXT PRIMARY KEY,
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
@@ -105,7 +114,7 @@ CREATE TABLE telegram_pet_identity_analytics (
     REFERENCES telegram_pet_season_slots(pet_id, telegram_id, season_key) ON DELETE CASCADE
 );
 
-CREATE TABLE telegram_pet_achievements (
+CREATE TABLE IF NOT EXISTS telegram_pet_achievements (
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
@@ -133,3 +142,7 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_achievements_unlocked
   ON telegram_pet_achievements(achievement_id, unlocked_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_achievements_owner
   ON telegram_pet_achievements(telegram_id, pet_id, unlocked_at);
+
+INSERT OR IGNORE INTO moonpet_identity_authority_cutovers
+  (cutover_key, migration_name, reset_beta_identity_rows)
+  VALUES ('pet_identity_achievement_authority_v1', '070_moonpet_pet_identity_achievement_authority.sql', 1);

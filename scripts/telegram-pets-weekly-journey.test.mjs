@@ -41,6 +41,7 @@ class D1 {
     this.database = new DatabaseSync(':memory:');
     this.beforeWeeklyCrestInsert = null;
     this.beforeDailyMoonRunEventInsert = null;
+    this.beforeWeeklyBossEventInsert = null;
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
@@ -48,6 +49,9 @@ class D1 {
     try {
       const results = [];
       for (const statement of statements) {
+        if (/INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_events/i.test(statement.sql) && /'weekly_boss'/i.test(statement.sql)) {
+          this.beforeWeeklyBossEventInsert?.(statement.args);
+        }
         const prepared = this.database.prepare(statement.sql);
         if (/\bRETURNING\b/i.test(statement.sql)) {
           const rows = prepared.all(...statement.args);
@@ -874,6 +878,29 @@ assert.equal(runDuplicateRecoveryDb.database.prepare(`SELECT COUNT(*) AS count F
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`)
   .get(runDuplicateRecoveryTelegramId, runDuplicateRecoveryPet).count, 1,
   'Test 5j: repeated duplicate legacy run extraction recovery remains idempotent');
+
+const bossMemorySwitchDb = createDb();
+const bossMemorySwitchTelegramId = 'weekly-boss-memory-switch';
+const bossMemorySwitchSeasonKey = getPetSeasonInfo(new Date()).key;
+const bossMemoryPetA = seedPlayer(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemorySwitchSeasonKey);
+const bossMemoryPetB = 'pet-weekly-boss-memory-switch-b';
+seedAdditionalPet(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemoryPetB, 2, bossMemorySwitchSeasonKey);
+bossMemorySwitchDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=60000, level=600, energy=100, health=100, happiness=100, cleanliness=100
+  WHERE telegram_id=?`).run(bossMemorySwitchTelegramId);
+bossMemorySwitchDb.beforeWeeklyBossEventInsert = () => {
+  switchActivePet(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemoryPetB, bossMemorySwitchSeasonKey);
+};
+const bossMemorySwitch = await processPetWeeklyBoss(bossMemorySwitchDb, bossMemorySwitchTelegramId, 'strike', 'weekly-boss-memory-switch');
+assert.equal(bossMemorySwitch.reason, 'boss_defeated', 'Test 5k: high-level weekly boss attempt defeats the boss');
+assert.equal(bossMemorySwitchDb.database.prepare(`SELECT total_bosses_defeated FROM telegram_pet_memories WHERE pet_id=?`).get(bossMemoryPetA).total_bosses_defeated, 1,
+  'Test 5k: weekly boss memory is written to the victorious pet captured at source event time');
+assert.equal(bossMemorySwitchDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?`).get(bossMemoryPetB).count, 0,
+  'Test 5k: active-pet switching cannot redirect weekly boss memory to the new active pet');
+assert.equal(bossMemorySwitchDb.database.prepare(`SELECT unlocked_at IS NOT NULL AS unlocked FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='boss_breaker'`).get(bossMemoryPetA).unlocked, 0,
+  'Test 5k: weekly boss achievement sync targets the victorious pet, not the switched active pet');
+assert.equal(bossMemorySwitchDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=?`).get(bossMemoryPetB).count, 0,
+  'Test 5k: switched active pet does not receive weekly boss achievement rows');
 
 const bossDuplicateDb = createDb();
 const bossDuplicateTelegramId = 'weekly-boss-duplicate';

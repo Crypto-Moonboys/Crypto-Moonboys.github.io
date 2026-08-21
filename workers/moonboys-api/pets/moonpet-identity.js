@@ -31,6 +31,17 @@ function safeTelegramText(value, maximum = 80) {
   return escapeTelegramHtml(String(value ?? '').slice(0, maximum));
 }
 
+function sourceEventTypes(value) {
+  const values = Array.isArray(value) ? value : [value];
+  return values.map((entry) => String(entry || '').trim()).filter(Boolean);
+}
+
+function sourceEventKeyFor(request = {}, eventKey = '') {
+  const sourceEventKey = String(request.source_event_key || '').trim().slice(0, 180);
+  if (sourceEventKey) return sourceEventKey;
+  return String(eventKey || '').trim().slice(0, 180);
+}
+
 export async function readActivePetIdentityScope(db, telegramId) {
   let scope = await db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
     FROM telegram_pet_active_slots a
@@ -63,6 +74,34 @@ async function resolveMoonpetIdentityScope(db, telegramId, request = {}) {
       LIMIT 1`).bind(requestedPetId, telegramId, requestedSeasonKey).first().catch(() => null);
   }
   return readActivePetIdentityScope(db, telegramId);
+}
+
+async function verifyMoonpetIdentitySourceEvent(db, request = {}, scope, identityEventKey, expectedTypes = []) {
+  const sourceEventKey = sourceEventKeyFor(request, identityEventKey);
+  if (!sourceEventKey || !scope?.pet_id || !scope?.season_key) return { ok: true, source_event_key: null, source_event: null };
+  const row = await db.prepare(`SELECT pet_id, telegram_id, season_key, event_type, status, reason, metadata
+    FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ? LIMIT 1`)
+    .bind(scope.telegram_id || request.telegram_id, sourceEventKey).first().catch(() => null);
+  if (!row) return request.source_event_key
+    ? { ok: false, reason: 'source_event_not_accepted', source_event_key: sourceEventKey }
+    : { ok: true, source_event_key: null, source_event: null };
+  const allowedTypes = sourceEventTypes(expectedTypes);
+  if (row.status !== 'accepted') return { ok: false, reason: 'source_event_not_accepted', source_event_key: sourceEventKey };
+  if (String(row.telegram_id) !== String(request.telegram_id || scope.telegram_id || '')) return { ok: false, reason: 'source_event_owner_mismatch', source_event_key: sourceEventKey };
+  if (String(row.pet_id || '') !== String(scope.pet_id || '')) return { ok: false, reason: 'source_event_pet_mismatch', source_event_key: sourceEventKey };
+  if (String(row.season_key || '') !== String(scope.season_key || '')) return { ok: false, reason: 'source_event_season_mismatch', source_event_key: sourceEventKey };
+  if (allowedTypes.length && !allowedTypes.includes(String(row.event_type || ''))) return { ok: false, reason: 'source_event_type_mismatch', source_event_key: sourceEventKey };
+  if (request.source_event_reason && String(row.reason || '') !== String(request.source_event_reason)) {
+    return { ok: false, reason: 'source_event_reason_mismatch', source_event_key: sourceEventKey };
+  }
+  if (request.source_event_category) {
+    let metadata = {};
+    try { metadata = JSON.parse(row.metadata || '{}'); } catch {}
+    if (String(metadata.source || '') !== String(request.source_event_category)) {
+      return { ok: false, reason: 'source_event_category_mismatch', source_event_key: sourceEventKey };
+    }
+  }
+  return { ok: true, source_event_key: sourceEventKey, source_event: row };
 }
 
 function validateInventoryRequirements(inventory) {
@@ -131,6 +170,8 @@ export async function recordMoonpetBehaviour(db, request = {}) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey) || !['combat', 'exploration', 'care', 'event', 'adventure'].includes(activity)) throw new Error('invalid_moonpet_behaviour');
   const scope = await resolveMoonpetIdentityScope(db, telegramId, request);
   if (!scope?.pet_id || !scope?.season_key) return { accepted: false, duplicate: false, reason: 'identity_authority_unavailable' };
+  const source = await verifyMoonpetIdentitySourceEvent(db, request, { ...scope, telegram_id: telegramId }, eventKey, request.source_event_types || request.source_event_type || []);
+  if (!source.ok) return { accepted: false, duplicate: false, reason: source.reason, source_event_key: source.source_event_key };
   const petId = scope.pet_id;
   const seasonKey = scope.season_key;
   const eventId = crypto.randomUUID();
@@ -142,7 +183,7 @@ export async function recordMoonpetBehaviour(db, request = {}) {
         FROM telegram_pet_identity_events WHERE pet_id = ? AND event_kind = 'personality' AND day_key = ?
           AND json_extract(payload, '$.behaviour') = ?), 0)))
       WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active')`)
-      .bind(eventId, petId, telegramId, seasonKey, eventKey, safeJson({ behaviour, requested_amount: amount, trait_id: definition.trait_id, activity }), dayKey,
+      .bind(eventId, petId, telegramId, seasonKey, eventKey, safeJson({ behaviour, requested_amount: amount, trait_id: definition.trait_id, activity, source_event_key: source.source_event_key }), dayKey,
         amount, definition.daily_cap, petId, dayKey, behaviour, petId, telegramId, seasonKey),
     db.prepare(`INSERT INTO telegram_pet_personality_traits (pet_id, telegram_id, season_key, trait_id, progress, unlocked_at)
       SELECT ?, ?, ?, ?, progress_delta, CASE WHEN progress_delta >= ? THEN CURRENT_TIMESTAMP ELSE NULL END
@@ -218,6 +259,9 @@ export async function recordMoonpetMemory(db, request = {}) {
   if ((values.type === 'milestone' && !values.milestone) || (values.milestone && (!ID_PATTERN.test(values.milestone) || !MOONPET_MEMORY_MILESTONES.has(values.milestone)))) throw new Error('invalid_moonpet_memory');
   const scope = await resolveMoonpetIdentityScope(db, telegramId, request);
   if (!scope?.pet_id || !scope?.season_key) return { accepted: false, duplicate: false, reason: 'identity_authority_unavailable' };
+  const expectedTypes = request.source_event_types || request.source_event_type || (values.type === 'boss_victory' ? ['weekly_boss', 'run_boss', 'daily_moon_run'] : []);
+  const source = await verifyMoonpetIdentitySourceEvent(db, request, { ...scope, telegram_id: telegramId }, eventKey, expectedTypes);
+  if (!source.ok) return { accepted: false, duplicate: false, reason: source.reason, source_event_key: source.source_event_key };
   const petId = scope.pet_id;
   const seasonKey = scope.season_key;
   const eventId = crypto.randomUUID();
@@ -227,7 +271,7 @@ export async function recordMoonpetMemory(db, request = {}) {
       (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
       SELECT ?, ?, ?, ?, ?, 'memory', ? WHERE EXISTS
         (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active')`)
-      .bind(eventId, petId, telegramId, seasonKey, eventKey, safeJson(values), petId, telegramId, seasonKey),
+      .bind(eventId, petId, telegramId, seasonKey, eventKey, safeJson({ ...values, source_event_key: source.source_event_key }), petId, telegramId, seasonKey),
     db.prepare(`INSERT INTO telegram_pet_memories
       (pet_id, telegram_id, season_key, first_adoption_at, first_run_at, first_extraction_at, first_boss_victory_at, first_boss_id,
        biggest_reward_amount, biggest_reward_currency, total_runs, total_bosses_defeated, milestones)

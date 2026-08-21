@@ -2552,8 +2552,13 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
   }
   if (!awardedAuthority.accepted) return { ...awardedAuthority, run: rewardRun, pet };
-  await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:personality`, behaviour: 'exploration', activity: 'adventure', amount: 2 });
-  await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${rewardRun.run_id}:terminal:memory`,
+  await recordMoonpetBehaviour(db, {
+    telegram_id: telegramId, pet_id: rewardRun.pet_id, season_key: rewardRun.season_key,
+    event_key: `${rewardRun.run_id}:terminal:personality`, source_event_key: eventKey, source_event_type: eventType,
+    behaviour: 'exploration', activity: 'adventure', amount: 2,
+  });
+  await recordMoonpetMemory(db, { telegram_id: telegramId, pet_id: rewardRun.pet_id, season_key: rewardRun.season_key,
+    event_key: `${rewardRun.run_id}:terminal:memory`, source_event_key: eventKey, source_event_type: eventType,
     memory_type: options.completed ? 'run_completed' : 'extraction',
     milestone: options.completed ? 'first_run_completed' : 'first_extraction', reward_amount: awardedAuthority.rewards?.moon_gold, reward_currency: 'moon_gold' });
   // Legacy runs have no persisted canonical boss room. Their completion may
@@ -3349,7 +3354,10 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     context: { source: options.source || 'telegram_bot', encounter_key: encounter.key, choice_key: choice.key, result_kind: outcome.kind, reward_slot: rewardSlot.claimed_slot, reward_multiplier: rewardSlot.multiplier, copy: outcome.copy },
   });
   if (awarded.accepted) {
-    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'event', activity: 'event' });
+    await recordMoonpetBehaviour(db, {
+      telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'random_event',
+      behaviour: 'event', activity: 'event',
+    });
     await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
   }
   if (awarded.duplicate) return { ...awarded, reason: 'duplicate', encounter, choice };
@@ -4767,7 +4775,10 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
       context: { source: 'telegram_arena', match_id: match.match_id, mode: match.mode },
     });
     if (awarded.accepted) {
-      await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'combat', activity: 'combat' });
+      await recordMoonpetBehaviour(db, {
+        telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'arena_battle',
+        behaviour: 'combat', activity: 'combat',
+      });
       await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
     }
     return { ...awarded, reward_slot: null, reward_multiplier: 1 };
@@ -5905,7 +5916,10 @@ async function processPetAction(db, telegramId, action, options = {}) {
   if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
 
   const careBehaviour = ['feed', 'play', 'clean', 'sleep'].includes(normalizedAction) ? 'care' : 'combat';
-  await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: careBehaviour, activity: careBehaviour });
+  await recordMoonpetBehaviour(db, {
+    telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: normalizedAction,
+    behaviour: careBehaviour, activity: careBehaviour,
+  });
   const acceptedSourceEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (careBehaviour === 'care') {
     await recordDailyCareChallenge(db, {
@@ -6167,7 +6181,10 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   applied.rewardsApplied = awarded.rewards;
   applied.deltas.pet_xp = awarded.pet_xp_awarded;
   if (awarded.accepted) {
-    await recordMoonpetBehaviour(db, { telegram_id: telegramId, event_key: `${eventKey}:personality`, behaviour: 'exploration', activity: 'adventure' });
+    await recordMoonpetBehaviour(db, {
+      telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'adventure',
+      behaviour: 'exploration', activity: 'adventure',
+    });
     await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
   }
 
@@ -13619,6 +13636,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetEvolutionPerk,
   getPetWeeklyBoss,
   syncPetAchievements,
+  syncPetAchievementsForPet,
   processPetWeeklyBoss,
   awardStoredWeeklyBossVictoryCrest,
   recordWeeklyBossVictoryCrest,
@@ -14899,11 +14917,14 @@ function buildPetProgressMenuReplyMarkup() {
   ] };
 }
 
-async function syncPetAchievements(db, telegramId) {
-  const scope = await readActivePetIdentityScope(db, telegramId).catch(() => null);
-  if (!scope?.pet_id || !scope?.season_key) return [];
-  const petId = scope.pet_id;
-  const seasonKey = scope.season_key;
+async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw) {
+  const petId = String(petIdRaw || '').trim();
+  const seasonKey = String(seasonKeyRaw || '').trim();
+  if (!telegramId || !petId || !seasonKey) return [];
+  const scope = await db.prepare(`SELECT pet_id, season_key FROM telegram_pet_season_slots
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active' LIMIT 1`)
+    .bind(petId, telegramId, seasonKey).first().catch(() => null);
+  if (!scope) return [];
   const [profile, events, memory, personalities, evolution] = await Promise.all([
     db.prepare(`SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT
@@ -14944,6 +14965,16 @@ async function syncPetAchievements(db, telegramId) {
   const rows = await db.prepare(`SELECT achievement_id, progress, target, unlocked_at FROM telegram_pet_achievements
     WHERE pet_id = ? AND telegram_id = ? ORDER BY unlocked_at IS NULL, unlocked_at, achievement_id`).bind(petId, telegramId).all();
   return (rows.results || []).map((row) => ({ ...row, ...PET_ACHIEVEMENTS[row.achievement_id] }));
+}
+
+async function syncActivePetAchievements(db, telegramId) {
+  const scope = await readActivePetIdentityScope(db, telegramId).catch(() => null);
+  if (!scope?.pet_id || !scope?.season_key) return [];
+  return syncPetAchievementsForPet(db, telegramId, scope.pet_id, scope.season_key);
+}
+
+async function syncPetAchievements(db, telegramId) {
+  return syncActivePetAchievements(db, telegramId);
 }
 
 async function settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress, options = {}) {
@@ -15091,7 +15122,20 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '')
   let reward = null;
   if (newlyDefeated) {
     reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress, { pet_id: victoriousPet?.pet_id || null });
-    await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'boss_victory', boss_id: boss.boss_id, milestone: 'first_boss_victory' });
+    await recordMoonpetMemory(db, {
+      telegram_id: telegramId,
+      pet_id: victoriousPet?.pet_id || '',
+      season_key: victoriousPet?.season_key || season.key,
+      event_key: `${eventKey}:memory`,
+      source_event_key: eventKey,
+      source_event_type: 'weekly_boss',
+      source_event_reason: 'weekly_boss_attempt',
+      source_event_category: 'pet_weekly_boss',
+      memory_type: 'boss_victory',
+      boss_id: boss.boss_id,
+      milestone: 'first_boss_victory',
+    });
+    await syncPetAchievementsForPet(db, telegramId, victoriousPet?.pet_id || '', victoriousPet?.season_key || season.key).catch(() => []);
     await applyPetRuntimeCommandAward(db, telegramId, `runtime:${eventKey}`, 'run_boss');
     await recordWeeklyBossVictoryCrest(db, telegramId, weekKey, boss.boss_id, `${weekKey}:${boss.boss_id}`, progress.defeated_at || now, victoriousPet);
   }
