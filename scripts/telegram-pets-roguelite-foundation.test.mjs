@@ -365,6 +365,18 @@ await startPetRogueliteRun(identitySwitchDb, {
 });
 const extractRun = identitySwitchDb.database.prepare(`SELECT * FROM telegram_pet_runs WHERE run_id='identity-extract-run'`).get();
 await extractPetRogueliteRun(identitySwitchDb, { ...extractRun, current_room: 2, score: 80 }, { moon_gold: 22 }, { rooms_completed: 2 });
+assert.deepEqual(
+  { ...identitySwitchDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events
+    WHERE telegram_id='run-identity-switch' AND event_key='pet_reward:roguelite_completion:identity-complete-run'`).get() },
+  { pet_id: identityPetA, season_key: 'pet-s2026-001' },
+  'roguelite completion source event must use the persisted run pet and season authority after active-pet/season drift',
+);
+assert.deepEqual(
+  { ...identitySwitchDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events
+    WHERE telegram_id='run-identity-switch' AND event_key='pet_reward:roguelite_completion:identity-extract-run:extract'`).get() },
+  { pet_id: identityPetA, season_key: 'pet-s2026-001' },
+  'roguelite extraction source event must use the persisted run pet and season authority after active-pet/season drift',
+);
 const petAMemory = identitySwitchDb.database.prepare(`SELECT total_runs, total_bosses_defeated, biggest_reward_amount, milestones FROM telegram_pet_memories WHERE pet_id=?`).get(identityPetA);
 assert.equal(petAMemory.total_runs, 2, 'roguelite terminal completion and extraction memories stay on the stored run pet');
 assert.equal(petAMemory.total_bosses_defeated, 1, 'roguelite boss memory stays on the stored run pet after active switch');

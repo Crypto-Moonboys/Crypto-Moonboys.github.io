@@ -2890,6 +2890,23 @@ assert.equal(runSeasonRolloverDb.database.prepare(`SELECT total_runs FROM telegr
 assert.equal(runSeasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits
   WHERE pet_id=? AND season_key='pet-s2026-001'`).get(runSeasonRolloverPet).count > 0, true,
   'run completion personality progress must remain attached to the Season A run pet authority');
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
+   unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('run-season-rollover-extract-row', ?, 'run-season-rollover', 'run-season-rollover-extract-run',
+    'pet-s2026-001', 'active', 3, 5, 1, 12, 7, 0, 0, '{}')`).run(runSeasonRolloverPet);
+const runSeasonRolloverExtractRun = runSeasonRolloverDb.database.prepare("SELECT * FROM telegram_pet_runs WHERE run_id='run-season-rollover-extract-run'").get();
+const runSeasonRolloverExtract = await recordPetRunBankedEvent(runSeasonRolloverDb, 'run-season-rollover', runSeasonRolloverExtractRun, {
+  pet_id: runSeasonRolloverPet,
+  telegram_id: 'run-season-rollover',
+}, { event_key: 'run-season-rollover-extract', source: 'season_rollover_regression' });
+assert.equal(runSeasonRolloverExtract.accepted, true, 'run extraction after season rollover must still settle');
+assert.deepEqual(
+  { ...runSeasonRolloverDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events
+    WHERE telegram_id='run-season-rollover' AND event_key=?`).get(buildPetRunExtractEventKey('run-season-rollover', 'run-season-rollover-extract-run')) },
+  { pet_id: runSeasonRolloverPet, season_key: 'pet-s2026-001' },
+  'run-derived extraction source events must also use the persisted run season authority',
+);
 
 async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
   const db = seedRepeatRewardPlayer(telegramId, 18);
