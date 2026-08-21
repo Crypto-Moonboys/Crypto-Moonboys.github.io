@@ -1560,6 +1560,7 @@ class RepeatReservationDb {
               meta: { changes: 1 },
               results: [{
                 id: event.id,
+                pet_id: event.pet_id,
                 status: event.status,
                 reason: event.reason,
                 day_key: event.day_key,
@@ -1583,6 +1584,7 @@ class RepeatReservationDb {
 function reserveFixture(db, player, mode, eventKey, energyCost = 0) {
   return reservePetRepeatRewardEvent(db, {
     telegram_id: player,
+    pet_id: mode === 'event' ? `pet:${player}:season:1` : undefined,
     event_type: mode === 'kaiju' ? 'kaiju_battle' : 'random_event',
     event_key: eventKey,
     season_key: 'season',
@@ -1596,6 +1598,19 @@ function reserveFixture(db, player, mode, eventKey, energyCost = 0) {
 const eventReservationDb = new RepeatReservationDb();
 const concurrentEventReservations = await Promise.all(Array.from({ length: 12 }, (_, index) => reserveFixture(eventReservationDb, 'event-player', 'event', `event-${index}`)));
 assert.deepEqual(concurrentEventReservations.map((claim) => claim.claimed_slot).sort((a, b) => a - b), Array.from({ length: 12 }, (_, index) => index + 1), 'concurrent Event reservations must receive unique atomic slots');
+await assert.rejects(
+  reservePetRepeatRewardEvent(new RepeatReservationDb(), {
+    telegram_id: 'missing-authority',
+    event_type: 'random_event',
+    event_key: 'missing-authority-event',
+    season_key: 'season',
+    day_key: '2026-08-10',
+    week_key: '2026-W33',
+    mode: 'event',
+  }),
+  /pet_repeat_reward_authority_required/,
+  'new Event reservations must not be created without pet authority',
+);
 
 const kaijuReservationDb = new RepeatReservationDb({ 'kaiju-player': 20 });
 const concurrentKaijuReservations = await Promise.all(Array.from({ length: 12 }, (_, index) => reserveFixture(kaijuReservationDb, 'kaiju-player', 'kaiju', `kaiju-${index}`, 1)));
@@ -3640,6 +3655,52 @@ assert.equal(eventPetSwitchDb.database.prepare("SELECT COUNT(*) AS count FROM te
   'retry identity writes land on Pet A');
 assert.equal(eventPetSwitchDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(eventRetryPetB).count, 0,
   'retry identity writes do not land on Pet B');
+
+const legacyPendingEventDb = seedRepeatRewardPlayer('event-legacy-pending', 70, recoveryDayA.toISOString());
+const legacyPendingPetB = seedAndSwitchRepeatRewardPet(legacyPendingEventDb, 'event-legacy-pending', 2, 70);
+legacyPendingEventDb.database.prepare(`
+  INSERT INTO telegram_pet_events
+    (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('legacy-pending-random-event', NULL, 'event-legacy-pending', 'random_event', 'moon_crate_found-legacy-pending', 0, 0, ?, ?, ?, 'pending', 'repeat_reward_slot:1', '{}')
+`).run(recoverySeasonAKey, recoveryDayAKey, recoveryWeekAKey);
+legacyPendingEventDb.database.prepare(`
+  INSERT INTO telegram_pet_repeat_reward_slots (telegram_id, day_key, mode, claimed_count)
+  VALUES ('event-legacy-pending', ?, 'event', 1)
+`).run(recoveryDayAKey);
+const legacyPendingRetry = await processPetRandomEvent(legacyPendingEventDb, 'event-legacy-pending', 'flip_it_fast', {
+  event_key: 'moon_crate_found-legacy-pending',
+  encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
+});
+assert.equal(legacyPendingRetry.accepted, false, 'legacy pending Event reservations without pet authority must not settle against the active pet');
+assert.equal(legacyPendingRetry.reason, 'legacy_repeat_reward_missing_pet_authority', 'legacy pending Event reservations must resolve with an explicit compatibility reason');
+assert.equal(legacyPendingRetry.cancelled, true, 'legacy pending Event reservations must be cancelled instead of staying pending forever');
+assert.equal(legacyPendingRetry.released_slot, true, 'legacy pending Event reservations must release their consumed repeat slot');
+assert.deepEqual(
+  { ...legacyPendingEventDb.database.prepare("SELECT status, reason, pet_id FROM telegram_pet_events WHERE event_key='moon_crate_found-legacy-pending'").get() },
+  { status: 'cancelled', reason: 'legacy_repeat_reward_missing_pet_authority', pet_id: null },
+  'legacy pending Event rows must be visibly cancelled without inventing pet authority',
+);
+assert.equal(legacyPendingEventDb.database.prepare(`
+  SELECT claimed_count FROM telegram_pet_repeat_reward_slots
+  WHERE telegram_id = 'event-legacy-pending' AND day_key = ? AND mode = 'event'
+`).get(recoveryDayAKey).claimed_count, 0, 'legacy pending Event cancellation must release the consumed reward slot');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='event-legacy-pending' AND idempotency_key='moon_crate_found-legacy-pending'").get().count, 0,
+  'legacy pending Event cancellation must not create a reward claim');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(legacyPendingPetB).count, 0,
+  'legacy pending Event cancellation must not write identity rows to the active Pet B');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE telegram_id='event-legacy-pending'").get().count, 0,
+  'legacy pending Event cancellation must not write personality progress without source-event pet authority');
+assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE telegram_id='event-legacy-pending'").get().count, 0,
+  'legacy pending Event cancellation must not write memories without source-event pet authority');
+const legacyPendingSecondRetry = await processPetRandomEvent(legacyPendingEventDb, 'event-legacy-pending', 'flip_it_fast', {
+  event_key: 'moon_crate_found-legacy-pending',
+  encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
+});
+assert.equal(legacyPendingSecondRetry.accepted, false, 'cancelled legacy pending Event retries must remain non-accepted');
+assert.equal(legacyPendingSecondRetry.duplicate, true, 'cancelled legacy pending Event retries must be idempotent');
+assert.equal(legacyPendingSecondRetry.reason, 'legacy_repeat_reward_missing_pet_authority', 'cancelled legacy pending Event retries must keep the compatibility reason');
 
 const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
 kaijuRecoveryDb.database.exec('DELETE FROM telegram_seasons');

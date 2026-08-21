@@ -1974,6 +1974,41 @@ function parsePetRepeatRewardReservation(row, mode) {
   };
 }
 
+async function cancelLegacyPendingRepeatRewardReservation(db, details) {
+  const reservation = details?.reservation || {};
+  const reservationId = String(reservation.reservation_id || '').trim();
+  const telegramId = String(details?.telegram_id || '').trim();
+  const eventKey = String(details?.event_key || '').trim();
+  const dayKey = String(reservation.day_key || '').trim();
+  const mode = String(details?.mode || '').trim().toLowerCase();
+  if (!reservationId || !telegramId || !eventKey || !dayKey || !mode || String(reservation.pet_id || '').trim()) {
+    return { cancelled: false, released: false };
+  }
+  const results = await db.batch([
+    db.prepare(`
+      UPDATE telegram_pet_events
+      SET status = 'cancelled', reason = 'legacy_repeat_reward_missing_pet_authority'
+      WHERE id = ? AND telegram_id = ? AND event_key = ? AND status = 'pending'
+        AND (pet_id IS NULL OR pet_id = '')
+      RETURNING id
+    `).bind(reservationId, telegramId, eventKey),
+    db.prepare(`
+      UPDATE telegram_pet_repeat_reward_slots
+      SET claimed_count = MAX(0, claimed_count - 1), updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND day_key = ? AND mode = ?
+        AND EXISTS (
+          SELECT 1 FROM telegram_pet_events
+          WHERE id = ? AND status = 'cancelled' AND reason = 'legacy_repeat_reward_missing_pet_authority'
+        )
+      RETURNING claimed_count
+    `).bind(telegramId, dayKey, mode, reservationId),
+  ]);
+  return {
+    cancelled: Boolean(results?.[0]?.results?.[0]),
+    released: Boolean(results?.[1]?.results?.[0]),
+  };
+}
+
 async function reservePetRepeatRewardEvent(db, details) {
   const normalizedMode = String(details.mode || '').trim().toLowerCase();
   if (!PET_REPEAT_REWARD_RULES[normalizedMode]) throw new Error('invalid_pet_repeat_reward_mode');
@@ -1987,6 +2022,8 @@ async function reservePetRepeatRewardEvent(db, details) {
 
   const reservationId = crypto.randomUUID();
   const petId = String(details.pet_id || '').trim();
+  const seasonKey = String(details.season_key || '').trim();
+  if (normalizedMode === 'event' && (!petId || !seasonKey)) throw new Error('pet_repeat_reward_authority_required');
   const energyCost = normalizedMode === 'kaiju' ? Math.max(0, Math.floor(Number(details.energy_cost || 0))) : 0;
   const metadata = JSON.stringify({ source: details.source || 'telegram_bot', mode: normalizedMode });
   const insert = normalizedMode === 'kaiju'
@@ -1996,7 +2033,7 @@ async function reservePetRepeatRewardEvent(db, details) {
         SELECT ?, NULLIF(?, ''), ?, ?, ?, 0, 0, ?, ?, ?, 'pending', 'repeat_reward_pending', ?
         WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND energy >= ?)
       `).bind(
-        reservationId, petId, telegramId, String(details.event_type), eventKey, String(details.season_key),
+        reservationId, petId, telegramId, String(details.event_type), eventKey, seasonKey,
         String(details.day_key), String(details.week_key), metadata, telegramId, energyCost,
       )
     : db.prepare(`
@@ -2004,7 +2041,7 @@ async function reservePetRepeatRewardEvent(db, details) {
           (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
         VALUES (?, NULLIF(?, ''), ?, ?, ?, 0, 0, ?, ?, ?, 'pending', 'repeat_reward_pending', ?)
       `).bind(
-        reservationId, petId, telegramId, String(details.event_type), eventKey, String(details.season_key),
+        reservationId, petId, telegramId, String(details.event_type), eventKey, seasonKey,
         String(details.day_key), String(details.week_key), metadata,
       );
   const statements = [insert];
@@ -3328,7 +3365,12 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     SELECT id, pet_id, status, reason, day_key, week_key, season_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
   `).bind(telegramId, eventKey).first().catch(() => null);
-  if (duplicate && duplicate.status !== 'pending') return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (duplicate && duplicate.status !== 'pending') {
+    if (String(duplicate.status) === 'cancelled' && String(duplicate.reason) === 'legacy_repeat_reward_missing_pet_authority') {
+      return { accepted: false, duplicate: true, reason: 'legacy_repeat_reward_missing_pet_authority', xp_awarded: 0, pet_xp_awarded: 0 };
+    }
+    return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const sourceAuthority = activePetRewardAuthority(pet);
@@ -3349,7 +3391,29 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
   const rewardAuthority = reservation.pet_id && reservation.season_key
     ? { pet_id: String(reservation.pet_id), season_key: String(reservation.season_key) }
     : null;
-  if (!rewardAuthority) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  if (!rewardAuthority) {
+    if (reservation.resumed) {
+      const legacyResolution = await cancelLegacyPendingRepeatRewardReservation(db, {
+        telegram_id: telegramId,
+        event_key: eventKey,
+        mode: 'event',
+        reservation,
+      });
+      if (legacyResolution.cancelled) {
+        return {
+          accepted: false,
+          reason: 'legacy_repeat_reward_missing_pet_authority',
+          cancelled: true,
+          released_slot: legacyResolution.released,
+          reward_slot: reservation.claimed_slot,
+          xp_awarded: 0,
+          pet_xp_awarded: 0,
+          pet,
+        };
+      }
+    }
+    return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
 
   // The recoverable numbered slot is transactionally reserved before any reward amount is rolled.
   const rewardSlot = reservation;
@@ -6013,6 +6077,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     event_key: eventKey,
     action: acceptedSourceEvent?.event_type || normalizedAction,
     behaviour: careBehaviour, activity: careBehaviour,
+    pet: persistedPet || pet,
   });
   if (careBehaviour === 'care') {
     await recordDailyCareChallenge(db, {
