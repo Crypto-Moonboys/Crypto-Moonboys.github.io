@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { createHash, createHmac } from 'node:crypto';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const walletReconciliation = fs.readFileSync(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
@@ -1771,6 +1772,107 @@ function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 7
     .run(telegramId, petId);
   return petId;
 }
+
+function buildSignedTelegramAuth(telegramId, botToken = '123456:test-token') {
+  const auth = {
+    id: String(telegramId),
+    first_name: 'Audit',
+    username: `audit_${telegramId}`,
+    auth_date: String(Math.floor(Date.now() / 1000)),
+  };
+  const checkString = Object.entries(auth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+  const secret = createHash('sha256').update(botToken).digest();
+  return {
+    ...auth,
+    hash: createHmac('sha256', secret).update(checkString).digest('hex'),
+  };
+}
+
+function seedIdentityAuditPet(db, telegramId, slotNumber = 1) {
+  const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_profiles
+    (telegram_id, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health)
+    VALUES (?, 'Audit Pet', 100, 2, 80, 0, 80, 80, 100)`).run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'free', ?, 0, 'active')`).run(petId, telegramId, slotNumber, `audit:${slotNumber}`);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, source_profile_updated_at, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'Audit Pet', 100, 2, 80, 0, 80, 80, 100, 'fixture', 'active')`).run(petId, telegramId, slotNumber);
+  return petId;
+}
+
+function identityAuditCounts(db) {
+  const counts = {};
+  for (const table of [
+    'telegram_pet_memories',
+    'telegram_pet_personality_traits',
+    'telegram_pet_boss_victories',
+    'telegram_pet_identity_events',
+    'telegram_pet_achievements',
+  ]) {
+    counts[table] = db.database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count;
+  }
+  return counts;
+}
+
+const identityAuditDb = new SqliteD1();
+const identityAuditPet = seedIdentityAuditPet(identityAuditDb, '9001001', 1);
+const otherAuditPet = seedIdentityAuditPet(identityAuditDb, '9002002', 1);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at, total_bosses_defeated, milestones)
+  VALUES (?, '9001001', 'pet-s2026-003', '2026-08-21T00:00:00Z', 1, '["first_run"]')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress)
+  VALUES (?, '9001001', 'pet-s2026-003', 'curious', 2)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories)
+  VALUES (?, '9001001', 'pet-s2026-003', 'alley_king', 1)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_identity_events
+  (event_id, pet_id, telegram_id, season_key, event_key, event_kind)
+  VALUES ('identity-audit-event', ?, '9001001', 'pet-s2026-003', 'identity:audit:event', 'memory')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target)
+  VALUES (?, '9001001', 'pet-s2026-003', 'boss_breaker', 1, 5)`).run(identityAuditPet);
+
+const identityAuditEnv = { DB: identityAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' };
+const identityAuditAuth = encodeURIComponent(JSON.stringify(buildSignedTelegramAuth('9001001')));
+const identityAuditBefore = identityAuditCounts(identityAuditDb);
+const identityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?telegram_auth=${identityAuditAuth}&pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
+), identityAuditEnv);
+assert.equal(identityAuditResponse.status, 200, 'identity audit endpoint accepts an authenticated owner pet request');
+const identityAuditPayload = await identityAuditResponse.json();
+assert.equal(identityAuditPayload.pet_id, identityAuditPet, 'identity audit endpoint returns the requested owned pet');
+assert.equal(identityAuditPayload.telegram_id, '9001001', 'identity audit endpoint is scoped to the authenticated Telegram owner');
+assert.equal(identityAuditPayload.memories_count, 1, 'identity audit endpoint returns owned memory diagnostics');
+assert.deepEqual(identityAuditPayload.personality_traits.map((row) => row.trait_id), ['curious'],
+  'identity audit endpoint returns only owned personality rows');
+assert.deepEqual(identityAuditPayload.achievements.map((row) => row.achievement_id), ['boss_breaker'],
+  'identity audit endpoint returns only owned achievement rows');
+assert.deepEqual(identityAuditPayload.boss_victories.map((row) => row.boss_id), ['alley_king'],
+  'identity audit endpoint returns only owned boss victory rows');
+assert.equal(identityAuditPayload.identity_events.length, 1, 'identity audit endpoint returns bounded owned identity history');
+assert.equal(identityAuditPayload.invalid_authority_rows.length, 0, 'identity audit endpoint reports zero invalid rows for owned fixture');
+assert.deepEqual(identityAuditCounts(identityAuditDb), identityAuditBefore,
+  'identity audit GET must not mutate memories, personality, achievements, boss victories, or identity events');
+
+const crossOwnerResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?telegram_auth=${identityAuditAuth}&pet_id=${encodeURIComponent(otherAuditPet)}&season_key=pet-s2026-003`,
+), identityAuditEnv);
+assert.equal(crossOwnerResponse.status, 403, 'identity audit endpoint rejects another player pet_id');
+const crossOwnerPayload = await crossOwnerResponse.json();
+assert.equal(crossOwnerPayload.error, 'identity_authority_scope_not_found');
+assert.equal(Object.prototype.hasOwnProperty.call(crossOwnerPayload, 'pet_id'), false,
+  'cross-owner identity audit rejection must not return another player pet payload');
+assert.deepEqual(identityAuditCounts(identityAuditDb), identityAuditBefore,
+  'rejected identity audit GET must not mutate identity ledgers');
 
 function insertWalletRecoveryRequired(db, telegramId) {
   db.database.prepare(`

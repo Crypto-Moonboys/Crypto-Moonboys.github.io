@@ -1026,18 +1026,21 @@ async function buildMoonpetIdentityAuthorityAudit(db, telegramId, request = {}) 
     FROM telegram_pet_personality_traits
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
     ORDER BY trait_id
+    LIMIT 100
   `).all());
   const achievements = await allMoonpetAuditRows(bindAuthority(`
     SELECT achievement_id, progress, target, unlocked_at, updated_at
     FROM telegram_pet_achievements
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
     ORDER BY achievement_id
+    LIMIT 100
   `).all());
   const bossVictories = await allMoonpetAuditRows(bindAuthority(`
     SELECT boss_id, victories, updated_at
     FROM telegram_pet_boss_victories
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
     ORDER BY boss_id
+    LIMIT 100
   `).all());
   const identityEvents = await allMoonpetAuditRows(bindAuthority(`
     SELECT event_id, event_key, event_kind, day_key, progress_delta, created_at, applied_at
@@ -1051,6 +1054,7 @@ async function buildMoonpetIdentityAuthorityAudit(db, telegramId, request = {}) 
     FROM moonpet_invalid_identity_authority_rows
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
     ORDER BY table_name, row_key
+    LIMIT 100
   `).all());
   return {
     pet_id: scope.pet_id,
@@ -9944,7 +9948,11 @@ export default {
         pet_id: url.searchParams.get('pet_id'),
         season_key: url.searchParams.get('season_key'),
       });
-      if (!audit) return err('identity_authority_scope_not_found', 404);
+      if (!audit) {
+        const requestedPetId = String(url.searchParams.get('pet_id') || '').trim();
+        const requestedSeasonKey = String(url.searchParams.get('season_key') || '').trim();
+        return err('identity_authority_scope_not_found', requestedPetId && requestedSeasonKey ? 403 : 404);
+      }
       return json(audit);
     }
 

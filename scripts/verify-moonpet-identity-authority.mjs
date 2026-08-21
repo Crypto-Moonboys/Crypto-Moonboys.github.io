@@ -116,12 +116,12 @@ function identityAuthorityViolationSql() {
   `).join('\nUNION ALL\n');
 }
 
-function identityRowsCheckedSql() {
-  return IDENTITY_AUTHORITY_TABLES.map((table) => `SELECT COUNT(*) AS count FROM ${table}`).join('\nUNION ALL\n');
-}
-
 export function auditIdentityAuthorityDb(db) {
-  const checkedRows = db.prepare(`SELECT COALESCE(SUM(count), 0) AS count FROM (${identityRowsCheckedSql()})`).get().count;
+  const tableCounts = Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [
+    table,
+    Number(db.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count || 0),
+  ]));
+  const checkedRows = Object.values(tableCounts).reduce((sum, count) => sum + count, 0);
   const violations = db.prepare(identityAuthorityViolationSql()).all();
   const viewCount = db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count;
   if (Number(viewCount) !== Number(violations.length)) {
@@ -131,7 +131,7 @@ export function auditIdentityAuthorityDb(db) {
       reason: `view_count_mismatch:${viewCount}:${violations.length}`,
     });
   }
-  return { checkedRows: Number(checkedRows || 0), violations };
+  return { checkedRows, tableCounts, violations };
 }
 
 function createProductionSchemaBeforeAuthorityChain() {
@@ -255,10 +255,32 @@ function assertArenaAuthorityIntegration() {
   if (!settlementAuthority) throw new Error('Pet Arena settlement must pass pet_id and season_key into identity writes');
 }
 
+function assertMigrationViewSafety() {
+  const migration072 = readRepoFile('workers/moonboys-api/migrations/072_moonpet_identity_authority_verification.sql');
+  const schema = readRepoFile('workers/moonboys-api/schema.sql');
+  const worker = readRepoFile('workers/moonboys-api/worker.js');
+  if (!/\bCREATE\s+VIEW\s+moonpet_invalid_identity_authority_rows\b/i.test(migration072)) {
+    throw new Error('migration 072 must create the read-only identity authority verification view');
+  }
+  if (!/\bCREATE\s+VIEW\s+IF\s+NOT\s+EXISTS\s+moonpet_invalid_identity_authority_rows\b/i.test(schema)) {
+    throw new Error('schema.sql must own the canonical identity authority verification view');
+  }
+  if (/\b(?:INSERT|UPDATE|DELETE|DROP|ALTER)\b[\s\S]{0,160}\bmoonpet_invalid_identity_authority_rows\b/i.test(worker)) {
+    throw new Error('worker runtime must not mutate the identity authority verification view');
+  }
+}
+
 export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {}) {
   const runtimeViolations = auditRuntimeIdentityQueries();
   assertArenaAuthorityIntegration();
-  if (runtimeViolations.length) return { checkedRows: 0, violations: runtimeViolations };
+  assertMigrationViewSafety();
+  if (runtimeViolations.length) {
+    return {
+      checkedRows: 0,
+      tableCounts: Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [table, 0])),
+      violations: runtimeViolations,
+    };
+  }
 
   await import(pathToFileURL(path.join(workerRoot, 'worker.js')).href);
 
@@ -271,7 +293,11 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
     }
     const foreignKeyViolations = db.prepare('PRAGMA foreign_key_check').all();
     if (foreignKeyViolations.length) {
-      return { checkedRows: 0, violations: foreignKeyViolations.map((row) => ({ ...row, reason: 'foreign_key_violation' })) };
+      return {
+        checkedRows: 0,
+        tableCounts: Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [table, 0])),
+        violations: foreignKeyViolations.map((row) => ({ ...row, reason: 'foreign_key_violation' })),
+      };
     }
     return auditIdentityAuthorityDb(db);
   } finally {
@@ -294,9 +320,13 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = await runMoonpetIdentityAuthorityAudit(parseArgs(process.argv.slice(2)));
   console.log('Moonpet Identity Authority Audit');
   console.log('');
-  console.log(`Rows checked: ${result.checkedRows}`);
+  console.log('Migration chain: 070 -> 071 -> 072');
   console.log('');
-  console.log(`Violations: ${result.violations.length}`);
+  for (const table of IDENTITY_AUTHORITY_TABLES) {
+    console.log(`${table}: ${Number(result.tableCounts?.[table] || 0)}`);
+  }
+  console.log('');
+  console.log(`Invalid authority rows: ${result.violations.length}`);
   console.log('');
   if (result.violations.length) {
     console.error(JSON.stringify(result.violations, null, 2));
