@@ -220,11 +220,12 @@ const dailyJourneyRuntime = new Function(
   'completedMissions',
   'guidance',
   'growth',
+  'stateValue',
   `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
 function escapeHtml(value) { return String(value == null ? '' : value); }
 function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
 function meter(label, percent) { return '<meter>' + label + ':' + percent + '</meter>'; }
-${dailyJourneyMarkupSource}; return dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth);`,
+${dailyJourneyMarkupSource}; return dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth, stateValue);`,
 );
 assert.match(dailyJourneyRuntime({}, 2, {}, {}), /DAILY JOURNEY \/\/ SYNCING/,
   'missing Daily Journey authority must render a syncing state');
@@ -232,6 +233,8 @@ assert.doesNotMatch(dailyJourneyRuntime({}, 2, {}, {}), /\d+\/0 OBJECTIVES/,
   'missing Daily Journey authority must not render an X/0 objective counter');
 assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /DAILY JOURNEY \/\/ 2\/3 OBJECTIVES/,
   'complete Daily Journey authority must still render objective progress');
+assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}, { lifecycle: { phase: 'young' } }), /DAILY JOURNEY \/\/ 2\/3 OBJECTIVES/,
+  'hatched young pet must still render normal Daily Journey progress when authority is available');
 assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /NEXT \/\/ Daily Journey: 2\/3 complete - finish 1 more daily objective for Growth Mark eligibility/,
   'incomplete Daily Journey must guide the next eligible objective count from authority');
 assert.match(dailyJourneyRuntime({ completed_objectives: 3, required_objectives: 3, growth_mark_awarded: true, reason: 'daily_journey_qualified' }, 0, {}, {}), /GROWTH MARK ALREADY SETTLED/,
@@ -243,17 +246,29 @@ assert.match(noActivePetDailyMarkup, /NEXT \/\/ Initialise, incubate, or hatch y
   'Daily Journey active-pet-required NEXT copy must be distinct and actionable');
 assert.equal((noActivePetDailyMarkup.match(/Journey progress starts after you have a hatched active Moonpet/g) || []).length, 1,
   'Daily Journey active-pet-required markup must not duplicate the same guidance sentence');
+const adoptedEggDailyMarkup = dailyJourneyRuntime({
+  completed_objectives: 0,
+  required_objectives: 3,
+  reason: 'daily_journey_in_progress',
+}, 0, {}, {}, { lifecycle: { phase: 'egg' } });
+assert.match(adoptedEggDailyMarkup, /DAILY JOURNEY \/\/ HATCH REQUIRED/,
+  'adopted egg Daily Journey must render hatch-required locked copy');
+assert.match(adoptedEggDailyMarkup, /NEXT \/\/ Incubate or HATCH MOONPET before Daily Journey progress starts\./,
+  'adopted egg Daily Journey must guide incubation or hatch before progress');
+assert.doesNotMatch(adoptedEggDailyMarkup, /0\/3 OBJECTIVES|Growth Mark awarded|Growth Mark eligibility|Daily clear progress|qualify/i,
+  'adopted egg Daily Journey must not render objective progress, Growth Mark, Daily clear, or qualification copy');
 
 const weeklyJourneyMarkupSource = extractTestExport(client, 'weeklyJourneyMarkup');
 assert.ok(weeklyJourneyMarkupSource, 'Weekly Journey markup helper must be extractable for runtime coverage');
 const weeklyJourneyRuntime = new Function(
   'weeklyAuthority',
   'weeklyCapability',
+  'stateValue',
   `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
 function escapeHtml(value) { return String(value == null ? '' : value); }
 function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').toUpperCase(); }
 function meter(label, percent) { return '<meter>' + label + ':' + percent + '</meter>'; }
-${weeklyJourneyMarkupSource}; return weeklyJourneyMarkup(weeklyAuthority, weeklyCapability);`,
+${weeklyJourneyMarkupSource}; return weeklyJourneyMarkup(weeklyAuthority, weeklyCapability, stateValue);`,
 );
 const zeroWeeklyMarkup = weeklyJourneyRuntime({
   state: 'AVAILABLE',
@@ -273,6 +288,35 @@ const zeroWeeklyMarkup = weeklyJourneyRuntime({
 assert.match(zeroWeeklyMarkup, /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/, 'Weekly Journey must render 0/5 when live authority is available');
 assert.match(zeroWeeklyMarkup, /Weekly care actions \/\/ 0\/5 \/\/ INCOMPLETE/, 'Weekly Journey must show clear objective names and incomplete state');
 assert.match(zeroWeeklyMarkup, /RESET 2026-08-24T00:00:00.000Z/, 'Weekly Journey must render reset timing when authority provides it');
+assert.match(weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  qualification_week: 2,
+  completed_objectives: 0,
+  required_objectives: 5,
+  reason: 'weekly_journey_in_progress',
+  objectives: [],
+}, {}, { lifecycle: { phase: 'young' } }), /WEEKLY JOURNEY \/\/ 0\/5 OBJECTIVES/,
+  'hatched young pet must still render normal Weekly Journey progress when authority is available');
+const adoptedEggWeeklyMarkup = weeklyJourneyRuntime({
+  state: 'AVAILABLE',
+  completed_objectives: 0,
+  required_objectives: 5,
+  reason: 'weekly_journey_in_progress',
+  objectives: [
+    { objective_id: 'weekly_care', progress: 0, target: 5, completed: false },
+    { objective_id: 'weekly_training', progress: 0, target: 3, completed: false },
+  ],
+}, {}, { lifecycle: { phase: 'egg' } });
+assert.match(adoptedEggWeeklyMarkup, /WEEKLY JOURNEY \/\/ HATCH REQUIRED/,
+  'adopted egg Weekly Journey must render hatch-required locked copy');
+assert.match(adoptedEggWeeklyMarkup, /NEXT \/\/ Incubate or HATCH MOONPET before Weekly Journey progress starts\./,
+  'adopted egg Weekly Journey must guide incubation or hatch before progress');
+assert.match(adoptedEggWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet\./,
+  'adopted egg Weekly Journey must keep active hatched seasonal Moonpet detail');
+assert.doesNotMatch(adoptedEggWeeklyMarkup, /0\/5 OBJECTIVES|Weekly Crest ready|Weekly Crest already settled|Weekly care actions|qualification|qualify/i,
+  'adopted egg Weekly Journey must not render objective progress, Crest, objective list, or qualification copy');
+assert.doesNotMatch(adoptedEggDailyMarkup + adoptedEggWeeklyMarkup, /Growth Mark awarded|Weekly Crest ready|0\/3|0\/5|qualify/i,
+  'adopted egg Journey panel copy must not mention fake awards, objective counters, or qualification copy');
 assert.match(weeklyJourneyRuntime({
   state: 'AVAILABLE',
   completed_objectives: 0,
@@ -910,7 +954,7 @@ assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, ne
   'canvas result feedback must receive before and after authoritative state snapshots');
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
-assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability\)/, 'Weekly Journey must render from server authority');
+assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability, stateValue\)/, 'Weekly Journey must render from server authority and lifecycle phase');
 assert.match(client, /WEEKLY JOURNEY \/\/ LIVE/, 'Weekly Journey must present live progress when authority is available');
 assert.match(client, /WEEKLY JOURNEY \/\/ SYNCING/, 'Weekly Journey must fail closed while authority is unavailable');
 assert.match(client, /var waitingTitle = weeklyState === 'COMING_SOON'[\s\S]*'WEEKLY JOURNEY \/\/ PLANNED EXPANSION'[\s\S]*'WEEKLY JOURNEY \/\/ SYNCING'/,

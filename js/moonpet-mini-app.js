@@ -719,9 +719,11 @@
   // TEST-EXPORT: capabilityCombatHelper:end
 
   // TEST-EXPORT: dailyJourneyMarkup:start
-  function dailyJourneyNextAction(dailyAuthority, completedMissions, guidance) {
+  function dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, stateValue) {
     dailyAuthority = dailyAuthority || {};
     guidance = guidance || {};
+    var lifecyclePhase = String(stateValue && stateValue.lifecycle && stateValue.lifecycle.phase || '').toLowerCase();
+    if (lifecyclePhase === 'egg') return 'Incubate or HATCH MOONPET before Daily Journey progress starts.';
     var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
     var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
     var reason = String(dailyAuthority.reason || '').toLowerCase();
@@ -734,14 +736,21 @@
     return 'Daily Journey: ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' complete - finish ' + number(remaining) + ' more daily objective' + (remaining === 1 ? '' : 's') + ' for Growth Mark eligibility.';
   }
 
-  function dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth) {
+  function dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth, stateValue) {
     dailyAuthority = dailyAuthority || {};
     guidance = guidance || {};
     growth = growth || {};
+    var lifecyclePhase = String(stateValue && stateValue.lifecycle && stateValue.lifecycle.phase || '').toLowerCase();
+    var eggJourneyLocked = lifecyclePhase === 'egg';
     var dailyCompleted = dailyAuthority.completed_objectives != null ? Number(dailyAuthority.completed_objectives) : completedMissions;
     var dailyRequired = Math.max(0, Number(dailyAuthority.required_objectives) || 0);
     var dailyAuthorityReady = Number.isFinite(dailyRequired) && dailyRequired > 0;
     var dailyReason = String(dailyAuthority.reason || '').toLowerCase();
+    if (eggJourneyLocked) {
+      return '<div class="line locked">DAILY JOURNEY // HATCH REQUIRED</div>' +
+        '<div class="line muted">Journey progress starts after HATCH MOONPET creates an active companion.</div>' +
+        '<div class="line muted">NEXT // Incubate or HATCH MOONPET before Daily Journey progress starts.</div>';
+    }
     if (dailyReason === 'active_pet_required') {
       return '<div class="line locked">DAILY JOURNEY // ACTIVE PET REQUIRED</div>' +
         '<div class="line muted">Journey progress starts after you have a hatched active Moonpet.</div>' +
@@ -756,9 +765,9 @@
         '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
         meter('GROWTH MARK', dailyPercent) +
         '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
-        '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div>' +
+        '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, stateValue)) + '</div>' +
         '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>'
-      : '<div class="line locked">DAILY JOURNEY // SYNCING</div><div class="line muted">' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div>';
+      : '<div class="line locked">DAILY JOURNEY // SYNCING</div><div class="line muted">' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, stateValue)) + '</div>';
   }
   // TEST-EXPORT: dailyJourneyMarkup:end
 
@@ -781,9 +790,11 @@
     }).map(weeklyObjectiveLabel);
   }
 
-  function weeklyJourneyNextAction(weeklyAuthority, weeklyCapability) {
+  function weeklyJourneyNextAction(weeklyAuthority, weeklyCapability, stateValue) {
     weeklyAuthority = weeklyAuthority || {};
     weeklyCapability = weeklyCapability || {};
+    var lifecyclePhase = String(stateValue && stateValue.lifecycle && stateValue.lifecycle.phase || '').toLowerCase();
+    if (lifecyclePhase === 'egg') return 'Incubate or HATCH MOONPET before Weekly Journey progress starts.';
     var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
     var weeklyReason = String(weeklyAuthority.reason || weeklyCapability.reason || '').toLowerCase();
     var weeklyRequired = Math.max(0, Number(weeklyAuthority.required_objectives != null ? weeklyAuthority.required_objectives : weeklyCapability.required_objectives) || 0);
@@ -806,9 +817,11 @@
     return 'Weekly Journey: ' + number(weeklyCompleted) + '/' + number(weeklyRequired) + ' complete - remaining: ' + (remaining.length ? remaining.join(', ') : 'server-confirmed objectives') + '.';
   }
 
-  function weeklyJourneyMarkup(weeklyAuthority, weeklyCapability) {
+  function weeklyJourneyMarkup(weeklyAuthority, weeklyCapability, stateValue) {
     weeklyAuthority = weeklyAuthority || {};
     weeklyCapability = weeklyCapability || {};
+    var lifecyclePhase = String(stateValue && stateValue.lifecycle && stateValue.lifecycle.phase || '').toLowerCase();
+    var eggJourneyLocked = lifecyclePhase === 'egg';
     var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
     var weeklyReason = String(weeklyAuthority.reason || weeklyCapability.reason || '').toLowerCase();
     var weeklyRequired = Math.max(0, Number(
@@ -822,6 +835,12 @@
         : weeklyCapability.completed_objectives
     ) || 0);
     var weeklyReady = weeklyState === 'AVAILABLE' && weeklyRequired > 0;
+    if (eggJourneyLocked) {
+      return '<div class="line locked">WEEKLY JOURNEY // HATCH REQUIRED</div>' +
+        '<div class="line muted">Weekly Journey progress starts after HATCH MOONPET creates an active companion.</div>' +
+        '<div class="line muted">NEXT // Incubate or HATCH MOONPET before Weekly Journey progress starts.</div>' +
+        '<div class="line muted">No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet.</div>';
+    }
     if (!weeklyReady) {
       var waitingTitle = weeklyState === 'COMING_SOON'
         ? 'WEEKLY JOURNEY // PLANNED EXPANSION'
@@ -838,7 +857,7 @@
           : 'Complete objectives to qualify for server settlement once authority returns objective evidence.';
       return '<div class="line locked">' + waitingTitle + '</div>' +
         '<div class="line muted">' + escapeHtml(waitingCopy) + '</div>' +
-        '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability)) + '</div>' +
+        '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability, stateValue)) + '</div>' +
         '<div class="line muted">' + waitingDetail + '</div>';
     }
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
@@ -870,7 +889,7 @@
       '<div class="line muted">QUALIFICATION WEEK ' + number(weeklyAuthority.qualification_week || weeklyCapability.qualification_week || 1) + resetCopy + ' // Server-authoritative source events only.</div>' +
       meter('WEEKLY CREST', weeklyPercent) +
       '<div class="line muted">' + crestStatus + ' // ' + escapeHtml(words(weeklyAuthority.reason || weeklyCapability.reason || 'weekly journey in progress')) + '</div>' +
-      '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability)) + '</div>' +
+      '<div class="line muted">NEXT // ' + escapeHtml(weeklyJourneyNextAction(weeklyAuthority, weeklyCapability, stateValue)) + '</div>' +
       '<div class="line muted">REMAINING // ' + escapeHtml(remainingCopy) + '</div>' +
       objectiveRows;
   }
@@ -1178,18 +1197,22 @@
     var progression = activePetProgression();
     var growth = progression.growth_marks || {};
     var dailyAuthority = state.daily_journey || {};
-    var dailyJourney = dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth);
+    var dailyJourney = dailyJourneyMarkup(dailyAuthority, completedMissions, guidance, growth, state);
     var weeklyCapability = state.capabilities && state.capabilities.weekly_journey || {};
     var weeklyAuthority = state.weekly_journey || {};
+    var lifecyclePhase = String(state && state.lifecycle && state.lifecycle.phase || '').toLowerCase();
+    var eggJourneyLocked = lifecyclePhase === 'egg';
     var weeklyState = String(weeklyAuthority.state || weeklyCapability.state || 'LOCKED').toUpperCase();
-    var weeklyTitle = weeklyState === 'AVAILABLE'
+    var weeklyTitle = eggJourneyLocked
+      ? 'WEEKLY JOURNEY // HATCH REQUIRED'
+      : weeklyState === 'AVAILABLE'
       ? 'WEEKLY JOURNEY // LIVE'
       : weeklyState === 'COMING_SOON' ? 'WEEKLY JOURNEY // PLANNED EXPANSION' : 'WEEKLY JOURNEY // SYNCING';
-    var weeklyJourney = weeklyJourneyMarkup(weeklyAuthority, weeklyCapability);
+    var weeklyJourney = weeklyJourneyMarkup(weeklyAuthority, weeklyCapability, state);
     return activePetSummary() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
-      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance)) + '</div><div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
+      panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, state)) + '</div><div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
