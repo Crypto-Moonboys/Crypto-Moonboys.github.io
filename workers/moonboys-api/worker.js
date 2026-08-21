@@ -3358,7 +3358,10 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
       telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'random_event',
       behaviour: 'event', activity: 'event',
     });
-    await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
+    await recordMoonpetBiggestReward(db, {
+      telegram_id: telegramId, event_key: `${eventKey}:biggest-reward`, source_event_key: eventKey, source_event_type: 'random_event',
+      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
+    });
   }
   if (awarded.duplicate) return { ...awarded, reason: 'duplicate', encounter, choice };
   const petXpAwarded = awarded.pet_xp_awarded;
@@ -4779,7 +4782,10 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
         telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'arena_battle',
         behaviour: 'combat', activity: 'combat',
       });
-      await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
+      await recordMoonpetBiggestReward(db, {
+        telegram_id: telegramId, event_key: `${eventKey}:biggest-reward`, source_event_key: eventKey, source_event_type: 'arena_battle',
+        reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
+      });
     }
     return { ...awarded, reward_slot: null, reward_multiplier: 1 };
   }
@@ -6185,7 +6191,10 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
       telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'adventure',
       behaviour: 'exploration', activity: 'adventure',
     });
-    await recordMoonpetBiggestReward(db, { telegram_id: telegramId, reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold' });
+    await recordMoonpetBiggestReward(db, {
+      telegram_id: telegramId, event_key: `${eventKey}:biggest-reward`, source_event_key: eventKey, source_event_type: 'adventure',
+      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
+    });
   }
 
   return {

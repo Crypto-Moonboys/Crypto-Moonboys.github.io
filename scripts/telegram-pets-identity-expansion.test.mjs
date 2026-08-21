@@ -9,6 +9,7 @@ import {
   formatMoonpetIdentitySummary,
   getMoonpetIdentityAnalytics,
   getMoonpetIdentitySummary,
+  recordMoonpetBiggestReward,
   recordMoonpetBehaviour,
   recordMoonpetMemory,
   validateMoonpetEvolutionContent,
@@ -472,7 +473,7 @@ isolationDb.database.prepare(`INSERT INTO telegram_pet_events
   .run(petA, TEST_SEASON_KEY, JSON.stringify({ source: 'pet_weekly_boss' }));
 await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petA, season_key: TEST_SEASON_KEY,
-  event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
+  event_key: 'source:boss:a', source_event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
   source_event_category: 'pet_weekly_boss', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
 });
 for (let day = 1; day <= 5; day += 1) for (let index = 0; index < 4; index += 1) await recordMoonpetBehaviour(isolationDb, {
@@ -493,19 +494,42 @@ assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegra
   'Pet A personality progress does not unlock traits for Pet B or Pet C');
 const retry = await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petA, season_key: TEST_SEASON_KEY,
-  event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
+  event_key: 'source:boss:a', source_event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
   source_event_category: 'pet_weekly_boss', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
 });
 assert.equal(retry.duplicate, true, 'duplicate source events are idempotent per pet_id');
 const crossPetSourceReplay = await recordMoonpetMemory(isolationDb, {
   telegram_id: 'isolation-player', pet_id: petB, season_key: TEST_SEASON_KEY,
-  event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
+  event_key: 'source:boss:a', source_event_key: 'source:boss:a', source_event_type: 'weekly_boss', source_event_reason: 'weekly_boss_attempt',
   source_event_category: 'pet_weekly_boss', memory_type: 'boss_victory', boss_id: 'alley_king', milestone: 'first_boss_victory',
 });
 assert.equal(crossPetSourceReplay.accepted, false, 'the same accepted source event cannot be used for another pet');
 assert.equal(crossPetSourceReplay.reason, 'source_event_pet_mismatch');
 assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='source:boss:a'").get().count, 1,
   'accepted source-event idempotency is scoped to the participating pet only');
+isolationDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('identity-source-random-a', ?, 'isolation-player', 'random_event', 'source:random:a', ?, '2026-08-01', '2026-W31', 'accepted', 'random:choice:reward', ?)`)
+  .run(petA, TEST_SEASON_KEY, JSON.stringify({ source: 'telegram_bot' }));
+setActivePetSlot(isolationDb, 'isolation-player', petB);
+const sourceScopedBehaviour = await recordMoonpetBehaviour(isolationDb, {
+  telegram_id: 'isolation-player', event_key: 'source:random:a:personality', source_event_key: 'source:random:a', source_event_type: 'random_event',
+  behaviour: 'event', activity: 'event',
+});
+assert.equal(sourceScopedBehaviour.accepted, true, 'source-event-key-only behaviour resolves the participating pet before active-pet fallback');
+assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='curious'").get(petA).progress, 1,
+  'source-event-key-only behaviour writes personality progress to the accepted source-event pet');
+assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='curious'").get(petB).count, 0,
+  'source-event-key-only behaviour does not write to the current active pet');
+const sourceScopedReward = await recordMoonpetBiggestReward(isolationDb, {
+  telegram_id: 'isolation-player', event_key: 'source:random:a:biggest-reward', source_event_key: 'source:random:a', source_event_type: 'random_event',
+  reward_amount: 333, reward_currency: 'moon_gold',
+});
+assert.equal(sourceScopedReward.accepted, true, 'source-event-key-only biggest reward resolves the participating pet before active-pet fallback');
+assert.equal(isolationDb.database.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(petA).biggest_reward_amount, 333,
+  'source-event-key-only biggest reward writes to the accepted source-event pet');
+assert.equal(isolationDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(petB).count, 0,
+  'source-event-key-only biggest reward does not create memory for the current active pet');
 setActivePetSlot(isolationDb, 'isolation-player', petC);
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events
   (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
