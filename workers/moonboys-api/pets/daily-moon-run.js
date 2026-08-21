@@ -120,7 +120,7 @@ export async function getDailyMoonRunReservation(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const runId = String(request.run_id || '').trim();
   if (!telegramId || !runId) return null;
-  return db.prepare(`SELECT d.*, r.status AS authoritative_status, r.region, r.difficulty, r.seed AS run_seed,
+  return db.prepare(`SELECT d.*, r.season_key, r.status AS authoritative_status, r.region, r.difficulty, r.seed AS run_seed,
       r.current_room, r.max_room, r.score AS authoritative_score, r.depth AS authoritative_depth, r.started_at
     FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r ON r.run_id = d.run_id AND r.telegram_id = d.telegram_id
     WHERE d.telegram_id = ? AND d.run_id = ? LIMIT 1`).bind(telegramId, runId).first().catch(() => null);
@@ -348,6 +348,8 @@ export async function createDailyMoonRun(db, request = {}) {
     : null;
   await recordMoonpetMemory(db, {
     telegram_id: telegramId,
+    pet_id: daily.pet_id,
+    season_key: daily.season_key,
     event_key: `daily:memory:first-run:${telegramId}`,
     memory_type: 'milestone',
     milestone: 'first_daily_moon_run',
@@ -823,7 +825,8 @@ async function finalizeDailyRecords(db, daily, referenceDay) {
     daily.boss_defeated ? ['daily_boss_victory', `daily:memory:boss-victory:${daily.telegram_id}`] : null,
   ].filter(Boolean);
   for (const [milestone, eventKey] of memories) await recordMoonpetMemory(db, {
-    telegram_id: daily.telegram_id, event_key: eventKey, memory_type: 'milestone', milestone,
+    telegram_id: daily.telegram_id, pet_id: daily.pet_id, season_key: daily.season_key,
+    event_key: eventKey, memory_type: 'milestone', milestone,
   });
   return { duplicate: false, duration_seconds: durationSeconds, streaks };
 }

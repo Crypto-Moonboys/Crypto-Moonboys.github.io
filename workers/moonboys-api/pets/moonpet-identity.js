@@ -110,8 +110,8 @@ function verifyMoonpetIdentitySourceEvent(request = {}, scope, source, expectedT
   return { ok: true, source_event_key: sourceEventKey, source_event: row };
 }
 
-async function resolveMoonpetIdentityAuthority(db, telegramId, request = {}, identityEventKey = '', expectedTypes = []) {
-  const source = await readMoonpetIdentitySourceEvent(db, telegramId, request, identityEventKey);
+async function resolveMoonpetIdentityAuthority(db, telegramId, request = {}, expectedTypes = []) {
+  const source = await readMoonpetIdentitySourceEvent(db, telegramId, request);
   if (!source.ok) return { ok: false, reason: source.reason, source_event_key: source.source_event_key };
   const hasSource = Boolean(source.source_event_key && source.source_event);
   const requestedPetId = String(request.pet_id || '').trim();
@@ -202,7 +202,7 @@ export async function recordMoonpetBehaviour(db, request = {}) {
   const activity = String(request.activity || behaviour).trim().toLowerCase();
   if (!telegramId || !eventKey || !definition || amount < 1) throw new Error('invalid_moonpet_behaviour');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey) || !['combat', 'exploration', 'care', 'event', 'adventure'].includes(activity)) throw new Error('invalid_moonpet_behaviour');
-  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, eventKey, request.source_event_types || request.source_event_type || []);
+  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, request.source_event_types || request.source_event_type || []);
   if (!authority.ok) return { accepted: false, duplicate: false, reason: authority.reason, source_event_key: authority.source_event_key };
   const petId = authority.scope.pet_id;
   const seasonKey = authority.scope.season_key;
@@ -291,7 +291,7 @@ export async function recordMoonpetMemory(db, request = {}) {
   if (values.boss_id && !ID_PATTERN.test(values.boss_id)) throw new Error('invalid_moonpet_memory');
   if ((values.type === 'milestone' && !values.milestone) || (values.milestone && (!ID_PATTERN.test(values.milestone) || !MOONPET_MEMORY_MILESTONES.has(values.milestone)))) throw new Error('invalid_moonpet_memory');
   const expectedTypes = request.source_event_types || request.source_event_type || (values.type === 'boss_victory' ? ['weekly_boss', 'run_boss', 'daily_moon_run'] : []);
-  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, eventKey, expectedTypes);
+  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, expectedTypes);
   if (!authority.ok) return { accepted: false, duplicate: false, reason: authority.reason, source_event_key: authority.source_event_key };
   const petId = authority.scope.pet_id;
   const seasonKey = authority.scope.season_key;
@@ -344,7 +344,7 @@ export async function recordMoonpetBiggestReward(db, request = {}) {
   const amount = positiveInteger(request.reward_amount);
   const currency = String(request.reward_currency || 'moon_gold').trim().toLowerCase().slice(0, 40);
   if (!telegramId || amount < 1 || !ID_PATTERN.test(currency)) return { accepted: false, reason: 'invalid_moonpet_reward_memory' };
-  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, request.event_key || '', request.source_event_types || request.source_event_type || []);
+  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, request.source_event_types || request.source_event_type || []);
   if (!authority.ok) return { accepted: false, reason: authority.reason || 'invalid_moonpet_reward_memory', source_event_key: authority.source_event_key };
   const scope = authority.scope;
   const result = await db.prepare(`INSERT INTO telegram_pet_memories (pet_id, telegram_id, season_key, biggest_reward_amount, biggest_reward_currency)

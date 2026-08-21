@@ -172,8 +172,8 @@ export async function movePetToSanctuaryIfEligible(db, input, options = {}) {
       rows(db, `SELECT evolution_id, stage, cosmetic_unlocks, achievement_unlocks, unlocked_at
         FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=? ORDER BY stage`, petId, telegramId),
       rows(db, `SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits
-        WHERE telegram_id=? ORDER BY trait_id`, telegramId),
-      db.prepare(`SELECT * FROM telegram_pet_memories WHERE telegram_id=?`).bind(telegramId).first(),
+        WHERE pet_id=? AND telegram_id=? ORDER BY trait_id`, petId, telegramId),
+      db.prepare(`SELECT * FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=?`).bind(petId, telegramId).first(),
       rows(db, `SELECT asset_type, asset_key, quantity FROM telegram_pet_inventory
         WHERE telegram_id=? AND asset_type='cosmetic' AND quantity>0 ORDER BY asset_key`, telegramId),
       rows(db, `SELECT item_key, slot, item_level, mastery_tier FROM telegram_pet_equipment_progression
