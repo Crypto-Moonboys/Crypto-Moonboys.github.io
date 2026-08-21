@@ -362,6 +362,10 @@ const noActivePetWeeklyMarkup = weeklyJourneyRuntime({
 assert.match(noActivePetWeeklyMarkup, /WEEKLY JOURNEY \/\/ ACTIVE PET REQUIRED/, 'no active pet state must be clear and safe');
 assert.match(noActivePetWeeklyMarkup, /Journey progress starts after you have a hatched active Moonpet/,
   'Weekly Journey must guide players without an active seasonal pet');
+assert.match(noActivePetWeeklyMarkup, /NEXT \/\/ Initialise, incubate, hatch, or select an active seasonal Moonpet before Weekly Journey progress starts\./,
+  'Weekly Journey active-pet-required NEXT copy must be distinct and actionable');
+assert.equal((noActivePetWeeklyMarkup.match(/Journey progress starts after you have a hatched active Moonpet/g) || []).length, 1,
+  'Weekly Journey active-pet-required markup must not duplicate the same guidance sentence');
 assert.match(noActivePetWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet\./,
   'Weekly Journey active-pet-required detail must name the active hatched seasonal Moonpet requirement');
 const comingSoonWeeklyMarkup = weeklyJourneyRuntime({

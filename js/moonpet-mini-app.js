@@ -790,7 +790,7 @@
     var weeklyCompleted = Math.max(0, Number(weeklyAuthority.completed_objectives != null ? weeklyAuthority.completed_objectives : weeklyCapability.completed_objectives) || 0);
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
-    if (weeklyReason === 'active_pet_required') return 'Journey progress starts after you have a hatched active Moonpet.';
+    if (weeklyReason === 'active_pet_required') return 'Initialise, incubate, hatch, or select an active seasonal Moonpet before Weekly Journey progress starts.';
     if (weeklyState === 'COMING_SOON') return 'Weekly Journey is planned expansion.';
     if (weeklyState !== 'AVAILABLE' || weeklyRequired <= 0) return 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.';
     var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
