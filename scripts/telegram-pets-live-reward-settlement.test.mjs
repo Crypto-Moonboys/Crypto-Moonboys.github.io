@@ -164,6 +164,7 @@ for (const [jobKey, expectedPetXp] of Object.entries({ street_artist: 18, courie
 
 for (const [index, choice] of ['fight_back', 'run_route', 'hide_out'].entries()) {
   const telegramId = `event-choice-${index}`;
+  const petId = `pet:${telegramId}:pet-s2026-003:1`;
   const eventKey = `alley_ambush-after-047-${index}`;
   seedPlayer(db, telegramId);
   const first = await processPetRandomEvent(db, telegramId, choice, {
@@ -172,8 +173,8 @@ for (const [index, choice] of ['fight_back', 'run_route', 'hide_out'].entries())
   assert.equal(first.accepted, true, `valid Pet Event choice ${choice} must settle after migration 047`);
   assert.equal(first.duplicate, false, `valid Pet Event choice ${choice} must award its first callback`);
   const identityBeforeRetry = {
-    trait: { ...db.database.prepare('SELECT trait_id, progress FROM telegram_pet_personality_traits WHERE telegram_id = ?').get(telegramId) },
-    memory: { ...db.database.prepare('SELECT biggest_reward_amount, biggest_reward_currency, event_actions FROM telegram_pet_memories WHERE telegram_id = ?').get(telegramId) },
+    trait: { ...db.database.prepare('SELECT trait_id, progress FROM telegram_pet_personality_traits WHERE pet_id = ? AND telegram_id = ? AND season_key = ?').get(petId, telegramId, 'pet-s2026-003') },
+    memory: { ...db.database.prepare('SELECT biggest_reward_amount, biggest_reward_currency, event_actions FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?').get(petId, telegramId, 'pet-s2026-003') },
   };
   const retry = await processPetRandomEvent(db, telegramId, choice, {
     event_key: eventKey, source: 'regression', now: new Date('2026-08-11T12:00:00Z'),
@@ -181,8 +182,8 @@ for (const [index, choice] of ['fight_back', 'run_route', 'hide_out'].entries())
   assert.equal(retry.duplicate, true, `Pet Event choice ${choice} must award a duplicate callback exactly zero times`);
   assert.deepEqual(
     {
-      trait: { ...db.database.prepare('SELECT trait_id, progress FROM telegram_pet_personality_traits WHERE telegram_id = ?').get(telegramId) },
-      memory: { ...db.database.prepare('SELECT biggest_reward_amount, biggest_reward_currency, event_actions FROM telegram_pet_memories WHERE telegram_id = ?').get(telegramId) },
+      trait: { ...db.database.prepare('SELECT trait_id, progress FROM telegram_pet_personality_traits WHERE pet_id = ? AND telegram_id = ? AND season_key = ?').get(petId, telegramId, 'pet-s2026-003') },
+      memory: { ...db.database.prepare('SELECT biggest_reward_amount, biggest_reward_currency, event_actions FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?').get(petId, telegramId, 'pet-s2026-003') },
     },
     identityBeforeRetry,
     `Pet Event choice ${choice} must keep personality progress and memories idempotent`,

@@ -70,7 +70,7 @@ async function deriveIdentity(seed, incubation = {}) {
 }
 
 async function readLifecycle(db, telegramId) {
-  return db.prepare(`SELECT l.* FROM telegram_pet_active_slots a
+  return db.prepare(`SELECT l.*, a.season_key FROM telegram_pet_active_slots a
     JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=a.pet_id AND l.telegram_id=a.telegram_id
     WHERE a.telegram_id=? LIMIT 1`).bind(telegramId).first().catch(() => null);
 }
@@ -141,10 +141,10 @@ async function rareProgress(db, telegramId, row) {
   if (row.phase === 'rare') return { signal: 'morphed', ready: false, percent: 100 };
   const route = RARE_ROUTES[Math.max(0, Number(row.rare_route_index || 0)) % RARE_ROUTES.length];
   const [memory, evolution, traitRows] = await Promise.all([
-    db.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=?').bind(row.pet_id, telegramId).first().catch(() => null),
+    db.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(row.pet_id, telegramId, row.season_key).first().catch(() => null),
     db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').bind(row.pet_id).first().catch(() => null),
-    db.prepare('SELECT trait_id FROM telegram_pet_personality_traits WHERE pet_id=? AND telegram_id=? AND unlocked_at IS NOT NULL')
-      .bind(row.pet_id, telegramId).all().catch(() => ({ results: [] })),
+    db.prepare('SELECT trait_id FROM telegram_pet_personality_traits WHERE pet_id=? AND telegram_id=? AND season_key=? AND unlocked_at IS NOT NULL')
+      .bind(row.pet_id, telegramId, row.season_key).all().catch(() => ({ results: [] })),
   ]);
   const unlocked = new Set((traitRows.results || []).map((entry) => entry.trait_id));
   const traitDone = route.traits.filter((trait) => unlocked.has(trait)).length;

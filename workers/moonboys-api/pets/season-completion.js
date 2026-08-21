@@ -168,7 +168,8 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     };
     ageProgress = { current: ageDays, required: minAgeDays, complete: ageDays >= minAgeDays };
     bossProgress = await Promise.all(Object.entries(next.requirements.boss_victories || {}).map(async ([bossId, required]) => {
-      const row = await db.prepare(`SELECT victories FROM telegram_pet_boss_victories WHERE pet_id=? AND telegram_id=? AND boss_id=?`).bind(petId, pet.telegram_id, bossId).first();
+      const row = await db.prepare(`SELECT victories FROM telegram_pet_boss_victories
+        WHERE pet_id=? AND telegram_id=? AND season_key=? AND boss_id=?`).bind(petId, pet.telegram_id, seasonKey, bossId).first();
       return { boss_id: bossId, current: integer(row?.victories), required: integer(required), complete: integer(row?.victories) >= integer(required) };
     }));
     itemProgress = await Promise.all(Object.entries(next.requirements.inventory || {}).flatMap(([assetType, assets]) => Object.entries(assets).map(async ([assetKey, required]) => {

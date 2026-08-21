@@ -23,8 +23,33 @@ const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', imp
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql', import.meta.url), 'utf8');
 const stage5Migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/062_moonpet_evolution_stage_5.sql', import.meta.url), 'utf8');
 const petIdentityAuthorityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/070_moonpet_pet_identity_achievement_authority.sql', import.meta.url), 'utf8');
+const identityAuthorityVerificationMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/072_moonpet_identity_authority_verification.sql', import.meta.url), 'utf8');
 const identitySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/moonpet-identity.js', import.meta.url), 'utf8');
+const identityRuntimeSources = new Map([
+  ['moonpet-identity.js', identitySource],
+  ['worker.js', fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8')],
+  ['sanctuary.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8')],
+  ['species-lifecycle.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/species-lifecycle.js', import.meta.url), 'utf8')],
+  ['season-completion.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8')],
+]);
 const TEST_SEASON_KEY = 'pet-s2026-003';
+const IDENTITY_AUTHORITY_TABLES = [
+  'telegram_pet_memories',
+  'telegram_pet_personality_traits',
+  'telegram_pet_boss_victories',
+  'telegram_pet_identity_events',
+  'telegram_pet_identity_analytics',
+  'telegram_pet_achievements',
+];
+
+for (const [sourceName, source] of identityRuntimeSources) {
+  for (const table of IDENTITY_AUTHORITY_TABLES) {
+    const accountOnlyRead = new RegExp(`FROM\\s+${table}\\s+WHERE\\s+telegram_id\\s*=\\s*\\?(?:\\s*(?:ORDER\\s+BY|GROUP\\s+BY|LIMIT|\\)|\`|;))`, 'i');
+    const accountOnlyWrite = new RegExp(`(?:UPDATE|DELETE\\s+FROM)\\s+${table}\\s+[\\s\\S]{0,80}WHERE\\s+telegram_id\\s*=\\s*\\?(?:\\s*(?:ORDER\\s+BY|LIMIT|\\)|\`|;))`, 'i');
+    assert.doesNotMatch(source, accountOnlyRead, `${sourceName} must not read ${table} with telegram_id-only authority`);
+    assert.doesNotMatch(source, accountOnlyWrite, `${sourceName} must not write ${table} with telegram_id-only authority`);
+  }
+}
 
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
@@ -263,6 +288,27 @@ assert.equal(migration070Db.prepare("SELECT first_run_at FROM telegram_pet_memor
 assert.equal(migration070Db.prepare('PRAGMA foreign_key_check').all().length, 0, 'blocked migration 070 rerun remains schema-valid');
 assert.equal(migration070Db.prepare("SELECT COUNT(*) AS count FROM moonpet_identity_authority_cutovers").get().count, 1,
   'migration 070 rerun keeps a single cutover marker');
+migration070Db.exec(identityAuthorityVerificationMigration);
+assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 0,
+  'valid pet-scoped identity rows produce zero invalid authority rows');
+migration070Db.exec('PRAGMA foreign_keys=OFF');
+migration070Db.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at) VALUES ('invalid-pet', 'old-owner', 'wrong-season', '2026-08-21T00:00:00Z')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress) VALUES ('invalid-pet', 'old-owner', 'wrong-season', 'street_fighter', 1)`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories) VALUES ('invalid-pet', 'old-owner', 'wrong-season', 'alley_king', 1)`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_identity_events
+  (event_id, pet_id, telegram_id, season_key, event_key, event_kind) VALUES ('invalid-event', 'invalid-pet', 'old-owner', 'wrong-season', 'invalid:event', 'memory')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_identity_analytics
+  (analytics_id, pet_id, telegram_id, season_key, event_type) VALUES ('invalid-analytics', 'invalid-pet', 'old-owner', 'wrong-season', 'memory_milestone')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target) VALUES ('invalid-pet', 'old-owner', 'wrong-season', 'boss_breaker', 1, 5)`).run();
+assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 6,
+  'the identity authority verifier catches every invalid identity table row');
+for (const table of IDENTITY_AUTHORITY_TABLES) migration070Db.prepare(`DELETE FROM ${table} WHERE pet_id='invalid-pet'`).run();
+assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 0,
+  'after invalid fixtures are removed the verifier returns to zero invalid rows');
 const canonical070Db = new DatabaseSync(':memory:');
 canonical070Db.exec(schema);
 canonical070Db.exec(petIdentityAuthorityMigration);

@@ -24,6 +24,7 @@ assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/068_moonpet_w
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/069_moonpet_breeding_authority\.sql/, 'migration 069 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/070_moonpet_pet_identity_achievement_authority\.sql/, 'migration 070 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/071_moonpet_arena_pet_authority\.sql/, 'migration 071 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/072_moonpet_identity_authority_verification\.sql/, 'migration 072 changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -72,6 +73,7 @@ assert.match(remoteQueryStep, /068_moonpet_weekly_journey_authority\.sql/, 'the 
 assert.match(remoteQueryStep, /069_moonpet_breeding_authority\.sql/, 'the workflow_dispatch D1 query must request migration 069 from production');
 assert.match(remoteQueryStep, /070_moonpet_pet_identity_achievement_authority\.sql/, 'the workflow_dispatch D1 query must request migration 070 from production');
 assert.match(remoteQueryStep, /071_moonpet_arena_pet_authority\.sql/, 'the workflow_dispatch D1 query must request migration 071 from production');
+assert.match(remoteQueryStep, /072_moonpet_identity_authority_verification\.sql/, 'the workflow_dispatch D1 query must request migration 072 from production');
 assert.ok(
   REQUIRED_D1_MIGRATIONS.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be detected by the production migration verification script',
@@ -85,6 +87,10 @@ assert.ok(
   'migration 071 must be detected by the production migration verification script',
 );
 assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('072_moonpet_identity_authority_verification.sql'),
+  'migration 072 must be detected by the production migration verification script',
+);
+assert.ok(
   request.required_migrations.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be included in the checked-in D1 evidence request',
 );
@@ -95,6 +101,10 @@ assert.ok(
 assert.ok(
   request.required_migrations.includes('071_moonpet_arena_pet_authority.sql'),
   'migration 071 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
+  request.required_migrations.includes('072_moonpet_identity_authority_verification.sql'),
+  'migration 072 must be included in the checked-in D1 evidence request',
 );
 assert.deepEqual(
   [...request.required_migrations].sort(),
@@ -340,6 +350,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 071',
 );
 
+const withoutMoonpetIdentityAuthorityVerification = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '072_moonpet_identity_authority_verification.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutMoonpetIdentityAuthorityVerification),
+  /missing required migrations: 072_moonpet_identity_authority_verification\.sql/,
+  'deployment verification must reject an evidence request that omits migration 072',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -532,6 +552,15 @@ assert.throws(
   }], request),
   /missing migrations: 071_moonpet_arena_pet_authority\.sql/,
   'deployment verification must fail when production D1 has not applied migration 071',
+);
+
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '072_moonpet_identity_authority_verification.sql'),
+  }], request),
+  /missing migrations: 072_moonpet_identity_authority_verification\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 072',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');
