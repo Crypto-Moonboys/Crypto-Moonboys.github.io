@@ -1,7 +1,7 @@
 -- Player-facing Moonpet expansion: permanent achievements, weekly personal
 -- bosses and retry-safe seasonal reward claims.
 
-CREATE TABLE telegram_pet_achievements (
+CREATE TABLE IF NOT EXISTS telegram_pet_achievements (
   telegram_id TEXT NOT NULL,
   achievement_id TEXT NOT NULL,
   progress INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0),
@@ -51,7 +51,7 @@ CREATE TABLE telegram_pet_season_reward_claims (
   FOREIGN KEY (telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_telegram_pet_achievements_unlocked
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_achievements_unlocked
   ON telegram_pet_achievements(achievement_id, unlocked_at);
 CREATE INDEX idx_telegram_pet_weekly_boss_week
   ON telegram_pet_weekly_boss_progress(week_key, damage DESC);

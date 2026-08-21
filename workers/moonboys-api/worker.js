@@ -16,7 +16,7 @@ import {
 import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
   evaluateMoonpetEvolutionRequirements, getMoonpetIdentityAnalytics, getMoonpetIdentitySummary, recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory,
-  validateMoonpetEvolutionContent,
+  readActivePetIdentityScope, validateMoonpetEvolutionContent,
 } from './pets/moonpet-identity.js';
 import {
   MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle, getExistingMoonpetLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
@@ -14507,8 +14507,10 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
       .bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND quantity > 0`)
       .bind(telegramId).all().catch(() => ({ results: [] })),
-    db.prepare(`SELECT boss_id, victories FROM telegram_pet_boss_victories WHERE telegram_id = ?`)
-      .bind(telegramId).all().catch(() => ({ results: [] })),
+    identity?.scope?.pet_id
+      ? db.prepare(`SELECT boss_id, victories FROM telegram_pet_boss_victories WHERE pet_id = ? AND telegram_id = ?`)
+        .bind(identity.scope.pet_id, telegramId).all().catch(() => ({ results: [] }))
+      : Promise.resolve({ results: [] }),
     db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = ?`)
       .bind(telegramId).first().catch(() => ({ count: 0 })),
     evaluateMoonpetEvolutionRequirements(db, { telegram_id: telegramId, evolution_id: next.evolution_id }),
@@ -14898,6 +14900,10 @@ function buildPetProgressMenuReplyMarkup() {
 }
 
 async function syncPetAchievements(db, telegramId) {
+  const scope = await readActivePetIdentityScope(db, telegramId).catch(() => null);
+  if (!scope?.pet_id || !scope?.season_key) return [];
+  const petId = scope.pet_id;
+  const seasonKey = scope.season_key;
   const [profile, events, memory, personalities, evolution] = await Promise.all([
     db.prepare(`SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT
@@ -14905,14 +14911,11 @@ async function syncPetAchievements(db, telegramId) {
       SUM(CASE WHEN event_type='random_event' AND status='accepted' THEN 1 ELSE 0 END) AS event_actions,
       SUM(CASE WHEN event_type='work' AND status='accepted' THEN 1 ELSE 0 END) AS job_actions,
       COUNT(DISTINCT CASE WHEN event_type='work' AND status='accepted' THEN reason END) AS distinct_jobs
-      FROM telegram_pet_events WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
-    db.prepare(`SELECT total_runs, total_bosses_defeated FROM telegram_pet_memories WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
-    db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE telegram_id = ? AND unlocked_at IS NOT NULL`).bind(telegramId).first().catch(() => null),
-    db.prepare(`SELECT COALESCE(
-      (SELECT MAX(stage) FROM telegram_pet_evolutions_by_pet WHERE telegram_id = ?),
-      (SELECT MAX(stage) FROM telegram_pet_evolutions WHERE telegram_id = ?),
-      0
-    ) AS stage`).bind(telegramId, telegramId).first().catch(() => null),
+      FROM telegram_pet_events WHERE telegram_id = ? AND pet_id = ?`).bind(telegramId, petId).first().catch(() => null),
+    db.prepare(`SELECT total_runs, total_bosses_defeated FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ?`).bind(petId, telegramId).first().catch(() => null),
+    db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id = ? AND telegram_id = ? AND unlocked_at IS NOT NULL`).bind(petId, telegramId).first().catch(() => null),
+    db.prepare(`SELECT COALESCE((SELECT MAX(stage) FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND telegram_id = ?), 0) AS stage`)
+      .bind(petId, telegramId).first().catch(() => null),
   ]);
   if (!profile) return [];
   const values = {
@@ -14928,18 +14931,18 @@ async function syncPetAchievements(db, telegramId) {
   };
   const statements = Object.entries(PET_ACHIEVEMENTS).map(([achievementId, definition]) => {
     const progress = Math.max(0, Math.floor(values[definition.source] || 0));
-    return db.prepare(`INSERT INTO telegram_pet_achievements (telegram_id, achievement_id, progress, target, unlocked_at)
-      VALUES (?, ?, ?, ?, CASE WHEN ? >= ? THEN CURRENT_TIMESTAMP ELSE NULL END)
-      ON CONFLICT(telegram_id, achievement_id) DO UPDATE SET
+    return db.prepare(`INSERT INTO telegram_pet_achievements (pet_id, telegram_id, season_key, achievement_id, progress, target, unlocked_at)
+      VALUES (?, ?, ?, ?, ?, ?, CASE WHEN ? >= ? THEN CURRENT_TIMESTAMP ELSE NULL END)
+      ON CONFLICT(pet_id, achievement_id) DO UPDATE SET
         progress = MAX(telegram_pet_achievements.progress, excluded.progress), target = excluded.target,
         unlocked_at = COALESCE(telegram_pet_achievements.unlocked_at,
           CASE WHEN MAX(telegram_pet_achievements.progress, excluded.progress) >= excluded.target THEN CURRENT_TIMESTAMP ELSE NULL END),
         updated_at = CURRENT_TIMESTAMP`)
-      .bind(telegramId, achievementId, progress, definition.target, progress, definition.target);
+      .bind(petId, telegramId, seasonKey, achievementId, progress, definition.target, progress, definition.target);
   });
   await db.batch(statements);
   const rows = await db.prepare(`SELECT achievement_id, progress, target, unlocked_at FROM telegram_pet_achievements
-    WHERE telegram_id = ? ORDER BY unlocked_at IS NULL, unlocked_at, achievement_id`).bind(telegramId).all();
+    WHERE pet_id = ? AND telegram_id = ? ORDER BY unlocked_at IS NULL, unlocked_at, achievement_id`).bind(petId, telegramId).all();
   return (rows.results || []).map((row) => ({ ...row, ...PET_ACHIEVEMENTS[row.achievement_id] }));
 }
 
