@@ -51,6 +51,10 @@ assert.doesNotMatch(runStepAuthoritySource, /getPetProfile\s*\(/, 'run steps can
 assert.match(runStepAuthoritySource, /getPetInstanceWithAtomicDecay\(db, run\.pet_id\)/, 'run steps must load the stored run pet');
 assert.match(foundationFunction('completePetRun'), /pet_id:\s*requireRunPetId\(run\)/, 'completion settlement requires run.pet_id');
 assert.match(foundationFunction('extractPetRogueliteRun'), /pet_id:\s*requireRunPetId\(run\)/, 'extraction settlement requires run.pet_id');
+for (const fn of ['rewardPetRunRoom', 'rewardPetRogueliteBoss', 'completePetRun', 'extractPetRogueliteRun']) {
+  assert.match(foundationFunction(fn), /season_key:\s*requireRunSeasonKey\(run\)/,
+    `${fn} must stamp reward source events with persisted run.season_key`);
+}
 
 
 class Statement {

@@ -2856,6 +2856,41 @@ assert.equal(blockedCyberEvolution.accepted, false, 'legacy completion cannot un
 assert.equal(blockedCyberEvolution.reason, 'evolution_authority_unavailable',
   'legacy account-only state cannot bypass missing pet and season authority');
 
+const runSeasonRolloverDb = seedRepeatRewardPlayer('run-season-rollover', 100);
+const runSeasonRolloverPet = 'pet-run-season-rollover-a';
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type)
+  VALUES (?, 'run-season-rollover', 'pet-s2026-001', 1, 'free')`).run(runSeasonRolloverPet);
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, source_profile_updated_at, status)
+  VALUES (?, 'run-season-rollover', 'pet-s2026-001', 1, 0, 1, 70, 100, CURRENT_TIMESTAMP, 'active')`).run(runSeasonRolloverPet);
+runSeasonRolloverDb.database.prepare(`UPDATE telegram_pet_active_slots
+  SET pet_id=?, season_key='pet-s2026-001'
+  WHERE telegram_id='run-season-rollover'`).run(runSeasonRolloverPet);
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level,
+   unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
+  VALUES ('run-season-rollover-row', ?, 'run-season-rollover', 'run-season-rollover-run',
+    'pet-s2026-001', 'active', 5, 5, 1, 24, 19, 0, 0, '{}')`).run(runSeasonRolloverPet);
+const runSeasonRolloverRun = runSeasonRolloverDb.database.prepare("SELECT * FROM telegram_pet_runs WHERE run_id='run-season-rollover-run'").get();
+const runSeasonRolloverResult = await recordPetRunBankedEvent(runSeasonRolloverDb, 'run-season-rollover', runSeasonRolloverRun, {
+  pet_id: runSeasonRolloverPet,
+  telegram_id: 'run-season-rollover',
+}, { completed: true, event_key: 'run-season-rollover-complete', source: 'season_rollover_regression' });
+assert.equal(runSeasonRolloverResult.accepted, true, 'run completion after season rollover must still settle');
+assert.deepEqual(
+  { ...runSeasonRolloverDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events
+    WHERE telegram_id='run-season-rollover' AND event_key='run-season-rollover-complete'`).get() },
+  { pet_id: runSeasonRolloverPet, season_key: 'pet-s2026-001' },
+  'run-derived reward source events must use the persisted run season authority, not the current calendar season',
+);
+assert.equal(runSeasonRolloverDb.database.prepare(`SELECT total_runs FROM telegram_pet_memories
+  WHERE pet_id=? AND season_key='pet-s2026-001'`).get(runSeasonRolloverPet).total_runs, 1,
+  'run completion memory must remain attached to the Season A run pet authority');
+assert.equal(runSeasonRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits
+  WHERE pet_id=? AND season_key='pet-s2026-001'`).get(runSeasonRolloverPet).count > 0, true,
+  'run completion personality progress must remain attached to the Season A run pet authority');
+
 async function runMoonAlleyEnergyFixture(telegramId, randomValue, eventKey) {
   const db = seedRepeatRewardPlayer(telegramId, 18);
   const originalRandom = Math.random;

@@ -902,6 +902,30 @@ assert.equal(bossMemorySwitchDb.database.prepare(`SELECT unlocked_at IS NOT NULL
 assert.equal(bossMemorySwitchDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=?`).get(bossMemoryPetB).count, 0,
   'Test 5k: switched active pet does not receive weekly boss achievement rows');
 
+const bossMissingAuthorityDb = createDb();
+const bossMissingAuthorityTelegramId = 'weekly-boss-missing-authority';
+const bossMissingAuthorityPet = seedPlayer(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, getPetSeasonInfo(new Date()).key);
+bossMissingAuthorityDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=60000, level=600, energy=100, health=100, happiness=100, cleanliness=100
+  WHERE telegram_id=?`).run(bossMissingAuthorityTelegramId);
+bossMissingAuthorityDb.database.prepare(`DELETE FROM telegram_pet_active_slots WHERE telegram_id=?`).run(bossMissingAuthorityTelegramId);
+const bossMissingAuthority = await processPetWeeklyBoss(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, 'strike', 'weekly-boss-missing-authority');
+assert.equal(bossMissingAuthority.accepted, false, 'Test 5l: weekly boss victory without pet authority must fail explicitly');
+assert.equal(bossMissingAuthority.reason, 'weekly_boss_pet_authority_missing',
+  'Test 5l: weekly boss missing pet authority must not be swallowed by best-effort identity catches');
+assert.equal(bossMissingAuthorityDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id=? AND event_type='weekly_boss'`).get(bossMissingAuthorityTelegramId).count, 0,
+  'Test 5l: weekly boss missing pet authority must not create a source event with an invalid authority pair');
+assert.equal(bossMissingAuthorityDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_memories
+  WHERE telegram_id=?`).get(bossMissingAuthorityTelegramId).count, 0,
+  'Test 5l: weekly boss missing pet authority must not write boss memory');
+assert.equal(bossMissingAuthorityDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_achievements
+  WHERE telegram_id=?`).get(bossMissingAuthorityTelegramId).count, 0,
+  'Test 5l: weekly boss missing pet authority must not sync achievements');
+assert.equal(bossMissingAuthorityDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_memories
+  WHERE pet_id=?`).get(bossMissingAuthorityPet).count, 0,
+  'Test 5l: weekly boss missing pet authority must not fall back to account or stale pet identity rows');
+
 const bossDuplicateDb = createDb();
 const bossDuplicateTelegramId = 'weekly-boss-duplicate';
 const bossDuplicateSeasonKey = getPetSeasonInfo(new Date()).key;
