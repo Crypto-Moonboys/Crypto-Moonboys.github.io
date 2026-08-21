@@ -251,16 +251,25 @@ assert.equal(migration070Db.prepare("SELECT quantity FROM telegram_pet_material_
   'migration 070 preserves account-owned material authority');
 assert.equal(migration070Db.prepare("SELECT cutover_key FROM moonpet_identity_authority_cutovers").get().cutover_key, 'pet_identity_achievement_authority_v1',
   'migration 070 writes a cutover marker');
-migration070Db.exec(petIdentityAuthorityMigration);
-assert.equal(migration070Db.prepare('PRAGMA foreign_key_check').all().length, 0, 'migration 070 retry remains schema-valid');
+// Once the beta reset marker exists, a manual rerun must fail before DROP TABLE
+// can erase runtime-written pet-scoped identity rows.
+migration070Db.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at, milestones)
+  VALUES ('pet:old-owner:season:1', 'old-owner', 'season', '2026-08-20T00:00:00Z', '["first_run"]')`).run();
+assert.throws(() => migration070Db.exec(petIdentityAuthorityMigration), /UNIQUE constraint failed/,
+  'migration 070 rerun must fail closed once the cutover marker exists');
+assert.equal(migration070Db.prepare("SELECT first_run_at FROM telegram_pet_memories WHERE pet_id='pet:old-owner:season:1'").get().first_run_at,
+  '2026-08-20T00:00:00Z', 'migration 070 rerun cannot erase post-cutover pet identity rows');
+assert.equal(migration070Db.prepare('PRAGMA foreign_key_check').all().length, 0, 'blocked migration 070 rerun remains schema-valid');
 assert.equal(migration070Db.prepare("SELECT COUNT(*) AS count FROM moonpet_identity_authority_cutovers").get().count, 1,
-  'migration 070 retry keeps a single cutover marker');
+  'migration 070 rerun keeps a single cutover marker');
 const canonical070Db = new DatabaseSync(':memory:');
 canonical070Db.exec(schema);
 canonical070Db.exec(petIdentityAuthorityMigration);
-canonical070Db.exec(petIdentityAuthorityMigration);
+assert.throws(() => canonical070Db.exec(petIdentityAuthorityMigration), /UNIQUE constraint failed/,
+  'migration 070 canonical replay is guarded after the cutover marker exists');
 assert.equal(canonical070Db.prepare('PRAGMA foreign_key_check').all().length, 0,
-  'migration 070 can replay against canonical schema fixtures');
+  'blocked migration 070 canonical replay remains schema-valid');
 
 assert.deepEqual(Object.values(MOONPET_EVOLUTIONS).map(({ name }) => name), [
   'Moon Egg', 'Street Moonpet', 'Cyber Moonpet', 'Elite Moonpet', 'Moon Guardian', 'Legendary Moon Guardian',
@@ -530,6 +539,39 @@ assert.equal(isolationDb.database.prepare('SELECT biggest_reward_amount FROM tel
   'source-event-key-only biggest reward writes to the accepted source-event pet');
 assert.equal(isolationDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=?').get(petB).count, 0,
   'source-event-key-only biggest reward does not create memory for the current active pet');
+isolationDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('legacy-action-without-pet', 'isolation-player', 'feed', 'source:legacy-action:no-pet', ?, '2026-08-01', '2026-W31', 'accepted', 'accepted', ?)` )
+  .run(TEST_SEASON_KEY, JSON.stringify({ source: 'telegram_bot' }));
+setActivePetSlot(isolationDb, 'isolation-player', petA);
+const legacyActionDuplicate = await workerHooks.processPetAction(isolationDb, 'isolation-player', 'feed', {
+  event_key: 'source:legacy-action:no-pet',
+  source: 'telegram_bot',
+});
+assert.equal(legacyActionDuplicate.duplicate, true, 'legacy accepted action callbacks remain idempotent');
+assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA).progress, 1,
+  'legacy accepted actions without pet_id explicitly use active pet authority for personality progress');
+isolationDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('pet-action-source-a', ?, 'isolation-player', 'feed', 'source:pet-action:a', ?, '2026-08-01', '2026-W31', 'accepted', 'accepted', ?)` )
+  .run(petA, TEST_SEASON_KEY, JSON.stringify({ source: 'telegram_bot' }));
+setActivePetSlot(isolationDb, 'isolation-player', petB);
+const petOwnedActionDuplicate = await workerHooks.processPetAction(isolationDb, 'isolation-player', 'feed', {
+  event_key: 'source:pet-action:a',
+  source: 'telegram_bot',
+});
+assert.equal(petOwnedActionDuplicate.duplicate, true, 'pet-owned accepted action callbacks remain idempotent after active switch');
+assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA).progress, 2,
+  'pet-owned action duplicate uses source-event authority instead of the active pet');
+assert.equal(isolationDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(petB).count, 0,
+  'pet-owned action duplicate does not write personality progress to the active Pet B');
+const mismatchedPetOwnedAction = await recordMoonpetBehaviour(isolationDb, {
+  telegram_id: 'isolation-player', pet_id: petB, season_key: TEST_SEASON_KEY,
+  event_key: 'source:pet-action:a:mismatch', source_event_key: 'source:pet-action:a', source_event_type: 'feed',
+  behaviour: 'care', activity: 'care',
+});
+assert.equal(mismatchedPetOwnedAction.accepted, false, 'new pet-owned actions still reject mismatched source-event pet scope');
+assert.equal(mismatchedPetOwnedAction.reason, 'source_event_pet_mismatch');
 
 function seedProducerAuthorityPlayer(telegramId) {
   const db = seedPlayer(telegramId, false);

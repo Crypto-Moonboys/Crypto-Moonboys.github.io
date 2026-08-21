@@ -3,8 +3,9 @@
 -- across three-pet rosters, so this migration resets only those identity and
 -- achievement ledgers while preserving account, slot, lifecycle, wallet,
 -- inventory, material, run, and economy authority tables.
--- The marker records that this beta reset happened; DROP IF EXISTS plus
--- CREATE IF NOT EXISTS makes local rehearsal/canonical replay retry-safe.
+-- The marker records that this beta reset happened. It is inserted before any
+-- destructive reset so a manual rerun fails closed before pet-scoped identity
+-- rows can be erased. D1 migration tracking is the authority for normal replay.
 
 CREATE TABLE IF NOT EXISTS moonpet_identity_authority_cutovers (
   cutover_key TEXT PRIMARY KEY,
@@ -12,6 +13,10 @@ CREATE TABLE IF NOT EXISTS moonpet_identity_authority_cutovers (
   reset_beta_identity_rows INTEGER NOT NULL DEFAULT 1 CHECK (reset_beta_identity_rows IN (0, 1)),
   applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO moonpet_identity_authority_cutovers
+  (cutover_key, migration_name, reset_beta_identity_rows)
+  VALUES ('pet_identity_achievement_authority_v1', '070_moonpet_pet_identity_achievement_authority.sql', 1);
 
 DROP TABLE IF EXISTS telegram_pet_personality_traits;
 DROP TABLE IF EXISTS telegram_pet_memories;
@@ -142,7 +147,3 @@ CREATE INDEX IF NOT EXISTS idx_telegram_pet_achievements_unlocked
   ON telegram_pet_achievements(achievement_id, unlocked_at);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_achievements_owner
   ON telegram_pet_achievements(telegram_id, pet_id, unlocked_at);
-
-INSERT OR IGNORE INTO moonpet_identity_authority_cutovers
-  (cutover_key, migration_name, reset_beta_identity_rows)
-  VALUES ('pet_identity_achievement_authority_v1', '070_moonpet_pet_identity_achievement_authority.sql', 1);

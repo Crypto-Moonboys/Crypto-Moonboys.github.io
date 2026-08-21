@@ -1734,6 +1734,21 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   return db;
 }
 
+function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 70) {
+  const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'arcade_xp', ?, 500, 'active')`).run(petId, telegramId, slotNumber, `fixture:slot:${slotNumber}`);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, last_decay_at, source_profile_updated_at, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 0, 1, 70, ?, CURRENT_TIMESTAMP, 'fixture', 'active')`).run(petId, telegramId, slotNumber, energy);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, 'pet-s2026-003')
+    ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=CURRENT_TIMESTAMP`)
+    .run(telegramId, petId);
+  return petId;
+}
+
 function insertWalletRecoveryRequired(db, telegramId) {
   db.database.prepare(`
     INSERT INTO telegram_pet_reward_claims
@@ -3596,6 +3611,36 @@ const duplicateEvent = await processPetRandomEvent(eventRecoveryDb, 'event-recov
 assert.equal(duplicateEvent.duplicate, true, 'a completed Event callback retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(eventRecoveryDb, 'event-recovery', 'event'), eventAfterRecovery, 'duplicate Event callback must not change XP, currencies, Energy, or its slot');
 
+const eventPetSwitchDb = seedRepeatRewardPlayer('event-retry-switch', 70, recoveryDayA.toISOString());
+const eventRetryPetA = eventPetSwitchDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='event-retry-switch'").get().pet_id;
+eventPetSwitchDb.failOnBatch(3);
+await assert.rejects(
+  processPetRandomEvent(eventPetSwitchDb, 'event-retry-switch', 'flip_it_fast', {
+    event_key: 'moon_crate_found-retry-switch',
+    encounter: PET_RANDOM_EVENTS.moon_crate_found,
+    now: recoveryDayA,
+  }),
+  /simulated_d1_batch_failure/,
+  'first Event settlement can fail after creating a pet-owned pending source row',
+);
+const eventRetryPetB = seedAndSwitchRepeatRewardPet(eventPetSwitchDb, 'event-retry-switch', 2, 70);
+const switchedRetry = await processPetRandomEvent(eventPetSwitchDb, 'event-retry-switch', 'flip_it_fast', {
+  event_key: 'moon_crate_found-retry-switch',
+  encounter: PET_RANDOM_EVENTS.moon_crate_found,
+  now: recoveryDayB,
+});
+assert.equal(switchedRetry.accepted, true, 'retry after active-pet switching must settle the pending Event');
+assert.equal(eventPetSwitchDb.database.prepare("SELECT pet_id FROM telegram_pet_events WHERE event_key='moon_crate_found-retry-switch'").get().pet_id, eventRetryPetA,
+  'retry keeps the original Pet A source-event authority');
+assert.ok(eventPetSwitchDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(eventRetryPetA).pet_xp > 0,
+  'retry rewards Pet A after the active pet switches');
+assert.equal(eventPetSwitchDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(eventRetryPetB).pet_xp, 0,
+  'retry does not reward active Pet B');
+assert.equal(eventPetSwitchDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='curious'").get(eventRetryPetA).count, 1,
+  'retry identity writes land on Pet A');
+assert.equal(eventPetSwitchDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(eventRetryPetB).count, 0,
+  'retry identity writes do not land on Pet B');
+
 const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
 kaijuRecoveryDb.database.exec('DELETE FROM telegram_seasons');
 kaijuRecoveryDb.database.prepare(`
@@ -3808,8 +3853,8 @@ assert.ok(repeatReservation.includes('const results = await db.batch(statements)
 assert.ok(repeatReservation.includes('ON CONFLICT(telegram_id, day_key, mode) DO UPDATE SET') && repeatReservation.includes('claimed_count = claimed_count + 1') && repeatReservation.includes('RETURNING claimed_count'), 'Event and Kaiju slot claims must atomically increment and return the exact counter value');
 assert.match(repeatReservation, /SET energy = energy - \?, updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND energy >= \?/, 'Kaiju Energy must be claimed with one conditional update');
 assert.ok(repeatReservation.match(/EXISTS \(SELECT 1 FROM telegram_pet_events WHERE id = \? AND status = 'pending'\)/g)?.length >= 2, 'Energy and slot claims must be gated by the newly inserted idempotency reservation');
-assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, status, reason'), 'the exact reward slot and paid Energy must be persisted for retry recovery');
-assert.ok(repeatReservation.includes('day_key, week_key, season_key'), 'pending reservations must load and return their stored accounting window');
+assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, pet_id, status, reason'), 'the exact reward slot, pet authority, and paid Energy must be persisted for retry recovery');
+assert.ok(repeatReservation.includes('pet_id, status, reason, day_key, week_key, season_key'), 'pending reservations must load and return their stored pet and accounting authority');
 assert.ok(repeatReservation.includes("Number(results[1]?.meta?.changes || 0) !== 1"), 'Kaiju reward authorization must require exactly one changed Energy row');
 assert.ok(worker.includes("match(/^repeat_reward_slot:") && worker.includes('resumed: true'), 'pending repeat rewards must resume their original slot without another counter increment or Energy charge');
 
