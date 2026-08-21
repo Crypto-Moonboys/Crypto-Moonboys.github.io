@@ -6,7 +6,10 @@ on:
       - deployments/d1-evidence-request.json
       - scripts/verify-d1-production-migrations.mjs
       - scripts/verify-d1-production-migrations.test.mjs
+      - scripts/verify-d1-identity-authority-audit.mjs
       - scripts/report-d1-query-failure.mjs
+      - workers/moonboys-api/migrations/038_telegram_pet_equipment_progression.sql
+      - workers/moonboys-api/migrations/039_telegram_pet_runtime_progression.sql
       - workers/moonboys-api/migrations/041_telegram_pet_repeat_reward_slots.sql
       - workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql
       - workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql
@@ -38,6 +41,7 @@ on:
       - workers/moonboys-api/migrations/069_moonpet_breeding_authority.sql
       - workers/moonboys-api/migrations/070_moonpet_pet_identity_achievement_authority.sql
       - workers/moonboys-api/migrations/071_moonpet_arena_pet_authority.sql
+      - workers/moonboys-api/migrations/072_moonpet_identity_authority_verification.sql
       - .github/workflows/d1-production-migration-verify.yml
   workflow_dispatch:
 
@@ -57,13 +61,14 @@ jobs:
         run: |
           node --check scripts/verify-d1-production-migrations.mjs
           node --check scripts/verify-d1-production-migrations.test.mjs
+          node --check scripts/verify-d1-identity-authority-audit.mjs
           node --check scripts/report-d1-query-failure.mjs
       - name: Verify required migration contract
         run: node scripts/verify-d1-production-migrations.test.mjs
       - name: Verify known migration evidence
         shell: bash
         run: |
-          printf '%s\n' '[{"success":true,"results":[{"name":"038_telegram_pet_equipment_progression.sql"},{"name":"039_telegram_pet_runtime_progression.sql"},{"name":"041_telegram_pet_repeat_reward_slots.sql"},{"name":"042_telegram_pet_roguelite_foundation.sql"},{"name":"043_telegram_pet_identity_expansion.sql"},{"name":"044_telegram_pet_daily_runs.sql"},{"name":"045_telegram_pet_inventory_cutover_reconciliation.sql"},{"name":"046_fix_pet_runtime_unique_constraints.sql"},{"name":"047_fix_telegram_leaderboard_reward_constraint.sql"},{"name":"048_telegram_pet_player_expansion.sql"},{"name":"049_telegram_pet_dialogue_history.sql"},{"name":"050_telegram_pet_guided_progression.sql"},{"name":"051_telegram_pet_content_reconciliation.sql"},{"name":"052_telegram_pet_live_systems.sql"},{"name":"053_telegram_pet_species_lifecycle.sql"},{"name":"054_telegram_pet_client_performance.sql"},{"name":"055_telegram_pet_season_slots.sql"},{"name":"056_telegram_pet_instance_state.sql"},{"name":"057_telegram_pet_lifecycle_pet_id.sql"},{"name":"058_telegram_pet_season_completion.sql"},{"name":"059_telegram_pet_sanctuary.sql"},{"name":"060_telegram_pet_sanctuary_indexes.sql"},{"name":"061_moonpet_season_economy_calibration.sql"},{"name":"062_moonpet_evolution_stage_5.sql"},{"name":"063_arcade_xp_spendable_wallet.sql"},{"name":"064_moonpet_beta_runtime_cutover.sql"},{"name":"065_moonpet_reward_pet_id_authority.sql"},{"name":"066_moonpet_run_pet_id_authority.sql"},{"name":"067_moonpet_daily_journey_authority.sql"},{"name":"068_moonpet_weekly_journey_authority.sql"},{"name":"069_moonpet_breeding_authority.sql"},{"name":"070_moonpet_pet_identity_achievement_authority.sql"},{"name":"071_moonpet_arena_pet_authority.sql"}]}]' > /tmp/d1-query.json
+          printf '%s\n' '[{"success":true,"results":[{"name":"038_telegram_pet_equipment_progression.sql"},{"name":"039_telegram_pet_runtime_progression.sql"},{"name":"041_telegram_pet_repeat_reward_slots.sql"},{"name":"042_telegram_pet_roguelite_foundation.sql"},{"name":"043_telegram_pet_identity_expansion.sql"},{"name":"044_telegram_pet_daily_runs.sql"},{"name":"045_telegram_pet_inventory_cutover_reconciliation.sql"},{"name":"046_fix_pet_runtime_unique_constraints.sql"},{"name":"047_fix_telegram_leaderboard_reward_constraint.sql"},{"name":"048_telegram_pet_player_expansion.sql"},{"name":"049_telegram_pet_dialogue_history.sql"},{"name":"050_telegram_pet_guided_progression.sql"},{"name":"051_telegram_pet_content_reconciliation.sql"},{"name":"052_telegram_pet_live_systems.sql"},{"name":"053_telegram_pet_species_lifecycle.sql"},{"name":"054_telegram_pet_client_performance.sql"},{"name":"055_telegram_pet_season_slots.sql"},{"name":"056_telegram_pet_instance_state.sql"},{"name":"057_telegram_pet_lifecycle_pet_id.sql"},{"name":"058_telegram_pet_season_completion.sql"},{"name":"059_telegram_pet_sanctuary.sql"},{"name":"060_telegram_pet_sanctuary_indexes.sql"},{"name":"061_moonpet_season_economy_calibration.sql"},{"name":"062_moonpet_evolution_stage_5.sql"},{"name":"063_arcade_xp_spendable_wallet.sql"},{"name":"064_moonpet_beta_runtime_cutover.sql"},{"name":"065_moonpet_reward_pet_id_authority.sql"},{"name":"066_moonpet_run_pet_id_authority.sql"},{"name":"067_moonpet_daily_journey_authority.sql"},{"name":"068_moonpet_weekly_journey_authority.sql"},{"name":"069_moonpet_breeding_authority.sql"},{"name":"070_moonpet_pet_identity_achievement_authority.sql"},{"name":"071_moonpet_arena_pet_authority.sql"},{"name":"072_moonpet_identity_authority_verification.sql"}]}]' > /tmp/d1-query.json
           node scripts/verify-d1-production-migrations.mjs --input /tmp/d1-query.json --request deployments/d1-evidence-request.json --output /tmp/d1-evidence.json
           node -e "const e=require('/tmp/d1-evidence.json'); if(e.status!=='verified-applied') process.exit(1)"
       - name: Verify sanitised failure reporting
@@ -119,7 +124,7 @@ jobs:
           npx wrangler d1 execute wikicoms \
             --remote \
             --config workers/moonboys-api/wrangler.toml \
-            --command "SELECT name FROM d1_migrations WHERE name IN ('038_telegram_pet_equipment_progression.sql', '039_telegram_pet_runtime_progression.sql', '041_telegram_pet_repeat_reward_slots.sql', '042_telegram_pet_roguelite_foundation.sql', '043_telegram_pet_identity_expansion.sql', '044_telegram_pet_daily_runs.sql', '045_telegram_pet_inventory_cutover_reconciliation.sql', '046_fix_pet_runtime_unique_constraints.sql', '047_fix_telegram_leaderboard_reward_constraint.sql', '048_telegram_pet_player_expansion.sql', '049_telegram_pet_dialogue_history.sql', '050_telegram_pet_guided_progression.sql', '051_telegram_pet_content_reconciliation.sql', '052_telegram_pet_live_systems.sql', '053_telegram_pet_species_lifecycle.sql', '054_telegram_pet_client_performance.sql', '055_telegram_pet_season_slots.sql', '056_telegram_pet_instance_state.sql', '057_telegram_pet_lifecycle_pet_id.sql', '058_telegram_pet_season_completion.sql', '059_telegram_pet_sanctuary.sql', '060_telegram_pet_sanctuary_indexes.sql', '061_moonpet_season_economy_calibration.sql', '062_moonpet_evolution_stage_5.sql', '063_arcade_xp_spendable_wallet.sql', '064_moonpet_beta_runtime_cutover.sql', '065_moonpet_reward_pet_id_authority.sql', '066_moonpet_run_pet_id_authority.sql', '067_moonpet_daily_journey_authority.sql', '068_moonpet_weekly_journey_authority.sql', '069_moonpet_breeding_authority.sql', '070_moonpet_pet_identity_achievement_authority.sql', '071_moonpet_arena_pet_authority.sql') ORDER BY name" \
+            --command "SELECT name FROM d1_migrations WHERE name IN ('038_telegram_pet_equipment_progression.sql', '039_telegram_pet_runtime_progression.sql', '041_telegram_pet_repeat_reward_slots.sql', '042_telegram_pet_roguelite_foundation.sql', '043_telegram_pet_identity_expansion.sql', '044_telegram_pet_daily_runs.sql', '045_telegram_pet_inventory_cutover_reconciliation.sql', '046_fix_pet_runtime_unique_constraints.sql', '047_fix_telegram_leaderboard_reward_constraint.sql', '048_telegram_pet_player_expansion.sql', '049_telegram_pet_dialogue_history.sql', '050_telegram_pet_guided_progression.sql', '051_telegram_pet_content_reconciliation.sql', '052_telegram_pet_live_systems.sql', '053_telegram_pet_species_lifecycle.sql', '054_telegram_pet_client_performance.sql', '055_telegram_pet_season_slots.sql', '056_telegram_pet_instance_state.sql', '057_telegram_pet_lifecycle_pet_id.sql', '058_telegram_pet_season_completion.sql', '059_telegram_pet_sanctuary.sql', '060_telegram_pet_sanctuary_indexes.sql', '061_moonpet_season_economy_calibration.sql', '062_moonpet_evolution_stage_5.sql', '063_arcade_xp_spendable_wallet.sql', '064_moonpet_beta_runtime_cutover.sql', '065_moonpet_reward_pet_id_authority.sql', '066_moonpet_run_pet_id_authority.sql', '067_moonpet_daily_journey_authority.sql', '068_moonpet_weekly_journey_authority.sql', '069_moonpet_breeding_authority.sql', '070_moonpet_pet_identity_achievement_authority.sql', '071_moonpet_arena_pet_authority.sql', '072_moonpet_identity_authority_verification.sql') ORDER BY name" \
             --json > d1-migration-query.json 2> d1-migration-query.stderr
           status=$?
           set -e
@@ -144,11 +149,60 @@ jobs:
       - name: Validate and sanitise evidence
         if: steps.d1-query.outputs.status == '0'
         run: node scripts/verify-d1-production-migrations.mjs --input d1-migration-query.json --request deployments/d1-evidence-request.json --output d1-production-migration-evidence.json
+      - name: Query production identity authority violations
+        if: steps.d1-query.outputs.status == '0'
+        id: d1-identity-audit
+        shell: bash
+        run: |
+          set +e
+          npx wrangler d1 execute wikicoms \
+            --remote \
+            --config workers/moonboys-api/wrangler.toml \
+            --command "SELECT COUNT(*) AS invalid_identity_authority_rows FROM moonpet_invalid_identity_authority_rows" \
+            --json > d1-identity-authority-audit.json 2> d1-identity-authority-audit.stderr
+          status=$?
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Fail on production identity authority violations
+        if: steps.d1-query.outputs.status == '0'
+        id: d1-identity-audit-verify
+        shell: bash
+        run: |
+          if [ "${{ steps.d1-identity-audit.outputs.status }}" != "0" ]; then
+            node scripts/report-d1-query-failure.mjs \
+              d1-identity-authority-audit.json \
+              d1-identity-authority-audit.stderr \
+              d1-identity-authority-audit-failure.txt
+            echo "status=${{ steps.d1-identity-audit.outputs.status }}" >> "$GITHUB_OUTPUT"
+            exit "${{ steps.d1-identity-audit.outputs.status }}"
+          fi
+          set +e
+          node scripts/verify-d1-identity-authority-audit.mjs \
+            --input d1-identity-authority-audit.json \
+            --output d1-identity-authority-audit-result.txt \
+            2> d1-identity-authority-audit-failure.txt
+          verify_status=$?
+          set -e
+          echo "status=$verify_status" >> "$GITHUB_OUTPUT"
+          if [ "$verify_status" != "0" ]; then
+            cat d1-identity-authority-audit-failure.txt
+            exit "$verify_status"
+          fi
+      - name: Upload sanitised identity audit failure diagnostics
+        if: always() && steps.d1-query.outputs.status == '0' && steps.d1-identity-audit-verify.outputs.status != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-identity-authority-audit-failure-diagnostics
+          path: d1-identity-authority-audit-failure.txt
+          if-no-files-found: error
+          retention-days: 30
       - name: Upload sanitised evidence
         if: steps.d1-query.outputs.status == '0'
         uses: actions/upload-artifact@v4
         with:
           name: d1-production-migration-evidence
-          path: d1-production-migration-evidence.json
+          path: |
+            d1-production-migration-evidence.json
+            d1-identity-authority-audit-result.txt
           if-no-files-found: error
           retention-days: 90

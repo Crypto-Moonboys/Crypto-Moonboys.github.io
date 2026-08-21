@@ -12,7 +12,7 @@ Briefly explain the exact change.
 List every changed file and why.
 
 # Runtime impact
-Choose one:
+Choose all that apply:
 - [ ] Static frontend only
 - [ ] Worker/API change
 - [ ] D1 migration

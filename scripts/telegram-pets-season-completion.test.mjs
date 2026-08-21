@@ -85,6 +85,17 @@ assert.match(sqlite.prepare(`SELECT earned_at FROM telegram_pet_weekly_crests WH
   /^\d{4}-\d{2}-\d{2}T/, 'malformed Crest timestamps fall back to a safe server ISO timestamp');
 assert.equal((await awardPetWeeklyCrest(db, { ...crest, evidence_key: 'weekly-boss:s1:1:replay' })).duplicate, true, 'weekly objective cannot award twice');
 assert.equal((await awardPetWeeklyCrest(db, { ...crest, objective: 'weekly_journey', evidence_key: 'weekly-journey:s1:1' })).duplicate, true, 'a pet earns at most one Crest in a week');
+sqlite.prepare(`INSERT INTO telegram_pet_season_slots VALUES ('tuple-mismatch','owner','s1',3,'active','free')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_instances VALUES ('tuple-mismatch','owner','wrong-season',3,50,4900,'active')`).run();
+assert.equal((await isPetLegendary(db, 'tuple-mismatch', 's1')), false,
+  'season completion rejects pet_id-only ownership when the instance season tuple is mismatched');
+assert.equal((await awardPetGrowthMark(db, {
+  pet_id: 'tuple-mismatch',
+  telegram_id: 'owner',
+  season_key: 's1',
+  milestone: 'boss',
+  evidence_key: 'boss:tuple-mismatch',
+})).accepted, false, 'growth marks require the season slot + instance ownership tuple');
 
 let state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-01'), { telegram_id: 'owner' });
 assert.equal(state.legendary, true);

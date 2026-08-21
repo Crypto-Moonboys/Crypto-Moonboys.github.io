@@ -117,6 +117,7 @@ await test('worker CORS allow-headers keeps Content-Type and removes admin-secre
   const allowHeaders = String(res.headers.get('Access-Control-Allow-Headers') || '');
   const normalized = allowHeaders.toLowerCase();
   assert.ok(normalized.includes('content-type'), `Content-Type must remain allowed. Found: ${allowHeaders}`);
+  assert.ok(normalized.includes('authorization'), `Authorization must be allowed for signed audit endpoints. Found: ${allowHeaders}`);
   assert.equal(normalized.includes('x-admin-secret'), false, `x-admin-secret must not be browser-allowed. Found: ${allowHeaders}`);
 });
 

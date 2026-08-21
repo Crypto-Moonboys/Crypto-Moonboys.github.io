@@ -71,8 +71,8 @@ jobs:
             'GitHub Pages/workflow/docs only'
           ];
           const runtimeChecked = countCheckedOptions(runtimeImpactSection, runtimeOptions);
-          if (runtimeChecked !== 1) {
-            errors.push('Runtime impact must have exactly one checked option.');
+          if (runtimeChecked < 1) {
+            errors.push('Runtime impact must have at least one checked option.');
           }
 
           const mergeDecisionSection = getSection(body, '# Merge decision');

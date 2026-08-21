@@ -29,8 +29,8 @@ class D1 {
 }
 function provisionActivePet(database, telegramId) {
   database.exec(`
-    CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, level INTEGER DEFAULT 1, pet_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'active');
-    CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1, level INTEGER DEFAULT 1, pet_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'active');
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1, status TEXT DEFAULT 'active', updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_growth_marks (mark_id TEXT PRIMARY KEY, pet_id TEXT, telegram_id TEXT, season_key TEXT, milestone_type TEXT, evidence_key TEXT, earned_day TEXT, earned_at TEXT, UNIQUE(pet_id,season_key,earned_day));
     CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT, telegram_id TEXT, season_key TEXT, qualification_week INTEGER);
@@ -48,8 +48,8 @@ function provisionActivePet(database, telegramId) {
     );
   `);
   const petId = `pet:${telegramId}:test:1`;
-  database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES (?, ?)`).run(petId, telegramId);
-  database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key) VALUES (?, ?, 'test')`).run(petId, telegramId);
+  database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number) VALUES (?, ?, 'test', 1)`).run(petId, telegramId);
+  database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number) VALUES (?, ?, 'test', 1)`).run(petId, telegramId);
   database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, 'test')`).run(telegramId, petId);
 }
 
@@ -110,8 +110,8 @@ for (const trait of ['explorer', 'curious', 'street_fighter', 'loyal']) db.datab
 db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','moon_guardian',4)`).run();
 assert.equal((await morphMoonpetRare(db, 'new-player', 'rare:before-legendary')).reason, 'rare_signal_not_ready',
   'rare morph cannot trigger at the former final stage before Legendary stage 5');
-db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES ('pet:new-player:test:2', 'new-player')`).run();
-db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key) VALUES ('pet:new-player:test:2', 'new-player', 'test')`).run();
+db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:new-player:test:2', 'new-player', 'test', 2)`).run();
+db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:new-player:test:2', 'new-player', 'test', 2)`).run();
 db.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
   (pet_id, telegram_id, identity_seed, phase, species_id, rare_route_index)
   VALUES ('pet:new-player:test:2', 'new-player', 'pet-b-seed', 'adult', 'lunar_fox', 0)`).run();
@@ -122,7 +122,8 @@ assert.equal(petBRareAttempt.reason, 'rare_signal_not_ready',
   'rare morph readiness for Pet B must not use Pet A memories or personality traits');
 
 db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('guaranteed-player');
-db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id) VALUES ('pet:guaranteed-player:test:1', 'guaranteed-player')`).run();
+db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:guaranteed-player:test:1', 'guaranteed-player', 'test', 1)`).run();
+db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:guaranteed-player:test:1', 'guaranteed-player', 'test', 1)`).run();
 db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES ('guaranteed-player', 'pet:guaranteed-player:test:1', 'test')`).run();
 db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').run('guaranteed-player');
 await createMoonEggLifecycle(db, 'guaranteed-player', 'adopt:guaranteed');

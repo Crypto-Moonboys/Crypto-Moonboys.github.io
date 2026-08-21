@@ -229,7 +229,7 @@ function buildCorsHeaders(request, env) {
     : DEFAULT_CORS_ALLOWED_ORIGINS;
   const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Vary': 'Origin',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -783,6 +783,12 @@ function parseTelegramAuthEvidence(rawValue) {
   return null;
 }
 
+function readTelegramAuthEvidenceFromAuthorization(request) {
+  const authorization = String(request?.headers?.get?.('Authorization') || '').trim();
+  const match = authorization.match(/^(?:Bearer|Telegram)\s+(.+)$/i);
+  return match ? match[1].trim() : '';
+}
+
 async function verifyTelegramAuthEvidenceForRestore(body, env) {
   const tg = parseTelegramAuthEvidence(body?.telegram_auth || body?.auth_evidence || body);
   if (!tg || typeof tg !== 'object') return null;
@@ -979,6 +985,134 @@ async function verifyRequiredWikiTelegram(body, env) {
   }
   await upsertTelegramUser(env.DB, verified.user);
   return { verified };
+}
+
+async function resolveMoonpetAuditIdentityScope(db, telegramId, request = {}) {
+  const petId = String(request.pet_id || '').trim();
+  const seasonKey = String(request.season_key || '').trim();
+  if (Boolean(petId) !== Boolean(seasonKey)) return null;
+  if (!petId) {
+    const active = await db.prepare(`
+      SELECT s.pet_id, s.telegram_id, s.season_key
+      FROM telegram_pet_active_slots a
+      JOIN telegram_pet_season_slots s
+        ON s.pet_id = a.pet_id AND s.telegram_id = a.telegram_id AND s.season_key = a.season_key
+      JOIN telegram_pet_instances i
+        ON i.pet_id = s.pet_id
+       AND i.telegram_id = s.telegram_id
+       AND i.season_key = s.season_key
+       AND i.slot_number = s.slot_number
+      WHERE a.telegram_id = ?
+        AND s.status = 'active'
+        AND i.status = 'active'
+      LIMIT 1
+    `).bind(telegramId).first();
+    return active ? { pet_id: active.pet_id, telegram_id: telegramId, season_key: active.season_key } : null;
+  }
+  const row = await firstMoonpetAuditRow(db.prepare(`
+    SELECT s.pet_id, s.telegram_id, s.season_key
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i
+      ON i.pet_id = s.pet_id
+     AND i.telegram_id = s.telegram_id
+     AND i.season_key = s.season_key
+     AND i.slot_number = s.slot_number
+    WHERE s.pet_id = ?
+      AND s.telegram_id = ?
+      AND s.season_key = ?
+      AND s.status IN ('active', 'archived')
+      AND i.status IN ('active', 'archived')
+    LIMIT 1
+  `).bind(petId, telegramId, seasonKey).first());
+  return row?.pet_id ? { pet_id: row.pet_id, telegram_id: row.telegram_id, season_key: row.season_key } : null;
+}
+
+async function allMoonpetAuditRows(statementPromise) {
+  const rows = await statementPromise;
+  if (rows?.success === false) throw new Error('identity_authority_audit_query_failed');
+  if (!rows || !Array.isArray(rows.results)) throw new Error('identity_authority_audit_query_failed');
+  return rows.results;
+}
+
+async function firstMoonpetAuditRow(statementPromise) {
+  const row = await statementPromise;
+  if (row?.success === false) throw new Error('identity_authority_audit_query_failed');
+  return row || null;
+}
+
+function redactMoonpetInvalidAuthorityRow(row) {
+  return {
+    table_name: String(row?.table_name || ''),
+    row_key: row?.row_key == null ? null : String(row.row_key),
+    reason: String(row?.reason || 'invalid_authority'),
+  };
+}
+
+async function buildMoonpetIdentityAuthorityAudit(db, telegramId, request = {}) {
+  const scope = await resolveMoonpetAuditIdentityScope(db, telegramId, request);
+  if (!scope) return null;
+  const bindAuthority = (sql) => db.prepare(sql).bind(scope.pet_id, scope.telegram_id, scope.season_key);
+  const memories = await firstMoonpetAuditRow(bindAuthority(`
+    SELECT COUNT(*) AS count
+    FROM telegram_pet_memories
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+  `).first());
+  const personalityTraits = await allMoonpetAuditRows(bindAuthority(`
+    SELECT trait_id, progress, unlocked_at, updated_at
+    FROM telegram_pet_personality_traits
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+    ORDER BY trait_id
+    LIMIT 100
+  `).all());
+  const achievements = await allMoonpetAuditRows(bindAuthority(`
+    SELECT achievement_id, progress, target, unlocked_at, updated_at
+    FROM telegram_pet_achievements
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+    ORDER BY achievement_id
+    LIMIT 100
+  `).all());
+  const bossVictories = await allMoonpetAuditRows(bindAuthority(`
+    SELECT boss_id, victories, updated_at
+    FROM telegram_pet_boss_victories
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+    ORDER BY boss_id
+    LIMIT 100
+  `).all());
+  const identityEvents = await allMoonpetAuditRows(bindAuthority(`
+    SELECT event_id, event_key, event_kind, day_key, progress_delta, created_at, applied_at
+    FROM telegram_pet_identity_events
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+    ORDER BY created_at DESC, event_id DESC
+    LIMIT 100
+  `).all());
+  const identityAnalytics = await allMoonpetAuditRows(bindAuthority(`
+    SELECT analytics_id, event_type, evolution_id, trait_id, milestone_id, duration_seconds, created_at
+    FROM telegram_pet_identity_analytics
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+    ORDER BY created_at DESC, analytics_id DESC
+    LIMIT 100
+  `).all());
+  const invalidAuthorityRows = await allMoonpetAuditRows(db.prepare(`
+    SELECT table_name, pet_id, telegram_id, season_key, row_key, reason
+    FROM moonpet_invalid_identity_authority_rows
+    WHERE pet_id = ?
+    ORDER BY table_name, row_key
+    LIMIT 100
+  `).bind(scope.pet_id).all());
+  const safeInvalidAuthorityRows = invalidAuthorityRows.map(redactMoonpetInvalidAuthorityRow);
+  return {
+    pet_id: scope.pet_id,
+    telegram_id: scope.telegram_id,
+    season_key: scope.season_key,
+    memories_count: Number(memories?.count || 0),
+    personality_traits: personalityTraits,
+    achievements,
+    boss_victories: bossVictories,
+    identity_events: identityEvents,
+    identity_analytics: identityAnalytics,
+    orphans: safeInvalidAuthorityRows,
+    invalid_authority_rows: safeInvalidAuthorityRows,
+  };
 }
 
 async function isWikiRewardLinkedUser(db, telegramId) {
@@ -9848,6 +9982,42 @@ export default {
       return json({ pets: await listSanctuaryPets(env.DB, telegramId) });
     }
 
+    if (path === '/api/telegram/pets/identity/audit' && request.method === 'GET') {
+      const auditHeaders = { ...corsHeaders, 'Cache-Control': 'no-store' };
+      const auditJson = (data, status = 200) => new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json', ...auditHeaders },
+      });
+      const auditErr = (message, status = 400) => auditJson({ error: message }, status);
+      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit:preauth', null, auditHeaders, { includeIp: true }); if (limited) return limited; }
+      if (url.searchParams.has('telegram_auth') || url.searchParams.has('auth_evidence')) return auditErr('telegram_auth_url_credentials_rejected', 400);
+      const rawAuth = readTelegramAuthEvidenceFromAuthorization(request);
+      if (!rawAuth) return auditErr('authorization required', 401);
+      const body = { telegram_auth: parseTelegramAuthEvidence(rawAuth) };
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified?.error || !verified?.telegramId) return auditErr(verified?.error || 'telegram_auth invalid', verified?.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit', null, auditHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      let audit;
+      try {
+        audit = await buildMoonpetIdentityAuthorityAudit(env.DB, verified.telegramId, {
+          pet_id: url.searchParams.get('pet_id'),
+          season_key: url.searchParams.get('season_key'),
+        });
+      } catch (error) {
+        logApiFailure('identity_authority_audit_failed', {
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+        });
+        return auditErr('identity_authority_audit_failed', 500);
+      }
+      if (!audit) {
+        const requestedPetId = String(url.searchParams.get('pet_id') || '').trim();
+        const requestedSeasonKey = String(url.searchParams.get('season_key') || '').trim();
+        return auditErr('identity_authority_scope_not_found', requestedPetId && requestedSeasonKey ? 403 : 404);
+      }
+      return auditJson(audit);
+    }
+
     if (path === '/telegram-pets/state' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
@@ -13832,6 +14002,7 @@ export const __petMediaTestHooks = Object.freeze({
   recordMoonpetBehaviour,
   recordMoonpetBiggestReward,
   recordMoonpetMemory,
+  buildMoonpetIdentityAuthorityAudit,
   buildMoonpetReaction,
   calculatePetWeeklyBossDamage,
   getPetEvolutionPerk,
@@ -14727,8 +14898,9 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
     db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND quantity > 0`)
       .bind(telegramId).all().catch(() => ({ results: [] })),
     identity?.scope?.pet_id
-      ? db.prepare(`SELECT boss_id, victories FROM telegram_pet_boss_victories WHERE pet_id = ? AND telegram_id = ?`)
-        .bind(identity.scope.pet_id, telegramId).all().catch(() => ({ results: [] }))
+      ? db.prepare(`SELECT boss_id, victories FROM telegram_pet_boss_victories
+          WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
+        .bind(identity.scope.pet_id, telegramId, identity.scope.season_key).all().catch(() => ({ results: [] }))
       : Promise.resolve({ results: [] }),
     db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_relics WHERE telegram_id = ?`)
       .bind(telegramId).first().catch(() => ({ count: 0 })),
@@ -15122,10 +15294,22 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
   const petId = String(petIdRaw || '').trim();
   const seasonKey = String(seasonKeyRaw || '').trim();
   if (!telegramId || !petId || !seasonKey) return [];
-  const scope = await db.prepare(`SELECT pet_id, season_key FROM telegram_pet_season_slots
-    WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active' LIMIT 1`)
+  const scope = await db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i
+      ON i.pet_id = s.pet_id
+     AND i.telegram_id = s.telegram_id
+     AND i.season_key = s.season_key
+     AND i.slot_number = s.slot_number
+    WHERE s.pet_id = ? AND s.telegram_id = ? AND s.season_key = ?
+      AND s.status = 'active' AND i.status = 'active'
+    LIMIT 1`)
     .bind(petId, telegramId, seasonKey).first().catch(() => null);
-  if (!scope) return [];
+  if (!scope || !scope.pet_id || !scope.telegram_id || !scope.season_key) return [];
+  const corruptExisting = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_achievements
+    WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
+    .bind(petId, telegramId, seasonKey).first();
+  if (corruptExisting) throw new Error('moonpet_achievement_authority_tuple_mismatch');
   const [profile, events, memory, personalities, evolution] = await Promise.all([
     db.prepare(`SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT
@@ -15133,9 +15317,11 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
       SUM(CASE WHEN event_type='random_event' AND status='accepted' THEN 1 ELSE 0 END) AS event_actions,
       SUM(CASE WHEN event_type='work' AND status='accepted' THEN 1 ELSE 0 END) AS job_actions,
       COUNT(DISTINCT CASE WHEN event_type='work' AND status='accepted' THEN reason END) AS distinct_jobs
-      FROM telegram_pet_events WHERE telegram_id = ? AND pet_id = ?`).bind(telegramId, petId).first().catch(() => null),
-    db.prepare(`SELECT total_runs, total_bosses_defeated FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ?`).bind(petId, telegramId).first().catch(() => null),
-    db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id = ? AND telegram_id = ? AND unlocked_at IS NOT NULL`).bind(petId, telegramId).first().catch(() => null),
+      FROM telegram_pet_events WHERE telegram_id = ? AND pet_id = ? AND season_key = ?`).bind(telegramId, petId, seasonKey).first().catch(() => null),
+    db.prepare(`SELECT total_runs, total_bosses_defeated FROM telegram_pet_memories
+      WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(petId, telegramId, seasonKey).first().catch(() => null),
+    db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits
+      WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND unlocked_at IS NOT NULL`).bind(petId, telegramId, seasonKey).first().catch(() => null),
     db.prepare(`SELECT COALESCE((SELECT MAX(stage) FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND telegram_id = ?), 0) AS stage`)
       .bind(petId, telegramId).first().catch(() => null),
   ]);
@@ -15159,12 +15345,16 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
         progress = MAX(telegram_pet_achievements.progress, excluded.progress), target = excluded.target,
         unlocked_at = COALESCE(telegram_pet_achievements.unlocked_at,
           CASE WHEN MAX(telegram_pet_achievements.progress, excluded.progress) >= excluded.target THEN CURRENT_TIMESTAMP ELSE NULL END),
-        updated_at = CURRENT_TIMESTAMP`)
+        updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_pet_achievements.pet_id = excluded.pet_id
+        AND telegram_pet_achievements.telegram_id = excluded.telegram_id
+        AND telegram_pet_achievements.season_key = excluded.season_key`)
       .bind(petId, telegramId, seasonKey, achievementId, progress, definition.target, progress, definition.target);
   });
   await db.batch(statements);
   const rows = await db.prepare(`SELECT achievement_id, progress, target, unlocked_at FROM telegram_pet_achievements
-    WHERE pet_id = ? AND telegram_id = ? ORDER BY unlocked_at IS NULL, unlocked_at, achievement_id`).bind(petId, telegramId).all();
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+    ORDER BY unlocked_at IS NULL, unlocked_at, achievement_id`).bind(petId, telegramId, seasonKey).all();
   return (rows.results || []).map((row) => ({ ...row, ...PET_ACHIEVEMENTS[row.achievement_id] }));
 }
 

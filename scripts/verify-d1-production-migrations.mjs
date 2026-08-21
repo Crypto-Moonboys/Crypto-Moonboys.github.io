@@ -38,6 +38,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '069_moonpet_breeding_authority.sql',
   '070_moonpet_pet_identity_achievement_authority.sql',
   '071_moonpet_arena_pet_authority.sql',
+  '072_moonpet_identity_authority_verification.sql',
 ]);
 
 function readJson(filePath, label) {
@@ -84,7 +85,10 @@ export function validateRequest(request) {
   return request;
 }
 
-function extractStatement(payload) {
+export function normalizeD1StatementResult(payload) {
+  if (payload && typeof payload === 'object' && !Array.isArray(payload) && 'success' in payload && payload.success !== true) {
+    throw new Error('Wrangler D1 query did not report success');
+  }
   let statements;
   if (Array.isArray(payload)) statements = payload;
   else if (payload && typeof payload === 'object' && Array.isArray(payload.result)) statements = payload.result;
@@ -101,7 +105,7 @@ function extractStatement(payload) {
 
 export function verifyD1MigrationPayload(payload, request, verifiedAt = new Date().toISOString()) {
   validateRequest(request);
-  const statement = extractStatement(payload);
+  const statement = normalizeD1StatementResult(payload);
   const names = statement.results.map((row, index) => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) throw new Error(`D1 migration result row ${index} is invalid`);
     if (Object.keys(row).length !== 1 || typeof row.name !== 'string') throw new Error(`D1 migration result row ${index} must contain only name`);

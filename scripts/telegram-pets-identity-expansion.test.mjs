@@ -23,8 +23,35 @@ const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', imp
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql', import.meta.url), 'utf8');
 const stage5Migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/062_moonpet_evolution_stage_5.sql', import.meta.url), 'utf8');
 const petIdentityAuthorityMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/070_moonpet_pet_identity_achievement_authority.sql', import.meta.url), 'utf8');
+const identityAuthorityVerificationMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/072_moonpet_identity_authority_verification.sql', import.meta.url), 'utf8');
 const identitySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/moonpet-identity.js', import.meta.url), 'utf8');
+const identityRuntimeSources = new Map([
+  ['moonpet-identity.js', identitySource],
+  ['worker.js', fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8')],
+  ['sanctuary.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8')],
+  ['species-lifecycle.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/species-lifecycle.js', import.meta.url), 'utf8')],
+  ['season-completion.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8')],
+]);
 const TEST_SEASON_KEY = 'pet-s2026-003';
+const IDENTITY_AUTHORITY_TABLES = [
+  'telegram_pet_memories',
+  'telegram_pet_personality_traits',
+  'telegram_pet_boss_victories',
+  'telegram_pet_identity_events',
+  'telegram_pet_identity_analytics',
+  'telegram_pet_achievements',
+];
+
+for (const [sourceName, source] of identityRuntimeSources) {
+  for (const table of IDENTITY_AUTHORITY_TABLES) {
+    const accountOnlyRead = new RegExp(`FROM\\s+${table}\\s+WHERE\\s+telegram_id\\s*=\\s*\\?(?:\\s*(?:ORDER\\s+BY|GROUP\\s+BY|LIMIT|\\)|\`|;))`, 'i');
+    const accountOnlyWrite = new RegExp(`(?:UPDATE|DELETE\\s+FROM)\\s+${table}\\s+[\\s\\S]{0,80}WHERE\\s+telegram_id\\s*=\\s*\\?(?:\\s*(?:ORDER\\s+BY|LIMIT|\\)|\`|;))`, 'i');
+    assert.doesNotMatch(source, accountOnlyRead, `${sourceName} must not read ${table} with telegram_id-only authority`);
+    assert.doesNotMatch(source, accountOnlyWrite, `${sourceName} must not write ${table} with telegram_id-only authority`);
+  }
+}
+assert.doesNotMatch(identitySource, /authority_assertion|personality_authority_assertion|memory_authority_assertion|evolution_authority_assertion/,
+  'identity writes must not use sentinel rows or intentional schema violations for rollback');
 
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
@@ -263,6 +290,44 @@ assert.equal(migration070Db.prepare("SELECT first_run_at FROM telegram_pet_memor
 assert.equal(migration070Db.prepare('PRAGMA foreign_key_check').all().length, 0, 'blocked migration 070 rerun remains schema-valid');
 assert.equal(migration070Db.prepare("SELECT COUNT(*) AS count FROM moonpet_identity_authority_cutovers").get().count, 1,
   'migration 070 rerun keeps a single cutover marker');
+migration070Db.exec(identityAuthorityVerificationMigration);
+assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 0,
+  'valid pet-scoped identity rows produce zero invalid authority rows');
+migration070Db.exec('PRAGMA foreign_keys=OFF');
+migration070Db.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at) VALUES ('invalid-pet', 'old-owner', 'wrong-season', '2026-08-21T00:00:00Z')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress) VALUES ('invalid-pet', 'old-owner', 'wrong-season', 'street_fighter', 1)`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories) VALUES ('invalid-pet', 'old-owner', 'wrong-season', 'alley_king', 1)`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_identity_events
+  (event_id, pet_id, telegram_id, season_key, event_key, event_kind) VALUES ('invalid-event', 'invalid-pet', 'old-owner', 'wrong-season', 'invalid:event', 'memory')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_identity_analytics
+  (analytics_id, pet_id, telegram_id, season_key, event_type) VALUES ('invalid-analytics', 'invalid-pet', 'old-owner', 'wrong-season', 'memory_milestone')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target) VALUES ('invalid-pet', 'old-owner', 'wrong-season', 'boss_breaker', 1, 5)`).run();
+assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 6,
+  'the identity authority verifier catches every invalid identity table row');
+assert.deepEqual(
+  migration070Db.prepare(`SELECT DISTINCT reason FROM moonpet_invalid_identity_authority_rows ORDER BY reason`).all().map((row) => row.reason),
+  ['season_slot_tuple_missing'],
+  'invalid identity rows report the missing authority tuple reason',
+);
+for (const table of IDENTITY_AUTHORITY_TABLES) migration070Db.prepare(`DELETE FROM ${table} WHERE pet_id='invalid-pet'`).run();
+assert.equal(migration070Db.prepare('SELECT COUNT(*) AS count FROM moonpet_invalid_identity_authority_rows').get().count, 0,
+  'after invalid fixtures are removed the verifier returns to zero invalid rows');
+migration070Db.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, status)
+  VALUES ('pet:slot-only:season:1', 'old-owner', 'season', 2, 'active')`).run();
+migration070Db.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at) VALUES ('pet:slot-only:season:1', 'old-owner', 'season', '2026-08-21T00:00:00Z')`).run();
+assert.deepEqual(
+  { ...migration070Db.prepare("SELECT table_name, reason FROM moonpet_invalid_identity_authority_rows WHERE pet_id='pet:slot-only:season:1'").get() },
+  { table_name: 'telegram_pet_memories', reason: 'pet_instance_tuple_missing' },
+  'migration 072 validates telegram_pet_instances in addition to season slot authority',
+);
+migration070Db.prepare("DELETE FROM telegram_pet_memories WHERE pet_id='pet:slot-only:season:1'").run();
+migration070Db.prepare("DELETE FROM telegram_pet_season_slots WHERE pet_id='pet:slot-only:season:1'").run();
 const canonical070Db = new DatabaseSync(':memory:');
 canonical070Db.exec(schema);
 canonical070Db.exec(petIdentityAuthorityMigration);
@@ -814,6 +879,180 @@ assert.equal(jobProducer.db.database.prepare("SELECT progress FROM telegram_pet_
   'syncPetAchievementsForPet counts distinct_jobs for Pet A');
 assert.equal(jobProducer.db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=?').get(jobProducer.secondPet).count, 0,
   'job achievement sync does not create Pet B progress from Pet A source events');
+
+const activeSwitchDb = seedPlayer('active-switch-authority', false);
+const activeSwitchPetA = `pet:active-switch-authority:${TEST_SEASON_KEY}:1`;
+const activeSwitchPetB = seedPetSlot(activeSwitchDb, 'active-switch-authority', 2, 'arcade_xp', false);
+setActivePetSlot(activeSwitchDb, 'active-switch-authority', activeSwitchPetA);
+activeSwitchDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('active-switch-memory-source', ?, 'active-switch-authority', 'weekly_boss', 'active-switch:boss:a', ?, '2026-08-01', '2026-W31', 'accepted', 'weekly_boss_attempt', ?)` )
+  .run(activeSwitchPetA, TEST_SEASON_KEY, JSON.stringify({ source: 'pet_weekly_boss' }));
+setActivePetSlot(activeSwitchDb, 'active-switch-authority', activeSwitchPetB);
+await recordMoonpetMemory(activeSwitchDb, {
+  telegram_id: 'active-switch-authority',
+  event_key: 'active-switch:boss:a',
+  source_event_key: 'active-switch:boss:a',
+  source_event_type: 'weekly_boss',
+  source_event_reason: 'weekly_boss_attempt',
+  source_event_category: 'pet_weekly_boss',
+  memory_type: 'boss_victory',
+  boss_id: 'alley_king',
+  milestone: 'first_boss_victory',
+});
+activeSwitchDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES ('active-switch-personality-source', ?, 'active-switch-authority', 'pet_arena', 'active-switch:arena:a', ?, '2026-08-01', '2026-W31', 'accepted', 'arena_win', ?)` )
+  .run(activeSwitchPetA, TEST_SEASON_KEY, JSON.stringify({ source: 'pet_arena' }));
+await recordMoonpetBehaviour(activeSwitchDb, {
+  telegram_id: 'active-switch-authority',
+  event_key: 'active-switch:arena:a:personality',
+  source_event_key: 'active-switch:arena:a',
+  source_event_type: 'pet_arena',
+  behaviour: 'combat',
+  activity: 'combat',
+  amount: 20,
+});
+await workerHooks.syncPetAchievementsForPet(activeSwitchDb, 'active-switch-authority', activeSwitchPetA, TEST_SEASON_KEY);
+for (const table of IDENTITY_AUTHORITY_TABLES) {
+  assert.equal(activeSwitchDb.database.prepare(`SELECT COUNT(*) AS count FROM ${table} WHERE pet_id=?`).get(activeSwitchPetB).count, 0,
+    `${table} must not write to the active Pet B after Pet A source authority is established`);
+}
+assert.equal(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count, 1,
+  'Pet A receives the memory row after active pet switch');
+assert.equal(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_boss_victories WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count, 1,
+  'Pet A receives boss victory authority after active pet switch');
+assert.equal(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count, 1,
+  'Pet A receives personality authority after active pet switch');
+assert.ok(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count > 0,
+  'Pet A receives achievement authority after active pet switch');
+assert.ok(activeSwitchDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE pet_id=? AND telegram_id=? AND season_key=?')
+  .get(activeSwitchPetA, 'active-switch-authority', TEST_SEASON_KEY).count >= 2,
+  'Pet A receives identity events after active pet switch');
+const activeSwitchAudit = await workerHooks.buildMoonpetIdentityAuthorityAudit(activeSwitchDb, 'active-switch-authority', {
+  pet_id: activeSwitchPetA,
+  season_key: TEST_SEASON_KEY,
+});
+assert.equal(activeSwitchAudit.pet_id, activeSwitchPetA, 'production audit helper can inspect an owned non-active pet by canonical authority');
+assert.equal(activeSwitchAudit.telegram_id, 'active-switch-authority');
+assert.equal(activeSwitchAudit.season_key, TEST_SEASON_KEY);
+assert.equal(activeSwitchAudit.memories_count, 1);
+assert.equal(activeSwitchAudit.invalid_authority_rows.length, 0, 'production audit helper reports zero invalid Pet A identity rows');
+
+const corruptMemoryDb = seedPlayer('corrupt-memory-authority', false);
+const corruptMemoryPet = `pet:corrupt-memory-authority:${TEST_SEASON_KEY}:1`;
+await recordMoonpetMemory(corruptMemoryDb, {
+  telegram_id: 'corrupt-memory-authority',
+  pet_id: corruptMemoryPet,
+  season_key: TEST_SEASON_KEY,
+  event_key: 'corrupt-memory:first',
+  memory_type: 'first_adoption',
+  milestone: 'first_adoption',
+});
+corruptMemoryDb.database.exec('PRAGMA foreign_keys=OFF');
+corruptMemoryDb.database.prepare("UPDATE telegram_pet_memories SET telegram_id='corrupt-owner' WHERE pet_id=?").run(corruptMemoryPet);
+corruptMemoryDb.database.exec('PRAGMA foreign_keys=ON');
+await assert.rejects(() => recordMoonpetMemory(corruptMemoryDb, {
+  telegram_id: 'corrupt-memory-authority',
+  pet_id: corruptMemoryPet,
+  season_key: TEST_SEASON_KEY,
+  event_key: 'corrupt-memory:run',
+  memory_type: 'run_completed',
+}), /NOT NULL|authority/i, 'memory upsert rejects and rolls back an existing corrupted authority tuple');
+assert.equal(corruptMemoryDb.database.prepare("SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?").get(corruptMemoryPet).total_runs, 0,
+  'memory conflict update does not mutate a corrupted authority tuple');
+assert.equal(corruptMemoryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='corrupt-memory:run'").get().count, 0,
+  'memory event is rolled back when the ledger tuple is corrupted');
+
+const corruptPersonalityDb = seedPlayer('corrupt-personality-authority', false);
+const corruptPersonalityPet = `pet:corrupt-personality-authority:${TEST_SEASON_KEY}:1`;
+await recordMoonpetBehaviour(corruptPersonalityDb, {
+  telegram_id: 'corrupt-personality-authority',
+  pet_id: corruptPersonalityPet,
+  season_key: TEST_SEASON_KEY,
+  event_key: 'corrupt-personality:first',
+  behaviour: 'care',
+  activity: 'care',
+});
+corruptPersonalityDb.database.exec('PRAGMA foreign_keys=OFF');
+corruptPersonalityDb.database.prepare("UPDATE telegram_pet_personality_traits SET season_key='wrong-season' WHERE pet_id=? AND trait_id='loyal'").run(corruptPersonalityPet);
+corruptPersonalityDb.database.exec('PRAGMA foreign_keys=ON');
+await assert.rejects(() => recordMoonpetBehaviour(corruptPersonalityDb, {
+  telegram_id: 'corrupt-personality-authority',
+  pet_id: corruptPersonalityPet,
+  season_key: TEST_SEASON_KEY,
+  event_key: 'corrupt-personality:second',
+  behaviour: 'care',
+  activity: 'care',
+}), /NOT NULL|authority/i, 'personality upsert rejects and rolls back an existing corrupted authority tuple');
+assert.equal(corruptPersonalityDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(corruptPersonalityPet).progress, 1,
+  'personality conflict update does not mutate a corrupted authority tuple');
+assert.equal(corruptPersonalityDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='corrupt-personality:second'").get().count, 0,
+  'personality event is rolled back when paired ledgers are corrupted');
+
+const corruptBossDb = seedPlayer('corrupt-boss-authority', false);
+const corruptBossPet = `pet:corrupt-boss-authority:${TEST_SEASON_KEY}:1`;
+await recordMoonpetMemory(corruptBossDb, {
+  telegram_id: 'corrupt-boss-authority',
+  pet_id: corruptBossPet,
+  season_key: TEST_SEASON_KEY,
+  event_key: 'corrupt-boss:first',
+  memory_type: 'boss_victory',
+  boss_id: 'alley_king',
+  milestone: 'first_boss_victory',
+});
+corruptBossDb.database.exec('PRAGMA foreign_keys=OFF');
+corruptBossDb.database.prepare("UPDATE telegram_pet_boss_victories SET telegram_id='corrupt-owner' WHERE pet_id=? AND boss_id='alley_king'").run(corruptBossPet);
+corruptBossDb.database.exec('PRAGMA foreign_keys=ON');
+await assert.rejects(() => recordMoonpetMemory(corruptBossDb, {
+  telegram_id: 'corrupt-boss-authority',
+  pet_id: corruptBossPet,
+  season_key: TEST_SEASON_KEY,
+  event_key: 'corrupt-boss:second',
+  memory_type: 'boss_victory',
+  boss_id: 'alley_king',
+}), /NOT NULL|authority/i, 'boss victory upsert rejects and rolls back an existing corrupted authority tuple');
+assert.equal(corruptBossDb.database.prepare("SELECT total_bosses_defeated FROM telegram_pet_memories WHERE pet_id=?").get(corruptBossPet).total_bosses_defeated, 1,
+  'boss memory counters do not advance when the boss victory tuple is corrupted');
+assert.equal(corruptBossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='corrupt-boss:second'").get().count, 0,
+  'boss victory event is rolled back when the ledger tuple is corrupted');
+
+const corruptAchievementDb = seedPlayer('corrupt-achievement-authority', false);
+const corruptAchievementPet = `pet:corrupt-achievement-authority:${TEST_SEASON_KEY}:1`;
+corruptAchievementDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, total_bosses_defeated)
+  VALUES (?, 'corrupt-achievement-authority', ?, 4)`).run(corruptAchievementPet, TEST_SEASON_KEY);
+await workerHooks.syncPetAchievementsForPet(corruptAchievementDb, 'corrupt-achievement-authority', corruptAchievementPet, TEST_SEASON_KEY);
+corruptAchievementDb.database.exec('PRAGMA foreign_keys=OFF');
+corruptAchievementDb.database.prepare("UPDATE telegram_pet_achievements SET season_key='wrong-season' WHERE pet_id=? AND achievement_id='boss_breaker'").run(corruptAchievementPet);
+corruptAchievementDb.database.exec('PRAGMA foreign_keys=ON');
+corruptAchievementDb.database.prepare('UPDATE telegram_pet_memories SET total_bosses_defeated=5 WHERE pet_id=?').run(corruptAchievementPet);
+await assert.rejects(
+  () => workerHooks.syncPetAchievementsForPet(corruptAchievementDb, 'corrupt-achievement-authority', corruptAchievementPet, TEST_SEASON_KEY),
+  /authority/i,
+  'achievement sync rejects an existing corrupted authority tuple',
+);
+assert.equal(corruptAchievementDb.database.prepare("SELECT progress FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='boss_breaker'").get(corruptAchievementPet).progress, 4,
+  'achievement conflict update does not mutate a corrupted authority tuple');
+assert.equal(corruptAchievementDb.database.prepare("SELECT unlocked_at FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='boss_breaker'").get(corruptAchievementPet).unlocked_at, null,
+  'achievement conflict update cannot unlock a corrupted authority tuple');
+
+const mismatchAchievementDb = seedPlayer('mismatch-achievement-authority', false);
+const mismatchAchievementPet = `pet:mismatch-achievement-authority:${TEST_SEASON_KEY}:1`;
+mismatchAchievementDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, total_bosses_defeated)
+  VALUES (?, 'mismatch-achievement-authority', ?, 5)`).run(mismatchAchievementPet, TEST_SEASON_KEY);
+mismatchAchievementDb.database.exec('PRAGMA foreign_keys=OFF');
+mismatchAchievementDb.database.prepare('UPDATE telegram_pet_instances SET slot_number=2 WHERE pet_id=?').run(mismatchAchievementPet);
+mismatchAchievementDb.database.exec('PRAGMA foreign_keys=ON');
+const mismatchAchievementRows = await workerHooks.syncPetAchievementsForPet(mismatchAchievementDb, 'mismatch-achievement-authority', mismatchAchievementPet, TEST_SEASON_KEY);
+assert.deepEqual(mismatchAchievementRows, [], 'achievement sync rejects a pet whose season slot and instance tuple disagree');
+assert.equal(mismatchAchievementDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_achievements WHERE pet_id=?').get(mismatchAchievementPet).count, 0,
+  'achievement sync writes no achievements without the canonical pet/telegram/season/slot tuple');
 
 setActivePetSlot(isolationDb, 'isolation-player', petC);
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events

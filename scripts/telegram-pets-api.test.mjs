@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { createHash, createHmac } from 'node:crypto';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const walletReconciliation = fs.readFileSync(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
@@ -141,6 +142,24 @@ assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');
 assert.ok(worker.includes("path === '/telegram-pets/action'"), '/telegram-pets/action route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/leaderboard'"), '/telegram-pets/leaderboard route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/state'"), '/telegram-pets/state route must exist');
+assert.ok(worker.includes("path === '/api/telegram/pets/identity/audit'"), 'production identity authority audit endpoint must exist');
+const identityAuditRouteSource = routeBlock('/api/telegram/pets/identity/audit');
+assert.ok(identityAuditRouteSource.includes('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)'),
+  'identity authority audit endpoint must require valid Telegram authentication');
+assert.ok(identityAuditRouteSource.includes("readTelegramAuthEvidenceFromAuthorization(request)"),
+  'identity authority audit endpoint must read Telegram auth from the Authorization header');
+assert.ok(identityAuditRouteSource.includes("url.searchParams.has('telegram_auth')") && identityAuditRouteSource.includes("url.searchParams.has('auth_evidence')"),
+  'identity authority audit endpoint must reject URL credentials');
+assert.ok(identityAuditRouteSource.indexOf("'/api/telegram/pets/identity/audit:preauth'") < identityAuditRouteSource.indexOf('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)'),
+  'identity authority audit endpoint must apply an IP rate limit before Telegram auth verification');
+assert.ok(identityAuditRouteSource.includes('buildMoonpetIdentityAuthorityAudit(env.DB, verified.telegramId'),
+  'identity authority audit endpoint must read through pet-authorized audit helper');
+assert.ok(identityAuditRouteSource.includes('identity_authority_audit_failed'),
+  'identity authority audit endpoint must return an explicit failure when diagnostics cannot be read');
+assert.ok(identityAuditRouteSource.includes("'Cache-Control': 'no-store'"),
+  'identity authority audit endpoint must mark all responses no-store');
+assert.doesNotMatch(identityAuditRouteSource, /\b(?:INSERT|UPDATE|DELETE|DROP|ALTER)\b/i,
+  'identity authority audit endpoint must remain read only');
 assert.ok(!worker.includes("path === '/telegram-pets/season/slots'"), '/telegram-pets/season/slots must not expose owner-specific slot data without auth');
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
@@ -1641,10 +1660,18 @@ class SqliteD1Statement {
   }
 
   async first() {
+    if (this.adapter.failReadSqlPattern && this.adapter.failReadSqlPattern.test(this.sql)) {
+      this.adapter.failReadSqlPattern = null;
+      return { success: false, error: 'simulated_d1_read_failure' };
+    }
     return this.adapter.database.prepare(this.sql).get(...this.args) || null;
   }
 
   async all() {
+    if (this.adapter.failReadSqlPattern && this.adapter.failReadSqlPattern.test(this.sql)) {
+      this.adapter.failReadSqlPattern = null;
+      return { success: false, error: 'simulated_d1_read_failure' };
+    }
     return { results: this.adapter.database.prepare(this.sql).all(...this.args) };
   }
 
@@ -1668,6 +1695,7 @@ class SqliteD1 {
     this.beforeBatchSqlPattern = null;
     this.beforeBatchSqlCallback = null;
     this.beforeRun = null;
+    this.failReadSqlPattern = null;
   }
 
   prepare(sql) {
@@ -1685,6 +1713,10 @@ class SqliteD1 {
   beforeBatchSql(pattern, callback) {
     this.beforeBatchSqlPattern = pattern;
     this.beforeBatchSqlCallback = callback;
+  }
+
+  failReadOnSql(pattern) {
+    this.failReadSqlPattern = pattern;
   }
 
   async batch(statements) {
@@ -1763,6 +1795,180 @@ function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 7
     .run(telegramId, petId);
   return petId;
 }
+
+function buildSignedTelegramAuth(telegramId, botToken = '123456:test-token') {
+  const auth = {
+    id: String(telegramId),
+    first_name: 'Audit',
+    username: `audit_${telegramId}`,
+    auth_date: String(Math.floor(Date.now() / 1000)),
+  };
+  const checkString = Object.entries(auth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+  const secret = createHash('sha256').update(botToken).digest();
+  return {
+    ...auth,
+    hash: createHmac('sha256', secret).update(checkString).digest('hex'),
+  };
+}
+
+function seedIdentityAuditPet(db, telegramId, slotNumber = 1) {
+  const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_profiles
+    (telegram_id, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health)
+    VALUES (?, 'Audit Pet', 100, 2, 80, 0, 80, 80, 100)`).run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'free', ?, 0, 'active')`).run(petId, telegramId, slotNumber, `audit:${slotNumber}`);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, source_profile_updated_at, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'Audit Pet', 100, 2, 80, 0, 80, 80, 100, 'fixture', 'active')`).run(petId, telegramId, slotNumber);
+  return petId;
+}
+
+function identityAuditCounts(db) {
+  const counts = {};
+  for (const table of [
+    'telegram_pet_memories',
+    'telegram_pet_personality_traits',
+    'telegram_pet_boss_victories',
+    'telegram_pet_identity_events',
+    'telegram_pet_identity_analytics',
+    'telegram_pet_achievements',
+  ]) {
+    counts[table] = db.database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count;
+  }
+  return counts;
+}
+
+const identityAuditDb = new SqliteD1();
+const identityAuditPet = seedIdentityAuditPet(identityAuditDb, '9001001', 1);
+const otherAuditPet = seedIdentityAuditPet(identityAuditDb, '9002002', 1);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at, total_bosses_defeated, milestones)
+  VALUES (?, '9001001', 'pet-s2026-003', '2026-08-21T00:00:00Z', 1, '["first_run"]')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress)
+  VALUES (?, '9001001', 'pet-s2026-003', 'curious', 2)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories)
+  VALUES (?, '9001001', 'pet-s2026-003', 'alley_king', 1)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_identity_events
+  (event_id, pet_id, telegram_id, season_key, event_key, event_kind)
+  VALUES ('identity-audit-event', ?, '9001001', 'pet-s2026-003', 'identity:audit:event', 'memory')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_identity_analytics
+  (analytics_id, pet_id, telegram_id, season_key, event_type, milestone_id)
+  VALUES ('identity-audit-analytics', ?, '9001001', 'pet-s2026-003', 'memory_milestone', 'first_run')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target)
+  VALUES (?, '9001001', 'pet-s2026-003', 'boss_breaker', 1, 5)`).run(identityAuditPet);
+
+const identityAuditEnv = { DB: identityAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' };
+const identityAuditAuth = JSON.stringify(buildSignedTelegramAuth('9001001'));
+const identityAuditAuthorization = { Authorization: `Bearer ${identityAuditAuth}` };
+const identityAuditBefore = identityAuditCounts(identityAuditDb);
+const identityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(identityAuditResponse.status, 200, 'identity audit endpoint accepts an authenticated owner pet request');
+assert.equal(identityAuditResponse.headers.get('Cache-Control'), 'no-store', 'identity audit endpoint must not cache diagnostics');
+const identityAuditPayload = await identityAuditResponse.json();
+assert.equal(identityAuditPayload.pet_id, identityAuditPet, 'identity audit endpoint returns the requested owned pet');
+assert.equal(identityAuditPayload.telegram_id, '9001001', 'identity audit endpoint is scoped to the authenticated Telegram owner');
+assert.equal(identityAuditPayload.memories_count, 1, 'identity audit endpoint returns owned memory diagnostics');
+assert.deepEqual(identityAuditPayload.personality_traits.map((row) => row.trait_id), ['curious'],
+  'identity audit endpoint returns only owned personality rows');
+assert.deepEqual(identityAuditPayload.achievements.map((row) => row.achievement_id), ['boss_breaker'],
+  'identity audit endpoint returns only owned achievement rows');
+assert.deepEqual(identityAuditPayload.boss_victories.map((row) => row.boss_id), ['alley_king'],
+  'identity audit endpoint returns only owned boss victory rows');
+assert.equal(identityAuditPayload.identity_events.length, 1, 'identity audit endpoint returns bounded owned identity history');
+assert.deepEqual(identityAuditPayload.identity_analytics.map((row) => row.analytics_id), ['identity-audit-analytics'],
+  'identity audit endpoint returns owned identity analytics rows');
+assert.equal(identityAuditPayload.invalid_authority_rows.length, 0, 'identity audit endpoint reports zero invalid rows for owned fixture');
+assert.deepEqual(identityAuditCounts(identityAuditDb), identityAuditBefore,
+  'identity audit GET must not mutate memories, personality, achievements, boss victories, or identity events');
+
+const urlCredentialAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?telegram_auth=${encodeURIComponent(identityAuditAuth)}&pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
+), identityAuditEnv);
+assert.equal(urlCredentialAuditResponse.status, 400, 'identity audit endpoint rejects URL Telegram credentials');
+assert.equal((await urlCredentialAuditResponse.json()).error, 'telegram_auth_url_credentials_rejected');
+
+const crossOwnerResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(otherAuditPet)}&season_key=pet-s2026-003`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(crossOwnerResponse.status, 403, 'identity audit endpoint rejects another player pet_id');
+const crossOwnerPayload = await crossOwnerResponse.json();
+assert.equal(crossOwnerPayload.error, 'identity_authority_scope_not_found');
+assert.equal(Object.prototype.hasOwnProperty.call(crossOwnerPayload, 'pet_id'), false,
+  'cross-owner identity audit rejection must not return another player pet payload');
+assert.deepEqual(identityAuditCounts(identityAuditDb), identityAuditBefore,
+  'rejected identity audit GET must not mutate identity ledgers');
+
+identityAuditDb.database.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=?").run(identityAuditPet);
+identityAuditDb.database.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=?").run(identityAuditPet);
+const archivedAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(archivedAuditResponse.status, 200, 'identity audit endpoint supports explicit owned archived pet audits');
+const archivedAuditPayload = await archivedAuditResponse.json();
+assert.equal(archivedAuditPayload.pet_id, identityAuditPet);
+assert.equal(archivedAuditPayload.identity_analytics.length, 1, 'archived pet audit still returns owned identity analytics');
+
+const invalidDiagnosticDb = new SqliteD1();
+const invalidDiagnosticPet = seedIdentityAuditPet(invalidDiagnosticDb, '9004004', 1);
+invalidDiagnosticDb.database.exec('PRAGMA foreign_keys=OFF');
+invalidDiagnosticDb.database.prepare(`INSERT INTO telegram_pet_identity_analytics
+  (analytics_id, pet_id, telegram_id, season_key, event_type)
+  VALUES ('invalid-owned-pet-analytics', ?, '9004999', 'wrong-season', 'memory_milestone')`).run(invalidDiagnosticPet);
+const invalidDiagnosticAuth = JSON.stringify(buildSignedTelegramAuth('9004004'));
+const invalidDiagnosticResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(invalidDiagnosticPet)}&season_key=pet-s2026-003`,
+  { headers: { Authorization: `Telegram ${invalidDiagnosticAuth}` } },
+), { DB: invalidDiagnosticDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
+assert.equal(invalidDiagnosticResponse.status, 200, 'identity audit endpoint can report invalid rows for an authorized pet');
+const invalidDiagnosticPayload = await invalidDiagnosticResponse.json();
+assert.deepEqual(
+  invalidDiagnosticPayload.invalid_authority_rows.map((row) => ({ table_name: row.table_name, row_key: row.row_key, reason: row.reason })),
+  [{ table_name: 'telegram_pet_identity_analytics', row_key: 'invalid-owned-pet-analytics', reason: 'season_slot_tuple_missing' }],
+  'identity audit endpoint must not silently hide invalid rows attached to an authorized pet',
+);
+assert.equal(Object.prototype.hasOwnProperty.call(invalidDiagnosticPayload.invalid_authority_rows[0], 'telegram_id'), false,
+  'identity audit endpoint must redact mismatched telegram_id from invalid authority rows');
+assert.equal(Object.prototype.hasOwnProperty.call(invalidDiagnosticPayload.invalid_authority_rows[0], 'season_key'), false,
+  'identity audit endpoint must redact mismatched season_key from invalid authority rows');
+
+const brokenAuditDb = new SqliteD1();
+const brokenAuditPet = seedIdentityAuditPet(brokenAuditDb, '9003003', 1);
+brokenAuditDb.database.exec('DROP VIEW moonpet_invalid_identity_authority_rows');
+const brokenAuditAuth = JSON.stringify(buildSignedTelegramAuth('9003003'));
+const brokenAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(brokenAuditPet)}&season_key=pet-s2026-003`,
+  { headers: { Authorization: `Bearer ${brokenAuditAuth}` } },
+), { DB: brokenAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
+assert.equal(brokenAuditResponse.status, 500, 'identity audit endpoint must fail closed when verifier view is unavailable');
+assert.equal(brokenAuditResponse.headers.get('Cache-Control'), 'no-store', 'failed identity audit diagnostics must not be cached');
+assert.equal((await brokenAuditResponse.json()).error, 'identity_authority_audit_failed');
+
+const failedReadAuditDb = new SqliteD1();
+const failedReadAuditPet = seedIdentityAuditPet(failedReadAuditDb, '9005005', 1);
+failedReadAuditDb.failReadOnSql(/FROM telegram_pet_identity_analytics/i);
+const failedReadAuditAuth = JSON.stringify(buildSignedTelegramAuth('9005005'));
+const failedReadAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(failedReadAuditPet)}&season_key=pet-s2026-003`,
+  { headers: { Authorization: `Bearer ${failedReadAuditAuth}` } },
+), { DB: failedReadAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
+assert.equal(failedReadAuditResponse.status, 500, 'identity audit endpoint must reject D1 success:false reads');
+assert.equal((await failedReadAuditResponse.json()).error, 'identity_authority_audit_failed');
 
 function insertWalletRecoveryRequired(db, telegramId) {
   db.database.prepare(`
