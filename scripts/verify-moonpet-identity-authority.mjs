@@ -35,11 +35,22 @@ function hasColumnReference(sql, column) {
 }
 
 function hasBoundAuthorityPredicate(sql, column) {
-  return new RegExp(`\\b${column}\\s*=\\s*\\?`, 'i').test(sql);
+  return new RegExp(`(?:\\b[a-z_][a-z0-9_]*\\s*\\.\\s*)?\\b${column}\\s*=\\s*\\?`, 'i').test(sql);
 }
 
 function hasCompleteAuthorityWhereClause(whereClause) {
-  return ['pet_id', 'telegram_id', 'season_key'].every((column) => hasBoundAuthorityPredicate(whereClause, column));
+  const predicate = (column) => `(?:\\b[a-z_][a-z0-9_]*\\s*\\.\\s*)?\\b${column}\\s*=\\s*\\?`;
+  const columns = ['pet_id', 'telegram_id', 'season_key'];
+  const permutations = [
+    ['pet_id', 'telegram_id', 'season_key'],
+    ['pet_id', 'season_key', 'telegram_id'],
+    ['telegram_id', 'pet_id', 'season_key'],
+    ['telegram_id', 'season_key', 'pet_id'],
+    ['season_key', 'pet_id', 'telegram_id'],
+    ['season_key', 'telegram_id', 'pet_id'],
+  ];
+  return columns.every((column) => hasBoundAuthorityPredicate(whereClause, column)) &&
+    permutations.some((order) => new RegExp(order.map(predicate).join('\\s+AND\\s+'), 'i').test(whereClause));
 }
 
 function hasAnyBoundAuthorityPredicate(whereClause) {
@@ -269,11 +280,19 @@ function assertRequiredTablesAndIndexes(db) {
   for (const index of [
     'idx_telegram_pet_identity_events_owner',
     'idx_telegram_pet_identity_events_pet_kind_day',
-    'idx_telegram_pet_identity_analytics_owner',
     'idx_telegram_pet_achievements_owner',
   ]) {
     const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?").get(index);
     if (!row) throw new Error(`missing identity authority index: ${index}`);
+  }
+  const analyticsIndex = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_telegram_pet_identity_analytics_owner'").get();
+  if (!analyticsIndex) throw new Error('missing identity authority index: idx_telegram_pet_identity_analytics_owner');
+  const analyticsColumns = db.prepare("PRAGMA index_info('idx_telegram_pet_identity_analytics_owner')").all()
+    .sort((a, b) => Number(a.seqno) - Number(b.seqno))
+    .map((row) => row.name);
+  const expectedAnalyticsColumns = ['pet_id', 'telegram_id', 'season_key', 'created_at'];
+  if (JSON.stringify(analyticsColumns) !== JSON.stringify(expectedAnalyticsColumns)) {
+    throw new Error(`idx_telegram_pet_identity_analytics_owner columns must be ${expectedAnalyticsColumns.join(', ')}`);
   }
   const view = db.prepare("SELECT name FROM sqlite_master WHERE type = 'view' AND name = 'moonpet_invalid_identity_authority_rows'").get();
   if (!view) throw new Error('missing identity authority verification view');

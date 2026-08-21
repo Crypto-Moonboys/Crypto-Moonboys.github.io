@@ -229,7 +229,7 @@ function buildCorsHeaders(request, env) {
     : DEFAULT_CORS_ALLOWED_ORIGINS;
   const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Vary': 'Origin',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -15319,7 +15319,10 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
         progress = MAX(telegram_pet_achievements.progress, excluded.progress), target = excluded.target,
         unlocked_at = COALESCE(telegram_pet_achievements.unlocked_at,
           CASE WHEN MAX(telegram_pet_achievements.progress, excluded.progress) >= excluded.target THEN CURRENT_TIMESTAMP ELSE NULL END),
-        updated_at = CURRENT_TIMESTAMP`)
+        updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_pet_achievements.pet_id = excluded.pet_id
+        AND telegram_pet_achievements.telegram_id = excluded.telegram_id
+        AND telegram_pet_achievements.season_key = excluded.season_key`)
       .bind(petId, telegramId, seasonKey, achievementId, progress, definition.target, progress, definition.target);
   });
   await db.batch(statements);

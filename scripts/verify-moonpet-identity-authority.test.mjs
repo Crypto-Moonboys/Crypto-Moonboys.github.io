@@ -52,6 +52,16 @@ try {
   assert.equal(auditRuntimeIdentityQueries({ root: selectOnlyRoot }).length, 1,
     'verifier does not accept authority columns that appear only in SELECT');
 
+  const orRuntimeRoot = path.join(tmpRoot, 'or');
+  fs.mkdirSync(orRuntimeRoot);
+  fs.writeFileSync(path.join(orRuntimeRoot, 'or.js'), `
+    export async function bad(db, petId, telegramId, seasonKey) {
+      return db.prepare(\`SELECT * FROM telegram_pet_memories WHERE pet_id = ? OR telegram_id = ? OR season_key = ?\`).bind(petId, telegramId, seasonKey).first();
+    }
+  `);
+  assert.equal(auditRuntimeIdentityQueries({ root: orRuntimeRoot }).length, 1,
+    'verifier rejects OR-conjoined authority predicates');
+
   const goodRuntimeRoot = path.join(tmpRoot, 'good');
   fs.mkdirSync(goodRuntimeRoot);
   fs.writeFileSync(path.join(goodRuntimeRoot, 'good.js'), `

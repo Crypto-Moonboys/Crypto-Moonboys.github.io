@@ -6,6 +6,7 @@ on:
       - deployments/d1-evidence-request.json
       - scripts/verify-d1-production-migrations.mjs
       - scripts/verify-d1-production-migrations.test.mjs
+      - scripts/verify-d1-identity-authority-audit.mjs
       - scripts/report-d1-query-failure.mjs
       - workers/moonboys-api/migrations/041_telegram_pet_repeat_reward_slots.sql
       - workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql
@@ -58,6 +59,7 @@ jobs:
         run: |
           node --check scripts/verify-d1-production-migrations.mjs
           node --check scripts/verify-d1-production-migrations.test.mjs
+          node --check scripts/verify-d1-identity-authority-audit.mjs
           node --check scripts/report-d1-query-failure.mjs
       - name: Verify required migration contract
         run: node scripts/verify-d1-production-migrations.test.mjs
@@ -161,6 +163,7 @@ jobs:
           echo "status=$status" >> "$GITHUB_OUTPUT"
       - name: Fail on production identity authority violations
         if: steps.d1-query.outputs.status == '0'
+        id: d1-identity-audit-verify
         shell: bash
         run: |
           if [ "${{ steps.d1-identity-audit.outputs.status }}" != "0" ]; then
@@ -168,9 +171,32 @@ jobs:
               d1-identity-authority-audit.json \
               d1-identity-authority-audit.stderr \
               d1-identity-authority-audit-failure.txt
+            echo "status=${{ steps.d1-identity-audit.outputs.status }}" >> "$GITHUB_OUTPUT"
             exit "${{ steps.d1-identity-audit.outputs.status }}"
           fi
-          node -e "const fs=require('fs'); const payload=JSON.parse(fs.readFileSync('d1-identity-authority-audit.json','utf8')); const rows=Array.isArray(payload) ? (payload[0]?.results || []) : (payload.results || []); const raw=rows[0]?.invalid_identity_authority_rows ?? rows[0]?.count; const validRaw=typeof raw==='number' || (typeof raw==='string' && /^[0-9]+$/.test(raw.trim())); const count=validRaw ? Number(raw) : NaN; if(!Number.isSafeInteger(count)||count<0){ console.error('Invalid identity authority audit output'); process.exit(1); } if(count > 0){ console.error('Expected 0 invalid identity authority rows, got '+count); process.exit(1); } console.log('0 invalid identity authority rows');"
+          set +e
+          node scripts/verify-d1-identity-authority-audit.mjs \
+            --input d1-identity-authority-audit.json \
+            --output d1-identity-authority-audit-result.txt \
+            2> d1-identity-authority-audit-failure.txt
+          verify_status=$?
+          set -e
+          echo "status=$verify_status" >> "$GITHUB_OUTPUT"
+          if [ "$verify_status" != "0" ]; then
+            cat d1-identity-authority-audit-failure.txt
+            exit "$verify_status"
+          fi
+      - name: Upload sanitised identity audit failure diagnostics
+        if: always() && steps.d1-query.outputs.status == '0' && steps.d1-identity-audit-verify.outputs.status != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-identity-authority-audit-failure-diagnostics
+          path: |
+            d1-identity-authority-audit-failure.txt
+            d1-identity-authority-audit.json
+            d1-identity-authority-audit.stderr
+          if-no-files-found: error
+          retention-days: 30
       - name: Upload sanitised evidence
         if: steps.d1-query.outputs.status == '0'
         uses: actions/upload-artifact@v4
@@ -179,5 +205,6 @@ jobs:
           path: |
             d1-production-migration-evidence.json
             d1-identity-authority-audit.json
+            d1-identity-authority-audit-result.txt
           if-no-files-found: error
           retention-days: 90

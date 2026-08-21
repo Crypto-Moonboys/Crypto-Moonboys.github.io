@@ -45,7 +45,12 @@ async function ownedPet(db, petId, seasonKey, telegramId = null) {
   const ownerClause = telegramId == null ? '' : ' AND s.telegram_id=?';
   const args = telegramId == null ? [petId, seasonKey] : [petId, seasonKey, String(telegramId)];
   return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, i.level, i.pet_xp
-    FROM telegram_pet_season_slots s JOIN telegram_pet_instances i ON i.pet_id=s.pet_id
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i
+      ON i.pet_id=s.pet_id
+     AND i.telegram_id=s.telegram_id
+     AND i.season_key=s.season_key
+     AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.season_key=?${ownerClause} LIMIT 1`).bind(...args).first();
 }
 

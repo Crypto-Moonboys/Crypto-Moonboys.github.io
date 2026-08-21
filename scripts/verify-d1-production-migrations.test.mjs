@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
   REQUIRED_D1_MIGRATIONS,
+  normalizeD1StatementResult,
   validateRequest,
   verifyD1MigrationPayload,
 } from './verify-d1-production-migrations.mjs';
+import { verifyD1IdentityAuthorityAuditPayload } from './verify-d1-identity-authority-audit.mjs';
 
 const request = JSON.parse(fs.readFileSync(new URL('../deployments/d1-evidence-request.json', import.meta.url), 'utf8'));
 const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-migration-verify.yml', import.meta.url), 'utf8');
@@ -26,6 +28,7 @@ assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/069_moonpet_b
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/070_moonpet_pet_identity_achievement_authority\.sql/, 'migration 070 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/071_moonpet_arena_pet_authority\.sql/, 'migration 071 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/072_moonpet_identity_authority_verification\.sql/, 'migration 072 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /scripts\/verify-d1-identity-authority-audit\.mjs/, 'identity authority audit parser changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -77,16 +80,16 @@ assert.match(remoteQueryStep, /071_moonpet_arena_pet_authority\.sql/, 'the workf
 assert.match(remoteQueryStep, /072_moonpet_identity_authority_verification\.sql/, 'the workflow_dispatch D1 query must request migration 072 from production');
 assert.match(remoteIdentityAuditStep, /SELECT COUNT\(\*\) AS invalid_identity_authority_rows FROM moonpet_invalid_identity_authority_rows/,
   'workflow_dispatch must query the production identity authority verification view');
-assert.match(remoteIdentityAuditStep, /count > 0/,
-  'workflow_dispatch must fail when production has invalid identity authority rows');
-assert.match(remoteIdentityAuditStep, /Number\.isSafeInteger\(count\)/,
-  'workflow_dispatch must fail closed when production identity authority audit output is malformed');
-assert.match(remoteIdentityAuditStep, /\^\[0-9\]\+\$/,
-  'workflow_dispatch must reject empty, decimal, or negative string counts');
-assert.match(remoteIdentityAuditStep, /count<0/,
-  'workflow_dispatch must reject negative production identity authority counts');
-assert.match(remoteIdentityAuditStep, /0 invalid identity authority rows/,
-  'workflow_dispatch must report the expected zero-invalid-row audit result');
+assert.match(remoteIdentityAuditStep, /verify-d1-identity-authority-audit\.mjs/,
+  'workflow_dispatch must use the shared D1 response normalisation parser for identity authority audits');
+assert.match(remoteIdentityAuditStep, /d1-identity-audit-verify/,
+  'workflow_dispatch must expose a distinct identity authority audit verification status');
+assert.match(workflow, /d1-query-failure-diagnostics/,
+  'workflow_dispatch must upload migration query failure diagnostics separately');
+assert.match(workflow, /d1-identity-authority-audit-failure-diagnostics/,
+  'workflow_dispatch must upload identity audit failure diagnostics separately');
+assert.match(workflow, /d1-identity-authority-audit-result\.txt/,
+  'workflow_dispatch must upload successful identity audit evidence');
 assert.ok(
   REQUIRED_D1_MIGRATIONS.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be detected by the production migration verification script',
@@ -125,6 +128,33 @@ assert.deepEqual(
   'the production evidence request must track the complete exact migration gate',
 );
 assert.doesNotThrow(() => validateRequest(request), 'the checked-in D1 evidence request must satisfy the migration contract');
+
+assert.doesNotThrow(() => normalizeD1StatementResult([{ success: true, results: [] }]), 'normaliser accepts array statement responses');
+assert.doesNotThrow(() => normalizeD1StatementResult({ result: [{ success: true, results: [] }] }), 'normaliser accepts result[] responses');
+assert.doesNotThrow(() => normalizeD1StatementResult({ success: true, results: [] }), 'normaliser accepts results[] object responses');
+assert.throws(() => normalizeD1StatementResult([{ success: false, results: [] }]), /did not report success/,
+  'normaliser requires success === true');
+for (const payload of [
+  [{ success: true, results: [{ invalid_identity_authority_rows: 0 }] }],
+  { result: [{ success: true, results: [{ invalid_identity_authority_rows: '0' }] }] },
+  { success: true, results: [{ count: 0 }] },
+]) assert.deepEqual(verifyD1IdentityAuthorityAuditPayload(payload), { invalid_identity_authority_rows: 0 },
+  'identity audit parser accepts every Wrangler D1 response shape');
+for (const value of [null, '', '-1', -1, '1.5', 1.5]) assert.throws(
+  () => verifyD1IdentityAuthorityAuditPayload([{ success: true, results: [{ invalid_identity_authority_rows: value }] }]),
+  /Invalid identity authority audit output/,
+  `identity audit parser rejects malformed count ${JSON.stringify(value)}`,
+);
+assert.throws(
+  () => verifyD1IdentityAuthorityAuditPayload([{ success: false, results: [{ invalid_identity_authority_rows: 0 }] }]),
+  /did not report success/,
+  'identity audit parser requires success === true',
+);
+assert.throws(
+  () => verifyD1IdentityAuthorityAuditPayload([{ success: true, results: [{ invalid_identity_authority_rows: 1 }] }]),
+  /Expected 0 invalid identity authority rows, got 1/,
+  'identity audit parser fails deployment when invalid authority rows exist',
+);
 
 const withoutRepeatSlots = {
   ...request,
