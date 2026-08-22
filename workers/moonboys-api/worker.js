@@ -15312,7 +15312,8 @@ async function runPetCrystalExpedition(db, telegramId, now = new Date(), request
   if (!state.expedition_attempts_left) return { accepted: false, reason: 'expedition_daily_limit', state };
   if (Number(state.pet.energy || 0) < state.expedition.energy) return { accepted: false, reason: 'pet_tired', state };
   const attempt = state.expedition_attempts + 1;
-  const resolved = resolvePetExpeditionReward(state.day_key, telegramId, attempt, state.pet.level);
+  const level = getPetLevel(state.pet.pet_xp);
+  const resolved = resolvePetExpeditionReward(state.day_key, telegramId, attempt, level);
   const settlementKey = String(requestKey || `${state.day_key}:${attempt}`).slice(0, 120);
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_expedition', idempotency_key: settlementKey,

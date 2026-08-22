@@ -91,6 +91,8 @@ const {
   buildPetProgressMenuReplyMarkup,
   normalizePetActivityType,
   computePetActivityRewards,
+  getPetEconomyState,
+  runPetCrystalExpedition,
   formatPetActivityLine,
   buildPetMediaUrl,
   buildPetRunChoiceReplyMarkup,
@@ -2311,6 +2313,31 @@ assert.equal(insufficientPurchaseDb.database.prepare("SELECT moon_gold FROM tele
   'insufficient shop purchase must not debit the account wallet');
 assert.equal(insufficientPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-insufficient' AND event_key = 'callback:buy:insufficient' AND status = 'accepted'").get().count, 0,
   'insufficient shop purchase must not create an accepted receipt');
+
+const staleExpeditionDb = seedRepeatRewardPlayer('expedition-stale-level', 20);
+staleExpeditionDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=5000, level=51, energy=20
+  WHERE telegram_id='expedition-stale-level'`).run();
+staleExpeditionDb.database.prepare(`UPDATE telegram_pet_instances
+  SET pet_xp=5000, level=51, energy=20
+  WHERE telegram_id='expedition-stale-level'`).run();
+const staleExpeditionNow = new Date('2026-08-19T12:00:00Z');
+const staleExpeditionState = await getPetEconomyState(staleExpeditionDb, 'expedition-stale-level', null, staleExpeditionNow);
+assert.equal(staleExpeditionState.expedition.key, 'crystal_caves',
+  'Crystal Expedition selection must use XP-derived visible level for stale stored-level pets');
+assert.equal(staleExpeditionState.expedition.energy, 18);
+const staleExpeditionResult = await runPetCrystalExpedition(staleExpeditionDb, 'expedition-stale-level', staleExpeditionNow, 'stale-level-expedition');
+assert.equal(staleExpeditionResult.accepted, true);
+assert.equal(staleExpeditionResult.expedition.key, 'crystal_caves',
+  'Crystal Expedition settlement must use the same XP-derived tier as selection');
+assert.equal(staleExpeditionDb.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='expedition-stale-level'").get().energy, 2,
+  'Crystal Expedition settlement must charge the selected XP-derived tier energy cost');
+const staleExpeditionClaim = staleExpeditionDb.database.prepare(`SELECT metadata FROM telegram_pet_reward_claims
+  WHERE telegram_id='expedition-stale-level' AND source='pet_expedition'`).get();
+assert.equal(JSON.parse(staleExpeditionClaim.metadata).context.expedition_key, 'crystal_caves',
+  'Crystal Expedition reward claim reason must match the XP-derived reward tier');
+assert.equal(JSON.parse(staleExpeditionClaim.metadata).context.energy_cost, 18,
+  'Crystal Expedition claim metadata must record the selected XP-derived tier cost');
 
 const recoveryFreezePurchaseDb = seedRepeatRewardPlayer('purchase-recovery-freeze', 70);
 recoveryFreezePurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-recovery-freeze'").run();
