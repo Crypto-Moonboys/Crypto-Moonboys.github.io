@@ -39,6 +39,7 @@ const ACTION_TRACK_AWARDS = Object.freeze({
   arena_attack: Object.freeze({ arena: 5 }),
   arena_block: Object.freeze({ arena: 5 }),
   arena_complete: Object.freeze({ arena: 20 }),
+  kaiju_win: Object.freeze({ arena: 16 }),
   job: Object.freeze({ job: 14 }),
   timed_work: Object.freeze({ job: 20 }),
   daily_chest: Object.freeze({ bond: 8 }),
@@ -74,10 +75,19 @@ function firstBatchRow(result) {
   return Array.isArray(result?.results) ? (result.results[0] || null) : null;
 }
 
-function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey) {
+function normalizePetSpecialistAuthority(telegramId, options = {}) {
+  const id = String(telegramId || '').trim();
+  const petId = String(options.pet_id || options.petId || '').trim();
+  const seasonKey = String(options.season_key || options.seasonKey || '').trim();
+  return id && petId && seasonKey ? { telegram_id: id, pet_id: petId, season_key: seasonKey } : null;
+}
+
+function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey, authority = null) {
   const assignments = ['daily_key = ?', 'updated_at = CURRENT_TIMESTAMP'];
   const bindings = [dayKey];
-  const claimSql = 'EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?)';
+  const stateTable = authority ? 'telegram_pet_specialist_progression' : 'telegram_pet_progression_state';
+  const eventTable = authority ? 'telegram_pet_specialist_events' : 'telegram_pet_runtime_events';
+  const claimSql = `EXISTS (SELECT 1 FROM ${eventTable} WHERE id = ?)`;
 
   for (const [track, columns] of Object.entries(TRACK_COLUMNS)) {
     const requested = Math.max(0, Math.floor(Number(plan.tracks?.[track]) || 0));
@@ -103,9 +113,12 @@ function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey) {
     bindings.push(...jsonBindings);
   }
 
-  bindings.push(telegramId, claimId);
+  if (authority) bindings.push(authority.pet_id, telegramId, authority.season_key, claimId);
+  else bindings.push(telegramId, claimId);
   return {
-    sql: `UPDATE telegram_pet_progression_state SET ${assignments.join(', ')} WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?) RETURNING *`,
+    sql: authority
+      ? `UPDATE ${stateTable} SET ${assignments.join(', ')} WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND EXISTS (SELECT 1 FROM ${eventTable} WHERE id = ?) RETURNING *`
+      : `UPDATE ${stateTable} SET ${assignments.join(', ')} WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM ${eventTable} WHERE id = ?) RETURNING *`,
     bindings,
   };
 }
@@ -183,9 +196,24 @@ export function buildPetGearSummary(rows = []) {
   return lines.join('\n');
 }
 
-export async function getOrCreatePetRuntimeState(db, telegramId, dayKey) {
+export async function getOrCreatePetRuntimeState(db, telegramId, dayKey, options = {}) {
   const id = String(telegramId || '').trim();
   const day = String(dayKey || '').trim();
+  const authority = normalizePetSpecialistAuthority(id, options);
+  if (authority) {
+    await db.prepare(`INSERT OR IGNORE INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key, daily_key)
+      SELECT ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)`)
+      .bind(authority.pet_id, id, authority.season_key, day, authority.pet_id, id, authority.season_key).run();
+    let state = await db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
+      .bind(authority.pet_id, id, authority.season_key).first();
+    if (state && state.daily_key !== day) {
+      await db.prepare(`UPDATE telegram_pet_specialist_progression SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
+        .bind(day, authority.pet_id, id, authority.season_key).run();
+      state = await db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
+        .bind(authority.pet_id, id, authority.season_key).first();
+    }
+    return state;
+  }
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, day).run();
   let state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
   if (state && state.daily_key !== day) {
@@ -202,26 +230,41 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
   if (!id || !stableEventKey || !plan || typeof db?.batch !== 'function') return { ok: false, code: 'invalid_runtime_award' };
 
   const dayKey = String(options.day_key || new Date().toISOString().slice(0, 10));
+  const authority = normalizePetSpecialistAuthority(id, options);
   const claimId = crypto.randomUUID();
-  const stateUpdate = buildAtomicStateUpdate(plan, claimId, id, dayKey);
-  const statements = [
-    db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, dayKey),
-    db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id),
-    db.prepare(`INSERT INTO telegram_pet_runtime_events (id, telegram_id, event_key, action, payload_json) VALUES (?, ?, ?, ?, ?) ON CONFLICT (telegram_id, event_key) DO NOTHING RETURNING id`).bind(claimId, id, stableEventKey, plan.action, JSON.stringify(plan)),
-    db.prepare(stateUpdate.sql).bind(...stateUpdate.bindings),
-  ];
+  const stateUpdate = buildAtomicStateUpdate(plan, claimId, id, dayKey, authority);
+  const statements = authority
+    ? [
+      db.prepare(`INSERT OR IGNORE INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key, daily_key)
+        SELECT ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)`)
+        .bind(authority.pet_id, id, authority.season_key, dayKey, authority.pet_id, id, authority.season_key),
+      db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
+        .bind(authority.pet_id, id, authority.season_key),
+      db.prepare(`INSERT INTO telegram_pet_specialist_events (id, pet_id, telegram_id, season_key, event_key, action, payload_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (pet_id, telegram_id, season_key, event_key) DO NOTHING RETURNING id`)
+        .bind(claimId, authority.pet_id, id, authority.season_key, stableEventKey, plan.action, JSON.stringify(plan)),
+      db.prepare(stateUpdate.sql).bind(...stateUpdate.bindings),
+    ]
+    : [
+      db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, dayKey),
+      db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id),
+      db.prepare(`INSERT INTO telegram_pet_runtime_events (id, telegram_id, event_key, action, payload_json) VALUES (?, ?, ?, ?, ?) ON CONFLICT (telegram_id, event_key) DO NOTHING RETURNING id`).bind(claimId, id, stableEventKey, plan.action, JSON.stringify(plan)),
+      db.prepare(stateUpdate.sql).bind(...stateUpdate.bindings),
+    ];
 
   let materialBeforeIndex = -1;
   let materialAfterIndex = -1;
   let requestedMaterialQuantity = 0;
   if (plan.material && normalizePetMaterial(plan.material)) {
+    const eventTable = authority ? 'telegram_pet_specialist_events' : 'telegram_pet_runtime_events';
     requestedMaterialQuantity = Math.max(1, Math.min(25, Math.floor(Number(options.material_amount) || 1)));
     const maxStack = PET_CRAFTING_MATERIALS[plan.material].max_stack;
     materialBeforeIndex = statements.length;
     statements.push(db.prepare(`SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id = ? AND material_key = ?`).bind(id, plan.material));
     materialAfterIndex = statements.length;
     statements.push(db.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity)
-      SELECT ?, ?, MIN(?, ?) WHERE EXISTS (SELECT 1 FROM telegram_pet_runtime_events WHERE id = ?)
+      SELECT ?, ?, MIN(?, ?) WHERE EXISTS (SELECT 1 FROM ${eventTable} WHERE id = ?)
       ON CONFLICT (telegram_id, material_key) DO UPDATE SET quantity = MIN(?, telegram_pet_material_balances.quantity + excluded.quantity), updated_at = CURRENT_TIMESTAMP
       RETURNING quantity`).bind(id, plan.material, requestedMaterialQuantity, maxStack, claimId, maxStack));
   }
