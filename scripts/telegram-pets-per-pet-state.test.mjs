@@ -645,6 +645,71 @@ assert.deepEqual(
   'work started by the previous-season pet must not leak onto the new-season starter',
 );
 
+const legacySpecialistDb = new DatabaseSync(':memory:');
+legacySpecialistDb.exec(`
+  PRAGMA foreign_keys = ON;
+  CREATE TABLE telegram_pet_profiles (
+    telegram_id TEXT PRIMARY KEY,
+    pet_name TEXT NOT NULL DEFAULT 'Moonpet', species TEXT NOT NULL DEFAULT '',
+    stage TEXT NOT NULL DEFAULT 'egg', pet_xp INTEGER NOT NULL DEFAULT 0,
+    level INTEGER NOT NULL DEFAULT 1, hunger INTEGER NOT NULL DEFAULT 25,
+    happiness INTEGER NOT NULL DEFAULT 70, cleanliness INTEGER NOT NULL DEFAULT 70,
+    energy INTEGER NOT NULL DEFAULT 70, health INTEGER NOT NULL DEFAULT 75,
+    streak_days INTEGER NOT NULL DEFAULT 0, moon_gold INTEGER NOT NULL DEFAULT 0,
+    moon_crystals INTEGER NOT NULL DEFAULT 0, style_tokens INTEGER NOT NULL DEFAULT 0,
+    equipped_food TEXT, equipped_toy TEXT, equipped_outfit TEXT,
+    equipped_armor TEXT, equipped_weapon TEXT, equipped_charm TEXT,
+    last_active_day TEXT, last_decay_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE telegram_pet_season_state (
+    telegram_id TEXT NOT NULL, season_key TEXT NOT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (telegram_id, season_key)
+  );
+`);
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name)
+  VALUES ('legacy-specialist-owner', 'Legacy Pet')`).run();
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key)
+  VALUES ('legacy-specialist-owner', '2026-q3')`).run();
+legacySpecialistDb.exec(migration055);
+legacySpecialistDb.exec(migration056);
+legacySpecialistDb.exec(migration039);
+legacySpecialistDb.prepare(`UPDATE telegram_pet_progression_state
+  SET care_xp=8, bond_xp=5, daily_key='2026-08-22', care_daily=8, bond_daily=5, traits_json='{"loyal":4}'
+  WHERE telegram_id='legacy-specialist-owner'`).run();
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_runtime_events
+  (id, telegram_id, event_key, action, payload_json, created_at)
+  VALUES ('legacy-runtime-feed-1', 'legacy-specialist-owner', 'legacy:feed:1', 'feed', '{"action":"feed"}', '2026-08-22T08:00:00Z')`).run();
+legacySpecialistDb.exec(migration073);
+const legacySpecialistD1 = new SqliteD1(legacySpecialistDb);
+const legacyPet = { pet_id: 'pet:legacy-specialist-owner:2026-q3:1', season_key: '2026-q3' };
+assert.equal(legacySpecialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_events
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3' AND event_key='legacy:feed:1'`)
+  .get(legacyPet.pet_id).count, 1,
+  'migration 073 must backfill legacy runtime idempotency evidence onto the proven starter pet');
+const legacyReplay = await applyPetRuntimeAward(legacySpecialistD1, 'legacy-specialist-owner', 'legacy:feed:1', 'feed', {
+  ...legacyPet,
+  day_key: '2026-08-22',
+  trait_amount: 4,
+});
+assert.equal(legacyReplay.duplicate, true, 'a pre-migration runtime event key must not be replayable after migration 073');
+let legacyState = await getOrCreatePetRuntimeState(legacySpecialistD1, 'legacy-specialist-owner', '2026-08-22', legacyPet);
+assert.equal(legacyState.care_xp, 8, 'duplicate legacy replay must not add specialist XP');
+assert.equal(legacyState.bond_xp, 5, 'duplicate legacy replay must not add secondary specialist XP');
+assert.equal(JSON.parse(legacyState.traits_json).loyal, 4, 'duplicate legacy replay must not add aptitude progress');
+const legacyNewAward = await applyPetRuntimeAward(legacySpecialistD1, 'legacy-specialist-owner', 'legacy:feed:2', 'feed', {
+  ...legacyPet,
+  day_key: '2026-08-22',
+  trait_amount: 4,
+});
+assert.equal(legacyNewAward.duplicate, false, 'a genuinely new pet-scoped runtime event key must still credit once');
+legacyState = await getOrCreatePetRuntimeState(legacySpecialistD1, 'legacy-specialist-owner', '2026-08-22', legacyPet);
+assert.equal(legacyState.care_xp, 16, 'new runtime event should add one Care award after the legacy duplicate is blocked');
+assert.equal(legacyState.bond_xp, 10, 'new runtime event should add one Bond award after the legacy duplicate is blocked');
+assert.equal(JSON.parse(legacyState.traits_json).loyal, 8, 'new runtime event should add one aptitude award after the legacy duplicate is blocked');
+
 const runRolloverPet = seedPendingRolloverPlayer('rollover-run');
 db.prepare(`INSERT INTO telegram_pet_runs (run_id, telegram_id, status) VALUES ('run-rollover-active', 'rollover-run', 'active')`).run();
 assert.equal(await preparePetMiniAppState(d1, 'rollover-run', rolloverNow), true, 'run-gated rollover preparation must return successfully while deferring activation');

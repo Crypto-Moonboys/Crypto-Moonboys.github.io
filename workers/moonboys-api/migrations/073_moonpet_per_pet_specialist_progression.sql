@@ -62,3 +62,25 @@ SELECT
 FROM telegram_pet_instances i
 JOIN telegram_pet_progression_state p ON p.telegram_id = i.telegram_id
 WHERE i.slot_number = 1 AND i.status = 'active';
+
+INSERT OR IGNORE INTO telegram_pet_specialist_events (
+  id, pet_id, telegram_id, season_key, event_key, action, payload_json, created_at
+)
+SELECT
+  'legacy-runtime:' || e.id,
+  i.pet_id,
+  e.telegram_id,
+  i.season_key,
+  e.event_key,
+  e.action,
+  e.payload_json,
+  e.created_at
+FROM telegram_pet_runtime_events e
+JOIN telegram_pet_instances i
+  ON i.telegram_id = e.telegram_id
+  AND i.slot_number = 1
+  AND i.status = 'active'
+JOIN telegram_pet_specialist_progression s
+  ON s.pet_id = i.pet_id
+  AND s.telegram_id = i.telegram_id
+  AND s.season_key = i.season_key;
