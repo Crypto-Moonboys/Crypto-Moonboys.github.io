@@ -470,10 +470,30 @@
     var waitingDetail = !activity.ready && !cooldown && activity.detail ? String(activity.detail) : '';
     return { disabled: !activity.ready, cooldown: cooldown, statusLabel: waitingDetail ? 'WAITING' : '', detail: waitingDetail };
   }
+
+  function actionCooldownEntry(action) {
+    var key = 'action:' + String(action || '');
+    var entries = Array.isArray(state && state.cooldowns && state.cooldowns.entries) ? state.cooldowns.entries : [];
+    var entry = entries.find(function (candidate) { return candidate && candidate.key === key; }) || null;
+    if (!entry) return null;
+    return cooldownRemainingSeconds(entry) > 0 ? entry : null;
+  }
+
+  function actionCooldownButtonOptions(action, options) {
+    options = options || {};
+    if (options.cooldown && cooldownRemainingSeconds(options.cooldown) > 0) return options;
+    var actionCooldown = actionCooldownEntry(action);
+    if (!actionCooldown) return options;
+    return Object.assign({}, options, {
+      disabled: true,
+      cooldown: actionCooldown,
+      statusLabel: '',
+    });
+  }
   // TEST-EXPORT: actionAvailability:end
 
   function button(label, action, payload, options) {
-    options = options || {};
+    options = actionCooldownButtonOptions(action, options);
     var disabled = options && options.disabled;
     var detail = shouldShowAvailability(options)
       ? '<small>' + availabilityDetailMarkup(options) + '</small>'

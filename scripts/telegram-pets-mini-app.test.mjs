@@ -124,17 +124,18 @@ function escapeHtml(value) {
   });
 }
 var serverClockOffsetMs = 0;
+var state = option && option.state || null;
 ${countdownComponentSource}
 ${actionAvailabilitySource}
 function button(label, action, payload, options) {
-  options = options || {};
+  options = actionCooldownButtonOptions(action, options);
   var disabled = options && options.disabled;
   var detail = shouldShowAvailability(options)
     ? '<small>' + availabilityDetailMarkup(options) + '</small>'
     : '';
   return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
 }
-return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, cooldownExpiresAt, formatCountdownSeconds, countdownText, countdownMarkup, setOffset: function (value) { serverClockOffsetMs = value; } };`,
+return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, cooldownExpiresAt, formatCountdownSeconds, countdownText, countdownMarkup, actionCooldownButtonOptions, setOffset: function (value) { serverClockOffsetMs = value; }, setState: function (value) { state = value; } };`,
 )({});
 assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
   'available action buttons must not show locked copy');
@@ -260,6 +261,24 @@ assert.match(defeatedBossButton, /DEFEATED/,
   'defeated boss buttons must render defeated status copy');
 assert.doesNotMatch(defeatedBossButton, /Available in|data-cooldown-expires-at/,
   'defeated bosses must not render false availability cooldown timers');
+actionAvailabilityRuntime.setOffset(Date.parse('2026-08-22T12:00:00.000Z') - Date.now());
+actionAvailabilityRuntime.setState({
+  cooldowns: {
+    entries: [{ key: 'action:work', expires_at: '2026-08-22T12:01:00.000Z', remaining_seconds: 60 }],
+  },
+});
+const actionCooldownButton = actionAvailabilityRuntime.button('WORK SHIFT', 'work', {}, {});
+assert.match(actionCooldownButton, /disabled/,
+  'action-level cooldown entries must disable matching action controls');
+assert.match(actionCooldownButton, /Available in 1m 00s/,
+  'action-level cooldown entries must render a live countdown on matching action controls');
+actionAvailabilityRuntime.setState({
+  cooldowns: {
+    entries: [{ key: 'action:work', expires_at: '2026-08-22T11:59:00.000Z', remaining_seconds: 0 }],
+  },
+});
+assert.doesNotMatch(actionAvailabilityRuntime.button('WORK SHIFT', 'work', {}, {}), /disabled|Available in/,
+  'expired action-level cooldown entries must not keep controls disabled');
 
 const cooldownRefreshSource = extractTestExport(client, 'cooldownRefresh');
 assert.ok(cooldownRefreshSource, 'cooldown refresh helper must be extractable for debounce coverage');
