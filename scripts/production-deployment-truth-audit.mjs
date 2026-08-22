@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { REQUIRED_D1_MIGRATIONS } from './verify-d1-production-migrations.mjs';
 
 const ROOT = process.env.DEPLOYMENT_TRUTH_ROOT
   ? path.resolve(process.env.DEPLOYMENT_TRUTH_ROOT)
@@ -20,17 +21,7 @@ const LIVE_STATUSES = new Set(['unverified', 'verification-pending', 'verified-l
 const BLOCKED_STATUSES = new Set(['blocked', 'not-deployed', 'unverified']);
 const SUPPORTED_SURFACES = new Set(['github-pages']);
 const REQUIRED_D1_DATABASES = Object.freeze({
-  wikicoms: Object.freeze([
-    '038_telegram_pet_equipment_progression.sql',
-    '039_telegram_pet_runtime_progression.sql',
-    '041_telegram_pet_repeat_reward_slots.sql',
-    '042_telegram_pet_roguelite_foundation.sql',
-    '043_telegram_pet_identity_expansion.sql',
-    '044_telegram_pet_daily_runs.sql',
-    '045_telegram_pet_inventory_cutover_reconciliation.sql',
-    '046_fix_pet_runtime_unique_constraints.sql',
-    '047_fix_telegram_leaderboard_reward_constraint.sql',
-  ]),
+  wikicoms: Object.freeze([...REQUIRED_D1_MIGRATIONS]),
 });
 
 function readJson(filePath, label) {

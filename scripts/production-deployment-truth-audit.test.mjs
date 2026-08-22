@@ -6,6 +6,7 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { REQUIRED_D1_MIGRATIONS } from './verify-d1-production-migrations.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const AUDIT = path.join(ROOT, 'scripts', 'production-deployment-truth-audit.mjs');
@@ -14,17 +15,7 @@ const REPOSITORY_SHA = execFileSync('git', ['rev-parse', 'HEAD'], {
   encoding: 'utf8',
 }).trim();
 const NONEXISTENT_SHA = 'e'.repeat(40);
-const REQUIRED_PETS_MIGRATIONS = [
-  '038_telegram_pet_equipment_progression.sql',
-  '039_telegram_pet_runtime_progression.sql',
-  '041_telegram_pet_repeat_reward_slots.sql',
-  '042_telegram_pet_roguelite_foundation.sql',
-  '043_telegram_pet_identity_expansion.sql',
-  '044_telegram_pet_daily_runs.sql',
-  '045_telegram_pet_inventory_cutover_reconciliation.sql',
-  '046_fix_pet_runtime_unique_constraints.sql',
-  '047_fix_telegram_leaderboard_reward_constraint.sql',
-];
+const REQUIRED_PETS_MIGRATIONS = [...REQUIRED_D1_MIGRATIONS];
 
 async function withFixture(readiness, truth, run) {
   const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'deployment-truth-'));

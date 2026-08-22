@@ -83,6 +83,7 @@ const GROUPS = {
     ['node', 'scripts/verify-moonpet-identity-authority.test.mjs'],
     ['node', 'scripts/verify-moonpet-identity-authority.mjs'],
     ['node', 'scripts/verify-d1-production-migrations.test.mjs'],
+    ['node', 'scripts/verify-d1-moonpet-hardening-audit.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.mjs'],
   ],

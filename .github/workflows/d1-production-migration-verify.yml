@@ -7,6 +7,8 @@ on:
       - scripts/verify-d1-production-migrations.mjs
       - scripts/verify-d1-production-migrations.test.mjs
       - scripts/verify-d1-identity-authority-audit.mjs
+      - scripts/verify-d1-moonpet-hardening-audit.mjs
+      - scripts/verify-d1-moonpet-hardening-audit.test.mjs
       - scripts/report-d1-query-failure.mjs
       - workers/moonboys-api/migrations/038_telegram_pet_equipment_progression.sql
       - workers/moonboys-api/migrations/039_telegram_pet_runtime_progression.sql
@@ -64,9 +66,12 @@ jobs:
           node --check scripts/verify-d1-production-migrations.mjs
           node --check scripts/verify-d1-production-migrations.test.mjs
           node --check scripts/verify-d1-identity-authority-audit.mjs
+          node --check scripts/verify-d1-moonpet-hardening-audit.mjs
           node --check scripts/report-d1-query-failure.mjs
       - name: Verify required migration contract
         run: node scripts/verify-d1-production-migrations.test.mjs
+      - name: Verify Moonpet hardening audit parser contract
+        run: node scripts/verify-d1-moonpet-hardening-audit.test.mjs
       - name: Verify known migration evidence
         shell: bash
         run: |
@@ -198,6 +203,90 @@ jobs:
           path: d1-identity-authority-audit-failure.txt
           if-no-files-found: error
           retention-days: 30
+      - name: Query production Moonpet hardening schema objects
+        if: steps.d1-query.outputs.status == '0'
+        id: d1-hardening-schema
+        shell: bash
+        run: |
+          set +e
+          npx wrangler d1 execute wikicoms \
+            --remote \
+            --config workers/moonboys-api/wrangler.toml \
+            --command "SELECT type, name FROM sqlite_master WHERE (type='view' AND name='moonpet_invalid_identity_authority_rows') OR (type='table' AND name IN ('telegram_pet_specialist_progression','telegram_pet_specialist_events','telegram_pet_live_progression_state','telegram_pet_system_events','telegram_pet_event_chain_progress','telegram_pet_seasonal_boss_progress')) OR (type='index' AND name IN ('idx_pet_specialist_progression_owner','idx_pet_specialist_events_owner_created','idx_pet_system_events_owner','idx_pet_system_events_pet_owner')) ORDER BY type, name" \
+            --json > d1-hardening-schema.json 2> d1-hardening-schema.stderr
+          status=$?
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Query production Moonpet specialist ownership audit
+        if: steps.d1-query.outputs.status == '0'
+        id: d1-hardening-specialist
+        shell: bash
+        run: |
+          set +e
+          npx wrangler d1 execute wikicoms \
+            --remote \
+            --config workers/moonboys-api/wrangler.toml \
+            --command "WITH invalid_progression AS (SELECT COUNT(*) AS count FROM telegram_pet_specialist_progression s LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = s.pet_id AND slot.telegram_id = s.telegram_id AND slot.season_key = s.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id AND i.season_key = s.season_key WHERE s.pet_id IS NULL OR s.pet_id = '' OR s.telegram_id IS NULL OR s.telegram_id = '' OR s.season_key IS NULL OR s.season_key = '' OR slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number), invalid_events AS (SELECT COUNT(*) AS count FROM telegram_pet_specialist_events e LEFT JOIN telegram_pet_specialist_progression s ON s.pet_id = e.pet_id AND s.telegram_id = e.telegram_id AND s.season_key = e.season_key LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = e.pet_id AND slot.telegram_id = e.telegram_id AND slot.season_key = e.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = e.pet_id AND i.telegram_id = e.telegram_id AND i.season_key = e.season_key WHERE e.pet_id IS NULL OR e.pet_id = '' OR e.telegram_id IS NULL OR e.telegram_id = '' OR e.season_key IS NULL OR e.season_key = '' OR s.pet_id IS NULL OR slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number), crossover AS (SELECT COUNT(*) AS count FROM (SELECT telegram_id, season_key, event_key, COUNT(DISTINCT pet_id) AS pet_count FROM telegram_pet_specialist_events GROUP BY telegram_id, season_key, event_key HAVING pet_count > 1)), wallet_pet_columns AS (SELECT (SELECT COUNT(*) FROM pragma_table_info('telegram_pet_profiles') WHERE name='pet_id') + (SELECT COUNT(*) FROM pragma_table_info('telegram_pet_material_balances') WHERE name='pet_id') + (SELECT COUNT(*) FROM pragma_table_info('telegram_pet_inventory') WHERE name='pet_id') AS count), wallet_balance_columns AS (SELECT (3 - (SELECT COUNT(*) FROM pragma_table_info('telegram_pet_profiles') WHERE name IN ('moon_gold','moon_crystals','style_tokens'))) AS count) SELECT (SELECT count FROM invalid_progression) AS invalid_specialist_progression_rows, (SELECT count FROM invalid_events) AS invalid_specialist_event_rows, (SELECT count FROM crossover) AS specialist_event_pet_crossovers, (SELECT count FROM wallet_pet_columns) AS account_wallet_pet_id_columns, (SELECT count FROM wallet_balance_columns) AS missing_wallet_balance_columns" \
+            --json > d1-hardening-specialist.json 2> d1-hardening-specialist.stderr
+          status=$?
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Query production Moonpet live ownership audit
+        if: steps.d1-query.outputs.status == '0'
+        id: d1-hardening-live
+        shell: bash
+        run: |
+          set +e
+          npx wrangler d1 execute wikicoms \
+            --remote \
+            --config workers/moonboys-api/wrangler.toml \
+            --command "WITH invalid_live_progression AS (SELECT COUNT(*) AS count FROM telegram_pet_live_progression_state p LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = p.pet_id AND slot.telegram_id = p.telegram_id AND slot.season_key = p.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = p.pet_id AND i.telegram_id = p.telegram_id AND i.season_key = p.season_key WHERE p.pet_id IS NULL OR p.pet_id = '' OR p.telegram_id IS NULL OR p.telegram_id = '' OR p.season_key IS NULL OR p.season_key = '' OR slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number), invalid_system_events AS (SELECT COUNT(*) AS count FROM telegram_pet_system_events e LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = e.pet_id AND slot.telegram_id = e.telegram_id AND slot.season_key = e.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = e.pet_id AND i.telegram_id = e.telegram_id AND i.season_key = e.season_key WHERE e.system_key IN ('district','event_chain','seasonal_boss') AND (e.pet_id IS NULL OR e.pet_id = '' OR e.season_key IS NULL OR e.season_key = '' OR slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number)), invalid_event_chain AS (SELECT COUNT(*) AS count FROM telegram_pet_event_chain_progress c LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = c.pet_id AND slot.telegram_id = c.telegram_id AND slot.season_key = c.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = c.pet_id AND i.telegram_id = c.telegram_id AND i.season_key = c.season_key WHERE c.pet_id IS NULL OR c.pet_id = '' OR c.season_key IS NULL OR c.season_key = '' OR slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number), invalid_seasonal_boss AS (SELECT COUNT(*) AS count FROM telegram_pet_seasonal_boss_progress b LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = b.pet_id AND slot.telegram_id = b.telegram_id AND slot.season_key = b.pet_season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = b.pet_id AND i.telegram_id = b.telegram_id AND i.season_key = b.pet_season_key WHERE b.pet_id IS NULL OR b.pet_id = '' OR b.pet_season_key IS NULL OR b.pet_season_key = '' OR slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number), empty_pet_owned_events AS (SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE system_key IN ('district','event_chain','seasonal_boss') AND (pet_id IS NULL OR pet_id = '' OR season_key IS NULL OR season_key = '')), invalid_daily_journey AS (SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives d LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = d.pet_id AND slot.telegram_id = d.telegram_id AND slot.season_key = d.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = d.pet_id AND i.telegram_id = d.telegram_id AND i.season_key = d.season_key WHERE slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number), invalid_weekly_journey AS (SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives w LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = w.pet_id AND slot.telegram_id = w.telegram_id AND slot.season_key = w.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = w.pet_id AND i.telegram_id = w.telegram_id AND i.season_key = w.season_key WHERE slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number), invalid_daily_runs AS (SELECT COUNT(*) AS count FROM telegram_pet_daily_runs r LEFT JOIN telegram_pet_season_slots slot ON slot.pet_id = r.pet_id AND slot.telegram_id = r.telegram_id AND slot.season_key = r.season_key LEFT JOIN telegram_pet_instances i ON i.pet_id = r.pet_id AND i.telegram_id = r.telegram_id AND i.season_key = r.season_key WHERE r.pet_id IS NOT NULL AND r.pet_id <> '' AND (slot.pet_id IS NULL OR i.pet_id IS NULL OR slot.slot_number <> i.slot_number)) SELECT (SELECT count FROM invalid_live_progression) AS invalid_live_progression_rows, (SELECT count FROM invalid_system_events) AS invalid_system_event_rows, (SELECT count FROM invalid_event_chain) AS invalid_event_chain_rows, (SELECT count FROM invalid_seasonal_boss) AS invalid_seasonal_boss_rows, (SELECT count FROM empty_pet_owned_events) AS empty_pet_owned_system_events, (SELECT count FROM invalid_daily_journey) AS invalid_daily_journey_rows, (SELECT count FROM invalid_weekly_journey) AS invalid_weekly_journey_rows, (SELECT count FROM invalid_daily_runs) AS invalid_daily_run_rows" \
+            --json > d1-hardening-live.json 2> d1-hardening-live.stderr
+          status=$?
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Verify Moonpet hardening production audit
+        if: steps.d1-query.outputs.status == '0'
+        id: d1-hardening-verify
+        shell: bash
+        run: |
+          if [ "${{ steps.d1-hardening-schema.outputs.status }}" != "0" ]; then
+            node scripts/report-d1-query-failure.mjs d1-hardening-schema.json d1-hardening-schema.stderr d1-hardening-audit-failure.txt
+            echo "status=${{ steps.d1-hardening-schema.outputs.status }}" >> "$GITHUB_OUTPUT"
+            exit "${{ steps.d1-hardening-schema.outputs.status }}"
+          fi
+          if [ "${{ steps.d1-hardening-specialist.outputs.status }}" != "0" ]; then
+            node scripts/report-d1-query-failure.mjs d1-hardening-specialist.json d1-hardening-specialist.stderr d1-hardening-audit-failure.txt
+            echo "status=${{ steps.d1-hardening-specialist.outputs.status }}" >> "$GITHUB_OUTPUT"
+            exit "${{ steps.d1-hardening-specialist.outputs.status }}"
+          fi
+          if [ "${{ steps.d1-hardening-live.outputs.status }}" != "0" ]; then
+            node scripts/report-d1-query-failure.mjs d1-hardening-live.json d1-hardening-live.stderr d1-hardening-audit-failure.txt
+            echo "status=${{ steps.d1-hardening-live.outputs.status }}" >> "$GITHUB_OUTPUT"
+            exit "${{ steps.d1-hardening-live.outputs.status }}"
+          fi
+          set +e
+          node scripts/verify-d1-moonpet-hardening-audit.mjs \
+            --schema-input d1-hardening-schema.json \
+            --specialist-input d1-hardening-specialist.json \
+            --live-input d1-hardening-live.json \
+            --output d1-moonpet-hardening-audit-evidence.json \
+            2> d1-hardening-audit-failure.txt
+          verify_status=$?
+          set -e
+          echo "status=$verify_status" >> "$GITHUB_OUTPUT"
+          if [ "$verify_status" != "0" ]; then
+            cat d1-hardening-audit-failure.txt
+            exit "$verify_status"
+          fi
+      - name: Upload sanitised Moonpet hardening audit failure diagnostics
+        if: always() && steps.d1-query.outputs.status == '0' && steps.d1-hardening-verify.outputs.status != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-moonpet-hardening-audit-failure-diagnostics
+          path: d1-hardening-audit-failure.txt
+          if-no-files-found: error
+          retention-days: 30
       - name: Upload sanitised evidence
         if: steps.d1-query.outputs.status == '0'
         uses: actions/upload-artifact@v4
@@ -206,5 +295,6 @@ jobs:
           path: |
             d1-production-migration-evidence.json
             d1-identity-authority-audit-result.txt
+            d1-moonpet-hardening-audit-evidence.json
           if-no-files-found: error
           retention-days: 90

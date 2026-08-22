@@ -31,6 +31,7 @@ assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/072_moonpet_i
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/073_moonpet_per_pet_specialist_progression\.sql/, 'migration 073 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/074_moonpet_live_system_ownership_classification\.sql/, 'migration 074 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /scripts\/verify-d1-identity-authority-audit\.mjs/, 'identity authority audit parser changes must trigger production migration verification');
+assert.match(pullRequestPaths, /scripts\/verify-d1-moonpet-hardening-audit\.mjs/, 'Moonpet hardening audit parser changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,
@@ -92,6 +93,18 @@ assert.match(workflow, /d1-query-failure-diagnostics/,
   'workflow_dispatch must upload migration query failure diagnostics separately');
 assert.match(workflow, /d1-identity-authority-audit-failure-diagnostics/,
   'workflow_dispatch must upload identity audit failure diagnostics separately');
+assert.match(workflow, /d1-hardening-schema/,
+  'workflow_dispatch must query production schema objects for Moonpet hardening checks');
+assert.match(workflow, /d1-hardening-specialist/,
+  'workflow_dispatch must query production specialist ownership checks');
+assert.match(workflow, /d1-hardening-live/,
+  'workflow_dispatch must query production live ownership checks');
+assert.match(workflow, /verify-d1-moonpet-hardening-audit\.mjs/,
+  'workflow_dispatch must use the Moonpet hardening audit parser');
+assert.match(workflow, /d1-moonpet-hardening-audit-failure-diagnostics/,
+  'workflow_dispatch must upload Moonpet hardening failure diagnostics separately');
+assert.match(workflow, /d1-moonpet-hardening-audit-evidence\.json/,
+  'workflow_dispatch must upload Moonpet hardening audit evidence');
 assert.match(workflow, /d1-identity-authority-audit-result\.txt/,
   'workflow_dispatch must upload successful identity audit evidence');
 assert.doesNotMatch(workflow, /path:\s*\|\s*d1-identity-authority-audit-failure\.txt\s*d1-identity-authority-audit\.json/s,
