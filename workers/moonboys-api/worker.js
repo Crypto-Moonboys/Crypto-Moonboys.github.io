@@ -8525,7 +8525,13 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
       SELECT scores.telegram_id, scores.pet_xp, p.pet_name,
         COALESCE(
           (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-            WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = scores.telegram_id)
+            WHERE pe.telegram_id = scores.telegram_id
+              AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                WHERE a.telegram_id = scores.telegram_id AND a.pet_id = pe.pet_id
+                  AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                    WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
+                  AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                    WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
             ORDER BY pe.stage DESC LIMIT 1),
           (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=scores.telegram_id ORDER BY pe.stage DESC LIMIT 1),
           'moon_egg'
@@ -8882,7 +8888,13 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     db.prepare(`SELECT p.telegram_id, p.pet_name,
         COALESCE(
           (SELECT e.evolution_id FROM telegram_pet_evolutions_by_pet e
-            WHERE e.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
+            WHERE e.telegram_id = p.telegram_id
+              AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                WHERE a.telegram_id = p.telegram_id AND a.pet_id = e.pet_id
+                  AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                    WHERE stale_i.pet_id = e.pet_id AND stale_i.telegram_id = e.telegram_id AND stale_i.season_key <> a.season_key)
+                  AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                    WHERE stale_s.pet_id = e.pet_id AND stale_s.telegram_id = e.telegram_id AND stale_s.season_key <> a.season_key))
             ORDER BY e.stage DESC LIMIT 1),
           (SELECT e.evolution_id FROM telegram_pet_evolutions e WHERE e.telegram_id=p.telegram_id ORDER BY e.stage DESC LIMIT 1),
           'moon_egg'
@@ -10061,7 +10073,13 @@ export default {
         SELECT e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
                p.pet_name, COALESCE(
                  (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                   WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
+                   WHERE pe.telegram_id = e.telegram_id
+                     AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                       WHERE a.telegram_id = e.telegram_id AND a.pet_id = pe.pet_id
+                         AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                           WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
+                         AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                           WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
                    ORDER BY pe.stage DESC LIMIT 1),
                  (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
                  'moon_egg'
@@ -10099,7 +10117,13 @@ export default {
         rows = await env.DB.prepare(`
           SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE(
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
+                     WHERE pe.telegram_id = e.telegram_id
+                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                         WHERE a.telegram_id = e.telegram_id AND a.pet_id = pe.pet_id
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
                      ORDER BY pe.stage DESC LIMIT 1),
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
                    'moon_egg'
@@ -10120,7 +10144,13 @@ export default {
         rows = await env.DB.prepare(`
           SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE(
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
+                     WHERE pe.telegram_id = e.telegram_id
+                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                         WHERE a.telegram_id = e.telegram_id AND a.pet_id = pe.pet_id
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
                      ORDER BY pe.stage DESC LIMIT 1),
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
                    'moon_egg'
@@ -10141,7 +10171,13 @@ export default {
         rows = await env.DB.prepare(`
           SELECT p.telegram_id, p.pet_xp, p.pet_name, COALESCE(
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
+                     WHERE pe.telegram_id = p.telegram_id
+                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                         WHERE a.telegram_id = p.telegram_id AND a.pet_id = pe.pet_id
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
                      ORDER BY pe.stage DESC LIMIT 1),
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=p.telegram_id ORDER BY pe.stage DESC LIMIT 1),
                    'moon_egg'
@@ -10159,7 +10195,13 @@ export default {
         rows = await env.DB.prepare(`
           SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, COALESCE(
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = s.telegram_id)
+                     WHERE pe.telegram_id = s.telegram_id
+                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                         WHERE a.telegram_id = s.telegram_id AND a.pet_id = pe.pet_id
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
+                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
                      ORDER BY pe.stage DESC LIMIT 1),
                    (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1),
                    'moon_egg'
@@ -15322,8 +15364,16 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw)
       WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(petId, telegramId, seasonKey).first().catch(() => null),
     db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits
       WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND unlocked_at IS NOT NULL`).bind(petId, telegramId, seasonKey).first().catch(() => null),
-    db.prepare(`SELECT COALESCE((SELECT MAX(stage) FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND telegram_id = ?), 0) AS stage`)
-      .bind(petId, telegramId).first().catch(() => null),
+    db.prepare(`SELECT COALESCE((
+      SELECT MAX(e.stage)
+      FROM telegram_pet_evolutions_by_pet e
+      WHERE e.pet_id = ? AND e.telegram_id = ?
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+          WHERE stale_i.pet_id = e.pet_id AND stale_i.telegram_id = e.telegram_id AND stale_i.season_key <> ?)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+          WHERE stale_s.pet_id = e.pet_id AND stale_s.telegram_id = e.telegram_id AND stale_s.season_key <> ?)
+    ), 0) AS stage`)
+      .bind(petId, telegramId, seasonKey, seasonKey).first().catch(() => null),
   ]);
   if (!profile) return [];
   const values = {
@@ -16597,7 +16647,13 @@ async function cmdPetLeaderboard(db, tok, chatId, replyMarkup = null) {
   const rows = await db.prepare(`
     SELECT s.telegram_id, s.season_xp, p.pet_name, COALESCE(
              (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-               WHERE pe.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = s.telegram_id)
+               WHERE pe.telegram_id = s.telegram_id
+                 AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
+                   WHERE a.telegram_id = s.telegram_id AND a.pet_id = pe.pet_id
+                     AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+                       WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
+                     AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+                       WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
                ORDER BY pe.stage DESC LIMIT 1),
              (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1),
              'moon_egg'

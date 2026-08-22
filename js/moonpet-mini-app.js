@@ -1484,12 +1484,16 @@
       button('DISABLE ALERTS', 'notification_set', { enabled: false }, { disabled: !notifications.enabled, statusLabel: !notifications.enabled ? 'CURRENT' : '', danger: true }) + '</div>';
     var aptitudeRows = ['brave', 'loyal', 'clever', 'stylish', 'tough', 'lucky'].map(function (key) { return '<div class="line">' + key.toUpperCase() + ' ' + number(learnedTraits[key]) + '</div>'; }).join('');
     var memory = identity.memories || {};
+    var bossHistory = (identity.boss_victories || []).slice(0, 4).map(function (boss) {
+      return 'BOSS // ' + words(boss.boss_id) + ' x' + number(boss.victories);
+    });
     var memoryRows = [
       memory.first_boss_id ? 'FIRST BOSS // ' + words(memory.first_boss_id) : '',
       Number(memory.total_runs) > 0 ? 'RUNS COMPLETED // ' + number(memory.total_runs) : '',
       Number(memory.total_bosses_defeated) > 0 ? 'BOSSES DEFEATED // ' + number(memory.total_bosses_defeated) : '',
       memory.favourite_activity ? 'FAVOURITE // ' + words(memory.favourite_activity) : '',
       Number(memory.biggest_reward_amount) > 0 ? 'BIGGEST REWARD // ' + number(memory.biggest_reward_amount) + ' ' + words(memory.biggest_reward_currency) : '',
+      bossHistory.length ? bossHistory.join(' / ') : '',
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
